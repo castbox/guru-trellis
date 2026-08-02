@@ -9,7 +9,7 @@
     "invocation_context", "review_target", "target_disposition", "context_evidence",
     "confirmed_facts", "repository_answerable_questions",
     "clarification_rounds", "open_questions", "scope_proposals",
-    "source_actions", "human_confirmation", "mutation_results",
+    "source_actions", "mutation_results",
     "active_task_evidence", "ai_review_gate", "affected_contracts",
     "content_identity", "reason", "consumer", "error"
   ],
@@ -29,7 +29,6 @@
     "open_questions": {"$ref": "#/$defs/idList"},
     "scope_proposals": {"type": "array", "items": {"$ref": "#/$defs/scopeProposal"}},
     "source_actions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sourceAction"}},
-    "human_confirmation": {"$ref": "#/$defs/humanConfirmation"},
     "mutation_results": {"type": "array", "items": {"$ref": "#/$defs/mutationResult"}},
     "active_task_evidence": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/activeTaskEvidence"}]},
     "ai_review_gate": {"$ref": "#/$defs/aiGate"},
@@ -209,7 +208,7 @@
     },
     "targetDisposition": {
       "type": "object", "additionalProperties": false,
-      "required": ["disposition", "duplicate_query", "duplicate_checked_at", "duplicate_candidates", "duplicate_facts_sha256", "selected_issue", "original_target_role", "decision_summary", "confirmation_ref", "disposition_digest"],
+      "required": ["disposition", "duplicate_query", "duplicate_checked_at", "duplicate_candidates", "duplicate_facts_sha256", "selected_issue", "original_target_role", "decision_summary", "disposition_digest"],
       "properties": {
         "disposition": {"enum": ["keep_current_open_issue", "keep_current_draft", "retarget_existing_issue", "reopen_closed_issue", "create_followup_draft", "block_target_complete"]},
         "duplicate_query": {"$ref": "#/$defs/nonEmpty"},
@@ -219,7 +218,6 @@
         "selected_issue": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/selectedIssuePayload"}]},
         "original_target_role": {"enum": ["primary", "related", "reference"]},
         "decision_summary": {"$ref": "#/$defs/nonEmpty"},
-        "confirmation_ref": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/identifier"}]},
         "disposition_digest": {"$ref": "#/$defs/sha256"}
       }
     },
@@ -285,7 +283,7 @@
     },
     "scopeProposal": {
       "type": "object", "additionalProperties": false,
-      "required": ["proposal_id", "scenario", "trigger_evidence", "proposed_contracts", "cost", "alternatives", "consequence_if_omitted", "origin_requirement_status", "optional_mechanism_origin", "decision", "proposal_digest", "confirmation_ref"],
+      "required": ["proposal_id", "scenario", "trigger_evidence", "proposed_contracts", "cost", "alternatives", "consequence_if_omitted", "origin_requirement_status", "optional_mechanism_origin", "decision", "proposal_digest"],
       "properties": {
         "proposal_id": {"$ref": "#/$defs/identifier"},
         "scenario": {"$ref": "#/$defs/nonEmpty"},
@@ -297,13 +295,12 @@
         "origin_requirement_status": {"enum": ["explicit", "necessary_correctness", "confirmed_expansion", "unconfirmed_expansion"]},
         "optional_mechanism_origin": {"type": "boolean"},
         "decision": {"enum": ["pending", "accepted_current", "related", "followup", "new_task", "out_of_scope", "mechanism_removed", "mechanism_replaced"]},
-        "proposal_digest": {"$ref": "#/$defs/sha256"},
-        "confirmation_ref": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/identifier"}]}
+        "proposal_digest": {"$ref": "#/$defs/sha256"}
       },
       "allOf": [
         {
           "if": {"properties": {"decision": {"enum": ["mechanism_removed", "mechanism_replaced"]}}, "required": ["decision"]},
-          "then": {"properties": {"optional_mechanism_origin": {"const": true}, "confirmation_ref": {"type": "null"}}}
+          "then": {"properties": {"optional_mechanism_origin": {"const": true}}}
         },
         {
           "if": {"properties": {"optional_mechanism_origin": {"const": true}}, "required": ["optional_mechanism_origin"]},
@@ -409,22 +406,7 @@
     "activeTaskMutationEvidence": {
       "type": "object", "additionalProperties": false,
       "required": ["source"],
-      "properties": {"source": {"const": "confirmed-task-local-update"}}
-    },
-    "humanConfirmation": {
-      "type": "object", "additionalProperties": false,
-      "required": ["status", "confirmation_kind", "action_digest", "target_disposition_digest", "proposal_digests", "confirmed_actions", "confirmer", "confirmed_at", "evidence_summary"],
-      "properties": {
-        "status": {"enum": ["not_required", "confirmed", "refused"]},
-        "confirmation_kind": {"enum": ["none", "exact_source_action", "exact_scope_proposal", "exact_source_action_and_scope", "exact_target_disposition", "exact_source_action_and_target"]},
-        "action_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
-        "target_disposition_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
-        "proposal_digests": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/sha256"}},
-        "confirmed_actions": {"$ref": "#/$defs/idList"},
-        "confirmer": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmpty"}]},
-        "confirmed_at": {"oneOf": [{"type": "null"}, {"type": "string", "format": "date-time"}]},
-        "evidence_summary": {"$ref": "#/$defs/nonEmpty"}
-      }
+      "properties": {"source": {"const": "task-local-update"}}
     },
     "mutationResult": {
       "type": "object", "additionalProperties": false,
@@ -450,27 +432,23 @@
     },
     "activeTaskEvidence": {
       "type": "object", "additionalProperties": false,
-      "required": ["task_locator", "github_authority_facts_sha256", "ledger", "planning_documents", "stale_downstream_evidence", "review_evidence", "decision_trail", "reentry_owners"],
+      "required": ["task_locator", "github_authority_facts_sha256", "ledger", "planning_documents", "decision_trail", "reentry_owners"],
       "properties": {
         "task_locator": {"$ref": "#/$defs/portablePath"},
         "github_authority_facts_sha256": {"$ref": "#/$defs/sha256"},
         "ledger": {"$ref": "#/$defs/fileEvidence"},
         "planning_documents": {"$ref": "#/$defs/planningDocumentEvidence"},
-        "stale_downstream_evidence": {"$ref": "#/$defs/staleDownstreamEvidence"},
-        "review_evidence": {"$ref": "#/$defs/reviewEvidence"},
         "decision_trail": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/decisionTrail"}]},
         "reentry_owners": {"$ref": "#/$defs/reentryOwners"}
       }
     },
     "activeTaskActionPayload": {
       "type": "object", "additionalProperties": false,
-      "required": ["github_authority_facts_sha256", "ledger", "planning_documents", "stale_downstream_evidence", "review_evidence", "decision_trail", "reentry_owners"],
+      "required": ["github_authority_facts_sha256", "ledger", "planning_documents", "decision_trail", "reentry_owners"],
       "properties": {
         "github_authority_facts_sha256": {"$ref": "#/$defs/sha256"},
         "ledger": {"$ref": "#/$defs/fileEvidence"},
         "planning_documents": {"$ref": "#/$defs/planningDocumentEvidence"},
-        "stale_downstream_evidence": {"$ref": "#/$defs/staleDownstreamEvidence"},
-        "review_evidence": {"$ref": "#/$defs/reviewEvidence"},
         "decision_trail": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/decisionTrail"}]},
         "reentry_owners": {"$ref": "#/$defs/reentryOwners"}
       }
@@ -479,88 +457,37 @@
       "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true,
       "items": {"$ref": "#/$defs/fileEvidence"}
     },
-    "staleDownstreamEvidence": {
-      "type": "object", "additionalProperties": false,
-      "required": ["planning_approval_sha256", "phase2_check_sha256", "branch_review_sha256"],
-      "properties": {
-        "planning_approval_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
-        "phase2_check_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
-        "branch_review_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]}
-      }
-    },
-    "reviewEvidence": {
-      "type": "object", "additionalProperties": false,
-      "required": ["status", "artifact"],
-      "properties": {
-        "status": {"enum": ["not_started", "stale"]},
-        "artifact": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/fileEvidence"}]}
-      },
-      "allOf": [
-        {
-          "if": {"properties": {"status": {"const": "not_started"}}, "required": ["status"]},
-          "then": {"properties": {"artifact": {"type": "null"}}},
-          "else": {"properties": {"artifact": {"$ref": "#/$defs/fileEvidence"}}}
-        }
-      ]
-    },
     "decisionTrail": {
       "type": "object", "additionalProperties": false,
-      "required": ["trail_id", "proposal_decisions", "user_decision", "github_authority", "context_before_task_update_sha256", "planning_documents", "stale_downstream_evidence", "review_evidence", "reentry_owners", "interrupted_resume_target"],
+      "required": ["trail_id", "proposal_decisions", "github_authority"],
       "properties": {
         "trail_id": {"$ref": "#/$defs/identifier"},
         "proposal_decisions": {
           "type": "array", "minItems": 1, "uniqueItems": true,
           "items": {"$ref": "#/$defs/proposalDecision"}
         },
-        "user_decision": {"$ref": "#/$defs/userDecisionEvidence"},
-        "github_authority": {"$ref": "#/$defs/githubDecisionAuthority"},
-        "context_before_task_update_sha256": {"$ref": "#/$defs/sha256"},
-        "planning_documents": {"$ref": "#/$defs/planningDocumentEvidence"},
-        "stale_downstream_evidence": {"$ref": "#/$defs/staleDownstreamEvidence"},
-        "review_evidence": {"$ref": "#/$defs/reviewEvidence"},
-        "reentry_owners": {"$ref": "#/$defs/reentryOwners"},
-        "interrupted_resume_target": {
-          "enum": [
-            "guru-active-task-planning-review", "guru-resume-requirement-exploration",
-            "guru-resume-implementation", "guru-resume-phase2-check",
-            "guru-resume-spec-evaluation", "guru-resume-task-commit",
-            "guru-resume-branch-review"
-          ]
-        }
+        "github_authority": {"$ref": "#/$defs/githubDecisionAuthority"}
       }
     },
     "proposalDecision": {
       "type": "object", "additionalProperties": false,
-      "required": ["proposal_id", "proposal_digest", "decision", "confirmation_ref"],
+      "required": ["proposal_id", "proposal_digest", "decision"],
       "properties": {
         "proposal_id": {"$ref": "#/$defs/identifier"},
         "proposal_digest": {"$ref": "#/$defs/sha256"},
-        "decision": {"enum": ["accepted_current", "related", "followup", "new_task", "out_of_scope"]},
-        "confirmation_ref": {"$ref": "#/$defs/identifier"}
-      }
-    },
-    "userDecisionEvidence": {
-      "type": "object", "additionalProperties": false,
-      "required": ["status", "proposal_digests", "confirmer", "confirmed_at", "evidence_summary"],
-      "properties": {
-        "status": {"const": "confirmed"},
-        "proposal_digests": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/sha256"}},
-        "confirmer": {"$ref": "#/$defs/nonEmpty"},
-        "confirmed_at": {"type": "string", "format": "date-time"},
-        "evidence_summary": {"$ref": "#/$defs/nonEmpty"}
+        "decision": {"enum": ["accepted_current", "related", "followup", "new_task", "out_of_scope"]}
       }
     },
     "githubDecisionAuthority": {
       "type": "object", "additionalProperties": false,
-      "required": ["kind", "url", "content_sha256", "updated_at"],
+      "required": ["kind", "url", "content_sha256"],
       "properties": {
         "kind": {"enum": ["issue_comment", "issue_body"]},
         "url": {
           "type": "string",
           "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*(?:#issuecomment-[1-9][0-9]*)?$"
         },
-        "content_sha256": {"$ref": "#/$defs/sha256"},
-        "updated_at": {"type": "string", "format": "date-time"}
+        "content_sha256": {"$ref": "#/$defs/sha256"}
       }
     },
     "reentryOwners": {

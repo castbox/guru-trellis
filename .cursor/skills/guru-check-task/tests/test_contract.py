@@ -13,26 +13,24 @@ from pathlib import Path
 class CheckTaskPackageContractTests(unittest.TestCase):
     def setUp(self) -> None:
         self.package = Path(__file__).resolve().parents[1]
-        self.interface = json.loads((self.package / "interface.json").read_text(encoding="utf-8"))
-        self.schema = json.loads((self.package / "schemas/phase2-check.schema.json").read_text(encoding="utf-8"))
-        self.example = json.loads((self.package / "examples/phase2-check.json").read_text(encoding="utf-8"))
+        self.interface = self.read("interface.json")
+        self.schema = self.read("schemas/phase2-check.schema.json")
+        self.example = self.read("examples/phase2-check.json")
 
-    def test_identity_modes_stages_runtime_and_exits(self) -> None:
+    def read(self, relative: str) -> dict:
+        return json.loads((self.package / relative).read_text(encoding="utf-8"))
+
+    def test_interface_declares_compact_private_owner_contract(self) -> None:
         self.assertEqual(self.interface["id"], "guru-check-task")
         self.assertEqual(self.interface["schema_version"], "1.3")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         expected = [
             "runtime_dependency", "task_workspace", "approved_planning",
-            "requirement_provenance", "implementation_handoff",
-            "repository_check_inputs", "docs_ssot_plan", "issue_scope_ledger",
-            "repository_snapshot", "invocation_freshness",
+            "live_implementation", "validation_scope", "docs_ssot",
+            "issue_scope", "invocation_freshness",
         ]
         self.assertEqual(self.interface["modes"]["workflow"]["entry_precondition_ids"], expected)
         self.assertEqual(self.interface["modes"]["standalone"]["entry_precondition_ids"], expected)
-        self.assertEqual(self.interface["ordered_stages"], [
-            "forward_behavior", "ai_review_gate", "conditional_human_confirmation",
-            "recorder_validator", "typed_exit",
-        ])
         self.assertEqual(
             [(item["id"], item["consumer"]) for item in self.interface["external_exits"]],
             [
@@ -42,20 +40,120 @@ class CheckTaskPackageContractTests(unittest.TestCase):
                 ("blocked", {"kind": "stop", "id": "task-check-blocked"}),
             ],
         )
+        private = self.interface["public_contracts"]["private_artifacts"]
+        self.assertEqual(private[0]["persistence"], "ignored_runtime")
+        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-3.0.json"))
+        self.assertRegex(self.example["reviewed_worktree_sha256"], r"^[0-9a-f]{64}$")
+        self.assertIn(
+            "Owner-private composite freshness token",
+            self.schema["properties"]["reviewed_worktree_sha256"]["description"],
+        )
 
-    def test_skill_and_contract_keep_semantic_boundary(self) -> None:
-        text = (self.package / "SKILL.md").read_text(encoding="utf-8") + (self.package / "references/contract.md").read_text(encoding="utf-8")
-        for phrase in (
-            "all ten entry preconditions", "Classify every candidate issue",
-            "ephemeral evidence", "one full new round", "never decide scope",
-            "schema 2.0 artifacts remain", "not self-contained or portable",
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_interface_gate_inputs_and_outputs_validate(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        interface_schema = json.loads(
+            (self.package.parents[1] / "schemas/skill-interface-1.3.schema.json").read_text(encoding="utf-8")
+        )
+        Draft202012Validator(interface_schema).validate(self.interface)
+        Draft202012Validator.check_schema(self.schema)
+        Draft202012Validator(self.schema).validate(self.example)
+
+        for name in ("initial-check", "finding-fix-rerun", "planning-reentry"):
+            Draft202012Validator(self.read(f"schemas/public-{name}-input.schema.json")).validate(
+                self.read(f"examples/public-{name}-input.json")
+            )
+        for name in ("passed", "implementation-required", "planning-stale", "blocked"):
+            Draft202012Validator(self.read(f"schemas/public-{name}-output.schema.json")).validate(
+                self.read(f"examples/public-{name}-output.json")
+            )
+
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_compact_gate_has_four_closed_semantic_routes(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        validator = Draft202012Validator(self.schema)
+
+        implementation = copy.deepcopy(self.example)
+        implementation["typed_exit"] = "implementation_required"
+        implementation["consumer"] = {"kind": "workflow", "id": "guru-resume-implementation"}
+        implementation["semantic_review"]["status"] = "implementation_required"
+        implementation["semantic_review"]["adequacy_dimensions"][2]["status"] = "failed"
+        implementation["semantic_review"]["scope_decisions"] = [{
+            "id": "C1", "disposition": "current_scope",
+            "summary": "A supported current-scope defect remains.",
+            "normal_path_reproduction": "The supported path reproduces the defect.",
+            "finding_id": "F1",
+        }]
+        implementation["semantic_review"]["findings"] = [{
+            "id": "F1", "severity": "P2", "summary": "Open defect.",
+            "path": "src/example.py", "status": "open",
+        }]
+        validator.validate(implementation)
+
+        planning = copy.deepcopy(self.example)
+        planning["typed_exit"] = "planning_stale"
+        planning["route"] = "reapprove_plan"
+        planning["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
+        planning["semantic_review"]["status"] = "planning_stale"
+        planning["semantic_review"]["scope_decisions"] = [{
+            "id": "scope-proposal:R13", "disposition": "scope_change_required",
+            "summary": "The current authority changes scope.",
+            "normal_path_reproduction": "A supported path requires the scope change.",
+            "finding_id": None,
+        }]
+        validator.validate(planning)
+
+        blocked = copy.deepcopy(self.example)
+        blocked["typed_exit"] = "blocked"
+        blocked["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
+        blocked["semantic_review"]["status"] = "blocked"
+        blocked["semantic_review"]["adequacy_dimensions"][-1]["status"] = "blocked"
+        blocked["validation"]["unverified_items"] = [{
+            "id": "U1", "summary": "Required integration evidence is unavailable.",
+            "blocking": True,
+        }]
+        validator.validate(blocked)
+
+        invalid_pass = copy.deepcopy(self.example)
+        invalid_pass["semantic_review"]["findings"] = implementation["semantic_review"]["findings"]
+        self.assertFalse(validator.is_valid(invalid_pass))
+
+    def test_public_inputs_only_route_owner_entry(self) -> None:
+        forbidden = {
+            "adequacy_review", "ai_review_gate", "evidence_locators",
+            "exit_intent", "findings", "provenance_review",
+            "scope_dispositions", "unusual_scenario_dispositions",
+            "unverified_conclusions",
+        }
+        for path in sorted((self.package / "schemas").glob("public-*input.schema.json")):
+            properties = self.read(path.relative_to(self.package).as_posix()).get("properties", {})
+            self.assertTrue(forbidden.isdisjoint(properties), path)
+
+    def test_package_json_has_no_authorization_or_routine_handoff_fields(self) -> None:
+        forbidden = {
+            "agent_assignment", "confirmation", "confirmation_ref",
+            "confirmation_sha256", "confirmed_plan_digest", "human_authorization",
+            "human_confirmation", "implementation_handoff", "liveness",
+            "review_report", "review_reports", "user_confirmation",
+        }
+
+        def keys(value: object) -> set[str]:
+            if isinstance(value, dict):
+                return set(value) | set().union(*(keys(item) for item in value.values()), set())
+            if isinstance(value, list):
+                return set().union(*(keys(item) for item in value), set())
+            return set()
+
+        for path in sorted(self.package.rglob("*.json")):
+            self.assertTrue(forbidden.isdisjoint(keys(json.loads(path.read_text(encoding="utf-8")))), path)
+
+    def test_wrappers_are_dispatcher_only_and_package_is_not_portable(self) -> None:
+        for name, validator in (
+            ("record-phase2-check.sh", "phase2_check_recorder"),
+            ("check-phase2-check.sh", "phase2_check_checker"),
         ):
-            self.assertIn(phrase, text)
-        for excluded in ("script decides scope", "worker produces Guru pass", "trellis/presets/guru-team/overlays/"):
-            self.assertNotIn(excluded, text)
-
-    def test_wrappers_are_dispatcher_only(self) -> None:
-        for name, validator in (("record-phase2-check.sh", "phase2_check_recorder"), ("check-phase2-check.sh", "phase2_check_checker")):
             path = self.package / "scripts" / name
             self.assertTrue(path.stat().st_mode & 0o111)
             wrapper = path.read_text(encoding="utf-8")
@@ -63,210 +161,21 @@ class CheckTaskPackageContractTests(unittest.TestCase):
             self.assertIn(f"--validator {validator}", wrapper)
             self.assertNotIn("guru_team_trellis.py", wrapper)
 
-    def test_package_only_copy_fails_with_full_preset_remediation(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             copied = Path(temp) / "guru-check-task"
             shutil.copytree(self.package, copied)
-            result = subprocess.run([str(copied / "scripts/record-phase2-check.sh"), "--help"], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            result = subprocess.run(
+                [str(copied / "scripts/record-phase2-check.sh"), "--help"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
             self.assertEqual(result.returncode, 2)
             self.assertIn("not self-contained or portable", result.stderr)
-            self.assertIn("complete Guru Team preset", result.stderr)
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
-    def test_closed_schema_example_scope_order_and_four_exits(self) -> None:
-        from jsonschema import Draft202012Validator
-
-        Draft202012Validator.check_schema(self.schema)
-        validator = Draft202012Validator(self.schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
-        self.assertEqual(list(validator.iter_errors(self.example)), [])
-
-        illegal = copy.deepcopy(self.example)
-        illegal["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "Untriggered proposal", "trigger_refs": [],
-            "normal_path_reproduction": "Requires a scenario outside approved normal operation.",
-            "disposition": "out_of_scope", "route_basis": "No approved trigger.",
-            "severity": "P1", "finding_id": None,
-        }]
-        self.assertNotEqual(list(validator.iter_errors(illegal)), [])
-
-        cases = [
-            ("implementation_required", None, {"kind": "workflow", "id": "guru-resume-implementation"}),
-            ("planning_stale", "reapprove_plan", {"kind": "workflow", "id": "guru-task-check-planning-router"}),
-            ("planning_stale", "clarify_requirements", {"kind": "workflow", "id": "guru-task-check-planning-router"}),
-            ("blocked", None, {"kind": "stop", "id": "task-check-blocked"}),
-        ]
-        for typed_exit, route, consumer in cases:
-            with self.subTest(typed_exit=typed_exit, route=route):
-                payload = copy.deepcopy(self.example)
-                payload["typed_exit"] = typed_exit
-                payload["route"] = route
-                payload["consumer"] = consumer
-                payload["semantic_review"]["ai_review_gate"]["status"] = typed_exit
-                if typed_exit == "implementation_required":
-                    payload["scope_qualification"]["candidates"] = [{
-                        "id": "C1", "summary": "Open current-scope defect",
-                        "trigger_refs": ["PRD R6"],
-                        "normal_path_reproduction": "Reproduces on a supported normal path.",
-                        "disposition": "current_scope", "route_basis": "Implementation fix.",
-                        "severity": "P2", "finding_id": "F1",
-                    }]
-                    payload["semantic_review"]["findings"] = [{
-                        "id": "F1", "candidate_id": "C1", "severity": "P2",
-                        "summary": "Open defect.", "path": "example.py",
-                        "blocking": True, "status": "open",
-                    }]
-                elif typed_exit == "planning_stale":
-                    payload["scope_qualification"]["candidates"] = [{
-                        "id": "C1", "summary": "Approved scope must change",
-                        "trigger_refs": ["PRD R4"],
-                        "normal_path_reproduction": "A supported path requires a scope change.",
-                        "disposition": "scope_change_required", "route_basis": "Return to planning.",
-                        "severity": None, "finding_id": None,
-                    }]
-                elif typed_exit == "blocked":
-                    payload["check_execution"]["unverified_items"] = [{
-                        "id": "U1", "command_or_area": "integration test",
-                        "reason": "Dependency unavailable.",
-                        "impact": "A reliable complete check cannot be formed.",
-                        "blocking": True,
-                    }]
-                self.assertEqual(list(validator.iter_errors(payload)), [])
-
-        ambiguous = copy.deepcopy(self.example)
-        ambiguous["typed_exit"] = "planning_stale"
-        ambiguous["semantic_review"]["ai_review_gate"]["status"] = "planning_stale"
-        ambiguous["route"] = None
-        ambiguous["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
-        self.assertNotEqual(list(validator.iter_errors(ambiguous)), [])
-
-        self.assertNotIn("agent_assignment", self.example)
-        self.assertNotIn(
-            "agent_recovery",
-            [item["id"] for item in self.example["semantic_review"]["adequacy_dimensions"]],
-        )
-
-        nonblocking_finding = copy.deepcopy(self.example)
-        nonblocking_finding["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "Open current-scope defect",
-            "trigger_refs": ["PRD R6"],
-            "normal_path_reproduction": "Reproduces on a supported normal path.",
-            "disposition": "current_scope", "route_basis": "Implementation fix.",
-            "severity": "P3", "finding_id": "F1",
-        }]
-        nonblocking_finding["semantic_review"]["findings"] = [{
-            "id": "F1", "candidate_id": "C1", "severity": "P3",
-            "summary": "Open defect.", "path": "example.py",
-            "blocking": False, "status": "open",
-        }]
-        self.assertNotEqual(list(validator.iter_errors(nonblocking_finding)), [])
-
-        missing_current_finding = copy.deepcopy(self.example)
-        missing_current_finding["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "Current-scope defect",
-            "trigger_refs": ["PRD R6"],
-            "normal_path_reproduction": "Reproduces on a supported normal path.",
-            "disposition": "current_scope", "route_basis": "Implementation fix.",
-            "severity": "P1", "finding_id": None,
-        }]
-        self.assertNotEqual(list(validator.iter_errors(missing_current_finding)), [])
-
-        unsupported_blocked = copy.deepcopy(self.example)
-        unsupported_blocked["typed_exit"] = "blocked"
-        unsupported_blocked["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
-        unsupported_blocked["semantic_review"]["ai_review_gate"]["status"] = "blocked"
-        self.assertNotEqual(list(validator.iter_errors(unsupported_blocked)), [])
-
-        unsupported_planning = copy.deepcopy(self.example)
-        unsupported_planning["typed_exit"] = "planning_stale"
-        unsupported_planning["route"] = "reapprove_plan"
-        unsupported_planning["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
-        unsupported_planning["semantic_review"]["ai_review_gate"]["status"] = "planning_stale"
-        self.assertNotEqual(list(validator.iter_errors(unsupported_planning)), [])
-
-        blocker_with_planning_exit = copy.deepcopy(self.example)
-        blocker_with_planning_exit["typed_exit"] = "planning_stale"
-        blocker_with_planning_exit["route"] = "reapprove_plan"
-        blocker_with_planning_exit["consumer"] = {
-            "kind": "workflow", "id": "guru-task-check-planning-router",
-        }
-        blocker_with_planning_exit["semantic_review"]["ai_review_gate"]["status"] = "planning_stale"
-        blocker_with_planning_exit["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "Scope change", "trigger_refs": ["PRD R4"],
-            "normal_path_reproduction": "Normal path requires scope change.",
-            "disposition": "scope_change_required", "route_basis": "Return to planning.",
-            "severity": None, "finding_id": None,
-        }]
-        blocker_with_planning_exit["check_execution"]["unverified_items"] = [{
-            "id": "U1", "command_or_area": "integration test",
-            "reason": "Dependency unavailable.", "impact": "Coverage incomplete.",
-            "blocking": True,
-        }]
-        self.assertNotEqual(list(validator.iter_errors(blocker_with_planning_exit)), [])
-
-    def test_example_is_deidentified_and_package_local(self) -> None:
+    def test_example_is_deidentified_and_current(self) -> None:
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
-        self.assertNotIn("07-19-130", encoded)
-        self.assertEqual(self.example["schema_version"], "2.1")
+        self.assertEqual(self.example["schema_version"], "3.0")
         self.assertEqual(self.example["skill_id"], "guru-check-task")
-
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
-    def test_schema_rejects_duplicate_semantic_collection_items(self) -> None:
-        from jsonschema import Draft202012Validator
-
-        validator = Draft202012Validator(self.schema)
-
-        duplicate_candidate = copy.deepcopy(self.example)
-        candidate = {
-            "id": "C1", "summary": "Follow-up proposal", "trigger_refs": ["PRD R4"],
-            "normal_path_reproduction": "A supported path suggests later work.",
-            "disposition": "followup_proposal", "route_basis": "Track separately.",
-            "severity": None, "finding_id": None,
-        }
-        duplicate_candidate["scope_qualification"]["candidates"] = [candidate, copy.deepcopy(candidate)]
-
-        duplicate_unverified = copy.deepcopy(self.example)
-        unverified = {
-            "id": "U1", "command_or_area": "integration test",
-            "reason": "Dependency unavailable.", "impact": "Coverage is partial.",
-            "blocking": False,
-        }
-        duplicate_unverified["check_execution"]["unverified_items"] = [
-            unverified, copy.deepcopy(unverified),
-        ]
-
-        duplicate_finding = copy.deepcopy(self.example)
-        duplicate_finding["typed_exit"] = "implementation_required"
-        duplicate_finding["consumer"] = {
-            "kind": "workflow", "id": "guru-resume-implementation",
-        }
-        duplicate_finding["semantic_review"]["ai_review_gate"]["status"] = "implementation_required"
-        duplicate_finding["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "Open current-scope defect", "trigger_refs": ["PRD R6"],
-            "normal_path_reproduction": "Reproduces on a supported normal path.",
-            "disposition": "current_scope", "route_basis": "Implementation fix.",
-            "severity": "P2", "finding_id": "F1",
-        }]
-        finding = {
-            "id": "F1", "candidate_id": "C1", "severity": "P2",
-            "summary": "Open defect.", "path": "example.py",
-            "blocking": True, "status": "open",
-        }
-        duplicate_finding["semantic_review"]["findings"] = [finding, copy.deepcopy(finding)]
-
-        duplicate_dimension = copy.deepcopy(self.example)
-        duplicate_dimension["semantic_review"]["adequacy_dimensions"][-1] = copy.deepcopy(
-            duplicate_dimension["semantic_review"]["adequacy_dimensions"][0]
-        )
-
-        for payload in (
-            duplicate_candidate,
-            duplicate_unverified,
-            duplicate_finding,
-            duplicate_dimension,
-        ):
-            with self.subTest(collection=payload):
-                self.assertFalse(validator.is_valid(payload))
 
 
 if __name__ == "__main__":

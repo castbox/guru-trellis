@@ -313,6 +313,44 @@ def owner_recipe(request: dict[str, Any]) -> tuple[str, Path]:
     return recipe, public_input
 
 
+def bind_owner_result_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    owner_result: Path | str,
+) -> str:
+    result_path = Path(owner_result).resolve()
+    try:
+        result_relative = result_path.relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("owner result must stay inside the installed eval fixture") from exc
+    if result_path.is_symlink() or not result_path.is_file():
+        raise ValueError("owner result is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--owner-result" not in arguments:
+            continue
+        index = arguments.index("--owner-result")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case owner-result invocation argument is invalid")
+        arguments[index + 1] = result_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic case must declare one owner-result invocation argument")
+    return result_relative
+
+
 def stage_clean_installed_owner_repo(
     execution_root: Path, runtime_target: Path, request_package: Path,
 ) -> tuple[Path, Path]:
@@ -332,7 +370,10 @@ def stage_clean_installed_owner_repo(
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     shutil.copy2(source_workflow, fixture / ".trellis/workflow.md")
-    (fixture / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+    (fixture / ".gitignore").write_text(
+        ".trellis/.runtime/\n__pycache__/\n*.py[cod]\n",
+        encoding="utf-8",
+    )
     run_git(fixture, "init", "-q", "-b", "main")
     run_git(fixture, "config", "user.email", "stage0-eval@example.invalid")
     run_git(fixture, "config", "user.name", "Stage0 Eval")
@@ -485,7 +526,6 @@ def clarity_disposition(
     candidates: list[dict[str, Any]] | None = None,
     selected_issue: dict[str, Any] | None = None,
     role: str = "primary",
-    confirmation_ref: str | None = None,
 ) -> dict[str, Any]:
     payload["target_disposition"] = {
         "disposition": disposition,
@@ -494,23 +534,12 @@ def clarity_disposition(
         "duplicate_candidates": candidates or [], "duplicate_facts_sha256": "0" * 64,
         "selected_issue": selected_issue, "original_target_role": role,
         "decision_summary": f"The reviewed owner staging selected {disposition}.",
-        "confirmation_ref": confirmation_ref, "disposition_digest": "0" * 64,
+        "disposition_digest": "0" * 64,
     }
     return runtime.derive_requirements_clarification_result(payload)
 
 
-def clarity_confirm(runtime: Any, payload: dict[str, Any], action_ids: list[str]) -> dict[str, Any]:
-    payload = runtime.derive_requirements_clarification_result(payload)
-    actions = {item["action_id"]: item for item in payload["source_actions"]}
-    payload["human_confirmation"] = {
-        "status": "confirmed",
-        "confirmation_kind": "exact_source_action_and_target" if action_ids else "exact_target_disposition",
-        "action_digest": runtime.context_digest([actions[item]["action_digest"] for item in action_ids]) if action_ids else None,
-        "target_disposition_digest": payload["target_disposition"]["disposition_digest"],
-        "proposal_digests": [], "confirmed_actions": action_ids, "confirmer": "user",
-        "confirmed_at": "2026-01-01T00:00:01Z",
-        "evidence_summary": "The exact reviewed owner staging action was confirmed.",
-    }
+def clarity_finalize(runtime: Any, payload: dict[str, Any]) -> dict[str, Any]:
     return runtime.derive_requirements_clarification_result(payload)
 
 
@@ -547,10 +576,10 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         payload["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
         payload["ai_review_gate"]["status"] = "blocked"
         payload["error"] = {
-            "codes": ["user_refused"],
-            "summary": "A load-bearing requirement decision was refused.",
+            "codes": ["load_bearing_decision_unresolved"],
+            "summary": "A load-bearing requirement decision remains unresolved.",
         }
-        payload["reason"] = "The refused load-bearing decision blocks the clarification loop."
+        payload["reason"] = "The unresolved load-bearing decision blocks the clarification loop."
         return runtime.derive_requirements_clarification_result(payload)
     if recipe == "clarity-retarget":
         payload = clarity_target(runtime, payload)
@@ -561,7 +590,7 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         }
         candidate = {
             **projection, "facts_sha256": runtime.context_digest(projection),
-            "decision": "selected", "reason": "The current duplicate is the confirmed target.",
+            "decision": "selected", "reason": "The current duplicate is the selected target.",
         }
         selected = {
             "repo": candidate["repo"], "issue_number": candidate["number"],
@@ -579,9 +608,9 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         }]
         payload = clarity_disposition(
             runtime, payload, "retarget_existing_issue", candidates=[candidate],
-            selected_issue=selected, role="related", confirmation_ref="selected_target_confirmation",
+            selected_issue=selected, role="related",
         )
-        return clarity_confirm(runtime, payload, ["select_existing"])
+        return clarity_finalize(runtime, payload)
     if recipe == "clarity-new-task":
         payload = clarity_target(runtime, payload, state="closed")
         payload["typed_exit"] = "new_task"
@@ -595,9 +624,8 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         }]
         payload = clarity_disposition(
             runtime, payload, "create_followup_draft", role="related",
-            confirmation_ref="followup_target_confirmation",
         )
-        return clarity_confirm(runtime, payload, ["new_issue"])
+        return clarity_finalize(runtime, payload)
     raise ValueError(f"unsupported clarification owner staging recipe: {recipe}")
 
 
@@ -736,8 +764,7 @@ def wording_review(
         revisions = [{
             "revision_id": "stage0-eval-revision", "locator": item["path"],
             "before_sha256": "0" * 64, "after_sha256": item["content_sha256"],
-            "reason": "The authorized planning wording revision is present in the current rescan.",
-            "mutation_authority": "The reviewed workflow authorized the exact planning wording revision.",
+            "reason": "The completed planning wording revision is present in the current rescan.",
             "rescan_sha256": scan["scan_sha256"],
         }]
     gate: dict[str, Any] = {
@@ -761,11 +788,6 @@ def wording_review(
                 "reason": "The semantic review retained this explicit contract term.",
             } for hit in scan["hits"]] if passed else [],
             "ai_review_gate": gate,
-        },
-        "human_confirmation": {
-            "status": "not_required" if passed else "refused", "confirmed_by": None,
-            "confirmed_at": None,
-            "reason": "The current route records the completed wording review decision.",
         },
         "typed_exit": typed_exit,
     }
@@ -846,7 +868,7 @@ def readiness_prerequisites(
         "duplicate_facts_sha256": "0" * 64, "selected_issue": None,
         "original_target_role": "primary",
         "decision_summary": "No current duplicate replaces the reviewed draft.",
-        "confirmation_ref": None, "disposition_digest": "0" * 64,
+        "disposition_digest": "0" * 64,
     }
     snapshot_sha256 = context["snapshot_identity"]["snapshot_sha256"]
     clarity["context_evidence"] = {
@@ -963,12 +985,6 @@ def build_readiness_owner(
         "generated_at": "2026-01-01T00:00:00Z", "mode": mode,
         "target": raw_target, "prerequisite_payloads": prerequisites,
         "semantic_review": readiness_semantic_review(runtime, target, linkage, typed_exit),
-        "human_confirmation": {
-            "status": "required" if typed_exit == "clarify_requirements" else "not_required",
-            "reason": "A product decision returns to requirements clarification."
-            if typed_exit == "clarify_requirements" else "No new product decision is required.",
-            "proposal_sha256": "f" * 64 if typed_exit == "clarify_requirements" else None,
-        },
         "typed_exit": typed_exit,
         "reason": "The semantic readiness review selected exactly one declared route.",
         "affected_evidence": [{
@@ -1057,11 +1073,6 @@ def workspace_prerequisites(
         "generated_at": "2026-01-01T00:00:00Z", "mode": mode,
         "target": raw_target, "prerequisite_payloads": prerequisite_payloads,
         "semantic_review": semantic_review,
-        "human_confirmation": {
-            "status": "not_required",
-            "reason": "The current reviewed issue requires no additional product decision.",
-            "proposal_sha256": None,
-        },
         "typed_exit": "ready",
         "reason": "The complete existing-issue delivery unit passed semantic readiness review.",
         "affected_evidence": [{
@@ -1105,15 +1116,13 @@ def workspace_plan(
             key, relative, payload, hashlib.sha256(path.read_bytes()).hexdigest()
         )
 
-    route = {
-        "workspace-created": ("passed", "confirmed"),
-        "workspace-cancelled": ("passed", "refused"),
-        "workspace-refresh-review": ("reroute", "not_in_current_invocation"),
-        "workspace-blocked": ("blocked", "not_in_current_invocation"),
+    gate_status = {
+        "workspace-created": "passed",
+        "workspace-refresh-review": "reroute",
+        "workspace-blocked": "blocked",
     }.get(recipe)
-    if route is None:
+    if gate_status is None:
         raise ValueError(f"unsupported task workspace owner staging recipe: {recipe}")
-    gate_status, confirmation_status = route
     task_slug = "145-stage0-owner-eval"
     task_dir = f".trellis/tasks/{time.strftime('%m-%d')}-{task_slug}"
     scope_item = {
@@ -1124,7 +1133,7 @@ def workspace_plan(
     base_result = prerequisites["base"]
     naming_disposition = "conflict_blocked" if gate_status == "blocked" else "create_new"
     plan: dict[str, Any] = {
-        "schema_version": "1.0", "skill_id": "guru-create-task-workspace",
+        "schema_version": "2.0", "skill_id": "guru-create-task-workspace",
         "generated_at": "2026-01-01T00:00:00Z", "mode": mode,
         "invocation": {
             "caller": "guru-review-change-request:ready", "target_kind": "existing_issue",
@@ -1184,25 +1193,6 @@ def workspace_plan(
             "command_argv": ["create-task-workspace", "--input", OWNER_PLAN],
             "stop_after": "created_workspace",
         },
-        "confirmations": {
-            "github_issue_mutation": {
-                "status": "not_in_current_invocation", "source": None,
-                "reviewed_plan_sha256": None, "evidence": None,
-                "confirmation_sha256": None,
-            },
-            "workspace_and_task_mutation": {
-                "status": confirmation_status,
-                "source": "explicit_user_confirmation" if confirmation_status != "not_in_current_invocation" else None,
-                "reviewed_plan_sha256": "0" * 64 if confirmation_status != "not_in_current_invocation" else None,
-                "evidence": (
-                    "The exact reviewed workspace mutation was confirmed."
-                    if confirmation_status == "confirmed"
-                    else "The exact reviewed workspace mutation was refused."
-                    if confirmation_status == "refused" else None
-                ),
-                "confirmation_sha256": "0" * 64 if confirmation_status != "not_in_current_invocation" else None,
-            },
-        },
         "ai_review_gate": {
             "status": gate_status, "reviewer": "stage0-eval-reviewer",
             "reviewed_plan_sha256": "0" * 64,
@@ -1219,10 +1209,6 @@ def workspace_plan(
     }
     plan["scope"]["scope_sha256"] = runtime.task_workspace_scope_digest(plan["scope"])
     reviewable = runtime.context_digest(runtime.task_workspace_reviewable_projection(plan))
-    confirmation = plan["confirmations"]["workspace_and_task_mutation"]
-    if confirmation_status != "not_in_current_invocation":
-        confirmation["reviewed_plan_sha256"] = reviewable
-        confirmation["confirmation_sha256"] = runtime.task_workspace_confirmation_digest(confirmation)
     plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable
     plan["freshness"]["reviewable_plan_sha256"] = reviewable
     plan["freshness"]["plan_sha256"] = runtime.task_workspace_plan_digest(plan)
@@ -1257,7 +1243,6 @@ def build_workspace_owner(
     try:
         result = runtime.cmd_create_task_workspace(argparse.Namespace(
             root=str(fixture), input=relative_plan,
-            cancelled=recipe == "workspace-cancelled",
             refresh_review=recipe == "workspace-refresh-review",
             reason=None,
             reason_code=(
@@ -1273,47 +1258,6 @@ def build_workspace_owner(
         root=str(fixture), input=result_path.relative_to(fixture).as_posix(),
         plan_input=relative_plan,
     ))
-
-
-def production_wording_evidence(runtime: Any, fixture: Path, task: Path) -> None:
-    scope, contents = runtime.contract_wording_build_scope(
-        fixture, "planning_artifacts", "workflow", task_dir=task,
-    )
-    scan = runtime.scan_contract_wording(scope, contents)
-    gate = {
-        "status": "passed",
-        "reviewer": "production-eval-owner",
-        "summary": "The fixed planning scope passed the complete wording review.",
-        "reviewed_scan_sha256": scan["scan_sha256"],
-        "checked_dimensions": {
-            key: True for key in runtime.CONTRACT_WORDING_REVIEW_DIMENSIONS
-        },
-        "planning_checked_dimensions": {
-            key: True for key in runtime.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-        },
-    }
-    evidence = runtime.contract_wording_derive_result(
-        "planning_artifacts",
-        "workflow",
-        scope,
-        scan,
-        {
-            "generated_at": "2026-07-23T00:00:00Z",
-            "semantic_review": {
-                "revisions": [],
-                "classifications": [],
-                "ai_review_gate": gate,
-            },
-            "human_confirmation": {
-                "status": "not_required",
-                "confirmed_by": None,
-                "confirmed_at": None,
-                "reason": "The production eval wording review does not mutate content.",
-            },
-            "typed_exit": "pass",
-        },
-    )
-    runtime.write_json(task / runtime.CONTRACT_WORDING_EVIDENCE_ARTIFACT, evidence)
 
 
 def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
@@ -1358,27 +1302,6 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
         "related_issues": [],
         "followup_issues": [],
     })
-    runtime.write_json(task / "task-start-context.json", {
-        "schema_version": "1.0",
-        "task_artifact_dir": ".trellis/tasks/current",
-        "task_slug": "current",
-        "workspace_slug": "current",
-        "task_title": "Production minimal handoff eval",
-        "task_workspace_id": "current",
-        "branch_name": "eval/current",
-        "base_branch": "main",
-        "base_ref": "refs/remotes/origin/main",
-        "base_head_sha": "0" * 40,
-        "remote_head_sha": "0" * 40,
-        "source_issue": {"number": 146},
-        "source_repo": {"repo": "example/guru-extension", "url": ""},
-        "assignee": "production-eval",
-        "actor": {"login": "production-eval"},
-        "issue_scope_ledger_seed": {},
-        "intake_summary": {
-            "duplicate_decision": {}, "naming_quality": {}, "confirmation": {},
-        },
-    })
     durable = fixture / "docs/requirements.md"
     durable.parent.mkdir(parents=True, exist_ok=True)
     durable.write_text(
@@ -1388,27 +1311,29 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
     source = fixture / "src/production-eval.txt"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text("baseline\n", encoding="utf-8")
-    production_wording_evidence(runtime, fixture, task)
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage production owner fixture")
     base_head = run_git(fixture, "rev-parse", "HEAD")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", base_head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
     run_git(fixture, "checkout", "-q", "-b", "eval/current")
-    context_path = task / "task-start-context.json"
-    context = json.loads(context_path.read_text(encoding="utf-8"))
-    context["base_head_sha"] = base_head
-    context["remote_head_sha"] = base_head
-    runtime.write_json(context_path, context)
-    run_git(fixture, "add", context_path.relative_to(fixture).as_posix())
-    run_git(fixture, "commit", "-q", "-m", "bind production task base")
+    runtime.write_runtime_mappings(
+        fixture,
+        runtime.load_config(fixture),
+        {
+            "workspace_slug": "current",
+            "task_slug": "current",
+            "task_dir": ".trellis/tasks/current",
+            "branch_name": "eval/current",
+        },
+        fixture,
+    )
     return task, base_head
 
 
 def production_planning_input(
     runtime: Any, fixture: Path, task: Path, exit_id: str,
 ) -> Path:
-    task_ref = task.relative_to(fixture).as_posix()
     statuses = {
         "approved": "passed",
         "revision_required": "revision_required",
@@ -1424,11 +1349,19 @@ def production_planning_input(
         "blocked": {"kind": "stop", "id": "task-plan-approval-blocked"},
     }
     status = statuses[exit_id]
-    gate = {
+    semantic_review = {
         "status": status,
-        "reviewer": "production-eval-owner",
         "summary": "The exact production planning case completed semantic review.",
-        "reviewed_at": "2026-07-23T00:01:00Z",
+        "checked_dimensions": {
+            "requirement_authority": True,
+            "scope_boundary": True,
+            "design_adequacy": True,
+            "implementation_plan": True,
+            "acceptance_verifiability": True,
+            "docs_ssot": True,
+            "provenance": True,
+            "unusual_scenarios": True,
+        },
         "findings": [],
         "revision_actions": (
             ["Revise the task-local planning contract."]
@@ -1442,67 +1375,18 @@ def production_planning_input(
             if exit_id == "blocked" else []
         ),
     }
-    confirmation = {
-        "kind": "post-planning-approval" if exit_id == "approved" else "not-required",
-        "status": "confirmed" if exit_id == "approved" else "not_required",
-        "prompt_presented_at": "2026-07-23T00:02:00Z" if exit_id == "approved" else None,
-        "confirmed_at": "2026-07-23T00:03:00Z" if exit_id == "approved" else None,
-        "evidence_summary": (
-            "The user confirmed after reviewing all planning links."
-            if exit_id == "approved"
-            else "This route does not activate the task."
-        ),
-    }
     payload = {
         "mode": "workflow",
-        "requirement_authorities": [{
-            "id": "task-prd",
-            "kind": "task_artifact",
-            "locator": f"{task_ref}/prd.md",
-            "sha256": "0" * 64,
-            "updated_at": None,
-        }],
+        "authority_refs": ["issue:146"],
         "docs_ssot_plan": {
             "strategy": "ssot_first",
-            "artifact_path": "design.md",
-            "locator": "Docs SSOT Plan",
-            "statement_sha256": "0" * 64,
             "durable_paths": ["docs/requirements.md"],
+            "summary": "The durable requirement is the implementation source of truth.",
         },
-        "provenance_review": {
-            "entries": [{
-                "id": "R1",
-                "artifact_path": "prd.md",
-                "locator": "R1. Production eval",
-                "statement_sha256": "0" * 64,
-                "classification": "explicit_requirement",
-                "authority_refs": ["task-prd"],
-                "reason": "The task PRD explicitly owns the public eval boundary.",
-                "implementation_choice": None,
-                "scope_expansion": None,
-                "out_of_scope_proposal": None,
-            }],
-            "coverage": {
-                "reviewer": "production-eval-owner",
-                "summary": "Every load-bearing item is covered.",
-                "reviewed_entry_ids": ["R1"],
-                "all_load_bearing_items_covered": True,
-                "review_sha256": "0" * 64,
-            },
-        },
-        "unusual_scenario_review": {
-            "reviewer": "production-eval-owner",
-            "summary": "No unusual scenario expands this eval scope.",
-            "candidates": [],
-            "unresolved_count": 0,
-            "review_sha256": "0" * 64,
-        },
-        "semantic_review": {"ai_review_gate": gate},
-        "user_confirmation": confirmation,
+        "semantic_review": semantic_review,
         "typed_exit": exit_id,
         "consumer": consumers[exit_id],
         "reason": f"Production planning eval selected {exit_id}.",
-        "supersedes_facts_sha256": None,
     }
     path = fixture / ".trellis/.runtime/guru-team/evals/planning-owner-input.json"
     runtime.write_json(path, payload)
@@ -1522,40 +1406,14 @@ def production_record_planning(
     return runtime.cmd_check_planning_approval(argparse.Namespace(
         root=str(fixture),
         task=task.relative_to(fixture).as_posix(),
-        allow_committed_head=False,
         require_exit=None,
-        expected_artifact_sha256=None,
     ))
 
 
 def production_phase2_input(
     runtime: Any, fixture: Path, task: Path, package: Path, exit_id: str,
 ) -> Path:
-    task_ref = task.relative_to(fixture).as_posix().rstrip("/") + "/"
-    payload = json.loads(
-        (package / "examples/phase2-check.json").read_text(encoding="utf-8")
-    )
-    payload["mode"] = "workflow"
-    payload["requirement_provenance"] = {
-        "summary": "The approved requirement authority was reviewed.",
-        "artifacts": [{"path": "docs/requirements.md"}],
-        "facts_sha256": "0" * 64,
-    }
-    payload["docs_ssot_plan"] = {
-        "strategy": "ssot_first",
-        "durable_paths": [{"path": "docs/requirements.md"}],
-        "sync_result": "The durable requirement was the implementation input.",
-        "task_delta_merged": True,
-        "task_history_only": ["Eval owner staging evidence"],
-        "no_update_reason": None,
-        "followup_or_pr_limit": None,
-        "facts_sha256": "0" * 64,
-    }
-    payload["implementation_handoff"] = {
-        "summary": "The production eval implementation and checks completed.",
-        "artifacts": [{"path": f"{task_ref}implement.md"}],
-        "facts_sha256": "0" * 64,
-    }
+    del package
     task_payload = runtime.read_json(task / "task.json")
     base_ref = runtime.diff_base_ref(
         fixture,
@@ -1565,29 +1423,23 @@ def production_phase2_input(
     implementation_paths.update(
         path
         for path in runtime.git_status_paths(fixture)
-        if not path.startswith(task_ref)
-        and not path.startswith(".trellis/.runtime/")
+        if not path.startswith(".trellis/.runtime/")
     )
-    payload["repository_snapshot"] = {
-        "reviewed_paths": [
-            {"path": path}
-            for path in sorted(implementation_paths)
-        ],
-    }
-    payload["check_execution"]["worker_evidence"] = [{
-        "source": "official_trellis_check",
-        "agent_id": "check-1",
-        "summary": "The checker supplied evidence for the completed semantic round.",
-        "evidence_only": True,
-        "facts_sha256": "f" * 64,
-    }]
-    payload["check_execution"]["unverified_items"] = []
-    payload["scope_qualification"]["candidates"] = []
-    payload["semantic_review"]["findings"] = []
-    for dimension in payload["semantic_review"]["adequacy_dimensions"]:
-        dimension["status"] = "passed"
-        dimension["finding_ids"] = []
-        dimension["unverified_ids"] = []
+    dimensions = [
+        {
+            "id": dimension,
+            "status": "passed",
+            "summary": f"The production eval reviewed {dimension}.",
+        }
+        for dimension in (
+            "requirements", "design", "implementation", "tests", "docs_ssot",
+            "cross_layer", "compatibility", "deployment_and_operations",
+            "verification_completeness",
+        )
+    ]
+    scope_decisions: list[dict[str, Any]] = []
+    findings: list[dict[str, Any]] = []
+    unverified_items: list[dict[str, Any]] = []
     route = None
     consumer = {
         "passed": {"kind": "skill", "id": "guru-create-task-commit"},
@@ -1596,48 +1448,68 @@ def production_phase2_input(
         "blocked": {"kind": "stop", "id": "task-check-blocked"},
     }[exit_id]
     if exit_id == "implementation_required":
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "A current-scope implementation defect remains.",
-            "trigger_refs": ["PRD R1"],
+        scope_decisions = [{
+            "id": "C1",
+            "disposition": "current_scope",
+            "summary": "A current-scope implementation defect remains.",
             "normal_path_reproduction": "The supported eval path reproduces the defect.",
-            "disposition": "current_scope", "route_basis": "Return to implementation.",
-            "severity": "P2", "finding_id": "F1",
+            "finding_id": "F1",
         }]
-        payload["semantic_review"]["findings"] = [{
-            "id": "F1", "candidate_id": "C1", "severity": "P2",
+        findings = [{
+            "id": "F1", "severity": "P2",
             "summary": "The current implementation requires a fix.",
-            "path": "src/production-eval.txt", "blocking": True, "status": "open",
+            "path": "src/production-eval.txt", "status": "open",
         }]
-        payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["F1"]
+        next(item for item in dimensions if item["id"] == "implementation")["status"] = "failed"
     elif exit_id == "planning_stale":
         route = "reapprove_plan"
-        payload["scope_qualification"]["candidates"] = [{
+        scope_decisions = [{
             "id": "scope-proposal:R13",
-            "summary": "The approved scope requires a current authority decision.",
-            "trigger_refs": ["PRD R1"],
-            "normal_path_reproduction": "The supported eval path requires a scope change.",
             "disposition": "scope_change_required",
-            "route_basis": "Return to the planning owner.",
-            "severity": None, "finding_id": None,
+            "summary": "The approved scope requires a current authority decision.",
+            "normal_path_reproduction": "The supported eval path requires a scope change.",
+            "finding_id": None,
         }]
     elif exit_id == "blocked":
-        payload["check_execution"]["unverified_items"] = [{
-            "id": "U1", "command_or_area": "integration verification",
-            "reason": "The required dependency is unavailable.",
-            "impact": "A complete reliable check cannot be claimed.",
+        unverified_items = [{
+            "id": "U1",
+            "summary": "The required integration dependency is unavailable.",
             "blocking": True,
         }]
         next(
-            item
-            for item in payload["semantic_review"]["adequacy_dimensions"]
+            item for item in dimensions
             if item["id"] == "verification_completeness"
-        )["unverified_ids"] = ["U1"]
-    payload["typed_exit"] = exit_id
-    payload["route"] = route
-    payload["reason"] = f"Production Phase 2 eval selected {exit_id}."
-    payload["consumer"] = consumer
-    payload["semantic_review"]["ai_review_gate"]["status"] = exit_id
-    payload["semantic_review"]["ai_review_gate"]["full_rerun"] = True
+        )["status"] = "blocked"
+    payload = {
+        "mode": "workflow",
+        "reviewed_paths": sorted(implementation_paths),
+        "validation": {
+            "commands": [{
+                "id": "production-eval",
+                "outcome": "passed",
+                "summary": "The production owner fixture completed its applicable checks.",
+            }],
+            "unverified_items": unverified_items,
+            "summary": "The production eval captured the applicable validation conclusion.",
+        },
+        "docs_ssot": {
+            "status": "passed",
+            "strategy": "ssot_first",
+            "durable_paths": ["docs/requirements.md"],
+            "summary": "The durable requirement was the implementation input.",
+        },
+        "semantic_review": {
+            "status": exit_id,
+            "summary": f"The production Phase 2 owner selected {exit_id}.",
+            "adequacy_dimensions": dimensions,
+            "scope_decisions": scope_decisions,
+            "findings": findings,
+        },
+        "typed_exit": exit_id,
+        "route": route,
+        "reason": f"Production Phase 2 eval selected {exit_id}.",
+        "consumer": consumer,
+    }
     path = fixture / ".trellis/.runtime/guru-team/evals/phase2-owner-input.json"
     runtime.write_json(path, payload)
     return path
@@ -1658,51 +1530,69 @@ def production_record_phase2(
     ))
 
 
+def production_task_commit_authoring(
+    runtime: Any,
+    fixture: Path,
+    checked: dict[str, Any],
+    review_status: str,
+) -> dict[str, Any]:
+    coverage_source = (
+        "guru-check-task:passed DTO at " + str(checked["checked_head"])
+    )
+    classifications = [
+        {
+            "path": path,
+            "category": "task-reviewed",
+            "reason": "The isolated production eval includes this path in the checked task scope.",
+            "coverage_source": coverage_source,
+        }
+        for path in runtime.git_status_paths(fixture)
+    ]
+    return {
+        "path_classifications": classifications,
+        "message": {
+            "type": "feat",
+            "scope": "workflow",
+            "summary": "增加生产闭环评测",
+            "background": "需要以真实 public wrapper 验证 AI-first 任务提交合同。",
+            "changes": "提交隔离 fixture 中已由 Phase 2 覆盖的精确路径。",
+            "boundaries": "不执行真实发布，也不包含用户授权记录。",
+            "validations": "运行共享 public Skill wrapper corpus。",
+        },
+        "ai_review": {
+            "status": review_status,
+            "summary": "The exact production eval candidate completed semantic review.",
+            "evidence": [
+                "Every staged path is part of the isolated fixture and the current Phase 2 result."
+            ],
+        },
+    }
+
+
 def production_commit_for_review(
     runtime: Any,
     fixture: Path,
     task: Path,
     checked: dict[str, Any],
 ) -> tuple[str, str]:
-    ledger = runtime.read_json(task / "issue-scope-ledger.json")
-    primary_issue = int((ledger.get("primary_issue") or {}).get("number"))
     public_input = {
         "profile": "initial_commit",
         "mode": "workflow",
         "task_ref": task.relative_to(fixture).as_posix(),
-        "message_intent": {
-            "subject": f"feat(workflow): #{primary_issue} 添加分支审查评测",
-            "body": (
-                "背景：\n"
-                "把 production Branch Review eval 绑定到真实 task commit。\n\n"
-                "变更：\n"
-                "提交精确的已检查 fixture 路径。\n\n"
-                "边界：\n"
-                "不执行真实发布或外部仓库写入。\n\n"
-                "验证：\n"
-                "运行 shared public Skill wrapper corpus。\n\n"
-                f"Refs #{primary_issue}"
-            ),
-        },
-        "path_authorizations": runtime.git_status_paths(fixture),
-        "semantic_review": {
-            "status": "passed",
-            "summary": "The exact production review fixture paths passed semantic review.",
-        },
-        "human_authorization": {
-            "status": "confirmed",
-            "summary": "The production eval authorizes this isolated fixture commit.",
-        },
-        "exit_intent": "committed",
         "source_exit": "passed",
         "checked_head": checked["checked_head"],
-        "check_ref": runtime.task_commit_public_check_ref(
-            checked["artifact_sha256"]
-        ),
     }
     try:
-        candidate, plan, _ = runtime.build_task_commit_candidate_from_public_input(
-            fixture, task, public_input,
+        candidate, plan, _ = runtime.build_task_commit_candidate(
+            fixture,
+            task,
+            public_input,
+            production_task_commit_authoring(
+                runtime,
+                fixture,
+                checked,
+                "passed",
+            ),
         )
         executed = runtime.execute_task_commit_candidate(fixture, candidate, task)
     except runtime.WorkflowError as exc:
@@ -1724,7 +1614,7 @@ def production_review_candidate(
         "candidate_ref": "candidate-001",
         "affected_behavior": "The public Branch Review route must preserve the reviewed task behavior.",
         "path": "src/production-eval.txt",
-        "evidence_refs": ["phase2-check.json", "src/production-eval.txt"],
+        "evidence_refs": ["git:committed_head", "src/production-eval.txt"],
         "requirement_refs": ["PRD R1"],
         "scope_basis": "The approved production eval requirement owns this behavior.",
         "qualification_reason": "The candidate was classified before any severity was assigned.",
@@ -1764,7 +1654,8 @@ def production_review_candidate(
             "finding_ref": "F-001",
             "severity": "P2",
             "introduced_head": introduced_head or head,
-            "resolved_at_head": head if resolved else None,
+            "fix_head": head if resolved else None,
+            "closure_head": head if resolved else None,
             "status": "resolved" if resolved else "open",
             "closure_evidence": (
                 [f"commit:{head}", "test:production-eval"]
@@ -1908,9 +1799,7 @@ def production_publication_authoring(
             "affected_artifacts": ["docs/requirements.md"],
             "route_class": "task_work",
             "status": "open",
-            "closure_evidence": [
-                "Open route: rerun task work and replace this finding with fresh closure evidence."
-            ],
+            "closure_evidence": [],
         })
     elif typed_exit == "blocked":
         dimension_status["artifact_binding_freshness"] = "blocked"
@@ -1923,9 +1812,7 @@ def production_publication_authoring(
             "affected_artifacts": ["pr-body.md"],
             "route_class": "external_blocker",
             "status": "open",
-            "closure_evidence": [
-                "Open route: restore the external dependency before closure."
-            ],
+            "closure_evidence": [],
         })
     elif route == "metadata-fix-ready":
         findings.append({
@@ -1946,95 +1833,51 @@ def production_publication_authoring(
         "evidence_refs": [
             "pr-body.md",
             "finish-summary-index.json",
-            "review-gate.json",
+            "git:reviewed_content_head",
         ],
     } for dimension in runtime.TASK_PUBLICATION_DIMENSIONS]
-    gate_status = {
-        "ready": "passed",
-        "return_to_task_work": "return_to_task_work",
-        "blocked": "blocked",
-    }[typed_exit]
     authoring: dict[str, Any] = {
         "profile": public_input["profile"],
         "mode": public_input["mode"],
         "review_intent": public_input["review_intent"],
-        "semantic_review": {
-            "dimensions": dimensions,
-            "findings": findings,
-            "conclusions": {
-                "issue_scope": {
-                    "status": (
-                        "passed"
-                        if typed_exit == "ready"
-                        else "finding"
-                        if typed_exit == "return_to_task_work"
-                        else "blocked"
-                    ),
-                    "summary": "The owner reviewed current issue closure scope.",
-                    "evidence_refs": ["issue-scope-ledger.json"],
-                },
-                "docs_ssot": {
-                    "status": (
-                        "finding"
-                        if route == "metadata-durable-drift-return"
-                        else "passed"
-                    ),
-                    "summary": "The owner reviewed the approved Docs SSOT outcome.",
-                    "evidence_refs": ["phase2-check.json"],
-                },
-                "safety_deployment": {
-                    "status": "blocked" if typed_exit == "blocked" else "passed",
-                    "summary": "The owner reviewed safety and deployment impact.",
-                    "evidence_refs": ["pr-body.md"],
-                },
+        "dimensions": dimensions,
+        "findings": findings,
+        "conclusions": {
+            "issue_scope": {
+                "status": (
+                    "passed"
+                    if typed_exit == "ready"
+                    else "finding"
+                    if typed_exit == "return_to_task_work"
+                    else "blocked"
+                ),
+                "summary": "The owner reviewed current issue closure scope.",
+                "evidence_refs": ["issue-scope-ledger.json"],
             },
-            "revision_history": (
-                [{
-                    "revision_ref": "revision:metadata-fix",
-                    "kind": "metadata_revision",
-                    "summary": "The task-local publication metadata was revised and rereviewed.",
-                    "evidence_refs": ["pr-body.md#metadata-fix"],
-                }]
-                if route == "metadata-fix-ready"
-                else [{
-                    "revision_ref": "revision:stale-reentry",
-                    "kind": "stale_reentry",
-                    "summary": "The stale owner round superseded the prior publication identity.",
-                    "evidence_refs": ["pr-readiness.json"],
-                }]
-                if public_input["profile"] == "publication_review_stale"
-                else []
-            ),
-            "reviewer_process": {
-                "reviewer": "production-publication-owner",
-                "summary": "The semantic owner completed the current ten-dimension review.",
-                "evidence_refs": ["review-gate.json", "pr-body.md"],
+            "docs_ssot": {
+                "status": (
+                    "finding"
+                    if route == "metadata-durable-drift-return"
+                    else "passed"
+                ),
+                "summary": "The owner reviewed the approved Docs SSOT outcome.",
+                "evidence_refs": [
+                    "git:reviewed_content_head",
+                    "docs/requirements.md",
+                ],
             },
-            "human_confirmation": {
-                "status": "not_required",
-                "summary": "No publication confirmation was required for this eval route.",
-                "confirmed_by": None,
-                "confirmed_at": None,
-            },
-            "ai_review_gate": {
-                "status": gate_status,
-                "summary": "The AI completed the fresh ten-dimension publication review.",
+            "safety_deployment": {
+                "status": "blocked" if typed_exit == "blocked" else "passed",
+                "summary": "The owner reviewed safety and deployment impact.",
+                "evidence_refs": ["pr-body.md"],
             },
         },
-        "typed_exit": typed_exit,
-        "consumer": copy.deepcopy(runtime.TASK_PUBLICATION_CONSUMERS[typed_exit]),
+        "route": {"typed_exit": typed_exit},
     }
     if public_input["profile"] == "publication_review_stale":
-        prior = runtime.read_json(task / runtime.PR_READINESS_ARTIFACT)
-        authoring.update({
-            "stale_reason": public_input["stale_reason"],
-            "reentry_context": public_input["reentry_context"],
-            "supersedes_publication_ref": (
-                prior["deterministic_bindings"]["publication_ref"]
-            ),
-        })
+        authoring["stale_reason"] = public_input["stale_reason"]
     if typed_exit == "blocked":
-        authoring.update({
+        authoring["route"].update({
             "reason_code": "external_publication_dependency",
             "remediation": "Restore the external dependency and re-enter publication review.",
         })
@@ -2249,6 +2092,10 @@ def stage_extension_verification_owner_execution(
 ) -> tuple[Path, Path, dict[str, str]]:
     if not recipe.startswith("extension-"):
         raise ValueError("extension owner staging recipe is invalid")
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    repo_ref = public_input.get("repo_ref")
+    if not isinstance(repo_ref, str) or not repo_ref:
+        raise ValueError("extension owner staging repo identity is invalid")
     package = (
         fixture
         / ".trellis/guru-team/skills/packages/"
@@ -2266,7 +2113,7 @@ def stage_extension_verification_owner_execution(
     task = fixture / ".trellis/tasks/current"
     task.mkdir(parents=True, exist_ok=True)
     (fixture / ".trellis/guru-team/config.yml").write_text(
-        "workspace_mode: current\n",
+        f"workspace_mode: current\ngithub_repo: {json.dumps(repo_ref)}\n",
         encoding="utf-8",
     )
     runtime.write_json(task / "task.json", {
@@ -2277,32 +2124,20 @@ def stage_extension_verification_owner_execution(
         "branch": "main",
         "base_branch": "main",
     })
-    runtime.write_json(task / "task-start-context.json", {
-        "schema_version": "1.0",
-        "source_issue": {"number": 117},
-        "source_repo": {"repo": "example/guru-extension", "url": ""},
-        "task_slug": "current",
-        "task_title": "Extension verification eval",
-        "task_artifact_dir": ".trellis/tasks/current",
-        "branch_name": "main",
-        "base_branch": "main",
-        "base_ref": "main",
-        "base_head_sha": "0" * 40,
-        "remote_head_sha": "0" * 40,
-        "workspace_slug": "current",
-        "task_workspace_id": "current",
-        "assignee": "extension-eval",
-        "actor": {"login": "extension-eval"},
-        "issue_scope_ledger_seed": {},
-        "intake_summary": {
-            "duplicate_decision": {},
-            "naming_quality": {},
-            "confirmation": {},
-        },
-    })
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage extension verification owner")
     head = run_git(fixture, "rev-parse", "HEAD")
+    runtime.write_runtime_mappings(
+        fixture,
+        runtime.load_config(fixture),
+        {
+            "workspace_slug": "current",
+            "task_slug": "current",
+            "task_dir": ".trellis/tasks/current",
+            "branch_name": "main",
+        },
+        fixture,
+    )
     os.environ["TRELLIS_CONTEXT_ID"] = (
         f"extension-eval-{hashlib.sha256(str(fixture).encode()).hexdigest()[:16]}"
     )
@@ -2321,7 +2156,6 @@ def stage_extension_verification_owner_execution(
     )
     if task_start.returncode != 0:
         raise ValueError("extension owner staging could not activate its task")
-    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
     if public_input["mode"] == "workflow":
         public_input["reviewed_head"] = head
     runtime_input = fixture / OWNER_INPUT
@@ -2604,6 +2438,7 @@ def stage_finalization_not_required_edge(
 
 def stage_finalization_owner_execution(
     runtime: Any,
+    request: dict[str, Any],
     fixture: Path,
     fixture_runtime_target: Path,
     request_package: Path,
@@ -2712,10 +2547,12 @@ def stage_finalization_owner_execution(
     plan_ref = f"closeout-plan:{plan_digest}"
     if "plan_ref" in public_input:
         public_input["plan_ref"] = plan_ref
+    if "reviewed_content_head" in public_input:
+        public_input["reviewed_content_head"] = head
     if "reviewed_head" in public_input:
         public_input["reviewed_head"] = head
-    if "publication_ref" in public_input:
-        public_input["publication_ref"] = "publication:eval-current"
+    if "resolved_head" in public_input:
+        public_input["resolved_head"] = head
     if "verification_ref" in public_input and producer_output is None:
         public_input["verification_ref"] = "verification:eval-current"
     runtime_input = fixture / OWNER_INPUT
@@ -2748,9 +2585,8 @@ def stage_finalization_owner_execution(
                 "stage archived not-required owner evidence",
             )
     context_payload = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "task_ref": public_input["task_ref"],
-        "public_input_sha256": runtime.context_digest(public_input),
         "plan_ref": plan_ref,
         "plan_digest": plan_digest,
         "reviewed_head": head,
@@ -2758,7 +2594,6 @@ def stage_finalization_owner_execution(
         "repo_ref": "example/guru-extension",
         "remote": "origin",
         "head_branch": "main",
-        "publication_ref": "publication:eval-current",
         "verification_ref": (
             public_input.get("verification_ref")
             if public_input.get("profile")
@@ -2826,50 +2661,39 @@ def stage_finalization_owner_execution(
             },
         }
         gate = {
-            "schema_version": "1.0",
+            "schema_version": "2.0",
             "skill_id": "guru-finalize-task",
-            "generated_at": "2026-07-26T00:00:00Z",
-            "invocation": {
-                "profile": public_input["profile"],
-                "mode": public_input["mode"],
+            "identity": {
                 "task_ref": public_input["task_ref"],
-                "input_identity_sha256": runtime.context_digest(public_input),
-            },
-            "plan": {
-                "available": True,
                 "plan_ref": plan_ref,
                 "plan_digest": plan_digest,
-                "reviewed_head": head,
+                "reviewed_content_head": head,
             },
             "review": {
-                "status": "blocked" if exit_id == "blocked" else "passed",
-                "summary": "The finalization eval owner reviewed the exact staged objective facts.",
-                "evidence_refs": [plan_ref, "finalization-eval:objective-facts"],
-            },
-            "confirmation": {
                 "status": (
-                    "confirmed"
-                    if transaction_state in {"prepared", "reprepare_required"}
-                    else "not_required"
+                    "blocked"
+                    if exit_id == "blocked"
+                    else "reroute"
+                    if exit_id in {
+                        "publication_review_stale",
+                        "resume_finalization",
+                        "reprepare_required",
+                    }
+                    else "passed"
                 ),
-                "confirmed_plan_digest": (
-                    plan_digest
-                    if transaction_state in {"prepared", "reprepare_required"}
-                    else None
-                ),
-                "summary": "The staged semantic round records the required confirmation state.",
+                "summary": "The finalization eval owner reviewed the exact staged objective facts.",
             },
             "route": {
                 "typed_exit": exit_id,
                 "consumer": runtime.FINALIZATION_CONSUMERS[exit_id],
                 "output": outputs[exit_id],
             },
-            "freshness": {
-                "current_facts_sha256": context["current_facts_sha256"],
-                "supersedes_gate_ref": None,
-            },
         }
-        gate_path = task / "task-finalization-gate.json"
+        gate_path = runtime.task_finalization_path(
+            fixture,
+            task,
+            for_write=True,
+        )
         runtime.write_json(gate_path, gate)
         runtime.check_finalization_gate_result(
             fixture,
@@ -2878,6 +2702,7 @@ def stage_finalization_owner_execution(
             gate,
             gate_path,
         )
+        bind_owner_result_argument(request, fixture, gate_path)
     finally:
         if previous_eval is None:
             os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
@@ -2902,6 +2727,7 @@ def stage_production_owner_execution(
     if skill_id == "guru-finalize-task":
         return stage_finalization_owner_execution(
             runtime,
+            request,
             fixture,
             fixture_runtime_target,
             request_package,
@@ -2939,9 +2765,18 @@ def stage_production_owner_execution(
     if not recipe.startswith(expected_prefix):
         raise ValueError("production owner staging recipe does not match the evaluated package")
     if skill_id == "guru-approve-task-plan":
-        production_record_planning(
-            runtime, fixture, task, str(public_input["exit_intent"]),
+        planning_exit = {
+            "planning-approved": "approved",
+            "planning-revision-required": "revision_required",
+            "planning-clarify-scope": "clarify_scope",
+            "planning-blocked": "blocked",
+        }.get(recipe)
+        if planning_exit is None:
+            raise ValueError("unsupported planning owner staging recipe")
+        checked_owner = production_record_planning(
+            runtime, fixture, task, planning_exit,
         )
+        owner_result_path = Path(checked_owner["artifact_path"])
     else:
         production_record_planning(runtime, fixture, task, "approved")
         task_payload = json.loads((task / "task.json").read_text(encoding="utf-8"))
@@ -3011,6 +2846,12 @@ def stage_production_owner_execution(
                 },
             })
         phase2_package = fixture / ".trellis/guru-team/skills/packages/guru-check-task"
+        phase2_exit = {
+            "check-passed": "passed",
+            "check-implementation-required": "implementation_required",
+            "check-planning-stale": "planning_stale",
+            "check-blocked": "blocked",
+        }.get(recipe)
         checked = production_record_phase2(
             runtime,
             fixture,
@@ -3023,17 +2864,48 @@ def stage_production_owner_execution(
                     "guru-review-branch",
                     "guru-review-task-publication",
                 }
-                else str(public_input["exit_intent"])
+                else phase2_exit
             ),
         )
+        owner_result_path = Path(checked["artifact_path"])
         if skill_id == "guru-create-task-commit":
             public_input["checked_head"] = checked["checked_head"]
-            public_input["check_ref"] = runtime.task_commit_public_check_ref(
-                checked["artifact_sha256"]
+            review_status = {
+                "commit-revision-required": "revision-required",
+                "commit-blocked-recovery": "blocked",
+            }.get(recipe, "passed")
+            if recipe == "commit-revision-required":
+                runtime.build_task_commit_candidate(
+                    fixture,
+                    task,
+                    {
+                        "profile": "initial_commit",
+                        "mode": public_input["mode"],
+                        "task_ref": task.relative_to(fixture).as_posix(),
+                        "source_exit": "passed",
+                        "checked_head": checked["checked_head"],
+                    },
+                    production_task_commit_authoring(
+                        runtime,
+                        fixture,
+                        checked,
+                        "revision-required",
+                    ),
+                )
+            owner_result_path, _, _ = runtime.build_task_commit_candidate(
+                fixture,
+                task,
+                public_input,
+                production_task_commit_authoring(
+                    runtime,
+                    fixture,
+                    checked,
+                    review_status,
+                ),
             )
         elif skill_id == "guru-review-branch":
             production_commit_for_review(runtime, fixture, task, checked)
-            production_record_review(
+            branch_owner = production_record_review(
                 runtime,
                 fixture,
                 task,
@@ -3044,6 +2916,7 @@ def stage_production_owner_execution(
                     else recipe
                 ),
             )
+            owner_result_path = Path(branch_owner["artifact_path"])
             if recipe == "review-blocked":
                 (fixture / "src/production-eval.txt").write_text(
                     "review-blocked-stale-head\n", encoding="utf-8"
@@ -3080,21 +2953,16 @@ def stage_production_owner_execution(
                 branch_input,
                 "review-passed",
             )
+            reviewed_content_head = branch_check["reviewed_content_head"]
             public_input["task_ref"] = task.relative_to(fixture).as_posix()
             if public_input["profile"] == "publication_review":
-                public_input["reviewed_head"] = branch_check["reviewed_head"]
-                public_input["review_ref"] = (
-                    f"review-gate:{branch_check['artifact_sha256']}"
-                )
+                public_input["reviewed_content_head"] = reviewed_content_head
             else:
                 initial_input = {
                     "profile": "publication_review",
                     "mode": public_input["mode"],
                     "task_ref": task.relative_to(fixture).as_posix(),
-                    "reviewed_head": branch_check["reviewed_head"],
-                    "review_ref": (
-                        f"review-gate:{branch_check['artifact_sha256']}"
-                    ),
+                    "reviewed_content_head": reviewed_content_head,
                     "review_intent": "initial_review",
                 }
                 initial_authoring_path = production_publication_authoring(
@@ -3108,6 +2976,7 @@ def stage_production_owner_execution(
                     root=str(fixture),
                     task=task.relative_to(fixture).as_posix(),
                     input=initial_authoring_path.relative_to(fixture).as_posix(),
+                    reviewed_content_head=initial_input["reviewed_content_head"],
                     dry_run=False,
                 ))
             if recipe == "publication-metadata-fix-ready":
@@ -3130,12 +2999,14 @@ def stage_production_owner_execution(
                 public_input,
                 recipe,
             )
-            runtime.cmd_record_task_publication_review(argparse.Namespace(
+            publication_owner = runtime.cmd_record_task_publication_review(argparse.Namespace(
                 root=str(fixture),
                 task=task.relative_to(fixture).as_posix(),
                 input=authoring_path.relative_to(fixture).as_posix(),
+                reviewed_content_head=reviewed_content_head,
                 dry_run=False,
             ))
+            owner_result_path = Path(publication_owner["artifact_path"])
             runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
             for runtime_artifact in runtime_dir.rglob("*"):
                 if (
@@ -3145,6 +3016,7 @@ def stage_production_owner_execution(
                     runtime_artifact.unlink()
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
+    bind_owner_result_argument(request, fixture, owner_result_path)
     return package, fixture_runtime_target, {}
 
 
@@ -3212,17 +3084,6 @@ def stage_owner_execution(
         "implement.md": "# Implement\n\nRun the production wrapper and owner checker.\n",
     }.items():
         (task / name).write_text(content, encoding="utf-8")
-    (task / "task-start-context.json").write_text(json.dumps({
-        "schema_version": "1.0", "task_artifact_dir": ".trellis/tasks/current",
-        "task_slug": "current", "workspace_slug": "current",
-        "task_title": "Stage 0 wording fixture", "task_workspace_id": "current",
-        "branch_name": "main", "base_branch": "main", "base_ref": "main",
-        "base_head_sha": "", "remote_head_sha": "", "source_issue": {"number": 145},
-        "source_repo": {"repo": "example/guru-extension", "url": ""},
-        "assignee": "stage0-eval", "actor": {"login": "stage0-eval"},
-        "issue_scope_ledger_seed": {},
-        "intake_summary": {"duplicate_decision": {}, "naming_quality": {}, "confirmation": {}},
-    }) + "\n", encoding="utf-8")
     fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
@@ -3243,6 +3104,17 @@ def stage_owner_execution(
     run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
     runtime = load_owner_runtime(runtime_target)
+    runtime.write_runtime_mappings(
+        fixture,
+        runtime.load_config(fixture),
+        {
+            "workspace_slug": "current",
+            "task_slug": "current",
+            "task_dir": ".trellis/tasks/current",
+            "branch_name": "main",
+        },
+        fixture,
+    )
     public_payload = json.loads(public_input.read_text(encoding="utf-8"))
     public_mode = str(public_payload.get("mode") or "")
     fake_bin = write_fake_gh(execution_root, recipe)

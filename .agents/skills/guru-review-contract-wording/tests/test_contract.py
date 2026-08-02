@@ -99,12 +99,6 @@ class ContractWordingPackageTest(unittest.TestCase):
                     "classifications": classifications,
                     "ai_review_gate": gate,
                 },
-                "human_confirmation": {
-                    "status": "not_required" if passed else "refused",
-                    "confirmed_by": None,
-                    "confirmed_at": None,
-                    "reason": "The package test records the reviewed confirmation state.",
-                },
                 "typed_exit": typed_exit,
             },
         )
@@ -134,12 +128,16 @@ class ContractWordingPackageTest(unittest.TestCase):
             self.assertIn(classification, contract)
         for dimension in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS:
             self.assertIn(dimension, contract)
-        self.assertIn("--supersede-reentry-facts-sha256", contract)
-        self.assertIn("current `pass`", " ".join(contract.split()))
+        self.assertIn("stdout-only owner-private evidence", contract)
+        self.assertNotIn("--supersede-reentry-facts-sha256", contract)
+        self.assertIn("No caller may\nrequest `--replace-stale`", contract)
         interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertIn("facts_sha256", interface["reentry"]["freshness"])
-        self.assertIn("identical results", interface["reentry"]["freshness"])
-        self.assertIn("current pass", interface["reentry"]["freshness"])
+        self.assertIn("discards it", interface["reentry"]["freshness"])
+        self.assertNotIn("facts_sha256", interface["reentry"]["freshness"])
+        self.assertEqual(
+            interface["public_contracts"]["private_artifacts"][0]["persistence"],
+            "stdout_only_owner_private",
+        )
 
     def test_schema_and_example_are_closed_versioned_json(self) -> None:
         schema = json.loads((PACKAGE_ROOT / "schemas" / "contract-wording-review.schema.json").read_text(encoding="utf-8"))
@@ -406,10 +404,6 @@ class ContractWordingPackageTest(unittest.TestCase):
             result["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"],
             expected,
         )
-        self.assertEqual(
-            GTT.contract_wording_planning_projection(result)["checked_dimensions"],
-            expected,
-        )
 
         def resign(payload: dict[str, object]) -> None:
             payload["facts_sha256"] = GTT.context_digest({
@@ -433,8 +427,6 @@ class ContractWordingPackageTest(unittest.TestCase):
             "contract_wording_planning_review_dimensions_incomplete",
             GTT.contract_wording_structural_errors(self.root, false_value, scope, scan),
         )
-        with self.assertRaises(GTT.WorkflowError):
-            GTT.contract_wording_planning_projection(false_value)
 
         extra = json.loads(json.dumps(result))
         extra["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
@@ -603,7 +595,6 @@ class ContractWordingPackageTest(unittest.TestCase):
             "before_sha256": "0" * 64,
             "after_sha256": current_hash,
             "reason": "The wording was rewritten to one exact contract.",
-            "mutation_authority": "standalone user-authorized file edit",
             "rescan_sha256": scan["scan_sha256"],
         }
         changed = self.result(
@@ -627,7 +618,7 @@ class ContractWordingPackageTest(unittest.TestCase):
             GTT.contract_wording_structural_errors(self.root, wrong_changed, scope, scan),
         )
 
-    def test_live_issue_mutation_binds_confirmed_payload_preimage_and_reread_result(self) -> None:
+    def test_live_issue_mutation_binds_preimage_and_reread_result(self) -> None:
         issue_input = self.root / "issue-mutation.json"
         issue_input.write_text(json.dumps({
             "kind": "issue",
@@ -657,25 +648,16 @@ class ContractWordingPackageTest(unittest.TestCase):
             "before_sha256": "0" * 64,
             "after_sha256": body_item["content_sha256"],
             "reason": "The issue body was rewritten to one exact contract.",
-            "mutation_authority": "The user confirmed the exact issue body payload.",
             "rescan_sha256": scan["scan_sha256"],
             "change_request_mutation": {
                 "source_identity": body_item["source_identity"],
                 "locator": body_item["id"],
                 "field": "body",
                 "preimage_sha256": "0" * 64,
-                "confirmed_content_sha256": body_item["content_sha256"],
                 "reread_content_sha256": body_item["content_sha256"],
                 "source_updated_at": body_item["updated_at"],
             },
         }
-        payload_digest = GTT.context_digest([GTT.context_digest({
-            "source_identity": body_item["source_identity"],
-            "locator": body_item["id"],
-            "field": "body",
-            "preimage_sha256": "0" * 64,
-            "content_sha256": body_item["content_sha256"],
-        })])
         result = GTT.contract_wording_derive_result(
             "change_request",
             "standalone",
@@ -689,19 +671,12 @@ class ContractWordingPackageTest(unittest.TestCase):
                     "ai_review_gate": {
                         "status": "passed",
                         "reviewer": "package-test-reviewer",
-                        "summary": "The exact confirmed payload and live reread result were reviewed.",
+                        "summary": "The exact mutation target and live reread result were reviewed.",
                         "reviewed_scan_sha256": scan["scan_sha256"],
                         "checked_dimensions": {
                             name: True for name in GTT.CONTRACT_WORDING_REVIEW_DIMENSIONS
                         },
                     },
-                },
-                "human_confirmation": {
-                    "status": "confirmed",
-                    "confirmed_by": "user",
-                    "confirmed_at": "2026-07-17T07:59:00Z",
-                    "reason": "The user confirmed the exact issue body payload.",
-                    "confirmed_payload_sha256": payload_digest,
                 },
                 "typed_exit": "content_changed",
             },

@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
   "title": "Guru Team Task Workspace Plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "generated_at", "mode", "invocation", "prerequisites", "target", "scope", "base", "naming", "assignee", "side_effects", "confirmations", "ai_review_gate", "freshness"],
+  "required": ["schema_version", "skill_id", "generated_at", "mode", "invocation", "prerequisites", "target", "scope", "base", "naming", "assignee", "side_effects", "ai_review_gate", "freshness"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "skill_id": {"const": "guru-create-task-workspace"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
@@ -18,7 +18,6 @@
     "naming": {"$ref": "#/$defs/naming"},
     "assignee": {"$ref": "#/$defs/assignee"},
     "side_effects": {"$ref": "#/$defs/sideEffects"},
-    "confirmations": {"$ref": "#/$defs/confirmations"},
     "ai_review_gate": {"$ref": "#/$defs/aiReviewGate"},
     "freshness": {"$ref": "#/$defs/freshness"}
   },
@@ -54,11 +53,7 @@
                 "created_issue_binding_sha256": {"$ref": "#/$defs/sha256"},
                 "created_issue_result": {"$ref": "#/$defs/createdIssueResult"}
               }}
-          ]}]},
-          "confirmations": {"properties": {
-            "github_issue_mutation": {"properties": {"status": {"const": "not_in_current_invocation"}}},
-            "workspace_and_task_mutation": {"properties": {"status": {"enum": ["confirmed", "refused", "not_in_current_invocation"]}}}
-          }}
+          ]}]}
         }
       }
     },
@@ -86,10 +81,6 @@
             "draft": {"type": "object"},
             "created_issue_binding_sha256": {"type": "null"},
             "created_issue_result": {"type": "null"}
-          }},
-          "confirmations": {"properties": {
-            "github_issue_mutation": {"properties": {"status": {"enum": ["confirmed", "refused", "not_in_current_invocation"]}}},
-            "workspace_and_task_mutation": {"properties": {"status": {"const": "not_in_current_invocation"}}}
           }}
         }
       }
@@ -100,7 +91,6 @@
     "nullableSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
     "gitSha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "cleanText": {"type": "string", "minLength": 1},
-    "nullableText": {"type": ["string", "null"], "minLength": 1},
     "repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
     "issueUrl": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/[1-9][0-9]*$"},
     "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
@@ -216,7 +206,7 @@
     },
     "createdIssue": {
       "type": "object", "additionalProperties": false,
-      "required": ["repo", "number", "canonical_url", "state", "title_sha256", "body_sha256", "updated_at", "reviewed_draft_id", "reviewed_draft_sha256", "creation_confirmation_sha256", "facts_sha256"],
+      "required": ["repo", "number", "canonical_url", "state", "title_sha256", "body_sha256", "updated_at", "reviewed_draft_id", "reviewed_draft_sha256", "facts_sha256"],
       "properties": {
         "repo": {"$ref": "#/$defs/repo"},
         "number": {"type": "integer", "minimum": 1},
@@ -227,7 +217,6 @@
         "updated_at": {"type": "string", "format": "date-time"},
         "reviewed_draft_id": {"$ref": "#/$defs/cleanText"},
         "reviewed_draft_sha256": {"$ref": "#/$defs/sha256"},
-        "creation_confirmation_sha256": {"$ref": "#/$defs/sha256"},
         "facts_sha256": {"$ref": "#/$defs/sha256"}
       }
     },
@@ -235,7 +224,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["schema_version", "skill_id", "generated_at", "mode", "variant", "plan_sha256", "executor", "checker", "created_issue", "created_workspace", "no_side_effect", "typed_exit", "reason", "consumer", "facts_sha256"],
       "properties": {
-        "schema_version": {"const": "1.0"},
+        "schema_version": {"const": "2.0"},
         "skill_id": {"const": "guru-create-task-workspace"},
         "generated_at": {"type": "string", "format": "date-time"},
         "mode": {"enum": ["workflow", "standalone"]},
@@ -282,29 +271,10 @@
       "required": ["operations", "task_artifacts", "runtime_mappings", "command_argv", "stop_after"],
       "properties": {
         "operations": {"type": "array", "items": {"enum": ["create_issue", "create_branch", "create_worktree", "create_task", "write_task_artifacts", "write_runtime_mappings"]}, "uniqueItems": true},
-        "task_artifacts": {"type": "array", "items": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/(task-start-context|issue-scope-ledger|context-discovery|issue-review)\\.json$"}, "uniqueItems": true},
+        "task_artifacts": {"type": "array", "items": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+/issue-scope-ledger\\.json$"}, "uniqueItems": true},
         "runtime_mappings": {"type": "array", "items": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/(workspaces|tasks)/[^/]+\\.json$"}, "uniqueItems": true},
         "command_argv": {"type": "array", "items": {"type": "string", "pattern": "^(?!/)(?![A-Za-z]:/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\r\\n\\\\]*$"}, "minItems": 1},
         "stop_after": {"enum": ["created_issue_refresh", "created_workspace"]}
-      }
-    },
-    "confirmation": {
-      "type": "object", "additionalProperties": false,
-      "required": ["status", "source", "reviewed_plan_sha256", "evidence", "confirmation_sha256"],
-      "properties": {
-        "status": {"enum": ["confirmed", "not_in_current_invocation", "refused"]},
-        "source": {"$ref": "#/$defs/nullableText"},
-        "reviewed_plan_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "evidence": {"$ref": "#/$defs/nullableText"},
-        "confirmation_sha256": {"$ref": "#/$defs/nullableSha256"}
-      }
-    },
-    "confirmations": {
-      "type": "object", "additionalProperties": false,
-      "required": ["github_issue_mutation", "workspace_and_task_mutation"],
-      "properties": {
-        "github_issue_mutation": {"$ref": "#/$defs/confirmation"},
-        "workspace_and_task_mutation": {"$ref": "#/$defs/confirmation"}
       }
     },
     "aiReviewGate": {

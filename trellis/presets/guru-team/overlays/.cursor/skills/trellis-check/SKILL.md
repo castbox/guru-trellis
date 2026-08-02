@@ -26,12 +26,10 @@ For Guru Team implementation tasks, run:
 .trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
 ```
 
-Stop if planning approval is missing, old schema, lacks passed
-`ambiguity_review` evidence, lacks fixed-scope scanner evidence, has
-unchecked normative hits, is not sourced from
-`explicit-post-planning-review`, or the reviewed planning document content
-digests no longer match. Current HEAD or dirty-path drift alone is not a
-planning approval failure.
+Stop if the checker rejects a missing, stale, legacy, or non-approved owner
+result. Do not interpret the planning owner's private checkpoint fields; the
+main workflow reruns the semantic owner and auto-consumes its mapped exit.
+Current HEAD or dirty-path drift alone is not a planning approval failure.
 
 ## Step 3: Read Task Artifacts and Applicable Specs
 

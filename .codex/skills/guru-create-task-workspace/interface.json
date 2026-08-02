@@ -3,7 +3,7 @@
   "schema_version": "1.3",
   "id": "guru-create-task-workspace",
   "name": "guru-create-task-workspace",
-  "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through a semantic gate, scoped confirmation, deterministic execution, and four typed exits.",
+  "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and three typed exits.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -89,13 +89,13 @@
     },
     {
       "id": "side_effect_authorization",
-      "evidence": "AI Review Gate plus exactly one invocation-specific confirmation",
+      "evidence": "AI Review Gate plus exactly one invocation-specific confirmation observed before the recorder/executor boundary",
       "binding": "github_issue_mutation or workspace_and_task_mutation, never both",
-      "freshness": "confirmation binds the current reviewable plan digest"
+      "freshness": "the AI revalidates the displayed action set immediately before requesting confirmation; authorization is not persisted"
     },
     {
       "id": "invocation_freshness",
-      "evidence": "canonical plan, prerequisite bytes, target, base, object and confirmation digests",
+      "evidence": "canonical plan, prerequisite bytes, target, base and live object facts",
       "binding": "one current recorder/executor/checker invocation",
       "freshness": "every digest and live fact is recomputed before typed exit"
     }
@@ -125,20 +125,8 @@
       "path": "examples/task-workspace-result.json"
     },
     {
-      "id": "public_input_issue_only_initial_example",
-      "path": "examples/public-issue-only-initial-input.json"
-    },
-    {
-      "id": "public_input_issue_only_recovery_example",
-      "path": "examples/public-issue-only-recovery-input.json"
-    },
-    {
-      "id": "public_input_workspace_task_initial_example",
-      "path": "examples/public-workspace-task-initial-input.json"
-    },
-    {
-      "id": "public_input_workspace_task_recovery_example",
-      "path": "examples/public-workspace-task-recovery-input.json"
+      "id": "public_input_execute_reviewed_plan_example",
+      "path": "examples/public-execute-reviewed-plan-input.json"
     },
     {
       "id": "public_invocation_error_example",
@@ -151,10 +139,6 @@
     {
       "id": "public_output_refresh_review_example",
       "path": "examples/public-refresh-review-output.json"
-    },
-    {
-      "id": "public_output_cancelled_example",
-      "path": "examples/public-cancelled-output.json"
     },
     {
       "id": "public_output_blocked_example",
@@ -171,20 +155,8 @@
       "path": "schemas/task-workspace-result.schema.json"
     },
     {
-      "id": "public_input_issue_only_initial",
-      "path": "schemas/public-issue-only-initial-input.schema.json"
-    },
-    {
-      "id": "public_input_issue_only_recovery",
-      "path": "schemas/public-issue-only-recovery-input.schema.json"
-    },
-    {
-      "id": "public_input_workspace_task_initial",
-      "path": "schemas/public-workspace-task-initial-input.schema.json"
-    },
-    {
-      "id": "public_input_workspace_task_recovery",
-      "path": "schemas/public-workspace-task-recovery-input.schema.json"
+      "id": "public_input_execute_reviewed_plan",
+      "path": "schemas/public-execute-reviewed-plan-input.schema.json"
     },
     {
       "id": "public_input_aggregate",
@@ -203,10 +175,6 @@
       "path": "schemas/public-refresh-review-output.schema.json"
     },
     {
-      "id": "public_output_cancelled",
-      "path": "schemas/public-cancelled-output.schema.json"
-    },
-    {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
     }
@@ -216,19 +184,19 @@
       "id": "task_workspace_plan_recorder",
       "command": "scripts/record-task-workspace-plan.sh",
       "runtime_command": "record-task-workspace-plan",
-      "objective_scope": "closed schema, five prerequisite identities and digests, target/scope/base projection, confirmation and AI Gate binding, canonical plan digest, stdout-only zero-write postcondition"
+      "objective_scope": "closed schema, five prerequisite identities and digests, target/scope/base projection, AI Gate binding, canonical plan digest and stdout-only pre-task or ignored-runtime persistence"
     },
     {
       "id": "task_workspace_exact_executor",
       "command": "scripts/create-task-workspace.sh",
       "runtime_command": "create-task-workspace",
-      "objective_scope": "mutation-time shared base sync, exact issue recovery, current target/prerequisite/plan confirmation facts, issue-only or workspace/task-only mutations, object reuse identity, explicit assignee and four task-local artifacts without developer identity"
+      "objective_scope": "mutation-time shared base sync, exact issue recovery, current target/prerequisite/plan facts, issue-only or workspace/task-only mutations, object reuse identity, explicit assignee and one task-local ledger without developer identity"
     },
     {
       "id": "task_workspace_result_checker",
       "command": "scripts/check-task-workspace-result.sh",
       "runtime_command": "check-task-workspace-result",
-      "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact artifact bytes/digests/trackability, ignored runtime, workspace boundary, no-developer and typed consumer"
+      "objective_scope": "published result schema, live issue binding or branch/worktree/task identity, exact ledger bytes/digest/trackability, ignored runtime, workspace boundary, no-developer and typed consumer"
     },
     {
       "id": "public_invocation",
@@ -240,7 +208,7 @@
   "external_exits": [
     {
       "id": "created",
-      "evidence": "exact workspace, branch, active task, four task-local artifacts and ignored runtime mappings passed result checking",
+      "evidence": "exact workspace, branch, active task, task-local issue ledger and ignored runtime mappings passed result checking",
       "consumer": {
         "kind": "workflow",
         "id": "guru-task-workspace-created"
@@ -255,14 +223,6 @@
       }
     },
     {
-      "id": "cancelled",
-      "evidence": "the user cancelled the exact plan before mutation and the zero-write snapshot passed",
-      "consumer": {
-        "kind": "stop",
-        "id": "task-workspace-cancelled"
-      }
-    },
-    {
       "id": "blocked",
       "evidence": "semantic conflict, unresolved assignee, object identity conflict or deterministic execution/check failure",
       "consumer": {
@@ -272,7 +232,7 @@
     }
   ],
   "reentry": {
-    "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, scope, post-sync base identity, naming, assignee, side-effect scope, confirmation and plan digest",
+    "identity": "five prerequisite result digests, final target/disposition, complete created-issue provenance when applicable, scope, post-sync base identity, naming, assignee, side-effect scope and plan digest",
     "freshness": "draft retry recovers one exact post-plan issue; complete Intake replay validates the checker-passed created-issue result; first mutation reruns shared base sync; workspace recovery only reuses identity-exact live objects and byte-identical artifacts",
     "stale_behavior": "fail_closed"
   },
@@ -289,68 +249,23 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-create-task-workspace-input-aggregate-1.0",
+        "schema_id": "guru-stage0-create-task-workspace-input-aggregate-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
-          "id": "issue_only_initial",
+          "id": "execute_reviewed_plan",
           "schema": {
-            "schema_id": "guru-stage0-create-task-workspace-input-issue-only-initial-1.0",
-            "path": "schemas/public-issue-only-initial-input.schema.json"
+            "schema_id": "guru-stage0-create-task-workspace-input-execute-reviewed-plan-2.0",
+            "path": "schemas/public-execute-reviewed-plan-input.schema.json"
           },
           "example": {
-            "id": "issue_only_initial_input",
-            "path": "examples/public-issue-only-initial-input.json"
+            "id": "execute_reviewed_plan_input",
+            "path": "examples/public-execute-reviewed-plan-input.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "issue_only_initial"
-          }
-        },
-        {
-          "id": "issue_only_recovery",
-          "schema": {
-            "schema_id": "guru-stage0-create-task-workspace-input-issue-only-recovery-1.0",
-            "path": "schemas/public-issue-only-recovery-input.schema.json"
-          },
-          "example": {
-            "id": "issue_only_recovery_input",
-            "path": "examples/public-issue-only-recovery-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "issue_only_recovery"
-          }
-        },
-        {
-          "id": "workspace_task_initial",
-          "schema": {
-            "schema_id": "guru-stage0-create-task-workspace-input-workspace-task-initial-1.0",
-            "path": "schemas/public-workspace-task-initial-input.schema.json"
-          },
-          "example": {
-            "id": "workspace_task_initial_input",
-            "path": "examples/public-workspace-task-initial-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "workspace_task_initial"
-          }
-        },
-        {
-          "id": "workspace_task_recovery",
-          "schema": {
-            "schema_id": "guru-stage0-create-task-workspace-input-workspace-task-recovery-1.0",
-            "path": "schemas/public-workspace-task-recovery-input.schema.json"
-          },
-          "example": {
-            "id": "workspace_task_recovery_input",
-            "path": "examples/public-workspace-task-recovery-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "workspace_task_recovery"
+            "value": "execute_reviewed_plan"
           }
         }
       ]
@@ -360,7 +275,7 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "issue_only_initial"
+        "profile_id": "execute_reviewed_plan"
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
@@ -373,7 +288,7 @@
       },
       "example_argv": [
         "--input",
-        "examples/public-issue-only-initial-input.json",
+        "examples/public-execute-reviewed-plan-input.json",
         "--owner-result",
         ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-result.json",
         "--owner-plan",
@@ -384,7 +299,7 @@
       {
         "exit_id": "created",
         "schema": {
-          "schema_id": "guru-stage0-create-task-workspace-output-created-1.0",
+          "schema_id": "guru-stage0-create-task-workspace-output-created-2.0",
           "path": "schemas/public-created-output.schema.json"
         },
         "example": {
@@ -398,7 +313,7 @@
       {
         "exit_id": "refresh_review",
         "schema": {
-          "schema_id": "guru-stage0-create-task-workspace-output-refresh-review-1.0",
+          "schema_id": "guru-stage0-create-task-workspace-output-refresh-review-2.0",
           "path": "schemas/public-refresh-review-output.schema.json"
         },
         "example": {
@@ -410,23 +325,9 @@
         ]
       },
       {
-        "exit_id": "cancelled",
-        "schema": {
-          "schema_id": "guru-stage0-create-task-workspace-output-cancelled-1.0",
-          "path": "schemas/public-cancelled-output.schema.json"
-        },
-        "example": {
-          "id": "cancelled_output",
-          "path": "examples/public-cancelled-output.json"
-        },
-        "consumer_use_ids": [
-          "project_cancelled"
-        ]
-      },
-      {
         "exit_id": "blocked",
         "schema": {
-          "schema_id": "guru-stage0-create-task-workspace-output-blocked-1.0",
+          "schema_id": "guru-stage0-create-task-workspace-output-blocked-2.0",
           "path": "schemas/public-blocked-output.schema.json"
         },
         "example": {
@@ -448,7 +349,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-create-task-workspace-workflow-created-input-1.0",
+          "schema_id": "guru-stage0-create-task-workspace-workflow-created-input-2.0",
           "path": "consumers/workflow/stage0/create-task-workspace-created.schema.json"
         }
       },
@@ -464,14 +365,6 @@
           "interface_path": "packages/guru-sync-base/interface.json",
           "input_kind": "scalar_cli"
         }
-      },
-      {
-        "id": "cancelled_stop_input",
-        "consumer": {
-          "kind": "stop",
-          "id": "task-workspace-cancelled"
-        },
-        "payload_kind": "zero_payload"
       },
       {
         "id": "blocked_stop_input",
@@ -500,29 +393,14 @@
             "target": "source_exit"
           },
           {
-            "source": "handoff_mode",
+            "source": "mode",
             "target": "mode"
           },
           {
-            "source": "handoff_repo_root",
-            "target": "repo_root"
-          },
-          {
-            "source": "handoff_base_branch",
+            "source": "base_branch",
             "target": "base_branch"
-          },
-          {
-            "source": "handoff_route",
-            "target": "route"
           }
         ]
-      },
-      {
-        "id": "project_cancelled",
-        "exit_id": "cancelled",
-        "consumer_input_id": "cancelled_stop_input",
-        "operation": "select",
-        "mappings": []
       },
       {
         "id": "project_blocked",
@@ -537,19 +415,19 @@
         "id": "task_workspace_plan",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-1.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
           "path": "schemas/task-workspace-plan.schema.json"
         },
-        "persistence": "task_local_tracked"
+        "persistence": "ignored_runtime"
       },
       {
         "id": "task_workspace_result",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-1.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json",
           "path": "schemas/task-workspace-result.schema.json"
         },
-        "persistence": "task_local_tracked"
+        "persistence": "ignored_runtime"
       }
     ]
   }

@@ -4,7 +4,7 @@
   "title": "Guru contract wording review result",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "generated_at", "profile", "mode", "vocabulary_version", "classification_version", "scope", "scan", "semantic_review", "human_confirmation", "typed_exit", "facts_sha256"],
+  "required": ["schema_version", "skill_id", "generated_at", "profile", "mode", "vocabulary_version", "classification_version", "scope", "scan", "semantic_review", "typed_exit", "facts_sha256"],
   "properties": {
     "schema_version": {"const": "1.0"},
     "skill_id": {"const": "guru-review-contract-wording"},
@@ -43,7 +43,6 @@
         "ai_review_gate": {"$ref": "#/$defs/aiReviewGate"}
       }
     },
-    "human_confirmation": {"$ref": "#/$defs/humanConfirmation"},
     "typed_exit": {"enum": ["pass", "content_changed", "blocked"]},
     "facts_sha256": {"$ref": "#/$defs/sha256"}
   },
@@ -155,14 +154,13 @@
     "revision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["revision_id", "locator", "before_sha256", "after_sha256", "reason", "mutation_authority", "rescan_sha256"],
+      "required": ["revision_id", "locator", "before_sha256", "after_sha256", "reason", "rescan_sha256"],
       "properties": {
         "revision_id": {"type": "string", "minLength": 1},
         "locator": {"type": "string", "minLength": 1},
         "before_sha256": {"$ref": "#/$defs/sha256"},
         "after_sha256": {"$ref": "#/$defs/sha256"},
         "reason": {"type": "string", "minLength": 1},
-        "mutation_authority": {"type": "string", "minLength": 1},
         "rescan_sha256": {"$ref": "#/$defs/sha256"},
         "change_request_mutation": {"$ref": "#/$defs/changeRequestMutation"}
       }
@@ -170,14 +168,12 @@
     "changeRequestMutation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source_identity", "locator", "field", "preimage_sha256", "confirmed_content_sha256", "confirmed_payload_sha256", "reread_content_sha256", "source_updated_at", "mutation_result_sha256"],
+      "required": ["source_identity", "locator", "field", "preimage_sha256", "reread_content_sha256", "source_updated_at", "mutation_result_sha256"],
       "properties": {
         "source_identity": {"type": "string", "minLength": 1},
         "locator": {"type": "string", "minLength": 1},
         "field": {"enum": ["title", "body", "comment"]},
         "preimage_sha256": {"$ref": "#/$defs/sha256"},
-        "confirmed_content_sha256": {"$ref": "#/$defs/sha256"},
-        "confirmed_payload_sha256": {"$ref": "#/$defs/sha256"},
         "reread_content_sha256": {"$ref": "#/$defs/sha256"},
         "source_updated_at": {"type": "string", "format": "date-time"},
         "mutation_result_sha256": {"$ref": "#/$defs/sha256"}
@@ -230,18 +226,6 @@
         "gates_have_machine_verifiable_conditions": {"type": "boolean"},
         "acceptance_criteria_are_deterministic": {"type": "boolean"},
         "external_quotes_are_labeled_non_contract": {"type": "boolean"}
-      }
-    },
-    "humanConfirmation": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["status", "confirmed_by", "confirmed_at", "reason"],
-      "properties": {
-        "status": {"enum": ["not_required", "confirmed", "refused"]},
-        "confirmed_by": {"type": ["string", "null"]},
-        "confirmed_at": {"type": ["string", "null"], "format": "date-time"},
-        "reason": {"type": "string", "minLength": 1},
-        "confirmed_payload_sha256": {"anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}
       }
     }
   }

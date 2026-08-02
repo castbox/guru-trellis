@@ -52,7 +52,6 @@ CODEX_DISPATCH_HEADER = """#----------------------------------------------------
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
-    Path("schemas/task-start-context.schema.json"),
     Path("schemas/closeout-plan.schema.json"),
     Path("schemas/finish-summary.schema.json"),
     Path("schemas/marketplace-verification.schema.json"),
@@ -98,6 +97,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/execute-finalization-transition.sh"),
     Path("scripts/bash/record-agent-recovery.sh"),
     Path("scripts/bash/check-agent-recovery.sh"),
+    Path("scripts/bash/prepare-task-commit.sh"),
     Path("scripts/bash/check-commit-messages.sh"),
     Path("scripts/bash/create-task-commit.sh"),
     Path("scripts/bash/format-merge-commit.sh"),
@@ -110,6 +110,9 @@ MANAGED_ASSET_PATHS = [
 ]
 OBSOLETE_MANAGED_ASSETS = {
     Path("handoff.json"): set(),
+    Path("schemas/task-start-context.schema.json"): {
+        "38c0baa21215a8d97178a56826606d23547fffae1c76db83b88902d0586ab617"
+    },
     Path("schemas/intake-handoff.schema.json"): {
         "6d9484b82ea7e71b4661035f370d8b21240aa1af844dfa131c1131bba1c3dcfc"
     },
@@ -138,6 +141,19 @@ RUNTIME_GITIGNORE_MARKER = "# Guru Team local runtime cache"
 RUNTIME_GITIGNORE_RULE = ".trellis/.runtime/"
 WORKSPACE_GITIGNORE_MARKER = "# Guru Team excludes upstream workspace journals"
 WORKSPACE_GITIGNORE_RULE = ".trellis/workspace/"
+AGENTS_AI_FIRST_START_MARKER = "<!-- guru-team-ai-first-principles:start -->"
+AGENTS_AI_FIRST_END_MARKER = "<!-- guru-team-ai-first-principles:end -->"
+AGENTS_AI_FIRST_BLOCK = f"""{AGENTS_AI_FIRST_START_MARKER}
+## Guru Team AI-first 原则
+
+- **AI-first，不模拟人类审批流**：AI 直接读取 live authority、规划、diff、测试和前序最终结果完成语义判断，不制造 assignment、handoff、签字或审批链。
+- **只保留不可重新推导且有直接 consumer 的最小结果**：活动 checkpoint 默认 owner-private、短生命周期，consumer 完成后即删除。
+- **任何阶段都不持久化用户授权信息或授权过程**：授权只存在于当前对话，不进入 tracked、ignored-runtime、gate、handoff、checkpoint、archive、schema 或 public DTO。
+- **Digest 不是 workflow authority**：digest 只服务一个局部确定性 consumer，不绑定用户授权、semantic approval、跨 Skill handoff 或全链 freshness。
+- **交互只服务真实选择和副作用**：只有真实选择、scope/authority 变化或 Git/GitHub 副作用才询问；mapped exit、stale/re-entry/reprepare/recovery 自动承接。
+- **语义门禁与持久化解耦**：AI 语义门禁仍然必需；recorder/checker 不得替代判断，也不得为留下证明制造 tracked dirty。
+{AGENTS_AI_FIRST_END_MARKER}
+"""
 SESSION_AUTO_COMMIT_HEADER = """# Guru Team owns archive and finish-summary metadata commits.
 # Keep official task.py/add_session.py bookkeeping from committing implicitly.
 """
@@ -889,6 +905,61 @@ def ensure_workspace_gitignore(repo: Path) -> dict[str, str]:
     return {"action": "updated" if original else "installed", "path": ".gitignore", "rule": WORKSPACE_GITIGNORE_RULE}
 
 
+def ensure_agents_ai_first_principles(repo: Path) -> dict[str, str]:
+    path = repo / "AGENTS.md"
+    exists = path.exists() or path.is_symlink()
+    if exists:
+        try:
+            path_stat = path.lstat()
+        except OSError as exc:
+            raise SystemExit(f"Cannot inspect target AGENTS.md: {exc}") from exc
+        if not stat.S_ISREG(path_stat.st_mode):
+            raise SystemExit("Target AGENTS.md must be a regular file")
+        try:
+            original = path.read_bytes().decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise SystemExit("Target AGENTS.md must be valid UTF-8") from exc
+    else:
+        original = ""
+
+    start_count = original.count(AGENTS_AI_FIRST_START_MARKER)
+    end_count = original.count(AGENTS_AI_FIRST_END_MARKER)
+    if start_count == 0 and end_count == 0:
+        separator = "" if not original or original.endswith("\n\n") else ("\n" if original.endswith("\n") else "\n\n")
+        updated = f"{original}{separator}{AGENTS_AI_FIRST_BLOCK}"
+        action = "updated" if exists else "installed"
+    else:
+        if start_count != 1 or end_count != 1:
+            raise SystemExit("Target AGENTS.md contains malformed or duplicate Guru Team AI-first markers")
+        lines = original.splitlines(keepends=True)
+        start_indexes = [
+            index
+            for index, line in enumerate(lines)
+            if line.rstrip("\r\n") == AGENTS_AI_FIRST_START_MARKER
+        ]
+        end_indexes = [
+            index
+            for index, line in enumerate(lines)
+            if line.rstrip("\r\n") == AGENTS_AI_FIRST_END_MARKER
+        ]
+        if len(start_indexes) != 1 or len(end_indexes) != 1 or start_indexes[0] >= end_indexes[0]:
+            raise SystemExit("Target AGENTS.md contains malformed or out-of-order Guru Team AI-first markers")
+        start_index = start_indexes[0]
+        end_index = end_indexes[0]
+        current_block = "".join(lines[start_index : end_index + 1])
+        if current_block == AGENTS_AI_FIRST_BLOCK:
+            return {
+                "action": "unchanged",
+                "path": "AGENTS.md",
+                "marker": AGENTS_AI_FIRST_START_MARKER,
+            }
+        updated = "".join(lines[:start_index]) + AGENTS_AI_FIRST_BLOCK + "".join(lines[end_index + 1 :])
+        action = "updated"
+
+    path.write_bytes(updated.encode("utf-8"))
+    return {"action": action, "path": "AGENTS.md", "marker": AGENTS_AI_FIRST_START_MARKER}
+
+
 def ensure_session_auto_commit_false(repo: Path) -> dict[str, str | None]:
     path = repo / ".trellis/config.yaml"
     original = path.read_text(encoding="utf-8") if path.exists() else ""
@@ -1632,6 +1703,7 @@ def _install_assets_in_place(
         dst / "scripts/bash/execute-finalization-transition.sh",
         dst / "scripts/bash/record-agent-recovery.sh",
         dst / "scripts/bash/check-agent-recovery.sh",
+        dst / "scripts/bash/prepare-task-commit.sh",
         dst / "scripts/bash/check-commit-messages.sh",
         dst / "scripts/bash/create-task-commit.sh",
         dst / "scripts/bash/format-merge-commit.sh",
@@ -1654,6 +1726,7 @@ def _install_assets_in_place(
     replaced_overlays.extend(overlays["replaced_overlays"])
     updated_managed.extend(overlays["updated_managed"])
     managed_backups.extend(overlays["managed_backups"])
+    agents_principles = ensure_agents_ai_first_principles(repo)
     codex_dispatch = ensure_codex_dispatch_mode(repo)
     session_auto_commit = ensure_session_auto_commit_false(repo)
     runtime_gitignore = ensure_runtime_gitignore(repo)
@@ -1669,6 +1742,7 @@ def _install_assets_in_place(
         "managed_backups": managed_backups,
         "removed_obsolete": removed_obsolete,
         "obsolete_conflicts": obsolete_conflicts,
+        "agents_principles": agents_principles,
         "codex_dispatch": codex_dispatch,
         "session_auto_commit": session_auto_commit,
         "runtime_gitignore": runtime_gitignore,
@@ -1777,6 +1851,7 @@ def main() -> int:
         "replaced_overlays": result["replaced_overlays"],
         "updated_managed": result["updated_managed"],
         "managed_backups": result["managed_backups"],
+        "agents_principles": result["agents_principles"],
         "codex_dispatch": result["codex_dispatch"],
         "session_auto_commit": result["session_auto_commit"],
         "runtime_gitignore": result["runtime_gitignore"],

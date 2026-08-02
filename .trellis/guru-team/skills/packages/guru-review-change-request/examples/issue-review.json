@@ -108,11 +108,6 @@
       "scope_conclusion_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     }
   },
-  "human_confirmation": {
-    "status": "not_required",
-    "reason": "No product-semantic change requires a new decision.",
-    "proposal_sha256": null
-  },
   "typed_exit": "ready",
   "reason": "The independently deliverable change request is ready for workspace creation.",
   "affected_evidence": [

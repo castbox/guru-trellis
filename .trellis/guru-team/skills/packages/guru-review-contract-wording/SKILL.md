@@ -10,21 +10,22 @@ for an explicit standalone Markdown review. Load
 [references/contract.md](references/contract.md) before acting.
 
 Choose exactly one fixed profile. Build its complete scope, call the
-deterministic scanner, prefer an authorized rewrite over retaining weak
+deterministic scanner, prefer a permitted rewrite over retaining weak
 wording, classify every retained hit with a non-empty reason, rebuild and
 rescan after any mutation, then complete the AI Review Gate and any required
-human confirmation before calling the recorder and checker wrappers.
+real-choice or side-effect interaction before calling the recorder and checker
+wrappers. Any authorization stays only in the current dialogue; the owner
+result contains no authorization state or process.
 
 Return exactly one declared typed exit. `content_changed` requires complete
 re-entry by the profile consumer; it is not a partial pass. Fail closed when
 scope can be narrowed, evidence is stale or incomplete, a hit is unclassified
-or a contract violation, mutation authority is missing, product semantics
+or a contract violation, mutation preconditions are missing, product semantics
 would change without confirmation, or the compatible Guru Team runtime is not
-installed. After the consumer enters a complete same-profile re-entry, current
-`content_changed` or `blocked` task-local evidence may be superseded only by
-binding its exact `facts_sha256` to a different, fully current result; an
-identical result and a current `pass` remain protected. This package is not
-self-contained or portable.
+installed. Results are stdout-only owner-private evidence. A mapped
+`content_changed` re-entry rebuilds the complete current scope and discards the
+prior result; it never creates a task-local replacement chain. This package is
+not self-contained or portable.
 
 After the semantic gate and owner recorder/checker complete, invoke
 `scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-wording-result>`.

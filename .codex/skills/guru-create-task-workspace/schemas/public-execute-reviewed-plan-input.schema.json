@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-create-task-workspace-input-execute-reviewed-plan-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode"
+  ],
+  "properties": {
+    "profile": {
+      "const": "execute_reviewed_plan"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    }
+  }
+}

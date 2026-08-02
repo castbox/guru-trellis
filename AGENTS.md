@@ -68,7 +68,7 @@ Mandatory workflow step 必须由 workflow 按 stable skill id 显式加载和�
 
 每个 closed-loop skill 必须显式声明 `judgment_mode`，并且只能使用对应的精确阶段 profile：
 
-- `judgment_mode=semantic`：正向行为 -> AI Review Gate -> 命中条件时的 human confirmation -> recorder/validator -> typed exit。AI 必须负责 scope、充分性、finding、pass/block、revision action 和 route 判断；recorder/validator 只能在对应 AI review 或 human confirmation 已发生后记录或校验确定性事实，脚本返回值不得替代 semantic pass 或 route 判断。
+- `judgment_mode=semantic`：正向行为 -> AI Review Gate -> 仅在存在真实选择或副作用时于当前对话取得 human confirmation -> recorder/validator -> typed exit。AI 必须负责 scope、充分性、finding、pass/block、revision action 和 route 判断；recorder/validator 只能在对应判断已发生后记录或校验有直接 consumer 的确定性事实，且不得记录授权状态或过程；脚本返回值不得替代 semantic pass 或 route 判断。
 - `judgment_mode=deterministic`：正向行为 -> recorder/validator -> typed exit。只有输入、状态转换、副作用以及 pass/block 条件均能由 executor/validator 完整机器验证，且 Skill 内不存在 scope、充分性、finding、revision action、用户选择或 route intent 判断时，才能声明 deterministic。Caller-side AI route classification 可以发生在 Skill 调用前，但不得伪装成 Skill 内部 post-execution Gate。
 
 任何 semantic judgment 或 human confirmation 一旦进入 Skill 边界，该 Skill 就必须使用 semantic profile；不得为了缩短流程而把 semantic Skill 降级为 deterministic。`guru-create-task-commit`、Phase 2 `trellis-check`、Branch Review Gate 与 PR readiness 均属于 semantic 门禁。
@@ -100,7 +100,7 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 - 新增 Guru Team 公共 workflow skill id 必须使用 `guru-<action>-<object>`。
 - Skill id、external exit id、schema id 和 script command 都是团队公共 API；破坏性调整必须新建 id，或提供明确迁移合同，不得静默改变既有语义。
 - 公共 skill package 只能携带可复用合同和去敏示例，不得包含 active task、workspace journal、平台 prompt、业务私有状态、secret 或本机绝对路径。
-- Pre-task 结果必须保持 repo side-effect-free；task 创建后，持久化结果只能写入 task-local tracked artifact，本机 workspace 映射只能写入 gitignored runtime。
+- Pre-task 结果必须保持 repo side-effect-free；task 创建后，只有不可重新推导且有明确直接 consumer 的最小长期结果可写入 task-local tracked artifact，owner-private 短生命周期 checkpoint 与本机 workspace 映射只能写入 gitignored runtime，consumer 完成后即删除。
 
 ### 3.5 Public Skill I/O 与私有状态
 
@@ -122,7 +122,7 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 
 - Executor：按明确输入执行具体副作用，例如创建 worktree、提交、push、创建 PR。
 - Validator：校验客观、机器可判定的条件，例如 schema、必填字段、HEAD 是否匹配、gate 是否过期。
-- Recorder：把 AI/human 已审查过的结论写成结构化 artifact。
+- Recorder：仅把 AI 已审查、不可重新推导且有明确直接 consumer 的最小结论写成结构化 artifact。
 
 脚本不得扮演：
 
@@ -131,15 +131,15 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 - Product owner：决定 issue 关闭范围或 scope 扩张是否合理。
 - Publisher of record：在没有 AI 审查的情况下生成最终 PR 论证、安全说明和验证声明。
 
-如果 semantic gate 需要脚本参与，顺序必须是：AI review / human confirmation 先发生，脚本随后 recorder / validator。不能反过来用 `--pass`、默认模板或脚本返回值冒充审查过程。显式声明为 deterministic 的 Skill 不执行形式化 AI Review Gate，但必须满足第 3.2 节的适用条件和三阶段 profile。
+如果 semantic gate 需要脚本参与，顺序必须是：AI review / 当前对话中的必要确认先发生，脚本随后 recorder / validator。脚本不得接收、验证或持久化授权信息。不能反过来用 `--pass`、默认模板或脚本返回值冒充审查过程。显式声明为 deterministic 的 Skill 不执行形式化 AI Review Gate，但必须满足第 3.2 节的适用条件和三阶段 profile。
 
 ## 5. 必须保留的 AI 判断门禁
 
-以下步骤必须由 AI Agent 明确执行判断，并把证据写入任务 artifact、review report、PR readiness report 或等价记录；脚本只能提供原始事实和阻塞校验。
+以下步骤必须由 AI Agent 明确执行判断；只有存在长期或恢复直接 consumer 时才写入最小 artifact，否则保留在当前会话或 owner-private 短生命周期 checkpoint。脚本只能提供原始事实和阻塞校验。
 
 - 判断用户请求是否需要 GitHub issue、Trellis task、worktree 或 branch。
 - duplicate search 后决定复用 issue、强制创建新 issue，或把候选交给用户确认。
-- 创建 GitHub issue、worktree、branch、Trellis task 前展示 handoff plan 并获得确认。
+- 创建 GitHub issue、worktree、branch、Trellis task 前展示精确副作用计划并获得确认。
 - `prd.md`、`design.md`、`implement.md` 是否足够进入实现；`task.py start` 只是状态写入，不代表规划已审查。
 - 实现是否满足需求、设计、测试和兼容性约束。
 - `trellis-check` 是否完整覆盖当前 task scope；不能用几个命令通过替代完整 check。
@@ -199,7 +199,7 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 
 ## 9. 副作用控制
 
-除非用户明确要求，或已经确认清晰 handoff plan，否则不要创建 GitHub issue、worktree、branch、Trellis task、commit、push 或 PR。
+除非用户明确要求，或已经确认清晰的副作用计划，否则不要创建 GitHub issue、worktree、branch、Trellis task、commit、push 或 PR。
 
 执行副作用前必须说明：
 
@@ -213,18 +213,11 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 
 ## 10. Evidence 与 Gate Artifact
 
-所有关键 gate 都应留下可审计证据。良好的 gate artifact 至少记录：
+关键 gate 必须有真实语义审查，但不因此自动产生 tracked 证明文件。Gate 结果优先通过当前对话、唯一 consumer 的最小 DTO、owner-private 短生命周期 checkpoint，以及 Git/live facts 直接承接。
 
-- task 与 issue scope；
-- 被审查的源文件、规划文件、spec、diff range 或 file hash；
-- reviewer / AI process 身份；
-- findings、severity、处理状态；
-- 验证命令和结果；
-- 当前 HEAD 或 working tree 状态；
-- 阻塞/通过结论和理由；
-- evidence 是否与当前 HEAD 匹配，是否 stale。
+只有当后续恢复、发布或长期归档存在明确直接 consumer 时才保留 gate artifact；其字段只包含该 consumer 无法重新推导的最小 task/content identity、finding/结论与验证结果。Git 可推导事实、完整 scan/review 历史、reviewer/AI process 元数据、size/mtime/hash bundle、逐轮状态、重复摘要和任何用户授权信息默认不得持久化。
 
-通过 gate 不能是空白断言。`summary` 和 `evidence` 必须说明实际审查了什么、为什么足够继续、哪些范围明确不受影响。
+无论是否持久化，gate pass 都不能是空白断言：AI 必须实际说明审查范围、充分性、findings/阻塞与未验证边界。Recorder/checker pass 只证明结构和客观事实，不证明 semantic pass。
 
 ## 11. 安全与发布
 
@@ -256,3 +249,14 @@ PR 发布前必须由 AI 审查 PR readiness，至少确认：
 修改 preset installer 或 companion scripts 时，至少检查 canonical 脚本、安装副本、README、配置模板和 schema 是否一致。
 
 最终报告要明确：改了什么、验证了什么、哪些开箱即用/upgrade-update 门禁已覆盖、哪些未覆盖。
+
+<!-- guru-team-ai-first-principles:start -->
+## Guru Team AI-first 原则
+
+- **AI-first，不模拟人类审批流**：AI 直接读取 live authority、规划、diff、测试和前序最终结果完成语义判断，不制造 assignment、handoff、签字或审批链。
+- **只保留不可重新推导且有直接 consumer 的最小结果**：活动 checkpoint 默认 owner-private、短生命周期，consumer 完成后即删除。
+- **任何阶段都不持久化用户授权信息或授权过程**：授权只存在于当前对话，不进入 tracked、ignored-runtime、gate、handoff、checkpoint、archive、schema 或 public DTO。
+- **Digest 不是 workflow authority**：digest 只服务一个局部确定性 consumer，不绑定用户授权、semantic approval、跨 Skill handoff 或全链 freshness。
+- **交互只服务真实选择和副作用**：只有真实选择、scope/authority 变化或 Git/GitHub 副作用才询问；mapped exit、stale/re-entry/reprepare/recovery 自动承接。
+- **语义门禁与持久化解耦**：AI 语义门禁仍然必需；recorder/checker 不得替代判断，也不得为留下证明制造 tracked dirty。
+<!-- guru-team-ai-first-principles:end -->

@@ -290,12 +290,15 @@ is considered complete.
 ## Production Migration Ownership
 
 `trellis/skills/guru-team/migrations/production-minimal-handoff.json`, its
-schema, the three planning/check/commit package trees, production workflow/stop
+schema, the additive `production-ai-first-contract-v2` migration/schema, the
+three planning/check/commit package trees, production workflow/stop
 consumer schemas, public wrappers, canonical corpora, and native owner fixtures
 are Guru-owned additive preset assets. They do not alter the frozen Stage 0
 manifest or the immutable issue #128 path/baseline identity. Registry,
 extension, installed provenance, and platform copies may change only as the
-atomic production activation projection of those canonical assets. Issues
+atomic production activation projection of those canonical assets. The preset
+must reproduce production v1 byte-for-byte and use only v2 for current output
+schema identities. Issues
 #131/#161 separately bind current bytes for only the eighteen reviewed
 continue/agent/finish-router entries.
 The Interface 1.3 `skill_input_authoring_seed` shape, the twelve target-owned
@@ -326,9 +329,9 @@ baseline digest.
 
 `guru-finalize-task` is an active Guru-owned additive package and the semantic
 owner of its seven-profile, six-exit closeout loop. The current package graph is
-thirteen active Skills and 52 external exits, with twelve target-owned
+thirteen active Skills and 51 external exits, with twelve target-owned
 `skill_input_authoring_seed` handoffs. Global workflow markers are 13 invokes,
-52 exits, and 29 targets. Issue #119 completes the combined layer with three
+51 exits, and 28 targets. Issue #119 completes the combined layer with three
 Guru-owned `guru-finish-work` platform entries, two terminal published eval
 cases, and the private checked-verification projection through normal and
 active-completed archive paths. These additive assets do not change the frozen

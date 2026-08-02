@@ -2,73 +2,87 @@
 
 ## Ownership
 
-`guru-check-task` is the semantic owner of the complete Phase 2 check and the
-single tracked `phase2-check.json`. Workflow and standalone mode use the same
-ten preconditions and the same stage order: forward behavior, AI review gate,
-conditional confirmation, recorder/checker, then one typed exit. Official
-`trellis-check` workers return ephemeral evidence; they do not own Guru pass or
-write an additional handoff/report artifact.
+`guru-check-task` is the sole semantic owner of the complete Phase 2 check. It
+uses `judgment_mode=semantic`. Official Trellis workers and repository commands
+provide ephemeral evidence; they do not own the Guru result and do not create a
+handoff, assignment, liveness record, or raw review artifact.
+
+Workflow and standalone mode use the same owner loop. Any real side-effect
+authorization remains only in the current conversation and is never recorded.
+
+## Public Entry
+
+Public input schema 2.0 is a minimal route DTO:
+
+- `initial_check` identifies the current implementation-complete entry;
+- `finding_fix_rerun` carries only the finding references whose fixes require a
+  complete current-scope rerun;
+- `planning_reentry` identifies a refreshed planning route.
+
+The caller does not submit semantic conclusions, findings, raw evidence, an AI
+gate, or an exit. Eval cases likewise choose a staged semantic case outside the
+public input and assert the actual exit only after the owner result returns.
 
 ## Semantic Loop
 
-1. Validate the current workspace, active task, approved planning, provenance,
-   Docs SSOT plan, issue ledger, repository inputs and invocation freshness.
-2. Read the complete scope, implementation terminal result, current diff,
-   code, tests, docs/specs, repository-defined validation commands and any
-   unresolved verification.
-3. Run every applicable check. Record exact argv, exit code, output digests and
-   a concrete result summary. Record a specific reason and impact for an
-   intentionally omitted check.
-4. Classify each candidate before severity. P0-P3 applies only to supported
-   current-scope behavior. A scope-changing candidate routes to planning;
-   follow-up and out-of-scope candidates do not block or authorize work.
-5. Review nine adequacy dimensions: requirements, design, implementation,
-   tests, Docs SSOT, cross-layer behavior, compatibility,
-   deployment/operations and verification completeness.
-6. Complete the AI gate. A current-scope finding returns
-   `implementation_required`; changed planning/scope returns `planning_stale`;
-   unavailable reliable evidence returns `blocked`.
-7. After implementation changes, run one full new round over the complete
-   scope and current repository. A latest-chunk-only rerun cannot pass.
+1. Reread the current task, approved plan, live authority, issue scope, diff,
+   dirty paths, code, tests, docs, and applicable validation commands.
+2. Perform early candidate hygiene over the committed task-base diff, staged,
+   unstaged, untracked, and new files before expensive or external validation.
+3. Classify each candidate on supported normal behavior. Only current-scope
+   candidates receive P0-P3 findings; scope changes route to planning and
+   excluded hostile or deliberately forged cases remain out of scope.
+4. Review requirements, design, implementation, tests, Docs SSOT, cross-layer
+   behavior, compatibility, deployment/operations, and verification
+   completeness.
+5. After a finding fix, perform one current complete semantic round. Do not
+   persist each worker round or require historical HEAD equality.
 
-Routine assignment, liveness, progress, completion and recovery bookkeeping is
-not entry evidence. A real unfinished-to-replacement event may use the separate
-gitignored recovery checkpoint, but that checkpoint does not become a Phase 2
-dimension or tracked handoff.
+AI-owned delta classification decides which conclusions actually changed.
+Equivalent formatting, links, derived text, OS noise, and stale downstream
+workflow projections do not trigger an unrelated full replay. Real semantic
+changes, unknown dirty content, missing checks, or reproduced findings do.
 
-## Artifact Boundary
+## Private Result
 
-New evidence uses `schema_version=2.1` and schema id
-`guru-phase2-check-2.1`. It binds planning/provenance, Docs SSOT, the embedded
-implementation evidence collection, repository snapshot, checks, scope
-qualification, nine adequacy dimensions, findings, unresolved verification,
-AI gate, route, consumer, full-round identity and `facts_sha256`.
+New evidence uses schema `guru-phase2-check-3.0` in ignored runtime. It retains
+only task and checked content identity, one composite
+`reviewed_worktree_sha256` freshness token, reviewed path locators, validation
+summaries and unverified items, Docs SSOT conclusion, nine-dimension semantic
+result, scope decisions, findings, route, reason, and consumer.
 
-`implementation_handoff` remains the public input id for compatibility, but it
-is an embedded evidence collection assembled from terminal output and live
-facts. It never requires `implementation-handoff.md`.
+It does not retain implementation handoffs, worker identity, raw output,
+assignments, liveness, repository snapshots, per-file digests, artifact-digest
+bundles, or authorization. The one composite token has a direct local consumer:
+the checker invoked inside this Skill's public wrapper before typed-output
+projection. A mismatch returns to this owner for AI delta classification; it is
+not authorization, semantic approval, a public DTO field, cross-Skill authority,
+or a digest chain. After the checked typed output passes its output schema, the
+same producer wrapper deletes the checkpoint. Task Commit consumes only the
+minimal `passed` DTO and live Git facts; it never reads or deletes Phase 2 private
+state. Schema 2.0 and 2.1 artifacts are read only to detect one-time AI-first
+re-entry; new execution does not regenerate their fields.
 
-Recorder/checker code validates objective schema, paths, hashes, sizes, HEAD,
-diff, dirty state, planning/ledger linkage, full-round identity and
-exit/consumer invariants. It never decides scope, severity, sufficiency, Docs
-SSOT consistency, semantic pass or route. Existing schema 2.0 artifacts remain
-read-only compatible. Re-entry writes 2.1 and drops legacy assignment/recovery
-fields and dimensions.
+## Recorder And Validator
 
-Post-commit consumers may accept the recorded HEAD as an ancestor only when
-later committed paths are the reviewed task commit and no unreviewed
-non-metadata dirty path exists. They do not re-record Phase 2 solely to match a
-Git commit that contains its already reviewed changes.
+The recorder writes the completed semantic result and derives the one composite
+worktree-content token. The validator recomputes that token before public output
+projection and checks closed schema shape, task/planning linkage, reviewed dirty-path
+coverage, checked HEAD or allowed task-commit ancestry, finding/scope linkage,
+and exit/consumer invariants. It never decides scope, severity, sufficiency,
+Docs SSOT, semantic pass, or route.
+
+The ignored runtime result is distinct from the public DTO. `passed` projects
+only `task_ref` and `checked_head` to `guru-create-task-commit`; finding and
+planning routes project only their direct consumer references.
 
 ## Exits
 
-- `passed`: all nine dimensions pass, no open finding or blocking unverified
-  item remains, and the consumer is `guru-create-task-commit`.
-- `implementation_required`: one or more current-scope findings return to the
-  implementation route.
-- `planning_stale`: the checked discriminator routes to plan reapproval or
-  requirement clarification.
-- `blocked`: a concrete evidence/dependency blocker stops the workflow.
+- `passed`: all nine dimensions pass with no open finding or blocking
+  unverified item.
+- `implementation_required`: A current-scope finding returns to implementation.
+- `planning_stale`: a current scope or authority change returns to planning.
+- `blocked`: a concrete evidence or dependency gap prevents a reliable result.
 
-Mapped re-entry is automatic. Unknown, multiple, stale, ambiguous, unmapped or
+Mapped re-entry is automatic. Unknown, multiple, stale, ambiguous, or
 consumer-mismatched exits fail closed without a routine user prompt.

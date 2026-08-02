@@ -141,7 +141,7 @@ For each component of the current plan:
 - risky files or rollback points
 - follow-up checks before `task.py start`
 
-Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, perform the planning artifact ambiguity review required by `.trellis/workflow.md`, then display task-local links to all three, wait for explicit post-planning confirmation, record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review` evidence, fixed-scope scanner `hits[]`, empty `unchecked_normative_hits[]`, and only then run `task.py start`.
+Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, invoke the mandatory `guru-review-contract-wording:planning_artifacts` and `guru-approve-task-plan` owners through `.trellis/workflow.md`. Auto-consume mapped exits; on the checked `approved` exit, display task-local links to all three documents and run `task.py start`. Do not add a routine post-planning confirmation. Ask only when unresolved scope, a material plan choice, or the next real side effect needs current-conversation authorization, and never persist that authorization.
 
 Planning artifact normative language must be deterministic. For requirements,
 design contracts, gates, acceptance criteria, implementation steps, and
@@ -177,8 +177,8 @@ Before declaring planning ready:
 - Repository-answerable questions have already been answered through inspection.
 - Remaining open questions are genuinely about user intent or scope.
 - Guru Team tasks have `design.md` and `implement.md` before implementation.
-- Planning artifact ambiguity review has passed before links are displayed for post-planning approval.
+- Planning wording and plan-adequacy semantic gates have passed before task activation.
 - Sub-agent-dispatch tasks have real curated entries in both `implement.jsonl` and `check.jsonl`; seed-only manifests are not ready.
-- The user has reviewed the final `prd.md`, `design.md`, and `implement.md` links and explicitly confirmed post-planning approval.
+- The checked `approved` exit is consumed automatically; a user prompt exists only for unresolved scope, a material plan choice, or a real side effect.
 
-Do not start implementation until the user approves or asks for implementation.
+Do not start implementation until the semantic planning owners pass and `task.py start` succeeds.

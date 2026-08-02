@@ -31,11 +31,13 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
    user question when the issue has multiple assignees or the actor is
    unresolved.
 6. Display the exact repository, target, GitHub operation, base, branch,
-   worktree, task, assignee, four task-local artifacts, ignored runtime writes,
+   worktree, task, assignee, task-local issue ledger, ignored runtime writes,
    command argv, and invocation stop condition.
 7. Complete the AI Review Gate below.
-8. Obtain exactly the confirmation required for this invocation.
-9. Run `record-task-workspace-plan`, `create-task-workspace`, and
+8. Obtain exactly the confirmation required for this invocation without
+   writing the authorization or authorization process anywhere. Refusal stops
+   here before any owner recorder/executor call and produces no result or DTO.
+9. After confirmation, run `record-task-workspace-plan`, `create-task-workspace`, and
    `check-task-workspace-result` in order.
 10. Return exactly one declared typed exit.
 
@@ -52,29 +54,25 @@ operation. Only a passed Gate can authorize mutation.
 
 ## Mutually exclusive confirmations
 
-`github_issue_mutation` applies only to an exact reviewed draft. Its paired
-`workspace_and_task_mutation` status must be `not_in_current_invocation`.
+`github_issue_mutation` applies only to an exact reviewed draft.
 Creation is followed by an immediate live reread and a `refresh_review` exit;
 the invocation stops without creating a branch, worktree, task, or runtime
 mapping.
 
 `workspace_and_task_mutation` applies only to a checker-passed final open
-issue. Its paired `github_issue_mutation` status is
-`not_in_current_invocation`. A confirmation from the draft invocation is not
-reusable after Intake refresh.
+issue. A confirmation from the draft invocation is not reusable after Intake
+refresh.
 
 Changing target or disposition returns `refresh_review` with zero side effects.
-Explicit cancellation returns `cancelled` with zero side effects.
-
-The plan preserves the AI-authored non-mutation route. A passed Gate plus a
-digest-bound `refused` active confirmation returns `cancelled`; `reroute` plus
-no active confirmation returns `refresh_review`; `blocked` plus no active
-confirmation returns `blocked`. Only passed plus `confirmed` may mutate.
+The plan preserves the AI-authored non-mutation route: `reroute` returns
+`refresh_review` and `blocked` returns `blocked`. Only a passed Gate followed
+by the user's current confirmation may cross into the recorder/executor. The
+confirmation itself is ephemeral and is never a plan/result/schema/DTO field.
 
 ## Exact execution and recovery
 
 The executor revalidates runtime, plan digest, base, final target, prerequisite
-bytes, confirmation and live object facts at every mutation boundary. The plan
+bytes and live object facts at every mutation boundary. The plan
 binds the initial checker-passed `post_sync_resolution_sha256`. Before the
 first confirmed issue or workspace/task mutation, runtime calls the shared base
 resolver/sync core once. A changed fresh post-sync identity returns
@@ -91,8 +89,8 @@ create after an immediate reread failure.
 
 After complete Intake re-entry, an existing issue produced by this path embeds
 the complete prior checker-passed created-issue result. Runtime recomputes the
-result and binding facts digests and matches the current issue, reviewed draft
-id/digest, and creation confirmation digest. The fresh context is the canonical
+result and binding facts digests and matches the current issue and reviewed
+draft id/digest. The fresh context is the canonical
 live existing issue (`kind=issue`, canonical identity, open state, update time,
 body and facts digests, null `issue_binding`) rather than the pre-create draft.
 Ordinary existing issues use null result/binding provenance; partial or mixed
@@ -105,14 +103,12 @@ reviewed assignee and replaces the module's developer accessor with a null
 result only for that handler invocation. Official fallback therefore writes
 `task.json.creator=task.json.assignee=<reviewed-login>` without consuming
 developer identity. The executor then sets branch, base and issue scope.
-It then writes exactly these tracked task-local Intake artifacts:
+It writes exactly one tracked task-local Intake artifact:
 
-- `task-start-context.json`
 - `issue-scope-ledger.json`
-- `context-discovery.json`
-- `issue-review.json`
 
-The final two preserve checker-passed canonical bytes. Local path mappings are
+All other prerequisite evidence stays owner-private and is reread from its
+owner when needed. Local path mappings are
 written only under ignored `.trellis/.runtime/guru-team/workspaces/` and
 `.trellis/.runtime/guru-team/tasks/`. Guru runtime never reads, copies,
 initializes, restores, or requires `.trellis/.developer` or
@@ -133,7 +129,6 @@ part of this contract.
 
 - `created` enters `guru-task-workspace-created` and then Phase 1.
 - `refresh_review` re-enters `guru-sync-base` and the complete Intake chain.
-- `cancelled` stops at `task-workspace-cancelled`.
 - `blocked` stops at `task-workspace-blocked`.
 
 Unknown, multiple, unmapped, or consumer-mismatched exits fail closed.
@@ -142,9 +137,12 @@ direct callers must enter this Skill.
 
 ## Interface 1.3 Public Handoff
 
-The four public profiles separate issue-only/workspace-task and initial/recovery
-invocations at the schema discriminator. After the owner mutation/check loop,
+The single `execute_reviewed_plan` public profile carries only `profile` and
+`mode`; target, naming, and recovery remain owner-private, while authorization
+exists only in the current dialogue. The wrapper accepts each of the four retired v1 profiles once as a strict read-only
+compatibility projection and discards every legacy handoff field before v2
+validation. After the owner mutation/check loop,
 `scripts/invoke.sh --input ... --owner-result ... --owner-plan ...` reruns the
 existing result checker and serializes one minimal result derived from its
-checked executor outcome. Plan, result, and ignored runtime mapping remain
+checked executor outcome. Plan, result, and runtime mappings remain ignored,
 owner-private artifacts.

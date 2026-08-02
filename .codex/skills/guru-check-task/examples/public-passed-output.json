@@ -1,6 +1,1 @@
-{
-  "exit_id": "passed",
-  "task_ref": ".trellis/tasks/example-task",
-  "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "check_ref": "phase2-check:current"
-}
+{"exit_id":"passed","task_ref":".trellis/tasks/07-26-example","checked_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}

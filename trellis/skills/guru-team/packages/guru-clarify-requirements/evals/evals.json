@@ -78,7 +78,7 @@
     },
     {
       "id": "retarget-context-route",
-      "prompt": "Review the staged duplicate-selection scenario, complete the semantic owner result and exact confirmation, then invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged duplicate-selection scenario, complete the semantic owner result, then invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
       "expected_exit": "retarget_context",
       "expected_output": "The public DTO is the declared retarget_context route.",
       "assertions": {

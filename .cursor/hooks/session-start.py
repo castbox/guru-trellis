@@ -404,15 +404,16 @@ def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
             )
         else:
             next_bits.append(
-                "planning artifacts are present; display links to prd.md, design.md, and "
-                "implement.md and wait for explicit post-planning confirmation"
+                "planning artifacts are present; invoke the planning wording and plan-approval "
+                "owners, auto-consume the mapped result, and start on checked approved; ask only "
+                "for unresolved scope, a material plan choice, or a real side effect"
             )
         if not jsonl_ready:
             next_bits.append("curate `implement.jsonl` and `check.jsonl` before sub-agent mode start")
         return (
             f"Status: PLANNING\nTask: {task_title}\n"
             f"Present: {present_line}\n"
-            f"Next-Action: {'; '.join(next_bits)}. Do not enter implementation until the user confirms start."
+            f"Next-Action: {'; '.join(next_bits)}. Enter implementation only after the checked approved exit is consumed and task status is in_progress."
         )
 
     return (

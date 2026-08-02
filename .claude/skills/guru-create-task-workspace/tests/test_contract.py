@@ -46,7 +46,19 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         self.assertEqual(interface["runtime_dependency"], GTT.SKILL_RUNTIME_DEPENDENCY)
         self.assertEqual(
             [item["id"] for item in interface["external_exits"]],
-            ["created", "refresh_review", "cancelled", "blocked"],
+            ["created", "refresh_review", "blocked"],
+        )
+        self.assertEqual(
+            [item["id"] for item in interface["public_contracts"]["input"]["profiles"]],
+            ["execute_reviewed_plan"],
+        )
+        self.assertEqual(
+            interface["public_contracts"]["private_artifacts"][0]["persistence"],
+            "ignored_runtime",
+        )
+        self.assertEqual(
+            interface["public_contracts"]["private_artifacts"][1]["persistence"],
+            "ignored_runtime",
         )
         self.assertEqual(
             {item["runtime_command"] for item in interface["validators"]},
@@ -114,14 +126,6 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
             "command_argv": ["create-task-workspace", "--input", "task-workspace-plan.json"],
             "stop_after": "created_issue_refresh",
         }
-        reviewed_draft["confirmations"]["github_issue_mutation"]["status"] = "confirmed"
-        reviewed_draft["confirmations"]["workspace_and_task_mutation"] = {
-            "status": "not_in_current_invocation",
-            "source": None,
-            "reviewed_plan_sha256": None,
-            "evidence": None,
-            "confirmation_sha256": None,
-        }
         self.assertEqual(GTT.skill_json_schema_validation_errors(reviewed_draft, schema, "reviewed draft"), [])
 
         missing_provenance = copy.deepcopy(example)
@@ -138,11 +142,10 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
             "updated_at": example["target"]["updated_at"],
             "reviewed_draft_id": "draft-27",
             "reviewed_draft_sha256": "a" * 64,
-            "creation_confirmation_sha256": "b" * 64,
         }
         binding["facts_sha256"] = GTT.context_digest(binding)
         checked_result = {
-            "schema_version": "1.0", "skill_id": "guru-create-task-workspace",
+            "schema_version": "2.0", "skill_id": "guru-create-task-workspace",
             "generated_at": "2026-01-01T00:00:30Z", "mode": "workflow",
             "variant": "created_issue", "plan_sha256": "c" * 64,
             "executor": {"status": "passed", "checked_at": "2026-01-01T00:00:20Z", "evidence": ["created"]},
@@ -169,13 +172,13 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
             "created_issue": None,
             "created_workspace": None,
             "no_side_effect": {
-                "reason_code": "user_cancelled",
+                "reason_code": "target_changed",
                 "before": {"head": "a" * 40, "status_sha256": "b" * 64, "worktrees_sha256": "c" * 64, "issues_sha256": "d" * 64},
                 "after": {"head": "a" * 40, "status_sha256": "b" * 64, "worktrees_sha256": "c" * 64, "issues_sha256": "d" * 64},
                 "zero_writes": True,
             },
-            "typed_exit": "cancelled",
-            "consumer": {"kind": "stop", "id": "task-workspace-cancelled"},
+            "typed_exit": "refresh_review",
+            "consumer": {"kind": "skill", "id": "guru-sync-base"},
         })
         self.assertEqual(GTT.skill_json_schema_validation_errors(no_effect, schema, "no effect"), [])
         no_effect["typed_exit"] = "created"
@@ -234,6 +237,10 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         self.assertIn("complete prior checker-passed created-issue result", contract)
         self.assertIn("null `issue_binding`", contract)
         self.assertIn("`post_sync_resolution_sha256`", contract)
+        self.assertIn("exactly one tracked task-local Intake artifact", contract)
+        self.assertIn("single `execute_reviewed_plan` public profile", contract)
+        self.assertNotIn("creation confirmation digest", contract)
+        self.assertNotIn("`cancelled` stops", contract)
         self.assertIn("`prepare-task` is query-only", contract)
         self.assertNotIn("init_developer.py <name>", contract)
 

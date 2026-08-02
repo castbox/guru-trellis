@@ -24,7 +24,8 @@ import sys
 import tempfile
 import time
 import unicodedata
-from datetime import datetime, timedelta, timezone
+from collections.abc import Iterable
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -61,27 +62,21 @@ DEFAULTS: dict[str, Any] = {
 }
 
 VALID_PRIORITIES = {"P0", "P1", "P2", "P3"}
-BLOCKING_PRIORITIES = {"P0", "P1", "P2"}
 PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
 PLANNING_APPROVAL_SKILL_ID = "guru-approve-task-plan"
-PLANNING_APPROVAL_SCHEMA_VERSION = "2.0"
-PLANNING_APPROVAL_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json"
-PLANNING_APPROVAL_LEGACY_SCHEMA_VERSION = "1.2"
-PLANNING_APPROVAL_CONFIRMATION_SOURCE = "post-planning-approval"
-PLANNING_APPROVAL_PROVENANCE_CLASSES = {
-    "explicit_requirement",
-    "necessary_implementation_choice",
-    "approved_scope_expansion",
-    "out_of_scope_proposal",
-}
-PLANNING_APPROVAL_UNUSUAL_DISPOSITIONS = {
-    "explicit_requirement",
-    "mechanism_removed",
-    "mechanism_replaced",
-    "confirmed_scope_expansion",
-    "clarification_required",
-    "out_of_scope",
-}
+PLANNING_APPROVAL_SCHEMA_VERSION = "3.0"
+PLANNING_APPROVAL_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-3.0.json"
+PLANNING_APPROVAL_LEGACY_SCHEMA_VERSIONS = {"1.2", "2.0"}
+PLANNING_APPROVAL_DIMENSIONS = (
+    "requirement_authority",
+    "scope_boundary",
+    "design_adequacy",
+    "implementation_plan",
+    "acceptance_verifiability",
+    "docs_ssot",
+    "provenance",
+    "unusual_scenarios",
+)
 PLANNING_APPROVAL_CONSUMERS = {
     "approved": {"kind": "workflow", "id": "phase-1-task-activation"},
     "revision_required": {"kind": "skill", "id": "guru-approve-task-plan"},
@@ -93,7 +88,6 @@ CONTRACT_WORDING_SCHEMA_VERSION = "1.0"
 CONTRACT_WORDING_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json"
 CONTRACT_WORDING_VOCABULARY_VERSION = "contract-wording-v2"
 CONTRACT_WORDING_CLASSIFICATION_VERSION = "contract-wording-classifications-v1"
-CONTRACT_WORDING_EVIDENCE_ARTIFACT = "contract-wording-review.json"
 CONTRACT_WORDING_PROFILES = {"change_request", "planning_artifacts", "explicit_paths"}
 CONTRACT_WORDING_VOCABULARY_V2 = [
     "可以",
@@ -153,11 +147,6 @@ CONTRACT_WORDING_REVIEW_DIMENSIONS = [
     "retained_reasons_sufficient",
     "zero_hits_not_requirement_review",
 ]
-CONTRACT_WORDING_CONSUMERS = {
-    "pass": {"kind": "workflow", "id": "guru-contract-wording-pass-router"},
-    "content_changed": {"kind": "workflow", "id": "guru-contract-wording-change-router"},
-    "blocked": {"kind": "stop", "id": "contract-wording-blocked"},
-}
 CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = [
     "no_requirement_weakening",
     "source_issue_semantics_preserved",
@@ -169,22 +158,20 @@ CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = [
 ]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 PHASE2_CHECK_SKILL_ID = "guru-check-task"
-PHASE2_CHECK_SCHEMA_VERSION = "2.1"
-PHASE2_CHECK_LEGACY_SCHEMA_VERSION = "2.0"
-PHASE2_CHECK_SCHEMA_VERSIONS = {
-    PHASE2_CHECK_LEGACY_SCHEMA_VERSION,
-    PHASE2_CHECK_SCHEMA_VERSION,
-}
-PHASE2_CHECK_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.1.json"
-PHASE2_CHECK_DIMENSIONS = [
-    "requirements", "design", "implementation", "tests", "docs_ssot",
-    "cross_layer", "compatibility", "deployment_and_operations",
+PHASE2_CHECK_SCHEMA_VERSION = "3.0"
+PHASE2_CHECK_LEGACY_SCHEMA_VERSIONS = {"2.0", "2.1"}
+PHASE2_CHECK_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-3.0.json"
+PHASE2_CHECK_DIMENSIONS = (
+    "requirements",
+    "design",
+    "implementation",
+    "tests",
+    "docs_ssot",
+    "cross_layer",
+    "compatibility",
+    "deployment_and_operations",
     "verification_completeness",
-]
-PHASE2_CHECK_EVIDENCE_REFS = {
-    "planning", "requirement_provenance", "implementation_handoff",
-    "docs_ssot_plan", "repository_snapshot", "check_execution",
-}
+)
 PHASE2_CHECK_CONSUMERS = {
     "passed": {"kind": "skill", "id": "guru-create-task-commit"},
     "implementation_required": {"kind": "workflow", "id": "guru-resume-implementation"},
@@ -229,7 +216,7 @@ CONTEXT_TOP_LEVEL_KEYS = {
     "repository", "base_evidence", "task_worktree_state", "superseded_snapshot_sha256",
     "change_input", "live_change",
     "duplicate_search", "current_state", "canonical_query", "history_preview",
-    "history_review", "mem_review", "ai_review_gate", "human_confirmation",
+    "history_review", "mem_review", "ai_review_gate",
     "refresh_history", "snapshot_identity", "error",
 }
 CONTEXT_REFRESHABLE_LIVE_ERRORS = frozenset({
@@ -261,7 +248,7 @@ REQUIREMENTS_CLARIFICATION_TOP_LEVEL_KEYS = {
     "invocation_context", "review_target", "target_disposition", "context_evidence",
     "confirmed_facts", "repository_answerable_questions",
     "clarification_rounds", "open_questions", "scope_proposals",
-    "source_actions", "human_confirmation", "mutation_results",
+    "source_actions", "mutation_results",
     "active_task_evidence", "ai_review_gate", "affected_contracts",
     "content_identity", "reason", "consumer", "error",
 }
@@ -301,8 +288,7 @@ REQUIREMENTS_CLARIFICATION_REENTRY_OWNERS = {
 }
 REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS = (
     "github_authority_facts_sha256", "ledger", "planning_documents",
-    "stale_downstream_evidence", "review_evidence", "decision_trail",
-    "reentry_owners",
+    "decision_trail", "reentry_owners",
 )
 REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS = {
     "accepted_current", "related", "followup", "new_task", "out_of_scope",
@@ -314,9 +300,6 @@ REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_TERMINAL_DECISIONS = (
     REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
     | REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS
 )
-REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_NON_CURRENT_DECISIONS = {
-    "related", "followup", "new_task", "out_of_scope",
-}
 REQUIREMENTS_CLARIFICATION_REFRESH_ACTION_KINDS = {
     "issue_comment", "issue_body_edit", "proposed_draft_update", "reopen_issue",
 }
@@ -363,15 +346,15 @@ CHANGE_REQUEST_REVIEW_GATE_BY_EXIT = {
     "blocked": "blocked",
 }
 TASK_WORKSPACE_SKILL_ID = "guru-create-task-workspace"
-TASK_WORKSPACE_PLAN_SCHEMA_VERSION = "1.0"
-TASK_WORKSPACE_RESULT_SCHEMA_VERSION = "1.0"
+TASK_WORKSPACE_PLAN_SCHEMA_VERSION = "2.0"
+TASK_WORKSPACE_RESULT_SCHEMA_VERSION = "2.0"
 TASK_WORKSPACE_PLAN_SCHEMA_ID = (
     "https://github.com/castbox/guru-trellis/schemas/"
-    "guru-task-workspace-plan-1.0.json"
+    "guru-task-workspace-plan-2.0.json"
 )
 TASK_WORKSPACE_RESULT_SCHEMA_ID = (
     "https://github.com/castbox/guru-trellis/schemas/"
-    "guru-task-workspace-result-1.0.json"
+    "guru-task-workspace-result-2.0.json"
 )
 TASK_WORKSPACE_PREREQUISITES = {
     "base": (BASE_SYNC_SKILL_ID, "guru-base-sync-result-1.0", "synced"),
@@ -381,19 +364,22 @@ TASK_WORKSPACE_PREREQUISITES = {
     "readiness": (CHANGE_REQUEST_REVIEW_SKILL_ID, "guru-change-request-review-1.0", "ready"),
 }
 TASK_WORKSPACE_ARTIFACT_NAMES = (
-    "task-start-context.json",
     "issue-scope-ledger.json",
-    "context-discovery.json",
-    "issue-review.json",
 )
 TASK_WORKSPACE_CONSUMERS = {
     "created": {"kind": "workflow", "id": "guru-task-workspace-created"},
     "refresh_review": {"kind": "skill", "id": "guru-sync-base"},
-    "cancelled": {"kind": "stop", "id": "task-workspace-cancelled"},
     "blocked": {"kind": "stop", "id": "task-workspace-blocked"},
 }
-TASK_COMMIT_PLAN_SCHEMA_VERSION = "1.0"
+TASK_WORKSPACE_LEGACY_PUBLIC_INPUT_PROFILES = frozenset({
+    "issue_only_initial",
+    "issue_only_recovery",
+    "workspace_task_initial",
+    "workspace_task_recovery",
+})
 TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
+TASK_COMMIT_CANDIDATE_SCHEMA_VERSION = "2.0"
+TASK_COMMIT_CANDIDATE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
 TASK_COMMIT_RUNTIME_DIR = ".trellis/.runtime/guru-team/task-commit-plans"
 AGENT_RECOVERY_RUNTIME_DIR = ".trellis/.runtime/guru-team/agent-recovery"
@@ -413,6 +399,28 @@ TASK_COMMIT_GIT_OPERATION_MARKERS = (
     ("rebase-merge", "rebase-merge"),
     ("rebase-or-am", "rebase-apply"),
 )
+AI_FIRST_OWNER_CHECKPOINT_DIR = "owner-checkpoints"
+AI_FIRST_OWNER_ARTIFACTS = frozenset({
+    PLANNING_APPROVAL_ARTIFACT,
+    PHASE2_CHECK_ARTIFACT,
+    "review-gate.json",
+    "pr-readiness.json",
+    "task-finalization-gate.json",
+})
+AI_FIRST_OWNER_SKILL_BY_ARTIFACT = {
+    PLANNING_APPROVAL_ARTIFACT: PLANNING_APPROVAL_SKILL_ID,
+    PHASE2_CHECK_ARTIFACT: PHASE2_CHECK_SKILL_ID,
+    "review-gate.json": "guru-review-branch",
+    "pr-readiness.json": "guru-review-task-publication",
+    "task-finalization-gate.json": "guru-finalize-task",
+}
+AI_FIRST_OS_NOISE_NAMES = frozenset({".DS_Store"})
+AI_FIRST_TEXT_SUFFIXES = frozenset({
+    ".c", ".cc", ".cfg", ".conf", ".cpp", ".css", ".go", ".h", ".hpp",
+    ".html", ".ini", ".java", ".js", ".json", ".jsx", ".kt", ".kts",
+    ".md", ".mjs", ".py", ".rb", ".rs", ".sh", ".sql", ".swift",
+    ".toml", ".ts", ".tsx", ".txt", ".xml", ".yaml", ".yml",
+})
 AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
 MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
@@ -420,29 +428,42 @@ FINISH_SUMMARY_ARTIFACT = "finish-summary.json"
 FINISH_SUMMARY_INDEX_ARTIFACT = "finish-summary-index.json"
 CLOSEOUT_PLAN_ARTIFACT = "closeout-plan.json"
 TASK_FINALIZATION_GATE_ARTIFACT = "task-finalization-gate.json"
-CLOSEOUT_PLAN_SCHEMA_VERSION = "1.1"
+CLOSEOUT_PLAN_SCHEMA_VERSION = "1.2"
+CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION = "1.1"
 CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION = "1.0"
 CLOSEOUT_PLAN_SCHEMA_VERSIONS = {
     CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION,
+    CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION,
     CLOSEOUT_PLAN_SCHEMA_VERSION,
 }
-CLOSEOUT_ARCHIVE_CORE_ARTIFACTS = {
+CLOSEOUT_COMPACT_SCHEMA_VERSIONS = {
+    CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION,
+    CLOSEOUT_PLAN_SCHEMA_VERSION,
+}
+CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS = {
     "task.json",
     "prd.md",
     "design.md",
     "implement.md",
     "issue-scope-ledger.json",
+    CLOSEOUT_PLAN_ARTIFACT,
+    FINISH_SUMMARY_ARTIFACT,
+}
+CLOSEOUT_ARCHIVE_CORE_ARTIFACTS = {
+    *CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS,
     "planning-approval.json",
     PHASE2_CHECK_ARTIFACT,
     "review-gate.json",
-    CLOSEOUT_PLAN_ARTIFACT,
+}
+CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS = {
+    *CLOSEOUT_ARCHIVE_CORE_ARTIFACTS,
     TASK_FINALIZATION_GATE_ARTIFACT,
-    FINISH_SUMMARY_ARTIFACT,
 }
 CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS = {
     MARKETPLACE_VERIFICATION_ARTIFACT,
 }
-CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 12
+CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 11
+CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS = 12
 CLOSEOUT_PR_PLACEHOLDER_NUMBER = 9223372036854775807
 CLOSEOUT_PR_HEAD_READ_ATTEMPTS = 6
 CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS = 1
@@ -610,154 +631,24 @@ WORKSPACE_BOUNDARY_REVIEW_METADATA = {
     "pr-readiness.json",
 }
 DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
-DEFAULT_PHASE2_TASK_ARTIFACTS = [
-    "prd.md",
-    "design.md",
-    "implement.md",
-    PLANNING_APPROVAL_ARTIFACT,
-]
-REQUIRED_PHASE2_COVERAGE = [
-    "requirements",
-    "design",
-    "code",
-    "tests",
-    "spec_sync",
-    "cross_layer",
-    "docs_ssot",
-    "deployment",
-]
-RESOLVED_FINDING_STATUSES = {"resolved", "fixed", "closed"}
 INDEPENDENT_REVIEW_SOURCE = "independent-agent"
-FORBIDDEN_REVIEW_REPORT_ENGLISH_TEMPLATE_HEADINGS = [
-    "Review Rounds",
-    "Findings Lifecycle",
-    "Evidence Handoff",
-    "Deployment / safety impact",
-    "Follow-up Candidates",
-    "Files Checked",
-    "Issues Found and Fixed",
-    "Issues Not Fixed",
-    "Verification Results",
-    "Summary",
-]
-AGENT_ASSIGNMENT_SCHEMA_VERSION = "1.2"
-ALLOWED_LOGICAL_ROLES = [
-    "实现代理",
-    "阶段二检查代理",
-    "问题发现审查代理",
-    "问题闭环审查代理",
-    "最终放行审查代理",
-]
-ALLOWED_REUSE_DECISIONS = {"reuse", "replace", "reuse-for-closure", "new-agent", "not-applicable"}
-AGENT_PROGRESS_EVENTS = {
-    "explicit-message-observed",
-    "tool-activity-observed",
-    "command-output-observed",
-    "platform-progress-observed",
-    "status-response-observed",
-}
-AGENT_TERMINAL_EVENTS = {"completed", "failed"}
-AGENT_CONTROL_EVENTS = {
-    "assigned",
-    "status-requested",
-    "status-request-failed",
-    "stale-assessed",
-    "resume-same-agent",
-    "replacement-started",
-    "terminated-unfinished",
-}
-AGENT_WORKSPACE_AUDIT_EVENTS = {"workspace-boundary-violation"}
-ALLOWED_AGENT_STATUS_EVENTS = (
-    AGENT_PROGRESS_EVENTS
-    | AGENT_TERMINAL_EVENTS
-    | AGENT_CONTROL_EVENTS
-    | AGENT_WORKSPACE_AUDIT_EVENTS
-)
-AGENT_LIVENESS_DECISIONS = {
-    "workspace_boundary_violation_progress",
-    "progress_observed",
-    "status_request_required",
-    "continue_waiting_no_repeat_ping",
-    "stale_allowed",
-    "blocked_missing_evidence",
-}
-AGENT_REPLACEMENT_REASONS = {
-    "max_progress_silence_exceeded",
-    "terminal_failed_incomplete",
-    "manual_or_platform_terminated_unfinished",
-}
-AGENT_TERMINATION_REASONS = {
-    "stale_cutover",
-    "manual_or_platform_terminated_unfinished",
-}
-AGENT_STATUS_EVENT_SOURCES = {"main-session", "recorder", "checker"}
-AGENT_CORRECTABLE_EVENTS = AGENT_PROGRESS_EVENTS | {
-    "status-requested",
-    "status-request-failed",
-}
-AGENT_CORRECTION_KIND = "invalidate-provenance"
-AGENT_RECOVERY_LINK_KIND = "failed-to-termination"
-AGENT_PROGRESS_SOURCE_KINDS = {
-    "task_head",
-    "task_status",
-    "task_diff_stat",
-    "task_mtime",
-    "source_head",
-    "source_status",
-    "source_diff_stat",
-    "source_mtime",
-    "status_event",
-}
-AGENT_LIVENESS_SNAPSHOT_FIELDS = [
-    "task_head",
-    "task_content_status_digest",
-    "task_content_diff_stat_digest",
-    "task_content_max_mtime",
-    "source_head",
-    "source_status_digest",
-    "source_diff_stat_digest",
-    "source_max_mtime",
-    "progress_events_count",
-    "progress_events_digest",
-    "progress_events_newest_event_id",
-]
-AGENT_LIVENESS_BLOCKED_DECISION = "blocked_missing_evidence"
-AGENT_LIVENESS_DEFAULT_SCAN_INTERVAL_SECONDS = 120
-AGENT_LIVENESS_DEFAULT_MAX_SILENCE_SECONDS = 180
 PLACEHOLDER_EVIDENCE_VALUES = {"", "n/a", "na", "none", "unknown", "placeholder", "todo", "tbd"}
 SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])main[-_./\s]*session($|[-_./\s])", re.IGNORECASE),
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
 ]
-METADATA_ONLY_PREFIXES = (".trellis/tasks/", ".trellis/.runtime/")
-METADATA_ONLY_FILES: set[str] = set()
 BRANCH_REVIEW_TASK_METADATA_FILES = {"review-gate.json"}
 BRANCH_REVIEW_RUNTIME_INPUT_PREFIX = ".trellis/.runtime/guru-team/"
-PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS = {
-    "issue-scope-ledger.json",
-    "pr-body.md",
-    "pr-readiness.json",
+BRANCH_REVIEW_DESCENDANT_METADATA_FILES = {
     "review-gate.json",
-    MARKETPLACE_VERIFICATION_ARTIFACT,
+    "pr-readiness.json",
+    "pr-body.md",
+    "finish-summary-index.json",
+    "closeout-plan.json",
+    "marketplace-verification.json",
+    "task-finalization-gate.json",
+    "finish-summary.json",
 }
-
-
-def is_phase2_post_commit_mutable_artifact_path(artifact_path: str) -> bool:
-    normalized = artifact_path.strip().replace("\\", "/")
-    if not normalized:
-        return False
-    if Path(normalized).name in PHASE2_POST_COMMIT_MUTABLE_ARTIFACTS:
-        return True
-    parts = [part for part in normalized.split("/") if part]
-    return (
-        len(parts) >= 4
-        and parts[0] == ".trellis"
-        and parts[1] == "tasks"
-        and parts[-2] == REVIEW_ROUND_REPORT_DIR
-        and parts[-1].endswith(".md")
-    )
-
-
 def finish_summary_normalized_text(value: str) -> str:
     folded = value.strip().casefold()
     folded = re.sub(r"\s+", "", folded)
@@ -1427,11 +1318,6 @@ def backfill_issue_number(value: Any) -> int | None:
     return None
 
 
-def backfill_issue_numbers(value: Any) -> list[int]:
-    values = value if isinstance(value, list) else ([value] if value is not None else [])
-    return sorted({number for item in values if (number := backfill_issue_number(item)) is not None})
-
-
 def backfill_surface_kind(path: str) -> str:
     mappings = (
         ("trellis/workflows/", "workflow"),
@@ -1930,13 +1816,6 @@ def finish_summary_git_path_snapshot(
     return safe_paths, protected_paths_filtered, False
 
 
-def finish_summary_git_paths(root: Path, base_ref: str, *, include_worktree: bool) -> list[str]:
-    paths, _protected_paths_filtered, _snapshot_unavailable = finish_summary_git_path_snapshot(
-        root, base_ref, include_worktree=include_worktree
-    )
-    return paths
-
-
 def build_finish_summary(
     root: Path,
     task_dir: Path,
@@ -2300,76 +2179,6 @@ WORK_COMMIT_BODY_SECTIONS = ["背景：", "变更：", "边界：", "验证："]
 MERGE_COMMIT_BODY_SECTIONS = ["合并：", "范围：", "审计："]
 METADATA_COMMIT_SCOPES = {"task", "trellis"}
 MERGE_COMMIT_BODY_FILE_HINT = "<merge-body-file>"
-DEPLOYMENT_ASSET_CATEGORIES: dict[str, list[str]] = {
-    "ci_cd": [
-        ".github/workflows/",
-        ".github/actions/",
-        ".gitlab-ci",
-        "Jenkinsfile",
-        "buildkite/",
-        ".circleci/",
-    ],
-    "container": [
-        "Dockerfile",
-        "dockerfile",
-        "docker-compose",
-        "compose.",
-        "container",
-        "entrypoint",
-        "startup",
-    ],
-    "kubernetes": [
-        "k8s/",
-        "kubernetes/",
-        "deploy/",
-        "deployment/",
-        "kustomization.yaml",
-        "kustomization.yml",
-        "helm/",
-        "values.yaml",
-        "values.yml",
-    ],
-    "database": [
-        "migration",
-        "migrations/",
-        "schema/",
-        "seed",
-        "seeds/",
-        "backfill",
-        "db/",
-        "database/",
-    ],
-    "makefile": [
-        "Makefile",
-    ],
-}
-DEPLOYMENT_IMPACT_KEYWORDS = [
-    "api",
-    "service",
-    "server",
-    "worker",
-    "background",
-    "daemon",
-    "cron",
-    "job",
-    "queue",
-    "consumer",
-    "cli",
-    "cmd/",
-    "command",
-    "deploy",
-    "deployment",
-    "runtime",
-    "entrypoint",
-    "docker",
-    "k8s",
-    "kubernetes",
-    "compose",
-    "migration",
-    "schema",
-]
-
-
 class WorkflowError(RuntimeError):
     def __init__(self, message: str, exit_code: int = 1, payload: dict[str, Any] | None = None) -> None:
         super().__init__(message)
@@ -2854,10 +2663,18 @@ def text_contains_branch_keyword(text: str, keyword: str) -> bool:
 
 
 def generated_issue_intent_text(text: str) -> str | None:
-    if "This issue body was drafted by the Guru Team Trellis intake workflow" not in text:
+    generated_markers = (
+        "This issue body was drafted by the Guru Team Trellis intake workflow",
+        "当前请求没有提供既有 source issue，因此 Guru Team intake 只生成这份无副作用草稿。",
+    )
+    if not any(marker in text for marker in generated_markers):
         return None
-    prefix = text.split("## Background", 1)[0].strip()
-    match = re.search(r"(?ims)^## Problem or Gap\s*(.*?)(?=^## |\Z)", text)
+    background = re.search(r"(?im)^## (?:Background|背景)\s*$", text)
+    prefix = text[:background.start()].strip() if background else ""
+    match = re.search(
+        r"(?ims)^## (?:Problem or Gap|问题或缺口)\s*(.*?)(?=^## |\Z)",
+        text,
+    )
     problem = match.group(1).strip() if match else ""
     return "\n".join(part for part in [prefix, problem] if part)
 
@@ -3080,17 +2897,6 @@ def prepare_naming_payload(
     }
 
 
-def ensure_naming_quality_for_create(payload: dict[str, Any]) -> None:
-    naming_quality = payload.get("naming_quality")
-    if isinstance(naming_quality, dict) and naming_quality.get("ok") is True:
-        return
-    raise WorkflowError(
-        "Low-information prepare-task naming blocked before create. Provide semantic English overrides with --short-name/--workspace-slug/--branch/--task-slug.",
-        exit_code=2,
-        payload=payload,
-    )
-
-
 def make_issue_title(requirement: str, short_name: str | None = None) -> str:
     text = clean_requirement(requirement)
     first = re.split(r"[。\n.!?]", text, maxsplit=1)[0].strip()
@@ -3108,89 +2914,42 @@ def issue_body(requirement: str, duplicates: list[dict[str, Any]]) -> str:
     )
     if not duplicate_lines:
         duplicate_lines = "- 创建前未发现阻塞级重复 issue。"
-    return f"""## Background
+    return f"""## 背景
 
-This issue body was drafted by the Guru Team Trellis intake workflow because the user request did not provide an existing source issue.
+当前请求没有提供既有 source issue，因此 Guru Team intake 只生成这份无副作用草稿。
 
-## Current State
+## 当前状态
 
-The request has not yet been converted into Trellis planning artifacts.
+请求尚未进入 Trellis planning。
 
-## Problem or Gap
+## 问题或缺口
 
 {clean_requirement(requirement)}
 
-## Requirement Change
+## 需求变化
 
-The Trellis task `prd.md` should turn this intake into testable requirements and acceptance criteria.
+后续 planning 需要把本请求收敛为可验证的需求、边界与验收标准。
 
-## Design or Implementation Handoff
+## 实施边界
 
-Use this issue as the discussion and intake record. Trellis task artifacts become the execution source of truth after planning.
+本 issue 只记录需求与范围；实现直接读取 live issue、当前规划、Git diff 与测试证据。
 
-## Out of Scope
+## 非目标
 
-Clarify during Trellis planning if the request is broader than the next task.
+若请求超出一个独立交付单元，在 planning 中拆出明确 follow-up，不把范围隐式并入当前实现。
 
-## Open Questions
+## 待解决问题
 
-Clarify during Trellis planning.
+仅保留无法从仓库与 live authority 推导、且会真实改变范围或行为的选择。
 
-## Duplicate Issue Search
+## 重复 Issue 搜索
 
 {duplicate_lines}
 
-## Trellis Handoff
+## 后续流程
 
-The workflow will record the Trellis task path, branch, base branch, and workspace path in the task artifacts or follow-up comments when the task is created.
+当前 owner 完成 live review 后，由 `guru-create-task-workspace` 独占必要的 issue、branch、worktree 与 task 副作用；本草稿不记录用户授权或流程状态。
 """
-
-
-def confirmed_issue_prepare_command(
-    args: argparse.Namespace,
-    title: str,
-    requirement: str,
-    force_new: bool | None = None,
-    expected_resolution_sha256: str | None = None,
-) -> list[str]:
-    cmd = [
-        "python3",
-        "./.trellis/guru-team/scripts/python/guru_team_trellis.py",
-        "prepare",
-        "--json",
-        "--create-issue-confirmed",
-        "--issue-title",
-        title,
-        "--issue-body-file",
-        "<reviewed-issue-body.md>",
-    ]
-    option_map = [
-        ("short_name", "--short-name"),
-        ("base_branch", "--base-branch"),
-        ("branch", "--branch"),
-        ("task_slug", "--task-slug"),
-        ("workspace_slug", "--workspace-slug"),
-        ("title", "--title"),
-        ("assignee", "--assignee"),
-        ("priority", "--priority"),
-        ("description", "--description"),
-    ]
-    for attr, option in option_map:
-        value = getattr(args, attr, None)
-        if value:
-            cmd.extend([option, str(value)])
-    resolution_sha256 = expected_resolution_sha256 or getattr(
-        args, "expected_resolution_sha256", None
-    )
-    if resolution_sha256:
-        cmd.extend(["--expected-resolution-sha256", str(resolution_sha256)])
-    should_force_new = getattr(args, "force_new", False) if force_new is None else force_new
-    if should_force_new:
-        cmd.append("--force-new")
-    if getattr(args, "worktree", False):
-        cmd.append("--worktree")
-    cmd.append(requirement)
-    return cmd
 
 
 def issue_view(repo: str, number: int, root: Path) -> dict[str, Any]:
@@ -3262,9 +3021,9 @@ def duplicate_search(repo: str, requirement: str, root: Path, limit: int) -> lis
 
 def create_issue(repo: str, title: str, body: str, root: Path, labels: list[str]) -> dict[str, Any]:
     if not title.strip():
-        raise WorkflowError("Confirmed issue creation requires a non-empty issue title.")
+        raise WorkflowError("Issue creation requires a non-empty reviewed title.")
     if not body.strip():
-        raise WorkflowError("Confirmed issue creation requires a non-empty issue body.")
+        raise WorkflowError("Issue creation requires a non-empty reviewed body.")
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", newline="", delete=False) as tmp:
         tmp.write(body)
         tmp_path = tmp.name
@@ -3286,21 +3045,6 @@ def create_issue(repo: str, title: str, body: str, root: Path, labels: list[str]
     return issue_view(repo, int(match.group(1)), root)
 
 
-def read_confirmed_issue_body(path_value: str | None) -> str:
-    if not path_value:
-        raise WorkflowError(
-            "--create-issue-confirmed requires --issue-body-file containing the AI/human reviewed issue body.",
-            exit_code=2,
-        )
-    path = Path(path_value)
-    if not path.exists():
-        raise WorkflowError(f"Confirmed issue body file not found: {path}")
-    body = path.read_text(encoding="utf-8").strip()
-    if not body:
-        raise WorkflowError(f"Confirmed issue body file is empty: {path}")
-    return body
-
-
 def git_branch_exists(root: Path, ref: str) -> bool:
     return run(["git", "rev-parse", "--verify", "--quiet", ref], cwd=root, check=False).returncode == 0
 
@@ -3320,35 +3064,6 @@ def ref_head(root: Path, ref: str) -> str | None:
 def base_short_name(base_ref: str) -> str:
     normalized = normalize_ref(base_ref)
     return normalized.split("/", 1)[1] if normalized.startswith("origin/") else normalized
-
-
-def inspect_base_freshness(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
-    base = base_short_name(base_ref)
-    local_head = ref_head(root, base)
-    remote_ref = f"{remote}/{base}"
-    remote_head = ref_head(root, remote_ref)
-    fresh = bool(remote_head and local_head == remote_head)
-    if remote_head and not local_head:
-        fresh = True
-    status = "fresh" if fresh else "unknown"
-    if remote_head and local_head and local_head != remote_head:
-        status = "stale"
-    if not remote_head:
-        status = "remote_ref_missing"
-    return {
-        "remote": remote,
-        "base_branch": base,
-        "base_ref": base_ref,
-        "remote_ref": remote_ref,
-        "local_head_before": local_head,
-        "local_head_after": local_head,
-        "remote_head": remote_head,
-        "fetch_performed": False,
-        "fast_forwarded": False,
-        "fresh": fresh,
-        "status": status,
-        "base_ref_for_worktree": remote_ref if remote_head else base_ref,
-    }
 
 
 def base_sync_clean(root: Path) -> bool:
@@ -4025,12 +3740,6 @@ def base_sync_freshness_projection(
     }
 
 
-def refresh_base_freshness_for_planner(root: Path, base_ref: str, remote: str = "origin") -> dict[str, Any]:
-    config = load_config(root)
-    resolution = resolve_base_selection(root, config, base_short_name(base_ref), remote)
-    return base_sync_freshness_projection(execute_base_sync(root, resolution))
-
-
 def ensure_base_freshness(
     root: Path,
     base_ref: str | None,
@@ -4114,8 +3823,12 @@ def current_head(root: Path) -> str:
     return run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
 
 
+def ai_first_os_noise_path(path: str) -> bool:
+    return Path(path).name in AI_FIRST_OS_NOISE_NAMES
+
+
 def git_dirty(root: Path) -> bool:
-    return bool(run(["git", "status", "--porcelain"], cwd=root, check=False).stdout.strip())
+    return bool(git_status_paths(root))
 
 
 def git_status_paths(root: Path, *, fail_closed: bool = False) -> list[str]:
@@ -4139,7 +3852,9 @@ def git_status_paths(root: Path, *, fail_closed: bool = False) -> list[str]:
                 raise WorkflowError("Git status returned an invalid path record.", exit_code=2)
             continue
         try:
-            paths.append(record[3:].decode("utf-8", "strict"))
+            path = record[3:].decode("utf-8", "strict")
+            if not ai_first_os_noise_path(path):
+                paths.append(path)
         except UnicodeError as exc:
             if fail_closed:
                 raise WorkflowError("Git status returned an invalid path record.", exit_code=2) from exc
@@ -4147,89 +3862,137 @@ def git_status_paths(root: Path, *, fail_closed: bool = False) -> list[str]:
     return paths
 
 
-def has_non_metadata_dirty_paths(root: Path) -> tuple[bool, list[str]]:
-    paths = git_status_paths(root)
-    non_metadata = [
-        path
-        for path in paths
-        if not path.startswith(METADATA_ONLY_PREFIXES) and path not in METADATA_ONLY_FILES
-    ]
-    return bool(non_metadata), non_metadata
-
-
-def committed_paths_match_phase2_dirty_paths(
+def ai_first_candidate_hygiene_scan(
     root: Path,
-    recorded_head: str,
-    recorded_dirty_paths: list[Any],
-) -> tuple[bool, list[str]]:
-    proc = run(["git", "diff", "--name-only", f"{recorded_head}..HEAD"], cwd=root, check=False)
-    if proc.returncode != 0:
-        return False, []
-    files = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-    uncovered = [
-        path
-        for path in files
-        if not path.startswith(METADATA_ONLY_PREFIXES)
-        and path not in METADATA_ONLY_FILES
-        and not committed_path_covered_by_phase2_dirty_path(path, recorded_dirty_paths)
+    *,
+    base_ref: str | None = None,
+    candidate_paths: list[str] | None = None,
+) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    diff_commands = [
+        ["git", "diff", "--check"],
+        ["git", "diff", "--cached", "--check"],
     ]
-    return not uncovered, uncovered
+    if base_ref:
+        diff_commands.insert(0, ["git", "diff", "--check", f"{base_ref}...HEAD"])
+    for command in diff_commands:
+        proc = run(command, cwd=root, check=False)
+        if proc.returncode != 0:
+            lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+            if lines:
+                errors.extend(f"git-diff-check:{line}" for line in lines)
+            else:
+                errors.append(f"git-diff-check-unavailable:{shlex.join(command)}")
 
-
-def committed_path_covered_by_phase2_dirty_path(
-    committed_path: str,
-    recorded_dirty_paths: list[Any],
-) -> bool:
-    committed = committed_path.strip().rstrip("/")
-    if not committed:
-        return False
-    for item in recorded_dirty_paths:
-        raw = str(item).strip()
-        if not raw:
-            continue
-        dirty = raw.rstrip("/")
-        if committed == dirty:
-            return True
-        if raw.endswith("/") and committed.startswith(f"{dirty}/"):
-            return True
-    return False
-
-
-def stage_metadata_paths(root: Path) -> list[str]:
-    metadata_paths = [
-        path
-        for path in git_status_paths(root)
-        if path.startswith(METADATA_ONLY_PREFIXES) or path in METADATA_ONLY_FILES
-    ]
-    if metadata_paths:
-        run_stdout(["git", "add", "--", *metadata_paths], cwd=root)
-    return metadata_paths
-
-
-def commit_if_metadata_dirty(root: Path, message: str) -> dict[str, Any]:
-    dirty, dirty_paths = has_non_metadata_dirty_paths(root)
-    if dirty:
-        raise WorkflowError(
-            "finish-work produced uncommitted non-metadata changes. Return to continue/review before publish.",
-            exit_code=2,
-            payload={"dirty_paths": dirty_paths},
+    paths = set(candidate_paths or [])
+    if base_ref:
+        range_spec = f"{base_ref}...HEAD"
+        path_proc = run(
+            ["git", "diff", "--name-only", "--no-renames", "-z", range_spec],
+            cwd=root,
+            check=False,
         )
-    metadata_paths = stage_metadata_paths(root)
-    if not metadata_paths:
-        return {"committed": False, "paths": []}
-    if run(["git", "diff", "--cached", "--quiet"], cwd=root, check=False).returncode == 0:
-        return {"committed": False, "paths": metadata_paths}
-    run_stdout(["git", "commit", "-m", message], cwd=root)
-    return {"committed": True, "paths": metadata_paths, "commit": current_head(root)}
+        if path_proc.returncode != 0:
+            errors.append(f"candidate-path-scan-unavailable:{range_spec}")
+        else:
+            paths.update(value for value in path_proc.stdout.split("\0") if value)
+    paths.update(git_status_paths(root, fail_closed=True))
+    tracked_proc = run(["git", "ls-files", "-z"], cwd=root, check=False)
+    if tracked_proc.returncode != 0:
+        errors.append("candidate-tracked-path-scan-unavailable")
+        tracked_paths: set[str] = set()
+    else:
+        tracked_paths = {
+            value for value in tracked_proc.stdout.split("\0") if value
+        }
+    for relative in sorted(paths, key=lambda item: item.encode("utf-8")):
+        if ai_first_os_noise_path(relative):
+            continue
+        path = (root / relative).resolve()
+        try:
+            path.relative_to(root.resolve())
+        except ValueError:
+            errors.append(f"candidate-path-outside-repository:{relative}")
+            continue
+        if not path.is_file() or path.is_symlink():
+            continue
+        tracked = relative in tracked_paths
+        suffix = path.suffix.casefold()
+        if tracked and suffix != ".json":
+            continue
+        if not tracked and suffix not in AI_FIRST_TEXT_SUFFIXES:
+            continue
+        try:
+            content = path.read_bytes()
+        except OSError:
+            errors.append(f"candidate-unreadable:{relative}")
+            continue
+        if b"\0" in content:
+            continue
+        try:
+            text = content.decode("utf-8")
+        except UnicodeDecodeError:
+            errors.append(f"candidate-invalid-utf8:{relative}")
+            continue
+        if suffix == ".json":
+            try:
+                json.loads(text)
+            except json.JSONDecodeError as exc:
+                errors.append(f"candidate-invalid-json:{relative}:{exc.lineno}:{exc.colno}")
+        if tracked:
+            continue
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            if line.endswith((" ", "\t")):
+                errors.append(f"candidate-trailing-whitespace:{relative}:{line_number}")
+        if text.endswith("\n\n"):
+            errors.append(f"candidate-blank-line-at-eof:{relative}")
+    return (
+        sorted(paths, key=lambda item: item.encode("utf-8")),
+        sorted(set(errors), key=lambda item: item.encode("utf-8")),
+    )
 
 
-def recent_work_commits(root: Path, reviewed_head: str, max_count: int = 5) -> list[str]:
-    proc = run(["git", "log", "--format=%H", f"{reviewed_head}^..{reviewed_head}"], cwd=root, check=False)
-    if proc.returncode == 0:
-        commits = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-        if commits:
-            return commits[:max_count]
-    return [reviewed_head] if reviewed_head else []
+def ai_first_candidate_hygiene_report(
+    root: Path,
+    *,
+    base_ref: str | None = None,
+    candidate_paths: list[str] | None = None,
+) -> dict[str, Any]:
+    resolved_paths, errors = ai_first_candidate_hygiene_scan(
+        root,
+        base_ref=base_ref,
+        candidate_paths=candidate_paths,
+    )
+    return {
+        "status": "passed" if not errors else "blocked",
+        "base_ref": base_ref,
+        "candidate_paths": resolved_paths,
+        "errors": errors,
+    }
+
+
+def cmd_check_candidate_hygiene(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    base_ref = str(getattr(args, "base_ref", "") or "").strip() or None
+    task_value = str(getattr(args, "task", "") or "").strip()
+    if base_ref is None and task_value:
+        task_dir = resolve_task_dir(root, task_value)
+        task = task_json(task_dir)
+        base_branch = str(task.get("base_branch") or "").strip()
+        if base_branch:
+            base_ref = diff_base_ref(root, base_branch)
+    report = ai_first_candidate_hygiene_report(
+        root,
+        base_ref=base_ref,
+        candidate_paths=list(getattr(args, "path", []) or []),
+    )
+    if report["errors"]:
+        raise WorkflowError(
+            "Candidate hygiene failed before semantic validation.",
+            exit_code=2,
+            payload=report,
+        )
+    return report
 
 
 def normalize_ref(ref: str) -> str:
@@ -4251,95 +4014,11 @@ def diff_base_ref(root: Path, base_branch: str) -> str:
     return candidates[0]
 
 
-def diff_range(root: Path, base_branch: str) -> str:
-    return f"{diff_base_ref(root, base_branch)}...HEAD"
-
-
 def changed_files(root: Path, diff_spec: str) -> list[str]:
     proc = run(["git", "diff", "--name-only", diff_spec], cwd=root, check=False)
     if proc.returncode != 0:
         raise WorkflowError(f"Could not compute diff for {diff_spec}:\n{proc.stderr.strip()}")
     return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-
-
-def file_matches_marker(path: str, marker: str) -> bool:
-    lowered = path.lower()
-    marker_lower = marker.lower()
-    name = Path(path).name
-    if marker.endswith("/"):
-        return lowered.startswith(marker_lower) or f"/{marker_lower}" in lowered
-    if marker_lower in {"makefile", "dockerfile", "jenkinsfile"}:
-        return name.lower() == marker_lower or name.lower().startswith(f"{marker_lower}.")
-    return marker_lower in lowered
-
-
-def classify_changed_files(files: list[str]) -> dict[str, list[str]]:
-    categories: dict[str, list[str]] = {key: [] for key in DEPLOYMENT_ASSET_CATEGORIES}
-    categories.update(
-        {
-            "docs": [],
-            "tests": [],
-            "trellis_artifacts": [],
-            "config": [],
-            "scripts": [],
-            "schemas": [],
-            "code": [],
-            "other": [],
-        }
-    )
-    for path in files:
-        matched = False
-        lowered = path.lower()
-        for category, markers in DEPLOYMENT_ASSET_CATEGORIES.items():
-            if any(file_matches_marker(path, marker) for marker in markers):
-                categories[category].append(path)
-                matched = True
-        if path.startswith(".trellis/") or "/.trellis/" in path or path.startswith("trellis/"):
-            categories["trellis_artifacts"].append(path)
-            matched = True
-        if lowered.endswith((".md", ".mdx", ".rst", ".txt")) or lowered.startswith("docs/"):
-            categories["docs"].append(path)
-            matched = True
-        if any(part in lowered for part in ["/test", "/tests/", "_test.", ".spec.", ".test."]):
-            categories["tests"].append(path)
-            matched = True
-        if lowered.endswith((".json", ".yaml", ".yml", ".toml", ".ini", ".conf", ".cfg", ".properties")):
-            categories["config"].append(path)
-            matched = True
-        if lowered.endswith((".sh", ".bash", ".zsh", ".py", ".rb", ".pl")) and (
-            "/script" in lowered or lowered.startswith("scripts/") or "/bin/" in lowered
-        ):
-            categories["scripts"].append(path)
-            matched = True
-        if "schema" in lowered or lowered.endswith(".schema.json"):
-            categories["schemas"].append(path)
-            matched = True
-        if lowered.endswith(
-            (
-                ".go",
-                ".py",
-                ".ts",
-                ".tsx",
-                ".js",
-                ".jsx",
-                ".java",
-                ".kt",
-                ".rs",
-                ".rb",
-                ".php",
-                ".cs",
-                ".cpp",
-                ".c",
-                ".h",
-                ".sql",
-            )
-        ):
-            categories["code"].append(path)
-            matched = True
-        if not matched:
-            categories["other"].append(path)
-    return {key: sorted(set(value)) for key, value in categories.items() if value}
-
 
 
 def is_ancestor(root: Path, ancestor: str, descendant: str = "HEAD") -> bool:
@@ -4424,6 +4103,120 @@ def runtime_root(root: Path, config: dict[str, Any]) -> Path:
     return rel if rel.is_absolute() else root / rel
 
 
+def ai_first_task_checkpoint_key(task_dir: Path) -> str:
+    identity = task_dir.name
+    task_path = task_dir / "task.json"
+    if task_path.is_file() and not task_path.is_symlink():
+        try:
+            payload = read_json(task_path)
+        except (OSError, ValueError, WorkflowError):
+            payload = {}
+        candidate = str(payload.get("id") or "").strip()
+        if candidate:
+            identity = candidate
+    return hashlib.sha256(identity.encode("utf-8")).hexdigest()[:20]
+
+
+def ai_first_owner_checkpoint_path(
+    root: Path,
+    task_dir: Path,
+    artifact_name: str,
+) -> Path:
+    if artifact_name not in AI_FIRST_OWNER_ARTIFACTS:
+        raise WorkflowError(
+            f"Unsupported AI-first owner artifact: {artifact_name}",
+            exit_code=2,
+        )
+    return (
+        runtime_root(root, load_config(root))
+        / AI_FIRST_OWNER_CHECKPOINT_DIR
+        / ai_first_task_checkpoint_key(task_dir)
+        / artifact_name
+    )
+
+
+def ai_first_owner_artifact_path(
+    root: Path,
+    task_dir: Path,
+    artifact_name: str,
+    *,
+    for_write: bool = False,
+) -> Path:
+    checkpoint = ai_first_owner_checkpoint_path(root, task_dir, artifact_name)
+    if for_write or checkpoint.is_file():
+        return checkpoint
+    legacy = task_dir / artifact_name
+    return legacy if legacy.is_file() else checkpoint
+
+
+def ai_first_retire_owner_checkpoints(
+    root: Path,
+    task_dir: Path,
+    artifact_names: Iterable[str],
+) -> list[str]:
+    retired: list[str] = []
+    checkpoint_dir: Path | None = None
+    for artifact_name in artifact_names:
+        path = ai_first_owner_checkpoint_path(root, task_dir, artifact_name)
+        checkpoint_dir = path.parent
+        if path.is_symlink():
+            raise WorkflowError(
+                f"AI-first owner checkpoint is unsafe: {artifact_name}",
+                exit_code=2,
+            )
+        if path.is_file():
+            path.unlink()
+            retired.append(artifact_name)
+        elif path.exists():
+            raise WorkflowError(
+                f"AI-first owner checkpoint is not a regular file: {artifact_name}",
+                exit_code=2,
+            )
+    if checkpoint_dir is not None:
+        try:
+            checkpoint_dir.rmdir()
+        except OSError:
+            pass
+    return retired
+
+
+def ai_first_converge_legacy_owner_residue(
+    root: Path,
+    task_dir: Path,
+    artifact_name: str,
+) -> dict[str, str]:
+    """Remove only a recognized active-task projection after its private replacement exists."""
+    checkpoint = ai_first_owner_checkpoint_path(root, task_dir, artifact_name)
+    legacy = task_dir / artifact_name
+    if not checkpoint.is_file() or not legacy.exists() or legacy.is_symlink():
+        return {"status": "not_applicable", "artifact": artifact_name}
+    relative = repo_relative(root, legacy)
+    if relative.startswith(".trellis/tasks/archive/"):
+        return {"status": "archived_preserved", "artifact": artifact_name}
+    try:
+        payload = read_json(legacy)
+    except (OSError, ValueError, WorkflowError):
+        return {"status": "unknown_preserved", "artifact": artifact_name}
+    if payload.get("skill_id") != AI_FIRST_OWNER_SKILL_BY_ARTIFACT[artifact_name]:
+        return {"status": "unknown_preserved", "artifact": artifact_name}
+    tracked = run(
+        ["git", "ls-files", "--error-unmatch", "--", relative],
+        cwd=root,
+        check=False,
+    ).returncode == 0
+    if tracked:
+        dirty = run(
+            ["git", "diff", "--quiet", "HEAD", "--", relative],
+            cwd=root,
+            check=False,
+        ).returncode != 0
+        if dirty:
+            return {"status": "tracked_dirty_preserved", "artifact": artifact_name}
+        return {"status": "tracked_unchanged", "artifact": artifact_name}
+    legacy.unlink()
+    return {"status": "untracked_removed", "artifact": artifact_name}
+
+
 def runtime_workspace_path(root: Path, config: dict[str, Any], workspace_slug: str) -> Path:
     return runtime_root(root, config) / "workspaces" / f"{workspace_slug}.json"
 
@@ -4468,7 +4261,7 @@ def rebuild_runtime_mappings(root: Path, config: dict[str, Any], context: dict[s
         Path(record["worktree"]).resolve()
         for record in records
         if record.get("branch") == expected_branch
-        and (Path(record["worktree"]) / task_dir / "task-start-context.json").is_file()
+        and (Path(record["worktree"]) / task_dir / "task.json").is_file()
     ]
     if len(matches) != 1:
         return None
@@ -4578,16 +4371,220 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
     }
 
 
-def load_task_start_context(task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
+def load_legacy_task_start_context(
+    task_dir: Path,
+    config: dict[str, Any],
+) -> dict[str, Any] | None:
     path = task_start_context_path(task_dir, config)
     if not path.exists():
-        return {}
+        return None
     payload = read_json(path)
-    validate_task_start_context(payload)
-    payload.setdefault("_path", str(path))
-    payload.setdefault("task_dir", payload.get("task_artifact_dir"))
-    payload.setdefault("issue_scope_ledger", payload.get("issue_scope_ledger_seed") or {})
-    return payload
+    if payload.get("schema_version") != "1.0":
+        raise WorkflowError(
+            "Legacy task-start-context schema_version must be 1.0.",
+            exit_code=2,
+        )
+
+    def required_text(key: str) -> str:
+        value = str(payload.get(key) or "").strip()
+        if not value:
+            raise WorkflowError(
+                f"Legacy task-start-context identity is missing {key}.",
+                exit_code=2,
+            )
+        return value
+
+    task_artifact_dir = required_text("task_artifact_dir")
+    if (
+        Path(task_artifact_dir).is_absolute()
+        or not re.fullmatch(r"\.trellis/tasks/[^/]+", task_artifact_dir)
+        or Path(task_artifact_dir).name != task_dir.name
+    ):
+        raise WorkflowError(
+            "Legacy task-start-context task identity does not match the selected task.",
+            exit_code=2,
+        )
+    base_head_sha = str(payload.get("base_head_sha") or "").strip()
+    if base_head_sha and not re.fullmatch(r"[0-9a-f]{40}", base_head_sha):
+        raise WorkflowError(
+            "Legacy task-start-context base_head_sha is invalid.",
+            exit_code=2,
+        )
+    source_issue = payload.get("source_issue")
+    source_repo = payload.get("source_repo")
+    ledger_seed = payload.get("issue_scope_ledger_seed")
+    if not isinstance(source_issue, dict):
+        source_issue = {}
+    if not isinstance(source_repo, dict):
+        source_repo = {}
+    if not isinstance(ledger_seed, dict):
+        ledger_seed = {}
+    ledger_path = task_dir / "issue-scope-ledger.json"
+    ledger = read_json(ledger_path) if ledger_path.is_file() else ledger_seed
+    workspace_slug = required_text("workspace_slug")
+    return {
+        "_path": str(path),
+        "_identity_source": "legacy_task_start_context_projection",
+        "schema_version": "legacy-projection-1.0",
+        "source_issue": {
+            key: copy.deepcopy(source_issue[key])
+            for key in ("number", "url", "title", "created_by_workflow")
+            if key in source_issue
+        },
+        "source_repo": {
+            key: copy.deepcopy(source_repo[key])
+            for key in ("repo", "url")
+            if key in source_repo
+        },
+        "task_slug": required_text("task_slug"),
+        "task_title": str(payload.get("task_title") or payload.get("task_slug") or "").strip(),
+        "task_artifact_dir": task_artifact_dir,
+        "task_dir": task_artifact_dir,
+        "branch_name": required_text("branch_name"),
+        "base_branch": required_text("base_branch"),
+        "base_ref": str(payload.get("base_ref") or payload.get("base_branch") or "").strip(),
+        "base_head_sha": base_head_sha,
+        "workspace_slug": workspace_slug,
+        "task_workspace_id": str(payload.get("task_workspace_id") or workspace_slug).strip(),
+        "issue_scope_ledger_seed": copy.deepcopy(ledger_seed),
+        "issue_scope_ledger": copy.deepcopy(ledger),
+    }
+
+
+def load_task_runtime_identity(task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
+    legacy = load_legacy_task_start_context(task_dir, config)
+    if legacy is not None:
+        return legacy
+
+    task_path = task_dir / "task.json"
+    if not task_path.is_file() or task_path.is_symlink():
+        return {}
+    root = repo_root(task_dir)
+    task = read_json(task_path)
+    task_slug = str(task.get("id") or task.get("name") or "").strip()
+    task_relative = repo_relative(root, task_dir)
+    branch_name = str(task.get("branch") or "").strip()
+    base_branch = str(task.get("base_branch") or "").strip()
+    if not all((task_slug, task_relative, branch_name, base_branch)):
+        raise WorkflowError(
+            "Task runtime identity requires task.json id, branch and base_branch.",
+            exit_code=2,
+        )
+
+    task_mapping_path = runtime_task_path(root, config, task_slug)
+    task_mapping, task_mapping_error = read_optional_json(task_mapping_path)
+    if task_mapping is None and task_mapping_error == "missing":
+        rebuild_runtime_mappings(
+            root,
+            config,
+            {
+                "workspace_slug": root.name,
+                "task_slug": task_slug,
+                "task_artifact_dir": task_relative,
+                "branch_name": branch_name,
+                "base_branch": base_branch,
+            },
+        )
+        task_mapping, task_mapping_error = read_optional_json(task_mapping_path)
+    if task_mapping is None:
+        raise WorkflowError(
+            "Task runtime identity could not derive or rebuild the ignored task mapping.",
+            exit_code=2,
+            payload={"path": str(task_mapping_path), "error": task_mapping_error},
+        )
+    workspace_slug = str(task_mapping.get("workspace_slug") or "").strip()
+    expected_task_mapping = {
+        "schema_version": "1.0",
+        "task_slug": task_slug,
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(root.resolve()),
+        "task_artifact_dir": task_relative,
+    }
+    if not workspace_slug or any(
+        task_mapping.get(key) != value for key, value in expected_task_mapping.items()
+    ):
+        raise WorkflowError(
+            "Ignored task runtime mapping does not match task.json and the current checkout.",
+            exit_code=2,
+            payload={"path": str(task_mapping_path)},
+        )
+
+    workspace_mapping_path = runtime_workspace_path(root, config, workspace_slug)
+    workspace_mapping, workspace_mapping_error = read_optional_json(workspace_mapping_path)
+    if workspace_mapping is None:
+        raise WorkflowError(
+            "Task runtime identity requires the ignored workspace mapping.",
+            exit_code=2,
+            payload={"path": str(workspace_mapping_path), "error": workspace_mapping_error},
+        )
+    expected_workspace_mapping = {
+        "schema_version": "1.0",
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(root.resolve()),
+        "branch_name": branch_name,
+    }
+    if any(
+        workspace_mapping.get(key) != value
+        for key, value in expected_workspace_mapping.items()
+    ):
+        raise WorkflowError(
+            "Ignored workspace runtime mapping does not match task.json and the current checkout.",
+            exit_code=2,
+            payload={"path": str(workspace_mapping_path)},
+        )
+
+    current_records = [
+        record
+        for record in worktree_records(root)
+        if Path(record.get("worktree") or "").resolve() == root.resolve()
+    ]
+    if (
+        len(current_records) != 1
+        or current_records[0].get("branch") != f"refs/heads/{branch_name}"
+    ):
+        raise WorkflowError(
+            "Current Git worktree identity does not match task.json branch.",
+            exit_code=2,
+        )
+
+    base_ref = diff_base_ref(root, base_branch)
+    merge_base = run(
+        ["git", "merge-base", base_ref, "HEAD"], cwd=root, check=False
+    )
+    base_head_sha = merge_base.stdout.strip() if merge_base.returncode == 0 else ""
+    if not re.fullmatch(r"[0-9a-f]{40}", base_head_sha):
+        raise WorkflowError(
+            "Could not derive the current task base from live Git facts.",
+            exit_code=2,
+        )
+
+    ledger_path = issue_scope_ledger_path(task_dir)
+    ledger = read_json(ledger_path) if ledger_path.is_file() else {}
+    primary = ledger.get("primary_issue") if isinstance(ledger.get("primary_issue"), dict) else {}
+    source_repo = str(config.get("github_repo") or "").strip() or infer_github_repo(root)
+    return {
+        "_path": str(task_mapping_path),
+        "_identity_source": "task_json_runtime_mapping",
+        "schema_version": "runtime-1.0",
+        "source_issue": copy.deepcopy(primary),
+        "source_repo": {"repo": source_repo},
+        "task_slug": task_slug,
+        "task_title": str(task.get("title") or task.get("name") or task_slug),
+        "task_artifact_dir": task_relative,
+        "task_dir": task_relative,
+        "branch_name": branch_name,
+        "base_branch": base_branch,
+        "base_ref": base_ref,
+        "base_head_sha": base_head_sha,
+        "remote_head_sha": "",
+        "workspace_slug": workspace_slug,
+        "task_workspace_id": workspace_slug,
+        "assignee": str(task.get("assignee") or ""),
+        "actor": {"login": str(task.get("creator") or task.get("assignee") or "")},
+        "issue_scope_ledger_seed": {},
+        "issue_scope_ledger": ledger,
+        "intake_summary": {},
+    }
 
 
 def tasks_root(root: Path) -> Path:
@@ -5006,7 +5003,7 @@ def workspace_boundary_errors(
     blockers = blocking_suspicious_source_artifacts(snapshot)
 
     if workspace_mode == "worktree" and not task_context_present:
-        errors.append("workspace boundary 缺少 task-start-context.json，无法确认 task-local portable context。")
+        errors.append("workspace boundary 缺少可验证的 task/runtime/worktree identity。")
     elif workspace_mode == "worktree" and isinstance(expected_workspace, Path) and actual_root.resolve() != expected_workspace.resolve():
             allow_source = (
                 allow_source_clean
@@ -5112,7 +5109,7 @@ def default_issue_scope_ledger(task_context: dict[str, Any]) -> dict[str, Any]:
             "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
             "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
             "followup_issues 表示新范围或后续任务，不能自动关闭。",
-            "新增 issue 进入 close_issues 前必须更新 prd/design/implement 并取得用户明确确认。",
+            "新增 issue 进入 close_issues 前，AI 必须根据当前 authority 重新判断 scope，并更新 prd/design/implement 与验收证据。",
         ],
     }
 
@@ -5238,7 +5235,7 @@ def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: 
 
 def validate_ledger_for_publish(
     ledger: dict[str, Any],
-    gate: dict[str, Any],
+    gate: dict[str, Any] | None,
     *,
     allow_pending_remote_marketplace: bool = False,
     marketplace_required: bool | None = None,
@@ -5250,13 +5247,13 @@ def validate_ledger_for_publish(
         close_issues = []
     related_numbers = set(issue_numbers(ledger.get("related_issues")))
     followup_numbers = set(issue_numbers(ledger.get("followup_issues")))
-    compact_review_gate = gate.get("schema_version") == "2.1"
+    compact_review_gate = gate is None or gate.get("schema_version") in {"2.1", "2.2"}
     gate_reviewed = set(
-        issue_numbers(gate.get("issue_scope", {}).get("close_issues_reviewed"))
+        issue_numbers((gate or {}).get("issue_scope", {}).get("close_issues_reviewed"))
     )
     if marketplace_required is None:
         marketplace_required = bool(
-            marketplace_verification_required(gate)["candidate_surfaces"]
+            marketplace_verification_required(gate or {})["candidate_surfaces"]
         )
     for issue in close_issues:
         if not isinstance(issue, dict):
@@ -5333,43 +5330,20 @@ def validate_finish_work_invocation(args: argparse.Namespace) -> None:
     )
 
 
-def configured_review_gate_path(task_dir: Path, config: dict[str, Any]) -> Path:
+def configured_review_gate_path(
+    root: Path,
+    task_dir: Path,
+    config: dict[str, Any],
+    *,
+    for_write: bool = False,
+) -> Path:
     gate_config = review_gate_config(config)
     configured = Path(str(gate_config.get("artifact_path") or "review-gate.json"))
-    return configured if configured.is_absolute() else task_dir / configured
-
-
-
-def raw_review_report_path_errors(root: Path, task_dir: Path, path: Path, label: str) -> list[str]:
-    errors: list[str] = []
-    resolved = path.resolve()
-    reviews_dir = (task_dir / REVIEW_ROUND_REPORT_DIR).resolve()
-    if reviews_dir not in [resolved, *resolved.parents] or resolved.parent != reviews_dir:
-        errors.append(f"{label} must point to a task-local {REVIEW_ROUND_REPORT_DIR}/*.md file.")
-    if resolved.suffix != ".md":
-        errors.append(f"{label} must point to a Markdown .md file.")
-    try:
-        resolved.relative_to(task_dir.resolve())
-    except ValueError:
-        errors.append(f"{label} must stay inside the current task directory.")
-    return errors
-
-
-
-def review_round_report_digest_entry(item: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "path": item.get("review_report_path"),
-        "sha256": item.get("review_report_sha256"),
-        "size_bytes": item.get("review_report_size_bytes"),
-        "modified_at": item.get("review_report_modified_at"),
-    }
-
-
-def add_review_round_report_digest_fields(event: dict[str, Any], digest: dict[str, Any]) -> None:
-    event["review_report_path"] = digest.get("path")
-    event["review_report_sha256"] = digest.get("sha256")
-    event["review_report_size_bytes"] = digest.get("size_bytes")
-    event["review_report_modified_at"] = digest.get("modified_at")
+    legacy = configured if configured.is_absolute() else task_dir / configured
+    checkpoint = ai_first_owner_checkpoint_path(root, task_dir, "review-gate.json")
+    if for_write or checkpoint.is_file():
+        return checkpoint
+    return legacy if legacy.is_file() else checkpoint
 
 
 def resolve_task_local_path(root: Path, task_dir: Path, value: str) -> Path:
@@ -5391,36 +5365,6 @@ def resolve_repo_path(root: Path, value: str) -> Path:
     return raw_path if raw_path.is_absolute() else root / raw_path
 
 
-def resolve_checked_spec_path(root: Path, value: str) -> Path:
-    path = resolve_repo_path(root, value).resolve()
-    spec_root = (root / ".trellis/spec").resolve()
-    if spec_root not in [path, *path.parents]:
-        raise WorkflowError(f"Checked spec must stay inside .trellis/spec: {value}", exit_code=2)
-    return path
-
-
-def file_digest(root: Path, path: Path) -> dict[str, Any]:
-    if not path.exists():
-        raise WorkflowError(f"Required artifact not found: {path}")
-    if not path.is_file():
-        raise WorkflowError(f"Artifact must point to a file: {path}")
-    content = path.read_bytes()
-    if not content.strip():
-        raise WorkflowError(f"Artifact must not be empty: {path}")
-    stat = path.stat()
-    return {
-        "path": repo_relative(root, path),
-        "sha256": hashlib.sha256(content).hexdigest(),
-        "size_bytes": stat.st_size,
-        "modified_at": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
-    }
-
-
-def agent_assignment_path(task_dir: Path) -> Path:
-    return task_dir / AGENT_ASSIGNMENT_ARTIFACT
-
-
-
 def parse_iso_datetime(value: Any, label: str = "timestamp") -> datetime:
     text = str(value or "").strip()
     if not text:
@@ -5435,1349 +5379,12 @@ def parse_iso_datetime(value: Any, label: str = "timestamp") -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
-def parse_utc_iso_datetime(value: Any, label: str = "timestamp") -> datetime:
-    text = str(value or "").strip()
-    if not text:
-        raise WorkflowError(f"{label} is required.", exit_code=2)
-    normalized = text.removesuffix("Z") + "+00:00" if text.endswith("Z") else text
-    try:
-        parsed = datetime.fromisoformat(normalized)
-    except ValueError as exc:
-        raise WorkflowError(f"{label} must be ISO-8601 UTC: {text}", exit_code=2) from exc
-    if parsed.tzinfo is None:
-        raise WorkflowError(f"{label} must include a UTC offset: {text}", exit_code=2)
-    if parsed.utcoffset() != timedelta(0):
-        raise WorkflowError(f"{label} must be UTC, not a non-zero offset: {text}", exit_code=2)
-    return parsed.astimezone(timezone.utc)
-
-
-def iso_from_datetime(value: datetime) -> str:
-    return value.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def normalize_utc_iso(value: Any, label: str = "timestamp") -> str:
-    return iso_from_datetime(parse_utc_iso_datetime(value, label))
-
-
-def max_iso(left: str, right: str) -> str:
-    if not left:
-        return right
-    if not right:
-        return left
-    return iso_from_datetime(max(parse_iso_datetime(left), parse_iso_datetime(right)))
-
-
-def evidence_is_placeholder(value: str) -> bool:
-    normalized = re.sub(r"\s+", " ", value.strip()).casefold()
-    return normalized in PLACEHOLDER_EVIDENCE_VALUES
-
-
-def validate_event_evidence(value: str) -> str:
-    evidence = value.strip()
-    if evidence_is_placeholder(evidence):
-        raise WorkflowError("liveness event requires non-placeholder --evidence.", exit_code=2)
-    return evidence
-
-
 def digest_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def agent_status_event_sha256(event: dict[str, Any]) -> str:
-    return digest_text(
-        json.dumps(
-            event,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
-    )
-
-
-def verified_invalidated_status_event_ids(payload: dict[str, Any]) -> set[str]:
-    events = payload.get("status_events")
-    corrections = payload.get("event_corrections")
-    if not isinstance(events, list) or not isinstance(corrections, list):
-        return set()
-    events_by_id = {
-        str(item.get("event_id") or "").strip(): item
-        for item in events
-        if isinstance(item, dict) and str(item.get("event_id") or "").strip()
-    }
-    invalidated: set[str] = set()
-    for item in corrections:
-        if not isinstance(item, dict) or item.get("kind") != AGENT_CORRECTION_KIND:
-            continue
-        target_id = str(item.get("target_event_id") or "").strip()
-        target = events_by_id.get(target_id)
-        if not isinstance(target, dict):
-            continue
-        if str(target.get("event") or "").strip() not in AGENT_CORRECTABLE_EVENTS:
-            continue
-        if str(item.get("agent_id") or "").strip() != str(target.get("agent_id") or "").strip():
-            continue
-        if str(item.get("target_event_sha256") or "").strip() != agent_status_event_sha256(target):
-            continue
-        invalidated.add(target_id)
-    return invalidated
-
-
-def effective_status_events(payload: dict[str, Any]) -> list[dict[str, Any]]:
-    events = payload.get("status_events")
-    if not isinstance(events, list):
-        return []
-    invalidated = verified_invalidated_status_event_ids(payload)
-    return [
-        item
-        for item in events
-        if isinstance(item, dict)
-        and str(item.get("event_id") or "").strip() not in invalidated
-    ]
-
-
-def rebuild_corrected_agent_liveness_projection(payload: dict[str, Any], agent_id: str) -> None:
-    assigned = agent_record(payload, agent_id)
-    anchor = str(assigned.get("assigned_at") or "") if isinstance(assigned, dict) else ""
-    pending: str | None = None
-    for item in effective_status_events(payload):
-        if str(item.get("agent_id") or "").strip() != agent_id:
-            continue
-        event = str(item.get("event") or "").strip()
-        observed = str(item.get("observed_at") or "").strip()
-        if event in AGENT_PROGRESS_EVENTS:
-            anchor = max_iso(anchor, observed)
-            pending = None
-        elif event == "status-requested":
-            pending = observed
-        elif event in AGENT_TERMINAL_EVENTS or event == "terminated-unfinished":
-            pending = None
-    entry = ensure_liveness_entry(payload, agent_id)
-    entry["progress_anchor_at"] = anchor
-    entry["pending_status_request_at"] = pending
-    entry["last_checked_at"] = ""
-    entry["last_decision"] = ""
-    snapshot = entry.get("last_scan_snapshot")
-    if isinstance(snapshot, dict):
-        snapshot.update(progress_events_digest(payload, agent_id))
-
-
-
-def progress_events_for_agent(payload: dict[str, Any], agent_id: str) -> list[dict[str, Any]]:
-    return [
-        item
-        for item in effective_status_events(payload)
-        if str(item.get("agent_id") or "").strip() == agent_id
-        and str(item.get("event") or "").strip() in AGENT_PROGRESS_EVENTS
-    ]
-
-
-def progress_events_digest(payload: dict[str, Any], agent_id: str) -> dict[str, Any]:
-    events = progress_events_for_agent(payload, agent_id)
-    normalized = [
-        {
-            "event_id": str(item.get("event_id") or ""),
-            "event": str(item.get("event") or ""),
-            "observed_at": str(item.get("observed_at") or ""),
-            "evidence": str(item.get("evidence") or ""),
-        }
-        for item in events
-    ]
-    newest = ""
-    if events:
-        newest_item = max(events, key=lambda item: parse_iso_datetime(item.get("observed_at"), "progress observed_at"))
-        newest = str(newest_item.get("event_id") or "")
-    return {
-        "progress_events_count": len(events),
-        "progress_events_digest": digest_text(json.dumps(normalized, ensure_ascii=False, sort_keys=True)),
-        "progress_events_newest_event_id": newest,
-    }
-
-
-
-def agent_record(payload: dict[str, Any], agent_id: str) -> dict[str, Any] | None:
-    agents = payload.get("agents")
-    if not isinstance(agents, list):
-        return None
-    for item in agents:
-        if isinstance(item, dict) and str(item.get("agent_id") or "").strip() == agent_id:
-            return item
-    return None
-
-
-
-def ensure_liveness_entry(payload: dict[str, Any], agent_id: str) -> dict[str, Any]:
-    liveness = payload.setdefault("liveness", {})
-    if not isinstance(liveness, dict):
-        raise WorkflowError("agent-assignment.json liveness must be an object.", exit_code=2)
-    entry = liveness.setdefault(agent_id, {})
-    if not isinstance(entry, dict):
-        raise WorkflowError(f"agent-assignment.json liveness[{agent_id}] must be an object.", exit_code=2)
-    return entry
-
-
-
-def event_by_id(payload: dict[str, Any], event_id: str) -> dict[str, Any] | None:
-    if not event_id:
-        return None
-    events = payload.get("status_events")
-    if not isinstance(events, list):
-        return None
-    for item in events:
-        if isinstance(item, dict) and str(item.get("event_id") or "").strip() == event_id:
-            return item
-    return None
-
-
-
-
-def validate_resume_reference(payload: dict[str, Any], agent_id: str, predecessor_event_id: str) -> None:
-    predecessor = event_by_id(payload, predecessor_event_id)
-    if not predecessor or str(predecessor.get("agent_id") or "") != agent_id:
-        raise WorkflowError("resume-same-agent requires --predecessor-event-id referencing the same agent.", exit_code=2)
-    predecessor_event = str(predecessor.get("event") or "")
-    predecessor_reason = str(predecessor.get("termination_reason") or "")
-    if predecessor_event == "failed":
-        return
-    if predecessor_event == "terminated-unfinished" and predecessor_reason == "manual_or_platform_terminated_unfinished":
-        return
-    raise WorkflowError("resume-same-agent may reference only failed or manual_or_platform_terminated_unfinished evidence, never stale evidence.", exit_code=2)
-
-
-def validate_replacement_reference(
-    payload: dict[str, Any],
-    agent_id: str,
-    predecessor_agent_id: str,
-    predecessor_event_id: str,
-    replacement_reason: str,
-) -> None:
-    if agent_id == predecessor_agent_id:
-        raise WorkflowError("replacement-started requires a different replacement agent; use resume-same-agent for same-agent recovery.", exit_code=2)
-    if not agent_record(payload, agent_id):
-        raise WorkflowError("replacement-started requires the replacement agent to be assigned first.", exit_code=2)
-    predecessor = event_by_id(payload, predecessor_event_id)
-    if not predecessor or str(predecessor.get("agent_id") or "") != predecessor_agent_id:
-        raise WorkflowError("replacement-started predecessor_event_id must reference predecessor_agent_id.", exit_code=2)
-    predecessor_event = str(predecessor.get("event") or "")
-    predecessor_termination_reason = str(predecessor.get("termination_reason") or "")
-    expected = ""
-    if predecessor_event == "stale-assessed":
-        expected = "max_progress_silence_exceeded"
-        has_cutover = any(
-            isinstance(item, dict)
-            and str(item.get("event") or "") == "terminated-unfinished"
-            and str(item.get("agent_id") or "") == predecessor_agent_id
-            and str(item.get("termination_reason") or "") == "stale_cutover"
-            and str(item.get("termination_source_event_id") or "") == predecessor_event_id
-            for item in payload.get("status_events", [])
-        )
-        if not has_cutover:
-            raise WorkflowError("stale replacement-started requires prior terminated-unfinished termination_reason=stale_cutover.", exit_code=2)
-    elif predecessor_event == "failed":
-        expected = "terminal_failed_incomplete"
-    elif predecessor_event == "terminated-unfinished" and predecessor_termination_reason == "manual_or_platform_terminated_unfinished":
-        expected = "manual_or_platform_terminated_unfinished"
-    elif predecessor_event == "terminated-unfinished" and predecessor_termination_reason == "stale_cutover":
-        raise WorkflowError("stale cutover replacement-started must reference stale-assessed, not terminated-unfinished.", exit_code=2)
-    else:
-        raise WorkflowError("replacement-started predecessor_event_id must reference failed, stale-assessed, or terminated-unfinished evidence.", exit_code=2)
-    if replacement_reason != expected:
-        raise WorkflowError(
-            f"replacement-started replacement_reason must be {expected} for predecessor event {predecessor_event}.",
-            exit_code=2,
-        )
-
-
-def validate_termination_reference(payload: dict[str, Any], agent_id: str, termination_reason: str, termination_source_event_id: str) -> None:
-    if termination_reason not in AGENT_TERMINATION_REASONS:
-        raise WorkflowError(f"Invalid termination_reason: {termination_reason or '(empty)'}", exit_code=2)
-    if termination_reason == "stale_cutover":
-        source_event = event_by_id(payload, termination_source_event_id)
-        if not source_event or str(source_event.get("agent_id") or "") != agent_id or str(source_event.get("event") or "") != "stale-assessed":
-            raise WorkflowError("stale_cutover requires termination_source_event_id referencing same-agent stale-assessed.", exit_code=2)
-    elif termination_source_event_id:
-        raise WorkflowError("manual_or_platform_terminated_unfinished must not set termination_source_event_id.", exit_code=2)
-
-
-
-def git_object_exists(root: Path, ref: str) -> bool:
-    if not ref:
-        return False
-    return run(["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"], cwd=root, check=False).returncode == 0
-
-
-def validate_head_field(root: Path, value: Any, label: str, errors: list[str], require_current: bool = False) -> None:
-    head = str(value or "").strip()
-    if not head:
-        errors.append(f"agent-assignment.json 缺少 {label}。")
-        return
-    if not git_object_exists(root, head):
-        errors.append(f"agent-assignment.json {label} 不是可解析的 Git commit: {head}。")
-        return
-    if require_current and head != current_head(root):
-        errors.append(f"agent-assignment.json {label} {head} 与当前 HEAD {current_head(root)} 不一致。")
-
-
-def validate_timestamp_field(value: Any, label: str, errors: list[str], required: bool = True) -> None:
-    text = str(value or "").strip()
-    if not text:
-        if required:
-            errors.append(f"agent-assignment.json 缺少 {label}。")
-        return
-    normalized = text.removesuffix("Z") + "+00:00" if text.endswith("Z") else text
-    try:
-        datetime.fromisoformat(normalized)
-    except ValueError:
-        errors.append(f"agent-assignment.json {label} 必须是 ISO-8601 时间: {text}。")
-
-
-def validate_review_round_report_digest(root: Path, task_dir: Path, item: dict[str, Any], label: str) -> list[str]:
-    entry = migrated_archive_digest_entry(root, task_dir, review_round_report_digest_entry(item)) or review_round_report_digest_entry(item)
-    errors: list[str] = []
-    path_value = str(entry.get("path") or "").strip()
-    if path_value:
-        path = resolve_repo_path(root, path_value)
-        errors.extend(raw_review_report_path_errors(root, task_dir, path, f"{label}.review_report_path"))
-    errors.extend(digest_errors(root, entry, f"{label} raw review report"))
-    return errors
-
-
-def validate_agent_assignment_repair_errors(root: Path, payload: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    events = payload.get("status_events")
-    if not isinstance(events, list):
-        return ["agent-assignment.json status_events 必须是数组。"]
-    events_by_id: dict[str, dict[str, Any]] = {}
-    event_indexes: dict[str, int] = {}
-    for index, item in enumerate(events):
-        if not isinstance(item, dict):
-            continue
-        event_id = str(item.get("event_id") or "").strip()
-        if event_id and event_id not in events_by_id:
-            events_by_id[event_id] = item
-            event_indexes[event_id] = index
-
-    corrections = payload.get("event_corrections")
-    if not isinstance(corrections, list):
-        errors.append("agent-assignment.json event_corrections 必须是数组。")
-        corrections = []
-    seen_correction_ids: set[str] = set()
-    seen_targets: set[str] = set()
-    for index, item in enumerate(corrections):
-        label = f"agent-assignment.json event_corrections[{index}]"
-        if not isinstance(item, dict):
-            errors.append(f"{label} 必须是对象。")
-            continue
-        correction_id = str(item.get("correction_id") or "").strip()
-        target_id = str(item.get("target_event_id") or "").strip()
-        if not re.fullmatch(r"cor-[0-9]{4}-[0-9a-f]{10}", correction_id):
-            errors.append(f"{label}.correction_id 非法。")
-        elif correction_id in seen_correction_ids:
-            errors.append(f"{label}.correction_id 重复: {correction_id}。")
-        seen_correction_ids.add(correction_id)
-        if target_id in seen_targets:
-            errors.append(f"{label}.target_event_id 重复失效: {target_id}。")
-        seen_targets.add(target_id)
-        if item.get("kind") != AGENT_CORRECTION_KIND:
-            errors.append(f"{label}.kind 必须是 {AGENT_CORRECTION_KIND}。")
-        target = events_by_id.get(target_id)
-        if not isinstance(target, dict):
-            errors.append(f"{label}.target_event_id 未引用已有 event: {target_id or '(missing)'}。")
-        else:
-            if str(target.get("event") or "").strip() not in AGENT_CORRECTABLE_EVENTS:
-                errors.append(f"{label} 只能失效 progress/status-request event。")
-            if str(item.get("agent_id") or "").strip() != str(target.get("agent_id") or "").strip():
-                errors.append(f"{label}.agent_id 与 target event 不一致。")
-            if str(item.get("target_event_sha256") or "").strip() != agent_status_event_sha256(target):
-                errors.append(f"{label}.target_event_sha256 与 immutable target event 不一致。")
-        validate_head_field(root, item.get("head"), f"event_corrections[{index}].head", errors)
-        validate_timestamp_field(item.get("recorded_at"), f"event_corrections[{index}].recorded_at", errors)
-        if str(item.get("source") or "").strip() != "main-session":
-            errors.append(f"{label}.source 必须是 main-session。")
-        for field in ("reason", "evidence"):
-            if evidence_is_placeholder(str(item.get(field) or "")):
-                errors.append(f"{label}.{field} 必须是非占位证据。")
-
-    links = payload.get("recovery_links")
-    if not isinstance(links, list):
-        errors.append("agent-assignment.json recovery_links 必须是数组。")
-        links = []
-    invalidated = verified_invalidated_status_event_ids(payload)
-    seen_recovery_ids: set[str] = set()
-    seen_failed_ids: set[str] = set()
-    graph: dict[str, str] = {}
-    for index, item in enumerate(links):
-        label = f"agent-assignment.json recovery_links[{index}]"
-        if not isinstance(item, dict):
-            errors.append(f"{label} 必须是对象。")
-            continue
-        recovery_id = str(item.get("recovery_id") or "").strip()
-        failed_id = str(item.get("failed_event_id") or "").strip()
-        termination_id = str(item.get("termination_event_id") or "").strip()
-        if not re.fullmatch(r"rec-[0-9]{4}-[0-9a-f]{10}", recovery_id):
-            errors.append(f"{label}.recovery_id 非法。")
-        elif recovery_id in seen_recovery_ids:
-            errors.append(f"{label}.recovery_id 重复: {recovery_id}。")
-        seen_recovery_ids.add(recovery_id)
-        if failed_id in seen_failed_ids:
-            errors.append(f"{label}.failed_event_id 重复链接: {failed_id}。")
-        seen_failed_ids.add(failed_id)
-        if item.get("kind") != AGENT_RECOVERY_LINK_KIND:
-            errors.append(f"{label}.kind 必须是 {AGENT_RECOVERY_LINK_KIND}。")
-        failed = events_by_id.get(failed_id)
-        termination = events_by_id.get(termination_id)
-        if not isinstance(failed, dict) or not isinstance(termination, dict):
-            errors.append(f"{label} 必须引用已有 failed/termination events。")
-        else:
-            failed_agent = str(failed.get("agent_id") or "").strip()
-            termination_agent = str(termination.get("agent_id") or "").strip()
-            if str(failed.get("event") or "").strip() != "failed":
-                errors.append(f"{label}.failed_event_id 必须引用 failed。")
-            if (
-                str(termination.get("event") or "").strip() != "terminated-unfinished"
-                or str(termination.get("termination_reason") or "").strip()
-                != "manual_or_platform_terminated_unfinished"
-            ):
-                errors.append(f"{label}.termination_event_id 必须引用 manual/platform termination。")
-            if not failed_agent or failed_agent != termination_agent:
-                errors.append(f"{label} 必须是 same-agent recovery link。")
-            if str(item.get("agent_id") or "").strip() != failed_agent:
-                errors.append(f"{label}.agent_id 与 referenced events 不一致。")
-            if event_indexes.get(failed_id, len(events)) >= event_indexes.get(termination_id, -1):
-                errors.append(f"{label} 必须从 earlier failed 指向 later termination。")
-            if failed_id in invalidated or termination_id in invalidated:
-                errors.append(f"{label} 不得引用 invalidated event。")
-            if str(item.get("failed_event_sha256") or "").strip() != agent_status_event_sha256(failed):
-                errors.append(f"{label}.failed_event_sha256 与 immutable event 不一致。")
-            if str(item.get("termination_event_sha256") or "").strip() != agent_status_event_sha256(termination):
-                errors.append(f"{label}.termination_event_sha256 与 immutable event 不一致。")
-        validate_head_field(root, item.get("head"), f"recovery_links[{index}].head", errors)
-        validate_timestamp_field(item.get("recorded_at"), f"recovery_links[{index}].recorded_at", errors)
-        if str(item.get("source") or "").strip() != "main-session":
-            errors.append(f"{label}.source 必须是 main-session。")
-        for field in ("reason", "evidence"):
-            if evidence_is_placeholder(str(item.get(field) or "")):
-                errors.append(f"{label}.{field} 必须是非占位证据。")
-        if failed_id and termination_id:
-            graph[failed_id] = termination_id
-
-    for start in graph:
-        visited: set[str] = set()
-        cursor = start
-        while cursor in graph:
-            if cursor in visited:
-                errors.append(f"agent-assignment.json recovery_links 存在 cycle: {start}。")
-                break
-            visited.add(cursor)
-            cursor = graph[cursor]
-    return errors
-
-
-def validate_liveness_payload_errors(root: Path, payload: dict[str, Any], enforce_recovery_chains: bool = True) -> list[str]:
-    errors: list[str] = []
-    liveness = payload.get("liveness")
-    if not isinstance(liveness, dict):
-        errors.append("agent-assignment.json liveness 必须是对象。")
-    agents_by_id = {
-        str(item.get("agent_id") or "").strip(): item
-        for item in payload.get("agents", [])
-        if isinstance(item, dict) and str(item.get("agent_id") or "").strip()
-    }
-    status_events = payload.get("status_events")
-    if not isinstance(status_events, list):
-        return ["agent-assignment.json status_events 必须是数组。"]
-    seen_event_ids: set[str] = set()
-    for index, item in enumerate(status_events):
-        if not isinstance(item, dict):
-            errors.append(f"agent-assignment.json status_events[{index}] 必须是对象。")
-            continue
-        event_name = str(item.get("event") or "").strip()
-        event_id = str(item.get("event_id") or "").strip()
-        agent_id = str(item.get("agent_id") or "").strip()
-        if not event_id:
-            errors.append(f"agent-assignment.json status_events[{index}] 缺少 event_id。")
-        elif event_id in seen_event_ids:
-            errors.append(f"agent-assignment.json status_events[{index}].event_id 重复: {event_id}。")
-        seen_event_ids.add(event_id)
-        if event_name not in ALLOWED_AGENT_STATUS_EVENTS:
-            errors.append(f"agent-assignment.json status_events[{index}].event 非法: {event_name or '(missing)'}。")
-        role = str(item.get("logical_role") or "").strip()
-        if role not in ALLOWED_LOGICAL_ROLES:
-            errors.append(f"agent-assignment.json status_events[{index}].logical_role 非法: {role or '(missing)'}。")
-        if not agent_id:
-            errors.append(f"agent-assignment.json status_events[{index}] 缺少 agent_id 字段。")
-        elif event_name != "assigned" and agent_id not in agents_by_id:
-            errors.append(f"agent-assignment.json status_events[{index}].agent_id 未在 agents[] 中登记: {agent_id}。")
-        if "platform_nickname" not in item:
-            errors.append(f"agent-assignment.json status_events[{index}] 缺少 platform_nickname 字段。")
-        validate_head_field(root, item.get("head"), f"status_events[{index}].head", errors)
-        validate_timestamp_field(item.get("observed_at"), f"status_events[{index}].observed_at", errors)
-        validate_timestamp_field(item.get("recorded_at"), f"status_events[{index}].recorded_at", errors)
-        source = str(item.get("source") or "").strip()
-        if source not in AGENT_STATUS_EVENT_SOURCES:
-            errors.append(f"agent-assignment.json status_events[{index}].source 非法。")
-        if evidence_is_placeholder(str(item.get("evidence") or "")):
-            errors.append(f"agent-assignment.json status_events[{index}] 缺少非占位 evidence。")
-        predecessor_agent_id = str(item.get("predecessor_agent_id") or "").strip()
-        predecessor_event_id = str(item.get("predecessor_event_id") or "").strip()
-        termination_reason = str(item.get("termination_reason") or "").strip()
-        termination_source_event_id = str(item.get("termination_source_event_id") or "").strip()
-        replacement_reason = str(item.get("replacement_reason") or "").strip()
-        handoff_summary = str(item.get("handoff_summary") or "").strip()
-        try:
-            if event_name == "resume-same-agent":
-                if not predecessor_event_id or not handoff_summary:
-                    errors.append(f"agent-assignment.json status_events[{index}] resume-same-agent 缺少 predecessor_event_id 或 handoff_summary。")
-                else:
-                    validate_resume_reference(payload, agent_id, predecessor_event_id)
-                if predecessor_agent_id or termination_reason or termination_source_event_id or replacement_reason:
-                    errors.append(f"agent-assignment.json status_events[{index}] resume-same-agent 包含不应出现的结构化字段。")
-            elif event_name == "replacement-started":
-                if not predecessor_agent_id or not predecessor_event_id or not replacement_reason or not handoff_summary:
-                    errors.append(f"agent-assignment.json status_events[{index}] replacement-started 缺少 predecessor/reason/handoff 字段。")
-                else:
-                    validate_replacement_reference(payload, agent_id, predecessor_agent_id, predecessor_event_id, replacement_reason)
-                if termination_reason or termination_source_event_id:
-                    errors.append(f"agent-assignment.json status_events[{index}] replacement-started 不得包含 termination 字段。")
-            elif event_name == "terminated-unfinished":
-                if not termination_reason or not handoff_summary:
-                    errors.append(f"agent-assignment.json status_events[{index}] terminated-unfinished 缺少 termination_reason 或 handoff_summary。")
-                else:
-                    validate_termination_reference(payload, agent_id, termination_reason, termination_source_event_id)
-                if predecessor_agent_id or predecessor_event_id or replacement_reason:
-                    errors.append(f"agent-assignment.json status_events[{index}] terminated-unfinished 包含不应出现的 predecessor/replacement 字段。")
-            elif event_name and event_name not in {"replacement-started", "resume-same-agent", "terminated-unfinished"}:
-                unexpected = [
-                    predecessor_agent_id,
-                    predecessor_event_id,
-                    termination_reason,
-                    termination_source_event_id,
-                    replacement_reason,
-                    handoff_summary,
-                ]
-                if any(unexpected):
-                    errors.append(f"agent-assignment.json status_events[{index}] {event_name} 包含不应出现的结构化字段。")
-        except WorkflowError as exc:
-            errors.append(f"agent-assignment.json status_events[{index}] {exc}")
-
-    if enforce_recovery_chains:
-        errors.extend(status_event_completion_errors(payload))
-    if isinstance(liveness, dict):
-        for agent_id, entry in liveness.items():
-            if not isinstance(entry, dict):
-                errors.append(f"agent-assignment.json liveness[{agent_id}] 必须是对象。")
-                continue
-            snapshot = entry.get("last_scan_snapshot")
-            if snapshot is not None and not isinstance(snapshot, dict):
-                errors.append(f"agent-assignment.json liveness[{agent_id}].last_scan_snapshot 必须是对象。")
-                continue
-            if isinstance(snapshot, dict):
-                missing = [field for field in AGENT_LIVENESS_SNAPSHOT_FIELDS if field not in snapshot]
-                if missing:
-                    errors.append(f"agent-assignment.json liveness[{agent_id}].last_scan_snapshot 缺少字段: {', '.join(missing)}。")
-            decision = str(entry.get("last_decision") or "")
-            if decision and decision not in AGENT_LIVENESS_DECISIONS:
-                errors.append(f"agent-assignment.json liveness[{agent_id}].last_decision 非法: {decision}。")
-            if entry.get("progress_anchor_at"):
-                validate_timestamp_field(entry.get("progress_anchor_at"), f"liveness[{agent_id}].progress_anchor_at", errors)
-            if entry.get("last_checked_at"):
-                validate_timestamp_field(entry.get("last_checked_at"), f"liveness[{agent_id}].last_checked_at", errors)
-            if entry.get("pending_status_request_at"):
-                validate_timestamp_field(entry.get("pending_status_request_at"), f"liveness[{agent_id}].pending_status_request_at", errors)
-    return errors
-
-
-def validate_agent_assignment_payload(
-    root: Path,
-    task_dir: Path,
-    payload: dict[str, Any],
-    require_current_head: bool = False,
-    enforce_recovery_chains: bool = True,
-) -> list[str]:
-    errors: list[str] = []
-    if payload.get("schema_version") != AGENT_ASSIGNMENT_SCHEMA_VERSION:
-        errors.append(f"agent-assignment.json schema_version 必须是 {AGENT_ASSIGNMENT_SCHEMA_VERSION}。")
-    if payload.get("task") != repo_relative(root, task_dir):
-        errors.append(f"agent-assignment.json task 必须是 {repo_relative(root, task_dir)}。")
-    validate_head_field(root, payload.get("head"), "head", errors, require_current=require_current_head)
-
-    agents = payload.get("agents")
-    if not isinstance(agents, list):
-        errors.append("agent-assignment.json agents 必须是数组。")
-    else:
-        for index, item in enumerate(agents):
-            if not isinstance(item, dict):
-                errors.append(f"agent-assignment.json agents[{index}] 必须是对象。")
-                continue
-            role = str(item.get("logical_role") or "").strip()
-            if role not in ALLOWED_LOGICAL_ROLES:
-                errors.append(f"agent-assignment.json agents[{index}].logical_role 非法: {role or '(missing)'}。")
-            if "agent_id" not in item:
-                errors.append(f"agent-assignment.json agents[{index}] 缺少 agent_id 字段。")
-            if "platform_nickname" not in item:
-                errors.append(f"agent-assignment.json agents[{index}] 缺少 platform_nickname 字段。")
-            if not str(item.get("reason") or "").strip():
-                errors.append(f"agent-assignment.json agents[{index}] 缺少 reason。")
-            validate_head_field(root, item.get("assigned_head"), f"agents[{index}].assigned_head", errors)
-
-    rounds = payload.get("review_rounds")
-    if not isinstance(rounds, list):
-        errors.append("agent-assignment.json review_rounds 必须是数组。")
-    else:
-        seen_round_numbers: set[int] = set()
-        previous_round_number = 0
-        for index, item in enumerate(rounds):
-            if not isinstance(item, dict):
-                errors.append(f"agent-assignment.json review_rounds[{index}] 必须是对象。")
-                continue
-            role = str(item.get("logical_role") or "").strip()
-            if role not in ALLOWED_LOGICAL_ROLES:
-                errors.append(f"agent-assignment.json review_rounds[{index}].logical_role 非法: {role or '(missing)'}。")
-            round_value = item.get("round")
-            if not isinstance(round_value, int) or isinstance(round_value, bool) or round_value <= 0:
-                errors.append(f"agent-assignment.json review_rounds[{index}].round 必须是正整数。")
-            else:
-                if round_value in seen_round_numbers:
-                    errors.append(f"agent-assignment.json review_rounds[{index}].round {round_value} 重复；review_rounds[].round 必须唯一。")
-                if round_value <= previous_round_number:
-                    errors.append(
-                        f"agent-assignment.json review_rounds[{index}].round {round_value} 必须按记录顺序严格递增，"
-                        f"上一轮是 {previous_round_number}。"
-                    )
-                seen_round_numbers.add(round_value)
-                previous_round_number = round_value
-            findings_count = item.get("findings_count")
-            if not is_strict_int(findings_count) or findings_count < 0:
-                errors.append(f"agent-assignment.json review_rounds[{index}].findings_count 必须是非负整数。")
-            if str(item.get("reuse_decision") or "").strip() not in ALLOWED_REUSE_DECISIONS:
-                errors.append(f"agent-assignment.json review_rounds[{index}].reuse_decision 非法。")
-            if not str(item.get("reuse_policy") or "").strip():
-                errors.append(f"agent-assignment.json review_rounds[{index}] 缺少 reuse_policy。")
-            if "agent_id" not in item:
-                errors.append(f"agent-assignment.json review_rounds[{index}] 缺少 agent_id 字段。")
-            if "platform_nickname" not in item:
-                errors.append(f"agent-assignment.json review_rounds[{index}] 缺少 platform_nickname 字段。")
-            validate_head_field(root, item.get("reviewed_head"), f"review_rounds[{index}].reviewed_head", errors)
-            errors.extend(
-                validate_review_round_report_digest(
-                    root,
-                    task_dir,
-                    item,
-                    f"agent-assignment.json review_rounds[{index}]",
-                )
-            )
-
-    decisions = payload.get("reuse_decisions")
-    if not isinstance(decisions, list):
-        errors.append("agent-assignment.json reuse_decisions 必须是数组。")
-    else:
-        for index, item in enumerate(decisions):
-            if not isinstance(item, dict):
-                errors.append(f"agent-assignment.json reuse_decisions[{index}] 必须是对象。")
-                continue
-            role = str(item.get("logical_role") or "").strip()
-            if role not in ALLOWED_LOGICAL_ROLES:
-                errors.append(f"agent-assignment.json reuse_decisions[{index}].logical_role 非法: {role or '(missing)'}。")
-            if str(item.get("decision") or "").strip() not in ALLOWED_REUSE_DECISIONS:
-                errors.append(f"agent-assignment.json reuse_decisions[{index}].decision 非法。")
-            if not str(item.get("reason") or "").strip():
-                errors.append(f"agent-assignment.json reuse_decisions[{index}] 缺少 reason。")
-            for round_field in ["from_round", "to_round"]:
-                if round_field in item and (not is_strict_int(item.get(round_field)) or item[round_field] <= 0):
-                    errors.append(
-                        f"agent-assignment.json reuse_decisions[{index}].{round_field} 必须是正 strict int。"
-                    )
-            validate_head_field(root, item.get("head"), f"reuse_decisions[{index}].head", errors)
-    errors.extend(validate_agent_assignment_repair_errors(root, payload))
-    errors.extend(validate_liveness_payload_errors(root, payload, enforce_recovery_chains=enforce_recovery_chains))
-    return errors
-
-
-def normalize_agent_assignment_for_task(root: Path, task_dir: Path, payload: dict[str, Any]) -> dict[str, Any]:
-    normalized = dict(payload)
-    normalized["schema_version"] = AGENT_ASSIGNMENT_SCHEMA_VERSION
-    normalized["task"] = normalized_archive_task_value(root, task_dir, normalized.get("task"))
-    if not isinstance(normalized.get("agents"), list):
-        normalized["agents"] = []
-    if not isinstance(normalized.get("liveness"), dict):
-        normalized["liveness"] = {}
-    if not isinstance(normalized.get("review_rounds"), list):
-        normalized["review_rounds"] = []
-    if not isinstance(normalized.get("reuse_decisions"), list):
-        normalized["reuse_decisions"] = []
-    if not isinstance(normalized.get("status_events"), list):
-        normalized["status_events"] = []
-    if not isinstance(normalized.get("event_corrections"), list):
-        normalized["event_corrections"] = []
-    if not isinstance(normalized.get("recovery_links"), list):
-        normalized["recovery_links"] = []
-    return normalized
-
-
-def summarize_agent_assignment(root: Path, task_dir: Path, path: Path, payload: dict[str, Any]) -> dict[str, Any]:
-    digest = file_digest(root, path)
-    roles = sorted(
-        {
-            str(item.get("logical_role") or "").strip()
-            for item in payload.get("agents", [])
-            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
-        }
-        | {
-            str(item.get("logical_role") or "").strip()
-            for item in payload.get("review_rounds", [])
-            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
-        }
-        | {
-            str(item.get("logical_role") or "").strip()
-            for item in payload.get("reuse_decisions", [])
-            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
-        }
-        | {
-            str(item.get("logical_role") or "").strip()
-            for item in payload.get("status_events", [])
-            if isinstance(item, dict) and str(item.get("logical_role") or "").strip()
-        }
-    )
-    return {
-        **digest,
-        "schema_version": payload.get("schema_version"),
-        "artifact_head": payload.get("head"),
-        "roles": roles,
-        "agents_count": len(payload.get("agents", [])) if isinstance(payload.get("agents"), list) else 0,
-        "review_rounds_count": len(payload.get("review_rounds", [])) if isinstance(payload.get("review_rounds"), list) else 0,
-        "reuse_decisions_count": len(payload.get("reuse_decisions", [])) if isinstance(payload.get("reuse_decisions"), list) else 0,
-        "status_events_count": len(payload.get("status_events", [])) if isinstance(payload.get("status_events"), list) else 0,
-        "effective_status_events_count": len(effective_status_events(payload)),
-        "event_corrections_count": len(payload.get("event_corrections", [])) if isinstance(payload.get("event_corrections"), list) else 0,
-        "recovery_links_count": len(payload.get("recovery_links", [])) if isinstance(payload.get("recovery_links"), list) else 0,
-        "task": repo_relative(root, task_dir),
-        "notes": "platform_nickname 仅作展示；gate 判断使用 logical_role、agent_id、HEAD、digest 与 AI/human 记录的复用决策。",
-    }
-
-
-def review_reports_from_assignment(root: Path, task_dir: Path, payload: dict[str, Any]) -> list[dict[str, Any]]:
-    reports: list[dict[str, Any]] = []
-    rounds = payload.get("review_rounds")
-    if not isinstance(rounds, list):
-        return reports
-    for item in rounds:
-        if not isinstance(item, dict):
-            continue
-        digest = migrated_archive_digest_entry(root, task_dir, review_round_report_digest_entry(item)) or review_round_report_digest_entry(item)
-        reports.append(
-            {
-                "round": item.get("round"),
-                "logical_role": item.get("logical_role"),
-                "agent_id": item.get("agent_id"),
-                "reviewed_head": item.get("reviewed_head"),
-                "findings_count": item.get("findings_count"),
-                "path": digest.get("path"),
-                "sha256": digest.get("sha256"),
-                "size_bytes": digest.get("size_bytes"),
-                "modified_at": digest.get("modified_at"),
-            }
-        )
-    return reports
-
-
-
-def normalized_review_report_template_line(line: str) -> str:
-    value = line.strip()
-    value = re.sub(r"^>+\s*", "", value)
-    value = re.sub(r"^#{1,6}\s*", "", value)
-    value = re.sub(r"^(?:[-*+]\s+|\d+[.)]\s+)", "", value)
-    value = value.strip().strip("#").strip()
-    value = value.strip("`*_ ")
-    return re.sub(r"\s+", " ", value).strip()
-
-
-def forbidden_review_report_heading_match(line: str) -> str | None:
-    normalized = normalized_review_report_template_line(line)
-    if not normalized:
-        return None
-    folded = normalized.casefold()
-    for heading in FORBIDDEN_REVIEW_REPORT_ENGLISH_TEMPLATE_HEADINGS:
-        needle = heading.casefold()
-        if folded == needle:
-            return heading
-        if folded.startswith((f"{needle}:", f"{needle} -", f"{needle} --", f"{needle} —", f"{needle} –")):
-            return heading
-    return None
-
-
-def review_report_template_heading_errors_for_path(root: Path, path: Path, label: str) -> list[str]:
-    try:
-        content = path.read_text(encoding="utf-8")
-    except OSError as exc:
-        return [f"{label} 无法读取以校验中文模板标题: {exc}。"]
-    errors: list[str] = []
-    in_fence = False
-    for line_number, line in enumerate(content.splitlines(), start=1):
-        stripped = line.strip()
-        if stripped.startswith("```") or stripped.startswith("~~~"):
-            in_fence = not in_fence
-            continue
-        if in_fence:
-            continue
-        heading = forbidden_review_report_heading_match(line)
-        if heading:
-            errors.append(
-                f"{label} {repo_relative(root, path)} 第 {line_number} 行包含英文模板标题 `{heading}`；"
-                "`review.md` / `reviews/*.md` 的 human-readable 标题和字段名必须中文。"
-            )
-    return errors
-
-
-def review_report_language_template_errors(
-    root: Path,
-    task_dir: Path,
-    review_report: Any,
-    review_reports: Any,
-) -> list[str]:
-    entries: list[tuple[str, Path]] = []
-    if isinstance(review_report, dict):
-        normalized_report = migrated_archive_entry(root, task_dir, review_report, REVIEW_REPORT_ARTIFACT) or review_report
-        path_value = str(normalized_report.get("path") or "").strip()
-        if path_value:
-            entries.append(("Branch Review Gate review_report", resolve_repo_path(root, path_value)))
-    if isinstance(review_reports, list):
-        for index, item in enumerate(review_reports):
-            if not isinstance(item, dict):
-                continue
-            normalized_item = migrated_archive_digest_entry(root, task_dir, item) or item
-            path_value = str(normalized_item.get("path") or "").strip()
-            if path_value:
-                entries.append((f"Branch Review Gate review_reports[{index}]", resolve_repo_path(root, path_value)))
-
-    errors: list[str] = []
-    seen: set[Path] = set()
-    for label, path in entries:
-        resolved = path.resolve()
-        if resolved in seen:
-            continue
-        seen.add(resolved)
-        errors.extend(review_report_template_heading_errors_for_path(root, resolved, label))
-    return errors
-
-
 def is_strict_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
-
-
-def review_round_number(item: dict[str, Any]) -> int:
-    value = item.get("round")
-    if is_strict_int(value):
-        return value
-    return 0
-
-
-def finding_round_has_replacement_closure(
-    payload: dict[str, Any],
-    rounds: list[Any],
-    finding_round: dict[str, Any],
-    final_round_number: int,
-    expected_closure_round: int | None = None,
-) -> bool:
-    finding_agent = str(finding_round.get("agent_id") or "").strip()
-    finding_round_number = review_round_number(finding_round)
-    if not finding_agent or finding_round_number <= 0:
-        return False
-    decisions = payload.get("reuse_decisions")
-    status_events = payload.get("status_events")
-    if not isinstance(decisions, list) or not isinstance(status_events, list):
-        return False
-    events_by_id = {
-        str(item.get("event_id") or "").strip(): item
-        for item in status_events
-        if isinstance(item, dict) and str(item.get("event_id") or "").strip()
-    }
-    closure_candidates = [
-        item
-        for item in rounds
-        if isinstance(item, dict)
-        and review_round_number(item) > finding_round_number
-        and review_round_number(item) < final_round_number
-        and (
-            expected_closure_round is None
-            or review_round_number(item) == expected_closure_round
-        )
-        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-        and str(item.get("agent_id") or "").strip()
-        and str(item.get("agent_id") or "").strip() != finding_agent
-        and is_strict_int(item.get("findings_count"))
-        and item["findings_count"] == 0
-        and str(item.get("reuse_decision") or "").strip() == "replace"
-    ]
-    for closure in closure_candidates:
-        closure_agent = str(closure.get("agent_id") or "").strip()
-        closure_round_number = review_round_number(closure)
-        closure_head = str(closure.get("reviewed_head") or "").strip()
-        matching_decision = any(
-            isinstance(item, dict)
-            and str(item.get("decision") or "").strip() == "replace"
-            and is_strict_int(item.get("from_round"))
-            and item["from_round"] == finding_round_number
-            and is_strict_int(item.get("to_round"))
-            and item["to_round"] == closure_round_number
-            and str(item.get("agent_id") or "").strip() == closure_agent
-            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-            and str(item.get("head") or "").strip() == closure_head
-            and str(item.get("reason") or "").strip()
-            for item in decisions
-        )
-        status_event_indexes_by_id = {
-            str(item.get("event_id") or "").strip(): index
-            for index, item in enumerate(status_events)
-            if isinstance(item, dict) and str(item.get("event_id") or "").strip()
-        }
-        replacement_start_entries = [
-            (index, item)
-            for index, item in enumerate(status_events)
-            if isinstance(item, dict)
-            and str(item.get("event") or "").strip() == "replacement-started"
-            and str(item.get("agent_id") or "").strip() == closure_agent
-            and str(item.get("predecessor_agent_id") or "").strip() == finding_agent
-            and str(item.get("predecessor_event_id") or "").strip()
-            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-            and str(item.get("head") or "").strip() == closure_head
-            and str(item.get("replacement_reason") or "").strip() in AGENT_REPLACEMENT_REASONS
-            and str(item.get("handoff_summary") or "").strip()
-        ]
-        completion_indexes = [
-            index
-            for index, item in enumerate(status_events)
-            if isinstance(item, dict)
-            and str(item.get("event") or "").strip() == "completed"
-            and str(item.get("agent_id") or "").strip() == closure_agent
-            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-            and str(item.get("head") or "").strip() == closure_head
-        ]
-        matching_recovery_chain = False
-        for replacement_index, replacement_start in replacement_start_entries:
-            predecessor_event_id = str(replacement_start.get("predecessor_event_id") or "").strip()
-            predecessor_index = status_event_indexes_by_id.get(predecessor_event_id)
-            predecessor_event = events_by_id.get(predecessor_event_id)
-            if predecessor_index is None or not isinstance(predecessor_event, dict):
-                continue
-            if str(predecessor_event.get("agent_id") or "").strip() != finding_agent:
-                continue
-            if str(predecessor_event.get("event") or "").strip() not in {"failed", "stale-assessed", "terminated-unfinished"}:
-                continue
-            if any(predecessor_index < replacement_index < completion_index for completion_index in completion_indexes):
-                matching_recovery_chain = True
-                break
-        if matching_decision and matching_recovery_chain:
-            return True
-    return False
-
-
-def finding_round_has_new_agent_closure(
-    payload: dict[str, Any],
-    rounds: list[Any],
-    finding_round: dict[str, Any],
-    final_round_number: int,
-) -> bool:
-    finding_agent = str(finding_round.get("agent_id") or "").strip()
-    finding_round_number = review_round_number(finding_round)
-    if not finding_agent or finding_round_number <= 0:
-        return False
-    decisions = payload.get("reuse_decisions")
-    if not isinstance(decisions, list):
-        return False
-    closure_candidates = [
-        item
-        for item in rounds
-        if isinstance(item, dict)
-        and review_round_number(item) > finding_round_number
-        and review_round_number(item) < final_round_number
-        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-        and str(item.get("agent_id") or "").strip()
-        and str(item.get("agent_id") or "").strip() != finding_agent
-        and is_strict_int(item.get("findings_count"))
-        and item["findings_count"] >= 0
-        and str(item.get("reuse_decision") or "").strip() == "new-agent"
-    ]
-    for closure in closure_candidates:
-        closure_agent = str(closure.get("agent_id") or "").strip()
-        closure_round_number = review_round_number(closure)
-        closure_head = str(closure.get("reviewed_head") or "").strip()
-        if any(
-            isinstance(item, dict)
-            and review_round_number(item) < closure_round_number
-            and str(item.get("agent_id") or "").strip() == closure_agent
-            for item in rounds
-        ):
-            continue
-        if any(
-            isinstance(item, dict)
-            and str(item.get("decision") or "").strip() == "new-agent"
-            and is_strict_int(item.get("from_round"))
-            and item["from_round"] == finding_round_number
-            and is_strict_int(item.get("to_round"))
-            and item["to_round"] == closure_round_number
-            and str(item.get("agent_id") or "").strip() == closure_agent
-            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-            and str(item.get("head") or "").strip() == closure_head
-            and str(item.get("reason") or "").strip()
-            for item in decisions
-        ):
-            return True
-    return False
-
-
-def final_review_round_errors(root: Path, payload: dict[str, Any], expected_head: str | None = None) -> list[str]:
-    rounds = payload.get("review_rounds")
-    if not isinstance(rounds, list) or not rounds:
-        return ["Branch Review Gate pass 需要 agent-assignment.json 记录最终放行审查轮次。"]
-    errors: list[str] = []
-    seen_round_numbers: set[int] = set()
-    previous_round_number = 0
-    for index, item in enumerate(rounds):
-        if not isinstance(item, dict):
-            continue
-        value = item.get("round")
-        if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
-            continue
-        if value in seen_round_numbers:
-            errors.append(f"review_rounds[{index}].round {value} 重复；无法证明最终放行审查代理是唯一最后一轮。")
-        if value <= previous_round_number:
-            errors.append(
-                f"review_rounds[{index}].round {value} 未按记录顺序严格递增；"
-                f"无法证明最终放行审查代理是最后一轮。"
-            )
-        seen_round_numbers.add(value)
-        previous_round_number = value
-    final_rounds = [
-        item
-        for item in rounds
-        if isinstance(item, dict) and str(item.get("logical_role") or "").strip() == "最终放行审查代理"
-    ]
-    if not final_rounds:
-        errors.append("Branch Review Gate pass 需要 logical_role=最终放行审查代理 的 review_rounds[] 记录。")
-        return errors
-    final_round = max(final_rounds, key=review_round_number)
-    current = expected_head or current_head(root)
-    final_round_number = review_round_number(final_round)
-    final_agent = str(final_round.get("agent_id") or "").strip()
-    reviewed_head = str(final_round.get("reviewed_head") or "").strip()
-    later_rounds = [
-        str(item.get("round") or index)
-        for index, item in enumerate(rounds)
-        if isinstance(item, dict) and review_round_number(item) > final_round_number
-    ]
-    if later_rounds:
-        errors.append("最终放行审查代理必须是最后一轮 review_rounds[]；后续轮次: " + ", ".join(later_rounds) + "。")
-    if reviewed_head != current:
-        errors.append(f"最终放行审查代理 reviewed_head {reviewed_head or '(missing)'} 与当前 HEAD {current} 不一致。")
-    final_findings_count = final_round.get("findings_count")
-    if not is_strict_int(final_findings_count) or final_findings_count != 0:
-        errors.append("最终放行审查代理 findings_count 必须为明确整数 0。")
-    if str(final_round.get("reuse_decision") or "").strip() != "new-agent":
-        errors.append("最终放行审查代理 reuse_decision 必须是 new-agent，不能复用问题发现/闭环审查代理。")
-    if not final_agent:
-        errors.append("最终放行审查代理缺少 agent_id。")
-    earlier_review_agents = {
-        str(item.get("agent_id") or "").strip()
-        for item in rounds
-        if isinstance(item, dict)
-        and review_round_number(item) < final_round_number
-        and str(item.get("agent_id") or "").strip()
-    }
-    finding_owner_agents = {
-        str(item.get("agent_id") or "").strip()
-        for item in rounds
-        if isinstance(item, dict)
-        and item is not final_round
-        and is_strict_int(item.get("findings_count"))
-        and item["findings_count"] > 0
-        and str(item.get("agent_id") or "").strip()
-    }
-    replacement_closure_agents = {
-        str(item.get("agent_id") or "").strip()
-        for item in rounds
-        if isinstance(item, dict)
-        and item is not final_round
-        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-        and str(item.get("reuse_decision") or "").strip() == "replace"
-        and str(item.get("agent_id") or "").strip()
-    }
-    closure_agents = {
-        str(item.get("agent_id") or "").strip()
-        for item in rounds
-        if isinstance(item, dict)
-        and item is not final_round
-        and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-        and str(item.get("agent_id") or "").strip()
-    }
-    missing_finding_owner_agent_rounds = [
-        str(item.get("round") or index)
-        for index, item in enumerate(rounds)
-        if isinstance(item, dict)
-        and item is not final_round
-        and is_strict_int(item.get("findings_count"))
-        and item["findings_count"] > 0
-        and not str(item.get("agent_id") or "").strip()
-    ]
-    if missing_finding_owner_agent_rounds:
-        errors.append(
-            "发现过 finding 的 review_rounds[] 必须记录 agent_id，无法证明最终放行审查代理 fresh；缺失轮次: "
-            + ", ".join(missing_finding_owner_agent_rounds)
-            + "。"
-        )
-    finding_rounds = [
-        item
-        for item in rounds
-        if isinstance(item, dict)
-        and item is not final_round
-        and is_strict_int(item.get("findings_count"))
-        and item["findings_count"] > 0
-        and str(item.get("agent_id") or "").strip()
-    ]
-    for finding_round in finding_rounds:
-        finding_agent = str(finding_round.get("agent_id") or "").strip()
-        finding_round_number = review_round_number(finding_round)
-        closure_candidates = [
-            item
-            for item in rounds
-            if isinstance(item, dict)
-            and review_round_number(item) > finding_round_number
-            and review_round_number(item) < final_round_number
-            and str(item.get("logical_role") or "").strip() == "问题闭环审查代理"
-            and str(item.get("agent_id") or "").strip() == finding_agent
-            and is_strict_int(item.get("findings_count"))
-            and item["findings_count"] == 0
-            and str(item.get("reuse_decision") or "").strip() == "reuse-for-closure"
-        ]
-        has_explicit_new_agent_closure = finding_round_has_new_agent_closure(
-            payload,
-            rounds,
-            finding_round,
-            final_round_number,
-        )
-        if (
-            not closure_candidates
-            and not has_explicit_new_agent_closure
-            and not finding_round_has_replacement_closure(payload, rounds, finding_round, final_round_number)
-        ):
-            errors.append(
-                "发现过 finding 的 review agent 必须先以问题闭环审查代理复审并给出 0 findings，"
-                "或由不同的新问题闭环审查代理通过 new-agent reuse_decision 的明确 from_round/to_round 关系闭环，"
-                "或在原 agent 失败/中断时记录完整 replacement-started、replace reuse_decision 与 completed 替代闭环链，"
-                f"然后才能启动新的最终放行审查代理；缺少闭环轮次: round {finding_round.get('round') or finding_round_number} agent {finding_agent}。"
-            )
-    if final_agent and final_agent in finding_owner_agents:
-        errors.append("发现过 finding 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
-    if final_agent and final_agent in replacement_closure_agents:
-        errors.append("替代 finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
-    elif final_agent and final_agent in closure_agents:
-        errors.append("finding closure 的 review agent 只能做问题闭环确认，不能作为最终放行审查代理。")
-    if final_agent and final_agent in earlier_review_agents:
-        errors.append("最终放行审查代理必须使用未在任何更早 review_rounds[] 出现过的 fresh agent_id。")
-    return errors
-
-
-def status_event_completion_errors(payload: dict[str, Any]) -> list[str]:
-    raw_status_events = payload.get("status_events")
-    if not isinstance(raw_status_events, list):
-        return ["agent-assignment.json status_events 必须是数组。"]
-    status_events = effective_status_events(payload)
-    errors: list[str] = []
-    events_by_id = {
-        str(item.get("event_id") or ""): item
-        for item in status_events
-        if isinstance(item, dict) and str(item.get("event_id") or "")
-    }
-    event_indexes_by_id = {
-        str(item.get("event_id") or "").strip(): index
-        for index, item in enumerate(status_events)
-        if str(item.get("event_id") or "").strip()
-    }
-    recovery_targets = {
-        str(item.get("failed_event_id") or "").strip(): str(item.get("termination_event_id") or "").strip()
-        for item in payload.get("recovery_links", [])
-        if isinstance(item, dict)
-        and item.get("kind") == AGENT_RECOVERY_LINK_KIND
-        and str(item.get("failed_event_id") or "").strip()
-        and str(item.get("termination_event_id") or "").strip()
-    }
-
-    def recovery_completed_from(index: int, original_agent: str, predecessor_event_id: str, allow_resume: bool) -> bool:
-        visited: set[tuple[int, str, str, bool]] = set()
-
-        def active_agent_completes_or_recovers(start_index: int, active_agent: str) -> bool:
-            for later_index, later in enumerate(status_events[start_index + 1:], start=start_index + 1):
-                if not isinstance(later, dict):
-                    continue
-                later_event = str(later.get("event") or "").strip()
-                later_agent = str(later.get("agent_id") or "").strip()
-                later_event_id = str(later.get("event_id") or "").strip()
-                if later_agent != active_agent:
-                    continue
-                if later_event == "completed":
-                    return True
-                if later_event == "failed":
-                    return recover_from_event(later_index, active_agent, later_event_id, allow_same_agent_resume=True)
-                if later_event == "terminated-unfinished":
-                    reason = str(later.get("termination_reason") or "").strip()
-                    if reason == "manual_or_platform_terminated_unfinished":
-                        return recover_from_event(later_index, active_agent, later_event_id, allow_same_agent_resume=True)
-                    # stale_cutover is recovered through its source stale-assessed event.
-                    continue
-                if later_event == "stale-assessed":
-                    return recover_from_event(later_index, active_agent, later_event_id, allow_same_agent_resume=False)
-            return False
-
-        def recover_from_event(start_index: int, source_agent: str, source_event_id: str, allow_same_agent_resume: bool) -> bool:
-            if not source_agent or not source_event_id:
-                return False
-            key = (start_index, source_agent, source_event_id, allow_same_agent_resume)
-            if key in visited:
-                return False
-            visited.add(key)
-            linked_termination_id = recovery_targets.get(source_event_id)
-            linked_termination = events_by_id.get(linked_termination_id or "")
-            linked_index = event_indexes_by_id.get(linked_termination_id or "")
-            if (
-                isinstance(linked_termination, dict)
-                and linked_index is not None
-                and linked_index > start_index
-                and str(linked_termination.get("agent_id") or "").strip() == source_agent
-                and recover_from_event(
-                    linked_index,
-                    source_agent,
-                    linked_termination_id or "",
-                    allow_same_agent_resume=True,
-                )
-            ):
-                return True
-            for later_index, later in enumerate(status_events[start_index + 1:], start=start_index + 1):
-                if not isinstance(later, dict):
-                    continue
-                later_event = str(later.get("event") or "").strip()
-                later_agent = str(later.get("agent_id") or "").strip()
-                if (
-                    allow_same_agent_resume
-                    and later_event == "resume-same-agent"
-                    and later_agent == source_agent
-                    and str(later.get("predecessor_event_id") or "").strip() == source_event_id
-                ):
-                    if active_agent_completes_or_recovers(later_index, later_agent):
-                        return True
-                if (
-                    later_event == "replacement-started"
-                    and str(later.get("predecessor_agent_id") or "").strip() == source_agent
-                    and str(later.get("predecessor_event_id") or "").strip() == source_event_id
-                    and later_agent
-                ):
-                    if active_agent_completes_or_recovers(later_index, later_agent):
-                        return True
-            return False
-
-        return recover_from_event(index, original_agent, predecessor_event_id, allow_resume)
-
-    for index, item in enumerate(status_events):
-        if not isinstance(item, dict):
-            continue
-        event_name = str(item.get("event") or "").strip()
-        agent_id = str(item.get("agent_id") or "").strip()
-        event_id = str(item.get("event_id") or "").strip()
-        if event_name == "stale-assessed":
-            stale_cutover = [
-                later
-                for later in status_events[index + 1:]
-                if isinstance(later, dict)
-                and str(later.get("event") or "") == "terminated-unfinished"
-                and str(later.get("agent_id") or "") == agent_id
-                and str(later.get("termination_reason") or "") == "stale_cutover"
-                and str(later.get("termination_source_event_id") or "") == event_id
-            ]
-            if not stale_cutover:
-                errors.append(f"status_events[{index}] stale-assessed 后缺少 terminated-unfinished stale_cutover。")
-            stale_resume = [
-                later
-                for later in status_events[index + 1:]
-                if isinstance(later, dict)
-                and str(later.get("event") or "") == "resume-same-agent"
-                and str(later.get("agent_id") or "") == agent_id
-            ]
-            if stale_resume:
-                errors.append(f"status_events[{index}] stale-assessed 后不得 resume-same-agent。")
-            if not recovery_completed_from(index, agent_id, event_id, allow_resume=False):
-                errors.append(f"status_events[{index}] stale-assessed 的 replacement chain 缺少后续 replacement completed。")
-        if event_name == "terminated-unfinished":
-            reason = str(item.get("termination_reason") or "").strip()
-            if reason == "stale_cutover":
-                source_id = str(item.get("termination_source_event_id") or "").strip()
-                if source_id not in events_by_id:
-                    errors.append(f"status_events[{index}] stale_cutover termination_source_event_id 未引用已有 stale-assessed。")
-                continue
-            if not recovery_completed_from(index, agent_id, event_id, allow_resume=True):
-                errors.append(
-                    f"status_events[{index}] terminated-unfinished 后缺少 same-agent resume 或 replacement 且后续 completed 的完整恢复链。"
-                )
-        if event_name == "failed":
-            if not recovery_completed_from(index, agent_id, event_id, allow_resume=True):
-                errors.append(
-                    f"status_events[{index}] failed 后缺少 same-agent resume 或 replacement 且后续 completed 的完整恢复链。"
-                )
-    return errors
-
-
-def validate_agent_assignment(
-    root: Path,
-    task_dir: Path,
-    assignment_arg: str | None = None,
-    require_current_head: bool = False,
-) -> tuple[Path, dict[str, Any], list[str], dict[str, Any]]:
-    path = resolve_task_local_path(root, task_dir, assignment_arg) if assignment_arg else agent_assignment_path(task_dir)
-    if not path.exists():
-        raise WorkflowError(f"Agent assignment artifact not found: {path}", exit_code=2)
-    payload = normalize_agent_assignment_for_task(root, task_dir, read_json(path))
-    errors = validate_agent_assignment_payload(root, task_dir, payload, require_current_head=require_current_head)
-    summary = summarize_agent_assignment(root, task_dir, path, payload) if not errors else {}
-    return path, payload, errors, summary
-
-
-def digest_errors(root: Path, entry: Any, label: str, require_modified_at_match: bool = False) -> list[str]:
-    if not isinstance(entry, dict):
-        return [f"{label} 中存在非对象 artifact entry。"]
-    errors: list[str] = []
-    path_value = str(entry.get("path") or "").strip()
-    if not path_value:
-        return [f"{label} artifact entry 缺少 path。"]
-    path = resolve_repo_path(root, path_value)
-    if not path.exists() or not path.is_file():
-        return [f"{label} artifact 不存在或不是文件: {path_value}。"]
-    current = file_digest(root, path)
-    for key in ["sha256", "size_bytes", "modified_at"]:
-        value = entry.get(key)
-        if key not in entry or value is None or value == "":
-            errors.append(f"{label} artifact 缺少 {key}: {path_value}。")
-    for key in ["sha256", "size_bytes"]:
-        if entry.get(key) != current.get(key):
-            errors.append(f"{label} artifact 已过期: {path_value} 的 {key} 不匹配。")
-    if (
-        require_modified_at_match
-        and entry.get("modified_at")
-        and entry.get("modified_at") != current.get("modified_at")
-    ):
-        errors.append(f"{label} artifact 已过期: {path_value} 的 modified_at 不匹配。")
-    return errors
-
-
-def default_existing_task_artifacts(task_dir: Path, names: list[str]) -> list[str]:
-    artifacts: list[str] = []
-    for name in names:
-        if (task_dir / name).is_file():
-            artifacts.append(name)
-    return artifacts
-
-
-def dirty_paths_excluding(root: Path, excluded: set[str]) -> list[str]:
-    return [
-        path
-        for path in git_status_paths(root)
-        if path not in excluded
-    ]
 
 
 def task_dir_is_archived(root: Path, task_dir: Path) -> bool:
@@ -6794,194 +5401,32 @@ def active_task_relative_for_archive(root: Path, task_dir: Path) -> str | None:
     return (tasks_root(root) / task_dir.name).relative_to(root).as_posix()
 
 
-def migrated_archive_entry(root: Path, task_dir: Path, entry: Any, expected_name: str) -> dict[str, Any] | None:
-    if not isinstance(entry, dict):
-        return None
-    active_task = active_task_relative_for_archive(root, task_dir)
-    if active_task is None:
-        return None
-    path_value = str(entry.get("path") or "").strip()
-    if not path_value:
-        return None
-    expected_active_path = f"{active_task}/{expected_name}"
-    if path_value != expected_active_path:
-        return None
-    archived_path = task_dir / expected_name
-    if not archived_path.is_file():
-        return None
-    migrated = dict(entry)
-    migrated.update(file_digest(root, archived_path))
-    return migrated
-
-
-def migrated_archive_digest_entry(root: Path, task_dir: Path, entry: Any) -> dict[str, Any] | None:
-    if not isinstance(entry, dict):
-        return None
-    active_task = active_task_relative_for_archive(root, task_dir)
-    if active_task is None:
-        return None
-    path_value = str(entry.get("path") or "").strip()
-    if not path_value or not path_value.startswith(f"{active_task}/"):
-        return None
-    relative_name = path_value.removeprefix(f"{active_task}/")
-    if not relative_name or relative_name.startswith("/") or ".." in relative_name.split("/"):
-        return None
-    if "/" in relative_name:
-        parts = relative_name.split("/")
-        if not (len(parts) == 2 and parts[0] == REVIEW_ROUND_REPORT_DIR and parts[1].endswith(".md") and parts[1]):
-            return None
-    archived_path = task_dir / relative_name
-    if not archived_path.is_file():
-        return None
-    migrated = dict(entry)
-    migrated.update(file_digest(root, archived_path))
-    return migrated
-
-
-def normalized_digest_entry(root: Path, task_dir: Path, entry: Any) -> Any:
-    return migrated_archive_digest_entry(root, task_dir, entry) or entry
-
-
-def normalized_archive_task_value(root: Path, task_dir: Path, value: Any) -> Any:
-    active_task = active_task_relative_for_archive(root, task_dir)
-    if active_task is None or value != active_task:
-        return value
-    return repo_relative(root, task_dir)
-
-
-def planning_approval_path(task_dir: Path) -> Path:
-    return task_dir / PLANNING_APPROVAL_ARTIFACT
-
-
-def phase2_check_path(task_dir: Path) -> Path:
-    return task_dir / PHASE2_CHECK_ARTIFACT
-
-
-def valid_review_report_fields(root: Path, task_dir: Path, review_report: Any) -> list[str]:
-    if not isinstance(review_report, dict):
-        return ["Branch Review Gate 缺少 review_report；passed gate 必须引用 task-local review.md digest。"]
-    review_report = migrated_archive_entry(root, task_dir, review_report, REVIEW_REPORT_ARTIFACT) or review_report
-    errors: list[str] = []
-    for key in ["path", "sha256", "size_bytes", "modified_at"]:
-        if not review_report.get(key):
-            errors.append(f"Branch Review Gate review_report 缺少 {key}。")
-    path_value = str(review_report.get("path") or "").strip()
-    if path_value:
-        path = resolve_repo_path(root, path_value).resolve()
-        if task_dir.resolve() not in [path, *path.parents]:
-            errors.append("Branch Review Gate review_report 必须指向当前 task-local review.md。")
-        if path.name != REVIEW_REPORT_ARTIFACT:
-            errors.append("Branch Review Gate review_report 必须指向 task-local review.md。")
-    if not errors:
-        errors.extend(digest_errors(root, review_report, "Branch Review Gate review_report"))
-    return errors
-
-
-def valid_agent_assignment_summary_fields(
+def planning_approval_path(
     root: Path,
     task_dir: Path,
-    agent_assignment: Any,
-    expected_head: str | None = None,
-    require_final: bool = True,
-) -> list[str]:
-    if not isinstance(agent_assignment, dict) or not agent_assignment:
-        return ["Branch Review Gate 缺少 agent_assignment；passed gate 必须记录 fresh 最终放行审查代理的 agent-assignment.json digest。"]
-    agent_assignment = migrated_archive_entry(root, task_dir, agent_assignment, AGENT_ASSIGNMENT_ARTIFACT) or agent_assignment
-    errors: list[str] = []
-    errors.extend(digest_errors(root, agent_assignment, "Branch Review Gate agent_assignment"))
-    path_value = str(agent_assignment.get("path") or "").strip()
-    if not path_value:
-        errors.append("Branch Review Gate agent_assignment 缺少 path。")
-        return errors
-    path = resolve_repo_path(root, path_value).resolve()
-    if task_dir.resolve() not in [path, *path.parents]:
-        errors.append("Branch Review Gate agent_assignment 必须指向当前 task-local agent-assignment.json。")
-        return errors
-    if path.name != AGENT_ASSIGNMENT_ARTIFACT:
-        errors.append("Branch Review Gate agent_assignment 必须指向 task-local agent-assignment.json。")
-        return errors
-    try:
-        payload = read_json(path)
-    except WorkflowError as exc:
-        errors.append(str(exc))
-        return errors
-    payload = normalize_agent_assignment_for_task(root, task_dir, payload)
-    errors.extend(validate_agent_assignment_payload(root, task_dir, payload, require_current_head=False))
-    if require_final:
-        errors.extend(final_review_round_errors(root, payload, expected_head=expected_head))
-    errors.extend(status_event_completion_errors(payload))
-    roles = agent_assignment.get("roles")
-    if not isinstance(roles, list) or not roles:
-        errors.append("Branch Review Gate agent_assignment 缺少 roles 摘要。")
-    else:
-        invalid_roles = [str(role) for role in roles if str(role) not in ALLOWED_LOGICAL_ROLES]
-        if invalid_roles:
-            errors.append("Branch Review Gate agent_assignment roles 存在非法中文逻辑角色: " + ", ".join(invalid_roles) + "。")
-    for key in [
-        "agents_count",
-        "review_rounds_count",
-        "reuse_decisions_count",
-        "status_events_count",
-        "effective_status_events_count",
-        "event_corrections_count",
-        "recovery_links_count",
-    ]:
-        if key in agent_assignment and (not isinstance(agent_assignment.get(key), int) or agent_assignment[key] < 0):
-            errors.append(f"Branch Review Gate agent_assignment.{key} 必须是非负整数。")
-    return errors
+    *,
+    for_write: bool = False,
+) -> Path:
+    return ai_first_owner_artifact_path(
+        root,
+        task_dir,
+        PLANNING_APPROVAL_ARTIFACT,
+        for_write=for_write,
+    )
 
 
-def valid_review_reports_summary_fields(
+def phase2_check_path(
     root: Path,
     task_dir: Path,
-    review_reports: Any,
-    assignment_payload: dict[str, Any] | None = None,
-) -> list[str]:
-    if not isinstance(review_reports, list) or not review_reports:
-        return ["Branch Review Gate 缺少 verification_evidence.review_reports[] raw report digest 摘要。"]
-    errors: list[str] = []
-    for index, item in enumerate(review_reports):
-        if not isinstance(item, dict):
-            errors.append(f"Branch Review Gate review_reports[{index}] 必须是对象。")
-            continue
-        for key in ["round", "logical_role", "agent_id", "reviewed_head", "findings_count", "path", "sha256", "size_bytes", "modified_at"]:
-            if item.get(key) in (None, ""):
-                errors.append(f"Branch Review Gate review_reports[{index}] 缺少 {key}。")
-        if not is_strict_int(item.get("round")) or int(item.get("round") or 0) <= 0:
-            errors.append(f"Branch Review Gate review_reports[{index}].round 必须是正整数。")
-        findings_count = item.get("findings_count")
-        if not is_strict_int(findings_count) or findings_count < 0:
-            errors.append(f"Branch Review Gate review_reports[{index}].findings_count 必须是非负整数。")
-        role = str(item.get("logical_role") or "").strip()
-        if role and role not in ALLOWED_LOGICAL_ROLES:
-            errors.append(f"Branch Review Gate review_reports[{index}].logical_role 非法: {role}。")
-        normalized_item = migrated_archive_digest_entry(root, task_dir, item) or item
-        path_value = str(normalized_item.get("path") or "").strip()
-        if path_value:
-            path = resolve_repo_path(root, str(normalized_item.get("path") or ""))
-            errors.extend(raw_review_report_path_errors(root, task_dir, path, f"Branch Review Gate review_reports[{index}].path"))
-            errors.extend(digest_errors(root, normalized_item, f"Branch Review Gate review_reports[{index}]"))
-    if assignment_payload is not None and isinstance(assignment_payload.get("review_rounds"), list):
-        expected = review_reports_from_assignment(root, task_dir, assignment_payload)
-        actual_by_round = {
-            item.get("round"): migrated_archive_digest_entry(root, task_dir, item) or item
-            for item in review_reports
-            if isinstance(item, dict) and is_strict_int(item.get("round"))
-        }
-        if len(review_reports) != len(expected):
-            errors.append(
-                f"Branch Review Gate review_reports[] 数量 {len(review_reports)} 与 agent-assignment.json review_rounds[] 数量 {len(expected)} 不一致。"
-            )
-        for expected_item in expected:
-            round_value = expected_item.get("round")
-            actual = actual_by_round.get(round_value)
-            if actual is None:
-                errors.append(f"Branch Review Gate review_reports[] 缺少 round {round_value} 的 raw report 摘要。")
-                continue
-            for key in ["logical_role", "agent_id", "reviewed_head", "findings_count", "path", "sha256", "size_bytes", "modified_at"]:
-                if actual.get(key) != expected_item.get(key):
-                    errors.append(f"Branch Review Gate review_reports[] round {round_value} 的 {key} 与 agent-assignment.json 不一致。")
-    return errors
+    *,
+    for_write: bool = False,
+) -> Path:
+    return ai_first_owner_artifact_path(
+        root,
+        task_dir,
+        PHASE2_CHECK_ARTIFACT,
+        for_write=for_write,
+    )
 
 
 def reviewer_identity_errors(reviewer: str) -> list[str]:
@@ -7005,23 +5450,8 @@ def independent_review_source_errors(review_source: str, reviewer: str) -> list[
     return errors
 
 
-def blocking_findings(findings: list[dict[str, Any]], config: dict[str, Any]) -> list[dict[str, Any]]:
-    block = {str(item).upper() for item in review_gate_config(config).get("block_priorities", ["P0", "P1", "P2", "P3"])}
-    return [finding for finding in findings if str(finding.get("priority") or "").upper() in block]
-
-
 def review_gate_blocking_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return list(findings)
-
-
-def unresolved_blocking_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    blockers: list[dict[str, Any]] = []
-    for finding in findings:
-        priority = str(finding.get("priority") or "").upper()
-        status = str(finding.get("status") or "").strip().lower()
-        if priority in BLOCKING_PRIORITIES and status not in RESOLVED_FINDING_STATUSES:
-            blockers.append(finding)
-    return blockers
 
 
 def contract_wording_schema(root: Path) -> dict[str, Any]:
@@ -7430,7 +5860,7 @@ def contract_wording_derive_result(
     scan: dict[str, Any],
     authored: dict[str, Any],
 ) -> dict[str, Any]:
-    if set(authored) != {"generated_at", "semantic_review", "human_confirmation", "typed_exit"}:
+    if set(authored) != {"generated_at", "semantic_review", "typed_exit"}:
         raise WorkflowError("Contract wording recorder input has undeclared or missing fields.", exit_code=2)
     semantic = authored.get("semantic_review")
     if not isinstance(semantic, dict) or set(semantic) != {"revisions", "classifications", "ai_review_gate"}:
@@ -7458,13 +5888,6 @@ def contract_wording_derive_result(
         mutation = revision.get("change_request_mutation")
         if not isinstance(mutation, dict):
             continue
-        payload_facts = {
-            "source_identity": mutation.get("source_identity"),
-            "locator": mutation.get("locator"),
-            "field": mutation.get("field"),
-            "preimage_sha256": mutation.get("preimage_sha256"),
-            "content_sha256": mutation.get("confirmed_content_sha256"),
-        }
         result_facts = {
             "source_identity": mutation.get("source_identity"),
             "locator": mutation.get("locator"),
@@ -7473,7 +5896,6 @@ def contract_wording_derive_result(
             "content_sha256": mutation.get("reread_content_sha256"),
             "source_updated_at": mutation.get("source_updated_at"),
         }
-        mutation["confirmed_payload_sha256"] = context_digest(payload_facts)
         mutation["mutation_result_sha256"] = context_digest(result_facts)
     result = {
         "schema_version": CONTRACT_WORDING_SCHEMA_VERSION,
@@ -7491,7 +5913,6 @@ def contract_wording_derive_result(
             "unchecked_normative_hits": unchecked,
             "ai_review_gate": copy.deepcopy(semantic.get("ai_review_gate")),
         },
-        "human_confirmation": copy.deepcopy(authored.get("human_confirmation")),
         "typed_exit": authored.get("typed_exit"),
     }
     result["facts_sha256"] = context_digest(result)
@@ -7593,7 +6014,6 @@ def contract_wording_structural_errors(
         str(item.get("path") or item["id"]): item
         for item in scope["items"]
     }
-    live_issue_payload_digests: list[str] = []
     for row in revisions:
         if not isinstance(row, dict):
             errors.append("invalid_contract_wording_revision")
@@ -7617,13 +6037,6 @@ def contract_wording_structural_errors(
             if not isinstance(mutation, dict):
                 errors.append("change_request_live_mutation_evidence_missing")
                 continue
-            payload_facts = {
-                "source_identity": mutation.get("source_identity"),
-                "locator": mutation.get("locator"),
-                "field": mutation.get("field"),
-                "preimage_sha256": mutation.get("preimage_sha256"),
-                "content_sha256": mutation.get("confirmed_content_sha256"),
-            }
             result_facts = {
                 "source_identity": mutation.get("source_identity"),
                 "locator": mutation.get("locator"),
@@ -7632,48 +6045,24 @@ def contract_wording_structural_errors(
                 "content_sha256": mutation.get("reread_content_sha256"),
                 "source_updated_at": mutation.get("source_updated_at"),
             }
-            expected_payload_digest = context_digest(payload_facts)
             expected_result_digest = context_digest(result_facts)
             if (
                 mutation.get("source_identity") != current_item.get("source_identity")
                 or mutation.get("locator") != locator
                 or mutation.get("field") != current_item.get("field")
                 or mutation.get("preimage_sha256") != row.get("before_sha256")
-                or mutation.get("confirmed_content_sha256") != row.get("after_sha256")
             ):
-                errors.append("change_request_confirmed_payload_binding_mismatch")
+                errors.append("change_request_mutation_target_binding_mismatch")
             if (
                 mutation.get("reread_content_sha256") != row.get("after_sha256")
                 or mutation.get("reread_content_sha256") != current_item.get("content_sha256")
                 or mutation.get("source_updated_at") != current_item.get("updated_at")
             ):
                 errors.append("change_request_mutation_result_binding_mismatch")
-            if mutation.get("confirmed_payload_sha256") != expected_payload_digest:
-                errors.append("change_request_confirmed_payload_digest_mismatch")
             if mutation.get("mutation_result_sha256") != expected_result_digest:
                 errors.append("change_request_mutation_result_digest_mismatch")
-            live_issue_payload_digests.append(expected_payload_digest)
         elif mutation is not None:
             errors.append("unexpected_change_request_mutation_evidence")
-    confirmation = payload.get("human_confirmation")
-    confirmation = confirmation if isinstance(confirmation, dict) else {}
-    if confirmation.get("status") == "confirmed" and (
-        not str(confirmation.get("confirmed_by") or "").strip()
-        or not str(confirmation.get("confirmed_at") or "").strip()
-    ):
-        errors.append("incomplete_contract_wording_confirmation")
-    if confirmation.get("status") == "not_required" and (
-        confirmation.get("confirmed_by") is not None or confirmation.get("confirmed_at") is not None
-    ):
-        errors.append("invalid_not_required_contract_wording_confirmation")
-    if live_issue_payload_digests:
-        expected_confirmation_digest = context_digest(live_issue_payload_digests)
-        if confirmation.get("status") != "confirmed":
-            errors.append("change_request_live_mutation_confirmation_required")
-        if confirmation.get("confirmed_payload_sha256") != expected_confirmation_digest:
-            errors.append("change_request_confirmation_payload_digest_mismatch")
-    elif confirmation.get("confirmed_payload_sha256") is not None:
-        errors.append("unexpected_contract_wording_confirmation_payload_digest")
 
     if typed_exit in {"pass", "content_changed"}:
         if set(classification_ids) != set(current_hit_ids):
@@ -7684,177 +6073,18 @@ def contract_wording_structural_errors(
             errors.append("contract_wording_review_dimensions_incomplete")
         if payload.get("profile") == "planning_artifacts" and not planning_dimensions_complete:
             errors.append("contract_wording_planning_review_dimensions_incomplete")
-        if confirmation.get("status") == "refused":
-            errors.append("contract_wording_confirmation_refused")
     if typed_exit == "pass" and revisions:
         errors.append("contract_wording_pass_has_unconsumed_revision")
     if typed_exit == "content_changed" and not revisions:
         errors.append("contract_wording_content_changed_requires_revision")
     if (
         typed_exit == "blocked"
-        and confirmation.get("status") == "confirmed"
         and not expected_unchecked
         and all(dimensions.get(name) is True for name in CONTRACT_WORDING_REVIEW_DIMENSIONS)
         and planning_dimensions_complete
     ):
         errors.append("contract_wording_blocked_without_blocking_evidence")
     return context_sort(errors)
-
-
-def contract_wording_trackability_errors(root: Path, target: Path) -> list[str]:
-    relative = repo_relative(root, target)
-    try:
-        proc = subprocess.run(
-            ["git", "check-ignore", "--quiet", "--no-index", "--", relative],
-            cwd=root,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-    except OSError:
-        return ["contract_wording_evidence_trackability_unreadable"]
-    if proc.returncode == 0:
-        return ["contract_wording_evidence_target_ignored"]
-    if proc.returncode != 1:
-        return ["contract_wording_evidence_trackability_unreadable"]
-    return []
-
-
-def contract_wording_planning_projection(payload: dict[str, Any]) -> dict[str, Any]:
-    gate = payload.get("semantic_review", {}).get("ai_review_gate", {})
-    planning_dimensions = gate.get("planning_checked_dimensions")
-    if (
-        payload.get("profile") != "planning_artifacts"
-        or payload.get("typed_exit") != "pass"
-        or gate.get("status") != "passed"
-        or not isinstance(planning_dimensions, dict)
-        or set(planning_dimensions) != set(CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS)
-        or any(
-            planning_dimensions.get(dimension) is not True
-            for dimension in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-        )
-    ):
-        raise WorkflowError(
-            "Planning compatibility projection requires seven explicitly AI-reviewed planning dimensions.",
-            exit_code=2,
-            payload={"error_codes": ["contract_wording_planning_review_dimensions_not_passed"]},
-        )
-    scan_hits = payload["scan"]["hits"]
-    classifications = {
-        row["hit_id"]: row for row in payload["semantic_review"]["classifications"]
-    }
-    hits = [
-        {
-            "path": hit["locator"],
-            "line": hit["line"],
-            "term": hit["term"],
-            "text": hit["text"],
-            "classification": classifications.get(hit["hit_id"], {}).get("classification", ""),
-            "reason": classifications.get(hit["hit_id"], {}).get("reason", ""),
-        }
-        for hit in scan_hits
-    ]
-    unchecked_ids = set(payload["semantic_review"]["unchecked_normative_hits"])
-    unchecked = [copy.deepcopy(row) for row, hit in zip(hits, scan_hits) if hit["hit_id"] in unchecked_ids]
-    return {
-        "status": "passed",
-        "reviewer": payload["semantic_review"]["ai_review_gate"]["reviewer"],
-        "summary": payload["semantic_review"]["ai_review_gate"]["summary"],
-        "normative_language": {
-            "controlled_terms": list(CONTRACT_WORDING_VOCABULARY_V2),
-            "scan_scope": list(CONTRACT_WORDING_PLANNING_SCOPE),
-            "hits": hits,
-            "unchecked_normative_hits": unchecked,
-        },
-        "checked_dimensions": {
-            dimension: planning_dimensions[dimension]
-            for dimension in CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-        },
-    }
-
-
-def contract_wording_planning_evidence(
-    root: Path,
-    task_dir: Path,
-    evidence_value: str | None,
-) -> tuple[Path, dict[str, Any]]:
-    expected = task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT
-    locator = str(evidence_value or CONTRACT_WORDING_EVIDENCE_ARTIFACT).strip()
-    active_task = active_task_relative_for_archive(root, task_dir)
-    active_locator = (
-        f"{active_task}/{CONTRACT_WORDING_EVIDENCE_ARTIFACT}"
-        if active_task is not None
-        else None
-    )
-    if active_locator is not None and locator == active_locator:
-        path = expected
-    else:
-        path = resolve_task_local_path(root, task_dir, locator)
-    if path.resolve() != expected.resolve():
-        raise WorkflowError(
-            f"planning_artifacts wording evidence must be task-local {CONTRACT_WORDING_EVIDENCE_ARTIFACT}.",
-            exit_code=2,
-        )
-    if not path.is_file():
-        raise WorkflowError(
-            f"Planning contract wording evidence not found: {path}",
-            exit_code=2,
-            payload={"error_codes": ["contract_wording_evidence_missing"]},
-        )
-    payload = read_json(path)
-    scope, contents = contract_wording_build_scope(root, "planning_artifacts", "workflow", task_dir=task_dir)
-    scan = scan_contract_wording(scope, contents)
-    errors = contract_wording_structural_errors(root, payload, scope, scan)
-    if payload.get("profile") != "planning_artifacts" or payload.get("mode") != "workflow":
-        errors.append("planning_approval_requires_planning_artifacts_wording_evidence")
-    if payload.get("typed_exit") != "pass":
-        errors.append("planning_approval_requires_passed_wording_evidence")
-    errors.extend(contract_wording_trackability_errors(root, path))
-    if errors:
-        raise WorkflowError(
-            "Planning contract wording evidence is missing, stale, or blocked.",
-            exit_code=2,
-            payload={"error_codes": context_sort(errors)},
-        )
-    return path, payload
-
-
-def planning_wording_review_errors(
-    root: Path,
-    task_dir: Path,
-    approval: dict[str, Any],
-) -> list[str]:
-    binding = approval.get("contract_wording_review")
-    if not isinstance(binding, dict):
-        return [
-            "planning-approval.json 缺少 contract_wording_review；pre-#114 active approval 必须重新执行 planning_artifacts wording review 和显式规划确认。"
-        ]
-    try:
-        path, evidence = contract_wording_planning_evidence(root, task_dir, str(binding.get("artifact_path") or ""))
-    except WorkflowError as exc:
-        codes = exc.payload.get("error_codes") if isinstance(exc.payload, dict) else None
-        return ["planning-approval.json contract wording evidence 校验失败: " + ", ".join(codes or [str(exc)])]
-    logical_task = active_task_relative_for_archive(root, task_dir)
-    expected_binding = {
-        "artifact_path": (
-            f"{logical_task}/{CONTRACT_WORDING_EVIDENCE_ARTIFACT}"
-            if logical_task is not None
-            else repo_relative(root, path)
-        ),
-        "schema_id": "guru-contract-wording-review-1.0",
-        "profile": "planning_artifacts",
-        "typed_exit": "pass",
-        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "facts_sha256": evidence["facts_sha256"],
-        "scope_sha256": evidence["scope"]["scope_sha256"],
-        "scan_sha256": evidence["scan"]["scan_sha256"],
-    }
-    errors: list[str] = []
-    if binding != expected_binding:
-        errors.append("planning-approval.json contract_wording_review binding 与当前 wording evidence 不一致。")
-    if approval.get("ambiguity_review") != contract_wording_planning_projection(evidence):
-        errors.append("planning-approval.json ambiguity_review 必须是已验证 planning_artifacts wording evidence 的完整投影。")
-    return errors
 
 
 def planning_approval_schema(root: Path) -> dict[str, Any]:
@@ -7879,7 +6109,7 @@ def planning_approval_schema(root: Path) -> dict[str, Any]:
     )
     if schema_path is None:
         raise WorkflowError(
-            "Planning approval v2 schema is missing from the compatible Guru Team runtime.",
+            "Planning approval v3 schema is missing from the compatible Guru Team runtime.",
             exit_code=2,
             payload={"error_codes": ["planning_approval_schema_unavailable"]},
         )
@@ -7891,452 +6121,83 @@ def planning_approval_schema(root: Path) -> dict[str, Any]:
         or schema.get("$id") != PLANNING_APPROVAL_SCHEMA_ID
     ):
         raise WorkflowError(
-            "Planning approval v2 schema is incompatible.",
+            "Planning approval v3 schema is incompatible.",
             exit_code=2,
             payload={"error_codes": ["planning_approval_schema_invalid"]},
         )
     return schema
 
 
-def planning_task_artifact_path(root: Path, task_dir: Path, value: Any) -> Path:
-    locator = str(value or "").strip()
-    active_task = active_task_relative_for_archive(root, task_dir)
-    if active_task is not None and locator.startswith(f"{active_task}/"):
-        relative = locator.removeprefix(f"{active_task}/")
-        if "/" in relative or relative not in DEFAULT_PLANNING_ARTIFACTS:
-            raise WorkflowError("Planning artifact locator is outside the fixed task scope.", exit_code=2)
-        return task_dir / relative
-    return resolve_task_local_path(root, task_dir, locator)
-
-
-def planning_locator_statement(path: Path, locator: Any) -> tuple[str, str]:
-    locator_value = str(locator or "").strip()
-    if not locator_value:
-        raise WorkflowError("Planning statement locator must be non-empty.", exit_code=2)
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError) as exc:
-        raise WorkflowError(f"Planning statement artifact is unreadable: {path}", exit_code=2) from exc
-    matches = [
-        index
-        for index, line in enumerate(lines)
-        if locator_value == line.strip()
-        or locator_value == line.strip().lstrip("#").strip()
-        or locator_value in line.strip()
-    ]
-    if len(matches) != 1:
-        raise WorkflowError(
-            "Planning statement locator must resolve exactly once.",
-            exit_code=2,
-            payload={"locator": locator_value, "matches": len(matches), "path": str(path)},
-        )
-    index = matches[0]
-    selected = lines[index].rstrip()
-    heading = re.match(r"^(#{1,6})\s+", selected.strip())
-    if heading:
-        level = len(heading.group(1))
-        end = len(lines)
-        for candidate in range(index + 1, len(lines)):
-            next_heading = re.match(r"^(#{1,6})\s+", lines[candidate].strip())
-            if next_heading and len(next_heading.group(1)) <= level:
-                end = candidate
-                break
-        statement = "\n".join(line.rstrip() for line in lines[index:end]).rstrip() + "\n"
-    else:
-        statement = selected.strip() + "\n"
-    return statement, hashlib.sha256(statement.encode("utf-8")).hexdigest()
-
-
-def planning_scope_ledger_projection(ledger: dict[str, Any]) -> dict[str, Any]:
-    primary = ledger.get("primary_issue")
-    if not isinstance(primary, dict) or not is_strict_int(primary.get("number")):
-        raise WorkflowError(
-            "Planning approval requires a positive primary issue number.",
-            exit_code=2,
-        )
-    primary_number = int(primary["number"])
-    if primary_number <= 0:
-        raise WorkflowError(
-            "Planning approval requires a positive primary issue number.",
-            exit_code=2,
-        )
-
-    projection: dict[str, Any] = {"primary_issue": primary_number}
-    for key in ("close_issues", "related_issues", "followup_issues"):
-        entries = ledger.get(key)
-        if not isinstance(entries, list):
-            raise WorkflowError(
-                "Planning approval requires a complete issue scope ledger.",
-                exit_code=2,
-            )
-        numbers: list[int] = []
-        for entry in entries:
-            if (
-                not isinstance(entry, dict)
-                or not is_strict_int(entry.get("number"))
-                or int(entry["number"]) <= 0
-            ):
-                raise WorkflowError(
-                    f"Planning approval requires positive issue numbers in {key}.",
-                    exit_code=2,
-                )
-            numbers.append(int(entry["number"]))
-        projection[key] = sorted(set(numbers))
-    return projection
-
-
-def planning_task_projection(
-    root: Path,
-    task_dir: Path,
-    task_context: dict[str, Any],
-) -> dict[str, Any]:
-    task = task_json(task_dir)
-    ledger_path = issue_scope_ledger_path(task_dir)
-    if not ledger_path.is_file():
-        raise WorkflowError("planning approval requires current issue-scope-ledger.json.", exit_code=2)
-    ledger = read_json(ledger_path)
-    scope_projection = planning_scope_ledger_projection(ledger)
-    branch = str(task.get("branch") or task_context.get("branch_name") or current_branch(root)).strip()
-    base_branch = str(task.get("base_branch") or task_context.get("base_branch") or "").strip()
-    identity = {
-        "task_dir": repo_relative(root, task_dir),
-        "id": task.get("id"),
-        "name": task.get("name"),
-        "title": task.get("title"),
-        "scope": task.get("scope"),
-        "branch": branch,
-        "base_branch": base_branch,
-    }
-    numbers = []
-    primary = ledger.get("primary_issue")
-    if isinstance(primary, dict) and is_strict_int(primary.get("number")):
-        numbers.append(int(primary["number"]))
-    numbers.extend(issue_numbers(ledger.get("close_issues")))
-    return {
-        "task_dir": repo_relative(root, task_dir),
-        "task_identity_sha256": context_digest(identity),
-        "scope_ledger_sha256": context_digest(scope_projection),
-        "status": str(task.get("status") or "planning"),
-        "branch": branch,
-        "issue_numbers": sorted(set(numbers)),
-    }
-
-
-def planning_repository_snapshot(
-    root: Path,
-    task_dir: Path,
-    task_context: dict[str, Any],
-) -> dict[str, Any]:
-    task = task_json(task_dir)
-    selected_base = str(task_context.get("base_branch") or task.get("base_branch") or "").strip()
-    if not selected_base:
-        raise WorkflowError("planning approval cannot resolve selected base.", exit_code=2)
-    base_ref = str(task_context.get("base_ref") or diff_base_ref(root, selected_base)).strip()
-    base_head = str(task_context.get("base_head_sha") or ref_head(root, base_ref) or "").strip()
-    head = current_head(root)
-    if re.fullmatch(r"[0-9a-f]{40}", base_head) is None or re.fullmatch(r"[0-9a-f]{40}", head) is None:
-        raise WorkflowError("planning approval requires full 40-hex base and current HEAD facts.", exit_code=2)
-    artifact_path = repo_relative(root, planning_approval_path(task_dir))
-    return {
-        "selected_base": selected_base,
-        "base_ref": base_ref,
-        "base_head": base_head,
-        "head": head,
-        "dirty_paths": sorted(path for path in git_status_paths(root) if path != artifact_path),
-        "captured_at": now_iso(),
-    }
-
-
-def planning_current_authority(
-    root: Path,
-    authority: Any,
-    task_dir: Path | None = None,
-) -> dict[str, Any]:
-    if not isinstance(authority, dict):
-        raise WorkflowError("planning approval authority entries must be objects.", exit_code=2)
-    authority_id = str(authority.get("id") or "").strip()
-    kind = str(authority.get("kind") or "").strip()
-    locator = str(authority.get("locator") or "").strip()
-    if not authority_id or not kind or not locator:
-        raise WorkflowError("planning approval authority id/kind/locator must be non-empty.", exit_code=2)
-    updated_at: str | None = None
-    if kind in {"task_artifact", "repository_document"}:
-        path = resolve_repo_path(root, locator)
-        if not path.is_file() or path.is_symlink():
-            raise WorkflowError(f"Planning authority file is missing or invalid: {locator}", exit_code=2)
-        scope_ledger_path = issue_scope_ledger_path(task_dir) if task_dir is not None else None
-        if (
-            kind == "task_artifact"
-            and scope_ledger_path is not None
-            and path.resolve() == scope_ledger_path.resolve()
-        ):
-            digest = context_digest(planning_scope_ledger_projection(read_json(path)))
-        else:
-            digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    elif kind in {"github_issue", "github_comment"}:
-        match = re.fullmatch(
-            r"https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/([1-9][0-9]*)(?:#issuecomment-([1-9][0-9]*))?",
-            locator,
-        )
-        if match is None:
-            raise WorkflowError(f"Planning GitHub authority locator is invalid: {locator}", exit_code=2)
-        repo, number_text, comment_text = match.groups()
-        live = issue_view(repo, int(number_text), root)
-        if kind == "github_issue":
-            if comment_text is not None:
-                raise WorkflowError("github_issue authority must not use a comment locator.", exit_code=2)
-            projection = {
-                "repo": repo,
-                "number": int(number_text),
-                "url": live.get("url"),
-                "state": live.get("state"),
-                "title": live.get("title"),
-                "body": live.get("body"),
-                "updated_at": live.get("updatedAt"),
-            }
-            updated_at = str(live.get("updatedAt") or "").strip() or None
-        else:
-            comments = live.get("comments") if isinstance(live.get("comments"), list) else []
-            matches = [
-                row for row in comments
-                if isinstance(row, dict)
-                and str(row.get("url") or "").endswith(f"#issuecomment-{comment_text}")
-            ]
-            if len(matches) != 1:
-                raise WorkflowError("GitHub comment authority must resolve exactly once.", exit_code=2)
-            comment = matches[0]
-            projection = {
-                "url": comment.get("url"),
-                "author": comment.get("author"),
-                "body": comment.get("body"),
-                "updated_at": comment.get("updatedAt"),
-            }
-            updated_at = str(comment.get("updatedAt") or "").strip() or None
-        digest = context_digest(projection)
-    elif kind == "user_request":
-        digest = hashlib.sha256(locator.encode("utf-8")).hexdigest()
-    else:
-        raise WorkflowError(f"Unknown planning authority kind: {kind}", exit_code=2)
-    return {
-        "id": authority_id,
-        "kind": kind,
-        "locator": locator,
-        "sha256": digest,
-        "updated_at": updated_at,
-    }
-
-
-def planning_coverage_digest(entries: list[dict[str, Any]], coverage: dict[str, Any]) -> str:
-    return context_digest({
-        "entries": entries,
-        "coverage": {key: value for key, value in coverage.items() if key != "review_sha256"},
-    })
-
-
-def planning_unusual_proposal_digest(candidate: dict[str, Any]) -> str:
-    return context_digest({
-        key: candidate.get(key)
-        for key in [
-            "id", "scenario_class", "trigger_evidence", "scope", "cost",
-            "alternatives", "consequence", "source_requirement_refs",
-        ]
-    })
-
-
-def planning_unusual_review_digest(review: dict[str, Any]) -> str:
-    return context_digest({key: value for key, value in review.items() if key != "review_sha256"})
-
-
-def planning_scope_expansion_projection(
-    root: Path,
-    task_dir: Path,
-    expansion: Any,
-    authorities_by_id: dict[str, dict[str, Any]],
-    unusual_candidates_by_id: dict[str, dict[str, Any]],
-    entry_authority_refs: list[Any],
-) -> tuple[dict[str, Any] | None, list[str]]:
-    if not isinstance(expansion, dict):
-        return None, ["planning_approval_scope_expansion_invalid"]
-    proposal = expansion.get("proposal_binding")
-    confirmation = expansion.get("confirmation")
-    authority_binding = expansion.get("authority_binding")
-    if not isinstance(proposal, dict):
-        return None, ["planning_approval_scope_expansion_proposal_binding_invalid"]
-    errors: list[str] = []
-    source_kind = str(proposal.get("source_kind") or "")
-    proposal_sha = ""
-    canonical_proposal: dict[str, Any]
-    unusual_candidate: dict[str, Any] | None = None
-    if source_kind == "planning_artifact":
-        if proposal.get("unusual_candidate_id") is not None:
-            errors.append("planning_approval_scope_expansion_proposal_source_shape_invalid")
-        try:
-            proposal_path = planning_task_artifact_path(
-                root, task_dir, proposal.get("artifact_path")
-            )
-            _statement, proposal_sha = planning_locator_statement(
-                proposal_path, proposal.get("locator")
-            )
-        except WorkflowError:
-            errors.append("planning_approval_scope_expansion_proposal_locator_invalid")
-            canonical_proposal = copy.deepcopy(proposal)
-        else:
-            canonical_proposal = {
-                "source_kind": "planning_artifact",
-                "artifact_path": repo_relative(root, proposal_path),
-                "locator": str(proposal.get("locator") or "").strip(),
-                "unusual_candidate_id": None,
-                "proposal_sha256": proposal_sha,
-            }
-    elif source_kind == "unusual_scenario_candidate":
-        candidate_id = str(proposal.get("unusual_candidate_id") or "").strip()
-        if proposal.get("artifact_path") is not None or proposal.get("locator") is not None:
-            errors.append("planning_approval_scope_expansion_proposal_source_shape_invalid")
-        unusual_candidate = unusual_candidates_by_id.get(candidate_id)
-        if unusual_candidate is None:
-            errors.append("planning_approval_scope_expansion_unusual_candidate_unknown")
-            canonical_proposal = copy.deepcopy(proposal)
-        else:
-            proposal_sha = planning_unusual_proposal_digest(unusual_candidate)
-            canonical_proposal = {
-                "source_kind": "unusual_scenario_candidate",
-                "artifact_path": None,
-                "locator": None,
-                "unusual_candidate_id": candidate_id,
-                "proposal_sha256": proposal_sha,
-            }
-            if unusual_candidate.get("disposition") != "confirmed_scope_expansion":
-                errors.append(
-                    "planning_approval_scope_expansion_unusual_candidate_not_confirmed"
-                )
-    else:
-        errors.append("planning_approval_scope_expansion_proposal_source_kind_invalid")
-        canonical_proposal = copy.deepcopy(proposal)
-
-    if proposal_sha and proposal.get("proposal_sha256") != proposal_sha:
-        errors.append("planning_approval_scope_expansion_proposal_digest_mismatch")
-
-    expected_confirmation_kind = (
-        "dedicated-unusual-scenario"
-        if source_kind == "unusual_scenario_candidate"
-        else "dedicated-scope-expansion"
-    )
-    if not isinstance(confirmation, dict):
-        errors.append("planning_approval_scope_expansion_confirmation_invalid")
-    else:
-        if confirmation.get("confirmation_kind") != expected_confirmation_kind:
-            errors.append("planning_approval_scope_expansion_confirmation_kind_mismatch")
-        if proposal_sha and confirmation.get("proposal_sha256") != proposal_sha:
-            errors.append("planning_approval_scope_expansion_confirmation_digest_mismatch")
-        if unusual_candidate is not None:
-            candidate_confirmation = unusual_candidate.get("confirmation")
-            expected_confirmation = {
-                "confirmation_kind": candidate_confirmation.get("confirmation_kind"),
-                "proposal_sha256": candidate_confirmation.get("proposal_sha256"),
-                "confirmation_summary": candidate_confirmation.get("confirmation_summary"),
-                "confirmed_at": candidate_confirmation.get("confirmed_at"),
-            } if isinstance(candidate_confirmation, dict) else None
-            if confirmation != expected_confirmation:
-                errors.append(
-                    "planning_approval_scope_expansion_unusual_confirmation_mismatch"
-                )
-
-    if not isinstance(authority_binding, dict):
-        errors.append("planning_approval_scope_expansion_authority_binding_invalid")
-    else:
-        authority_ref = str(authority_binding.get("authority_ref") or "")
-        authority = authorities_by_id.get(authority_ref)
-        if authority is None:
-            errors.append("planning_approval_scope_expansion_authority_unknown")
-        else:
-            if authority_ref not in entry_authority_refs:
-                errors.append(
-                    "planning_approval_scope_expansion_authority_not_in_entry_refs"
-                )
-            if authority_binding.get("authority_sha256") != authority.get("sha256"):
-                errors.append("planning_approval_scope_expansion_authority_digest_mismatch")
-        if proposal_sha and authority_binding.get("proposal_sha256") != proposal_sha:
-            errors.append(
-                "planning_approval_scope_expansion_authority_proposal_digest_mismatch"
-            )
-        if unusual_candidate is not None:
-            candidate_confirmation = unusual_candidate.get("confirmation")
-            if (
-                not isinstance(candidate_confirmation, dict)
-                or authority_ref != candidate_confirmation.get("authority_ref")
-            ):
-                errors.append(
-                    "planning_approval_scope_expansion_unusual_authority_mismatch"
-                )
-
-    canonical = {
-        "proposal_binding": canonical_proposal,
-        "confirmation": copy.deepcopy(confirmation),
-        "authority_binding": copy.deepcopy(authority_binding),
-    }
-    return canonical, context_sort(errors)
-
-
 def planning_approval_closed_union_errors(payload: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    if payload.get("typed_exit") == "approved":
-        semantic_review = payload.get("semantic_review")
-        gate = (
-            semantic_review.get("ai_review_gate")
-            if isinstance(semantic_review, dict)
-            else None
-        )
-        if isinstance(gate, dict):
-            for field in (
-                "findings",
-                "revision_actions",
-                "scope_proposals",
-                "blocking_reasons",
-            ):
-                if gate.get(field) != []:
-                    errors.append(f"planning_approval_approved_gate_{field}_not_empty")
-        confirmation = payload.get("user_confirmation")
-        if isinstance(confirmation, dict):
-            for field in ("prompt_presented_at", "confirmed_at"):
-                if not isinstance(confirmation.get(field), str) or not confirmation[field].strip():
-                    errors.append(
-                        f"planning_approval_approved_confirmation_{field}_missing"
-                    )
+    typed_exit = str(payload.get("typed_exit") or "")
+    semantic = (
+        payload.get("semantic_review")
+        if isinstance(payload.get("semantic_review"), dict)
+        else {}
+    )
+    expected_status = {
+        "approved": "passed",
+        "revision_required": "revision_required",
+        "clarify_scope": "clarify_scope",
+        "blocked": "blocked",
+    }.get(typed_exit)
+    if expected_status is None:
+        errors.append("planning_approval_typed_exit_invalid")
+    elif semantic.get("status") != expected_status:
+        errors.append("planning_approval_semantic_status_mismatch")
 
-    authority_ids = {
-        str(item.get("id") or "")
-        for item in payload.get("requirement_authorities", [])
-        if isinstance(item, dict)
-    }
-    unusual = payload.get("unusual_scenario_review")
-    candidates = unusual.get("candidates") if isinstance(unusual, dict) else None
-    if isinstance(candidates, list):
-        for candidate in candidates:
-            if not isinstance(candidate, dict):
-                continue
-            alternatives = candidate.get("alternatives")
-            if not isinstance(alternatives, list) or not alternatives:
-                errors.append("planning_approval_unusual_alternatives_empty")
-            refs = candidate.get("source_requirement_refs")
-            if not isinstance(refs, list):
-                continue
-            if candidate.get("disposition") == "explicit_requirement" and not refs:
-                errors.append(
-                    "planning_approval_unusual_explicit_requirement_refs_missing"
-                )
-            if any(not isinstance(ref, str) or ref not in authority_ids for ref in refs):
-                errors.append(
-                    "planning_approval_unusual_source_requirement_ref_unknown"
-                )
+    expected_consumer = PLANNING_APPROVAL_CONSUMERS.get(typed_exit)
+    if expected_consumer is None or payload.get("consumer") != expected_consumer:
+        errors.append("planning_approval_exit_consumer_mismatch")
+
+    dimensions = (
+        semantic.get("checked_dimensions")
+        if isinstance(semantic.get("checked_dimensions"), dict)
+        else {}
+    )
+    if set(dimensions) != set(PLANNING_APPROVAL_DIMENSIONS):
+        errors.append("planning_approval_checked_dimensions_incomplete")
+    if typed_exit == "approved":
+        if any(dimensions.get(item) is not True for item in PLANNING_APPROVAL_DIMENSIONS):
+            errors.append("planning_approval_passed_dimensions_incomplete")
+        for field in (
+            "findings",
+            "revision_actions",
+            "scope_proposals",
+            "blocking_reasons",
+        ):
+            if semantic.get(field) != []:
+                errors.append(f"planning_approval_approved_{field}_not_empty")
     return context_sort(errors)
 
 
-def planning_facts_digest(payload: dict[str, Any]) -> str:
-    return context_digest({
-        key: value
-        for key, value in payload.items()
-        if key not in {"generated_at", "facts_sha256"}
-    })
+def ai_first_file_set_content_sha256(
+    root: Path,
+    paths: list[str],
+) -> str:
+    files: list[dict[str, str]] = []
+    for path_value in paths:
+        path = resolve_repo_path(root, path_value)
+        if not path.is_file() or path.is_symlink():
+            raise WorkflowError(
+                "AI-first content identity requires safe regular files.",
+                exit_code=2,
+                payload={"path": path_value},
+            )
+        files.append(
+            {
+                "path": path_value,
+                "content_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+        )
+    encoded = json.dumps(
+        files,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def build_planning_approval_payload(
@@ -8345,182 +6206,83 @@ def build_planning_approval_payload(
     authored: dict[str, Any],
     task_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    del task_context
     expected_keys = {
-        "mode", "requirement_authorities", "docs_ssot_plan", "provenance_review",
-        "unusual_scenario_review", "semantic_review", "user_confirmation",
-        "typed_exit", "consumer", "reason", "supersedes_facts_sha256",
+        "mode",
+        "authority_refs",
+        "docs_ssot_plan",
+        "semantic_review",
+        "typed_exit",
+        "consumer",
+        "reason",
     }
     if set(authored) != expected_keys:
         raise WorkflowError(
-            "Planning approval AI-reviewed input has missing or unknown fields.",
+            "Planning approval semantic result has missing or unknown fields.",
             exit_code=2,
             payload={"expected": sorted(expected_keys), "actual": sorted(authored)},
         )
     mode = str(authored.get("mode") or "").strip()
     if mode not in {"workflow", "standalone"}:
-        raise WorkflowError("Planning approval mode must be workflow or standalone.", exit_code=2)
-    task_context = task_context or load_task_start_context(task_dir, load_config(root))
-    required_paths = [resolve_task_local_path(root, task_dir, name) for name in DEFAULT_PLANNING_ARTIFACTS]
-    if any(not path.is_file() for path in required_paths):
-        raise WorkflowError("Planning approval requires prd.md, design.md, and implement.md.", exit_code=2)
-    wording_path, wording_evidence = contract_wording_planning_evidence(
-        root, task_dir, CONTRACT_WORDING_EVIDENCE_ARTIFACT
-    )
-    ambiguity_review = contract_wording_planning_projection(wording_evidence)
-    reviewed = [file_digest(root, path) for path in required_paths]
-    logical_task = active_task_relative_for_archive(root, task_dir)
-    wording_binding = {
-        "artifact_path": (
-            f"{logical_task}/{CONTRACT_WORDING_EVIDENCE_ARTIFACT}"
-            if logical_task is not None
-            else repo_relative(root, wording_path)
-        ),
-        "schema_id": "guru-contract-wording-review-1.0",
-        "profile": "planning_artifacts",
-        "typed_exit": "pass",
-        "artifact_sha256": hashlib.sha256(wording_path.read_bytes()).hexdigest(),
-        "facts_sha256": wording_evidence["facts_sha256"],
-        "scope_sha256": wording_evidence["scope"]["scope_sha256"],
-        "scan_sha256": wording_evidence["scan"]["scan_sha256"],
-    }
-    authorities_raw = authored.get("requirement_authorities")
-    if not isinstance(authorities_raw, list) or not authorities_raw:
-        raise WorkflowError("Planning approval requires at least one requirement authority.", exit_code=2)
-    authorities = [planning_current_authority(root, item, task_dir) for item in authorities_raw]
-    authority_ids = [item["id"] for item in authorities]
-    if len(authority_ids) != len(set(authority_ids)):
-        raise WorkflowError("Planning approval authority ids must be unique.", exit_code=2)
-    authorities_by_id = {item["id"]: item for item in authorities}
-
-    docs = copy.deepcopy(authored.get("docs_ssot_plan"))
-    if not isinstance(docs, dict):
-        raise WorkflowError("Planning approval requires a Docs SSOT Plan object.", exit_code=2)
-    docs_path = planning_task_artifact_path(root, task_dir, docs.get("artifact_path"))
-    _statement, docs_sha = planning_locator_statement(docs_path, docs.get("locator"))
-    docs["artifact_path"] = repo_relative(root, docs_path)
-    docs["statement_sha256"] = docs_sha
-
-    unusual = copy.deepcopy(authored.get("unusual_scenario_review"))
-    if not isinstance(unusual, dict) or not isinstance(unusual.get("candidates"), list):
-        raise WorkflowError("Planning approval requires unusual scenario review.", exit_code=2)
-    candidates: list[dict[str, Any]] = []
-    for raw_candidate in unusual["candidates"]:
-        if not isinstance(raw_candidate, dict):
-            raise WorkflowError("Unusual scenario candidates must be objects.", exit_code=2)
-        candidate = copy.deepcopy(raw_candidate)
-        proposal_sha = planning_unusual_proposal_digest(candidate)
-        confirmation = candidate.get("confirmation")
-        if candidate.get("disposition") == "confirmed_scope_expansion":
-            if (
-                not isinstance(confirmation, dict)
-                or confirmation.get("confirmation_kind") != "dedicated-unusual-scenario"
-                or confirmation.get("proposal_sha256") != proposal_sha
-                or confirmation.get("authority_ref") not in authority_ids
-            ):
-                raise WorkflowError("Confirmed unusual scope expansion requires exact dedicated confirmation and current authority.", exit_code=2)
-        elif confirmation is not None:
-            raise WorkflowError("Only confirmed unusual scope expansion accepts dedicated confirmation.", exit_code=2)
-        candidate["proposal_sha256"] = proposal_sha
-        candidates.append(candidate)
-    candidate_ids = [str(item.get("id") or "") for item in candidates]
-    if not all(candidate_ids) or len(candidate_ids) != len(set(candidate_ids)):
         raise WorkflowError(
-            "Unusual scenario candidate ids must be non-empty and unique.", exit_code=2
+            "Planning approval mode must be workflow or standalone.",
+            exit_code=2,
         )
-    unusual_candidates_by_id = {
-        str(item["id"]): item for item in candidates
-    }
-    unusual["candidates"] = candidates
-    unusual["unresolved_count"] = sum(
-        1 for item in candidates if item.get("disposition") == "clarification_required"
-    )
-    unusual["review_sha256"] = planning_unusual_review_digest(unusual)
 
-    provenance = copy.deepcopy(authored.get("provenance_review"))
-    if not isinstance(provenance, dict) or not isinstance(provenance.get("entries"), list):
-        raise WorkflowError("Planning approval requires provenance review entries.", exit_code=2)
-    entries: list[dict[str, Any]] = []
-    for raw_entry in provenance["entries"]:
-        if not isinstance(raw_entry, dict):
-            raise WorkflowError("Planning provenance entries must be objects.", exit_code=2)
-        entry = copy.deepcopy(raw_entry)
-        artifact_path = planning_task_artifact_path(root, task_dir, entry.get("artifact_path"))
-        _statement, statement_sha = planning_locator_statement(artifact_path, entry.get("locator"))
-        entry["artifact_path"] = repo_relative(root, artifact_path)
-        entry["statement_sha256"] = statement_sha
-        if entry.get("classification") not in PLANNING_APPROVAL_PROVENANCE_CLASSES:
-            raise WorkflowError("Planning provenance classification is invalid.", exit_code=2)
-        refs = entry.get("authority_refs") if isinstance(entry.get("authority_refs"), list) else []
-        if any(ref not in authority_ids for ref in refs):
-            raise WorkflowError("Planning provenance authority_refs must resolve current authorities.", exit_code=2)
-        choice = entry.get("implementation_choice")
-        if isinstance(choice, dict):
-            alternatives = choice.get("alternatives") if isinstance(choice.get("alternatives"), list) else []
-            alternative_ids = [row.get("id") for row in alternatives if isinstance(row, dict)]
-            if len(alternative_ids) != len(set(alternative_ids)) or choice.get("selected_id") not in alternative_ids:
-                raise WorkflowError("Planning implementation choice selected_id must resolve one unique alternative.", exit_code=2)
-        expansion = entry.get("scope_expansion")
-        if entry.get("classification") == "approved_scope_expansion":
-            canonical_expansion, expansion_errors = planning_scope_expansion_projection(
-                root,
-                task_dir,
-                expansion,
-                authorities_by_id,
-                unusual_candidates_by_id,
-                refs,
+    planning_paths: list[str] = []
+    for name in DEFAULT_PLANNING_ARTIFACTS:
+        path = resolve_task_local_path(root, task_dir, name)
+        if (
+            not path.is_file()
+            or path.is_symlink()
+            or not path.read_text(encoding="utf-8").strip()
+        ):
+            raise WorkflowError(
+                "Planning approval requires non-empty prd.md, design.md, and implement.md.",
+                exit_code=2,
             )
-            if expansion_errors:
-                raise WorkflowError(
-                    "Approved scope expansion binding is invalid.",
-                    exit_code=2,
-                    payload={"error_codes": expansion_errors},
-                )
-            entry["scope_expansion"] = canonical_expansion
-        entries.append(entry)
-    entry_ids = [str(item.get("id") or "") for item in entries]
-    if not all(entry_ids) or len(entry_ids) != len(set(entry_ids)):
-        raise WorkflowError("Planning provenance entry ids must be non-empty and unique.", exit_code=2)
-    coverage = provenance.get("coverage")
-    if not isinstance(coverage, dict) or set(coverage.get("reviewed_entry_ids") or []) != set(entry_ids):
-        raise WorkflowError("Planning provenance coverage must reference every entry exactly.", exit_code=2)
-    provenance["entries"] = entries
-    coverage["review_sha256"] = planning_coverage_digest(entries, coverage)
+        planning_paths.append(repo_relative(root, path))
 
-    snapshot = planning_repository_snapshot(root, task_dir, task_context)
+    authority_refs = authored.get("authority_refs")
+    if (
+        not isinstance(authority_refs, list)
+        or not authority_refs
+        or any(not isinstance(item, str) or not item.strip() for item in authority_refs)
+        or len(authority_refs) != len(set(authority_refs))
+    ):
+        raise WorkflowError(
+            "Planning approval requires unique current authority refs.",
+            exit_code=2,
+        )
+
     payload = {
         "schema_version": PLANNING_APPROVAL_SCHEMA_VERSION,
         "skill_id": PLANNING_APPROVAL_SKILL_ID,
-        "generated_at": now_iso(),
         "mode": mode,
-        "task": planning_task_projection(root, task_dir, task_context),
-        "repository_snapshot": snapshot,
-        "requirement_authorities": authorities,
-        "reviewed_artifacts": reviewed,
-        "approved_artifacts": copy.deepcopy(reviewed),
-        "docs_ssot_plan": docs,
-        "contract_wording_review": wording_binding,
-        "ambiguity_review": ambiguity_review,
-        "provenance_review": provenance,
-        "unusual_scenario_review": unusual,
+        "task_ref": repo_relative(root, task_dir),
+        "planning_paths": planning_paths,
+        "reviewed_content_sha256": ai_first_file_set_content_sha256(
+            root,
+            planning_paths,
+        ),
+        "authority_refs": [item.strip() for item in authority_refs],
+        "docs_ssot_plan": copy.deepcopy(authored.get("docs_ssot_plan")),
         "semantic_review": copy.deepcopy(authored.get("semantic_review")),
-        "user_confirmation": copy.deepcopy(authored.get("user_confirmation")),
         "typed_exit": authored.get("typed_exit"),
-        "consumer": copy.deepcopy(authored.get("consumer")),
         "reason": authored.get("reason"),
-        "supersedes_facts_sha256": authored.get("supersedes_facts_sha256"),
+        "consumer": copy.deepcopy(authored.get("consumer")),
     }
-    payload["facts_sha256"] = planning_facts_digest(payload)
-    schema_errors = skill_json_schema_validation_errors(
-        payload, planning_approval_schema(root), "planning approval"
+    errors = skill_json_schema_validation_errors(
+        payload,
+        planning_approval_schema(root),
+        "planning approval",
     )
-    validation_errors = context_sort(
-        schema_errors + planning_approval_closed_union_errors(payload)
-    )
-    if validation_errors:
+    errors.extend(planning_approval_closed_union_errors(payload))
+    if errors:
         raise WorkflowError(
-            "Planning approval result validation failed.",
+            "Planning approval compact semantic result is invalid.",
             exit_code=2,
-            payload={"error_codes": validation_errors},
+            payload={"error_codes": context_sort(errors)},
         )
     return payload
 
@@ -8528,239 +6290,67 @@ def build_planning_approval_payload(
 def validate_planning_approval(
     root: Path,
     task_dir: Path,
-    allow_committed_head: bool = False,
     required_exit: str | None = "approved",
 ) -> tuple[Path, dict[str, Any], list[str]]:
-    path = planning_approval_path(task_dir)
-    if not path.exists():
-        raise WorkflowError(f"Planning approval artifact not found: {path}", exit_code=2)
+    path = planning_approval_path(root, task_dir)
+    if not path.is_file() or path.is_symlink():
+        raise WorkflowError(
+            f"Planning approval artifact not found: {path}",
+            exit_code=2,
+        )
     payload = read_json(path)
-    errors: list[str] = []
-    if payload.get("schema_version") != PLANNING_APPROVAL_SCHEMA_VERSION:
-        legacy = payload.get("schema_version") == PLANNING_APPROVAL_LEGACY_SCHEMA_VERSION
-        errors.append(
-            "planning_approval_legacy_1_2_requires_complete_v2_reentry"
-            if legacy
+    version = str(payload.get("schema_version") or "")
+    if version != PLANNING_APPROVAL_SCHEMA_VERSION:
+        code = (
+            "planning_approval_legacy_requires_ai_first_reentry"
+            if version in PLANNING_APPROVAL_LEGACY_SCHEMA_VERSIONS
             else "planning_approval_schema_version_invalid"
         )
-        return path, payload, errors
+        return path, payload, [code]
+
+    errors: list[str] = []
     try:
-        schema_errors = skill_json_schema_validation_errors(
-            payload, planning_approval_schema(root), "planning approval"
+        errors.extend(
+            skill_json_schema_validation_errors(
+                payload,
+                planning_approval_schema(root),
+                "planning approval",
+            )
         )
     except WorkflowError as exc:
-        schema_errors = list(exc.payload.get("error_codes") or [str(exc)])
-    errors.extend(schema_errors)
+        errors.extend(exc.payload.get("error_codes") or [str(exc)])
     errors.extend(planning_approval_closed_union_errors(payload))
-    if payload.get("facts_sha256") != planning_facts_digest(payload):
-        errors.append("planning_approval_facts_sha256_mismatch")
-    expected_consumer = PLANNING_APPROVAL_CONSUMERS.get(str(payload.get("typed_exit") or ""))
-    if expected_consumer is None or payload.get("consumer") != expected_consumer:
-        errors.append("planning_approval_exit_consumer_mismatch")
+
+    task_ref = repo_relative(root, task_dir)
+    if payload.get("task_ref") != task_ref:
+        errors.append("planning_approval_task_ref_mismatch")
+    expected_paths = [
+        repo_relative(root, task_dir / name)
+        for name in DEFAULT_PLANNING_ARTIFACTS
+    ]
+    if payload.get("planning_paths") != expected_paths:
+        errors.append("planning_approval_paths_mismatch")
+    for path_value in expected_paths:
+        candidate = resolve_repo_path(root, path_value)
+        if (
+            not candidate.is_file()
+            or candidate.is_symlink()
+            or not candidate.read_text(encoding="utf-8").strip()
+        ):
+            errors.append("planning_approval_required_artifact_missing")
+            break
+    try:
+        current_content_sha256 = ai_first_file_set_content_sha256(
+            root,
+            expected_paths,
+        )
+    except WorkflowError:
+        current_content_sha256 = ""
+    if payload.get("reviewed_content_sha256") != current_content_sha256:
+        errors.append("planning_approval_reviewed_content_stale")
     if required_exit is not None and payload.get("typed_exit") != required_exit:
         errors.append(f"planning_approval_requires_{required_exit}_exit")
-    errors.extend(planning_wording_review_errors(root, task_dir, payload))
-    reviewed = payload.get("reviewed_artifacts")
-    approved_alias = payload.get("approved_artifacts")
-    normalized_reviewed: list[Any] = []
-    if not isinstance(reviewed, list) or not reviewed:
-        errors.append("planning-approval.json 缺少 reviewed_artifacts。")
-        reviewed = []
-    if not isinstance(approved_alias, list) or not approved_alias:
-        errors.append("planning-approval.json 缺少 approved_artifacts alias。")
-    if reviewed:
-        normalized_reviewed = [
-            normalized_digest_entry(root, task_dir, item)
-            for item in reviewed
-        ]
-        reviewed_paths = {str(item.get("path") or "") for item in normalized_reviewed if isinstance(item, dict)}
-        for name in DEFAULT_PLANNING_ARTIFACTS:
-            required_path = repo_relative(root, task_dir / name)
-            if required_path not in reviewed_paths:
-                errors.append(f"planning-approval.json 未在 reviewed_artifacts 记录 {name}。")
-        for item in normalized_reviewed:
-            errors.extend(digest_errors(root, item, "planning approval reviewed_artifacts"))
-    if isinstance(approved_alias, list) and approved_alias:
-        normalized_alias = [
-            normalized_digest_entry(root, task_dir, item)
-            for item in approved_alias
-        ]
-        alias_paths = {str(item.get("path") or "") for item in normalized_alias if isinstance(item, dict)}
-        for name in DEFAULT_PLANNING_ARTIFACTS:
-            required_path = repo_relative(root, task_dir / name)
-            if required_path not in alias_paths:
-                errors.append(f"planning-approval.json 未在 approved_artifacts alias 记录 {name}。")
-        for item in normalized_alias:
-            errors.extend(digest_errors(root, item, "planning approval approved_artifacts"))
-        if normalized_alias != normalized_reviewed:
-            errors.append(
-                "planning-approval.json approved_artifacts alias 必须与 reviewed_artifacts 完全一致。"
-            )
-    else:
-        pass
-    if normalized_reviewed:
-        try:
-            expected_rows = [
-                normalized_digest_entry(root, task_dir, file_digest(root, task_dir / name))
-                for name in DEFAULT_PLANNING_ARTIFACTS
-            ]
-        except WorkflowError:
-            errors.append("planning_approval_required_artifact_missing")
-        else:
-            content_keys = ("path", "sha256", "size_bytes")
-            recorded_content = [
-                {key: row.get(key) for key in content_keys}
-                for row in normalized_reviewed
-                if isinstance(row, dict)
-            ]
-            expected_content = [
-                {key: row.get(key) for key in content_keys}
-                for row in expected_rows
-                if isinstance(row, dict)
-            ]
-            if recorded_content != expected_content:
-                errors.append("planning_approval_reviewed_artifacts_not_current")
-
-    docs = payload.get("docs_ssot_plan")
-    if isinstance(docs, dict):
-        try:
-            docs_path = planning_task_artifact_path(root, task_dir, docs.get("artifact_path"))
-            _statement, statement_sha = planning_locator_statement(docs_path, docs.get("locator"))
-            if docs.get("statement_sha256") != statement_sha:
-                errors.append("planning_approval_docs_ssot_statement_stale")
-        except WorkflowError:
-            errors.append("planning_approval_docs_ssot_locator_invalid")
-
-    recorded_authorities = {
-        str(item.get("id") or ""): item
-        for item in payload.get("requirement_authorities", [])
-        if isinstance(item, dict)
-    }
-    unusual_payload = payload.get("unusual_scenario_review")
-    unusual_rows = (
-        unusual_payload.get("candidates")
-        if isinstance(unusual_payload, dict)
-        and isinstance(unusual_payload.get("candidates"), list)
-        else []
-    )
-    unusual_candidate_ids = [
-        str(item.get("id") or "") for item in unusual_rows if isinstance(item, dict)
-    ]
-    if (
-        len(unusual_candidate_ids) != len(unusual_rows)
-        or not all(unusual_candidate_ids)
-        or len(unusual_candidate_ids) != len(set(unusual_candidate_ids))
-    ):
-        errors.append("planning_approval_unusual_candidate_ids_invalid")
-    unusual_candidates_by_id = {
-        str(item.get("id") or ""): item
-        for item in unusual_rows
-        if isinstance(item, dict) and str(item.get("id") or "")
-    }
-
-    provenance = payload.get("provenance_review")
-    if isinstance(provenance, dict) and isinstance(provenance.get("entries"), list):
-        authority_ids = set(recorded_authorities)
-        entry_ids: list[str] = []
-        for entry in provenance["entries"]:
-            if not isinstance(entry, dict):
-                continue
-            entry_ids.append(str(entry.get("id") or ""))
-            try:
-                artifact_path = planning_task_artifact_path(root, task_dir, entry.get("artifact_path"))
-                _statement, statement_sha = planning_locator_statement(artifact_path, entry.get("locator"))
-                if entry.get("statement_sha256") != statement_sha:
-                    errors.append("planning_approval_provenance_statement_stale")
-            except WorkflowError:
-                errors.append("planning_approval_provenance_locator_invalid")
-            refs = entry.get("authority_refs") if isinstance(entry.get("authority_refs"), list) else []
-            if any(ref not in authority_ids for ref in refs):
-                errors.append("planning_approval_provenance_authority_unknown")
-            choice = entry.get("implementation_choice")
-            if isinstance(choice, dict):
-                alternative_ids = [
-                    row.get("id") for row in choice.get("alternatives", []) if isinstance(row, dict)
-                ]
-                if len(alternative_ids) != len(set(alternative_ids)) or choice.get("selected_id") not in alternative_ids:
-                    errors.append("planning_approval_choice_selection_invalid")
-            if entry.get("classification") == "approved_scope_expansion":
-                canonical_expansion, expansion_errors = planning_scope_expansion_projection(
-                    root,
-                    task_dir,
-                    entry.get("scope_expansion"),
-                    recorded_authorities,
-                    unusual_candidates_by_id,
-                    refs,
-                )
-                errors.extend(expansion_errors)
-                if canonical_expansion != entry.get("scope_expansion"):
-                    errors.append("planning_approval_scope_expansion_projection_mismatch")
-        coverage = provenance.get("coverage")
-        if isinstance(coverage, dict):
-            if set(coverage.get("reviewed_entry_ids") or []) != set(entry_ids):
-                errors.append("planning_approval_provenance_coverage_mismatch")
-            if coverage.get("review_sha256") != planning_coverage_digest(provenance["entries"], coverage):
-                errors.append("planning_approval_provenance_review_digest_mismatch")
-
-    unusual = unusual_payload
-    if isinstance(unusual, dict) and isinstance(unusual.get("candidates"), list):
-        unresolved = 0
-        authority_ids = {
-            str(item.get("id") or "")
-            for item in payload.get("requirement_authorities", [])
-            if isinstance(item, dict)
-        }
-        for candidate in unusual["candidates"]:
-            if not isinstance(candidate, dict):
-                continue
-            proposal_sha = planning_unusual_proposal_digest(candidate)
-            if candidate.get("proposal_sha256") != proposal_sha:
-                errors.append("planning_approval_unusual_proposal_digest_mismatch")
-            confirmation = candidate.get("confirmation")
-            if candidate.get("disposition") == "confirmed_scope_expansion":
-                if (
-                    not isinstance(confirmation, dict)
-                    or confirmation.get("confirmation_kind") != "dedicated-unusual-scenario"
-                    or confirmation.get("proposal_sha256") != proposal_sha
-                    or confirmation.get("authority_ref") not in authority_ids
-                ):
-                    errors.append("planning_approval_unusual_confirmation_mismatch")
-            if candidate.get("disposition") == "clarification_required":
-                unresolved += 1
-        if unusual.get("unresolved_count") != unresolved:
-            errors.append("planning_approval_unusual_unresolved_count_mismatch")
-        if unusual.get("review_sha256") != planning_unusual_review_digest(unusual):
-            errors.append("planning_approval_unusual_review_digest_mismatch")
-
-    if not task_dir_is_archived(root, task_dir):
-        try:
-            config = load_config(root)
-            task_context = load_task_start_context(task_dir, config)
-            current_task = planning_task_projection(root, task_dir, task_context)
-            recorded_task = payload.get("task") if isinstance(payload.get("task"), dict) else {}
-            for key in ["task_dir", "task_identity_sha256", "scope_ledger_sha256", "branch", "issue_numbers"]:
-                if recorded_task.get(key) != current_task.get(key):
-                    errors.append(f"planning_approval_task_{key}_stale")
-            current_authorities = [
-                planning_current_authority(root, item, task_dir)
-                for item in payload.get("requirement_authorities", [])
-            ]
-            if current_authorities != payload.get("requirement_authorities"):
-                errors.append("planning_approval_requirement_authority_stale")
-            if current_task.get("status") == "planning":
-                current_snapshot = planning_repository_snapshot(root, task_dir, task_context)
-                recorded_snapshot = (
-                    payload.get("repository_snapshot")
-                    if isinstance(payload.get("repository_snapshot"), dict)
-                    else {}
-                )
-                for key in ["selected_base", "base_ref", "base_head", "head", "dirty_paths"]:
-                    if recorded_snapshot.get(key) != current_snapshot.get(key):
-                        errors.append(f"planning_approval_repository_snapshot_{key}_stale")
-        except WorkflowError as exc:
-            errors.append(f"planning_approval_current_facts_invalid:{exc}")
-    return path, payload, errors
-
+    return path, payload, context_sort(errors)
 
 def phase2_check_schema_path(root: Path) -> Path:
     candidates = [
@@ -8795,492 +6385,183 @@ def load_phase2_check_schema(root: Path) -> dict[str, Any]:
     return schema
 
 
-def phase2_path_digest(root: Path, path: Path) -> dict[str, Any]:
-    digest = file_digest(root, path)
-    return {
-        "path": digest["path"],
-        "sha256": digest["sha256"],
-        "size_bytes": digest["size_bytes"],
-    }
-
-
-def phase2_requirement_artifact_digest(
-    root: Path,
-    path: Path,
-) -> dict[str, Any]:
-    relative = Path(repo_relative(root, path))
-    if (
-        relative.name == "issue-scope-ledger.json"
-        and relative.parts[:2] == (".trellis", "tasks")
-    ):
-        scope = planning_scope_ledger_projection(read_json(path))
-        canonical = json.dumps(
-            scope,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-        return {
-            "path": relative.as_posix(),
-            "sha256": context_digest(scope),
-            "size_bytes": len(canonical),
-        }
-    return phase2_path_digest(root, path)
-
-
-def phase2_evidence_projection(
-    root: Path,
-    value: Any,
-    label: str,
-    *,
-    preserve_recorded_paths: set[str] | None = None,
-) -> dict[str, Any]:
-    if not isinstance(value, dict) or not str(value.get("summary") or "").strip():
-        raise WorkflowError(f"{label} must contain an AI-authored summary.", exit_code=2)
-    artifacts = value.get("artifacts")
-    if not isinstance(artifacts, list) or not artifacts:
-        raise WorkflowError(f"{label}.artifacts must be a non-empty array.", exit_code=2)
-    current: list[dict[str, Any]] = []
-    for item in artifacts:
-        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
-        if not path_value:
-            raise WorkflowError(f"{label} contains an invalid artifact path.", exit_code=2)
-        path = resolve_repo_path(root, path_value)
-        if not path.is_file() or path.is_symlink():
-            raise WorkflowError(f"{label} artifact is missing or invalid: {path_value}", exit_code=2)
-        if path_value in (preserve_recorded_paths or set()):
-            current.append({
-                "path": path_value,
-                "sha256": item.get("sha256"),
-                "size_bytes": item.get("size_bytes"),
-            })
-        else:
-            current.append(
-                phase2_requirement_artifact_digest(root, path)
-                if label == "requirement_provenance"
-                else phase2_path_digest(root, path)
-            )
-    projection = {"summary": str(value["summary"]).strip(), "artifacts": current}
-    projection["facts_sha256"] = context_digest(projection)
-    return projection
-
-
-def phase2_docs_projection(root: Path, value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        raise WorkflowError("docs_ssot_plan must be an AI-authored object.", exit_code=2)
-    durable = value.get("durable_paths")
-    if not isinstance(durable, list) or not durable:
-        raise WorkflowError("docs_ssot_plan.durable_paths must be a non-empty array.", exit_code=2)
-    paths: list[dict[str, Any]] = []
-    for item in durable:
-        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
-        path = resolve_repo_path(root, path_value) if path_value else root / ".missing"
-        if not path.is_file() or path.is_symlink():
-            raise WorkflowError(f"Docs SSOT durable path is missing or invalid: {path_value}", exit_code=2)
-        paths.append(phase2_path_digest(root, path))
-    projection = {
-        "strategy": value.get("strategy"),
-        "durable_paths": paths,
-        "sync_result": value.get("sync_result"),
-        "task_delta_merged": value.get("task_delta_merged"),
-        "task_history_only": value.get("task_history_only"),
-        "no_update_reason": value.get("no_update_reason"),
-        "followup_or_pr_limit": value.get("followup_or_pr_limit"),
-    }
-    projection["facts_sha256"] = context_digest(projection)
-    return projection
-
-
-def phase2_repository_projection(
-    root: Path,
-    task_dir: Path,
-    task_context: dict[str, Any],
-    authored: Any,
-    additional_dirty_excluded: set[str] | None = None,
-) -> dict[str, Any]:
-    if (
-        not isinstance(authored, dict)
-        or not isinstance(authored.get("reviewed_paths"), list)
-        or not authored["reviewed_paths"]
-    ):
-        raise WorkflowError("repository_snapshot.reviewed_paths must be a non-empty array.", exit_code=2)
-    task = task_json(task_dir)
-    base_branch = str(task.get("base_branch") or task_context.get("base_branch") or "").strip()
-    if not base_branch:
-        raise WorkflowError("Phase 2 cannot resolve the selected base branch.", exit_code=2)
-    base_ref = str(task_context.get("base_ref") or diff_base_ref(root, base_branch)).strip()
-    base_head = str(ref_head(root, base_ref) or task_context.get("base_head_sha") or "").strip()
-    head = current_head(root)
-    if not re.fullmatch(r"[0-9a-f]{40}", base_head) or not re.fullmatch(r"[0-9a-f]{40}", head):
-        raise WorkflowError("Phase 2 requires full base and HEAD identities.", exit_code=2)
-    reviewed: list[dict[str, Any]] = []
-    for item in authored["reviewed_paths"]:
-        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
-        path = resolve_repo_path(root, path_value) if path_value else root / ".missing"
-        if not path.is_file() or path.is_symlink():
-            raise WorkflowError(f"Reviewed path is missing or invalid: {path_value}", exit_code=2)
-        reviewed.append(phase2_path_digest(root, path))
-    artifact_rel = repo_relative(root, phase2_check_path(task_dir))
-    dirty_excluded = {artifact_rel}
-    dirty_excluded.update(additional_dirty_excluded or set())
-    snapshot = {
-        "base_ref": base_ref,
-        "base_head": base_head,
-        "head": head,
-        "diff_range": diff_range(root, base_branch),
-        "dirty_paths": sorted(path for path in git_status_paths(root) if path not in dirty_excluded),
-        "reviewed_paths": reviewed,
-    }
-    snapshot["snapshot_sha256"] = context_digest(snapshot)
-    return snapshot
-
-
-def phase2_task_projection(root: Path, task_dir: Path, task_context: dict[str, Any]) -> dict[str, Any]:
-    task = task_json(task_dir)
-    planning = planning_task_projection(root, task_dir, task_context)
-    base_branch = str(task.get("base_branch") or task_context.get("base_branch") or "").strip()
-    return {
-        "task_dir": planning["task_dir"],
-        "task_id": str(task.get("id") or task_dir.name),
-        "branch": planning["branch"],
-        "base_branch": base_branch,
-        "issue_numbers": planning["issue_numbers"],
-        "task_identity_sha256": planning["task_identity_sha256"],
-    }
-
-
-def phase2_planning_projection(root: Path, task_dir: Path) -> dict[str, Any]:
-    path, approval, errors = validate_planning_approval(root, task_dir, required_exit="approved")
-    if errors:
-        raise WorkflowError(
-            "guru-check-task requires current approved guru-planning-approval-2.0 evidence.",
-            exit_code=2,
-            payload={"error_codes": errors},
-        )
-    reviewed = approval.get("reviewed_artifacts")
-    if not isinstance(reviewed, list) or len(reviewed) != 3:
-        raise WorkflowError("Planning approval does not bind exactly three reviewed artifacts.", exit_code=2)
-    current_reviewed = []
-    for item in reviewed:
-        path_value = str(item.get("path") or "").strip() if isinstance(item, dict) else ""
-        artifact_path = resolve_repo_path(root, path_value) if path_value else root / ".missing"
-        if not artifact_path.is_file() or artifact_path.is_symlink():
-            raise WorkflowError(f"Reviewed planning artifact is missing: {path_value}", exit_code=2)
-        current_reviewed.append(phase2_path_digest(root, artifact_path))
-    return {
-        "schema_id": "guru-planning-approval-2.0",
-        "typed_exit": "approved",
-        "artifact": phase2_path_digest(root, path),
-        "reviewed_artifacts": current_reviewed,
-        "facts_sha256": approval.get("facts_sha256"),
-    }
-
-
-def phase2_agent_projection(root: Path, task_dir: Path, authored: Any) -> dict[str, Any]:
-    if not isinstance(authored, dict):
-        raise WorkflowError("agent_assignment must be an AI-authored object.", exit_code=2)
-    path = agent_assignment_path(task_dir)
-    artifact_path = repo_relative(root, path) if path.is_file() and not path.is_symlink() else None
-    recovery_errors = phase2_agent_assignment_errors(root, task_dir)
-    implementation_agent_ids = authored.get("implementation_agent_ids")
-    check_agent_ids = authored.get("check_agent_ids")
-    if artifact_path is None:
-        raise WorkflowError(
-            "guru-check-task requires a task-local agent-assignment.json artifact.",
-            exit_code=2,
-        )
-    if recovery_errors:
-        raise WorkflowError(
-            "guru-check-task requires a completed agent assignment recovery chain.",
-            exit_code=2,
-            payload={"errors": recovery_errors},
-        )
-    assignment = normalize_agent_assignment_for_task(root, task_dir, read_json(path))
-    phase2_roles = {"实现代理", "阶段二检查代理"}
-    phase2_agents = [
-        copy.deepcopy(item)
-        for item in assignment.get("agents", [])
-        if isinstance(item, dict) and item.get("logical_role") in phase2_roles
-    ]
-    phase2_agent_ids = {
-        str(item.get("agent_id") or "").strip()
-        for item in phase2_agents
-        if str(item.get("agent_id") or "").strip()
-    }
-    phase2_status_events = [
-        copy.deepcopy(item)
-        for item in assignment.get("status_events", [])
-        if isinstance(item, dict) and item.get("logical_role") in phase2_roles
-    ]
-    phase2_event_ids = {
-        str(item.get("event_id") or "").strip()
-        for item in phase2_status_events
-        if str(item.get("event_id") or "").strip()
-    }
-    stable_state = {
-        "schema_version": assignment.get("schema_version"),
-        "task": assignment.get("task"),
-        "agents": phase2_agents,
-        "liveness": {
-            agent_id: copy.deepcopy(entry)
-            for agent_id, entry in sorted((assignment.get("liveness") or {}).items())
-            if agent_id in phase2_agent_ids
-        },
-        "status_events": phase2_status_events,
-        "event_corrections": [
-            copy.deepcopy(item)
-            for item in assignment.get("event_corrections", [])
-            if isinstance(item, dict)
-            and str(item.get("target_event_id") or "").strip() in phase2_event_ids
-        ],
-        "recovery_links": [
-            copy.deepcopy(item)
-            for item in assignment.get("recovery_links", [])
-            if isinstance(item, dict)
-            and (
-                str(item.get("failed_event_id") or "").strip() in phase2_event_ids
-                or str(item.get("termination_event_id") or "").strip() in phase2_event_ids
-            )
-        ],
-    }
-    completed_by_role = {
-        role: {
-            str(item.get("agent_id") or "").strip()
-            for item in effective_status_events(assignment)
-            if isinstance(item, dict)
-            and item.get("event") == "completed"
-            and item.get("logical_role") == role
-            and str(item.get("agent_id") or "").strip()
-        }
-        for role in ("实现代理", "阶段二检查代理")
-    }
-    if (
-        not completed_by_role["实现代理"]
-        or set(implementation_agent_ids or []) != completed_by_role["实现代理"]
-    ):
-        raise WorkflowError(
-            "agent_assignment.implementation_agent_ids must exactly match completed implementation agents.",
-            exit_code=2,
-        )
-    if (
-        not completed_by_role["阶段二检查代理"]
-        or set(check_agent_ids or []) != completed_by_role["阶段二检查代理"]
-    ):
-        raise WorkflowError(
-            "agent_assignment.check_agent_ids must exactly match completed Phase 2 check agents.",
-            exit_code=2,
-        )
-    stable_state["completed_agent_ids"] = {
-        "implementation": sorted(completed_by_role["实现代理"]),
-        "check": sorted(completed_by_role["阶段二检查代理"]),
-    }
-    stable_state["recovery_complete"] = not recovery_errors
-    projection = {
-        "artifact_path": artifact_path,
-        "implementation_agent_ids": stable_state["completed_agent_ids"]["implementation"],
-        "check_agent_ids": stable_state["completed_agent_ids"]["check"],
-        "recovery_complete": not recovery_errors,
-        "phase2_state_sha256": context_digest(stable_state),
-    }
-    projection["facts_sha256"] = context_digest(projection)
-    return projection
-
-
-def phase2_semantic_projection(payload: dict[str, Any]) -> None:
-    execution = payload.get("check_execution")
-    scope = payload.get("scope_qualification")
-    review = payload.get("semantic_review")
-    if not isinstance(execution, dict) or not isinstance(scope, dict) or not isinstance(review, dict):
-        raise WorkflowError("Phase 2 semantic input is incomplete.", exit_code=2)
-    execution["execution_sha256"] = context_digest({key: value for key, value in execution.items() if key != "execution_sha256"})
-    scope["scope_sha256"] = context_digest(scope.get("candidates"))
-    dimensions = review.get("adequacy_dimensions")
-    review["adequacy_sha256"] = context_digest(dimensions)
-    gate = review.get("ai_review_gate")
-    if not isinstance(gate, dict):
-        raise WorkflowError("Phase 2 AI Review Gate is missing.", exit_code=2)
-    gate["planning_facts_sha256"] = payload["planning"]["facts_sha256"]
-    gate["snapshot_sha256"] = payload["repository_snapshot"]["snapshot_sha256"]
-    gate["scope_sha256"] = scope["scope_sha256"]
-    gate["adequacy_sha256"] = review["adequacy_sha256"]
-    findings = review.get("findings") if isinstance(review.get("findings"), list) else []
-    gate["findings_count"] = len(findings)
-    round_identity = {
-        "planning": payload["planning"]["facts_sha256"],
-        "snapshot": payload["repository_snapshot"]["snapshot_sha256"],
-        "execution": execution["execution_sha256"],
-        "scope": scope["scope_sha256"],
-        "adequacy": review["adequacy_sha256"],
-        "findings": findings,
-        "unverified_items": execution.get("unverified_items"),
-    }
-    gate["full_round_sha256"] = context_digest(round_identity)
-
-
 def phase2_semantic_errors(payload: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    scope = payload.get("scope_qualification") if isinstance(payload.get("scope_qualification"), dict) else {}
-    candidates = scope.get("candidates") if isinstance(scope.get("candidates"), list) else []
-    candidate_ids = [str(item.get("id") or "") for item in candidates if isinstance(item, dict)]
-    if any(not item for item in candidate_ids) or len(candidate_ids) != len(set(candidate_ids)):
-        errors.append("phase2_check_duplicate_or_missing_candidate_id")
-    candidate_by_id = {item.get("id"): item for item in candidates if isinstance(item, dict)}
-    scope_change_required = any(
-        item.get("disposition") == "scope_change_required"
-        for item in candidates
-        if isinstance(item, dict)
+    typed_exit = str(payload.get("typed_exit") or "")
+    semantic = (
+        payload.get("semantic_review")
+        if isinstance(payload.get("semantic_review"), dict)
+        else {}
     )
-    review = payload.get("semantic_review") if isinstance(payload.get("semantic_review"), dict) else {}
-    findings = review.get("findings") if isinstance(review.get("findings"), list) else []
-    finding_ids: set[str] = set()
+    expected_status = {
+        "passed": "passed",
+        "implementation_required": "implementation_required",
+        "planning_stale": "planning_stale",
+        "blocked": "blocked",
+    }.get(typed_exit)
+    if expected_status is None:
+        errors.append("phase2_check_typed_exit_invalid")
+    elif semantic.get("status") != expected_status:
+        errors.append("phase2_check_semantic_status_mismatch")
+    expected_consumer = PHASE2_CHECK_CONSUMERS.get(typed_exit)
+    if expected_consumer is None or payload.get("consumer") != expected_consumer:
+        errors.append("phase2_check_exit_consumer_mismatch")
+
+    dimensions = semantic.get("adequacy_dimensions")
+    dimension_ids = [
+        str(item.get("id") or "")
+        for item in dimensions or []
+        if isinstance(item, dict)
+    ]
+    if (
+        len(dimension_ids) != len(PHASE2_CHECK_DIMENSIONS)
+        or len(dimension_ids) != len(set(dimension_ids))
+        or set(dimension_ids) != set(PHASE2_CHECK_DIMENSIONS)
+    ):
+        errors.append("phase2_check_adequacy_dimensions_incomplete")
+
+    decisions = semantic.get("scope_decisions")
+    findings = semantic.get("findings")
     finding_by_id = {
         str(item.get("id") or ""): item
-        for item in findings
+        for item in findings or []
         if isinstance(item, dict) and str(item.get("id") or "")
     }
-    for finding in findings:
-        if not isinstance(finding, dict):
+    if len(finding_by_id) != len(findings or []):
+        errors.append("phase2_check_finding_ids_invalid")
+    current_scope_finding_ids: set[str] = set()
+    scope_change_count = 0
+    for decision in decisions or []:
+        if not isinstance(decision, dict):
+            errors.append("phase2_check_scope_decision_invalid")
             continue
-        finding_id = str(finding.get("id") or "")
-        candidate = candidate_by_id.get(finding.get("candidate_id"))
-        if not finding_id or finding_id in finding_ids:
-            errors.append("phase2_check_duplicate_or_missing_finding_id")
-        finding_ids.add(finding_id)
-        if not isinstance(candidate, dict) or candidate.get("disposition") != "current_scope":
-            errors.append("phase2_check_finding_candidate_not_current_scope")
-        elif candidate.get("severity") != finding.get("severity") or candidate.get("finding_id") != finding_id:
-            errors.append("phase2_check_finding_candidate_link_mismatch")
-    for candidate in candidates:
-        if not isinstance(candidate, dict):
-            continue
-        if (
-            candidate.get("disposition") in {"current_scope", "scope_change_required"}
-            and not candidate.get("trigger_refs")
-        ):
-            errors.append("phase2_check_scope_candidate_trigger_refs_missing")
-        if candidate.get("disposition") != "current_scope":
-            continue
-        finding_id = str(candidate.get("finding_id") or "")
-        finding = finding_by_id.get(finding_id)
-        if (
-            not finding_id
-            or not isinstance(finding, dict)
-            or finding.get("candidate_id") != candidate.get("id")
-            or finding.get("severity") != candidate.get("severity")
-        ):
-            errors.append("phase2_check_current_scope_candidate_finding_link_missing")
-    dimensions = review.get("adequacy_dimensions") if isinstance(review.get("adequacy_dimensions"), list) else []
-    dimension_ids = [item.get("id") for item in dimensions if isinstance(item, dict)]
-    expected_dimensions = list(PHASE2_CHECK_DIMENSIONS)
-    allowed_evidence_refs = set(PHASE2_CHECK_EVIDENCE_REFS)
-    if payload.get("schema_version") == PHASE2_CHECK_LEGACY_SCHEMA_VERSION:
-        expected_dimensions.insert(-1, "agent_recovery")
-        allowed_evidence_refs.add("agent_assignment")
-    if dimension_ids != expected_dimensions:
-        errors.append("phase2_check_adequacy_dimension_order_mismatch")
-    evidence_refs = {
-        str(ref)
-        for dimension in dimensions
-        if isinstance(dimension, dict) and isinstance(dimension.get("evidence_refs"), list)
-        for ref in dimension["evidence_refs"]
-    }
-    if any(
-        not dimension.get("evidence_refs")
-        for dimension in dimensions
-        if isinstance(dimension, dict)
-    ):
-        errors.append("phase2_check_adequacy_evidence_refs_missing")
-    if not evidence_refs.issubset(allowed_evidence_refs):
-        errors.append("phase2_check_adequacy_evidence_ref_unknown")
-    if not PHASE2_CHECK_EVIDENCE_REFS.issubset(evidence_refs):
-        errors.append("phase2_check_adequacy_evidence_source_uncovered")
-    execution = payload.get("check_execution") if isinstance(payload.get("check_execution"), dict) else {}
-    if not execution.get("commands"):
-        errors.append("phase2_check_execution_commands_missing")
-    worker_evidence = execution.get("worker_evidence") if isinstance(execution.get("worker_evidence"), list) else []
-    worker_agent_ids = {
-        str(item.get("agent_id") or "").strip()
-        for item in worker_evidence
-        if isinstance(item, dict) and str(item.get("agent_id") or "").strip()
-    }
-    if any(not item for item in worker_agent_ids):
-        errors.append("phase2_check_worker_evidence_agent_id_missing")
-    unverified = execution.get("unverified_items") if isinstance(execution.get("unverified_items"), list) else []
-    unverified_ids = [str(item.get("id") or "") for item in unverified if isinstance(item, dict)]
-    if any(not item for item in unverified_ids) or len(unverified_ids) != len(set(unverified_ids)):
-        errors.append("phase2_check_duplicate_or_missing_unverified_id")
-    dimension_finding_ids = {
-        str(item_id)
-        for dimension in dimensions
-        if isinstance(dimension, dict) and isinstance(dimension.get("finding_ids"), list)
-        for item_id in dimension["finding_ids"]
-    }
-    dimension_unverified_ids = {
-        str(item_id)
-        for dimension in dimensions
-        if isinstance(dimension, dict) and isinstance(dimension.get("unverified_ids"), list)
-        for item_id in dimension["unverified_ids"]
-    }
-    if not dimension_finding_ids.issubset(finding_ids):
-        errors.append("phase2_check_adequacy_references_unknown_finding")
-    if not dimension_unverified_ids.issubset(set(unverified_ids)):
-        errors.append("phase2_check_adequacy_references_unknown_unverified_item")
-    if finding_ids - dimension_finding_ids:
-        errors.append("phase2_check_finding_missing_adequacy_reference")
-    if set(unverified_ids) - dimension_unverified_ids:
-        errors.append("phase2_check_unverified_item_missing_adequacy_reference")
-    blocking_unverified = any(item.get("blocking") is True for item in unverified if isinstance(item, dict))
-    open_findings = any(item.get("status") == "open" for item in findings if isinstance(item, dict))
-    gate = review.get("ai_review_gate") if isinstance(review.get("ai_review_gate"), dict) else {}
-    typed_exit = payload.get("typed_exit")
-    if payload.get("consumer") != PHASE2_CHECK_CONSUMERS.get(str(typed_exit)):
-        errors.append("phase2_check_exit_consumer_mismatch")
-    if gate.get("status") != typed_exit:
-        errors.append("phase2_check_gate_exit_mismatch")
+        disposition = decision.get("disposition")
+        finding_id = decision.get("finding_id")
+        if disposition == "current_scope":
+            if not isinstance(finding_id, str) or finding_id not in finding_by_id:
+                errors.append("phase2_check_current_scope_finding_missing")
+            else:
+                current_scope_finding_ids.add(finding_id)
+        elif finding_id is not None:
+            errors.append("phase2_check_non_finding_decision_has_finding")
+        if disposition == "scope_change_required":
+            scope_change_count += 1
+    if set(finding_by_id) != current_scope_finding_ids:
+        errors.append("phase2_check_finding_scope_linkage_mismatch")
+
+    validation = (
+        payload.get("validation")
+        if isinstance(payload.get("validation"), dict)
+        else {}
+    )
+    unverified = validation.get("unverified_items")
+    blocking_unverified = any(
+        isinstance(item, dict) and item.get("blocking") is True
+        for item in unverified or []
+    )
+    open_findings = [
+        item
+        for item in finding_by_id.values()
+        if item.get("status") == "open"
+    ]
     if typed_exit == "passed":
-        if any(item.get("status") != "passed" for item in dimensions if isinstance(item, dict)):
-            errors.append("phase2_check_pass_requires_all_dimensions")
-        if open_findings or blocking_unverified:
-            errors.append("phase2_check_pass_has_blocker")
-        if gate.get("full_rerun") is not True:
-            errors.append("phase2_check_pass_requires_full_rerun")
-    if open_findings and typed_exit != "implementation_required":
-        errors.append("phase2_check_open_finding_requires_implementation")
-    if typed_exit == "implementation_required" and not open_findings:
-        errors.append("phase2_check_implementation_required_without_open_finding")
-    if scope_change_required and typed_exit != "planning_stale":
-        errors.append("phase2_check_scope_change_requires_planning_stale")
-    if typed_exit == "planning_stale" and not scope_change_required:
-        errors.append("phase2_check_planning_stale_without_scope_change")
-    if typed_exit == "planning_stale" and payload.get("route") not in {"reapprove_plan", "clarify_requirements"}:
-        errors.append("phase2_check_planning_route_invalid")
-    if typed_exit == "blocked" and not blocking_unverified:
-        errors.append("phase2_check_blocked_without_verification_blocker")
-    if blocking_unverified and typed_exit != "blocked":
-        errors.append("phase2_check_verification_blocker_requires_blocked")
-    if typed_exit != "planning_stale" and payload.get("route") is not None:
-        errors.append("phase2_check_route_only_allowed_for_planning_stale")
-    derived = copy.deepcopy(payload)
-    try:
-        phase2_semantic_projection(derived)
-    except (KeyError, TypeError, WorkflowError):
-        errors.append("phase2_check_semantic_projection_invalid")
-    else:
-        comparisons = [
-            (execution.get("execution_sha256"), derived["check_execution"].get("execution_sha256"), "execution_sha256"),
-            (scope.get("scope_sha256"), derived["scope_qualification"].get("scope_sha256"), "scope_sha256"),
-            (review.get("adequacy_sha256"), derived["semantic_review"].get("adequacy_sha256"), "adequacy_sha256"),
-        ]
-        derived_gate = derived["semantic_review"].get("ai_review_gate", {})
-        for field in (
-            "planning_facts_sha256", "snapshot_sha256", "scope_sha256",
-            "adequacy_sha256", "findings_count", "full_round_sha256",
+        if open_findings:
+            errors.append("phase2_check_passed_has_open_findings")
+        if blocking_unverified:
+            errors.append("phase2_check_passed_has_blocking_unverified")
+        if any(
+            isinstance(item, dict) and item.get("status") != "passed"
+            for item in dimensions or []
         ):
-            comparisons.append((gate.get(field), derived_gate.get(field), f"gate_{field}"))
-        for actual, expected, field in comparisons:
-            if actual != expected:
-                errors.append(f"phase2_check_{field}_mismatch")
-    return errors
+            errors.append("phase2_check_passed_dimension_not_passed")
+        if any(
+            isinstance(item, dict) and item.get("outcome") == "failed"
+            for item in validation.get("commands") or []
+        ):
+            errors.append("phase2_check_passed_has_failed_command")
+        docs = payload.get("docs_ssot")
+        if not isinstance(docs, dict) or docs.get("status") != "passed":
+            errors.append("phase2_check_passed_docs_ssot_not_passed")
+    elif typed_exit == "implementation_required" and not open_findings:
+        errors.append("phase2_check_implementation_required_without_finding")
+    elif typed_exit == "planning_stale":
+        if scope_change_count == 0:
+            errors.append("phase2_check_planning_stale_without_scope_change")
+        if payload.get("route") not in {"reapprove_plan", "clarify_requirements"}:
+            errors.append("phase2_check_planning_stale_route_invalid")
+    elif typed_exit == "blocked":
+        has_blocked_dimension = any(
+            isinstance(item, dict) and item.get("status") == "blocked"
+            for item in dimensions or []
+        )
+        if not blocking_unverified and not has_blocked_dimension:
+            errors.append("phase2_check_blocked_without_objective_gap")
+    return context_sort(errors)
+
+
+def phase2_reviewed_paths(
+    root: Path,
+    values: Any,
+) -> list[str]:
+    if not isinstance(values, list) or not values:
+        raise WorkflowError(
+            "Phase 2 requires at least one AI-reviewed path.",
+            exit_code=2,
+        )
+    normalized: list[str] = []
+    for value in values:
+        if not isinstance(value, str) or not value.strip():
+            raise WorkflowError("Phase 2 reviewed path is invalid.", exit_code=2)
+        path = resolve_repo_path(root, value.strip()).resolve()
+        try:
+            relative = path.relative_to(root.resolve()).as_posix()
+        except ValueError as exc:
+            raise WorkflowError(
+                "Phase 2 reviewed paths must stay inside the current repository.",
+                exit_code=2,
+            ) from exc
+        if relative.startswith(".trellis/.runtime/") or ai_first_os_noise_path(relative):
+            raise WorkflowError(
+                "Phase 2 reviewed paths cannot include private runtime or OS noise.",
+                exit_code=2,
+            )
+        normalized.append(relative)
+    if len(normalized) != len(set(normalized)):
+        raise WorkflowError("Phase 2 reviewed paths must be unique.", exit_code=2)
+    return sorted(normalized)
+
+
+def phase2_worktree_content_sha256(root: Path) -> str:
+    retained_fields = (
+        "path",
+        "worktree_sha256",
+        "mode",
+        "deleted",
+        "renamed_from",
+        "copied_from",
+        "gitlink_head",
+        "gitlink_initialized",
+        "gitlink_dirty",
+    )
+    entries: list[dict[str, Any]] = []
+    for entry in capture_task_commit_snapshot(root)["entries"]:
+        path = str(entry.get("path") or "")
+        if ai_first_os_noise_path(path):
+            continue
+        entries.append(
+            {
+                field: copy.deepcopy(entry.get(field))
+                for field in retained_fields
+                if field in entry
+            }
+        )
+    encoded = json.dumps(
+        entries,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def materialize_phase2_check_payload(
@@ -9289,306 +6570,136 @@ def materialize_phase2_check_payload(
     task_context: dict[str, Any],
     authored: dict[str, Any],
 ) -> dict[str, Any]:
-    payload = copy.deepcopy(authored)
-    payload["schema_version"] = PHASE2_CHECK_SCHEMA_VERSION
-    payload["skill_id"] = PHASE2_CHECK_SKILL_ID
-    payload["generated_at"] = now_iso()
-    payload["task"] = phase2_task_projection(root, task_dir, task_context)
-    payload["planning"] = phase2_planning_projection(root, task_dir)
-    payload["requirement_provenance"] = phase2_evidence_projection(root, payload.get("requirement_provenance"), "requirement_provenance")
-    payload["docs_ssot_plan"] = phase2_docs_projection(root, payload.get("docs_ssot_plan"))
-    payload["implementation_handoff"] = phase2_evidence_projection(root, payload.get("implementation_handoff"), "implementation_handoff")
-    semantic_review = payload.get("semantic_review")
-    if isinstance(semantic_review, dict) and isinstance(
-        semantic_review.get("adequacy_dimensions"), list
-    ):
-        semantic_review["adequacy_dimensions"] = [
-            dimension
-            for dimension in semantic_review["adequacy_dimensions"]
-            if not (
-                isinstance(dimension, dict)
-                and dimension.get("id") == "agent_recovery"
-            )
-        ]
-        for dimension in semantic_review["adequacy_dimensions"]:
-            if isinstance(dimension, dict) and isinstance(
-                dimension.get("evidence_refs"), list
-            ):
-                dimension["evidence_refs"] = [
-                    ref
-                    for ref in dimension["evidence_refs"]
-                    if ref != "agent_assignment"
-                ]
-    # Schema 2.1 deliberately drops routine assignment/liveness bookkeeping.
-    # A legacy 2.0 artifact may still carry agent_assignment and is read-only.
-    payload.pop("agent_assignment", None)
-    payload["repository_snapshot"] = phase2_repository_projection(root, task_dir, task_context, payload.get("repository_snapshot"))
-    phase2_semantic_projection(payload)
-    payload["facts_sha256"] = context_digest({key: value for key, value in payload.items() if key not in {"generated_at", "facts_sha256"}})
-    return payload
-
-
-def normalize_coverage(items: list[str] | None) -> dict[str, bool]:
-    coverage = {key: False for key in REQUIRED_PHASE2_COVERAGE}
-    for item in items or []:
-        key = str(item).strip()
-        if not key:
-            continue
-        if key not in coverage:
-            raise WorkflowError(
-                f"Unknown phase2 coverage key: {key}. Valid keys: {', '.join(REQUIRED_PHASE2_COVERAGE)}",
-                exit_code=2,
-            )
-        coverage[key] = True
-    return coverage
-
-
-def recorded_digest_paths(entries: Any) -> set[str]:
-    if not isinstance(entries, list):
-        return set()
-    paths: set[str] = set()
-    for entry in entries:
-        if isinstance(entry, dict) and str(entry.get("path") or "").strip():
-            paths.add(str(entry["path"]))
-    return paths
-
-
-def parse_validation_arg(value: str) -> dict[str, Any]:
-    parts = [part.strip() for part in value.split("|", 1)]
-    command = parts[0]
-    result = parts[1] if len(parts) > 1 else "recorded"
-    if not command:
-        raise WorkflowError("Validation evidence command must not be empty.", exit_code=2)
-    return {"command": command, "result": result}
-
-
-def build_phase2_check_payload(
-    root: Path,
-    task_dir: Path,
-    task_context: dict[str, Any],
-    task: dict[str, Any],
-    checker: str,
-    check_summary: str,
-    checked_artifacts: list[str],
-    checked_specs: list[str],
-    coverage_items: list[str],
-    validation_items: list[str],
-    findings: list[dict[str, Any]],
-) -> dict[str, Any]:
-    base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
-    task_artifact_names = checked_artifacts or default_existing_task_artifacts(task_dir, DEFAULT_PHASE2_TASK_ARTIFACTS)
-    task_artifacts = [file_digest(root, resolve_task_local_path(root, task_dir, item)) for item in task_artifact_names]
-    specs = [file_digest(root, resolve_checked_spec_path(root, item)) for item in checked_specs]
-    validation_commands = [parse_validation_arg(item) for item in validation_items]
-    coverage = normalize_coverage(coverage_items)
-    excluded = {str(item["path"]) for item in task_artifacts}
-    excluded.add(repo_relative(root, phase2_check_path(task_dir)))
-    dirty_paths = dirty_paths_excluding(root, excluded)
-    return {
-        "schema_version": "1.0",
-        "generated_at": now_iso(),
-        "task_dir": repo_relative(root, task_dir),
-        "base_branch": base_branch,
-        "head": current_head(root),
-        "diff_range": diff_range(root, base_branch),
-        "dirty_paths": dirty_paths,
-        "checker": checker,
-        "check_summary": check_summary,
-        "checked_artifacts": task_artifacts,
-        "checked_specs": specs,
-        "coverage": coverage,
-        "validation_commands": validation_commands,
-        "findings": findings,
-        "notes": "record-phase2-check 是 recorder / validator：记录已经完成的完整 trellis-check 结论、证据和 stale 判定；验证命令只是 check evidence 的一部分。",
+    del task_context
+    expected_keys = {
+        "mode",
+        "reviewed_paths",
+        "validation",
+        "docs_ssot",
+        "semantic_review",
+        "typed_exit",
+        "route",
+        "reason",
+        "consumer",
     }
-
-
-def phase2_agent_assignment_errors(root: Path, task_dir: Path) -> list[str]:
-    path = agent_assignment_path(task_dir)
-    if not path.exists():
-        return []
-    try:
-        raw_payload = read_json(path)
-    except WorkflowError as exc:
-        return [str(exc)]
-    status_events = raw_payload.get("status_events")
-    liveness = raw_payload.get("liveness")
-    if not status_events and not liveness:
-        return []
-    payload = normalize_agent_assignment_for_task(root, task_dir, raw_payload)
-    errors = validate_agent_assignment_repair_errors(root, payload)
-    errors.extend(validate_liveness_payload_errors(root, payload, enforce_recovery_chains=True))
+    if set(authored) != expected_keys:
+        raise WorkflowError(
+            "guru-check-task semantic result has missing or unknown fields.",
+            exit_code=2,
+            payload={"expected": sorted(expected_keys), "actual": sorted(authored)},
+        )
+    mode = str(authored.get("mode") or "")
+    if mode not in {"workflow", "standalone"}:
+        raise WorkflowError("guru-check-task mode is invalid.", exit_code=2)
+    reviewed_paths = phase2_reviewed_paths(root, authored.get("reviewed_paths"))
+    current_dirty = {
+        path
+        for path in git_status_paths(root, fail_closed=True)
+        if not ai_first_os_noise_path(path)
+    }
+    uncovered = sorted(current_dirty - set(reviewed_paths))
+    if uncovered:
+        raise WorkflowError(
+            "Phase 2 semantic review does not cover every current dirty path.",
+            exit_code=2,
+            payload={"paths": uncovered},
+        )
+    payload = {
+        "schema_version": PHASE2_CHECK_SCHEMA_VERSION,
+        "skill_id": PHASE2_CHECK_SKILL_ID,
+        "mode": mode,
+        "task_ref": repo_relative(root, task_dir),
+        "checked_head": current_head(root),
+        "reviewed_paths": reviewed_paths,
+        "reviewed_worktree_sha256": phase2_worktree_content_sha256(root),
+        "validation": copy.deepcopy(authored.get("validation")),
+        "docs_ssot": copy.deepcopy(authored.get("docs_ssot")),
+        "semantic_review": copy.deepcopy(authored.get("semantic_review")),
+        "typed_exit": authored.get("typed_exit"),
+        "route": authored.get("route"),
+        "reason": authored.get("reason"),
+        "consumer": copy.deepcopy(authored.get("consumer")),
+    }
+    errors = skill_json_schema_validation_errors(
+        payload,
+        load_phase2_check_schema(root),
+        "phase2 check",
+    )
+    errors.extend(phase2_semantic_errors(payload))
     if errors:
-        return [
-            "phase2-check.json 不能在 agent-assignment.json 存在未闭环 sub-agent liveness/recovery evidence 时通过: "
-            + error
-            for error in errors
-        ]
-    return []
-
-
-def task_commit_candidate_dirty_exclusions(root: Path, task_dir: Path) -> set[str]:
-    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
-    if not plan_dir.is_dir():
-        return set()
-    candidates: list[str] = []
-    for path in sorted(plan_dir.glob("[0-9][0-9][0-9].json")):
-        payload, error = read_optional_json(path)
-        if error or payload is None:
-            continue
-        relative = repo_relative(root, path)
-        task = payload.get("task") if isinstance(payload.get("task"), dict) else {}
-        git = payload.get("git") if isinstance(payload.get("git"), dict) else {}
-        result = payload.get("result") if isinstance(payload.get("result"), dict) else {}
-        classifications = payload.get("path_classifications")
-        self_classification = next(
-            (
-                item
-                for item in classifications
-                if isinstance(item, dict) and item.get("path") == relative
-            ),
-            None,
-        ) if isinstance(classifications, list) else None
-        schema_errors: list[str] = []
-        try:
-            schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
-        except WorkflowError:
-            schema = None
-        if schema is not None:
-            schema_errors.extend(skill_json_schema_validation_errors(payload, schema, "task commit plan"))
-        if (
-            not schema_errors
-            and payload.get("schema_version") == TASK_COMMIT_PLAN_SCHEMA_VERSION
-            and payload.get("skill_id") == TASK_COMMIT_SKILL_ID
-            and payload.get("sequence") == path.stem
-            and task.get("path") == repo_relative(root, task_dir)
-            and git.get("pre_commit_head") == current_head(root)
-            and result.get("status") == "planned"
-            and relative in (payload.get("exact_stage_paths") or [])
-            and isinstance(self_classification, dict)
-            and self_classification.get("category") == "task-reviewed"
-            and self_classification.get("coverage_source") == "skill-artifact"
-            and payload.get("freshness", {}).get("plan_digest") == task_commit_plan_digest(payload)
-        ):
-            candidates.append(relative)
-    return set(candidates) if len(candidates) == 1 else set()
+        raise WorkflowError(
+            "AI-authored guru-check-task result is structurally invalid.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return payload
 
 
 def validate_phase2_check(
     root: Path,
     task_dir: Path,
-    allow_committed_head: bool = False,
     additional_dirty_excluded: set[str] | None = None,
 ) -> tuple[Path, dict[str, Any], list[str]]:
-    path = phase2_check_path(task_dir)
-    if not path.exists():
-        raise WorkflowError(f"Phase 2 check artifact not found: {path}", exit_code=2)
+    path = phase2_check_path(root, task_dir)
+    if not path.is_file() or path.is_symlink():
+        raise WorkflowError(
+            f"Phase 2 check artifact not found: {path}",
+            exit_code=2,
+        )
     payload = read_json(path)
+    version = str(payload.get("schema_version") or "")
+    if version != PHASE2_CHECK_SCHEMA_VERSION:
+        code = (
+            "phase2_check_legacy_requires_ai_first_reentry"
+            if version in PHASE2_CHECK_LEGACY_SCHEMA_VERSIONS
+            else "phase2_check_schema_version_invalid"
+        )
+        return path, payload, [code]
+
     errors: list[str] = []
-    if payload.get("schema_version") not in PHASE2_CHECK_SCHEMA_VERSIONS or payload.get("skill_id") != PHASE2_CHECK_SKILL_ID:
-        return path, payload, [
-            "phase2_check_legacy_requires_complete_guru_check_task_reentry"
-        ]
-    schema = load_phase2_check_schema(root)
-    errors.extend(skill_json_schema_validation_errors(payload, schema, "phase2 check"))
-    errors.extend(phase2_semantic_errors(payload))
-
-    repository = payload.get("repository_snapshot") if isinstance(payload.get("repository_snapshot"), dict) else {}
-    recorded_head = str(repository.get("head") or "")
-    head = current_head(root)
-    post_commit_audit_candidate = bool(
-        allow_committed_head
-        and recorded_head
-        and recorded_head != head
-        and is_ancestor(root, recorded_head, "HEAD")
+    errors.extend(
+        skill_json_schema_validation_errors(
+            payload,
+            load_phase2_check_schema(root),
+            "phase2 check",
+        )
     )
-
-    task_context: dict[str, Any] | None = None
-    if not task_dir_is_archived(root, task_dir):
-        try:
-            task_context = load_task_start_context(task_dir, load_config(root))
-            current_task = phase2_task_projection(root, task_dir, task_context)
-            if payload.get("task") != current_task:
-                errors.append("phase2_check_task_projection_stale")
-            current_planning = phase2_planning_projection(root, task_dir)
-            if payload.get("planning") != current_planning:
-                errors.append("phase2_check_planning_projection_stale")
-            current_requirement = phase2_evidence_projection(root, payload.get("requirement_provenance"), "requirement_provenance")
-            if payload.get("requirement_provenance") != current_requirement:
-                errors.append("phase2_check_requirement_provenance_stale")
-            current_docs = phase2_docs_projection(root, payload.get("docs_ssot_plan"))
-            if payload.get("docs_ssot_plan") != current_docs:
-                errors.append("phase2_check_docs_ssot_stale")
-            preserved_handoff_paths: set[str] = set()
-            current_handoff = phase2_evidence_projection(
-                root,
-                payload.get("implementation_handoff"),
-                "implementation_handoff",
-                preserve_recorded_paths=preserved_handoff_paths,
+    errors.extend(phase2_semantic_errors(payload))
+    task_ref = repo_relative(root, task_dir)
+    if payload.get("task_ref") != task_ref:
+        errors.append("phase2_check_task_ref_mismatch")
+    checked_head = str(payload.get("checked_head") or "")
+    head = current_head(root)
+    if checked_head != head:
+        errors.append("phase2_check_head_stale")
+    else:
+        if payload.get("reviewed_worktree_sha256") != phase2_worktree_content_sha256(
+            root
+        ):
+            errors.append("phase2_check_reviewed_content_stale")
+        excluded = set(additional_dirty_excluded or set())
+        legacy = task_dir / PHASE2_CHECK_ARTIFACT
+        if legacy.is_file() and not legacy.is_symlink():
+            try:
+                legacy_payload = read_json(legacy)
+            except (OSError, ValueError, WorkflowError):
+                legacy_payload = {}
+            if legacy_payload.get("skill_id") == PHASE2_CHECK_SKILL_ID:
+                excluded.add(repo_relative(root, legacy))
+        dirty_now = {
+            item
+            for item in git_status_paths(root, fail_closed=True)
+            if item not in excluded
+            and not ai_first_os_noise_path(item)
+        }
+        reviewed = set(payload.get("reviewed_paths") or [])
+        uncovered = sorted(dirty_now - reviewed)
+        if uncovered:
+            errors.append(
+                "phase2_check_dirty_paths_not_reviewed:"
+                + ",".join(uncovered[:20])
             )
-            if payload.get("implementation_handoff") != current_handoff:
-                errors.append("phase2_check_implementation_handoff_stale")
-            if payload.get("schema_version") == PHASE2_CHECK_LEGACY_SCHEMA_VERSION and "agent_assignment" in payload:
-                current_agent = phase2_agent_projection(root, task_dir, payload.get("agent_assignment"))
-                if payload.get("agent_assignment") != current_agent:
-                    errors.append("phase2_check_agent_assignment_stale")
-        except WorkflowError as exc:
-            errors.append(f"phase2_check_current_facts_invalid:{exc}")
-
-    accepted_committed_state = False
-    committed_head_audit_performed = False
-    if recorded_head != head:
-        if post_commit_audit_candidate:
-            committed_head_audit_performed = True
-            recorded_dirty = repository.get("dirty_paths")
-            if not isinstance(recorded_dirty, list):
-                errors.append("phase2_check_dirty_paths_missing")
-            committed_paths_covered, uncovered_paths = committed_paths_match_phase2_dirty_paths(
-                root,
-                recorded_head,
-                recorded_dirty if isinstance(recorded_dirty, list) else [],
-            )
-            if not committed_paths_covered:
-                errors.append("phase2_check_post_commit_paths_uncovered:" + ",".join(uncovered_paths[:20]))
-            has_non_metadata, non_metadata_paths = has_non_metadata_dirty_paths(root)
-            if has_non_metadata:
-                errors.append("phase2_check_post_commit_dirty_non_metadata:" + ",".join(non_metadata_paths[:20]))
-            else:
-                accepted_committed_state = committed_paths_covered
-        else:
-            errors.append("phase2_check_head_stale")
-    dirty_excluded = {repo_relative(root, phase2_check_path(task_dir))}
-    dirty_excluded.update(additional_dirty_excluded or task_commit_candidate_dirty_exclusions(root, task_dir))
-    dirty_now = sorted(path for path in git_status_paths(root) if path not in dirty_excluded)
-    recorded_dirty = repository.get("dirty_paths")
-    if not isinstance(recorded_dirty, list):
-        if "phase2_check_dirty_paths_missing" not in errors:
-            errors.append("phase2_check_dirty_paths_missing")
-    elif accepted_committed_state or committed_head_audit_performed:
-        pass
-    elif sorted(str(item) for item in recorded_dirty) != sorted(dirty_now):
-        errors.append("phase2_check_dirty_snapshot_stale")
-
-    if task_context is not None and not committed_head_audit_performed:
-        try:
-            current_repository = phase2_repository_projection(
-                root,
-                task_dir,
-                task_context,
-                repository,
-                additional_dirty_excluded=dirty_excluded,
-            )
-            if repository != current_repository:
-                errors.append("phase2_check_repository_snapshot_stale")
-        except WorkflowError as exc:
-            errors.append(f"phase2_check_repository_snapshot_invalid:{exc}")
-
-    expected_facts = context_digest({key: value for key, value in payload.items() if key not in {"generated_at", "facts_sha256"}})
-    if payload.get("facts_sha256") != expected_facts:
-        errors.append("phase2_check_facts_sha256_mismatch")
-    return path, payload, errors
-
-
+    return path, payload, context_sort(errors)
 
 def repo_relative(root: Path, path: Path) -> str:
     try:
@@ -9597,88 +6708,82 @@ def repo_relative(root: Path, path: Path) -> str:
         return str(path)
 
 
-def load_review_gate(task_dir: Path, config: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
-    path = configured_review_gate_path(task_dir, config)
+def load_review_gate(
+    root: Path,
+    task_dir: Path,
+    config: dict[str, Any],
+) -> tuple[Path, dict[str, Any]]:
+    path = configured_review_gate_path(root, task_dir, config)
     if not path.exists():
         raise WorkflowError(f"Branch Review Gate artifact not found: {path}")
     return path, read_json(path)
 
 
-def migrate_review_gate_for_archived_task(root: Path, task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
-    result: dict[str, Any] = {
-        "migrated": False,
-        "path": None,
-        "updates": [],
+def review_branch_descendant_metadata_path(
+    root: Path,
+    task_dir: Path,
+    path: str,
+) -> bool:
+    task_ref = repo_relative(root, task_dir).rstrip("/")
+    return path in {
+        f"{task_ref}/{name}"
+        for name in BRANCH_REVIEW_DESCENDANT_METADATA_FILES
     }
-    if not task_dir_is_archived(root, task_dir):
-        return result
-    path = configured_review_gate_path(task_dir, config)
-    result["path"] = str(path)
-    if not path.exists():
-        return result
-    gate = read_json(path)
-    changed = False
-
-    archived_task = repo_relative(root, task_dir)
-    if gate.get("task_dir") != archived_task:
-        gate["task_dir"] = archived_task
-        result["updates"].append("task_dir")
-        changed = True
-
-    issue_scope = gate.get("issue_scope")
-    if isinstance(issue_scope, dict):
-        expected_ledger = repo_relative(root, issue_scope_ledger_path(task_dir))
-        if issue_scope.get("ledger_path") != expected_ledger:
-            issue_scope["ledger_path"] = expected_ledger
-            result["updates"].append("issue_scope.ledger_path")
-            changed = True
-
-    verification = gate.get("verification_evidence")
-    if isinstance(verification, dict):
-        review_report = verification.get("review_report")
-        migrated_report = migrated_archive_entry(root, task_dir, review_report, REVIEW_REPORT_ARTIFACT)
-        if migrated_report is not None and migrated_report != review_report:
-            verification["review_report"] = migrated_report
-            result["updates"].append("verification_evidence.review_report")
-            changed = True
-
-        agent_assignment = verification.get("agent_assignment")
-        migrated_assignment = migrated_archive_entry(root, task_dir, agent_assignment, AGENT_ASSIGNMENT_ARTIFACT)
-        if migrated_assignment is not None:
-            migrated_assignment["task"] = normalized_archive_task_value(root, task_dir, migrated_assignment.get("task"))
-            if migrated_assignment != agent_assignment:
-                verification["agent_assignment"] = migrated_assignment
-                result["updates"].append("verification_evidence.agent_assignment")
-                changed = True
-
-        review_reports = verification.get("review_reports")
-        if isinstance(review_reports, list):
-            migrated_reports: list[Any] = []
-            reports_changed = False
-            for item in review_reports:
-                migrated_item = migrated_archive_digest_entry(root, task_dir, item) if isinstance(item, dict) else None
-                if migrated_item is not None and migrated_item != item:
-                    migrated_reports.append(migrated_item)
-                    reports_changed = True
-                else:
-                    migrated_reports.append(item)
-            if reports_changed:
-                verification["review_reports"] = migrated_reports
-                result["updates"].append("verification_evidence.review_reports")
-                changed = True
-
-    if changed:
-        write_json(path, gate)
-        result["migrated"] = True
-    return result
 
 
-def metadata_only_since(root: Path, reviewed_head: str) -> tuple[bool, list[str]]:
-    proc = run(["git", "diff", "--name-only", f"{reviewed_head}...HEAD"], cwd=root, check=False)
+def finalizer_unreviewed_dirty_paths(root: Path, task_dir: Path) -> list[str]:
+    return [
+        path
+        for path in git_status_paths(root, fail_closed=True)
+        if not review_branch_descendant_metadata_path(root, task_dir, path)
+    ]
+
+
+def review_gate_content_head(gate: dict[str, Any]) -> str:
+    if gate.get("schema_version") == "2.2":
+        return str(gate.get("reviewed_content_head") or "")
+    return str(gate.get("head") or "")
+
+
+def review_branch_content_continuity_errors(
+    root: Path,
+    task_dir: Path,
+    reviewed_content_head: str,
+    current: str | None = None,
+) -> list[str]:
+    current_head_value = current or current_head(root)
+    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_content_head):
+        return ["Branch Review reviewed_content_head is invalid."]
+    if not is_ancestor(root, reviewed_content_head, current_head_value):
+        return [
+            "Branch Review reviewed_content_head is not an ancestor of the current HEAD."
+        ]
+    if reviewed_content_head == current_head_value:
+        return []
+    proc = run(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            f"{reviewed_content_head}..{current_head_value}",
+        ],
+        cwd=root,
+        check=False,
+    )
     if proc.returncode != 0:
-        return False, []
-    files = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-    return all(path.startswith(METADATA_ONLY_PREFIXES) or path in METADATA_ONLY_FILES for path in files), files
+        return ["Branch Review could not inspect the descendant metadata tail."]
+    paths = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    non_metadata = [
+        path
+        for path in paths
+        if not review_branch_descendant_metadata_path(root, task_dir, path)
+    ]
+    if non_metadata:
+        return [
+            "Branch Review content changed after reviewed_content_head: "
+            + ", ".join(non_metadata[:20])
+        ]
+    return []
 
 
 def review_branch_owner_evidence_precondition_errors(
@@ -9701,99 +6806,25 @@ def review_branch_owner_evidence_precondition_errors(
     reviewer = str(verification.get("reviewer") or "").strip()
     review_source = str(verification.get("review_source") or "").strip()
     errors.extend(independent_review_source_errors(review_source, reviewer))
-    if gate.get("schema_version") == "2.1":
+    if gate.get("schema_version") in {"2.1", "2.2"}:
         semantic = gate.get("semantic_review")
         if isinstance(semantic, dict):
             errors.extend(
                 review_branch_finding_lifecycle_errors(
-                    root, task_dir, semantic, None
+                    root,
+                    task_dir,
+                    semantic,
+                    reviewed_content_head=review_gate_content_head(gate),
                 )
             )
         else:
             errors.append("Branch Review Gate 缺少 semantic_review。")
         return errors
-    review_report = (
-        verification.get("review_report")
-        if isinstance(verification.get("review_report"), dict)
-        else None
+    errors.append(
+        "Legacy Branch Review Gate requires current guru-review-branch owner "
+        "re-entry; assignment, liveness and raw review reports are migration "
+        "residue, not workflow authority."
     )
-    errors.extend(valid_review_report_fields(root, task_dir, review_report))
-    reviewed_head = str(gate.get("head") or "")
-    agent_assignment = verification.get("agent_assignment")
-    require_final_review = (
-        gate.get("schema_version") != "2.0"
-        or gate.get("typed_exit") == "passed"
-    )
-    errors.extend(
-        valid_agent_assignment_summary_fields(
-            root,
-            task_dir,
-            agent_assignment,
-            expected_head=reviewed_head,
-            require_final=require_final_review,
-        )
-    )
-    assignment_payload_for_reports: dict[str, Any] | None = None
-    if isinstance(agent_assignment, dict):
-        migrated_assignment = (
-            migrated_archive_entry(
-                root,
-                task_dir,
-                agent_assignment,
-                AGENT_ASSIGNMENT_ARTIFACT,
-            )
-            or agent_assignment
-        )
-        assignment_path_value = str(
-            migrated_assignment.get("path") or ""
-        ).strip()
-        if assignment_path_value:
-            assignment_path = resolve_repo_path(
-                root,
-                assignment_path_value,
-            ).resolve()
-            if (
-                assignment_path.is_file()
-                and task_dir.resolve()
-                in [assignment_path, *assignment_path.parents]
-            ):
-                try:
-                    assignment_payload_for_reports = (
-                        normalize_agent_assignment_for_task(
-                            root,
-                            task_dir,
-                            read_json(assignment_path),
-                        )
-                    )
-                except WorkflowError:
-                    assignment_payload_for_reports = None
-    review_reports = verification.get("review_reports")
-    errors.extend(
-        valid_review_reports_summary_fields(
-            root,
-            task_dir,
-            review_reports,
-            assignment_payload=assignment_payload_for_reports,
-        )
-    )
-    errors.extend(
-        review_report_language_template_errors(
-            root,
-            task_dir,
-            review_report,
-            review_reports,
-        )
-    )
-    semantic = gate.get("semantic_review")
-    if isinstance(semantic, dict):
-        errors.extend(
-            review_branch_finding_lifecycle_errors(
-                root,
-                task_dir,
-                semantic,
-                assignment_payload_for_reports,
-            )
-        )
     return errors
 
 
@@ -9804,9 +6835,10 @@ def validate_review_gate(
     allow_metadata_after_gate: bool,
     require_pass: bool = True,
 ) -> tuple[Path, dict[str, Any], list[str]]:
-    path, gate = load_review_gate(task_dir, config)
+    path, gate = load_review_gate(root, task_dir, config)
     errors: list[str] = []
-    schema_v21 = gate.get("schema_version") == "2.1"
+    schema_v22 = gate.get("schema_version") == "2.2"
+    compact_schema = gate.get("schema_version") in {"2.1", "2.2"}
     semantic = gate.get("semantic_review") if isinstance(gate.get("semantic_review"), dict) else {}
     semantic_gate = (
         semantic.get("ai_review_gate")
@@ -9823,7 +6855,7 @@ def validate_review_gate(
         for item in qualified
         if isinstance(item, dict) and item.get("status") == "open"
     ]
-    if schema_v21:
+    if compact_schema:
         typed_exit = str(gate.get("typed_exit") or "")
         conclusion = {
             "passed": typed_exit == "passed",
@@ -9844,7 +6876,7 @@ def validate_review_gate(
     if not str(conclusion.get("summary") or "").strip():
         errors.append("Branch Review Gate 缺少中文 summary。")
     findings = findings_raw if isinstance(findings_raw, list) else []
-    if not schema_v21 and "findings" in gate and not isinstance(findings_raw, list):
+    if not compact_schema and "findings" in gate and not isinstance(findings_raw, list):
         errors.append("Branch Review Gate findings 必须是数组。")
     if require_pass and findings:
         errors.append("Branch Review Gate passed=true 但 findings[] 非空；任意 finding 均阻断。")
@@ -9864,7 +6896,7 @@ def validate_review_gate(
             errors.append(
                 f"Branch Review Gate conclusion.{key}={raw_count} 与 findings[] 数量 {len(findings)} 不一致。"
             )
-    reviewed_head = str(gate.get("head") or "")
+    reviewed_head = review_gate_content_head(gate)
     errors.extend(
         review_branch_owner_evidence_precondition_errors(
             root,
@@ -9875,19 +6907,29 @@ def validate_review_gate(
     head = current_head(root)
     gate_config = review_gate_config(config)
     require_head_match = bool(gate_config.get("require_head_match", True))
-    if require_head_match and reviewed_head != head:
+    if schema_v22:
+        errors.extend(
+            review_branch_content_continuity_errors(
+                root,
+                task_dir,
+                reviewed_head,
+                head,
+            )
+        )
+    elif require_head_match and reviewed_head != head:
         accepted_metadata_tail = False
-        if allow_metadata_after_gate and reviewed_head and is_ancestor(root, reviewed_head, "HEAD"):
-            metadata_only, tail_files = metadata_only_since(root, reviewed_head)
-            accepted_metadata_tail = metadata_only
-            if not metadata_only:
-                errors.append(
-                    "Branch Review Gate 通过后出现非 Trellis metadata 变更: "
-                    + ", ".join(tail_files[:20])
-                )
+        if allow_metadata_after_gate:
+            continuity_errors = review_branch_content_continuity_errors(
+                root,
+                task_dir,
+                reviewed_head,
+                head,
+            )
+            accepted_metadata_tail = not continuity_errors
+            errors.extend(continuity_errors)
         if not accepted_metadata_tail:
             errors.append(f"Branch Review Gate 记录的 HEAD {reviewed_head or '(missing)'} 与当前 HEAD {head} 不一致。")
-    if gate.get("schema_version") in {"2.0", "2.1"}:
+    if gate.get("schema_version") in {"2.0", "2.1", "2.2"}:
         try:
             errors.extend(skill_json_schema_validation_errors(
                 gate,
@@ -9964,7 +7006,7 @@ def base_branch_from_sources(args: argparse.Namespace, task: dict[str, Any], tas
     ]:
         if value:
             return str(value)
-    raise WorkflowError("Could not resolve base_branch from args, task-start-context, or task.json.")
+    raise WorkflowError("Could not resolve base_branch from args, task runtime identity, or task.json.")
 
 
 def markdown_section_ranges(body: str) -> dict[str, str]:
@@ -10388,24 +7430,6 @@ def is_reviewed_pr_body_source(body_source: str) -> bool:
     return body_source.startswith(REVIEWED_PR_BODY_SOURCE_PREFIXES)
 
 
-def active_task_relative_path(root: Path, task_dir: Path, body_path_arg: str | None) -> str | None:
-    if not body_path_arg:
-        return None
-    raw_path = Path(body_path_arg).expanduser()
-    path = raw_path if raw_path.is_absolute() else root / raw_path
-    try:
-        return path.resolve().relative_to(task_dir.resolve()).as_posix()
-    except ValueError:
-        return None
-
-
-def rewrite_active_task_artifact_path(root: Path, task_dir: Path, archived_task_dir: Path, body_path_arg: str | None) -> str | None:
-    relative = active_task_relative_path(root, task_dir, body_path_arg)
-    if relative is None:
-        return body_path_arg
-    return str(archived_task_dir / relative)
-
-
 def canonical_json_sha256(payload: dict[str, Any]) -> str:
     encoded = json.dumps(
         payload,
@@ -10558,16 +7582,6 @@ def build_pr_readiness_snapshot(
     return readiness_path, artifact
 
 
-def write_pr_readiness_snapshot(
-    root: Path,
-    task_dir: Path,
-    **kwargs: Any,
-) -> tuple[Path, dict[str, Any]]:
-    path, artifact = build_pr_readiness_snapshot(root, task_dir, **kwargs)
-    write_json(path, artifact)
-    return path, artifact
-
-
 def read_pr_readiness_publish_inputs(
     root: Path,
     task_dir: Path,
@@ -10585,7 +7599,7 @@ def read_pr_readiness_publish_inputs(
             task_publication_schema(root),
             "task publication readiness",
         )
-        semantic_errors = task_publication_semantic_errors(
+        semantic_errors = task_publication_legacy_semantic_errors(
             {
                 "profile": artifact.get("profile"),
                 "mode": artifact.get("mode"),
@@ -10662,7 +7676,7 @@ def read_pr_readiness_publish_inputs(
         ):
             identity_errors.append("task publication identity is invalid")
         if artifact.get("facts_sha256") != context_digest(
-            task_publication_facts_payload(artifact)
+            task_publication_legacy_facts_payload(artifact)
         ):
             identity_errors.append("task publication facts digest is invalid")
         errors = sorted(set([*schema_errors, *semantic_errors, *identity_errors]))
@@ -11030,7 +8044,19 @@ def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    try:
+        task_context = load_task_runtime_identity(task_dir, config)
+    except WorkflowError as exc:
+        payload = {
+            "status": "blocked",
+            "task_dir": str(task_dir.resolve()),
+            "errors": [str(exc)],
+        }
+        raise WorkflowError(
+            "Workspace boundary validation failed.",
+            exit_code=2,
+            payload=payload,
+        ) from exc
     snapshot = workspace_boundary_snapshot(
         root,
         config,
@@ -11049,114 +8075,8 @@ def cmd_check_workspace_boundary(args: argparse.Namespace) -> dict[str, Any]:
 
 def cmd_resolve_human_artifacts(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
     return resolve_human_markdown_artifacts(root, task_dir)
-
-
-def infer_assignee(root: Path, explicit: str | None) -> str | None:
-    del root
-    value = str(explicit or "").strip()
-    return value or None
-
-
-def create_task(root: Path, payload: dict[str, Any], args: argparse.Namespace) -> str:
-    task_script = root / ".trellis/scripts/task.py"
-    if not task_script.exists():
-        raise WorkflowError(f"Trellis task script not found: {task_script}")
-    workspace = Path(payload["workspace_path"])
-    cmd = ["python3", "./.trellis/scripts/task.py", "create", payload["task_title"], "--slug", payload["task_slug"]]
-    assignee = infer_assignee(root, args.assignee)
-    if not assignee:
-        raise WorkflowError("Guru task workspace creation requires an explicit non-empty assignee.", exit_code=2)
-    cmd.extend(["--assignee", assignee])
-    if args.priority:
-        cmd.extend(["--priority", args.priority])
-    if args.description:
-        cmd.extend(["--description", args.description])
-    proc = run(cmd, cwd=workspace, check=False)
-    if proc.returncode != 0:
-        raise WorkflowError(f"task.py create failed:\n{proc.stderr.strip()}")
-    return proc.stdout.strip()
-
-
-def build_task_start_context(root: Path, payload: dict[str, Any], task_dir: Path, assignee: str | None) -> dict[str, Any]:
-    freshness = payload.get("base_freshness") if isinstance(payload.get("base_freshness"), dict) else {}
-    source_issue = payload.get("source_issue") if isinstance(payload.get("source_issue"), dict) else {}
-    base_head_sha = str(freshness.get("local_head_after") or "")
-    remote_head_sha = str(freshness.get("remote_head") or "")
-    freshness_status = str(freshness.get("status") or "")
-    if freshness_status == "fresh" and (not base_head_sha or not remote_head_sha or base_head_sha != remote_head_sha):
-        raise WorkflowError("fresh base context requires matching local_head_after and remote_head SHA.", exit_code=2)
-    if freshness_status == "remote_only" and (base_head_sha or not remote_head_sha):
-        raise WorkflowError("remote_only base context requires empty local SHA and non-empty remote_head SHA.", exit_code=2)
-    if freshness_status not in {"fetch_failed", "remote_ref_missing", "unknown"} and not remote_head_sha:
-        raise WorkflowError(f"base context status {freshness_status or '(missing)'} requires remote_head SHA.", exit_code=2)
-    context = {
-        "schema_version": "1.0", "source_issue": source_issue,
-        "source_repo": {"repo": payload.get("source_repo", ""), "url": source_issue.get("url", "")},
-        "task_slug": payload["task_slug"], "task_title": payload["task_title"],
-        "task_artifact_dir": repo_relative(Path(payload["workspace_path"]), task_dir),
-        "branch_name": payload["branch_name"], "base_branch": payload["base_branch"],
-        "base_ref": freshness.get("base_ref") or payload["base_branch"],
-        "base_head_sha": base_head_sha,
-        "remote_head_sha": remote_head_sha,
-        "workspace_slug": payload["workspace_slug"], "task_workspace_id": payload["workspace_slug"],
-        "assignee": assignee or "", "actor": {"login": assignee or ""},
-        "issue_scope_ledger_seed": payload.get("issue_scope_ledger") or {},
-        "intake_summary": {
-            "duplicate_decision": {"search_performed": payload.get("duplicate_search", {}).get("performed", False), "selected_issue": source_issue.get("number")},
-            "naming_quality": payload.get("naming_quality") or {},
-            "confirmation": {"source_issue_confirmed": bool(source_issue), "created_by_workflow": source_issue.get("created_by_workflow", False)},
-        },
-    }
-    final_binding = payload.get("final_source_issue_binding")
-    prerequisite_evidence = payload.get("prerequisite_evidence")
-    if isinstance(final_binding, dict):
-        context["intake_summary"]["final_source_issue_binding"] = copy.deepcopy(final_binding)
-    if isinstance(prerequisite_evidence, dict):
-        context["intake_summary"]["prerequisite_evidence"] = copy.deepcopy(prerequisite_evidence)
-    validate_task_start_context(context)
-    return context
-
-
-TASK_START_CONTEXT_FORBIDDEN_KEYS = {
-    "workspace_path", "runtime_root", "preflight", "existing_worktrees",
-    "developer_identity", "current_checkout", "repo_root", "worktree_root",
-    "create_task_command", "handoff_path", "handoff_written",
-}
-
-
-def validate_task_start_context(payload: dict[str, Any]) -> None:
-    required = {
-        "schema_version", "source_issue", "source_repo", "task_slug", "task_title",
-        "task_artifact_dir", "branch_name", "base_branch", "base_ref", "base_head_sha",
-        "remote_head_sha", "workspace_slug", "task_workspace_id", "assignee", "actor",
-        "issue_scope_ledger_seed", "intake_summary",
-    }
-    extra = set(payload) - required
-    missing = required - set(payload)
-    if missing or extra:
-        raise WorkflowError(f"Invalid task-start-context keys: missing={sorted(missing)}, extra={sorted(extra)}", exit_code=2)
-    task_dir = str(payload.get("task_artifact_dir") or "")
-    if Path(task_dir).is_absolute() or not re.fullmatch(r"\.trellis/tasks/[^/]+", task_dir):
-        raise WorkflowError("task-start-context task_artifact_dir must be a repo-relative active task directory.", exit_code=2)
-
-    def scan(value: Any, path: str = "$") -> None:
-        if isinstance(value, dict):
-            for key, child in value.items():
-                if key in TASK_START_CONTEXT_FORBIDDEN_KEYS:
-                    raise WorkflowError(f"task-start-context forbidden key at {path}.{key}", exit_code=2)
-                scan(child, f"{path}.{key}")
-        elif isinstance(value, list):
-            for index, child in enumerate(value):
-                scan(child, f"{path}[{index}]")
-        elif isinstance(value, str):
-            if value.startswith(".trellis/.runtime/") or Path(value).expanduser().is_absolute():
-                raise WorkflowError(f"task-start-context contains local-only path at {path}", exit_code=2)
-
-    scan(payload)
 
 
 def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
@@ -11187,11 +8107,6 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                 ],
                 "writes_performed": False,
             },
-        )
-    if args.create_issue_confirmed and not str(args.issue_title or "").strip():
-        raise WorkflowError(
-            "--create-issue-confirmed requires --issue-title containing the AI/human reviewed issue title.",
-            exit_code=2,
         )
 
     require_tool("git")
@@ -11228,14 +8143,12 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     provided = parse_issue_ref(requirement, repo)
     duplicates: list[dict[str, Any]] = []
     duplicate_search_performed = False
-    created_by_workflow = False
     issue: dict[str, Any] | None = None
     proposed_issue: dict[str, Any] | None = None
     issue_title_for_planning = ""
     issue_body_for_branch_type = ""
     issue_number_for_slug = "new"
     source_issue: dict[str, Any] | None = None
-    confirmation_required: dict[str, Any] | None = None
 
     if args.reuse_issue:
         issue = issue_view(repo, int(args.reuse_issue), root)
@@ -11256,7 +8169,7 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                 proposed_title = args.issue_title or make_issue_title(requirement, args.short_name)
                 proposed_body = issue_body(requirement, duplicates)
                 raise WorkflowError(
-                    "Likely duplicate open issue found. Re-run with --reuse-issue <number> or --force-new after user confirmation.",
+                    "Likely duplicate open issue found. The AI must choose reuse or force-new before continuing.",
                     exit_code=2,
                     payload={
                         "duplicates": high,
@@ -11266,61 +8179,28 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
                             "title": proposed_title,
                             "body": proposed_body,
                             "labels": list(config.get("created_issue_labels") or []),
-                            "body_reviewed": False,
-                            "create_issue_command": confirmed_issue_prepare_command(
-                                args,
-                                proposed_title,
-                                requirement,
-                                force_new=True,
-                                expected_resolution_sha256=next_resolution_sha256,
-                            ),
                         },
-                        "requires_confirmation": {
-                            "reuse_issue_or_force_new": True,
-                            "reason": "High-similarity duplicate candidates require AI/human review before binding an existing issue or forcing a new one.",
+                        "choice_required": {
+                            "id": "reuse_issue_or_force_new",
+                            "options": ["reuse_issue", "force_new"],
+                            "reason": "High-similarity duplicate candidates require one real target choice.",
                         },
                     },
                 )
         proposed_title = args.issue_title or make_issue_title(requirement, args.short_name)
-        proposed_body = read_confirmed_issue_body(args.issue_body_file) if args.create_issue_confirmed else issue_body(requirement, duplicates)
+        proposed_body = issue_body(requirement, duplicates)
         proposed_issue = {
             "repo": repo,
             "title": proposed_title,
             "body": proposed_body,
             "labels": list(config.get("created_issue_labels") or []),
-            "body_reviewed": bool(args.create_issue_confirmed),
-            "create_issue_command": confirmed_issue_prepare_command(
-                args,
-                proposed_title,
-                requirement,
-                expected_resolution_sha256=next_resolution_sha256,
-            ),
         }
         if config.get("auto_create_issue", False):
             proposed_issue["legacy_auto_create_issue_config_ignored"] = True
             proposed_issue["legacy_auto_create_issue_note"] = (
                 "auto_create_issue is kept only for backward-compatible config parsing; "
-                "prepare requires --create-issue-confirmed before GitHub issue creation."
+                "prepare is query-only and guru-create-task-workspace owns issue creation."
             )
-        if args.create_issue_confirmed:
-            if args.create_worktree or args.create_task:
-                pre_create_naming = prepare_naming_payload(
-                    args,
-                    config,
-                    "NNN",
-                    proposed_title or requirement,
-                    f"{proposed_title}\n{proposed_body}",
-                )
-                ensure_naming_quality_for_create({**pre_create_naming, "proposed_issue": proposed_issue})
-            base_freshness = rerun_reviewed_base_guard()
-            issue = create_issue(repo, proposed_title, proposed_body, root, list(config.get("created_issue_labels") or []))
-            created_by_workflow = True
-        else:
-            confirmation_required = {
-                "create_issue": True,
-                "reason": "No source issue was provided. prepare generated a proposed issue only; an AI/human must review title/body and rerun with --create-issue-confirmed before GitHub issue creation.",
-                "next_commands": proposed_issue["create_issue_command"],
-            }
 
     if issue is not None:
         issue_number = int(issue["number"])
@@ -11331,17 +8211,11 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             "number": issue_number,
             "url": issue["url"],
             "title": issue_title_for_planning,
-            "created_by_workflow": created_by_workflow,
+            "created_by_workflow": False,
         }
     else:
         issue_title_for_planning = str(proposed_issue.get("title") if proposed_issue else make_issue_title(requirement, args.short_name))
         issue_body_for_branch_type = requirement
-    if (args.create_worktree or args.create_task) and source_issue is None:
-        raise WorkflowError(
-            "--create-worktree and --create-task require a confirmed source issue. Review proposed_issue, create/bind the GitHub issue, then rerun prepare.",
-            exit_code=2,
-            payload={"proposed_issue": proposed_issue, "requires_confirmation": confirmation_required},
-        )
     branch_type_source_text = "\n".join(
         part for part in [issue_title_for_planning, issue_body_for_branch_type] if part
     )
@@ -11357,126 +8231,27 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     workspace_slug = str(naming_payload["workspace_slug"])
     branch_name = str(naming_payload["branch_name"])
     naming_quality = naming_payload["naming_quality"]
-    should_create_worktree = args.create_worktree or args.create_task
-    if should_create_worktree:
-        ensure_naming_quality_for_create(naming_payload)
     title_prefix = f"#{issue_number_for_slug}" if issue is not None else "[proposed-issue]"
     task_title = args.title or f"{title_prefix} {issue_title_for_planning}"
-    if should_create_worktree:
-        base_freshness = rerun_reviewed_base_guard()
-    workspace_base_ref = str(base_freshness.get("base_ref_for_worktree") or base_ref)
-    workspace_mode, workspace_path, workspace_ready = prepare_workspace(
-        root,
-        config,
-        branch_name,
-        workspace_slug,
-        workspace_base_ref,
-        args.worktree,
-        should_create_worktree,
-    )
-    current = current_branch(root)
-    assignee = infer_assignee(root, args.assignee)
-    developer_identity: dict[str, Any] | None = None
-
-    create_cmd = ["python3", "./.trellis/scripts/task.py", "create", task_title, "--slug", task_slug]
-    if assignee:
-        create_cmd.extend(["--assignee", assignee])
-    if args.priority:
-        create_cmd.extend(["--priority", args.priority])
-    if args.description:
-        create_cmd.extend(["--description", args.description])
-
     payload: dict[str, Any] = {
         "schema_version": "1.2",
         "source_repo": repo,
         "source_issue": source_issue,
         "proposed_issue": proposed_issue,
-        "requires_confirmation": confirmation_required,
         "slug": issue_slug,
         "naming_quality": naming_quality,
         "task_slug": task_slug,
         "task_title": task_title,
         "branch_name": branch_name,
         "workspace_slug": workspace_slug,
-        "workspace_mode": workspace_mode,
-        "workspace_path": str(workspace_path),
-        "workspace_ready": workspace_ready,
         "base_branch": base_ref,
         "base_branch_candidates": base_candidates,
         "base_freshness": base_freshness,
-        "create_task_command": create_cmd,
-        "task_dir": None,
         "duplicate_search": {
             "performed": duplicate_search_performed,
             "candidates": duplicates,
         },
-        "issue_scope_ledger": {},
-        "preflight": {
-            "repo_root": str(root),
-            "current_checkout": str(root),
-            "current_branch": current,
-            "dirty": git_dirty(root),
-            "worktree_root": str(configured_worktree_root(root, config)),
-            "existing_worktrees": worktree_lines(root),
-            "selected_base_branch": base_ref,
-            "base_freshness": base_freshness,
-            "workspace_was_created_or_reused": workspace_ready,
-            "developer_identity": developer_identity,
-        },
     }
-    if source_issue is not None:
-        payload["issue_scope_ledger"] = {
-            "primary_issue": issue_entry(
-                source_issue["number"],
-                source_issue["url"],
-                source_issue.get("title", ""),
-                "intake 主 issue，默认进入 close 候选。",
-            ),
-            "close_issues": [
-                issue_entry(
-                    source_issue["number"],
-                    source_issue["url"],
-                    source_issue.get("title", ""),
-                    "默认 close 候选；publish 前必须在 task artifact 中补齐验收证据。",
-                )
-            ],
-            "related_issues": [],
-            "followup_issues": [],
-        }
-    else:
-        payload["issue_scope_ledger"] = {
-            "primary_issue": None,
-            "close_issues": [],
-            "related_issues": [],
-            "followup_issues": [],
-            "notes": [
-                "尚未创建或绑定 source issue；用户确认 proposed_issue 后重新运行 prepare。",
-                "未绑定 source issue 前不得创建 Trellis task 或发布关闭语义。",
-            ],
-        }
-
-    if args.create_task:
-        if source_issue is None:
-            raise WorkflowError(
-                "--create-task requires a confirmed source issue. Review proposed_issue, create/bind the GitHub issue, then rerun prepare.",
-                exit_code=2,
-                payload={"proposed_issue": proposed_issue, "requires_confirmation": confirmation_required},
-            )
-        base_freshness = rerun_reviewed_base_guard()
-        payload["base_freshness"] = base_freshness
-        payload["preflight"]["base_freshness"] = base_freshness
-        payload["task_dir"] = create_task(root, payload, args)
-        run(["python3", "./.trellis/scripts/task.py", "set-branch", payload["task_dir"], branch_name], cwd=workspace_path, check=False)
-        run(["python3", "./.trellis/scripts/task.py", "set-base-branch", payload["task_dir"], base_ref], cwd=workspace_path, check=False)
-        run(["python3", "./.trellis/scripts/task.py", "set-scope", payload["task_dir"], f"GitHub issue: {source_issue['url']}"], cwd=workspace_path, check=False)
-        task_dir = resolve_task_dir(workspace_path, payload["task_dir"])
-        ensure_issue_scope_ledger(task_dir, payload)
-        context = build_task_start_context(root, payload, task_dir, assignee)
-        write_json(task_start_context_path(task_dir, config), context)
-        payload["task_start_context"] = repo_relative(workspace_path, task_start_context_path(task_dir, config))
-
-    if source_issue is not None and should_create_worktree:
-        write_runtime_mappings(root, config, payload, workspace_path)
     return payload
 
 
@@ -11528,21 +8303,8 @@ def review_branch_task_commit_evidence_errors(
     errors: list[str] = []
     if public_input is not None:
         current = current_head(root)
+        committed_head = str(public_input.get("committed_head") or "")
         try:
-            _phase2_path, phase2, phase2_errors = validate_phase2_check(
-                root,
-                task_dir,
-                allow_committed_head=True,
-            )
-            if phase2_errors:
-                raise WorkflowError(
-                    "current Phase 2 evidence is invalid",
-                    exit_code=2,
-                    payload={"errors": phase2_errors},
-                )
-            checked_head = str(
-                (phase2.get("repository_snapshot") or {}).get("head") or ""
-            )
             base_branch = base_branch_from_sources(
                 argparse.Namespace(base_branch=None),
                 task,
@@ -11553,15 +8315,22 @@ def review_branch_task_commit_evidence_errors(
             if (
                 public_input.get("task_ref") != expected_task
                 or public_input.get("base_ref") != expected_base_ref
-                or public_input.get("committed_head") != current
             ):
                 errors.append(
                     "review entry public task/base/committed HEAD identity is stale."
                 )
+            errors.extend(
+                review_branch_content_continuity_errors(
+                    root,
+                    task_dir,
+                    committed_head,
+                    current,
+                )
+            )
             parents = run_stdout(
-                ["git", "show", "-s", "--format=%P", current], cwd=root
+                ["git", "show", "-s", "--format=%P", committed_head], cwd=root
             ).split()
-            raw_message = task_commit_raw_message(root, current)
+            raw_message = task_commit_raw_message(root, committed_head)
             subject, body = task_commit_message_parts(
                 raw_message.decode("utf-8", "strict")
             )
@@ -11575,12 +8344,12 @@ def review_branch_task_commit_evidence_errors(
                 root,
                 [
                     "diff-tree", "--root", "--no-commit-id", "--name-only",
-                    "--no-renames", "-r", "-z", current,
+                    "--no-renames", "-r", "-z", committed_head,
                 ],
             )
-            if parents != [checked_head]:
+            if len(parents) != 1:
                 errors.append(
-                    "review entry current commit parent does not equal the checked HEAD."
+                    "review entry current task commit must have exactly one parent."
                 )
             if not committed_paths:
                 errors.append("review entry current commit has no changed paths.")
@@ -11686,8 +8455,8 @@ def review_branch_task_commit_evidence_errors(
 
     evidence = plan.get("evidence") if isinstance(plan.get("evidence"), dict) else {}
     evidence_paths = {
-        "planning_approval": planning_approval_path(task_dir),
-        "phase2_check": phase2_check_path(task_dir),
+        "planning_approval": planning_approval_path(root, task_dir),
+        "phase2_check": phase2_check_path(root, task_dir),
         "issue_scope_ledger": issue_scope_ledger_path(task_dir),
         "task": task_dir / "task.json",
     }
@@ -11760,12 +8529,11 @@ def review_branch_entry_precondition_errors(
     try:
         review_branch_public_input_schema(root)
         review_branch_gate_schema(root)
-        task_commit_schema_path(root)
     except WorkflowError as exc:
         errors.append(f"review entry runtime dependency is unavailable: {exc}")
 
     try:
-        task_context = load_task_start_context(task_dir, config)
+        task_context = load_task_runtime_identity(task_dir, config)
         assert_workspace_boundary(root, config, task_context, task_dir)
         task = task_json(task_dir)
     except WorkflowError as exc:
@@ -11787,16 +8555,30 @@ def review_branch_entry_precondition_errors(
 
     try:
         expected_base_ref = diff_base_ref(root, expected_base_branch)
-        changed_files(root, f"{expected_base_ref}...HEAD")
+        review_target = (
+            str(public_input.get("committed_head") or "")
+            if public_input is not None
+            else current
+        )
+        changed_files(root, f"{expected_base_ref}...{review_target}")
     except WorkflowError as exc:
         expected_base_ref = ""
         errors.append(f"review entry complete review range is unavailable: {exc}")
     if public_input is not None and (
         public_input.get("task_ref") != expected_task
         or public_input.get("base_ref") != expected_base_ref
-        or public_input.get("committed_head") != current
     ):
-        errors.append("review entry invocation freshness does not match task/base/HEAD.")
+        errors.append("review entry invocation freshness does not match task/base.")
+    if public_input is not None:
+        errors.extend(
+            "review entry invocation freshness: " + item
+            for item in review_branch_content_continuity_errors(
+                root,
+                task_dir,
+                str(public_input.get("committed_head") or ""),
+                current,
+            )
+        )
 
     try:
         errors.extend(
@@ -11810,30 +8592,6 @@ def review_branch_entry_precondition_errors(
         )
     except WorkflowError as exc:
         errors.append(f"review entry task commit evidence is invalid: {exc}")
-
-    try:
-        _planning_path, _planning, planning_errors = validate_planning_approval(
-            root,
-            task_dir,
-            allow_committed_head=True,
-            required_exit="approved",
-        )
-        errors.extend("review entry planning approval: " + item for item in planning_errors)
-    except WorkflowError as exc:
-        errors.append(f"review entry planning approval is unavailable: {exc}")
-
-    phase2: dict[str, Any] = {}
-    try:
-        _phase2_path, phase2, phase2_errors = validate_phase2_check(
-            root,
-            task_dir,
-            allow_committed_head=True,
-        )
-        errors.extend("review entry Phase 2: " + item for item in phase2_errors)
-        if phase2.get("typed_exit") != "passed":
-            errors.append("review entry Phase 2 typed exit is not passed.")
-    except WorkflowError as exc:
-        errors.append(f"review entry Phase 2 evidence is unavailable: {exc}")
 
     ledger_path = issue_scope_ledger_path(task_dir)
     if not ledger_path.is_file():
@@ -11850,19 +8608,6 @@ def review_branch_entry_precondition_errors(
                 errors.append("review entry issue scope ledger identity is incomplete.")
         except WorkflowError as exc:
             errors.append(f"review entry issue scope ledger is invalid: {exc}")
-
-    docs = phase2.get("docs_ssot_plan") if isinstance(phase2.get("docs_ssot_plan"), dict) else {}
-    docs_strategy = docs.get("strategy")
-    docs_complete = (
-        docs_strategy
-        in {"ssot_first", "delta_first", "bootstrap_or_repair_docs"}
-        and docs.get("task_delta_merged") is True
-    ) or (
-        docs_strategy == "no_docs_update_needed"
-        and bool(str(docs.get("no_update_reason") or "").strip())
-    )
-    if not docs_complete:
-        errors.append("review entry Docs SSOT outcome is missing or incomplete.")
 
     if owner_result is not None:
         errors.extend(
@@ -11909,39 +8654,26 @@ def review_branch_task_metadata_allowlist(
         for filename in BRANCH_REVIEW_TASK_METADATA_FILES
     }
 
-    assignment_path = task_dir / AGENT_ASSIGNMENT_ARTIFACT
     legacy_gate = task_dir / "review-gate.json"
     legacy_artifacts = not legacy_gate.is_file()
     if legacy_gate.is_file():
         try:
-            legacy_artifacts = read_json(legacy_gate).get("schema_version") != "2.1"
+            legacy_artifacts = read_json(legacy_gate).get("schema_version") not in {
+                "2.1",
+                "2.2",
+            }
         except WorkflowError:
             legacy_artifacts = True
     if legacy_artifacts:
         for filename in (AGENT_ASSIGNMENT_ARTIFACT, REVIEW_REPORT_ARTIFACT):
-            if (task_dir / filename).exists():
+            path = task_dir / filename
+            if path.is_file() and not path.is_symlink():
                 allowed.add(f"{task_ref}/{filename}")
-    try:
-        assignment = read_json(assignment_path)
-    except WorkflowError:
-        assignment = {}
-    rounds = (
-        assignment.get("review_rounds")
-        if isinstance(assignment.get("review_rounds"), list)
-        else []
-    )
-    reports_root = Path(task_ref) / "reviews"
-    for item in rounds:
-        if not isinstance(item, dict):
-            continue
-        report_value = str(item.get("review_report_path") or "").strip()
-        report_relative = skill_safe_relative(report_value)
-        if (
-            report_relative is not None
-            and report_relative.parent == reports_root
-            and report_relative.suffix == ".md"
-        ):
-            allowed.add(report_relative.as_posix())
+        reports_dir = task_dir / "reviews"
+        if reports_dir.is_dir() and not reports_dir.is_symlink():
+            for report in sorted(reports_dir.glob("*.md")):
+                if report.is_file() and not report.is_symlink():
+                    allowed.add(repo_relative(root, report))
 
     current = current_head(root)
     plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
@@ -11998,7 +8730,8 @@ def review_branch_finding_lifecycle_errors(
     root: Path,
     task_dir: Path,
     semantic_review: dict[str, Any],
-    assignment_payload: dict[str, Any] | None,
+    *,
+    reviewed_content_head: str | None = None,
 ) -> list[str]:
     findings = (
         semantic_review.get("qualified_findings")
@@ -12007,6 +8740,65 @@ def review_branch_finding_lifecycle_errors(
     )
     if not findings:
         return []
+    if any(
+        isinstance(item, dict)
+        and ("fix_head" in item or "closure_head" in item)
+        for item in findings
+    ):
+        current = current_head(root)
+        content_head = str(reviewed_content_head or current)
+        errors: list[str] = []
+        if not re.fullmatch(r"[0-9a-f]{40}", content_head) or not is_ancestor(
+            root, content_head, current
+        ):
+            errors.append(
+                "fresh-final reviewed_content_head is not a current-history commit."
+            )
+        for finding in findings:
+            if not isinstance(finding, dict):
+                continue
+            finding_ref = str(finding.get("finding_ref") or "(missing)")
+            introduced = str(finding.get("introduced_head") or "")
+            fix_head = finding.get("fix_head")
+            closure_head = finding.get("closure_head")
+            closure = finding.get("closure_evidence")
+            if not re.fullmatch(r"[0-9a-f]{40}", introduced) or not is_ancestor(
+                root, introduced, content_head
+            ):
+                errors.append(
+                    f"qualified finding {finding_ref} introduced_head is not an ancestor of reviewed_content_head."
+                )
+            if finding.get("status") == "open":
+                if (
+                    introduced != content_head
+                    or fix_head is not None
+                    or closure_head is not None
+                    or closure
+                ):
+                    errors.append(
+                        f"open qualified finding {finding_ref} has contradictory causal state."
+                    )
+                continue
+            if finding.get("status") != "resolved":
+                errors.append(
+                    f"qualified finding {finding_ref} has an invalid status."
+                )
+                continue
+            valid_chain = (
+                isinstance(fix_head, str)
+                and re.fullmatch(r"[0-9a-f]{40}", fix_head) is not None
+                and fix_head != introduced
+                and isinstance(closure_head, str)
+                and re.fullmatch(r"[0-9a-f]{40}", closure_head) is not None
+                and is_ancestor(root, introduced, fix_head)
+                and is_ancestor(root, fix_head, closure_head)
+                and is_ancestor(root, closure_head, content_head)
+            )
+            if not valid_chain or not isinstance(closure, list) or not closure:
+                errors.append(
+                    f"resolved finding {finding_ref} must bind introduced -> fix -> closure -> reviewed content ancestry and concrete closure evidence."
+                )
+        return errors
     if any(isinstance(item, dict) and "introduced_head" in item for item in findings):
         current = current_head(root)
         errors: list[str] = []
@@ -12036,200 +8828,10 @@ def review_branch_finding_lifecycle_errors(
             else:
                 errors.append(f"qualified finding {finding_ref} has an invalid status.")
         return errors
-    if not isinstance(assignment_payload, dict):
-        return [
-            "qualified findings require current agent-assignment.json review_rounds evidence."
-        ]
-    rounds = (
-        assignment_payload.get("review_rounds")
-        if isinstance(assignment_payload.get("review_rounds"), list)
-        else []
-    )
-    rounds_by_number = {
-        item.get("round"): item
-        for item in rounds
-        if isinstance(item, dict)
-        and isinstance(item.get("round"), int)
-        and not isinstance(item.get("round"), bool)
-    }
-    task_relative_prefix = repo_relative(root, task_dir).rstrip("/") + "/"
-
-    def task_local_report_refs(value: Any) -> set[str]:
-        report = str(value or "").strip()
-        if not report:
-            return set()
-        refs = {report}
-        if report.startswith(task_relative_prefix):
-            refs.add(report.removeprefix(task_relative_prefix))
-        return refs
-
-    rounds_by_report = {
-        report_ref: item
-        for item in rounds
-        if isinstance(item, dict)
-        for report_ref in task_local_report_refs(item.get("review_report_path"))
-    }
-    reuse_decisions = (
-        assignment_payload.get("reuse_decisions")
-        if isinstance(assignment_payload.get("reuse_decisions"), list)
-        else []
-    )
-    errors: list[str] = []
-    for finding in findings:
-        if not isinstance(finding, dict):
-            continue
-        finding_ref = str(finding.get("finding_ref") or "(missing)")
-        owner_number = finding.get("owner_round")
-        owner = rounds_by_number.get(owner_number)
-        if not isinstance(owner, dict):
-            errors.append(
-                f"qualified finding {finding_ref} owner_round={owner_number} "
-                "does not identify an agent-assignment review round."
-            )
-            continue
-        owner_report = str(owner.get("review_report_path") or "")
-        evidence_refs = {
-            str(item)
-            for item in finding.get("evidence_refs", [])
-            if isinstance(item, str)
-        }
-        if (
-            owner.get("logical_role")
-            not in {"问题发现审查代理", "问题闭环审查代理"}
-            or not isinstance(owner.get("findings_count"), int)
-            or isinstance(owner.get("findings_count"), bool)
-            or owner.get("findings_count", 0) < 1
-            or finding.get("reviewed_head") != owner.get("reviewed_head")
-        ):
-            errors.append(
-                f"qualified finding {finding_ref} owner_round does not bind "
-                "a finding-producing review round at the recorded HEAD."
-            )
-        if (
-            not owner_report
-            or task_local_report_refs(owner_report).isdisjoint(evidence_refs)
-        ):
-            errors.append(
-                f"qualified finding {finding_ref} evidence_refs do not bind "
-                "the owner round raw report."
-            )
-
-        closure_paths = finding.get("closure_evidence")
-        if not isinstance(closure_paths, list):
-            continue
-        if finding.get("status") == "open" and closure_paths:
-            errors.append(
-                f"open qualified finding {finding_ref} cannot carry closure_evidence."
-            )
-            continue
-        if finding.get("status") != "resolved":
-            continue
-        matched_closure = False
-        for closure_path in closure_paths:
-            closure = rounds_by_report.get(str(closure_path or ""))
-            if not isinstance(closure, dict):
-                errors.append(
-                    f"resolved finding {finding_ref} closure_evidence "
-                    f"{closure_path!s} does not identify a registered raw report."
-                )
-                continue
-            closure_number = closure.get("round")
-            if (
-                closure.get("logical_role") != "问题闭环审查代理"
-                or not isinstance(closure_number, int)
-                or isinstance(closure_number, bool)
-                or not isinstance(owner_number, int)
-                or closure_number <= owner_number
-            ):
-                errors.append(
-                    f"resolved finding {finding_ref} closure_evidence "
-                    "does not belong to a later closure review round."
-                )
-                continue
-            try:
-                report_path = resolve_repo_path(
-                    root,
-                    str(closure.get("review_report_path") or ""),
-                ).resolve()
-                if (
-                    not report_path.is_file()
-                    or task_dir.resolve() not in [report_path, *report_path.parents]
-                ):
-                    raise WorkflowError("closure report is not task-local.", exit_code=2)
-                actual = file_digest(root, report_path)
-            except WorkflowError:
-                errors.append(
-                    f"resolved finding {finding_ref} closure raw report is missing."
-                )
-                continue
-            if any(
-                closure.get(recorded_field) != actual.get(actual_field)
-                for recorded_field, actual_field in (
-                    ("review_report_path", "path"),
-                    ("review_report_sha256", "sha256"),
-                    ("review_report_size_bytes", "size_bytes"),
-                    ("review_report_modified_at", "modified_at"),
-                )
-            ):
-                errors.append(
-                    f"resolved finding {finding_ref} closure raw report digest is stale."
-                )
-                continue
-            same_agent_closure = (
-                closure.get("agent_id") == owner.get("agent_id")
-                and closure.get("reuse_decision") == "reuse-for-closure"
-            )
-            replacement_closure = any(
-                isinstance(item, dict)
-                and item.get("logical_role") == "问题闭环审查代理"
-                and item.get("from_round") == owner_number
-                and item.get("to_round") == closure_number
-                and item.get("agent_id") == closure.get("agent_id")
-                and item.get("decision") == "new-agent"
-                for item in reuse_decisions
-            )
-            final_round_numbers = [
-                review_round_number(item)
-                for item in rounds
-                if isinstance(item, dict)
-                and item.get("logical_role") == "最终放行审查代理"
-                and review_round_number(item) > closure_number
-            ]
-            replacement_recovery_closure = (
-                finding_round_has_replacement_closure(
-                    assignment_payload,
-                    rounds,
-                    owner,
-                    min(final_round_numbers)
-                    if final_round_numbers
-                    else max(
-                        [
-                            review_round_number(item)
-                            for item in rounds
-                            if isinstance(item, dict)
-                        ],
-                        default=closure_number,
-                    )
-                    + 1,
-                    expected_closure_round=closure_number,
-                )
-            )
-            if (
-                not same_agent_closure
-                and not replacement_closure
-                and not replacement_recovery_closure
-            ):
-                errors.append(
-                    f"resolved finding {finding_ref} closure round lacks "
-                    "same-agent continuity or replacement linkage."
-                )
-                continue
-            matched_closure = True
-        if not matched_closure:
-            errors.append(
-                f"resolved finding {finding_ref} has no current bound closure_evidence."
-            )
-    return errors
+    return [
+        "legacy qualified finding shape requires current guru-review-branch "
+        "owner re-entry"
+    ]
 
 
 def review_branch_semantic_payload(
@@ -12319,7 +8921,7 @@ def review_branch_semantic_payload(
         if disposition == "qualified_finding":
             allowed = common_fields | {
                 "finding_ref", "severity", "introduced_head",
-                "resolved_at_head", "status", "closure_evidence",
+                "fix_head", "closure_head", "status", "closure_evidence",
             }
             finding_ref = str(raw.get("finding_ref") or "").strip()
             severity = str(raw.get("severity") or "")
@@ -12338,14 +8940,20 @@ def review_branch_semantic_payload(
                     status == "open"
                     and (
                         raw.get("introduced_head") != reviewed_head
-                        or raw.get("resolved_at_head") is not None
+                        or raw.get("fix_head") is not None
+                        or raw.get("closure_head") is not None
                         or raw.get("closure_evidence")
                     )
                 )
                 or (
                     status == "resolved"
                     and (
-                        raw.get("resolved_at_head") != reviewed_head
+                        not re.fullmatch(
+                            r"[0-9a-f]{40}", str(raw.get("fix_head") or "")
+                        )
+                        or not re.fullmatch(
+                            r"[0-9a-f]{40}", str(raw.get("closure_head") or "")
+                        )
                         or not raw.get("closure_evidence")
                     )
                 )
@@ -12427,7 +9035,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
     base_branch = base_branch_from_sources(args, task, task_context)
@@ -12462,24 +9070,6 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             payload={"errors": entry_errors},
         )
     ensure_issue_scope_ledger(task_dir, task_context)
-    planning_path, _planning_payload, planning_errors = validate_planning_approval(
-        root,
-        task_dir,
-        allow_committed_head=True,
-    )
-    if planning_errors:
-        raise WorkflowError(
-            "Branch Review Gate blocked because planning approval evidence is missing, stale, or incomplete.",
-            exit_code=2,
-            payload={"artifact_path": str(planning_path), "errors": planning_errors},
-        )
-    phase2_path, _phase2_payload, phase2_errors = validate_phase2_check(root, task_dir, allow_committed_head=True)
-    if phase2_errors:
-        raise WorkflowError(
-            "Branch Review Gate blocked because Phase 2 check report is missing, stale, or incomplete.",
-            exit_code=2,
-            payload={"artifact_path": str(phase2_path), "errors": phase2_errors},
-        )
 
     typed_exit = str(args.typed_exit)
     if (
@@ -12527,7 +9117,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         root,
         task_dir,
         semantic_review,
-        None,
+        reviewed_content_head=current_head(root),
     )
     if lifecycle_errors:
         raise WorkflowError(
@@ -12558,14 +9148,14 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
         )
     payload = {
-        "schema_version": "2.1",
+        "schema_version": "2.2",
         "skill_id": BRANCH_REVIEW_SKILL_ID,
         "generated_at": now_iso(),
         "task_dir": repo_relative(root, task_dir),
         "mode": public_input["mode"],
         "review_intent": public_input["review_intent"],
         "typed_exit": typed_exit,
-        "head": current_head(root),
+        "reviewed_content_head": current_head(root),
         "base_ref": diff_base_ref(root, base_branch),
         "semantic_review": semantic_review,
         "verification_evidence": {
@@ -12579,13 +9169,32 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         for key, value in payload.items()
         if key not in {"generated_at", "facts_sha256"}
     })
-    path = configured_review_gate_path(task_dir, config)
+    path = configured_review_gate_path(root, task_dir, config, for_write=True)
+    status_before = git_status_paths(root, fail_closed=True)
+    convergence = {"status": "not_run", "artifact": "review-gate.json"}
     if not args.dry_run:
         write_json(path, payload)
+        convergence = ai_first_converge_legacy_owner_residue(
+            root,
+            task_dir,
+            "review-gate.json",
+        )
+        status_after = git_status_paths(root, fail_closed=True)
+        if (
+            convergence["status"] != "untracked_removed"
+            and status_after != status_before
+        ):
+            raise WorkflowError(
+                "Branch Review owner checkpoint changed tracked status.",
+                exit_code=2,
+            )
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
+    payload["tracked_status_unchanged"] = (
+        True if args.dry_run else git_status_paths(root, fail_closed=True) == status_before
+    )
+    payload["legacy_convergence"] = convergence
     return payload
-
 
 
 def agent_recovery_path(root: Path, task_dir: Path) -> Path:
@@ -12697,7 +9306,7 @@ def cmd_record_agent_recovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     path = agent_recovery_path(root, task_dir)
     if path.is_file() and not path.is_symlink():
@@ -12761,7 +9370,7 @@ def cmd_check_agent_recovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     path = agent_recovery_path(root, task_dir)
     if not path.is_file() or path.is_symlink():
@@ -12797,10 +9406,12 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     authored = contract_wording_read_input(
-        root, getattr(args, "input", None), "planning approval recorder"
+        root,
+        getattr(args, "input", None),
+        "planning approval recorder",
     )
     payload = build_planning_approval_payload(
         root=root,
@@ -12808,40 +9419,17 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         authored=authored,
         task_context=task_context,
     )
-    path = planning_approval_path(task_dir)
-    if path.exists():
-        existing = read_json(path)
-        if existing.get("schema_version") == PLANNING_APPROVAL_SCHEMA_VERSION:
-            expected_prior = str(authored.get("supersedes_facts_sha256") or "").strip()
-            if expected_prior != str(existing.get("facts_sha256") or ""):
-                raise WorkflowError(
-                    "Replacing current planning approval requires exact supersedes_facts_sha256.",
-                    exit_code=2,
-                    payload={"error_codes": ["planning_approval_superseded_facts_mismatch"]},
-                )
-        elif existing.get("schema_version") != PLANNING_APPROVAL_LEGACY_SCHEMA_VERSION:
-            raise WorkflowError(
-                "Only the active legacy schema 1.2 planning artifact may bootstrap directly to v2.",
-                exit_code=2,
-                payload={"error_codes": ["planning_approval_legacy_schema_not_migratable"]},
-            )
-    snapshot_before = copy.deepcopy(payload["repository_snapshot"])
+    path = planning_approval_path(root, task_dir, for_write=True)
+    convergence = {
+        "status": "not_applicable",
+        "artifact": PLANNING_APPROVAL_ARTIFACT,
+    }
     if not args.dry_run:
         write_json(path, payload)
-        persisted = read_json(path)
-        if persisted != payload:
-            raise WorkflowError("Persisted planning approval identity mismatch.", exit_code=2)
-    snapshot_after = planning_repository_snapshot(root, task_dir, task_context)
-    for key in ["selected_base", "base_ref", "base_head", "head", "dirty_paths"]:
-        if snapshot_after.get(key) != snapshot_before.get(key):
-            raise WorkflowError(
-                "Repository snapshot changed during planning approval recording.",
-                exit_code=2,
-                payload={"error_codes": ["planning_approval_invocation_snapshot_drift"]},
-            )
-    if not args.dry_run:
-        _checked_path, _checked_payload, errors = validate_planning_approval(
-            root, task_dir, required_exit=None
+        _checked_path, checked_payload, errors = validate_planning_approval(
+            root,
+            task_dir,
+            required_exit=None,
         )
         if errors:
             raise WorkflowError(
@@ -12849,8 +9437,15 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
                 exit_code=2,
                 payload={"error_codes": errors},
             )
+        payload = checked_payload
+        convergence = ai_first_converge_legacy_owner_residue(
+            root,
+            task_dir,
+            PLANNING_APPROVAL_ARTIFACT,
+        )
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
+    payload["legacy_convergence"] = convergence
     return payload
 
 
@@ -12858,21 +9453,16 @@ def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors = validate_planning_approval(
         root,
         task_dir,
-        allow_committed_head=bool(getattr(args, "allow_committed_head", False)),
         required_exit=getattr(args, "require_exit", None),
     )
-    expected_artifact = str(getattr(args, "expected_artifact_sha256", None) or "").strip()
-    actual_artifact = hashlib.sha256(path.read_bytes()).hexdigest()
-    if expected_artifact and expected_artifact != actual_artifact:
-        errors.append("planning_approval_artifact_sha256_mismatch")
     if errors:
         raise WorkflowError(
-            "Planning approval is missing or stale.",
+            "Planning approval is missing or requires AI-first re-entry.",
             exit_code=2,
             payload={"artifact_path": str(path), "errors": errors},
         )
@@ -12880,21 +9470,30 @@ def cmd_check_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         "status": "ok",
         "artifact_path": str(path),
         "task_dir": str(task_dir),
-        "head": current_head(root),
-        "approval_head": payload.get("repository_snapshot", {}).get("head"),
         "typed_exit": payload.get("typed_exit"),
         "consumer": payload.get("consumer"),
-        "facts_sha256": payload.get("facts_sha256"),
-        "artifact_sha256": actual_artifact,
     }
-
 
 def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
+    task = task_json(task_dir)
+    base_branch = base_branch_from_sources(
+        argparse.Namespace(base_branch=None), task, task_context
+    )
+    hygiene = ai_first_candidate_hygiene_report(
+        root,
+        base_ref=diff_base_ref(root, base_branch),
+    )
+    if hygiene["errors"]:
+        raise WorkflowError(
+            "Phase 2 candidate hygiene must pass before semantic checking.",
+            exit_code=2,
+            payload=hygiene,
+        )
     authored = contract_wording_read_input(root, args.input, "guru-check-task recorder")
     payload = materialize_phase2_check_payload(root, task_dir, task_context, authored)
     errors = skill_json_schema_validation_errors(payload, load_phase2_check_schema(root), "phase2 check")
@@ -12905,7 +9504,7 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": sorted(set(errors))},
         )
-    path = phase2_check_path(task_dir)
+    path = phase2_check_path(root, task_dir, for_write=True)
     if not args.dry_run:
         write_json(path, payload)
         checked_path, checked_payload, checked_errors = validate_phase2_check(root, task_dir)
@@ -12916,6 +9515,11 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
                 payload={"artifact_path": str(checked_path), "errors": checked_errors},
             )
         payload = checked_payload
+        ai_first_converge_legacy_owner_residue(
+            root,
+            task_dir,
+            PHASE2_CHECK_ARTIFACT,
+        )
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
     return payload
@@ -12925,7 +9529,7 @@ def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     path, payload, errors = validate_phase2_check(root, task_dir)
     if errors:
@@ -12939,12 +9543,10 @@ def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "task_dir": str(task_dir),
         "head": current_head(root),
-        "checked_head": payload.get("repository_snapshot", {}).get("head"),
+        "checked_head": payload.get("checked_head"),
         "typed_exit": payload.get("typed_exit"),
         "route": payload.get("route"),
         "consumer": payload.get("consumer"),
-        "facts_sha256": payload.get("facts_sha256"),
-        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
     }
 
 
@@ -12952,7 +9554,7 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     allow_nonpass = bool(getattr(args, "allow_nonpass", False))
     path, gate, errors = validate_review_gate(
@@ -12963,13 +9565,14 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
         require_pass=not allow_nonpass,
     )
     entry_input = None
-    if gate.get("schema_version") == "2.1":
+    if gate.get("schema_version") in {"2.1", "2.2"}:
+        reviewed_content_head = review_gate_content_head(gate)
         entry_input = {
             "profile": "branch_review",
             "mode": gate.get("mode"),
             "task_ref": gate.get("task_dir"),
             "base_ref": gate.get("base_ref"),
-            "committed_head": gate.get("head"),
+            "committed_head": reviewed_content_head,
             "review_intent": gate.get("review_intent"),
         }
     entry_errors = review_branch_entry_precondition_errors(
@@ -12996,7 +9599,7 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "task_dir": str(task_dir),
         "head": current_head(root),
-        "reviewed_head": gate.get("head"),
+        "reviewed_content_head": review_gate_content_head(gate),
         "typed_exit": gate.get("typed_exit") or "passed",
         "facts_sha256": gate.get("facts_sha256"),
         "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -13023,7 +9626,7 @@ TASK_PUBLICATION_CONSUMERS = {
     },
     "blocked": {"kind": "stop", "id": "task-publication-review-blocked"},
 }
-TASK_PUBLICATION_EVIDENCE_FILES = (
+TASK_PUBLICATION_LEGACY_EVIDENCE_FILES = (
     "prd.md",
     "design.md",
     "implement.md",
@@ -13060,25 +9663,46 @@ def task_publication_schema(root: Path) -> dict[str, Any]:
     )
 
 
-def task_publication_path(task_dir: Path) -> Path:
-    return task_dir / PR_READINESS_ARTIFACT
+def task_publication_path(
+    root: Path,
+    task_dir: Path,
+    *,
+    for_write: bool = False,
+) -> Path:
+    return ai_first_owner_artifact_path(
+        root,
+        task_dir,
+        PR_READINESS_ARTIFACT,
+        for_write=for_write,
+    )
 
 
-def task_publication_artifact_bindings(task_dir: Path) -> dict[str, dict[str, Any]]:
+def task_publication_legacy_artifact_bindings(
+    root: Path,
+    task_dir: Path,
+    config: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
     bindings: dict[str, dict[str, Any]] = {}
-    for name in TASK_PUBLICATION_EVIDENCE_FILES:
-        path = task_dir / name
+    for name in TASK_PUBLICATION_LEGACY_EVIDENCE_FILES:
+        if name == PLANNING_APPROVAL_ARTIFACT:
+            path = planning_approval_path(root, task_dir)
+        elif name == PHASE2_CHECK_ARTIFACT:
+            path = phase2_check_path(root, task_dir)
+        elif name == "review-gate.json":
+            path = configured_review_gate_path(root, task_dir, config)
+        else:
+            path = task_dir / name
         if not path.is_file() or path.is_symlink():
             raise WorkflowError(
                 f"Task publication review requires task-local {name}.",
                 exit_code=2,
             )
         content = path.read_bytes()
-        bindings[name] = task_publication_artifact_binding(content)
+        bindings[name] = task_publication_legacy_artifact_binding(content)
     return bindings
 
 
-def task_publication_artifact_binding(content: bytes) -> dict[str, Any]:
+def task_publication_legacy_artifact_binding(content: bytes) -> dict[str, Any]:
     return {
         "sha256": hashlib.sha256(content).hexdigest(),
         "size": len(content),
@@ -13216,7 +9840,7 @@ def task_publication_entry_precondition_bindings(
     direct_runtime_inputs: list[str] | None = None,
     finalization_owned_paths: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, str]], list[str], dict[str, Any], dict[str, Any]]:
-    """Rebuild the twelve objective publication-entry preconditions.
+    """Rebuild the objective publication-entry preconditions.
 
     The function records only deterministic facts after the semantic owner has
     authored its review. It never selects a finding route, dimension status, or
@@ -13224,6 +9848,7 @@ def task_publication_entry_precondition_bindings(
     """
     bindings: dict[str, dict[str, str]] = {}
     errors: list[str] = []
+    del prior_payload, require_prior_artifact
 
     step_errors: list[str] = []
     try:
@@ -13266,7 +9891,7 @@ def task_publication_entry_precondition_bindings(
     task: dict[str, Any] = {}
     step_errors = []
     try:
-        task_context = load_task_start_context(task_dir, config)
+        task_context = load_task_runtime_identity(task_dir, config)
         assert_workspace_boundary(root, config, task_context, task_dir)
         task = task_json(task_dir)
     except WorkflowError as exc:
@@ -13309,87 +9934,37 @@ def task_publication_entry_precondition_bindings(
             "base_branch": expected_base,
         })
 
-    review_path = task_dir / "review-gate.json"
-    review_gate: dict[str, Any] = {}
+    reviewed_head = str(invocation.get("reviewed_content_head") or "")
+    review_handoff: dict[str, Any] = {
+        "typed_exit": "passed",
+        "reviewed_content_head": reviewed_head,
+    }
     review_errors: list[str] = []
-    try:
-        review_path, review_gate, review_errors = validate_review_gate(
-            root,
-            task_dir,
-            config,
-            False,
-            require_pass=True,
+    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
+        review_errors.append("Branch Review DTO reviewed_content_head is invalid.")
+    else:
+        review_errors.extend(
+            review_branch_content_continuity_errors(
+                root,
+                task_dir,
+                reviewed_head,
+                current_head(root),
+            )
         )
-    except WorkflowError as exc:
-        review_errors = [str(exc)]
-    if review_gate.get("typed_exit") != "passed":
-        review_errors.append("Branch Review typed exit is not passed.")
-    reviewed_head = str(review_gate.get("head") or "")
-    review_ref = (
-        f"review-gate:{hashlib.sha256(review_path.read_bytes()).hexdigest()}"
-        if review_path.is_file() and not review_path.is_symlink()
-        else ""
-    )
-    if (
-        invocation.get("reviewed_head", reviewed_head) != reviewed_head
-        or invocation.get("review_ref", review_ref) != review_ref
-    ):
-        review_errors.append("invocation Branch Review identity mismatch")
     if review_errors:
         errors.extend(
             f"branch_review_handoff:{item}" for item in sorted(set(review_errors))
         )
     else:
-        bindings["branch_review_handoff"] = task_publication_binding({
-            "reviewed_head": reviewed_head,
-            "review_ref": review_ref,
-            "typed_exit": review_gate.get("typed_exit"),
-        })
+        bindings["branch_review_handoff"] = task_publication_binding(
+            review_handoff
+        )
 
-    planning_payload: dict[str, Any] = {}
-    planning_errors: list[str] = []
     try:
-        planning_path, planning_payload, planning_errors = validate_planning_approval(
-            root,
-            task_dir,
-            allow_committed_head=True,
-            required_exit="approved",
-        )
+        repository = task_publication_repository_binding(root, task_dir)
     except WorkflowError as exc:
-        planning_path = planning_approval_path(task_dir)
-        planning_errors = [str(exc)]
-    if planning_errors:
-        errors.extend(
-            f"planning_approval:{item}" for item in sorted(set(planning_errors))
-        )
-    else:
-        bindings["planning_approval"] = task_publication_binding({
-            "artifact_sha256": hashlib.sha256(planning_path.read_bytes()).hexdigest(),
-            "facts_sha256": planning_payload.get("facts_sha256"),
-            "typed_exit": planning_payload.get("typed_exit"),
-        })
-
-    phase2_payload: dict[str, Any] = {}
-    phase2_errors: list[str] = []
-    try:
-        phase2_path, phase2_payload, phase2_errors = validate_phase2_check(
-            root,
-            task_dir,
-            allow_committed_head=True,
-        )
-    except WorkflowError as exc:
-        phase2_path = phase2_check_path(task_dir)
-        phase2_errors = [str(exc)]
-    if phase2_payload.get("typed_exit") != "passed":
-        phase2_errors.append("Phase 2 typed exit is not passed.")
-    if phase2_errors:
-        errors.extend(f"phase2_check:{item}" for item in sorted(set(phase2_errors)))
-    else:
-        bindings["phase2_check"] = task_publication_binding({
-            "artifact_sha256": hashlib.sha256(phase2_path.read_bytes()).hexdigest(),
-            "facts_sha256": phase2_payload.get("facts_sha256"),
-            "typed_exit": phase2_payload.get("typed_exit"),
-        })
+        repository = {}
+        errors.append(f"review_range_and_working_tree:{exc}")
 
     ledger: dict[str, Any] = {}
     ledger_errors: list[str] = []
@@ -13406,11 +9981,17 @@ def task_publication_entry_precondition_bindings(
     ):
         ledger_errors.append("issue scope ledger identity is incomplete")
     if not ledger_errors:
+        marketplace_required = bool(
+            marketplace_verification_required(
+                {"changed_files": repository.get("diff_paths", [])}
+            )["candidate_surfaces"]
+        )
         ledger_errors.extend(
             validate_ledger_for_publish(
                 ledger,
-                review_gate,
+                {"schema_version": "2.2"},
                 allow_pending_remote_marketplace=True,
+                marketplace_required=marketplace_required,
             )
         )
     if ledger_errors:
@@ -13424,45 +10005,6 @@ def task_publication_entry_precondition_bindings(
                 ledger_path.read_bytes(),
             )
         )
-
-    docs = (
-        phase2_payload.get("docs_ssot_plan")
-        if isinstance(phase2_payload.get("docs_ssot_plan"), dict)
-        else {}
-    )
-    docs_strategy = docs.get("strategy")
-    docs_complete = (
-        docs_strategy
-        in {"ssot_first", "delta_first", "bootstrap_or_repair_docs"}
-        and docs.get("task_delta_merged") is True
-    ) or (
-        docs_strategy == "no_docs_update_needed"
-        and bool(str(docs.get("no_update_reason") or "").strip())
-    )
-    if not docs_complete:
-        errors.append("docs_ssot_reconciliation:current outcome is incomplete")
-    else:
-        bindings["docs_ssot_reconciliation"] = task_publication_binding(docs)
-
-    branch_evidence_paths = (review_path,)
-    branch_evidence_errors = [
-        f"missing or unsafe {path.name}"
-        for path in branch_evidence_paths
-        if not path.is_file() or path.is_symlink()
-    ]
-    if branch_evidence_errors or review_errors:
-        errors.extend(
-            f"branch_review_evidence:{item}"
-            for item in sorted(set([*branch_evidence_errors, *review_errors]))
-        )
-    else:
-        bindings["branch_review_evidence"] = task_publication_binding({
-            "artifacts": {
-                repo_relative(root, path): hashlib.sha256(path.read_bytes()).hexdigest()
-                for path in branch_evidence_paths
-            },
-            "reviewed_head": reviewed_head,
-        })
 
     publication_content_errors: list[str] = []
     pr_body_path = task_dir / PR_BODY_ARTIFACT
@@ -13498,12 +10040,7 @@ def task_publication_entry_precondition_bindings(
             "finish_summary_index": index_payload,
         })
 
-    try:
-        repository = task_publication_repository_binding(root, task_dir)
-    except WorkflowError as exc:
-        repository = {}
-        errors.append(f"review_range_and_working_tree:{exc}")
-    else:
+    if repository:
         unexpected_status_paths = task_publication_unexpected_status_paths(
             root,
             task_dir,
@@ -13524,78 +10061,17 @@ def task_publication_entry_precondition_bindings(
                 repository
             )
 
-    invocation_errors: list[str] = []
-    profile = invocation.get("profile")
-    prior_ref = invocation.get("supersedes_publication_ref")
-    if profile == "publication_review_stale":
-        for key in ("stale_reason", "reentry_context", "supersedes_publication_ref"):
-            if not isinstance(invocation.get(key), str) or not str(
-                invocation.get(key) or ""
-            ).strip():
-                invocation_errors.append(f"{key} is required for stale re-entry")
-        if require_prior_artifact:
-            prior_bindings = (
-                prior_payload.get("deterministic_bindings")
-                if isinstance(prior_payload, dict)
-                else None
-            )
-            actual_prior_ref = (
-                prior_bindings.get("publication_ref")
-                if isinstance(prior_bindings, dict)
-                else None
-            )
-            if (
-                not isinstance(prior_payload, dict)
-                or prior_payload.get("skill_id") != TASK_PUBLICATION_SKILL_ID
-                or prior_payload.get("task_dir") != expected_task
-                or prior_payload.get("facts_sha256")
-                != context_digest(task_publication_facts_payload(prior_payload))
-                or not isinstance(actual_prior_ref, str)
-                or prior_ref != actual_prior_ref
-            ):
-                invocation_errors.append(
-                    "supersedes_publication_ref does not match the exact prior owner artifact"
-                )
-    else:
-        if prior_payload is not None and require_prior_artifact:
-            invocation_errors.append(
-                "replacement of an existing publication artifact requires the stale profile"
-            )
-        if (
-            invocation.get("stale_reason") is not None
-            or invocation.get("reentry_context") is not None
-            or prior_ref is not None
-        ):
-            invocation_errors.append(
-                "initial publication review cannot carry stale replacement fields"
-            )
-    if invocation_errors:
-        errors.extend(
-            f"invocation_freshness:{item}"
-            for item in sorted(set(invocation_errors))
-        )
-    else:
-        bindings["invocation_freshness"] = task_publication_binding({
-            "profile": profile,
-            "mode": invocation.get("mode"),
-            "review_intent": invocation.get("review_intent"),
-            "stale_reason": invocation.get("stale_reason"),
-            "reentry_context": invocation.get("reentry_context"),
-            "supersedes_publication_ref": prior_ref,
-            "reviewed_head": reviewed_head,
-            "review_ref": review_ref,
-        })
+    bindings["invocation_freshness"] = task_publication_binding({
+        "task_ref": expected_task,
+        "reviewed_content_head": reviewed_head,
+    })
 
     expected_ids = {
         "runtime_dependency",
         "task_workspace",
         "task_identity",
         "branch_review_handoff",
-        "planning_approval",
-        "phase2_check",
         "issue_scope_ledger",
-        "docs_ssot_reconciliation",
-        "branch_review_evidence",
         "publication_content",
         "review_range_and_working_tree",
         "invocation_freshness",
@@ -13613,10 +10089,10 @@ def task_publication_entry_precondition_bindings(
             },
             status="failed",
         )
-    return bindings, sorted(set(errors)), review_gate, repository
+    return bindings, sorted(set(errors)), review_handoff, repository
 
 
-def task_publication_semantic_errors(
+def task_publication_legacy_semantic_errors(
     authored: dict[str, Any],
     *,
     reviewed_head: str,
@@ -13633,9 +10109,15 @@ def task_publication_semantic_errors(
         "stale_reentry_review",
     }:
         errors.append("publication review_intent is invalid")
-    if authored.get("reviewed_head", reviewed_head) != reviewed_head:
-        errors.append("publication reviewed_head does not match current Branch Review")
-    if authored.get("review_ref", review_ref) != review_ref:
+    authored_reviewed_head = authored.get(
+        "reviewed_content_head",
+        authored.get("reviewed_head", reviewed_head),
+    )
+    if authored_reviewed_head != reviewed_head:
+        errors.append(
+            "publication reviewed_content_head does not match current Branch Review"
+        )
+    if "review_ref" in authored and authored.get("review_ref") != review_ref:
         errors.append("publication review_ref does not match current Branch Review")
     if authored.get("profile") == "publication_review_stale":
         if authored.get("review_intent") != "stale_reentry_review":
@@ -13659,13 +10141,14 @@ def task_publication_semantic_errors(
     semantic = authored.get("semantic_review")
     if not isinstance(semantic, dict):
         return [*errors, "publication semantic_review must be an object"]
+    semantic = copy.deepcopy(semantic)
+    semantic.pop("human_confirmation", None)
     required_semantic_fields = {
         "dimensions",
         "findings",
         "conclusions",
         "revision_history",
         "reviewer_process",
-        "human_confirmation",
         "ai_review_gate",
     }
     if set(semantic) != required_semantic_fields:
@@ -13831,32 +10314,6 @@ def task_publication_semantic_errors(
         or not reviewer_process.get("evidence_refs")
     ):
         errors.append("publication reviewer_process evidence is incomplete")
-    confirmation = semantic.get("human_confirmation")
-    if (
-        not isinstance(confirmation, dict)
-        or set(confirmation)
-        != {"status", "summary", "confirmed_by", "confirmed_at"}
-        or confirmation.get("status") not in {"not_required", "confirmed"}
-        or not isinstance(confirmation.get("summary"), str)
-        or not confirmation.get("summary")
-        or (
-            confirmation.get("status") == "confirmed"
-            and (
-                not isinstance(confirmation.get("confirmed_by"), str)
-                or not confirmation.get("confirmed_by")
-                or not isinstance(confirmation.get("confirmed_at"), str)
-                or not confirmation.get("confirmed_at")
-            )
-        )
-        or (
-            confirmation.get("status") == "not_required"
-            and (
-                confirmation.get("confirmed_by") is not None
-                or confirmation.get("confirmed_at") is not None
-            )
-        )
-    ):
-        errors.append("publication human_confirmation evidence is incomplete")
     gate = semantic.get("ai_review_gate")
     if (
         not isinstance(gate, dict)
@@ -13952,12 +10409,253 @@ def task_publication_semantic_errors(
     return sorted(set(errors))
 
 
-def task_publication_facts_payload(payload: dict[str, Any]) -> dict[str, Any]:
+def task_publication_legacy_facts_payload(payload: dict[str, Any]) -> dict[str, Any]:
     normalized = copy.deepcopy(payload)
     normalized.pop("generated_at", None)
     normalized.pop("facts_sha256", None)
     normalized.pop("publish_inputs", None)
     return normalized
+
+
+def task_publication_semantic_errors(
+    authored: dict[str, Any],
+    *,
+    reviewed_content_head: str,
+) -> list[str]:
+    errors: list[str] = []
+    candidate_head = str(
+        authored.get("reviewed_content_head") or reviewed_content_head
+    )
+    if candidate_head != reviewed_content_head:
+        errors.append(
+            "publication reviewed_content_head does not match current Branch Review"
+        )
+    dimensions = authored.get("dimensions")
+    if not isinstance(dimensions, list):
+        errors.append("publication dimensions must be a list")
+        dimensions = []
+    ids = [item.get("id") for item in dimensions if isinstance(item, dict)]
+    if ids != list(TASK_PUBLICATION_DIMENSIONS):
+        errors.append("publication dimensions must contain the exact ordered ten ids")
+    for item in dimensions:
+        if (
+            not isinstance(item, dict)
+            or set(item) != {"id", "status", "summary", "evidence_refs"}
+            or item.get("status") not in {"passed", "finding", "blocked"}
+            or not isinstance(item.get("summary"), str)
+            or not str(item.get("summary") or "").strip()
+            or not isinstance(item.get("evidence_refs"), list)
+            or not item.get("evidence_refs")
+            or any(
+                not isinstance(value, str) or not value.strip()
+                for value in item.get("evidence_refs", [])
+            )
+        ):
+            errors.append("publication dimension evidence is incomplete")
+            break
+
+    findings = authored.get("findings")
+    if not isinstance(findings, list):
+        errors.append("publication findings must be a list")
+        findings = []
+    refs: list[str] = []
+    for finding in findings:
+        if not isinstance(finding, dict):
+            errors.append("publication finding must be an object")
+            continue
+        required = {
+            "finding_ref",
+            "dimension",
+            "summary",
+            "scope_basis",
+            "evidence_refs",
+            "affected_artifacts",
+            "route_class",
+            "status",
+            "closure_evidence",
+        }
+        if set(finding) != required:
+            errors.append("publication finding fields are incomplete or unknown")
+            continue
+        refs.append(str(finding.get("finding_ref") or ""))
+        if (
+            finding.get("dimension") not in TASK_PUBLICATION_DIMENSIONS
+            or finding.get("route_class")
+            not in {"metadata_revision", "task_work", "external_blocker"}
+            or finding.get("status") not in {"open", "closed"}
+        ):
+            errors.append("publication finding enum is invalid")
+        textual_fields = ("summary", "scope_basis")
+        list_fields = ("evidence_refs", "affected_artifacts")
+        if any(
+            not isinstance(finding.get(field), str)
+            or not str(finding.get(field) or "").strip()
+            for field in textual_fields
+        ) or any(
+            not isinstance(finding.get(field), list)
+            or not finding.get(field)
+            or any(
+                not isinstance(value, str) or not value.strip()
+                for value in finding.get(field, [])
+            )
+            for field in list_fields
+        ):
+            errors.append("publication finding evidence must be non-empty")
+        closure = finding.get("closure_evidence")
+        if (
+            not isinstance(closure, list)
+            or any(not isinstance(value, str) or not value.strip() for value in closure)
+            or (finding.get("status") == "closed" and not closure)
+            or (finding.get("status") == "open" and bool(closure))
+        ):
+            errors.append("publication finding closure evidence does not match status")
+    if len(refs) != len(set(refs)) or any(not value for value in refs):
+        errors.append("publication finding refs must be unique and non-empty")
+
+    conclusions = authored.get("conclusions")
+    if not isinstance(conclusions, dict) or set(conclusions) != {
+        "issue_scope",
+        "docs_ssot",
+        "safety_deployment",
+    }:
+        errors.append("publication conclusions are incomplete")
+        conclusions = {}
+    for conclusion in conclusions.values():
+        if (
+            not isinstance(conclusion, dict)
+            or set(conclusion) != {"status", "summary", "evidence_refs"}
+            or conclusion.get("status") not in {"passed", "finding", "blocked"}
+            or not isinstance(conclusion.get("summary"), str)
+            or not str(conclusion.get("summary") or "").strip()
+            or not isinstance(conclusion.get("evidence_refs"), list)
+            or not conclusion.get("evidence_refs")
+        ):
+            errors.append("publication conclusion evidence is incomplete")
+            break
+
+    route = authored.get("route")
+    typed_exit = route.get("typed_exit") if isinstance(route, dict) else None
+    if typed_exit not in TASK_PUBLICATION_CONSUMERS:
+        errors.append("publication route is invalid")
+        return sorted(set(errors))
+    expected_route_fields = (
+        {"typed_exit", "reason_code", "remediation"}
+        if typed_exit == "blocked"
+        else {"typed_exit"}
+    )
+    if set(route) != expected_route_fields:
+        errors.append("publication route fields are incomplete or unknown")
+
+    dimension_statuses = {
+        str(item.get("id")): str(item.get("status"))
+        for item in dimensions
+        if isinstance(item, dict)
+    }
+    open_findings = [
+        item
+        for item in findings
+        if isinstance(item, dict) and item.get("status") == "open"
+    ]
+    for finding in open_findings:
+        if dimension_statuses.get(str(finding.get("dimension") or "")) == "passed":
+            errors.append(
+                "open publication finding must reference a non-passed dimension"
+            )
+    open_finding_dimensions = {
+        str(item.get("dimension") or "") for item in open_findings
+    }
+    if any(
+        status != "passed" and dimension not in open_finding_dimensions
+        for dimension, status in dimension_statuses.items()
+    ):
+        errors.append(
+            "every non-passed publication dimension requires open finding evidence"
+        )
+
+    if typed_exit == "ready":
+        if any(status != "passed" for status in dimension_statuses.values()):
+            errors.append("ready requires every publication dimension to pass")
+        if any(item.get("status") != "closed" for item in findings):
+            errors.append("ready requires every publication finding to close")
+        if any(item.get("status") != "passed" for item in conclusions.values()):
+            errors.append("ready requires every publication conclusion to pass")
+    elif typed_exit == "return_to_task_work":
+        if not any(status == "finding" for status in dimension_statuses.values()):
+            errors.append("return_to_task_work requires a finding publication dimension")
+        if any(status == "blocked" for status in dimension_statuses.values()):
+            errors.append("return_to_task_work cannot carry a blocked publication dimension")
+        if not any(item.get("route_class") == "task_work" for item in open_findings):
+            errors.append("return_to_task_work requires an open task_work finding")
+        if any(
+            item.get("route_class") != "task_work"
+            or dimension_statuses.get(str(item.get("dimension") or "")) != "finding"
+            for item in open_findings
+        ):
+            errors.append(
+                "return_to_task_work open findings must reference finding dimensions"
+            )
+        if any(item.get("status") == "blocked" for item in conclusions.values()):
+            errors.append(
+                "return_to_task_work cannot carry a blocked publication conclusion"
+            )
+    else:
+        if (
+            not isinstance(route.get("reason_code"), str)
+            or not str(route.get("reason_code") or "").strip()
+            or not isinstance(route.get("remediation"), str)
+            or not str(route.get("remediation") or "").strip()
+        ):
+            errors.append("blocked requires non-empty reason_code and remediation")
+        if not any(status == "blocked" for status in dimension_statuses.values()):
+            errors.append("blocked requires a blocked publication dimension")
+        if not any(
+            item.get("route_class") == "external_blocker"
+            for item in open_findings
+        ):
+            errors.append("blocked requires an open external_blocker finding")
+        if any(
+            item.get("route_class") != "external_blocker"
+            or dimension_statuses.get(str(item.get("dimension") or "")) != "blocked"
+            for item in open_findings
+        ):
+            errors.append("blocked open findings must reference blocked dimensions")
+        if not any(item.get("status") == "blocked" for item in conclusions.values()):
+            errors.append("blocked requires a blocked publication conclusion")
+    return sorted(set(errors))
+
+
+def task_publication_closeout_preflight(
+    root: Path,
+    task_dir: Path,
+    reviewed_content_head: str,
+) -> dict[str, Any]:
+    """Run the exact side-effect-free Finalizer producer preflight."""
+    config = load_config(root)
+    task_context = load_task_runtime_identity(task_dir, config)
+    assert_workspace_boundary(root, config, task_context, task_dir)
+    args = argparse.Namespace(
+        finish_summary_index_file=str(task_dir / FINISH_SUMMARY_INDEX_ARTIFACT),
+        body_file=str(task_dir / PR_BODY_ARTIFACT),
+        body_artifact=None,
+        repo=None,
+        remote=None,
+        base_branch=None,
+        title=None,
+        include_finalization_gate=True,
+    )
+    return prepare_closeout(
+        root,
+        args,
+        config,
+        task_dir,
+        task_context,
+        publication_ready={
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": repo_relative(root, task_dir),
+            "reviewed_content_head": reviewed_content_head,
+        },
+    )
 
 
 def task_publication_check_errors(
@@ -13973,105 +10671,54 @@ def task_publication_check_errors(
         task_publication_schema(root),
         "task publication readiness",
     )
-    expected_facts = context_digest(task_publication_facts_payload(payload))
-    if payload.get("facts_sha256") != expected_facts:
-        errors.append("task publication facts_sha256 mismatch")
-    if payload.get("task_dir") != repo_relative(root, task_dir):
+    if payload.get("task_ref") != repo_relative(root, task_dir):
         errors.append("task publication task identity mismatch")
-    review_identity = payload.get("review_identity")
-    invocation = {
-        "task_ref": payload.get("task_dir"),
-        "profile": payload.get("profile"),
-        "mode": payload.get("mode"),
-        "review_intent": payload.get("review_intent"),
-        "stale_reason": payload.get("stale_reason"),
-        "reentry_context": payload.get("reentry_context"),
-        "supersedes_publication_ref": payload.get("supersedes_publication_ref"),
-        "reviewed_head": (
-            review_identity.get("reviewed_head")
-            if isinstance(review_identity, dict)
-            else None
-        ),
-        "review_ref": (
-            review_identity.get("review_ref")
-            if isinstance(review_identity, dict)
-            else None
-        ),
-    }
-    current_entry_bindings, entry_errors, current_review_gate, current_repository = (
-        task_publication_entry_precondition_bindings(
+    reviewed_content_head = str(payload.get("reviewed_content_head") or "")
+    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_content_head):
+        errors.append("task publication reviewed content HEAD is invalid")
+    else:
+        continuity_errors = review_branch_content_continuity_errors(
             root,
             task_dir,
-            load_config(root),
-            invocation,
-            direct_runtime_inputs=direct_runtime_inputs,
-            finalization_owned_paths=finalization_owned_paths,
+            reviewed_content_head,
+            current_head(root),
         )
-    )
-    if payload.get("typed_exit") == "ready":
-        errors.extend(entry_errors)
-    current_reviewed_head = str(current_review_gate.get("head") or "")
-    if (
-        not isinstance(review_identity, dict)
-        or review_identity.get("reviewed_head") != current_reviewed_head
-    ):
-        errors.append("task publication reviewed HEAD is stale")
-    bindings = payload.get("deterministic_bindings")
-    artifacts = bindings.get("artifacts") if isinstance(bindings, dict) else None
-    repository = bindings.get("repository") if isinstance(bindings, dict) else None
-    entry_bindings = (
-        bindings.get("entry_preconditions")
-        if isinstance(bindings, dict)
-        else None
-    )
-    if entry_bindings != current_entry_bindings:
-        errors.append("task publication entry precondition bindings are stale")
-    if not isinstance(artifacts, dict):
-        errors.append("task publication artifact bindings are missing")
-    else:
-        try:
-            current = task_publication_artifact_bindings(task_dir)
-        except WorkflowError as exc:
-            errors.append(str(exc))
-        else:
-            if artifacts != current:
-                errors.append("task publication artifact bindings are stale")
-    if current_repository:
-        if repository != current_repository:
-            errors.append("task publication repository binding is stale")
-    expected_publication_ref = (
-        f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation, 'head': (review_identity or {}).get('reviewed_head'), 'review_ref': (review_identity or {}).get('review_ref'), 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_bindings})}"
-        if (
-            isinstance(artifacts, dict)
-            and isinstance(repository, dict)
-            and isinstance(entry_bindings, dict)
+        errors.extend(
+            "task publication reviewed content HEAD is stale: " + item
+            for item in continuity_errors
         )
-        else None
-    )
-    if not isinstance(bindings, dict) or bindings.get("publication_ref") != expected_publication_ref:
-        errors.append("task publication opaque identity mismatch")
-    semantic = payload.get("semantic_review")
-    authored = {
-        "profile": payload.get("profile"),
-        "mode": payload.get("mode"),
-        "review_intent": payload.get("review_intent"),
-        "reviewed_head": (review_identity or {}).get("reviewed_head"),
-        "review_ref": (review_identity or {}).get("review_ref"),
-        "typed_exit": payload.get("typed_exit"),
-        "consumer": payload.get("consumer"),
-        "semantic_review": semantic,
-        "stale_reason": payload.get("stale_reason"),
-        "reentry_context": payload.get("reentry_context"),
-        "supersedes_publication_ref": payload.get("supersedes_publication_ref"),
+    invocation = {
+        "task_ref": payload.get("task_ref"),
+        "reviewed_content_head": reviewed_content_head,
     }
-    if payload.get("typed_exit") == "blocked":
-        authored["reason_code"] = payload.get("reason_code")
-        authored["remediation"] = payload.get("remediation")
+    _, entry_errors, _, _ = task_publication_entry_precondition_bindings(
+        root,
+        task_dir,
+        load_config(root),
+        invocation,
+        direct_runtime_inputs=direct_runtime_inputs,
+        finalization_owned_paths=finalization_owned_paths,
+    )
+    typed_exit = (payload.get("route") or {}).get("typed_exit")
+    if typed_exit == "ready":
+        errors.extend(entry_errors)
+        try:
+            task_publication_closeout_preflight(
+                root,
+                task_dir,
+                reviewed_content_head,
+            )
+        except WorkflowError as exc:
+            errors.append(f"finalizer_preflight:{exc}")
+            errors.extend(
+                f"finalizer_preflight:{item}"
+                for item in exc.payload.get("errors", [])
+                if isinstance(item, str)
+            )
     errors.extend(
         task_publication_semantic_errors(
-            authored,
-            reviewed_head=str((review_identity or {}).get("reviewed_head") or ""),
-            review_ref=str((review_identity or {}).get("review_ref") or ""),
+            payload,
+            reviewed_content_head=str(payload.get("reviewed_content_head") or ""),
         )
     )
     return sorted(set(errors))
@@ -14081,22 +10728,69 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     authored = contract_wording_read_input(
         root,
         args.input,
         "guru-review-task-publication recorder",
     )
-    path = task_publication_path(task_dir)
-    prior_payload = (
-        read_json(path)
-        if path.is_file() and not path.is_symlink()
-        else None
-    )
+    path = task_publication_path(root, task_dir, for_write=True)
+    profile = authored.get("profile")
+    mode = authored.get("mode")
+    review_intent = authored.get("review_intent")
+    authoring_fields = {
+        "profile",
+        "mode",
+        "review_intent",
+        "dimensions",
+        "findings",
+        "conclusions",
+        "route",
+    }
+    if profile == "publication_review_stale":
+        authoring_fields.add("stale_reason")
+    authoring_errors: list[str] = []
+    if set(authored) != authoring_fields:
+        authoring_errors.append(
+            "publication authoring fields are incomplete or unknown"
+        )
+    if profile not in {"publication_review", "publication_review_stale"}:
+        authoring_errors.append("publication profile is invalid")
+    if mode not in {"workflow", "standalone"}:
+        authoring_errors.append("publication mode is invalid")
+    if review_intent not in {
+        "initial_review",
+        "metadata_revision_review",
+        "stale_reentry_review",
+    }:
+        authoring_errors.append("publication review_intent is invalid")
+    if profile == "publication_review_stale":
+        if review_intent != "stale_reentry_review":
+            authoring_errors.append(
+                "stale publication requires stale_reentry_review intent"
+            )
+        if not isinstance(authored.get("stale_reason"), str) or not str(
+            authored.get("stale_reason") or ""
+        ).strip():
+            authoring_errors.append(
+                "stale publication requires non-empty stale_reason"
+            )
+    if authoring_errors:
+        raise WorkflowError(
+            "AI-authored task publication review is structurally invalid.",
+            exit_code=2,
+            payload={"error_codes": sorted(set(authoring_errors))},
+        )
     invocation = {
-        **authored,
+        "profile": profile,
+        "mode": mode,
+        "review_intent": review_intent,
+        "stale_reason": authored.get("stale_reason"),
         "task_ref": repo_relative(root, task_dir),
+        "reviewed_content_head": str(
+            getattr(args, "reviewed_content_head", "") or ""
+        ),
     }
     entry_bindings, entry_errors, review_gate, repository = (
         task_publication_entry_precondition_bindings(
@@ -14104,77 +10798,31 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
             task_dir,
             config,
             invocation,
-            prior_payload=prior_payload,
-            require_prior_artifact=True,
             direct_runtime_inputs=[str(args.input)],
         )
     )
-    review_path = task_dir / "review-gate.json"
-    if entry_errors and authored.get("typed_exit") == "ready":
+    route = authored.get("route") if isinstance(authored.get("route"), dict) else {}
+    typed_exit = route.get("typed_exit")
+    if entry_errors and typed_exit == "ready":
         raise WorkflowError(
             "Ready task publication entry preconditions are missing, stale, or incomplete.",
             exit_code=2,
             payload={
-                "artifact_path": str(review_path),
+                "task_ref": repo_relative(root, task_dir),
                 "error_codes": entry_errors,
             },
         )
-    reviewed_head = str(review_gate.get("head") or "")
-    review_ref = f"review-gate:{hashlib.sha256(review_path.read_bytes()).hexdigest()}"
-    errors = task_publication_semantic_errors(
-        authored,
-        reviewed_head=reviewed_head,
-        review_ref=review_ref,
-    )
-    if errors:
-        raise WorkflowError(
-            "AI-authored task publication review is structurally invalid.",
-            exit_code=2,
-            payload={"error_codes": errors},
-        )
-    artifacts = task_publication_artifact_bindings(task_dir)
-    invocation_identity = {
-        "task_ref": repo_relative(root, task_dir),
-        "profile": authored["profile"],
-        "mode": authored["mode"],
-        "review_intent": authored["review_intent"],
-        "stale_reason": authored.get("stale_reason"),
-        "reentry_context": authored.get("reentry_context"),
-        "supersedes_publication_ref": authored.get("supersedes_publication_ref"),
-        "reviewed_head": reviewed_head,
-        "review_ref": review_ref,
-    }
-    publication_ref = f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation_identity, 'head': reviewed_head, 'review_ref': review_ref, 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_bindings})}"
+    reviewed_content_head = str(invocation["reviewed_content_head"])
     payload: dict[str, Any] = {
-        "schema_version": "1.1",
+        "schema_version": "2.0",
         "skill_id": TASK_PUBLICATION_SKILL_ID,
-        "generated_at": now_iso(),
-        "task_dir": repo_relative(root, task_dir),
-        "profile": authored["profile"],
-        "mode": authored["mode"],
-        "review_intent": authored["review_intent"],
-        "review_identity": {
-            "reviewed_head": reviewed_head,
-            "review_ref": review_ref,
-        },
-        "semantic_review": copy.deepcopy(authored["semantic_review"]),
-        "deterministic_bindings": {
-            "artifacts": artifacts,
-            "repository": repository,
-            "entry_preconditions": entry_bindings,
-            "publication_ref": publication_ref,
-        },
-        "typed_exit": authored["typed_exit"],
-        "consumer": copy.deepcopy(authored["consumer"]),
-        "supersedes_publication_ref": authored.get("supersedes_publication_ref"),
+        "task_ref": repo_relative(root, task_dir),
+        "reviewed_content_head": reviewed_content_head,
+        "dimensions": copy.deepcopy(authored.get("dimensions")),
+        "findings": copy.deepcopy(authored.get("findings")),
+        "conclusions": copy.deepcopy(authored.get("conclusions")),
+        "route": copy.deepcopy(route),
     }
-    if authored["profile"] == "publication_review_stale":
-        payload["stale_reason"] = authored["stale_reason"]
-        payload["reentry_context"] = authored["reentry_context"]
-    if authored["typed_exit"] == "blocked":
-        payload["reason_code"] = authored["reason_code"]
-        payload["remediation"] = authored.get("remediation", "Resolve the recorded blocker and re-enter.")
-    payload["facts_sha256"] = context_digest(task_publication_facts_payload(payload))
     errors = task_publication_check_errors(
         root,
         task_dir,
@@ -14189,6 +10837,11 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         )
     if not args.dry_run:
         write_json(path, payload)
+        ai_first_converge_legacy_owner_residue(
+            root,
+            task_dir,
+            PR_READINESS_ARTIFACT,
+        )
     return {
         **payload,
         "artifact_path": str(path),
@@ -14200,15 +10853,26 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
-    path = task_publication_path(task_dir)
+    path = task_publication_path(root, task_dir)
     if not path.is_file() or path.is_symlink():
         raise WorkflowError(
             "Task publication readiness artifact is missing or unsafe.",
             exit_code=2,
         )
     payload = read_json(path)
+    if payload.get("schema_version") in {"1.0", "1.1"}:
+        raise WorkflowError(
+            "Legacy task publication readiness requires Branch Review owner re-entry.",
+            exit_code=2,
+            payload={
+                "artifact_path": str(path),
+                "errors": [
+                    "legacy_publication_requires_current_branch_review_dto"
+                ],
+            },
+        )
     errors = task_publication_check_errors(
         root,
         task_dir,
@@ -14218,7 +10882,8 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
         ),
     )
     expected_exit = str(getattr(args, "expected_exit", "") or "")
-    if expected_exit and payload.get("typed_exit") != expected_exit:
+    typed_exit = (payload.get("route") or {}).get("typed_exit")
+    if expected_exit and typed_exit != expected_exit:
         errors.append("task publication expected exit mismatch")
     if errors:
         raise WorkflowError(
@@ -14226,17 +10891,14 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
             payload={"artifact_path": str(path), "errors": sorted(set(errors))},
         )
-    bindings = payload["deterministic_bindings"]
     return {
         "status": "ok",
         "artifact_path": str(path),
         "task_dir": str(task_dir),
-        "reviewed_head": payload["review_identity"]["reviewed_head"],
-        "review_ref": payload["review_identity"]["review_ref"],
-        "typed_exit": payload["typed_exit"],
-        "publication_ref": bindings["publication_ref"],
-        "facts_sha256": payload["facts_sha256"],
-        "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "task_ref": payload["task_ref"],
+        "reviewed_content_head": payload["reviewed_content_head"],
+        "typed_exit": typed_exit,
+        "owner_result": payload,
     }
 
 
@@ -14340,7 +11002,7 @@ def task_publication_finalization_ledger_augmentation(
     for candidate in prior_candidates:
         content = closeout_json_artifact_bytes(candidate)
         if (
-            stored_artifact == task_publication_artifact_binding(content)
+            stored_artifact == task_publication_legacy_artifact_binding(content)
             and stored_entry
             == task_publication_issue_scope_ledger_binding(candidate, content)
         ):
@@ -14354,7 +11016,7 @@ def task_publication_finalization_ledger_augmentation(
     current_content = ledger_path.read_bytes()
     return {
         "path": repo_relative(root, ledger_path),
-        "artifact_binding": task_publication_artifact_binding(current_content),
+        "artifact_binding": task_publication_legacy_artifact_binding(current_content),
         "entry_binding": task_publication_issue_scope_ledger_binding(
             ledger,
             current_content,
@@ -14363,7 +11025,7 @@ def task_publication_finalization_ledger_augmentation(
     }
 
 
-def check_task_publication_for_finalization_augmentation(
+def check_legacy_task_publication_for_finalization_augmentation(
     root: Path,
     task_dir: Path,
     payload: dict[str, Any],
@@ -14449,7 +11111,11 @@ def check_task_publication_for_finalization_augmentation(
     current_artifacts: dict[str, dict[str, Any]] | None = None
     if artifacts_stale in errors:
         try:
-            current_artifacts = task_publication_artifact_bindings(task_dir)
+            current_artifacts = task_publication_legacy_artifact_bindings(
+                root,
+                task_dir,
+                load_config(root),
+            )
         except WorkflowError as exc:
             errors.append(str(exc))
 
@@ -14603,7 +11269,7 @@ def check_task_publication_for_finalization_augmentation(
             "Task publication gate is not fresh for finalization augmentation.",
             exit_code=2,
             payload={
-                "artifact_path": str(task_publication_path(task_dir)),
+                "artifact_path": str(task_publication_path(root, task_dir)),
                 "errors": errors,
                 "allowed_finalization_paths": finalization_paths,
             },
@@ -14611,7 +11277,7 @@ def check_task_publication_for_finalization_augmentation(
     review_identity = payload["review_identity"]
     return {
         "status": "ok",
-        "artifact_path": str(task_publication_path(task_dir)),
+        "artifact_path": str(task_publication_path(root, task_dir)),
         "task_dir": str(task_dir),
         "reviewed_head": review_identity["reviewed_head"],
         "review_ref": review_identity["review_ref"],
@@ -14619,21 +11285,116 @@ def check_task_publication_for_finalization_augmentation(
         "publication_ref": bindings["publication_ref"],
         "facts_sha256": payload["facts_sha256"],
         "artifact_sha256": hashlib.sha256(
-            task_publication_path(task_dir).read_bytes()
+            task_publication_path(root, task_dir).read_bytes()
         ).hexdigest(),
         "finalization_owned_delta": finalization_paths,
     }
 
 
-def task_commit_schema_path(root: Path) -> Path:
+def check_task_publication_for_finalization_augmentation(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    *,
+    expected_closeout_plan_digest: str | None,
+    additional_owned_paths: list[str] | None = None,
+    allow_verification_metadata: bool = False,
+    marketplace_verification: dict[str, Any] | None = None,
+    require_plan: bool = True,
+) -> dict[str, Any]:
+    """Recheck one current publication gate across finalizer-owned metadata."""
+    if payload.get("schema_version") in {"1.0", "1.1"}:
+        return check_legacy_task_publication_for_finalization_augmentation(
+            root,
+            task_dir,
+            payload,
+            expected_closeout_plan_digest=expected_closeout_plan_digest,
+            additional_owned_paths=additional_owned_paths,
+            allow_verification_metadata=allow_verification_metadata,
+            marketplace_verification=marketplace_verification,
+            require_plan=require_plan,
+        )
+    plan_path = closeout_plan_path(task_dir)
+    gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+    verification_path = marketplace_verification_path(task_dir, load_config(root))
+    accepted = {
+        repo_relative(root, plan_path),
+        repo_relative(root, gate_path),
+    }
+    if allow_verification_metadata:
+        accepted.add(repo_relative(root, verification_path))
+    finalization_paths: list[str] = []
+    if require_plan:
+        finalization_paths.append(repo_relative(root, plan_path))
+    if gate_path.is_file() and not gate_path.is_symlink():
+        finalization_paths.append(repo_relative(root, gate_path))
+    for value in additional_owned_paths or []:
+        relative = skill_safe_relative(value)
+        if (
+            relative is None
+            or relative.as_posix() != value
+            or value not in accepted
+        ):
+            raise WorkflowError(
+                "Task publication finalization metadata path is invalid.",
+                exit_code=2,
+            )
+        if value not in finalization_paths:
+            finalization_paths.append(value)
+    if require_plan:
+        if not plan_path.is_file() or plan_path.is_symlink():
+            raise WorkflowError(
+                "Task publication finalization requires the immutable plan.",
+                exit_code=2,
+            )
+        plan = validate_closeout_plan(read_json(plan_path))
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", expected_closeout_plan_digest or "")
+            or plan.get("plan_digest") != expected_closeout_plan_digest
+        ):
+            raise WorkflowError(
+                "Task publication finalization closeout plan identity changed.",
+                exit_code=2,
+            )
+    errors = task_publication_check_errors(
+        root,
+        task_dir,
+        payload,
+        finalization_owned_paths=finalization_paths,
+    )
+    if (payload.get("route") or {}).get("typed_exit") != "ready":
+        errors.append("task publication finalization requires ready")
+    if errors:
+        raise WorkflowError(
+            "Task publication gate is not current for finalization.",
+            exit_code=2,
+            payload={
+                "artifact_path": str(task_publication_path(root, task_dir)),
+                "errors": sorted(set(errors)),
+                "allowed_finalization_paths": finalization_paths,
+            },
+        )
+    return {
+        "status": "ok",
+        "artifact_path": str(task_publication_path(root, task_dir)),
+        "task_dir": str(task_dir),
+        "task_ref": payload["task_ref"],
+        "reviewed_content_head": payload["reviewed_content_head"],
+        "typed_exit": "ready",
+        "owner_result": payload,
+        "finalization_owned_delta": finalization_paths,
+    }
+
+
+def task_commit_candidate_schema_path(root: Path) -> Path:
     candidates = [
-        root / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
-        root / ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+        root / ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
     ]
     for path in candidates:
-        if path.is_file():
+        if path.is_file() and not path.is_symlink():
             return path
-    raise WorkflowError("guru-create-task-commit schema is not installed.", exit_code=2)
+    raise WorkflowError("guru-create-task-commit v2 candidate schema is not installed.", exit_code=2)
 
 
 def task_commit_repo_path_errors(value: Any, label: str) -> list[str]:
@@ -15250,6 +12011,83 @@ def task_commit_message_parts(message_bytes: str) -> tuple[str, str]:
     return (subject, body) if separator else ("", "")
 
 
+def task_commit_normalize_message_field(value: Any, label: str) -> str:
+    if not isinstance(value, str):
+        raise WorkflowError(f"Task commit message {label} must be a string.", exit_code=2)
+    normalized = "\n".join(line.rstrip() for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n"))
+    normalized = normalized.strip()
+    if not normalized:
+        raise WorkflowError(f"Task commit message {label} must contain concrete text.", exit_code=2)
+    return normalized
+
+
+def task_commit_canonical_message(
+    message: dict[str, Any],
+    *,
+    primary_issue: int,
+) -> dict[str, str]:
+    commit_type = str(message.get("type") or "").strip().casefold()
+    scope = str(message.get("scope") or "").strip().casefold()
+    if commit_type not in CONVENTIONAL_COMMIT_TYPES:
+        raise WorkflowError("Task commit message type is not supported.", exit_code=2)
+    if re.fullmatch(CONVENTIONAL_COMMIT_SCOPE_PATTERN, scope) is None:
+        raise WorkflowError("Task commit message scope is not canonical.", exit_code=2)
+    if commit_type == "chore" and scope in METADATA_COMMIT_SCOPES:
+        raise WorkflowError("Task work commit cannot use a metadata-only scope.", exit_code=2)
+
+    summary = task_commit_normalize_message_field(message.get("summary"), "summary")
+    background = task_commit_normalize_message_field(message.get("background"), "background")
+    changes = task_commit_normalize_message_field(message.get("changes"), "changes")
+    boundaries = task_commit_normalize_message_field(message.get("boundaries"), "boundaries")
+    validations = task_commit_normalize_message_field(message.get("validations"), "validations")
+    subject = f"{commit_type}({scope}): #{primary_issue} {summary}"
+    body = (
+        f"背景：\n{background}\n\n"
+        f"变更：\n{changes}\n\n"
+        f"边界：\n{boundaries}\n\n"
+        f"验证：\n{validations}\n\n"
+        f"Refs #{primary_issue}"
+    )
+    message_bytes = f"{subject}\n\n{body}\n"
+    kind, errors = validate_commit_message(subject, body, primary_issue=primary_issue)
+    if kind != "work" or errors:
+        raise WorkflowError(
+            "Task commit canonical message failed the shared parser before confirmation.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return {
+        "type": commit_type,
+        "scope": scope,
+        "summary": summary,
+        "background": background,
+        "changes": changes,
+        "boundaries": boundaries,
+        "validations": validations,
+        "subject": subject,
+        "body": body,
+        "bytes": message_bytes,
+    }
+
+
+def task_commit_snapshot_without_digest(snapshot: dict[str, Any]) -> dict[str, Any]:
+    entries = snapshot.get("entries")
+    return {"entries": copy.deepcopy(entries) if isinstance(entries, list) else []}
+
+
+def task_commit_ai_exit(ai_review: Any) -> str:
+    status = ai_review.get("status") if isinstance(ai_review, dict) else None
+    exits = {
+        "passed": "committed",
+        "revision-required": "revision-required",
+        "blocked": "blocked",
+    }
+    exit_id = exits.get(status)
+    if exit_id is None:
+        raise WorkflowError("Task commit candidate has no declared semantic exit.", exit_code=2)
+    return exit_id
+
+
 def resolve_task_commit_candidate(root: Path, value: str) -> tuple[Path, Path]:
     raw = Path(value).expanduser()
     path = raw if raw.is_absolute() else root / raw
@@ -15292,6 +12130,8 @@ def validate_task_commit_candidate(
     root: Path,
     candidate_path: Path,
     task_dir: Path,
+    *,
+    recovery_checked_head: str | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
     errors: list[str] = []
     try:
@@ -15311,13 +12151,17 @@ def validate_task_commit_candidate(
         )
     candidate_raw_sha256 = hashlib.sha256(candidate_raw_bytes).hexdigest()
     schema_errors: list[str] = []
-    schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
+    schema = skill_read_json(
+        task_commit_candidate_schema_path(root),
+        "task commit candidate schema",
+        schema_errors,
+    )
     errors.extend(schema_errors)
     if schema is not None:
-        errors.extend(skill_json_schema_validation_errors(plan, schema, "task commit plan"))
+        errors.extend(skill_json_schema_validation_errors(plan, schema, "task commit candidate"))
 
     config = load_config(root)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     boundary = assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
     task_relative = repo_relative(root, task_dir)
@@ -15341,10 +12185,10 @@ def validate_task_commit_candidate(
             "git_operation_state": git_operation_state,
         }, errors
 
-    if plan.get("$schema") != TASK_COMMIT_PLAN_SCHEMA_ID:
-        errors.append("task commit plan has the wrong $schema identity.")
-    if plan.get("schema_version") != TASK_COMMIT_PLAN_SCHEMA_VERSION:
-        errors.append("task commit plan schema_version must be 1.0.")
+    if plan.get("$schema") != TASK_COMMIT_CANDIDATE_SCHEMA_ID:
+        errors.append("task commit candidate has the wrong $schema identity.")
+    if plan.get("schema_version") != TASK_COMMIT_CANDIDATE_SCHEMA_VERSION:
+        errors.append("task commit candidate schema_version must be 2.0.")
     if plan.get("skill_id") != TASK_COMMIT_SKILL_ID:
         errors.append("task commit plan skill_id must be guru-create-task-commit.")
     if plan.get("sequence") != candidate_path.stem:
@@ -15359,15 +12203,7 @@ def validate_task_commit_candidate(
         }
         expected_prior = set(range(1, sequence_number))
         if sequence_number < 1 or occupied_sequences != expected_prior:
-            errors.append("task commit plan sequence must be the next unused contiguous sequence.")
-        if candidate_relative.startswith(".trellis/tasks/"):
-            try:
-                tracked_candidate_blob, _ = task_commit_tree_path_identity(root, "HEAD", candidate_relative)
-            except WorkflowError:
-                errors.append("legacy task commit plan could not verify sequence history at pre_commit_head.")
-                tracked_candidate_blob = None
-            if tracked_candidate_blob is not None:
-                errors.append("legacy task commit plan candidate already exists at pre_commit_head; use the next unused sequence.")
+            errors.append("task commit candidate sequence must be the only contiguous private sequence.")
 
     task_plan = plan.get("task") if isinstance(plan.get("task"), dict) else {}
     if task_plan.get("id") != task.get("id") or task_plan.get("path") != task_relative:
@@ -15378,7 +12214,8 @@ def validate_task_commit_candidate(
         errors.append("task commit plan branch does not match the current branch.")
 
     git_plan = plan.get("git") if isinstance(plan.get("git"), dict) else {}
-    if git_plan.get("pre_commit_head") != current:
+    candidate_head = recovery_checked_head or current
+    if git_plan.get("pre_commit_head") != candidate_head:
         errors.append("task commit plan pre_commit_head is stale.")
     base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
     if git_plan.get("base_branch") != base_branch:
@@ -15387,49 +12224,25 @@ def validate_task_commit_candidate(
     if git_plan.get("base_ref") != expected_base_ref:
         errors.append("task commit plan base_ref does not match the current Git base.")
 
-    ledger_path = issue_scope_ledger_path(task_dir)
     ledger = load_issue_scope_ledger(task_dir, task_context)
     primary_issue = primary_issue_number_from_ledger(ledger)
-    issue_plan = plan.get("issue") if isinstance(plan.get("issue"), dict) else {}
-    ledger_digest = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
-    if issue_plan.get("primary_issue") != primary_issue or issue_plan.get("ledger_sha256") != ledger_digest:
-        errors.append("task commit plan issue identity or ledger digest is stale.")
+    if git_plan.get("checked_head") != candidate_head:
+        errors.append(
+            "task commit plan checked_head does not match the current passed DTO identity."
+        )
 
-    evidence = plan.get("evidence") if isinstance(plan.get("evidence"), dict) else {}
-    evidence_paths = {
-        "planning_approval": planning_approval_path(task_dir),
-        "phase2_check": phase2_check_path(task_dir),
-        "issue_scope_ledger": ledger_path,
-        "task": task_dir / "task.json",
-    }
-    for label, path in evidence_paths.items():
-        errors.extend(task_commit_evidence_errors(root, evidence.get(label), path, label))
-    _, _, planning_errors = validate_planning_approval(root, task_dir)
-    errors.extend(f"planning approval: {item}" for item in planning_errors)
-    _, phase2, phase2_errors = validate_phase2_check(
-        root,
-        task_dir,
-        additional_dirty_excluded={candidate_relative},
-    )
-    errors.extend(f"Phase 2 check: {item}" for item in phase2_errors)
-    phase2_repository = (
-        phase2.get("repository_snapshot")
-        if isinstance(phase2.get("repository_snapshot"), dict)
-        else {}
-    )
-    phase2_head = phase2_repository.get("head") or phase2.get("head")
-    if str(phase2_head or "") != current:
-        errors.append("task commit plan requires Phase 2 evidence recorded at pre_commit_head.")
-    if (
-        phase2.get("skill_id") == PHASE2_CHECK_SKILL_ID
-        and phase2.get("typed_exit") != "passed"
-    ):
-        errors.append("task commit plan requires guru-check-task typed_exit=passed.")
-
-    current_snapshot = capture_task_commit_snapshot(root, {candidate_relative})
     snapshot = plan.get("dirty_snapshot") if isinstance(plan.get("dirty_snapshot"), dict) else {}
-    if snapshot != current_snapshot:
-        errors.append("task commit plan dirty_snapshot is stale or incomplete.")
+    if recovery_checked_head is None:
+        current_snapshot = task_commit_snapshot_without_digest(
+            capture_task_commit_snapshot(root, {candidate_relative})
+        )
+        if snapshot != current_snapshot:
+            errors.append("task commit plan dirty_snapshot is stale or incomplete.")
+    else:
+        # A successful publication leaves the worktree clean for owned paths.
+        # Recovery validates those paths against the surviving candidate and
+        # committed tree below instead of requiring the pre-commit dirty state.
+        current_snapshot = task_commit_snapshot_without_digest(snapshot)
 
     classifications = plan.get("path_classifications")
     classification_by_path: dict[str, dict[str, Any]] = {}
@@ -15476,39 +12289,12 @@ def validate_task_commit_candidate(
                 errors.append(
                     f"task commit snapshot entry {path_value} has a self-referential {field_name}."
                 )
-    legacy_tracked_candidate = candidate_relative.startswith(".trellis/tasks/")
-    expected_classified_paths = snapshot_paths | (
-        {candidate_relative} if legacy_tracked_candidate else set()
-    )
-    if set(classification_by_path) != expected_classified_paths:
+    if set(classification_by_path) != snapshot_paths:
         errors.append("task commit plan classifications do not exactly cover its owned dirty paths.")
-    self_classification = classification_by_path.get(candidate_relative, {})
-    if legacy_tracked_candidate and (
-        self_classification.get("category") != "task-reviewed"
-        or self_classification.get("coverage_source") != "skill-artifact"
-    ):
-        errors.append("legacy task commit plan candidate self path must use task-reviewed/skill-artifact coverage.")
-    if any(item.get("category") in TASK_COMMIT_BLOCKING_CATEGORIES for item in classification_by_path.values()):
-        errors.append("task commit plan contains a blocking path classification.")
 
     reviewed_paths = {
         path for path, item in classification_by_path.items() if item.get("category") == "task-reviewed"
     }
-    phase2_dirty_paths = phase2_repository.get("dirty_paths", phase2.get("dirty_paths", []))
-    phase2_covered_paths = {
-        str(item) for item in phase2_dirty_paths if isinstance(item, str)
-    }
-    phase2_covered_paths.update(recorded_digest_paths(phase2_repository.get("reviewed_paths")))
-    phase2_covered_paths.update(recorded_digest_paths(phase2.get("checked_artifacts")))
-    # Phase 2 evidence cannot bind its own final bytes without a recursive
-    # digest. Candidate evidence authorizes those bytes for exact staging.
-    phase2_covered_paths.add(repo_relative(root, phase2_check_path(task_dir)))
-    uncovered_reviewed = sorted(reviewed_paths - {candidate_relative} - phase2_covered_paths)
-    if uncovered_reviewed:
-        errors.append(
-            "task-reviewed paths are not covered by fresh Phase 2 evidence: "
-            + ", ".join(uncovered_reviewed)
-        )
     snapshot_by_path = {str(item["path"]): item for item in snapshot_entries}
     expected_stage_paths = set(reviewed_paths)
     for path in list(reviewed_paths):
@@ -15525,54 +12311,47 @@ def validate_task_commit_candidate(
         errors.append("task commit plan exact_stage_paths do not equal the reviewed literal path set.")
 
     message = plan.get("message") if isinstance(plan.get("message"), dict) else {}
-    message_bytes = message.get("bytes")
-    if not isinstance(message_bytes, str):
-        errors.append("task commit plan message.bytes must be a string.")
-        message_bytes = ""
-    subject, body = task_commit_message_parts(message_bytes)
-    if not subject or not body or message.get("subject") != subject or message.get("body") != body:
-        errors.append("task commit plan message subject/body do not match exact bytes.")
-    message_digest = hashlib.sha256(message_bytes.encode("utf-8")).hexdigest()
-    if message.get("sha256") != message_digest:
-        errors.append("task commit plan message digest is stale.")
-    kind, message_errors = validate_commit_message(subject, body, primary_issue=primary_issue)
-    if kind != "work":
-        errors.append("task commit plan message must be a work commit.")
-    errors.extend(f"candidate message: {item}" for item in message_errors)
+    try:
+        canonical_message = task_commit_canonical_message(
+            message,
+            primary_issue=primary_issue,
+        )
+    except WorkflowError as exc:
+        errors.append(str(exc))
+        canonical_message = {}
+    if message != canonical_message:
+        errors.append("task commit candidate message is not the canonical shared-parser output.")
 
     ai_review = plan.get("ai_review") if isinstance(plan.get("ai_review"), dict) else {}
     if (
-        ai_review.get("status") != "passed"
-        or not str(ai_review.get("reviewer") or "").strip()
+        ai_review.get("status") not in {"passed", "revision-required", "blocked"}
         or not str(ai_review.get("summary") or "").strip()
         or not isinstance(ai_review.get("evidence"), list)
         or not ai_review.get("evidence")
     ):
-        errors.append("task commit plan requires a concrete passed AI Review Gate.")
-    authorization = plan.get("authorization") if isinstance(plan.get("authorization"), dict) else {}
-    if (
-        authorization.get("authorized") is not True
-        or not str(authorization.get("source") or "").strip()
-        or not str(authorization.get("evidence") or "").strip()
-    ):
-        errors.append("task commit plan lacks commit side-effect authorization.")
-    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
-    if result.get("status") != "planned" or result.get("exit") is not None:
-        errors.append("task commit plan is not in the unexecuted planned state.")
-    freshness = plan.get("freshness") if isinstance(plan.get("freshness"), dict) else {}
-    if not str(freshness.get("captured_at") or "").strip():
-        errors.append("task commit plan freshness.captured_at is missing.")
-    if freshness.get("plan_digest") != task_commit_plan_digest(plan):
-        errors.append("task commit plan plan_digest is stale.")
+        errors.append("task commit candidate requires a concrete AI semantic result.")
+    semantic_exit = "blocked"
+    try:
+        semantic_exit = task_commit_ai_exit(ai_review)
+    except WorkflowError as exc:
+        errors.append(str(exc))
+    blocking_paths = sorted(
+        path
+        for path, item in classification_by_path.items()
+        if item.get("category") in TASK_COMMIT_BLOCKING_CATEGORIES
+    )
+    if semantic_exit == "committed" and blocking_paths:
+        errors.append("passed task commit candidate cannot contain blocking path classifications.")
+    if semantic_exit == "committed" and not stage_paths:
+        errors.append("passed task commit candidate requires at least one exact stage path.")
 
     facts = {
         "task_dir": task_relative,
         "candidate_artifact": candidate_relative,
         "sequence": plan.get("sequence"),
-        "pre_commit_head": current,
+        "pre_commit_head": candidate_head,
         "primary_issue": primary_issue,
-        "snapshot_digest": current_snapshot["digest"],
-        "message_sha256": message_digest,
+        "semantic_exit": semantic_exit,
         "candidate_raw_sha256": candidate_raw_sha256,
         "candidate_raw_size": len(candidate_raw_bytes),
         "exact_stage_paths": stage_paths,
@@ -15585,44 +12364,46 @@ def validate_task_commit_candidate(
     return plan, facts, errors
 
 
-def task_commit_public_check_ref(artifact_sha256: str) -> str:
-    return f"phase2-check:{artifact_sha256}"
-
-
-def task_commit_next_candidate_path(
-    root: Path,
-    task_dir: Path,
-) -> tuple[Path, str]:
+def task_commit_prepare_candidate_path(root: Path, task_dir: Path) -> tuple[Path, str]:
     task_key = hashlib.sha256(repo_relative(root, task_dir).encode("utf-8")).hexdigest()[:16]
     plan_dir = root / TASK_COMMIT_RUNTIME_DIR / task_key
     if plan_dir.exists() and not plan_dir.is_dir():
-        raise WorkflowError("Task commit plan path is not a directory.", exit_code=2)
+        raise WorkflowError("Task commit candidate path is not a directory.", exit_code=2)
     plan_dir.mkdir(parents=True, exist_ok=True)
-    occupied: list[int] = []
-    for path in sorted(plan_dir.iterdir()):
-        if not path.is_file() or not re.fullmatch(r"[0-9]{3}\.json", path.name):
-            raise WorkflowError(
-                "Task commit plan directory contains an unsupported entry.", exit_code=2
-            )
-        occupied.append(int(path.stem))
-    if occupied != list(range(1, len(occupied) + 1)) or len(occupied) >= 999:
-        raise WorkflowError(
-            "Task commit plan sequence history is not contiguous or is exhausted.", exit_code=2
-        )
-    sequence = f"{len(occupied) + 1:03d}"
-    candidate_path = plan_dir / f"{sequence}.json"
-    if candidate_path.exists():
-        raise WorkflowError("Task commit candidate sequence is already occupied.", exit_code=2)
-    return candidate_path, sequence
+    candidates = sorted(plan_dir.glob("[0-9][0-9][0-9].json"))
+    unsupported = [path for path in plan_dir.iterdir() if path not in candidates]
+    if unsupported or len(candidates) > 1:
+        raise WorkflowError("Task commit candidate runtime is ambiguous.", exit_code=2)
+    if candidates:
+        return candidates[0], candidates[0].stem
+    return plan_dir / "001.json", "001"
 
 
-def build_task_commit_candidate_from_public_input(
+def task_commit_normalize_ai_review(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise WorkflowError("Task commit AI review must be an object.", exit_code=2)
+    status = str(value.get("status") or "").strip()
+    if status not in {"passed", "revision-required", "blocked"}:
+        raise WorkflowError("Task commit AI review has an unsupported status.", exit_code=2)
+    summary = task_commit_normalize_message_field(value.get("summary"), "AI review summary")
+    evidence = value.get("evidence")
+    if not isinstance(evidence, list) or not evidence:
+        raise WorkflowError("Task commit AI review requires concrete evidence.", exit_code=2)
+    normalized_evidence = [
+        task_commit_normalize_message_field(item, "AI review evidence")
+        for item in evidence
+    ]
+    return {"status": status, "summary": summary, "evidence": normalized_evidence}
+
+
+def build_task_commit_candidate(
     root: Path,
     task_dir: Path,
     public_input: dict[str, Any],
+    authoring: dict[str, Any],
 ) -> tuple[Path, dict[str, Any], dict[str, Any]]:
     config = load_config(root)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     task = task_json(task_dir)
     task_relative = repo_relative(root, task_dir)
@@ -15632,107 +12413,69 @@ def build_task_commit_candidate_from_public_input(
         raise WorkflowError("Task commit candidate requires an in_progress task.", exit_code=2)
     require_ordinary_task_commit_git_state(root)
 
-    phase2_path, phase2, phase2_errors = validate_phase2_check(root, task_dir)
-    if phase2_errors:
-        raise WorkflowError(
-            "Task commit candidate requires a fresh passed Phase 2 check.",
-            exit_code=2,
-            payload={"errors": phase2_errors},
-        )
-    phase2_sha256 = hashlib.sha256(phase2_path.read_bytes()).hexdigest()
-    phase2_repository = (
-        phase2.get("repository_snapshot")
-        if isinstance(phase2.get("repository_snapshot"), dict)
-        else {}
-    )
     current = current_head(root)
+    expected_source_exit = {
+        "initial_commit": "passed",
+        "revision_reentry": "revision-required",
+        "finding_fix_commit": "passed",
+        "recovery_resume": "transaction_recovery",
+    }.get(str(public_input.get("profile") or ""))
     if (
-        phase2.get("typed_exit") != "passed"
+        public_input.get("source_exit") != expected_source_exit
         or public_input.get("checked_head") != current
-        or phase2_repository.get("head") != current
-        or public_input.get("check_ref") != task_commit_public_check_ref(phase2_sha256)
     ):
         raise WorkflowError(
             "Public commit input does not bind the current passed Phase 2 identity.",
             exit_code=2,
         )
-
-    candidate_path, sequence = task_commit_next_candidate_path(root, task_dir)
+    candidate_path, sequence = task_commit_prepare_candidate_path(root, task_dir)
     candidate_relative = repo_relative(root, candidate_path)
-    snapshot = capture_task_commit_snapshot(root, {candidate_relative})
+    snapshot = task_commit_snapshot_without_digest(
+        capture_task_commit_snapshot(root, {candidate_relative})
+    )
     snapshot_entries = {
         str(item["path"]): item
         for item in snapshot["entries"]
         if isinstance(item, dict) and isinstance(item.get("path"), str)
     }
-    authorizations = public_input.get("path_authorizations")
-    if not isinstance(authorizations, list) or any(
-        task_commit_repo_path_errors(item, "path_authorizations")
-        for item in authorizations
-    ):
-        raise WorkflowError("Public path authorizations are invalid.", exit_code=2)
-    authorized_paths = set(authorizations)
-    if len(authorized_paths) != len(authorizations):
-        raise WorkflowError("Public path authorizations must be unique.", exit_code=2)
-    unknown_authorizations = sorted(authorized_paths - set(snapshot_entries))
-    if unknown_authorizations:
-        raise WorkflowError(
-            "Public path authorizations do not resolve current dirty paths.",
-            exit_code=2,
-            payload={"paths": unknown_authorizations},
-        )
-
-    semantic_review = public_input.get("semantic_review")
-    authorization = public_input.get("human_authorization")
-    if (
-        not isinstance(semantic_review, dict)
-        or semantic_review.get("status") != "passed"
-        or not str(semantic_review.get("summary") or "").strip()
-        or not isinstance(authorization, dict)
-        or authorization.get("status") != "confirmed"
-        or not str(authorization.get("summary") or "").strip()
-    ):
-        raise WorkflowError(
-            "Committed route requires a passed semantic review and plan-bound confirmation.",
-            exit_code=2,
-        )
-
-    message_intent = public_input.get("message_intent")
-    if not isinstance(message_intent, dict):
-        raise WorkflowError("Public commit message intent is missing.", exit_code=2)
-    subject = str(message_intent.get("subject") or "")
-    body = str(message_intent.get("body") or "")
-    message_bytes = f"{subject}\n\n{body}\n"
-    parsed_subject, parsed_body = task_commit_message_parts(message_bytes)
-    if parsed_subject != subject or parsed_body != body:
-        raise WorkflowError("Public commit message intent is not canonical.", exit_code=2)
-
+    classifications_raw = authoring.get("path_classifications")
+    if not isinstance(classifications_raw, list):
+        raise WorkflowError("Task commit authoring must classify every dirty path.", exit_code=2)
     classifications: list[dict[str, Any]] = []
-    exact_stage_paths = set(authorized_paths)
-    for path, entry in snapshot_entries.items():
-        reviewed = path in authorized_paths
-        classifications.append({
-            "path": path,
-            "category": "task-reviewed" if reviewed else "unrelated-preserved",
-            "reason": (
-                str(semantic_review["summary"])
-                if reviewed
-                else "The caller did not authorize this current dirty path for the task commit."
-            ),
-            "coverage_source": (
-                repo_relative(root, phase2_path)
-                if reviewed
-                else "public-path-authorization"
-            ),
-        })
-        if reviewed and isinstance(entry.get("renamed_from"), str):
-            exact_stage_paths.add(str(entry["renamed_from"]))
-    ledger_path = issue_scope_ledger_path(task_dir)
+    for item in classifications_raw:
+        if not isinstance(item, dict):
+            raise WorkflowError("Task commit path classification must be an object.", exit_code=2)
+        classifications.append(
+            {
+                "path": str(item.get("path") or "").strip(),
+                "category": str(item.get("category") or "").strip(),
+                "reason": task_commit_normalize_message_field(item.get("reason"), "classification reason"),
+                "coverage_source": task_commit_normalize_message_field(
+                    item.get("coverage_source"), "classification coverage source"
+                ),
+            }
+        )
+    classification_by_path = {
+        item["path"]: item for item in classifications if item["path"]
+    }
+    if len(classification_by_path) != len(classifications):
+        raise WorkflowError("Task commit path classifications must be unique and non-empty.", exit_code=2)
+    exact_stage_paths = {
+        path
+        for path, item in classification_by_path.items()
+        if item["category"] == "task-reviewed"
+    }
+    for path in list(exact_stage_paths):
+        renamed_from = snapshot_entries.get(path, {}).get("renamed_from")
+        if isinstance(renamed_from, str) and renamed_from:
+            exact_stage_paths.add(renamed_from)
+
     ledger = load_issue_scope_ledger(task_dir, task_context)
+    primary_issue = primary_issue_number_from_ledger(ledger)
     base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
     plan: dict[str, Any] = {
-        "$schema": TASK_COMMIT_PLAN_SCHEMA_ID,
-        "schema_version": TASK_COMMIT_PLAN_SCHEMA_VERSION,
+        "$schema": TASK_COMMIT_CANDIDATE_SCHEMA_ID,
+        "schema_version": TASK_COMMIT_CANDIDATE_SCHEMA_VERSION,
         "skill_id": TASK_COMMIT_SKILL_ID,
         "sequence": sequence,
         "task": {
@@ -15741,57 +12484,227 @@ def build_task_commit_candidate_from_public_input(
             "status": task.get("status"),
             "branch": current_branch(root),
         },
-        "issue": {
-            "primary_issue": primary_issue_number_from_ledger(ledger),
-            "ledger_sha256": hashlib.sha256(ledger_path.read_bytes()).hexdigest(),
-        },
         "git": {
             "base_branch": base_branch,
             "base_ref": diff_base_ref(root, base_branch),
             "pre_commit_head": current,
-        },
-        "evidence": {
-            "planning_approval": task_commit_file_evidence(root, planning_approval_path(task_dir)),
-            "phase2_check": task_commit_file_evidence(root, phase2_path),
-            "issue_scope_ledger": task_commit_file_evidence(root, ledger_path),
-            "task": task_commit_file_evidence(root, task_dir / "task.json"),
+            "checked_head": str(public_input.get("checked_head") or ""),
         },
         "dirty_snapshot": snapshot,
-        "path_classifications": classifications,
+        "path_classifications": sorted(classifications, key=lambda item: item["path"].encode("utf-8")),
         "exact_stage_paths": sorted(exact_stage_paths),
-        "message": {
-            "subject": subject,
-            "body": body,
-            "bytes": message_bytes,
-            "sha256": hashlib.sha256(message_bytes.encode("utf-8")).hexdigest(),
-        },
-        "ai_review": {
-            "status": "passed",
-            "reviewer": "public-skill-caller",
-            "summary": str(semantic_review["summary"]),
-            "evidence": [
-                "The caller supplied the exact reviewed path authorization set and commit message intent."
-            ],
-        },
-        "authorization": {
-            "authorized": True,
-            "source": "explicit-plan-bound-confirmation",
-            "evidence": str(authorization["summary"]),
-        },
-        "freshness": {"captured_at": now_iso(), "plan_digest": ""},
-        "result": {"status": "planned", "exit": None},
+        "message": task_commit_canonical_message(
+            authoring.get("message") if isinstance(authoring.get("message"), dict) else {},
+            primary_issue=primary_issue,
+        ),
+        "ai_review": task_commit_normalize_ai_review(authoring.get("ai_review")),
     }
-    plan["freshness"]["plan_digest"] = task_commit_plan_digest(plan)
+    candidate_preimage = candidate_path.read_bytes() if candidate_path.exists() else None
     write_json(candidate_path, plan)
-    checked_plan, facts, errors = validate_task_commit_candidate(root, candidate_path, task_dir)
+    try:
+        checked_plan, facts, errors = validate_task_commit_candidate(
+            root, candidate_path, task_dir
+        )
+    except Exception:
+        if candidate_preimage is None:
+            candidate_path.unlink(missing_ok=True)
+        else:
+            candidate_path.write_bytes(candidate_preimage)
+        raise
     if errors:
-        candidate_path.unlink(missing_ok=True)
+        if candidate_preimage is None:
+            candidate_path.unlink(missing_ok=True)
+        else:
+            candidate_path.write_bytes(candidate_preimage)
         raise WorkflowError(
             "Deterministic task commit candidate validation failed.",
             exit_code=2,
             payload={"errors": errors},
         )
     return candidate_path, checked_plan, facts
+
+
+TASK_COMMIT_LEGACY_PUBLIC_FIELDS = frozenset({
+    "message_intent",
+    "path_authorizations",
+    "semantic_review",
+    "human_authorization",
+    "exit_intent",
+    "check_ref",
+    "reentry_reason",
+    "commit_intent",
+    "recovery_intent",
+})
+
+
+def task_commit_legacy_public_input_errors(payload: Any) -> list[str]:
+    if not isinstance(payload, dict) or not TASK_COMMIT_LEGACY_PUBLIC_FIELDS.intersection(payload):
+        return ["not a legacy task commit public input"]
+    errors: list[str] = []
+    if payload.get("profile") not in {
+        "initial_commit", "revision_reentry", "finding_fix_commit", "recovery_resume",
+    }:
+        errors.append("legacy profile is unsupported")
+    if payload.get("mode") not in {"workflow", "standalone"}:
+        errors.append("legacy mode is unsupported")
+    if not isinstance(payload.get("task_ref"), str):
+        errors.append("legacy task_ref is missing")
+    if re.fullmatch(r"[0-9a-f]{40,64}", str(payload.get("checked_head") or "")) is None:
+        errors.append("legacy checked_head is invalid")
+    if not isinstance(payload.get("message_intent"), dict):
+        errors.append("legacy message_intent is missing")
+    paths = payload.get("path_authorizations")
+    if not isinstance(paths, list) or any(not isinstance(item, str) or not item for item in paths):
+        errors.append("legacy path_authorizations are invalid")
+    semantic = payload.get("semantic_review")
+    if (
+        not isinstance(semantic, dict)
+        or semantic.get("status") not in {"passed", "revision-required", "blocked"}
+        or not isinstance(semantic.get("summary"), str)
+        or not semantic.get("summary", "").strip()
+    ):
+        errors.append("legacy semantic_review is invalid")
+    return errors
+
+
+def task_commit_legacy_body_section(body: str, section: str, next_section: str | None) -> str:
+    lines = body.replace("\r\n", "\n").replace("\r", "\n").splitlines()
+    starts = [index for index, line in enumerate(lines) if line.strip() == section]
+    if len(starts) != 1:
+        return ""
+    start = starts[0] + 1
+    end = len(lines)
+    if next_section is not None:
+        next_matches = [
+            index for index, line in enumerate(lines[start:], start=start)
+            if line.strip() == next_section
+        ]
+        if next_matches:
+            end = next_matches[0]
+    else:
+        refs = [
+            index for index, line in enumerate(lines[start:], start=start)
+            if re.fullmatch(r"Refs #\d+", line.strip())
+        ]
+        if refs:
+            end = refs[0]
+    return "\n".join(lines[start:end]).strip()
+
+
+def task_commit_legacy_authoring(
+    root: Path,
+    task_dir: Path,
+    public_input: dict[str, Any],
+) -> dict[str, Any]:
+    candidate_path, _ = task_commit_prepare_candidate_path(root, task_dir)
+    snapshot = task_commit_snapshot_without_digest(
+        capture_task_commit_snapshot(root, {repo_relative(root, candidate_path)})
+    )
+    authorized = {
+        str(path) for path in public_input.get("path_authorizations", []) if isinstance(path, str)
+    }
+    phase2_source = repo_relative(root, phase2_check_path(root, task_dir))
+    classifications = [
+        {
+            "path": str(entry["path"]),
+            "category": "task-reviewed" if entry["path"] in authorized else "unrelated-preserved",
+            "reason": (
+                str((public_input.get("semantic_review") or {}).get("summary") or "").strip()
+                if entry["path"] in authorized
+                else "旧版输入未将此当前 dirty path 纳入任务提交，迁移时保持原样。"
+            ),
+            "coverage_source": phase2_source if entry["path"] in authorized else "legacy-v1-projection",
+        }
+        for entry in snapshot["entries"]
+        if isinstance(entry, dict) and isinstance(entry.get("path"), str)
+    ]
+
+    message_intent = public_input.get("message_intent") or {}
+    subject = str(message_intent.get("subject") or "").strip()
+    body = str(message_intent.get("body") or "")
+    match = re.match(
+        r"^(?P<type>[a-z]+)\((?P<scope>[^)]+)\):(?:\s+#\d+)?\s*(?P<summary>.*)$",
+        subject,
+    )
+    commit_type = str(match.group("type") if match else "feat").casefold()
+    if commit_type not in CONVENTIONAL_COMMIT_TYPES:
+        commit_type = "feat"
+    scope = str(match.group("scope") if match else "workflow").strip().casefold()
+    if re.fullmatch(CONVENTIONAL_COMMIT_SCOPE_PATTERN, scope) is None or (
+        commit_type == "chore" and scope in METADATA_COMMIT_SCOPES
+    ):
+        scope = "workflow"
+    summary = str(match.group("summary") if match else subject).strip()
+    if not contains_chinese_text(summary):
+        summary = "提交当前任务变更" + (f"：{summary}" if summary else "")
+
+    fallbacks = {
+        "背景：": "兼容迁移旧版任务提交候选。",
+        "变更：": "提交当前由 AI 分类且由 Phase 2 覆盖的任务变更。",
+        "边界：": "保留未纳入本次任务提交的工作区路径。",
+        "验证：": "沿用当前 checked content HEAD 的 Phase 2 通过结论。",
+    }
+    sections = {
+        section: task_commit_legacy_body_section(
+            body,
+            section,
+            WORK_COMMIT_BODY_SECTIONS[index + 1]
+            if index + 1 < len(WORK_COMMIT_BODY_SECTIONS)
+            else None,
+        ) or fallback
+        for index, (section, fallback) in enumerate(fallbacks.items())
+    }
+    semantic = public_input.get("semantic_review") or {}
+    return {
+        "path_classifications": classifications,
+        "message": {
+            "type": commit_type,
+            "scope": scope,
+            "summary": summary,
+            "background": sections["背景："],
+            "changes": sections["变更："],
+            "boundaries": sections["边界："],
+            "validations": sections["验证："],
+        },
+        "ai_review": {
+            "status": semantic.get("status"),
+            "summary": str(semantic.get("summary") or "").strip(),
+            "evidence": [
+                "旧版 message/path/semantic 字段已一次性投影为当前 candidate。"
+            ],
+        },
+    }
+
+
+def cmd_prepare_task_commit(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or os.getcwd()))
+    input_path = resolve_repo_path(root, str(args.input))
+    public_input = read_json(input_path)
+    task_dir = production_task_from_public_input(root, public_input)
+    try:
+        authoring = json.loads(str(args.candidate_json))
+    except json.JSONDecodeError as exc:
+        raise WorkflowError("--candidate-json must be one JSON object.", exit_code=2) from exc
+    if not isinstance(authoring, dict):
+        raise WorkflowError("--candidate-json must be one JSON object.", exit_code=2)
+    candidate_path, candidate, facts = build_task_commit_candidate(
+        root,
+        task_dir,
+        public_input,
+        authoring,
+    )
+    return {
+        "status": "prepared",
+        "typed_exit": task_commit_ai_exit(candidate.get("ai_review")),
+        "task_ref": repo_relative(root, task_dir),
+        "candidate_artifact": repo_relative(root, candidate_path),
+        "checked_head": candidate["git"]["checked_head"],
+        "exact_stage_paths": facts["exact_stage_paths"],
+        "message": {
+            "subject": candidate["message"]["subject"],
+            "body": candidate["message"]["body"],
+        },
+    }
 
 
 def git_nul_path_set(
@@ -15830,11 +12743,16 @@ def task_commit_raw_message(root: Path, commit: str) -> bytes:
 
 def task_commit_result_validation_errors(root: Path, plan: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    schema_errors: list[str] = []
-    schema = skill_read_json(task_commit_schema_path(root), "task commit plan schema", schema_errors)
-    errors.extend(schema_errors)
-    if schema is not None:
-        errors.extend(skill_json_schema_validation_errors(plan, schema, "task commit plan result"))
+    if plan.get("$schema") != TASK_COMMIT_PLAN_SCHEMA_ID:
+        errors.append("legacy task commit plan has the wrong schema identity.")
+    if plan.get("schema_version") != "1.0" or plan.get("skill_id") != TASK_COMMIT_SKILL_ID:
+        errors.append("legacy task commit plan identity is invalid.")
+    if not isinstance(plan.get("git"), dict):
+        errors.append("legacy task commit plan git identity is missing.")
+    if not isinstance(plan.get("message"), dict):
+        errors.append("legacy task commit plan message is missing.")
+    if not isinstance(plan.get("exact_stage_paths"), list):
+        errors.append("legacy task commit plan exact_stage_paths are missing.")
 
     result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
     status = result.get("status")
@@ -15968,101 +12886,6 @@ def task_commit_result_validation_errors(root: Path, plan: dict[str, Any]) -> li
     return errors
 
 
-def record_task_commit_result(
-    root: Path,
-    candidate_path: Path,
-    plan: dict[str, Any],
-    status: str,
-    exit_id: str,
-    **facts: Any,
-) -> None:
-    plan["result"] = {
-        "status": status,
-        "exit": exit_id,
-        "recorded_at": now_iso(),
-        **facts,
-    }
-    errors = task_commit_result_validation_errors(root, plan)
-    if errors:
-        raise WorkflowError(
-            "Task commit post-result does not satisfy the public schema.",
-            exit_code=2,
-            payload={"status": "blocked", "errors": errors},
-        )
-    write_json(candidate_path, plan)
-
-
-def task_commit_blocked_observation(
-    root: Path,
-    *,
-    pre_commit_head: str,
-    failure_stage: str,
-    exact_paths: set[str],
-    unrelated_before: dict[str, Any],
-    expected_tree: str | None,
-    errors: list[str],
-) -> dict[str, Any]:
-    commit_sha = current_head(root)
-    head_changed = commit_sha != pre_commit_head
-    parent: str | None = None
-    message_sha256: str | None = None
-    committed_paths: set[str] = set()
-    if head_changed:
-        parents = run_stdout(["git", "show", "-s", "--format=%P", commit_sha], cwd=root).split()
-        parent = parents[0] if len(parents) == 1 else None
-        raw_message = task_commit_raw_message(root, commit_sha)
-        message_sha256 = hashlib.sha256(raw_message).hexdigest()
-        committed_paths = git_nul_path_set(
-            root,
-            ["diff-tree", "--root", "--no-commit-id", "--name-only", "--no-renames", "-r", "-z", commit_sha],
-        )
-
-    tree_evidence: dict[str, Any] | None = None
-    if expected_tree is not None:
-        actual_tree = task_commit_commit_tree(root, commit_sha) if head_changed else task_commit_write_tree(root)
-        tree_evidence = task_commit_tree_evidence(
-            root,
-            expected_tree,
-            actual_tree,
-            exact_paths,
-            actual_source="commit" if head_changed else "index",
-        )
-
-    post_snapshot = capture_task_commit_snapshot(root)
-    post_by_path = {str(item["path"]): item for item in post_snapshot["entries"]}
-    unrelated_after = {path: post_by_path.get(path) for path in unrelated_before}
-    unrelated_preserved = unrelated_after == unrelated_before
-    unexpected_dirty = sorted(set(post_by_path) - set(unrelated_before) - exact_paths)
-    unstaged_now = git_nul_path_set(root, ["diff", "--name-only", "--no-renames", "-z"])
-    planned_unstaged = sorted(unstaged_now & exact_paths)
-    staged_now = git_nul_path_set(root, ["diff", "--cached", "--name-only", "--no-renames", "-z"])
-    unexpected_staged = sorted(staged_now - exact_paths)
-    hook_mutation = failure_stage in {"commit", "postcondition"} and bool(
-        (tree_evidence is not None and not tree_evidence["matches"])
-        or unexpected_dirty
-        or planned_unstaged
-        or not unrelated_preserved
-        or unexpected_staged
-        or (head_changed and committed_paths != exact_paths)
-    )
-    return {
-        "failure_stage": failure_stage,
-        "pre_commit_head": pre_commit_head,
-        "commit_sha": commit_sha,
-        "head_changed": head_changed,
-        "parent": parent,
-        "message_sha256": message_sha256,
-        "committed_paths": sorted(committed_paths),
-        "unrelated_preserved": unrelated_preserved,
-        "hook_mutation": hook_mutation,
-        "unexpected_staged_paths": unexpected_staged,
-        "unexpected_dirty_paths": unexpected_dirty,
-        "planned_unstaged_paths": planned_unstaged,
-        "tree_evidence": tree_evidence,
-        "errors": errors,
-    }
-
-
 def task_commit_common_git_dir(root: Path) -> Path:
     value = run_stdout(["git", "rev-parse", "--git-common-dir"], cwd=root)
     path = Path(value)
@@ -16090,66 +12913,6 @@ def task_commit_index_preimage(root: Path) -> dict[str, Any]:
         "bytes": path.read_bytes(),
         "mode": stat.S_IMODE(metadata.st_mode),
     }
-
-
-def task_commit_index_preimage_matches(preimage: dict[str, Any]) -> bool:
-    path = preimage["path"]
-    try:
-        metadata = path.lstat()
-    except FileNotFoundError:
-        return preimage["exists"] is False
-    return (
-        preimage["exists"] is True
-        and stat.S_ISREG(metadata.st_mode)
-        and path.read_bytes() == preimage["bytes"]
-    )
-
-
-def task_commit_acquire_index_lock(preimage: dict[str, Any]) -> tuple[int, Path]:
-    lock_path = Path(str(preimage["path"]) + ".lock")
-    try:
-        fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    except FileExistsError as exc:
-        raise WorkflowError(
-            "Task commit live index is already locked by another Git operation.", exit_code=2
-        ) from exc
-    return fd, lock_path
-
-
-def task_commit_write_locked_file(fd: int, content: bytes, mode: int) -> None:
-    os.ftruncate(fd, 0)
-    os.lseek(fd, 0, os.SEEK_SET)
-    offset = 0
-    while offset < len(content):
-        offset += os.write(fd, content[offset:])
-    os.fchmod(fd, mode)
-    os.fsync(fd)
-
-
-def task_commit_publish_locked_index(source_path: Path, index_path: Path) -> None:
-    os.replace(source_path, index_path)
-
-
-def task_commit_atomic_replace_bytes(path: Path, content: bytes, mode: int) -> None:
-    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".transaction", dir=str(path.parent))
-    tmp_path = Path(name)
-    try:
-        task_commit_write_locked_file(fd, content, mode)
-        os.close(fd)
-        fd = -1
-        os.replace(tmp_path, path)
-    finally:
-        if fd >= 0:
-            os.close(fd)
-        tmp_path.unlink(missing_ok=True)
-
-
-def task_commit_restore_index_preimage(preimage: dict[str, Any]) -> None:
-    path = preimage["path"]
-    if preimage["exists"]:
-        task_commit_atomic_replace_bytes(path, preimage["bytes"], preimage["mode"])
-    else:
-        path.unlink(missing_ok=True)
 
 
 def task_commit_transaction_git_env(
@@ -16200,349 +12963,49 @@ def task_commit_update_ref(root: Path, ref: str, new_value: str, old_value: str)
         )
 
 
-def task_commit_acquire_ref_guard(root: Path, ref: str, expected_value: str) -> tuple[int, Path]:
-    ref_path = task_commit_git_path(root, ref)
-    guard_path = Path(str(ref_path) + ".lock")
-    try:
-        fd = os.open(guard_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    except FileExistsError as exc:
-        raise WorkflowError(
-            "Task commit real branch ref is already locked by another Git operation.",
-            exit_code=2,
-        ) from exc
-    try:
-        token = f"guru-task-commit-ref-guard {expected_value}\n".encode("ascii")
-        task_commit_write_locked_file(fd, token, 0o600)
-        actual = run_stdout(["git", "rev-parse", "--verify", ref], cwd=root)
-        if actual != expected_value:
-            raise WorkflowError(
-                "Task commit real branch changed before ref guard ownership was established.",
-                exit_code=2,
-            )
-        return fd, guard_path
-    except Exception:
-        os.close(fd)
-        guard_path.unlink(missing_ok=True)
-        raise
-
-
-def task_commit_file_identity(path: Path, expected_bytes: bytes) -> dict[str, Any]:
-    metadata = path.lstat()
-    if not stat.S_ISREG(metadata.st_mode):
-        raise WorkflowError(f"Task commit transaction path is not a regular file: {path.name}", exit_code=2)
-    actual = path.read_bytes()
-    if actual != expected_bytes:
-        raise WorkflowError(f"Task commit transaction bytes changed: {path.name}", exit_code=2)
-    return {
-        "device": metadata.st_dev,
-        "inode": metadata.st_ino,
-        "sha256": hashlib.sha256(actual).hexdigest(),
-        "size": len(actual),
-    }
-
-
-def task_commit_file_matches_identity(path: Path, identity: dict[str, Any], expected_bytes: bytes) -> bool:
-    try:
-        metadata = path.lstat()
-        actual = path.read_bytes()
-    except OSError:
-        return False
-    return (
-        stat.S_ISREG(metadata.st_mode)
-        and metadata.st_dev == identity.get("device")
-        and metadata.st_ino == identity.get("inode")
-        and len(actual) == identity.get("size")
-        and hashlib.sha256(actual).hexdigest() == identity.get("sha256")
-        and actual == expected_bytes
-    )
-
-
-def task_commit_candidate_guard_matches(path: Path, identity: dict[str, Any]) -> bool:
-    try:
-        metadata = path.lstat()
-    except OSError:
-        return False
-    return (
-        stat.S_ISREG(metadata.st_mode)
-        and metadata.st_dev == identity.get("device")
-        and metadata.st_ino == identity.get("inode")
-    )
-
-
-def task_commit_open_guard_matches(fd: int, path: Path | None) -> bool:
-    if fd < 0 or path is None:
-        return False
-    try:
-        open_metadata = os.fstat(fd)
-        path_metadata = path.lstat()
-    except OSError:
-        return False
-    return (
-        stat.S_ISREG(open_metadata.st_mode)
-        and stat.S_ISREG(path_metadata.st_mode)
-        and open_metadata.st_dev == path_metadata.st_dev
-        and open_metadata.st_ino == path_metadata.st_ino
-    )
-
-
-def task_commit_publish_guarded_candidate(
-    source: Path,
-    candidate_path: Path,
-    candidate_preimage: bytes,
-) -> None:
-    if candidate_path.read_bytes() != candidate_preimage:
-        raise WorkflowError(
-            "Task commit candidate changed inside the guarded publication boundary.",
-            exit_code=2,
-        )
-    os.replace(source, candidate_path)
-
-
-def task_commit_publish_validated_transaction(
+def task_commit_publish_validated_commit(
     root: Path,
     *,
-    candidate_path: Path,
-    candidate_preimage: bytes,
-    candidate_mode: int,
-    candidate_result_bytes: bytes,
-    index_preimage: dict[str, Any],
-    index_lock_fd: int,
-    index_lock_path: Path,
-    final_index_bytes: bytes,
     branch_ref: str,
     pre_commit_head: str,
     commit_sha: str,
 ) -> None:
-    candidate_guard_path = Path(str(candidate_path) + ".lock")
-    candidate_guard_fd = -1
-    candidate_guard_identity: dict[str, Any] = {}
-    candidate_result_fd = -1
-    candidate_result_path: Path | None = None
-    candidate_result_identity: dict[str, Any] = {}
-    final_index_fd = -1
-    final_index_path: Path | None = None
-    final_index_identity: dict[str, Any] = {}
-    ref_guard_fd = -1
-    ref_guard_path: Path | None = None
-    ref_guard_owned = False
-    ref_advanced = False
-    candidate_published = False
-    try:
-        candidate_guard_fd = os.open(
-            candidate_guard_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
-        )
-        guard_token = hashlib.sha256(candidate_preimage).hexdigest().encode("ascii") + b"\n"
-        task_commit_write_locked_file(candidate_guard_fd, guard_token, 0o600)
-        candidate_guard_identity = task_commit_file_identity(candidate_guard_path, guard_token)
-        if candidate_path.read_bytes() != candidate_preimage:
-            raise WorkflowError(
-                "Task commit candidate raw bytes changed before publication.", exit_code=2
-            )
-        candidate_result_fd, candidate_result_name = tempfile.mkstemp(
-            prefix=f".{candidate_path.name}.",
-            suffix=".publication",
-            dir=str(candidate_path.parent),
-        )
-        candidate_result_path = Path(candidate_result_name)
-        task_commit_write_locked_file(candidate_result_fd, candidate_result_bytes, candidate_mode)
-        os.close(candidate_result_fd)
-        candidate_result_fd = -1
-        candidate_result_identity = task_commit_file_identity(
-            candidate_result_path, candidate_result_bytes
-        )
-        final_index_fd, final_index_name = tempfile.mkstemp(
-            prefix=f".{index_preimage['path'].name}.",
-            suffix=".publication",
-            dir=str(index_preimage["path"].parent),
-        )
-        final_index_path = Path(final_index_name)
-        task_commit_write_locked_file(
-            final_index_fd, final_index_bytes, index_preimage["mode"]
-        )
-        os.close(final_index_fd)
-        final_index_fd = -1
-        final_index_identity = task_commit_file_identity(
-            final_index_path, final_index_bytes
-        )
-
-        task_commit_update_ref(root, branch_ref, commit_sha, pre_commit_head)
-        ref_advanced = True
-        ref_guard_fd, ref_guard_path = task_commit_acquire_ref_guard(
-            root, branch_ref, commit_sha
-        )
-        ref_guard_owned = True
-        if not task_commit_candidate_guard_matches(candidate_guard_path, candidate_guard_identity):
-            raise WorkflowError("Task commit candidate guard ownership changed before publication.", exit_code=2)
-        if candidate_path.read_bytes() != candidate_preimage:
-            raise WorkflowError("Task commit candidate changed while its publication guard was held.", exit_code=2)
-        task_commit_publish_guarded_candidate(
-            candidate_result_path, candidate_path, candidate_preimage
-        )
-        candidate_published = True
-        task_commit_publish_locked_index(final_index_path, index_preimage["path"])
-
-        if not task_commit_open_guard_matches(index_lock_fd, index_lock_path):
-            raise WorkflowError(
-                "Task commit live index sentinel ownership changed before success linearization.",
-                exit_code=2,
-            )
-        if not task_commit_open_guard_matches(ref_guard_fd, ref_guard_path):
-            raise WorkflowError(
-                "Task commit real branch guard ownership changed before success linearization.",
-                exit_code=2,
-            )
-        if current_head(root) != commit_sha:
-            raise WorkflowError(
-                "Task commit real branch changed before success linearization.",
-                exit_code=2,
-            )
-        if not task_commit_file_matches_identity(
-            index_preimage["path"], final_index_identity, final_index_bytes
-        ):
-            raise WorkflowError(
-                "Task commit live index publication identity mismatch.",
-                exit_code=2,
-            )
-        if not task_commit_candidate_guard_matches(
-            candidate_guard_path, candidate_guard_identity
-        ):
-            raise WorkflowError(
-                "Task commit candidate guard ownership changed before success linearization.",
-                exit_code=2,
-            )
-
-        # This final candidate inode/content read is the success linearization
-        # point. Only best-effort guard/temp cleanup and return follow it.
-        if not task_commit_file_matches_identity(
-            candidate_path, candidate_result_identity, candidate_result_bytes
-        ):
-            raise WorkflowError(
-                "Task commit candidate result changed before success linearization.",
-                exit_code=2,
-            )
-    except Exception as exc:
-        rollback_errors: list[str] = []
-        if not candidate_published and task_commit_file_matches_identity(
-            candidate_path, candidate_result_identity, candidate_result_bytes
-        ):
-            candidate_published = True
-        if candidate_published:
-            if not task_commit_candidate_guard_matches(candidate_guard_path, candidate_guard_identity):
-                rollback_errors.append("candidate guard ownership was lost; third-party candidate state was preserved")
-            elif not task_commit_file_matches_identity(
-                candidate_path, candidate_result_identity, candidate_result_bytes
-            ):
-                rollback_errors.append("candidate result ownership was lost; third-party candidate state was preserved")
-            else:
-                try:
-                    task_commit_atomic_replace_bytes(
-                        candidate_path, candidate_preimage, candidate_mode
-                    )
-                except Exception as rollback_exc:
-                    rollback_errors.append(f"candidate rollback failed: {rollback_exc}")
-        else:
-            try:
-                candidate_unchanged = candidate_path.read_bytes() == candidate_preimage
-            except OSError:
-                candidate_unchanged = False
-            if not candidate_unchanged:
-                rollback_errors.append(
-                    "candidate ownership was lost before publication; third-party candidate state was preserved"
-                )
-        if task_commit_file_matches_identity(
-            index_preimage["path"], final_index_identity, final_index_bytes
-        ):
-            try:
-                task_commit_restore_index_preimage(index_preimage)
-            except Exception as rollback_exc:
-                rollback_errors.append(f"live index rollback failed: {rollback_exc}")
-        elif not task_commit_index_preimage_matches(index_preimage):
-            rollback_errors.append(
-                "live index ownership was lost; third-party index state was preserved"
-            )
-        if ref_guard_owned:
-            ref_guard_released = True
-            try:
-                os.close(ref_guard_fd)
-            except OSError:
-                pass
-            ref_guard_fd = -1
-            try:
-                if ref_guard_path is not None:
-                    ref_guard_path.unlink(missing_ok=True)
-            except OSError as rollback_exc:
-                rollback_errors.append(f"ref guard release failed: {rollback_exc}")
-                ref_guard_released = False
-            ref_guard_owned = not ref_guard_released
-        try:
-            if ref_advanced:
-                task_commit_update_ref(root, branch_ref, pre_commit_head, commit_sha)
-        except Exception as rollback_exc:
-            rollback_errors.append(f"ref rollback failed: {rollback_exc}")
-
-        if current_head(root) != pre_commit_head:
-            rollback_errors.append("real ref ownership was lost; third-party ref state was preserved")
-        if not task_commit_index_preimage_matches(index_preimage):
-            rollback_errors.append("live index ownership was lost; third-party index state was preserved")
-        if candidate_published:
-            try:
-                candidate_restored = candidate_path.read_bytes() == candidate_preimage
-            except OSError:
-                candidate_restored = False
-            if not candidate_restored:
-                rollback_errors.append("candidate did not return to its exact preimage")
-        if rollback_errors:
-            raise WorkflowError(
-                "Task commit publication rollback could not restore the exact entry state.",
-                exit_code=2,
-                payload={"status": "blocked", "errors": rollback_errors},
-            ) from exc
+    task_commit_update_ref(root, branch_ref, commit_sha, pre_commit_head)
+    reset_proc = run(
+        ["git", "reset", "--mixed", "--quiet", "HEAD"],
+        cwd=root,
+        check=False,
+    )
+    if reset_proc.returncode != 0:
         raise WorkflowError(
-            "Task commit publication failed and the exact entry state was restored.",
+            "Task commit was created but the live index refresh failed; resume the same commit plan.",
             exit_code=2,
-            payload={"status": "blocked", "errors": [str(exc)]},
-        ) from exc
-    finally:
-        if candidate_result_fd >= 0:
-            try:
-                os.close(candidate_result_fd)
-            except OSError:
-                pass
-        if final_index_fd >= 0:
-            try:
-                os.close(final_index_fd)
-            except OSError:
-                pass
-        if candidate_guard_fd >= 0:
-            try:
-                os.close(candidate_guard_fd)
-            except OSError:
-                pass
-        if ref_guard_fd >= 0:
-            try:
-                os.close(ref_guard_fd)
-            except OSError:
-                pass
-        if index_lock_fd >= 0:
-            try:
-                os.close(index_lock_fd)
-            except OSError:
-                pass
-        cleanup_paths = [
-            candidate_result_path,
-            final_index_path,
-            candidate_guard_path,
-            index_lock_path,
-        ]
-        if ref_guard_owned:
-            cleanup_paths.append(ref_guard_path)
-        for cleanup_path in cleanup_paths:
-            if cleanup_path is None:
-                continue
-            try:
-                cleanup_path.unlink(missing_ok=True)
-            except OSError:
-                pass
+            payload={
+                "status": "blocked",
+                "commit_sha": commit_sha,
+                "stderr": reset_proc.stderr.strip(),
+            },
+        )
+    if current_head(root) != commit_sha:
+        raise WorkflowError(
+            "Task commit branch does not point to the validated commit.", exit_code=2
+        )
+    if git_nul_path_set(
+        root,
+        ["diff", "--cached", "--name-only", "--no-renames", "-z"],
+    ):
+        raise WorkflowError(
+            "Task commit left unexpected staged paths after index refresh.", exit_code=2
+        )
+
+
+def task_commit_consume_candidate(candidate_path: Path) -> None:
+    try:
+        candidate_path.unlink(missing_ok=True)
+        candidate_path.parent.rmdir()
+    except OSError:
+        # Runtime cleanup is best effort after Git reports success.
+        pass
 
 
 def execute_task_commit_candidate(
@@ -16573,10 +13036,8 @@ def execute_task_commit_candidate(
         raise WorkflowError(
             "Task commit candidate bytes changed after validation.", exit_code=2
         )
-    candidate_metadata = candidate_path.lstat()
-    if not stat.S_ISREG(candidate_metadata.st_mode):
+    if not stat.S_ISREG(candidate_path.lstat().st_mode):
         raise WorkflowError("Task commit candidate is not a regular file.", exit_code=2)
-    candidate_mode = stat.S_IMODE(candidate_metadata.st_mode)
     require_ordinary_task_commit_git_state(root)
     exact_paths = set(facts["exact_stage_paths"])
     pre_commit_head = current_head(root)
@@ -16590,224 +13051,171 @@ def execute_task_commit_candidate(
             payload={"status": "blocked", "unexpected_staged_paths": unexpected_staged},
         )
 
-    snapshot_entries = {
-        str(item["path"]): item
-        for item in plan["dirty_snapshot"]["entries"]
-        if isinstance(item, dict)
-    }
-    classifications = {
-        str(item["path"]): item
-        for item in plan["path_classifications"]
-        if isinstance(item, dict)
-    }
-    unrelated_before = {
-        path: snapshot_entries[path]
-        for path, item in classifications.items()
-        if item.get("category") == "unrelated-preserved" and path in snapshot_entries
-    }
     gitlink_bindings = task_commit_planned_gitlink_heads(plan, exact_paths)
     require_task_commit_gitlink_bindings(
         root, gitlink_bindings, require_index=False
     )
     index_preimage = task_commit_index_preimage(root)
-    index_lock_fd, index_lock_path = task_commit_acquire_index_lock(index_preimage)
-    try:
-        bindings, _ = task_commit_planned_index_bindings(
+    bindings, _ = task_commit_planned_index_bindings(
+        root,
+        plan,
+        exact_paths,
+        str(facts["candidate_artifact"]),
+    )
+    with tempfile.TemporaryDirectory(prefix="guru-task-commit-gitdir-") as transaction_name:
+        transaction_dir = Path(transaction_name)
+        git_env, _transaction_index = task_commit_transaction_git_env(
             root,
-            plan,
-            exact_paths,
-            str(facts["candidate_artifact"]),
+            transaction_dir,
+            pre_commit_head,
+            index_preimage,
         )
-        transaction_owner = tempfile.TemporaryDirectory(prefix="guru-task-commit-gitdir-")
-        with transaction_owner as transaction_name:
-            transaction_dir = Path(transaction_name)
-            git_env, transaction_index = task_commit_transaction_git_env(
-                root,
-                transaction_dir,
-                pre_commit_head,
-                index_preimage,
+        stage_task_commit_index_bindings(root, bindings, git_env)
+        staged_after = git_nul_path_set(
+            root,
+            ["diff", "--cached", "--name-only", "--no-renames", "-z", pre_commit_head],
+            git_env,
+        )
+        if staged_after != exact_paths:
+            raise WorkflowError(
+                "Task commit isolated index path set does not equal the exact plan.",
+                exit_code=2,
+                payload={"expected": sorted(exact_paths), "actual": sorted(staged_after)},
             )
-            stage_task_commit_index_bindings(root, bindings, git_env)
-            staged_after = git_nul_path_set(
-                root,
-                ["diff", "--cached", "--name-only", "--no-renames", "-z", pre_commit_head],
-                git_env,
-            )
-            if staged_after != exact_paths:
-                raise WorkflowError(
-                    "Task commit isolated index path set does not equal the exact plan.",
-                    exit_code=2,
-                    payload={"expected": sorted(exact_paths), "actual": sorted(staged_after)},
-                )
+        require_task_commit_index_bindings(root, bindings, git_env)
+        require_task_commit_gitlink_bindings(
+            root, gitlink_bindings, require_index=False
+        )
+        expected_tree = task_commit_write_tree(root, git_env)
+
+        message_bytes = plan["message"]["bytes"].encode("utf-8")
+        fd, name = tempfile.mkstemp(prefix=".guru-task-commit-", suffix=".msg")
+        message_path = Path(name)
+        try:
+            os.fchmod(fd, 0o600)
+            with os.fdopen(fd, "wb") as handle:
+                handle.write(message_bytes)
+                handle.flush()
+                os.fsync(handle.fileno())
+            require_ordinary_task_commit_git_state(root)
             require_task_commit_index_bindings(root, bindings, git_env)
             require_task_commit_gitlink_bindings(
                 root, gitlink_bindings, require_index=False
             )
-            expected_tree = task_commit_write_tree(root, git_env)
-
-            message_bytes = plan["message"]["bytes"].encode("utf-8")
-            fd, name = tempfile.mkstemp(prefix=".guru-task-commit-", suffix=".msg")
-            message_path = Path(name)
-            try:
-                os.fchmod(fd, 0o600)
-                with os.fdopen(fd, "wb") as handle:
-                    handle.write(message_bytes)
-                    handle.flush()
-                    os.fsync(handle.fileno())
-                require_ordinary_task_commit_git_state(root)
-                require_task_commit_index_bindings(root, bindings, git_env)
-                require_task_commit_gitlink_bindings(
-                    root, gitlink_bindings, require_index=False
-                )
-                commit_proc = run(
-                    ["git", "commit", "--cleanup=verbatim", "-F", str(message_path)],
-                    cwd=root,
-                    check=False,
-                    env=git_env,
-                )
-            finally:
-                message_path.unlink(missing_ok=True)
-            if commit_proc.returncode != 0:
-                raise WorkflowError(
-                    "isolated git commit failed; the real ref/index/candidate were not published.",
-                    exit_code=2,
-                    payload={
-                        "status": "blocked",
-                        "stderr": commit_proc.stderr.strip(),
-                        "stdout": commit_proc.stdout.strip(),
-                    },
-                )
-
-            commit_sha = run_stdout(
-                ["git", "rev-parse", "--verify", "HEAD^{commit}"], cwd=root, env=git_env
+            commit_proc = run(
+                ["git", "commit", "--cleanup=verbatim", "-F", str(message_path)],
+                cwd=root,
+                check=False,
+                env=git_env,
             )
-            parents = run_stdout(
-                ["git", "show", "-s", "--format=%P", commit_sha], cwd=root
-            ).split()
-            committed_paths = git_nul_path_set(
-                root,
-                [
-                    "diff-tree", "--root", "--no-commit-id", "--name-only",
-                    "--no-renames", "-r", "-z", commit_sha,
-                ],
+        finally:
+            message_path.unlink(missing_ok=True)
+        if commit_proc.returncode != 0:
+            raise WorkflowError(
+                "isolated git commit failed; the real ref/index/candidate were not published.",
+                exit_code=2,
+                payload={
+                    "status": "blocked",
+                    "stderr": commit_proc.stderr.strip(),
+                    "stdout": commit_proc.stdout.strip(),
+                },
             )
-            actual_tree = task_commit_commit_tree(root, commit_sha)
-            tree_evidence = task_commit_tree_evidence(
-                root,
-                expected_tree,
-                actual_tree,
-                exact_paths,
-                actual_source="commit",
-            )
-            raw_message = task_commit_raw_message(root, commit_sha)
-            post_errors: list[str] = []
-            if parents != [pre_commit_head]:
-                post_errors.append("isolated commit parent does not equal pre_commit_head")
-            if raw_message != message_bytes:
-                post_errors.append("isolated commit message bytes do not equal candidate bytes")
-            if committed_paths != exact_paths:
-                post_errors.append("isolated commit path set does not equal exact_stage_paths")
-            if not tree_evidence["matches"]:
-                post_errors.append("isolated commit tree does not equal artifact authority")
-            subject, body = task_commit_message_parts(raw_message.decode("utf-8", "strict"))
-            _, parser_errors = validate_commit_message(
-                subject, body, primary_issue=int(facts["primary_issue"])
-            )
-            post_errors.extend(f"committed message: {item}" for item in parser_errors)
-            if task_commit_write_tree(root, git_env) != expected_tree:
-                post_errors.append("isolated index changed during hook/commit execution")
-            if git_nul_path_set(
-                root,
-                ["diff", "--cached", "--name-only", "--no-renames", "-z", commit_sha],
-                git_env,
-            ):
-                post_errors.append("isolated index remains staged after commit")
-            if capture_task_commit_snapshot(
-                root, {str(facts["candidate_artifact"])}
-            ) != plan["dirty_snapshot"]:
-                post_errors.append("worktree snapshot changed during isolated execution")
-            if candidate_path.read_bytes() != candidate_preimage:
-                post_errors.append("candidate raw bytes changed during isolated execution")
-            if current_head(root) != pre_commit_head:
-                post_errors.append("real HEAD changed before transaction publication")
-            if task_commit_branch_ref(root) != branch_ref:
-                post_errors.append("real branch ref changed before transaction publication")
-            if not task_commit_index_preimage_matches(index_preimage):
-                post_errors.append("live index changed before transaction publication")
-            if task_commit_git_operation_state(root)["active"]:
-                post_errors.append("Git operation state changed before transaction publication")
-            if post_errors:
-                raise WorkflowError(
-                    "Task commit isolated transaction validation failed before publication.",
-                    exit_code=2,
-                    payload={"status": "blocked", "errors": post_errors},
-                )
 
-            # The private candidate remains the immutable planned preimage while
-            # the transaction publishes Git state. Successful Git facts are
-            # returned to the caller and are not copied back into an artifact.
-            candidate_result_bytes = candidate_preimage
-            final_index_bytes = transaction_index.read_bytes()
-            committed_payload = {
-                "status": "committed",
-                "exit": "committed",
-                "pre_commit_head": pre_commit_head,
-                "commit_sha": commit_sha,
-            }
+        commit_sha = run_stdout(
+            ["git", "rev-parse", "--verify", "HEAD^{commit}"], cwd=root, env=git_env
+        )
+        parents = run_stdout(
+            ["git", "show", "-s", "--format=%P", commit_sha], cwd=root
+        ).split()
+        committed_paths = git_nul_path_set(
+            root,
+            [
+                "diff-tree", "--root", "--no-commit-id", "--name-only",
+                "--no-renames", "-r", "-z", commit_sha,
+            ],
+        )
+        actual_tree = task_commit_commit_tree(root, commit_sha)
+        tree_evidence = task_commit_tree_evidence(
+            root,
+            expected_tree,
+            actual_tree,
+            exact_paths,
+            actual_source="commit",
+        )
+        raw_message = task_commit_raw_message(root, commit_sha)
+        post_errors: list[str] = []
+        if parents != [pre_commit_head]:
+            post_errors.append("isolated commit parent does not equal pre_commit_head")
+        if raw_message != message_bytes:
+            post_errors.append("isolated commit message bytes do not equal candidate bytes")
+        if committed_paths != exact_paths:
+            post_errors.append("isolated commit path set does not equal exact_stage_paths")
+        if not tree_evidence["matches"]:
+            post_errors.append("isolated commit tree does not equal artifact authority")
+        subject, body = task_commit_message_parts(raw_message.decode("utf-8", "strict"))
+        _, parser_errors = validate_commit_message(
+            subject, body, primary_issue=int(facts["primary_issue"])
+        )
+        post_errors.extend(f"committed message: {item}" for item in parser_errors)
+        if task_commit_write_tree(root, git_env) != expected_tree:
+            post_errors.append("isolated index changed during hook/commit execution")
+        if git_nul_path_set(
+            root,
+            ["diff", "--cached", "--name-only", "--no-renames", "-z", commit_sha],
+            git_env,
+        ):
+            post_errors.append("isolated index remains staged after commit")
+        if task_commit_snapshot_without_digest(capture_task_commit_snapshot(
+            root, {str(facts["candidate_artifact"])}
+        )) != plan["dirty_snapshot"]:
+            post_errors.append("worktree snapshot changed during isolated execution")
+        if candidate_path.read_bytes() != candidate_preimage:
+            post_errors.append("candidate raw bytes changed during isolated execution")
+        if current_head(root) != pre_commit_head:
+            post_errors.append("real HEAD changed before transaction publication")
+        if task_commit_branch_ref(root) != branch_ref:
+            post_errors.append("real branch ref changed before transaction publication")
+        if task_commit_index_preimage(root)["bytes"] != index_preimage["bytes"]:
+            post_errors.append("live index changed before transaction publication")
+        if task_commit_git_operation_state(root)["active"]:
+            post_errors.append("Git operation state changed before transaction publication")
+        if post_errors:
+            raise WorkflowError(
+                "Task commit isolated transaction validation failed before publication.",
+                exit_code=2,
+                payload={"status": "blocked", "errors": post_errors},
+            )
 
-            require_ordinary_task_commit_git_state(root)
-            if capture_task_commit_snapshot(
-                root, {str(facts["candidate_artifact"])}
-            ) != plan["dirty_snapshot"]:
-                raise WorkflowError(
-                    "Task commit worktree changed at the publication boundary.", exit_code=2
-                )
-            if candidate_path.read_bytes() != candidate_preimage:
-                raise WorkflowError(
-                    "Task commit candidate changed at the publication boundary.", exit_code=2
-                )
-            if not task_commit_index_preimage_matches(index_preimage):
-                raise WorkflowError(
-                    "Task commit live index changed at the publication boundary.", exit_code=2
-                )
-            # All temporary transaction cleanup that may fail occurs before
-            # real publication. The context-manager exit is a no-op afterward.
-            transaction_owner.cleanup()
-            try:
-                task_commit_publish_validated_transaction(
-                    root,
-                    candidate_path=candidate_path,
-                    candidate_preimage=candidate_preimage,
-                    candidate_mode=candidate_mode,
-                    candidate_result_bytes=candidate_result_bytes,
-                    index_preimage=index_preimage,
-                    index_lock_fd=index_lock_fd,
-                    index_lock_path=index_lock_path,
-                    final_index_bytes=final_index_bytes,
-                    branch_ref=branch_ref,
-                    pre_commit_head=pre_commit_head,
-                    commit_sha=commit_sha,
-                )
-            finally:
-                index_lock_fd = -1
-            try:
-                candidate_path.unlink(missing_ok=True)
-                candidate_path.parent.rmdir()
-            except OSError:
-                # Runtime cleanup is best effort after the commit has reached
-                # its success linearization point. It never dirties Git.
-                pass
-            return committed_payload
-    finally:
-        if index_lock_fd >= 0:
-            try:
-                os.close(index_lock_fd)
-            except OSError:
-                pass
-        try:
-            index_lock_path.unlink(missing_ok=True)
-        except OSError:
-            pass
+        committed_payload = {
+            "status": "committed",
+            "exit": "committed",
+            "pre_commit_head": pre_commit_head,
+            "commit_sha": commit_sha,
+        }
+
+        require_ordinary_task_commit_git_state(root)
+        if task_commit_snapshot_without_digest(capture_task_commit_snapshot(
+            root, {str(facts["candidate_artifact"])}
+        )) != plan["dirty_snapshot"]:
+            raise WorkflowError(
+                "Task commit worktree changed at the publication boundary.", exit_code=2
+            )
+        if candidate_path.read_bytes() != candidate_preimage:
+            raise WorkflowError(
+                "Task commit candidate changed at the publication boundary.", exit_code=2
+            )
+        if task_commit_index_preimage(root)["bytes"] != index_preimage["bytes"]:
+            raise WorkflowError(
+                "Task commit live index changed at the publication boundary.", exit_code=2
+            )
+        task_commit_publish_validated_commit(
+            root,
+            branch_ref=branch_ref,
+            pre_commit_head=pre_commit_head,
+            commit_sha=commit_sha,
+        )
+        task_commit_consume_candidate(candidate_path)
+        return committed_payload
 
 
 def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
@@ -16831,7 +13239,7 @@ def cmd_check_commit_messages(args: argparse.Namespace) -> dict[str, Any]:
         return payload
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
+    task_context = load_task_runtime_identity(task_dir, config) if getattr(args, "task", None) else None
     task = task_json(task_dir) if task_dir else {}
     ledger = load_issue_scope_ledger(task_dir, task_context) if task_dir else {}
     primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
@@ -16888,7 +13296,7 @@ def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config) if getattr(args, "task", None) else None
+    task_context = load_task_runtime_identity(task_dir, config) if getattr(args, "task", None) else None
     task = task_json(task_dir) if task_dir else {}
     ledger = load_issue_scope_ledger(task_dir, task_context) if task_dir else {}
     primary_issue = int(args.primary_issue) if getattr(args, "primary_issue", None) else primary_issue_number_from_ledger(ledger)
@@ -17061,7 +13469,7 @@ def marketplace_verification_required(gate: dict[str, Any]) -> dict[str, Any]:
 def closeout_reviewed_change_facts(
     root: Path,
     task_context: dict[str, Any],
-    gate: dict[str, Any],
+    gate: dict[str, Any] | None,
     reviewed_head: str,
 ) -> dict[str, Any]:
     """Rebuild one reviewed-path fact set for closeout and its projections."""
@@ -17090,7 +13498,7 @@ def closeout_reviewed_change_facts(
             }
         )
     else:
-        legacy_paths = gate.get("changed_files")
+        legacy_paths = (gate or {}).get("changed_files")
         if not isinstance(legacy_paths, list):
             raise WorkflowError(
                 "Closeout reviewed paths require a pinned task base or a legacy changed_files gate.",
@@ -18458,10 +14866,16 @@ MARKETPLACE_VERIFICATION_KEYS = {
     "schema_version", "generated_at", "status", "repo", "remote", "branch",
     "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
 }
+MARKETPLACE_VERIFICATION_SCHEMA_VERSION = "1.1"
+MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION = "1.0"
 MARKETPLACE_ASSET_KEYS = {
-    "workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256",
+    "workflow_sha256", "preview_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256",
     "runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false",
     "legacy_handoff_absent", "legacy_intake_schema_absent",
+}
+MARKETPLACE_LEGACY_ASSET_KEYS = {
+    *MARKETPLACE_ASSET_KEYS,
+    "task_start_context_schema_sha256",
 }
 
 
@@ -18469,7 +14883,15 @@ def marketplace_verification_contract_errors(payload: dict[str, Any]) -> list[st
     errors: list[str] = []
     if set(payload) != MARKETPLACE_VERIFICATION_KEYS:
         errors.append("marketplace verification keys do not match schema 1.0.")
-    if payload.get("schema_version") != "1.0" or payload.get("status") not in {"passed", "failed"}:
+    schema_version = payload.get("schema_version")
+    if (
+        schema_version
+        not in {
+            MARKETPLACE_VERIFICATION_SCHEMA_VERSION,
+            MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION,
+        }
+        or payload.get("status") not in {"passed", "failed"}
+    ):
         errors.append("marketplace verification schema_version/status is invalid.")
     for key in ["generated_at", "repo", "remote", "branch", "marketplace_source", "task_dir"]:
         if not isinstance(payload.get(key), str) or not payload.get(key):
@@ -18505,11 +14927,26 @@ def marketplace_verification_contract_errors(payload: dict[str, Any]) -> list[st
             if not isinstance(step.get("passed"), bool):
                 errors.append(f"marketplace verification step {index} passed is invalid.")
     assets = payload.get("assets")
-    if not isinstance(assets, dict) or set(assets) != MARKETPLACE_ASSET_KEYS:
-        errors.append("marketplace verification assets keys do not match schema 1.0.")
+    expected_asset_keys = (
+        MARKETPLACE_LEGACY_ASSET_KEYS
+        if schema_version == MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION
+        else MARKETPLACE_ASSET_KEYS
+    )
+    if not isinstance(assets, dict) or set(assets) != expected_asset_keys:
+        errors.append(
+            "marketplace verification assets keys do not match its schema version."
+        )
         assets = {}
     digest_pattern = re.compile(r"^[0-9a-f]{64}$")
-    for key in ["workflow_sha256", "preview_sha256", "task_start_context_schema_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256"]:
+    digest_keys = [
+        "workflow_sha256",
+        "preview_sha256",
+        "finish_summary_schema_sha256",
+        "closeout_plan_schema_sha256",
+    ]
+    if schema_version == MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION:
+        digest_keys.append("task_start_context_schema_sha256")
+    for key in digest_keys:
         value = str(assets.get(key) or "")
         if payload.get("status") == "passed" and not digest_pattern.fullmatch(value):
             errors.append(f"passed marketplace verification requires asset digest: {key}.")
@@ -18580,13 +15017,6 @@ def execute_marketplace_verification(
     assets = {
         "workflow_sha256": workflow_digest,
         "preview_sha256": workflow_digest,
-        "task_start_context_schema_sha256": str(
-            digests.get(
-                "trellis/workflows/guru-team/schemas/"
-                "task-start-context.schema.json"
-            )
-            or ""
-        ),
         "finish_summary_schema_sha256": str(
             digests.get(
                 "trellis/workflows/guru-team/schemas/"
@@ -18608,7 +15038,7 @@ def execute_marketplace_verification(
         "legacy_intake_schema_absent": passed,
     }
     payload = {
-        "schema_version": "1.0",
+        "schema_version": MARKETPLACE_VERIFICATION_SCHEMA_VERSION,
         "generated_at": now_iso(),
         "status": "passed" if passed else "failed",
         "repo": repo,
@@ -18627,7 +15057,6 @@ def execute_marketplace_verification(
         payload["assets"] = {
             "workflow_sha256": assets.get("workflow_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("workflow_sha256") or "")) else "",
             "preview_sha256": assets.get("preview_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("preview_sha256") or "")) else "",
-            "task_start_context_schema_sha256": assets.get("task_start_context_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("task_start_context_schema_sha256") or "")) else "",
             "finish_summary_schema_sha256": assets.get("finish_summary_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("finish_summary_schema_sha256") or "")) else "",
             "closeout_plan_schema_sha256": assets.get("closeout_plan_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("closeout_plan_schema_sha256") or "")) else "",
             "runtime_gitignore_present": bool(assets.get("runtime_gitignore_present")),
@@ -18673,8 +15102,6 @@ SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*
 SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
 SKILL_TARGET_RE = re.compile(r"^\s*<!--\s*guru-(workflow|stop)-target:\s*(\{.*\})\s*-->\s*$")
 SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
-# Compatibility aliases remain public until the legacy migration completes.
-SKILL_INTERFACE_SCHEMA_VERSION = "1.2"
 SKILL_INTERFACE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.2.json"
 SKILL_INTERFACE_SCHEMAS = {
     "guru-team-skill-interface-1.2": {
@@ -18690,7 +15117,7 @@ SKILL_INTERFACE_SCHEMAS = {
         "schema_path": Path("schemas/skill-interface-1.3.schema.json"),
         "interface_ref": "../../schemas/skill-interface-1.3.schema.json",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
-        "sha256": "befa5fe3fd27b7b8929ecc5bf0981c2c906d0045bb20b26b221ba4d0a480a6dd",
+        "sha256": "2892c524fa4ac2553b7aa2c1dd2004c0b53fb84388af506dc8a836ea61d4eb73",
         "io_contract_state": "minimal_handoff",
     },
 }
@@ -18742,9 +15169,29 @@ STAGE0_LEGACY_SKILL_IDS = PRODUCTION_MIGRATION_SKILL_IDS
 STAGE0_MIGRATION_MANIFEST = Path("migrations/stage0-minimal-handoff.json")
 STAGE0_MIGRATION_SCHEMA = Path("schemas/stage0-migration-manifest.schema.json")
 STAGE0_MIGRATION_SCHEMA_ID = "guru-team-stage0-migration-manifest-1.0"
+STAGE0_MIGRATION_MANIFEST_SHA256 = "0b7d930033bbf6301e7b90bbe9ddcbfa321555c542fbf2e993368f3b2a29aa62"
+STAGE0_AI_FIRST_MIGRATION_MANIFEST = Path("migrations/stage0-ai-first-contract-v2.json")
+STAGE0_AI_FIRST_MIGRATION_SCHEMA = Path(
+    "schemas/stage0-ai-first-contract-migration.schema.json"
+)
+STAGE0_AI_FIRST_MIGRATION_SCHEMA_ID = (
+    "guru-team-stage0-ai-first-contract-migration-1.0"
+)
+STAGE0_AI_FIRST_MIGRATION_ID = "stage0-ai-first-contract-v2"
 PRODUCTION_MIGRATION_MANIFEST = Path("migrations/production-minimal-handoff.json")
 PRODUCTION_MIGRATION_SCHEMA = Path("schemas/production-migration-manifest.schema.json")
 PRODUCTION_MIGRATION_SCHEMA_ID = "guru-team-production-migration-manifest-1.0"
+PRODUCTION_MIGRATION_MANIFEST_SHA256 = "b6eab31fd84023fd7238c075ed725262eaac3e56bfe8004d75d492fb948de2ba"
+PRODUCTION_AI_FIRST_MIGRATION_MANIFEST = Path(
+    "migrations/production-ai-first-contract-v2.json"
+)
+PRODUCTION_AI_FIRST_MIGRATION_SCHEMA = Path(
+    "schemas/production-ai-first-contract-migration.schema.json"
+)
+PRODUCTION_AI_FIRST_MIGRATION_SCHEMA_ID = (
+    "guru-team-production-ai-first-contract-migration-1.0"
+)
+PRODUCTION_AI_FIRST_MIGRATION_ID = "production-ai-first-contract-v2"
 SKILL_RUNTIME_REMEDIATION = (
     "Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete "
     "Guru Team preset, resolve every .new/.bak sidecar, run source and installed Skill package "
@@ -21089,7 +17536,9 @@ def validate_skill_public_contracts(
         if len(mapping_targets) != len(set(mapping_targets)):
             errors.append(f"[projection_target_duplicate] projection {projection.get('id')} writes a target field more than once")
         if any(
-            isinstance(item, dict) and item.get("source") in private_field_names
+            isinstance(item, dict)
+            and item.get("source") in private_field_names
+            and item.get("source") not in output_properties
             for item in mappings
         ):
             errors.append(f"[projection_private_field] projection {projection.get('id')} reads a private artifact field")
@@ -21709,6 +18158,90 @@ def parse_skill_workflow_markers(
     return invokes, exits, targets
 
 
+def stage0_current_activation_projection(
+    skills_root: Path,
+    interfaces: dict[str, dict[str, Any]],
+    errors: list[str],
+) -> dict[str, Any]:
+    entries: list[dict[str, Any]] = []
+    for skill_id in STAGE0_MIGRATION_SKILL_IDS:
+        interface = interfaces.get(skill_id, {})
+        contracts = interface.get("public_contracts", {})
+        public_input = contracts.get("input", {})
+        input_kind = public_input.get("kind")
+        profile_ids = [
+            str(profile.get("id") or "")
+            for profile in public_input.get("profiles", [])
+            if isinstance(profile, dict)
+        ] if input_kind == "structured_json" else []
+        corpus_path = skills_root / "packages" / skill_id / "evals/evals.json"
+        corpus = skill_read_json(corpus_path, f"Stage 0 eval corpus for {skill_id}", errors)
+        cases = {
+            str(case.get("id") or ""): case
+            for case in corpus.get("evals", [])
+            if isinstance(corpus, dict) and isinstance(case, dict)
+        }
+        outputs = {
+            str(output.get("exit_id") or ""): output
+            for output in contracts.get("outputs", [])
+            if isinstance(output, dict)
+        }
+        projections = {
+            str(projection.get("exit_id") or ""): projection
+            for projection in contracts.get("projections", [])
+            if isinstance(projection, dict)
+        }
+        exits = [
+            str(item.get("id") or "")
+            for item in interface.get("external_exits", [])
+            if isinstance(item, dict)
+        ]
+        entries.append({
+            "id": skill_id,
+            "input_kind": input_kind,
+            "input_profile_ids": profile_ids,
+            "profile_case_bindings": [
+                {
+                    "profile_id": profile_id,
+                    "eval_case_ids": list(cases) if profile_id == "scalar_cli" else [
+                        case_id
+                        for case_id, case in cases.items()
+                        if case.get("input_profile_id") == profile_id
+                    ],
+                }
+                for profile_id in (profile_ids if input_kind == "structured_json" else ["scalar_cli"])
+            ],
+            "exit_bindings": [
+                {
+                    "exit_id": exit_id,
+                    "output_schema_id": (
+                        outputs.get(exit_id, {}).get("schema", {}).get("schema_id")
+                    ),
+                    "consumer_input_id": projections.get(exit_id, {}).get("consumer_input_id"),
+                    "projection_id": projections.get(exit_id, {}).get("id"),
+                    "eval_case_ids": [
+                        case_id
+                        for case_id, case in cases.items()
+                        if case.get("expected_exit") == exit_id
+                    ],
+                }
+                for exit_id in exits
+            ],
+            "private_artifact_ids": [
+                str(artifact.get("id") or "")
+                for artifact in contracts.get("private_artifacts", [])
+                if isinstance(artifact, dict)
+            ],
+            "eval_case_ids": list(cases),
+        })
+    return {
+        "activation_unit_id": STAGE0_AI_FIRST_MIGRATION_ID,
+        "skill_ids": list(STAGE0_MIGRATION_SKILL_IDS),
+        "legacy_skill_ids": list(STAGE0_LEGACY_SKILL_IDS),
+        "skills": entries,
+    }
+
+
 def validate_stage0_migration_manifest(
     skills_root: Path,
     boundary: Path,
@@ -21740,6 +18273,88 @@ def validate_stage0_migration_manifest(
         errors.extend(skill_json_schema_validation_errors(
             manifest, schema, "Stage 0 migration manifest"
         ))
+    if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != STAGE0_MIGRATION_MANIFEST_SHA256:
+        errors.append("frozen Stage 0 v1 migration manifest bytes changed")
+
+    ai_first_schema_path = skills_root / STAGE0_AI_FIRST_MIGRATION_SCHEMA
+    ai_first_manifest_path = skills_root / STAGE0_AI_FIRST_MIGRATION_MANIFEST
+    if skill_lstat_path(
+        boundary,
+        ai_first_schema_path,
+        "Stage 0 AI-first migration schema",
+        errors,
+        kind="file",
+    ) is None or skill_lstat_path(
+        boundary,
+        ai_first_manifest_path,
+        "Stage 0 AI-first migration manifest",
+        errors,
+        kind="file",
+    ) is None:
+        return None
+    ai_first_schema = skill_read_schema(
+        ai_first_schema_path,
+        "Stage 0 AI-first migration schema",
+        errors,
+    )
+    ai_first_manifest = skill_read_json(
+        ai_first_manifest_path,
+        "Stage 0 AI-first migration manifest",
+        errors,
+    )
+    if (
+        not isinstance(ai_first_schema, dict)
+        or not isinstance(ai_first_manifest, dict)
+        or ai_first_schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or ai_first_schema.get("$id") != STAGE0_AI_FIRST_MIGRATION_SCHEMA_ID
+    ):
+        errors.append("Stage 0 AI-first migration contract has an incompatible identity")
+        return None
+    ai_first_schema_errors = skill_json_schema_subset_errors(
+        ai_first_schema,
+        "Stage 0 AI-first migration schema",
+    )
+    errors.extend(ai_first_schema_errors)
+    if not ai_first_schema_errors:
+        errors.extend(skill_json_schema_validation_errors(
+            ai_first_manifest,
+            ai_first_schema,
+            "Stage 0 AI-first migration manifest",
+        ))
+    expected_changes = [
+        {
+            "skill_id": "guru-sync-base",
+            "migration": "repo_root and route scalar CLI arguments become optional; omitted values derive the current repository root and repo_change route",
+        },
+        {
+            "skill_id": "guru-review-change-request",
+            "migration": "ready v1 projects to the target-owned execute_reviewed_plan input; current ready output schema is v2",
+        },
+        {
+            "skill_id": "guru-create-task-workspace",
+            "migration": "four v1 mutation profiles collapse to execute_reviewed_plan; cancelled is consumed as a dialogue-local stop before recorder or DTO creation",
+        },
+    ]
+    if ai_first_manifest.get("changes") != expected_changes:
+        errors.append("Stage 0 AI-first migration changes do not match the closed compatibility contract")
+    current_stage0_exit_count = sum(
+        len(interfaces.get(skill_id, {}).get("external_exits", []))
+        for skill_id in STAGE0_MIGRATION_SKILL_IDS
+    )
+    if (
+        ai_first_manifest.get("current_contract")
+        != {
+            "interface_schema_id": "guru-team-skill-interface-1.3",
+            "skill_count": len(STAGE0_MIGRATION_SKILL_IDS),
+            "exit_count": current_stage0_exit_count,
+        }
+        or current_stage0_exit_count != 23
+    ):
+        errors.append("Stage 0 AI-first migration does not bind the current 6-Skill/23-exit closure")
+
+    # The frozen v1 bytes remain historical authority. Validate the live 6/23
+    # package closure from current Interfaces and eval corpora, not by rewriting v1.
+    manifest = stage0_current_activation_projection(skills_root, interfaces, errors)
 
     expected_skill_ids = list(STAGE0_MIGRATION_SKILL_IDS)
     expected_legacy_ids = list(STAGE0_LEGACY_SKILL_IDS)
@@ -21747,7 +18362,7 @@ def validate_stage0_migration_manifest(
         errors.append("Stage 0 migration manifest skill_ids do not match the ordered activation unit")
     if manifest.get("legacy_skill_ids") != expected_legacy_ids:
         errors.append("Stage 0 migration manifest legacy_skill_ids do not match the #146 boundary")
-    if manifest.get("activation_unit_id") != "stage0-minimal-handoff-v1":
+    if manifest.get("activation_unit_id") != STAGE0_AI_FIRST_MIGRATION_ID:
         errors.append("Stage 0 migration manifest has an unknown activation unit")
 
     raw_entries = manifest.get("skills")
@@ -21909,13 +18524,115 @@ def validate_production_migration_manifest(
         errors.extend(skill_json_schema_validation_errors(
             manifest, schema, "production migration manifest"
         ))
+    if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != PRODUCTION_MIGRATION_MANIFEST_SHA256:
+        errors.append("frozen production v1 migration manifest bytes changed")
+
+    ai_first_schema_path = skills_root / PRODUCTION_AI_FIRST_MIGRATION_SCHEMA
+    ai_first_manifest_path = skills_root / PRODUCTION_AI_FIRST_MIGRATION_MANIFEST
+    if skill_lstat_path(
+        boundary,
+        ai_first_schema_path,
+        "production AI-first migration schema",
+        errors,
+        kind="file",
+    ) is None or skill_lstat_path(
+        boundary,
+        ai_first_manifest_path,
+        "production AI-first migration manifest",
+        errors,
+        kind="file",
+    ) is None:
+        return None
+    ai_first_schema = skill_read_schema(
+        ai_first_schema_path,
+        "production AI-first migration schema",
+        errors,
+    )
+    ai_first_manifest = skill_read_json(
+        ai_first_manifest_path,
+        "production AI-first migration manifest",
+        errors,
+    )
+    if (
+        not isinstance(ai_first_schema, dict)
+        or not isinstance(ai_first_manifest, dict)
+        or ai_first_schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or ai_first_schema.get("$id") != PRODUCTION_AI_FIRST_MIGRATION_SCHEMA_ID
+    ):
+        errors.append("production AI-first migration contract has an incompatible identity")
+        return None
+    ai_first_schema_errors = skill_json_schema_subset_errors(
+        ai_first_schema,
+        "production AI-first migration schema",
+    )
+    errors.extend(ai_first_schema_errors)
+    if not ai_first_schema_errors:
+        errors.extend(skill_json_schema_validation_errors(
+            ai_first_manifest,
+            ai_first_schema,
+            "production AI-first migration manifest",
+        ))
+    expected_changes = [
+        {
+            "skill_id": "guru-approve-task-plan",
+            "migration": "approved removes the producer-private approval_ref; the output schema moves from v1 to v2",
+        },
+        {
+            "skill_id": "guru-check-task",
+            "migration": "passed removes the producer-private check_ref and accepts the repository hash width; the output schema moves from v1 to v2",
+        },
+        {
+            "skill_id": "guru-create-task-commit",
+            "migration": "v1 message/path/semantic fields project once into the five-field v2 owner-entry seed and ignored-runtime candidate; authorization and caller-selected exit fields are discarded, and no terminal result journal is written",
+        },
+    ]
+    if ai_first_manifest.get("changes") != expected_changes:
+        errors.append("production AI-first migration changes do not match the closed compatibility contract")
+    current_production_exit_count = sum(
+        len(interfaces.get(skill_id, {}).get("external_exits", []))
+        for skill_id in PRODUCTION_MIGRATION_SKILL_IDS
+    )
+    if (
+        ai_first_manifest.get("current_contract")
+        != {
+            "interface_schema_id": "guru-team-skill-interface-1.3",
+            "skill_count": len(PRODUCTION_MIGRATION_SKILL_IDS),
+            "exit_count": current_production_exit_count,
+        }
+        or current_production_exit_count != 11
+    ):
+        errors.append("production AI-first migration does not bind the current 3-Skill/11-exit closure")
+
+    # Keep v1 byte-for-byte as historical authority. This three-Skill migration
+    # records Task Commit input/private-state projection; only the planning and
+    # check exits require replacement output schema identities.
+    manifest = copy.deepcopy(manifest)
+    manifest["activation_unit_id"] = PRODUCTION_AI_FIRST_MIGRATION_ID
+    current_output_schema_ids = {
+        ("guru-approve-task-plan", "approved"):
+            "guru-production-approve-task-plan-output-approved-2.0",
+        ("guru-check-task", "passed"):
+            "guru-production-check-task-output-passed-2.0",
+    }
+    for skill_entry in manifest.get("skills", []):
+        if not isinstance(skill_entry, dict):
+            continue
+        skill_id = str(skill_entry.get("id") or "")
+        for binding in skill_entry.get("exit_bindings", []):
+            if not isinstance(binding, dict):
+                continue
+            current_schema_id = current_output_schema_ids.get(
+                (skill_id, str(binding.get("exit_id") or ""))
+            )
+            if current_schema_id:
+                binding["output_schema_id"] = current_schema_id
 
     expected_skill_ids = list(PRODUCTION_MIGRATION_SKILL_IDS)
     if manifest.get("skill_ids") != expected_skill_ids:
         errors.append("production migration manifest skill_ids do not match the ordered activation unit")
     if manifest.get("legacy_skill_ids") != []:
         errors.append("production migration manifest legacy_skill_ids must be empty")
-    if manifest.get("activation_unit_id") != "production-minimal-handoff-v1":
+    if manifest.get("activation_unit_id") != PRODUCTION_AI_FIRST_MIGRATION_ID:
         errors.append("production migration manifest has an unknown activation unit")
     if manifest.get("interface_schema_id") != "guru-team-skill-interface-1.3":
         errors.append("production migration manifest does not require Interface 1.3")
@@ -22252,13 +18969,23 @@ def _validate_skill_source(
                 "schema_id": PRODUCTION_MIGRATION_SCHEMA_ID,
                 "path": PRODUCTION_MIGRATION_MANIFEST.as_posix(),
             },
+            {
+                "id": STAGE0_AI_FIRST_MIGRATION_ID,
+                "schema_id": STAGE0_AI_FIRST_MIGRATION_SCHEMA_ID,
+                "path": STAGE0_AI_FIRST_MIGRATION_MANIFEST.as_posix(),
+            },
+            {
+                "id": PRODUCTION_AI_FIRST_MIGRATION_ID,
+                "schema_id": PRODUCTION_AI_FIRST_MIGRATION_SCHEMA_ID,
+                "path": PRODUCTION_AI_FIRST_MIGRATION_MANIFEST.as_posix(),
+            },
         ]
         if (
             not isinstance(skill_contracts, dict)
             or skill_contracts.get("migration_manifests") != expected_manifest_locators
         ):
             errors.append(
-                "extension migration_manifests do not publish the exact Stage 0 then production activation order"
+                "extension migration_manifests do not publish the frozen Stage 0/production contracts before their AI-first migrations"
             )
         stage0_ids = set(STAGE0_MIGRATION_SKILL_IDS)
         production_ids = set(PRODUCTION_MIGRATION_SKILL_IDS)
@@ -22285,8 +19012,8 @@ def _validate_skill_source(
                 for interface in interfaces.values()
                 if isinstance(interface.get("external_exits"), list)
             )
-            if len(active_ids) != 13 or exit_count != 52:
-                errors.append("current active Skill closure must remain exactly 13 Skills and 52 exits")
+            if len(active_ids) != 13 or exit_count != 51:
+                errors.append("current active Skill closure must remain exactly 13 Skills and 51 exits")
 
     workflow_stat = None
     if not require_workflow:
@@ -23164,6 +19891,19 @@ def stage0_structured_input(
     path = stage0_safe_input_path(root, package, interface, input_value)
     errors: list[str] = []
     payload = skill_read_json(path, "Stage 0 public input", errors)
+    if (
+        skill_id == TASK_WORKSPACE_SKILL_ID
+        and isinstance(payload, dict)
+        and payload.get("profile") in TASK_WORKSPACE_LEGACY_PUBLIC_INPUT_PROFILES
+    ):
+        legacy_errors = task_workspace_legacy_public_input_errors(payload)
+        if legacy_errors:
+            errors.extend(legacy_errors)
+        else:
+            payload = {
+                "profile": "execute_reviewed_plan",
+                "mode": payload["mode"],
+            }
     public_input = interface["public_contracts"].get("input")
     profiles = public_input.get("profiles", []) if isinstance(public_input, dict) else []
     profile_id = payload.get("profile") if isinstance(payload, dict) else None
@@ -23182,7 +19922,15 @@ def stage0_structured_input(
     schema_path = package / str(schema_ref.get("path") if isinstance(schema_ref, dict) else "")
     schema = skill_read_schema(schema_path, "Stage 0 public input profile", errors)
     if isinstance(schema, dict):
-        errors.extend(skill_json_schema_validation_errors(payload, schema, "Stage 0 public input"))
+        validation_errors = skill_json_schema_validation_errors(
+            payload, schema, "Stage 0 public input"
+        )
+        if not (
+            skill_id == TASK_COMMIT_SKILL_ID
+            and validation_errors
+            and not task_commit_legacy_public_input_errors(payload)
+        ):
+            errors.extend(validation_errors)
     if errors or not isinstance(schema, dict):
         raise stage0_invocation_error(
             "invalid_public_input",
@@ -23191,6 +19939,17 @@ def stage0_structured_input(
             "Stage 0 structured public input failed its declared profile schema.",
         )
     return payload
+
+
+def task_workspace_legacy_public_input_errors(payload: Any) -> list[str]:
+    if not isinstance(payload, dict):
+        return ["legacy workspace input must be an object"]
+    profile = payload.get("profile")
+    if profile not in TASK_WORKSPACE_LEGACY_PUBLIC_INPUT_PROFILES:
+        return ["legacy workspace input profile is unknown"]
+    if payload.get("mode") not in {"workflow", "standalone"}:
+        return ["legacy workspace input mode is invalid"]
+    return []
 
 
 def stage0_output_contract(
@@ -23469,7 +20228,7 @@ def review_branch_owner_invocation_errors(
         or result.get("mode") != public_input.get("mode")
         or result.get("review_intent") != public_input.get("review_intent")
         or result.get("base_ref") != public_input.get("base_ref")
-        or result.get("head") != public_input.get("committed_head")
+        or review_gate_content_head(result) != public_input.get("committed_head")
     ):
         errors.append(
             "guru-review-branch owner artifact identity does not match "
@@ -23494,7 +20253,18 @@ def production_owner_result(
         if skill_id == BRANCH_REVIEW_SKILL_ID
         else PHASE2_CHECK_ARTIFACT
     )
-    expected_path = task_dir / artifact_name
+    if skill_id == "guru-approve-task-plan":
+        expected_path = planning_approval_path(root, task_dir)
+    elif skill_id == "guru-check-task":
+        expected_path = phase2_check_path(root, task_dir)
+    elif skill_id == BRANCH_REVIEW_SKILL_ID:
+        expected_path = configured_review_gate_path(
+            root, task_dir, load_config(root)
+        )
+    elif skill_id == TASK_PUBLICATION_SKILL_ID:
+        expected_path = task_publication_path(root, task_dir)
+    else:
+        expected_path = task_dir / artifact_name
     result_path = stage0_owner_path(root, args.owner_result, "arguments.owner_result")
     if result_path.resolve() != expected_path.resolve():
         raise stage0_invocation_error(
@@ -23509,12 +20279,12 @@ def production_owner_result(
             checked = cmd_check_planning_approval(argparse.Namespace(
                 root=str(root), task=repo_relative(root, task_dir),
             ))
-            result_task_ref = (result.get("task") or {}).get("task_dir")
+            result_task_ref = result.get("task_ref")
         elif skill_id == "guru-check-task":
             checked = cmd_check_phase2_check(argparse.Namespace(
                 root=str(root), task=repo_relative(root, task_dir),
             ))
-            result_task_ref = (result.get("task") or {}).get("task_dir")
+            result_task_ref = result.get("task_ref")
         elif skill_id == BRANCH_REVIEW_SKILL_ID:
             invocation_errors = review_branch_owner_invocation_errors(
                 root,
@@ -23541,12 +20311,13 @@ def production_owner_result(
             )
             if entry_errors:
                 result = {
+                    "schema_version": "2.2",
                     "mode": public_input["mode"],
                     "review_intent": public_input["review_intent"],
                     "typed_exit": "blocked",
                     "task_dir": public_input["task_ref"],
                     "base_ref": public_input["base_ref"],
-                    "head": public_input["committed_head"],
+                    "reviewed_content_head": public_input["committed_head"],
                     "entry_precondition_errors": entry_errors,
                 }
                 checked = {
@@ -23574,7 +20345,8 @@ def production_owner_result(
                     ],
                 )
             )
-            result_task_ref = result.get("task_dir")
+            result = checked.get("owner_result", result)
+            result_task_ref = result.get("task_ref")
         else:
             raise WorkflowError("Unsupported production owner package.", exit_code=2)
     except WorkflowError as exc:
@@ -23584,49 +20356,26 @@ def production_owner_result(
             "Complete the owner recorder/checker loop against current facts before public serialization.",
             "Production owner result failed its objective checker.",
         ) from exc
-    actual_exit = str(result.get("typed_exit") or "")
+    actual_exit = str(
+        (result.get("route") or {}).get("typed_exit")
+        if skill_id == TASK_PUBLICATION_SKILL_ID
+        else result.get("typed_exit") or ""
+    )
     if skill_id == BRANCH_REVIEW_SKILL_ID:
         input_matches = (
             result.get("mode") == public_input.get("mode")
             and result.get("review_intent") == public_input.get("review_intent")
             and result.get("base_ref") == public_input.get("base_ref")
-            and result.get("head") == public_input.get("committed_head")
+            and review_gate_content_head(result) == public_input.get("committed_head")
         )
     elif skill_id == TASK_PUBLICATION_SKILL_ID:
         input_matches = (
-            result.get("mode") == public_input.get("mode")
-            and result.get("profile") == public_input.get("profile")
-            and result.get("review_intent") == public_input.get("review_intent")
-            and (
-                (
-                    public_input.get("profile") == "publication_review_stale"
-                    and result.get("stale_reason")
-                    == public_input.get("stale_reason")
-                    and result.get("reentry_context")
-                    == public_input.get("reentry_context")
-                    and isinstance(
-                        result.get("supersedes_publication_ref"),
-                        str,
-                    )
-                    and bool(result.get("supersedes_publication_ref"))
-                )
-                or (
-                    (result.get("review_identity") or {}).get("reviewed_head")
-                    == public_input.get("reviewed_head")
-                    and (result.get("review_identity") or {}).get("review_ref")
-                    == public_input.get("review_ref")
-                )
-            )
+            public_input.get("profile") == "publication_review_stale"
+            or result.get("reviewed_content_head")
+            == public_input.get("reviewed_content_head")
         )
     else:
-        semantic = result.get("semantic_review")
-        gate = semantic.get("ai_review_gate") if isinstance(semantic, dict) else None
-        input_matches = (
-            result.get("mode") == public_input.get("mode")
-            and public_input.get("exit_intent") == actual_exit
-            and isinstance(gate, dict)
-            and gate.get("status") == public_input.get("ai_review_gate", {}).get("status")
-        )
+        input_matches = result.get("mode") == public_input.get("mode")
     if (
         checked.get("status") != "ok"
         or checked.get("typed_exit") != actual_exit
@@ -23636,7 +20385,7 @@ def production_owner_result(
         raise stage0_invocation_error(
             "owner_result_input_mismatch",
             "arguments.owner_result",
-            "Rerun the semantic owner for the exact public task, mode, Gate, and exit intent.",
+            "Rerun the semantic owner for the exact public task and mode.",
             "Production public input and checked owner result do not describe the same owner round.",
         )
     return result, checked
@@ -23644,22 +20393,20 @@ def production_owner_result(
 
 def production_scope_proposal_refs(owner_result: dict[str, Any]) -> list[str]:
     semantic = owner_result.get("semantic_review")
-    gate = semantic.get("ai_review_gate") if isinstance(semantic, dict) else None
-    proposals = gate.get("scope_proposals") if isinstance(gate, dict) else None
+    proposals = semantic.get("scope_proposals") if isinstance(semantic, dict) else None
     if isinstance(proposals, list):
         refs = [str(item) for item in proposals if isinstance(item, str) and item]
         if refs:
             return list(dict.fromkeys(refs))
-    scope = owner_result.get("scope_qualification")
-    candidates = scope.get("candidates") if isinstance(scope, dict) else None
+    decisions = semantic.get("scope_decisions") if isinstance(semantic, dict) else None
     refs = [
         str(item.get("id"))
-        for item in candidates or []
+        for item in decisions or []
         if isinstance(item, dict)
         and item.get("disposition") == "scope_change_required"
         and isinstance(item.get("id"), str)
         and item.get("id")
-    ] if isinstance(candidates, list) else []
+    ] if isinstance(decisions, list) else []
     if refs:
         return list(dict.fromkeys(refs))
     raise stage0_invocation_error(
@@ -23670,56 +20417,143 @@ def production_scope_proposal_refs(owner_result: dict[str, Any]) -> list[str]:
     )
 
 
-def production_commit_semantic_exit(public_input: dict[str, Any]) -> str:
-    exit_id = str(public_input.get("exit_intent") or "")
-    semantic = public_input.get("semantic_review")
-    authorization = public_input.get("human_authorization")
-    semantic_status = semantic.get("status") if isinstance(semantic, dict) else None
-    authorization_status = authorization.get("status") if isinstance(authorization, dict) else None
-    valid = (
-        exit_id == "committed" and semantic_status == "passed" and authorization_status == "confirmed"
-        or exit_id == "revision-required" and semantic_status == "revision-required"
-        or exit_id == "blocked" and (
-            semantic_status == "blocked" or authorization_status == "refused"
-        )
+def production_commit_semantic_exit(candidate: dict[str, Any]) -> str:
+    return task_commit_ai_exit(candidate.get("ai_review"))
+
+
+def task_commit_blob_sha256(root: Path, blob: str) -> str:
+    proc = subprocess.run(
+        ["git", "cat-file", "blob", blob],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
     )
-    if not valid:
-        raise stage0_invocation_error(
-            "invalid_public_input",
-            "input.exit_intent",
-            "Align exit_intent with the completed semantic review and confirmation outcome.",
-            "Production commit public input contains a contradictory semantic route.",
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not read the recovered task commit blob.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
         )
-    return exit_id
+    return hashlib.sha256(proc.stdout).hexdigest()
+
+
+def task_commit_recovery_commit_errors(
+    root: Path,
+    commit_sha: str,
+    plan: dict[str, Any],
+    checked_head: str,
+) -> list[str]:
+    errors: list[str] = []
+    parents = run_stdout(
+        ["git", "show", "-s", "--format=%P", commit_sha], cwd=root
+    ).split()
+    if parents != [checked_head]:
+        errors.append("recovery commit parent does not equal the candidate checked_head")
+
+    message = plan.get("message") if isinstance(plan.get("message"), dict) else {}
+    expected_message = str(message.get("bytes") or "").encode("utf-8")
+    if task_commit_raw_message(root, commit_sha) != expected_message:
+        errors.append("recovery commit message bytes do not equal the candidate bytes")
+
+    exact_paths = {
+        path for path in plan.get("exact_stage_paths", []) if isinstance(path, str)
+    }
+    committed_paths = git_nul_path_set(
+        root,
+        [
+            "diff-tree", "--root", "--no-commit-id", "--name-only",
+            "--no-renames", "-r", "-z", commit_sha,
+        ],
+    )
+    if committed_paths != exact_paths:
+        errors.append("recovery commit path set does not equal exact_stage_paths")
+
+    expected_paths: dict[str, tuple[str | None, str | None, str | None]] = {}
+    snapshot = plan.get("dirty_snapshot") if isinstance(plan.get("dirty_snapshot"), dict) else {}
+    entries = snapshot.get("entries") if isinstance(snapshot.get("entries"), list) else []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        path = entry.get("path")
+        if isinstance(path, str) and path in exact_paths:
+            if entry.get("deleted") is True:
+                expected_paths[path] = (None, None, None)
+            elif entry.get("mode") == "160000":
+                expected_paths[path] = (
+                    str(entry.get("gitlink_head") or ""),
+                    "160000",
+                    None,
+                )
+            else:
+                expected_paths[path] = (
+                    None,
+                    str(entry.get("mode") or ""),
+                    str(entry.get("worktree_sha256") or ""),
+                )
+        renamed_from = entry.get("renamed_from")
+        if isinstance(renamed_from, str) and renamed_from in exact_paths:
+            expected_paths[renamed_from] = (None, None, None)
+
+    if set(expected_paths) != exact_paths:
+        errors.append("candidate snapshot does not authorize every recovery commit path")
+        return errors
+
+    tree = task_commit_commit_tree(root, commit_sha)
+    for path in sorted(exact_paths, key=lambda item: item.encode("utf-8")):
+        expected_blob, expected_mode, expected_sha256 = expected_paths[path]
+        actual_blob, actual_mode = task_commit_tree_path_identity(root, tree, path)
+        if expected_mode is None:
+            if actual_blob is not None or actual_mode is not None:
+                errors.append(f"recovery commit path was expected to be deleted: {path}")
+            continue
+        if actual_mode != expected_mode:
+            errors.append(f"recovery commit mode does not match candidate snapshot: {path}")
+            continue
+        if expected_mode == "160000":
+            if actual_blob != expected_blob:
+                errors.append(f"recovery gitlink does not match candidate snapshot: {path}")
+            continue
+        if actual_blob is None or task_commit_blob_sha256(root, actual_blob) != expected_sha256:
+            errors.append(f"recovery commit content does not match candidate snapshot: {path}")
+    return errors
 
 
 def production_verify_committed_candidate(
     root: Path,
     task_dir: Path,
     public_input: dict[str, Any],
+    candidate_path: Path | None,
 ) -> dict[str, Any]:
-    phase2_path = phase2_check_path(task_dir)
     current = current_head(root)
     checked_head = str(public_input.get("checked_head") or "")
-    expected_check_ref = task_commit_public_check_ref(
-        hashlib.sha256(phase2_path.read_bytes()).hexdigest()
-    )
-    parents = run_stdout(
-        ["git", "show", "-s", "--format=%P", current], cwd=root
-    ).split()
-    if (
-        parents == [checked_head]
-        and public_input.get("check_ref") == expected_check_ref
-    ):
-        task = task_json(task_dir)
-        task_context = load_task_start_context(task_dir, load_config(root))
-        base_branch = base_branch_from_sources(
-            argparse.Namespace(base_branch=None), task, task_context
+    if candidate_path is not None:
+        plan, _facts, candidate_errors = validate_task_commit_candidate(
+            root,
+            candidate_path,
+            task_dir,
+            recovery_checked_head=checked_head,
         )
+        recovery_errors = task_commit_recovery_commit_errors(
+            root,
+            current,
+            plan,
+            checked_head,
+        )
+        errors = [*candidate_errors, *recovery_errors]
+        if production_commit_semantic_exit(plan) != "committed":
+            errors.append("recovery candidate semantic exit is not committed")
+        if errors:
+            raise WorkflowError(
+                "Current recovery commit does not match the surviving private candidate.",
+                exit_code=2,
+                payload={"errors": errors},
+            )
+        task_commit_consume_candidate(candidate_path)
         return {
             "status": "committed",
             "commit_sha": current,
-            "base_ref": diff_base_ref(root, base_branch),
+            "base_ref": plan["git"]["base_ref"],
         }
 
     # Compatibility only: old active tasks may still carry a tracked terminal
@@ -23735,8 +20569,6 @@ def production_verify_committed_candidate(
         or task_commit_result_validation_errors(root, plan)
         or result.get("commit_sha") != current_head(root)
         or public_input.get("checked_head") != plan.get("git", {}).get("pre_commit_head")
-        or public_input.get("check_ref")
-        != task_commit_public_check_ref(hashlib.sha256(phase2_path.read_bytes()).hexdigest())
     ):
         raise WorkflowError("Committed task candidate recovery evidence is stale.", exit_code=2)
     return {
@@ -23748,26 +20580,94 @@ def production_verify_committed_candidate(
 
 def production_commit_result(
     root: Path,
+    args: argparse.Namespace,
     public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     task_dir = production_task_from_public_input(root, public_input)
-    exit_id = production_commit_semantic_exit(public_input)
-    if exit_id != "committed":
-        return {"typed_exit": exit_id}, None
+    legacy_input = not task_commit_legacy_public_input_errors(public_input)
+    effective_input = public_input
+    if legacy_input:
+        effective_input = {
+            "profile": public_input["profile"],
+            "mode": public_input["mode"],
+            "task_ref": public_input["task_ref"],
+            "source_exit": {
+                "initial_commit": "passed",
+                "revision_reentry": "revision-required",
+                "finding_fix_commit": "passed",
+                "recovery_resume": "transaction_recovery",
+            }[str(public_input["profile"])],
+            "checked_head": public_input["checked_head"],
+        }
     try:
-        if (
-            public_input.get("profile") == "recovery_resume"
-            and public_input.get("recovery_intent") == "verify_committed"
-        ):
-            executed = production_verify_committed_candidate(root, task_dir, public_input)
+        owner_value = str(getattr(args, "owner_result", "") or "").strip()
+        if public_input.get("profile") == "recovery_resume" and current_head(root) != public_input.get("checked_head"):
+            candidate_path: Path | None = None
+            if owner_value:
+                candidate_path, candidate_task_dir = resolve_task_commit_candidate(
+                    root, owner_value
+                )
+                if candidate_task_dir.resolve() != task_dir.resolve():
+                    raise WorkflowError(
+                        "Task commit private candidate belongs to another task.", exit_code=2
+                    )
+            elif not legacy_input:
+                raise WorkflowError(
+                    "Task commit recovery requires the surviving owner-private candidate.",
+                    exit_code=2,
+                )
+            executed = production_verify_committed_candidate(
+                root,
+                task_dir,
+                public_input,
+                candidate_path,
+            )
             return {"typed_exit": "committed"}, executed
-        candidate_path, plan, _ = build_task_commit_candidate_from_public_input(
-            root, task_dir, public_input
-        )
+        if owner_value:
+            candidate_path, candidate_task_dir = resolve_task_commit_candidate(
+                root, owner_value
+            )
+            if candidate_task_dir.resolve() != task_dir.resolve():
+                raise WorkflowError(
+                    "Task commit private candidate belongs to another task.", exit_code=2
+                )
+            plan, facts, errors = validate_task_commit_candidate(
+                root, candidate_path, task_dir
+            )
+            if errors:
+                raise WorkflowError(
+                    "Task commit private candidate is stale or invalid.",
+                    exit_code=2,
+                    payload={"errors": errors},
+                )
+        elif legacy_input:
+            candidate_path, plan, facts = build_task_commit_candidate(
+                root,
+                task_dir,
+                effective_input,
+                task_commit_legacy_authoring(root, task_dir, public_input),
+            )
+        else:
+            raise WorkflowError(
+                "Task commit public wrapper requires the prepared owner-private candidate.",
+                exit_code=2,
+            )
+        exit_id = production_commit_semantic_exit(plan)
+        if exit_id != "committed":
+            return {"typed_exit": exit_id}, {
+                "status": "prepared",
+                "base_ref": plan["git"]["base_ref"],
+                "candidate_artifact": facts["candidate_artifact"],
+            }
         executed = execute_task_commit_candidate(root, candidate_path, task_dir)
         executed["base_ref"] = plan["git"]["base_ref"]
         return {"typed_exit": "committed"}, executed
     except WorkflowError as exc:
+        if legacy_input:
+            return {"typed_exit": "revision-required"}, {
+                "status": "revision-required",
+                "errors": [str(exc)],
+            }
         return {"typed_exit": "blocked"}, {
             "status": "blocked",
             "errors": [str(exc)],
@@ -23819,28 +20719,6 @@ def stage0_clarity_disposition(result: dict[str, Any]) -> str:
     )
 
 
-def stage0_confirmed_action_id(result: dict[str, Any]) -> str:
-    confirmation = result.get("human_confirmation")
-    actions = confirmation.get("confirmed_actions") if isinstance(confirmation, dict) else None
-    if isinstance(actions, list) and actions and isinstance(actions[0], str) and actions[0]:
-        return actions[0]
-    source_actions = result.get("source_actions")
-    if isinstance(source_actions, list):
-        for action in source_actions:
-            action_id = action.get("action_id") if isinstance(action, dict) else None
-            if isinstance(action_id, str) and action_id:
-                return action_id
-    facts = result.get("facts_sha256") or (result.get("content_identity") or {}).get("result_sha256")
-    if isinstance(facts, str) and facts:
-        return f"reviewed-{facts[:16]}"
-    raise stage0_invocation_error(
-        "owner_result_projection_failed",
-        "owner_result.human_confirmation",
-        "Record the owner decision/action identity before public serialization.",
-        "Stage 0 owner result cannot supply a confirmed action id.",
-    )
-
-
 def stage0_build_output(
     skill_id: str,
     exit_id: str,
@@ -23873,7 +20751,6 @@ def stage0_build_output(
             values.update({
                 "resume_target": (owner_result.get("invocation_context") or {}).get("resume_target"),
                 "target_disposition": stage0_clarity_disposition(owner_result),
-                "confirmed_action_id": stage0_confirmed_action_id(owner_result),
             })
         elif exit_id == "needs_context":
             values.update({
@@ -23891,7 +20768,6 @@ def stage0_build_output(
         elif exit_id == "new_task":
             values.update({
                 "target_locator": stage0_target_locator(target, public_input.get("target_locator")),
-                "confirmed_action_id": stage0_confirmed_action_id(owner_result),
             })
     elif skill_id == "guru-review-contract-wording" and owner_result is not None:
         values.update({
@@ -23902,12 +20778,8 @@ def stage0_build_output(
         target = owner_result.get("target")
         if exit_id == "ready":
             values.update({
-                "handoff_profile": "workspace_task_initial",
-                "handoff_mode": owner_result.get("mode"),
-                "handoff_target_locator": stage0_target_locator(target, public_input.get("target_locator")),
-                "handoff_repo_locator": (target or {}).get("repo"),
-                "handoff_confirmed_action_id": stage0_confirmed_action_id(owner_result),
-                "handoff_continuation_id": public_input.get("continuation_id"),
+                "profile": "execute_reviewed_plan",
+                "mode": owner_result.get("mode"),
             })
         elif exit_id == "clarify_requirements":
             values.update({
@@ -23931,30 +20803,14 @@ def stage0_build_output(
                 "handoff_route": "repo_change",
             })
     elif skill_id == "guru-create-task-workspace" and owner_result is not None:
-        if exit_id == "created":
-            created = owner_result.get("created_workspace") or {}
+        if exit_id == "refresh_review":
             values.update({
-                "repo_locator": created.get("repo"),
-                "issue_locator": f"#{created.get('issue_number')}",
-                "base_branch": (owner_plan or {}).get("base", {}).get("selected_base") or public_input.get("base_branch"),
-                "branch": created.get("branch_name"),
-                "worktree_locator": created.get("workspace_slug"),
-                "task_locator": created.get("task_artifact_dir"),
-                "continuation_id": public_input.get("continuation_id"),
-            })
-        elif exit_id == "refresh_review":
-            values.update({
-                "handoff_mode": owner_result.get("mode"),
-                "handoff_repo_root": ".",
-                "handoff_base_branch": (owner_plan or {}).get("base", {}).get("selected_base") or public_input.get("base_branch"),
-                "handoff_route": "repo_change",
+                "mode": owner_result.get("mode"),
+                "base_branch": (owner_plan or {}).get("base", {}).get("selected_base"),
             })
     elif skill_id == "guru-approve-task-plan" and owner_result is not None:
         if exit_id == "approved":
-            values.update({
-                "task_ref": public_input.get("task_ref"),
-                "approval_ref": f"planning-approval:{(owner_plan or {}).get('artifact_sha256')}",
-            })
+            values["task_ref"] = public_input.get("task_ref")
         elif exit_id == "revision_required":
             values["task_ref"] = public_input.get("task_ref")
         elif exit_id == "clarify_scope":
@@ -23967,9 +20823,6 @@ def stage0_build_output(
             values.update({
                 "task_ref": public_input.get("task_ref"),
                 "checked_head": (owner_plan or {}).get("checked_head"),
-                "check_ref": task_commit_public_check_ref(
-                    str((owner_plan or {}).get("artifact_sha256") or "")
-                ),
             })
         elif exit_id == "implementation_required":
             findings = owner_result.get("semantic_review", {}).get("findings", [])
@@ -24005,13 +20858,12 @@ def stage0_build_output(
         if exit_id == "passed":
             values.update({
                 "task_ref": public_input.get("task_ref"),
-                "reviewed_head": owner_result.get("head"),
-                "review_ref": f"review-gate:{(owner_plan or {}).get('artifact_sha256')}",
+                "reviewed_content_head": review_gate_content_head(owner_result),
             })
         elif exit_id == "implementation_required":
             values.update({
                 "task_ref": public_input.get("task_ref"),
-                "reviewed_head": owner_result.get("head"),
+                "reviewed_content_head": review_gate_content_head(owner_result),
                 "finding_refs": [
                     str(item.get("finding_ref"))
                     for item in semantic.get("qualified_findings", [])
@@ -24030,22 +20882,14 @@ def stage0_build_output(
                 ],
             })
     elif skill_id == TASK_PUBLICATION_SKILL_ID and owner_result is not None:
-        bindings = (
-            owner_result.get("deterministic_bindings")
-            if isinstance(owner_result.get("deterministic_bindings"), dict)
-            else {}
-        )
-        semantic = (
-            owner_result.get("semantic_review")
-            if isinstance(owner_result.get("semantic_review"), dict)
-            else {}
-        )
+        semantic = owner_result
         if exit_id == "ready":
             values.update(
                 {
                     "task_ref": public_input.get("task_ref"),
-                    "reviewed_head": (owner_result.get("review_identity") or {}).get("reviewed_head"),
-                    "publication_ref": bindings.get("publication_ref"),
+                    "reviewed_content_head": owner_result.get(
+                        "reviewed_content_head"
+                    ),
                 }
             )
         elif exit_id == "return_to_task_work":
@@ -24064,10 +20908,15 @@ def stage0_build_output(
                 }
             )
         elif exit_id == "blocked":
+            route = (
+                owner_result.get("route")
+                if isinstance(owner_result.get("route"), dict)
+                else {}
+            )
             values.update(
                 {
-                    "reason_code": owner_result.get("reason_code"),
-                    "remediation": owner_result.get("remediation"),
+                    "reason_code": route.get("reason_code"),
+                    "remediation": route.get("remediation"),
                 }
             )
 
@@ -24111,43 +20960,43 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
     owner_plan: dict[str, Any] | None = None
     owner_locator: str | None = None
     if skill_id == "guru-sync-base":
+        repo_root_value = args.repo_root or "."
+        route_value = args.route or "repo_change"
         required = {
             "source_exit": args.source_exit,
             "mode": args.mode,
-            "repo_root": args.repo_root,
-            "route": args.route,
         }
         if any(not isinstance(value, str) or not value for value in required.values()):
             raise stage0_invocation_error(
                 "invalid_public_input",
                 "arguments",
-                "Provide every required guru-sync-base scalar argument; --base-branch may be omitted.",
+                "Provide --source-exit and --mode; repo root, base branch and repo-change route may be derived.",
                 "Stage 0 scalar public input is incomplete.",
             )
-        if args.mode not in {"workflow", "standalone"} or args.route not in {"repo_change", "original_request"}:
+        if args.mode not in {"workflow", "standalone"} or route_value not in {"repo_change", "original_request"}:
             raise stage0_invocation_error(
                 "invalid_public_input",
                 "arguments.route",
                 "Use workflow|standalone mode and repo_change|original_request route.",
                 "Stage 0 scalar public input contains an unsupported enum.",
             )
-        if args.mode == "standalone" and args.route == "original_request":
+        if args.mode == "standalone" and route_value == "original_request":
             raise stage0_invocation_error(
                 "invalid_public_input",
                 "arguments.route",
                 "Standalone base sync must use repo_change.",
                 "Standalone Stage 0 base sync cannot select skipped.",
             )
-        resolved_repo = repo_root(Path(args.repo_root))
+        resolved_repo = repo_root(Path(repo_root_value))
         public_input = {
             "source_exit": args.source_exit,
             "mode": args.mode,
-            "repo_root": args.repo_root,
+            "repo_root": repo_root_value,
             "base_branch": args.base_branch,
-            "route": args.route,
+            "route": route_value,
         }
         try:
-            if args.route == "original_request":
+            if route_value == "original_request":
                 owner_result = cmd_check_base_sync(argparse.Namespace(
                     root=str(resolved_repo), mode=args.mode, result_json=None,
                     expected_resolution_sha256=None,
@@ -24194,7 +21043,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 checker_args = finalization_public_wrapper_checker_args(
                     root,
                     args,
-                    owner_path.parent,
+                    finalization_task_dir(root, public_input),
                 )
                 owner_result, owner_plan = check_finalization_gate_result(
                     root,
@@ -24207,7 +21056,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 raise stage0_invocation_error(
                     "owner_result_not_checked",
                     "arguments.owner_result",
-                    "Rerun the finalization gate checker against the exact task-local gate and current transaction facts.",
+                    "Rerun the finalization gate checker against the exact owner-private ignored-runtime checkpoint and current transaction facts.",
                     "Task finalization owner result failed its objective checker.",
                 ) from exc
             exit_id = str((owner_result.get("route") or {}).get("typed_exit") or "")
@@ -24253,6 +21102,20 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                     "Repair the checked finalization route output and rerun the owner gate.",
                     "Task finalization could not serialize a valid actual-exit output.",
                 )
+            if exit_id == "published":
+                finalization_task = owner_plan.get("task_dir")
+                if not isinstance(finalization_task, Path):
+                    raise stage0_invocation_error(
+                        "owner_result_projection_failed",
+                        "owner_result.task_dir",
+                        "Restore the checked terminal finalization context.",
+                        "Task finalization cannot consume terminal owner checkpoints without its task identity.",
+                    )
+                ai_first_retire_owner_checkpoints(
+                    root,
+                    finalization_task,
+                    (TASK_FINALIZATION_GATE_ARTIFACT,),
+                )
             return payload
         if skill_id in {
             "guru-approve-task-plan",
@@ -24264,13 +21127,16 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 skill_id, root, args, public_input
             )
         elif skill_id == "guru-create-task-commit":
-            owner_result, owner_plan = production_commit_result(root, public_input)
+            owner_result, owner_plan = production_commit_result(root, args, public_input)
         else:
             owner_result, owner_plan = stage0_owner_result(
                 skill_id, root, args, public_input
             )
         if (
-            skill_id != "guru-create-task-commit"
+            skill_id not in {
+                "guru-create-task-commit",
+                TASK_PUBLICATION_SKILL_ID,
+            }
             and public_input.get("mode") != owner_result.get("mode")
         ):
             raise stage0_invocation_error(
@@ -24289,7 +21155,11 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 "Rerun the wording owner for the exact fixed public profile.",
                 "Stage 0 wording public input and owner result profiles do not match.",
             )
-        exit_id = str(owner_result.get("typed_exit") or "")
+        exit_id = str(
+            (owner_result.get("route") or {}).get("typed_exit")
+            if skill_id == TASK_PUBLICATION_SKILL_ID
+            else owner_result.get("typed_exit") or ""
+        )
         if skill_id != "guru-create-task-commit":
             owner_locator = repo_relative(
                 root,
@@ -24311,6 +21181,18 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             "stdout",
             "Repair the declared public projection/output contract and rerun source validation.",
             "Stage 0 public invocation could not serialize a valid typed output.",
+        )
+    owner_artifact = {
+        "guru-approve-task-plan": PLANNING_APPROVAL_ARTIFACT,
+        "guru-check-task": PHASE2_CHECK_ARTIFACT,
+        BRANCH_REVIEW_SKILL_ID: "review-gate.json",
+        TASK_PUBLICATION_SKILL_ID: PR_READINESS_ARTIFACT,
+    }.get(skill_id)
+    if owner_artifact is not None:
+        ai_first_retire_owner_checkpoints(
+            root,
+            production_task_from_public_input(root, public_input),
+            (owner_artifact,),
         )
     return payload
 
@@ -24715,38 +21597,6 @@ def skill_eval_validate_corpus(
                         if relative is None or relative.as_posix() != assertion.get("path"):
                             raise skill_eval_error("eval_assertion_path_invalid", f"{field}.assertions.{group}[{assertion_index}].path", "Use a normalized isolated-run relative file path.", "Skill eval file assertion path is unsafe.")
     return corpus, corpus_bytes
-
-
-def migrate_legacy_skill_evals(payload: dict[str, Any], skill_id: str, expected_exit: str) -> dict[str, Any]:
-    if set(payload) != {"skill_name", "evals"} or payload.get("skill_name") != skill_id or not isinstance(payload.get("evals"), list) or not payload["evals"]:
-        raise skill_eval_error("eval_legacy_shape_invalid", "legacy", "Provide one factory-style skill_name/evals payload for the exact Skill.", "Legacy eval migration input is invalid.")
-    migrated: list[dict[str, Any]] = []
-    for index, item in enumerate(payload["evals"]):
-        if not isinstance(item, dict) or set(item) != {"id", "prompt", "expected_output", "expectations"} or not isinstance(item.get("expectations"), list) or not item["expectations"]:
-            raise skill_eval_error("eval_legacy_shape_invalid", f"evals[{index}]", "Use the closed factory-style migration input without assertions.", "Legacy eval migration case is invalid.")
-        criteria = []
-        for expectation_index, expectation in enumerate(item["expectations"]):
-            if not isinstance(expectation, str) or not expectation.strip():
-                raise skill_eval_error("eval_legacy_expectation_invalid", f"evals[{index}].expectations[{expectation_index}]", "Use non-empty human-readable expectation strings.", "Legacy eval expectation is invalid.")
-            criteria.append({
-                "id": f"legacy-expectation-{expectation_index + 1}",
-                "criterion": expectation,
-                "evidence_selector": "output",
-            })
-        migrated.append({
-            "id": f"legacy-{item['id']}",
-            "prompt": item["prompt"],
-            "expected_exit": expected_exit,
-            "expected_output": item["expected_output"],
-            "assertions": {"semantic": criteria},
-        })
-    return {
-        "$schema": SKILL_SCHEMA_DIALECT,
-        "$id": SKILL_EVAL_SCHEMA_ID,
-        "schema_version": SKILL_EVAL_SCHEMA_VERSION,
-        "skill_name": skill_id,
-        "evals": migrated,
-    }
 
 
 def build_skill_eval_discovery(skills_root: Path, skill_id: str) -> dict[str, Any]:
@@ -25311,7 +22161,7 @@ def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
     if not repo:
@@ -25403,20 +22253,26 @@ def extension_verification_task_identity(
     task_ref = str(public_input["task_ref"])
     errors: list[str] = []
     if task_dir.parent.resolve() != tasks_root(root).resolve():
-        errors.append(
-            "task_ref must identify one direct active task under .trellis/tasks."
+        raise WorkflowError(
+            "Extension verification task repository identity validation failed.",
+            exit_code=2,
+            payload={
+                "errors": [
+                    "task_ref must identify one direct active task under .trellis/tasks."
+                ]
+            },
         )
 
     config = load_config(root)
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     if not task_context:
         errors.append(
-            "task-bearing extension verification requires task-start-context.json."
+            "task-bearing extension verification requires current task/runtime/worktree identity."
         )
     else:
         if task_context.get("task_artifact_dir") != task_ref:
             errors.append(
-                "task_ref does not match task-start-context task_artifact_dir."
+                "task_ref does not match the current task artifact locator."
             )
         task = task_json(task_dir)
         task_identity = str(task.get("id") or task.get("name") or "").strip()
@@ -25425,7 +22281,7 @@ def extension_verification_task_identity(
             or str(task_context.get("task_slug") or "").strip() != task_identity
         ):
             errors.append(
-                "task-start-context task_slug does not match task.json identity."
+                "runtime task slug does not match task.json identity."
             )
         if task.get("status") not in {"planning", "in_progress", "review"}:
             errors.append(
@@ -25441,7 +22297,7 @@ def extension_verification_task_identity(
             or context_branch != live_branch
         ):
             errors.append(
-                "current branch does not match task.json and task-start-context."
+                "current branch does not match task.json and runtime identity."
             )
 
         context_repo = normalize_github_repository(
@@ -25454,7 +22310,7 @@ def extension_verification_task_identity(
         public_repo = normalize_github_repository(public_input.get("repo_ref"))
         if not context_repo or context_repo != public_repo:
             errors.append(
-                "repo_ref does not match task-start-context source_repo.repo."
+                "repo_ref does not match the current repository identity."
             )
 
     active_task = current_task_dir(root)
@@ -26048,13 +22904,13 @@ def validate_publish_identity_and_remote_head(
         else ""
     ).strip()
     if expected_repo and expected_repo.casefold() != repo.casefold():
-        errors.append("publish repo does not match task-start-context source_repo.repo")
+        errors.append("publish repo does not match current task runtime repository identity")
     expected_branch = str(task_context.get("branch_name") or "").strip()
     if expected_branch and expected_branch != branch:
-        errors.append("current head branch does not match task-start-context branch_name")
+        errors.append("current head branch does not match current task runtime branch")
     normalized_base = normalize_ref(base_branch).removeprefix("origin/")
     for label, value in [
-        ("task-start-context", task_context.get("base_branch")),
+        ("task runtime identity", task_context.get("base_branch")),
         ("task.json", task.get("base_branch")),
     ]:
         if value and normalize_ref(str(value)).removeprefix("origin/") != normalized_base:
@@ -26092,6 +22948,20 @@ def closeout_plan_path(task_dir: Path) -> Path:
     return task_dir / CLOSEOUT_PLAN_ARTIFACT
 
 
+def task_finalization_path(
+    root: Path,
+    task_dir: Path,
+    *,
+    for_write: bool = False,
+) -> Path:
+    return ai_first_owner_artifact_path(
+        root,
+        task_dir,
+        TASK_FINALIZATION_GATE_ARTIFACT,
+        for_write=for_write,
+    )
+
+
 def closeout_semantic_ledger(ledger: dict[str, Any]) -> dict[str, Any]:
     normalized = copy.deepcopy(ledger)
     targets: list[dict[str, Any]] = []
@@ -26110,6 +22980,24 @@ def closeout_semantic_ledger(ledger: dict[str, Any]) -> dict[str, Any]:
                 if not (isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE)
             ]
     return normalized
+
+
+def closeout_ledger_matches_plan_semantics(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+) -> bool:
+    inputs = plan.get("inputs")
+    bound = (
+        inputs.get("issue_scope_ledger")
+        if isinstance(inputs, dict)
+        else None
+    )
+    return bound == {
+        "path": repo_relative(root, issue_scope_ledger_path(task_dir)),
+        "sha256": canonical_json_sha256(closeout_semantic_ledger(ledger)),
+    }
 
 
 def closeout_input_record(root: Path, path: Path, *, payload: dict[str, Any] | None = None) -> dict[str, str]:
@@ -26265,6 +23153,18 @@ def closeout_evidence_parent_head(plan: dict[str, Any]) -> str:
     return str(git.get("evidence_parent_head") or git.get("reviewed_work_head") or "")
 
 
+def closeout_uses_evidence_commit(plan: dict[str, Any]) -> bool:
+    return plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
+
+
+def closeout_transaction_parent_head(plan: dict[str, Any]) -> str:
+    return (
+        closeout_evidence_parent_head(plan)
+        if closeout_uses_evidence_commit(plan)
+        else str(plan.get("git", {}).get("reviewed_work_head") or "")
+    )
+
+
 def normalize_closeout_archive_identity(value: Any, archive_locator: str) -> Any:
     if isinstance(value, dict):
         return {
@@ -26331,6 +23231,11 @@ def build_closeout_finalizer_gate_takeover_plan(
 ) -> dict[str, Any]:
     """Build the one legal same-month migration from a pre-finalizer plan."""
     validate_closeout_plan(previous)
+    if previous.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        raise WorkflowError(
+            "Finalizer takeover is available only for an explicit legacy closeout plan.",
+            exit_code=2,
+        )
     projection = previous["projection"]
     active_gate = (
         f"{previous['task']['active_locator']}/{TASK_FINALIZATION_GATE_ARTIFACT}"
@@ -26709,9 +23614,15 @@ def closeout_archive_retained_paths(plan: dict[str, Any]) -> list[str]:
     move_paths = plan.get("projection", {}).get("move_paths", [])
     if not isinstance(move_paths, list):
         return []
-    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+    schema_version = plan.get("schema_version")
+    if schema_version == CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION:
         return list(move_paths)
-    allowed = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+    if schema_version == CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION:
+        allowed = set(CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS)
+    elif schema_version == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        allowed = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+    else:
+        return []
     marketplace = plan.get("marketplace")
     if isinstance(marketplace, dict) and marketplace.get("required") is True:
         allowed.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
@@ -26743,7 +23654,7 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     if set(plan) != expected:
         errors.append("closeout plan top-level keys do not match a supported schema.")
     if plan.get("schema_version") not in CLOSEOUT_PLAN_SCHEMA_VERSIONS:
-        errors.append("closeout plan schema_version must be 1.0 or 1.1.")
+        errors.append("closeout plan schema_version must be 1.0, 1.1, or 1.2.")
     digest = str(plan.get("plan_digest") or "")
     if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != closeout_plan_digest(plan):
         errors.append("closeout plan digest does not match canonical content.")
@@ -26757,7 +23668,17 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     projection = plan.get("projection") if isinstance(plan.get("projection"), dict) else {}
     nested_keys = {
         "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
-        "review": (review, {"gate_locator", "reviewed_head", "changed_paths", "close_issues_reviewed"}),
+        "review": (
+            review,
+            (
+                {"reviewed_head", "changed_paths", "close_issues_reviewed"}
+                if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
+                else {
+                    "gate_locator", "reviewed_head", "changed_paths",
+                    "close_issues_reviewed",
+                }
+            ),
+        ),
         "publish": (publish, {"title", "body_sha256", "draft", "draft_to_ready", "match"}),
         "marketplace": (marketplace, {"required", "pending_machine", "verifier_artifact_locator"}),
         "projection": (
@@ -26883,15 +23804,31 @@ def closeout_plan_errors(plan: Any) -> list[str]:
         errors.append("closeout tracked/untracked move classes must be disjoint and cover every move path.")
     if FINISH_SUMMARY_ARTIFACT not in untracked_archive_outputs:
         errors.append("closeout final summary must be classified as an untracked archive output.")
-    retained_paths = closeout_archive_retained_paths(plan)
     if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        if CLOSEOUT_PLAN_ARTIFACT not in untracked_archive_outputs:
+            errors.append("closeout plan 1.2 must archive its plan without an evidence commit.")
+        forbidden_finalizer_artifacts = {
+            PR_READINESS_ARTIFACT,
+            TASK_FINALIZATION_GATE_ARTIFACT,
+        }
+        if forbidden_finalizer_artifacts & set(move_paths):
+            errors.append(
+                "closeout plan 1.2 must not move publication readiness or finalization gates."
+            )
+    retained_paths = closeout_archive_retained_paths(plan)
+    if plan.get("schema_version") in CLOSEOUT_COMPACT_SCHEMA_VERSIONS:
         required_retained = {
             CLOSEOUT_PLAN_ARTIFACT,
             FINISH_SUMMARY_ARTIFACT,
         }
         if not required_retained.issubset(retained_paths):
             errors.append("closeout compact archive is missing required recovery artifacts.")
-        if len(retained_paths) > CLOSEOUT_ARCHIVE_MAX_ARTIFACTS:
+        artifact_budget = (
+            CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS
+            if plan.get("schema_version") == CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION
+            else CLOSEOUT_ARCHIVE_MAX_ARTIFACTS
+        )
+        if len(retained_paths) > artifact_budget:
             errors.append("closeout compact archive exceeds the long-term artifact budget.")
         marketplace_retained = MARKETPLACE_VERIFICATION_ARTIFACT in retained_paths
         if marketplace.get("required") is not marketplace_retained:
@@ -26905,7 +23842,10 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     if allowlist != expected_allowlist:
         errors.append("closeout metadata allowlist must equal tracked active deletions plus all archive outputs.")
     evidence_paths = projection.get("evidence_paths")
-    if (
+    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        if evidence_paths != []:
+            errors.append("closeout plan 1.2 must not create a pre-draft evidence commit.")
+    elif (
         not isinstance(evidence_paths, list)
         or not evidence_paths
         or evidence_paths != sorted(set(evidence_paths))
@@ -26945,6 +23885,22 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     if not isinstance(inputs, dict) or not inputs:
         errors.append("closeout inputs must be a non-empty object.")
     else:
+        required_inputs = {
+            "task",
+            "issue_scope_ledger",
+            "pr_body",
+            "finish_summary_index",
+            "official_after_archive_hooks",
+        }
+        if not required_inputs.issubset(inputs):
+            errors.append("closeout inputs are missing required direct-consumer facts.")
+        if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
+            if "task_context" in inputs:
+                errors.append(
+                    "closeout plan 1.2 must not persist synthetic task runtime identity."
+                )
+        elif "task_context" not in inputs:
+            errors.append("legacy closeout plan requires task_context compatibility input.")
         for key, item in inputs.items():
             if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
                 errors.append(f"closeout input {key} is invalid.")
@@ -26967,8 +23923,8 @@ def build_closeout_plan(
     task_dir: Path,
     task_context: dict[str, Any],
     task: dict[str, Any],
-    gate_path: Path,
-    gate: dict[str, Any],
+    gate_path: Path | None,
+    gate: dict[str, Any] | None,
     ledger: dict[str, Any],
     finish_summary_index_path: Path,
     *,
@@ -26995,8 +23951,17 @@ def build_closeout_plan(
     existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
     if existing_plan:
         validate_closeout_plan(existing_plan)
+    legacy_task_local_owner_residue = any(
+        (task_dir / name).is_file()
+        for name in (PR_READINESS_ARTIFACT, TASK_FINALIZATION_GATE_ARTIFACT)
+    )
     plan_schema_version = str(
-        existing_plan.get("schema_version") or CLOSEOUT_PLAN_SCHEMA_VERSION
+        existing_plan.get("schema_version")
+        or (
+            CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION
+            if legacy_task_local_owner_residue
+            else CLOSEOUT_PLAN_SCHEMA_VERSION
+        )
     )
     existing_task = existing_plan.get("task") if isinstance(existing_plan.get("task"), dict) else {}
     existing_projection = (
@@ -27018,7 +23983,8 @@ def build_closeout_plan(
     if not archive_locator:
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     legacy_finalizer_gate_takeover = bool(
-        include_finalization_gate
+        plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION
+        and include_finalization_gate
         and existing_projection
         and closeout_archive_month(existing_plan) == archive_month_now
         and TASK_FINALIZATION_GATE_ARTIFACT
@@ -27068,8 +24034,13 @@ def build_closeout_plan(
                 exit_code=2,
             )
         task_files = set(observed_task_files)
-        task_files.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
-        if include_finalization_gate:
+        task_files.update({CLOSEOUT_PLAN_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
+        if plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION:
+            task_files.add(PR_READINESS_ARTIFACT)
+        if (
+            include_finalization_gate
+            and plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION
+        ):
             task_files.add(TASK_FINALIZATION_GATE_ARTIFACT)
         if requires_marketplace:
             task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
@@ -27082,15 +24053,34 @@ def build_closeout_plan(
                 {*untracked_archive_outputs, TASK_FINALIZATION_GATE_ARTIFACT}
             )
     else:
-        untracked_archive_outputs = [FINISH_SUMMARY_ARTIFACT]
-        if include_finalization_gate:
-            untracked_archive_outputs.append(TASK_FINALIZATION_GATE_ARTIFACT)
-            untracked_archive_outputs.sort()
-        tracked_move_paths = sorted(set(move_paths) - set(untracked_archive_outputs))
+        if plan_schema_version == CLOSEOUT_PLAN_SCHEMA_VERSION:
+            tracked_prefix = f"{active_locator}/"
+            tracked_task_files = {
+                path.removeprefix(tracked_prefix)
+                for path in run_stdout(
+                    ["git", "ls-files", "--", active_locator],
+                    cwd=root,
+                ).splitlines()
+                if path.startswith(tracked_prefix)
+            }
+            tracked_move_paths = sorted(set(move_paths) & tracked_task_files)
+            untracked_archive_outputs = sorted(
+                set(move_paths) - set(tracked_move_paths)
+            )
+        else:
+            untracked_archive_outputs = [FINISH_SUMMARY_ARTIFACT]
+            if include_finalization_gate:
+                untracked_archive_outputs.append(TASK_FINALIZATION_GATE_ARTIFACT)
+                untracked_archive_outputs.sort()
+            tracked_move_paths = sorted(set(move_paths) - set(untracked_archive_outputs))
     if plan_schema_version == CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION:
         retained_archive_paths = list(move_paths)
     else:
-        retained_allowlist = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+        retained_allowlist = set(
+            CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS
+            if plan_schema_version == CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION
+            else CLOSEOUT_ARCHIVE_CORE_ARTIFACTS
+        )
         if requires_marketplace:
             retained_allowlist.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
         retained_archive_paths = sorted(set(move_paths) & retained_allowlist)
@@ -27098,7 +24088,9 @@ def build_closeout_plan(
         {f"{active_locator}/{name}" for name in tracked_move_paths}
         | {f"{archive_locator}/{name}" for name in retained_archive_paths}
     )
-    if existing_projection and (
+    if plan_schema_version == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        evidence_paths = []
+    elif existing_projection and (
         superseding_committed_month or committed_finalizer_gate_takeover
     ):
         evidence_paths = sorted(
@@ -27119,13 +24111,10 @@ def build_closeout_plan(
         if requires_marketplace:
             evidence_names.update({MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"})
         evidence_paths = sorted(f"{active_locator}/{name}" for name in evidence_names)
-    context_path = task_dir / str(DEFAULTS["task_start_context_artifact"])
     body_path = task_dir / PR_BODY_ARTIFACT
     ledger_path = issue_scope_ledger_path(task_dir)
     inputs = {
-        "task_context": closeout_input_record(root, context_path, payload=task_context),
         "task": closeout_input_record(root, task_dir / "task.json"),
-        "review_gate": closeout_input_record(root, gate_path, payload=gate),
         "issue_scope_ledger": closeout_input_record(
             root, ledger_path, payload=closeout_semantic_ledger(ledger)
         ),
@@ -27137,18 +24126,51 @@ def build_closeout_plan(
             payload=official_after_archive_hook_state(root),
         ),
     }
+    if plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION:
+        context_path = task_dir / str(DEFAULTS["task_start_context_artifact"])
+        inputs["task_context"] = closeout_input_record(
+            root,
+            context_path,
+            payload=task_context,
+        )
+        if gate_path is None or gate is None:
+            raise WorkflowError(
+                "Legacy closeout plan requires its task-local Branch Review compatibility artifact.",
+                exit_code=2,
+            )
+        inputs["review_gate"] = closeout_input_record(root, gate_path, payload=gate)
     config_path = root / ".trellis/guru-team/config.yml"
     if config_path.is_file():
         inputs["guru_team_config"] = closeout_input_record(root, config_path)
     source_issue = primary_issue_number_from_ledger(ledger)
     pending = closeout_pending_marketplace_evidence(root, task_dir, reviewed_head)
     placeholder = closeout_pr_placeholder(repo)
-    generated_at = str(gate.get("generated_at") or "")
+    existing_summary_template = (
+        existing_projection.get("summary_template")
+        if isinstance(existing_projection.get("summary_template"), dict)
+        else {}
+    )
+    generated_at = str(
+        existing_summary_template.get("generated_at")
+        or (gate or {}).get("generated_at")
+        or ""
+    )
     if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", generated_at):
-        raise WorkflowError(
-            "Branch Review Gate generated_at is required for the deterministic final-summary projection.",
-            exit_code=2,
+        commit_time = run_stdout(
+            ["git", "show", "-s", "--format=%cI", reviewed_head],
+            cwd=root,
         )
+        try:
+            generated_at = (
+                datetime.fromisoformat(commit_time)
+                .astimezone(timezone.utc)
+                .strftime("%Y-%m-%dT%H:%M:%SZ")
+            )
+        except ValueError as exc:
+            raise WorkflowError(
+                "Reviewed content commit time is invalid for the deterministic final-summary projection.",
+                exit_code=2,
+            ) from exc
     projected_ledger = (
         record_marketplace_machine_evidence(ledger, pending)
         if requires_marketplace
@@ -27191,8 +24213,12 @@ def build_closeout_plan(
         },
         "inputs": inputs,
         "review": {
-            "gate_locator": repo_relative(root, gate_path),
-            "reviewed_head": str(gate.get("head") or ""),
+            **(
+                {"gate_locator": repo_relative(root, gate_path)}
+                if plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION
+                else {}
+            ),
+            "reviewed_head": reviewed_head,
             "changed_paths": reviewed_paths,
             "close_issues_reviewed": sorted(
                 set(issue_numbers(ledger.get("close_issues")))
@@ -27238,33 +24264,113 @@ def prepare_closeout(
     task_dir: Path,
     task_context: dict[str, Any],
     *,
+    publication_ready: dict[str, Any] | None = None,
     verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
     marketplace_verification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
-    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
-    if gate_errors:
-        raise WorkflowError(
-            "finish-work blocked because Branch Review Gate is not valid for the reviewed HEAD.",
-            exit_code=2,
-            payload={"artifact_path": str(gate_path), "errors": gate_errors},
+    existing_plan_path = closeout_plan_path(task_dir)
+    existing_plan = (
+        validate_closeout_plan(read_json(existing_plan_path))
+        if existing_plan_path.is_file() and not existing_plan_path.is_symlink()
+        else None
+    )
+    ai_first_plan = bool(
+        isinstance(existing_plan, dict)
+        and existing_plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
+    )
+    legacy_task_local_owner_residue = any(
+        (task_dir / name).is_file()
+        for name in (PR_READINESS_ARTIFACT, TASK_FINALIZATION_GATE_ARTIFACT)
+    )
+    gate_path: Path | None = None
+    gate: dict[str, Any] | None = None
+    if ai_first_plan or (
+        publication_ready is not None and not legacy_task_local_owner_residue
+    ):
+        expected_task_ref = repo_relative(root, task_dir)
+        if publication_ready is not None:
+            if (
+                publication_ready.get("profile") != "publication_ready"
+                or publication_ready.get("task_ref") != expected_task_ref
+            ):
+                raise WorkflowError(
+                    "Finalizer publication-ready DTO does not match the active task.",
+                    exit_code=2,
+                )
+            reviewed_head = str(publication_ready.get("reviewed_content_head") or "")
+        else:
+            reviewed_head = str(existing_plan["git"]["reviewed_work_head"])
+        continuity_errors = review_branch_content_continuity_errors(
+            root,
+            task_dir,
+            reviewed_head,
+            current_head(root),
         )
-    dirty, dirty_paths = has_non_metadata_dirty_paths(root)
-    if dirty:
+        if continuity_errors:
+            raise WorkflowError(
+                "Finalizer publication-ready content identity is stale.",
+                exit_code=2,
+                payload={"errors": continuity_errors},
+            )
+        if ai_first_plan:
+            reviewed_paths = list(existing_plan["review"]["changed_paths"])
+            marketplace = marketplace_verification_required(
+                {"changed_files": reviewed_paths}
+            )
+            if bool(marketplace["candidate_surfaces"]) != bool(
+                existing_plan["marketplace"]["required"]
+            ):
+                raise WorkflowError(
+                    "Finalizer live extension-surface facts differ from the immutable plan.",
+                    exit_code=2,
+                )
+            review_facts = {
+                "changed_paths": reviewed_paths,
+                "candidate_surfaces": marketplace["candidate_surfaces"],
+                "marketplace_required": bool(marketplace["candidate_surfaces"]),
+            }
+        else:
+            review_facts = closeout_reviewed_change_facts(
+                root,
+                task_context,
+                None,
+                reviewed_head,
+            )
+    else:
+        gate_path, gate, gate_errors = validate_review_gate(
+            root, task_dir, config, True
+        )
+        if gate_errors:
+            raise WorkflowError(
+                "finish-work blocked because the legacy Branch Review Gate is not valid for the reviewed HEAD.",
+                exit_code=2,
+                payload={"artifact_path": str(gate_path), "errors": gate_errors},
+            )
+        reviewed_head = review_gate_content_head(gate)
+        if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
+            raise WorkflowError("Legacy Branch Review Gate reviewed HEAD is invalid.", exit_code=2)
+        if (
+            publication_ready is not None
+            and publication_ready.get("reviewed_content_head") != reviewed_head
+        ):
+            raise WorkflowError(
+                "Legacy closeout compatibility projection does not match the Publication ready DTO.",
+                exit_code=2,
+            )
+        review_facts = closeout_reviewed_change_facts(
+            root,
+            task_context,
+            gate,
+            reviewed_head,
+        )
+    dirty_paths = finalizer_unreviewed_dirty_paths(root, task_dir)
+    if dirty_paths:
         raise WorkflowError(
-            "Working tree has uncommitted non-metadata changes. Commit task work before finish-work.",
+            "Working tree has uncommitted changes outside the current task's explicit publication/finalization allowlist. Commit reviewed task work before finish-work.",
             exit_code=2,
             payload={"dirty_paths": dirty_paths},
         )
-    reviewed_head = str(gate.get("head") or "")
-    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
-        raise WorkflowError("Branch Review Gate reviewed HEAD is invalid.", exit_code=2)
-    review_facts = closeout_reviewed_change_facts(
-        root,
-        task_context,
-        gate,
-        reviewed_head,
-    )
     index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
     ledger = load_issue_scope_ledger(task_dir, task_context)
     requires_marketplace = bool(review_facts["marketplace_required"])
@@ -27310,6 +24416,11 @@ def prepare_closeout(
             payload={"errors": body_errors + source_errors, "body_source": body_source, "reviewed_source_ok": not source_errors},
         )
     task = task_json(task_dir)
+    if task.get("status") != "in_progress":
+        raise WorkflowError(
+            "Initial or resumed closeout preparation requires task status=in_progress.",
+            exit_code=2,
+        )
     validate_closeout_task_children(task_dir, task)
     repo = normalize_github_repository(
         str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
@@ -27593,8 +24704,13 @@ def closeout_evidence_is_committed(
     task_dir: Path,
     plan: dict[str, Any],
     ledger: dict[str, Any],
-    gate: dict[str, Any],
+    gate: dict[str, Any] | None,
 ) -> bool:
+    if gate is None:
+        raise WorkflowError(
+            "Legacy closeout evidence validation requires its Branch Review compatibility artifact.",
+            exit_code=2,
+        )
     required = [closeout_plan_path(task_dir), task_dir / PR_READINESS_ARTIFACT]
     if plan["marketplace"]["required"]:
         required.append(marketplace_verification_path(task_dir))
@@ -27637,10 +24753,70 @@ def resolve_closeout_pre_draft_state(
     task_dir: Path,
     plan: dict[str, Any],
     ledger: dict[str, Any],
-    gate: dict[str, Any],
+    gate: dict[str, Any] | None,
     *,
     marketplace_verification: dict[str, Any] | None = None,
 ) -> str:
+    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        plan_path = closeout_plan_path(task_dir)
+        if not plan_path.exists():
+            return "prepared"
+        if not plan_path.is_file() or plan_path.is_symlink():
+            raise WorkflowError("Interrupted closeout plan is unavailable or unsafe.", exit_code=2)
+        if validate_closeout_plan(read_json(plan_path)) != plan:
+            raise WorkflowError(
+                "Interrupted closeout plan differs from the rebuilt immutable plan.",
+                exit_code=2,
+            )
+        if current_head(root) != plan["git"]["reviewed_work_head"]:
+            raise WorkflowError(
+                "Closeout plan 1.2 must remain directly based on the reviewed content HEAD.",
+                exit_code=2,
+            )
+        if not plan["marketplace"]["required"]:
+            return "evidence_ready"
+        targets: list[dict[str, Any]] = []
+        if isinstance(ledger.get("primary_issue"), dict):
+            targets.append(ledger["primary_issue"])
+        targets.extend(
+            item
+            for item in ledger.get("close_issues", [])
+            if isinstance(item, dict)
+        )
+        evidence = [remote_marketplace_evidence(issue) for issue in targets]
+        if evidence and all(
+            item == plan["marketplace"]["pending_machine"] for item in evidence
+        ):
+            return "content_pushed"
+        verification_path = marketplace_verification_path(task_dir)
+        if verification_path.is_file():
+            verification = (
+                marketplace_verification
+                if isinstance(marketplace_verification, dict)
+                else read_json(verification_path)
+            )
+            if (
+                verification.get("status") == "passed"
+                and not marketplace_verification_contract_errors(verification)
+            ):
+                passed = closeout_passed_marketplace_evidence(
+                    root,
+                    verification_path,
+                    verification,
+                )
+                if evidence and all(item == passed for item in evidence):
+                    return "evidence_ready"
+        if closeout_ledger_matches_plan_semantics(root, task_dir, plan, ledger):
+            return "content_pushed"
+        raise WorkflowError(
+            "Interrupted closeout marketplace evidence has no unique resumable state.",
+            exit_code=2,
+        )
+    if gate is None:
+        raise WorkflowError(
+            "Legacy closeout recovery requires its Branch Review compatibility artifact.",
+            exit_code=2,
+        )
     if closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
         return "evidence_pushed"
 
@@ -27725,6 +24901,8 @@ def resolve_closeout_pre_draft_state(
             passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
             if evidence and all(item == passed for item in evidence):
                 return "evidence_ready"
+    if closeout_ledger_matches_plan_semantics(root, task_dir, plan, ledger):
+        return "content_pushed"
     raise WorkflowError("Interrupted closeout marketplace evidence has no unique resumable state.", exit_code=2)
 
 
@@ -28105,15 +25283,40 @@ def build_final_archive_projection(
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
     ledger_errors = validate_ledger_for_publish(
         ledger,
-        prepared["gate"],
+        (
+            prepared.get("gate")
+            if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
+            else None
+        ),
         marketplace_required=bool(plan["marketplace"]["required"]),
     )
     if ledger_errors:
         raise WorkflowError("Final projection ledger validation failed.", exit_code=2, payload={"errors": ledger_errors})
-    readiness = read_json(task_dir / PR_READINESS_ARTIFACT)
-    inputs = readiness.get("publish_inputs") if isinstance(readiness.get("publish_inputs"), dict) else {}
-    if inputs.get("closeout_plan_digest") != plan["plan_digest"]:
-        raise WorkflowError("Final projection readiness digest does not match closeout plan.", exit_code=2)
+    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        continuity_errors = review_branch_content_continuity_errors(
+            root,
+            task_dir,
+            plan["git"]["reviewed_work_head"],
+            current_head(root),
+        )
+        if continuity_errors:
+            raise WorkflowError(
+                "Final projection content changed after the Publication ready DTO.",
+                exit_code=2,
+                payload={"errors": continuity_errors},
+            )
+    else:
+        readiness = read_json(task_dir / PR_READINESS_ARTIFACT)
+        inputs = (
+            readiness.get("publish_inputs")
+            if isinstance(readiness.get("publish_inputs"), dict)
+            else {}
+        )
+        if inputs.get("closeout_plan_digest") != plan["plan_digest"]:
+            raise WorkflowError(
+                "Final projection readiness digest does not match closeout plan.",
+                exit_code=2,
+            )
     validate_closeout_pull_request_identity(
         root,
         task_dir,
@@ -28134,9 +25337,13 @@ def build_final_archive_projection(
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
         raise WorkflowError("Final projection must contain one canonical PR ref.", exit_code=2)
     required_artifacts = set(summary["artifacts"].values()) | {
-        CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT, FINISH_SUMMARY_INDEX_ARTIFACT,
-        "issue-scope-ledger.json", "review-gate.json", PR_BODY_ARTIFACT,
+        CLOSEOUT_PLAN_ARTIFACT,
+        FINISH_SUMMARY_INDEX_ARTIFACT,
+        "issue-scope-ledger.json",
+        PR_BODY_ARTIFACT,
     }
+    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+        required_artifacts.update({PR_READINESS_ARTIFACT, "review-gate.json"})
     missing = sorted(name for name in required_artifacts if not (task_dir / name).is_file())
     if missing:
         raise WorkflowError("Final archive projection is missing task artifacts.", exit_code=2, payload={"missing": missing})
@@ -28325,6 +25532,37 @@ def closeout_untracked_paths(root: Path) -> set[str]:
     return {path for path in proc.stdout.split("\0") if path}
 
 
+def closeout_v12_projection_content_is_current(
+    plan: dict[str, Any],
+    relative: str,
+    content: bytes,
+) -> bool:
+    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+        return False
+    input_key = {
+        "task.json": "task",
+        "issue-scope-ledger.json": "issue_scope_ledger",
+        PR_BODY_ARTIFACT: "pr_body",
+        FINISH_SUMMARY_INDEX_ARTIFACT: "finish_summary_index",
+    }.get(relative)
+    if input_key is None:
+        return False
+    record = plan.get("inputs", {}).get(input_key)
+    if not isinstance(record, dict):
+        return False
+    if relative == "issue-scope-ledger.json":
+        try:
+            payload = json.loads(content.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return False
+        if not isinstance(payload, dict):
+            return False
+        actual = canonical_json_sha256(closeout_semantic_ledger(payload))
+    else:
+        actual = hashlib.sha256(content).hexdigest()
+    return actual == record.get("sha256")
+
+
 def validate_closeout_pre_move_continuity(
     root: Path,
     task_dir: Path,
@@ -28403,7 +25641,15 @@ def validate_closeout_pre_move_continuity(
                 },
             )
         before = closeout_commit_blob_bytes(root, evidence_commit, repo_path)
-        if target.read_bytes() != before:
+        current_bytes = target.read_bytes()
+        if (
+            current_bytes != before
+            and not closeout_v12_projection_content_is_current(
+                plan,
+                relative,
+                current_bytes,
+            )
+        ):
             raise WorkflowError(
                 "Closeout tracked output differs from the immutable evidence blob before archive.",
                 exit_code=2,
@@ -28421,7 +25667,15 @@ def validate_closeout_pre_move_continuity(
         ).splitlines()
     )
     untracked = closeout_untracked_paths(root)
-    if dirty != expected_outputs or staged or untracked != expected_outputs:
+    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
+        allowed_dirty = {
+            f"{active_locator}/{relative}"
+            for relative in plan["projection"]["move_paths"]
+        }
+        dirty_is_valid = dirty.issubset(allowed_dirty)
+    else:
+        dirty_is_valid = dirty == expected_outputs
+    if not dirty_is_valid or staged or untracked != expected_outputs:
         raise WorkflowError(
             "Closeout pre-archive dirty/staged/untracked paths do not match the immutable final outputs.",
             exit_code=2,
@@ -28438,7 +25692,7 @@ def validate_closeout_pre_move_continuity(
 
 def compact_closeout_archive(archived: Path, plan: dict[str, Any]) -> None:
     """Remove task-local intermediates that have no long-term archive consumer."""
-    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+    if plan.get("schema_version") not in CLOSEOUT_COMPACT_SCHEMA_VERSIONS:
         return
     parents: set[Path] = set()
     for relative in closeout_archive_pruned_paths(plan):
@@ -28588,7 +25842,14 @@ def validate_closeout_archive_blob_continuity(
             after = closeout_commit_blob_bytes(root, archive_commit, f"{archive_locator}/{relative}")
         if relative == "task.json":
             validate_closeout_task_json_archive_change(before, after)
-        elif before != after:
+        elif (
+            before != after
+            and not closeout_v12_projection_content_is_current(
+                plan,
+                relative,
+                after,
+            )
+        ):
             raise WorkflowError(
                 "Archived tracked output differs from the immutable evidence blob.",
                 exit_code=2,
@@ -28646,7 +25907,10 @@ def resolve_committed_closeout_archive_transaction(
         return None
     validate_closeout_archive_git_paths(committed_paths, plan, stage="archive-committed-head")
     evidence_commit = closeout_commit_parent(root, archive_commit)
-    validate_closeout_evidence_commit(root, plan, evidence_commit)
+    if closeout_uses_evidence_commit(plan):
+        validate_closeout_evidence_commit(root, plan, evidence_commit)
+    elif evidence_commit != closeout_transaction_parent_head(plan):
+        return None
     validate_closeout_archive_commit_tree(root, plan, archive_commit)
     summary_pr = validate_closeout_archive_blob_continuity(
         root,
@@ -28701,6 +25965,15 @@ def assert_archived_committed_workspace_boundary(
     archive_plan_path = f"{task_locator}/{CLOSEOUT_PLAN_ARTIFACT}"
     plan_blob = closeout_optional_commit_blob_bytes(root, archive_commit, archive_plan_path)
     plan_source = "archive"
+    working_plan_path = task_dir / CLOSEOUT_PLAN_ARTIFACT
+    if plan_blob is None and working_plan_path.exists():
+        if not working_plan_path.is_file() or working_plan_path.is_symlink():
+            raise WorkflowError(
+                "Archived closeout working-tree plan is unavailable or unsafe.",
+                exit_code=2,
+            )
+        plan_blob = working_plan_path.read_bytes()
+        plan_source = "archive_worktree"
     if plan_blob is None:
         active_plan_path = f".trellis/tasks/{task_dir.name}/{CLOSEOUT_PLAN_ARTIFACT}"
         plan_blob = closeout_optional_commit_blob_bytes(root, archive_commit, active_plan_path)
@@ -28751,6 +26024,14 @@ def assert_archived_committed_workspace_boundary(
     active_parts = Path(active_locator).parts
     archive_parts = Path(archive_locator).parts
     source_issues = summary_github.get("source_issues")
+    plan_projection_valid = (
+        CLOSEOUT_PLAN_ARTIFACT in projection["move_paths"]
+        and (
+            CLOSEOUT_PLAN_ARTIFACT in projection["untracked_archive_outputs"]
+            if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
+            else CLOSEOUT_PLAN_ARTIFACT in projection["tracked_move_paths"]
+        )
+    )
     locator_identity_valid = (
         task_locator == archive_locator
         and resolved_task_dir == resolved_expected_task_dir
@@ -28760,7 +26041,7 @@ def assert_archived_committed_workspace_boundary(
         and len(archive_parts) == 5
         and active_parts[-1] == archive_parts[-1] == task_dir.name
         and not (root / active_locator).exists()
-        and CLOSEOUT_PLAN_ARTIFACT in projection["tracked_move_paths"]
+        and plan_projection_valid
         and summary_task.get("slug") == task_dir.name
         and summary_task.get("title") == task["title"]
         and summary_task.get("artifact_dir") == active_locator
@@ -28812,13 +26093,19 @@ def assert_archived_committed_workspace_boundary(
             exit_code=2,
             payload={"head": archive_commit, "task_dir": task_locator},
         )
-    if plan_source == "active":
+    if plan_source in {"active", "archive_worktree"}:
         if transaction is not None:
             raise WorkflowError(
                 "Archived closeout evidence-plan fallback cannot replace an exact archive plan.",
                 exit_code=2,
             )
-        validate_closeout_evidence_commit(root, plan, archive_commit)
+        if closeout_uses_evidence_commit(plan):
+            validate_closeout_evidence_commit(root, plan, archive_commit)
+        elif archive_commit != closeout_transaction_parent_head(plan):
+            raise WorkflowError(
+                "Archived closeout working-tree move is not based on the reviewed content HEAD.",
+                exit_code=2,
+            )
     return {
         "status": "ok",
         "mode": (
@@ -28846,7 +26133,13 @@ def execute_archive_metadata_transaction(
     if not archive_script.is_file():
         raise WorkflowError(f"Trellis task.py not found: {archive_script}")
     evidence_commit = current_head(root)
-    validate_closeout_evidence_commit(root, plan, evidence_commit)
+    if closeout_uses_evidence_commit(plan):
+        validate_closeout_evidence_commit(root, plan, evidence_commit)
+    elif evidence_commit != closeout_transaction_parent_head(plan):
+        raise WorkflowError(
+            "Closeout archive transaction parent is not the reviewed content HEAD.",
+            exit_code=2,
+        )
     validate_closeout_active_projection(
         root,
         task_dir,
@@ -29015,7 +26308,13 @@ def resume_archive_metadata_transaction(
     if dirty:
         validate_closeout_archive_git_paths(dirty, plan, stage="archive-recovery-dirty")
         evidence_commit = current_head(root)
-        validate_closeout_evidence_commit(root, plan, evidence_commit)
+        if closeout_uses_evidence_commit(plan):
+            validate_closeout_evidence_commit(root, plan, evidence_commit)
+        elif evidence_commit != closeout_transaction_parent_head(plan):
+            raise WorkflowError(
+                "Recovered archive transaction parent is not the reviewed content HEAD.",
+                exit_code=2,
+            )
         validate_closeout_archive_blob_continuity(
             root,
             task_dir,
@@ -29056,7 +26355,13 @@ def resume_archive_metadata_transaction(
         last_paths = closeout_commit_paths(root, archive_commit)
         evidence_commit = closeout_commit_parent(root, archive_commit)
         validate_closeout_archive_git_paths(last_paths, plan, stage="archive-recovery-head")
-        validate_closeout_evidence_commit(root, plan, evidence_commit)
+        if closeout_uses_evidence_commit(plan):
+            validate_closeout_evidence_commit(root, plan, evidence_commit)
+        elif evidence_commit != closeout_transaction_parent_head(plan):
+            raise WorkflowError(
+                "Archived closeout parent is not the reviewed content HEAD.",
+                exit_code=2,
+            )
         validate_closeout_archive_blob_continuity(
             root,
             task_dir,
@@ -29191,19 +26496,20 @@ def apply_active_closeout_month_supersession(
         read_and_validate_closeout_final_summary(summary_path, previous)
         summary_path.unlink()
     write_json(closeout_plan_path(task_dir), plan)
-    readiness_path, readiness = build_pr_readiness_snapshot(
-        root,
-        task_dir,
-        repo=plan["git"]["repo"],
-        base_branch=plan["git"]["base_branch"],
-        head_branch=plan["git"]["head_branch"],
-        reviewed_head_sha=plan["git"]["reviewed_work_head"],
-        title=plan["publish"]["title"],
-        draft=True,
-        closeout_plan_digest=plan["plan_digest"],
-        allow_closeout_digest_replacement=True,
-    )
-    write_json(readiness_path, readiness)
+    if closeout_uses_evidence_commit(plan):
+        readiness_path, readiness = build_pr_readiness_snapshot(
+            root,
+            task_dir,
+            repo=plan["git"]["repo"],
+            base_branch=plan["git"]["base_branch"],
+            head_branch=plan["git"]["head_branch"],
+            reviewed_head_sha=plan["git"]["reviewed_work_head"],
+            title=plan["publish"]["title"],
+            draft=True,
+            closeout_plan_digest=plan["plan_digest"],
+            allow_closeout_digest_replacement=True,
+        )
+        write_json(readiness_path, readiness)
     return "evidence_ready" if committed else str(supersession["prior_state"])
 
 
@@ -29248,10 +26554,20 @@ def apply_active_closeout_finalizer_takeover(
         "plan_digest": plan["plan_digest"],
         "reviewed_head": plan["git"]["reviewed_work_head"],
     }
+    expected_gate_identity = {
+        "task_ref": plan["task"]["active_locator"],
+        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+        "plan_digest": plan["plan_digest"],
+        "reviewed_content_head": plan["git"]["reviewed_work_head"],
+    }
+    gate_binding_matches = isinstance(finalization_gate, dict) and (
+        finalization_gate.get("plan") == expected_gate_plan
+        or finalization_gate.get("identity") == expected_gate_identity
+    )
     if (
         not isinstance(finalization_gate, dict)
         or finalization_gate.get("skill_id") != FINALIZE_TASK_SKILL_ID
-        or finalization_gate.get("plan") != expected_gate_plan
+        or not gate_binding_matches
         or persisted_gate != finalization_gate
     ):
         errors.append("finalizer takeover gate is not bound to the augmented plan")
@@ -29303,12 +26619,29 @@ def resume_active_archive_move(
     task = task_json(task_dir)
     if task.get("status") != "completed":
         raise WorkflowError("Archive-move recovery requires active task status=completed.", exit_code=2)
-    gate_path, gate, gate_errors = validate_review_gate(root, task_dir, config, True)
-    if gate_errors:
-        raise WorkflowError("Archive-move recovery review gate is invalid.", exit_code=2, payload={"artifact_path": str(gate_path), "errors": gate_errors})
+    gate: dict[str, Any] | None = None
+    if closeout_uses_evidence_commit(plan):
+        gate_path, gate, gate_errors = validate_review_gate(
+            root, task_dir, config, True
+        )
+        if gate_errors:
+            raise WorkflowError(
+                "Legacy archive-move recovery review gate is invalid.",
+                exit_code=2,
+                payload={"artifact_path": str(gate_path), "errors": gate_errors},
+            )
     ledger = load_issue_scope_ledger(task_dir, task_context)
-    if not closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
-        raise WorkflowError("Archive-move recovery requires committed plan/readiness/evidence.", exit_code=2)
+    if closeout_uses_evidence_commit(plan):
+        if not closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
+            raise WorkflowError(
+                "Archive-move recovery requires committed plan/readiness/evidence.",
+                exit_code=2,
+            )
+    elif current_head(root) != closeout_transaction_parent_head(plan):
+        raise WorkflowError(
+            "Archive-move recovery is not based on the reviewed content HEAD.",
+            exit_code=2,
+        )
     summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if not summary_path.is_file():
         raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
@@ -29319,7 +26652,8 @@ def resume_active_archive_move(
         plan,
         marketplace_verification=marketplace_verification,
     )
-    validate_closeout_evidence_commit(root, plan, current_head(root))
+    if closeout_uses_evidence_commit(plan):
+        validate_closeout_evidence_commit(root, plan, current_head(root))
     assert_closeout_archive_month_current(plan)
     official_after_archive_hook_state(root)
     require_gh_auth(root)
@@ -29393,25 +26727,20 @@ def execute_closeout_content_push(
         plan["git"]["remote"],
     )
     write_json(closeout_plan_path(task_dir), plan)
-    readiness_path, readiness = build_pr_readiness_snapshot(
-        root,
-        task_dir,
-        repo=plan["git"]["repo"],
-        base_branch=plan["git"]["base_branch"],
-        head_branch=plan["git"]["head_branch"],
-        reviewed_head_sha=plan["git"]["reviewed_work_head"],
-        title=plan["publish"]["title"],
-        draft=True,
-        closeout_plan_digest=plan["plan_digest"],
-    )
-    write_json(readiness_path, readiness)
-    ledger = load_issue_scope_ledger(task_dir, task_context)
-    if plan["marketplace"]["required"]:
-        ledger = record_marketplace_machine_evidence(
-            ledger,
-            plan["marketplace"]["pending_machine"],
+    if closeout_uses_evidence_commit(plan):
+        readiness_path, readiness = build_pr_readiness_snapshot(
+            root,
+            task_dir,
+            repo=plan["git"]["repo"],
+            base_branch=plan["git"]["base_branch"],
+            head_branch=plan["git"]["head_branch"],
+            reviewed_head_sha=plan["git"]["reviewed_work_head"],
+            title=plan["publish"]["title"],
+            draft=True,
+            closeout_plan_digest=plan["plan_digest"],
         )
-        write_json(issue_scope_ledger_path(task_dir), ledger)
+        write_json(readiness_path, readiness)
+    ledger = load_issue_scope_ledger(task_dir, task_context)
     return {
         "status": "ok",
         "stage": "content_pushed",
@@ -29446,7 +26775,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             committed_plan=committed_boundary["plan"],
             committed_archive=committed_boundary.get("archive_commit"),
         )
-    task_context = load_task_start_context(task_dir, config)
+    task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     if closeout_plan_path(task_dir).is_file() and task_json(task_dir).get("status") == "completed":
         if args.dry_run:
@@ -29460,6 +26789,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         config,
         task_dir,
         task_context,
+        publication_ready=getattr(args, "publication_ready", None),
         marketplace_verification=marketplace_verification,
     )
     plan = prepared["plan"]
@@ -29546,17 +26876,23 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             write_json(issue_scope_ledger_path(task_dir), record_marketplace_machine_evidence(ledger, passed))
 
     if entry_state in {"prepared", "content_pushed", "evidence_ready"}:
-        evidence_commit = commit_closeout_evidence_metadata(
-            root,
-            task_dir,
-            plan,
-            finalizer_mode=bool(getattr(args, "include_finalization_gate", False)),
-        )
-        push_closeout_branch_if_needed(root, plan)
-        validate_publish_identity_and_remote_head(
-            root, prepared["task"], task_context, plan["git"]["repo"],
-            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
-        )
+        if closeout_uses_evidence_commit(plan):
+            evidence_commit = commit_closeout_evidence_metadata(
+                root,
+                task_dir,
+                plan,
+                finalizer_mode=bool(getattr(args, "include_finalization_gate", False)),
+            )
+            push_closeout_branch_if_needed(root, plan)
+            validate_publish_identity_and_remote_head(
+                root, prepared["task"], task_context, plan["git"]["repo"],
+                plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+            )
+        elif current_head(root) != plan["git"]["reviewed_work_head"]:
+            raise WorkflowError(
+                "Closeout plan 1.2 content identity changed before archive.",
+                exit_code=2,
+            )
     elif entry_state == "evidence_pushed":
         push_closeout_branch_if_needed(root, plan)
         validate_publish_identity_and_remote_head(
@@ -29651,6 +26987,7 @@ FINALIZATION_CONSUMERS = {
 }
 
 FINALIZATION_EXECUTOR_OUTPUT_MARKER = {"materialization": "executor"}
+FINALIZATION_GATE_SCHEMA_VERSION = "2.0"
 FINALIZATION_COMMITTED_RECOVERY_STATES = {"archived", "ready"}
 FINALIZATION_RESUME_RECOVERY_STATES = {
     "content_pushed",
@@ -29737,11 +27074,87 @@ def finalization_interface(root: Path) -> dict[str, Any]:
     return interface
 
 
+FINALIZATION_LEGACY_PUBLICATION_READY_FIELDS = frozenset({
+    "profile",
+    "mode",
+    "task_ref",
+    "reviewed_head",
+    "publication_ref",
+    "finalization_intent",
+})
+
+
+def finalization_legacy_publication_ready_errors(payload: Any) -> list[str]:
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != FINALIZATION_LEGACY_PUBLICATION_READY_FIELDS
+    ):
+        return ["not a legacy finalization publication_ready input"]
+    errors: list[str] = []
+    if payload.get("profile") != "publication_ready":
+        errors.append("legacy finalization profile is unsupported")
+    if payload.get("mode") not in {"workflow", "standalone"}:
+        errors.append("legacy finalization mode is unsupported")
+    if re.fullmatch(
+        r"\.trellis/tasks/[A-Za-z0-9._/-]+",
+        str(payload.get("task_ref") or ""),
+    ) is None:
+        errors.append("legacy finalization task_ref is invalid")
+    if re.fullmatch(r"[0-9a-f]{40}", str(payload.get("reviewed_head") or "")) is None:
+        errors.append("legacy finalization reviewed_head is invalid")
+    if not isinstance(payload.get("publication_ref"), str) or not str(
+        payload.get("publication_ref") or ""
+    ).strip():
+        errors.append("legacy finalization publication_ref is invalid")
+    if payload.get("finalization_intent") not in {
+        "initial_finalize",
+        "resume_same_plan",
+    }:
+        errors.append("legacy finalization intent is unsupported")
+    return errors
+
+
+def finalization_project_legacy_publication_ready(
+    root: Path,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    errors = finalization_legacy_publication_ready_errors(payload)
+    if errors:
+        raise WorkflowError(
+            "Legacy task finalization input is incomplete or mixed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    task_ref = str(payload["task_ref"])
+    task_dir = resolve_finish_work_task_dir(root, task_ref)
+    if repo_relative(root, task_dir) != task_ref:
+        raise WorkflowError(
+            "Legacy task finalization input does not resolve exactly.",
+            exit_code=2,
+        )
+    checked = cmd_check_task_publication_review(
+        argparse.Namespace(
+            root=str(root),
+            task=task_ref,
+            expected_exit="ready",
+            direct_runtime_inputs=[],
+        )
+    )
+    return {
+        "profile": "publication_ready",
+        "mode": payload["mode"],
+        "task_ref": task_ref,
+        "reviewed_content_head": checked["reviewed_content_head"],
+    }
+
+
 def finalization_public_input(
     root: Path,
     value: str | None,
 ) -> tuple[dict[str, Any], str]:
     payload, locator = finalization_json_input(root, value, "task finalization public input")
+    if not finalization_legacy_publication_ready_errors(payload):
+        payload = finalization_project_legacy_publication_ready(root, payload)
     package = finalization_package_root(root)
     interface = finalization_interface(root)
     profiles = interface["public_contracts"]["input"]["profiles"]
@@ -29810,6 +27223,54 @@ def finalization_semantic_review_input(
     return payload
 
 
+def finalization_project_legacy_gate(root: Path, payload: Any) -> dict[str, Any]:
+    if (
+        not isinstance(payload, dict)
+        or payload.get("schema_version") != "1.0"
+        or payload.get("skill_id") != FINALIZE_TASK_SKILL_ID
+    ):
+        raise WorkflowError(
+            "Legacy task finalization gate is not a supported 1.0 artifact.",
+            exit_code=2,
+        )
+    invocation = payload.get("invocation")
+    plan = payload.get("plan")
+    review = payload.get("review")
+    route = payload.get("route")
+    if not all(isinstance(value, dict) for value in (invocation, plan, review, route)):
+        raise WorkflowError(
+            "Legacy task finalization gate is incomplete.",
+            exit_code=2,
+        )
+    projected = {
+        "schema_version": FINALIZATION_GATE_SCHEMA_VERSION,
+        "skill_id": FINALIZE_TASK_SKILL_ID,
+        "identity": {
+            "task_ref": invocation.get("task_ref"),
+            "plan_ref": plan.get("plan_ref"),
+            "plan_digest": plan.get("plan_digest"),
+            "reviewed_content_head": plan.get("reviewed_head"),
+        },
+        "review": {
+            "status": review.get("status"),
+            "summary": review.get("summary"),
+        },
+        "route": copy.deepcopy(route),
+    }
+    errors = skill_json_schema_validation_errors(
+        projected,
+        finalization_gate_schema(root),
+        "projected legacy task finalization gate",
+    )
+    if errors:
+        raise WorkflowError(
+            "Legacy task finalization gate cannot be projected to 2.0.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return projected
+
+
 def finalization_task_dir(root: Path, public_input: dict[str, Any]) -> Path:
     task_ref = str(public_input.get("task_ref") or "")
     task_dir = resolve_finish_work_task_dir(root, task_ref)
@@ -29838,119 +27299,71 @@ def finalization_publication_owner_result(
     public_input: dict[str, Any],
     verification: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    path = task_publication_path(task_dir)
-    if path.is_symlink():
+    del verification
+    task_ref = repo_relative(root, task_dir)
+    if public_input.get("task_ref") != task_ref:
         raise WorkflowError(
-            "Task finalization publication owner result is unsafe.",
+            "Task finalization publication handoff does not match the resolved task.",
             exit_code=2,
         )
-    if not path.is_file():
-        return {
-            "owner_status": "stale",
-            "stale_reason": "publication_review_missing",
-        }
-    payload = read_json(path)
-    plan_path = closeout_plan_path(task_dir)
-    gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-    expected_plan_digest = (
-        validate_closeout_plan(read_json(plan_path))["plan_digest"]
-        if plan_path.is_file()
-        else None
-    )
-    additional_owned_paths = (
-        [repo_relative(root, gate_path)] if gate_path.is_file() else []
-    )
-    allow_verification_metadata = False
-    marketplace_verification: dict[str, Any] | None = None
-    if verification is not None:
-        checked_verification = verification[1]
-        if (
-            checked_verification.get("status") != "ok"
-            or checked_verification.get("typed_exit")
-            not in {"verified", "not_required"}
-        ):
+
+    profile = str(public_input.get("profile") or "")
+    if profile == "publication_ready":
+        reviewed_content_head = str(
+            public_input.get("reviewed_content_head") or ""
+        )
+        task = task_json(task_dir)
+        if task.get("status") != "in_progress":
+            return {
+                "owner_status": "stale",
+                "stale_reason": "publication_review_stale",
+            }
+        repository = task_publication_repository_binding(root, task_dir)
+        unexpected = task_publication_unexpected_status_paths(
+            root,
+            task_dir,
+            repository["status_paths"],
+        )
+        if unexpected:
             raise WorkflowError(
-                "Task finalization publication augmentation requires current owner-checked verification evidence.",
+                "Task finalization found dirty paths outside the Publication handoff allowlist.",
                 exit_code=2,
+                payload={"unexpected_dirty_paths": unexpected},
             )
-        additional_owned_paths.append(
-            repo_relative(
-                root,
-                marketplace_verification_path(task_dir, load_config(root)),
-            )
-        )
-        allow_verification_metadata = True
-        if checked_verification.get("typed_exit") == "verified":
-            if expected_plan_digest is None:
-                raise WorkflowError(
-                    "Task finalization verified publication augmentation requires the immutable plan.",
-                    exit_code=2,
-                )
-            marketplace_verification = (
-                finalization_marketplace_verification_compatibility_projection(
-                    root,
-                    task_dir,
-                    validate_closeout_plan(read_json(plan_path)),
-                    verification,
-                )
-            )
-    try:
-        if plan_path.is_file() or gate_path.is_file():
-            checked = check_task_publication_for_finalization_augmentation(
-                root,
-                task_dir,
-                payload,
-                expected_closeout_plan_digest=expected_plan_digest,
-                additional_owned_paths=additional_owned_paths,
-                allow_verification_metadata=allow_verification_metadata,
-                marketplace_verification=marketplace_verification,
-                require_plan=plan_path.is_file(),
-            )
-        else:
-            checked = cmd_check_task_publication_review(
-                argparse.Namespace(
-                    root=str(root),
-                    task=repo_relative(root, task_dir),
-                    expected_exit="ready",
-                    direct_runtime_inputs=[],
-                )
-            )
-    except WorkflowError:
-        review_identity = payload.get("review_identity")
-        stored_head = (
-            review_identity.get("reviewed_head")
-            if isinstance(review_identity, dict)
-            else None
-        )
-        stale_reason = (
-            "publication_review_head_mismatch"
-            if isinstance(stored_head, str)
-            and stored_head
-            and stored_head != public_input.get("reviewed_head")
-            else "publication_review_stale"
-        )
+    else:
+        plan = finalization_verification_augmentation_plan(root, task_dir)
+        if plan is None:
+            return {
+                "owner_status": "stale",
+                "stale_reason": "publication_review_missing",
+            }
+        reviewed_content_head = str(plan["git"]["reviewed_work_head"])
+        supplied_head = public_input.get("reviewed_head")
+        if isinstance(supplied_head, str) and supplied_head != reviewed_content_head:
+            return {
+                "owner_status": "stale",
+                "stale_reason": "publication_review_head_mismatch",
+            }
+
+    continuity_errors = review_branch_content_continuity_errors(
+        root,
+        task_dir,
+        reviewed_content_head,
+        current_head(root),
+    )
+    if continuity_errors:
         return {
             "owner_status": "stale",
-            "stale_reason": stale_reason,
+            "stale_reason": "publication_review_head_mismatch",
+            "errors": continuity_errors,
         }
-    if checked.get("typed_exit") != "ready":
-        return {
-            "owner_status": "stale",
-            "stale_reason": "publication_review_stale",
-        }
-    if public_input.get("profile") == "publication_ready" and (
-        checked.get("reviewed_head") != public_input.get("reviewed_head")
-        or checked.get("publication_ref") != public_input.get("publication_ref")
-    ):
-        return {
-            "owner_status": "stale",
-            "stale_reason": (
-                "publication_review_head_mismatch"
-                if checked.get("reviewed_head") != public_input.get("reviewed_head")
-                else "publication_review_stale"
-            ),
-        }
-    return {**checked, "owner_status": "current"}
+    return {
+        "status": "ok",
+        "owner_status": "current",
+        "typed_exit": "ready",
+        "task_ref": task_ref,
+        "reviewed_content_head": reviewed_content_head,
+    }
 
 
 def finalization_verification_augmentation_plan(
@@ -29963,11 +27376,34 @@ def finalization_verification_augmentation_plan(
             return None
         return validate_closeout_plan(read_json(plan_path))
     locator = repo_relative(root, task_dir)
+    working_plan: dict[str, Any] | None = None
+    if plan_path.exists():
+        if not plan_path.is_file() or plan_path.is_symlink():
+            raise WorkflowError(
+                "Archived finalization verification recovery has an unsafe working-tree plan.",
+                exit_code=2,
+            )
+        working_plan = validate_closeout_plan(read_json(plan_path))
     content = closeout_optional_commit_blob_bytes(
         root,
         current_head(root),
         f"{locator}/{CLOSEOUT_PLAN_ARTIFACT}",
     )
+    if working_plan is not None:
+        if content is not None:
+            try:
+                committed_plan = validate_closeout_plan(json.loads(content.decode("utf-8")))
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise WorkflowError(
+                    "Archived finalization verification recovery has an invalid committed plan.",
+                    exit_code=2,
+                ) from exc
+            if committed_plan != working_plan:
+                raise WorkflowError(
+                    "Archived finalization working-tree plan differs from its committed plan.",
+                    exit_code=2,
+                )
+        return working_plan
     if content is None:
         raise WorkflowError(
             "Archived finalization verification recovery is missing its committed plan.",
@@ -30458,9 +27894,6 @@ def finalization_marketplace_verification_compatibility_projection(
     ]
     expectation_paths = {
         "workflow_sha256": "trellis/workflows/guru-team/workflow.md",
-        "task_start_context_schema_sha256": (
-            "trellis/workflows/guru-team/schemas/task-start-context.schema.json"
-        ),
         "finish_summary_schema_sha256": (
             "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
         ),
@@ -30485,7 +27918,7 @@ def finalization_marketplace_verification_compatibility_projection(
             digests[legacy_key] = matches[0]
     workflow_digest = digests.get("workflow_sha256", "")
     projected = {
-        "schema_version": "1.0",
+        "schema_version": MARKETPLACE_VERIFICATION_SCHEMA_VERSION,
         "generated_at": owner.get("generated_at"),
         "status": "passed",
         "repo": plan["git"]["repo"],
@@ -30501,9 +27934,6 @@ def finalization_marketplace_verification_compatibility_projection(
         "assets": {
             "workflow_sha256": workflow_digest,
             "preview_sha256": workflow_digest,
-            "task_start_context_schema_sha256": digests.get(
-                "task_start_context_schema_sha256", ""
-            ),
             "finish_summary_schema_sha256": digests.get(
                 "finish_summary_schema_sha256", ""
             ),
@@ -30540,7 +27970,6 @@ def finalization_eval_preview_context(
     expected_keys = {
         "schema_version",
         "task_ref",
-        "public_input_sha256",
         "plan_ref",
         "plan_digest",
         "reviewed_head",
@@ -30548,7 +27977,6 @@ def finalization_eval_preview_context(
         "repo_ref",
         "remote",
         "head_branch",
-        "publication_ref",
         "verification_ref",
         "publication_status",
         "publication_stale_reason",
@@ -30576,9 +28004,8 @@ def finalization_eval_preview_context(
     verification_ref = payload.get("verification_ref")
     if (
         set(payload) != expected_keys
-        or payload.get("schema_version") != "1.0"
+        or payload.get("schema_version") != "2.0"
         or payload.get("task_ref") != public_input.get("task_ref")
-        or payload.get("public_input_sha256") != context_digest(public_input)
         or not re.fullmatch(r"closeout-plan:[0-9a-f]{64}", str(payload.get("plan_ref") or ""))
         or payload.get("plan_ref") != f"closeout-plan:{payload.get('plan_digest')}"
         or not re.fullmatch(r"[0-9a-f]{64}", str(payload.get("plan_digest") or ""))
@@ -30629,19 +28056,6 @@ def finalization_eval_preview_context(
                 exit_code=2,
             )
         task_dir = archive_dir
-    facts = {
-        "task_ref": public_input["task_ref"],
-        "profile": public_input["profile"],
-        "mode": public_input["mode"],
-        "plan_ref": payload["plan_ref"],
-        "plan_digest": payload["plan_digest"],
-        "reviewed_head": payload["reviewed_head"],
-        "archive_locator": payload["archive_locator"],
-        "publication_ref": payload["publication_ref"],
-        "verification_ref": payload["verification_ref"],
-        "publication_status": payload["publication_status"],
-        "publication_stale_reason": payload["publication_stale_reason"],
-    }
     plan = {
         "plan_digest": payload["plan_digest"],
         "git": {
@@ -30732,12 +28146,10 @@ def finalization_eval_preview_context(
             if payload["transaction_state"] == "ready"
             else None
         ),
-        "publication": {"publication_ref": payload["publication_ref"]},
+        "publication": {"owner_status": "current"},
         "publication_status": payload["publication_status"],
         "publication_stale_reason": payload["publication_stale_reason"],
         "verification": verification,
-        "facts": facts,
-        "current_facts_sha256": context_digest(facts),
     }
 
 
@@ -30820,106 +28232,40 @@ def finalization_archived_owner_results(
     transaction: dict[str, Any],
     public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], tuple[dict[str, Any], dict[str, Any]] | None]:
-    gate = finalization_archived_gate(root, plan, transaction)
-    errors = skill_json_schema_validation_errors(
-        gate,
-        finalization_gate_schema(root),
-        "archived task finalization gate",
-    )
-    expected_plan = {
-        "available": True,
-        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-        "plan_digest": plan["plan_digest"],
-        "reviewed_head": plan["git"]["reviewed_work_head"],
-    }
-    invocation = gate.get("invocation") if isinstance(gate, dict) else None
-    route = gate.get("route") if isinstance(gate, dict) else None
-    if (
-        not isinstance(invocation, dict)
-        or invocation.get("task_ref") != plan["task"]["active_locator"]
-    ):
-        errors.append("archived finalization gate task identity mismatch")
-    if not isinstance(gate, dict) or gate.get("plan") != expected_plan:
-        errors.append("archived finalization gate plan identity mismatch")
-    if (
-        not isinstance(route, dict)
-        or route.get("typed_exit") != "published"
-        or route.get("consumer") != FINALIZATION_CONSUMERS["published"]
-        or route.get("output") != FINALIZATION_EXECUTOR_OUTPUT_MARKER
-    ):
-        errors.append("archived finalization gate does not authorize publication")
-    review = gate.get("review") if isinstance(gate, dict) else None
-    evidence_refs = (
-        review.get("evidence_refs") if isinstance(review, dict) else None
-    )
-    refs = evidence_refs if isinstance(evidence_refs, list) else []
-    publication_refs = [
-        value
-        for value in refs
-        if isinstance(value, str)
-        and value.startswith("publication:")
-        and value != "publication:"
-    ]
-    verification_refs = [
-        value
-        for value in refs
-        if isinstance(value, str)
-        and value.startswith("extension-verification:")
-        and value != "extension-verification:"
-    ]
-    if len(publication_refs) != 1:
-        errors.append(
-            "archived finalization gate publication identity is not unique"
+    del public_input
+    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+        gate = finalization_normalize_gate(
+            root,
+            finalization_archived_gate(root, plan, transaction),
         )
-    if len(verification_refs) > 1 or (
-        plan["marketplace"]["required"] and len(verification_refs) != 1
-    ):
-        errors.append(
-            "archived finalization gate verification identity is not unique"
+        errors = skill_json_schema_validation_errors(
+            gate,
+            finalization_gate_schema(root),
+            "archived task finalization gate",
         )
-    input_publication_ref = public_input.get("publication_ref")
-    if (
-        isinstance(input_publication_ref, str)
-        and publication_refs
-        and input_publication_ref != publication_refs[0]
-    ):
-        errors.append("archived finalization publication seed changed")
-    input_verification_ref = public_input.get("verification_ref")
-    if (
-        isinstance(input_verification_ref, str)
-        and verification_refs
-        and input_verification_ref != verification_refs[0]
-    ):
-        errors.append("archived finalization verification seed changed")
-    if errors:
-        raise WorkflowError(
-            "Archived task finalization owner facts are invalid.",
-            exit_code=2,
-            payload={"errors": sorted(set(errors))},
-        )
-    verification = (
-        (
-            {"source": "committed-finalization-gate"},
-            {
-                "status": "ok",
-                "typed_exit": (
-                    "verified"
-                    if plan["marketplace"]["required"]
-                    else "not_required"
-                ),
-                "verification_ref": verification_refs[0],
-            },
-        )
-        if verification_refs
-        else None
-    )
-    return (
-        {
-            "owner_status": "current",
-            "publication_ref": publication_refs[0],
-        },
-        verification,
-    )
+        expected_identity = {
+            "task_ref": plan["task"]["active_locator"],
+            "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+            "plan_digest": plan["plan_digest"],
+            "reviewed_content_head": plan["git"]["reviewed_work_head"],
+        }
+        route = gate.get("route") if isinstance(gate, dict) else None
+        if gate.get("identity") != expected_identity:
+            errors.append("archived finalization gate objective identity mismatch")
+        if (
+            not isinstance(route, dict)
+            or route.get("typed_exit") != "published"
+            or route.get("consumer") != FINALIZATION_CONSUMERS["published"]
+            or route.get("output") != FINALIZATION_EXECUTOR_OUTPUT_MARKER
+        ):
+            errors.append("archived finalization gate does not select publication")
+        if errors:
+            raise WorkflowError(
+                "Archived task finalization owner facts are invalid.",
+                exit_code=2,
+                payload={"errors": sorted(set(errors))},
+            )
+    return {"owner_status": "current"}, None
 
 
 def finalization_preview_context(
@@ -30972,13 +28318,6 @@ def finalization_preview_context(
             verification,
         )
         if publication.get("owner_status") == "stale":
-            facts = {
-                "task_ref": public_input["task_ref"],
-                "profile": public_input["profile"],
-                "mode": public_input["mode"],
-                "publication_status": "stale",
-                "stale_reason": publication["stale_reason"],
-            }
             return {
                 "task_dir": task_dir,
                 "task_context": None,
@@ -30990,12 +28329,10 @@ def finalization_preview_context(
                 "publication_status": "stale",
                 "publication_stale_reason": publication["stale_reason"],
                 "verification": None,
-                "facts": facts,
-                "current_facts_sha256": context_digest(facts),
             }
         published_transition_complete = False
         published_pr = None
-        task_context = load_task_start_context(task_dir, config)
+        task_context = load_task_runtime_identity(task_dir, config)
         assert_workspace_boundary(root, config, task_context, task_dir)
         task = task_json(task_dir)
         if task.get("status") == "completed" and closeout_plan_path(task_dir).is_file():
@@ -31010,6 +28347,11 @@ def finalization_preview_context(
                 config,
                 task_dir,
                 task_context,
+                publication_ready=(
+                    public_input
+                    if public_input["profile"] == "publication_ready"
+                    else None
+                ),
                 verification_owner_result=verification,
             )
             plan = prepared["plan"]
@@ -31071,19 +28413,6 @@ def finalization_preview_context(
             reviewed_head=plan["git"]["reviewed_work_head"],
             plan=plan,
         )
-    facts = {
-        "task_ref": public_input["task_ref"],
-        "profile": public_input["profile"],
-        "mode": public_input["mode"],
-        "plan_ref": plan_ref,
-        "plan_digest": plan["plan_digest"],
-        "reviewed_head": plan["git"]["reviewed_work_head"],
-        "archive_locator": plan["task"]["archive_locator"],
-        "publication_ref": publication.get("publication_ref"),
-        "verification_ref": (
-            verification[1].get("verification_ref") if verification is not None else None
-        ),
-    }
     return {
         "task_dir": task_dir,
         "task_context": task_context,
@@ -31097,8 +28426,6 @@ def finalization_preview_context(
         "publication_status": "current",
         "publication_stale_reason": None,
         "verification": verification,
-        "facts": facts,
-        "current_facts_sha256": context_digest(facts),
     }
 
 
@@ -31125,7 +28452,6 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             "publication_stale_reason": context["publication_stale_reason"],
             "verification_required": False,
             "expected_actions": [],
-            "current_facts_sha256": context["current_facts_sha256"],
         }
     return {
         "status": "ok",
@@ -31144,7 +28470,6 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
         "transaction_state": context["transaction_state"],
         "verification_required": bool(plan["marketplace"]["required"]),
         "expected_actions": list(CLOSEOUT_TRANSITIONS[1:]),
-        "current_facts_sha256": context["current_facts_sha256"],
     }
 
 
@@ -31306,9 +28631,12 @@ def finalization_validate_route(
             and isinstance(verification[1], dict)
             else {}
         )
-        if checked.get("typed_exit") not in {"verified", "not_required"}:
+        if (
+            plan["marketplace"]["required"]
+            and checked.get("typed_exit") not in {"verified", "not_required"}
+        ):
             raise WorkflowError(
-                "published requires current same-plan verification owner evidence before archive.",
+                "published requires current same-plan verification owner evidence when the plan requires verification.",
                 exit_code=2,
             )
         if not allow_pending_transition or not executor_materialized:
@@ -31340,6 +28668,14 @@ def finalization_gate_schema(root: Path) -> dict[str, Any]:
     return schema
 
 
+def finalization_normalize_gate(root: Path, payload: Any) -> dict[str, Any]:
+    if isinstance(payload, dict) and payload.get("schema_version") == "1.0":
+        return finalization_project_legacy_gate(root, payload)
+    if not isinstance(payload, dict):
+        raise WorkflowError("Task finalization gate must be an object.", exit_code=2)
+    return payload
+
+
 def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input, _ = finalization_public_input(root, args.input)
@@ -31353,50 +28689,19 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
         allow_pending_transition=True,
     )
     plan = context["plan"]
-    confirmation = reviewed["confirmation"]
-    if plan is None:
-        confirmation_valid = (
-            confirmation.get("status") == "not_required"
-            and confirmation.get("confirmed_plan_digest") is None
-        )
-    else:
-        confirmation_valid = (
-            confirmation.get("confirmed_plan_digest") == plan["plan_digest"]
-            and (
-                context["transaction_state"] not in {"prepared", "reprepare_required"}
-                or confirmation.get("status") == "confirmed"
-            )
-        )
-    if not confirmation_valid:
-        raise WorkflowError(
-            "Task finalization confirmation is not bound to the exact current plan.",
-            exit_code=2,
-        )
     gate = {
-        "schema_version": "1.0",
+        "schema_version": FINALIZATION_GATE_SCHEMA_VERSION,
         "skill_id": FINALIZE_TASK_SKILL_ID,
-        "generated_at": now_iso(),
-        "invocation": {
-            "profile": public_input["profile"],
-            "mode": public_input["mode"],
+        "identity": {
             "task_ref": public_input["task_ref"],
-            "input_identity_sha256": context_digest(public_input),
-        },
-        "plan": {
-            "available": plan is not None,
             "plan_ref": context["plan_ref"] if plan is not None else None,
             "plan_digest": plan["plan_digest"] if plan is not None else None,
-            "reviewed_head": (
+            "reviewed_content_head": (
                 plan["git"]["reviewed_work_head"] if plan is not None else None
             ),
         },
         "review": copy.deepcopy(reviewed["review"]),
-        "confirmation": copy.deepcopy(confirmation),
         "route": copy.deepcopy(reviewed["route"]),
-        "freshness": {
-            "current_facts_sha256": context["current_facts_sha256"],
-            "supersedes_gate_ref": reviewed["supersedes_gate_ref"],
-        },
     }
     errors = skill_json_schema_validation_errors(
         gate,
@@ -31410,7 +28715,17 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
             payload={"errors": errors},
         )
     task_dir = context["task_dir"]
-    artifact_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+    legacy_takeover = bool(
+        plan is not None
+        and plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
+        and TASK_FINALIZATION_GATE_ARTIFACT
+        in plan.get("projection", {}).get("move_paths", [])
+    )
+    artifact_path = (
+        task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+        if legacy_takeover
+        else task_finalization_path(root, task_dir, for_write=True)
+    )
     committed_recovery = (
         context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
     )
@@ -31422,7 +28737,6 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
         "typed_exit": gate["route"]["typed_exit"],
         "plan_ref": context["plan_ref"],
         "plan_digest": plan["plan_digest"] if plan is not None else None,
-        "current_facts_sha256": context["current_facts_sha256"],
         "dry_run": bool(getattr(args, "dry_run", False)),
     }
 
@@ -31433,13 +28747,13 @@ def finalization_gate_input(
     value: str | None,
 ) -> tuple[dict[str, Any], Path]:
     task_dir = finalization_task_dir(root, public_input)
-    expected = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+    expected = task_finalization_path(root, task_dir)
     if task_dir_is_archived(root, task_dir):
         if value:
-            relative = skill_safe_relative(str(value).strip())
-            if relative is None or (root / relative).resolve() != expected.resolve():
+            supplied = stage0_owner_path(root, value, "arguments.owner_result")
+            if supplied.resolve() != expected.resolve():
                 raise WorkflowError(
-                    "Task finalization gate must use the exact task-local artifact.",
+                    "Task finalization gate must use the exact owner-private artifact.",
                     exit_code=2,
                 )
         plan = finalization_verification_augmentation_plan(root, task_dir)
@@ -31454,7 +28768,33 @@ def finalization_gate_input(
                 "Archived task finalization is not the exact plan transaction.",
                 exit_code=2,
             )
-        return finalization_archived_gate(root, plan, transaction), expected
+        if expected.is_file() and not expected.is_symlink():
+            return finalization_normalize_gate(root, read_json(expected)), expected
+        if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+            legacy = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
+            return finalization_normalize_gate(
+                root,
+                finalization_archived_gate(root, plan, transaction),
+            ), legacy
+        return {
+            "schema_version": FINALIZATION_GATE_SCHEMA_VERSION,
+            "skill_id": FINALIZE_TASK_SKILL_ID,
+            "identity": {
+                "task_ref": plan["task"]["active_locator"],
+                "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+                "plan_digest": plan["plan_digest"],
+                "reviewed_content_head": plan["git"]["reviewed_work_head"],
+            },
+            "review": {
+                "status": "passed",
+                "summary": "The committed archive transaction is the unchanged reviewed closeout plan.",
+            },
+            "route": {
+                "typed_exit": "published",
+                "consumer": copy.deepcopy(FINALIZATION_CONSUMERS["published"]),
+                "output": copy.deepcopy(FINALIZATION_EXECUTOR_OUTPUT_MARKER),
+            },
+        }, expected
     path = (
         stage0_owner_path(root, value, "arguments.owner_result")
         if value
@@ -31462,10 +28802,10 @@ def finalization_gate_input(
     )
     if path.resolve() != expected.resolve():
         raise WorkflowError(
-            "Task finalization gate must use the exact task-local artifact.",
+            "Task finalization gate must use the exact owner-private artifact.",
             exit_code=2,
         )
-    return read_json(path), path
+    return finalization_normalize_gate(root, read_json(path)), path
 
 
 def finalization_public_wrapper_checker_args(
@@ -31520,38 +28860,21 @@ def check_finalization_gate_result(
     committed_recovery = (
         context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
     )
-    expected_invocation = {
-        "profile": public_input["profile"],
-        "mode": public_input["mode"],
-        "task_ref": public_input["task_ref"],
-        "input_identity_sha256": context_digest(public_input),
-    }
     plan = context["plan"]
-    expected_plan = {
-        "available": plan is not None,
+    expected_identity = {
+        "task_ref": (
+            plan["task"]["active_locator"]
+            if committed_recovery and plan is not None
+            else public_input["task_ref"]
+        ),
         "plan_ref": context["plan_ref"] if plan is not None else None,
         "plan_digest": plan["plan_digest"] if plan is not None else None,
-        "reviewed_head": (
+        "reviewed_content_head": (
             plan["git"]["reviewed_work_head"] if plan is not None else None
         ),
     }
-    if committed_recovery:
-        invocation = gate.get("invocation")
-        if (
-            not isinstance(invocation, dict)
-            or invocation.get("task_ref") != plan["task"]["active_locator"]
-        ):
-            errors.append("committed task finalization gate task identity mismatch")
-    elif gate.get("invocation") != expected_invocation:
-        errors.append("task finalization gate invocation identity mismatch")
-    if gate.get("plan") != expected_plan:
-        errors.append("task finalization gate plan identity mismatch")
-    if (
-        not committed_recovery
-        and gate.get("freshness", {}).get("current_facts_sha256")
-        != context["current_facts_sha256"]
-    ):
-        errors.append("task finalization gate current facts mismatch")
+    if gate.get("identity") != expected_identity:
+        errors.append("task finalization gate objective identity mismatch")
     try:
         finalization_validate_route(
             root,
@@ -31595,7 +28918,6 @@ def cmd_check_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
             else None
         ),
         "transaction_state": context["transaction_state"],
-        "current_facts_sha256": context["current_facts_sha256"],
     }
 
 
@@ -31681,7 +29003,6 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             "reviewed_head": context["plan"]["git"]["reviewed_work_head"],
             "verification_target": "extension-installation",
         }
-        write_json(gate_path, gate)
         return {
             **result,
             "typed_exit": exit_id,
@@ -31697,7 +29018,14 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         finish_args.draft = None
         finish_args.body_artifact = None
         finish_args.finalization_gate = gate
-        finish_args.include_finalization_gate = True
+        finish_args.publication_ready = (
+            public_input
+            if public_input["profile"] == "publication_ready"
+            else None
+        )
+        finish_args.include_finalization_gate = closeout_uses_evidence_commit(
+            context["plan"]
+        )
         if (
             context["plan"]["marketplace"]["required"]
             and context["transaction_state"]
@@ -31718,7 +29046,6 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 )
             )
         result = cmd_finish_work(finish_args)
-        archived_gate = Path(result["archived_task_dir"]) / TASK_FINALIZATION_GATE_ARTIFACT
         materialized_gate = finalization_gate_with_published_output(
             root,
             Path(result["archived_task_dir"]),
@@ -31730,7 +29057,6 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             **result,
             "typed_exit": exit_id,
             "output": materialized_gate["route"]["output"],
-            "finalization_gate": str(archived_gate),
         }
     return {
         "status": "ok",
@@ -32708,8 +30034,6 @@ def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
         or not gate["load_bearing_conclusions"]
     ):
         errors.append("passed_gate_requires_semantic_evidence")
-    if payload.get("human_confirmation") != {"status": "not_required", "reason": "decision_owned_by_guru-clarify-requirements"}:
-        errors.append("invalid_human_confirmation")
     if typed_exit == "refresh_base":
         refresh_history = payload.get("refresh_history")
         if not isinstance(refresh_history, list) or not refresh_history:
@@ -33447,7 +30771,6 @@ def requirements_clarification_target_disposition_projection(
     projection = copy.deepcopy(disposition)
     projection.pop("duplicate_facts_sha256", None)
     projection.pop("disposition_digest", None)
-    projection.pop("confirmation_ref", None)
     return projection
 
 
@@ -33456,7 +30779,6 @@ def requirements_clarification_proposal_projection(proposal: Any) -> dict[str, A
         return None
     projection = copy.deepcopy(proposal)
     projection.pop("proposal_digest", None)
-    projection.pop("confirmation_ref", None)
     return projection
 
 
@@ -33558,11 +30880,83 @@ def derive_requirements_clarification_result(payload: dict[str, Any]) -> dict[st
             projection = requirements_clarification_proposal_projection(proposal)
             if isinstance(proposal, dict) and projection is not None:
                 proposal["proposal_digest"] = context_digest(projection)
+    legacy_trail_projected = False
+    active_task_evidence = result.get("active_task_evidence")
+    if isinstance(active_task_evidence, dict):
+        trail = active_task_evidence.get("decision_trail")
+        legacy_trail_keys = {
+            "trail_id",
+            "proposal_decisions",
+            "user_decision",
+            "github_authority",
+            "context_before_task_update_sha256",
+            "planning_documents",
+            "stale_downstream_evidence",
+            "review_evidence",
+            "reentry_owners",
+            "interrupted_resume_target",
+        }
+        authority = trail.get("github_authority") if isinstance(trail, dict) else None
+        proposal_decisions = (
+            trail.get("proposal_decisions") if isinstance(trail, dict) else None
+        )
+        if (
+            isinstance(trail, dict)
+            and set(trail) == legacy_trail_keys
+            and isinstance(authority, dict)
+            and set(authority) == {"kind", "url", "content_sha256", "updated_at"}
+            and isinstance(proposal_decisions, list)
+            and bool(proposal_decisions)
+            and all(
+                isinstance(item, dict)
+                and set(item)
+                == {"proposal_id", "proposal_digest", "decision", "confirmation_ref"}
+                for item in proposal_decisions
+            )
+        ):
+            active_task_evidence["decision_trail"] = {
+                "trail_id": trail.get("trail_id"),
+                "proposal_decisions": [
+                    {
+                        "proposal_id": item.get("proposal_id"),
+                        "proposal_digest": item.get("proposal_digest"),
+                        "decision": item.get("decision"),
+                    }
+                    for item in proposal_decisions
+                ],
+                "github_authority": {
+                    "kind": authority.get("kind"),
+                    "url": authority.get("url"),
+                    "content_sha256": authority.get("content_sha256"),
+                },
+            }
+            legacy_active_task_evidence_keys = {
+                "task_locator",
+                "github_authority_facts_sha256",
+                "ledger",
+                "planning_documents",
+                "stale_downstream_evidence",
+                "review_evidence",
+                "decision_trail",
+                "reentry_owners",
+            }
+            if set(active_task_evidence) == legacy_active_task_evidence_keys:
+                active_task_evidence.pop("stale_downstream_evidence")
+                active_task_evidence.pop("review_evidence")
+            legacy_trail_projected = True
     actions = result.get("source_actions")
     if isinstance(actions, list):
         for action in actions:
             if not isinstance(action, dict):
                 continue
+            if legacy_trail_projected and action.get("kind") == "active_task_scope_update":
+                action["payload"] = requirements_clarification_active_task_payload_projection(
+                    active_task_evidence
+                )
+                if action.get("mutation_evidence") == {
+                    "source": "confirmed-task-local-update"
+                }:
+                    action["mutation_evidence"] = {"source": "task-local-update"}
             payload_value = action.get("payload")
             action["payload_sha256"] = (
                 context_digest(payload_value) if isinstance(payload_value, dict) else None
@@ -33597,51 +30991,6 @@ def requirements_clarification_nonempty(value: Any) -> bool:
     )
 
 
-def requirements_clarification_confirmation_covers_actions(
-    confirmation: Any,
-    action_by_id: dict[str, dict[str, Any]],
-    required_action_ids: set[str],
-) -> bool:
-    if not isinstance(confirmation, dict):
-        return False
-    confirmed_actions = confirmation.get("confirmed_actions")
-    if (
-        confirmation.get("status") != "confirmed"
-        or confirmation.get("confirmation_kind")
-        not in {
-            "exact_source_action", "exact_source_action_and_scope",
-            "exact_source_action_and_target",
-        }
-        or not isinstance(confirmed_actions, list)
-        or any(
-            not isinstance(action_id, str) or action_id not in action_by_id
-            for action_id in confirmed_actions
-        )
-        or not required_action_ids.issubset(set(confirmed_actions))
-    ):
-        return False
-    expected_digest = context_digest([
-        action_by_id[action_id].get("action_digest")
-        for action_id in confirmed_actions
-    ])
-    return confirmation.get("action_digest") == expected_digest
-
-
-def requirements_clarification_confirmation_covers_target(
-    confirmation: Any,
-    disposition: Any,
-) -> bool:
-    return (
-        isinstance(confirmation, dict)
-        and isinstance(disposition, dict)
-        and confirmation.get("status") == "confirmed"
-        and confirmation.get("confirmation_kind")
-        in {"exact_target_disposition", "exact_source_action_and_target"}
-        and confirmation.get("target_disposition_digest")
-        == disposition.get("disposition_digest")
-    )
-
-
 def requirements_clarification_target_disposition_errors(
     payload: dict[str, Any],
 ) -> list[str]:
@@ -33661,7 +31010,7 @@ def requirements_clarification_target_disposition_errors(
     expected_keys = {
         "disposition", "duplicate_query", "duplicate_checked_at",
         "duplicate_candidates", "duplicate_facts_sha256", "selected_issue",
-        "original_target_role", "decision_summary", "confirmation_ref",
+        "original_target_role", "decision_summary",
         "disposition_digest",
     }
     if set(disposition) != expected_keys:
@@ -33807,54 +31156,6 @@ def requirements_clarification_target_disposition_errors(
         ):
             errors.append("block_target_complete_disposition_invalid")
     return context_sort(errors)
-
-
-def requirements_clarification_active_task_action_confirmation_errors(
-    payload: dict[str, Any],
-) -> list[str]:
-    invocation = payload.get("invocation_context")
-    if not isinstance(invocation, dict) or invocation.get("kind") != "active_task_scope_change":
-        return []
-    proposals = payload.get("scope_proposals")
-    classification_proposals = [
-        proposal for proposal in proposals
-        if isinstance(proposals, list)
-        and isinstance(proposal, dict)
-        and proposal.get("decision")
-        in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_CLASSIFICATION_DECISIONS
-    ] if isinstance(proposals, list) else []
-    if not classification_proposals:
-        return []
-    actions = payload.get("source_actions")
-    action_by_id = {
-        action["action_id"]: action
-        for action in actions
-        if isinstance(actions, list)
-        and isinstance(action, dict)
-        and isinstance(action.get("action_id"), str)
-    } if isinstance(actions, list) else {}
-    task_update_action_ids = {
-        action_id for action_id, action in action_by_id.items()
-        if action.get("kind") == "active_task_scope_update"
-    }
-    if not task_update_action_ids:
-        return []
-    confirmation = payload.get("human_confirmation")
-    expected_proposal_digests = [
-        proposal.get("proposal_digest") for proposal in classification_proposals
-    ]
-    if (
-        not isinstance(confirmation, dict)
-        or confirmation.get("confirmation_kind") != "exact_source_action_and_scope"
-        or confirmation.get("proposal_digests") != expected_proposal_digests
-        or not requirements_clarification_confirmation_covers_actions(
-            confirmation,
-            action_by_id,
-            task_update_action_ids,
-        )
-    ):
-        return ["active_task_scope_update_requires_exact_action_confirmation"]
-    return []
 
 
 def requirements_clarification_structural_errors(
@@ -34075,8 +31376,6 @@ def requirements_clarification_structural_errors(
         if decision in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_MECHANISM_DECISIONS:
             if not optional_mechanism:
                 errors.append("mechanism_disposition_requires_optional_mechanism_origin")
-            if proposal.get("confirmation_ref") is not None:
-                errors.append("mechanism_disposition_forbids_confirmation")
         elif (
             optional_mechanism
             and decision
@@ -34224,7 +31523,7 @@ def requirements_clarification_structural_errors(
                 or not requirements_clarification_is_sha256(action.get("preimage_sha256"))
                 or action_status not in {"executed", "validated"}
                 or action.get("mutation_evidence")
-                != {"source": "confirmed-task-local-update"}
+                != {"source": "task-local-update"}
             ):
                 errors.append("active_task_scope_action_binding_invalid")
     if len(action_ids) != len(set(action_ids)):
@@ -34252,97 +31551,10 @@ def requirements_clarification_structural_errors(
         ):
             errors.append("load_bearing_round_requires_authority_action")
 
-    confirmation = payload.get("human_confirmation")
-    if not isinstance(confirmation, dict):
-        errors.append("invalid_requirements_confirmation")
-        confirmation = {}
-    confirmation_status = confirmation.get("status")
-    proposal_digests = confirmation.get("proposal_digests")
-    confirmed_actions = confirmation.get("confirmed_actions")
-    confirmed_target_digest = confirmation.get("target_disposition_digest")
-    if not isinstance(proposal_digests, list) or not isinstance(confirmed_actions, list):
-        errors.append("invalid_requirements_confirmation")
-        proposal_digests = []
-        confirmed_actions = []
-    if confirmation_status == "not_required":
-        if (
-            confirmation.get("confirmation_kind") != "none"
-            or confirmation.get("action_digest") is not None
-            or confirmed_target_digest is not None
-            or proposal_digests
-            or confirmed_actions
-            or confirmation.get("confirmer") is not None
-            or confirmation.get("confirmed_at") is not None
-        ):
-            errors.append("not_required_confirmation_shape_invalid")
-    elif confirmation_status in {"confirmed", "refused"}:
-        if confirmation.get("confirmation_kind") not in {
-            "exact_source_action", "exact_scope_proposal",
-            "exact_source_action_and_scope", "exact_target_disposition",
-            "exact_source_action_and_target",
-        }:
-            errors.append("generic_confirmation_forbidden")
-        if not requirements_clarification_nonempty(confirmation.get("confirmer")) or not requirements_clarification_nonempty(confirmation.get("confirmed_at")):
-            errors.append("exact_confirmation_identity_required")
-        if confirmed_actions and confirmation.get("action_digest") != context_digest([
-            action_by_id[action_id].get("action_digest")
-            for action_id in confirmed_actions if action_id in action_by_id
-        ]):
-            errors.append("confirmation_action_digest_mismatch")
-        if any(action_id not in action_by_id for action_id in confirmed_actions):
-            errors.append("confirmation_action_unknown")
-        known_proposal_digests = {
-            proposal.get("proposal_digest")
-            for proposal in proposals if isinstance(proposal, dict)
-        }
-        if any(digest not in known_proposal_digests for digest in proposal_digests):
-            errors.append("confirmation_proposal_unknown")
-        if confirmed_actions and confirmation.get("confirmation_kind") not in {
-            "exact_source_action", "exact_source_action_and_scope",
-            "exact_source_action_and_target",
-        }:
-            errors.append("confirmation_kind_action_mismatch")
-        if proposal_digests and confirmation.get("confirmation_kind") not in {
-            "exact_scope_proposal", "exact_source_action_and_scope",
-        }:
-            errors.append("confirmation_kind_proposal_mismatch")
-        if confirmed_target_digest is not None and confirmation.get(
-            "confirmation_kind"
-        ) not in {"exact_target_disposition", "exact_source_action_and_target"}:
-            errors.append("confirmation_kind_target_mismatch")
-    else:
-        errors.append("invalid_requirements_confirmation_status")
     disposition = payload.get("target_disposition")
     disposition_kind = (
         disposition.get("disposition") if isinstance(disposition, dict) else None
     )
-    disposition_candidates = (
-        disposition.get("duplicate_candidates")
-        if isinstance(disposition, dict)
-        else []
-    )
-    target_confirmation_required = (
-        isinstance(disposition, dict)
-        and (
-            bool(disposition_candidates)
-            or disposition_kind
-            in {
-                "retarget_existing_issue", "reopen_closed_issue",
-                "create_followup_draft", "block_target_complete",
-            }
-        )
-    )
-    if target_confirmation_required:
-        if (
-            not requirements_clarification_confirmation_covers_target(
-                confirmation, disposition
-            )
-            or disposition.get("confirmation_ref") is None
-        ):
-            errors.append("target_disposition_requires_exact_confirmation")
-    elif confirmed_target_digest is not None:
-        errors.append("unnecessary_target_disposition_confirmation")
-
     disposition_action_requirements = {
         "retarget_existing_issue": {"select_existing_issue"},
         "reopen_closed_issue": {"reopen_issue"},
@@ -34354,37 +31566,8 @@ def requirements_clarification_structural_errors(
             action_id for action_id, action in action_by_id.items()
             if action.get("kind") in required_kinds
         }
-        if (
-            len(required_ids) != 1
-            or not requirements_clarification_confirmation_covers_actions(
-                confirmation, action_by_id, required_ids
-            )
-            or confirmation.get("confirmation_kind")
-            != "exact_source_action_and_target"
-        ):
-            errors.append("target_disposition_action_requires_exact_confirmation")
-    for proposal in proposals:
-        if not isinstance(proposal, dict):
-            continue
-        if proposal.get("origin_requirement_status") == "unconfirmed_expansion" and proposal.get("decision") == "accepted_current":
-            if (
-                confirmation_status != "confirmed"
-                or proposal.get("proposal_digest") not in proposal_digests
-                or proposal.get("confirmation_ref") is None
-            ):
-                errors.append("unconfirmed_expansion_requires_exact_confirmation")
-        if (
-            invocation_kind == "active_task_scope_change"
-            and proposal.get("origin_requirement_status") == "unconfirmed_expansion"
-            and proposal.get("decision")
-            in REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_NON_CURRENT_DECISIONS
-            and (
-                confirmation_status != "confirmed"
-                or proposal.get("proposal_digest") not in proposal_digests
-                or proposal.get("confirmation_ref") is None
-            )
-        ):
-            errors.append("unconfirmed_non_current_decision_requires_user_evidence")
+        if len(required_ids) != 1:
+            errors.append("target_disposition_requires_exact_action")
 
     mutations = payload.get("mutation_results")
     if not isinstance(mutations, list):
@@ -34415,15 +31598,6 @@ def requirements_clarification_structural_errors(
             errors.append("mutation_action_binding_mismatch")
         elif mutation.get("kind") != action.get("kind") or action.get("status") not in {"executed", "validated"}:
             errors.append("mutation_action_state_mismatch")
-        elif (
-            confirmation_status != "confirmed"
-            or not requirements_clarification_confirmation_covers_actions(
-                confirmation,
-                action_by_id,
-                {str(mutation.get("action_id"))},
-            )
-        ):
-            errors.append("mutation_requires_exact_action_confirmation")
         if mutation.get("facts_sha256") != context_digest(projection):
             errors.append("mutation_facts_digest_mismatch")
         mutation_kind = mutation.get("kind")
@@ -34438,7 +31612,7 @@ def requirements_clarification_structural_errors(
             action.get("payload_sha256") != context_digest(action_payload)
             or mutation.get("content_sha256") != expected_content_sha
         ):
-            errors.append("mutation_confirmed_payload_mismatch")
+            errors.append("mutation_payload_result_mismatch")
         if mutation_kind == "reopen_issue":
             if (
                 mutation.get("url")
@@ -34516,25 +31690,7 @@ def requirements_clarification_structural_errors(
     if invocation_kind == "active_task_scope_change" and accepted_current:
         if invocation.get("resume_target") != "guru-active-task-planning-review":
             errors.append("active_task_current_scope_requires_planning_resume")
-        accepted_digests = {proposal.get("proposal_digest") for proposal in accepted_current}
-        if confirmation_status != "confirmed" or not accepted_digests.issubset(set(proposal_digests)):
-            errors.append("active_task_current_scope_requires_exact_confirmation")
     if invocation_kind == "active_task_scope_change" and active_task_classification_proposals:
-        classification_proposal_digests = [
-            proposal.get("proposal_digest")
-            for proposal in active_task_classification_proposals
-        ]
-        if (
-            confirmation_status != "confirmed"
-            or confirmation.get("confirmation_kind")
-            != "exact_source_action_and_scope"
-            or proposal_digests != classification_proposal_digests
-            or any(
-                proposal.get("confirmation_ref") is None
-                for proposal in active_task_classification_proposals
-            )
-        ):
-            errors.append("active_task_final_classification_requires_exact_user_decision")
         evidence = payload.get("active_task_evidence")
         trail = evidence.get("decision_trail") if isinstance(evidence, dict) else None
         requires_reentry_trail = typed_exit in {"clear", "new_task"}
@@ -34546,39 +31702,17 @@ def requirements_clarification_structural_errors(
                     "proposal_id": proposal.get("proposal_id"),
                     "proposal_digest": proposal.get("proposal_digest"),
                     "decision": proposal.get("decision"),
-                    "confirmation_ref": proposal.get("confirmation_ref"),
                 }
                 for proposal in active_task_classification_proposals
             ]
             if trail.get("proposal_decisions") != expected_decisions:
                 errors.append("active_task_decision_trail_proposals_mismatch")
-            trail_decision = trail.get("user_decision")
-            if not isinstance(trail_decision, dict):
-                errors.append("active_task_decision_trail_user_evidence_invalid")
-            elif trail_decision != {
-                "status": confirmation_status,
-                "proposal_digests": proposal_digests,
-                "confirmer": confirmation.get("confirmer"),
-                "confirmed_at": confirmation.get("confirmed_at"),
-                "evidence_summary": confirmation.get("evidence_summary"),
-            }:
-                errors.append("active_task_decision_trail_user_evidence_mismatch")
-            if trail.get("planning_documents") != evidence.get("planning_documents"):
-                errors.append("active_task_decision_trail_planning_mismatch")
-            if trail.get("stale_downstream_evidence") != evidence.get("stale_downstream_evidence"):
-                errors.append("active_task_decision_trail_stale_evidence_mismatch")
-            if trail.get("review_evidence") != evidence.get("review_evidence"):
-                errors.append("active_task_decision_trail_review_mismatch")
-            if trail.get("reentry_owners") != evidence.get("reentry_owners"):
-                errors.append("active_task_decision_trail_reentry_mismatch")
-            if trail.get("interrupted_resume_target") != invocation.get("resume_target"):
-                errors.append("active_task_decision_trail_resume_mismatch")
-            context_before = trail.get("context_before_task_update_sha256")
-            current_context = context.get("snapshot_sha256") if isinstance(context, dict) else None
-            if context_before != current_context:
-                errors.append("active_task_decision_trail_task_update_context_mismatch")
         elif trail is not None:
             errors.append("active_task_decision_trail_forbidden_before_reentry")
+
+        current_context = (
+            context.get("snapshot_sha256") if isinstance(context, dict) else None
+        )
 
         github_action_kinds = {
             action.get("kind") for action in actions
@@ -34607,29 +31741,19 @@ def requirements_clarification_structural_errors(
             elif task_update_actions[0].get("status") != "validated":
                 errors.append("active_task_final_classification_requires_validated_task_update")
             elif (
-                isinstance(trail, dict)
-                and task_update_actions[0].get("preimage_sha256")
-                != trail.get("context_before_task_update_sha256")
+                task_update_actions[0].get("preimage_sha256")
+                != current_context
             ):
                 errors.append("active_task_task_update_preimage_mismatch")
 
-        errors.extend(
-            requirements_clarification_active_task_action_confirmation_errors(
-                payload
-            )
-        )
-
     if invocation_kind == "active_task_scope_change" and active_task_mechanism_proposals:
         if any(
-            proposal.get("confirmation_ref") is not None
-            or proposal.get("optional_mechanism_origin") is not True
+            proposal.get("optional_mechanism_origin") is not True
             for proposal in active_task_mechanism_proposals
         ):
             errors.append("active_task_mechanism_disposition_shape_invalid")
         if not active_task_classification_proposals:
             evidence = payload.get("active_task_evidence")
-            if confirmation_status != "not_required" or proposal_digests:
-                errors.append("active_task_mechanism_only_forbids_confirmation")
             if not isinstance(evidence, dict):
                 errors.append("active_task_mechanism_only_requires_task_evidence")
             elif evidence.get("decision_trail") is not None:
@@ -34777,75 +31901,24 @@ def requirements_clarification_active_task_shape_errors(
     } if isinstance(planning, list) else set()
     if planning_paths != expected_planning or len(planning or []) != 3:
         errors.append("active_task_planning_binding_invalid")
-    stale = evidence.get("stale_downstream_evidence")
-    if (
-        not isinstance(stale, dict)
-        or set(stale)
-        != {"planning_approval_sha256", "phase2_check_sha256", "branch_review_sha256"}
-    ):
-        errors.append("active_task_stale_evidence_invalid")
-    elif not requirements_clarification_is_sha256(stale.get("planning_approval_sha256")):
-        errors.append("active_task_planning_approval_evidence_required")
-    review = evidence.get("review_evidence")
-    branch_review_sha = stale.get("branch_review_sha256") if isinstance(stale, dict) else None
-    review_path = task_dir / "review-gate.json"
-    review_started = review_path.exists()
-    if not isinstance(review, dict) or set(review) != {"status", "artifact"}:
-        errors.append("active_task_review_evidence_invalid")
-    elif review.get("status") == "not_started":
-        if review.get("artifact") is not None or branch_review_sha is not None:
-            errors.append("active_task_review_evidence_mismatch")
-        if review_started:
-            errors.append("active_task_review_started_requires_stale")
-    elif review.get("status") == "current":
-        errors.append("active_task_review_current_forbidden_during_reentry")
-    elif review.get("status") == "stale":
-        artifact = review.get("artifact")
-        expected_review_path = f"{expected_locator}/review-gate.json"
-        if (
-            not isinstance(artifact, dict)
-            or artifact.get("path") != expected_review_path
-            or artifact.get("content_sha256") != branch_review_sha
-            or not requirements_clarification_is_sha256(branch_review_sha)
-        ):
-            errors.append("active_task_review_evidence_mismatch")
-        if not review_started:
-            errors.append("active_task_review_stale_requires_existing_artifact")
-    else:
-        errors.append("active_task_review_evidence_invalid")
     trail = evidence.get("decision_trail")
     if trail is not None:
         required_trail_keys = {
-            "trail_id", "proposal_decisions", "user_decision",
-            "github_authority", "context_before_task_update_sha256",
-            "planning_documents", "stale_downstream_evidence",
-            "review_evidence", "reentry_owners", "interrupted_resume_target",
+            "trail_id", "proposal_decisions", "github_authority",
         }
         if set(trail) != required_trail_keys:
             errors.append("active_task_decision_trail_shape_invalid")
         if not requirements_clarification_nonempty(trail.get("trail_id")):
             errors.append("active_task_decision_trail_shape_invalid")
-        if not requirements_clarification_is_sha256(
-            trail.get("context_before_task_update_sha256")
-        ):
-            errors.append("active_task_decision_trail_shape_invalid")
         authority = trail.get("github_authority")
         if (
             not isinstance(authority, dict)
-            or set(authority) != {"kind", "url", "content_sha256", "updated_at"}
+            or set(authority) != {"kind", "url", "content_sha256"}
             or authority.get("kind") not in {"issue_comment", "issue_body"}
             or not requirements_clarification_nonempty(authority.get("url"))
             or not requirements_clarification_is_sha256(authority.get("content_sha256"))
         ):
             errors.append("active_task_decision_trail_github_authority_invalid")
-        else:
-            try:
-                parse_iso_datetime(
-                    authority.get("updated_at"),
-                    "active-task GitHub authority updated_at",
-                )
-            except WorkflowError:
-                errors.append("active_task_decision_trail_github_authority_invalid")
     reentry = evidence.get("reentry_owners")
     if not isinstance(reentry, list) or set(reentry) != REQUIREMENTS_CLARIFICATION_REENTRY_OWNERS or len(reentry) != 3:
         errors.append("active_task_reentry_owners_invalid")
@@ -34923,39 +31996,40 @@ def requirements_clarification_target_disposition_live_errors(
     return context_sort(errors)
 
 
-def requirements_clarification_decision_authority_live_errors(
+def requirements_clarification_decision_authority_live_result(
     root: Path,
     target: Any,
     authority: Any,
-) -> list[str]:
+) -> tuple[list[str], str | None]:
     if not isinstance(target, dict) or target.get("kind") != "issue":
-        return ["active_task_decision_authority_requires_issue"]
+        return ["active_task_decision_authority_requires_issue"], None
     if not isinstance(authority, dict):
-        return ["active_task_decision_authority_invalid"]
+        return ["active_task_decision_authority_invalid"], None
     repo = str(target.get("repo") or "")
     number = target.get("issue_number")
     if not isinstance(number, int) or number <= 0:
-        return ["active_task_decision_authority_requires_issue"]
+        return ["active_task_decision_authority_requires_issue"], None
     if authority.get("kind") == "issue_body":
         facts, issue_error = context_read_live_issue(root, repo, number)
+        updated_at = facts.get("updated_at") if isinstance(facts, dict) else None
         if (
             issue_error is not None
             or facts is None
             or authority.get("url") != facts.get("url")
             or authority.get("content_sha256") != facts.get("body_sha256")
-            or authority.get("updated_at") != facts.get("updated_at")
+            or not requirements_clarification_nonempty(updated_at)
         ):
-            return ["active_task_decision_authority_body_stale"]
-        return []
+            return ["active_task_decision_authority_body_stale"], None
+        return [], str(updated_at)
     if authority.get("kind") != "issue_comment":
-        return ["active_task_decision_authority_invalid"]
+        return ["active_task_decision_authority_invalid"], None
     url = str(authority.get("url") or "")
     match = re.fullmatch(
         rf"https://github\.com/{re.escape(repo)}/issues/{number}#issuecomment-([1-9][0-9]*)",
         url,
     )
     if match is None:
-        return ["active_task_decision_authority_comment_invalid"]
+        return ["active_task_decision_authority_comment_invalid"], None
     comment_id = int(match.group(1))
     proc = run(
         ["gh", "api", f"repos/{repo}/issues/comments/{comment_id}"],
@@ -34963,21 +32037,22 @@ def requirements_clarification_decision_authority_live_errors(
         check=False,
     )
     if proc.returncode != 0:
-        return ["active_task_decision_authority_comment_unreadable"]
+        return ["active_task_decision_authority_comment_unreadable"], None
     try:
         comment = json.loads(proc.stdout)
     except json.JSONDecodeError:
-        return ["active_task_decision_authority_comment_unreadable"]
+        return ["active_task_decision_authority_comment_unreadable"], None
+    updated_at = comment.get("updated_at") if isinstance(comment, dict) else None
     if (
         not isinstance(comment, dict)
         or comment.get("id") != comment_id
         or comment.get("html_url") != url
-        or authority.get("updated_at") != comment.get("updated_at")
+        or not requirements_clarification_nonempty(updated_at)
         or authority.get("content_sha256")
         != hashlib.sha256(str(comment.get("body") or "").encode("utf-8")).hexdigest()
     ):
-        return ["active_task_decision_authority_comment_stale"]
-    return []
+        return ["active_task_decision_authority_comment_stale"], None
+    return [], str(updated_at)
 
 
 def requirements_clarification_active_task_live_errors(
@@ -34991,16 +32066,6 @@ def requirements_clarification_active_task_live_errors(
     if not isinstance(evidence, dict):
         return ["active_task_evidence_required"]
     errors: list[str] = []
-    planning_approval_payload: dict[str, Any] = {}
-    try:
-        _, planning_approval_payload, planning_approval_errors = validate_planning_approval(
-            root,
-            task_dir,
-        )
-    except WorkflowError:
-        planning_approval_errors = ["planning approval unavailable"]
-    if planning_approval_errors:
-        errors.append("active_task_planning_approval_invalid")
     ledger_payload: Any = None
     file_rows: list[dict[str, Any]] = []
     ledger = evidence.get("ledger")
@@ -35009,28 +32074,19 @@ def requirements_clarification_active_task_live_errors(
     planning = evidence.get("planning_documents")
     if isinstance(planning, list):
         file_rows.extend(row for row in planning if isinstance(row, dict))
-    reviewed_artifacts = planning_approval_payload.get("reviewed_artifacts")
-    normalized_reviewed = [
-        normalized_digest_entry(root, task_dir, item)
-        for item in reviewed_artifacts
-    ] if isinstance(reviewed_artifacts, list) else []
-    reviewed_by_path = {
-        str(item.get("path")): item
-        for item in normalized_reviewed
-        if isinstance(item, dict)
-    }
-    expected_planning_from_approval = [
+    expected_planning = [
         {
             "path": repo_relative(root, task_dir / name),
-            "content_sha256": reviewed_by_path.get(
-                repo_relative(root, task_dir / name),
-                {},
-            ).get("sha256"),
+            "content_sha256": requirements_clarification_file_digest(
+                task_dir / name
+            ),
         }
         for name in DEFAULT_PLANNING_ARTIFACTS
     ]
-    if planning != expected_planning_from_approval:
-        errors.append("active_task_planning_approval_binding_mismatch")
+    if planning != expected_planning or any(
+        item["content_sha256"] is None for item in expected_planning
+    ):
+        errors.append("active_task_planning_binding_mismatch")
     for row in file_rows:
         path_value = row.get("path")
         if not isinstance(path_value, str):
@@ -35054,6 +32110,7 @@ def requirements_clarification_active_task_live_errors(
     if not isinstance(ledger_payload, dict) or not required_ledger_keys.issubset(ledger_payload):
         errors.append("active_task_ledger_structure_invalid")
     trail = evidence.get("decision_trail")
+    authority_updated_at: str | None = None
     if isinstance(trail, dict):
         scope_decisions = ledger_payload.get("scope_decisions") if isinstance(ledger_payload, dict) else None
         matching = [
@@ -35062,55 +32119,12 @@ def requirements_clarification_active_task_live_errors(
         ] if isinstance(scope_decisions, list) else []
         if len(matching) != 1 or matching[0] != trail:
             errors.append("active_task_decision_trail_ledger_mismatch")
-        errors.extend(
-            requirements_clarification_decision_authority_live_errors(
-                root,
-                payload.get("review_target"),
-                trail.get("github_authority"),
+        authority_errors, authority_updated_at = (
+            requirements_clarification_decision_authority_live_result(
+                root, payload.get("review_target"), trail.get("github_authority")
             )
         )
-    stale = evidence.get("stale_downstream_evidence")
-    if isinstance(stale, dict):
-        stale_files = {
-            "planning_approval_sha256": task_dir / PLANNING_APPROVAL_ARTIFACT,
-            "phase2_check_sha256": task_dir / PHASE2_CHECK_ARTIFACT,
-            "branch_review_sha256": task_dir / "review-gate.json",
-        }
-        for field, path in stale_files.items():
-            expected = stale.get(field)
-            actual = requirements_clarification_file_digest(path)
-            if expected is None and actual is not None:
-                errors.append("active_task_stale_evidence_unbound")
-            elif expected is not None and actual != expected:
-                errors.append("active_task_stale_evidence_drift")
-    review = evidence.get("review_evidence")
-    review_path = task_dir / "review-gate.json"
-    review_started = review_path.exists()
-    review_status = review.get("status") if isinstance(review, dict) else None
-    if review_started:
-        if review_status != "stale":
-            errors.append("active_task_review_started_requires_stale")
-        artifact = review.get("artifact") if isinstance(review, dict) else None
-        if isinstance(artifact, dict):
-            try:
-                bound_review_path = root / context_query_path_shape(
-                    str(artifact.get("path") or "")
-                )
-            except WorkflowError:
-                errors.append("active_task_review_evidence_invalid")
-            else:
-                if (
-                    bound_review_path != review_path
-                    or requirements_clarification_file_digest(bound_review_path)
-                    != artifact.get("content_sha256")
-                ):
-                    errors.append("active_task_review_evidence_stale")
-        else:
-            errors.append("active_task_review_evidence_invalid")
-    elif review_status != "not_started" or (
-        isinstance(review, dict) and review.get("artifact") is not None
-    ):
-        errors.append("active_task_review_not_started_required")
+        errors.extend(authority_errors)
     context = payload.get("context_evidence")
     context_path = task_dir / "context-discovery.json"
     if isinstance(context, dict) and context.get("status") == "current":
@@ -35125,9 +32139,7 @@ def requirements_clarification_active_task_live_errors(
                 identity = snapshot.get("snapshot_identity") if isinstance(snapshot, dict) else None
                 if not isinstance(identity, dict) or identity.get("snapshot_sha256") != context.get("snapshot_sha256"):
                     errors.append("requirements_context_snapshot_stale")
-                trail = evidence.get("decision_trail")
-                authority = trail.get("github_authority") if isinstance(trail, dict) else None
-                if isinstance(authority, dict):
+                if isinstance(trail, dict) and authority_updated_at is not None:
                     try:
                         context_generated_at = parse_iso_datetime(
                             snapshot.get("generated_at") if isinstance(snapshot, dict) else None,
@@ -35138,7 +32150,7 @@ def requirements_clarification_active_task_live_errors(
                     else:
                         try:
                             authority_updated_at = parse_iso_datetime(
-                                authority.get("updated_at"),
+                                authority_updated_at,
                                 "active-task GitHub authority updated_at",
                             )
                         except WorkflowError:
@@ -35281,9 +32293,6 @@ def requirements_clarification_live_errors(
             root, payload.get("target_disposition")
         )
     )
-    errors.extend(
-        requirements_clarification_active_task_action_confirmation_errors(payload)
-    )
     proposals = payload.get("scope_proposals")
     has_active_task_terminal_reentry = (
         task_dir is not None
@@ -35338,7 +32347,7 @@ def contract_wording_scope_from_args(
     if profile == "planning_artifacts":
         task_dir = resolve_task_dir(root, getattr(args, "task", None))
         config = load_config(root)
-        task_context = load_task_start_context(task_dir, config)
+        task_context = load_task_runtime_identity(task_dir, config)
         assert_workspace_boundary(root, config, task_context, task_dir)
     elif getattr(args, "task", None):
         raise WorkflowError("Only planning_artifacts accepts --task.", exit_code=2)
@@ -35357,25 +32366,7 @@ def cmd_record_contract_wording_review(args: argparse.Namespace) -> dict[str, An
     root = repo_root(Path(args.root or os.getcwd()))
     profile = str(args.profile or "").strip()
     mode = str(args.mode or "").strip()
-    scope, contents, task_dir = contract_wording_scope_from_args(root, args, profile, mode)
-    replace_stale = bool(getattr(args, "replace_stale", False))
-    supersede_facts = str(
-        getattr(args, "supersede_reentry_facts_sha256", None) or ""
-    ).strip()
-    if replace_stale and supersede_facts:
-        raise WorkflowError(
-            "Stale replacement and current re-entry supersession are mutually exclusive.",
-            exit_code=2,
-            payload={"error_codes": ["contract_wording_replacement_modes_conflict"]},
-        )
-    if (replace_stale or supersede_facts) and (
-        profile != "planning_artifacts" or bool(getattr(args, "scan_only", False))
-    ):
-        raise WorkflowError(
-            "Contract wording replacement is available only while recording task-local planning_artifacts evidence.",
-            exit_code=2,
-            payload={"error_codes": ["contract_wording_replacement_profile_invalid"]},
-        )
+    scope, contents, _task_dir = contract_wording_scope_from_args(root, args, profile, mode)
     scan = scan_contract_wording(scope, contents)
     if args.scan_only:
         if getattr(args, "input", None):
@@ -35400,111 +32391,20 @@ def cmd_record_contract_wording_review(args: argparse.Namespace) -> dict[str, An
             exit_code=2,
             payload={"error_codes": errors},
         )
-    if profile != "planning_artifacts":
-        return result
-
-    assert task_dir is not None
-    target = task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT
-    trackability = contract_wording_trackability_errors(root, target)
-    if trackability:
-        raise WorkflowError(
-            "Contract wording evidence target must be trackable by Git.",
-            exit_code=2,
-            payload={"error_codes": trackability},
-        )
-    if not target.exists() and (replace_stale or supersede_facts):
-        raise WorkflowError(
-            "Contract wording replacement requires an existing task-local artifact.",
-            exit_code=2,
-            payload={"error_codes": ["contract_wording_replacement_target_missing"]},
-        )
-    if target.exists():
-        existing = read_json(target)
-        if existing != result and not replace_stale and not supersede_facts:
-            raise WorkflowError(
-                "Existing contract-wording-review.json differs; use --replace-stale for stale evidence or --supersede-reentry-facts-sha256 after a current non-pass re-entry.",
-                exit_code=2,
-            )
-        if replace_stale or supersede_facts:
-            existing_errors = contract_wording_structural_errors(root, existing, scope, scan)
-            if replace_stale:
-                if not existing_errors:
-                    raise WorkflowError(
-                        "Current contract-wording-review.json cannot be replaced as stale.",
-                        exit_code=2,
-                    )
-            else:
-                supersession_errors: list[str] = []
-                if re.fullmatch(r"[0-9a-f]{64}", supersede_facts) is None:
-                    supersession_errors.append(
-                        "contract_wording_reentry_superseded_facts_invalid"
-                    )
-                if existing == result:
-                    supersession_errors.append(
-                        "contract_wording_reentry_requires_new_result"
-                    )
-                if existing_errors:
-                    supersession_errors.append(
-                        "contract_wording_reentry_requires_current_evidence"
-                    )
-                if (
-                    existing.get("profile") != result.get("profile")
-                    or existing.get("mode") != result.get("mode")
-                ):
-                    supersession_errors.append(
-                        "contract_wording_reentry_profile_mismatch"
-                    )
-                if existing.get("facts_sha256") != supersede_facts:
-                    supersession_errors.append(
-                        "contract_wording_reentry_superseded_facts_mismatch"
-                    )
-                if existing.get("typed_exit") == "pass":
-                    supersession_errors.append(
-                        "contract_wording_current_pass_protected"
-                    )
-                elif existing.get("typed_exit") not in {"content_changed", "blocked"}:
-                    supersession_errors.append(
-                        "contract_wording_reentry_requires_nonpass_exit"
-                    )
-                if supersession_errors:
-                    raise WorkflowError(
-                        "Contract wording same-profile re-entry supersession is invalid.",
-                        exit_code=2,
-                        payload={"error_codes": context_sort(supersession_errors)},
-                    )
-    write_json(target, result)
-    persisted = read_json(target)
-    if persisted != result:
-        raise WorkflowError("Persisted contract wording evidence identity mismatch.", exit_code=2)
-    trackability = contract_wording_trackability_errors(root, target)
-    if trackability:
-        raise WorkflowError(
-            "Contract wording evidence target must remain trackable by Git.",
-            exit_code=2,
-            payload={"error_codes": trackability},
-        )
     return result
 
 
 def cmd_check_contract_wording_review(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     input_value = getattr(args, "input", None)
-    if input_value:
-        payload = contract_wording_read_input(root, input_value, "contract wording checker")
-    elif getattr(args, "task", None):
-        task_dir = resolve_task_dir(root, args.task)
-        payload = read_json(task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT)
-    else:
-        raise WorkflowError("check-contract-wording-review requires --input or --task.", exit_code=2)
+    if not input_value:
+        raise WorkflowError("check-contract-wording-review requires --input.", exit_code=2)
+    payload = contract_wording_read_input(root, input_value, "contract wording checker")
     profile = str(payload.get("profile") or "")
     mode = str(payload.get("mode") or "")
-    scope, contents, task_dir = contract_wording_scope_from_args(root, args, profile, mode)
+    scope, contents, _task_dir = contract_wording_scope_from_args(root, args, profile, mode)
     scan = scan_contract_wording(scope, contents)
     errors = contract_wording_structural_errors(root, payload, scope, scan)
-    if task_dir is not None:
-        expected_target = task_dir / CONTRACT_WORDING_EVIDENCE_ARTIFACT
-        if not input_value or Path(input_value).name == CONTRACT_WORDING_EVIDENCE_ARTIFACT:
-            errors.extend(contract_wording_trackability_errors(root, expected_target))
     if args.expected_facts_sha256 and args.expected_facts_sha256 != payload.get("facts_sha256"):
         errors.append("expected_contract_wording_facts_mismatch")
     if errors:
@@ -36305,7 +33205,7 @@ def change_request_review_derive_result(
 ) -> dict[str, Any]:
     expected = {
         "generated_at", "mode", "target", "prerequisite_payloads",
-        "semantic_review", "human_confirmation", "typed_exit", "reason",
+        "semantic_review", "typed_exit", "reason",
         "affected_evidence", "consumer",
     }
     if set(authored) != expected:
@@ -36323,7 +33223,6 @@ def change_request_review_derive_result(
         "prerequisites": copy.deepcopy(prerequisites),
         "evidence_linkage": copy.deepcopy(linkage),
         "semantic_review": copy.deepcopy(authored.get("semantic_review")),
-        "human_confirmation": copy.deepcopy(authored.get("human_confirmation")),
         "typed_exit": authored.get("typed_exit"),
         "reason": authored.get("reason"),
         "affected_evidence": copy.deepcopy(authored.get("affected_evidence")),
@@ -36350,7 +33249,7 @@ def change_request_review_structural_errors(
     expected_top = {
         "schema_version", "skill_id", "generated_at", "mode", "target",
         "prerequisites", "evidence_linkage", "semantic_review",
-        "human_confirmation", "typed_exit", "reason", "affected_evidence",
+        "typed_exit", "reason", "affected_evidence",
         "consumer", "facts_sha256",
     }
     if set(payload) != expected_top:
@@ -36462,15 +33361,6 @@ def change_request_review_structural_errors(
     expected_gate = CHANGE_REQUEST_REVIEW_GATE_BY_EXIT.get(typed_exit)
     if gate.get("status") != expected_gate:
         errors.append("change_request_review_gate_exit_mismatch")
-    confirmation = payload.get("human_confirmation")
-    confirmation = confirmation if isinstance(confirmation, dict) else {}
-    if confirmation.get("status") == "not_required" and confirmation.get("proposal_sha256") is not None:
-        errors.append("change_request_review_confirmation_shape_invalid")
-    if confirmation.get("status") == "required" and (
-        typed_exit != "clarify_requirements"
-        or change_request_review_sha256(confirmation.get("proposal_sha256")) is None
-    ):
-        errors.append("change_request_review_confirmation_route_invalid")
     if typed_exit in CHANGE_REQUEST_REVIEW_CONSUMERS and typed_exit != "ready":
         if not findings:
             errors.append("change_request_review_non_ready_requires_finding")
@@ -36502,8 +33392,6 @@ def change_request_review_structural_errors(
             for finding in findings
         ):
             errors.append("change_request_review_ready_has_blocking_finding")
-        if confirmation.get("status") != "not_required":
-            errors.append("change_request_review_ready_confirmation_invalid")
         if any(
             expected_linkage.get(field) is None
             for field in (
@@ -36816,27 +33704,70 @@ def task_workspace_reviewable_projection(plan: dict[str, Any]) -> dict[str, Any]
     }
 
 
-def task_workspace_confirmation_digest(confirmation: dict[str, Any]) -> str:
-    projection = copy.deepcopy(confirmation)
-    projection.pop("confirmation_sha256", None)
-    return context_digest(projection)
-
-
-def task_workspace_active_confirmation_name(plan: dict[str, Any]) -> str:
-    target = plan.get("target") if isinstance(plan.get("target"), dict) else {}
-    return (
-        "github_issue_mutation"
-        if target.get("kind") == "reviewed_draft"
-        else "workspace_and_task_mutation"
-    )
-
-
 def task_workspace_plan_digest(plan: dict[str, Any]) -> str:
     projection = copy.deepcopy(plan)
     freshness = projection.get("freshness")
     if isinstance(freshness, dict):
         freshness.pop("plan_sha256", None)
     return context_digest(projection)
+
+
+def task_workspace_project_legacy_result(result: dict[str, Any]) -> dict[str, Any]:
+    if result.get("schema_version") != "1.0":
+        return result
+    if result.get("typed_exit") == "cancelled":
+        raise WorkflowError(
+            "Legacy cancelled task workspace results have no v2 execution route.",
+            exit_code=2,
+            payload={"typed_exit": "blocked", "error_code": "task_workspace_legacy_cancelled_terminal"},
+        )
+    projected = copy.deepcopy(result)
+    projected["schema_version"] = TASK_WORKSPACE_RESULT_SCHEMA_VERSION
+    created_issue = projected.get("created_issue")
+    if isinstance(created_issue, dict):
+        created_issue.pop("creation_confirmation_sha256", None)
+        created_issue["facts_sha256"] = context_digest({
+            key: value for key, value in created_issue.items() if key != "facts_sha256"
+        })
+    created_workspace = projected.get("created_workspace")
+    if isinstance(created_workspace, dict):
+        created_workspace["artifacts"] = [
+            row for row in created_workspace.get("artifacts", [])
+            if isinstance(row, dict) and str(row.get("path") or "").endswith("/issue-scope-ledger.json")
+        ]
+    projected["facts_sha256"] = task_workspace_result_digest(projected)
+    return projected
+
+
+def task_workspace_project_legacy_plan(plan: dict[str, Any]) -> dict[str, Any]:
+    if plan.get("schema_version") != "1.0":
+        return plan
+    projected = copy.deepcopy(plan)
+    projected["schema_version"] = TASK_WORKSPACE_PLAN_SCHEMA_VERSION
+    projected.pop("confirmations", None)
+    target = projected.get("target") if isinstance(projected.get("target"), dict) else {}
+    created_result = target.get("created_issue_result")
+    if isinstance(created_result, dict):
+        target["created_issue_result"] = task_workspace_project_legacy_result(created_result)
+        binding = target["created_issue_result"].get("created_issue")
+        target["created_issue_binding_sha256"] = (
+            binding.get("facts_sha256") if isinstance(binding, dict) else None
+        )
+    side_effects = projected.get("side_effects")
+    if isinstance(side_effects, dict):
+        side_effects["task_artifacts"] = [
+            value for value in side_effects.get("task_artifacts", [])
+            if str(value).endswith("/issue-scope-ledger.json")
+        ]
+    reviewable_sha = context_digest(task_workspace_reviewable_projection(projected))
+    gate = projected.get("ai_review_gate")
+    if isinstance(gate, dict):
+        gate["reviewed_plan_sha256"] = reviewable_sha
+    freshness = projected.get("freshness")
+    if isinstance(freshness, dict):
+        freshness["reviewable_plan_sha256"] = reviewable_sha
+        freshness["plan_sha256"] = task_workspace_plan_digest(projected)
+    return projected
 
 
 def task_workspace_scope_digest(scope: dict[str, Any]) -> str:
@@ -37003,37 +33934,14 @@ def task_workspace_plan_semantic_errors(
     gate_status = gate.get("status")
     if gate_status not in {"passed", "blocked", "reroute"} or gate.get("reviewed_plan_sha256") != reviewable_sha:
         errors.append("task_workspace_ai_review_gate_invalid")
-    confirmations = plan.get("confirmations") if isinstance(plan.get("confirmations"), dict) else {}
-    for name in ("github_issue_mutation", "workspace_and_task_mutation"):
-        confirmation = confirmations.get(name) if isinstance(confirmations.get(name), dict) else {}
-        if confirmation.get("status") in {"confirmed", "refused"}:
-            if confirmation.get("reviewed_plan_sha256") != reviewable_sha:
-                errors.append(f"task_workspace_{name}_plan_digest_mismatch")
-            if confirmation.get("confirmation_sha256") != task_workspace_confirmation_digest(confirmation):
-                errors.append(f"task_workspace_{name}_confirmation_digest_mismatch")
-            if not str(confirmation.get("source") or "").strip() or not str(confirmation.get("evidence") or "").strip():
-                errors.append(f"task_workspace_{name}_confirmation_evidence_missing")
-        elif any(
-            confirmation.get(key) is not None
-            for key in ("source", "reviewed_plan_sha256", "evidence", "confirmation_sha256")
-        ):
-            errors.append(f"task_workspace_{name}_inactive_confirmation_has_evidence")
-
-    active_confirmation = confirmations.get(task_workspace_active_confirmation_name(plan))
-    active_confirmation = active_confirmation if isinstance(active_confirmation, dict) else {}
-    active_status = active_confirmation.get("status")
     dispositions = {
         plan.get("naming", {}).get(key)
         for key in ("branch_disposition", "workspace_disposition", "task_disposition")
         if isinstance(plan.get("naming"), dict)
     }
     if gate_status == "passed":
-        if active_status not in {"confirmed", "refused"}:
-            errors.append("task_workspace_passed_gate_confirmation_invalid")
         if "conflict_blocked" in dispositions:
             errors.append("task_workspace_passed_gate_has_object_conflict")
-    elif gate_status in {"blocked", "reroute"} and active_status != "not_in_current_invocation":
-        errors.append("task_workspace_non_pass_gate_confirmation_invalid")
 
     target = plan.get("target") if isinstance(plan.get("target"), dict) else {}
     invocation = plan.get("invocation") if isinstance(plan.get("invocation"), dict) else {}
@@ -37084,7 +33992,7 @@ def task_workspace_plan_semantic_errors(
         expected_parent_suffix = f"-{naming.get('task_slug')}"
         if (
             artifact_names != expected_names
-            or len(artifact_paths) != 4
+            or len(artifact_paths) != 1
             or len(artifact_parents) != 1
             or not next(iter(artifact_parents), "").startswith(".trellis/tasks/")
             or not Path(next(iter(artifact_parents), "")).name.endswith(expected_parent_suffix)
@@ -37222,8 +34130,8 @@ def task_workspace_snapshot(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
 def cmd_record_task_workspace_plan(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     input_path = task_workspace_input_path(root, args.input, "task workspace authored plan")
-    before = task_workspace_snapshot(root, read_json(input_path))
-    plan = read_json(input_path)
+    plan = task_workspace_project_legacy_plan(read_json(input_path))
+    before = task_workspace_snapshot(root, plan)
     _, errors = task_workspace_validate_plan(root, plan)
     after = task_workspace_snapshot(root, plan)
     if before != after:
@@ -37416,9 +34324,6 @@ def task_workspace_no_side_effect_result(
 def task_workspace_created_issue_result(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
     target = plan["target"]
     draft = target.get("draft") if isinstance(target.get("draft"), dict) else {}
-    confirmation = plan["confirmations"]["github_issue_mutation"]
-    if confirmation.get("status") != "confirmed":
-        raise WorkflowError("Reviewed issue creation lacks its exact confirmation.", exit_code=2)
     candidates = task_workspace_created_issue_recovery_candidates(root, plan)
     if len(candidates) > 1:
         raise WorkflowError(
@@ -37447,7 +34352,6 @@ def task_workspace_created_issue_result(root: Path, plan: dict[str, Any]) -> dic
         "updated_at": issue.get("updatedAt"),
         "reviewed_draft_id": draft.get("draft_id"),
         "reviewed_draft_sha256": draft.get("reviewed_draft_sha256"),
-        "creation_confirmation_sha256": confirmation.get("confirmation_sha256"),
     }
     live_labels = task_workspace_issue_labels(issue)
     reviewed_labels = sorted({str(item) for item in draft.get("labels", []) if str(item)})
@@ -37515,21 +34419,6 @@ def task_workspace_issue_scope_ledger(plan: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def task_workspace_prerequisite_context(plan: dict[str, Any]) -> dict[str, Any]:
-    return {
-        key: {
-            "skill_id": row["skill_id"],
-            "schema_id": row["schema_id"],
-            "typed_exit": row["typed_exit"],
-            "payload_sha256": row["payload_sha256"],
-            "facts_sha256": row["facts_sha256"],
-            "content_sha256": row["content_sha256"],
-            "linkage_sha256": row["linkage_sha256"],
-        }
-        for key, row in plan["prerequisites"].items()
-    }
-
-
 def task_workspace_planned_task_dir(workspace: Path, plan: dict[str, Any]) -> Path:
     artifact_paths = [Path(str(value)) for value in plan["side_effects"]["task_artifacts"]]
     parents = {path.parent for path in artifact_paths}
@@ -37552,63 +34441,9 @@ def task_workspace_intended_artifacts(
     plan: dict[str, Any],
     live: dict[str, Any],
 ) -> dict[str, bytes]:
-    target = plan["target"]
-    naming = plan["naming"]
-    assignee = plan["assignee"]["login"]
     ledger = task_workspace_issue_scope_ledger(plan)
-    final_binding = {
-        "repo": target["repo"],
-        "number": target["issue_number"],
-        "url": target["url"],
-        "state": "open",
-        "title_sha256": target["title_sha256"],
-        "body_sha256": target["body_sha256"],
-        "updated_at": target["updated_at"],
-        "target_disposition_sha256": target["disposition_sha256"],
-        "created_issue_binding_sha256": target.get("created_issue_binding_sha256"),
-    }
-    context_payload = {
-        "base_freshness": {
-            "status": "fresh",
-            "local_head_after": plan["base"]["local_head"],
-            "remote_head": plan["base"]["remote_head"],
-            "base_ref": plan["base"]["base_ref"],
-        },
-        "source_repo": target["repo"],
-        "source_issue": {
-            "number": target["issue_number"],
-            "url": target["url"],
-            "title": live["title"],
-            "created_by_workflow": target.get("created_issue_binding_sha256") is not None,
-        },
-        "task_slug": naming["task_slug"],
-        "task_title": naming["task_title"],
-        "workspace_path": str(workspace),
-        "branch_name": naming["branch_name"],
-        "base_branch": plan["base"]["selected_base"],
-        "workspace_slug": naming["workspace_slug"],
-        "issue_scope_ledger": ledger,
-        "naming_quality": {"ok": True, "reason": naming["reason"]},
-        "duplicate_search": {"performed": True},
-        "final_source_issue_binding": final_binding,
-        "prerequisite_evidence": task_workspace_prerequisite_context(plan),
-    }
-    task_context = build_task_start_context(root, context_payload, task_dir, assignee)
-    context_path = task_workspace_portable_input_path(
-        root,
-        plan["prerequisites"]["context"]["artifact"],
-        "context discovery canonical bytes",
-    )
-    readiness_path = task_workspace_portable_input_path(
-        root,
-        plan["prerequisites"]["readiness"]["artifact"],
-        "issue review canonical bytes",
-    )
     return {
-        "task-start-context.json": json_document_bytes(task_context),
         "issue-scope-ledger.json": json_document_bytes(ledger),
-        "context-discovery.json": context_path.read_bytes(),
-        "issue-review.json": readiness_path.read_bytes(),
     }
 
 
@@ -37858,9 +34693,6 @@ def task_workspace_created_workspace_result(
     task_workspace_validate_assignee(root, plan, live)
     if run(["git", "rev-parse", "HEAD"], cwd=root, check=False).stdout.strip() != plan["base"]["decision_head"]:
         raise WorkflowError("Task workspace source HEAD drifted from the reviewed base.", exit_code=2)
-    confirmation = plan["confirmations"]["workspace_and_task_mutation"]
-    if confirmation.get("status") != "confirmed":
-        raise WorkflowError("Workspace/task mutation lacks its exact confirmation.", exit_code=2)
 
     workspace, task_dir, config = task_workspace_prepare_objects(root, plan)
     task_workspace_require_execution_boundary(root, plan, workspace)
@@ -37955,7 +34787,7 @@ def task_workspace_created_workspace_result(
         "mode": plan["mode"],
         "variant": "created_workspace",
         "plan_sha256": plan["freshness"]["plan_sha256"],
-        "executor": task_workspace_stage("passed", ["Created or exactly reused the reviewed branch, worktree and task.", "Wrote exactly four portable task-local Intake artifacts."]),
+        "executor": task_workspace_stage("passed", ["Created or exactly reused the reviewed branch, worktree and task.", "Wrote the one durable task-local Issue Scope Ledger."]),
         "checker": task_workspace_stage("not_run", []),
         "created_issue": None,
         "created_workspace": created,
@@ -37970,7 +34802,9 @@ def task_workspace_created_workspace_result(
 
 def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    plan = read_json(task_workspace_input_path(root, args.input, "task workspace plan"))
+    plan = task_workspace_project_legacy_plan(
+        read_json(task_workspace_input_path(root, args.input, "task workspace plan"))
+    )
     payloads, errors = task_workspace_validate_plan(root, plan)
     if errors:
         raise WorkflowError(
@@ -37980,8 +34814,6 @@ def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
         )
     before = task_workspace_snapshot(root, plan)
     gate_status = plan["ai_review_gate"]["status"]
-    confirmation_name = task_workspace_active_confirmation_name(plan)
-    confirmation_status = plan["confirmations"][confirmation_name]["status"]
     requested_route = None
     reason_code = str(getattr(args, "reason_code", None) or "")
     if gate_status == "reroute":
@@ -37994,18 +34826,8 @@ def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
             for key in ("branch_disposition", "workspace_disposition", "task_disposition")
         }
         reason_code = reason_code or ("object_conflict" if "conflict_blocked" in dispositions else "execution_blocked")
-    elif confirmation_status == "refused":
-        requested_route = "cancelled"
-        reason_code = "user_cancelled"
-    if getattr(args, "cancelled", False) and requested_route != "cancelled":
-        raise WorkflowError("--cancelled requires an AI-reviewed plan with refused confirmation.", exit_code=2)
     if getattr(args, "refresh_review", False) and requested_route != "refresh_review":
         raise WorkflowError("--refresh-review requires an AI Review Gate reroute plan.", exit_code=2)
-    if requested_route == "cancelled":
-        return task_workspace_no_side_effect_result(
-            plan, before, task_workspace_snapshot(root, plan), "cancelled", "user_cancelled",
-            str(getattr(args, "reason", None) or "The user cancelled the exact task workspace plan."),
-        )
     if requested_route == "refresh_review":
         return task_workspace_no_side_effect_result(
             plan, before, task_workspace_snapshot(root, plan), "refresh_review", reason_code,
@@ -38017,7 +34839,7 @@ def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
             str(getattr(args, "reason", None) or "The AI Review Gate blocked the exact task workspace plan."),
         )
     task_workspace_refresh_base_before_mutation(root, plan, payloads["base"])
-    if plan["target"]["kind"] == "reviewed_draft":
+    if plan["invocation"]["action_scope"] == "github_issue_mutation":
         result = task_workspace_created_issue_result(root, plan)
     else:
         result = task_workspace_created_workspace_result(root, plan, payloads)
@@ -38064,16 +34886,11 @@ def task_workspace_static_plan_errors(root: Path, plan: dict[str, Any]) -> list[
 
 def task_workspace_expected_result_route(plan: dict[str, Any]) -> tuple[str, str, str]:
     gate_status = plan.get("ai_review_gate", {}).get("status")
-    confirmation_name = task_workspace_active_confirmation_name(plan)
-    confirmation = plan.get("confirmations", {}).get(confirmation_name, {})
-    confirmation_status = confirmation.get("status") if isinstance(confirmation, dict) else None
     if gate_status == "reroute":
         return "no_side_effect", "refresh_review", "not_run"
     if gate_status == "blocked":
         return "no_side_effect", "blocked", "not_run"
-    if gate_status == "passed" and confirmation_status == "refused":
-        return "no_side_effect", "cancelled", "not_run"
-    if gate_status == "passed" and confirmation_status == "confirmed":
+    if gate_status == "passed":
         target = plan.get("target") if isinstance(plan.get("target"), dict) else {}
         if target.get("kind") == "reviewed_draft":
             return "created_issue", "refresh_review", "passed"
@@ -38112,15 +34929,12 @@ def task_workspace_result_check_errors(
     if result.get("variant") == "created_issue":
         binding = result.get("created_issue") if isinstance(result.get("created_issue"), dict) else {}
         draft = plan.get("target", {}).get("draft") if isinstance(plan.get("target", {}).get("draft"), dict) else {}
-        confirmation = plan.get("confirmations", {}).get("github_issue_mutation")
-        confirmation = confirmation if isinstance(confirmation, dict) else {}
         for field, expected in (
             ("repo", plan.get("target", {}).get("repo")),
             ("title_sha256", plan.get("target", {}).get("title_sha256")),
             ("body_sha256", plan.get("target", {}).get("body_sha256")),
             ("reviewed_draft_id", draft.get("draft_id")),
             ("reviewed_draft_sha256", draft.get("reviewed_draft_sha256")),
-            ("creation_confirmation_sha256", confirmation.get("confirmation_sha256")),
         ):
             if binding.get(field) != expected:
                 errors.append(f"task_workspace_created_issue_{field}_plan_mismatch")
@@ -38143,7 +34957,6 @@ def task_workspace_result_check_errors(
                 "updated_at": live.get("updatedAt"),
                 "reviewed_draft_id": binding.get("reviewed_draft_id"),
                 "reviewed_draft_sha256": binding.get("reviewed_draft_sha256"),
-                "creation_confirmation_sha256": binding.get("creation_confirmation_sha256"),
             }
             live_binding["facts_sha256"] = context_digest(live_binding)
             if live_binding != binding:
@@ -38257,8 +35070,12 @@ def task_workspace_result_check_errors(
 
 def cmd_check_task_workspace_result(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    plan = read_json(task_workspace_input_path(root, args.plan_input, "task workspace plan"))
-    result = read_json(task_workspace_input_path(root, args.input, "task workspace result"))
+    plan = task_workspace_project_legacy_plan(
+        read_json(task_workspace_input_path(root, args.plan_input, "task workspace plan"))
+    )
+    result = task_workspace_project_legacy_result(
+        read_json(task_workspace_input_path(root, args.input, "task workspace result"))
+    )
     payloads, errors = task_workspace_validate_plan(root, plan)
     if not errors:
         errors.extend(task_workspace_result_check_errors(root, plan, result, payloads))
@@ -38371,12 +35188,6 @@ def build_parser() -> argparse.ArgumentParser:
     wording_record.add_argument("--path", action="append", default=[])
     wording_record.add_argument("--change-request-input")
     wording_record.add_argument("--scan-only", action="store_true")
-    wording_replacement = wording_record.add_mutually_exclusive_group()
-    wording_replacement.add_argument("--replace-stale", action="store_true")
-    wording_replacement.add_argument(
-        "--supersede-reentry-facts-sha256",
-        help="Exact facts_sha256 of current same-profile content_changed/blocked evidence whose consumer has entered a complete re-entry.",
-    )
 
     wording_check = sub.add_parser("check-contract-wording-review")
     wording_check.add_argument("--root")
@@ -38415,9 +35226,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_workspace_create.add_argument("--root")
     task_workspace_create.add_argument("--json", action="store_true")
     task_workspace_create.add_argument("--input", required=True)
-    task_workspace_no_effect = task_workspace_create.add_mutually_exclusive_group()
-    task_workspace_no_effect.add_argument("--cancelled", action="store_true")
-    task_workspace_no_effect.add_argument("--refresh-review", action="store_true")
+    task_workspace_create.add_argument("--refresh-review", action="store_true")
     task_workspace_create.add_argument("--reason")
     task_workspace_create.add_argument(
         "--reason-code",
@@ -38585,9 +35394,16 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--short-name")
     prepare.add_argument("--reuse-issue", type=int)
     prepare.add_argument("--force-new", action="store_true")
-    prepare.add_argument("--create-issue-confirmed", action="store_true", help="Create a GitHub issue only after AI/human review confirmed the proposed title/body.")
-    prepare.add_argument("--issue-title", help="Reviewed issue title used with --create-issue-confirmed.")
-    prepare.add_argument("--issue-body-file", help="Path to reviewed issue body used with --create-issue-confirmed.")
+    prepare.add_argument(
+        "--create-issue-confirmed",
+        action="store_true",
+        help="Deprecated disabled mutation flag; always fails closed and routes to guru-create-task-workspace.",
+    )
+    prepare.add_argument("--issue-title", help="Optional title override for the query-only proposed issue.")
+    prepare.add_argument(
+        "--issue-body-file",
+        help="Deprecated companion to --create-issue-confirmed; accepted only so the disabled legacy call can fail closed.",
+    )
     prepare.add_argument(
         "--expected-resolution-sha256",
         required=True,
@@ -38644,12 +35460,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=sorted(PLANNING_APPROVAL_CONSUMERS),
         help="Require one exact typed exit. Task activation and downstream gates use approved.",
     )
-    check_planning.add_argument("--expected-artifact-sha256")
-    check_planning.add_argument(
-        "--allow-committed-head",
-        action="store_true",
-        help="Compatibility flag; planning freshness is based on reviewed planning artifact digests, not HEAD drift.",
-    )
+    candidate_hygiene = sub.add_parser("check-candidate-hygiene")
+    candidate_hygiene.add_argument("--root")
+    candidate_hygiene.add_argument("--json", action="store_true")
+    candidate_hygiene.add_argument("--task")
+    candidate_hygiene.add_argument("--base-ref")
+    candidate_hygiene.add_argument("--path", action="append", default=[])
 
     phase2 = sub.add_parser("record-phase2-check")
     phase2.add_argument("--root")
@@ -38658,7 +35474,7 @@ def build_parser() -> argparse.ArgumentParser:
     phase2.add_argument(
         "--input",
         required=True,
-        help="AI-authored guru-phase2-check-2.1 input JSON file, or - for stdin. Legacy --pass/--coverage invocation is rejected.",
+        help="AI-authored guru-phase2-check-3.0 input JSON file, or - for stdin. Legacy --pass/--coverage invocation is rejected.",
     )
     phase2.add_argument("--dry-run", action="store_true")
 
@@ -38675,6 +35491,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--input",
         required=True,
         help="AI-authored guru-review-task-publication semantic review JSON file, or - for stdin.",
+    )
+    publication.add_argument(
+        "--reviewed-content-head",
+        required=True,
+        help="Immutable reviewed_content_head from guru-review-branch:passed.",
     )
     publication.add_argument("--dry-run", action="store_true")
 
@@ -38725,6 +35546,12 @@ def build_parser() -> argparse.ArgumentParser:
     check_commit_mode = check_commits.add_mutually_exclusive_group()
     check_commit_mode.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
     check_commit_mode.add_argument("--candidate-artifact", help="Ignored runtime task-commit-plans/<task-key>/<sequence>.json, or a legacy tracked plan for read-only compatibility.")
+
+    prepare_commit = sub.add_parser("prepare-task-commit")
+    prepare_commit.add_argument("--root")
+    prepare_commit.add_argument("--json", action="store_true")
+    prepare_commit.add_argument("--input", required=True)
+    prepare_commit.add_argument("--candidate-json", required=True)
 
     create_commit = sub.add_parser("create-task-commit")
     create_commit.add_argument("--root")
@@ -38883,6 +35710,8 @@ def main() -> int:
             payload = cmd_record_planning_approval(args)
         elif args.command == "check-planning-approval":
             payload = cmd_check_planning_approval(args)
+        elif args.command == "check-candidate-hygiene":
+            payload = cmd_check_candidate_hygiene(args)
         elif args.command == "record-phase2-check":
             payload = cmd_record_phase2_check(args)
         elif args.command == "check-phase2-check":
@@ -38899,6 +35728,8 @@ def main() -> int:
             payload = cmd_check_review_gate(args)
         elif args.command == "check-commit-messages":
             payload = cmd_check_commit_messages(args)
+        elif args.command == "prepare-task-commit":
+            payload = cmd_prepare_task_commit(args)
         elif args.command == "create-task-commit":
             payload = cmd_create_task_commit(args)
         elif args.command == "format-merge-commit":

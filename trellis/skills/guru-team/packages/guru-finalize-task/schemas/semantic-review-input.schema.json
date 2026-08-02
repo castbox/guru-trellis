@@ -1,29 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-semantic-review-input-1.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-semantic-review-input-2.0.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "review", "confirmation", "route", "supersedes_gate_ref"],
+  "required": ["schema_version", "skill_id", "review", "route"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "skill_id": {"const": "guru-finalize-task"},
     "review": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "summary", "evidence_refs"],
+      "required": ["status", "summary"],
       "properties": {
         "status": {"enum": ["passed", "reroute", "blocked"]},
-        "summary": {"type": "string", "minLength": 1},
-        "evidence_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
-      }
-    },
-    "confirmation": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["status", "confirmed_plan_digest", "summary"],
-      "properties": {
-        "status": {"enum": ["confirmed", "not_required"]},
-        "confirmed_plan_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
         "summary": {"type": "string", "minLength": 1}
       }
     },
@@ -48,9 +37,7 @@
               "type": "object",
               "additionalProperties": false,
               "required": ["materialization"],
-              "properties": {
-                "materialization": {"const": "executor"}
-              }
+              "properties": {"materialization": {"const": "executor"}}
             },
             {
               "type": "object",
@@ -59,15 +46,12 @@
                 "type": "object",
                 "additionalProperties": false,
                 "required": ["materialization"],
-                "properties": {
-                  "materialization": {"const": "executor"}
-                }
+                "properties": {"materialization": {"const": "executor"}}
               }
             }
           ]
         }
       }
-    },
-    "supersedes_gate_ref": {"type": ["string", "null"], "minLength": 1}
+    }
   }
 }

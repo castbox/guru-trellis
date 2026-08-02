@@ -28,24 +28,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import guru_team_trellis as gtt
 
 
-def load_task_commit_contract_test_helpers() -> object:
-    helper_path = (
-        Path(__file__).resolve().parents[5]
-        / "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "guru_create_task_commit_contract_test_helpers", helper_path
-    )
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Could not load task commit contract test helpers: {helper_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-task_commit_contract_tests = load_task_commit_contract_test_helpers()
-
-
 def prepare_args(**overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
         "root": None,
@@ -274,29 +256,6 @@ def planning_args(**overrides: object) -> argparse.Namespace:
         "task": None,
         "input": None,
         "require_exit": None,
-        "expected_artifact_sha256": None,
-        "allow_committed_head": False,
-        "dry_run": False,
-    }
-    values.update(overrides)
-    return argparse.Namespace(**values)
-
-
-def phase2_args(**overrides: object) -> argparse.Namespace:
-    values: dict[str, object] = {
-        "root": None,
-        "json": True,
-        "task": None,
-        "input": None,
-        "pass_check": True,
-        "checker": "codex-main-session",
-        "summary": "已按完整 task scope 执行 trellis-check。",
-        "checked_artifact": None,
-        "checked_spec": None,
-        "coverage": list(gtt.REQUIRED_PHASE2_COVERAGE),
-        "validation": ["python3 -m unittest trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py|passed"],
-        "finding": [],
-        "findings_file": None,
         "dry_run": False,
     }
     values.update(overrides)
@@ -454,7 +413,11 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             if skill_id == gtt.TASK_PUBLICATION_SKILL_ID
             else gtt.PHASE2_CHECK_ARTIFACT
         )
-        owner_path = self.task_dir / artifact_name
+        owner_path = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            self.task_dir,
+            artifact_name,
+        )
         gtt.write_json(owner_path, owner_result)
         input_path = self.root / f"{skill_id}-input.json"
         gtt.write_json(input_path, public_input)
@@ -474,10 +437,12 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             mock.patch.object(gtt, "stage0_repo_root", return_value=self.root),
             mock.patch.object(gtt, checker_name, return_value=checked),
         ):
-            return gtt.cmd_invoke_stage0_skill(argparse.Namespace(
+            output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
                 input=input_path.relative_to(self.root).as_posix(),
                 owner_result=owner_path.relative_to(self.root).as_posix(),
             ))
+        self.assertFalse(owner_path.exists())
+        return output
 
     def example_input(self, skill_id: str, name: str) -> dict[str, object]:
         return json.loads(
@@ -493,7 +458,6 @@ class ProductionPublicInvocationTest(unittest.TestCase):
                 [],
                 {
                     "exit_id": "approved", "task_ref": self.task_rel,
-                    "approval_ref": f"planning-approval:{sha}",
                 },
             ),
             (
@@ -522,17 +486,15 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             with self.subTest(exit_id=exit_id):
                 public_input = self.example_input("guru-approve-task-plan", example_name)
                 public_input["task_ref"] = self.task_rel
-                public_input["exit_intent"] = exit_id
                 gate_status = "passed" if exit_id == "approved" else exit_id
-                public_input["ai_review_gate"]["status"] = gate_status  # type: ignore[index]
                 owner = {
                     "mode": public_input["mode"],
                     "typed_exit": exit_id,
-                    "task": {"task_dir": self.task_rel},
-                    "semantic_review": {"ai_review_gate": {
+                    "task_ref": self.task_rel,
+                    "semantic_review": {
                         "status": gate_status,
                         "scope_proposals": proposals,
-                    }},
+                    },
                 }
                 output = self.invoke(
                     "guru-approve-task-plan",
@@ -554,7 +516,6 @@ class ProductionPublicInvocationTest(unittest.TestCase):
                 {
                     "exit_id": "passed", "task_ref": self.task_rel,
                     "checked_head": head,
-                    "check_ref": gtt.task_commit_public_check_ref(sha),
                 },
             ),
             (
@@ -590,20 +551,19 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             with self.subTest(exit_id=exit_id):
                 public_input = self.example_input("guru-check-task", example_name)
                 public_input["task_ref"] = self.task_rel
-                public_input["exit_intent"] = exit_id
-                public_input["ai_review_gate"]["status"] = exit_id  # type: ignore[index]
                 owner = {
                     "mode": public_input["mode"],
                     "typed_exit": exit_id,
                     "route": route,
-                    "task": {"task_dir": self.task_rel},
-                    "scope_qualification": {"candidates": ([{
-                        "id": "scope-proposal:R13",
-                        "disposition": "scope_change_required",
-                    }] if exit_id == "planning_stale" else [])},
+                    "task_ref": self.task_rel,
                     "semantic_review": {
                         "findings": findings,
-                        "ai_review_gate": {"status": exit_id},
+                        "status": exit_id,
+                        "scope_decisions": ([{
+                            "id": "scope-proposal:R13",
+                            "disposition": "scope_change_required",
+                            "finding_id": None,
+                        }] if exit_id == "planning_stale" else []),
                     },
                 }
                 output = self.invoke(
@@ -625,8 +585,8 @@ class ProductionPublicInvocationTest(unittest.TestCase):
         owner = {
             "mode": public_input["mode"],
             "typed_exit": "passed",
-            "task": {"task_dir": ".trellis/tasks/other-task"},
-            "semantic_review": {"ai_review_gate": {"status": "passed"}},
+            "task_ref": ".trellis/tasks/other-task",
+            "semantic_review": {"status": "passed"},
         }
         checked = {
             "status": "ok", "typed_exit": "passed",
@@ -639,7 +599,7 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             "owner_result_input_mismatch",
         )
 
-        owner["task"]["task_dir"] = self.task_rel  # type: ignore[index]
+        owner["task_ref"] = self.task_rel
         stale_checked = {**checked, "typed_exit": "implementation_required"}
         with self.assertRaises(gtt.WorkflowError) as stale_owner:
             self.invoke("guru-check-task", public_input, owner, stale_checked)
@@ -648,34 +608,26 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             "owner_result_input_mismatch",
         )
 
-    def test_publication_stale_wrapper_binds_reason_context_and_prior_identity(self) -> None:
+    def test_publication_stale_wrapper_emits_current_minimal_ready_seed(self) -> None:
         public_input = self.example_input(
             gtt.TASK_PUBLICATION_SKILL_ID,
             "public-publication-review-stale-input.json",
         )
         public_input["task_ref"] = self.task_rel
-        owner = {
-            "task_dir": self.task_rel,
-            "profile": "publication_review_stale",
-            "mode": public_input["mode"],
-            "review_intent": public_input["review_intent"],
-            "stale_reason": public_input["stale_reason"],
-            "reentry_context": public_input["reentry_context"],
-            "supersedes_publication_ref": "publication:prior-owner-round",
-            "review_identity": {
-                "reviewed_head": "c" * 40,
-                "review_ref": "review-gate:current",
-            },
-            "deterministic_bindings": {
-                "publication_ref": "publication:current-owner-round",
-            },
-            "semantic_review": {"findings": []},
-            "typed_exit": "ready",
-        }
+        owner = json.loads(
+            (
+                self.packages
+                / gtt.TASK_PUBLICATION_SKILL_ID
+                / "examples/pr-readiness.json"
+            ).read_text(encoding="utf-8")
+        )
+        owner["task_ref"] = self.task_rel
+        owner["reviewed_content_head"] = "c" * 40
         checked = {
             "status": "ok",
             "typed_exit": "ready",
-            "publication_ref": "publication:current-owner-round",
+            "reviewed_content_head": "c" * 40,
+            "owner_result": owner,
         }
         output = self.invoke(
             gtt.TASK_PUBLICATION_SKILL_ID,
@@ -686,50 +638,35 @@ class ProductionPublicInvocationTest(unittest.TestCase):
         self.assertEqual(output, {
             "exit_id": "ready",
             "task_ref": self.task_rel,
-            "reviewed_head": "c" * 40,
-            "publication_ref": "publication:current-owner-round",
+            "reviewed_content_head": "c" * 40,
         })
-
-        for field, replacement in (
-            ("stale_reason", "different stale reason"),
-            ("reentry_context", "different re-entry context"),
-            ("supersedes_publication_ref", ""),
-        ):
-            with self.subTest(field=field):
-                mismatched = copy.deepcopy(owner)
-                mismatched[field] = replacement
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    self.invoke(
-                        gtt.TASK_PUBLICATION_SKILL_ID,
-                        public_input,
-                        mismatched,
-                        checked,
-                    )
-                self.assertEqual(
-                    raised.exception.payload.get("code"),
-                    "owner_result_input_mismatch",
-                )
-
-    def test_commit_public_semantic_route_rejects_contradictions(self) -> None:
-        base = self.example_input(
-            "guru-create-task-commit", "public-initial-commit-input.json",
+        self.assertFalse(
+            {"stale_reason", "reentry_context", "publication_ref"} & set(output)
         )
-        cases = [
-            ("committed", "revision-required", "confirmed"),
-            ("revision-required", "passed", "confirmed"),
-            ("blocked", "passed", "confirmed"),
-        ]
-        for exit_id, semantic_status, authorization_status in cases:
-            with self.subTest(exit_id=exit_id):
-                public_input = copy.deepcopy(base)
-                public_input["exit_intent"] = exit_id
-                public_input["semantic_review"]["status"] = semantic_status  # type: ignore[index]
-                public_input["human_authorization"]["status"] = authorization_status  # type: ignore[index]
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.production_commit_semantic_exit(public_input)
+
+    def test_commit_semantic_route_is_owned_by_private_candidate(self) -> None:
+        for status, expected_exit in (
+            ("passed", "committed"),
+            ("revision-required", "revision-required"),
+            ("blocked", "blocked"),
+        ):
+            with self.subTest(status=status):
                 self.assertEqual(
-                    raised.exception.payload.get("code"), "invalid_public_input",
+                    gtt.production_commit_semantic_exit({
+                        "ai_review": {
+                            "status": status,
+                            "summary": "The candidate owner completed semantic review.",
+                            "evidence": ["The exact task paths and commit message were reviewed."],
+                        }
+                    }),
+                    expected_exit,
                 )
+
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "no declared semantic exit",
+        ):
+            gtt.production_commit_semantic_exit({"ai_review": {"status": "unknown"}})
 
 
 class TaskCommitCandidateExecutorTest(unittest.TestCase):
@@ -769,26 +706,17 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         }
         gtt.write_json(self.task_dir / "task.json", self.task)
         gtt.write_json(self.task_dir / "task-start-context.json", self.context)
-        gtt.write_json(self.task_dir / "planning-approval.json", {"schema_version": "1.2"})
-        gtt.write_json(self.task_dir / "phase2-check.json", {"schema_version": "1.0"})
         gtt.write_json(self.task_dir / "issue-scope-ledger.json", self.ledger)
         subprocess.run(["git", "add", "."], cwd=self.root, check=True)
         subprocess.run(["git", "commit", "-q", "-m", "chore(test): #122 初始化测试仓库"], cwd=self.root, check=True)
         subprocess.run(["git", "checkout", "-q", "-b", "feat/example-task"], cwd=self.root, check=True)
-        self.phase2 = {"head": gtt.current_head(self.root), "dirty_paths": [], "checked_artifacts": []}
         schema = (
             Path(gtt.__file__).resolve().parents[5]
-            / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-plan.schema.json"
+            / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json"
         )
         self.patches = [
             mock.patch.object(gtt, "assert_workspace_boundary", return_value={"status": "ok"}),
-            mock.patch.object(gtt, "validate_planning_approval", side_effect=lambda root, task_dir, **kwargs: (task_dir / "planning-approval.json", {}, [])),
-            mock.patch.object(
-                gtt,
-                "validate_phase2_check",
-                side_effect=lambda root, task_dir, **kwargs: (task_dir / "phase2-check.json", self.phase2, []),
-            ),
-            mock.patch.object(gtt, "task_commit_schema_path", return_value=schema),
+            mock.patch.object(gtt, "task_commit_candidate_schema_path", return_value=schema),
         ]
         for patcher in self.patches:
             patcher.start()
@@ -809,18 +737,15 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             self.root / gtt.TASK_COMMIT_RUNTIME_DIR / task_key / f"{sequence:03d}.json"
         )
         candidate_rel = candidate.relative_to(self.root).as_posix()
-        snapshot = gtt.capture_task_commit_snapshot(self.root, {candidate_rel})
-        self.phase2 = {
-            "head": gtt.current_head(self.root),
-            "dirty_paths": list(reviewed_paths),
-            "checked_artifacts": [],
-        }
+        snapshot = gtt.task_commit_snapshot_without_digest(
+            gtt.capture_task_commit_snapshot(self.root, {candidate_rel})
+        )
         classifications = [
             {
                 "path": path,
                 "category": "task-reviewed" if path in reviewed_paths else "unrelated-preserved",
-                "reason": "Covered by the current Phase 2 report." if path in reviewed_paths else "Preserve unrelated test state.",
-                "coverage_source": "phase2-check.json" if path in reviewed_paths else "AI scope review",
+                "reason": "Covered by the current Phase 2 result." if path in reviewed_paths else "Preserve unrelated test state.",
+                "coverage_source": "guru-check-task passed result" if path in reviewed_paths else "AI scope review",
             }
             for path in [str(item["path"]) for item in snapshot["entries"]]
         ]
@@ -830,41 +755,35 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             renamed_from = snapshot_by_path.get(path, {}).get("renamed_from")
             if renamed_from:
                 exact_paths.add(str(renamed_from))
-        body = (
-            "背景：\n需要验证 task commit 闭环。\n\n"
-            "变更：\n提交精确测试路径。\n\n"
-            "边界：\n保留无关工作区状态。\n\n"
-            "验证：\n运行 task commit 单元测试。\n\n"
-            "Refs #122"
+        message = gtt.task_commit_canonical_message(
+            {
+                "type": "feat",
+                "scope": "workflow",
+                "summary": "增加任务提交闭环",
+                "background": "需要验证 task commit 闭环。",
+                "changes": "提交精确测试路径。",
+                "boundaries": "保留无关工作区状态。",
+                "validations": "运行 task commit 单元测试。",
+            },
+            primary_issue=122,
         )
-        subject = "feat(trellis): #122 增加任务提交闭环"
-        message_bytes = f"{subject}\n\n{body}\n"
-        evidence = {
-            "planning_approval": gtt.task_commit_file_evidence(self.root, self.task_dir / "planning-approval.json"),
-            "phase2_check": gtt.task_commit_file_evidence(self.root, self.task_dir / "phase2-check.json"),
-            "issue_scope_ledger": gtt.task_commit_file_evidence(self.root, self.task_dir / "issue-scope-ledger.json"),
-            "task": gtt.task_commit_file_evidence(self.root, self.task_dir / "task.json"),
-        }
         plan = {
-            "$schema": gtt.TASK_COMMIT_PLAN_SCHEMA_ID,
-            "schema_version": "1.0", "skill_id": gtt.TASK_COMMIT_SKILL_ID,
+            "$schema": gtt.TASK_COMMIT_CANDIDATE_SCHEMA_ID,
+            "schema_version": "2.0", "skill_id": gtt.TASK_COMMIT_SKILL_ID,
             "sequence": f"{sequence:03d}",
             "task": {"id": "example-task", "path": self.task_rel, "status": "in_progress", "branch": "feat/example-task"},
-            "issue": {
-                "primary_issue": 122,
-                "ledger_sha256": hashlib.sha256((self.task_dir / "issue-scope-ledger.json").read_bytes()).hexdigest(),
+            "git": {
+                "base_branch": "main",
+                "base_ref": gtt.diff_base_ref(self.root, "main"),
+                "pre_commit_head": gtt.current_head(self.root),
+                "checked_head": gtt.current_head(self.root),
             },
-            "git": {"base_branch": "main", "base_ref": gtt.diff_base_ref(self.root, "main"), "pre_commit_head": gtt.current_head(self.root)},
-            "evidence": evidence, "dirty_snapshot": snapshot,
+            "dirty_snapshot": snapshot,
             "path_classifications": classifications,
             "exact_stage_paths": sorted(exact_paths),
-            "message": {"subject": subject, "body": body, "bytes": message_bytes, "sha256": hashlib.sha256(message_bytes.encode("utf-8")).hexdigest()},
-            "ai_review": {"status": "passed", "reviewer": "task-commit-test", "summary": "Reviewed exact test scope.", "evidence": ["Phase 2 covers each task-reviewed path."]},
-            "authorization": {"authorized": True, "source": "explicit-test-authorization", "evidence": "Authorize this exact test plan."},
-            "freshness": {"captured_at": gtt.now_iso(), "plan_digest": ""},
-            "result": {"status": "planned", "exit": None},
+            "message": message,
+            "ai_review": {"status": "passed", "summary": "Reviewed exact test scope.", "evidence": ["Phase 2 covers each task-reviewed path."]},
         }
-        plan["freshness"]["plan_digest"] = gtt.task_commit_plan_digest(plan)
         gtt.write_json(candidate, plan)
         return candidate
 
@@ -890,8 +809,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             before["candidate"] if candidate_bytes is None else candidate_bytes,
         )
         self.assertEqual(gtt.task_commit_git_operation_state(self.root), before["operation"])
-        self.assertFalse(Path(str(gtt.task_commit_index_preimage(self.root)["path"]) + ".lock").exists())
-        self.assertFalse(Path(str(candidate) + ".lock").exists())
 
     def committed_paths(self, commit_sha: str) -> set[str]:
         return gtt.git_nul_path_set(
@@ -979,59 +896,80 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertEqual(payload["checked_commits"], [])
         self.assertEqual(payload["candidate_validation"]["sequence"], "001")
 
-    def public_commit_input(self) -> dict[str, object]:
-        phase2_sha256 = hashlib.sha256(
-            (self.task_dir / "phase2-check.json").read_bytes()
-        ).hexdigest()
+    def public_commit_input(
+        self,
+        *,
+        profile: str = "initial_commit",
+        source_exit: str = "passed",
+    ) -> dict[str, object]:
         return {
-            "profile": "initial_commit",
+            "profile": profile,
             "mode": "workflow",
             "task_ref": self.task_rel,
-            "message_intent": {
-                "subject": "feat(trellis): #122 增加 production 提交闭环",
-                "body": (
-                    "背景：\n需要验证 production public commit。\n\n"
-                    "变更：\n通过 deterministic builder 提交精确路径。\n\n"
-                    "边界：\n保留未授权的工作区路径。\n\n"
-                    "验证：\n运行 task commit focused tests。\n\n"
-                    "Refs #122"
-                ),
-            },
-            "path_authorizations": ["src/task.txt"],
-            "semantic_review": {
-                "status": "passed",
-                "summary": "AI reviewed the exact commit message and authorized path set.",
-            },
-            "human_authorization": {
-                "status": "confirmed",
-                "summary": "The exact task commit side effect is authorized.",
-            },
-            "exit_intent": "committed",
-            "source_exit": "passed",
+            "source_exit": source_exit,
             "checked_head": gtt.current_head(self.root),
-            "check_ref": gtt.task_commit_public_check_ref(phase2_sha256),
         }
 
-    def bind_public_phase2(self, dirty_paths: list[str]) -> None:
-        self.phase2 = {
-            "skill_id": gtt.PHASE2_CHECK_SKILL_ID,
-            "typed_exit": "passed",
-            "repository_snapshot": {
-                "head": gtt.current_head(self.root),
-                "dirty_paths": dirty_paths,
-                "reviewed_paths": [],
+    def task_commit_authoring(
+        self,
+        reviewed_paths: list[str],
+        *,
+        status: str = "passed",
+    ) -> dict[str, object]:
+        candidate, _ = gtt.task_commit_prepare_candidate_path(self.root, self.task_dir)
+        snapshot = gtt.task_commit_snapshot_without_digest(
+            gtt.capture_task_commit_snapshot(
+                self.root, {candidate.relative_to(self.root).as_posix()}
+            )
+        )
+        reviewed = set(reviewed_paths)
+        return {
+            "path_classifications": [
+                {
+                    "path": str(entry["path"]),
+                    "category": (
+                        "task-reviewed"
+                        if entry["path"] in reviewed
+                        else "unrelated-preserved"
+                    ),
+                    "reason": (
+                        "Current Phase 2 covers this task path."
+                        if entry["path"] in reviewed
+                        else "Preserve unrelated test state."
+                    ),
+                    "coverage_source": (
+                        "guru-check-task passed DTO"
+                        if entry["path"] in reviewed
+                        else "AI scope review"
+                    ),
+                }
+                for entry in snapshot["entries"]
+            ],
+            "message": {
+                "type": "feat",
+                "scope": "trellis",
+                "summary": "增加 production 提交闭环",
+                "background": "需要验证 production public commit。",
+                "changes": "通过 deterministic builder 提交精确路径。",
+                "boundaries": "保留未纳入任务范围的工作区路径。",
+                "validations": "运行 task commit focused tests。",
+            },
+            "ai_review": {
+                "status": status,
+                "summary": "AI reviewed the exact commit message and path set.",
+                "evidence": ["Current Phase 2 covers every task-reviewed path."],
             },
         }
 
     def test_public_candidate_builder_materializes_exact_authority_and_preserves_unrelated(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         (self.root / "src/unrelated.txt").write_text("preserve\n", encoding="utf-8")
-        self.bind_public_phase2(["src/task.txt", "src/unrelated.txt"])
 
-        candidate, plan, facts = gtt.build_task_commit_candidate_from_public_input(
+        candidate, plan, facts = gtt.build_task_commit_candidate(
             self.root,
             self.task_dir,
             self.public_commit_input(),
+            self.task_commit_authoring(["src/task.txt"]),
         )
 
         self.assertEqual(candidate.name, "001.json")
@@ -1052,70 +990,230 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             [],
         )
 
-    def test_public_candidate_builder_rejects_invalid_paths_and_stale_phase2_identity(self) -> None:
+    def test_candidate_builder_rejects_invalid_paths_and_stale_passed_dto_identity(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
-        self.bind_public_phase2(["src/task.txt"])
-        cases = [
-            (
-                "invalid-path-authorization",
-                lambda value: value.__setitem__("path_authorizations", ["src/missing.txt"]),
-                "Public path authorizations do not resolve current dirty paths.",
-            ),
-            (
-                "stale-checked-head",
-                lambda value: value.__setitem__("checked_head", "f" * 40),
-                "Public commit input does not bind the current passed Phase 2 identity.",
-            ),
-            (
-                "stale-check-ref",
-                lambda value: value.__setitem__("check_ref", "phase2-check:" + "f" * 64),
-                "Public commit input does not bind the current passed Phase 2 identity.",
-            ),
-        ]
-        for label, mutate, message in cases:
-            with self.subTest(case=label):
-                public_input = self.public_commit_input()
-                mutate(public_input)
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.build_task_commit_candidate_from_public_input(
-                        self.root, self.task_dir, public_input,
-                    )
-                self.assertEqual(str(raised.exception), message)
+        stale_input = self.public_commit_input()
+        stale_input["checked_head"] = "f" * 40
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.build_task_commit_candidate(
+                self.root,
+                self.task_dir,
+                stale_input,
+                self.task_commit_authoring(["src/task.txt"]),
+            )
+        self.assertEqual(
+            str(raised.exception),
+            "Public commit input does not bind the current passed Phase 2 identity.",
+        )
 
-    def test_committed_candidate_recovery_verifies_current_result_and_phase2_identity(self) -> None:
+        invalid_authoring = self.task_commit_authoring(["src/task.txt"])
+        invalid_authoring["path_classifications"].append(
+            {
+                "path": "src/missing.txt",
+                "category": "task-reviewed",
+                "reason": "This path does not exist.",
+                "coverage_source": "invalid test fixture",
+            }
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.build_task_commit_candidate(
+                self.root,
+                self.task_dir,
+                self.public_commit_input(),
+                invalid_authoring,
+            )
+        self.assertEqual(
+            str(raised.exception),
+            "Deterministic task commit candidate validation failed.",
+        )
+        self.assertEqual(
+            list(
+                (self.root / gtt.TASK_COMMIT_RUNTIME_DIR).glob(
+                    "**/[0-9][0-9][0-9].json"
+                )
+            ),
+            [],
+        )
+
+    def test_candidate_builder_accepts_profile_owned_reentry_sources(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
-        self.bind_public_phase2(["src/task.txt"])
+
+        for profile, source_exit in (
+            ("revision_reentry", "revision-required"),
+            ("recovery_resume", "transaction_recovery"),
+        ):
+            with self.subTest(profile=profile):
+                candidate, plan, _ = gtt.build_task_commit_candidate(
+                    self.root,
+                    self.task_dir,
+                    self.public_commit_input(
+                        profile=profile,
+                        source_exit=source_exit,
+                    ),
+                    self.task_commit_authoring(["src/task.txt"], status="blocked"),
+                )
+                self.assertEqual(plan["git"]["checked_head"], gtt.current_head(self.root))
+                candidate.unlink()
+
+    def test_legacy_public_input_projects_once_without_authorization_residue(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        legacy_input = {
+            "profile": "revision_reentry",
+            "mode": "workflow",
+            "task_ref": self.task_rel,
+            "checked_head": gtt.current_head(self.root),
+            "message_intent": {
+                "subject": "feat(trellis): 修正旧版任务提交",
+                "body": "",
+            },
+            "path_authorizations": ["src/task.txt"],
+            "semantic_review": {
+                "status": "revision-required",
+                "summary": "Current task paths require one internal message revision.",
+            },
+            "human_authorization": {
+                "status": "confirmed",
+                "confirmation_ref": "legacy-only",
+            },
+            "exit_intent": "blocked",
+        }
+
+        owner_result, prepared = gtt.production_commit_result(
+            self.root,
+            argparse.Namespace(owner_result=None),
+            legacy_input,
+        )
+
+        self.assertEqual(owner_result, {"typed_exit": "revision-required"})
+        self.assertEqual(prepared["status"], "prepared")  # type: ignore[index]
+        candidate_path = self.root / str(prepared["candidate_artifact"])  # type: ignore[index]
+        candidate = gtt.read_json(candidate_path)
+        self.assertEqual(candidate["git"]["checked_head"], legacy_input["checked_head"])
+        self.assertEqual(candidate["exact_stage_paths"], ["src/task.txt"])
+        serialized = json.dumps(candidate, ensure_ascii=False)
+        for residue in (
+            "authorization",
+            "confirmation",
+            "exit_intent",
+            "human_authorization",
+            "授权",
+            "确认",
+        ):
+            self.assertNotIn(residue, serialized)
+
+    def test_candidate_builder_restores_existing_private_candidate_on_validation_failure(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate = self.make_plan(1, ["src/task.txt"])
+        preimage = candidate.read_bytes()
+        invalid_authoring = self.task_commit_authoring(["src/missing.txt"])
+
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.build_task_commit_candidate(
+                self.root,
+                self.task_dir,
+                self.public_commit_input(),
+                invalid_authoring,
+            )
+
+        self.assertEqual(candidate.read_bytes(), preimage)
+
+    def test_committed_candidate_recovery_verifies_current_result_and_passed_dto_identity(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         public_input = self.public_commit_input()
-        candidate, _, _ = gtt.build_task_commit_candidate_from_public_input(
-            self.root, self.task_dir, public_input,
+        candidate, _, _ = gtt.build_task_commit_candidate(
+            self.root,
+            self.task_dir,
+            public_input,
+            self.task_commit_authoring(["src/task.txt"]),
         )
-        committed = gtt.execute_task_commit_candidate(
-            self.root, candidate, self.task_dir,
-        )
+        original_publish = gtt.task_commit_publish_validated_commit
 
-        recovery = copy.deepcopy(public_input)
-        recovery["profile"] = "recovery_resume"
-        recovery["recovery_intent"] = "verify_committed"
-        owner_result, verified = gtt.production_commit_result(self.root, recovery)
+        def publish_then_interrupt(*args: object, **kwargs: object) -> None:
+            original_publish(*args, **kwargs)
+            raise gtt.WorkflowError("simulated interruption after ref publication", exit_code=2)
+
+        with (
+            mock.patch.object(
+                gtt,
+                "task_commit_publish_validated_commit",
+                side_effect=publish_then_interrupt,
+            ),
+            self.assertRaisesRegex(gtt.WorkflowError, "simulated interruption"),
+        ):
+            gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
+        committed_sha = gtt.current_head(self.root)
+        self.assertTrue(candidate.is_file())
+
+        recovery = self.public_commit_input(
+            profile="recovery_resume", source_exit="transaction_recovery"
+        )
+        recovery["checked_head"] = public_input["checked_head"]
+        args = argparse.Namespace(
+            owner_result=candidate.relative_to(self.root).as_posix()
+        )
+        owner_result, verified = gtt.production_commit_result(
+            self.root, args, recovery
+        )
         self.assertEqual(owner_result, {"typed_exit": "committed"})
         self.assertIsNotNone(verified)
-        self.assertEqual(verified["commit_sha"], committed["commit_sha"])  # type: ignore[index]
+        self.assertEqual(verified["commit_sha"], committed_sha)  # type: ignore[index]
+        self.assertFalse(candidate.exists())
 
         recovery["checked_head"] = "f" * 40
-        blocked, evidence = gtt.production_commit_result(self.root, recovery)
+        args.owner_result = None
+        blocked, evidence = gtt.production_commit_result(self.root, args, recovery)
         self.assertEqual(blocked, {"typed_exit": "blocked"})
         self.assertEqual(
             evidence["errors"],  # type: ignore[index]
-            ["No committed task candidate is available for recovery."],
+            ["Task commit recovery requires the surviving owner-private candidate."],
         )
+
+    def test_committed_candidate_recovery_rejects_parseable_sibling_commit(self) -> None:
+        task_path = self.root / "src/task.txt"
+        task_path.write_text("candidate content\n", encoding="utf-8")
+        public_input = self.public_commit_input()
+        candidate, plan, _ = gtt.build_task_commit_candidate(
+            self.root,
+            self.task_dir,
+            public_input,
+            self.task_commit_authoring(["src/task.txt"]),
+        )
+
+        task_path.write_text("sibling content\n", encoding="utf-8")
+        message_path = self.root / "sibling-commit-message.txt"
+        message_path.write_bytes(plan["message"]["bytes"].encode("utf-8"))
+        subprocess.run(["git", "add", "src/task.txt"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "--cleanup=verbatim", "-F", str(message_path)],
+            cwd=self.root,
+            check=True,
+        )
+        recovery = self.public_commit_input(
+            profile="recovery_resume", source_exit="transaction_recovery"
+        )
+        recovery["checked_head"] = public_input["checked_head"]
+        args = argparse.Namespace(
+            owner_result=candidate.relative_to(self.root).as_posix()
+        )
+
+        owner_result, evidence = gtt.production_commit_result(
+            self.root, args, recovery
+        )
+
+        self.assertEqual(owner_result, {"typed_exit": "blocked"})
+        self.assertEqual(
+            evidence["errors"],  # type: ignore[index]
+            ["Current recovery commit does not match the surviving private candidate."],
+        )
+        self.assertTrue(candidate.is_file())
 
     def test_review_entry_accepts_current_task_commit_evidence_and_rejects_stale_identity(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
-        self.bind_public_phase2(["src/task.txt"])
-        candidate, _, _ = gtt.build_task_commit_candidate_from_public_input(
+        candidate, _, _ = gtt.build_task_commit_candidate(
             self.root,
             self.task_dir,
             self.public_commit_input(),
+            self.task_commit_authoring(["src/task.txt"]),
         )
         committed = gtt.execute_task_commit_candidate(
             self.root,
@@ -1139,6 +1237,34 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             [],
         )
 
+        entry_input = {
+            **review_input,
+            "profile": "branch_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "review_branch_public_input_schema",
+                return_value={},
+            ),
+            mock.patch.object(
+                gtt,
+                "review_branch_gate_schema",
+                return_value={},
+            ),
+        ):
+            self.assertEqual(
+                gtt.review_branch_entry_precondition_errors(
+                    self.root,
+                    self.task_dir,
+                    gtt.load_config(self.root),
+                    public_input=entry_input,
+                ),
+                [],
+            )
+
         review_input["committed_head"] = "f" * 40
         errors = gtt.review_branch_task_commit_evidence_errors(
             self.root,
@@ -1147,16 +1273,27 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             self.context,
             review_input,
         )
-        self.assertTrue(any("public task/base/committed HEAD identity is stale" in error for error in errors))
+        self.assertIn(
+            "Branch Review reviewed_content_head is not an ancestor of the current HEAD.",
+            errors,
+        )
+        self.assertTrue(
+            any("review entry live commit validation failed" in error for error in errors)
+        )
 
     def test_public_wrapper_builds_executes_and_serializes_minimal_committed_dto(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         (self.root / "src/unrelated.txt").write_text("preserve\n", encoding="utf-8")
-        self.bind_public_phase2(["src/task.txt", "src/unrelated.txt"])
         public_input_path = self.root / "public-commit-input.json"
         public_input_path.write_text(
             json.dumps(self.public_commit_input(), ensure_ascii=False),
             encoding="utf-8",
+        )
+        candidate, _, _ = gtt.build_task_commit_candidate(
+            self.root,
+            self.task_dir,
+            self.public_commit_input(),
+            self.task_commit_authoring(["src/task.txt"]),
         )
         package = (
             Path(gtt.__file__).resolve().parents[5]
@@ -1164,7 +1301,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         )
         args = argparse.Namespace(
             input=public_input_path.relative_to(self.root).as_posix(),
-            owner_result=None,
+            owner_result=candidate.relative_to(self.root).as_posix(),
         )
 
         with (
@@ -1755,28 +1892,28 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertIn(phase2, plan["exact_stage_paths"])
 
-    def test_task_commit_rejects_non_passed_guru_check_task_exit(self) -> None:
+    def test_task_commit_rejects_non_passed_source_exit_before_candidate_generation(self) -> None:
         reviewed = "src/task.txt"
         (self.root / reviewed).write_text("changed\n", encoding="utf-8")
-        candidate = self.make_plan(1, [reviewed])
-        self.phase2 = {
-            "schema_version": "2.0",
-            "skill_id": gtt.PHASE2_CHECK_SKILL_ID,
-            "typed_exit": "implementation_required",
-            "repository_snapshot": {
-                "head": gtt.current_head(self.root),
-                "dirty_paths": [reviewed],
-                "reviewed_paths": [],
-            },
-        }
+        authoring = self.task_commit_authoring([reviewed])
 
-        _plan, _schema_errors, errors = gtt.validate_task_commit_candidate(
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.build_task_commit_candidate(
+                self.root,
+                self.task_dir,
+                self.public_commit_input(source_exit="implementation_required"),
+                authoring,
+            )
+
+        self.assertIn(
+            "does not bind the current passed Phase 2 identity",
+            str(raised.exception),
+        )
+        candidate, _ = gtt.task_commit_prepare_candidate_path(
             self.root,
-            candidate,
             self.task_dir,
         )
-
-        self.assertIn("task commit plan requires guru-check-task typed_exit=passed.", errors)
+        self.assertFalse(candidate.exists())
 
     def test_unrelated_staged_path_blocks_without_unstage(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -1789,7 +1926,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertIn("unrelated.log", raised.exception.payload["unexpected_staged_paths"])
         self.assertIn("unrelated.log", gtt.git_nul_path_set(self.root, ["diff", "--cached", "--name-only", "--no-renames", "-z"]))
         self.assert_task_commit_entry_state(before, candidate)
-        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
     def test_partial_isolated_index_write_preserves_complete_live_index_preimage(self) -> None:
         first = self.root / "src/first.txt"
@@ -1818,229 +1954,76 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                 gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
 
         self.assert_task_commit_entry_state(before, candidate)
-        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
-    def test_index_publication_failure_rolls_back_real_ref_index_and_candidate(self) -> None:
-        path = self.root / "src/task.txt"
-        path.write_text("reviewed-change\n", encoding="utf-8")
-        candidate = self.make_plan(1, ["src/task.txt"])
-        before = self.task_commit_entry_state(candidate)
-
-        with mock.patch.object(
-            gtt,
-            "task_commit_publish_locked_index",
-            side_effect=OSError("controlled index publication failure"),
-        ):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
-
-        self.assertIn("exact entry state was restored", str(raised.exception))
-        self.assert_task_commit_entry_state(before, candidate)
-        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
-
-    def test_candidate_publication_failure_holds_index_lock_against_concurrent_git_add(self) -> None:
-        concurrent = self.root / "src/concurrent.txt"
-        concurrent.write_text("base\n", encoding="utf-8")
-        subprocess.run(["git", "add", "src/concurrent.txt"], cwd=self.root, check=True)
-        subprocess.run(["git", "commit", "-q", "-m", "test(trellis): #122 添加并发基线"], cwd=self.root, check=True)
-        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
-        concurrent.write_text("concurrent-C\n", encoding="utf-8")
-        candidate = self.make_plan(1, ["src/task.txt"], ["src/concurrent.txt"])
-        before = self.task_commit_entry_state(candidate)
-        original = gtt.task_commit_publish_guarded_candidate
-        add_results: list[subprocess.CompletedProcess[str]] = []
-
-        def publish_then_fail(source: Path, target: Path, preimage: bytes) -> None:
-            add_results.append(
-                subprocess.run(
-                    ["git", "add", "src/concurrent.txt"],
-                    cwd=self.root,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-            )
-            original(source, target, preimage)
-            raise OSError("controlled candidate publication failure")
-
-        with mock.patch.object(gtt, "task_commit_publish_guarded_candidate", side_effect=publish_then_fail):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
-
-        self.assertNotEqual(add_results[0].returncode, 0)
-        self.assertIn("exact entry state was restored", str(raised.exception))
-        self.assert_task_commit_entry_state(before, candidate)
-
-    def test_candidate_writer_before_final_identity_read_rolls_back_and_is_preserved(self) -> None:
-        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
-        candidate = self.make_plan(1, ["src/task.txt"])
-        before = self.task_commit_entry_state(candidate)
-        original = gtt.task_commit_publish_locked_index
-        third_party = b'{"third_party":"candidate-C"}\n'
-        guard_observed: list[bool] = []
-        add_results: list[subprocess.CompletedProcess[str]] = []
-
-        def publish_index_after_concurrent_replace(source: Path, target: Path) -> None:
-            guard_observed.append(Path(str(candidate) + ".lock").is_file())
-            guard_observed.append(Path(str(target) + ".lock").is_file())
-            add_results.append(
-                subprocess.run(
-                    ["git", "add", "src/task.txt"],
-                    cwd=self.root,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-            )
-            gtt.task_commit_atomic_replace_bytes(candidate, third_party, 0o600)
-            original(source, target)
-
-        with mock.patch.object(
-            gtt,
-            "task_commit_publish_locked_index",
-            side_effect=publish_index_after_concurrent_replace,
-        ):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
-
-        self.assertEqual(guard_observed, [True, True])
-        self.assertNotEqual(add_results[0].returncode, 0)
-        self.assertTrue(
-            any(
-                "third-party candidate state was preserved" in error
-                for error in raised.exception.payload["errors"]
-            )
-        )
-        self.assertEqual(gtt.current_head(self.root), before["head"])
-        self.assertEqual(gtt.task_commit_index_preimage(self.root)["bytes"], before["index"])
-        self.assertEqual(candidate.read_bytes(), third_party)
-        index_path = gtt.task_commit_index_preimage(self.root)["path"]
-        ref_path = gtt.task_commit_git_path(self.root, gtt.task_commit_branch_ref(self.root))
-        self.assertFalse(Path(str(candidate) + ".lock").exists())
-        self.assertFalse(Path(str(index_path) + ".lock").exists())
-        self.assertFalse(Path(str(ref_path) + ".lock").exists())
-        self.assertEqual(list(candidate.parent.glob(f".{candidate.name}.*.publication")), [])
-        self.assertEqual(list(index_path.parent.glob(f".{index_path.name}.*.publication")), [])
-
-    def test_concurrent_ref_update_is_preserved_by_conditional_advance(self) -> None:
-        (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
-        candidate = self.make_plan(1, ["src/task.txt"])
-        before = self.task_commit_entry_state(candidate)
-        original = gtt.task_commit_update_ref
-        concurrent_ref: list[str] = []
-
-        def advance_concurrently(root: Path, ref: str, new_value: str, old_value: str) -> None:
-            if not concurrent_ref:
-                tree = subprocess.run(
-                    ["git", "rev-parse", f"{old_value}^{{tree}}"],
-                    cwd=self.root,
-                    check=True,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                ).stdout.strip()
-                commit = subprocess.run(
-                    ["git", "commit-tree", tree, "-p", old_value],
-                    cwd=self.root,
-                    check=True,
-                    input="concurrent ref\n",
-                    text=True,
-                    stdout=subprocess.PIPE,
-                ).stdout.strip()
-                subprocess.run(["git", "update-ref", ref, commit, old_value], cwd=self.root, check=True)
-                concurrent_ref.append(commit)
-            original(root, ref, new_value, old_value)
-
-        with mock.patch.object(gtt, "task_commit_update_ref", side_effect=advance_concurrently):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
-
-        self.assertTrue(
-            any(
-                "third-party ref state was preserved" in error
-                for error in raised.exception.payload["errors"]
-            )
-        )
-        self.assertEqual(gtt.current_head(self.root), concurrent_ref[0])
-        self.assertEqual(gtt.task_commit_index_preimage(self.root)["bytes"], before["index"])
-        self.assertEqual(candidate.read_bytes(), before["candidate"])
-
-    def test_candidate_stale_and_message_negative_matrix(self) -> None:
+    def test_candidate_stale_and_noncanonical_negative_matrix(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         original = json.loads(candidate.read_text(encoding="utf-8"))
 
-        def set_body(plan: dict[str, object], body: str) -> None:
-            message = plan["message"]
-            assert isinstance(message, dict)
-            subject = str(message["subject"])
-            value = f"{subject}\n\n{body}\n"
-            message.update({"body": body, "bytes": value, "sha256": hashlib.sha256(value.encode("utf-8")).hexdigest()})
-
-        def stale_planning(plan: dict[str, object]) -> None:
-            plan["evidence"]["planning_approval"]["sha256"] = "0" * 64
-
-        def stale_phase2(plan: dict[str, object]) -> None:
-            plan["evidence"]["phase2_check"]["sha256"] = "0" * 64
-
-        def stale_ledger(plan: dict[str, object]) -> None:
-            plan["issue"]["ledger_sha256"] = "0" * 64
-
         def stale_head(plan: dict[str, object]) -> None:
             plan["git"]["pre_commit_head"] = "0" * 40
 
-        def stale_snapshot(plan: dict[str, object]) -> None:
-            plan["dirty_snapshot"]["digest"] = "0" * 64
+        def stale_checked_head(plan: dict[str, object]) -> None:
+            plan["git"]["checked_head"] = "0" * 40
 
-        def stale_message_digest(plan: dict[str, object]) -> None:
-            plan["message"]["sha256"] = "0" * 64
+        def stale_snapshot(plan: dict[str, object]) -> None:
+            plan["dirty_snapshot"]["entries"][0]["worktree_sha256"] = "0" * 64
 
         def wrong_issue(plan: dict[str, object]) -> None:
-            plan["issue"]["primary_issue"] = 999
+            message = plan["message"]
+            message["subject"] = str(message["subject"]).replace("#122", "#999")
 
         def wrong_order(plan: dict[str, object]) -> None:
-            body = str(plan["message"]["body"])
-            set_body(plan, body.replace("变更：", "TEMP：").replace("边界：", "变更：").replace("TEMP：", "边界："))
+            message = plan["message"]
+            body = str(message["body"])
+            message["body"] = body.replace("变更：", "TEMP：").replace(
+                "边界：", "变更："
+            ).replace("TEMP：", "边界：")
 
         def missing_section(plan: dict[str, object]) -> None:
-            body = str(plan["message"]["body"])
-            set_body(plan, body.replace("\n验证：\n运行 task commit 单元测试。", ""))
+            message = plan["message"]
+            message["body"] = str(message["body"]).replace(
+                "\n验证：\n运行 task commit 单元测试。", ""
+            )
 
         def placeholder(plan: dict[str, object]) -> None:
-            body = str(plan["message"]["body"])
-            set_body(plan, body.replace("需要验证 task commit 闭环。", "TODO"))
+            plan["message"]["background"] = "TODO"
 
         def close_keyword(plan: dict[str, object]) -> None:
-            set_body(plan, str(plan["message"]["body"]).replace("Refs #122", "Closes #122"))
+            message = plan["message"]
+            message["body"] = str(message["body"]).replace(
+                "Refs #122", "Closes #122"
+            )
+
+        def add_authorization(plan: dict[str, object]) -> None:
+            plan["authorization"] = {"status": "confirmed"}
+
+        def empty_ai_evidence(plan: dict[str, object]) -> None:
+            plan["ai_review"]["evidence"] = []
+
+        def unknown_classification(plan: dict[str, object]) -> None:
+            plan["path_classifications"][0]["category"] = "unknown"
 
         mutations = {
-            "stale planning": stale_planning,
-            "stale Phase 2": stale_phase2,
-            "stale ledger": stale_ledger,
             "stale HEAD": stale_head,
+            "stale checked HEAD": stale_checked_head,
             "stale snapshot": stale_snapshot,
-            "stale message digest": stale_message_digest,
             "wrong issue": wrong_issue,
             "wrong body order": wrong_order,
             "missing body section": missing_section,
             "placeholder body": placeholder,
             "close keyword": close_keyword,
+            "authorization field": add_authorization,
+            "empty AI evidence": empty_ai_evidence,
+            "unknown classification": unknown_classification,
         }
         for label, mutate in mutations.items():
             with self.subTest(label=label):
                 plan = json.loads(json.dumps(original, ensure_ascii=False))
                 mutate(plan)
-                plan["freshness"]["plan_digest"] = gtt.task_commit_plan_digest(plan)
                 gtt.write_json(candidate, plan)
                 _, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
                 self.assertTrue(errors, label)
-
-        stale_digest = json.loads(json.dumps(original, ensure_ascii=False))
-        stale_digest["freshness"]["plan_digest"] = "0" * 64
-        gtt.write_json(candidate, stale_digest)
-        _, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
-        self.assertTrue(any("plan_digest" in error for error in errors))
 
     def test_hook_extra_path_blocks_before_real_publication(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -2053,7 +2036,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             gtt.execute_task_commit_candidate(self.root, candidate, self.task_dir)
         self.assertIn("isolated commit path set", " ".join(raised.exception.payload["errors"]))
         self.assert_task_commit_entry_state(before, candidate)
-        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
         self.assertTrue((self.root / "hook-extra.txt").is_file())
 
     def test_benign_pre_commit_hook_preserves_expected_tree(self) -> None:
@@ -2086,55 +2068,22 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         self.assertIn("isolated git commit failed", str(raised.exception))
         self.assert_task_commit_entry_state(before, candidate)
-        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
-    def test_blocked_result_failure_stage_runtime_matrix(self) -> None:
+    def test_v2_candidate_has_semantic_exit_without_result_or_digest_chain(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate = self.make_plan(1, ["src/task.txt"])
         plan = json.loads(candidate.read_text(encoding="utf-8"))
-        valid_results = task_commit_contract_tests.task_commit_blocked_producer_matrix(plan)
-        self.assertEqual(len(valid_results), 7)
-        for label, result in valid_results.items():
-            with self.subTest(label=label):
-                payload = copy.deepcopy(plan)
-                payload["result"] = result
-                self.assertEqual(gtt.task_commit_result_validation_errors(self.root, payload), [])
-                with mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]):
-                    self.assertEqual(
-                        gtt.task_commit_result_validation_errors(self.root, payload),
-                        [],
-                        "runtime producer-row validation must pass independently of JSON Schema",
-                    )
-
-        invalid_results = task_commit_contract_tests.task_commit_schema_negative_matrix(plan)
-        self.assertEqual(len(invalid_results), 15)
-        for label, result in invalid_results.items():
-            with self.subTest(label=label):
-                payload = copy.deepcopy(plan)
-                payload["result"] = result
-                self.assertTrue(gtt.task_commit_result_validation_errors(self.root, payload))
-                with mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]):
-                    self.assertTrue(
-                        gtt.task_commit_result_validation_errors(self.root, payload),
-                        "runtime cross-field validation must reject independently of JSON Schema",
-                    )
-
-        runtime_tampers = task_commit_contract_tests.task_commit_runtime_tamper_matrix(plan)
-        self.assertEqual(len(runtime_tampers), 12)
-        for label, tamper in runtime_tampers.items():
-            with self.subTest(schema_bypass_tamper=label):
-                result = tamper["result"]
-                expected_errors = tamper["expected_errors"]
-                self.assertTrue(expected_errors)
-                self.assertEqual(len(expected_errors), len(set(expected_errors)))
-                payload = copy.deepcopy(plan)
-                payload["result"] = result
-                with mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]):
-                    actual_errors = gtt.task_commit_result_validation_errors(self.root, payload)
-                    self.assertTrue(
-                        set(expected_errors).issubset(actual_errors),
-                        "runtime tamper validation must retain every canonical legacy error",
-                    )
+        self.assertEqual(gtt.task_commit_ai_exit(plan["ai_review"]), "committed")
+        encoded = json.dumps(plan, ensure_ascii=False, sort_keys=True)
+        for forbidden in (
+            '"authorization"',
+            '"human_authorization"',
+            '"freshness"',
+            '"result"',
+            '"check_ref"',
+            '"sha256"',
+        ):
+            self.assertNotIn(forbidden, encoded)
 
     def test_same_path_hook_content_restage_never_publishes_unreviewed_tree(self) -> None:
         (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
@@ -2157,7 +2106,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertIn("isolated commit tree", " ".join(raised.exception.payload["errors"]))
         self.assert_task_commit_entry_state(before, candidate)
         self.assertEqual((self.root / "src/task.txt").read_text(encoding="utf-8"), "hook-mutated\n")
-        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
     def test_same_path_hook_mode_restage_never_publishes_unreviewed_mode(self) -> None:
         (self.root / "src/task.txt").write_text("reviewed-change\n", encoding="utf-8")
@@ -2178,7 +2126,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         self.assertIn("isolated commit tree", " ".join(raised.exception.payload["errors"]))
         self.assert_task_commit_entry_state(before, candidate)
         self.assertTrue((self.root / "src/task.txt").stat().st_mode & stat.S_IXUSR)
-        self.assertEqual(json.loads(candidate.read_text(encoding="utf-8"))["result"]["status"], "planned")
 
     def test_private_candidate_is_single_use_and_next_candidate_restarts_runtime_sequence(self) -> None:
         (self.root / "src/task.txt").write_text("first\n", encoding="utf-8")
@@ -2200,7 +2147,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
 
         _, _, errors = gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)
 
-        self.assertTrue(any("next unused contiguous sequence" in error for error in errors))
+        self.assertTrue(any("only contiguous private sequence" in error for error in errors))
 
 
 class BaseSyncRuntimeTest(unittest.TestCase):
@@ -2844,14 +2791,12 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
         (self.root / ".trellis").mkdir()
-        self.worktree_root = self.root / "worktrees"
         (self.root / ".trellis/.developer").write_text(
             "name=tester\ninitialized_at=2026-07-04T00:00:00\n",
             encoding="utf-8",
         )
 
         self.real_ensure_base_freshness = gtt.ensure_base_freshness
-        self.real_refresh_base_freshness_for_planner = gtt.refresh_base_freshness_for_planner
         self.patches = [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={
@@ -2869,10 +2814,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
                 "ensure_base_freshness",
                 side_effect=lambda *_args, **_kwargs: fresh_base_sync_projection(),
             ),
-            mock.patch.object(gtt, "current_branch", return_value="main"),
-            mock.patch.object(gtt, "git_dirty", return_value=False),
-            mock.patch.object(gtt, "worktree_lines", return_value=[]),
-            mock.patch.object(gtt, "configured_worktree_root", return_value=self.worktree_root),
         ]
         for patcher in self.patches:
             patcher.start()
@@ -2885,22 +2826,39 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
     def test_freeform_prepare_outputs_proposal_without_side_effects(self) -> None:
         with (
             mock.patch.object(gtt, "create_issue") as create_issue,
-            mock.patch.object(gtt, "create_task") as create_task,
             mock.patch.object(gtt, "run_stdout") as run_stdout,
         ):
             payload = gtt.cmd_prepare(prepare_args())
 
         create_issue.assert_not_called()
-        create_task.assert_not_called()
         run_stdout.assert_not_called()
         self.assertIsNone(payload["source_issue"])
-        self.assertTrue(payload["requires_confirmation"]["create_issue"])
-        self.assertEqual(payload["workspace_ready"], False)
-        self.assertEqual(payload["preflight"]["workspace_was_created_or_reused"], False)
-        self.assertNotIn("task_start_context", payload)
+        for retired_field in (
+            "requires_confirmation",
+            "create_issue_command",
+            "create_task_command",
+            "workspace_mode",
+            "workspace_path",
+            "workspace_ready",
+            "preflight",
+            "issue_scope_ledger",
+            "task_dir",
+            "task_start_context",
+        ):
+            self.assertNotIn(retired_field, payload)
         self.assertFalse((self.root / ".trellis/.runtime/guru-team").exists())
         self.assertFalse((self.root / ".trellis/tasks").exists())
         self.assertEqual(payload["proposed_issue"]["title"], "Add default side-effect-free intake planning for freeform requests")
+        issue_draft = payload["proposed_issue"]["body"]
+        for retired_phrase in (
+            "## Handoff",
+            "## 交接",
+            "requires confirmation",
+            "需要用户确认",
+            "请复述",
+            "repeat the digest",
+        ):
+            self.assertNotIn(retired_phrase, issue_draft)
 
     def test_create_worktree_requires_confirmed_source_issue(self) -> None:
         with (
@@ -3062,7 +3020,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             mock.patch.object(
                 gtt, "require_gh_auth", side_effect=lambda *_args: order.append("gh-auth")
             ),
-            mock.patch.object(gtt, "refresh_base_freshness_for_planner") as refresh,
             mock.patch.object(
                 gtt,
                 "ensure_base_freshness",
@@ -3076,12 +3033,11 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             None,
             expected_resolution_sha256="b" * 64,
         )
-        refresh.assert_not_called()
         self.assertEqual(order, ["sync", "gh-auth", "issue"])
-        self.assertEqual(payload["preflight"]["base_freshness"]["fetch_performed"], True)
-        self.assertEqual(payload["preflight"]["base_freshness"]["fast_forwarded"], False)
-        self.assertEqual(payload["preflight"]["base_freshness"]["status"], "fresh")
-        self.assertTrue(payload["preflight"]["base_freshness"]["three_way_equal"])
+        self.assertEqual(payload["base_freshness"]["fetch_performed"], True)
+        self.assertEqual(payload["base_freshness"]["fast_forwarded"], False)
+        self.assertEqual(payload["base_freshness"]["status"], "fresh")
+        self.assertTrue(payload["base_freshness"]["three_way_equal"])
 
     def test_prepare_chinese_issue_title_marks_naming_quality_without_side_effects(self) -> None:
         existing_issue = {
@@ -3091,12 +3047,10 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         }
         with (
             mock.patch.object(gtt, "issue_view", return_value=existing_issue),
-            mock.patch.object(gtt, "create_task") as create_task,
             mock.patch.object(gtt, "run_stdout") as run_stdout,
         ):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
 
-        create_task.assert_not_called()
         run_stdout.assert_not_called()
         self.assertFalse(payload["naming_quality"]["ok"])
         self.assertTrue(payload["naming_quality"]["requires_semantic_name"])
@@ -3106,7 +3060,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertIn("--branch chore/052-semantic-business-name", suggested_flags)
         self.assertNotIn("--branch codex/", suggested_flags)
         self.assertEqual(payload["task_slug"], "52-issue-52")
-        self.assertFalse(payload["workspace_ready"])
+        self.assertNotIn("workspace_ready", payload)
 
     def test_prepare_mixed_non_ascii_title_requires_explicit_semantic_name(self) -> None:
         existing_issue = {
@@ -3122,7 +3076,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         self.assertIn("non-ASCII", payload["naming_quality"]["reason"])
         self.assertEqual(payload["task_slug"], "52-resume-detail-inline-attachment-preview")
 
-    def test_high_duplicate_payload_includes_reviewed_force_new_command(self) -> None:
+    def test_high_duplicate_payload_requires_one_real_target_choice(self) -> None:
         duplicate = {
             "number": 6,
             "title": "Existing duplicate",
@@ -3145,74 +3099,40 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         payload = raised.exception.payload
         self.assertEqual(payload["duplicates"], [duplicate])
         self.assertEqual(payload["proposed_issue"]["title"], "Add default side-effect-free intake planning for freeform requests")
-        create_command = payload["proposed_issue"]["create_issue_command"]
-        self.assertIn("--force-new", create_command)
-        digest_index = create_command.index("--expected-resolution-sha256")
-        self.assertEqual(create_command[digest_index + 1], "d" * 64)
-        self.assertTrue(payload["requires_confirmation"]["reuse_issue_or_force_new"])
+        self.assertNotIn("create_issue_command", payload["proposed_issue"])
+        self.assertNotIn("requires_confirmation", payload)
+        self.assertEqual(
+            payload["choice_required"],
+            {
+                "id": "reuse_issue_or_force_new",
+                "options": ["reuse_issue", "force_new"],
+                "reason": "High-similarity duplicate candidates require one real target choice.",
+            },
+        )
 
-    def test_prepare_issue_mutation_flag_fails_closed(self) -> None:
-        body_path = self.root / "reviewed-issue.md"
-        body_path.write_text("Reviewed issue body\n", encoding="utf-8")
-        with (
-            mock.patch.object(gtt, "create_issue") as create_issue,
-            self.assertRaises(gtt.WorkflowError) as raised,
+    def test_prepare_legacy_mutation_flags_fail_closed_before_any_write(self) -> None:
+        for flag in (
+            {"create_issue_confirmed": True},
+            {"create_worktree": True},
+            {"create_task": True},
         ):
-            gtt.cmd_prepare(
-                prepare_args(
-                    create_issue_confirmed=True,
-                    issue_title="Reviewed title",
-                    issue_body_file=str(body_path),
-                )
-            )
-
-        create_issue.assert_not_called()
-        self.assertIn("guru-create-task-workspace", str(raised.exception))
-
-    def test_prepare_worktree_mutation_flag_fails_before_runtime_write(self) -> None:
-        with (
-            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
-            mock.patch.object(gtt, "write_runtime_mappings") as write_runtime_mappings,
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
-        prepare_workspace.assert_not_called()
-        write_runtime_mappings.assert_not_called()
-        self.assertIn("guru-create-task-workspace", str(raised.exception))
-
-    def test_legacy_create_task_helper_requires_explicit_assignee(self) -> None:
-        (self.root / ".trellis/scripts").mkdir(parents=True)
-        (self.root / ".trellis/scripts/task.py").write_text("#!/usr/bin/env python3\n", encoding="utf-8")
-        payload = {"workspace_path": str(self.root), "task_title": "Task", "task_slug": "task"}
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.create_task(self.root, payload, prepare_args(requirement=["#42"], create_task=True))
-        self.assertIn("explicit non-empty assignee", str(raised.exception))
-
-    def test_legacy_prepare_mutation_does_not_run_base_or_workspace_guards(self) -> None:
-        with (
-            mock.patch.object(gtt, "ensure_base_freshness") as refresh,
-            mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
-            self.assertRaises(gtt.WorkflowError),
-        ):
-            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_worktree=True))
-        refresh.assert_not_called()
-        prepare_workspace.assert_not_called()
-
-    def test_prepare_task_mutation_flag_fails_before_task_create(self) -> None:
-        with (
-            mock.patch.object(gtt, "create_task") as create_task,
-            self.assertRaises(gtt.WorkflowError),
-        ):
-            gtt.cmd_prepare(prepare_args(requirement=["#42"], create_task=True))
-        create_task.assert_not_called()
-
-    def test_infer_assignee_ignores_developer_identity(self) -> None:
-        self.assertIsNone(gtt.infer_assignee(self.root, None))
-        self.assertEqual(gtt.infer_assignee(self.root, "explicit-dev"), "explicit-dev")
-
-    def test_infer_assignee_ignores_legacy_single_line_identity(self) -> None:
-        (self.root / ".trellis/.developer").write_text("legacy-dev\n", encoding="utf-8")
-        self.assertIsNone(gtt.infer_assignee(self.root, None))
+            with (
+                self.subTest(flag=flag),
+                mock.patch.object(gtt, "ensure_base_freshness") as refresh,
+                mock.patch.object(gtt, "create_issue") as create_issue,
+                mock.patch.object(gtt, "prepare_workspace") as prepare_workspace,
+                mock.patch.object(gtt, "write_runtime_mappings") as write_runtime_mappings,
+                mock.patch.object(gtt, "run_stdout") as run_stdout,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.cmd_prepare(prepare_args(requirement=["#42"], **flag))
+            refresh.assert_not_called()
+            create_issue.assert_not_called()
+            prepare_workspace.assert_not_called()
+            write_runtime_mappings.assert_not_called()
+            run_stdout.assert_not_called()
+            self.assertEqual(raised.exception.payload["migration"], "guru-create-task-workspace")
+            self.assertFalse(raised.exception.payload["writes_performed"])
 
     def test_ensure_base_freshness_adapter_uses_shared_core(self) -> None:
         result = fresh_base_sync_result()
@@ -3275,74 +3195,6 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             self.assertEqual(payload["remote_head"], remote_head)
             self.assertEqual(gtt.ref_head(local, "main"), remote_head)
             self.assertEqual(gtt.ref_head(local, "origin/main"), remote_head)
-
-    def test_planner_refresh_base_freshness_uses_same_strict_executor(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            remote = tmp_path / "remote.git"
-            seed = tmp_path / "seed"
-            local = tmp_path / "local"
-            subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(["git", "init", "-b", "main", str(seed)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=seed, check=True)
-            subprocess.run(["git", "config", "user.name", "Test User"], cwd=seed, check=True)
-            (seed / "README.md").write_text("one\n", encoding="utf-8")
-            subprocess.run(["git", "add", "README.md"], cwd=seed, check=True)
-            subprocess.run(["git", "commit", "-m", "one"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=seed, check=True)
-            subprocess.run(["git", "push", "-u", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(["git", "symbolic-ref", "HEAD", "refs/heads/main"], cwd=remote, check=True)
-            subprocess.run(["git", "clone", str(remote), str(local)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-            local_head_before = gtt.ref_head(local, "main")
-            self.assertEqual(local_head_before, gtt.ref_head(local, "origin/main"))
-
-            (seed / "README.md").write_text("two\n", encoding="utf-8")
-            subprocess.run(["git", "commit", "-am", "two"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(["git", "push", "origin", "main"], cwd=seed, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            remote_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=seed, text=True).strip()
-
-            payload = self.real_refresh_base_freshness_for_planner(local, "main")
-
-            self.assertTrue(payload["fetch_attempted"])
-            self.assertTrue(payload["fetch_performed"])
-            self.assertTrue(payload["fast_forwarded"])
-            self.assertTrue(payload["fresh"])
-            self.assertEqual(payload["status"], "fresh")
-            self.assertEqual(payload["local_head_before"], local_head_before)
-            self.assertEqual(payload["local_head_after"], remote_head)
-            self.assertEqual(payload["remote_head"], remote_head)
-            self.assertEqual(payload["base_ref_for_worktree"], "main")
-            self.assertEqual(gtt.ref_head(local, "main"), remote_head)
-            self.assertEqual(gtt.ref_head(local, "origin/main"), remote_head)
-
-    def test_planner_refresh_base_freshness_blocks_diverged(self) -> None:
-        with (
-            mock.patch.object(gtt, "resolve_base_selection", return_value={"selected_base": "main"}),
-            mock.patch.object(
-                gtt,
-                "execute_base_sync",
-                side_effect=gtt.WorkflowError("Local selected base diverged from the fetched remote base.", exit_code=2),
-            ),
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            self.real_refresh_base_freshness_for_planner(self.root, "main")
-
-        self.assertIn("diverged", str(raised.exception))
-
-    def test_planner_refresh_base_freshness_blocks_fetch_failure(self) -> None:
-        with (
-            mock.patch.object(gtt, "resolve_base_selection", return_value={"selected_base": "main"}),
-            mock.patch.object(
-                gtt,
-                "execute_base_sync",
-                side_effect=gtt.WorkflowError("Explicit selected-base fetch failed.", exit_code=2),
-            ),
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            self.real_refresh_base_freshness_for_planner(self.root, "main")
-
-        self.assertIn("fetch failed", str(raised.exception))
 
     def test_confirmed_issue_legacy_flag_routes_to_workspace_skill_before_payload_checks(self) -> None:
         body_path = self.root / "reviewed-issue.md"
@@ -3418,39 +3270,19 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "task_workspace_schema", return_value={}),
             mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]),
         ):
-            cancelled = copy.deepcopy(plan)
-            confirmation = cancelled["confirmations"]["workspace_and_task_mutation"]
-            confirmation["status"] = "refused"
-            confirmation["evidence"] = "The user refused the exact reviewed mutation plan."
-            confirmation["confirmation_sha256"] = gtt.task_workspace_confirmation_digest(confirmation)
-            finalize(cancelled)
-            cancelled_path = self.root / "cancelled-plan.json"
-            gtt.write_json(cancelled_path, cancelled)
-            cancelled_result = gtt.cmd_create_task_workspace(argparse.Namespace(
-                root=str(self.root), input=str(cancelled_path), cancelled=True,
-                refresh_review=False, reason=None, reason_code=None,
-            ))
-            self.assertEqual(cancelled_result["typed_exit"], "cancelled")
-
             for gate_status, typed_exit, reason_code in (
                 ("reroute", "refresh_review", "disposition_changed"),
                 ("blocked", "blocked", "object_conflict"),
             ):
                 authored = copy.deepcopy(plan)
                 authored["ai_review_gate"]["status"] = gate_status
-                active = authored["confirmations"]["workspace_and_task_mutation"]
-                active.update({
-                    "status": "not_in_current_invocation", "source": None,
-                    "reviewed_plan_sha256": None, "evidence": None,
-                    "confirmation_sha256": None,
-                })
                 if gate_status == "blocked":
                     authored["naming"]["task_disposition"] = "conflict_blocked"
                 finalize(authored)
                 path = self.root / f"{gate_status}-plan.json"
                 gtt.write_json(path, authored)
                 result = gtt.cmd_create_task_workspace(argparse.Namespace(
-                    root=str(self.root), input=str(path), cancelled=False,
+                    root=str(self.root), input=str(path),
                     refresh_review=gate_status == "reroute", reason=None,
                     reason_code=reason_code,
                 ))
@@ -3471,7 +3303,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             gtt.task_workspace_planned_task_dir(self.root, plan),
             self.root / ".trellis/tasks/07-18-112-create-task-workspace",
         )
-        plan["side_effects"]["task_artifacts"][0] = ".trellis/tasks/07-19-112-create-task-workspace/task-start-context.json"
+        plan["side_effects"]["task_artifacts"][0] = ".trellis/tasks/07-19-wrong-task/issue-scope-ledger.json"
         with self.assertRaises(gtt.WorkflowError):
             gtt.task_workspace_planned_task_dir(self.root, plan)
 
@@ -3606,9 +3438,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 "body_sha256": hashlib.sha256(draft["body"].encode()).hexdigest(),
                 "draft": draft,
             },
-            "confirmations": {
-                "github_issue_mutation": {"status": "confirmed", "confirmation_sha256": "b" * 64}
-            },
             "freshness": {"captured_at": "2026-07-18T00:00:00Z", "plan_sha256": "c" * 64},
         }
         live_issue = {
@@ -3655,9 +3484,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                     "labels": ["enhancement", "workflow"],
                     "reviewed_draft_sha256": "a" * 64,
                 },
-            },
-            "confirmations": {
-                "github_issue_mutation": {"status": "confirmed", "confirmation_sha256": "b" * 64}
             },
             "freshness": {"captured_at": "2026-07-18T00:00:00Z", "plan_sha256": "c" * 64},
         }
@@ -3722,11 +3548,10 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "updated_at": "2026-07-18T00:01:00Z",
             "reviewed_draft_id": "draft-112",
             "reviewed_draft_sha256": "c" * 64,
-            "creation_confirmation_sha256": "d" * 64,
         }
         binding["facts_sha256"] = gtt.context_digest(binding)
         checked_result = {
-            "schema_version": "1.0",
+            "schema_version": "2.0",
             "skill_id": "guru-create-task-workspace",
             "generated_at": "2026-07-18T00:02:00Z",
             "mode": "workflow",
@@ -3796,7 +3621,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "task_workspace_created_issue_provenance_incomplete",
             gtt.task_workspace_created_issue_provenance_errors(missing, payloads),
         )
-        for field in ("reviewed_draft_id", "reviewed_draft_sha256", "creation_confirmation_sha256"):
+        for field in ("reviewed_draft_id", "reviewed_draft_sha256"):
             stale = copy.deepcopy(plan)
             stale["target"]["created_issue_result"]["created_issue"][field] = "stale" if field.endswith("id") else "f" * 64
             errors = gtt.task_workspace_created_issue_provenance_errors(stale, payloads)
@@ -3950,11 +3775,10 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "updated_at": updated_at,
             "reviewed_draft_id": "draft-112",
             "reviewed_draft_sha256": digest("reviewed-draft"),
-            "creation_confirmation_sha256": digest("creation-confirmation"),
         }
         binding["facts_sha256"] = gtt.context_digest(binding)
         result = {
-            "schema_version": "1.0",
+            "schema_version": "2.0",
             "skill_id": "guru-create-task-workspace",
             "generated_at": "2026-07-18T00:02:00Z",
             "mode": "workflow",
@@ -4316,7 +4140,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             },
             "freshness": {"plan_sha256": "b" * 64},
             "ai_review_gate": {"status": "passed"},
-            "confirmations": {"workspace_and_task_mutation": {"status": "confirmed"}},
         }
         runtime_rows = []
         for relative in plan["side_effects"]["runtime_mappings"]:
@@ -4369,14 +4192,14 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "task_workspace_intended_artifacts", return_value=intended),
         ):
             self.assertEqual(gtt.task_workspace_result_check_errors(self.root, plan, result, {}), [])
-            changed_path = task_dir / "issue-review.json"
+            changed_path = task_dir / "issue-scope-ledger.json"
             changed_path.write_bytes(b"different but self-consistent\n")
             for index, row in enumerate(result["created_workspace"]["artifacts"]):
-                if row["path"].endswith("/issue-review.json"):
+                if row["path"].endswith("/issue-scope-ledger.json"):
                     result["created_workspace"]["artifacts"][index] = gtt.task_workspace_artifact_row(self.root, changed_path)
             result["facts_sha256"] = gtt.task_workspace_result_digest(result)
             errors = gtt.task_workspace_result_check_errors(self.root, plan, result, {})
-        self.assertIn("task_workspace_result_issue-review.json_canonical_bytes_mismatch", errors)
+        self.assertIn("task_workspace_result_issue-scope-ledger.json_canonical_bytes_mismatch", errors)
         changed_path.chmod(0o600)
         with self.assertRaises(gtt.WorkflowError):
             gtt.task_workspace_artifact_row(self.root, changed_path)
@@ -4568,7 +4391,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 "reason": "Independently archived A/B merge fixture task.",
             }
             plan: dict[str, object] = {
-                "schema_version": "1.0",
+                "schema_version": "2.0",
                 "skill_id": "guru-create-task-workspace",
                 "generated_at": "2026-07-18T00:00:00Z",
                 "mode": "workflow",
@@ -4642,27 +4465,13 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                     "command_argv": ["create-task-workspace", "--input", f".fixture-inputs/{token}/plan.json"],
                     "stop_after": "created_workspace",
                 },
-                "confirmations": {
-                    "github_issue_mutation": {
-                        "status": "not_in_current_invocation", "source": None,
-                        "reviewed_plan_sha256": None, "evidence": None,
-                        "confirmation_sha256": None,
-                    },
-                    "workspace_and_task_mutation": {
-                        "status": "confirmed",
-                        "source": "explicit_user_confirmation",
-                        "reviewed_plan_sha256": "0" * 64,
-                        "evidence": "The exact fixture workspace and task mutation was confirmed.",
-                        "confirmation_sha256": "0" * 64,
-                    },
-                },
                 "ai_review_gate": {
                     "status": "passed",
                     "reviewer": "A/B production fixture reviewer",
                     "reviewed_plan_sha256": "0" * 64,
                     "summary": "The target, names, assignee, scope and isolated task metadata are complete.",
                     "evidence": [
-                        "The invocation authorizes only one workspace and task.",
+                        "The invocation contains only one workspace and task mutation.",
                         "All tracked metadata is task-local.",
                     ],
                 },
@@ -4674,9 +4483,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             }
             plan["scope"]["scope_sha256"] = gtt.task_workspace_scope_digest(plan["scope"])
             reviewable = gtt.context_digest(gtt.task_workspace_reviewable_projection(plan))
-            plan["confirmations"]["workspace_and_task_mutation"]["reviewed_plan_sha256"] = reviewable
-            confirmation = plan["confirmations"]["workspace_and_task_mutation"]
-            confirmation["confirmation_sha256"] = gtt.task_workspace_confirmation_digest(confirmation)
             plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable
             plan["freshness"]["reviewable_plan_sha256"] = reviewable
             plan["freshness"]["plan_sha256"] = gtt.task_workspace_plan_digest(plan)
@@ -4721,7 +4527,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 with mock.patch.object(gtt, "prepare_workspace", side_effect=prepare_and_copy_inputs):
                     result = gtt.cmd_create_task_workspace(
                         argparse.Namespace(
-                            root=str(source), input=str(plan_path), cancelled=False,
+                            root=str(source), input=str(plan_path),
                             refresh_review=False, reason=None,
                         )
                     )
@@ -4735,7 +4541,12 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             workspace = worktree_root / str(result["created_workspace"]["workspace_slug"])
             task_dir = workspace / result["created_workspace"]["task_artifact_dir"]
             shutil.rmtree(workspace / ".fixture-inputs")
-            task_context = gtt.read_json(task_dir / "task-start-context.json")
+            task_context = {
+                "base_branch": "main",
+                "base_ref": "main",
+                "branch_name": str(plan["naming"]["branch_name"]),
+                "task_artifact_dir": gtt.repo_relative(workspace, task_dir),
+            }
             ledger = gtt.read_json(task_dir / "issue-scope-ledger.json")
             archive_relative = (
                 f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
@@ -4755,18 +4566,18 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                     "affected_surfaces": [{
                         "kind": "task-artifact",
                         "name": f"Task workspace {token.upper()}",
-                        "paths": [f"{archive_relative}/task-start-context.json"],
+                        "paths": [f"{archive_relative}/issue-scope-ledger.json"],
                         "change": "归档路径只绑定当前 task，不写共享索引。",
                     }],
                     "contract_changes": [],
                     "search_terms": {
                         "commands": ["create-task-workspace", "task.py archive"],
                         "config_keys": ["workspace_mode"],
-                        "schema_fields": ["task-start-context.json:intake_summary"],
+                        "schema_fields": ["issue-scope-ledger.json:close_issues"],
                         "symbols": ["cmd_create_task_workspace"],
                         "phrases": [
                             "create-task-workspace 已完成 task-local A/B merge fixture",
-                            "task-start-context.json 归档路径保持独立",
+                            "issue-scope-ledger.json 归档路径保持独立",
                             "workspace_mode 配置验证双向合并无冲突",
                         ],
                     },
@@ -4947,6 +4758,112 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         self.assertEqual(artifacts["pr-body.md"]["link"], "")
 
 
+class TaskRuntimeIdentityTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_slug = "runtime-identity"
+        self.workspace_slug = "runtime-identity-workspace"
+        self.branch = "feat/runtime-identity"
+        self.task_ref = f".trellis/tasks/{self.task_slug}"
+        self.task_dir = self.root / self.task_ref
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.name", "Runtime Test"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "runtime@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        (self.root / ".gitignore").write_text(
+            ".trellis/.runtime/\n",
+            encoding="utf-8",
+        )
+        (self.root / "README.md").write_text("runtime identity fixture\n", encoding="utf-8")
+        subprocess.run(["git", "add", ".gitignore", "README.md"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "test: initialize runtime identity fixture"], cwd=self.root, check=True)
+        subprocess.run(["git", "checkout", "-qb", self.branch], cwd=self.root, check=True)
+        self.task_dir.mkdir(parents=True)
+        gtt.write_json(
+            self.task_dir / "task.json",
+            {
+                "id": self.task_slug,
+                "name": self.task_slug,
+                "title": "Runtime identity",
+                "status": "in_progress",
+                "branch": self.branch,
+                "base_branch": "main",
+            },
+        )
+        gtt.write_json(
+            self.task_dir / "issue-scope-ledger.json",
+            {
+                "primary_issue": {"number": 161, "title": "AI-first workflow"},
+                "close_issues": [{"number": 161}],
+                "related_issues": [],
+                "followup_issues": [],
+            },
+        )
+        gtt.write_runtime_mappings(
+            self.root,
+            gtt.DEFAULTS,
+            {
+                "workspace_slug": self.workspace_slug,
+                "task_slug": self.task_slug,
+                "task_dir": self.task_ref,
+                "branch_name": self.branch,
+            },
+            self.root,
+        )
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_synthesizes_runtime_identity_without_persisting_legacy_context(self) -> None:
+        legacy_context = self.task_dir / "task-start-context.json"
+        self.assertFalse(legacy_context.exists())
+
+        identity = gtt.load_task_runtime_identity(self.task_dir, gtt.DEFAULTS)
+
+        self.assertEqual(identity["_identity_source"], "task_json_runtime_mapping")
+        self.assertEqual(identity["task_slug"], self.task_slug)
+        self.assertEqual(identity["task_artifact_dir"], self.task_ref)
+        self.assertEqual(identity["workspace_slug"], self.workspace_slug)
+        self.assertEqual(identity["branch_name"], self.branch)
+        self.assertEqual(identity["base_branch"], "main")
+        self.assertEqual(identity["source_issue"]["number"], 161)
+        self.assertRegex(identity["base_head_sha"], r"^[0-9a-f]{40}$")
+        self.assertFalse(legacy_context.exists())
+
+    def test_mismatched_task_mapping_fails_closed(self) -> None:
+        mapping_path = gtt.runtime_task_path(self.root, gtt.DEFAULTS, self.task_slug)
+        mapping = gtt.read_json(mapping_path)
+        mapping["task_artifact_dir"] = ".trellis/tasks/other-task"
+        gtt.write_json(mapping_path, mapping)
+
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.load_task_runtime_identity(self.task_dir, gtt.DEFAULTS)
+
+        self.assertIn("does not match task.json", str(raised.exception))
+
+    def test_worktree_branch_mismatch_fails_closed(self) -> None:
+        with (
+            mock.patch.object(
+                gtt,
+                "worktree_records",
+                return_value=[
+                    {
+                        "worktree": str(self.root),
+                        "branch": "refs/heads/feat/other-task",
+                    }
+                ],
+            ),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.load_task_runtime_identity(self.task_dir, gtt.DEFAULTS)
+
+        self.assertIn("worktree identity does not match", str(raised.exception))
+
+
 class WorkspaceBoundaryGuardTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -5010,14 +4927,14 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
         self.assertTrue(gtt.runtime_workspace_path(self.workspace, gtt.DEFAULTS, "060-workspace-boundary-guard").is_file())
         self.assertTrue(gtt.runtime_task_path(self.workspace, gtt.DEFAULTS, "060-workspace-boundary-guard").is_file())
 
-    def test_check_workspace_boundary_blocks_worktree_mode_without_task_context(self) -> None:
+    def test_check_workspace_boundary_blocks_without_task_runtime_identity(self) -> None:
         self.source_task_dir.mkdir(parents=True)
         (self.source_task_dir / "task.json").write_text('{"title":"Wrong task copy"}\n', encoding="utf-8")
         with self.assertRaises(gtt.WorkflowError) as raised:
             gtt.cmd_check_workspace_boundary(boundary_args(root=str(self.source), task=self.task_rel))
         payload = raised.exception.payload
         self.assertEqual(payload["status"], "blocked")
-        self.assertTrue(any("task-start-context.json" in error for error in payload["errors"]))
+        self.assertTrue(any("Task runtime identity" in error for error in payload["errors"]))
 
     def test_ordinary_task_resolution_rejects_plan_only_archived_directory(self) -> None:
         archived = self.workspace / ".trellis/tasks/archive/2026-07/07-08-plan-only"
@@ -5335,1109 +5252,151 @@ class WorkspaceBoundaryGuardTest(unittest.TestCase):
         self.assertEqual(payload["status"], "blocked")
         self.assertTrue(any("source checkout contains current-task artifacts" in error for error in payload["errors"]))
 
-    def test_wrong_task_artifact_arguments_are_rejected(self) -> None:
+    def test_wrong_phase2_artifact_argument_is_rejected(self) -> None:
         self.source_task_dir.mkdir(parents=True)
-        for name, content in [("prd.md", "# PRD\n"), ("agent-assignment.json", "{}\n")]:
-            (self.source_task_dir / name).write_text(content, encoding="utf-8")
+        (self.source_task_dir / "prd.md").write_text("# PRD\n", encoding="utf-8")
         with self.assertRaises(gtt.WorkflowError):
-            gtt.validate_agent_assignment(self.workspace, self.task_dir, str(self.source_task_dir / "agent-assignment.json"))
-        with self.assertRaises(gtt.WorkflowError):
-            gtt.build_phase2_check_payload(root=self.workspace, task_dir=self.task_dir, task_context=self.task_context, task={"base_branch": "main"}, checker="trellis-check", check_summary="检查完成。", checked_artifacts=[str(self.source_task_dir / "prd.md")], checked_specs=[], coverage_items=list(gtt.REQUIRED_PHASE2_COVERAGE), validation_items=["unit|passed"], findings=[])
+            gtt.phase2_reviewed_paths(
+                self.workspace,
+                [str(self.source_task_dir / "prd.md")],
+            )
 
 
 class PlanningAndPhase2GateTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        self.task_dir = self.root / ".trellis/tasks/07-04-gates"
+        self.task_ref = ".trellis/tasks/07-04-gates"
+        self.task_dir = self.root / self.task_ref
         self.task_dir.mkdir(parents=True)
-        (self.root / ".trellis/guru-team").mkdir(parents=True)
-        subprocess.run(
-            ["git", "init", "-q", "-b", "main", str(self.root)],
-            check=True,
-        )
-        (self.task_dir / "task.json").write_text(
-            '{"id":"gate-task","name":"gate-task","title":"Gate task","status":"planning","scope":"issue #27","branch":"feat/gate-task","base_branch":"main"}\n',
-            encoding="utf-8",
-        )
-        gtt.write_json(self.task_dir / "finish-summary-index.json", {
-            "schema_version": 1,
-            "index": {
-                "problem": "固定 journal 路径会让并行任务产生冲突。",
-                "outcome": "完成摘要改为 task-local artifact；非目标：不实现搜索。",
-                "changed_behavior": ["finish-work 完成后写入 finish-summary.json。"],
-                "affected_surfaces": [{
-                    "kind": "workflow",
-                    "name": "finish-work",
-                    "paths": ["trellis/workflows/guru-team/workflow.md"],
-                    "change": "finish-work 不再调用 add_session.py。",
-                }],
-                "contract_changes": [],
-                "search_terms": {
-                    "commands": ["add_session.py"],
-                    "config_keys": ["session_auto_commit"],
-                    "schema_fields": ["finish-summary.json:index"],
-                    "symbols": ["cmd_finish_work"],
-                    "phrases": ["固定 journal 冲突", "add_session.py", "完成摘要改为 task-local artifact"],
-                },
-            },
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        (self.root / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+        gtt.write_json(self.task_dir / "task.json", {
+            "id": "gate-task",
+            "name": "gate-task",
+            "title": "Gate task",
+            "status": "planning",
+            "scope": "issue #27",
+            "branch": "feat/gate-task",
+            "base_branch": "main",
         })
-        (self.task_dir / "prd.md").write_text(
-            "# PRD\n\n## R1. Requirement\n\n需求。\n", encoding="utf-8"
+        for name, body in (
+            ("prd.md", "# PRD\n\n## R1\n\nRequirement.\n"),
+            ("design.md", "# Design\n\n## Docs SSOT Plan\n\n- Strategy: ssot_first\n"),
+            ("implement.md", "# Implement\n\nImplementation plan.\n"),
+        ):
+            (self.task_dir / name).write_text(body, encoding="utf-8")
+
+        packages = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages"
         )
-        (self.task_dir / "design.md").write_text(
-            "# Design\n\n## Docs SSOT Plan\n\n- Strategy: ssot_first\n", encoding="utf-8"
+        self.planning_example = json.loads(
+            (
+                packages
+                / "guru-approve-task-plan/examples/planning-approval.json"
+            ).read_text(encoding="utf-8")
         )
-        (self.task_dir / "implement.md").write_text("# Implement\n\n计划。\n", encoding="utf-8")
-        gtt.write_json(self.task_dir / "issue-scope-ledger.json", {
-            "schema_version": "1.0",
-            "primary_issue": {"number": 27},
-            "close_issues": [{"number": 27}],
-            "related_issues": [],
-            "followup_issues": [],
-        })
-        gtt.write_json(self.task_dir / "agent-assignment.json", {})
-        (self.root / ".trellis/spec").mkdir(parents=True)
-        (self.root / ".trellis/spec/index.md").write_text("# Spec\n\n规则。\n", encoding="utf-8")
-        self.write_wording_evidence()
+        self.planning_schema = json.loads(
+            (
+                packages
+                / "guru-approve-task-plan/schemas/planning-approval.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.phase2_example = json.loads(
+            (
+                packages / "guru-check-task/examples/phase2-check.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.phase2_schema = json.loads(
+            (
+                packages / "guru-check-task/schemas/phase2-check.schema.json"
+            ).read_text(encoding="utf-8")
+        )
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
-    def patch_common(self) -> list[mock._patch]:
-        return [
-            mock.patch.object(gtt, "repo_root", return_value=self.root),
-            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
-                "base_branch": "main",
-                "base_ref": "refs/remotes/origin/main",
-                "base_head_sha": "b" * 40,
-                "workspace_mode": "worktree",
-                "workspace_path": str(self.root),
-                "task_dir": ".trellis/tasks/07-04-gates",
-                "preflight": {"current_checkout": str(self.root)},
-            }),
-            mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "current_head", return_value="a" * 40),
-            mock.patch.object(gtt, "git_status_paths", return_value=[]),
-            mock.patch.object(gtt, "phase2_agent_assignment_errors", return_value=[]),
-            mock.patch.object(gtt, "normalize_agent_assignment_for_task", return_value={
-                "status_events": [
-                    {"event": "completed", "logical_role": "实现代理", "agent_id": "implement-1"},
-                    {"event": "completed", "logical_role": "阶段二检查代理", "agent_id": "check-1"},
-                ],
-                "event_corrections": [],
-            }),
-            mock.patch.object(
-                gtt,
-                "load_phase2_check_schema",
-                return_value=json.loads(
-                    (Path(__file__).resolve().parents[5] / "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json").read_text(encoding="utf-8")
-                ),
-            ),
-        ]
-
-    def planning_input(self, **overrides: object) -> dict[str, object]:
-        payload: dict[str, object] = {
-            "mode": "workflow",
-            "requirement_authorities": [{
-                "id": "task-prd",
-                "kind": "task_artifact",
-                "locator": ".trellis/tasks/07-04-gates/prd.md",
-                "sha256": "0" * 64,
-                "updated_at": None,
-            }],
-            "docs_ssot_plan": {
-                "strategy": "ssot_first",
-                "artifact_path": "design.md",
-                "locator": "Docs SSOT Plan",
-                "statement_sha256": "0" * 64,
-                "durable_paths": ["docs/requirements.md"],
-            },
-            "provenance_review": {
-                "entries": [{
-                    "id": "R1",
-                    "artifact_path": "prd.md",
-                    "locator": "R1. Requirement",
-                    "statement_sha256": "0" * 64,
-                    "classification": "explicit_requirement",
-                    "authority_refs": ["task-prd"],
-                    "reason": "测试 requirement 明确要求该合同。",
-                    "implementation_choice": None,
-                    "scope_expansion": None,
-                    "out_of_scope_proposal": None,
-                }],
-                "coverage": {
-                    "reviewer": "test-planning-reviewer",
-                    "summary": "全部 load-bearing 条目已覆盖。",
-                    "reviewed_entry_ids": ["R1"],
-                    "all_load_bearing_items_covered": True,
-                    "review_sha256": "0" * 64,
-                },
-            },
-            "unusual_scenario_review": {
-                "reviewer": "test-planning-reviewer",
-                "summary": "当前 scope 无必要的非常规 proposal。",
-                "candidates": [],
-                "unresolved_count": 0,
-                "review_sha256": "0" * 64,
-            },
-            "semantic_review": {"ai_review_gate": {
-                "status": "passed",
-                "reviewer": "test-planning-reviewer",
-                "summary": "规划可进入实现。",
-                "reviewed_at": "2026-07-19T00:00:00Z",
-                "findings": [],
-                "revision_actions": [],
-                "scope_proposals": [],
-                "blocking_reasons": [],
-            }},
-            "user_confirmation": {
-                "kind": "post-planning-approval",
-                "status": "confirmed",
-                "prompt_presented_at": "2026-07-19T00:01:00Z",
-                "confirmed_at": "2026-07-19T00:02:00Z",
-                "evidence_summary": "用户查看三份 planning 链接后确认。",
-            },
-            "typed_exit": "approved",
-            "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
-            "reason": "规划已通过 semantic gate。",
-            "supersedes_facts_sha256": None,
+    def planning_authored(self) -> dict[str, object]:
+        fields = {
+            "mode", "authority_refs", "docs_ssot_plan", "semantic_review",
+            "typed_exit", "consumer", "reason",
         }
-        payload.update(overrides)
-        return payload
-
-    def planning_scope_expansion(
-        self,
-        *,
-        source_kind: str = "planning_artifact",
-        unusual_candidate: dict[str, object] | None = None,
-    ) -> dict[str, object]:
-        authority_sha = hashlib.sha256((self.task_dir / "prd.md").read_bytes()).hexdigest()
-        if source_kind == "planning_artifact":
-            _statement, proposal_sha = gtt.planning_locator_statement(
-                self.task_dir / "prd.md", "R1. Requirement"
-            )
-            proposal_binding = {
-                "source_kind": "planning_artifact",
-                "artifact_path": "prd.md",
-                "locator": "R1. Requirement",
-                "unusual_candidate_id": None,
-                "proposal_sha256": proposal_sha,
-            }
-            confirmation_kind = "dedicated-scope-expansion"
-        elif source_kind == "unusual_scenario_candidate" and unusual_candidate is not None:
-            proposal_sha = gtt.planning_unusual_proposal_digest(unusual_candidate)
-            proposal_binding = {
-                "source_kind": "unusual_scenario_candidate",
-                "artifact_path": None,
-                "locator": None,
-                "unusual_candidate_id": unusual_candidate["id"],
-                "proposal_sha256": proposal_sha,
-            }
-            confirmation_kind = "dedicated-unusual-scenario"
-            candidate_confirmation = unusual_candidate.get("confirmation")
-            if not isinstance(candidate_confirmation, dict):
-                raise AssertionError("Confirmed unusual candidate requires confirmation")
-        else:
-            raise AssertionError(f"Unsupported scope expansion source: {source_kind}")
         return {
-            "proposal_binding": proposal_binding,
-            "confirmation": {
-                "confirmation_kind": confirmation_kind,
-                "proposal_sha256": proposal_sha,
-                "confirmation_summary": (
-                    candidate_confirmation["confirmation_summary"]
-                    if source_kind == "unusual_scenario_candidate"
-                    else "用户确认 exact scope proposal。"
-                ),
-                "confirmed_at": (
-                    candidate_confirmation["confirmed_at"]
-                    if source_kind == "unusual_scenario_candidate"
-                    else "2026-07-19T00:00:00Z"
-                ),
-            },
-            "authority_binding": {
-                "authority_ref": "task-prd",
-                "authority_sha256": authority_sha,
-                "proposal_sha256": proposal_sha,
-            },
+            key: copy.deepcopy(value)
+            for key, value in self.planning_example.items()
+            if key in fields
         }
 
-    def write_planning_input(self, payload: dict[str, object], name: str = "planning-input.json") -> Path:
-        path = self.root / name
-        gtt.write_json(path, payload)
-        return path
-
-    def planning_v2_args(
-        self,
-        payload: dict[str, object] | None = None,
-        *,
-        name: str = "planning-input.json",
-        **overrides: object,
-    ) -> argparse.Namespace:
-        input_path = self.write_planning_input(payload or self.planning_input(), name)
-        return planning_args(input=str(input_path), **overrides)
-
-    def record_planning_approval(
-        self,
-        payload: dict[str, object] | None = None,
-        *,
-        name: str = "planning-input.json",
-        **overrides: object,
-    ) -> dict[str, object]:
-        return gtt.cmd_record_planning_approval(
-            self.planning_v2_args(payload, name=name, **overrides)
-        )
-
-    def phase2_input(self, **overrides: object) -> dict[str, object]:
-        payload = json.loads(
-            (Path(__file__).resolve().parents[5] / "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json").read_text(encoding="utf-8")
-        )
-        payload["requirement_provenance"] = {
-            "summary": "已复核 approved load-bearing provenance。",
-            "artifacts": [{"path": ".trellis/tasks/07-04-gates/prd.md"}],
-            "facts_sha256": "0" * 64,
+    def phase2_authored(self) -> dict[str, object]:
+        fields = {
+            "mode", "reviewed_paths", "validation", "docs_ssot",
+            "semantic_review", "typed_exit", "route", "reason", "consumer",
         }
-        payload["docs_ssot_plan"].update({
-            "durable_paths": [{"path": ".trellis/spec/index.md"}],
-            "sync_result": "ssot_first durable spec 已先更新并作为实现输入。",
-        })
-        payload["implementation_handoff"] = {
-            "summary": "实现 handoff 已覆盖文件、Docs SSOT、测试与风险。",
-            "artifacts": [{"path": ".trellis/tasks/07-04-gates/implement.md"}],
-            "facts_sha256": "0" * 64,
-        }
-        payload["repository_snapshot"]["reviewed_paths"] = [
-            {"path": ".trellis/spec/index.md"}
-        ]
-        payload.update(overrides)
-        return payload
-
-    def phase2_v2_args(
-        self,
-        payload: dict[str, object] | None = None,
-        *,
-        name: str = "phase2-input.json",
-        **overrides: object,
-    ) -> argparse.Namespace:
-        path = self.root / name
-        gtt.write_json(path, payload or self.phase2_input())
-        return phase2_args(input=str(path), **overrides)
-
-    def record_phase2(
-        self,
-        payload: dict[str, object] | None = None,
-        *,
-        name: str = "phase2-input.json",
-        **overrides: object,
-    ) -> dict[str, object]:
-        return gtt.cmd_record_phase2_check(
-            self.phase2_v2_args(payload, name=name, **overrides)
-        )
-
-    def write_normative_prd_hit(self, term: str) -> None:
-        (self.task_dir / "prd.md").write_text(
-            f"# PRD\n\n这里{term}固定合同。\n",
-            encoding="utf-8",
-        )
-
-    def write_wording_recorder_input(
-        self,
-        name: str,
-        typed_exit: str,
-        *,
-        with_revision: bool = False,
-    ) -> Path:
-        scope, contents = gtt.contract_wording_build_scope(
-            self.root,
-            "planning_artifacts",
-            "workflow",
-            task_dir=self.task_dir,
-        )
-        scan = gtt.scan_contract_wording(scope, contents)
-        passed = typed_exit != "blocked"
-        revisions = []
-        if with_revision:
-            item = scope["items"][0]
-            revisions = [{
-                "revision_id": f"{name}-revision",
-                "locator": item["path"],
-                "before_sha256": "0" * 64,
-                "after_sha256": item["content_sha256"],
-                "reason": "测试已授权改写后的 current rescan。",
-                "mutation_authority": "测试 workflow 已授权 planning artifact 改写。",
-                "rescan_sha256": scan["scan_sha256"],
-            }]
-        payload = {
-            "generated_at": f"2026-07-17T00:00:{sum(name.encode('utf-8')) % 60:02d}Z",
-            "semantic_review": {
-                "revisions": revisions,
-                "classifications": [{
-                    "hit_id": hit["hit_id"],
-                    "classification": "term_definition",
-                    "reason": "AI 已审查并保留该确定含义。",
-                } for hit in scan["hits"]],
-                "ai_review_gate": {
-                    "status": "passed" if passed else "blocked",
-                    "reviewer": "test-reentry-reviewer",
-                    "summary": "已完成同一 planning profile 的完整 current review。",
-                    "reviewed_scan_sha256": scan["scan_sha256"],
-                    "checked_dimensions": {
-                        key: passed for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                    },
-                    "planning_checked_dimensions": {
-                        key: passed
-                        for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-                    },
-                },
-            },
-            "human_confirmation": {
-                "status": "not_required" if passed else "refused",
-                "confirmed_by": None,
-                "confirmed_at": None,
-                "reason": "测试记录当前 authority/confirmation 结果。",
-            },
-            "typed_exit": typed_exit,
-        }
-        path = self.root / f"{name}.json"
-        gtt.write_json(path, payload)
-        return path
-
-    def wording_record_args(self, input_path: Path, **overrides: object) -> argparse.Namespace:
-        values: dict[str, object] = {
-            "root": None,
-            "json": True,
-            "mode": "workflow",
-            "profile": "planning_artifacts",
-            "input": str(input_path),
-            "task": str(self.task_dir),
-            "path": [],
-            "change_request_input": None,
-            "scan_only": False,
-            "replace_stale": False,
-            "supersede_reentry_facts_sha256": None,
-        }
-        values.update(overrides)
-        return argparse.Namespace(**values)
-
-    def write_wording_evidence(
-        self,
-        classification: str | None = "term_definition",
-        *,
-        typed_exit: str | None = None,
-    ) -> dict[str, object]:
-        scope, contents = gtt.contract_wording_build_scope(
-            self.root,
-            "planning_artifacts",
-            "workflow",
-            task_dir=self.task_dir,
-        )
-        scan = gtt.scan_contract_wording(scope, contents)
-        classifications = []
-        if classification is not None:
-            classifications = [
-                {
-                    "hit_id": hit["hit_id"],
-                    "classification": classification,
-                    "reason": "AI 已分类该命中。",
-                }
-                for hit in scan["hits"]
-            ]
-        has_blocker = classification is None or classification == "contract_violation"
-        exit_value = typed_exit or ("blocked" if has_blocker else "pass")
         authored = {
-            "generated_at": "2026-01-01T00:00:00Z",
-            "semantic_review": {
-                "revisions": [],
-                "classifications": classifications,
-                "ai_review_gate": {
-                    "status": "blocked" if exit_value == "blocked" else "passed",
-                    "reviewer": "codex-main-session",
-                    "summary": "已完成固定 planning artifacts 合同措辞审查。",
-                    "reviewed_scan_sha256": scan["scan_sha256"],
-                    "checked_dimensions": {
-                        key: exit_value != "blocked"
-                        for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                    },
-                    "planning_checked_dimensions": {
-                        key: exit_value != "blocked"
-                        for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-                    },
-                },
-            },
-            "human_confirmation": {
-                "status": "refused" if exit_value == "blocked" else "not_required",
-                "confirmed_by": None,
-                "confirmed_at": None,
-                "reason": "测试 evidence。",
-            },
-            "typed_exit": exit_value,
+            key: copy.deepcopy(value)
+            for key, value in self.phase2_example.items()
+            if key in fields
         }
-        result = gtt.contract_wording_derive_result(
-            "planning_artifacts", "workflow", scope, scan, authored
-        )
-        gtt.write_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, result)
-        return result
+        authored["reviewed_paths"] = [f"{self.task_ref}/prd.md"]
+        return authored
 
-    def test_check_planning_approval_rejects_missing_artifact(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
+    def test_check_planning_parser_rejects_removed_committed_head_bypass(self) -> None:
+        parser = gtt.build_parser()
+        with self.assertRaises(SystemExit) as rejected:
+            parser.parse_args([
+                "check-planning-approval",
+                "--allow-committed-head",
+            ])
+        self.assertEqual(rejected.exception.code, 2)
 
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("Planning approval artifact not found", str(raised.exception))
-
-    def test_contract_wording_v2_terms_are_scanned(self) -> None:
-        expected_terms = [
-            "可以",
-            "允许",
-            "建议",
-            "推荐",
-            "可选",
-            "尽量",
-            "尽可能",
-            "最好",
-            "应该",
-            "应当",
-            "原则上",
-            "一般",
-            "通常",
-            "视情况",
-            "根据情况",
-            "根据需要",
-            "按需",
-            "必要时",
-            "如有需要",
-            "需要时",
-            "适当",
-            "适当时",
-            "合理",
-            "合理时",
-            "类似",
-            "相关",
-            "相应",
-            "等",
-            "等等",
-            "之类",
-            "一些",
-            "若干",
-            "部分",
-            "至少",
-            "默认",
-        ]
-        self.assertEqual(gtt.CONTRACT_WORDING_VOCABULARY_V2, expected_terms)
-        self.assertEqual(gtt.CONTRACT_WORDING_PLANNING_SCOPE, ["prd.md", "design.md", "implement.md"])
-
-        for term in expected_terms:
-            with self.subTest(term=term):
-                self.write_normative_prd_hit(term)
-                scope, contents = gtt.contract_wording_build_scope(
-                    self.root, "planning_artifacts", "workflow", task_dir=self.task_dir
-                )
-                hits = gtt.scan_contract_wording(scope, contents)["hits"]
-                self.assertIn(term, {str(hit["term"]) for hit in hits})
-
-    def test_contract_wording_explicit_paths_normalize_before_duplicate_check(self) -> None:
-        path = self.root / "docs/review.md"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("# Review\n", encoding="utf-8")
-        scope, _ = gtt.contract_wording_build_scope(
-            self.root,
-            "explicit_paths",
-            "standalone",
-            explicit_paths=["docs/./review.md"],
-        )
-        self.assertEqual(scope["identity"], "explicit_paths:docs/review.md")
-        self.assertEqual(scope["items"][0]["path"], "docs/review.md")
-        with self.assertRaises(gtt.WorkflowError):
-            gtt.contract_wording_build_scope(
-                self.root,
-                "explicit_paths",
-                "standalone",
-                explicit_paths=["docs/review.md", "docs/./review.md"],
+    @staticmethod
+    def nested_keys(value: object) -> set[str]:
+        if isinstance(value, dict):
+            return set(value) | set().union(
+                *(PlanningAndPhase2GateTest.nested_keys(item) for item in value.values()),
+                set(),
             )
+        if isinstance(value, list):
+            return set().union(
+                *(PlanningAndPhase2GateTest.nested_keys(item) for item in value),
+                set(),
+            )
+        return set()
 
-    def test_contract_wording_change_request_rejects_selected_comment_without_stable_metadata(self) -> None:
-        source = self.root / "draft-selected-comment.json"
-        for missing in ("author", "updated_at"):
-            with self.subTest(missing=missing):
-                comment = {
-                    "id": "comment-1",
-                    "author": "reviewer",
-                    "updated_at": "2026-07-17T00:00:00Z",
-                    "selection_reason": "该评论是 authoritative contract source。",
-                    "body": "确定评论内容。",
-                }
-                comment[missing] = None
-                source.write_text(json.dumps({
-                    "kind": "draft",
-                    "draft_id": "draft-selected-comment",
-                    "title": "确定标题",
-                    "body": "确定正文",
-                    "selected_comments": [comment],
-                }), encoding="utf-8")
-                with self.assertRaises(gtt.WorkflowError):
-                    gtt.contract_wording_build_scope(
-                        self.root,
-                        "change_request",
-                        "standalone",
-                        change_request_input=source.name,
-                    )
-
-    def test_contract_wording_live_comment_adapter_failures_are_specific(self) -> None:
-        node_id = "IC_kwDOA114"
-        comment_url = "https://github.com/castbox/guru-trellis/issues/114#issuecomment-11401"
-        source = self.root / "issue-selected-comment.json"
-        source.write_text(json.dumps({
-            "kind": "issue",
-            "repo": "castbox/guru-trellis",
-            "number": 114,
-            "selected_comments": [{
-                "id": node_id,
-                "selection_reason": "该评论是 authoritative contract source。",
-            }],
-        }), encoding="utf-8")
-        live = {
-            "title": "确定标题",
-            "body": "确定正文",
-            "url": "https://github.com/castbox/guru-trellis/issues/114",
-            "updatedAt": "2026-07-17T08:00:00Z",
-            "comments": [{
-                "id": node_id,
-                "author": {"login": "reviewer"},
-                "body": "确定评论内容。",
-                "createdAt": "2026-07-17T07:00:00Z",
-                "url": comment_url,
-            }],
-        }
-        rest_comment = {
-            "id": 11401,
-            "node_id": node_id,
-            "user": {"login": "reviewer"},
-            "body": "确定评论内容。",
-            "created_at": "2026-07-17T07:00:00Z",
-            "updated_at": "2026-07-17T08:00:00Z",
-            "html_url": comment_url,
-        }
-        cases = [
-            (
-                [rest_comment],
-                "pagination response is invalid",
-            ),
-            (
-                [[rest_comment], [dict(rest_comment)]],
-                "duplicate comment identity",
-            ),
-            (
-                [[{key: value for key, value in rest_comment.items() if key != "updated_at"}]],
-                "updated_at",
-            ),
-        ]
-        for api_payload, expected in cases:
-            with (
-                self.subTest(expected=expected),
-                mock.patch.object(gtt, "require_gh_auth"),
-                mock.patch.object(gtt, "issue_view", return_value=live),
-                mock.patch.object(gtt, "gh_json", return_value=api_payload),
-            ):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.contract_wording_build_scope(
-                        self.root,
-                        "change_request",
-                        "standalone",
-                        change_request_input=source.name,
-                    )
-                self.assertIn(expected, str(raised.exception))
-
-        api_error = gtt.WorkflowError(
-            "gh command failed: gh api repos/castbox/guru-trellis/issues/114/comments?per_page=100",
-            exit_code=2,
-        )
-        with (
-            mock.patch.object(gtt, "require_gh_auth"),
-            mock.patch.object(gtt, "issue_view", return_value=live),
-            mock.patch.object(gtt, "gh_json", side_effect=api_error),
+    def test_planning_v3_is_compact_owner_private_and_valid(self) -> None:
+        before = set(gtt.git_status_paths(self.root))
+        with mock.patch.object(
+            gtt, "planning_approval_schema", return_value=self.planning_schema
         ):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.contract_wording_build_scope(
-                    self.root,
-                    "change_request",
-                    "standalone",
-                    change_request_input=source.name,
-                )
-        self.assertIn("gh command failed: gh api", str(raised.exception))
-
-    def test_contract_wording_live_issue_mutation_requires_exact_confirmation_chain(self) -> None:
-        source = self.root / "issue-change-request.json"
-        source.write_text(json.dumps({
-            "kind": "issue",
-            "repo": "castbox/guru-trellis",
-            "number": 114,
-            "selected_comments": [],
-        }), encoding="utf-8")
-        live = {
-            "title": "确定标题",
-            "body": "确定改写后的正文",
-            "url": "https://github.com/castbox/guru-trellis/issues/114",
-            "updatedAt": "2026-07-17T08:00:00Z",
-            "comments": [],
-        }
-        with mock.patch.object(gtt, "require_gh_auth"), mock.patch.object(gtt, "issue_view", return_value=live):
-            scope, contents = gtt.contract_wording_build_scope(
-                self.root,
-                "change_request",
-                "standalone",
-                change_request_input=source.name,
+            payload = gtt.build_planning_approval_payload(
+                self.root, self.task_dir, self.planning_authored()
             )
-        scan = gtt.scan_contract_wording(scope, contents)
-        body_item = next(item for item in scope["items"] if item["field"] == "body")
-        mutation = {
-            "source_identity": body_item["source_identity"],
-            "locator": body_item["id"],
-            "field": "body",
-            "preimage_sha256": "0" * 64,
-            "confirmed_content_sha256": body_item["content_sha256"],
-            "reread_content_sha256": body_item["content_sha256"],
-            "source_updated_at": body_item["updated_at"],
-        }
-        payload_digest = gtt.context_digest([gtt.context_digest({
-            "source_identity": mutation["source_identity"],
-            "locator": mutation["locator"],
-            "field": mutation["field"],
-            "preimage_sha256": mutation["preimage_sha256"],
-            "content_sha256": mutation["confirmed_content_sha256"],
-        })])
-        result = gtt.contract_wording_derive_result(
-            "change_request",
-            "standalone",
-            scope,
-            scan,
-            {
-                "generated_at": "2026-07-17T08:01:00Z",
-                "semantic_review": {
-                    "revisions": [{
-                        "revision_id": "revision-1",
-                        "locator": body_item["id"],
-                        "before_sha256": "0" * 64,
-                        "after_sha256": body_item["content_sha256"],
-                        "reason": "测试精确 issue body mutation binding。",
-                        "mutation_authority": "用户确认了精确 issue body payload。",
-                        "rescan_sha256": scan["scan_sha256"],
-                        "change_request_mutation": mutation,
-                    }],
-                    "classifications": [],
-                    "ai_review_gate": {
-                        "status": "passed",
-                        "reviewer": "test-reviewer",
-                        "summary": "已审查 confirmed payload、preimage 与 live reread result。",
-                        "reviewed_scan_sha256": scan["scan_sha256"],
-                        "checked_dimensions": {
-                            key: True for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                        },
-                    },
-                },
-                "human_confirmation": {
-                    "status": "confirmed",
-                    "confirmed_by": "user",
-                    "confirmed_at": "2026-07-17T07:59:00Z",
-                    "reason": "用户确认了精确 payload。",
-                    "confirmed_payload_sha256": payload_digest,
-                },
-                "typed_exit": "content_changed",
-            },
-        )
-        self.assertEqual(gtt.contract_wording_structural_errors(self.root, result, scope, scan), [])
-        result["human_confirmation"]["confirmed_payload_sha256"] = "f" * 64
-        result["facts_sha256"] = gtt.context_digest({
-            key: value for key, value in result.items() if key != "facts_sha256"
-        })
-        self.assertIn(
-            "change_request_confirmation_payload_digest_mismatch",
-            gtt.contract_wording_structural_errors(self.root, result, scope, scan),
-        )
-
-    def test_contract_wording_revision_binds_locator_to_current_hash(self) -> None:
-        self.write_normative_prd_hit("建议")
-        scope, contents = gtt.contract_wording_build_scope(
-            self.root,
-            "planning_artifacts",
-            "workflow",
-            task_dir=self.task_dir,
-        )
-        scan = gtt.scan_contract_wording(scope, contents)
-        result = gtt.contract_wording_derive_result(
-            "planning_artifacts",
-            "workflow",
-            scope,
-            scan,
-            {
-                "generated_at": "2026-01-01T00:00:00Z",
-                "semantic_review": {
-                    "revisions": [{
-                        "revision_id": "revision-1",
-                        "locator": "wrong.md",
-                        "before_sha256": "0" * 64,
-                        "after_sha256": scope["items"][0]["content_sha256"],
-                        "reason": "测试 revision locator 绑定。",
-                        "mutation_authority": "测试授权。",
-                        "rescan_sha256": scan["scan_sha256"],
-                    }],
-                    "classifications": [{
-                        "hit_id": hit["hit_id"],
-                        "classification": "term_definition",
-                        "reason": "测试分类。",
-                    } for hit in scan["hits"]],
-                    "ai_review_gate": {
-                        "status": "passed",
-                        "reviewer": "test-reviewer",
-                        "summary": "测试 current revision binding。",
-                        "reviewed_scan_sha256": scan["scan_sha256"],
-                        "checked_dimensions": {
-                            key: True for key in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                        },
-                        "planning_checked_dimensions": {
-                            key: True
-                            for key in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-                        },
-                    },
-                },
-                "human_confirmation": {
-                    "status": "not_required",
-                    "confirmed_by": None,
-                    "confirmed_at": None,
-                    "reason": "测试无需确认。",
-                },
-                "typed_exit": "content_changed",
-            },
-        )
-        self.assertIn(
-            "contract_wording_revision_rescan_mismatch",
-            gtt.contract_wording_structural_errors(self.root, result, scope, scan),
-        )
-
-    def test_contract_wording_recorder_supersedes_current_content_changed_after_reentry(self) -> None:
-        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
-        before = {
-            name: (self.task_dir / name).read_bytes()
-            for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
-        }
-        changed_input = self.write_wording_recorder_input(
-            "content-changed", "content_changed", with_revision=True
-        )
-        pass_input = self.write_wording_recorder_input("content-changed-pass", "pass")
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            changed = gtt.cmd_record_contract_wording_review(
-                self.wording_record_args(changed_input)
+            artifact = gtt.planning_approval_path(
+                self.root, self.task_dir, for_write=True
             )
-            passed = gtt.cmd_record_contract_wording_review(
-                self.wording_record_args(
-                    pass_input,
-                    supersede_reentry_facts_sha256=changed["facts_sha256"],
-                )
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(changed["typed_exit"], "content_changed")
-        self.assertEqual(passed["typed_exit"], "pass")
-        self.assertEqual(
-            gtt.read_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT),
-            passed,
-        )
-        self.assertEqual(
-            before,
-            {
-                name: (self.task_dir / name).read_bytes()
-                for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
-            },
-        )
-
-    def test_contract_wording_recorder_supersedes_current_blocked_but_protects_pass(self) -> None:
-        (self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT).unlink()
-        blocked_input = self.write_wording_recorder_input("blocked", "blocked")
-        pass_input = self.write_wording_recorder_input("blocked-pass", "pass")
-        next_pass_input = self.write_wording_recorder_input("second-pass", "pass")
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            blocked = gtt.cmd_record_contract_wording_review(
-                self.wording_record_args(blocked_input)
-            )
-            passed = gtt.cmd_record_contract_wording_review(
-                self.wording_record_args(
-                    pass_input,
-                    supersede_reentry_facts_sha256=blocked["facts_sha256"],
-                )
-            )
-            with self.assertRaises(gtt.WorkflowError) as exact_pass:
-                gtt.cmd_record_contract_wording_review(
-                    self.wording_record_args(
-                        pass_input,
-                        supersede_reentry_facts_sha256=passed["facts_sha256"],
-                    )
-                )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_contract_wording_review(
-                    self.wording_record_args(
-                        next_pass_input,
-                        supersede_reentry_facts_sha256=passed["facts_sha256"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(blocked["typed_exit"], "blocked")
-        self.assertEqual(passed["typed_exit"], "pass")
-        self.assertIn(
-            "contract_wording_current_pass_protected",
-            exact_pass.exception.payload["error_codes"],
-        )
-        self.assertIn(
-            "contract_wording_current_pass_protected",
-            raised.exception.payload["error_codes"],
-        )
-
-    def test_contract_wording_reentry_supersession_requires_existing_target_and_exact_digest(self) -> None:
-        evidence_path = self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT
-        evidence_path.unlink()
-        changed_input = self.write_wording_recorder_input(
-            "missing-content-changed", "content_changed", with_revision=True
-        )
-        pass_input = self.write_wording_recorder_input("missing-pass", "pass")
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as missing:
-                gtt.cmd_record_contract_wording_review(
-                    self.wording_record_args(
-                        changed_input,
-                        supersede_reentry_facts_sha256="0" * 64,
-                    )
-                )
-            changed = gtt.cmd_record_contract_wording_review(
-                self.wording_record_args(changed_input)
-            )
-            with self.assertRaises(gtt.WorkflowError) as identical:
-                gtt.cmd_record_contract_wording_review(
-                    self.wording_record_args(
-                        changed_input,
-                        supersede_reentry_facts_sha256=changed["facts_sha256"],
-                    )
-                )
-            with self.assertRaises(gtt.WorkflowError) as digest:
-                gtt.cmd_record_contract_wording_review(
-                    self.wording_record_args(
-                        pass_input,
-                        supersede_reentry_facts_sha256="0" * 64,
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(changed["typed_exit"], "content_changed")
-        self.assertIn(
-            "contract_wording_replacement_target_missing",
-            missing.exception.payload["error_codes"],
-        )
-        self.assertIn(
-            "contract_wording_reentry_requires_new_result",
-            identical.exception.payload["error_codes"],
-        )
-        self.assertIn(
-            "contract_wording_reentry_superseded_facts_mismatch",
-            digest.exception.payload["error_codes"],
-        )
-
-    def test_contract_wording_reentry_supersession_rejects_non_task_profile(self) -> None:
-        explicit = self.root / "explicit.md"
-        explicit.write_text("# Explicit\n\n确定合同。\n", encoding="utf-8")
-        args = self.wording_record_args(
-            explicit,
-            root=str(self.root),
-            mode="standalone",
-            profile="explicit_paths",
-            input=None,
-            task=None,
-            path=["explicit.md"],
-            supersede_reentry_facts_sha256="0" * 64,
-        )
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.cmd_record_contract_wording_review(args)
-        self.assertIn(
-            "contract_wording_replacement_profile_invalid",
-            raised.exception.payload["error_codes"],
-        )
-
-    def test_contract_wording_reentry_supersession_rejects_stale_digest_and_wrong_profile(self) -> None:
-        evidence_path = self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT
-        evidence_path.unlink()
-        changed_input = self.write_wording_recorder_input(
-            "stale-content-changed", "content_changed", with_revision=True
-        )
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            changed = gtt.cmd_record_contract_wording_review(
-                self.wording_record_args(changed_input)
-            )
-            (self.task_dir / "prd.md").write_text(
-                "# PRD\n\n改写后的确定需求。\n", encoding="utf-8"
-            )
-            pass_input = self.write_wording_recorder_input("fresh-pass", "pass")
-            with self.assertRaises(gtt.WorkflowError) as stale:
-                gtt.cmd_record_contract_wording_review(
-                    self.wording_record_args(
-                        pass_input,
-                        supersede_reentry_facts_sha256=changed["facts_sha256"],
-                    )
-                )
-            fresh = gtt.cmd_record_contract_wording_review(
-                self.wording_record_args(pass_input, replace_stale=True)
+            gtt.write_json(artifact, payload)
+            checked_path, checked, errors = gtt.validate_planning_approval(
+                self.root, self.task_dir
             )
 
-            current_changed_input = self.write_wording_recorder_input(
-                "current-content-changed", "content_changed", with_revision=True
+        self.assertEqual(errors, [])
+        self.assertEqual(checked_path, artifact)
+        self.assertEqual(checked["schema_version"], "3.0")
+        self.assertEqual(checked["typed_exit"], "approved")
+        self.assertTrue(
+            artifact.is_relative_to(
+                self.root / ".trellis/.runtime/guru-team/owner-checkpoints"
             )
-            scope, contents = gtt.contract_wording_build_scope(
-                self.root,
-                "planning_artifacts",
-                "workflow",
-                task_dir=self.task_dir,
-            )
-            scan = gtt.scan_contract_wording(scope, contents)
-            current_changed = gtt.contract_wording_derive_result(
-                "planning_artifacts",
-                "workflow",
-                scope,
-                scan,
-                gtt.read_json(current_changed_input),
-            )
-            current_changed["profile"] = "explicit_paths"
-            current_changed["facts_sha256"] = gtt.context_digest({
-                key: value
-                for key, value in current_changed.items()
-                if key != "facts_sha256"
-            })
-            gtt.write_json(evidence_path, current_changed)
-            wrong_profile_pass = self.write_wording_recorder_input(
-                "wrong-profile-pass", "pass"
-            )
-            with self.assertRaises(gtt.WorkflowError) as wrong_profile:
-                gtt.cmd_record_contract_wording_review(
-                    self.wording_record_args(
-                        wrong_profile_pass,
-                        supersede_reentry_facts_sha256=current_changed["facts_sha256"],
-                    )
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(fresh["typed_exit"], "pass")
-        self.assertIn(
-            "contract_wording_reentry_requires_current_evidence",
-            stale.exception.payload["error_codes"],
         )
-        self.assertIn(
-            "contract_wording_reentry_profile_mismatch",
-            wrong_profile.exception.payload["error_codes"],
-        )
+        self.assertFalse((self.task_dir / "planning-approval.json").exists())
+        self.assertEqual(set(gtt.git_status_paths(self.root)), before)
+        self.assertTrue({
+            "confirmation", "confirmed_action_id", "human_confirmation",
+            "user_confirmation", "agent_assignment", "liveness",
+        }.isdisjoint(self.nested_keys(checked)))
 
-    def test_record_and_check_planning_approval_v2_in_both_modes(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            for mode in ["workflow", "standalone"]:
-                with self.subTest(mode=mode):
-                    (self.task_dir / "planning-approval.json").unlink(missing_ok=True)
-                    payload = self.record_planning_approval(
-                        self.planning_input(mode=mode),
-                        name=f"planning-{mode}.json",
-                    )
-                    check = gtt.cmd_check_planning_approval(
-                        planning_args(require_exit="approved")
-                    )
-                    self.assertEqual(payload["schema_version"], "2.0")
-                    self.assertEqual(payload["skill_id"], "guru-approve-task-plan")
-                    self.assertEqual(payload["mode"], mode)
-                    self.assertEqual(payload["typed_exit"], "approved")
-                    self.assertEqual(check["status"], "ok")
-                    self.assertEqual(check["typed_exit"], "approved")
-                    self.assertEqual(payload["reviewed_artifacts"], payload["approved_artifacts"])
-                    self.assertEqual(len(payload["reviewed_artifacts"]), 3)
-                    self.assertEqual(payload["repository_snapshot"]["head"], "a" * 40)
-                    self.assertEqual(
-                        payload["ambiguity_review"]["status"], "passed"
-                    )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_planning_semantic_dimension_matrix_and_projection_fail_closed(self) -> None:
-        result = self.write_wording_evidence()
-        scope, contents = gtt.contract_wording_build_scope(
-            self.root,
-            "planning_artifacts",
-            "workflow",
-            task_dir=self.task_dir,
-        )
-        scan = gtt.scan_contract_wording(scope, contents)
-        expected = {
-            name: True for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-        }
-        self.assertEqual(
-            gtt.contract_wording_planning_projection(result)["checked_dimensions"],
-            expected,
-        )
-
-        cases = []
-        missing = json.loads(json.dumps(result))
-        del missing["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]
-        cases.append(("missing", missing, "contract_wording_planning_review_dimensions_missing"))
-        false_value = json.loads(json.dumps(result))
-        false_value["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
-            "no_requirement_weakening"
-        ] = False
-        cases.append(("false", false_value, "contract_wording_planning_review_dimensions_incomplete"))
-        extra = json.loads(json.dumps(result))
-        extra["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
-            "undeclared_dimension"
-        ] = True
-        cases.append(("extra", extra, "contract_wording_planning_review_dimensions_invalid"))
-        wrong_profile = json.loads(json.dumps(result))
-        wrong_profile["profile"] = "explicit_paths"
-        cases.append(("wrong-profile", wrong_profile, "unexpected_contract_wording_planning_review_dimensions"))
-
-        for label, payload, expected_error in cases:
-            with self.subTest(label=label):
-                payload["facts_sha256"] = gtt.context_digest({
-                    key: value for key, value in payload.items() if key != "facts_sha256"
-                })
-                self.assertIn(
-                    expected_error,
-                    gtt.contract_wording_structural_errors(self.root, payload, scope, scan),
-                )
-                with self.assertRaises(gtt.WorkflowError):
-                    gtt.contract_wording_planning_projection(payload)
-
-    def test_planning_approval_four_exits_and_activation_gate(self) -> None:
+    def test_planning_v3_closed_routes_and_invalid_pass_fail_closed(self) -> None:
         cases = {
             "approved": (
                 "passed",
@@ -6456,2187 +5415,427 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 {"kind": "stop", "id": "task-plan-approval-blocked"},
             ),
         }
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            for typed_exit, (gate_status, consumer) in cases.items():
-                with self.subTest(typed_exit=typed_exit):
-                    (self.task_dir / "planning-approval.json").unlink(missing_ok=True)
-                    payload = self.planning_input(typed_exit=typed_exit, consumer=consumer)
-                    gate = payload["semantic_review"]["ai_review_gate"]
-                    gate["status"] = gate_status
-                    gate["findings"] = [] if typed_exit == "approved" else ["需要处理的规划结论。"]
-                    gate["revision_actions"] = ["修订 task-local planning。"] if typed_exit == "revision_required" else []
-                    gate["scope_proposals"] = ["更新 source authority。"] if typed_exit == "clarify_scope" else []
-                    gate["blocking_reasons"] = ["外部 authority 不可用。"] if typed_exit == "blocked" else []
-                    if typed_exit != "approved":
-                        payload["user_confirmation"] = {
-                            "kind": "not-required",
-                            "status": "refused" if typed_exit == "blocked" else "not_required",
-                            "prompt_presented_at": None,
-                            "confirmed_at": None,
-                            "evidence_summary": "当前出口不消费 post-planning approval。",
-                        }
-                    recorded = self.record_planning_approval(
-                        payload, name=f"planning-exit-{typed_exit}.json"
-                    )
-                    checked = gtt.cmd_check_planning_approval(
-                        planning_args(require_exit=typed_exit)
-                    )
-                    self.assertEqual(recorded["consumer"], consumer)
-                    self.assertEqual(checked["typed_exit"], typed_exit)
-                    if typed_exit != "approved":
-                        with self.assertRaises(gtt.WorkflowError) as raised:
-                            gtt.cmd_check_planning_approval(
-                                planning_args(require_exit="approved")
-                            )
-                        self.assertIn(
-                            "planning_approval_requires_approved_exit",
-                            raised.exception.payload["errors"],
-                        )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_planning_approval_rejects_normal_ai_closed_union_input_errors(self) -> None:
-        cases: list[tuple[str, dict[str, object], str]] = []
-        for field in (
-            "findings",
-            "revision_actions",
-            "scope_proposals",
-            "blocking_reasons",
+        with mock.patch.object(
+            gtt, "planning_approval_schema", return_value=self.planning_schema
         ):
-            payload = self.planning_input()
-            payload["semantic_review"]["ai_review_gate"][field] = [
-                "A passed gate cannot retain unresolved review state."
-            ]
-            cases.append((
-                f"approved-{field}",
-                payload,
-                f"planning_approval_approved_gate_{field}_not_empty",
-            ))
+            for typed_exit, (status, consumer) in cases.items():
+                with self.subTest(typed_exit=typed_exit):
+                    authored = self.planning_authored()
+                    semantic = authored["semantic_review"]
+                    semantic["status"] = status
+                    semantic["findings"] = []
+                    semantic["revision_actions"] = (
+                        ["Revise the task-local plan."]
+                        if typed_exit == "revision_required"
+                        else []
+                    )
+                    semantic["scope_proposals"] = (
+                        ["scope-proposal:R13"]
+                        if typed_exit == "clarify_scope"
+                        else []
+                    )
+                    semantic["blocking_reasons"] = (
+                        ["Current authority is unavailable."]
+                        if typed_exit == "blocked"
+                        else []
+                    )
+                    authored["typed_exit"] = typed_exit
+                    authored["consumer"] = consumer
+                    payload = gtt.build_planning_approval_payload(
+                        self.root, self.task_dir, authored
+                    )
+                    self.assertEqual(payload["typed_exit"], typed_exit)
 
-        for field in ("prompt_presented_at", "confirmed_at"):
-            payload = self.planning_input()
-            payload["user_confirmation"][field] = None
-            cases.append((
-                f"approved-{field}",
-                payload,
-                f"planning_approval_approved_confirmation_{field}_missing",
-            ))
+            invalid = self.planning_authored()
+            invalid["semantic_review"]["findings"] = ["An open finding remains."]
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.build_planning_approval_payload(
+                    self.root, self.task_dir, invalid
+                )
+            self.assertIn(
+                "planning_approval_approved_findings_not_empty",
+                raised.exception.payload["error_codes"],
+            )
 
-        base_candidate = {
-            "id": "bounded-nonstandard-case",
-            "scenario_class": "other_nonstandard",
-            "trigger_evidence": "The AI recorded one bounded nonstandard scenario.",
-            "scope": "Only the reviewed task contract.",
-            "cost": "Bounded implementation cost.",
-            "alternatives": ["Remove the optional mechanism."],
-            "consequence": "The disposition remains explicit.",
-            "source_requirement_refs": [],
-            "proposal_sha256": "0" * 64,
-            "disposition": "mechanism_removed",
-            "confirmation": None,
-        }
-        empty_alternatives = self.planning_input()
-        candidate = copy.deepcopy(base_candidate)
-        candidate["alternatives"] = []
-        empty_alternatives["unusual_scenario_review"]["candidates"] = [candidate]
-        cases.append((
-            "empty-unusual-alternatives",
-            empty_alternatives,
-            "planning_approval_unusual_alternatives_empty",
-        ))
-
-        explicit_without_refs = self.planning_input()
-        candidate = copy.deepcopy(base_candidate)
-        candidate["disposition"] = "explicit_requirement"
-        explicit_without_refs["unusual_scenario_review"]["candidates"] = [candidate]
-        cases.append((
-            "explicit-unusual-without-refs",
-            explicit_without_refs,
-            "planning_approval_unusual_explicit_requirement_refs_missing",
-        ))
-
-        unknown_ref = self.planning_input()
-        candidate = copy.deepcopy(base_candidate)
-        candidate["source_requirement_refs"] = ["unknown-authority"]
-        unknown_ref["unusual_scenario_review"]["candidates"] = [candidate]
-        cases.append((
-            "unknown-unusual-source-ref",
-            unknown_ref,
-            "planning_approval_unusual_source_requirement_ref_unknown",
-        ))
-
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            for name, payload, expected_error in cases:
-                with self.subTest(name=name):
-                    with self.assertRaises(gtt.WorkflowError) as raised:
-                        self.record_planning_approval(
-                            payload,
-                            name=f"invalid-{name}.json",
-                        )
-                    self.assertIn(expected_error, raised.exception.payload["error_codes"])
-
-            recorded = self.record_planning_approval(name="valid-before-checker-negative.json")
-            recorded["semantic_review"]["ai_review_gate"]["findings"] = [
-                "A normal recorder wrote an inconsistent passed gate."
-            ]
-            recorded["facts_sha256"] = gtt.planning_facts_digest(recorded)
-            gtt.write_json(self.task_dir / "planning-approval.json", recorded)
-            _path, _payload, errors = gtt.validate_planning_approval(
+    def test_owner_checkpoints_reject_same_path_content_drift(self) -> None:
+        with mock.patch.object(
+            gtt, "planning_approval_schema", return_value=self.planning_schema
+        ):
+            planning = gtt.build_planning_approval_payload(
+                self.root,
+                self.task_dir,
+                self.planning_authored(),
+            )
+            planning_path = gtt.planning_approval_path(
+                self.root,
+                self.task_dir,
+                for_write=True,
+            )
+            gtt.write_json(planning_path, planning)
+            (self.task_dir / "prd.md").write_text(
+                "# PRD\n\nA materially different requirement.\n",
+                encoding="utf-8",
+            )
+            _path, _payload, planning_errors = gtt.validate_planning_approval(
                 self.root,
                 self.task_dir,
             )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("planning_approval_approved_gate_findings_not_empty", errors)
-
-    def test_planning_approval_provenance_four_class_matrix(self) -> None:
-        entries = []
-        for classification in sorted(gtt.PLANNING_APPROVAL_PROVENANCE_CLASSES):
-            entry = copy.deepcopy(self.planning_input()["provenance_review"]["entries"][0])
-            entry["id"] = classification
-            entry["classification"] = classification
-            if classification == "necessary_implementation_choice":
-                entry["implementation_choice"] = {
-                    "alternatives": [
-                        {"id": "extend-v1", "tradeoff": "兼容但语义模糊。"},
-                        {"id": "new-v2", "tradeoff": "明确 breaking migration。"},
-                    ],
-                    "selected_id": "new-v2",
-                    "selection_reason": "四出口需要 closed major schema。",
-                    "product_scope_expanded": False,
-                    "risk_scope_expanded": False,
-                }
-            elif classification == "approved_scope_expansion":
-                entry["scope_expansion"] = self.planning_scope_expansion()
-            elif classification == "out_of_scope_proposal":
-                entry["out_of_scope_proposal"] = {
-                    "proposal_sha256": "2" * 64,
-                    "disposition": "followup",
-                    "route": "future-task",
-                }
-            entries.append(entry)
-        payload = self.planning_input()
-        payload["provenance_review"]["entries"] = entries
-        payload["provenance_review"]["coverage"]["reviewed_entry_ids"] = [
-            entry["id"] for entry in entries
-        ]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            recorded = self.record_planning_approval(payload)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertEqual(
-            {entry["classification"] for entry in recorded["provenance_review"]["entries"]},
-            gtt.PLANNING_APPROVAL_PROVENANCE_CLASSES,
+        self.assertIn(
+            "planning_approval_reviewed_content_stale",
+            planning_errors,
         )
 
-    def test_planning_approval_scope_expansion_binding_has_mode_parity(self) -> None:
-        for mode in ("workflow", "standalone"):
-            with self.subTest(mode=mode):
-                payload = self.planning_input(mode=mode)
-                entry = payload["provenance_review"]["entries"][0]
-                entry["classification"] = "approved_scope_expansion"
-                entry["scope_expansion"] = self.planning_scope_expansion()
-                patches = self.patch_common()
-                for patcher in patches:
-                    patcher.start()
-                try:
-                    recorded = self.record_planning_approval(
-                        payload,
-                        name=f"scope-expansion-{mode}.json",
-                        dry_run=True,
-                    )
-                finally:
-                    for patcher in reversed(patches):
-                        patcher.stop()
-                expansion = recorded["provenance_review"]["entries"][0]["scope_expansion"]
-                proposal_sha = expansion["proposal_binding"]["proposal_sha256"]
-                self.assertEqual(
-                    expansion["confirmation"]["proposal_sha256"], proposal_sha
-                )
-                self.assertEqual(
-                    expansion["authority_binding"]["proposal_sha256"], proposal_sha
-                )
-                self.assertEqual(
-                    expansion["authority_binding"]["authority_sha256"],
-                    recorded["requirement_authorities"][0]["sha256"],
-                )
-
-    def test_planning_approval_scope_expansion_rejects_wrong_binding_matrix(self) -> None:
-        base = self.planning_input()
-        entry = base["provenance_review"]["entries"][0]
-        entry["classification"] = "approved_scope_expansion"
-        entry["scope_expansion"] = self.planning_scope_expansion()
-        cases: list[tuple[str, dict[str, object], str]] = []
-
-        wrong_proposal_digest = copy.deepcopy(base)
-        wrong_proposal_digest["provenance_review"]["entries"][0]["scope_expansion"]["proposal_binding"]["proposal_sha256"] = "1" * 64
-        cases.append((
-            "proposal-digest",
-            wrong_proposal_digest,
-            "planning_approval_scope_expansion_proposal_digest_mismatch",
-        ))
-
-        wrong_locator = copy.deepcopy(base)
-        wrong_locator["provenance_review"]["entries"][0]["scope_expansion"]["proposal_binding"]["locator"] = "missing proposal"
-        cases.append((
-            "proposal-locator",
-            wrong_locator,
-            "planning_approval_scope_expansion_proposal_locator_invalid",
-        ))
-
-        wrong_confirmation = copy.deepcopy(base)
-        wrong_confirmation["provenance_review"]["entries"][0]["scope_expansion"]["confirmation"]["proposal_sha256"] = "2" * 64
-        cases.append((
-            "confirmation-digest",
-            wrong_confirmation,
-            "planning_approval_scope_expansion_confirmation_digest_mismatch",
-        ))
-
-        generic_confirmation = copy.deepcopy(base)
-        generic_confirmation["provenance_review"]["entries"][0]["scope_expansion"]["confirmation"]["confirmation_kind"] = "dedicated-unusual-scenario"
-        cases.append((
-            "confirmation-kind",
-            generic_confirmation,
-            "planning_approval_scope_expansion_confirmation_kind_mismatch",
-        ))
-
-        wrong_authority = copy.deepcopy(base)
-        wrong_authority["provenance_review"]["entries"][0]["scope_expansion"]["authority_binding"]["authority_sha256"] = "3" * 64
-        cases.append((
-            "authority-digest",
-            wrong_authority,
-            "planning_approval_scope_expansion_authority_digest_mismatch",
-        ))
-
-        wrong_authority_proposal = copy.deepcopy(base)
-        wrong_authority_proposal["provenance_review"]["entries"][0]["scope_expansion"]["authority_binding"]["proposal_sha256"] = "4" * 64
-        cases.append((
-            "authority-proposal-digest",
-            wrong_authority_proposal,
-            "planning_approval_scope_expansion_authority_proposal_digest_mismatch",
-        ))
-
-        unknown_authority = copy.deepcopy(base)
-        unknown_authority["provenance_review"]["entries"][0]["scope_expansion"]["authority_binding"]["authority_ref"] = "missing-authority"
-        cases.append((
-            "authority-ref",
-            unknown_authority,
-            "planning_approval_scope_expansion_authority_unknown",
-        ))
-
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            for name, payload, expected_error in cases:
-                with self.subTest(name=name):
-                    with self.assertRaises(gtt.WorkflowError) as raised:
-                        self.record_planning_approval(
-                            payload,
-                            name=f"invalid-scope-expansion-{name}.json",
-                            dry_run=True,
-                        )
-                    self.assertIn(expected_error, raised.exception.payload["error_codes"])
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_planning_approval_scope_expansion_supports_unusual_link_and_nonapproved_exit(self) -> None:
-        candidate: dict[str, object] = {
-            "id": "bounded-unusual-expansion",
-            "scenario_class": "other_nonstandard",
-            "trigger_evidence": "The source authority requires one bounded nonstandard case.",
-            "scope": "Only the reviewed task contract.",
-            "cost": "Bounded implementation cost.",
-            "alternatives": ["Keep the proposal outside the current task."],
-            "consequence": "The approved behavior remains absent without this proposal.",
-            "source_requirement_refs": [],
-            "proposal_sha256": "0" * 64,
-            "disposition": "confirmed_scope_expansion",
-            "confirmation": None,
-        }
-        proposal_sha = gtt.planning_unusual_proposal_digest(candidate)
-        candidate["confirmation"] = {
-            "confirmation_kind": "dedicated-unusual-scenario",
-            "proposal_sha256": proposal_sha,
-            "confirmation_summary": "用户确认 exact unusual proposal。",
-            "confirmed_at": "2026-07-19T00:00:00Z",
-            "authority_ref": "task-prd",
-        }
-        payload = self.planning_input()
-        payload["unusual_scenario_review"]["candidates"] = [candidate]
-        unusual_entry = payload["provenance_review"]["entries"][0]
-        unusual_entry["classification"] = "approved_scope_expansion"
-        unusual_entry["scope_expansion"] = self.planning_scope_expansion(
-            source_kind="unusual_scenario_candidate",
-            unusual_candidate=candidate,
-        )
-        ordinary_entry = copy.deepcopy(unusual_entry)
-        ordinary_entry["id"] = "ordinary-scope-expansion"
-        ordinary_entry["scope_expansion"] = self.planning_scope_expansion()
-        payload["provenance_review"]["entries"].append(ordinary_entry)
-        payload["provenance_review"]["coverage"]["reviewed_entry_ids"] = [
-            unusual_entry["id"],
-            ordinary_entry["id"],
-        ]
-        payload["typed_exit"] = "revision_required"
-        payload["consumer"] = {"kind": "skill", "id": "guru-approve-task-plan"}
-        payload["semantic_review"]["ai_review_gate"]["status"] = "revision_required"
-        payload["semantic_review"]["ai_review_gate"]["revision_actions"] = [
-            "Revise an unrelated task-local test obligation."
-        ]
-        payload["user_confirmation"] = {
-            "kind": "not-required",
-            "status": "not_required",
-            "prompt_presented_at": None,
-            "confirmed_at": None,
-            "evidence_summary": "This non-approved exit does not activate the task.",
-        }
-
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            recorded = self.record_planning_approval(payload, dry_run=True)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        expansion = recorded["provenance_review"]["entries"][0]["scope_expansion"]
-        ordinary = recorded["provenance_review"]["entries"][1]["scope_expansion"]
-        self.assertEqual(expansion["proposal_binding"]["proposal_sha256"], proposal_sha)
-        self.assertEqual(
-            expansion["proposal_binding"]["unusual_candidate_id"], candidate["id"]
-        )
-        self.assertEqual(
-            expansion["confirmation"]["confirmation_kind"],
-            "dedicated-unusual-scenario",
-        )
-        self.assertEqual(
-            ordinary["confirmation"]["confirmation_kind"],
-            "dedicated-scope-expansion",
-        )
-        self.assertEqual(recorded["typed_exit"], "revision_required")
-
-    def test_planning_approval_scope_expansion_checker_recomputes_current_content(self) -> None:
-        payload = self.planning_input()
-        entry = payload["provenance_review"]["entries"][0]
-        entry["classification"] = "approved_scope_expansion"
-        entry["scope_expansion"] = self.planning_scope_expansion()
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval(payload)
+        dirty = [f"{self.task_ref}/prd.md"]
+        with (
+            mock.patch.object(
+                gtt, "load_phase2_check_schema", return_value=self.phase2_schema
+            ),
+            mock.patch.object(gtt, "current_head", return_value="2" * 40),
+            mock.patch.object(gtt, "git_status_paths", return_value=dirty),
+        ):
+            phase2 = gtt.materialize_phase2_check_payload(
+                self.root,
+                self.task_dir,
+                {},
+                self.phase2_authored(),
+            )
+            phase2_path = gtt.phase2_check_path(
+                self.root,
+                self.task_dir,
+                for_write=True,
+            )
+            gtt.write_json(phase2_path, phase2)
             (self.task_dir / "prd.md").write_text(
-                "# PRD\n\n## R1. Requirement\n\nThe exact proposal content changed.\n",
+                "# PRD\n\nA second materially different requirement.\n",
                 encoding="utf-8",
             )
-            _path, _payload, errors = gtt.validate_planning_approval(
+            _path, _payload, phase2_errors = gtt.validate_phase2_check(
+                self.root,
+                self.task_dir,
+            )
+        self.assertIn("phase2_check_reviewed_content_stale", phase2_errors)
+
+    def test_phase2_v3_is_compact_owner_private_and_independent_of_planning_checkpoint(self) -> None:
+        with (
+            mock.patch.object(
+                gtt, "load_phase2_check_schema", return_value=self.phase2_schema
+            ),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+            mock.patch.object(gtt, "current_head", return_value="2" * 40),
+        ):
+            payload = gtt.materialize_phase2_check_payload(
+                self.root, self.task_dir, {}, self.phase2_authored()
+            )
+            artifact = gtt.phase2_check_path(
+                self.root, self.task_dir, for_write=True
+            )
+            gtt.write_json(artifact, payload)
+            checked_path, checked, errors = gtt.validate_phase2_check(
                 self.root, self.task_dir
             )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn(
-            "planning_approval_scope_expansion_proposal_digest_mismatch", errors
-        )
 
-    def test_planning_approval_provenance_invalid_entry_matrix(self) -> None:
-        base = copy.deepcopy(self.planning_input()["provenance_review"]["entries"][0])
-        cases: dict[str, list[dict[str, object]]] = {
-            "missing": [],
-            "duplicate": [base, copy.deepcopy(base)],
-            "unknown-class": [{**copy.deepcopy(base), "classification": "inferred_requirement"}],
-            "empty-authority": [{**copy.deepcopy(base), "authority_refs": []}],
-        }
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            for name, entries in cases.items():
-                with self.subTest(name=name):
-                    payload = self.planning_input()
-                    payload["provenance_review"]["entries"] = entries
-                    payload["provenance_review"]["coverage"]["reviewed_entry_ids"] = [
-                        str(entry.get("id") or "") for entry in entries
-                    ]
-                    with self.assertRaises(gtt.WorkflowError):
-                        self.record_planning_approval(payload, name=f"bad-provenance-{name}.json")
+        self.assertEqual(errors, [])
+        self.assertEqual(checked_path, artifact)
+        self.assertEqual(checked["schema_version"], "3.0")
+        self.assertEqual(checked["typed_exit"], "passed")
+        self.assertFalse((self.task_dir / "phase2-check.json").exists())
+        self.assertTrue({
+            "confirmation", "confirmed_action_id", "human_confirmation",
+            "agent_assignment", "implementation_handoff", "liveness",
+            "review_report", "review_reports",
+        }.isdisjoint(self.nested_keys(checked)))
 
-            self.record_planning_approval()
-            (self.task_dir / "prd.md").write_text(
-                "# PRD\n\n## R1. Requirement\n\nThe load-bearing statement changed.\n",
-                encoding="utf-8",
-            )
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root, self.task_dir
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("planning_approval_provenance_statement_stale", errors)
-
-    def test_planning_approval_choice_requires_exact_selection_and_scope_flags(self) -> None:
-        base_entry = copy.deepcopy(self.planning_input()["provenance_review"]["entries"][0])
-        base_entry.update({
-            "classification": "necessary_implementation_choice",
-            "implementation_choice": {
-                "alternatives": [
-                    {"id": "a", "tradeoff": "方案 A。"},
-                    {"id": "b", "tradeoff": "方案 B。"},
-                ],
-                "selected_id": "b",
-                "selection_reason": "方案 B 保持单一 artifact。",
-                "product_scope_expanded": False,
-                "risk_scope_expanded": False,
-            },
-        })
-        invalid_entries = []
-        wrong_selection = copy.deepcopy(base_entry)
-        wrong_selection["implementation_choice"]["selected_id"] = "missing"
-        invalid_entries.append(wrong_selection)
-        expanded_scope = copy.deepcopy(base_entry)
-        expanded_scope["implementation_choice"]["risk_scope_expanded"] = True
-        invalid_entries.append(expanded_scope)
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            for index, entry in enumerate(invalid_entries):
-                with self.subTest(index=index):
-                    payload = self.planning_input()
-                    payload["provenance_review"]["entries"] = [entry]
-                    with self.assertRaises(gtt.WorkflowError):
-                        self.record_planning_approval(payload, name=f"bad-choice-{index}.json")
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_planning_approval_unusual_scenario_confirmation_is_dedicated(self) -> None:
-        candidate = {
-            "id": "race-proposal",
-            "scenario_class": "toctou_or_concurrency_race",
-            "trigger_evidence": "新增 proposal 触发。",
-            "scope": "增加跨进程锁。",
-            "cost": "增加运行时状态与恢复路径。",
-            "alternatives": ["删除非必要机制"],
-            "consequence": "不确认则不得进入 approved execution。",
-            "source_requirement_refs": ["task-prd"],
-            "proposal_sha256": "0" * 64,
-            "disposition": "confirmed_scope_expansion",
-            "confirmation": None,
-        }
-        proposal_sha = gtt.planning_unusual_proposal_digest(candidate)
-        candidate["confirmation"] = {
-            "confirmation_kind": "dedicated-unusual-scenario",
-            "proposal_sha256": proposal_sha,
-            "confirmation_summary": "用户只确认该 exact race proposal。",
-            "confirmed_at": "2026-07-19T00:03:00Z",
-            "authority_ref": "task-prd",
-        }
-        payload = self.planning_input()
-        payload["unusual_scenario_review"]["candidates"] = [candidate]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            recorded = self.record_planning_approval(payload)
-            self.assertEqual(
-                recorded["unusual_scenario_review"]["candidates"][0]["proposal_sha256"],
-                proposal_sha,
-            )
-            (self.task_dir / "planning-approval.json").unlink()
-            candidate["confirmation"]["confirmation_kind"] = "post-planning-approval"
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_planning_approval(payload, name="bad-unusual-confirmation.json")
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("dedicated confirmation", str(raised.exception))
-
-    def test_planning_approval_unusual_disposition_refusal_and_route_matrix(self) -> None:
-        dispositions = [
-            "explicit_requirement",
-            "mechanism_removed",
-            "mechanism_replaced",
-            "confirmed_scope_expansion",
-            "clarification_required",
-            "out_of_scope",
-        ]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            for disposition in dispositions:
-                with self.subTest(disposition=disposition):
-                    candidate = {
-                        "id": f"candidate-{disposition}",
-                        "scenario_class": "other_nonstandard",
-                        "trigger_evidence": "AI review identified one bounded nonstandard proposal.",
-                        "scope": "Only the reviewed planning choice.",
-                        "cost": "Bounded task-local complexity.",
-                        "alternatives": ["Remove", "Replace", "Clarify"],
-                        "consequence": "The disposition must remain explicit.",
-                        "source_requirement_refs": ["task-prd"],
-                        "proposal_sha256": "0" * 64,
-                        "disposition": disposition,
-                        "confirmation": None,
-                    }
-                    if disposition == "confirmed_scope_expansion":
-                        candidate["confirmation"] = {
-                            "confirmation_kind": "dedicated-unusual-scenario",
-                            "proposal_sha256": gtt.planning_unusual_proposal_digest(candidate),
-                            "confirmation_summary": "The exact proposal was separately confirmed.",
-                            "confirmed_at": "2026-07-19T00:03:00Z",
-                            "authority_ref": "task-prd",
-                        }
-                    if disposition == "clarification_required":
-                        payload = self.planning_input(
-                            typed_exit="clarify_scope",
-                            consumer={
-                                "kind": "workflow",
-                                "id": "guru-task-plan-clarify-scope-router",
-                            },
-                            user_confirmation={
-                                "kind": "not-required",
-                                "status": "not_required",
-                                "prompt_presented_at": None,
-                                "confirmed_at": None,
-                                "evidence_summary": "Clarification owns the next user interaction.",
-                            },
-                        )
-                        payload["semantic_review"]["ai_review_gate"].update({
-                            "status": "clarify_scope",
-                            "scope_proposals": ["Clarify the exact nonstandard scope."],
-                        })
-                    else:
-                        payload = self.planning_input()
-                    payload["unusual_scenario_review"]["candidates"] = [candidate]
-                    recorded = self.record_planning_approval(
-                        payload,
-                        name=f"unusual-{disposition}.json",
+    def test_phase2_v3_rejects_unknown_dirty(self) -> None:
+        for unknown_path in [
+            "unknown.txt",
+            ".trellis/.runtime/guru-team/debug.json",
+        ]:
+            with (
+                self.subTest(unknown_path=unknown_path),
+                mock.patch.object(
+                    gtt, "load_phase2_check_schema", return_value=self.phase2_schema
+                ),
+                mock.patch.object(gtt, "current_head", return_value="2" * 40),
+                mock.patch.object(
+                    gtt,
+                    "git_status_paths",
+                    return_value=[unknown_path],
+                ),
+            ):
+                with self.assertRaises(gtt.WorkflowError) as dirty:
+                    gtt.materialize_phase2_check_payload(
+                        self.root, self.task_dir, {}, self.phase2_authored()
                     )
-                    expected_exit = "clarify_scope" if disposition == "clarification_required" else "approved"
-                    self.assertEqual(recorded["typed_exit"], expected_exit)
-                    (self.task_dir / "planning-approval.json").unlink()
+                self.assertEqual(dirty.exception.payload["paths"], [unknown_path])
 
-            refusal = self.planning_input(
-                typed_exit="blocked",
-                consumer={"kind": "stop", "id": "task-plan-approval-blocked"},
-                user_confirmation={
-                    "kind": "not-required",
-                    "status": "not_required",
-                    "prompt_presented_at": None,
-                    "confirmed_at": None,
-                    "evidence_summary": "The user refused the dedicated proposal.",
-                },
+    def test_phase2_v3_checker_rejects_new_unknown_runtime_dirty(self) -> None:
+        reviewed_path = f"{self.task_ref}/prd.md"
+        runtime_path = ".trellis/.runtime/guru-team/debug.json"
+        with (
+            mock.patch.object(
+                gtt, "load_phase2_check_schema", return_value=self.phase2_schema
+            ),
+            mock.patch.object(gtt, "current_head", return_value="2" * 40),
+            mock.patch.object(gtt, "git_status_paths", return_value=[reviewed_path]),
+            mock.patch.object(
+                gtt,
+                "phase2_worktree_content_sha256",
+                return_value="f" * 64,
+            ),
+        ):
+            payload = gtt.materialize_phase2_check_payload(
+                self.root,
+                self.task_dir,
+                {},
+                self.phase2_authored(),
             )
-            refusal["semantic_review"]["ai_review_gate"].update({
-                "status": "blocked",
-                "blocking_reasons": ["The required dedicated proposal was refused."],
-            })
-            recorded_refusal = self.record_planning_approval(
-                refusal,
-                name="unusual-refusal.json",
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertEqual(recorded_refusal["typed_exit"], "blocked")
-
-    def test_planning_approval_mechanism_revision_does_not_expand_scope(self) -> None:
-        candidates = []
-        for disposition in ["mechanism_removed", "mechanism_replaced"]:
-            candidates.append({
-                "id": disposition,
-                "scenario_class": "cross_os_atomicity",
-                "trigger_evidence": "非必要 atomic mechanism 引入额外风险。",
-                "scope": "删除或替换该 mechanism。",
-                "cost": "仅修改 task-local design。",
-                "alternatives": ["删除", "替换"],
-                "consequence": "保留机制会扩大非目标风险边界。",
-                "source_requirement_refs": [],
-                "proposal_sha256": "0" * 64,
-                "disposition": disposition,
-                "confirmation": None,
-            })
-        payload = self.planning_input(
-            typed_exit="revision_required",
-            consumer={"kind": "skill", "id": "guru-approve-task-plan"},
-            user_confirmation={
-                "kind": "not-required",
-                "status": "not_required",
-                "prompt_presented_at": None,
-                "confirmed_at": None,
-                "evidence_summary": "先修订非必要 mechanism。",
-            },
+        artifact = gtt.phase2_check_path(
+            self.root,
+            self.task_dir,
+            for_write=True,
         )
-        gate = payload["semantic_review"]["ai_review_gate"]
-        gate.update({
-            "status": "revision_required",
-            "findings": ["非必要 mechanism 引入超范围风险。"],
-            "revision_actions": ["删除或替换 mechanism 后重新 review。"],
-            "scope_proposals": [],
-        })
-        payload["unusual_scenario_review"]["candidates"] = candidates
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            recorded = self.record_planning_approval(payload)
-            fresh = self.planning_input(
-                reason="The unnecessary mechanisms were removed or replaced and the plan passed fresh review.",
-                supersedes_facts_sha256=recorded["facts_sha256"],
-            )
-            fresh["unusual_scenario_review"]["candidates"] = candidates
-            approved = self.record_planning_approval(
-                fresh,
-                name="mechanism-clean-approved.json",
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertEqual(recorded["typed_exit"], "revision_required")
-        self.assertTrue(all(row["confirmation"] is None for row in recorded["unusual_scenario_review"]["candidates"]))
-        self.assertEqual(recorded["semantic_review"]["ai_review_gate"]["scope_proposals"], [])
-        self.assertEqual(approved["typed_exit"], "approved")
-        self.assertTrue(all(row["confirmation"] is None for row in approved["unusual_scenario_review"]["candidates"]))
+        gtt.write_json(artifact, payload)
 
-    def test_planning_approval_requires_current_wording_and_authority(self) -> None:
-        authority_path = self.root / "docs/authority.md"
-        authority_path.parent.mkdir(parents=True)
-        authority_path.write_text("# Authority\n\nCurrent requirement.\n", encoding="utf-8")
-        payload = self.planning_input(requirement_authorities=[{
-            "id": "durable-authority",
-            "kind": "repository_document",
-            "locator": "docs/authority.md",
-            "sha256": "0" * 64,
-            "updated_at": None,
-        }])
-        payload["provenance_review"]["entries"][0]["authority_refs"] = ["durable-authority"]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval(payload)
-            authority_path.write_text("# Authority\n\nChanged requirement.\n", encoding="utf-8")
-            with self.assertRaises(gtt.WorkflowError) as authority_error:
-                gtt.cmd_check_planning_approval(planning_args())
-            self.assertIn(
-                "planning_approval_requirement_authority_stale",
-                authority_error.exception.payload["errors"],
+        with (
+            mock.patch.object(
+                gtt, "load_phase2_check_schema", return_value=self.phase2_schema
+            ),
+            mock.patch.object(gtt, "current_head", return_value="2" * 40),
+            mock.patch.object(
+                gtt,
+                "git_status_paths",
+                return_value=[reviewed_path, runtime_path],
+            ),
+            mock.patch.object(
+                gtt,
+                "phase2_worktree_content_sha256",
+                return_value="f" * 64,
+            ),
+        ):
+            _path, _payload, errors = gtt.validate_phase2_check(
+                self.root,
+                self.task_dir,
             )
-            authority_path.write_text("# Authority\n\nCurrent requirement.\n", encoding="utf-8")
-            wording = gtt.read_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT)
-            wording["semantic_review"]["ai_review_gate"]["summary"] = "stale wording evidence"
-            gtt.write_json(self.task_dir / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, wording)
-            with self.assertRaises(gtt.WorkflowError) as wording_error:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertTrue(any("wording evidence" in error for error in wording_error.exception.payload["errors"]))
-
-    def test_planning_approval_rejects_planning_docs_ssot_and_statement_drift(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            (self.task_dir / "design.md").write_text(
-                "# Design\n\n## Docs SSOT Plan\n\n- Strategy: delta_first\n",
-                encoding="utf-8",
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_planning_approval(planning_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        errors = raised.exception.payload["errors"]
-        self.assertIn("planning_approval_reviewed_artifacts_not_current", errors)
-        self.assertIn("planning_approval_docs_ssot_statement_stale", errors)
-
-    def test_planning_approval_legacy_migration_and_v2_supersession(self) -> None:
-        artifact = self.task_dir / "planning-approval.json"
-        gtt.write_json(artifact, {"schema_version": "1.2"})
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as legacy_error:
-                gtt.cmd_check_planning_approval(planning_args())
-            self.assertIn(
-                "planning_approval_legacy_1_2_requires_complete_v2_reentry",
-                legacy_error.exception.payload["errors"],
-            )
-            first = self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as supersession_error:
-                self.record_planning_approval(name="missing-supersession.json")
-            self.assertIn(
-                "planning_approval_superseded_facts_mismatch",
-                supersession_error.exception.payload["error_codes"],
-            )
-            replacement = self.planning_input(
-                reason="Fresh complete semantic re-entry approved.",
-                supersedes_facts_sha256=first["facts_sha256"],
-            )
-            second = self.record_planning_approval(replacement, name="replacement.json")
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertEqual(second["supersedes_facts_sha256"], first["facts_sha256"])
-        self.assertNotEqual(second["facts_sha256"], first["facts_sha256"])
-
-    def test_planning_approval_legacy_archive_bytes_remain_unchanged(self) -> None:
-        archived = self.root / ".trellis/tasks/archive/2026-07/07-04-legacy-plan"
-        archived.mkdir(parents=True)
-        legacy_bytes = b'{"schema_version":"1.2","status":"passed"}\n'
-        artifact = archived / "planning-approval.json"
-        artifact.write_bytes(legacy_bytes)
-
-        _path, _payload, errors = gtt.validate_planning_approval(
-            self.root, archived
-        )
 
         self.assertIn(
-            "planning_approval_legacy_1_2_requires_complete_v2_reentry",
+            f"phase2_check_dirty_paths_not_reviewed:{runtime_path}",
             errors,
         )
-        self.assertEqual(artifact.read_bytes(), legacy_bytes)
 
-    def test_planning_approval_runtime_keeps_semantic_fields_caller_authored(self) -> None:
-        source = inspect.getsource(gtt.build_planning_approval_payload)
-        for expected in [
-            'copy.deepcopy(authored.get("semantic_review"))',
-            'copy.deepcopy(authored.get("user_confirmation"))',
-            '"typed_exit": authored.get("typed_exit")',
-            '"consumer": copy.deepcopy(authored.get("consumer"))',
-        ]:
-            self.assertIn(expected, source)
-        for forbidden in [
-            'entry["classification"] =',
-            'choice["selected_id"] =',
-            'candidate["disposition"] =',
-            'payload["typed_exit"] =',
-            'payload["semantic_review"] =',
-        ]:
-            self.assertNotIn(forbidden, source)
-
-    def test_planning_approval_artifact_digest_and_required_doc_fail_closed(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as digest_error:
-                gtt.cmd_check_planning_approval(
-                    planning_args(expected_artifact_sha256="0" * 64)
-                )
-            self.assertIn(
-                "planning_approval_artifact_sha256_mismatch",
-                digest_error.exception.payload["errors"],
-            )
-            (self.task_dir / "implement.md").unlink()
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root, self.task_dir
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("planning_approval_required_artifact_missing", errors)
-
-    def test_planning_approval_recording_rejects_invocation_snapshot_drift(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(
-                gtt, "current_head", side_effect=["a" * 40, "c" * 40]
-            ):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    self.record_planning_approval()
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn(
-            "planning_approval_invocation_snapshot_drift",
-            raised.exception.payload["error_codes"],
-        )
-
-    def test_planning_approval_rechecks_invocation_snapshot_before_activation(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with (
-            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
-                "base_branch": "main",
-                "base_ref": "refs/remotes/origin/main",
-                "base_head_sha": "b" * 40,
-            }),
-            mock.patch.object(gtt, "current_head", return_value="c" * 40),
-            mock.patch.object(gtt, "git_status_paths", return_value=["unreviewed.py"]),
-        ):
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root, self.task_dir
-            )
-        self.assertIn("planning_approval_repository_snapshot_head_stale", errors)
-        self.assertIn("planning_approval_repository_snapshot_dirty_paths_stale", errors)
-
-    def test_planning_approval_allows_post_activation_head_status_and_mtime_drift(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            task = gtt.read_json(self.task_dir / "task.json")
-            task["status"] = "in_progress"
-            gtt.write_json(self.task_dir / "task.json", task)
-            prd = self.task_dir / "prd.md"
-            new_mtime = prd.stat().st_mtime + 10
-            os.utime(prd, (new_mtime, new_mtime))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        with (
-            mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
-                "base_branch": "main",
-                "base_ref": "refs/remotes/origin/main",
-                "base_head_sha": "b" * 40,
-            }),
-            mock.patch.object(gtt, "current_head", return_value="c" * 40),
-            mock.patch.object(gtt, "git_status_paths", return_value=["implementation.py"]),
-        ):
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root, self.task_dir
-            )
-        self.assertEqual(errors, [])
-
-    def test_planning_approval_scope_projection_ignores_ledger_evidence_metadata(self) -> None:
-        payload = self.planning_input()
-        payload["requirement_authorities"].append({
-            "id": "task-scope-ledger",
-            "kind": "task_artifact",
-            "locator": ".trellis/tasks/07-04-gates/issue-scope-ledger.json",
-            "sha256": "0" * 64,
-            "updated_at": None,
-        })
-        payload["provenance_review"]["entries"][0]["authority_refs"].append(
-            "task-scope-ledger"
-        )
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            recorded = self.record_planning_approval(payload)
-            ledger_path = self.task_dir / "issue-scope-ledger.json"
-            ledger = gtt.read_json(ledger_path)
-            expected_scope_sha = gtt.context_digest(
-                gtt.planning_scope_ledger_projection(ledger)
-            )
-            ledger_authority = next(
-                row
-                for row in recorded["requirement_authorities"]
-                if row["id"] == "task-scope-ledger"
-            )
-            self.assertEqual(ledger_authority["sha256"], expected_scope_sha)
-            self.assertEqual(recorded["task"]["scope_ledger_sha256"], expected_scope_sha)
-            ledger["scope_decisions"] = [{
-                "trail_id": "decision-1",
-                "planning_approval_sha256": hashlib.sha256(
-                    (self.task_dir / "planning-approval.json").read_bytes()
-                ).hexdigest(),
-            }]
-            ledger["close_issues"][0]["acceptance_evidence"] = [
-                "Planning approval is current."
-            ]
-            gtt.write_json(ledger_path, ledger)
-
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root,
-                self.task_dir,
-            )
-            self.assertEqual(errors, [])
-
-            ledger["related_issues"] = [{"number": 99}]
-            gtt.write_json(ledger_path, ledger)
-            _path, _payload, errors = gtt.validate_planning_approval(
-                self.root,
-                self.task_dir,
-            )
-            self.assertIn(
-                "planning_approval_task_scope_ledger_sha256_stale",
-                errors,
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_phase2_requirement_provenance_uses_scope_only_ledger_projection(self) -> None:
-        ledger_path = self.task_dir / "issue-scope-ledger.json"
-        source = {
-            "summary": "Phase 2 reviewed the current issue scope.",
-            "artifacts": [{
-                "path": ".trellis/tasks/07-04-gates/issue-scope-ledger.json",
-            }],
-        }
-        recorded = gtt.phase2_evidence_projection(
-            self.root,
-            source,
-            "requirement_provenance",
-        )
-
-        ledger = gtt.read_json(ledger_path)
-        other_label_recorded = gtt.phase2_evidence_projection(
-            self.root,
-            source,
-            "implementation_handoff",
-        )
-        non_task_ledger_path = self.root / "issue-scope-ledger.json"
-        gtt.write_json(non_task_ledger_path, ledger)
-        non_task_source = {
-            "summary": "Phase 2 reviewed a non-task-local ledger.",
-            "artifacts": [{"path": "issue-scope-ledger.json"}],
-        }
-        non_task_recorded = gtt.phase2_evidence_projection(
-            self.root,
-            non_task_source,
-            "requirement_provenance",
-        )
-
-        ledger["primary_issue"]["acceptance_evidence"] = [
-            "Publication acceptance evidence was added after Branch Review.",
-        ]
-        ledger["close_issues"][0]["acceptance_evidence"] = [
-            {
-                "type": "remote_marketplace_verification",
-                "status": "pending",
-            },
-        ]
-        gtt.write_json(ledger_path, ledger)
-        metadata_only = gtt.phase2_evidence_projection(
-            self.root,
-            recorded,
-            "requirement_provenance",
-        )
-        self.assertEqual(metadata_only, recorded)
-
-        other_label_changed = gtt.phase2_evidence_projection(
-            self.root,
-            other_label_recorded,
-            "implementation_handoff",
-        )
-        self.assertNotEqual(
-            other_label_changed["artifacts"][0],
-            other_label_recorded["artifacts"][0],
-        )
-
-        gtt.write_json(non_task_ledger_path, ledger)
-        non_task_changed = gtt.phase2_evidence_projection(
-            self.root,
-            non_task_recorded,
-            "requirement_provenance",
-        )
-        self.assertNotEqual(
-            non_task_changed["artifacts"][0],
-            non_task_recorded["artifacts"][0],
-        )
-
-        ledger["related_issues"] = [{"number": 99}]
-        gtt.write_json(ledger_path, ledger)
-        scope_changed = gtt.phase2_evidence_projection(
-            self.root,
-            recorded,
-            "requirement_provenance",
-        )
-        self.assertNotEqual(
-            scope_changed["artifacts"][0],
-            recorded["artifacts"][0],
-        )
-
-        invalid_task_dir = self.root / ".trellis/tasks/invalid-ledger"
-        invalid_task_dir.mkdir(parents=True)
-        invalid_ledger_path = invalid_task_dir / "issue-scope-ledger.json"
-        invalid_ledger = copy.deepcopy(ledger)
-        invalid_ledger["primary_issue"]["number"] = 0
-        gtt.write_json(invalid_ledger_path, invalid_ledger)
-        with self.assertRaises(gtt.WorkflowError) as invalid_error:
-            gtt.phase2_evidence_projection(
-                self.root,
-                {
-                    "summary": "Phase 2 must reject an invalid task-local ledger.",
-                    "artifacts": [{
-                        "path": ".trellis/tasks/invalid-ledger/issue-scope-ledger.json",
-                    }],
-                },
-                "requirement_provenance",
-            )
-        self.assertEqual(invalid_error.exception.exit_code, 2)
-        self.assertIn(
-            "positive primary issue number",
-            str(invalid_error.exception),
-        )
-
-    def test_validate_planning_approval_accepts_archived_task_with_active_artifact_paths(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-gates"
-        archived_task_dir.mkdir(parents=True)
-        for name in [
-            "task.json", "prd.md", "design.md", "implement.md",
-            gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, "planning-approval.json",
-        ]:
-            (archived_task_dir / name).write_bytes((self.task_dir / name).read_bytes())
-        for name in ["prd.md", "design.md", "implement.md"]:
-            (self.task_dir / name).unlink()
-        _path, _payload, errors = gtt.validate_planning_approval(
-            self.root, archived_task_dir, allow_committed_head=True
-        )
-        self.assertEqual(errors, [])
-
-    def test_record_and_check_phase2_v2_pass(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            payload = self.record_phase2()
-            checked = gtt.cmd_check_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertEqual(payload["schema_version"], "2.1")
-        self.assertEqual(payload["skill_id"], "guru-check-task")
-        self.assertEqual(checked["typed_exit"], "passed")
-        self.assertEqual(checked["consumer"], {"kind": "skill", "id": "guru-create-task-commit"})
-
-    def test_phase2_v2_scope_qualification_precedes_severity(self) -> None:
-        payload = self.phase2_input()
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "未触发的非常规候选", "trigger_refs": [],
-            "normal_path_reproduction": "只在未批准的非常规场景中出现。",
-            "disposition": "out_of_scope", "route_basis": "无 approved trigger。",
-            "severity": "P1", "finding_id": None,
-        }]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_phase2(payload)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("structurally invalid", str(raised.exception))
-
-    def test_closed_schema_validator_supports_contains_and_not(self) -> None:
-        schema = {
-            "type": "array",
-            "contains": {"const": "required"},
-            "not": {"contains": {"const": "forbidden"}},
-        }
-        self.assertEqual(
-            gtt.skill_json_schema_validation_errors(
-                ["required", "allowed"], schema, "closed union"
-            ),
-            [],
-        )
-        self.assertTrue(any(
-            "violates contains" in error
-            for error in gtt.skill_json_schema_validation_errors(
-                ["allowed"], schema, "closed union"
-            )
-        ))
-        self.assertTrue(any(
-            "violates not" in error
-            for error in gtt.skill_json_schema_validation_errors(
-                ["required", "forbidden"], schema, "closed union"
-            )
-        ))
-
-    def test_phase2_v2_scope_change_requires_planning_stale(self) -> None:
-        payload = self.phase2_input()
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "当前 authority 不能覆盖候选变更",
-            "trigger_refs": ["PRD R4"],
-            "normal_path_reproduction": "受支持正常路径需要改变 approved scope。",
-            "disposition": "scope_change_required",
-            "route_basis": "返回 planning owner。", "severity": None,
-            "finding_id": None,
-        }]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_phase2(payload)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn(
-            "phase2_check_scope_change_requires_planning_stale",
-            raised.exception.payload["error_codes"],
-        )
-
-    def test_phase2_v2_worker_evidence_cannot_independently_pass(self) -> None:
-        payload = self.phase2_input()
-        payload["semantic_review"]["adequacy_dimensions"][0]["status"] = "failed"
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_phase2(payload)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("phase2_check_pass_requires_all_dimensions", raised.exception.payload["error_codes"])
-
-    def test_phase2_v2_requires_nonempty_entry_and_adequacy_evidence(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            for label, mutate in (
-                ("requirement provenance", lambda payload: payload["requirement_provenance"].update(artifacts=[])),
-                ("implementation handoff", lambda payload: payload["implementation_handoff"].update(artifacts=[])),
-                ("durable paths", lambda payload: payload["docs_ssot_plan"].update(durable_paths=[])),
-                ("reviewed paths", lambda payload: payload["repository_snapshot"].update(reviewed_paths=[])),
-            ):
-                with self.subTest(label=label):
-                    payload = self.phase2_input()
-                    mutate(payload)
-                    with self.assertRaises(gtt.WorkflowError):
-                        self.record_phase2(payload, name=f"empty-{label.replace(' ', '-')}.json")
-
-            payload = self.phase2_input()
-            payload["check_execution"]["commands"] = []
-            payload["semantic_review"]["adequacy_dimensions"][0]["evidence_refs"] = []
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_phase2(payload, name="empty-round-evidence.json")
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("phase2_check_execution_commands_missing", raised.exception.payload["error_codes"])
-        self.assertIn("phase2_check_adequacy_evidence_refs_missing", raised.exception.payload["error_codes"])
-
-    def test_phase2_v2_requires_trigger_refs_and_complete_evidence_source_closure(self) -> None:
-        payload = self.phase2_input()
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "Current scope candidate", "trigger_refs": [],
-            "normal_path_reproduction": "Normal path reproduction.",
-            "disposition": "current_scope", "route_basis": "Return to implementation.",
-            "severity": "P2", "finding_id": "F1",
-        }]
-        payload["semantic_review"]["findings"] = [{
-            "id": "F1", "candidate_id": "C1", "severity": "P2",
-            "summary": "Current defect.", "path": "example.py", "blocking": True,
+    def test_phase2_v3_rejects_invalid_pass(self) -> None:
+        invalid = self.phase2_authored()
+        invalid["semantic_review"]["findings"] = [{
+            "id": "F1",
+            "severity": "P2",
+            "summary": "A supported current-scope defect remains.",
+            "path": "src/example.py",
             "status": "open",
         }]
-        payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["F1"]
-        payload["semantic_review"]["adequacy_dimensions"][0]["evidence_refs"] = ["planning"]
-        errors = gtt.phase2_semantic_errors(payload)
-        self.assertIn("phase2_check_scope_candidate_trigger_refs_missing", errors)
-        self.assertIn("phase2_check_adequacy_evidence_source_uncovered", errors)
-
-    def test_phase2_v2_checker_recomputes_every_semantic_derived_field(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            self.record_phase2()
-            artifact = self.task_dir / "phase2-check.json"
-            valid = gtt.read_json(artifact)
-            cases = {
-                "execution_sha256": ("check_execution", "execution_sha256", "phase2_check_execution_sha256_mismatch"),
-                "scope_sha256": ("scope_qualification", "scope_sha256", "phase2_check_scope_sha256_mismatch"),
-                "adequacy_sha256": ("semantic_review", "adequacy_sha256", "phase2_check_adequacy_sha256_mismatch"),
-                "gate_planning": ("gate", "planning_facts_sha256", "phase2_check_gate_planning_facts_sha256_mismatch"),
-                "gate_snapshot": ("gate", "snapshot_sha256", "phase2_check_gate_snapshot_sha256_mismatch"),
-                "gate_scope": ("gate", "scope_sha256", "phase2_check_gate_scope_sha256_mismatch"),
-                "gate_adequacy": ("gate", "adequacy_sha256", "phase2_check_gate_adequacy_sha256_mismatch"),
-                "findings_count": ("gate", "findings_count", "phase2_check_gate_findings_count_mismatch"),
-                "full_round_sha256": ("gate", "full_round_sha256", "phase2_check_gate_full_round_sha256_mismatch"),
-            }
-            for label, (section, field, expected_error) in cases.items():
-                with self.subTest(field=label):
-                    payload = copy.deepcopy(valid)
-                    target = (
-                        payload["semantic_review"]["ai_review_gate"]
-                        if section == "gate"
-                        else payload[section]
-                    )
-                    target[field] = 99 if field == "findings_count" else "0" * 64
-                    payload["facts_sha256"] = gtt.context_digest({
-                        key: value
-                        for key, value in payload.items()
-                        if key not in {"generated_at", "facts_sha256"}
-                    })
-                    gtt.write_json(artifact, payload)
-                    _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir)
-                    self.assertIn(expected_error, errors)
-            gtt.write_json(artifact, valid)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_phase2_v21_worker_evidence_does_not_require_assignment_ledger(self) -> None:
-        payload = self.phase2_input()
-        payload["check_execution"]["worker_evidence"][0]["agent_id"] = "other-check"
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            recorded = self.record_phase2(payload)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertEqual(recorded["schema_version"], "2.1")
-        self.assertNotIn("agent_assignment", recorded)
-
-    def test_phase2_v2_open_current_scope_finding_cannot_be_nonblocking(self) -> None:
-        payload = self.phase2_input()
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
-            "trigger_refs": ["PRD R6"],
-            "normal_path_reproduction": "受支持正常路径可复现。",
-            "disposition": "current_scope", "route_basis": "返回实现修复。",
-            "severity": "P3", "finding_id": "F1",
+        invalid["semantic_review"]["scope_decisions"] = [{
+            "id": "C1",
+            "disposition": "current_scope",
+            "summary": "The current implementation remains incorrect.",
+            "normal_path_reproduction": "The supported path reproduces the defect.",
+            "finding_id": "F1",
         }]
-        payload["semantic_review"]["findings"] = [{
-            "id": "F1", "candidate_id": "C1", "severity": "P3",
-            "summary": "仍未解决的缺陷。", "path": "example.py",
-            "blocking": False, "status": "open",
-        }]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_phase2(payload)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("structurally invalid", str(raised.exception))
-
-    def test_phase2_v2_open_finding_requires_implementation_exit(self) -> None:
-        payload = self.phase2_input()
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
-            "trigger_refs": ["PRD R6"],
-            "normal_path_reproduction": "受支持正常路径可复现。",
-            "disposition": "current_scope", "route_basis": "返回实现修复。",
-            "severity": "P3", "finding_id": "F1",
-        }]
-        payload["semantic_review"]["findings"] = [{
-            "id": "F1", "candidate_id": "C1", "severity": "P3",
-            "summary": "仍未解决的缺陷。", "path": "example.py",
-            "blocking": True, "status": "open",
-        }]
-        payload["typed_exit"] = "blocked"
-        payload["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
-        payload["semantic_review"]["ai_review_gate"]["status"] = "blocked"
-        payload["check_execution"]["unverified_items"] = [{
-            "id": "U1", "command_or_area": "integration test",
-            "reason": "Dependency unavailable.", "impact": "Coverage incomplete.",
-            "blocking": True,
-        }]
-        self.assertIn(
-            "phase2_check_open_finding_requires_implementation",
-            gtt.phase2_semantic_errors(payload),
-        )
-
-    def test_phase2_v2_current_scope_candidate_requires_linked_finding(self) -> None:
-        payload = self.phase2_input()
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
-            "trigger_refs": ["PRD R6"],
-            "normal_path_reproduction": "受支持正常路径可复现。",
-            "disposition": "current_scope", "route_basis": "返回实现修复。",
-            "severity": "P1", "finding_id": None,
-        }]
-        self.assertIn(
-            "phase2_check_current_scope_candidate_finding_link_missing",
-            gtt.phase2_semantic_errors(payload),
-        )
-
-    def test_phase2_v2_finding_requires_adequacy_reference(self) -> None:
-        payload = self.phase2_input()
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "正常路径中的当前 scope 缺陷",
-            "trigger_refs": ["PRD R6"],
-            "normal_path_reproduction": "受支持正常路径可复现。",
-            "disposition": "current_scope", "route_basis": "返回实现修复。",
-            "severity": "P2", "finding_id": "F1",
-        }]
-        payload["semantic_review"]["findings"] = [{
-            "id": "F1", "candidate_id": "C1", "severity": "P2",
-            "summary": "需要实现修复。", "path": "example.py",
-            "blocking": True, "status": "open",
-        }]
-        self.assertIn(
-            "phase2_check_finding_missing_adequacy_reference",
-            gtt.phase2_semantic_errors(payload),
-        )
-        payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["missing"]
-        self.assertIn(
-            "phase2_check_adequacy_references_unknown_finding",
-            gtt.phase2_semantic_errors(payload),
-        )
-        payload["check_execution"]["unverified_items"] = [{
-            "id": "U1", "command_or_area": "integration test",
-            "reason": "Dependency unavailable.", "impact": "Coverage incomplete.",
-            "blocking": False,
-        }]
-        self.assertIn(
-            "phase2_check_unverified_item_missing_adequacy_reference",
-            gtt.phase2_semantic_errors(payload),
-        )
-
-    def test_phase2_v2_candidate_and_unverified_ids_are_unique(self) -> None:
-        payload = self.phase2_input()
-        candidate = {
-            "id": "C1", "summary": "后续范围候选", "trigger_refs": ["PRD R4"],
-            "normal_path_reproduction": "正常路径中发现后续建议。",
-            "disposition": "followup_proposal", "route_basis": "后续 issue。",
-            "severity": None, "finding_id": None,
-        }
-        payload["scope_qualification"]["candidates"] = [candidate, dict(candidate)]
-        payload["check_execution"]["unverified_items"] = [
-            {"id": "U1", "command_or_area": "a", "reason": "r", "impact": "i", "blocking": False},
-            {"id": "U1", "command_or_area": "b", "reason": "r", "impact": "i", "blocking": False},
-        ]
-        errors = gtt.phase2_semantic_errors(payload)
-        self.assertIn("phase2_check_duplicate_or_missing_candidate_id", errors)
-        self.assertIn("phase2_check_duplicate_or_missing_unverified_id", errors)
-
-    def test_phase2_v2_planning_stale_requires_scope_change_candidate(self) -> None:
-        payload = self.phase2_input()
-        payload["typed_exit"] = "planning_stale"
-        payload["route"] = "reapprove_plan"
-        payload["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
-        payload["semantic_review"]["ai_review_gate"]["status"] = "planning_stale"
-        self.assertIn(
-            "phase2_check_planning_stale_without_scope_change",
-            gtt.phase2_semantic_errors(payload),
-        )
-
-    def test_phase2_v2_blocked_requires_verification_blocker(self) -> None:
-        payload = self.phase2_input()
-        payload["typed_exit"] = "blocked"
-        payload["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
-        payload["semantic_review"]["ai_review_gate"]["status"] = "blocked"
-        self.assertIn(
-            "phase2_check_blocked_without_verification_blocker",
-            gtt.phase2_semantic_errors(payload),
-        )
-
-    def test_phase2_v2_verification_blocker_requires_blocked_exit(self) -> None:
-        payload = self.phase2_input()
-        payload["typed_exit"] = "planning_stale"
-        payload["route"] = "reapprove_plan"
-        payload["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
-        payload["semantic_review"]["ai_review_gate"]["status"] = "planning_stale"
-        payload["scope_qualification"]["candidates"] = [{
-            "id": "C1", "summary": "需要调整 approved scope",
-            "trigger_refs": ["PRD R4"],
-            "normal_path_reproduction": "正常路径需要 scope 变更。",
-            "disposition": "scope_change_required",
-            "route_basis": "返回 planning owner。",
-            "severity": None, "finding_id": None,
-        }]
-        payload["check_execution"]["unverified_items"] = [{
-            "id": "U1", "command_or_area": "integration test",
-            "reason": "Dependency unavailable.",
-            "impact": "Reliable complete check is unavailable.",
-            "blocking": True,
-        }]
-        self.assertIn(
-            "phase2_check_verification_blocker_requires_blocked",
-            gtt.phase2_semantic_errors(payload),
-        )
-
-    def test_phase2_v21_has_no_assignment_or_recovery_dimension(self) -> None:
-        payload = self.phase2_input()
-        self.assertNotIn("agent_assignment", payload)
-        self.assertNotIn(
-            "agent_recovery",
-            [item["id"] for item in payload["semantic_review"]["adequacy_dimensions"]],
-        )
-        self.assertEqual(len(payload["semantic_review"]["adequacy_dimensions"]), 9)
-
-    def test_phase2_v2_agent_projection_requires_assignment_artifact(self) -> None:
-        (self.task_dir / "agent-assignment.json").unlink()
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.phase2_agent_projection(
-                self.root,
-                self.task_dir,
-                {"implementation_agent_ids": ["implement-1"], "check_agent_ids": ["check-1"]},
-            )
-        self.assertIn("requires a task-local agent-assignment.json", str(raised.exception))
-
-    def test_phase2_v2_agent_projection_requires_completed_role_ids(self) -> None:
-        assignment = self.task_dir / "agent-assignment.json"
-        assignment.write_text("{}\n", encoding="utf-8")
-        normalized = {
-            "status_events": [{
-                "event": "completed", "logical_role": "实现代理",
-                "agent_id": "implement-1",
-            }],
-            "event_corrections": [],
-        }
         with (
-            mock.patch.object(gtt, "phase2_agent_assignment_errors", return_value=[]),
-            mock.patch.object(gtt, "normalize_agent_assignment_for_task", return_value=normalized),
+            mock.patch.object(
+                gtt, "load_phase2_check_schema", return_value=self.phase2_schema
+            ),
+            mock.patch.object(gtt, "current_head", return_value="2" * 40),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+            self.assertRaises(gtt.WorkflowError) as invalid_pass,
         ):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.phase2_agent_projection(
-                    self.root,
-                    self.task_dir,
-                    {"implementation_agent_ids": ["implement-1"], "check_agent_ids": ["check-1"]},
-                )
-        self.assertIn("completed Phase 2 check agents", str(raised.exception))
+            gtt.materialize_phase2_check_payload(
+                self.root, self.task_dir, {}, invalid
+            )
+        self.assertIn(
+            "phase2_check_passed_has_open_findings",
+            invalid_pass.exception.payload["error_codes"],
+        )
 
-    def test_phase2_v2_four_exit_runtime_union(self) -> None:
-        cases = [
-            ("implementation_required", None, {"kind": "workflow", "id": "guru-resume-implementation"}),
-            ("planning_stale", "reapprove_plan", {"kind": "workflow", "id": "guru-task-check-planning-router"}),
-            ("planning_stale", "clarify_requirements", {"kind": "workflow", "id": "guru-task-check-planning-router"}),
-            ("blocked", None, {"kind": "stop", "id": "task-check-blocked"}),
-        ]
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            for index, (typed_exit, route, consumer) in enumerate(cases):
-                payload = self.phase2_input()
-                payload["typed_exit"] = typed_exit
-                payload["route"] = route
-                payload["consumer"] = consumer
-                payload["semantic_review"]["ai_review_gate"]["status"] = typed_exit
-                if typed_exit == "implementation_required":
-                    payload["scope_qualification"]["candidates"] = [{
-                        "id": "C1", "summary": "当前 scope 缺陷", "trigger_refs": ["PRD R1"],
-                        "normal_path_reproduction": "正常路径可复现。", "disposition": "current_scope",
-                        "route_basis": "实现修复。", "severity": "P2", "finding_id": "F1",
-                    }]
-                    payload["semantic_review"]["findings"] = [{
-                        "id": "F1", "candidate_id": "C1", "severity": "P2",
-                        "summary": "需要实现修复。", "path": "example.py", "blocking": True,
-                        "status": "open",
-                    }]
-                    payload["semantic_review"]["adequacy_dimensions"][2]["finding_ids"] = ["F1"]
-                elif typed_exit == "planning_stale":
-                    payload["scope_qualification"]["candidates"] = [{
-                        "id": "C1", "summary": "需要调整 approved scope",
-                        "trigger_refs": ["PRD R4"],
-                        "normal_path_reproduction": "正常路径需要 scope 变更。",
-                        "disposition": "scope_change_required",
-                        "route_basis": "返回 planning owner。",
-                        "severity": None, "finding_id": None,
-                    }]
-                elif typed_exit == "blocked":
-                    payload["check_execution"]["unverified_items"] = [{
-                        "id": "U1", "command_or_area": "integration test",
-                        "reason": "Dependency unavailable.",
-                        "impact": "Reliable complete check is unavailable.",
-                        "blocking": True,
-                    }]
-                    payload["semantic_review"]["adequacy_dimensions"][-1]["unverified_ids"] = ["U1"]
-                result = self.record_phase2(payload, name=f"phase2-{index}.json")
-                self.assertEqual(result["typed_exit"], typed_exit)
-                self.assertEqual(result["route"], route)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-    def test_phase2_v2_pass_requires_full_rerun(self) -> None:
-        payload = self.phase2_input()
-        payload["semantic_review"]["ai_review_gate"]["full_rerun"] = False
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                self.record_phase2(payload)
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertIn("phase2_check_pass_requires_full_rerun", raised.exception.payload["error_codes"])
-
-    def test_phase2_v2_legacy_artifact_requires_complete_reentry(self) -> None:
-        gtt.write_json(self.task_dir / "phase2-check.json", {"schema_version": "1.0"})
-        _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir)
-        self.assertEqual(errors, ["phase2_check_legacy_requires_complete_guru_check_task_reentry"])
-
-    def test_phase2_v2_candidate_path_exclusion_applies_to_repository_projection(self) -> None:
-        candidate_relative = ".trellis/tasks/07-04-gates/task-commit-plans/001.json"
-        candidate = self.root / candidate_relative
-        candidate.parent.mkdir(parents=True, exist_ok=True)
-        candidate.write_text("{}\n", encoding="utf-8")
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            recorded = self.record_phase2()
-            with (
-                mock.patch.object(gtt, "git_status_paths", return_value=[candidate_relative]),
-                mock.patch.object(gtt, "phase2_planning_projection", return_value=recorded["planning"]),
-            ):
-                _path, _payload, errors = gtt.validate_phase2_check(
-                    self.root,
-                    self.task_dir,
-                    additional_dirty_excluded={candidate_relative},
-                )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-        self.assertEqual(errors, [])
-
-    def phase2_status_event(
-        self,
-        *,
-        event_id: str,
-        event: str,
-        agent_id: str,
-        logical_role: str,
-        head: str,
-    ) -> dict[str, object]:
-        return {
-            "event_id": event_id,
-            "event": event,
-            "agent_id": agent_id,
-            "logical_role": logical_role,
-            "platform_nickname": agent_id,
-            "observed_at": "2026-07-19T00:00:00Z",
-            "recorded_at": "2026-07-19T00:00:00Z",
-            "head": head,
-            "source": "main-session",
-            "evidence": f"{logical_role} {event} evidence.",
-            "predecessor_agent_id": "",
-            "predecessor_event_id": "",
-            "termination_reason": "",
-            "termination_source_event_id": "",
-            "replacement_reason": "",
-            "handoff_summary": "",
-        }
-
-    def write_phase2_agent_assignment(self, head: str) -> dict[str, object]:
-        agents = [
-            {
-                "logical_role": role,
-                "agent_id": agent_id,
-                "platform_nickname": agent_id,
-                "assigned_at": "2026-07-19T00:00:00Z",
-                "assigned_head": head,
-                "reason": f"Assign {role} for the complete Phase 2 round.",
-                "event_id": f"evt-{agent_id}-assigned",
-            }
-            for role, agent_id in (("实现代理", "implement-1"), ("阶段二检查代理", "check-1"))
-        ]
-        payload = {
-            "schema_version": gtt.AGENT_ASSIGNMENT_SCHEMA_VERSION,
-            "generated_at": "2026-07-19T00:00:00Z",
-            "updated_at": "2026-07-19T00:00:00Z",
-            "task": ".trellis/tasks/07-04-gates",
-            "head": head,
-            "agents": agents,
-            "liveness": {},
-            "review_rounds": [],
-            "reuse_decisions": [],
-            "status_events": [
-                self.phase2_status_event(
-                    event_id=f"evt-{agent_id}-completed",
-                    event="completed",
-                    agent_id=agent_id,
-                    logical_role=role,
-                    head=head,
-                )
-                for role, agent_id in (("实现代理", "implement-1"), ("阶段二检查代理", "check-1"))
-            ],
-            "event_corrections": [],
-            "recovery_links": [],
-        }
-        gtt.write_json(self.task_dir / "agent-assignment.json", payload)
-        return payload
-
-    def phase2_post_commit_fixture(
-        self,
-        *,
-        include_uncovered: bool,
-    ) -> dict[str, object]:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            self.record_phase2()
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
+    def test_phase2_recorder_rejects_committed_trailing_whitespace_against_base(self) -> None:
         subprocess.run(["git", "config", "user.name", "Phase 2 Test"], cwd=self.root, check=True)
-        subprocess.run(["git", "config", "user.email", "phase2@example.invalid"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "phase2@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        task = gtt.read_json(self.task_dir / "task.json")
+        task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", task)
+        source = self.root / "src/committed.py"
+        source.parent.mkdir(parents=True)
+        source.write_text("value = 1\n", encoding="utf-8")
         subprocess.run(["git", "add", "."], cwd=self.root, check=True)
-        subprocess.run(["git", "commit", "-q", "-m", "initial fixture"], cwd=self.root, check=True)
-        recorded_head = gtt.current_head(self.root)
-
-        (self.root / "covered.py").write_text("covered = True\n", encoding="utf-8")
-        artifact = self.task_dir / "phase2-check.json"
-        recorded = gtt.read_json(artifact)
-        repository = recorded["repository_snapshot"]
-        repository.update({
-            "base_ref": "main",
-            "base_head": recorded_head,
-            "head": recorded_head,
-            "diff_range": "main...HEAD",
-            "dirty_paths": ["covered.py"],
-        })
-        repository["snapshot_sha256"] = gtt.context_digest({
-            key: value for key, value in repository.items() if key != "snapshot_sha256"
-        })
-        gtt.phase2_semantic_projection(recorded)
-        recorded["facts_sha256"] = gtt.context_digest({
-            key: value for key, value in recorded.items() if key not in {"generated_at", "facts_sha256"}
-        })
-        gtt.write_json(artifact, recorded)
-
-        committed_paths = ["covered.py"]
-        if include_uncovered:
-            (self.root / "unreviewed.py").write_text("unreviewed = True\n", encoding="utf-8")
-            committed_paths.append("unreviewed.py")
-        subprocess.run(["git", "add", "--", *committed_paths], cwd=self.root, check=True)
-        subprocess.run(["git", "commit", "-q", "-m", "commit reviewed work"], cwd=self.root, check=True)
-        return recorded
-
-    def validate_phase2_post_commit_fixture(self, recorded: dict[str, object]) -> list[str]:
-        patches = self.patch_common()
-        non_git_patches = [patcher for index, patcher in enumerate(patches) if index not in {4, 5, 6, 7}]
-        for patcher in non_git_patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "phase2_planning_projection", return_value=recorded["planning"]):
-                _path, _payload, errors = gtt.validate_phase2_check(
-                    self.root, self.task_dir, allow_committed_head=True
-                )
-        finally:
-            for patcher in reversed(non_git_patches):
-                patcher.stop()
-        return errors
-
-    def test_phase2_v2_post_commit_accepts_real_recorded_dirty_path_coverage(self) -> None:
-        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
-        self.assertEqual(self.validate_phase2_post_commit_fixture(recorded), [])
-
-    def test_phase2_v2_post_commit_rejects_real_uncovered_committed_path(self) -> None:
-        recorded = self.phase2_post_commit_fixture(include_uncovered=True)
-        errors = self.validate_phase2_post_commit_fixture(recorded)
-        self.assertIn("phase2_check_post_commit_paths_uncovered:unreviewed.py", errors)
-
-    @unittest.skip("legacy Phase 2 v1 coverage CLI removed by guru-check-task v2")
-    def test_record_phase2_check_requires_full_coverage_on_pass(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_phase2_check(phase2_args(coverage=["requirements"]))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("missing_coverage", raised.exception.payload)
-
-    @unittest.skip("legacy Phase 2 v1 producer replaced by AI-authored closed input")
-    def test_record_and_check_phase2_check(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            payload = gtt.cmd_record_phase2_check(
-                phase2_args(checked_spec=[".trellis/spec/index.md"])
-            )
-            check = gtt.cmd_check_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue((self.task_dir / "phase2-check.json").exists())
-        self.assertEqual(payload["head"], "a" * 40)
-        self.assertEqual(check["status"], "ok")
-        self.assertTrue(all(payload["coverage"].values()))
-
-    @unittest.skip("legacy Phase 2 v1 producer replaced by v2 agent projection tests")
-    def test_phase2_pass_rejects_unclosed_agent_assignment_recovery_chain(self) -> None:
-        assignment = self.task_dir / "agent-assignment.json"
-        unclosed_assignment = {
-            "schema_version": "1.1",
-            "task": ".trellis/tasks/07-04-gates",
-            "head": "abc123",
-            "agents": [
-                {
-                    "logical_role": "实现代理",
-                    "agent_id": "agent-a",
-                    "platform_nickname": "Implement A",
-                    "assigned_at": "2026-07-07T00:00:00Z",
-                    "assigned_head": "abc123",
-                    "reason": "分配实现代理。",
-                }
-            ],
-            "liveness": {},
-            "review_rounds": [],
-            "reuse_decisions": [],
-            "status_events": [
-                {
-                    "event_id": "evt-0001",
-                    "event": "terminated-unfinished",
-                    "agent_id": "agent-a",
-                    "logical_role": "实现代理",
-                    "platform_nickname": "Implement A",
-                    "observed_at": "2026-07-07T00:01:00Z",
-                    "recorded_at": "2026-07-07T00:01:00Z",
-                    "head": "abc123",
-                    "source": "main-session",
-                    "evidence": "实现代理被平台中断且未完成。",
-                    "predecessor_agent_id": "",
-                    "predecessor_event_id": "",
-                    "termination_reason": "manual_or_platform_terminated_unfinished",
-                    "termination_source_event_id": "",
-                    "replacement_reason": "",
-                    "handoff_summary": "predecessor output、当前 diff、剩余工作和 gate blockers。",
-                }
-            ],
-        }
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        git_object_patch = mock.patch.object(gtt, "git_object_exists", return_value=True)
-        git_object_patch.start()
-        try:
-            self.record_planning_approval()
-            assignment.write_text(json.dumps(unclosed_assignment, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            with self.assertRaises(gtt.WorkflowError) as record_raised:
-                gtt.cmd_record_phase2_check(phase2_args())
-            assignment.unlink()
-            gtt.cmd_record_phase2_check(phase2_args())
-            assignment.write_text(json.dumps(unclosed_assignment, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            with self.assertRaises(gtt.WorkflowError) as check_raised:
-                gtt.cmd_check_phase2_check(phase2_args())
-        finally:
-            git_object_patch.stop()
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(any("terminated-unfinished" in error for error in record_raised.exception.payload["errors"]))
-        self.assertTrue(any("terminated-unfinished" in error for error in check_raised.exception.payload["errors"]))
-
-    @unittest.skip("legacy v1 checked_artifacts exclusion no longer exists")
-    def test_check_phase2_ignores_recorded_task_artifact_dirty_paths(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(phase2_args())
-            with mock.patch.object(
-                gtt,
-                "git_status_paths",
-                return_value=[
-                    ".trellis/tasks/07-04-gates/prd.md",
-                    ".trellis/tasks/07-04-gates/planning-approval.json",
-                    ".trellis/tasks/07-04-gates/phase2-check.json",
-                ],
-            ):
-                check = gtt.cmd_check_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(check["status"], "ok")
-
-    @unittest.skip("legacy --checker CLI is intentionally rejected")
-    def test_record_phase2_check_requires_checker(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_phase2_check(phase2_args(checker=""))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("--checker", str(raised.exception))
-
-    @unittest.skip("legacy --checked-spec CLI is intentionally rejected")
-    def test_record_phase2_check_rejects_checked_spec_outside_spec_dir(self) -> None:
-        outside = self.root / "README.md"
-        outside.write_text("# README\n", encoding="utf-8")
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_phase2_check(phase2_args(checked_spec=["README.md"]))
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn(".trellis/spec", str(raised.exception))
-
-    @unittest.skip("legacy finding producer replaced by scope-linked v2 findings")
-    def test_check_phase2_rejects_unresolved_blocking_finding(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(
-                phase2_args(
-                    pass_check=False,
-                    finding=["P2|需要修复|trellis/workflows/guru-team/workflow.md"],
-                )
-            )
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_check_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(any("P0/P1/P2" in error for error in raised.exception.payload["errors"]))
-
-    @unittest.skip("legacy v1 dirty fixture replaced by v2 repository snapshot")
-    def test_check_phase2_rejects_dirty_state_drift(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            with mock.patch.object(gtt, "git_status_paths", return_value=["trellis/workflows/guru-team/workflow.md"]):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_check_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        self.assertTrue(any("dirty_paths" in error for error in raised.exception.payload["errors"]))
-
-    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
-    def test_validate_phase2_allows_post_commit_task_metadata_only(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
-            mock.patch.object(gtt, "git_status_paths", return_value=[".trellis/tasks/07-04-gates/review.md"]),
-        ):
-            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
-
-        self.assertEqual(errors, [])
-
-    def test_phase2_v21_ignores_legacy_review_metadata_tail(self) -> None:
-        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
-        self.write_phase2_agent_assignment(gtt.current_head(self.root))
-        (self.task_dir / "review.md").write_text("# Legacy review\n", encoding="utf-8")
-        self.assertEqual(self.validate_phase2_post_commit_fixture(recorded), [])
-
-    def test_phase2_v21_private_recovery_checkpoint_does_not_stale_phase2(self) -> None:
-        recorded = self.phase2_post_commit_fixture(include_uncovered=False)
-        recovery = {
-            "schema_version": "1.0",
-            "task_ref": ".trellis/tasks/07-04-gates",
-            "events": [{
-                "event_id": "recovery-001", "event": "unfinished",
-                "logical_role": "阶段二检查代理", "agent_id": "check-old",
-                "reason": "Agent stopped before completion.",
-                "handoff_summary": "Preserve completed checks and remaining scope.",
-                "observed_head": gtt.current_head(self.root),
-                "recorded_at": "2026-07-19T00:00:00Z",
-                "predecessor_event_id": None,
-            }, {
-                "event_id": "recovery-002", "event": "replacement",
-                "logical_role": "阶段二检查代理", "agent_id": "check-new",
-                "reason": "Replacement resumes the unfinished check.",
-                "handoff_summary": "Resume the exact remaining check scope.",
-                "observed_head": gtt.current_head(self.root),
-                "recorded_at": "2026-07-19T00:01:00Z",
-                "predecessor_event_id": "recovery-001",
-            }],
-            "updated_at": "2026-07-19T00:01:00Z",
-            "facts_sha256": "",
-        }
-        recovery["facts_sha256"] = gtt.context_digest(gtt.agent_recovery_facts(recovery))
-        path = gtt.agent_recovery_path(self.root, self.task_dir)
-        gtt.write_json(path, recovery)
-        self.assertEqual(gtt.agent_recovery_errors(self.root, self.task_dir, recovery), [])
-        self.assertEqual(self.validate_phase2_post_commit_fixture(recorded), [])
-
-    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
-    def test_validate_phase2_allows_post_commit_review_gate_metadata_updates(self) -> None:
-        review_report = self.task_dir / "review.md"
-        raw_report = self.task_dir / "reviews" / "round-001-final-release.md"
-        raw_report.parent.mkdir(parents=True, exist_ok=True)
-        review_report.write_text("# Review\n\n旧 final review evidence。\n", encoding="utf-8")
-        raw_report.write_text("# Raw Review\n\n旧 raw final review evidence。\n", encoding="utf-8")
-        ledger = self.task_dir / "issue-scope-ledger.json"
-        ledger.write_text(
-            gtt.json.dumps(
-                {
-                    "schema_version": "1.0",
-                    "primary_issue": {"number": 27},
-                    "close_issues": [{"number": 27}],
-                    "related_issues": [],
-                    "followup_issues": [],
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 添加基线"],
+            cwd=self.root,
+            check=True,
         )
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(
-                phase2_args(checked_artifact=["review.md", "reviews/round-001-final-release.md", "issue-scope-ledger.json"])
-            )
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        review_report.write_text("# Review\n\n新的 fresh final review evidence。\n", encoding="utf-8")
-        raw_report.write_text("# Raw Review\n\n新的 fresh raw final review evidence。\n", encoding="utf-8")
-        ledger.write_text(
-            gtt.json.dumps(
-                {
-                    "schema_version": "1.0",
-                    "primary_issue": {"number": 27},
-                    "close_issues": [
-                        {
-                            "number": 27,
-                            "url": "https://github.com/castbox/guru-trellis/issues/27",
-                            "title": "收紧 Branch Review Gate",
-                            "acceptance_evidence": ["Branch Review Gate 已覆盖 Issue #27。"],
-                        }
-                    ],
-                    "related_issues": [],
-                    "followup_issues": [],
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
+        subprocess.run(
+            ["git", "checkout", "-q", "-b", "feat/gate-task"],
+            cwd=self.root,
+            check=True,
         )
-
+        source.write_text("value = 2  \n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/committed.py"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 引入已提交空白"],
+            cwd=self.root,
+            check=True,
+        )
         with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
             mock.patch.object(
                 gtt,
-                "git_status_paths",
-                return_value=[
-                    ".trellis/tasks/07-04-gates/review.md",
-                    ".trellis/tasks/07-04-gates/reviews/round-001-final-release.md",
-                    ".trellis/tasks/07-04-gates/issue-scope-ledger.json",
-                ],
+                "load_task_runtime_identity",
+                return_value={"base_branch": "main"},
             ),
+            mock.patch.object(gtt, "assert_workspace_boundary", return_value={"status": "ok"}),
+            self.assertRaises(gtt.WorkflowError) as raised,
         ):
-            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+            gtt.cmd_record_phase2_check(argparse.Namespace(
+                root=str(self.root),
+                task=self.task_ref,
+                input="unused.json",
+                dry_run=True,
+            ))
 
-        self.assertEqual(errors, [])
+        self.assertIn(
+            "git-diff-check:src/committed.py:1: trailing whitespace.",
+            raised.exception.payload["errors"],
+        )
+        self.assertEqual(
+            raised.exception.payload["base_ref"],
+            gtt.diff_base_ref(self.root, "main"),
+        )
 
-    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
-    def test_validate_phase2_allows_post_commit_paths_recorded_as_dirty(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            with mock.patch.object(
-                gtt,
-                "git_status_paths",
-                return_value=["trellis/workflows/guru-team/workflow.md"],
-            ):
-                gtt.cmd_record_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        diff_result = subprocess.CompletedProcess(
-            ["git", "diff", "--name-only", "abc123..HEAD"],
-            0,
-            stdout="trellis/workflows/guru-team/workflow.md\n",
-            stderr="",
+    def test_phase2_recorder_rejects_committed_invalid_json_against_base(self) -> None:
+        subprocess.run(["git", "config", "user.name", "Phase 2 Test"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "phase2@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        task = gtt.read_json(self.task_dir / "task.json")
+        task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", task)
+        source = self.root / "config/committed.json"
+        source.parent.mkdir(parents=True)
+        source.write_text('{"value": 1}\n', encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 添加 JSON 基线"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "checkout", "-q", "-b", "feat/gate-task"],
+            cwd=self.root,
+            check=True,
+        )
+        source.write_text("{\n", encoding="utf-8")
+        subprocess.run(["git", "add", "config/committed.json"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 引入无效 JSON"],
+            cwd=self.root,
+            check=True,
         )
         with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "run", return_value=diff_result),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
-            mock.patch.object(gtt, "git_status_paths", return_value=[]),
-        ):
-            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
-
-        self.assertEqual(errors, [])
-
-    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
-    def test_validate_phase2_rejects_post_commit_paths_outside_recorded_dirty_paths(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
             mock.patch.object(
                 gtt,
-                "committed_paths_match_phase2_dirty_paths",
-                return_value=(False, ["trellis/workflows/guru-team/workflow.md"]),
+                "load_task_runtime_identity",
+                return_value={"base_branch": "main"},
             ),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
-            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+            mock.patch.object(gtt, "assert_workspace_boundary", return_value={"status": "ok"}),
+            self.assertRaises(gtt.WorkflowError) as raised,
         ):
-            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
+            gtt.cmd_record_phase2_check(argparse.Namespace(
+                root=str(self.root),
+                task=self.task_ref,
+                input="unused.json",
+                dry_run=True,
+            ))
 
-        self.assertTrue(any("dirty_paths" in error for error in errors))
-        self.assertFalse(any("working tree 不一致" in error for error in errors))
-
-    @unittest.skip("legacy v1 post-commit fixture replaced by v2 post-commit audit contract")
-    def test_validate_phase2_rejects_post_commit_non_metadata_dirty_state(self) -> None:
-        patches = self.patch_common()
-        for patcher in patches:
-            patcher.start()
-        try:
-            self.record_planning_approval()
-            gtt.cmd_record_phase2_check(phase2_args())
-        finally:
-            for patcher in reversed(patches):
-                patcher.stop()
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value="def456"),
-            mock.patch.object(gtt, "is_ancestor", return_value=True),
-            mock.patch.object(gtt, "committed_paths_match_phase2_dirty_paths", return_value=(True, [])),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(True, ["trellis/workflows/guru-team/workflow.md"])),
-            mock.patch.object(gtt, "git_status_paths", return_value=["trellis/workflows/guru-team/workflow.md"]),
-        ):
-            _path, _payload, errors = gtt.validate_phase2_check(self.root, self.task_dir, allow_committed_head=True)
-
-        self.assertTrue(any("非 Trellis metadata" in error for error in errors))
-
-    def test_committed_paths_match_phase2_dirty_paths_uses_direct_range(self) -> None:
-        diff_result = subprocess.CompletedProcess(
-            ["git", "diff", "--name-only", "abc123..HEAD"],
-            0,
-            stdout="trellis/workflows/guru-team/workflow.md\n.trellis/tasks/07-04-gates/review.md\n",
-            stderr="",
+        self.assertIn(
+            "candidate-invalid-json:config/committed.json:2:1",
+            raised.exception.payload["errors"],
         )
-        with mock.patch.object(gtt, "run", return_value=diff_result) as run:
-            matches, uncovered = gtt.committed_paths_match_phase2_dirty_paths(
-                self.root,
-                "abc123",
-                ["trellis/workflows/guru-team/workflow.md"],
-            )
-
-        self.assertTrue(matches)
-        self.assertEqual(uncovered, [])
-        run.assert_called_once_with(["git", "diff", "--name-only", "abc123..HEAD"], cwd=self.root, check=False)
-
-    def test_committed_paths_match_phase2_dirty_paths_reports_uncovered_paths(self) -> None:
-        diff_result = subprocess.CompletedProcess(
-            ["git", "diff", "--name-only", "abc123..HEAD"],
-            0,
-            stdout="trellis/workflows/guru-team/workflow.md\n",
-            stderr="",
+        self.assertIn(
+            "config/committed.json",
+            raised.exception.payload["candidate_paths"],
         )
-        with mock.patch.object(gtt, "run", return_value=diff_result):
-            matches, uncovered = gtt.committed_paths_match_phase2_dirty_paths(self.root, "abc123", [])
-
-        self.assertFalse(matches)
-        self.assertEqual(uncovered, ["trellis/workflows/guru-team/workflow.md"])
-
-    def test_committed_paths_match_phase2_dirty_paths_allows_recorded_directory(self) -> None:
-        diff_result = subprocess.CompletedProcess(
-            ["git", "diff", "--name-only", "abc123..HEAD"],
-            0,
-            stdout="docs/newdir/file.md\n",
-            stderr="",
+        self.assertEqual(
+            raised.exception.payload["base_ref"],
+            gtt.diff_base_ref(self.root, "main"),
         )
-        with mock.patch.object(gtt, "run", return_value=diff_result):
-            matches, uncovered = gtt.committed_paths_match_phase2_dirty_paths(self.root, "abc123", ["docs/"])
 
-        self.assertTrue(matches)
-        self.assertEqual(uncovered, [])
+    def test_legacy_owner_artifacts_require_ai_first_reentry(self) -> None:
+        planning_path = gtt.planning_approval_path(
+            self.root, self.task_dir, for_write=True
+        )
+        planning_path.parent.mkdir(parents=True, exist_ok=True)
+        gtt.write_json(planning_path, {"schema_version": "2.0"})
+        _path, _payload, planning_errors = gtt.validate_planning_approval(
+            self.root, self.task_dir
+        )
+        self.assertEqual(
+            planning_errors,
+            ["planning_approval_legacy_requires_ai_first_reentry"],
+        )
+
+        phase2_path = gtt.phase2_check_path(
+            self.root, self.task_dir, for_write=True
+        )
+        gtt.write_json(phase2_path, {"schema_version": "2.1"})
+        _path, _payload, phase2_errors = gtt.validate_phase2_check(
+            self.root, self.task_dir
+        )
+        self.assertEqual(
+            phase2_errors,
+            ["phase2_check_legacy_requires_ai_first_reentry"],
+        )
+
+    def test_dirty_tracked_legacy_owner_artifact_is_preserved(self) -> None:
+        legacy = self.task_dir / gtt.PLANNING_APPROVAL_ARTIFACT
+        gtt.write_json(legacy, {
+            "skill_id": gtt.AI_FIRST_OWNER_SKILL_BY_ARTIFACT[
+                gtt.PLANNING_APPROVAL_ARTIFACT
+            ],
+            "state": "committed-legacy",
+        })
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            [
+                "git", "-c", "user.name=Test", "-c",
+                "user.email=test@example.com", "commit", "-qm", "fixture",
+            ],
+            cwd=self.root,
+            check=True,
+        )
+        checkpoint = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            self.task_dir,
+            gtt.PLANNING_APPROVAL_ARTIFACT,
+        )
+        gtt.write_json(checkpoint, {"status": "replacement"})
+        gtt.write_json(legacy, {
+            "skill_id": gtt.AI_FIRST_OWNER_SKILL_BY_ARTIFACT[
+                gtt.PLANNING_APPROVAL_ARTIFACT
+            ],
+            "state": "user-modified",
+        })
+        before = legacy.read_bytes()
+
+        result = gtt.ai_first_converge_legacy_owner_residue(
+            self.root,
+            self.task_dir,
+            gtt.PLANNING_APPROVAL_ARTIFACT,
+        )
+
+        self.assertEqual(result["status"], "tracked_dirty_preserved")
+        self.assertEqual(legacy.read_bytes(), before)
+        self.assertIn(self.task_ref + "/planning-approval.json", gtt.git_status_paths(self.root))
 
 
 class PlanningApprovalDogfoodSyncTest(unittest.TestCase):
@@ -8684,7 +5883,7 @@ class PublishBoundaryTest(unittest.TestCase):
         (self.root / ".trellis/scripts/add_session.py").write_text("# test journal script\n", encoding="utf-8")
         (self.root / ".git").mkdir()
         (self.task_dir / "task.json").write_text(
-            '{"title":"Publish boundary","base_branch":"main"}\n',
+            '{"id":"publish-boundary","name":"publish-boundary","title":"Publish boundary","status":"in_progress","branch":"topic","base_branch":"main"}\n',
             encoding="utf-8",
         )
         gtt.write_json(self.task_dir / "finish-summary-index.json", {
@@ -8877,32 +6076,6 @@ class PublishBoundaryTest(unittest.TestCase):
 
         self.assertEqual([], errors)
 
-    def test_rewrite_active_task_artifact_path_to_archived_task(self) -> None:
-        active_path = self.task_dir / "pr-readiness.json"
-        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
-
-        rewritten = gtt.rewrite_active_task_artifact_path(
-            self.root,
-            self.task_dir,
-            archived_task_dir,
-            str(active_path),
-        )
-
-        self.assertEqual(rewritten, str(archived_task_dir / "pr-readiness.json"))
-
-    def test_rewrite_active_task_artifact_path_keeps_external_path(self) -> None:
-        external_path = self.root / "pr-readiness.json"
-        archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
-
-        rewritten = gtt.rewrite_active_task_artifact_path(
-            self.root,
-            self.task_dir,
-            archived_task_dir,
-            str(external_path),
-        )
-
-        self.assertEqual(rewritten, str(external_path))
-
     def test_finish_work_direct_call_requires_explicit_finish_work_entrypoint(self) -> None:
         with (
             mock.patch.object(gtt, "repo_root") as repo_root,
@@ -8932,7 +6105,7 @@ class PublishBoundaryTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value={
                 "base_branch": "main",
                 "workspace_mode": "worktree",
                 "workspace_path": str(self.root),
@@ -8942,7 +6115,7 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "assert_workspace_boundary"),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "finalizer_unreviewed_dirty_paths", return_value=[]),
             mock.patch.object(gtt, "run") as run,
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
@@ -8968,18 +6141,16 @@ class PublishBoundaryTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value={
                 "base_branch": "main",
                 "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
             }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
-            mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
+            mock.patch.object(gtt, "finalizer_unreviewed_dirty_paths", return_value=[]),
             mock.patch.object(gtt, "current_branch", return_value="codex/27-finish-work-dry-run-readiness"),
             mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
             mock.patch.object(gtt, "run") as run,
-            mock.patch.object(gtt, "commit_if_metadata_dirty") as commit_metadata,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
             payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path)))
@@ -8987,12 +6158,11 @@ class PublishBoundaryTest(unittest.TestCase):
         run_commands = [call.args[0] for call in run.call_args_list]
         self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
         self.assertFalse(any(command[:3] == ["python3", "./.trellis/scripts/add_session.py", "--title"] for command in run_commands))
-        commit_metadata.assert_not_called()
         self.assertEqual(payload["status"], "dry-run")
         self.assertFalse(payload["dry_run_side_effects"])
         plan = payload["closeout_plan"]
         self.assertEqual(payload["closeout_plan_digest"], plan["plan_digest"])
-        self.assertEqual(plan["task"]["id"], self.task_dir.name)
+        self.assertEqual(plan["task"]["id"], "publish-boundary")
         self.assertEqual(plan["git"]["repo"], "owner/repo")
         self.assertEqual(plan["git"]["base_branch"], "main")
         self.assertEqual(plan["git"]["head_branch"], "codex/27-finish-work-dry-run-readiness")
@@ -9014,17 +6184,15 @@ class PublishBoundaryTest(unittest.TestCase):
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
-            mock.patch.object(gtt, "load_task_start_context", return_value={
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value={
                 "base_branch": "main",
                 "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
             }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "validate_review_gate", return_value=(self.task_dir / "review-gate.json", gate, [])) as validate_gate,
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
-            mock.patch.object(gtt, "recent_work_commits", return_value=["abc123"]),
+            mock.patch.object(gtt, "finalizer_unreviewed_dirty_paths", return_value=[]),
             mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
             mock.patch.object(gtt, "run") as run,
-            mock.patch.object(gtt, "commit_if_metadata_dirty", return_value=None),
             mock.patch.object(gtt, "resolve_existing_task_dir", return_value=archived_task_dir),
             mock.patch.object(gtt, "validate_finish_summary"),
         ):
@@ -9126,7 +6294,7 @@ class ReviewGateReportTest(unittest.TestCase):
             ),
             mock.patch.object(
                 gtt,
-                "load_task_start_context",
+                "load_task_runtime_identity",
                 return_value={
                     "base_branch": "main",
                     "workspace_mode": "worktree",
@@ -9137,16 +6305,6 @@ class ReviewGateReportTest(unittest.TestCase):
             ),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "review_branch_entry_precondition_errors", return_value=[]),
-            mock.patch.object(
-                gtt,
-                "validate_planning_approval",
-                return_value=(self.task_dir / "planning-approval.json", {}, []),
-            ),
-            mock.patch.object(
-                gtt,
-                "validate_phase2_check",
-                return_value=(self.task_dir / "phase2-check.json", {}, []),
-            ),
             mock.patch.object(gtt, "current_branch", return_value="codex/20-review-gate"),
             mock.patch.object(gtt, "current_head", return_value=head),
             mock.patch.object(gtt, "diff_base_ref", return_value="origin/main"),
@@ -9156,6 +6314,7 @@ class ReviewGateReportTest(unittest.TestCase):
                 return_value=["trellis/workflows/guru-team/workflow.md"],
             ),
             mock.patch.object(gtt, "is_ancestor", return_value=True),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
             mock.patch.object(
                 gtt,
                 "review_branch_public_input_schema",
@@ -9232,7 +6391,12 @@ class ReviewGateReportTest(unittest.TestCase):
             for patcher in reversed(patchers):
                 patcher.stop()
 
-    def resolved_finding(self, introduced_head: str, resolved_head: str) -> dict[str, object]:
+    def resolved_finding(
+        self,
+        introduced_head: str,
+        fix_head: str,
+        closure_head: str,
+    ) -> dict[str, object]:
         return {
             "candidate_ref": "candidate-001",
             "disposition": "qualified_finding",
@@ -9246,12 +6410,30 @@ class ReviewGateReportTest(unittest.TestCase):
             "finding_ref": "F-001",
             "severity": "P2",
             "introduced_head": introduced_head,
-            "resolved_at_head": resolved_head,
+            "fix_head": fix_head,
+            "closure_head": closure_head,
             "status": "resolved",
-            "closure_evidence": [f"commit:{resolved_head}", "test:branch-review-regression"],
+            "closure_evidence": [
+                f"commit:{closure_head}",
+                "test:branch-review-regression",
+            ],
         }
 
-    def test_review_branch_records_only_compact_v21_gate(self) -> None:
+    def open_finding(self, introduced_head: str) -> dict[str, object]:
+        finding = self.resolved_finding(
+            introduced_head,
+            "b" * 40,
+            "c" * 40,
+        )
+        finding.update({
+            "status": "open",
+            "fix_head": None,
+            "closure_head": None,
+            "closure_evidence": [],
+        })
+        return finding
+
+    def test_review_branch_records_only_compact_v22_private_gate(self) -> None:
         head = "a" * 40
         payload = self.record(
             head=head,
@@ -9260,16 +6442,25 @@ class ReviewGateReportTest(unittest.TestCase):
             candidates=[],
         )
 
-        self.assertEqual(payload["schema_version"], "2.1")
+        self.assertEqual(payload["schema_version"], "2.2")
         self.assertEqual(payload["typed_exit"], "passed")
+        gate_path = Path(str(payload["artifact_path"]))
         self.assertEqual(
-            set(gtt.read_json(self.task_dir / "review-gate.json")),
+            set(gtt.read_json(gate_path)),
             {
                 "schema_version", "skill_id", "generated_at", "task_dir",
-                "mode", "review_intent", "typed_exit", "head", "base_ref",
+                "mode", "review_intent", "typed_exit", "reviewed_content_head",
+                "base_ref",
                 "semantic_review", "verification_evidence", "facts_sha256",
             },
         )
+        self.assertTrue(
+            gate_path.as_posix().startswith(
+                (self.root / ".trellis/.runtime/guru-team/owner-checkpoints").as_posix()
+            )
+        )
+        self.assertTrue(payload["tracked_status_unchanged"])
+        self.assertFalse((self.task_dir / "review-gate.json").exists())
         self.assertFalse((self.task_dir / "review.md").exists())
         self.assertFalse((self.task_dir / "agent-assignment.json").exists())
         self.assertFalse((self.task_dir / "reviews").exists())
@@ -9291,7 +6482,7 @@ class ReviewGateReportTest(unittest.TestCase):
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value=gtt.DEFAULTS),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "load_task_start_context", return_value={}),
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value={}),
             mock.patch.object(gtt, "assert_workspace_boundary"),
             mock.patch.object(
                 gtt,
@@ -9326,17 +6517,17 @@ class ReviewGateReportTest(unittest.TestCase):
             },
         )
 
-    def test_review_branch_v21_accepts_119_closure_then_distinct_fresh_final_sequence(self) -> None:
+    def test_review_branch_v22_accepts_closure_then_distinct_fresh_final_sequence(self) -> None:
         introduced_head = "a" * 40
-        resolved_head = "b" * 40
+        fix_head = "b" * 40
+        closure_head = "c" * 40
+        reviewed_content_head = "d" * 40
 
-        open_finding = self.resolved_finding(introduced_head, introduced_head)
-        open_finding.update({"status": "open", "resolved_at_head": None, "closure_evidence": []})
         initial = self.record(
             head=introduced_head,
             review_intent="initial_review",
             typed_exit="implementation_required",
-            candidates=[open_finding],
+            candidates=[self.open_finding(introduced_head)],
             reviewer="finding-owner",
         )
         self.assertEqual(initial["typed_exit"], "implementation_required")
@@ -9344,26 +6535,38 @@ class ReviewGateReportTest(unittest.TestCase):
         ephemeral_closure = {
             "reviewer": "finding-owner",
             "introduced_head": introduced_head,
-            "resolved_at_head": resolved_head,
-            "evidence": [f"commit:{resolved_head}", "test:branch-review-regression"],
+            "fix_head": fix_head,
+            "closure_head": closure_head,
+            "evidence": [f"commit:{closure_head}", "test:branch-review-regression"],
         }
         fresh_final_reviewer = "fresh-final-agent"
         self.assertNotEqual(ephemeral_closure["reviewer"], fresh_final_reviewer)
 
         payload = self.record(
-            head=resolved_head,
+            head=reviewed_content_head,
             review_intent="fresh_final_review",
             typed_exit="passed",
-            candidates=[self.resolved_finding(introduced_head, resolved_head)],
+            candidates=[
+                self.resolved_finding(
+                    introduced_head,
+                    fix_head,
+                    closure_head,
+                )
+            ],
             reviewer=fresh_final_reviewer,
         )
 
-        recorded = gtt.read_json(self.task_dir / "review-gate.json")
+        recorded = gtt.read_json(Path(str(payload["artifact_path"])))
         self.assertEqual(payload["typed_exit"], "passed")
         finding = recorded["semantic_review"]["qualified_findings"][0]
         self.assertEqual(finding["introduced_head"], introduced_head)
-        self.assertEqual(finding["resolved_at_head"], resolved_head)
-        self.assertNotEqual(finding["introduced_head"], finding["resolved_at_head"])
+        self.assertEqual(finding["fix_head"], fix_head)
+        self.assertEqual(finding["closure_head"], closure_head)
+        self.assertEqual(recorded["reviewed_content_head"], reviewed_content_head)
+        self.assertEqual(
+            len({introduced_head, fix_head, closure_head, reviewed_content_head}),
+            4,
+        )
         self.assertEqual(
             set(recorded["verification_evidence"]),
             {"reviewer", "review_source", "evidence"},
@@ -9375,13 +6578,20 @@ class ReviewGateReportTest(unittest.TestCase):
 
     def test_review_branch_rejects_legacy_finding_fix_public_intent(self) -> None:
         introduced_head = "a" * 40
-        resolved_head = "b" * 40
+        fix_head = "b" * 40
+        closure_head = "c" * 40
         with self.assertRaises(gtt.WorkflowError) as raised:
             self.record(
-                head=resolved_head,
+                head=closure_head,
                 review_intent="finding_fix_review",
                 typed_exit="passed",
-                candidates=[self.resolved_finding(introduced_head, resolved_head)],
+                candidates=[
+                    self.resolved_finding(
+                        introduced_head,
+                        fix_head,
+                        closure_head,
+                    )
+                ],
             )
 
         self.assertIn("public input is invalid", str(raised.exception))
@@ -9414,13 +6624,11 @@ class ReviewGateReportTest(unittest.TestCase):
 
     def test_review_branch_records_open_finding_without_raw_round(self) -> None:
         head = "c" * 40
-        finding = self.resolved_finding(head, head)
-        finding.update({"status": "open", "resolved_at_head": None, "closure_evidence": []})
         payload = self.record(
             head=head,
             review_intent="initial_review",
             typed_exit="implementation_required",
-            candidates=[finding],
+            candidates=[self.open_finding(head)],
         )
 
         self.assertEqual(payload["typed_exit"], "implementation_required")
@@ -9442,7 +6650,7 @@ class ReviewGateReportTest(unittest.TestCase):
 
         self.assertIn("independent Agent", str(raised.exception))
 
-    def test_review_branch_requires_phase2_check(self) -> None:
+    def test_review_branch_consumes_committed_dto_without_rereading_phase2_checkpoint(self) -> None:
         head = "e" * 40
         public_input, semantic_input = self.write_inputs(
             head=head,
@@ -9454,27 +6662,26 @@ class ReviewGateReportTest(unittest.TestCase):
         for patcher in patchers:
             patcher.start()
         try:
-            with (
-                mock.patch.object(
-                    gtt,
-                    "validate_phase2_check",
-                    return_value=(self.task_dir / "phase2-check.json", {}, ["phase2 missing"]),
-                ),
-                self.assertRaises(gtt.WorkflowError) as raised,
-            ):
-                gtt.cmd_review_branch(
+            with mock.patch.object(
+                gtt,
+                "validate_phase2_check",
+                side_effect=AssertionError("Branch Review must not reread Phase 2 private state."),
+            ) as phase2_check:
+                payload = gtt.cmd_review_branch(
                     review_args(
                         skill_input=str(public_input),
                         semantic_review_file=str(semantic_input),
                     )
                 )
+                phase2_check.assert_not_called()
         finally:
             for patcher in reversed(patchers):
                 patcher.stop()
 
-        self.assertIn("Phase 2 check report", str(raised.exception))
+        self.assertEqual(payload["typed_exit"], "passed")
+        self.assertEqual(payload["reviewed_content_head"], head)
 
-    def test_review_branch_cli_exposes_only_structured_v21_recorder(self) -> None:
+    def test_review_branch_cli_exposes_only_structured_v22_recorder(self) -> None:
         review = next(
             action
             for action in gtt.build_parser()._actions
@@ -9499,7 +6706,7 @@ class ReviewGateReportTest(unittest.TestCase):
         }:
             self.assertNotIn(removed, options)
 
-    def test_schema_v20_gate_remains_read_only_checker_input(self) -> None:
+    def test_schema_v20_gate_requires_owner_reentry_without_mutation(self) -> None:
         head = "f" * 40
         gate = {
             "schema_version": "2.0",
@@ -9542,7 +6749,6 @@ class ReviewGateReportTest(unittest.TestCase):
         before = path.read_bytes()
         with (
             mock.patch.object(gtt, "current_head", return_value=head),
-            mock.patch.object(gtt, "review_branch_owner_evidence_precondition_errors", return_value=[]),
             mock.patch.object(
                 gtt,
                 "review_branch_gate_schema",
@@ -9557,8 +6763,347 @@ class ReviewGateReportTest(unittest.TestCase):
                 False,
             )
 
-        self.assertEqual(errors, [])
+        self.assertTrue(
+            any("requires current guru-review-branch owner re-entry" in item for item in errors),
+            errors,
+        )
         self.assertEqual(path.read_bytes(), before)
+
+
+class ReviewBranchAncestryTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.task_dir = self.root / ".trellis/tasks/08-01-review-ancestry"
+        self.task_dir.mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "review@example.com"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Review Test"],
+            cwd=self.root,
+            check=True,
+        )
+        self.introduced_head = self.commit(
+            "src/feature.txt",
+            "behavior needing review\n",
+            "introduce reviewed behavior",
+        )
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def commit(self, relative: str, content: str, message: str) -> str:
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        subprocess.run(["git", "add", "--", relative], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", message], cwd=self.root, check=True)
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=self.root,
+            text=True,
+            stdout=subprocess.PIPE,
+            check=True,
+        ).stdout.strip()
+
+    @staticmethod
+    def resolved_finding(
+        introduced_head: str,
+        fix_head: str,
+        closure_head: str,
+    ) -> dict[str, object]:
+        return {
+            "finding_ref": "F-ANCESTRY",
+            "introduced_head": introduced_head,
+            "fix_head": fix_head,
+            "closure_head": closure_head,
+            "status": "resolved",
+            "closure_evidence": ["test:real-git-ancestry"],
+        }
+
+    def write_legacy_v21_gate(self, reviewed_head: str) -> None:
+        gate: dict[str, object] = {
+            "schema_version": "2.1",
+            "skill_id": gtt.BRANCH_REVIEW_SKILL_ID,
+            "generated_at": "2026-08-02T00:00:00Z",
+            "task_dir": ".trellis/tasks/08-01-review-ancestry",
+            "mode": "workflow",
+            "review_intent": "fresh_final_review",
+            "typed_exit": "passed",
+            "head": reviewed_head,
+            "base_ref": "origin/main",
+            "semantic_review": {
+                "qualified_findings": [],
+                "scope_proposals": [],
+                "observations": [],
+                "followup_candidates": [],
+                "rejected_candidates": [],
+                "ai_review_gate": {
+                    "status": "passed",
+                    "summary": "旧 task 的独立终审已通过。",
+                },
+            },
+            "verification_evidence": {
+                "reviewer": "legacy-independent-agent",
+                "review_source": gtt.INDEPENDENT_REVIEW_SOURCE,
+                "evidence": ["旧 task 已完成独立 current-content review。"],
+            },
+        }
+        gate["facts_sha256"] = gtt.context_digest({
+            key: value
+            for key, value in gate.items()
+            if key not in {"generated_at", "facts_sha256"}
+        })
+        gtt.write_json(self.task_dir / "review-gate.json", gate)
+
+    def test_resolved_historical_heads_pass_real_ancestry_chain(self) -> None:
+        fix_head = self.commit(
+            "src/feature.txt",
+            "fixed behavior\n",
+            "fix reviewed behavior",
+        )
+        closure_head = self.commit(
+            "tests/feature.txt",
+            "closure evidence\n",
+            "close reviewed finding",
+        )
+        reviewed_content_head = self.commit(
+            "tests/fresh-final.txt",
+            "fresh final coverage\n",
+            "complete fresh final coverage",
+        )
+        semantic = {
+            "qualified_findings": [
+                self.resolved_finding(
+                    self.introduced_head,
+                    fix_head,
+                    closure_head,
+                )
+            ]
+        }
+
+        self.assertEqual(
+            gtt.review_branch_finding_lifecycle_errors(
+                self.root,
+                self.task_dir,
+                semantic,
+                reviewed_content_head=reviewed_content_head,
+            ),
+            [],
+        )
+        self.assertEqual(
+            len(
+                {
+                    self.introduced_head,
+                    fix_head,
+                    closure_head,
+                    reviewed_content_head,
+                }
+            ),
+            4,
+        )
+
+    def test_fix_that_is_not_reviewed_history_fails_closed(self) -> None:
+        subprocess.run(
+            ["git", "switch", "-q", "-c", "alternate-fix", self.introduced_head],
+            cwd=self.root,
+            check=True,
+        )
+        unrelated_fix = self.commit(
+            "src/feature.txt",
+            "alternate fix\n",
+            "create alternate fix",
+        )
+        subprocess.run(["git", "switch", "-q", "main"], cwd=self.root, check=True)
+        reviewed_content_head = self.commit(
+            "tests/closure.txt",
+            "main history closure\n",
+            "record main history closure",
+        )
+        semantic = {
+            "qualified_findings": [
+                self.resolved_finding(
+                    self.introduced_head,
+                    unrelated_fix,
+                    reviewed_content_head,
+                )
+            ]
+        }
+
+        errors = gtt.review_branch_finding_lifecycle_errors(
+            self.root,
+            self.task_dir,
+            semantic,
+            reviewed_content_head=reviewed_content_head,
+        )
+
+        self.assertTrue(any("introduced -> fix -> closure" in item for item in errors))
+
+    def test_explicit_task_metadata_descendant_preserves_content_identity(self) -> None:
+        current = self.commit(
+            ".trellis/tasks/08-01-review-ancestry/pr-body.md",
+            "publication metadata\n",
+            "record publication metadata",
+        )
+
+        self.assertEqual(
+            gtt.review_branch_content_continuity_errors(
+                self.root,
+                self.task_dir,
+                self.introduced_head,
+                current,
+            ),
+            [],
+        )
+
+    def test_legacy_v21_gate_uses_narrow_descendant_allowlist(self) -> None:
+        publication_head = self.commit(
+            ".trellis/tasks/08-01-review-ancestry/pr-body.md",
+            "publication metadata\n",
+            "record publication metadata",
+        )
+        self.write_legacy_v21_gate(self.introduced_head)
+
+        with (
+            mock.patch.object(gtt, "review_branch_gate_schema", return_value={}),
+            mock.patch.object(
+                gtt,
+                "skill_json_schema_validation_errors",
+                return_value=[],
+            ),
+        ):
+            _path, _gate, publication_errors = gtt.validate_review_gate(
+                self.root,
+                self.task_dir,
+                gtt.DEFAULTS,
+                allow_metadata_after_gate=True,
+            )
+        self.assertEqual(publication_errors, [])
+        self.assertEqual(gtt.current_head(self.root), publication_head)
+
+        self.commit(
+            ".trellis/tasks/08-01-review-ancestry/design.md",
+            "changed durable design\n",
+            "change durable design",
+        )
+        with (
+            mock.patch.object(gtt, "review_branch_gate_schema", return_value={}),
+            mock.patch.object(
+                gtt,
+                "skill_json_schema_validation_errors",
+                return_value=[],
+            ),
+        ):
+            _path, _gate, durable_errors = gtt.validate_review_gate(
+                self.root,
+                self.task_dir,
+                gtt.DEFAULTS,
+                allow_metadata_after_gate=True,
+            )
+        self.assertTrue(
+            any(
+                "content changed after reviewed_content_head" in item
+                and "design.md" in item
+                for item in durable_errors
+            ),
+            durable_errors,
+        )
+
+    def test_finalizer_dirty_gate_allows_only_exact_current_task_metadata(self) -> None:
+        task_ref = ".trellis/tasks/08-01-review-ancestry"
+        status_paths = [
+            f"{task_ref}/pr-body.md",
+            f"{task_ref}/design.md",
+            f"{task_ref}/nested/pr-body.md",
+            ".trellis/tasks/other/pr-body.md",
+            ".trellis/.runtime/guru-team/debug.json",
+        ]
+
+        with mock.patch.object(
+            gtt,
+            "git_status_paths",
+            return_value=status_paths,
+        ) as git_status:
+            dirty_paths = gtt.finalizer_unreviewed_dirty_paths(
+                self.root,
+                self.task_dir,
+            )
+
+        git_status.assert_called_once_with(self.root, fail_closed=True)
+
+        self.assertEqual(
+            dirty_paths,
+            [
+                f"{task_ref}/design.md",
+                f"{task_ref}/nested/pr-body.md",
+                ".trellis/tasks/other/pr-body.md",
+                ".trellis/.runtime/guru-team/debug.json",
+            ],
+        )
+
+    def test_finalizer_dirty_gate_propagates_git_status_failure(self) -> None:
+        with (
+            mock.patch.object(
+                gtt,
+                "git_status_paths",
+                side_effect=gtt.WorkflowError(
+                    "Could not inspect Git status paths.",
+                    exit_code=2,
+                ),
+            ) as git_status,
+            self.assertRaises(gtt.WorkflowError) as failed,
+        ):
+            gtt.finalizer_unreviewed_dirty_paths(self.root, self.task_dir)
+
+        self.assertEqual(failed.exception.exit_code, 2)
+        git_status.assert_called_once_with(self.root, fail_closed=True)
+
+    def test_durable_or_code_descendant_makes_gate_stale(self) -> None:
+        durable_head = self.commit(
+            ".trellis/tasks/08-01-review-ancestry/design.md",
+            "changed durable design\n",
+            "change durable design",
+        )
+        durable_errors = gtt.review_branch_content_continuity_errors(
+            self.root,
+            self.task_dir,
+            self.introduced_head,
+            durable_head,
+        )
+        self.assertTrue(any("design.md" in item for item in durable_errors))
+
+        code_head = self.commit(
+            "src/feature.txt",
+            "changed after review\n",
+            "change reviewed code",
+        )
+        code_errors = gtt.review_branch_content_continuity_errors(
+            self.root,
+            self.task_dir,
+            self.introduced_head,
+            code_head,
+        )
+        self.assertTrue(any("src/feature.txt" in item for item in code_errors))
+
+    def test_unknown_runtime_descendant_does_not_bypass_content_gate(self) -> None:
+        current = self.commit(
+            ".trellis/.runtime/guru-team/debug.json",
+            "{}\n",
+            "record unknown runtime state",
+        )
+
+        errors = gtt.review_branch_content_continuity_errors(
+            self.root,
+            self.task_dir,
+            self.introduced_head,
+            current,
+        )
+
+        self.assertTrue(any("debug.json" in item for item in errors))
 
 
 
@@ -9584,7 +7129,7 @@ class AgentRecoveryCheckpointTest(unittest.TestCase):
             mock.patch.object(gtt, "load_config", return_value=gtt.DEFAULTS),
             mock.patch.object(
                 gtt,
-                "load_task_start_context",
+                "load_task_runtime_identity",
                 return_value={
                     "workspace_mode": "worktree",
                     "workspace_path": str(self.root),
@@ -10047,64 +7592,187 @@ class ExtensionVersionPayloadTest(unittest.TestCase):
 
 
 class TaskRuntimeBoundaryContractTest(unittest.TestCase):
-    def build_context(self, freshness: dict[str, object]) -> dict[str, object]:
-        with tempfile.TemporaryDirectory() as tmp:
-            workspace = Path(tmp)
-            task_dir = workspace / ".trellis/tasks/07-10-096-task-runtime-boundary"
-            task_dir.mkdir(parents=True)
-            return gtt.build_task_start_context(workspace, {
-                "workspace_path": str(workspace), "source_repo": "owner/repo",
-                "source_issue": {"number": 96, "url": "https://github.com/owner/repo/issues/96", "title": "Task", "created_by_workflow": False},
-                "task_slug": "096-task-runtime-boundary", "task_title": "Task",
-                "branch_name": "chore/096-task-runtime-boundary", "base_branch": "main",
-                "workspace_slug": "096-task-runtime-boundary", "issue_scope_ledger": {},
-                "duplicate_search": {"performed": False}, "naming_quality": {},
-                "base_freshness": freshness,
-            }, task_dir, "tester")
-
-    def test_task_start_context_copies_fresh_base_shas(self) -> None:
-        sha = "a" * 40
-        context = self.build_context({"status": "fresh", "base_ref": "main", "local_head_after": sha, "remote_head": sha})
-        self.assertEqual(context["base_head_sha"], sha)
-        self.assertEqual(context["remote_head_sha"], sha)
-
-    def test_task_start_context_rejects_fresh_mismatched_shas(self) -> None:
-        with self.assertRaises(gtt.WorkflowError):
-            self.build_context({"status": "fresh", "base_ref": "main", "local_head_after": "a" * 40, "remote_head": "b" * 40})
-
-    def test_task_start_context_remote_only_allows_empty_local_sha(self) -> None:
-        remote = "b" * 40
-        context = self.build_context({"status": "remote_only", "base_ref": "main", "local_head_after": None, "remote_head": remote})
-        self.assertEqual(context["base_head_sha"], "")
-        self.assertEqual(context["remote_head_sha"], remote)
-
-    def test_task_start_context_fetch_failed_allows_empty_shas(self) -> None:
-        context = self.build_context({"status": "fetch_failed", "base_ref": "main", "local_head_after": None, "remote_head": None})
-        self.assertEqual(context["base_head_sha"], "")
-        self.assertEqual(context["remote_head_sha"], "")
-
-    def test_task_start_context_rejects_forbidden_absolute_path(self) -> None:
-        payload = {
+    def legacy_context(self) -> dict[str, object]:
+        return {
             "schema_version": "1.0", "source_issue": {}, "source_repo": {},
             "task_slug": "096-task-runtime-boundary", "task_title": "task",
             "task_artifact_dir": ".trellis/tasks/07-10-096-task-runtime-boundary",
             "branch_name": "chore/096-task-runtime-boundary", "base_branch": "main",
             "base_ref": "main", "base_head_sha": "", "remote_head_sha": "",
-            "workspace_slug": "096-task-runtime-boundary", "task_workspace_id": "096-task-runtime-boundary",
+            "workspace_slug": "096-task-runtime-boundary",
+            "task_workspace_id": "096-task-runtime-boundary",
             "assignee": "tester", "actor": {"login": "tester"},
-            "issue_scope_ledger_seed": {}, "intake_summary": {"duplicate_decision": {}, "naming_quality": {}, "confirmation": {"workspace_path": "/tmp/worktree"}},
+            "issue_scope_ledger_seed": {},
+            "intake_summary": {
+                "duplicate_decision": {}, "naming_quality": {}, "confirmation": {},
+            },
         }
-        with self.assertRaises(gtt.WorkflowError):
-            gtt.validate_task_start_context(payload)
 
-    def test_parallel_tasks_use_distinct_runtime_and_tracked_paths(self) -> None:
+    def test_legacy_task_start_context_parser_is_read_only(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp) / ".trellis/tasks/07-10-096-task-runtime-boundary"
+            task_dir.mkdir(parents=True)
+            path = task_dir / "task-start-context.json"
+            gtt.write_json(path, self.legacy_context())
+            before = path.read_bytes()
+
+            context = gtt.load_legacy_task_start_context(task_dir, gtt.DEFAULTS)
+
+            self.assertIsNotNone(context)
+            self.assertEqual(
+                context["_identity_source"],
+                "legacy_task_start_context_projection",
+            )
+            self.assertEqual(context["task_slug"], "096-task-runtime-boundary")
+            self.assertEqual(context["workspace_slug"], "096-task-runtime-boundary")
+            self.assertNotIn("intake_summary", context)
+            self.assertNotIn("assignee", context)
+            self.assertNotIn("actor", context)
+            self.assertEqual(path.read_bytes(), before)
+
+    def test_active_runtime_has_no_task_start_context_writer(self) -> None:
+        source = Path(gtt.__file__).read_text(encoding="utf-8")
+        self.assertNotIn("def build_task_start_context", source)
+        self.assertNotIn("write_json(task_start_context_path", source)
+
+    def test_active_runtime_rebuilds_missing_ignored_mappings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "096-task-runtime-boundary"
+            task_dir = root / ".trellis/tasks/07-10-096-task-runtime-boundary"
+            task_dir.mkdir(parents=True)
+            gtt.write_json(
+                task_dir / "task.json",
+                {
+                    "id": "096-task-runtime-boundary",
+                    "name": "096-task-runtime-boundary",
+                    "title": "task",
+                    "branch": "chore/096-task-runtime-boundary",
+                    "base_branch": "main",
+                    "status": "in_progress",
+                    "assignee": "tester",
+                    "creator": "tester",
+                },
+            )
+            config = {**gtt.DEFAULTS, "github_repo": "owner/repo"}
+            records = [
+                {
+                    "worktree": str(root),
+                    "branch": "refs/heads/chore/096-task-runtime-boundary",
+                }
+            ]
+            with (
+                mock.patch.object(gtt, "repo_root", return_value=root),
+                mock.patch.object(gtt, "worktree_records", return_value=records),
+                mock.patch.object(gtt, "diff_base_ref", return_value="main"),
+                mock.patch.object(
+                    gtt,
+                    "run",
+                    return_value=mock.Mock(returncode=0, stdout=f"{'a' * 40}\n"),
+                ),
+            ):
+                context = gtt.load_task_runtime_identity(task_dir, config)
+
+            self.assertEqual(context["_identity_source"], "task_json_runtime_mapping")
+            self.assertEqual(context["workspace_slug"], root.name)
+            self.assertTrue(
+                gtt.runtime_task_path(root, config, "096-task-runtime-boundary").is_file()
+            )
+            self.assertTrue(
+                gtt.runtime_workspace_path(root, config, root.name).is_file()
+            )
+
+    def test_legacy_projection_ignores_authorization_and_non_identity_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp) / ".trellis/tasks/07-10-096-task-runtime-boundary"
+            task_dir.mkdir(parents=True)
+            payload = self.legacy_context()
+            payload["confirmed_action_id"] = "retired-confirmation"
+            payload["intake_summary"]["confirmation"] = {
+                "workspace_path": "/tmp/worktree",
+                "authorization_digest": "a" * 64,
+            }
+            gtt.write_json(task_dir / "task-start-context.json", payload)
+
+            context = gtt.load_legacy_task_start_context(task_dir, gtt.DEFAULTS)
+
+            encoded = json.dumps(context, ensure_ascii=False)
+            self.assertNotIn("confirmed_action_id", encoded)
+            self.assertNotIn("confirmation", encoded)
+            self.assertNotIn("authorization", encoded)
+            self.assertNotIn("/tmp/worktree", encoded)
+
+    def test_legacy_projection_rejects_nonportable_task_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task_dir = Path(tmp) / ".trellis/tasks/07-10-096-task-runtime-boundary"
+            task_dir.mkdir(parents=True)
+            payload = self.legacy_context()
+            payload["task_artifact_dir"] = "/tmp/task"
+            gtt.write_json(task_dir / "task-start-context.json", payload)
+
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.load_legacy_task_start_context(task_dir, gtt.DEFAULTS)
+
+    def test_legacy_workspace_input_projection_ignores_retired_payload_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = root / "package"
+            package.mkdir()
+            gtt.write_json(
+                root / "legacy-input.json",
+                {
+                    "profile": "workspace_task_initial",
+                    "mode": "workflow",
+                    "confirmed_action_id": None,
+                    "target_locator": 123,
+                    "authorization_digest": "retired",
+                },
+            )
+            gtt.write_json(
+                package / "public-input.schema.json",
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "required": ["profile", "mode"],
+                    "additionalProperties": False,
+                    "properties": {
+                        "profile": {"const": "execute_reviewed_plan"},
+                        "mode": {"enum": ["workflow", "standalone"]},
+                    },
+                },
+            )
+            interface = {
+                "public_contracts": {
+                    "input": {
+                        "profiles": [
+                            {
+                                "id": "execute_reviewed_plan",
+                                "schema": {"path": "public-input.schema.json"},
+                            }
+                        ]
+                    }
+                }
+            }
+
+            projected = gtt.stage0_structured_input(
+                gtt.TASK_WORKSPACE_SKILL_ID,
+                root,
+                package,
+                interface,
+                "legacy-input.json",
+            )
+
+            self.assertEqual(
+                projected,
+                {"profile": "execute_reviewed_plan", "mode": "workflow"},
+            )
+
+    def test_parallel_tasks_use_distinct_runtime_paths(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             first_task = root / ".trellis/tasks/07-10-096-first"
             second_task = root / ".trellis/tasks/07-10-097-second"
             first_task.mkdir(parents=True)
             second_task.mkdir(parents=True)
-            self.assertNotEqual(gtt.task_start_context_path(first_task, gtt.DEFAULTS), gtt.task_start_context_path(second_task, gtt.DEFAULTS))
             self.assertNotEqual(gtt.runtime_task_path(root, gtt.DEFAULTS, "096-first"), gtt.runtime_task_path(root, gtt.DEFAULTS, "097-second"))
             self.assertNotEqual(gtt.runtime_workspace_path(root, gtt.DEFAULTS, "096-first"), gtt.runtime_workspace_path(root, gtt.DEFAULTS, "097-second"))
 
@@ -10194,7 +7862,8 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
         for expected in [
             "Qualify every candidate before assigning severity",
             "Retain the original `introduced_head`",
-            "bind the current `resolved_at_head`",
+            "bind a later `closure_head`",
+            "ancestry, not equality, proves continuity",
             "Closure has no public exit, recorder call, or artifact",
             "distinct fresh reviewer",
             "never accepted by public input schema 1.1",
@@ -10570,9 +8239,14 @@ class MarketplaceVerificationContractTest(unittest.TestCase):
             self.assertTrue(payload["assets"]["session_auto_commit_false"])
             self.assertTrue(payload["assets"]["legacy_handoff_absent"])
             self.assertTrue(payload["assets"]["legacy_intake_schema_absent"])
+            self.assertEqual(payload["schema_version"], "1.1")
+            self.assertNotIn(
+                "task_start_context_schema_sha256",
+                payload["assets"],
+            )
             self.assertTrue((task_dir / "marketplace-verification.json").exists())
 
-    def test_marketplace_failed_payload_contract_allows_partial_evidence(self) -> None:
+    def test_marketplace_legacy_v10_payload_remains_read_only_compatible(self) -> None:
         payload = {
             "schema_version": "1.0", "generated_at": "2026-07-10T00:00:00Z", "status": "failed",
             "repo": "owner/repo", "remote": "origin", "branch": "codex/task",
@@ -12291,6 +9965,10 @@ class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
                 "base_branch": "main",
             },
         )
+        (self.root / ".gitignore").write_text(
+            ".trellis/.runtime/\n",
+            encoding="utf-8",
+        )
         subprocess.run(["git", "add", "."], cwd=self.root, check=True)
         subprocess.run(
             ["git", "commit", "-qm", "baseline"],
@@ -12408,9 +10086,10 @@ class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
             f"{task_ref}/{gtt.PR_READINESS_ARTIFACT}",
             repository["status_paths"],
         )
+        self.assertNotIn(runtime_input, repository["status_paths"])
         self.assertEqual(
             set(repository["status_paths"]),
-            {*approved_task_metadata, runtime_input, debug_note},
+            {*approved_task_metadata, debug_note},
         )
         self.assertEqual(
             gtt.task_publication_unexpected_status_paths(
@@ -12584,7 +10263,16 @@ class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
                 "task_publication_schema",
                 return_value={"type": "object"},
             ):
-                ready_payload = {"typed_exit": "ready"}
+                ready_payload = json.loads(
+                    (
+                        Path(gtt.__file__).resolve().parents[5]
+                        / "trellis/skills/guru-team/packages"
+                        / gtt.TASK_PUBLICATION_SKILL_ID
+                        / "examples/pr-readiness.json"
+                    ).read_text(encoding="utf-8")
+                )
+                ready_payload["task_ref"] = task_ref
+                ready_payload["reviewed_content_head"] = self.head
                 checker_errors = gtt.task_publication_check_errors(
                     self.root,
                     self.task_dir,
@@ -12602,6 +10290,7 @@ class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
                         self.task_dir,
                         ready_payload,
                         expected_closeout_plan_digest=None,
+                        require_plan=False,
                     )
                 self.assertIn(
                     "review_range_and_working_tree:"
@@ -12820,7 +10509,16 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         head_branch: str = "fix/105-closeout",
     ) -> dict[str, object]:
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
-            stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
+            if command[:2] == ["git", "rev-list"]:
+                stdout = f"{self.head}\n"
+            elif command[:2] == ["git", "ls-files"]:
+                stdout = "\n".join(
+                    path.relative_to(self.root).as_posix()
+                    for path in sorted(self.task_dir.rglob("*"))
+                    if path.is_file()
+                )
+            else:
+                stdout = ""
             return mock.Mock(returncode=0, stdout=stdout, stderr="")
 
         with mock.patch.object(gtt, "run", side_effect=fake_run):
@@ -12842,6 +10540,69 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 include_finalization_gate=include_finalization_gate,
             )
 
+    def build_legacy_plan(
+        self,
+        *,
+        repo: str = "owner/repo",
+        include_finalization_gate: bool = False,
+        head_branch: str = "fix/105-closeout",
+    ) -> dict[str, object]:
+        gtt.write_json(
+            self.task_dir / gtt.PR_READINESS_ARTIFACT,
+            {"fixture": "legacy-owner-residue"},
+        )
+        return self.build_plan(
+            repo=repo,
+            include_finalization_gate=include_finalization_gate,
+            head_branch=head_branch,
+        )
+
+    def test_current_plan_omits_synthetic_task_context_but_legacy_keeps_compatibility(self) -> None:
+        current = self.build_plan()
+
+        self.assertEqual(current["schema_version"], gtt.CLOSEOUT_PLAN_SCHEMA_VERSION)
+        self.assertNotIn("task_context", current["inputs"])
+        self.assertEqual(gtt.closeout_plan_errors(current), [])
+
+        legacy = self.build_legacy_plan()
+        self.assertNotEqual(legacy["schema_version"], gtt.CLOSEOUT_PLAN_SCHEMA_VERSION)
+        self.assertIn("task_context", legacy["inputs"])
+        self.assertEqual(gtt.closeout_plan_errors(legacy), [])
+
+    def current_publication_owner(
+        self,
+        *,
+        task_ref: str,
+        reviewed_content_head: str,
+    ) -> dict[str, object]:
+        source = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-review-task-publication"
+            / "examples/pr-readiness.json"
+        )
+        owner = json.loads(source.read_text(encoding="utf-8"))
+        owner["task_ref"] = task_ref
+        owner["reviewed_content_head"] = reviewed_content_head
+        return owner
+
+    def write_current_publication_owner(
+        self,
+        root: Path,
+        task_dir: Path,
+        *,
+        task_ref: str,
+        reviewed_content_head: str,
+    ) -> Path:
+        path = gtt.task_publication_path(root, task_dir, for_write=True)
+        gtt.write_json(
+            path,
+            self.current_publication_owner(
+                task_ref=task_ref,
+                reviewed_content_head=reviewed_content_head,
+            ),
+        )
+        return path
+
     def checked_marketplace_owner_result(
         self,
         plan: dict[str, object],
@@ -12854,10 +10615,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         verification_ref = "extension-verification:cross-month"
         source_paths = [
             "trellis/workflows/guru-team/workflow.md",
-            (
-                "trellis/workflows/guru-team/schemas/"
-                "task-start-context.schema.json"
-            ),
             "trellis/workflows/guru-team/schemas/finish-summary.schema.json",
             "trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
         ]
@@ -12935,7 +10692,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             mock.patch.object(gtt, "current_head", return_value=self.head),
             mock.patch.object(gtt, "current_archive_month", return_value="2026-07"),
         ):
-            plan = self.build_plan()
+            plan = self.build_legacy_plan()
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
         publish_inputs = {
             "repo": plan["git"]["repo"],
@@ -12994,7 +10751,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "validate_review_gate",
                 return_value=(self.task_dir / "review-gate.json", self.gate, []),
             ),
-            mock.patch.object(gtt, "has_non_metadata_dirty_paths", return_value=(False, [])),
+            mock.patch.object(gtt, "finalizer_unreviewed_dirty_paths", return_value=[]),
             mock.patch.object(
                 gtt,
                 "load_finish_summary_index",
@@ -13058,19 +10815,18 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         *,
         arbitrary_metadata: bool = False,
     ) -> dict[str, object] | None:
+        self.task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", self.task)
         task_ref = gtt.repo_relative(self.root, self.task_dir)
         gate_relative = f"{task_ref}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
         unexpected_relative = f"{task_ref}/arbitrary-finalization-note.md"
         plan = self.build_plan(include_finalization_gate=True)
         plan_ref = f"closeout-plan:{plan['plan_digest']}"
-        publication_ref = "publication:prepared-recorder-reentry"
         public_input = {
             "profile": "publication_ready",
             "mode": "workflow",
             "task_ref": task_ref,
-            "reviewed_head": self.head,
-            "publication_ref": publication_ref,
-            "finalization_intent": "Finalize the exact reviewed task plan.",
+            "reviewed_content_head": self.head,
         }
         stored_repository = {
             "head": self.head,
@@ -13079,43 +10835,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "diff_paths": ["src/runtime.py"],
             "status_paths": [f"{task_ref}/pr-body.md"],
         }
-        stored_entries = {
-            entry_id: gtt.task_publication_binding(entry_id)
-            for entry_id in (
-                "runtime_dependency",
-                "task_workspace",
-                "task_identity",
-                "branch_review_handoff",
-                "planning_approval",
-                "phase2_check",
-                "issue_scope_ledger",
-                "docs_ssot_reconciliation",
-                "branch_review_evidence",
-                "publication_content",
-                "review_range_and_working_tree",
-                "invocation_freshness",
-            )
-        }
-        publication = {
-            "skill_id": gtt.TASK_PUBLICATION_SKILL_ID,
-            "task_dir": task_ref,
-            "profile": "publication_review",
-            "mode": "workflow",
-            "review_intent": "initial_review",
-            "supersedes_publication_ref": None,
-            "review_identity": {
-                "reviewed_head": self.head,
-                "review_ref": "review-gate:prepared-recorder-reentry",
-            },
-            "deterministic_bindings": {
-                "repository": stored_repository,
-                "entry_preconditions": stored_entries,
-                "publication_ref": publication_ref,
-            },
-            "typed_exit": "ready",
-            "facts_sha256": "a" * 64,
-        }
-        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, publication)
+        self.write_current_publication_owner(
+            self.root,
+            self.task_dir,
+            task_ref=task_ref,
+            reviewed_content_head=self.head,
+        )
         prepared = {
             "plan": plan,
             "ledger": self.ledger,
@@ -13127,12 +10852,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "review": {
                 "status": "passed",
                 "summary": "The exact prepared plan is current.",
-                "evidence_refs": [plan_ref, publication_ref],
-            },
-            "confirmation": {
-                "status": "confirmed",
-                "confirmed_plan_digest": plan["plan_digest"],
-                "summary": "The exact prepared plan digest was confirmed.",
             },
             "route": {
                 "typed_exit": "verification_required",
@@ -13146,7 +10865,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "verification_target": "extension-installation",
                 },
             },
-            "supersedes_gate_ref": None,
         }
         package_root = (
             Path(__file__).resolve().parents[5]
@@ -13171,28 +10889,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 paths.append(unexpected_relative)
             return {**stored_repository, "status_paths": sorted(paths)}
 
-        def current_entries(
-            *_args: object,
-            **_kwargs: object,
-        ) -> tuple[dict[str, object], list[str], dict[str, object], dict[str, object]]:
-            repository = current_repository()
-            entries = copy.deepcopy(stored_entries)
-            entries["review_range_and_working_tree"] = (
-                gtt.task_publication_binding(repository)
-            )
-            return entries, [], {}, repository
-
-        def publication_errors(
-            *_args: object,
-            **_kwargs: object,
-        ) -> list[str]:
-            if not (self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT).is_file():
-                return []
-            return [
-                "task publication repository binding is stale",
-                "task publication entry precondition bindings are stale",
-            ]
-
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "finalization_task_dir", return_value=self.task_dir),
@@ -13215,13 +10911,18 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 return_value=None,
             ),
             mock.patch.object(gtt, "load_config", return_value={}),
-            mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value=self.context),
             mock.patch.object(gtt, "assert_workspace_boundary"),
             mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
             mock.patch.object(
                 gtt,
-                "task_publication_check_errors",
-                side_effect=publication_errors,
+                "current_head",
+                return_value=self.head,
+            ),
+            mock.patch.object(
+                gtt,
+                "is_ancestor",
+                return_value=True,
             ),
             mock.patch.object(
                 gtt,
@@ -13230,8 +10931,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ),
             mock.patch.object(
                 gtt,
-                "task_publication_entry_precondition_bindings",
-                side_effect=current_entries,
+                "task_publication_task_metadata_allowlist",
+                return_value={f"{task_ref}/pr-body.md"},
             ),
         ):
             recorded = gtt.cmd_record_finalization_gate(runtime_args)
@@ -13271,6 +10972,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         for skill_id in (
             gtt.EXTENSION_VERIFICATION_SKILL_ID,
             gtt.FINALIZE_TASK_SKILL_ID,
+            gtt.TASK_PUBLICATION_SKILL_ID,
         ):
             shutil.copytree(
                 source_root / "trellis/skills/guru-team/packages" / skill_id,
@@ -13406,65 +11108,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         publication_ledger_content = (
             self.task_dir / "issue-scope-ledger.json"
         ).read_bytes()
-        stored_repository = gtt.task_publication_repository_binding(
+        self.write_current_publication_owner(
             self.root,
             self.task_dir,
+            task_ref=task_ref,
+            reviewed_content_head=self.head,
         )
-        stored_entries = {
-            entry_id: gtt.task_publication_binding(entry_id)
-            for entry_id in (
-                "runtime_dependency",
-                "task_workspace",
-                "task_identity",
-                "branch_review_handoff",
-                "planning_approval",
-                "phase2_check",
-                "issue_scope_ledger",
-                "docs_ssot_reconciliation",
-                "branch_review_evidence",
-                "publication_content",
-                "review_range_and_working_tree",
-                "invocation_freshness",
-            )
-        }
-        stored_entries["issue_scope_ledger"] = (
-            gtt.task_publication_issue_scope_ledger_binding(
-                publication_ledger,
-                publication_ledger_content,
-            )
-        )
-        stored_entries["review_range_and_working_tree"] = (
-            gtt.task_publication_binding(stored_repository)
-        )
-        stored_artifacts = {
-            "issue-scope-ledger.json": gtt.task_publication_artifact_binding(
-                publication_ledger_content
-            ),
-            "pr-body.md": gtt.task_publication_artifact_binding(
-                (self.task_dir / "pr-body.md").read_bytes()
-            ),
-        }
-        publication_ref = "publication:real-recorder-reentry"
-        publication = {
-            "task_dir": task_ref,
-            "profile": "publication_review",
-            "mode": "workflow",
-            "review_intent": "initial_review",
-            "supersedes_publication_ref": None,
-            "review_identity": {
-                "reviewed_head": self.head,
-                "review_ref": "review-gate:real-recorder-reentry",
-            },
-            "deterministic_bindings": {
-                "artifacts": stored_artifacts,
-                "repository": stored_repository,
-                "entry_preconditions": stored_entries,
-                "publication_ref": publication_ref,
-            },
-            "typed_exit": "ready",
-            "facts_sha256": "a" * 64,
-        }
-        gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, publication)
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
         if marketplace_required:
             self.ledger = gtt.record_marketplace_machine_evidence(
@@ -13506,7 +11155,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 selected,
             )
             for name in (
-                "task-start-context.schema.json",
                 "finish-summary.schema.json",
                 "closeout-plan.schema.json",
             ):
@@ -13590,7 +11238,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "plan_ref": verification_output["plan_ref"],
                 "reviewed_head": verification_output["reviewed_head"],
                 "verification_ref": verification_output["verification_ref"],
-                "reentry_intent": "Continue the current owner-verified plan.",
             }
         else:
             finalization_input = {
@@ -13614,50 +11261,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "not owner-bound\n",
                 encoding="utf-8",
             )
-
-        def current_entries(
-            *_args: object,
-            **_kwargs: object,
-        ) -> tuple[dict[str, object], list[str], dict[str, object], dict[str, object]]:
-            repository = gtt.task_publication_repository_binding(
-                self.root,
-                self.task_dir,
-            )
-            entries = copy.deepcopy(stored_entries)
-            ledger_content = (
-                self.task_dir / "issue-scope-ledger.json"
-            ).read_bytes()
-            entries["issue_scope_ledger"] = (
-                gtt.task_publication_issue_scope_ledger_binding(
-                    gtt.read_json(
-                        self.task_dir / "issue-scope-ledger.json"
-                    ),
-                    ledger_content,
-                )
-            )
-            entries["review_range_and_working_tree"] = (
-                gtt.task_publication_binding(repository)
-            )
-            return entries, [], {}, repository
-
-        def current_artifacts(
-            *_args: object,
-            **_kwargs: object,
-        ) -> dict[str, dict[str, object]]:
-            artifacts = copy.deepcopy(stored_artifacts)
-            artifacts["issue-scope-ledger.json"] = (
-                gtt.task_publication_artifact_binding(
-                    (
-                        self.task_dir / "issue-scope-ledger.json"
-                    ).read_bytes()
-                )
-            )
-            if artifact_drift:
-                artifacts["pr-body.md"] = {
-                    "sha256": "f" * 64,
-                    "size": artifacts["pr-body.md"]["size"],
-                }
-            return artifacts
+        if artifact_drift:
+            with (self.task_dir / gtt.PR_BODY_ARTIFACT).open(
+                "a",
+                encoding="utf-8",
+            ) as handle:
+                handle.write("\n补充：未审查的发布正文漂移。\n")
 
         prepared = {
             "plan": plan,
@@ -13671,13 +11280,29 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             input=finalization_input_locator,
             repo="example/guru-extension",
             remote="origin",
-            finish_summary_index_file=None,
+            finish_summary_index_file=str(
+                self.task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT
+            ),
             include_finalization_gate=True,
             review_input=None,
             dry_run=False,
             owner_result=None,
             gate=None,
+            body_file=str(self.task_dir / gtt.PR_BODY_ARTIFACT),
+            base_branch=plan["git"]["base_branch"],
+            title=plan["publish"]["title"],
         )
+        dirty_before_finalizer = set(gtt.git_status_paths(self.root))
+        real_prepare_closeout = gtt.prepare_closeout
+
+        def preview_prepare(
+            *prepare_args: object,
+            **prepare_kwargs: object,
+        ) -> dict[str, object]:
+            if arbitrary_metadata or artifact_drift or ledger_drift:
+                return real_prepare_closeout(*prepare_args, **prepare_kwargs)
+            return prepared
+
         with (
             mock.patch.dict(
                 os.environ,
@@ -13685,28 +11310,21 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ),
             mock.patch.object(
                 gtt,
-                "task_publication_check_errors",
-                return_value=(
-                    ["task publication artifact bindings are stale"]
-                    if marketplace_required or artifact_drift
-                    else []
-                )
-                + [
-                    "task publication repository binding is stale",
-                    "task publication entry precondition bindings are stale",
-                ],
+                "official_after_archive_hook_state",
+                return_value={"commands": []},
+            ),
+            mock.patch.object(gtt, "validate_github_remote_repository"),
+            mock.patch.object(gtt, "validate_pr_body_quality", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "validate_reviewed_body_source_for_publish",
+                return_value=[],
             ),
             mock.patch.object(
                 gtt,
-                "task_publication_artifact_bindings",
-                side_effect=current_artifacts,
+                "prepare_closeout",
+                side_effect=preview_prepare,
             ),
-            mock.patch.object(
-                gtt,
-                "task_publication_entry_precondition_bindings",
-                side_effect=current_entries,
-            ),
-            mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
             mock.patch.object(
                 gtt,
                 "resolve_closeout_pre_draft_state",
@@ -13717,15 +11335,20 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 with self.assertRaises(gtt.WorkflowError):
                     gtt.cmd_preview_finalization(runtime_args)
                 return None
-            if artifact_drift or ledger_drift:
-                stale_preview = gtt.cmd_preview_finalization(runtime_args)
+            if artifact_drift:
+                with self.assertRaisesRegex(
+                    gtt.WorkflowError,
+                    "Extension verification evidence is not current for the "
+                    "immutable finalization plan",
+                ):
+                    gtt.cmd_preview_finalization(runtime_args)
+                return None
+            if ledger_drift:
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.cmd_preview_finalization(runtime_args)
                 self.assertEqual(
-                    stale_preview["transaction_state"],
-                    "publication_review_stale",
-                )
-                self.assertEqual(
-                    stale_preview["publication_stale_reason"],
-                    "publication_review_stale",
+                    raised.exception.payload.get("dirty_paths"),
+                    [f"{task_ref}/issue-scope-ledger.json"],
                 )
                 return None
 
@@ -13752,20 +11375,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 }
             )
             review_input = {
-                "schema_version": "1.0",
+                "schema_version": "2.0",
                 "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
                 "review": {
                     "status": "passed",
                     "summary": "Current verification evidence is plan-bound.",
-                    "evidence_refs": [plan_ref, publication_ref],
-                },
-                "confirmation": {
-                    "status": "confirmed",
-                    "confirmed_plan_digest": plan["plan_digest"],
-                    "summary": "The current immutable plan remains confirmed.",
                 },
                 "route": route,
-                "supersedes_gate_ref": None,
             }
             review_input_path = (
                 self.root / ".trellis/.runtime/guru-team/tests/finalization-review.json"
@@ -13780,12 +11396,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 recorded["typed_exit"],
                 "published" if execute_remaining else "resume_finalization",
             )
-            expected_dirty = set(plan["projection"]["evidence_paths"])
-            expected_dirty.update(
-                gtt.finalization_uncommitted_output_paths(self.root, plan)
+            self.assertEqual(
+                set(gtt.git_status_paths(self.root)),
+                dirty_before_finalizer,
             )
-            expected_dirty.add(verification_locator)
-            self.assertEqual(set(gtt.git_status_paths(self.root)), expected_dirty)
             checked_preview = gtt.cmd_preview_finalization(runtime_args)
             self.assertEqual(checked_preview["plan_ref"], plan_ref)
 
@@ -13821,13 +11435,16 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                             evidence,
                         )
                     )
-                    archived.mkdir(parents=True)
-                    gtt.write_json(
-                        archived / gtt.TASK_FINALIZATION_GATE_ARTIFACT,
-                        gtt.read_json(
-                            self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT
-                        ),
+                    self.assertTrue(
+                        gtt.task_finalization_path(
+                            self.root,
+                            self.task_dir,
+                        ).is_file()
                     )
+                    self.assertFalse(
+                        (self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT).exists()
+                    )
+                    archived.mkdir(parents=True)
                     return {
                         "archived_task_dir": str(archived),
                         "publish": {
@@ -13900,10 +11517,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 _task_dir: Path,
                 _task_context: dict[str, object],
                 *,
+                publication_ready: dict[str, object] | None = None,
                 verification_owner_result: (
                     tuple[dict[str, object], dict[str, object]] | None
                 ) = None,
             ) -> dict[str, object]:
+                self.assertIsNone(publication_ready)
                 self.assertIsNotNone(verification_owner_result)
                 assert verification_owner_result is not None
                 self.assertEqual(
@@ -14061,15 +11680,15 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "profile": "publication_ready",
             "mode": "workflow",
             "task_ref": self.task_dir.relative_to(self.root).as_posix(),
+            "reviewed_content_head": self.head,
         }
         runtime_dir = self.root / ".trellis/.runtime/guru-team/evals"
         runtime_dir.mkdir(parents=True)
         gtt.write_json(
             runtime_dir / "finalization-context.json",
             {
-                "schema_version": "1.0",
+                "schema_version": "2.0",
                 "task_ref": public_input["task_ref"],
-                "public_input_sha256": gtt.context_digest(public_input),
                 "plan_ref": f"closeout-plan:{'b' * 64}",
                 "plan_digest": "b" * 64,
                 "reviewed_head": self.head,
@@ -14077,10 +11696,9 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "repo_ref": "owner/repo",
                 "remote": "origin",
                 "head_branch": "main",
-                "publication_ref": "publication:eval-current",
                 "verification_ref": None,
                 "publication_status": "stale",
-                "publication_stale_reason": "publication_review_stale",
+                "publication_stale_reason": "publication_review_missing",
                 "marketplace_required": True,
                 "transaction_state": "prepared",
             },
@@ -14092,7 +11710,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(context["publication_status"], "stale")
         self.assertEqual(
             context["publication_stale_reason"],
-            "publication_review_stale",
+            "publication_review_missing",
         )
         with mock.patch.object(
             gtt,
@@ -14111,7 +11729,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "output": {
                         "exit_id": "publication_review_stale",
                         "task_ref": public_input["task_ref"],
-                        "stale_reason": "publication_review_stale",
+                        "stale_reason": "publication_review_missing",
                     },
                 },
             )
@@ -14126,6 +11744,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "profile": "publication_ready",
             "mode": "workflow",
             "task_ref": task_ref,
+            "reviewed_content_head": self.head,
         }
         marker_route = {
             "typed_exit": "published",
@@ -14222,6 +11841,45 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 early_public_route,
                 allow_pending_transition=True,
             )
+
+    def test_published_route_skips_verification_for_non_extension_plan(self) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_content_head": self.head,
+        }
+        context = {
+            "transaction_state": "prepared",
+            "published_transition_complete": False,
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "plan_ref": f"closeout-plan:{'b' * 64}",
+            "plan": {
+                "marketplace": {"required": False},
+                "git": {
+                    "repo": "owner/repo",
+                    "reviewed_work_head": self.head,
+                },
+                "task": {
+                    "active_locator": task_ref,
+                    "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+                },
+            },
+            "verification": None,
+        }
+        gtt.finalization_validate_route(
+            self.root,
+            public_input,
+            context,
+            {
+                "typed_exit": "published",
+                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            },
+            allow_pending_transition=True,
+        )
 
     def test_finalization_route_validates_empty_and_malformed_selected_exit_output(
         self,
@@ -14505,6 +12163,18 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         with self.assertRaises(gtt.WorkflowError):
             invoke(early_context)
 
+        finalization_checkpoint = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            archive_dir,
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+        )
+        publication_checkpoint = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            archive_dir,
+            gtt.PR_READINESS_ARTIFACT,
+        )
+        gtt.write_json(finalization_checkpoint, {"owner": "finalizer"})
+        gtt.write_json(publication_checkpoint, {"owner": "publication"})
         terminal_context = {
             **early_context,
             "task_dir": archive_dir,
@@ -14522,6 +12192,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             },
         )
         executor.assert_not_called()
+        self.assertFalse(finalization_checkpoint.exists())
+        self.assertTrue(publication_checkpoint.exists())
 
     def test_verification_required_binds_repo_to_immutable_plan(self) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
@@ -14530,6 +12202,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "profile": "publication_ready",
             "mode": "workflow",
             "task_ref": task_ref,
+            "reviewed_content_head": self.head,
         }
         context = {
             "transaction_state": "prepared",
@@ -15481,7 +13154,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
         self.assertEqual(
             first["projection"]["untracked_archive_outputs"],
-            [gtt.FINISH_SUMMARY_ARTIFACT],
+            [
+                gtt.CLOSEOUT_PLAN_ARTIFACT,
+                gtt.FINISH_SUMMARY_ARTIFACT,
+                gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            ],
         )
         self.assertNotIn(
             f"{first['task']['active_locator']}/{gtt.FINISH_SUMMARY_ARTIFACT}",
@@ -15619,7 +13296,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 mock.patch.object(gtt, "repo_root", return_value=self.root),
                 mock.patch.object(gtt, "load_config", return_value={}),
                 mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-                mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+                mock.patch.object(gtt, "load_task_runtime_identity", return_value=self.context),
                 mock.patch.object(gtt, "assert_workspace_boundary"),
                 mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
                 mock.patch.object(gtt, "prepare_closeout", side_effect=error),
@@ -15650,7 +13327,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ledger = gtt.record_marketplace_machine_evidence(self.ledger, evidence)
             gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
             gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
-            gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
             summary = gtt.closeout_summary_for_pr(
                 plan,
                 {"number": 105, "url": "https://github.com/owner/repo/pull/105"},
@@ -15702,10 +13378,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         ledger = gtt.record_marketplace_machine_evidence(self.ledger, evidence)
         gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
-        gtt.write_json(
-            self.task_dir / gtt.PR_READINESS_ARTIFACT,
-            {"publish_inputs": {"closeout_plan_digest": plan["plan_digest"]}},
-        )
         prepared = {
             "plan": plan,
             "task_context": self.context,
@@ -15723,6 +13395,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             mock.patch.object(gtt, "load_issue_scope_ledger", return_value=ledger),
             mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
             mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(
+                gtt,
+                "review_branch_content_continuity_errors",
+                return_value=[],
+            ),
             mock.patch.object(gtt, "validate_closeout_pull_request_identity"),
             mock.patch.object(gtt, "closeout_summary_for_pr", return_value=summary),
             mock.patch.object(gtt, "validate_closeout_final_summary"),
@@ -15902,7 +13579,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
             mock.patch.object(
                 gtt,
-                "load_task_start_context",
+                "load_task_runtime_identity",
                 return_value=self.context,
             ),
             mock.patch.object(gtt, "assert_workspace_boundary"),
@@ -15982,9 +13659,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "profile": "publication_ready",
             "mode": "workflow",
             "task_ref": task_ref,
-            "reviewed_head": self.head,
-            "publication_ref": "publication:current",
-            "finalization_intent": "Finalize the exact reviewed task plan.",
+            "reviewed_content_head": self.head,
         }
         prepared = {
             "plan": plan,
@@ -16000,14 +13675,14 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "finalization_publication_owner_result",
                 return_value={
                     "owner_status": "current",
-                    "publication_ref": public_input["publication_ref"],
+                    "reviewed_content_head": self.head,
                 },
             ),
             mock.patch.object(gtt, "load_config", return_value={}),
             mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
             mock.patch.object(
                 gtt,
-                "load_task_start_context",
+                "load_task_runtime_identity",
                 return_value=self.context,
             ),
             mock.patch.object(gtt, "assert_workspace_boundary"),
@@ -16048,8 +13723,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": task_ref,
             "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-            "recovery_intent": "Resume the exact immutable transaction.",
-            "recovery_context": "The prior verification owner is stale.",
         }
         prepared = {
             "plan": plan,
@@ -16076,7 +13749,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
             mock.patch.object(
                 gtt,
-                "load_task_start_context",
+                "load_task_runtime_identity",
                 return_value=self.context,
             ),
             mock.patch.object(gtt, "assert_workspace_boundary"),
@@ -16151,8 +13824,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": plan["task"]["active_locator"],
             "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-            "recovery_intent": "Resume the same immutable transaction.",
-            "recovery_context": "The archive commit is already pushed.",
         }
         transaction = {"commit": self.head, "parent": "d" * 40}
         package_root = (
@@ -16183,41 +13854,22 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 public_input,
             )
 
-        self.assertEqual(publication["publication_ref"], publication_ref)
-        self.assertEqual(verification[1]["verification_ref"], verification_ref)
-        self.assertEqual(verification[1]["typed_exit"], "verified")
-        committed_blob.assert_called_once_with(
-            self.root,
-            self.head,
-            (
-                f"{plan['task']['archive_locator']}/"
-                f"{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
-            ),
-        )
+        self.assertEqual(publication, {"owner_status": "current"})
+        self.assertIsNone(verification)
+        committed_blob.assert_not_called()
 
-        with (
-            mock.patch.object(
-                gtt,
-                "closeout_commit_blob_bytes",
-                return_value=gtt.closeout_json_artifact_bytes(gate),
-            ),
-            mock.patch.object(
-                gtt,
-                "finalization_package_root",
-                return_value=package_root,
-            ),
-            self.assertRaises(gtt.WorkflowError) as mismatched,
+        with mock.patch.object(
+            gtt,
+            "closeout_commit_blob_bytes",
+            side_effect=AssertionError("compact recovery reopened active-only evidence"),
         ):
-            gtt.finalization_archived_owner_results(
+            recovered = gtt.finalization_archived_owner_results(
                 self.root,
                 plan,
                 transaction,
                 {**public_input, "verification_ref": "extension-verification:other"},
             )
-        self.assertIn(
-            "archived finalization verification seed changed",
-            mismatched.exception.payload["errors"],
-        )
+        self.assertEqual(recovered, ({"owner_status": "current"}, None))
 
     def test_compact_archive_preview_bypasses_active_publication_owner(self) -> None:
         plan = self.build_plan(include_finalization_gate=True)
@@ -16258,8 +13910,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": plan["task"]["active_locator"],
             "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-            "recovery_intent": "Resume the same immutable transaction.",
-            "recovery_context": "The compact archive commit is already pushed.",
         }
         with (
             mock.patch.object(gtt, "finalization_task_dir", return_value=archived),
@@ -16406,8 +14056,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": plan["task"]["active_locator"],
             "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-            "recovery_intent": "Resume the same immutable transaction.",
-            "recovery_context": "The compact archive is already pushed.",
         }
         facts = {
             "task_ref": public_input["task_ref"],
@@ -16451,19 +14099,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "review": {
                 "status": "passed",
                 "summary": "The same committed transaction is ready to resume.",
-                "evidence_refs": [publication_ref, verification_ref],
-            },
-            "confirmation": {
-                "status": "not_required",
-                "confirmed_plan_digest": plan["plan_digest"],
-                "summary": "The immutable plan was already confirmed.",
             },
             "route": {
                 "typed_exit": "published",
                 "consumer": gtt.FINALIZATION_CONSUMERS["published"],
                 "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
             },
-            "supersedes_gate_ref": "task-finalization-gate:committed",
         }
         transaction = {
             "commit": archive_commit,
@@ -16600,15 +14241,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         archive_transaction.assert_not_called()
         archive_commit_side_effect.assert_not_called()
         evidence_commit.assert_not_called()
-        push_branch.assert_not_called()
+        push_branch.assert_called_once_with(self.root, plan)
 
     def test_active_preview_without_readiness_remains_publication_stale(self) -> None:
         public_input = {
             "profile": "standalone_finalization",
             "mode": "standalone",
             "task_ref": self.task_dir.relative_to(self.root).as_posix(),
-            "finalization_intent": "Finalize the reviewed task.",
-            "finalization_context": "Current active task.",
         }
         stale = {
             "owner_status": "stale",
@@ -16666,29 +14305,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT,
             persisted_plan,
         )
-        publish_inputs = {
-            "repo": persisted_plan["git"]["repo"],
-            "base_branch": persisted_plan["git"]["base_branch"],
-            "head_branch": persisted_plan["git"]["head_branch"],
-            "reviewed_head_sha": persisted_plan["git"]["reviewed_work_head"],
-            "title": persisted_plan["publish"]["title"],
-            "body_source": gtt.PR_BODY_ARTIFACT,
-            "body_sha256": persisted_plan["publish"]["body_sha256"],
-            "draft": True,
-            "reviewed_source": f"body-artifact:{gtt.PR_READINESS_ARTIFACT}",
-            "closeout_plan_digest": persisted_plan["plan_digest"],
-        }
-        gtt.write_json(
-            self.task_dir / gtt.PR_READINESS_ARTIFACT,
-            {
-                "ready": True,
-                "body_file": gtt.PR_BODY_ARTIFACT,
-                "publish_inputs": publish_inputs,
-                "publish_inputs_sha256": gtt.canonical_json_sha256(
-                    publish_inputs
-                ),
-            },
-        )
         dirty_paths = sorted(persisted_plan["projection"]["evidence_paths"])
         args, patchers = self.finalizer_takeover_runtime(ledger, dirty_paths)
         public_input = {
@@ -16732,7 +14348,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             stack.enter_context(
                 mock.patch.object(
                     gtt,
-                    "load_task_start_context",
+                    "load_task_runtime_identity",
                     return_value=self.context,
                 )
             )
@@ -16788,6 +14404,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
 
     def test_schema_1_1_prunes_inapplicable_marketplace_artifact(self) -> None:
+        gtt.write_json(
+            self.task_dir / gtt.PR_READINESS_ARTIFACT,
+            {"fixture": "legacy-owner-residue"},
+        )
         stale = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
         gtt.write_json(stale, {"status": "stale"})
         gate = copy.deepcopy(self.gate)
@@ -16863,7 +14483,16 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     stdout="\n".join(reversed(changed_paths)) + "\n",
                     stderr="",
                 )
-            stdout = f"{self.head}\n" if command[:2] == ["git", "rev-list"] else ""
+            if command[:2] == ["git", "rev-list"]:
+                stdout = f"{self.head}\n"
+            elif command[:2] == ["git", "ls-files"]:
+                stdout = "\n".join(
+                    path.relative_to(self.root).as_posix()
+                    for path in sorted(self.task_dir.rglob("*"))
+                    if path.is_file()
+                )
+            else:
+                stdout = ""
             return mock.Mock(returncode=0, stdout=stdout, stderr="")
 
         with mock.patch.object(gtt, "run", side_effect=fake_run):
@@ -16912,7 +14541,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertTrue(raised.exception.payload["missing_paths"])
         mutation.assert_not_called()
 
-        evidence_paths = set(plan["projection"]["evidence_paths"])
+        legacy_plan = self.build_legacy_plan()
+        evidence_paths = set(legacy_plan["projection"]["evidence_paths"])
         with (
             mock.patch.object(gtt, "closeout_commit_parent", return_value=self.head),
             mock.patch.object(gtt, "closeout_commit_paths", return_value=evidence_paths - {next(iter(evidence_paths))}),
@@ -16920,13 +14550,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 gtt,
                 "closeout_commit_tracked_task_paths",
                 return_value={
-                    f"{plan['task']['active_locator']}/{path}"
-                    for path in plan["projection"]["tracked_move_paths"]
+                    f"{legacy_plan['task']['active_locator']}/{path}"
+                    for path in legacy_plan["projection"]["tracked_move_paths"]
                 },
             ),
             self.assertRaises(gtt.WorkflowError),
         ):
-            gtt.validate_closeout_evidence_commit(self.root, plan, "b" * 40)
+            gtt.validate_closeout_evidence_commit(self.root, legacy_plan, "b" * 40)
 
     def test_real_git_mixed_tracked_untracked_archive_transaction_and_recovery(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -16981,6 +14611,7 @@ shutil.move(str(active), str(archived))
                 ".trellis/tasks/archive/2026-07/task/finish-summary.json",
             }
             plan = {
+                "schema_version": gtt.CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION,
                 "task": {
                     "active_locator": ".trellis/tasks/task",
                     "archive_locator": ".trellis/tasks/archive/2026-07/task",
@@ -17155,7 +14786,7 @@ shutil.move(str(active), str(archived))
             for name in phase3
         ]
         with mock.patch.object(gtt, "git_status_paths", return_value=planned_dirty):
-            plan = self.build_plan()
+            plan = self.build_legacy_plan()
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
         gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
         gtt.write_json(self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT, {"status": "passed"})
@@ -17181,7 +14812,7 @@ shutil.move(str(active), str(archived))
         )
 
     def test_finalizer_evidence_commit_stages_exact_paths_without_private_gate(self) -> None:
-        plan = self.build_plan(include_finalization_gate=True)
+        plan = self.build_legacy_plan(include_finalization_gate=True)
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
         gtt.write_json(self.task_dir / gtt.PR_READINESS_ARTIFACT, {"ready": True})
         gtt.write_json(self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT, {"status": "passed"})
@@ -17287,7 +14918,7 @@ shutil.move(str(active), str(archived))
             stack.enter_context(
                 mock.patch.object(
                     gtt,
-                    "load_task_start_context",
+                    "load_task_runtime_identity",
                     return_value=self.context,
                 )
             )
@@ -17350,18 +14981,8 @@ shutil.move(str(active), str(archived))
             "review": {
                 "status": "passed",
                 "summary": "The exact augmented takeover plan is current.",
-                "evidence_refs": [
-                    f"closeout-plan:{augmented_plan['plan_digest']}",
-                    "publication:test-current",
-                ],
-            },
-            "confirmation": {
-                "status": "confirmed",
-                "confirmed_plan_digest": augmented_plan["plan_digest"],
-                "summary": "The augmented candidate digest was confirmed exactly.",
             },
             "route": route,
-            "supersedes_gate_ref": None,
         }
         with contextlib.ExitStack() as stack:
             recorder_args = enter_command_runtime(stack, dirty_paths)
@@ -17500,7 +15121,7 @@ shutil.move(str(active), str(archived))
             stack.enter_context(
                 mock.patch.object(
                     gtt,
-                    "load_task_start_context",
+                    "load_task_runtime_identity",
                     return_value=self.context,
                 )
             )
@@ -17645,7 +15266,7 @@ shutil.move(str(active), str(archived))
     def test_committed_finalizer_takeover_binds_prior_evidence_head_and_minimal_tail(
         self,
     ) -> None:
-        legacy_plan = self.build_plan()
+        legacy_plan = self.build_legacy_plan()
         evidence_head = "b" * 40
         current = gtt.build_closeout_finalizer_gate_takeover_plan(
             legacy_plan,
@@ -17830,6 +15451,7 @@ shutil.move(str(active), str(archived))
             )
         }
         payload = {
+            "schema_version": "1.1",
             "task_dir": task_relative,
             "profile": "publication_review",
             "mode": "workflow",
@@ -17935,6 +15557,7 @@ shutil.move(str(active), str(archived))
             )
         }
         payload = {
+            "schema_version": "1.1",
             "task_dir": task_relative,
             "profile": "publication_review",
             "mode": "workflow",
@@ -18035,6 +15658,7 @@ shutil.move(str(active), str(archived))
             "status_paths": [f"{task_relative}/pr-body.md"],
         }
         payload = {
+            "schema_version": "1.1",
             "review_identity": {
                 "reviewed_head": self.head,
                 "review_ref": "review-gate:checked",
@@ -18092,6 +15716,7 @@ shutil.move(str(active), str(archived))
         task_relative = self.task_dir.relative_to(self.root).as_posix()
         gate_relative = f"{task_relative}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
         payload = {
+            "schema_version": "1.1",
             "review_identity": {
                 "reviewed_head": self.head,
                 "review_ref": "review-gate:checked",
@@ -18147,6 +15772,7 @@ shutil.move(str(active), str(archived))
             "status_paths": [f"{task_relative}/pr-body.md"],
         }
         payload = {
+            "schema_version": "1.1",
             "review_identity": {
                 "reviewed_head": self.head,
                 "review_ref": "review-gate:checked",
@@ -19084,7 +16710,7 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={}),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value=self.context),
             mock.patch.object(gtt, "assert_workspace_boundary"),
             mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
             mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
@@ -19161,7 +16787,7 @@ shutil.move(str(active), str(archived))
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={}),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
-            mock.patch.object(gtt, "load_task_start_context", return_value=self.context),
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value=self.context),
             mock.patch.object(gtt, "assert_workspace_boundary"),
             mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
             mock.patch.object(gtt, "prepare_closeout", return_value=prepared),
@@ -19181,7 +16807,7 @@ shutil.move(str(active), str(archived))
                     order.append("evidence-commit"),
                     {"commit": self.head},
                 )[1],
-            ),
+            ) as evidence_commit,
             mock.patch.object(gtt, "ensure_closeout_draft_pr", side_effect=lambda *a: (order.append("draft"), pr)[1]),
             mock.patch.object(gtt, "build_final_archive_projection", side_effect=lambda *a, **k: (order.append("projection"), (self.task_dir / "finish-summary.json", {}))[1]),
             mock.patch.object(gtt, "execute_archive_metadata_transaction", side_effect=lambda *a, **k: (order.append("archive"), (archived, {"commit": self.head}))[1]) as archive,
@@ -19189,7 +16815,11 @@ shutil.move(str(active), str(archived))
         ):
             result = gtt.cmd_finish_work(args)
         self.assertEqual(result["stage"], "ready")
-        self.assertEqual(order, ["auth", "verifier", "evidence-commit", "draft", "projection", "archive", "ready"])
+        self.assertEqual(
+            order,
+            ["auth", "verifier", "draft", "projection", "archive", "ready"],
+        )
+        evidence_commit.assert_not_called()
         self.assertIs(
             archive.call_args.kwargs["marketplace_verification"],
             verification,
@@ -19590,7 +17220,6 @@ shutil.move(str(active), str(archived))
         after_archive_hook: bool = False,
         archive_locator_conflict: bool = False,
         children_case: str | None = None,
-        archive_path_symlink: str | None = None,
         archived_pr_replacement: bool = False,
         predecessor_draft_metadata: bool = False,
     ) -> dict[str, object]:
@@ -19754,120 +17383,16 @@ shutil.move(str(active), str(archived))
             subprocess.run(["git", "commit", "-qm", "reviewed"], cwd=root, check=True)
             reviewed_head = gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
             gate["head"] = reviewed_head
-            review_ref = (
-                "review-gate:"
-                + hashlib.sha256((task_dir / "review-gate.json").read_bytes()).hexdigest()
+            publication_gate = self.current_publication_owner(
+                task_ref=".trellis/tasks/07-11-closeout",
+                reviewed_content_head=reviewed_head,
             )
-            publication_artifacts = gtt.task_publication_artifact_bindings(task_dir)
-            publication_repository = gtt.task_publication_repository_binding(root, task_dir)
-            publication_entries = {
-                entry_id: gtt.task_publication_binding({
-                    "fixture": "production-closeout",
-                    "entry_precondition_id": entry_id,
-                })
-                for entry_id in (
-                    "runtime_dependency",
-                    "task_workspace",
-                    "task_identity",
-                    "branch_review_handoff",
-                    "planning_approval",
-                    "phase2_check",
-                    "issue_scope_ledger",
-                    "docs_ssot_reconciliation",
-                    "branch_review_evidence",
-                    "publication_content",
-                    "review_range_and_working_tree",
-                    "invocation_freshness",
-                )
-            }
-            invocation_identity = {
-                "task_ref": ".trellis/tasks/07-11-closeout",
-                "profile": "publication_review",
-                "mode": "workflow",
-                "review_intent": "initial_review",
-                "stale_reason": None,
-                "reentry_context": None,
-                "supersedes_publication_ref": None,
-                "reviewed_head": reviewed_head,
-                "review_ref": review_ref,
-            }
-            publication_ref = "publication:" + gtt.context_digest({
-                "task": ".trellis/tasks/07-11-closeout",
-                "invocation": invocation_identity,
-                "head": reviewed_head,
-                "review_ref": review_ref,
-                "artifacts": publication_artifacts,
-                "repository": publication_repository,
-                "entry_preconditions": publication_entries,
-            })
-            publication_gate = {
-                "schema_version": "1.0",
-                "skill_id": gtt.TASK_PUBLICATION_SKILL_ID,
-                "generated_at": "2026-07-11T00:00:00Z",
-                "task_dir": ".trellis/tasks/07-11-closeout",
-                "profile": "publication_review",
-                "mode": "workflow",
-                "review_intent": "initial_review",
-                "review_identity": {
-                    "reviewed_head": reviewed_head,
-                    "review_ref": review_ref,
-                },
-                "semantic_review": {
-                    "dimensions": [{
-                        "id": dimension,
-                        "status": "passed",
-                        "summary": f"Reviewed {dimension}.",
-                        "evidence_refs": ["pr-body.md"],
-                    } for dimension in gtt.TASK_PUBLICATION_DIMENSIONS],
-                    "findings": [],
-                    "conclusions": {
-                        "issue_scope": {
-                            "status": "passed",
-                            "summary": "The closeout fixture issue scope was reviewed.",
-                            "evidence_refs": ["issue-scope-ledger.json"],
-                        },
-                        "docs_ssot": {
-                            "status": "passed",
-                            "summary": "The closeout fixture Docs SSOT outcome was reviewed.",
-                            "evidence_refs": ["design.md", "phase2-check.json"],
-                        },
-                        "safety_deployment": {
-                            "status": "passed",
-                            "summary": "The closeout fixture safety impact was reviewed.",
-                            "evidence_refs": ["pr-body.md"],
-                        },
-                    },
-                    "revision_history": [],
-                    "reviewer_process": {
-                        "reviewer": "production-closeout-fixture",
-                        "summary": "The fixture models a completed semantic publication review.",
-                        "evidence_refs": ["review.md", "review-gate.json"],
-                    },
-                    "human_confirmation": {
-                        "status": "not_required",
-                        "summary": "The fixture route does not require publication confirmation.",
-                        "confirmed_by": None,
-                        "confirmed_at": None,
-                    },
-                    "ai_review_gate": {
-                        "status": "passed",
-                        "summary": "The publication review passed.",
-                    },
-                },
-                "deterministic_bindings": {
-                    "artifacts": publication_artifacts,
-                    "repository": publication_repository,
-                    "entry_preconditions": publication_entries,
-                    "publication_ref": publication_ref,
-                },
-                "typed_exit": "ready",
-                "consumer": gtt.TASK_PUBLICATION_CONSUMERS["ready"],
-                "supersedes_publication_ref": None,
-            }
-            publication_gate["facts_sha256"] = gtt.context_digest(
-                gtt.task_publication_facts_payload(publication_gate)
+            self.write_current_publication_owner(
+                root,
+                task_dir,
+                task_ref=".trellis/tasks/07-11-closeout",
+                reviewed_content_head=reviewed_head,
             )
-            gtt.write_json(task_dir / gtt.PR_READINESS_ARTIFACT, publication_gate)
 
             immutable_body_bytes = (task_dir / "pr-body.md").read_bytes()
             pr_store: dict[str, object] = {}
@@ -20083,8 +17608,6 @@ shutil.move(str(active), str(archived))
                         original_run(["git", "add", unexpected.name], cwd=root, check=True)
                     elif pre_move_fault == "archive-month":
                         archive_month_clock = following_month(archive_month_clock)
-                    elif pre_move_fault == "archive-path-symlink":
-                        install_archive_path_symlink("month-outside")
                     if injected_stage == "projection":
                         record_transition("projection")
                         (task_dir / "review.md").unlink()
@@ -20183,33 +17706,6 @@ shutil.move(str(active), str(archived))
 
             archive_locator = f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/{task_dir.name}"
             archived_path = root / archive_locator
-            archive_symlink_sentinel: Path | None = None
-
-            def install_archive_path_symlink(case: str) -> None:
-                nonlocal archive_symlink_sentinel
-                component, target_scope = case.split("-", 1)
-                archive_root = root / ".trellis/tasks/archive"
-                target = (
-                    root / f".trellis/tasks/archive-symlink-target-{component}"
-                    if target_scope == "inside"
-                    else base / f"archive-symlink-target-{component}"
-                )
-                target.mkdir(parents=True)
-                archive_symlink_sentinel = target / "sentinel.txt"
-                archive_symlink_sentinel.write_bytes(b"archive-path-sentinel\n")
-                if component == "root":
-                    archive_root.symlink_to(target, target_is_directory=True)
-                    return
-                if component == "month":
-                    archive_root.mkdir(parents=True, exist_ok=True)
-                    (archive_root / datetime.now().strftime("%Y-%m")).symlink_to(
-                        target, target_is_directory=True
-                    )
-                    return
-                raise AssertionError(f"unsupported archive path symlink case: {case}")
-
-            if archive_path_symlink is not None:
-                install_archive_path_symlink(archive_path_symlink)
             if archive_locator_conflict:
                 archived_path.mkdir(parents=True)
 
@@ -20303,12 +17799,6 @@ shutil.move(str(active), str(archived))
                         if (task_dir / gtt.PR_READINESS_ARTIFACT).is_file()
                         else None
                     ),
-                    "archive_symlink_sentinel": (
-                        archive_symlink_sentinel.read_bytes()
-                        if archive_symlink_sentinel is not None
-                        and archive_symlink_sentinel.is_file()
-                        else None
-                    ),
                 }
 
             def fake_marketplace_verification(
@@ -20324,7 +17814,7 @@ shutil.move(str(active), str(archived))
                 failed = injected_stage == "verifier"
                 digest = gtt.digest_text("verified marketplace asset")
                 payload = {
-                    "schema_version": "1.0",
+                    "schema_version": "1.1",
                     "generated_at": gtt.now_iso(),
                     "status": "failed" if failed else "passed",
                     "repo": repo,
@@ -20356,9 +17846,6 @@ shutil.move(str(active), str(archived))
                     "assets": {
                         "workflow_sha256": "" if failed else digest,
                         "preview_sha256": "" if failed else digest,
-                        "task_start_context_schema_sha256": (
-                            "" if failed else digest
-                        ),
                         "finish_summary_schema_sha256": "" if failed else digest,
                         "closeout_plan_schema_sha256": "" if failed else digest,
                         "runtime_gitignore_present": not failed,
@@ -20408,8 +17895,8 @@ shutil.move(str(active), str(archived))
                     return_value={
                         "status": "ok",
                         "typed_exit": "ready",
-                        "reviewed_head": reviewed_head,
-                        "publication_ref": publication_ref,
+                        "reviewed_content_head": reviewed_head,
+                        "owner_result": publication_gate,
                     },
                 ),
                 mock.patch.object(
@@ -20418,8 +17905,8 @@ shutil.move(str(active), str(archived))
                     return_value={
                         "status": "ok",
                         "typed_exit": "ready",
-                        "reviewed_head": reviewed_head,
-                        "publication_ref": publication_ref,
+                        "reviewed_content_head": reviewed_head,
+                        "owner_result": publication_gate,
                     },
                 ),
                 mock.patch.object(
@@ -20438,7 +17925,6 @@ shutil.move(str(active), str(archived))
                 if (
                     archive_locator_conflict
                     or children_case in {"active", "malformed"}
-                    or archive_path_symlink is not None
                 ):
                     before = exact_state()
                     errors: list[gtt.WorkflowError] = []
@@ -20556,11 +18042,6 @@ shutil.move(str(active), str(archived))
                                 "events": failed_events,
                                 "reviewed_sha": reviewed_head,
                                 "evidence_sha": gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root),
-                                "sentinel_bytes": (
-                                    archive_symlink_sentinel.read_bytes()
-                                    if archive_symlink_sentinel is not None
-                                    else None
-                                ),
                             }
                         reentry_offset = len(transition_attempts)
                         replacement_preview = gtt.cmd_finish_work(dry_args)
@@ -20767,7 +18248,7 @@ shutil.move(str(active), str(archived))
         )
         self.assertEqual(len(result["archived_files"]), 10)
 
-    def test_production_predecessor_draft_rebinds_same_number_after_evidence_push(self) -> None:
+    def test_production_predecessor_draft_rebinds_same_number_after_content_push(self) -> None:
         result = self.run_production_finish_case(predecessor_draft_metadata=True)
         final = result["final_state"]
         events = result["all_transition_attempts"]
@@ -20776,7 +18257,8 @@ shutil.move(str(active), str(archived))
         self.assertEqual(final["pr_is_draft"], False)
         self.assertNotIn("draft", events)
         self.assertEqual(events.count("draft-rebind"), 1)
-        self.assertLess(events.index("evidence-push"), events.index("draft-rebind"))
+        self.assertLess(events.index("content-push"), events.index("draft-rebind"))
+        self.assertNotIn("evidence-push", events)
         self.assertLess(events.index("draft-rebind"), events.index("projection"))
         self.assertEqual(
             result["draft_rebind_body_bytes"],
@@ -20832,7 +18314,7 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(state["remote_sha"])
         self.assertIsNone(state["pr_number"])
         self.assertIsNone(state["plan_bytes"])
-        self.assertIsNotNone(state["readiness_bytes"])
+        self.assertIsNone(state["readiness_bytes"])
         self.assertEqual(result["events"], [])
         self.assertEqual(
             [error.payload.get("stage") for error in result["errors"]],
@@ -20859,7 +18341,7 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(state["remote_sha"])
         self.assertIsNone(state["pr_number"])
         self.assertIsNone(state["plan_bytes"])
-        self.assertIsNotNone(state["readiness_bytes"])
+        self.assertIsNone(state["readiness_bytes"])
         self.assertEqual(result["events"], [])
         self.assertEqual(
             [error.payload.get("active_children") for error in result["errors"]],
@@ -20876,59 +18358,12 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(state["remote_sha"])
         self.assertIsNone(state["pr_number"])
         self.assertIsNone(state["plan_bytes"])
-        self.assertIsNotNone(state["readiness_bytes"])
+        self.assertIsNone(state["readiness_bytes"])
         self.assertEqual(result["events"], [])
         self.assertEqual(
             [error.payload.get("stage") for error in result["errors"]],
             ["task-children-preflight", "task-children-preflight"],
         )
-
-    def test_production_archive_ancestor_symlinks_fail_dry_run_and_formal_without_side_effects(self) -> None:
-        cases = {
-            "root-inside": "archive-root",
-            "root-outside": "archive-root",
-            "month-inside": "archive-month",
-            "month-outside": "archive-month",
-        }
-        for case, component in cases.items():
-            with self.subTest(case=case):
-                result = self.run_production_finish_case(archive_path_symlink=case)
-                state = result["failed_state"]
-                self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
-                self.assertIsNone(state["archive_locator"])
-                self.assertEqual(state["task_status"], "in_progress")
-                self.assertEqual(state["local_sha"], result["reviewed_sha"])
-                self.assertIsNone(state["remote_sha"])
-                self.assertIsNone(state["pr_number"])
-                self.assertIsNone(state["plan_bytes"])
-                self.assertIsNotNone(state["readiness_bytes"])
-                self.assertEqual(state["archive_symlink_sentinel"], b"archive-path-sentinel\n")
-                self.assertEqual(result["events"], [])
-                self.assertEqual(
-                    [error.payload.get("stage") for error in result["errors"]],
-                    ["archive-path-preflight", "archive-path-preflight"],
-                )
-                self.assertEqual(
-                    [error.payload.get("component") for error in result["errors"]],
-                    [component, component],
-                )
-
-    def test_production_archive_ancestor_symlink_drift_fails_immediately_before_move(self) -> None:
-        result = self.run_production_finish_case(pre_move_fault="archive-path-symlink")
-        state = result["failed_state"]
-        self.assertEqual(state["active_locator"], ".trellis/tasks/07-11-closeout")
-        self.assertIsNone(state["archive_locator"])
-        self.assertEqual(state["task_status"], "in_progress")
-        self.assertEqual(state["local_sha"], result["evidence_sha"])
-        self.assertEqual(state["remote_sha"], result["evidence_sha"])
-        self.assertEqual(state["pr_head_sha"], result["evidence_sha"])
-        self.assertEqual(state["pr_is_draft"], True)
-        self.assertIsNotNone(state["plan_bytes"])
-        self.assertIsNotNone(state["readiness_bytes"])
-        self.assertEqual(result["sentinel_bytes"], b"archive-path-sentinel\n")
-        self.assertEqual(result["error_payload"].get("stage"), "archive-path-preflight")
-        self.assertEqual(result["error_payload"].get("component"), "archive-month")
-        self.assertNotIn("archive-move", result["events"])
 
     def test_production_pre_move_continuity_failures_keep_task_active_and_pr_draft(self) -> None:
         cases = [
@@ -20994,14 +18429,9 @@ shutil.move(str(active), str(archived))
         self.assertIsNone(failed["archive_locator"])
         self.assertEqual(failed["task_status"], "in_progress")
         self.assertEqual(failed["pr_is_draft"], True)
-        self.assertEqual(result["evidence_parent_sha"], failed["local_sha"])
-        self.assertEqual(
-            result["evidence_paths"],
-            {
-                ".trellis/tasks/07-11-closeout/closeout-plan.json",
-                ".trellis/tasks/07-11-closeout/pr-readiness.json",
-            },
-        )
+        self.assertEqual(result["evidence_sha"], failed["local_sha"])
+        self.assertNotIn("evidence-commit", result["all_transition_attempts"])
+        self.assertNotIn("evidence-push", result["all_transition_attempts"])
         self.assertIsNone(final["active_locator"])
         self.assertEqual(
             final["archive_locator"],
@@ -21074,7 +18504,10 @@ shutil.move(str(active), str(archived))
     def test_production_incomplete_or_mismatched_archive_still_requires_worktree_contracts(self) -> None:
         cases = [
             (False, "Archived closeout files do not match"),
-            (True, "Closeout evidence commit does not match"),
+            (
+                True,
+                "Archived closeout working-tree move is not based on the reviewed content HEAD",
+            ),
         ]
         for create_mismatch, expected_error in cases:
             with self.subTest(create_mismatch=create_mismatch):
@@ -21143,7 +18576,7 @@ shutil.move(str(active), str(archived))
         self.assertEqual(failed["task_status"], "in_progress")
         self.assertEqual(
             failed["dirty_paths"],
-            {".trellis/tasks/07-11-closeout/pr-readiness.json"},
+            set(),
         )
         self.assertEqual(failed["staged_paths"], set())
         self.assertEqual(failed["local_sha"], result["reviewed_sha"])
@@ -21166,7 +18599,7 @@ shutil.move(str(active), str(archived))
         self.assertEqual(failed["task_status"], "in_progress")
         self.assertEqual(
             failed["dirty_paths"],
-            {".trellis/tasks/07-11-closeout/pr-readiness.json"},
+            set(),
         )
         self.assertEqual(failed["staged_paths"], set())
         self.assertEqual(failed["local_sha"], result["reviewed_sha"])
@@ -21189,7 +18622,7 @@ shutil.move(str(active), str(archived))
         self.assertEqual(failed["task_status"], "in_progress")
         self.assertEqual(
             failed["dirty_paths"],
-            {".trellis/tasks/07-11-closeout/pr-readiness.json"},
+            set(),
         )
         self.assertEqual(failed["staged_paths"], set())
         self.assertEqual(failed["local_sha"], result["reviewed_sha"])
@@ -21210,8 +18643,6 @@ shutil.move(str(active), str(archived))
             "plan-digest",
             "content-push",
             "verifier",
-            "evidence-commit",
-            "evidence-push",
             "draft",
             "projection",
             "archive-move",
@@ -21222,17 +18653,13 @@ shutil.move(str(active), str(archived))
         ]
         active = ".trellis/tasks/07-11-closeout"
         archive = f".trellis/tasks/archive/{datetime.now().strftime('%Y-%m')}/07-11-closeout"
-        evidence_paths = {
-            f"{active}/closeout-plan.json",
-            f"{active}/pr-readiness.json",
-        }
         archive_move_paths = {
             f"{active}/{name}"
             for name in [
-                "agent-assignment.json", "closeout-plan.json", "design.md",
+                "agent-assignment.json", "design.md",
                 "finish-summary-index.json", "implement.md",
                 "issue-scope-ledger.json", "phase2-check.json", "planning-approval.json",
-                "pr-body.md", "pr-readiness.json", "prd.md", "review-gate.json",
+                "pr-body.md", "prd.md", "review-gate.json",
                 "review.md", "task-start-context.json", "task.json",
             ]
         } | {
@@ -21246,34 +18673,51 @@ shutil.move(str(active), str(archived))
         expected = {
             "prepare": (
                 active, None, "in_progress",
-                {
-                    f"{active}/finish-summary-index.json",
-                    f"{active}/pr-readiness.json",
-                },
+                {f"{active}/finish-summary-index.json"},
                 set(), "reviewed", None, None, None, None, None,
             ),
             "plan-digest": (
                 active, None, "in_progress",
-                {f"{active}/pr-readiness.json"},
+                set(),
                 set(), "reviewed", None, None, None, None, None,
             ),
             "content-push": (
                 active, None, "in_progress",
-                {f"{active}/pr-readiness.json"},
+                set(),
                 set(), "reviewed", None, None, None, None, None,
             ),
             "verifier": (
                 active, None, "in_progress",
-                evidence_paths | {f"{active}/issue-scope-ledger.json", f"{active}/marketplace-verification.json"},
+                {
+                    f"{active}/closeout-plan.json",
+                    f"{active}/marketplace-verification.json",
+                },
                 set(), "reviewed", "reviewed", None, None, None, None,
             ),
-            "evidence-commit": (active, None, "in_progress", evidence_paths, evidence_paths, "reviewed", "reviewed", None, None, None, None),
-            "evidence-push": (active, None, "in_progress", set(), set(), "evidence", "reviewed", None, None, None, None),
-            "draft": (active, None, "in_progress", set(), set(), "evidence", "evidence", None, None, None, None),
-            "projection": (active, None, "in_progress", {f"{active}/finish-summary.json", f"{active}/review.md"}, set(), "evidence", "evidence", "evidence", True, "OPEN", 105),
-            "archive-move": (active, None, "in_progress", {f"{active}/finish-summary.json"}, set(), "evidence", "evidence", "evidence", True, "OPEN", 105),
-            "archive-commit": (None, archive, "completed", archive_move_paths, archive_move_paths, "evidence", "evidence", "evidence", True, "OPEN", 105),
-            "archive-push": (None, archive, "completed", set(), set(), "archive", "evidence", "evidence", True, "OPEN", 105),
+            "draft": (
+                active, None, "in_progress",
+                {f"{active}/closeout-plan.json"},
+                set(), "reviewed", "reviewed", None, None, None, None,
+            ),
+            "projection": (
+                active, None, "in_progress",
+                {
+                    f"{active}/closeout-plan.json",
+                    f"{active}/finish-summary.json",
+                    f"{active}/review.md",
+                },
+                set(), "reviewed", "reviewed", "reviewed", True, "OPEN", 105,
+            ),
+            "archive-move": (
+                active, None, "in_progress",
+                {
+                    f"{active}/closeout-plan.json",
+                    f"{active}/finish-summary.json",
+                },
+                set(), "reviewed", "reviewed", "reviewed", True, "OPEN", 105,
+            ),
+            "archive-commit": (None, archive, "completed", archive_move_paths, archive_move_paths, "reviewed", "reviewed", "reviewed", True, "OPEN", 105),
+            "archive-push": (None, archive, "completed", set(), set(), "archive", "reviewed", "reviewed", True, "OPEN", 105),
             "remote-head": (None, archive, "completed", set(), set(), "archive", "archive", "archive", True, "OPEN", 105),
             "ready": (None, archive, "completed", set(), set(), "archive", "archive", "archive", True, "OPEN", 105),
         }
@@ -21284,7 +18728,6 @@ shutil.move(str(active), str(archived))
                 state = result["failed_state"]
                 sha = {
                     "reviewed": result["reviewed_sha"],
-                    "evidence": result["evidence_sha"],
                     "archive": result["archive_sha"],
                     None: None,
                 }
@@ -24656,22 +22099,52 @@ class RequirementsClarificationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.repo = Path(__file__).resolve().parents[5]
-        cls.example_path = (
+        cls.package = (
             cls.repo
-            / "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/requirements-clarification.json"
+            / "trellis/skills/guru-team/packages/guru-clarify-requirements"
+        )
+        cls.example_path = cls.package / "examples/requirements-clarification.json"
+        cls.schema = json.loads(
+            (
+                cls.package / "schemas/requirements-clarification.schema.json"
+            ).read_text(encoding="utf-8")
         )
 
     def raw_example(self) -> dict[str, object]:
         return json.loads(self.example_path.read_text(encoding="utf-8"))
 
     def example(self) -> dict[str, object]:
-        return self.derive(self.raw_example())
+        return gtt.derive_requirements_clarification_result(self.raw_example())
 
     def derive(self, payload: dict[str, object]) -> dict[str, object]:
         return gtt.derive_requirements_clarification_result(payload)
 
-    def structural(self, payload: dict[str, object], task_dir: Path | None = None) -> list[str]:
-        return gtt.requirements_clarification_structural_errors(self.repo, payload, task_dir)
+    def structural(
+        self,
+        payload: dict[str, object],
+        task_dir: Path | None = None,
+        root: Path | None = None,
+    ) -> list[str]:
+        with mock.patch.object(
+            gtt, "requirements_clarification_schema", return_value=self.schema
+        ):
+            return gtt.requirements_clarification_structural_errors(
+                root or self.repo, payload, task_dir
+            )
+
+    @staticmethod
+    def nested_keys(value: object) -> set[str]:
+        if isinstance(value, dict):
+            return set(value) | set().union(
+                *(RequirementsClarificationTests.nested_keys(item) for item in value.values()),
+                set(),
+            )
+        if isinstance(value, list):
+            return set().union(
+                *(RequirementsClarificationTests.nested_keys(item) for item in value),
+                set(),
+            )
+        return set()
 
     def set_issue_target(
         self,
@@ -24688,7 +22161,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             "task_locator": None,
             "resume_target": "guru-review-contract-wording",
         }
-        target_projection = {
+        projection = {
             "kind": "issue",
             "repo": "example/guru-extension",
             "issue_number": number,
@@ -24698,8 +22171,8 @@ class RequirementsClarificationTests(unittest.TestCase):
             "body_sha256": body_sha256,
         }
         payload["review_target"] = {
-            **target_projection,
-            "facts_sha256": gtt.context_digest(target_projection),
+            **projection,
+            "facts_sha256": gtt.context_digest(projection),
         }
         return payload
 
@@ -24711,18 +22184,20 @@ class RequirementsClarificationTests(unittest.TestCase):
         candidates: list[dict[str, object]] | None = None,
         selected_issue: dict[str, object] | None = None,
         original_target_role: str = "primary",
-        confirmation_ref: str | None = None,
     ) -> dict[str, object]:
         payload["target_disposition"] = {
             "disposition": disposition,
-            "duplicate_query": "repo:example/guru-extension is:issue is:open reviewed target",
+            "duplicate_query": (
+                "repo:example/guru-extension is:issue is:open reviewed target"
+            ),
             "duplicate_checked_at": "2026-01-01T00:00:00Z",
             "duplicate_candidates": candidates or [],
             "duplicate_facts_sha256": "0" * 64,
             "selected_issue": selected_issue,
             "original_target_role": original_target_role,
-            "decision_summary": f"The AI selected the {disposition} disposition from current evidence.",
-            "confirmation_ref": confirmation_ref,
+            "decision_summary": (
+                f"The AI selected {disposition} from current evidence."
+            ),
             "disposition_digest": "0" * 64,
         }
         return self.derive(payload)
@@ -24732,7 +22207,6 @@ class RequirementsClarificationTests(unittest.TestCase):
         number: int,
         *,
         decision: str,
-        updated_at: str = "2026-01-01T00:00:00Z",
     ) -> dict[str, object]:
         projection = {
             "repo": "example/guru-extension",
@@ -24740,7 +22214,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             "identity": f"#{number}",
             "url": f"https://github.com/example/guru-extension/issues/{number}",
             "state": "open",
-            "updated_at": updated_at,
+            "updated_at": "2026-01-01T00:00:00Z",
         }
         return {
             **projection,
@@ -24749,65 +22223,38 @@ class RequirementsClarificationTests(unittest.TestCase):
             "reason": "The candidate was compared with the reviewed delivery unit.",
         }
 
-    def confirm_target_and_actions(
+    def closed_followup_payload(
         self,
-        payload: dict[str, object],
-        *action_ids: str,
+        body: str = "Reviewed follow-up scope",
     ) -> dict[str, object]:
-        payload = self.derive(payload)
-        actions = {
-            action["action_id"]: action
-            for action in payload["source_actions"]
-            if isinstance(action, dict)
-        }
-        payload["human_confirmation"] = {
-            "status": "confirmed",
-            "confirmation_kind": (
-                "exact_source_action_and_target"
-                if action_ids
-                else "exact_target_disposition"
-            ),
-            "action_digest": (
-                gtt.context_digest([actions[action_id]["action_digest"] for action_id in action_ids])
-                if action_ids
-                else None
-            ),
-            "target_disposition_digest": payload["target_disposition"]["disposition_digest"],
-            "proposal_digests": [],
-            "confirmed_actions": list(action_ids),
-            "confirmer": "user",
-            "confirmed_at": "2026-01-01T00:00:01Z",
-            "evidence_summary": "The exact target disposition and listed action payloads were confirmed.",
-        }
-        return self.derive(payload)
-
-    def closed_followup_payload(self, body: str = "Reviewed follow-up scope") -> dict[str, object]:
         payload = self.set_issue_target(self.example(), state="closed")
         payload["typed_exit"] = "new_task"
-        payload["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
+        payload["consumer"] = {
+            "kind": "workflow",
+            "id": "guru-full-task-intake-chain",
+        }
         payload["source_actions"] = [{
             "action_id": "new_issue",
             "kind": "new_issue_draft",
             "target": {"repo": "example/guru-extension"},
-            "payload": {"title": "Independent follow-up delivery", "body": body},
+            "payload": {
+                "title": "Independent follow-up delivery",
+                "body": body,
+            },
             "preimage_sha256": None,
             "payload_sha256": None,
             "action_digest": "0" * 64,
             "status": "draft_ready",
             "mutation_evidence": None,
         }]
-        payload = self.set_target_disposition(
+        return self.set_target_disposition(
             payload,
             "create_followup_draft",
             original_target_role="related",
-            confirmation_ref="followup_target_confirmation",
         )
-        return self.confirm_target_and_actions(payload, "new_issue")
 
-    def retarget_payload(self, *, from_issue: bool) -> dict[str, object]:
+    def retarget_payload(self) -> dict[str, object]:
         payload = self.example()
-        if from_issue:
-            payload = self.set_issue_target(payload)
         candidate = self.duplicate_candidate(8, decision="selected")
         selected_issue = {
             "repo": candidate["repo"],
@@ -24822,7 +22269,10 @@ class RequirementsClarificationTests(unittest.TestCase):
         payload["source_actions"] = [{
             "action_id": "select_existing",
             "kind": "select_existing_issue",
-            "target": {"repo": candidate["repo"], "issue_number": candidate["number"]},
+            "target": {
+                "repo": candidate["repo"],
+                "issue_number": candidate["number"],
+            },
             "payload": selected_issue,
             "preimage_sha256": payload["review_target"]["facts_sha256"],
             "payload_sha256": None,
@@ -24830,15 +22280,13 @@ class RequirementsClarificationTests(unittest.TestCase):
             "status": "validated",
             "mutation_evidence": None,
         }]
-        payload = self.set_target_disposition(
+        return self.set_target_disposition(
             payload,
             "retarget_existing_issue",
             candidates=[candidate],
             selected_issue=selected_issue,
             original_target_role="related",
-            confirmation_ref="selected_target_confirmation",
         )
-        return self.confirm_target_and_actions(payload, "select_existing")
 
     def reopen_closed_payload(self) -> dict[str, object]:
         payload = self.set_issue_target(self.example(), state="closed")
@@ -24847,7 +22295,10 @@ class RequirementsClarificationTests(unittest.TestCase):
         payload["source_actions"] = [{
             "action_id": "reopen_source",
             "kind": "reopen_issue",
-            "target": {"repo": "example/guru-extension", "issue_number": 7},
+            "target": {
+                "repo": "example/guru-extension",
+                "issue_number": 7,
+            },
             "payload": {"state": "open"},
             "preimage_sha256": payload["review_target"]["facts_sha256"],
             "payload_sha256": None,
@@ -24858,7 +22309,6 @@ class RequirementsClarificationTests(unittest.TestCase):
         payload = self.set_target_disposition(
             payload,
             "reopen_closed_issue",
-            confirmation_ref="reopen_target_confirmation",
         )
         action_digest = payload["source_actions"][0]["action_digest"]
         payload["mutation_results"] = [{
@@ -24872,580 +22322,574 @@ class RequirementsClarificationTests(unittest.TestCase):
             "action_digest": action_digest,
             "facts_sha256": "0" * 64,
         }]
-        return self.confirm_target_and_actions(payload, "reopen_source")
+        return self.derive(payload)
 
     def closed_complete_payload(self) -> dict[str, object]:
         payload = self.set_issue_target(self.example(), state="closed")
         payload["typed_exit"] = "blocked"
-        payload["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
+        payload["consumer"] = {
+            "kind": "stop",
+            "id": "requirements-clarification-blocked",
+        }
         payload["ai_review_gate"]["status"] = "blocked"
         payload["error"] = {
             "codes": ["requirements_target_complete"],
-            "summary": "The closed target is complete and no independent gap remains.",
+            "summary": "The closed target is complete and no gap remains.",
         }
-        payload = self.set_target_disposition(
+        return self.set_target_disposition(
             payload,
             "block_target_complete",
             original_target_role="reference",
-            confirmation_ref="complete_target_confirmation",
         )
-        return self.confirm_target_and_actions(payload)
 
-    def persist_active_task_trail(
+    def issue_payload_with_action(
+        self,
+        *,
+        kind: str,
+        action_id: str,
+        body: str,
+        mutation_url: str,
+        mutation_updated_at: str,
+    ) -> dict[str, object]:
+        payload = self.set_issue_target(self.example())
+        payload["typed_exit"] = "refresh_context"
+        payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
+        payload["source_actions"] = [{
+            "action_id": action_id,
+            "kind": kind,
+            "target": {
+                "repo": "example/guru-extension",
+                "issue_number": 7,
+            },
+            "payload": {"body": body},
+            "preimage_sha256": "1" * 64,
+            "payload_sha256": None,
+            "action_digest": "0" * 64,
+            "status": "executed",
+            "mutation_evidence": {"source": "ai-reviewed-gh"},
+        }]
+        payload = self.set_target_disposition(
+            payload, "keep_current_open_issue"
+        )
+        action_digest = payload["source_actions"][0]["action_digest"]
+        payload["mutation_results"] = [{
+            "action_id": action_id,
+            "kind": kind,
+            "status": "succeeded",
+            "url": mutation_url,
+            "state": "open",
+            "updated_at": mutation_updated_at,
+            "content_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+            "action_digest": action_digest,
+            "facts_sha256": "0" * 64,
+        }]
+        return self.derive(payload)
+
+    def active_task_classification_payload(
         self,
         root: Path,
-        task: Path,
-        payload: dict[str, object],
-    ) -> dict[str, object]:
-        evidence = payload["active_task_evidence"]
+    ) -> tuple[
+        Path,
+        dict[str, object],
+        dict[str, object],
+        subprocess.CompletedProcess[str],
+    ]:
+        task = root / ".trellis/tasks/active-scope"
+        task.mkdir(parents=True)
+        locator = task.relative_to(root).as_posix()
+        planning = []
+        for name, content in (
+            ("prd.md", "# Requirements\n\nKeep the current delivery scope unchanged.\n"),
+            ("design.md", "# Design\n\nClassify the request from current authority.\n"),
+            ("implement.md", "# Implementation\n\nResume the interrupted owner after classification.\n"),
+        ):
+            path = task / name
+            path.write_text(content, encoding="utf-8")
+            planning.append({
+                "path": f"{locator}/{name}",
+                "content_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            })
+
+        context_sha256 = "3" * 64
+        (task / "context-discovery.json").write_text(
+            json.dumps({
+                "generated_at": "2026-01-01T00:00:03Z",
+                "snapshot_identity": {"snapshot_sha256": context_sha256},
+            }) + "\n",
+            encoding="utf-8",
+        )
+
+        payload = self.set_issue_target(self.example())
+        payload["invocation_context"] = {
+            "kind": "active_task_scope_change",
+            "caller": "active task",
+            "task_locator": locator,
+            "resume_target": "guru-resume-implementation",
+        }
+        payload["target_disposition"] = None
+        payload["context_evidence"] = {
+            "status": "current",
+            "schema_id": "guru-context-discovery-1.0",
+            "snapshot_sha256": context_sha256,
+            "evidence_refs": [f"guru-context-discovery-1.0:{context_sha256}"],
+            "missing_reason": None,
+        }
+        payload["scope_proposals"] = [{
+            "proposal_id": "classify_out_of_scope",
+            "scenario": "Classify an independent active-task request.",
+            "trigger_evidence": ["new active-task input"],
+            "proposed_contracts": ["one final scope classification"],
+            "cost": "A separate delivery and validation path.",
+            "alternatives": ["Keep the current confirmed scope unchanged."],
+            "consequence_if_omitted": "The independent request remains outside this delivery.",
+            "origin_requirement_status": "unconfirmed_expansion",
+            "optional_mechanism_origin": False,
+            "decision": "out_of_scope",
+            "proposal_digest": "0" * 64,
+        }]
+        payload = self.derive(payload)
+        proposal_digest = payload["scope_proposals"][0]["proposal_digest"]
+        comment_body = "The independent request is outside the active delivery."
+        comment_url = (
+            "https://github.com/example/guru-extension/issues/7#issuecomment-99"
+        )
+        trail = {
+            "trail_id": "scope_decision_out_of_scope",
+            "proposal_decisions": [{
+                "proposal_id": "classify_out_of_scope",
+                "proposal_digest": proposal_digest,
+                "decision": "out_of_scope",
+            }],
+            "github_authority": {
+                "kind": "issue_comment",
+                "url": comment_url,
+                "content_sha256": hashlib.sha256(
+                    comment_body.encode("utf-8")
+                ).hexdigest(),
+            },
+        }
         ledger_path = task / "issue-scope-ledger.json"
-        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
-        ledger["scope_decisions"] = [copy.deepcopy(evidence["decision_trail"])]
-        ledger_path.write_text(json.dumps(ledger, sort_keys=True) + "\n", encoding="utf-8")
-        evidence["ledger"]["content_sha256"] = hashlib.sha256(ledger_path.read_bytes()).hexdigest()
-        return self.derive(payload)
+        ledger_path.write_text(
+            json.dumps({
+                "primary_issue": {"number": 7},
+                "close_issues": [{"number": 7}],
+                "related_issues": [],
+                "followup_issues": [],
+                "scope_decisions": [trail],
+            }, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        evidence = {
+            "task_locator": locator,
+            "github_authority_facts_sha256": payload["review_target"]["facts_sha256"],
+            "ledger": {
+                "path": f"{locator}/issue-scope-ledger.json",
+                "content_sha256": hashlib.sha256(
+                    ledger_path.read_bytes()
+                ).hexdigest(),
+            },
+            "planning_documents": planning,
+            "decision_trail": trail,
+            "reentry_owners": [
+                "guru-approve-task-plan",
+                "guru-check-task",
+                "guru-review-branch",
+            ],
+        }
+        payload["active_task_evidence"] = evidence
+        payload["source_actions"] = [{
+            "action_id": "task_scope",
+            "kind": "active_task_scope_update",
+            "target": {"task_locator": locator},
+            "payload": gtt.requirements_clarification_active_task_payload_projection(
+                evidence
+            ),
+            "preimage_sha256": context_sha256,
+            "payload_sha256": None,
+            "action_digest": "0" * 64,
+            "status": "validated",
+            "mutation_evidence": {"source": "task-local-update"},
+        }]
+        payload["mutation_results"] = []
+        payload["typed_exit"] = "clear"
+        payload["consumer"] = gtt.REQUIREMENTS_CLARIFICATION_CONSUMERS["clear"]
+        payload = self.derive(payload)
+
+        current_issue = {
+            "repo": "example/guru-extension",
+            "number": 7,
+            "url": payload["review_target"]["url"],
+            "state": "open",
+            "updated_at": payload["review_target"]["updated_at"],
+            "body_sha256": payload["review_target"]["body_sha256"],
+            "facts_sha256": "unused",
+        }
+        comment_response = subprocess.CompletedProcess(
+            [],
+            0,
+            json.dumps({
+                "id": 99,
+                "html_url": comment_url,
+                "updated_at": "2026-01-01T00:00:02Z",
+                "body": comment_body,
+            }),
+            "",
+        )
+        return task, payload, current_issue, comment_response
 
     def test_example_record_and_check_are_canonical_and_stdout_only(self) -> None:
         before = set(gtt.git_status_paths(self.repo))
-        record_args = argparse.Namespace(
-            root=str(self.repo), mode="standalone", input=str(self.example_path), task=None
-        )
-        recorded = gtt.cmd_record_requirements_clarification(record_args)
-        self.assertEqual(recorded, self.raw_example())
-        check_args = argparse.Namespace(
-            root=str(self.repo), input=str(self.example_path), task=None,
-            expected_result_sha256=recorded["content_identity"]["result_sha256"],
-        )
-        checked = gtt.cmd_check_requirements_clarification(check_args)
+        with mock.patch.object(
+            gtt, "requirements_clarification_schema", return_value=self.schema
+        ):
+            recorded = gtt.cmd_record_requirements_clarification(
+                argparse.Namespace(
+                    root=str(self.repo),
+                    mode="standalone",
+                    input=str(self.example_path),
+                    task=None,
+                )
+            )
+            self.assertEqual(recorded, self.raw_example())
+            checked = gtt.cmd_check_requirements_clarification(
+                argparse.Namespace(
+                    root=str(self.repo),
+                    input=str(self.example_path),
+                    task=None,
+                    expected_result_sha256=recorded["content_identity"]["result_sha256"],
+                )
+            )
         self.assertEqual(checked["status"], "passed")
         self.assertEqual(checked["typed_exit"], "clear")
         self.assertEqual(set(gtt.git_status_paths(self.repo)), before)
 
-    def test_question_order_partial_answer_and_gate_biconditional(self) -> None:
-        pending = self.example()
-        pending["repository_answerable_questions"][0]["status"] = "pending"
-        pending["repository_answerable_questions"][0]["answer_summary"] = None
-        pending["clarification_rounds"] = [{
-            "round_id": "round_1", "question_id": "intent", "atomic_group_id": None,
-            "atomic_group_reason": None, "category": "product_intent", "question": "Which behavior?",
-            "answer_summary": "Only part was answered.", "answer_status": "partial",
-            "authority_impact": "load_bearing", "authority_action_ids": [],
-            "affected_contracts": ["requirements"], "opened_question_ids": ["intent"],
-            "closed_question_ids": ["intent"],
+    def test_authorization_fields_are_rejected_not_projected(self) -> None:
+        top_level = self.example()
+        top_level["human_confirmation"] = {"status": "confirmed"}
+        top_level = self.derive(top_level)
+        top_errors = self.structural(top_level)
+        self.assertIn("requirements_clarification_schema_validation_failed", top_errors)
+        self.assertIn("invalid_requirements_clarification_top_level", top_errors)
+
+        nested = self.example()
+        nested["target_disposition"]["confirmation_ref"] = "legacy-confirmation"
+        nested = self.derive(nested)
+        nested_errors = self.structural(nested)
+        self.assertIn("requirements_clarification_schema_validation_failed", nested_errors)
+        self.assertIn("invalid_requirements_target_disposition", nested_errors)
+
+        proposal = self.example()
+        proposal["scope_proposals"] = [{
+            "proposal_id": "legacy_confirmation",
+            "scenario": "A current-shape proposal carries a removed field.",
+            "trigger_evidence": ["legacy payload"],
+            "proposed_contracts": ["scope"],
+            "cost": "None.",
+            "alternatives": ["Use the current dialogue only."],
+            "consequence_if_omitted": "No persistent authorization remains.",
+            "origin_requirement_status": "confirmed_expansion",
+            "optional_mechanism_origin": False,
+            "decision": "related",
+            "proposal_digest": "0" * 64,
+            "confirmation_ref": "legacy-confirmation",
         }]
-        pending["open_questions"] = ["intent"]
-        pending = self.derive(pending)
-        errors = self.structural(pending)
-        self.assertIn("repository_questions_must_precede_user_questions", errors)
-        self.assertIn("partial_answer_cannot_close_questions", errors)
-
-        blocked = self.example()
-        blocked["typed_exit"] = "blocked"
-        blocked["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
-        blocked["error"] = {"codes": ["semantic_gate_blocked"], "summary": "The semantic gate is blocked."}
-        blocked = self.derive(blocked)
-        self.assertIn("requirements_blocked_gate_exit_mismatch", self.structural(blocked))
-        blocked["ai_review_gate"]["status"] = "blocked"
-        blocked = self.derive(blocked)
-        self.assertEqual(self.structural(blocked), [])
-
-    def test_question_state_requires_exact_open_minus_closed(self) -> None:
-        forged_clear = self.example()
-        forged_clear["clarification_rounds"] = [{
-            "round_id": "round_1", "question_id": "intent",
-            "atomic_group_id": None, "atomic_group_reason": None,
-            "category": "product_intent", "question": "Which behavior?",
-            "answer_summary": "Only part was answered.", "answer_status": "partial",
-            "authority_impact": "load_bearing", "authority_action_ids": [],
-            "affected_contracts": ["requirements"],
-            "opened_question_ids": ["intent"], "closed_question_ids": [],
-        }]
-        forged_clear["open_questions"] = []
-        forged_clear = self.derive(forged_clear)
-        self.assertIn("open_questions_state_mismatch", self.structural(forged_clear))
-
-        closed_other = copy.deepcopy(forged_clear)
-        closed_other["clarification_rounds"][0]["opened_question_ids"] = ["intent", "scope"]
-        closed_other["clarification_rounds"][0]["closed_question_ids"] = ["scope"]
-        closed_other = self.derive(closed_other)
-        self.assertIn("partial_answer_cannot_close_questions", self.structural(closed_other))
-
-        converged = copy.deepcopy(forged_clear)
-        converged["clarification_rounds"].append({
-            "round_id": "round_2", "question_id": "intent_followup",
-            "atomic_group_id": None, "atomic_group_reason": None,
-            "category": "product_intent", "question": "Confirm the remaining behavior?",
-            "answer_summary": "The remaining behavior was confirmed.", "answer_status": "complete",
-            "authority_impact": "non_load_bearing", "authority_action_ids": [],
-            "affected_contracts": ["requirements"],
-            "opened_question_ids": ["intent_followup"],
-            "closed_question_ids": ["intent", "intent_followup"],
-        })
-        converged = self.derive(converged)
-        self.assertEqual(self.structural(converged), [])
-
-        empty_lifecycle = self.example()
-        empty_lifecycle["clarification_rounds"] = [{
-            "round_id": "round_empty", "question_id": "untracked_intent",
-            "atomic_group_id": None, "atomic_group_reason": None,
-            "category": "product_intent", "question": "Which behavior?",
-            "answer_summary": "Only part was answered.", "answer_status": "partial",
-            "authority_impact": "load_bearing", "authority_action_ids": [],
-            "affected_contracts": ["requirements"],
-            "opened_question_ids": [], "closed_question_ids": [],
-        }]
-        empty_lifecycle["open_questions"] = []
-        empty_lifecycle = self.derive(empty_lifecycle)
-        self.assertIn("clarification_question_not_opened", self.structural(empty_lifecycle))
-
-    def test_published_schema_and_atomic_refusal_are_enforced_by_runtime(self) -> None:
-        unknown = self.example()
-        unknown["repository_answerable_questions"][0]["unexpected"] = True
-        unknown = self.derive(unknown)
+        proposal = self.derive(proposal)
         self.assertIn(
             "requirements_clarification_schema_validation_failed",
-            self.structural(unknown),
+            self.structural(proposal),
         )
 
-        deferred = self.example()
-        deferred["clarification_rounds"] = [{
-            "round_id": "round_1", "question_id": "delivery_choice",
-            "atomic_group_id": "delivery_choice", "atomic_group_reason": "The delivery and ownership choice is indivisible.",
-            "category": "scope_risk_decision", "question": "Include the independent delivery now?",
-            "answer_summary": "The user deferred the independent delivery.", "answer_status": "refused",
-            "authority_impact": "load_bearing", "authority_action_ids": [],
-            "affected_contracts": ["requirements", "issue scope"],
-            "opened_question_ids": ["delivery_choice"], "closed_question_ids": ["delivery_choice"],
-        }]
-        deferred["scope_proposals"] = [{
-            "proposal_id": "independent_delivery", "scenario": "Add an independent delivery unit.",
-            "trigger_evidence": ["user answer"], "proposed_contracts": ["separate acceptance"],
-            "cost": "A separate implementation and validation path.",
-            "alternatives": ["Create a follow-up task."],
-            "consequence_if_omitted": "The current confirmed scope remains complete.",
-            "origin_requirement_status": "unconfirmed_expansion", "optional_mechanism_origin": False,
-            "decision": "followup", "proposal_digest": "0" * 64, "confirmation_ref": None,
-        }]
-        deferred = self.derive(deferred)
-        self.assertEqual(self.structural(deferred), [])
-
-    def test_exact_scope_confirmation_and_optional_mechanism_rules(self) -> None:
-        payload = self.example()
-        payload["scope_proposals"] = [{
-            "proposal_id": "expanded_contract", "scenario": "Add a new product contract.",
-            "trigger_evidence": ["user request"], "proposed_contracts": ["new acceptance"],
-            "cost": "One additional implementation and test path.",
-            "alternatives": ["Create a follow-up task."],
-            "consequence_if_omitted": "The current delivery remains unchanged.",
-            "origin_requirement_status": "unconfirmed_expansion",
-            "optional_mechanism_origin": False, "decision": "accepted_current",
-            "proposal_digest": "0" * 64, "confirmation_ref": "scope_confirmation",
-        }]
-        payload = self.derive(payload)
-        proposal_digest = payload["scope_proposals"][0]["proposal_digest"]
-        payload["human_confirmation"] = {
-            "status": "confirmed", "confirmation_kind": "exact_scope_proposal",
-            "action_digest": None, "target_disposition_digest": None,
-            "proposal_digests": [proposal_digest],
-            "confirmed_actions": [], "confirmer": "user", "confirmed_at": "2026-01-01T00:00:01Z",
-            "evidence_summary": "The exact proposal digest was confirmed.",
+        forbidden = {
+            "confirmed_action_id", "confirmation_ref", "human_confirmation",
+            "user_confirmation", "authorization_digest", "confirmed_at",
         }
-        payload = self.derive(payload)
-        self.assertEqual(self.structural(payload), [])
+        self.assertTrue(forbidden.isdisjoint(self.nested_keys(self.example())))
 
-        generic = copy.deepcopy(payload)
-        generic["human_confirmation"]["confirmation_kind"] = "continuation"
-        generic = self.derive(generic)
-        self.assertIn("generic_confirmation_forbidden", self.structural(generic))
-
-        missing_digest = copy.deepcopy(payload)
-        missing_digest["human_confirmation"]["proposal_digests"] = []
-        missing_digest = self.derive(missing_digest)
-        self.assertIn("unconfirmed_expansion_requires_exact_confirmation", self.structural(missing_digest))
-
-        optional = copy.deepcopy(payload)
-        optional["scope_proposals"][0]["optional_mechanism_origin"] = True
-        optional = self.derive(optional)
-        self.assertIn("optional_mechanism_cannot_expand_scope", self.structural(optional))
-
-        removed = copy.deepcopy(optional)
-        removed["scope_proposals"][0]["decision"] = "mechanism_removed"
-        removed["scope_proposals"][0]["confirmation_ref"] = None
-        removed["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
-        removed = self.derive(removed)
-        self.assertEqual(self.structural(removed), [])
-
-        replaced = copy.deepcopy(removed)
-        replaced["scope_proposals"][0]["decision"] = "mechanism_replaced"
-        replaced = self.derive(replaced)
-        self.assertEqual(self.structural(replaced), [])
-
-    def test_draft_update_is_bound_to_reviewed_draft_content(self) -> None:
-        payload = self.example()
-        title = "Clarified delivery"
-        body = "The reviewed draft now contains the clarified acceptance."
-        payload["typed_exit"] = "refresh_context"
-        payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-        payload = self.set_target_disposition(payload, "keep_current_draft")
-        payload["review_target"]["body_sha256"] = hashlib.sha256(body.encode("utf-8")).hexdigest()
-        payload["source_actions"] = [{
-            "action_id": "update_draft", "kind": "proposed_draft_update",
-            "target": {"repo": "example/guru-extension"},
-            "payload": {"title": title, "body": body}, "preimage_sha256": "1" * 64,
-            "payload_sha256": None, "action_digest": "0" * 64,
-            "status": "validated", "mutation_evidence": None,
-        }]
-        payload = self.derive(payload)
-        action_digest = payload["source_actions"][0]["action_digest"]
-        payload["human_confirmation"] = {
-            "status": "confirmed", "confirmation_kind": "exact_source_action",
-            "action_digest": gtt.context_digest([action_digest]),
-            "target_disposition_digest": None, "proposal_digests": [],
-            "confirmed_actions": ["update_draft"], "confirmer": "user",
-            "confirmed_at": "2026-01-01T00:00:01Z",
-            "evidence_summary": "The exact proposed draft update was confirmed.",
-        }
-        payload["mutation_results"] = [{
-            "action_id": "update_draft", "kind": "proposed_draft_update",
-            "status": "succeeded", "url": None, "state": "draft", "updated_at": None,
-            "content_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
-            "action_digest": action_digest, "facts_sha256": "0" * 64,
-        }]
-        payload = self.derive(payload)
-        self.assertEqual(self.structural(payload), [])
-
-        illegal_clear = copy.deepcopy(payload)
-        illegal_clear["typed_exit"] = "clear"
-        illegal_clear["consumer"] = {"kind": "workflow", "id": "guru-requirements-clear-router"}
-        illegal_clear = self.derive(illegal_clear)
-        illegal_errors = self.structural(illegal_clear)
-        self.assertIn("draft_source_action_forbidden_for_exit", illegal_errors)
-        self.assertIn("mutation_results_require_refresh_context", illegal_errors)
-        self.assertIn("source_action_requires_refresh_context", illegal_errors)
-
-        stale = copy.deepcopy(payload)
-        stale["source_actions"][0]["payload"]["body"] = "Different draft bytes."
-        stale = self.derive(stale)
-        self.assertIn("proposed_draft_update_binding_invalid", self.structural(stale))
-
-    def test_all_six_exit_shapes_and_consumers(self) -> None:
-        clear = self.example()
-        self.assertEqual(self.structural(clear), [])
-
-        needs = self.example()
-        needs["typed_exit"] = "needs_context"
-        needs["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
-        needs["context_evidence"] = {
-            "status": "missing", "schema_id": None, "snapshot_sha256": None,
-            "evidence_refs": ["repository search"], "missing_reason": "Current context is unavailable.",
-        }
-        needs = self.derive(needs)
-        self.assertEqual(self.structural(needs), [])
-
-        refresh = self.example()
-        refresh["typed_exit"] = "refresh_context"
-        refresh["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-        refresh["context_evidence"]["status"] = "stale"
-        refresh["context_evidence"]["missing_reason"] = "The source authority changed."
-        refresh = self.derive(refresh)
-        self.assertEqual(self.structural(refresh), [])
-
-        refresh_without_disposition = copy.deepcopy(refresh)
-        refresh_without_disposition["target_disposition"] = None
-        refresh_without_disposition = self.derive(refresh_without_disposition)
-        self.assertIn(
-            "requirements_target_disposition_required",
-            self.structural(refresh_without_disposition),
-        )
-
-        candidate = self.duplicate_candidate(8, decision="selected")
-        retarget = self.example()
-        retarget["typed_exit"] = "retarget_context"
-        retarget["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-        selected_issue = {
-            "repo": candidate["repo"],
-            "issue_number": candidate["number"],
-            "url": candidate["url"],
-            "state": candidate["state"],
-            "updated_at": candidate["updated_at"],
-            "facts_sha256": candidate["facts_sha256"],
-        }
-        retarget["source_actions"] = [{
-            "action_id": "select_existing",
-            "kind": "select_existing_issue",
-            "target": {"repo": candidate["repo"], "issue_number": candidate["number"]},
-            "payload": selected_issue,
-            "preimage_sha256": retarget["review_target"]["facts_sha256"],
-            "payload_sha256": None,
-            "action_digest": "0" * 64,
-            "status": "validated",
-            "mutation_evidence": None,
-        }]
-        retarget = self.set_target_disposition(
-            retarget,
-            "retarget_existing_issue",
-            candidates=[candidate],
-            selected_issue=selected_issue,
-            original_target_role="related",
-            confirmation_ref="selected_target_confirmation",
-        )
-        retarget = self.confirm_target_and_actions(retarget, "select_existing")
-        self.assertEqual(self.structural(retarget), [])
-
-        new_task = self.closed_followup_payload("Reviewed scope")
-        self.assertEqual(self.structural(new_task), [])
-
-        blocked = self.example()
-        blocked["typed_exit"] = "blocked"
-        blocked["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
-        blocked["ai_review_gate"]["status"] = "blocked"
-        blocked["error"] = {"codes": ["user_refused"], "summary": "A load-bearing choice was refused."}
-        blocked = self.derive(blocked)
-        self.assertEqual(self.structural(blocked), [])
-
-    def test_duplicate_disposition_retain_and_retarget_for_draft_and_issue(self) -> None:
-        rejected = self.duplicate_candidate(8, decision="rejected")
-
-        retain_draft = self.set_target_disposition(
-            self.example(),
-            "keep_current_draft",
-            candidates=[rejected],
-            confirmation_ref="retain_draft_confirmation",
-        )
-        retain_draft = self.confirm_target_and_actions(retain_draft)
-        self.assertEqual(self.structural(retain_draft), [])
-
-        retain_issue = self.set_issue_target(self.example())
-        retain_issue = self.set_target_disposition(
-            retain_issue,
-            "keep_current_open_issue",
-            candidates=[rejected],
-            confirmation_ref="retain_issue_confirmation",
-        )
-        retain_issue = self.confirm_target_and_actions(retain_issue)
-        self.assertEqual(self.structural(retain_issue), [])
-
-        for from_issue in (False, True):
-            with self.subTest(retarget_from_issue=from_issue):
-                retarget = self.retarget_payload(from_issue=from_issue)
-                self.assertEqual(self.structural(retarget), [])
-                self.assertEqual(retarget["typed_exit"], "retarget_context")
+    def test_active_task_compact_trail_keeps_only_direct_consumer_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = (
+                self.active_task_classification_payload(root)
+            )
+            self.assertEqual(self.structural(payload, task, root), [])
+            trail = payload["active_task_evidence"]["decision_trail"]
+            self.assertEqual(
+                set(trail),
+                {"trail_id", "proposal_decisions", "github_authority"},
+            )
+            self.assertEqual(
+                set(trail["proposal_decisions"][0]),
+                {"proposal_id", "proposal_digest", "decision"},
+            )
+            self.assertEqual(
+                set(trail["github_authority"]),
+                {"kind", "url", "content_sha256"},
+            )
+            forbidden = {
+                "user_decision",
+                "confirmation_ref",
+                "context_before_task_update_sha256",
+                "stale_downstream_evidence",
+                "review_evidence",
+                "interrupted_resume_target",
+                "updated_at",
+            }
+            self.assertTrue(forbidden.isdisjoint(self.nested_keys(trail)))
+            with (
+                mock.patch.object(
+                    gtt,
+                    "context_read_live_issue",
+                    return_value=(current_issue, None),
+                ),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
                 self.assertEqual(
-                    retarget["consumer"], {"kind": "skill", "id": "guru-sync-base"}
+                    gtt.requirements_clarification_live_errors(
+                        root, payload, task
+                    ),
+                    [],
                 )
 
-        silent_keep = copy.deepcopy(retain_issue)
-        silent_keep["human_confirmation"] = copy.deepcopy(
-            self.example()["human_confirmation"]
-        )
-        silent_keep["target_disposition"]["confirmation_ref"] = None
-        silent_keep = self.derive(silent_keep)
-        self.assertIn(
-            "target_disposition_requires_exact_confirmation",
-            self.structural(silent_keep),
-        )
+    def test_legacy_full_trail_and_task_action_are_projected_once(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, current_issue, comment_response = (
+                self.active_task_classification_payload(root)
+            )
+            legacy = copy.deepcopy(payload)
+            compact = legacy["active_task_evidence"]["decision_trail"]
+            proposal_digest = compact["proposal_decisions"][0]["proposal_digest"]
+            planning = copy.deepcopy(
+                legacy["active_task_evidence"]["planning_documents"]
+            )
+            stale = {
+                "planning_approval_sha256": "4" * 64,
+                "phase2_check_sha256": None,
+                "branch_review_sha256": None,
+            }
+            review = {"status": "not_started", "artifact": None}
+            legacy_trail = {
+                "trail_id": compact["trail_id"],
+                "proposal_decisions": [{
+                    **compact["proposal_decisions"][0],
+                    "confirmation_ref": "legacy-confirmation",
+                }],
+                "user_decision": {
+                    "status": "confirmed",
+                    "proposal_digests": [proposal_digest],
+                    "confirmer": "user",
+                    "confirmed_at": "2026-01-01T00:00:01Z",
+                    "evidence_summary": "Legacy authorization process evidence.",
+                },
+                "github_authority": {
+                    **compact["github_authority"],
+                    "updated_at": "2026-01-01T00:00:02Z",
+                },
+                "context_before_task_update_sha256": legacy[
+                    "context_evidence"
+                ]["snapshot_sha256"],
+                "planning_documents": planning,
+                "stale_downstream_evidence": stale,
+                "review_evidence": review,
+                "reentry_owners": copy.deepcopy(
+                    legacy["active_task_evidence"]["reentry_owners"]
+                ),
+                "interrupted_resume_target": "guru-resume-implementation",
+            }
+            legacy["active_task_evidence"]["decision_trail"] = legacy_trail
+            legacy["active_task_evidence"]["stale_downstream_evidence"] = stale
+            legacy["active_task_evidence"]["review_evidence"] = review
+            action = legacy["source_actions"][0]
+            action["payload"] = {
+                "github_authority_facts_sha256": legacy[
+                    "active_task_evidence"
+                ]["github_authority_facts_sha256"],
+                "ledger": copy.deepcopy(legacy["active_task_evidence"]["ledger"]),
+                "planning_documents": planning,
+                "stale_downstream_evidence": stale,
+                "review_evidence": review,
+                "decision_trail": legacy_trail,
+                "reentry_owners": copy.deepcopy(
+                    legacy["active_task_evidence"]["reentry_owners"]
+                ),
+            }
+            action["mutation_evidence"] = {
+                "source": "confirmed-task-local-update"
+            }
 
-    def test_open_issue_without_duplicate_does_not_require_confirmation(self) -> None:
-        payload = self.set_issue_target(self.example())
-        payload = self.set_target_disposition(payload, "keep_current_open_issue")
+            projected = self.derive(legacy)
+            trail = projected["active_task_evidence"]["decision_trail"]
+            self.assertEqual(
+                set(projected["active_task_evidence"]),
+                {
+                    "task_locator",
+                    "github_authority_facts_sha256",
+                    "ledger",
+                    "planning_documents",
+                    "decision_trail",
+                    "reentry_owners",
+                },
+            )
+            self.assertEqual(
+                set(trail),
+                {"trail_id", "proposal_decisions", "github_authority"},
+            )
+            self.assertEqual(
+                set(trail["proposal_decisions"][0]),
+                {"proposal_id", "proposal_digest", "decision"},
+            )
+            self.assertEqual(
+                set(projected["source_actions"][0]["payload"]),
+                set(gtt.REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS),
+            )
+            self.assertEqual(
+                projected["source_actions"][0]["mutation_evidence"],
+                {"source": "task-local-update"},
+            )
+            self.assertEqual(self.structural(projected, task, root), [])
+            with (
+                mock.patch.object(
+                    gtt,
+                    "context_read_live_issue",
+                    return_value=(current_issue, None),
+                ),
+                mock.patch.object(gtt, "run", return_value=comment_response),
+            ):
+                self.assertEqual(
+                    gtt.requirements_clarification_live_errors(
+                        root, projected, task
+                    ),
+                    [],
+                )
+
+    def test_partial_legacy_fields_on_current_trail_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task, payload, _current_issue, _comment_response = (
+                self.active_task_classification_payload(root)
+            )
+            payload["active_task_evidence"]["decision_trail"][
+                "user_decision"
+            ] = {"status": "confirmed"}
+            payload = self.derive(payload)
+            errors = self.structural(payload, task, root)
+            self.assertIn(
+                "requirements_clarification_schema_validation_failed",
+                errors,
+            )
+            self.assertIn("active_task_decision_trail_shape_invalid", errors)
+
+    def test_current_target_dispositions_are_closed_without_authorization_state(self) -> None:
+        open_issue = self.set_target_disposition(
+            self.set_issue_target(self.example()),
+            "keep_current_open_issue",
+        )
+        cases = {
+            "keep_current_open_issue": open_issue,
+            "retarget_existing_issue": self.retarget_payload(),
+            "reopen_closed_issue": self.reopen_closed_payload(),
+            "create_followup_draft": self.closed_followup_payload(),
+            "block_target_complete": self.closed_complete_payload(),
+        }
+        for name, payload in cases.items():
+            with self.subTest(disposition=name):
+                self.assertEqual(self.structural(payload), [])
+                self.assertTrue({
+                    "confirmation_ref", "human_confirmation", "user_confirmation",
+                }.isdisjoint(self.nested_keys(payload)))
+
+    def test_live_mutation_binds_action_payload_and_result_without_authorization(self) -> None:
+        payload = self.issue_payload_with_action(
+            kind="issue_body_edit",
+            action_id="edit_body",
+            body="new body",
+            mutation_url="https://github.com/example/guru-extension/issues/7",
+            mutation_updated_at="2026-01-01T00:00:02Z",
+        )
         self.assertEqual(self.structural(payload), [])
-        self.assertEqual(payload["human_confirmation"]["status"], "not_required")
+        self.assertTrue({
+            "confirmation_ref", "human_confirmation", "confirmed_actions",
+        }.isdisjoint(self.nested_keys(payload)))
 
-    def test_closed_issue_reopen_followup_and_complete_dispositions(self) -> None:
-        reopened = self.reopen_closed_payload()
-        self.assertEqual(self.structural(reopened), [])
-
-        followup = self.closed_followup_payload()
-        self.assertEqual(self.structural(followup), [])
-        self.assertEqual(
-            followup["target_disposition"]["original_target_role"], "related"
-        )
-
-        complete = self.closed_complete_payload()
-        self.assertEqual(self.structural(complete), [])
-
-        open_complete = self.set_issue_target(self.example(), state="open")
-        open_complete["typed_exit"] = "blocked"
-        open_complete["consumer"] = {
-            "kind": "stop",
-            "id": "requirements-clarification-blocked",
-        }
-        open_complete["ai_review_gate"]["status"] = "blocked"
-        open_complete["error"] = {
-            "codes": ["requirements_target_complete"],
-            "summary": "The target was incorrectly classified complete.",
-        }
-        open_complete = self.set_target_disposition(
-            open_complete,
-            "block_target_complete",
-            original_target_role="reference",
-            confirmation_ref="complete_target_confirmation",
-        )
-        open_complete = self.confirm_target_and_actions(open_complete)
-        self.assertIn(
-            "block_target_complete_disposition_invalid",
-            self.structural(open_complete),
-        )
-
-    def test_load_bearing_round_requires_persisted_authority(self) -> None:
-        def add_round(
-            payload: dict[str, object],
-            *,
-            impact: str,
-            action_ids: list[str],
-        ) -> dict[str, object]:
-            payload["clarification_rounds"] = [{
-                "round_id": "round_authority",
-                "question_id": "acceptance_boundary",
-                "atomic_group_id": None,
-                "atomic_group_reason": None,
-                "category": "product_intent",
-                "question": "Which acceptance boundary is authoritative?",
-                "answer_summary": "The user confirmed the exact acceptance boundary.",
-                "answer_status": "complete",
-                "authority_impact": impact,
-                "authority_action_ids": action_ids,
-                "affected_contracts": ["acceptance criteria"],
-                "opened_question_ids": ["acceptance_boundary"],
-                "closed_question_ids": ["acceptance_boundary"],
-            }]
-            payload["open_questions"] = []
-            return self.derive(payload)
-
-        none_clear = add_round(self.example(), impact="load_bearing", action_ids=[])
-        self.assertIn(
-            "load_bearing_round_requires_authority_action",
-            self.structural(none_clear),
-        )
-        self.assertIn(
-            "load_bearing_authority_update_requires_refresh_context",
-            self.structural(none_clear),
-        )
-
-        non_load_bearing = add_round(
-            self.example(), impact="non_load_bearing", action_ids=[]
-        )
-        self.assertEqual(self.structural(non_load_bearing), [])
-
-        for kind in ("issue_comment", "issue_body_edit"):
-            with self.subTest(issue_authority_kind=kind):
-                body = f"Confirmed load-bearing authority through {kind}."
-                url = "https://github.com/example/guru-extension/issues/7"
-                if kind == "issue_comment":
-                    url += "#issuecomment-99"
-                issue_payload = self.issue_payload_with_action(
-                    kind=kind,
-                    action_id="persist_authority",
-                    action_payload={"body": body},
-                    mutation_url=url,
-                    mutation_updated_at="2026-01-01T00:00:02Z",
-                    mutation_content_sha256=hashlib.sha256(body.encode("utf-8")).hexdigest(),
-                )
-                issue_payload = add_round(
-                    issue_payload,
-                    impact="load_bearing",
-                    action_ids=["persist_authority"],
-                )
-                self.assertEqual(self.structural(issue_payload), [])
-
-        draft_body = "The proposed draft persists the load-bearing acceptance boundary."
-        draft = self.example()
-        draft["typed_exit"] = "refresh_context"
-        draft["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-        draft["review_target"]["body_sha256"] = hashlib.sha256(
-            draft_body.encode("utf-8")
-        ).hexdigest()
-        draft["source_actions"] = [{
-            "action_id": "persist_draft",
-            "kind": "proposed_draft_update",
-            "target": {"repo": "example/guru-extension"},
-            "payload": {"title": "Clarified draft", "body": draft_body},
-            "preimage_sha256": "1" * 64,
-            "payload_sha256": None,
-            "action_digest": "0" * 64,
-            "status": "validated",
-            "mutation_evidence": None,
-        }]
-        draft = self.derive(draft)
-        action_digest = draft["source_actions"][0]["action_digest"]
-        draft["human_confirmation"] = {
-            "status": "confirmed",
-            "confirmation_kind": "exact_source_action",
-            "action_digest": gtt.context_digest([action_digest]),
-            "target_disposition_digest": None,
-            "proposal_digests": [],
-            "confirmed_actions": ["persist_draft"],
-            "confirmer": "user",
-            "confirmed_at": "2026-01-01T00:00:01Z",
-            "evidence_summary": "The exact proposed draft update was confirmed.",
-        }
-        draft["mutation_results"] = [{
-            "action_id": "persist_draft",
-            "kind": "proposed_draft_update",
-            "status": "succeeded",
-            "url": None,
-            "state": "draft",
-            "updated_at": None,
-            "content_sha256": hashlib.sha256(draft_body.encode("utf-8")).hexdigest(),
-            "action_digest": action_digest,
-            "facts_sha256": "0" * 64,
-        }]
-        draft = add_round(draft, impact="load_bearing", action_ids=["persist_draft"])
-        self.assertEqual(self.structural(draft), [])
-
-    def test_target_duplicate_confirmation_and_content_staleness_fail_closed(self) -> None:
-        retarget = self.retarget_payload(from_issue=False)
-        stale_duplicate = copy.deepcopy(retarget)
-        stale_duplicate["target_disposition"]["duplicate_candidates"][0][
-            "updated_at"
-        ] = "2026-01-01T00:00:09Z"
-        stale_duplicate = self.derive(stale_duplicate)
-        live_candidate = {
-            "number": 8,
-            "url": "https://github.com/example/guru-extension/issues/8",
-            "state": "open",
-            "updated_at": "2026-01-01T00:00:10Z",
-        }
-        with mock.patch.object(
-            gtt, "context_read_live_issue", return_value=(live_candidate, None)
-        ):
-            self.assertIn(
-                "requirements_duplicate_candidate_stale",
-                gtt.requirements_clarification_live_errors(
-                    self.repo, stale_duplicate, None
-                ),
-            )
-
-        wrong_confirmation = copy.deepcopy(retarget)
-        wrong_confirmation["human_confirmation"][
-            "target_disposition_digest"
-        ] = "f" * 64
-        wrong_confirmation = self.derive(wrong_confirmation)
-        self.assertIn(
-            "target_disposition_requires_exact_confirmation",
-            self.structural(wrong_confirmation),
-        )
-
-        stale_target = self.set_issue_target(self.example())
-        stale_target = self.set_target_disposition(
-            stale_target, "keep_current_open_issue"
-        )
-        live_target = {
+        live_issue = {
+            "repo": "example/guru-extension",
             "number": 7,
-            "url": stale_target["review_target"]["url"],
-            "state": "closed",
-            "updated_at": "2026-01-01T00:00:10Z",
-            "body_sha256": "f" * 64,
+            "url": "https://github.com/example/guru-extension/issues/7",
+            "state": "open",
+            "updated_at": "2026-01-01T00:00:02Z",
+            "body_sha256": hashlib.sha256(b"new body").hexdigest(),
+            "facts_sha256": "unused",
         }
         with mock.patch.object(
-            gtt, "context_read_live_issue", return_value=(live_target, None)
+            gtt, "context_read_live_issue", return_value=(live_issue, None)
         ):
-            self.assertIn(
-                "requirements_target_issue_stale",
-                gtt.requirements_clarification_live_errors(
-                    self.repo, stale_target, None
-                ),
+            live_errors = gtt.requirements_clarification_live_errors(
+                self.repo, payload, None
             )
+        self.assertEqual(live_errors, ["requirements_target_issue_stale"])
+        self.assertEqual(
+            gtt.requirements_clarification_typed_exit_live_errors(
+                payload, live_errors
+            ),
+            [],
+        )
+
+        mismatch = copy.deepcopy(payload)
+        mismatch["mutation_results"][0]["content_sha256"] = "f" * 64
+        mismatch = self.derive(mismatch)
+        self.assertIn(
+            "mutation_payload_result_mismatch",
+            self.structural(mismatch),
+        )
+
+        missing_result = copy.deepcopy(payload)
+        missing_result["mutation_results"] = []
+        missing_result = self.derive(missing_result)
+        self.assertIn(
+            "executed_source_action_requires_mutation_result",
+            self.structural(missing_result),
+        )
+
+    def test_action_bodies_allow_multiline_markdown_and_reject_controls(self) -> None:
+        markdown = "# Clarification\n\n- first\tvalue\r\n- second"
+        self.assertTrue(gtt.requirements_clarification_nonempty(markdown))
+
+        def payload_for(kind: str, body: str) -> dict[str, object]:
+            if kind == "new_issue_draft":
+                return self.closed_followup_payload(body)
+            url = "https://github.com/example/guru-extension/issues/7"
+            if kind == "issue_comment":
+                url += "#issuecomment-99"
+            return self.issue_payload_with_action(
+                kind=kind,
+                action_id=f"multiline_{kind}",
+                body=body,
+                mutation_url=url,
+                mutation_updated_at="2026-01-01T00:00:02Z",
+            )
+
+        for kind in ("issue_comment", "issue_body_edit", "new_issue_draft"):
+            with self.subTest(kind=kind, value="multiline"):
+                self.assertEqual(self.structural(payload_for(kind, markdown)), [])
+            expected = (
+                "draft_source_action_shape_invalid"
+                if kind == "new_issue_draft"
+                else "github_source_action_shape_invalid"
+            )
+            for label, control in (
+                ("nul", "\x00"),
+                ("other_c0", "\x01"),
+                ("del", "\x7f"),
+            ):
+                with self.subTest(kind=kind, value=label):
+                    invalid = markdown + control
+                    self.assertFalse(
+                        gtt.requirements_clarification_nonempty(invalid)
+                    )
+                    self.assertIn(
+                        expected,
+                        self.structural(payload_for(kind, invalid)),
+                    )
 
     def test_legacy_schema_requires_complete_intake_refresh(self) -> None:
         legacy = self.raw_example()
@@ -25479,1583 +22923,25 @@ class RequirementsClarificationTests(unittest.TestCase):
                     command(args)
                 self.assertEqual(
                     raised.exception.payload["error_codes"],
-                    ["requirements_clarification_legacy_schema_requires_refresh"],
+                    [
+                        "requirements_clarification_legacy_schema_requires_refresh"
+                    ],
                 )
 
-    def test_actions_and_mutations_force_their_only_legal_exit(self) -> None:
-        draft = self.closed_followup_payload("Reviewed scope")
-        draft["typed_exit"] = "clear"
-        draft["consumer"] = {"kind": "workflow", "id": "guru-requirements-clear-router"}
-        draft = self.derive(draft)
-        self.assertIn("new_issue_draft_requires_new_task_exit", self.structural(draft))
-
-        needs = copy.deepcopy(draft)
-        needs["typed_exit"] = "needs_context"
-        needs["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
-        needs["context_evidence"] = {
-            "status": "missing", "schema_id": None, "snapshot_sha256": None,
-            "evidence_refs": ["repository search"], "missing_reason": "Context is unavailable.",
-        }
-        needs = self.derive(needs)
-        self.assertIn("new_issue_draft_requires_new_task_exit", self.structural(needs))
-
-        mutation = self.issue_payload_with_action(
-            kind="issue_body_edit", action_id="edit_body", action_payload={"body": "new body"},
-            mutation_url="https://github.com/example/guru-extension/issues/7",
-            mutation_updated_at="2026-01-01T00:00:02Z",
-            mutation_content_sha256=hashlib.sha256(b"new body").hexdigest(),
+    def test_public_outputs_are_minimal_consumer_dtos(self) -> None:
+        output_paths = sorted(
+            (self.package / "examples").glob("public-*-output.json")
         )
-        blocked = copy.deepcopy(mutation)
-        blocked["typed_exit"] = "blocked"
-        blocked["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
-        blocked["ai_review_gate"]["status"] = "blocked"
-        blocked["error"] = {"codes": ["semantic_gate_blocked"], "summary": "The gate is blocked."}
-        blocked = self.derive(blocked)
-        errors = self.structural(blocked)
-        self.assertIn("mutation_results_require_refresh_context", errors)
-        self.assertIn("source_action_requires_refresh_context", errors)
-
-    def test_initial_issue_and_explicit_standalone_entry_kinds(self) -> None:
-        standalone = self.example()
-        standalone["invocation_context"] = {
-            "kind": "standalone_review", "caller": "explicit review", "task_locator": None,
-            "resume_target": "guru-standalone-caller",
+        self.assertEqual(len(output_paths), 6)
+        forbidden = {
+            "confirmed_action_id", "confirmation_ref", "human_confirmation",
+            "user_confirmation", "content_identity", "source_actions",
         }
-        standalone = self.derive(standalone)
-        self.assertEqual(self.structural(standalone), [])
+        for path in output_paths:
+            with self.subTest(path=path.name):
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                self.assertTrue(forbidden.isdisjoint(self.nested_keys(payload)))
 
-        initial = self.set_issue_target(self.example())
-        initial = self.set_target_disposition(initial, "keep_current_open_issue")
-        self.assertEqual(self.structural(initial), [])
-        live_issue = {
-            "repo": "example/guru-extension", "number": 7,
-            "url": initial["review_target"]["url"], "state": "open",
-            "updated_at": initial["review_target"]["updated_at"],
-            "body_sha256": initial["review_target"]["body_sha256"],
-            "facts_sha256": "unused",
-        }
-        with mock.patch.object(gtt, "context_read_live_issue", return_value=(live_issue, None)):
-            self.assertEqual(gtt.requirements_clarification_live_errors(self.repo, initial, None), [])
-
-        wrong_resume = copy.deepcopy(initial)
-        wrong_resume["invocation_context"]["resume_target"] = "guru-standalone-caller"
-        wrong_resume = self.derive(wrong_resume)
-        self.assertIn(
-            "requirements_clarification_resume_target_mismatch",
-            self.structural(wrong_resume),
-        )
-
-    def test_answered_repository_question_requires_checked_evidence(self) -> None:
-        payload = self.example()
-        payload["repository_answerable_questions"][0]["evidence_refs"] = []
-        payload = self.derive(payload)
-        self.assertIn(
-            "answered_repository_question_requires_evidence",
-            self.structural(payload),
-        )
-
-    def make_active_task_classification(
-        self,
-        root: Path,
-        *,
-        decision: str,
-        typed_exit: str,
-        resume_target: str,
-        fresh_reentry: bool,
-    ) -> tuple[Path, dict[str, object], dict[str, object], subprocess.CompletedProcess[str]]:
-        subprocess.run(["git", "init", "-q", str(root)], check=True)
-        task = root / ".trellis/tasks/active-scope"
-        task.mkdir(parents=True)
-        locator = task.relative_to(root).as_posix()
-        (task / "task.json").write_text(
-            json.dumps({
-                "id": "active-scope",
-                "name": "active-scope",
-                "title": "Active scope classification",
-                "status": "in_progress",
-                "scope": "issue #7",
-                "branch": "main",
-                "base_branch": "main",
-            }) + "\n",
-            encoding="utf-8",
-        )
-        for name, content in (
-            (
-                "prd.md",
-                "# Active scope requirements\n\n"
-                "## Goal\n\nClassify the requested scope without changing the confirmed delivery silently.\n\n"
-                "## Acceptance\n\nPersist one exact user decision and resume only after evidence is current.\n",
-            ),
-            (
-                "design.md",
-                "# Active scope design\n\n"
-                "## Data flow\n\nBind the proposal, user decision, GitHub authority, and task ledger.\n\n"
-                "## Failure behavior\n\nReject missing, stale, or mismatched evidence with structured errors.\n\n"
-                "## Docs SSOT Plan\n\nUse ssot_first and update the durable workflow contract.\n",
-            ),
-            (
-                "implement.md",
-                "# Active scope implementation\n\n"
-                "## Sequence\n\nValidate planning, persist the trail, refresh authority, then resume the owner.\n\n"
-                "## Verification\n\nRun structural, live, package, and installation regression checks.\n",
-            ),
-        ):
-            (task / name).write_text(content, encoding="utf-8")
-        ledger_payload = {
-            "primary_issue": {"number": 7},
-            "close_issues": [{"number": 7}],
-            "related_issues": [],
-            "followup_issues": [],
-            "scope_decisions": [],
-        }
-        (task / "issue-scope-ledger.json").write_text(
-            json.dumps(ledger_payload, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        wording_scope, wording_contents = gtt.contract_wording_build_scope(
-            root,
-            "planning_artifacts",
-            "workflow",
-            task_dir=task,
-        )
-        wording_scan = gtt.scan_contract_wording(wording_scope, wording_contents)
-        wording_evidence = gtt.contract_wording_derive_result(
-            "planning_artifacts",
-            "workflow",
-            wording_scope,
-            wording_scan,
-            {
-                "generated_at": "2026-01-01T00:00:00Z",
-                "semantic_review": {
-                    "revisions": [],
-                    "classifications": [],
-                    "ai_review_gate": {
-                        "status": "passed",
-                        "reviewer": "codex-main-session",
-                        "summary": "The planning wording contract was reviewed and passed.",
-                        "reviewed_scan_sha256": wording_scan["scan_sha256"],
-                        "checked_dimensions": {
-                            name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                        },
-                        "planning_checked_dimensions": {
-                            name: True
-                            for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-                        },
-                    },
-                },
-                "human_confirmation": {
-                    "status": "not_required",
-                    "confirmed_by": None,
-                    "confirmed_at": None,
-                    "reason": "The fixture requires no content mutation.",
-                },
-                "typed_exit": "pass",
-            },
-        )
-        gtt.write_json(task / gtt.CONTRACT_WORDING_EVIDENCE_ARTIFACT, wording_evidence)
-        authored_planning = {
-            "mode": "workflow",
-            "requirement_authorities": [{
-                "id": "active-scope-prd",
-                "kind": "task_artifact",
-                "locator": f"{locator}/prd.md",
-                "sha256": "0" * 64,
-                "updated_at": None,
-            }],
-            "docs_ssot_plan": {
-                "strategy": "ssot_first",
-                "artifact_path": "design.md",
-                "locator": "Docs SSOT Plan",
-                "statement_sha256": "0" * 64,
-                "durable_paths": ["docs/requirements/active-scope.md"],
-            },
-            "provenance_review": {
-                "entries": [{
-                    "id": "active-scope-goal",
-                    "artifact_path": "prd.md",
-                    "locator": "Goal",
-                    "statement_sha256": "0" * 64,
-                    "classification": "explicit_requirement",
-                    "authority_refs": ["active-scope-prd"],
-                    "reason": "The active task explicitly requires one exact scope classification.",
-                    "implementation_choice": None,
-                    "scope_expansion": None,
-                    "out_of_scope_proposal": None,
-                }],
-                "coverage": {
-                    "reviewer": "codex-main-session",
-                    "summary": "All load-bearing active-scope planning contracts were reviewed.",
-                    "reviewed_entry_ids": ["active-scope-goal"],
-                    "all_load_bearing_items_covered": True,
-                    "review_sha256": "0" * 64,
-                },
-            },
-            "unusual_scenario_review": {
-                "reviewer": "codex-main-session",
-                "summary": "No unusual scenario proposal is required by this fixture.",
-                "candidates": [],
-                "unresolved_count": 0,
-                "review_sha256": "0" * 64,
-            },
-            "semantic_review": {"ai_review_gate": {
-                "status": "passed",
-                "reviewer": "codex-main-session",
-                "summary": "The complete active-scope planning contract was reviewed and accepted.",
-                "reviewed_at": "2026-01-01T00:00:00Z",
-                "findings": [],
-                "revision_actions": [],
-                "scope_proposals": [],
-                "blocking_reasons": [],
-            }},
-            "user_confirmation": {
-                "kind": "post-planning-approval",
-                "status": "confirmed",
-                "prompt_presented_at": "2026-01-01T00:00:00Z",
-                "confirmed_at": "2026-01-01T00:00:01Z",
-                "evidence_summary": "The user explicitly confirmed all three displayed planning documents.",
-            },
-            "typed_exit": "approved",
-            "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
-            "reason": "The active-scope planning fixture passed the semantic gate.",
-            "supersedes_facts_sha256": None,
-        }
-        with (
-            mock.patch.object(gtt, "current_head", return_value="a" * 40),
-            mock.patch.object(gtt, "git_status_paths", return_value=[]),
-        ):
-            planning_approval = gtt.build_planning_approval_payload(
-                root,
-                task,
-                authored_planning,
-                task_context={
-                    "base_branch": "main",
-                    "base_ref": "refs/heads/main",
-                    "base_head_sha": "b" * 40,
-                    "branch_name": "main",
-                },
-            )
-        gtt.write_json(task / "planning-approval.json", planning_approval)
-        payload = self.example()
-        original_context = payload["context_evidence"]["snapshot_sha256"]
-        current_context = "4" * 64 if fresh_reentry else original_context
-        payload["context_evidence"]["snapshot_sha256"] = current_context
-        context_generated_at = (
-            "2026-01-01T00:00:03Z"
-            if fresh_reentry
-            else "2026-01-01T00:00:00Z"
-        )
-        (task / "context-discovery.json").write_text(
-            json.dumps({
-                "generated_at": context_generated_at,
-                "snapshot_identity": {"snapshot_sha256": current_context},
-            }) + "\n",
-            encoding="utf-8",
-        )
-        target_projection = {
-            "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
-            "url": "https://github.com/example/guru-extension/issues/7", "state": "open",
-            "updated_at": "2026-01-01T00:00:00Z", "body_sha256": "1" * 64,
-        }
-        payload["mode"] = "workflow"
-        payload["target_disposition"] = None
-        payload["typed_exit"] = typed_exit
-        payload["consumer"] = gtt.REQUIREMENTS_CLARIFICATION_CONSUMERS[typed_exit]
-        payload["invocation_context"] = {
-            "kind": "active_task_scope_change", "caller": "active task",
-            "task_locator": locator, "resume_target": resume_target,
-        }
-        payload["review_target"] = {
-            **target_projection, "facts_sha256": gtt.context_digest(target_projection),
-        }
-        payload["scope_proposals"] = [{
-            "proposal_id": f"classify_{decision}",
-            "scenario": "Classify an independent active-task request.",
-            "trigger_evidence": ["new active-task input"],
-            "proposed_contracts": ["one explicit scope classification"],
-            "cost": "A separate delivery and validation path.",
-            "alternatives": ["Keep the current confirmed scope unchanged."],
-            "consequence_if_omitted": "The independent request is not part of this delivery.",
-            "origin_requirement_status": "unconfirmed_expansion",
-            "optional_mechanism_origin": False, "decision": decision,
-            "proposal_digest": "0" * 64, "confirmation_ref": "scope_confirmation",
-        }]
-        payload = self.derive(payload)
-        proposal_digest = payload["scope_proposals"][0]["proposal_digest"]
-        decision_summary = "The user confirmed the exact active-task classification proposal."
-        payload["human_confirmation"] = {
-            "status": "confirmed", "confirmation_kind": "exact_scope_proposal",
-            "action_digest": None, "target_disposition_digest": None,
-            "proposal_digests": [proposal_digest],
-            "confirmed_actions": [], "confirmer": "user",
-            "confirmed_at": "2026-01-01T00:00:01Z",
-            "evidence_summary": decision_summary,
-        }
-        planning = [
-            {
-                "path": f"{locator}/{name}",
-                "content_sha256": hashlib.sha256((task / name).read_bytes()).hexdigest(),
-            }
-            for name in ("prd.md", "design.md", "implement.md")
-        ]
-        stale = {
-            "planning_approval_sha256": hashlib.sha256(
-                (task / "planning-approval.json").read_bytes()
-            ).hexdigest(),
-            "phase2_check_sha256": None,
-            "branch_review_sha256": None,
-        }
-        review_evidence = {"status": "not_started", "artifact": None}
-        reentry_owners = ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"]
-        comment_body = f"Confirmed active-task scope decision: {decision}."
-        comment_url = "https://github.com/example/guru-extension/issues/7#issuecomment-99"
-        trail = {
-            "trail_id": f"scope_decision_{decision}",
-            "proposal_decisions": [{
-                "proposal_id": f"classify_{decision}",
-                "proposal_digest": proposal_digest,
-                "decision": decision,
-                "confirmation_ref": "scope_confirmation",
-            }],
-            "user_decision": {
-                "status": "confirmed", "proposal_digests": [proposal_digest],
-                "confirmer": "user", "confirmed_at": "2026-01-01T00:00:01Z",
-                "evidence_summary": decision_summary,
-            },
-            "github_authority": {
-                "kind": "issue_comment", "url": comment_url,
-                "content_sha256": hashlib.sha256(comment_body.encode("utf-8")).hexdigest(),
-                "updated_at": "2026-01-01T00:00:02Z",
-            },
-            "context_before_task_update_sha256": current_context,
-            "planning_documents": planning,
-            "stale_downstream_evidence": stale,
-            "review_evidence": review_evidence,
-            "reentry_owners": reentry_owners,
-            "interrupted_resume_target": resume_target,
-        }
-        ledger_payload["scope_decisions"] = [trail]
-        (task / "issue-scope-ledger.json").write_text(
-            json.dumps(ledger_payload, sort_keys=True) + "\n", encoding="utf-8"
-        )
-        ledger_sha = hashlib.sha256((task / "issue-scope-ledger.json").read_bytes()).hexdigest()
-        payload["active_task_evidence"] = {
-            "task_locator": locator,
-            "github_authority_facts_sha256": payload["review_target"]["facts_sha256"],
-            "ledger": {
-                "path": f"{locator}/issue-scope-ledger.json",
-                "content_sha256": ledger_sha,
-            },
-            "planning_documents": planning,
-            "stale_downstream_evidence": stale,
-            "review_evidence": review_evidence,
-            "decision_trail": trail,
-            "reentry_owners": reentry_owners,
-        }
-        if typed_exit in {"clear", "new_task"}:
-            payload["source_actions"] = [{
-                "action_id": "task_scope", "kind": "active_task_scope_update",
-                "target": {"task_locator": locator},
-                "payload": {
-                    field: copy.deepcopy(payload["active_task_evidence"][field])
-                    for field in gtt.REQUIREMENTS_CLARIFICATION_ACTIVE_TASK_PAYLOAD_FIELDS
-                },
-                "preimage_sha256": current_context, "payload_sha256": None,
-                "action_digest": "0" * 64, "status": "validated",
-                "mutation_evidence": {"source": "confirmed-task-local-update"},
-            }]
-            if typed_exit == "new_task":
-                payload["source_actions"].append({
-                    "action_id": "new_issue", "kind": "new_issue_draft",
-                    "target": {"repo": "example/guru-extension"},
-                    "payload": {
-                        "title": "Independent delivery",
-                        "body": "Reviewed independent scope.",
-                    },
-                    "preimage_sha256": None, "payload_sha256": None,
-                    "action_digest": "0" * 64, "status": "draft_ready",
-                    "mutation_evidence": None,
-                })
-            payload = self.derive(payload)
-            task_action_digest = next(
-                action["action_digest"] for action in payload["source_actions"]
-                if action["action_id"] == "task_scope"
-            )
-            payload["human_confirmation"]["confirmation_kind"] = (
-                "exact_source_action_and_scope"
-            )
-            payload["human_confirmation"]["action_digest"] = (
-                gtt.context_digest([task_action_digest])
-            )
-            payload["human_confirmation"]["confirmed_actions"] = ["task_scope"]
-        elif typed_exit == "refresh_context":
-            payload["active_task_evidence"] = None
-            ledger_payload["scope_decisions"] = []
-            (task / "issue-scope-ledger.json").write_text(
-                json.dumps(ledger_payload, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
-            payload["source_actions"] = [{
-                "action_id": "github_authority", "kind": "issue_comment",
-                "target": {"repo": "example/guru-extension", "issue_number": 7},
-                "payload": {"body": comment_body}, "preimage_sha256": "1" * 64,
-                "payload_sha256": None, "action_digest": "0" * 64,
-                "status": "executed", "mutation_evidence": {"source": "ai-reviewed-gh"},
-            }]
-            payload = self.derive(payload)
-            action_digests = [action["action_digest"] for action in payload["source_actions"]]
-            payload["human_confirmation"]["confirmation_kind"] = "exact_source_action_and_scope"
-            payload["human_confirmation"]["action_digest"] = gtt.context_digest(action_digests)
-            payload["human_confirmation"]["confirmed_actions"] = ["github_authority"]
-            payload["mutation_results"] = [{
-                "action_id": "github_authority", "kind": "issue_comment",
-                "status": "succeeded", "url": comment_url, "state": "open",
-                "updated_at": "2026-01-01T00:00:02Z",
-                "content_sha256": hashlib.sha256(comment_body.encode("utf-8")).hexdigest(),
-                "action_digest": action_digests[0], "facts_sha256": "0" * 64,
-            }]
-        payload = self.derive(payload)
-        current_issue = {
-            "repo": "example/guru-extension", "number": 7,
-            "url": target_projection["url"], "state": "open",
-            "updated_at": target_projection["updated_at"],
-            "body_sha256": target_projection["body_sha256"], "facts_sha256": "unused",
-        }
-        comment_response = subprocess.CompletedProcess(
-            [], 0,
-            json.dumps({
-                "id": 99, "html_url": comment_url,
-                "updated_at": "2026-01-01T00:00:02Z", "body": comment_body,
-            }),
-            "",
-        )
-        return task, payload, current_issue, comment_response
-
-    def test_active_task_clear_or_new_task_rejects_empty_final_proposal_set(self) -> None:
-        for typed_exit, resume_target in (
-            ("clear", "guru-resume-implementation"),
-            ("new_task", "guru-resume-implementation"),
-        ):
-            with self.subTest(typed_exit=typed_exit), tempfile.TemporaryDirectory() as temp:
-                root = Path(temp)
-                task, payload, _current_issue, _comment_response = self.make_active_task_classification(
-                    root,
-                    decision="new_task" if typed_exit == "new_task" else "related",
-                    typed_exit=typed_exit,
-                    resume_target=resume_target,
-                    fresh_reentry=True,
-                )
-                payload["scope_proposals"] = []
-                payload["active_task_evidence"]["decision_trail"] = None
-                payload["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
-                payload["source_actions"] = [{
-                    "action_id": "no_action", "kind": "none", "target": None,
-                    "payload": None, "preimage_sha256": None, "payload_sha256": None,
-                    "action_digest": "0" * 64, "status": "not_required",
-                    "mutation_evidence": None,
-                }]
-                payload["mutation_results"] = []
-                payload = self.derive(payload)
-                errors = gtt.requirements_clarification_structural_errors(root, payload, task)
-                self.assertIn(
-                    "active_task_clear_or_new_task_requires_final_scope_proposal_set",
-                    errors,
-                )
-
-    def test_active_task_terminal_decisions_split_classification_from_mechanism(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, _comment_response = self.make_active_task_classification(
-                root,
-                decision="related",
-                typed_exit="clear",
-                resume_target="guru-resume-implementation",
-                fresh_reentry=True,
-            )
-            classification_payload = copy.deepcopy(payload)
-            classification_comment = subprocess.CompletedProcess(
-                [],
-                0,
-                json.dumps({
-                    "id": 99,
-                    "html_url": "https://github.com/example/guru-extension/issues/7#issuecomment-99",
-                    "updated_at": "2026-01-01T00:00:02Z",
-                    "body": "Confirmed active-task scope decision: related.",
-                }),
-                "",
-            )
-            payload["scope_proposals"] = [{
-                "proposal_id": "remove_optional_guard",
-                "scenario": "Remove an optional implementation guard.",
-                "trigger_evidence": ["the mechanism created the reported risk"],
-                "proposed_contracts": ["retain the original requirement boundary"],
-                "cost": "Remove the optional mechanism.",
-                "alternatives": ["Replace it with a simpler mechanism."],
-                "consequence_if_omitted": "The implementation would create avoidable scope.",
-                "origin_requirement_status": "unconfirmed_expansion",
-                "optional_mechanism_origin": True,
-                "decision": "mechanism_removed",
-                "proposal_digest": "0" * 64,
-                "confirmation_ref": None,
-            }]
-            payload["human_confirmation"] = copy.deepcopy(
-                self.example()["human_confirmation"]
-            )
-            mechanism_evidence = copy.deepcopy(
-                payload["active_task_evidence"]
-            )
-            mechanism_evidence["decision_trail"] = None
-            payload["active_task_evidence"] = mechanism_evidence
-            payload["source_actions"] = [{
-                "action_id": "no_action", "kind": "none", "target": None,
-                "payload": None, "preimage_sha256": None,
-                "payload_sha256": None, "action_digest": "0" * 64,
-                "status": "not_required", "mutation_evidence": None,
-            }]
-            payload["mutation_results"] = []
-            mechanism_only = self.derive(payload)
-            self.assertEqual(
-                gtt.requirements_clarification_structural_errors(
-                    root, mechanism_only, task
-                ),
-                [],
-            )
-            with mock.patch.object(
-                gtt,
-                "context_read_live_issue",
-                return_value=(current_issue, None),
-            ):
-                self.assertEqual(
-                    gtt.requirements_clarification_live_errors(
-                        root, mechanism_only, task
-                    ),
-                    [],
-                )
-
-            mechanism_replaced = copy.deepcopy(mechanism_only)
-            mechanism_replaced["scope_proposals"][0]["decision"] = (
-                "mechanism_replaced"
-            )
-            mechanism_replaced = self.derive(mechanism_replaced)
-            self.assertEqual(
-                gtt.requirements_clarification_structural_errors(
-                    root, mechanism_replaced, task
-                ),
-                [],
-            )
-            with mock.patch.object(
-                gtt,
-                "context_read_live_issue",
-                return_value=(current_issue, None),
-            ):
-                self.assertEqual(
-                    gtt.requirements_clarification_live_errors(
-                        root, mechanism_replaced, task
-                    ),
-                    [],
-                )
-
-            context_path = task / "context-discovery.json"
-            current_context = context_path.read_text(encoding="utf-8")
-            stale_context = json.loads(current_context)
-            stale_context["snapshot_identity"]["snapshot_sha256"] = "9" * 64
-            context_path.write_text(
-                json.dumps(stale_context) + "\n", encoding="utf-8"
-            )
-            with mock.patch.object(
-                gtt,
-                "context_read_live_issue",
-                return_value=(current_issue, None),
-            ):
-                self.assertIn(
-                    "requirements_context_snapshot_stale",
-                    gtt.requirements_clarification_live_errors(
-                        root, mechanism_only, task
-                    ),
-                )
-            context_path.write_text(current_context, encoding="utf-8")
-
-            mixed_task = task
-            mixed = classification_payload
-            mixed_issue = current_issue
-            mixed_comment = classification_comment
-            mixed["scope_proposals"].append(copy.deepcopy(
-                mechanism_only["scope_proposals"][0]
-            ))
-            mixed = self.derive(mixed)
-            classification_digest = mixed["scope_proposals"][0]["proposal_digest"]
-            self.assertEqual(
-                mixed["human_confirmation"]["proposal_digests"],
-                [classification_digest],
-            )
-            self.assertEqual(
-                [row["decision"] for row in mixed["active_task_evidence"]["decision_trail"]["proposal_decisions"]],
-                ["related"],
-            )
-            self.assertEqual(
-                gtt.requirements_clarification_structural_errors(
-                    root, mixed, mixed_task
-                ),
-                [],
-            )
-            with (
-                mock.patch.object(
-                    gtt, "context_read_live_issue", return_value=(mixed_issue, None)
-                ),
-                mock.patch.object(gtt, "run", return_value=mixed_comment),
-            ):
-                self.assertEqual(
-                    gtt.requirements_clarification_live_errors(
-                        root, mixed, mixed_task
-                    ),
-                    [],
-                )
-
-    def test_active_task_mechanism_disposition_rejects_wrong_optional_confirmation_trail_and_action(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, _current_issue, _comment_response = self.make_active_task_classification(
-                root,
-                decision="related",
-                typed_exit="clear",
-                resume_target="guru-resume-implementation",
-                fresh_reentry=True,
-            )
-            proposal = payload["scope_proposals"][0]
-            proposal["decision"] = "mechanism_replaced"
-            proposal["confirmation_ref"] = None
-            proposal["optional_mechanism_origin"] = True
-            original_actions = copy.deepcopy(payload["source_actions"])
-            payload["human_confirmation"] = copy.deepcopy(
-                self.example()["human_confirmation"]
-            )
-            original_evidence = copy.deepcopy(payload["active_task_evidence"])
-            mechanism_evidence = copy.deepcopy(original_evidence)
-            mechanism_evidence["decision_trail"] = None
-            payload["active_task_evidence"] = mechanism_evidence
-            payload["source_actions"] = [{
-                "action_id": "no_action", "kind": "none", "target": None,
-                "payload": None, "preimage_sha256": None,
-                "payload_sha256": None, "action_digest": "0" * 64,
-                "status": "not_required", "mutation_evidence": None,
-            }]
-            payload["mutation_results"] = []
-            payload = self.derive(payload)
-
-            wrong_optional = copy.deepcopy(payload)
-            wrong_optional["scope_proposals"][0]["optional_mechanism_origin"] = False
-            wrong_optional = self.derive(wrong_optional)
-            self.assertIn(
-                "mechanism_disposition_requires_optional_mechanism_origin",
-                gtt.requirements_clarification_structural_errors(
-                    root, wrong_optional, task
-                ),
-            )
-
-            wrong_confirmation = copy.deepcopy(payload)
-            wrong_confirmation["scope_proposals"][0]["confirmation_ref"] = "generic_continue"
-            wrong_confirmation = self.derive(wrong_confirmation)
-            self.assertIn(
-                "mechanism_disposition_forbids_confirmation",
-                gtt.requirements_clarification_structural_errors(
-                    root, wrong_confirmation, task
-                ),
-            )
-
-            wrong_trail = copy.deepcopy(payload)
-            wrong_trail["active_task_evidence"] = original_evidence
-            wrong_trail = self.derive(wrong_trail)
-            self.assertIn(
-                "active_task_mechanism_only_forbids_decision_trail",
-                gtt.requirements_clarification_structural_errors(
-                    root, wrong_trail, task
-                ),
-            )
-
-            missing_evidence = copy.deepcopy(payload)
-            missing_evidence["active_task_evidence"] = None
-            missing_evidence = self.derive(missing_evidence)
-            self.assertIn(
-                "active_task_mechanism_only_requires_task_evidence",
-                gtt.requirements_clarification_structural_errors(
-                    root, missing_evidence, task
-                ),
-            )
-
-            wrong_action = copy.deepcopy(payload)
-            wrong_action["source_actions"] = original_actions
-            wrong_action = self.derive(wrong_action)
-            self.assertIn(
-                "active_task_mechanism_only_forbids_authority_mutation",
-                gtt.requirements_clarification_structural_errors(
-                    root, wrong_action, task
-                ),
-            )
-
-    def test_active_task_terminal_set_rejects_pending_and_new_task_without_classification(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, pending, _current_issue, _comment_response = self.make_active_task_classification(
-                root,
-                decision="related",
-                typed_exit="clear",
-                resume_target="guru-resume-implementation",
-                fresh_reentry=True,
-            )
-            pending["scope_proposals"][0]["decision"] = "pending"
-            pending = self.derive(pending)
-            self.assertIn(
-                "active_task_clear_or_new_task_requires_final_scope_proposal_set",
-                gtt.requirements_clarification_structural_errors(root, pending, task),
-            )
-
-            mechanism_new_task = copy.deepcopy(pending)
-            mechanism_new_task["typed_exit"] = "new_task"
-            mechanism_new_task["consumer"] = gtt.REQUIREMENTS_CLARIFICATION_CONSUMERS["new_task"]
-            mechanism_new_task["scope_proposals"][0]["decision"] = "mechanism_replaced"
-            mechanism_new_task["scope_proposals"][0]["optional_mechanism_origin"] = True
-            mechanism_new_task["scope_proposals"][0]["confirmation_ref"] = None
-            mechanism_new_task["human_confirmation"] = copy.deepcopy(
-                self.example()["human_confirmation"]
-            )
-            mechanism_new_task["active_task_evidence"] = None
-            mechanism_new_task["source_actions"] = [{
-                "action_id": "new_issue", "kind": "new_issue_draft",
-                "target": {"repo": "example/guru-extension"},
-                "payload": {"title": "Draft", "body": "Reviewed draft."},
-                "preimage_sha256": None, "payload_sha256": None,
-                "action_digest": "0" * 64, "status": "draft_ready",
-                "mutation_evidence": None,
-            }]
-            mechanism_new_task["mutation_results"] = []
-            mechanism_new_task = self.derive(mechanism_new_task)
-            self.assertIn(
-                "active_task_new_task_requires_new_task_classification",
-                gtt.requirements_clarification_structural_errors(
-                    root, mechanism_new_task, task
-                ),
-            )
-
-    def test_every_active_task_final_decision_requires_exact_user_evidence(self) -> None:
-        cases = (
-            ("accepted_current", "clear", "guru-active-task-planning-review"),
-            ("related", "clear", "guru-resume-implementation"),
-            ("followup", "clear", "guru-resume-implementation"),
-            ("new_task", "new_task", "guru-resume-implementation"),
-            ("out_of_scope", "clear", "guru-resume-implementation"),
-        )
-        for decision, typed_exit, resume_target in cases:
-            with self.subTest(decision=decision), tempfile.TemporaryDirectory() as temp:
-                root = Path(temp)
-                task, payload, _current_issue, _comment_response = self.make_active_task_classification(
-                    root,
-                    decision=decision,
-                    typed_exit=typed_exit,
-                    resume_target=resume_target,
-                    fresh_reentry=True,
-                )
-                payload["scope_proposals"][0]["origin_requirement_status"] = "explicit"
-                payload = self.derive(payload)
-                proposal_digest = payload["scope_proposals"][0]["proposal_digest"]
-                payload["scope_proposals"][0]["confirmation_ref"] = None
-                payload["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
-                trail = payload["active_task_evidence"]["decision_trail"]
-                trail["proposal_decisions"][0]["proposal_digest"] = proposal_digest
-                trail["proposal_decisions"][0]["confirmation_ref"] = None
-                trail["user_decision"] = {
-                    "status": "not_required", "proposal_digests": [], "confirmer": None,
-                    "confirmed_at": None, "evidence_summary": "No exact user decision exists.",
-                }
-                payload = self.derive(payload)
-                self.assertIn(
-                    "active_task_final_classification_requires_exact_user_decision",
-                    gtt.requirements_clarification_structural_errors(root, payload, task),
-                )
-
-    def test_every_active_task_classification_requires_exact_task_action_confirmation(self) -> None:
-        cases = (
-            ("accepted_current", "clear", "guru-active-task-planning-review"),
-            ("related", "clear", "guru-resume-implementation"),
-            ("followup", "clear", "guru-resume-implementation"),
-            ("new_task", "new_task", "guru-resume-implementation"),
-            ("out_of_scope", "clear", "guru-resume-implementation"),
-        )
-        for decision, typed_exit, resume_target in cases:
-            with self.subTest(decision=decision), tempfile.TemporaryDirectory() as temp:
-                root = Path(temp)
-                task, payload, current_issue, comment_response = (
-                    self.make_active_task_classification(
-                        root,
-                        decision=decision,
-                        typed_exit=typed_exit,
-                        resume_target=resume_target,
-                        fresh_reentry=True,
-                    )
-                )
-                task_action = next(
-                    action for action in payload["source_actions"]
-                    if action["kind"] == "active_task_scope_update"
-                )
-                self.assertEqual(
-                    payload["human_confirmation"]["confirmation_kind"],
-                    "exact_source_action_and_scope",
-                )
-                self.assertIn(
-                    task_action["action_id"],
-                    payload["human_confirmation"]["confirmed_actions"],
-                )
-                self.assertEqual(
-                    payload["human_confirmation"]["action_digest"],
-                    gtt.context_digest([task_action["action_digest"]]),
-                )
-                self.assertEqual(
-                    gtt.requirements_clarification_structural_errors(
-                        root, payload, task
-                    ),
-                    [],
-                )
-                with (
-                    mock.patch.object(
-                        gtt,
-                        "context_read_live_issue",
-                        return_value=(current_issue, None),
-                    ),
-                    mock.patch.object(gtt, "run", return_value=comment_response),
-                ):
-                    self.assertEqual(
-                        gtt.requirements_clarification_live_errors(
-                            root, payload, task
-                        ),
-                        [],
-                    )
-
-                variants = []
-                proposal_only = copy.deepcopy(payload)
-                proposal_only["human_confirmation"]["confirmation_kind"] = (
-                    "exact_scope_proposal"
-                )
-                proposal_only["human_confirmation"]["action_digest"] = None
-                proposal_only["human_confirmation"]["confirmed_actions"] = []
-                variants.append(("empty_confirmed_actions", proposal_only))
-
-                null_digest = copy.deepcopy(payload)
-                null_digest["human_confirmation"]["action_digest"] = None
-                variants.append(("null_action_digest", null_digest))
-
-                wrong_digest = copy.deepcopy(payload)
-                wrong_digest["human_confirmation"]["action_digest"] = "f" * 64
-                variants.append(("wrong_action_digest", wrong_digest))
-
-                task_action_unlisted = copy.deepcopy(payload)
-                task_action_unlisted["source_actions"].append({
-                    "action_id": "other_action",
-                    "kind": "none",
-                    "target": None,
-                    "payload": None,
-                    "preimage_sha256": None,
-                    "payload_sha256": None,
-                    "action_digest": "0" * 64,
-                    "status": "not_required",
-                    "mutation_evidence": None,
-                })
-                task_action_unlisted = self.derive(task_action_unlisted)
-                other_action = next(
-                    action for action in task_action_unlisted["source_actions"]
-                    if action["action_id"] == "other_action"
-                )
-                task_action_unlisted["human_confirmation"]["confirmed_actions"] = [
-                    "other_action"
-                ]
-                task_action_unlisted["human_confirmation"]["action_digest"] = (
-                    gtt.context_digest([other_action["action_digest"]])
-                )
-                variants.append(("task_action_unlisted", task_action_unlisted))
-
-                for variant, invalid in variants:
-                    with self.subTest(decision=decision, variant=variant):
-                        invalid = self.derive(invalid)
-                        self.assertIn(
-                            "active_task_scope_update_requires_exact_action_confirmation",
-                            gtt.requirements_clarification_structural_errors(
-                                root, invalid, task
-                            ),
-                        )
-                        with (
-                            mock.patch.object(
-                                gtt,
-                                "context_read_live_issue",
-                                return_value=(current_issue, None),
-                            ),
-                            mock.patch.object(
-                                gtt, "run", return_value=comment_response
-                            ),
-                        ):
-                            self.assertIn(
-                                "active_task_scope_update_requires_exact_action_confirmation",
-                                gtt.requirements_clarification_live_errors(
-                                    root, invalid, task
-                                ),
-                            )
-
-    def test_active_task_requires_complete_planning_approval_and_exact_doc_binding(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, comment_response = self.make_active_task_classification(
-                root,
-                decision="related",
-                typed_exit="clear",
-                resume_target="guru-resume-implementation",
-                fresh_reentry=True,
-            )
-            _path, approval, approval_errors = gtt.validate_planning_approval(root, task)
-            self.assertEqual(approval_errors, [])
-            self.assertEqual(approval["schema_version"], "2.0")
-            self.assertEqual(approval["reviewed_artifacts"], approval["approved_artifacts"])
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
-
-            for name in ("prd.md", "design.md", "implement.md"):
-                (task / name).write_text(f"# {name}\n\nPlaceholder.\n", encoding="utf-8")
-            (task / "planning-approval.json").write_text(
-                '{"schema_version":"1.2","status":"passed"}\n', encoding="utf-8"
-            )
-            planning = [
-                {
-                    "path": f"{task.relative_to(root).as_posix()}/{name}",
-                    "content_sha256": hashlib.sha256((task / name).read_bytes()).hexdigest(),
-                }
-                for name in ("prd.md", "design.md", "implement.md")
-            ]
-            stale = payload["active_task_evidence"]["stale_downstream_evidence"]
-            stale["planning_approval_sha256"] = hashlib.sha256(
-                (task / "planning-approval.json").read_bytes()
-            ).hexdigest()
-            payload["active_task_evidence"]["planning_documents"] = planning
-            payload["active_task_evidence"]["decision_trail"]["planning_documents"] = copy.deepcopy(planning)
-            payload["active_task_evidence"]["decision_trail"]["stale_downstream_evidence"] = copy.deepcopy(stale)
-            payload = self.persist_active_task_trail(root, task, payload)
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                live_errors = gtt.requirements_clarification_live_errors(root, payload, task)
-            self.assertIn("active_task_planning_approval_invalid", live_errors)
-            self.assertIn("active_task_planning_approval_binding_mismatch", live_errors)
-
-    def test_active_task_live_review_stale_identity_and_authority_are_bound(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, comment_response = self.make_active_task_classification(
-                root,
-                decision="out_of_scope",
-                typed_exit="clear",
-                resume_target="guru-resume-branch-review",
-                fresh_reentry=True,
-            )
-            review_path = task / "review-gate.json"
-            review_path.write_text(
-                '{"status":"stale","reason":"scope authority changed"}\n',
-                encoding="utf-8",
-            )
-            self.assertIn(
-                "active_task_review_started_requires_stale",
-                gtt.requirements_clarification_structural_errors(
-                    root, payload, task
-                ),
-            )
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertIn(
-                    "active_task_review_started_requires_stale",
-                    gtt.requirements_clarification_live_errors(root, payload, task),
-                )
-
-            review_sha = hashlib.sha256(review_path.read_bytes()).hexdigest()
-            review = {
-                "status": "stale",
-                "artifact": {
-                    "path": f"{task.relative_to(root).as_posix()}/review-gate.json",
-                    "content_sha256": review_sha,
-                },
-            }
-            stale = payload["active_task_evidence"]["stale_downstream_evidence"]
-            stale["branch_review_sha256"] = review_sha
-            payload["active_task_evidence"]["review_evidence"] = review
-            trail = payload["active_task_evidence"]["decision_trail"]
-            trail["review_evidence"] = copy.deepcopy(review)
-            trail["stale_downstream_evidence"] = copy.deepcopy(stale)
-            payload = self.persist_active_task_trail(root, task, payload)
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
-
-            current = copy.deepcopy(payload)
-            current["active_task_evidence"]["review_evidence"]["status"] = "current"
-            current["active_task_evidence"]["decision_trail"]["review_evidence"] = copy.deepcopy(
-                current["active_task_evidence"]["review_evidence"]
-            )
-            current = self.derive(current)
-            self.assertIn(
-                "active_task_review_current_forbidden_during_reentry",
-                gtt.requirements_clarification_structural_errors(
-                    root, current, task
-                ),
-            )
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertIn(
-                    "active_task_review_started_requires_stale",
-                    gtt.requirements_clarification_live_errors(root, current, task),
-                )
-
-            (task / "phase2-check.json").write_text('{"status":"stale"}\n', encoding="utf-8")
-            stale_comment = subprocess.CompletedProcess(
-                [],
-                0,
-                json.dumps({
-                    "id": 99,
-                    "html_url": "https://github.com/example/guru-extension/issues/7#issuecomment-99",
-                    "updated_at": "2026-01-01T00:00:02Z",
-                    "body": "A different live decision.",
-                }),
-                "",
-            )
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=stale_comment),
-            ):
-                live_errors = gtt.requirements_clarification_live_errors(root, payload, task)
-            self.assertIn("active_task_stale_evidence_unbound", live_errors)
-            self.assertIn("active_task_decision_authority_comment_stale", live_errors)
-
-    def test_active_task_non_current_classification_requires_confirmed_persisted_trail(self) -> None:
-        for decision in ("related", "followup", "out_of_scope"):
-            with self.subTest(decision=decision), tempfile.TemporaryDirectory() as temp:
-                root = Path(temp)
-                task, payload, current_issue, comment_response = self.make_active_task_classification(
-                    root, decision=decision, typed_exit="clear",
-                    resume_target="guru-resume-implementation", fresh_reentry=True,
-                )
-                self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
-                with (
-                    mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                    mock.patch.object(gtt, "run", return_value=comment_response),
-                ):
-                    self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
-
-                unconfirmed = copy.deepcopy(payload)
-                unconfirmed["scope_proposals"][0]["confirmation_ref"] = None
-                unconfirmed["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
-                unconfirmed["active_task_evidence"]["decision_trail"]["proposal_decisions"][0]["confirmation_ref"] = None
-                unconfirmed["active_task_evidence"]["decision_trail"]["user_decision"] = {
-                    "status": "not_required", "proposal_digests": [], "confirmer": None,
-                    "confirmed_at": None,
-                    "evidence_summary": "No auditable user decision was recorded.",
-                }
-                unconfirmed = self.derive(unconfirmed)
-                self.assertIn(
-                    "unconfirmed_non_current_decision_requires_user_evidence",
-                    gtt.requirements_clarification_structural_errors(root, unconfirmed, task),
-                )
-
-                no_trail = copy.deepcopy(payload)
-                no_trail["active_task_evidence"]["decision_trail"] = None
-                no_trail = self.derive(no_trail)
-                self.assertIn(
-                    "active_task_final_classification_requires_decision_trail",
-                    gtt.requirements_clarification_structural_errors(root, no_trail, task),
-                )
-
-                ledger = json.loads((task / "issue-scope-ledger.json").read_text(encoding="utf-8"))
-                ledger["scope_decisions"] = []
-                (task / "issue-scope-ledger.json").write_text(
-                    json.dumps(ledger, sort_keys=True) + "\n", encoding="utf-8"
-                )
-                payload["active_task_evidence"]["ledger"]["content_sha256"] = hashlib.sha256(
-                    (task / "issue-scope-ledger.json").read_bytes()
-                ).hexdigest()
-                payload = self.derive(payload)
-                with (
-                    mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                    mock.patch.object(gtt, "run", return_value=comment_response),
-                ):
-                    self.assertIn(
-                        "active_task_decision_trail_ledger_mismatch",
-                        gtt.requirements_clarification_live_errors(root, payload, task),
-                    )
-
-    def test_active_task_new_task_keeps_trail_and_returns_only_reviewed_draft(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, comment_response = self.make_active_task_classification(
-                root, decision="new_task", typed_exit="new_task",
-                resume_target="guru-resume-implementation", fresh_reentry=True,
-            )
-            self.assertEqual(
-                [action["kind"] for action in payload["source_actions"]],
-                ["active_task_scope_update", "new_issue_draft"],
-            )
-            self.assertEqual(payload["mutation_results"], [])
-            self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
-
-    def test_active_task_authority_mutation_requires_refresh_then_fresh_reentry(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, comment_response = self.make_active_task_classification(
-                root, decision="accepted_current", typed_exit="refresh_context",
-                resume_target="guru-active-task-planning-review", fresh_reentry=False,
-            )
-            self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
-            self.assertEqual(
-                json.loads(
-                    (task / "issue-scope-ledger.json").read_text(encoding="utf-8")
-                )["scope_decisions"],
-                [],
-            )
-            self.assertEqual(
-                [action["kind"] for action in payload["source_actions"]],
-                ["issue_comment"],
-            )
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                live = gtt.requirements_clarification_live_errors(root, payload, task)
-            self.assertEqual(live, [])
-            self.assertEqual(gtt.requirements_clarification_typed_exit_live_errors(payload, live), [])
-
-            illegal_clear = copy.deepcopy(payload)
-            illegal_clear["typed_exit"] = "clear"
-            illegal_clear["consumer"] = gtt.REQUIREMENTS_CLARIFICATION_CONSUMERS["clear"]
-            illegal_clear = self.derive(illegal_clear)
-            errors = gtt.requirements_clarification_structural_errors(root, illegal_clear, task)
-            self.assertIn("source_action_requires_refresh_context", errors)
-            self.assertIn("mutation_results_require_refresh_context", errors)
-            self.assertIn("active_task_reentry_forbids_github_mutation", errors)
-            self.assertIn(
-                "active_task_final_classification_requires_decision_trail",
-                errors,
-            )
-
-            wrong_resume = copy.deepcopy(payload)
-            wrong_resume["invocation_context"]["resume_target"] = "guru-resume-implementation"
-            wrong_resume = self.derive(wrong_resume)
-            self.assertIn(
-                "active_task_current_scope_requires_planning_resume",
-                gtt.requirements_clarification_structural_errors(root, wrong_resume, task),
-            )
-
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, comment_response = self.make_active_task_classification(
-                root, decision="accepted_current", typed_exit="clear",
-                resume_target="guru-active-task-planning-review", fresh_reentry=True,
-            )
-            self.assertEqual(gtt.requirements_clarification_structural_errors(root, payload, task), [])
-            with (
-                mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertEqual(gtt.requirements_clarification_live_errors(root, payload, task), [])
-
-    def test_active_task_issue_body_decision_authority_uses_live_post_mutation_body(self) -> None:
-        target = {
-            "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
-            "url": "https://github.com/example/guru-extension/issues/7",
-            "body_sha256": "1" * 64,
-        }
-        live_body_sha = hashlib.sha256(b"post-mutation body").hexdigest()
-        authority = {
-            "kind": "issue_body", "url": target["url"],
-            "content_sha256": live_body_sha,
-            "updated_at": "2026-01-01T00:00:02Z",
-        }
-        live_issue = {
-            "url": target["url"], "body_sha256": live_body_sha,
-            "updated_at": "2026-01-01T00:00:02Z",
-        }
-        with mock.patch.object(gtt, "context_read_live_issue", return_value=(live_issue, None)):
-            self.assertEqual(
-                gtt.requirements_clarification_decision_authority_live_errors(
-                    self.repo, target, authority
-                ),
-                [],
-            )
-
-        stale_time = copy.deepcopy(authority)
-        stale_time["updated_at"] = "2026-01-01T00:00:01Z"
-        with mock.patch.object(
-            gtt, "context_read_live_issue", return_value=(live_issue, None)
-        ):
-            self.assertIn(
-                "active_task_decision_authority_body_stale",
-                gtt.requirements_clarification_decision_authority_live_errors(
-                    self.repo, target, stale_time
-                ),
-            )
-
-    def test_active_task_reentry_binds_authority_time_context_time_and_task_update_context(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, comment_response = self.make_active_task_classification(
-                root,
-                decision="out_of_scope",
-                typed_exit="clear",
-                resume_target="guru-resume-branch-review",
-                fresh_reentry=True,
-            )
-            trail = payload["active_task_evidence"]["decision_trail"]
-            self.assertEqual(
-                trail["context_before_task_update_sha256"],
-                payload["context_evidence"]["snapshot_sha256"],
-            )
-            with (
-                mock.patch.object(
-                    gtt, "context_read_live_issue", return_value=(current_issue, None)
-                ),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertEqual(
-                    gtt.requirements_clarification_live_errors(root, payload, task),
-                    [],
-                )
-
-            stale_context = json.loads(
-                (task / "context-discovery.json").read_text(encoding="utf-8")
-            )
-            stale_context["generated_at"] = "2026-01-01T00:00:01Z"
-            (task / "context-discovery.json").write_text(
-                json.dumps(stale_context) + "\n", encoding="utf-8"
-            )
-            with (
-                mock.patch.object(
-                    gtt, "context_read_live_issue", return_value=(current_issue, None)
-                ),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertIn(
-                    "active_task_context_predates_decision_authority",
-                    gtt.requirements_clarification_live_errors(root, payload, task),
-                )
-
-            wrong_context = copy.deepcopy(payload)
-            wrong_context["active_task_evidence"]["decision_trail"][
-                "context_before_task_update_sha256"
-            ] = "5" * 64
-            wrong_context["source_actions"][0]["preimage_sha256"] = "5" * 64
-            wrong_context = self.persist_active_task_trail(
-                root, task, self.derive(wrong_context)
-            )
-            self.assertIn(
-                "active_task_decision_trail_task_update_context_mismatch",
-                gtt.requirements_clarification_structural_errors(
-                    root, wrong_context, task
-                ),
-            )
-
-    def test_active_task_comment_authority_updated_at_is_live_bound(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task, payload, current_issue, comment_response = self.make_active_task_classification(
-                root,
-                decision="related",
-                typed_exit="clear",
-                resume_target="guru-resume-implementation",
-                fresh_reentry=True,
-            )
-            payload["active_task_evidence"]["decision_trail"]["github_authority"][
-                "updated_at"
-            ] = "2026-01-01T00:00:01Z"
-            payload = self.persist_active_task_trail(root, task, self.derive(payload))
-            with (
-                mock.patch.object(
-                    gtt, "context_read_live_issue", return_value=(current_issue, None)
-                ),
-                mock.patch.object(gtt, "run", return_value=comment_response),
-            ):
-                self.assertIn(
-                    "active_task_decision_authority_comment_stale",
-                    gtt.requirements_clarification_live_errors(root, payload, task),
-                )
-
-    def issue_payload_with_action(
-        self,
-        *,
-        kind: str,
-        action_id: str,
-        action_payload: dict[str, str],
-        mutation_url: str,
-        mutation_updated_at: str,
-        mutation_content_sha256: str,
-    ) -> dict[str, object]:
-        payload = self.example()
-        payload["typed_exit"] = "refresh_context"
-        payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-        payload["invocation_context"]["kind"] = "initial_issue"
-        target_projection = {
-            "kind": "issue", "repo": "example/guru-extension", "issue_number": 7,
-            "url": "https://github.com/example/guru-extension/issues/7", "state": "open",
-            "updated_at": "2026-01-01T00:00:00Z", "body_sha256": "1" * 64,
-        }
-        payload["review_target"] = {
-            **target_projection, "facts_sha256": gtt.context_digest(target_projection),
-        }
-        payload["source_actions"] = [{
-            "action_id": action_id, "kind": kind,
-            "target": {"repo": "example/guru-extension", "issue_number": 7},
-            "payload": action_payload, "preimage_sha256": "1" * 64,
-            "payload_sha256": None, "action_digest": "0" * 64,
-            "status": "executed", "mutation_evidence": {"source": "ai-reviewed-gh"},
-        }]
-        payload = self.set_target_disposition(
-            payload,
-            "keep_current_open_issue",
-        )
-        action_digest = payload["source_actions"][0]["action_digest"]
-        payload["human_confirmation"] = {
-            "status": "confirmed", "confirmation_kind": "exact_source_action",
-            "action_digest": gtt.context_digest([action_digest]),
-            "target_disposition_digest": None, "proposal_digests": [],
-            "confirmed_actions": [action_id], "confirmer": "user",
-            "confirmed_at": "2026-01-01T00:00:01Z",
-            "evidence_summary": "The exact target and payload digest were confirmed.",
-        }
-        payload["mutation_results"] = [{
-            "action_id": action_id, "kind": kind, "status": "succeeded",
-            "url": mutation_url, "state": "open", "updated_at": mutation_updated_at,
-            "content_sha256": mutation_content_sha256, "action_digest": action_digest,
-            "facts_sha256": "0" * 64,
-        }]
-        return self.derive(payload)
-
-    def test_unknown_mutation_action_is_a_structured_cli_failure(self) -> None:
-        payload = self.issue_payload_with_action(
-            kind="issue_body_edit",
-            action_id="edit_body",
-            action_payload={"body": "Confirmed body"},
-            mutation_url="https://github.com/example/guru-extension/issues/7",
-            mutation_updated_at="2026-01-01T00:00:02Z",
-            mutation_content_sha256=hashlib.sha256(b"Confirmed body").hexdigest(),
-        )
-        payload["mutation_results"][0]["action_id"] = "missing_action"
-        payload = self.derive(payload)
-        self.assertIn("mutation_action_binding_mismatch", self.structural(payload))
-
-        with tempfile.TemporaryDirectory() as temp:
-            input_path = Path(temp) / "requirements-clarification.json"
-            input_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
-            proc = subprocess.run(
-                [
-                    sys.executable,
-                    str(Path(gtt.__file__).resolve()),
-                    "record-requirements-clarification",
-                    "--root",
-                    str(self.repo),
-                    "--json",
-                    "--mode",
-                    "standalone",
-                    "--input",
-                    str(input_path),
-                ],
-                cwd=self.repo,
-                text=True,
-                capture_output=True,
-                check=False,
-            )
-            self.assertEqual(proc.returncode, 2)
-            error = json.loads(proc.stderr)
-            self.assertIn("mutation_action_binding_mismatch", error["error_codes"])
-            self.assertNotIn("Traceback", proc.stderr)
-            self.assertNotIn("AttributeError", proc.stderr)
-            self.assertNotIn(str(self.repo), proc.stderr)
-            self.assertNotIn(str(input_path), proc.stderr)
-
-    def test_action_bodies_allow_multiline_markdown_and_reject_controls(self) -> None:
-        markdown = "# Clarification\n\n- first\tvalue\r\n- second"
-
-        def payload_for_action(kind: str, body: str) -> dict[str, object]:
-            if kind in {"issue_comment", "issue_body_edit"}:
-                mutation_url = "https://github.com/example/guru-extension/issues/7"
-                if kind == "issue_comment":
-                    mutation_url += "#issuecomment-99"
-                return self.issue_payload_with_action(
-                    kind=kind,
-                    action_id=f"multiline_{kind}",
-                    action_payload={"body": body},
-                    mutation_url=mutation_url,
-                    mutation_updated_at="2026-01-01T00:00:02Z",
-                    mutation_content_sha256=hashlib.sha256(body.encode("utf-8")).hexdigest(),
-                )
-            return self.closed_followup_payload(body)
-
-        self.assertTrue(gtt.requirements_clarification_nonempty(markdown))
-        for kind in ("issue_comment", "issue_body_edit", "new_issue_draft"):
-            with self.subTest(kind=kind, value="multiline_markdown"):
-                self.assertEqual(self.structural(payload_for_action(kind, markdown)), [])
-            expected_error = (
-                "draft_source_action_shape_invalid"
-                if kind == "new_issue_draft"
-                else "github_source_action_shape_invalid"
-            )
-            for label, control in (("nul", "\x00"), ("other_c0", "\x01"), ("del", "\x7f")):
-                with self.subTest(kind=kind, value=label):
-                    invalid = markdown + control
-                    self.assertFalse(gtt.requirements_clarification_nonempty(invalid))
-                    self.assertIn(expected_error, self.structural(payload_for_action(kind, invalid)))
-
-    def test_body_and_comment_mutations_require_confirmation_and_live_binding(self) -> None:
-        new_body_sha = hashlib.sha256(b"new body").hexdigest()
-        body = self.issue_payload_with_action(
-            kind="issue_body_edit", action_id="edit_body", action_payload={"body": "new body"},
-            mutation_url="https://github.com/example/guru-extension/issues/7",
-            mutation_updated_at="2026-01-01T00:00:02Z", mutation_content_sha256=new_body_sha,
-        )
-        self.assertEqual(self.structural(body), [])
-        live_issue = {
-            "repo": "example/guru-extension", "number": 7,
-            "url": "https://github.com/example/guru-extension/issues/7", "state": "open",
-            "updated_at": "2026-01-01T00:00:02Z", "body_sha256": new_body_sha,
-            "facts_sha256": "unused",
-        }
-        with mock.patch.object(gtt, "context_read_live_issue", return_value=(live_issue, None)):
-            live = gtt.requirements_clarification_live_errors(self.repo, body, None)
-        self.assertEqual(live, ["requirements_target_issue_stale"])
-        self.assertEqual(gtt.requirements_clarification_typed_exit_live_errors(body, live), [])
-
-        unconfirmed = copy.deepcopy(body)
-        unconfirmed["human_confirmation"] = {
-            "status": "not_required", "confirmation_kind": "none", "action_digest": None,
-            "target_disposition_digest": None, "proposal_digests": [],
-            "confirmed_actions": [], "confirmer": None,
-            "confirmed_at": None, "evidence_summary": "No confirmation was recorded.",
-        }
-        unconfirmed = self.derive(unconfirmed)
-        self.assertIn("mutation_requires_exact_action_confirmation", self.structural(unconfirmed))
-
-        comment_body = "confirmed detail"
-        comment_sha = hashlib.sha256(comment_body.encode("utf-8")).hexdigest()
-        comment_url = "https://github.com/example/guru-extension/issues/7#issuecomment-99"
-        comment = self.issue_payload_with_action(
-            kind="issue_comment", action_id="add_comment", action_payload={"body": comment_body},
-            mutation_url=comment_url, mutation_updated_at="2026-01-01T00:00:03Z",
-            mutation_content_sha256=comment_sha,
-        )
-        current_issue = copy.deepcopy(live_issue)
-        current_issue["updated_at"] = "2026-01-01T00:00:00Z"
-        current_issue["body_sha256"] = "1" * 64
-        comment_response = subprocess.CompletedProcess(
-            [], 0,
-            json.dumps({
-                "id": 99, "html_url": comment_url, "updated_at": "2026-01-01T00:00:03Z",
-                "body": comment_body,
-            }),
-            "",
-        )
-        with (
-            mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-            mock.patch.object(gtt, "run", return_value=comment_response) as run_mock,
-        ):
-            self.assertEqual(gtt.requirements_clarification_live_errors(self.repo, comment, None), [])
-        self.assertEqual(run_mock.call_args.args[0][:2], ["gh", "api"])
-
-        stale_comment = copy.deepcopy(comment)
-        stale_comment["mutation_results"][0]["content_sha256"] = "f" * 64
-        stale_comment = self.derive(stale_comment)
-        with (
-            mock.patch.object(gtt, "context_read_live_issue", return_value=(current_issue, None)),
-            mock.patch.object(gtt, "run", return_value=comment_response),
-        ):
-            errors = gtt.requirements_clarification_live_errors(self.repo, stale_comment, None)
-        self.assertIn("mutation_live_comment_payload_mismatch", errors)
-        self.assertIn(
-            "mutation_live_comment_payload_mismatch",
-            gtt.requirements_clarification_typed_exit_live_errors(stale_comment, errors),
-        )
-
-        for kind in ("issue_body_edit", "issue_comment"):
-            with self.subTest(kind=kind):
-                action_id = f"different_{kind}"
-                url = "https://github.com/example/guru-extension/issues/7"
-                if kind == "issue_comment":
-                    url += "#issuecomment-99"
-                different_body = "DIFFERENT LIVE CONTENT"
-                mismatch = self.issue_payload_with_action(
-                    kind=kind,
-                    action_id=action_id,
-                    action_payload={"body": "CONFIRMED PAYLOAD"},
-                    mutation_url=url,
-                    mutation_updated_at="2026-01-01T00:00:04Z",
-                    mutation_content_sha256=hashlib.sha256(different_body.encode("utf-8")).hexdigest(),
-                )
-                self.assertIn(
-                    "mutation_confirmed_payload_mismatch",
-                    self.structural(mismatch),
-                )
-                different_issue = copy.deepcopy(current_issue)
-                different_issue["updated_at"] = "2026-01-01T00:00:04Z"
-                different_issue["body_sha256"] = hashlib.sha256(different_body.encode("utf-8")).hexdigest()
-                different_comment = subprocess.CompletedProcess(
-                    [], 0,
-                    json.dumps({
-                        "id": 99, "html_url": url,
-                        "updated_at": "2026-01-01T00:00:04Z",
-                        "body": different_body,
-                    }),
-                    "",
-                )
-                with (
-                    mock.patch.object(gtt, "context_read_live_issue", return_value=(different_issue, None)),
-                    mock.patch.object(gtt, "run", return_value=different_comment),
-                ):
-                    live_mismatch = gtt.requirements_clarification_live_errors(
-                        self.repo, mismatch, None,
-                    )
-                expected = (
-                    "mutation_live_body_payload_mismatch"
-                    if kind == "issue_body_edit"
-                    else "mutation_live_comment_payload_mismatch"
-                )
-                self.assertIn(expected, live_mismatch)
-
-    def test_executed_github_action_cannot_bypass_confirmation_or_refresh(self) -> None:
-        body = self.issue_payload_with_action(
-            kind="issue_body_edit", action_id="edit_body", action_payload={"body": "new body"},
-            mutation_url="https://github.com/example/guru-extension/issues/7",
-            mutation_updated_at="2026-01-01T00:00:02Z",
-            mutation_content_sha256=hashlib.sha256(b"new body").hexdigest(),
-        )
-        bypass = copy.deepcopy(body)
-        bypass["typed_exit"] = "clear"
-        bypass["consumer"] = {"kind": "workflow", "id": "guru-requirements-clear-router"}
-        bypass["mutation_results"] = []
-        bypass["human_confirmation"] = copy.deepcopy(self.example()["human_confirmation"])
-        bypass = self.derive(bypass)
-        errors = self.structural(bypass)
-        self.assertIn("executed_source_action_requires_mutation_result", errors)
-        self.assertIn("clear_forbids_source_mutation_actions", errors)
-
-        wrong_target = copy.deepcopy(body)
-        wrong_target["source_actions"][0]["target"]["issue_number"] = 8
-        wrong_target = self.derive(wrong_target)
-        self.assertIn("github_source_action_shape_invalid", self.structural(wrong_target))
-
-        wrong_preimage = copy.deepcopy(body)
-        wrong_preimage["source_actions"][0]["preimage_sha256"] = "f" * 64
-        wrong_preimage = self.derive(wrong_preimage)
-        self.assertIn("github_source_action_shape_invalid", self.structural(wrong_preimage))
 
 class ChangeRequestReviewRuntimeCommandTests(unittest.TestCase):
     def test_record_and_check_commands_are_registered(self) -> None:

@@ -1,1 +1,1 @@
-{"profile":"same_plan_resume","mode":"workflow","task_ref":".trellis/tasks/current","plan_ref":"closeout-plan:placeholder","recovery_intent":"Resume the next legal transition for the unchanged plan.","recovery_context":"The prior deterministic transition ended before its terminal external exit."}
+{"profile":"same_plan_resume","mode":"workflow","task_ref":".trellis/tasks/current","plan_ref":"closeout-plan:placeholder"}

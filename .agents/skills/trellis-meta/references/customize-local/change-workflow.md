@@ -53,13 +53,13 @@ If the user wants only one platform to avoid sub-agents, first confirm whether t
 | --- | --- | --- |
 | `planning` | `prd.md` missing | Phase 1.1 (load `trellis-brainstorm`) |
 | `planning` | missing `design.md` or `implement.md` | complete the missing Guru Team planning artifacts |
-| `planning` | `prd.md`, `design.md`, and `implement.md` all present | perform planning artifact ambiguity review, display links to all three documents, wait for explicit post-planning confirmation, record/check schema 1.2 `planning-approval.json` with passed `ambiguity_review`, fixed-scope scanner `hits[]`, and empty `unchecked_normative_hits[]`, then run `task.py start` |
+| `planning` | `prd.md`, `design.md`, and `implement.md` all present | invoke `guru-review-contract-wording:planning_artifacts` and `guru-approve-task-plan`, auto-consume mapped exits, then run `task.py start` on checked `approved`; do not add a routine post-planning confirmation, and ask only for unresolved scope, a material plan choice, or a real side effect |
 | `in_progress` | no implementation in conversation history | Phase 2.1 (`trellis-implement`) |
 | `in_progress` | implementation done, no `trellis-check` run | Phase 2.2 (`trellis-check`) |
 | `in_progress` | check passed | Phase 3.3 (spec update) → 3.4 (commit) |
 | `completed` | task is still in active tree | Phase 3.5 (run `/trellis:finish-work` to archive) |
 
-Some native Trellis workflows may treat `design.md` or `implement.md` as smaller-task optional artifacts. Guru Team does not: the start gate requires all three planning documents and an explicit post-planning user confirmation before `task.py start`.
+Some native Trellis workflows may treat `design.md` or `implement.md` as smaller-task optional artifacts. Guru Team does not: the start gate requires all three planning documents plus the checked semantic planning-owner result before `task.py start`; a mapped `approved` exit does not create a routine user confirmation.
 
 When you add a custom status (e.g. `in-review`), add a `[workflow-state:in-review]` block in `.trellis/workflow.md` for the per-turn breadcrumb AND extend this route table — usually by editing the `/trellis:continue` command file (`.{platform}/commands/trellis/continue.md` or equivalent) to add a row that decides where to resume from. Without the route entry, `/trellis:continue` will fall through to a default branch and the user will not land on the step you intended.
 

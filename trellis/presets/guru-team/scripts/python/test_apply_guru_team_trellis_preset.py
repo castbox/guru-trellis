@@ -37,6 +37,53 @@ STALE_PLANNING_HINTS = (
     "implement.md if present",
     "optional `design.md` / `implement.md`",
     "technical design and implementation plan when present",
+    "轻量任务只需 `prd.md`",
+    "轻量任务可以只保留 `prd.md`",
+    "轻量任务无需 `design.md`",
+    "轻量任务无需 `implement.md`",
+    "`design.md`（如有）",
+    "`implement.md`（如有）",
+    "`design.md` 如存在",
+    "`implement.md` 如存在",
+    "技术设计（如有）",
+    "执行计划（如有）",
+    "设计文档可选",
+    "实现计划可选",
+)
+
+STALE_ROUTINE_PLANNING_CONFIRMATION_HINTS = (
+    "wait for explicit post-planning confirmation",
+    "explicitly confirmed post-planning approval",
+    "get fresh user confirmation",
+    "user confirms start",
+    "等待明确规划后确认",
+    "等待规划后确认",
+    "规划后明确确认后",
+    "规划后确认后",
+    "规划完成后再次确认",
+    "规划完成后重新确认",
+    "再次取得用户确认",
+    "重新取得用户确认",
+    "等待用户确认开始",
+    "用户确认后开始实现",
+    "用户确认后启动实现",
+    "规划通过后等待用户确认",
+    "等待用户明确确认后开始",
+    "经用户确认后进入实现",
+    "用户批准后开始实现",
+    "取得用户授权后开始实现",
+)
+
+STALE_PRIVATE_PLANNING_CONSUMER_HINTS = (
+    "ambiguity_review",
+    "unchecked_normative_hits",
+    "fixed-scope scanner",
+    "content digests no longer match",
+    "explicit-post-planning-review",
+    "规划歧义审查字段",
+    "扫描命中字段",
+    "规划文档内容摘要",
+    "规划文档哈希",
 )
 
 STAGE0_SKILL_IDS = (
@@ -53,6 +100,24 @@ def assert_required_planning_context(testcase: unittest.TestCase, text: str) -> 
     testcase.assertIn("Task `design.md` - required Guru Team technical design", text)
     testcase.assertIn("Task `implement.md` - required Guru Team execution plan", text)
     for stale_hint in STALE_PLANNING_HINTS:
+        testcase.assertNotIn(stale_hint, text)
+
+
+def assert_ai_first_planning_transition(testcase: unittest.TestCase, text: str) -> None:
+    testcase.assertIn("auto-consume", text.lower())
+    normalized = " ".join(text.lower().replace('"', " ").replace("'", " ").split())
+    testcase.assertIn("unresolved scope", normalized)
+    for stale_hint in STALE_ROUTINE_PLANNING_CONFIRMATION_HINTS:
+        testcase.assertNotIn(stale_hint, text)
+
+
+def assert_thin_planning_consumer(testcase: unittest.TestCase, text: str) -> None:
+    testcase.assertIn("private checkpoint", text.lower())
+    testcase.assertIn("auto-consum", text.lower())
+    for stale_hint in (
+        *STALE_ROUTINE_PLANNING_CONFIRMATION_HINTS,
+        *STALE_PRIVATE_PLANNING_CONSUMER_HINTS,
+    ):
         testcase.assertNotIn(stale_hint, text)
 
 
@@ -251,6 +316,84 @@ class FinishSummaryPresetPolicyTest(unittest.TestCase):
         self.assertFalse((self.repo / ".trellis/workspace").exists())
 
 
+class AgentsAiFirstPrinciplesInstallerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_missing_agents_file_is_created(self) -> None:
+        payload = preset.ensure_agents_ai_first_principles(self.repo)
+
+        self.assertEqual(payload["action"], "installed")
+        self.assertEqual(payload["path"], "AGENTS.md")
+        text = (self.repo / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertEqual(text, preset.AGENTS_AI_FIRST_BLOCK)
+        for principle in (
+            "AI-first，不模拟人类审批流",
+            "只保留不可重新推导且有直接 consumer 的最小结果",
+            "任何阶段都不持久化用户授权信息或授权过程",
+            "Digest 不是 workflow authority",
+            "交互只服务真实选择和副作用",
+            "语义门禁与持久化解耦",
+        ):
+            self.assertIn(principle, text)
+
+    def test_existing_content_is_preserved_and_reapply_is_idempotent(self) -> None:
+        path = self.repo / "AGENTS.md"
+        original = b"# Local instructions\r\n\r\nKeep this byte-for-byte.\r\n"
+        path.write_bytes(original)
+
+        first = preset.ensure_agents_ai_first_principles(self.repo)
+        first_bytes = path.read_bytes()
+        second = preset.ensure_agents_ai_first_principles(self.repo)
+
+        self.assertEqual(first["action"], "updated")
+        self.assertEqual(second["action"], "unchanged")
+        self.assertTrue(first_bytes.startswith(original))
+        self.assertEqual(path.read_bytes(), first_bytes)
+        self.assertEqual(first_bytes.count(preset.AGENTS_AI_FIRST_START_MARKER.encode()), 1)
+        self.assertEqual(first_bytes.count(preset.AGENTS_AI_FIRST_END_MARKER.encode()), 1)
+
+    def test_single_old_block_is_refreshed_without_touching_surrounding_bytes(self) -> None:
+        path = self.repo / "AGENTS.md"
+        prefix = b"# Local prefix\r\n"
+        suffix = b"Local suffix remains.\r\n"
+        old_block = (
+            f"{preset.AGENTS_AI_FIRST_START_MARKER}\nold principles\n"
+            f"{preset.AGENTS_AI_FIRST_END_MARKER}\n"
+        ).encode("utf-8")
+        path.write_bytes(prefix + old_block + suffix)
+
+        payload = preset.ensure_agents_ai_first_principles(self.repo)
+
+        self.assertEqual(payload["action"], "updated")
+        self.assertEqual(path.read_bytes(), prefix + preset.AGENTS_AI_FIRST_BLOCK.encode("utf-8") + suffix)
+
+    def test_malformed_or_duplicate_markers_fail_closed(self) -> None:
+        path = self.repo / "AGENTS.md"
+        cases = (
+            f"{preset.AGENTS_AI_FIRST_START_MARKER}\nmissing end\n",
+            (
+                f"{preset.AGENTS_AI_FIRST_START_MARKER}\n"
+                f"{preset.AGENTS_AI_FIRST_START_MARKER}\n"
+                f"{preset.AGENTS_AI_FIRST_END_MARKER}\n"
+            ),
+            f"prefix {preset.AGENTS_AI_FIRST_START_MARKER}\n{preset.AGENTS_AI_FIRST_END_MARKER}\n",
+            f"{preset.AGENTS_AI_FIRST_END_MARKER}\n{preset.AGENTS_AI_FIRST_START_MARKER}\n",
+        )
+        for content in cases:
+            with self.subTest(content=content):
+                original = content.encode("utf-8")
+                path.write_bytes(original)
+                with self.assertRaises(SystemExit):
+                    preset.ensure_agents_ai_first_principles(self.repo)
+                self.assertEqual(path.read_bytes(), original)
+
+
 class LanguageGuidanceInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -366,6 +509,12 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
 
         payload = json.loads(stdout.getvalue())
         self.assertEqual(exit_code, 0)
+        self.assertEqual(payload["agents_principles"]["action"], "installed")
+        self.assertEqual(payload["agents_principles"]["path"], "AGENTS.md")
+        self.assertEqual(
+            (self.repo / "AGENTS.md").read_text(encoding="utf-8"),
+            preset.AGENTS_AI_FIRST_BLOCK,
+        )
         self.assertEqual(payload["language_guidance"]["replacement_count"], 1)
         self.assertEqual(payload["language_guidance"]["updated_paths"][0]["path"], ".trellis/spec/backend/index.md")
         self.assertIn(".trellis/spec/**/*.md", payload["language_guidance"]["scope"])
@@ -597,7 +746,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
         self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
         brainstorm = (self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("explicit post-planning confirmation", brainstorm)
+        assert_ai_first_planning_transition(self, brainstorm)
+        self.assertIn("Do not add a routine post-planning confirmation", brainstorm)
         self.assertNotIn("Lightweight tasks may have only", brainstorm)
         self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
         before_dev = (self.repo / ".agents/skills/trellis-before-dev/SKILL.md").read_text(encoding="utf-8")
@@ -608,7 +758,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("required `design.md`", check_skill)
         self.assertNotIn("design.md` if present", check_skill)
         self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
-        self.assertIn("实现代理", (self.repo / ".trellis/agents/implement.md").read_text(encoding="utf-8"))
+        channel_implement = (self.repo / ".trellis/agents/implement.md").read_text(encoding="utf-8")
+        self.assertIn("实现代理", channel_implement)
+        assert_thin_planning_consumer(self, channel_implement)
+        channel_check = (self.repo / ".trellis/agents/check.md").read_text(encoding="utf-8")
+        assert_thin_planning_consumer(self, channel_check)
         self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
@@ -620,8 +774,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("实现代理", codex_implement)
         self.assertIn('nickname_candidates = ["Implement Agent"', codex_implement)
         self.assertNotIn('nickname_candidates = ["实现代理"', codex_implement)
+        assert_thin_planning_consumer(self, codex_implement)
+        codex_check = (self.repo / ".codex/agents/trellis-check.toml").read_text(encoding="utf-8")
+        assert_thin_planning_consumer(self, codex_check)
         codex_hook = (self.repo / ".codex/hooks/session-start.py").read_text(encoding="utf-8")
-        self.assertIn("post-planning confirmation", codex_hook)
+        assert_ai_first_planning_transition(self, codex_hook)
         self.assertNotIn("PRD-only", codex_hook)
         self.assertNotIn("Missing optional artifacts", codex_hook)
         self.assertNotIn("design.md if present", codex_hook)
@@ -638,7 +795,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         codex_change_workflow = (
             self.repo / ".agents/skills/trellis-meta/references/customize-local/change-workflow.md"
         ).read_text(encoding="utf-8")
-        self.assertIn("explicit post-planning confirmation", codex_change_workflow)
+        assert_ai_first_planning_transition(self, codex_change_workflow)
+        self.assertIn("do not add a routine post-planning confirmation", codex_change_workflow)
         self.assertNotIn("lightweight task with `prd.md` complete", codex_change_workflow)
         codex_change_context = (
             self.repo / ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
@@ -655,9 +813,13 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         cursor_check_agent = (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8")
         self.assertIn("阶段二检查代理", cursor_check_agent)
         assert_required_planning_context(self, cursor_check_agent)
+        assert_thin_planning_consumer(self, cursor_check_agent)
+        cursor_implement_agent = (self.repo / ".cursor/agents/trellis-implement.md").read_text(encoding="utf-8")
+        assert_thin_planning_consumer(self, cursor_implement_agent)
         self.assertTrue((self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").is_file())
         cursor_brainstorm = (self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("explicit post-planning confirmation", cursor_brainstorm)
+        assert_ai_first_planning_transition(self, cursor_brainstorm)
+        self.assertIn("Do not add a routine post-planning confirmation", cursor_brainstorm)
         self.assertNotIn("Lightweight tasks may have only", cursor_brainstorm)
         self.assertTrue((self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").is_file())
         cursor_before_dev = (self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").read_text(encoding="utf-8")
@@ -669,7 +831,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("design.md` if present", cursor_check_skill)
         self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
         cursor_hook = (self.repo / ".cursor/hooks/session-start.py").read_text(encoding="utf-8")
-        self.assertIn("post-planning confirmation", cursor_hook)
+        assert_ai_first_planning_transition(self, cursor_hook)
         self.assertNotIn("PRD-only", cursor_hook)
         self.assertNotIn("Missing optional artifacts", cursor_hook)
         self.assertNotIn("design.md if present", cursor_hook)
@@ -690,7 +852,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         cursor_change_workflow = (
             self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
         ).read_text(encoding="utf-8")
-        self.assertIn("explicit post-planning confirmation", cursor_change_workflow)
+        assert_ai_first_planning_transition(self, cursor_change_workflow)
+        self.assertIn("do not add a routine post-planning confirmation", cursor_change_workflow)
         self.assertNotIn("lightweight task with `prd.md` complete", cursor_change_workflow)
         cursor_change_context = (
             self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
@@ -773,9 +936,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
         self.assertTrue((self.repo / ".claude/agents/trellis-implement.md").is_file())
         self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
+        claude_implement_agent = (self.repo / ".claude/agents/trellis-implement.md").read_text(encoding="utf-8")
+        assert_thin_planning_consumer(self, claude_implement_agent)
         claude_check_agent = (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8")
         self.assertIn("阶段二检查代理", claude_check_agent)
         assert_required_planning_context(self, claude_check_agent)
+        assert_thin_planning_consumer(self, claude_check_agent)
         self.assertFalse((self.repo / ".agents/skills/trellis-meta").exists())
         self.assertFalse((self.repo / ".codex").exists())
         self.assertFalse((self.repo / ".cursor").exists())
@@ -787,7 +953,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         ownership_facts = payload["upstream_ownership_validation"]
-        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 21)
+        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 35)
         self.assertRegex(ownership_facts["reviewed_current_payloads_sha256"], r"^[0-9a-f]{64}$")
         continue_paths = (
             ".agents/skills/trellis-continue/SKILL.md",
@@ -1000,8 +1166,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         self.assertIn(".codex/hooks/session-start.py", payload["replaced_overlays"])
         self.assertIn(".cursor/hooks/session-start.py", payload["replaced_overlays"])
-        self.assertIn("post-planning confirmation", codex_hook.read_text(encoding="utf-8"))
-        self.assertIn("post-planning confirmation", cursor_hook.read_text(encoding="utf-8"))
+        assert_ai_first_planning_transition(self, codex_hook.read_text(encoding="utf-8"))
+        assert_ai_first_planning_transition(self, cursor_hook.read_text(encoding="utf-8"))
         self.assertNotIn("PRD-only", codex_hook.read_text(encoding="utf-8"))
         self.assertNotIn("PRD-only", cursor_hook.read_text(encoding="utf-8"))
 
@@ -1168,7 +1334,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn('--task "$task_rel" --input "$input" >"$result"', verifier)
-        self.assertIn('recorded["schema_version"] == "2.1"', verifier)
+        self.assertIn('recorded["schema_version"] == "3.0"', verifier)
         self.assertNotIn("--ambiguity-reviewer", verifier)
         self.assertNotIn("--normative-hit", verifier)
         self.assertIn("verify_installed_closeout.py", verifier)
@@ -1201,7 +1367,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("record_throwaway_completed_agent", verifier)
         self.assertIn('! grep -q "record-subagent-liveness-event.sh"', verifier)
         self.assertIn("record-agent-recovery.sh", verifier)
-        self.assertIn("TASK_COMMIT_RUNTIME_DIR", verifier)
+        self.assertNotIn("TASK_COMMIT_RUNTIME_DIR", verifier)
+        self.assertIn("prepare_task_commit_candidate initial_commit", verifier)
+        self.assertIn("scripts/prepare-task-commit.sh", verifier)
+        self.assertNotIn("create_task_commit_plan", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
             self.assertIn(
@@ -1228,7 +1397,18 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
         ).read_text(encoding="utf-8")
-        self.assertIn('.trellis/guru-team/scripts/bash/finish-work.sh', installed_closeout)
+        self.assertIn('root / ".agents/skills/guru-finalize-task"', installed_closeout)
+        for wrapper_name in (
+            "preview-finalization",
+            "record-finalization-gate",
+            "check-finalization-gate",
+            "execute-finalization-transition",
+            "invoke",
+        ):
+            self.assertIn(f'"{wrapper_name}"', installed_closeout)
+        self.assertNotIn(
+            '.trellis/guru-team/scripts/bash/finish-work.sh', installed_closeout
+        )
         self.assertIn('.trellis/guru-team/scripts/python/guru_team_trellis.py', installed_closeout)
         self.assertIn('args[:2] == ["remote", "get-url"]', installed_closeout)
         self.assertIn('args[:2] == ["pr", "ready"]', installed_closeout)
@@ -1237,6 +1417,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('hook_executed', installed_closeout)
         self.assertIn('installed-after-archive-hook-', installed_closeout)
         self.assertNotIn("copytree", installed_closeout)
+        self.assertIn(
+            '"reviewed_content_head": branch_check["reviewed_content_head"]',
+            installed_closeout,
+        )
+        self.assertNotIn('"reviewed_head": branch_check', installed_closeout)
+        self.assertNotIn('"review_ref":', installed_closeout)
 
     def test_dogfood_drift_checks_ownership_before_payload_bytes(self) -> None:
         checker = (
@@ -1382,14 +1568,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ]:
             self.assertIn(relative, payload["replaced_overlays"])
 
-        self.assertIn("explicit post-planning confirmation", shared_brainstorm.read_text(encoding="utf-8"))
-        self.assertIn("explicit post-planning confirmation", cursor_brainstorm.read_text(encoding="utf-8"))
+        assert_ai_first_planning_transition(self, shared_brainstorm.read_text(encoding="utf-8"))
+        assert_ai_first_planning_transition(self, cursor_brainstorm.read_text(encoding="utf-8"))
         self.assertIn("required `design.md`", shared_before_dev.read_text(encoding="utf-8"))
         self.assertIn("required `design.md`", cursor_before_dev.read_text(encoding="utf-8"))
         self.assertIn("required `design.md`", shared_check_skill.read_text(encoding="utf-8"))
         self.assertIn("required `design.md`", cursor_check_skill.read_text(encoding="utf-8"))
-        self.assertIn("explicit post-planning confirmation", shared_change_workflow.read_text(encoding="utf-8"))
-        self.assertIn("explicit post-planning confirmation", cursor_change_workflow.read_text(encoding="utf-8"))
+        assert_ai_first_planning_transition(self, shared_change_workflow.read_text(encoding="utf-8"))
+        assert_ai_first_planning_transition(self, cursor_change_workflow.read_text(encoding="utf-8"))
         self.assertIn("required `design.md`", shared_change_context.read_text(encoding="utf-8"))
         self.assertIn("required `design.md`", cursor_change_context.read_text(encoding="utf-8"))
         self.assertIn("required `design.md`", shared_context.read_text(encoding="utf-8"))
@@ -1532,7 +1718,9 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         for relative in (
             Path("migrations/stage0-minimal-handoff.json"),
+            Path("migrations/stage0-ai-first-contract-v2.json"),
             Path("schemas/stage0-migration-manifest.schema.json"),
+            Path("schemas/stage0-ai-first-contract-migration.schema.json"),
         ):
             path = installed_skills / relative
             if path.exists():
@@ -1649,6 +1837,10 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
         self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "minimal_handoff", "1.3")
         self.assertTrue((self.install_dst / "skills/migrations/stage0-minimal-handoff.json").is_file())
+        self.assertTrue((self.install_dst / "skills/migrations/stage0-ai-first-contract-v2.json").is_file())
+        self.assertTrue((self.install_dst / "skills/migrations/production-minimal-handoff.json").is_file())
+        self.assertTrue((self.install_dst / "skills/migrations/production-ai-first-contract-v2.json").is_file())
+        self.assertTrue((self.install_dst / "skills/schemas/production-ai-first-contract-migration.schema.json").is_file())
 
     def test_unknown_local_edit_conflict_preserves_complete_pre145_graph(self) -> None:
         target = self.install_dst / "skills/packages/guru-sync-base/SKILL.md"
@@ -1789,11 +1981,11 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-extension-verification", public_api["companion_scripts"])
         self.assertIn("invoke-extension-verification", public_api["companion_scripts"])
         self.assertIn(
-            "guru-planning-approval-2.0",
+            "guru-planning-approval-3.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-phase2-check-2.1",
+            "guru-phase2-check-3.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.1")
@@ -1803,8 +1995,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 37),
-            ("typed_output_schema_ids", 52),
+            ("public_input_schema_ids", 34),
+            ("typed_output_schema_ids", 51),
             ("private_artifact_schema_ids", 15),
         ):
             self.assertEqual(
@@ -1885,7 +2077,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-task-publication-readiness-1.1",
+            "guru-task-publication-readiness-2.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         schema_relative = Path("schemas/contract-wording-review.schema.json")

@@ -14,7 +14,7 @@ flowchart LR
   J --> D["Minimal typed exit"]
   D --> C["唯一 consumer"]
   C --> S
-  S --> P["必要的 compact gate"]
+  S --> P["短生命周期 owner-private checkpoint"]
   S --> R["确定性 executor / validator"]
 ```
 
@@ -27,9 +27,9 @@ Routine agent terminal output、Git live facts 和 mapped exits 直接消费，�
 | Phase | 保留的语义 | 正常持久化 |
 | --- | --- | --- |
 | Intake | base freshness、change context、Intake clarity、scope、workspace authority | 直接 consumer 需要的 task planning / scope evidence |
-| Planning | requirement、design、implementation plan、Docs SSOT、planning approval | `prd.md`、`design.md`、`implement.md`、approval |
-| Execute | implementation、Phase 2 adequacy、finding、真实 replacement recovery | `phase2-check.json`；异常 recovery 仅在 ignored runtime |
-| Finish | exact commit、Branch Review、publication judgment、finalization | compact gates 与最终 archive allowlist |
+| Planning | requirement、design、implementation plan、Docs SSOT、AI semantic plan gate | `prd.md`、`design.md`、`implement.md`；owner checkpoint 仅在 ignored runtime |
+| Execute | implementation、Phase 2 adequacy、finding、真实 replacement recovery | Phase 2 与异常 recovery checkpoint 均仅在 ignored runtime |
+| Finish | exact commit、Branch Review、publication judgment、finalization | `closeout-plan.json`、`finish-summary.json` 与 compact archive |
 
 ## Finding Fix 时序
 
@@ -45,7 +45,7 @@ sequenceDiagram
   R1-->>AI: introduced_head + resolved_at_head + evidence
   AI->>R2: complete current range
   R2-->>AI: fresh_final_review
-  AI->>Git: write one compact review-gate.json
+  AI->>AI: retain one private review-gate checkpoint
 ```
 
 Closure 与 fresh final 是两个语义 judgment，但 closure 没有 public exit 或 artifact。原 reviewer
@@ -54,9 +54,10 @@ Closure 与 fresh final 是两个语义 judgment，但 closure 没有 public exi
 
 ## 交互预算
 
-一个完整展示且无歧义的 current action 只问 `确认继续`，任意明确肯定回复均有效。内部仍绑定
-exact target、HEAD、scope、authority 和 digest。不同授权目的不合并；只有信息变化或真实选择
-才再次询问。Mapped exit、stale、re-entry、reprepare 和 same-plan recovery 自动运行。
+一个完整展示且无歧义的 current action 只问 `确认继续`，任意明确肯定回复均有效。内部客观状态
+仍绑定 exact target、HEAD、scope、authority 与确有唯一 consumer 的局部事务 identity，但不记录
+用户授权。不同副作用目的不合并；只有信息变化或真实选择才再次询问。Mapped exit、stale、
+re-entry、reprepare 和 same-plan recovery 自动运行。
 
 ## 安装与漂移
 

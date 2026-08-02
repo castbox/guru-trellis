@@ -7,8 +7,8 @@
 
 1. `.trellis/workflow.md` 只拥有 phase 顺序、mandatory Skill 调用、typed exit consumer
    和 fail-closed stop。
-2. 每个 active `guru-*` Skill 独占 entry、AI judgment、必要的人类授权、recorder / validator
-   和 re-entry 合同。
+2. 每个 active `guru-*` Skill 独占 entry、AI judgment、真实选择或副作用所需的当前对话交互、
+   recorder / validator 和 re-entry 合同。
 3. Platform command、prompt、breadcrumb 和 `trellis-start` 只加载 workflow 与路由，不复制
    Step-local 流程。
 4. Python / shell 只执行、记录或校验确定性事实，不决定 scope、finding、pass 或 publication
@@ -17,13 +17,15 @@
 ## 2. 交互预算
 
 一个已完整展示、current、unique、unambiguous 的 proposal 或 side effect，只提示
-`确认继续`；任意明确肯定回复均授权该已展示动作。内部 evidence 仍绑定 exact target、HEAD、
-scope、authority 和 digest，但不得要求用户复述 SHA、digest、proposal 原文或固定句式。
+`确认继续`；任意明确肯定回复均授权该已展示动作。内部客观状态仍绑定 exact target、HEAD、
+scope、authority，以及确有唯一事务 consumer 的局部 digest，但不得要求用户复述 SHA、digest、
+proposal 原文或固定句式，也不得把授权或授权过程写入任何 artifact、checkpoint 或 public DTO。
 
-Scope expansion、post-planning approval、commit、push、PR、merge、Issue mutation 和 cleanup
-仍是不同的 authority boundary。共享 prompt 不代表共享授权。只有 target、HEAD、scope、
-authority、可选项或 side-effect plan 改变时才重新展示并确认。存在多项选择或歧义时必须提出
-真实问题，不能用通用确认替代。
+Planning AI Gate 本身不是用户授权边界；其 checked `approved` exit 自动进入 task activation。
+只有 unresolved scope、material plan choice、commit、push、PR、merge、Issue mutation 和 cleanup
+等真实选择或副作用分别形成自己的 authority boundary。共享 prompt 不代表共享授权。只有
+target、HEAD、scope、authority、可选项或 side-effect plan 改变时才重新展示并确认。存在多项
+选择或歧义时必须提出真实问题，不能用通用确认替代。
 
 Mapped exits、stale、re-entry、reprepare、recorder/checker 和 same-plan recovery 由 AI workflow
 自动承接，不向用户暴露为 routine handoff 或“确认继续”。
@@ -35,16 +37,19 @@ Skill chain。Intake clarity 可使用 `trellis-brainstorm` 的单问题方法�
 action 和 route 仍由 owning Skill 判断。
 
 创建 Issue、worktree、branch 或 task 前必须展示真实目标和副作用。Planning 保留
-`prd.md`、`design.md`、`implement.md`、Docs SSOT decision 与独立 post-planning approval，
-因为这些内容有直接实现消费者。最终 close/ref/follow-up 只由 `issue-scope-ledger.json`
-持久化。
+`prd.md`、`design.md`、`implement.md`、Docs SSOT decision 与独立 AI semantic plan gate，
+因为这些内容有直接实现消费者。Plan gate 的 mapped `approved` exit 不产生 routine 用户确认；
+最终 close/ref/follow-up 只由 `issue-scope-ledger.json` 持久化。
 
 ## 4. 实现、Phase 2 与恢复
 
 Implementation 与 official `trellis-check` 的 terminal result 是 AI 的直接输入，不生成
 `implementation-handoff.md`、routine assignment、routine liveness 或重复 completion prose。
-`guru-check-task` 保留完整 task scope、adequacy、Docs SSOT 和 finding judgment，并只持久化
-最终 `phase2-check.json`。
+`guru-check-task` 保留完整 task scope、adequacy、Docs SSOT 和 finding judgment；其最终
+`phase2-check.json` 只作为 ignored owner-private checkpoint 存活到本 Skill public wrapper
+完成 checker、DTO 投影与 output schema 校验，随后由 producer 自行删除。跨 Skill 只传
+`task_ref` 与 `checked_head`，下游不得读取、解释或删除该 checkpoint，也不得把它作为 handoff
+或 archive evidence。
 
 只有 agent 真实 unfinished 且必须 replacement 时，才在 gitignored runtime 保存最小 recovery
 checkpoint。正常 completion、wait timeout、mapped re-entry 和 fresh dispatch 不写 recovery
@@ -63,8 +68,9 @@ re-entry 使用 ignored candidate。历史 archive 字节保持不变。
 ## 6. Branch Review
 
 Branch Review 保留 qualification-first、完整 `origin/<base>...HEAD` 审查、current-scope P0-P3
-finding、scope proposal、closure 和 fresh final review 的语义价值，但新流程只持久化 compact
-`review-gate.json`。
+finding、scope proposal、closure 和 fresh final review 的语义价值；新流程只在 ignored runtime
+保留 compact `review-gate.json` owner checkpoint，并向 Publication 输出
+`task_ref + reviewed_content_head`。
 
 初次 open finding 返回 `implementation_required`。Fix 通过 Phase 2 并产生新 commit 后，finding
 owner 或真实 unfinished-agent replacement 在 AI 内部完成瞬态 closure：保留原始
@@ -80,14 +86,19 @@ finding -> fix -> closure -> fresh final 路径不得出现 validator 自相矛�
 ## 7. Publication 与 Finalization
 
 `guru-review-task-publication` 保留 Issue closure、PR body、验证、安全、部署和 release readiness
-判断。`guru-finalize-task` 以一个已确认 plan 驱动 push、条件 marketplace verification、Draft PR、
-archive transaction 和 Ready；内部 recovery exit 自动承接。
+判断，在返回 `ready` 前执行与 Finalizer 首次 side-effect-free preview 相同的确定性 preflight。
+`guru-finalize-task` 直接消费 `task_ref + reviewed_content_head`，以一个已确认 plan 驱动 push、
+条件 marketplace verification、Draft PR、archive transaction 和 Ready；内部 recovery exit
+自动承接。Publication wrapper 在 valid DTO 形成后已删除自己的 checkpoint；Finalizer 不读取、
+增补、理解或代删 Publication 私有状态，只管理自己的 same-plan checkpoint。
 
-Schema 1.1 archive 长期保留 11 个有直接 history/recovery consumer 的 core files：task identity、
-三份 planning、scope ledger、planning approval、Phase 2、compact review gate、closeout plan、
-finalization gate 和 finish summary。适用 verifier 时 `marketplace-verification.json` 是第 12 个。
-Raw rounds、legacy rollup、commit candidate、PR preparation 和其他可从 exact evidence commit 或
-GitHub authority 推导的 checkpoint 不复制进 archive。
+新 schema 1.2 archive 长期只保留 7 个有直接 history/recovery consumer 的文件：`task.json`、
+三份 planning、`issue-scope-ledger.json`、`closeout-plan.json` 和 `finish-summary.json`；适用时可
+额外保留 `marketplace-verification.json`。Planning、Phase 2、Branch Review、Publication 和
+Finalizer checkpoint 均为 ignored owner-private state，不进入 archive。Schema 1.2 仅允许既有
+active task 的三份旧 tracked review artifact 通过一次性 10-file compatibility allowlist 随任务
+移动；schema 1.0/1.1 历史字节保持不变。Raw rounds、legacy rollup、commit candidate、PR
+preparation 和其它可由 Git/GitHub/current files 推导的状态不复制进 archive。
 
 ## 8. Distribution 与升级
 

@@ -134,40 +134,15 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
     smoke_path.write_text(f"installed closeout smoke {case_name}\n", encoding="utf-8")
     git(root, real_git, "add", smoke_path.name)
     git(root, real_git, "commit", "-m", f"test(closeout): #{issue} 验证安装后收尾事务")
-    reviewed_head = git(root, real_git, "rev-parse", "HEAD")
-    base_head = git(root, real_git, "rev-parse", BASE_BRANCH)
-
     task_dir = root / ".trellis/tasks" / f"07-11-{issue}-installed-closeout-{case_name}"
     task_dir.mkdir(parents=True)
-    context = {
-        "schema_version": "1.0",
-        "source_issue": {
-            "number": issue,
-            "url": f"https://github.com/{REPO}/issues/{issue}",
-            "title": "installed closeout smoke",
-            "created_by_workflow": False,
-        },
-        "source_repo": {"repo": REPO, "url": f"https://github.com/{REPO}"},
-        "task_slug": f"{issue}-installed-closeout-{case_name}",
-        "task_title": f"#{issue} 验证安装后 closeout",
-        "task_artifact_dir": task_dir.relative_to(root).as_posix(),
-        "branch_name": branch,
-        "base_branch": BASE_BRANCH,
-        "base_ref": BASE_BRANCH,
-        "base_head_sha": base_head,
-        "remote_head_sha": base_head,
-        "workspace_slug": "",
-        "task_workspace_id": f"{issue}-installed-closeout-{case_name}",
-        "assignee": "throwaway",
-        "actor": {"login": "throwaway"},
-        "issue_scope_ledger_seed": {},
-        "intake_summary": {},
-    }
+    task_slug = f"{issue}-installed-closeout-{case_name}"
     task = {
-        "id": f"{issue}-installed-closeout-{case_name}",
-        "name": f"{issue}-installed-closeout-{case_name}",
+        "id": task_slug,
+        "name": task_slug,
         "title": f"#{issue} 验证安装后 closeout",
         "status": "in_progress",
+        "branch": branch,
         "base_branch": BASE_BRANCH,
     }
     ledger = {
@@ -202,10 +177,20 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
             },
         },
     }
-    gtt.write_json(task_dir / "task-start-context.json", context)
     gtt.write_json(task_dir / "task.json", task)
     gtt.write_json(task_dir / "issue-scope-ledger.json", ledger)
     gtt.write_json(task_dir / "finish-summary-index.json", index)
+    gtt.write_runtime_mappings(
+        root,
+        gtt.load_config(root),
+        {
+            "workspace_slug": task_slug,
+            "task_slug": task_slug,
+            "task_dir": task_dir.relative_to(root).as_posix(),
+            "branch_name": branch,
+        },
+        root,
+    )
     (task_dir / "pr-body.md").write_bytes(valid_pr_body(issue).encode("utf-8"))
 
     for name, content in (
@@ -235,7 +220,6 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
     task_payload = gtt.read_json(task_dir / "task.json")
     task_payload.update({"status": "planning", "branch": branch})
     gtt.write_json(task_dir / "task.json", task_payload)
-    adapter.production_wording_evidence(gtt, root, task_dir)
     adapter.production_record_planning(
         gtt,
         root,
@@ -271,8 +255,7 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "profile": "publication_review",
         "mode": "workflow",
         "task_ref": task_dir.relative_to(root).as_posix(),
-        "reviewed_head": branch_check["reviewed_head"],
-        "review_ref": f"review-gate:{branch_check['artifact_sha256']}",
+        "reviewed_content_head": branch_check["reviewed_content_head"],
         "review_intent": "initial_review",
     }
     authoring_path = adapter.production_publication_authoring(
@@ -282,20 +265,33 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         publication_input,
         "publication-ready",
     )
-    gtt.cmd_record_task_publication_review(argparse.Namespace(
-        root=str(root),
-        task=task_dir.relative_to(root).as_posix(),
-        input=authoring_path.relative_to(root).as_posix(),
-        dry_run=False,
-    ))
-    checked_publication = gtt.cmd_check_task_publication_review(
-        argparse.Namespace(
+    original_remote_url = git(root, real_git, "remote", "get-url", "origin")
+    git(
+        root,
+        real_git,
+        "remote",
+        "set-url",
+        "origin",
+        f"https://github.com/{REMOTE_REPO}.git",
+    )
+    try:
+        gtt.cmd_record_task_publication_review(argparse.Namespace(
             root=str(root),
             task=task_dir.relative_to(root).as_posix(),
-            expected_exit="ready",
+            input=authoring_path.relative_to(root).as_posix(),
+            reviewed_content_head=publication_input["reviewed_content_head"],
+            dry_run=False,
+        ))
+        checked_publication = gtt.cmd_check_task_publication_review(
+            argparse.Namespace(
+                root=str(root),
+                task=task_dir.relative_to(root).as_posix(),
+                expected_exit="ready",
+            )
         )
-    )
-    return task_dir, branch, str(checked_publication["reviewed_head"])
+    finally:
+        git(root, real_git, "remote", "set-url", "origin", original_remote_url)
+    return task_dir, branch, str(checked_publication["reviewed_content_head"])
 
 
 def install_fake_commands(fake_bin: Path) -> None:
@@ -391,10 +387,31 @@ raise SystemExit(2)
     )
 
 
-def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: str, remote: Path) -> dict[str, Any]:
-    wrapper = root / ".trellis/guru-team/scripts/bash/finish-work.sh"
-    if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
-        raise RuntimeError(f"installed finish-work wrapper is missing or not executable: {wrapper}")
+def run_closeout(
+    root: Path,
+    task_dir: Path,
+    branch: str,
+    issue: int,
+    reviewed_content_head: str,
+    real_git: str,
+    remote: Path,
+) -> dict[str, Any]:
+    package = root / ".agents/skills/guru-finalize-task"
+    wrappers = {
+        name: package / "scripts" / f"{name}.sh"
+        for name in (
+            "preview-finalization",
+            "record-finalization-gate",
+            "check-finalization-gate",
+            "execute-finalization-transition",
+            "invoke",
+        )
+    }
+    for name, wrapper in wrappers.items():
+        if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
+            raise RuntimeError(
+                f"installed guru-finalize-task {name} wrapper is missing or not executable: {wrapper}"
+            )
     fake_bin = root.parent / f"fake-closeout-bin-{issue}"
     install_fake_commands(fake_bin)
     store = root.parent / f"installed-closeout-pr-{issue}.json"
@@ -409,12 +426,54 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         "INSTALLED_CLOSEOUT_PR_STORE": str(store),
     })
     task_rel = task_dir.relative_to(root).as_posix()
-    common = [
-        str(wrapper),
+    runtime_dir = root / ".trellis/.runtime/guru-team/installed-closeout"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    finalization_input = runtime_dir / f"{issue}-publication-ready.json"
+    finalization_input.write_text(
+        json.dumps(
+            {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": task_rel,
+                "reviewed_content_head": reviewed_content_head,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    semantic_review = runtime_dir / f"{issue}-semantic-review.json"
+    semantic_review.write_text(
+        json.dumps(
+            {
+                "schema_version": "2.0",
+                "skill_id": "guru-finalize-task",
+                "review": {
+                    "status": "passed",
+                    "summary": "The installed Finalizer plan is sufficient for the complete non-extension closeout transaction.",
+                },
+                "route": {
+                    "typed_exit": "published",
+                    "consumer": {
+                        "kind": "workflow",
+                        "id": "guru-finalization-finish-response",
+                    },
+                    "output": {"materialization": "executor"},
+                },
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    finalization_input_rel = finalization_input.relative_to(root).as_posix()
+    semantic_review_rel = semantic_review.relative_to(root).as_posix()
+    common_options = [
         "--root", str(root),
         "--json",
-        "--from-trellis-finish-work",
-        "--task", task_rel,
+        "--input", finalization_input_rel,
         "--repo", REPO,
         "--base-branch", BASE_BRANCH,
         "--remote", "origin",
@@ -422,6 +481,41 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         "--finish-summary-index-file", f"{task_rel}/finish-summary-index.json",
         "--body-file", f"{task_rel}/pr-body.md",
     ]
+    preview_command = [str(wrappers["preview-finalization"]), *common_options]
+    record_command = [
+        str(wrappers["record-finalization-gate"]),
+        *common_options,
+        "--review-input",
+        semantic_review_rel,
+    ]
+    check_command = [str(wrappers["check-finalization-gate"]), *common_options]
+    execute_command = [
+        str(wrappers["execute-finalization-transition"]),
+        *common_options,
+    ]
+
+    dry_payload = json.loads(run(preview_command, root, env=env).stdout)
+    if dry_payload.get("side_effects") is not False:
+        raise RuntimeError("installed Finalizer preview reported side effects")
+    if dry_payload.get("verification_required") is not False:
+        raise RuntimeError("installed non-extension closeout unexpectedly requires verification")
+    digest = dry_payload["closeout_plan_digest"]
+    recorded_payload = json.loads(run(record_command, root, env=env).stdout)
+    if (
+        recorded_payload.get("typed_exit") != "published"
+        or recorded_payload.get("plan_digest") != digest
+    ):
+        raise RuntimeError("installed Finalizer recorder did not bind the previewed plan")
+    gate_path = Path(recorded_payload["artifact_path"])
+    gate_rel = gate_path.relative_to(root).as_posix()
+    checked_payload = json.loads(run(check_command, root, env=env).stdout)
+    if (
+        checked_payload.get("typed_exit") != "published"
+        or checked_payload.get("plan_digest") != digest
+        or checked_payload.get("transaction_state") != "prepared"
+    ):
+        raise RuntimeError("installed Finalizer checker did not preserve the prepared plan")
+
     config_path = root / ".trellis/config.yaml"
     original_config = config_path.read_bytes() if config_path.exists() else None
     hook_sentinel = root / f"installed-after-archive-hook-{issue}.sentinel"
@@ -445,6 +539,7 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
                 if (task_dir / "pr-readiness.json").is_file()
                 else None
             ),
+            "finalization_gate": gate_path.read_bytes() if gate_path.is_file() else None,
         }
 
     def verify_archive_path_symlink_case(component: str, target_scope: str) -> None:
@@ -473,10 +568,7 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
                 moved_existing = True
             link_path.symlink_to(target, target_is_directory=True)
             before = preflight_state()
-            for command in (
-                [*common, "--dry-run"],
-                [*common, "--expected-plan-digest", "0" * 64],
-            ):
+            for command in (preview_command, execute_command):
                 blocked = subprocess.run(
                     command,
                     cwd=root,
@@ -491,10 +583,18 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
                     blocked_payload = json.loads(blocked.stderr)
                 except json.JSONDecodeError as exc:
                     raise RuntimeError("installed archive symlink preflight did not return JSON") from exc
-                if (
-                    blocked_payload.get("stage") != "archive-path-preflight"
-                    or blocked_payload.get("component") != component
-                ):
+                link_rel = link_path.relative_to(root).as_posix()
+                dirty_paths = blocked_payload.get("unexpected_dirty_paths")
+                blocked_by_publication_owner = isinstance(dirty_paths, list) and any(
+                    path == link_rel or path.startswith(f"{link_rel}/")
+                    for path in dirty_paths
+                    if isinstance(path, str)
+                )
+                blocked_by_archive_preflight = (
+                    blocked_payload.get("stage") == "archive-path-preflight"
+                    and blocked_payload.get("component") == component
+                )
+                if not (blocked_by_publication_owner or blocked_by_archive_preflight):
                     raise RuntimeError("installed archive symlink preflight evidence is incomplete")
                 if preflight_state() != before:
                     raise RuntimeError("installed archive symlink preflight changed closeout state")
@@ -524,25 +624,39 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
             + f"    - \"touch {hook_sentinel}\"\n",
             encoding="utf-8",
         )
-        blocked = subprocess.run(
-            [*common, "--dry-run"],
-            cwd=root,
-            env=env,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if blocked.returncode == 0:
-            raise RuntimeError("installed closeout accepted a non-empty official after_archive hook")
-        try:
-            blocked_payload = json.loads(blocked.stderr)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError("installed hook preflight did not return JSON failure evidence") from exc
-        if (
-            blocked_payload.get("stage") != "after-archive-hook-preflight"
-            or blocked_payload.get("hook_executed") is not False
-        ):
-            raise RuntimeError("installed hook preflight failure evidence is incomplete")
+        before = preflight_state()
+        for command in (preview_command, execute_command):
+            blocked = subprocess.run(
+                command,
+                cwd=root,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            if blocked.returncode == 0:
+                raise RuntimeError(
+                    "installed closeout accepted a non-empty official after_archive hook"
+                )
+            try:
+                blocked_payload = json.loads(blocked.stderr)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(
+                    "installed hook preflight did not return JSON failure evidence"
+                ) from exc
+            dirty_paths = blocked_payload.get("unexpected_dirty_paths")
+            blocked_by_publication_owner = (
+                isinstance(dirty_paths, list)
+                and ".trellis/config.yaml" in dirty_paths
+            )
+            blocked_by_hook_preflight = (
+                blocked_payload.get("stage") == "after-archive-hook-preflight"
+                and blocked_payload.get("hook_executed") is False
+            )
+            if not (blocked_by_publication_owner or blocked_by_hook_preflight):
+                raise RuntimeError("installed hook preflight failure evidence is incomplete")
+            if preflight_state() != before:
+                raise RuntimeError("installed hook preflight changed closeout state")
         if hook_sentinel.exists():
             raise RuntimeError("installed hook preflight executed the rejected after_archive hook")
         if not task_dir.is_dir() or json.loads((task_dir / "task.json").read_text(encoding="utf-8"))["status"] != "in_progress":
@@ -559,11 +673,12 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         else:
             config_path.write_bytes(original_config)
 
-    dry = run([*common, "--dry-run"], root, env=env)
-    dry_payload = json.loads(dry.stdout)
-    digest = dry_payload["closeout_plan_digest"]
-    formal = run([*common, "--expected-plan-digest", digest], root, env=env)
-    payload = json.loads(formal.stdout)
+    payload = json.loads(run(execute_command, root, env=env).stdout)
+    if (
+        payload.get("typed_exit") != "published"
+        or payload.get("closeout_plan_digest") != digest
+    ):
+        raise RuntimeError("installed Finalizer executor did not complete the reviewed plan")
 
     archived = Path(payload["archived_task_dir"])
     if not archived.is_dir() or task_dir.exists():
@@ -584,14 +699,27 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         raise RuntimeError("installed closeout summary PR URL is not canonical")
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{issue}"]:
         raise RuntimeError("installed closeout summary PR ref is not unique")
-    recovery = run([*common, "--expected-plan-digest", digest], root, env=env)
-    recovery_payload = json.loads(recovery.stdout)
-    recovered_pr = recovery_payload.get("publish", {}).get("pr", {})
+    public_invoke = [
+        str(wrappers["invoke"]),
+        "--input",
+        finalization_input_rel,
+    ]
+    published_payload = json.loads(
+        run([*public_invoke, "--owner-result", gate_rel], root, env=env).stdout
+    )
+    if (
+        published_payload.get("exit_id") != "published"
+        or published_payload.get("pr_number") != issue
+        or published_payload.get("pr_url") != expected_url
+    ):
+        raise RuntimeError("installed Finalizer public wrapper returned an invalid published DTO")
+    if gate_path.exists():
+        raise RuntimeError("installed Finalizer public wrapper retained its private gate")
+    recovery_payload = json.loads(run(public_invoke, root, env=env).stdout)
     recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
-    if recovery_payload.get("stage") != "ready" or recovery_payload.get("plan_digest") != digest:
+    archived_plan = json.loads((archived / "closeout-plan.json").read_text(encoding="utf-8"))
+    if archived_plan.get("plan_digest") != digest or recovery_payload != published_payload:
         raise RuntimeError("installed fresh archived recovery did not reuse the exact closeout transaction")
-    if recovered_pr.get("number") != issue or recovered_pr.get("url") != expected_url:
-        raise RuntimeError("installed fresh archived recovery changed the bound PR identity")
     if recovered_remote_pr.get("number") != issue or recovered_remote_pr.get("url") != expected_url:
         raise RuntimeError("installed fresh archived recovery changed the remote PR identity")
     return {
@@ -605,6 +733,8 @@ def run_closeout(root: Path, task_dir: Path, branch: str, issue: int, real_git: 
         "pr_head": pr["headRefOid"],
         "pr_url": pr["url"],
         "pr_ready": not pr["isDraft"],
+        "public_exit": published_payload["exit_id"],
+        "private_owner_checkpoints_consumed": True,
         "fresh_archived_pr_binding": True,
         "after_archive_hook_preflight": True,
         "archive_path_symlink_preflight": True,
@@ -625,8 +755,18 @@ def main() -> int:
     ensure_baseline(root, real_git, remote, after_update)
     gtt = load_installed_companion(root)
     issue = 106 if after_update else 105
-    task_dir, branch, _reviewed_head = write_fixture(root, gtt, real_git, args.case, issue)
-    payload = run_closeout(root, task_dir, branch, issue, real_git, remote)
+    task_dir, branch, reviewed_content_head = write_fixture(
+        root, gtt, real_git, args.case, issue
+    )
+    payload = run_closeout(
+        root,
+        task_dir,
+        branch,
+        issue,
+        reviewed_content_head,
+        real_git,
+        remote,
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
 

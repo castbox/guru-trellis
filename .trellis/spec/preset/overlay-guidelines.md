@@ -102,14 +102,16 @@ Continue entries must:
 - preserve the active `guru-clarify-requirements` invocation and typed exits:
   `clear` to workflow target `guru-requirements-clear-router`, `needs_context` to
   `guru-discover-change-context`, `refresh_context` to `guru-sync-base`,
-  `new_task` to workflow target `guru-full-task-intake-chain`, and `blocked` to
+  `retarget_context` to `guru-sync-base`, `new_task` to workflow target
+  `guru-full-task-intake-chain`, and `blocked` to
   `requirements-clarification-blocked`; platform entry text must load the
   stable id and must not copy its question/action/confirmation/Gate internals;
 - preserve the thin readiness-to-workspace transition:
   `guru-review-change-request:ready` mandatory invokes active
   `guru-create-task-workspace`; its `created` exit enters Phase 1,
-  `refresh_review` returns to `guru-sync-base`, and `cancelled` / `blocked`
-  stop fail closed. Platform entries must not copy target, naming, assignee,
+  `refresh_review` returns to `guru-sync-base`, and `blocked` stops fail closed.
+  Refusal stops in dialogue before recorder/executor and has no typed exit.
+  Platform entries must not copy target, naming, assignee, dialogue-only
   confirmation, recorder, executor, schema, or recovery internals. #112 adds
   only Guru-owned package/runtime/discovery assets and does not authorize any
   physical change below the frozen overlay tree;
@@ -151,23 +153,26 @@ Continue entries must:
   `prd.md`, `design.md`, `implement.md`, and `pr-body.md`; rows with
   `exists=false` must not be rendered as Markdown links, and JSON gate
   artifacts stay out of the standard table. Current Branch Review writes only
-  compact `review-gate.json`; it does not create `review.md` or
-  `reviews/*.md`
+  one owner-private ignored-runtime `review-gate.json` checkpoint; it does not
+  create `review.md` or `reviews/*.md`
 - state that Phase 1 mandatory invokes `guru-approve-task-plan`, whose single
-  `planning-approval.json` uses schema `guru-planning-approval-2.0`, current
-  wording/authority/planning/Docs SSOT bindings, four-class provenance,
-  unusual-proposal dispositions, distinct confirmations, AI Gate, facts digest,
-  and four typed exits; platform text must not copy that step-local loop
+  ignored-runtime `planning-approval.json` uses schema
+  `guru-planning-approval-3.0`, current task/planning locators, authority refs,
+  compact Docs SSOT, eight-dimension semantic result, and four typed exits;
+  platform text must not copy that step-local loop or persist authorization
 - state that schema 1.0 wording evidence missing the planning-only field is
-  stale and requires complete AI re-review, redisplay of all three planning
-  documents, and fresh post-planning confirmation; never patch old evidence
+  stale and requires complete AI re-review against the current three planning
+  documents; auto-consume the mapped exit, never patch old evidence, and never
+  turn this migration into routine user reconfirmation
 - in `in_progress`, rerun `check-planning-approval.sh --json` before dispatching
   `trellis-implement` / channel `implement` or recording `phase2-check.json`
 - in `in_progress`, tell the AI to consume the approved `Docs SSOT Plan` during
-  Phase 2: the implementation terminal result and live repository facts feed
-  the embedded `implementation_handoff` collection in `phase2-check.json`; do
-  not create a separate Markdown handoff. `trellis-check` verifies durable docs / task artifacts /
-  code/API/schema/config/deploy/test consistency by strategy
+  Phase 2: the implementation terminal result and live repository facts remain
+  ephemeral inputs to `guru-check-task`; its ignored-runtime schema 3.0
+  checkpoint stores only the compact final semantic result and must not contain
+  an embedded or separate implementation handoff. `trellis-check` verifies
+  durable docs / task artifacts / code/API/schema/config/deploy/test consistency
+  by strategy
 - after a fresh final Phase 2 pass, load and mandatory invoke the stable
   `guru-create-task-commit` id, then consume only its declared typed exit;
   continue/command/prompt/launcher entries must not copy candidate fields, AI
@@ -221,10 +226,10 @@ Finish entries must:
 - require the reviewed PR body to include a `Docs SSOT` / `文档同步` result with
   strategy, durable docs update or no-update reason, merged task delta,
   task-history-only content, and follow-up/current PR limitation
-- explain that the gate must already contain the compact task-local
-  `review-gate.json` semantic result and minimum verification evidence; do not
-  require legacy `review_report` / `review_reports[]` digest fields or generate
-  Markdown review artifacts
+- explain that the owner-private ignored-runtime `review-gate.json` checkpoint
+  must already contain the compact semantic result and minimum verification
+  evidence; do not require legacy `review_report` / `review_reports[]` digest
+  fields or generate Markdown review artifacts
 - state that only `close_issues` may use close keywords
 
 Start entries must:
@@ -259,7 +264,7 @@ The 43 inventory-pinned upstream overlay paths remain
 issue #128 path/baseline identity remains immutable; current bytes use that
 baseline except for the exact thirteen issue #131/#161 current bindings. Historical
 `schema 1.2` and `explicit-post-planning-review` implement-agent wording is
-transitional history; it must not guide current Guru package/runtime behavior
+frozen migration history; it must not guide current Guru package/runtime behavior
 or be copied into canonical `guru-*` packages, workflow contracts, durable
 docs, or new non-frozen platform sources.
 
@@ -271,12 +276,10 @@ docs, or new non-frozen platform sources.
 - require implement agents to run `check-planning-approval.sh --json --task
   <task-path>` before reading implementation context or editing, and to report
   `Implementation Blocked` if the artifact is missing, is not the Skill-owned
-  `guru-planning-approval-2.0` closed union, does not have
+  `guru-planning-approval-3.0` closed union, does not have
   `typed_exit=approved`, fails the shared
-  `check-planning-approval --require-exit approved` validator, lacks current
-  wording/authority/Docs SSOT/provenance/AI Gate evidence, does not carry
-  `user_confirmation.kind=post-planning-approval` with confirmed timestamps,
-  or the reviewed planning document content digests no longer match;
+  `check-planning-approval --require-exit approved` validator, or its current
+  task/planning locators and required non-empty files no longer match;
 - require implement agents to return one minimal terminal result with completion
   status, material changed behavior/paths, verification outcomes, and only
   remaining blockers, risks, or deferred validation; the next owner rereads
@@ -303,8 +306,8 @@ docs, or new non-frozen platform sources.
   `ssot_first`, `bootstrap_or_repair_docs`, and `no_docs_update_needed`;
 - require check agents in Branch Review mode to return concise Chinese terminal
   findings and evidence to the semantic owner; the semantic owner records only
-  the compact `review-gate.json`, with no raw report or Markdown rollup
-  artifacts;
+  the compact owner-private ignored-runtime `review-gate.json` checkpoint, with
+  no raw report or Markdown rollup artifacts;
 - require a recovery result when actually interrupted/replaced before
   completion, including only current diff, remaining work, validation state,
   and gate blockers needed for same-agent resume or replacement;
@@ -395,8 +398,8 @@ policy. Drift validation compares bytes and executable modes for the complete
 six-package set and rejects partial activation or sidecars.
 
 The production planning/check/commit package trees follow the same copy and
-mode rules under the independent `production-minimal-handoff-v1` manifest.
-Together the two manifests plus active `guru-review-branch` and
+mode rules under the frozen `production-minimal-handoff-v1` plus current
+`production-ai-first-contract-v2` contracts. Together the two activation sets plus active `guru-review-branch` and
 `guru-review-task-publication` yield eleven byte-identical active package trees
 and 42 exits. The frozen 43-path
 workflow/platform overlay payload is not expanded

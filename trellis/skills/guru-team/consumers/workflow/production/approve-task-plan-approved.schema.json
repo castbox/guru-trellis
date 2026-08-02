@@ -1,12 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-approve-task-plan-workflow-approved-input-1.0",
+  "$id": "guru-production-approve-task-plan-workflow-approved-input-2.0",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "exit_id",
-    "task_ref",
-    "approval_ref"
+    "task_ref"
   ],
   "properties": {
     "exit_id": {
@@ -15,10 +14,6 @@
     "task_ref": {
       "type": "string",
       "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
-    },
-    "approval_ref": {
-      "type": "string",
-      "minLength": 1
     }
   }
 }

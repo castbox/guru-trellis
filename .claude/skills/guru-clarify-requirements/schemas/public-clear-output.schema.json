@@ -7,7 +7,6 @@
     "exit_id",
     "resume_target",
     "target_disposition",
-    "confirmed_action_id",
     "continuation_id"
   ],
   "properties": {
@@ -25,10 +24,6 @@
         "reopened",
         "complete"
       ]
-    },
-    "confirmed_action_id": {
-      "type": "string",
-      "minLength": 1
     },
     "continuation_id": {
       "type": "string",

@@ -235,8 +235,10 @@ consumer identity，不安装 package，也不能拥有 invoke/exit marker。只
 package/interface/schema/route 验证的 `active` 项才会分发。当前 active ids 是
 `guru-sync-base`、`guru-discover-change-context`、
 `guru-clarify-requirements`、`guru-review-contract-wording`、
-`guru-review-change-request`、`guru-create-task-workspace` 与
-`guru-create-task-commit`，以及 `guru-approve-task-plan`、`guru-check-task`。Active package 的
+`guru-review-change-request`、`guru-create-task-workspace`、
+`guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
+`guru-review-branch`、`guru-review-task-publication`、
+`guru-verify-extension-installation` 与 `guru-finalize-task`。Active package 的
 `SKILL.md` frontmatter `name`/`description` 必须与 stable id/interface 精确
 一致，`tests[]` 必须是 package-local `tests/<file>` 的真实 regular file，不能
 使用标签、虚构路径、越界路径或 symlink evidence。升级遇到已知
@@ -262,26 +264,36 @@ Public Skill interface 采用独立版本共存：1.2 是冻结的 legacy contra
 `interface_schema_id` 与 `io_contract_state=legacy|minimal_handoff`，validator 按该 exact
 pair 选 schema，不从文件或 optional 字段猜版本。#144 的 Interface 1.2 结论只描述冻结
 历史 snapshot，不是当前 active
-状态。当前十三个 active Skills / 52 exits 全部使用 Interface 1.3；
-`stage0-minimal-handoff-v1` 已把 `guru-sync-base`、
+状态。当前十三个 active Skills / 51 exits 全部使用 Interface 1.3；
+冻结的 `stage0-minimal-handoff-v1` 记录 `guru-sync-base`、
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request` 与
-`guru-create-task-workspace` 六包、24 exits 原子迁移到
-`guru-team-skill-interface-1.3 + minimal_handoff`；
-独立 `production-minimal-handoff-v1` 再把 `guru-approve-task-plan`、
-`guru-check-task`、`guru-create-task-commit` 三包、十个 profiles 与 11 exits 原子迁移到
-1.3。`guru-review-branch` 之后的 `guru-review-task-publication` 以两个 closed
+`guru-create-task-workspace` 六包、24 exits 的原始原子迁移边界，bytes 不再修改；
+新增 `stage0-ai-first-contract-v2` 显式迁移当前六包到 23 exits，其中用户拒绝
+workspace/task mutation 在 recorder/executor 前停止，不再产生 `cancelled` DTO；两代均使用
+`guru-team-skill-interface-1.3 + minimal_handoff`；该 v2 migration 也显式声明
+`guru-sync-base.repo_root` / `route` 从 required 变为可由 runtime 推导的 optional scalar。
+独立 `production-minimal-handoff-v1` 冻结 `guru-approve-task-plan`、
+`guru-check-task`、`guru-create-task-commit` 三包、十个 profiles 与 11 exits 的原始
+output schema identities；`production-ai-first-contract-v2` 再显式迁移当前
+`approved` / `passed` minimal DTO，并将旧 Task Commit message/path/semantic 输入一次性
+投影为五字段 v2 owner-entry seed 与 ignored-runtime candidate；旧授权、caller 预选出口和
+terminal result journal 不进入新合同，且不改写 v1 bytes。`guru-review-branch` 之后的
+`guru-review-task-publication` 以两个 closed
 profiles、三个 minimal exits 和唯一 task-local `pr-readiness.json` 负责 Phase 3.6
-publication semantic gate；`ready` 向 active `guru-finalize-task` 投影
-`task_ref/reviewed_head/publication_ref`。新增 active
+publication semantic gate；ignored-runtime `pr-readiness.json` 使用 schema 2.0，
+`ready` 只向 active `guru-finalize-task` 投影
+`exit_id/task_ref/reviewed_content_head`，Publication 不读取 Branch Review 私有
+checkpoint。新增 active
 `guru-verify-extension-installation` 以两个独立 input profiles、四个 minimal exits
 和唯一 task-local-or-session private owner result 负责 extension installation
 semantic gate。新增 active `guru-finalize-task` 以七个 distinct input profiles、
 六个 `exit_id` outputs、owner-private `task-finalization-gate.json` 与既有 #105
 transaction engine 负责完整 semantic closeout。当前 package closure 为 13 Skills /
-52 exits，
-`legacy_skill_ids=[]`，Stage 0 manifest
-仍保持 6 Skills / 24 exits；global workflow production markers 为 13/52/29。
+51 exits，
+`legacy_skill_ids=[]`；冻结 Stage 0 v1 manifest 保持 6 Skills / 24 exits，
+AI-first v2 当前合同为 6 Skills / 23 exits；global workflow production markers 为
+13/51/28。
 Finish-family combined integration 由 canonical `guru-finish-work` 入口、两个 terminal
 eval、checked #117 private projection bridge 与安装验收共同覆盖；#132 仍独占五个
 legacy overlay 的物理删除。
@@ -353,9 +365,9 @@ checker 后从 checker-passed `typed_exit` 推导 route。调用方不能传入 
 读取/import shared Python runtime、private artifact body 或 public output example。
 
 `guru-finalize-task` 的完整 step-local 行为位于 package
-`references/contract.md`。它独占 immutable plan review、精确 digest confirmation、
-recovery route、六个 typed exits 与 private gate；deterministic runtime 只复用 #105
-engine 执行/校验/记录。`publication_review_stale` 保留 #116 owner checker 的
+`references/contract.md`。它独占 canonical transaction-plan review、当前对话中的真实副作用确认、
+recovery route、六个 typed exits 与 private gate；用户不复述 digest，deterministic runtime 只复用 #105
+engine 执行/校验/记录。plan/digest 只绑定该 deterministic consumer，不是 semantic 或 workflow authority。`publication_review_stale` 保留 #116 owner checker 的
 missing/stale/head-mismatch fact，由 AI 选择 route；无 plan 的 stale handback 不产生
 closeout 副作用。Public DTO 不包含内部 transition、plan/readiness/verification、
 PR/archive/recovery facts 或 digest。
@@ -448,18 +460,20 @@ regular/trackable、prior identity 等于显式 expected digest、完整 new/liv
 
 `guru-clarify-requirements` 统一 initial issue/proposed draft、active-task scope change 与
 standalone review。Workflow/standalone 使用相同 preconditions 和 semantic 五阶段；Skill
-验证 repository-answerable `answered` evidence、question lifecycle与confirmed payload/live
+验证 repository-answerable `answered` evidence、question lifecycle与objective payload/live
 mutation；先穷尽 repository-answerable questions，且 `answered` 必须有checked evidence，再按每轮一个最高价值
 问题收敛。每轮question id必须来自本轮opened或既有open set，reducer固定为
 `open_questions = opened - closed`。只有不可分割产品选择才记录 `atomic_group`。Scope proposal 与 source action 都绑定 recorder 派生的 digest；
-未确认 expansion 纳入 current scope 必须取得 proposal-digest-bound 专用确认，普通“继续”、
-task/planning/review approval 不得替代。Optional mechanism 产生的风险只能删除/替换机制或
-另行提案。
+该 digest 只校验当前 bytes，不是 workflow authority 或授权证据。Material expansion 纳入
+current scope 前必须完成一次对话内的真实产品/范围选择，普通“继续”、task/planning/review
+approval 不得替代；选择过程不写入 artifact。Optional mechanism 产生的风险只能删除/替换
+机制或另行提案。
 
-Package 不提供 mutation executor。GitHub comment/body 只能由 AI 在 exact action
-confirmation 和 live preimage 复核后通过现有 connector 或审查过的 `gh` 执行，随后重读
-live facts；recorder/checker 只规范化和校验 closed schema、derived digest、freshness、
-confirmed exact payload/mutation/live content、active-task ledger/planning/stale-gate linkage 与 typed exit。Pre-task/standalone stdout-only，
+Package 不提供 mutation executor。GitHub comment/body 只能由 AI 在当前对话完成 exact
+副作用确认并复核 live preimage 后，通过现有 connector 或审查过的 `gh` 执行，
+随后重读 live facts；recorder/checker 只规范化和校验 closed schema、derived digest、
+freshness、reviewed payload/mutation/live content、active-task compact ledger 与 live owner linkage 及 typed exit，
+不接收或记录授权。Pre-task/standalone stdout-only，
 无专用 clarification artifact；active-task current inclusion 绑定
 `guru-approve-task-plan`、`guru-check-task`、`guru-review-branch` re-entry owners。Schema 是
 `guru-requirements-clarification-2.0`，managed commands 是
@@ -481,16 +495,16 @@ active planning review或exact interrupted progression，不重新分类scope。
 
 Active-task `clear`/`new_task` 必须携带非空且全部属于七类 terminal decision 的 proposal set；
 accepted-current/related/followup/new-task/out-of-scope 五类 scope classification 无论来源状态，
-都必须有 proposal-digest-bound 用户证据，并把 structured
-`decision_trail` exact 写入当前 `issue-scope-ledger.json.scope_decisions[]`，并绑定 live
-GitHub comment/body authority 的 content/`updated_at`、planning approval/doc digests、review state、stale gates、
-interrupted target 与 re-entry owners；planning approval 必须是 shared checker 完整校验通过的
-`guru-planning-approval-2.0` `approved` result 并 exact 绑定 reviewed/approved 三文档，旧 ledger hash、两行 planning docs
-或最小 approval JSON 均不成立。`mechanism_removed/replaced` 要求 optional origin、null
-confirmation，不进入 trail 或 authority mutation。GitHub authority mutation 后必须先返回
-`refresh_context`；context `generated_at` 不早于 authority `updated_at` 后执行 task update，
-并以 `context_before_task_update_sha256` 绑定该 digest，不要求第二次 context refresh。
-Active-task `new_task` 保留该 trail，只向 #112 返回 side-effect-free reviewed draft。
+都必须有最终 decision；其中确有未决产品/范围选择的 classification 先在当前对话完成选择。
+兼容字段 `decision_trail` exact 写入当前 `issue-scope-ledger.json.scope_decisions[]`，但它不是过程轨迹：
+只记录 `trail_id`、最终 proposal id/digest/decision 与 live GitHub authority 的 kind/URL/content checksum。
+用户身份、原话、时间、confirmation ref、authorization digest、planning/context/review/stale/interrupted/re-entry
+等可重读事实均不得进入 ledger；checker 从各 owner 和 live authority 重新验证。旧 full-shape trail 由 recorder
+一次性投影为 compact task-update payload，不要求新的用户选择或 GitHub mutation。`mechanism_removed/replaced` 要求 optional origin，不进入
+trail 或 authority mutation。GitHub authority mutation 后必须先返回
+`refresh_context`；context `generated_at` 不早于 live authority `updated_at` 后，task update 的 preimage
+必须等于当前 context snapshot digest，不要求第二次 context refresh。
+Active-task `new_task` 持久化同一 compact classification，只向 #112 返回 side-effect-free reviewed draft。
 
 Source issue 的 live state 可为归一化后的 `open` 或 `closed`；open duplicate candidates
 与 draft-created issue binding 仍分别保持 open-only。Current Docs、code/contracts、tests
@@ -588,7 +602,6 @@ guru-clarify-requirements
         ready -> guru-create-task-workspace
           created -> Phase 1
           refresh_review -> guru-sync-base
-          cancelled -> task-workspace-cancelled
           blocked -> task-workspace-blocked
         clarify_requirements -> guru-clarify-requirements
         review_wording -> guru-review-contract-wording
@@ -612,10 +625,10 @@ guru-clarify-requirements
 ```
 
 `prepare-task.sh --json` 只保留 query-only 兼容能力：它可以读取明确提供的
-issue、搜索重复候选，并输出 proposed issue、base branch、branch name、workspace
-path、create-task command 和 `naming_quality`，但不会创建 GitHub issue、worktree、
-branch 或 Trellis task，也不会在未确认 source issue 时写
-task-local `.trellis/tasks/<task-slug>/task-start-context.json` and gitignored `.trellis/.runtime/guru-team/**` mappings。没有 source issue 的 freeform 请求必须先由 AI 展示
+issue、搜索重复候选，并输出 proposed issue、base branch、branch name、portable
+workspace/task slug 和 `naming_quality`，但不会创建 GitHub issue、worktree、branch、
+Trellis task、task-local artifact 或 gitignored `.trellis/.runtime/guru-team/**`
+mapping。新任务不生成 `task-start-context.json`。没有 source issue 的 freeform 请求必须先由 AI 展示
 proposed issue title/body、duplicate evidence 和 naming quality；planner 输出不会写
 task context 或 runtime cache。Legacy `--create-issue-confirmed`、`--create-worktree`、
 `--create-task` 均零写入 fail closed，并指向 active
@@ -657,9 +670,9 @@ exact issue 并重读后固定返回 `refresh_review`；同一调用不创建 br
 Intake 后，open issue invocation 另行取得 `workspace_and_task_mutation` confirmation。Assignee
 固定按 explicit、single issue assignee、zero issue assignees 时 current GitHub login、
 multiple/unresolved 时 AI/user 选择解析，并始终作为显式参数传给 official task-create handler。
-Passed Gate + confirmed 才可 mutation；passed + digest-bound refused 返回
-`cancelled`，`reroute` 返回 `refresh_review`，`blocked` 返回 `blocked`，后三者均由
-checker 验证 zero-write snapshot。
+Passed Gate + confirmed 才可 mutation；用户拒绝时在 recorder/executor 前停止，不生成
+plan、result 或 public DTO。`reroute` 返回 `refresh_review`，`blocked` 返回 `blocked`，
+两者均由 checker 验证 zero-write snapshot。
 
 Draft executor 在 create 前按 exact open title/body/labels 与 `createdAt >= reviewed plan`
 执行 0/1/>1 recovery：0 个才创建，1 个恢复并重读，多个 fail closed。因此 remote create
@@ -674,19 +687,20 @@ handler 调用内禁用 official developer accessor，因此 `task.json.assignee
 `task.json.creator` 都固定为 reviewed login。该 adapter 不读取或改写 existing
 `.trellis/.developer`，source/target 中已有 identity bytes 保持不变。
 
-创建成功后只写四个 tracked task-local Intake artifacts：`task-start-context.json`、
-`issue-scope-ledger.json`、`context-discovery.json`、`issue-review.json`。Plan/result 只走
-stdout 且不含 absolute workspace path，本机 mapping 只位于 ignored
+创建成功后，除 official Trellis `task.json` 外只写一个 Guru-owned tracked Intake artifact：
+`issue-scope-ledger.json`。Plan/result 位于 ignored runtime 且不含 absolute workspace path，
+本机 mapping 只位于 ignored
 `.trellis/.runtime/guru-team/**`。Checker 从 current config、reviewed slug 与 live Git facts
 推导 worktree。A/B fixture 从同一
 clean base 分别走 production recorder/executor/checker、task-local archive/commit，再验证
 A -> B 和 B -> A 两个本地 merge 顺序均无 Guru metadata conflict；不创建远程 PR或并发进程。
 
-executor 完成后，tracked `task-start-context.json` 只提供 portable
-`workspace_slug`、`task_workspace_id` 和 `task_artifact_dir`，不得包含或读取 absolute
-`workspace_path`。`workspace_mode: worktree` 下的 task artifact 写入边界由当前 checkout、
-`.trellis/.runtime/guru-team/**`、`git worktree list` 和 boundary helper 共同推导/校验。AI 或 main session 在写入/校验
-`planning-approval.json`、`phase2-check.json`、`review-gate.json` 等 task-local artifact 前，应从目标 worktree 运行：
+`workspace_mode: worktree` 下的 task artifact 写入边界由 current `task.json`、当前 checkout、
+`.trellis/.runtime/guru-team/**`、`git worktree list` 和 boundary helper 共同推导/校验。
+既有 active task 的 `task-start-context.json` 只作为一次性只读兼容输入，不是新任务依赖或
+新 artifact。AI 或 main session 在写入/校验
+`planning-approval.json`、`phase2-check.json`、`review-gate.json` 等 owner-private
+ignored-runtime checkpoint 前，应从目标 worktree 运行：
 
 ```bash
 .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
@@ -728,15 +742,13 @@ session/startup 注入、hook 未启用或未审批、怀疑自动注入没有�
 `approved` 唯一进入 task activation。`clarify_scope` 只进入三字段 routing-only workflow
 target `guru-task-plan-clarify-scope-router`；router 建立 scope context 后 mandatory invoke
 `guru-clarify-requirements:active_task_scope_change`，完整 semantic input 由 caller AI 基于
-fresh live context 编写。Installed recorder/checker 只消费 AI-reviewed input、
-重建确定性事实并校验 `guru-planning-approval-2.0` closed union，不执行 adequacy、
-provenance、confirmation 或 route 判断。`approved_scope_expansion` 不接受 caller-only digest：
-普通 proposal 从 current planning locator 重算，unusual proposal 从 canonical candidate 重算；
-专用 confirmation 与 runtime-materialized current authority digest 必须绑定同一 proposal，
-candidate link 不重复确认。Task 仍为 `planning` 时 checker 会复验 invocation
-base/HEAD/dirty snapshot；activation 后正常实现 HEAD/dirty drift 不会单独使 approval stale。
-`issue-scope-ledger.json` 作为 task projection 或 requirement authority 时都只绑定
-primary/close/related/follow-up issue 分类投影，decision/acceptance metadata 更新不会误 stale。
+fresh live context 编写。Installed recorder/checker 只记录已完成的 AI result，并校验
+`guru-planning-approval-3.0` schema、task/planning locators、非空文件与 closed union，不执行
+adequacy、provenance、authorization 或 route 判断。必要授权只存在于当前会话，不进入
+checkpoint、archive 或 public DTO。Active schema 1.2/2.0 只作为 re-entry signal；新流程不会
+重建旧 digest/confirmation chain。
+Planning public wrapper 在 checker-passed typed DTO 通过 output schema 后删除自己的
+`planning-approval.json`；task activation 与 Phase 2 只消费 DTO 和当前 planning/live facts。
 `task.py start` 只写状态，不代表规划已审查。
 `resolve-human-artifacts.sh` 为阶段回复提供确定性路径事实：规划停止、Phase 2 完成、
 Branch Review Gate 结果、finish-work dry-run 和最终 archive/publish 回复都应先运行它，
@@ -747,13 +759,13 @@ Phase 2 在 unchanged official `trellis-check` / channel `check` 收集 raw evid
 后 mandatory invoke active semantic Skill `guru-check-task`。该 Skill 是 scope
 qualification、adequacy、finding/full-rerun loop、Docs SSOT review、四出口和唯一
 `phase2-check.json` 的 owner；新 artifact 使用 closed schema
-`guru-phase2-check-2.1`。`record-phase2-check.sh` / `check-phase2-check.sh` 只记录和
+`guru-phase2-check-3.0`。`record-phase2-check.sh` / `check-phase2-check.sh` 只记录和
 校验 AI-authored closed result 的确定性事实；worker 输出、coverage flags、验证命令
 或脚本成功都不能生成 Guru pass。
-2.1 只保留九个有直接 Gate consumer 的 adequacy 维度、finding lifecycle、Docs SSOT
-结论和实际验证证据；routine assignment、handoff、recovery transcript 与 raw worker
-payload 不进入 artifact。Checker 从源字段重算 semantic bindings、finding count 和
-full-round digest。
+3.0 只保留 `checked_head`、reviewed paths、实际 validation、Docs SSOT、九个 adequacy
+维度、finding lifecycle 与 typed route；routine assignment、handoff、recovery transcript、
+raw worker payload 和 digest bundle 不进入 checkpoint。Checker 只校验 closed schema、
+task/HEAD freshness、当前 dirty-path coverage、finding/scope linkage 与 exit/consumer union。
 Codex 项目默认使用 `codex.dispatch_mode: sub-agent`，由 main session 调度
 `trellis-implement` / `trellis-check`；sub-agent 通过 dispatch prompt 首行
 `Active task: <task path>` 或 `task.py current --source` 加载上下文。默认 sub-agent
@@ -778,9 +790,11 @@ workflow 内继续观察或重入，不向用户索要“确认继续”。只�
 `.trellis/.runtime/guru-team/agent-recovery/<task-key>.json`，记录一次 `unfinished` 和一次
 `replacement` 的最小 reason/handoff；`check-agent-recovery.sh` 验证这条真实 recovery 链。
 该 checkpoint 不进入 task artifact、commit、public DTO 或长期 archive。
-`phase2-check.json` 是 Guru Team 固化 `guru-check-task` semantic check 结论、
-official worker/command evidence、scope qualification、adequacy、findings、unverified
-items 和 `dirty_paths` 的 artifact；脚本成功不能替代 Skill 的 AI Review Gate。
+`phase2-check.json` 是 Guru Team 固化 `guru-check-task` semantic check 的 owner-private
+短生命周期 checkpoint，只包含 reviewed paths、validation、Docs SSOT、scope decisions、
+adequacy、findings 和 typed route；脚本成功不能替代 Skill 的 AI Review Gate。Phase 2
+public wrapper 校验 typed DTO 后删除自己的 checkpoint，Task Commit 只消费
+`task_ref + checked_head` 与 live Git，不读取或代删上游私有状态。
 Active `guru-review-branch` 是唯一的 Phase 3.5 semantic owner。Global workflow 与
 五个平台 `trellis-continue` entry 只提供 `profile`、`mode`、`task_ref`、
 `base_ref`、`committed_head`、`review_intent` 六字段 public input，并消费
@@ -792,12 +806,15 @@ Gate、recovery checkpoint 或 revision 规则。
 recorder/validator implementation details：只在 AI Review Gate 已完成后记录或验证
 task-local private evidence，不能判断 scope、finding、充分性、pass 或 route。完整 lifecycle、
 private artifact 与 re-entry 合同只在 canonical package/spec 中维护。
+Branch Review public wrapper 在 typed DTO 校验后删除自己的 private gate；Publication 只消费
+该 DTO 与 live Git，不读取或代删 Branch Review checkpoint。
 `trellis-continue` 不得 push 分支、创建 PR、调用 `publish-pr` 或调用
 `finish-work`，也不得提交 `review-gate.json` 等 Trellis metadata。
 PR 发布只从显式 canonical `guru-finish-work` 薄入口开始：该入口先按 live workflow 调用
 `guru-review-task-publication`，仅从 `ready` 进入 `guru-finalize-task`。Finalizer 的私有
-preview 生成 immutable `closeout_plan` 与 digest，语义 Gate 完成精确副作用确认后才执行
-reviewed content push、marketplace evidence/readiness commit、draft PR、final archive
+preview 生成 canonical `closeout_plan` 与 local digest；该 digest 只绑定 deterministic executor。
+语义 Gate 在当前对话完成真实副作用确认后才执行
+reviewed content push、按需 marketplace verification、draft PR、final archive
 projection、单次 archive metadata commit/push、三方 HEAD 对齐与 draft-to-ready。裸
 `finish-work.sh` 默认拒绝普通直接调用，`publish-pr.sh` 无条件阻断；中断由同一 finalizer
 自动消费 recovery route，不暴露内部 flag 或要求用户选择下一条命令。
@@ -806,8 +823,9 @@ prepare 使用已安装的官方 config parser 读取 `.trellis/config.yaml`：�
 `hooks.after_archive`，非空、歧义、不可读、含 NUL 或 symlink 配置在任何副作用前拒绝，
 且不会执行 hook。official move 前再次核对实时 archive 月份、空 index、精确 untracked
 集合、所有 tracked regular-file/mode/blob continuity；失败时 task 保持 active、PR 保持
-draft。若已提交 plan 跨月，same entry 必须重新 dry-run 并审查新 digest，再以仅更新
-plan/readiness 的 additive evidence commit 显式 supersede；不 rewrite history、不迁移目录。
+draft。若 schema 1.2 plan 在 task 仍 active 时跨月，same entry 必须重新 dry-run、审查
+新 digest 并只替换 still-untracked plan；不创建 plan/readiness evidence commit、不 rewrite history、
+不迁移目录。已持久化 schema 1.0/1.1 plan 的 committed supersession 仅保留在兼容路径。
 共享 prepare 从 archive root 到 month/final destination 对每个既有组件逐层 `lstat`，
 不读取或跟随 symlink target，任何 symlink（含 dangling、repo 内 target）都拒绝；计划
 final locator 还必须不存在。official move 前重复同一检查，阻止 prepare-to-move 漂移。
@@ -819,14 +837,14 @@ Finalizer 的 private preview 是无副作用 readiness step：它校验 AI 已�
 `finish-summary-index.json`、PR body、gate 与 dirty state，并输出 canonical plan、digest、
 future archive mapping、metadata allowlist 与 transitions；
 不会移动或写入文件、创建 commit、push 或创建 PR，也不存在 journal/workspace 计划。
-Schema 1.1 将 active recovery evidence 与长期 history 分层：正常 finalizer archive
-只保留 `task.json`、三份 planning 文档、scope ledger、planning approval、Phase 2 check、
-compact review gate、closeout plan、finalization gate 与 finish summary 共 11 个文件；
-仅在 marketplace verification 适用时保留第 12 个 verifier artifact。其它
-intake/context、legacy assignment/liveness、commit plan、raw review、PR
-preparation/checkpoint 由 exact evidence commit 或 GitHub authority 承接，不复制进
-archive tree。已持久化 schema
-1.0 plan 继续使用原 full-move 语义。
+Schema 1.2 将 active transaction state 与长期 history 分层：10 文件 core compatibility
+allowlist 包含 `task.json`、三份 planning 文档、scope ledger、既有 task-local Planning/
+Phase 2/Branch Review artifact、closeout plan 与 finish summary；新 AI-first task 通常只
+保留其中 7 个 durable 文件。仅在 marketplace verification 适用时保留第 11 个 verifier
+artifact。Publication readiness 与 Finalizer gate 为 ignored runtime，不进入 archive；其它
+intake/context、legacy assignment/liveness、commit plan、raw review 与 PR preparation 也不
+复制进 archive tree。已持久化 schema 1.0 保留原 full-move，schema 1.1 保留旧 evidence
+commit 与 11+1 文件上限，均只走兼容路径。
 dry-run 回复使用 active task 路径表；正式 finish archive 后，AI 必须重新运行
 `resolve-human-artifacts.sh` 解析 archive 后 task 路径，并在最终回复输出 archive-path
 `Markdown 产物 review 表`，不能复用 archive 前的 active task 链接。
@@ -839,12 +857,12 @@ finish-work 在 active task 中绑定唯一 draft PR，再一次构建包含 can
 workspace/runtime 受保护前缀，把安全集合同时写入 `git.changed_paths` 与 search `paths`；
 schema/validator 的所有 path 字段仍拒绝受保护前缀。final summary 只随 exact archive metadata
 transaction 提交，不存在 empty-URL initial summary 或 post-archive metadata tail。
-archive 前 recovery 使用 committed plan/readiness/evidence 与 task-local body/summary facts。official
-move 后、精确 archive commit 尚未形成时，schema 1.1 先幂等完成 compact prune，再严格校验
+archive 前 recovery 使用 untracked schema 1.2 plan、live Git/GitHub、marketplace owner 与
+task-local body/summary facts。official move 后、精确 archive commit 尚未形成时，先幂等完成 compact prune，再严格校验
 retained working-tree 布局、dirty/staged path、blob continuity、pruned-path absence 与官方
 `task.json` delta；commit 缺失或不匹配继续 fail closed。一旦当前
 `HEAD` 已是精确 archive commit，普通 archived task 和 plan-only recovery 都从该 commit blob
-读取 plan，只以 immutable plan 和 Git parent/path/tree/blob lineage 为准，
+读取 plan，只以 committed plan blob 和 Git parent/path/tree/blob lineage 作为 deterministic recovery input，
 本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、远端 title/body digest、三方 HEAD
 或 draft-to-ready。plan-only archived directory 只允许 `guru-finish-work` 恢复入口解析，普通 task
 命令仍要求 `task.json`。readiness、body、ledger 与 verifier 不再打开；但 final summary 的 real-PR
@@ -857,11 +875,12 @@ final projection、incomplete 与 exact recovery 统一复用 strict PR URL pars
 owner/repository identity 按大小写不敏感比较，canonical summary 输出保留 remote 返回的合法 casing
 （如 `microsoft/PowerToys`）；非 HTTPS、错误 repo、非法 number、trailing/extra path、query/fragment
 仍一律 fail closed。
-plan-only 恢复不会把缺失 context 当作 boundary 豁免：它从当前 commit blob 读取 immutable plan，
+plan-only 恢复不会把缺失 context 当作 boundary 豁免：它从当前 commit blob 读取 committed plan，
 在任何 GitHub/fast-path 动作前校验 Git toplevel、配置和effective remote repo、当前head branch、
 base ref、current HEAD transaction、expected digest、task identity 与 active/archive locator。普通 task
-discovery、workspace boundary 和其它命令继续要求 `task.json`，worktree mode 继续要求
-`task-start-context.json`。
+discovery、workspace boundary 和其它命令继续要求 `task.json`；worktree mode 的边界由
+current task、ignored runtime mapping 与 Git worktree facts 解析，旧
+`task-start-context.json` 仅作一次性只读兼容输入。
 该入口在普通 resolver/`resolve()` 前保留 raw locator，只允许 task basename、原 active locator 或
 精确 archive locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`。basename
 输入则在普通 resolver 前按其候选顺序预检 `<repo>/<basename>`、active task candidate、archive
@@ -889,8 +908,9 @@ issue close 语义只在 PR body 中根据
 Task work commit 不再由 Phase 3.4 直接 stage/commit。Fresh final Phase 2 check
 通过后，workflow mandatory invoke `guru-create-task-commit`；该 skill 在 ignored
 `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json` 写临时
-candidate，由 AI 审查 scope、exact paths、消息与授权，再由 exact executor 验证并提交
-计划路径。candidate 永不 stage，commit 成功后删除；executor 只返回 Git 可推导的
+candidate，由 AI 审查 scope、exact paths、消息与机械约束；随后展示唯一 commit 副作用并
+只在当前对话取得确认，再由 exact executor 验证并提交计划路径。candidate 不含授权信息、
+永不 stage，commit 成功后删除；executor 只返回 Git 可推导的
 `pre_commit_head` 与 `commit_sha`，不再把 `committed/result/tree_evidence` 回写 tracked
 handoff，因此成功提交不会主动制造 post-commit dirty。失败时 private candidate 可用于
 同一未完成操作的 bounded recovery。既有 tracked plan 仅作只读迁移证据；finding fix
@@ -1009,6 +1029,7 @@ wrapper stdout 与返回 DTO 一致时才产生 trace invariant；合法 DTO 无
 `execution_error`。Schema id 为 `guru-team-skill-eval-native-trace-1.0`，transcript 记录
 native argv、stdout/stderr、context 与 receipt locator；四平台 projection 内 eval/private
 runtime raw read 必须真实失败。十三个 active packages 维护唯一 canonical
-corpora 并覆盖全部 52 exits/input profiles；Stage 0 的独立 24-exit corpus closure 保持不变。
+corpora 并覆盖全部 51 exits/input profiles；Stage 0 AI-first v2 的独立
+23-exit current corpus closure 保持不变，冻结 v1 manifest 仍为 24 exits。
 执行 `trellis update` 后需重新应用
 workflow/preset，运行 source/installed/platform checks 并清理所有 `.new`/`.bak`。

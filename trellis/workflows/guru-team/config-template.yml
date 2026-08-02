@@ -4,13 +4,13 @@
 # Target GitHub repository in owner/repo format. If empty, infer from git remote.
 github_repo: ""
 
-# Require users to provide an issue number or URL. When false, prepare can
-# propose a new issue for AI/human review.
+# Require callers to provide an issue number or URL. When false, prepare can
+# return a side-effect-free proposed issue for the current AI owner to review.
 source_issue_required: false
 
-# Deprecated compatibility field. prepare never creates a GitHub issue from the
-# default command; issue creation requires --create-issue-confirmed plus a
-# reviewed --issue-body-file.
+# Deprecated compatibility field. prepare is query-only and never creates a
+# GitHub issue. The disabled --create-issue-confirmed flag exists only to return
+# migration guidance; guru-create-task-workspace owns current issue creation.
 auto_create_issue: false
 
 # Search open issues for likely duplicates before proposing or creating an issue.
@@ -53,7 +53,7 @@ workspace_mode: worktree
 # Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
 worktree_root: ""
 
-# Task-local portable context artifact and gitignored local runtime namespace.
+# Read-only legacy context filename and gitignored local runtime namespace.
 task_start_context_artifact: "task-start-context.json"
 runtime_root: ".trellis/.runtime/guru-team"
 marketplace_verification_artifact: "marketplace-verification.json"
@@ -74,6 +74,8 @@ middle_platform_knowledge:
   mode: optional_warn
 
 # Branch Review Gate runs after task work is committed and before finish-work.
+# Current gates use this filename under owner-private ignored runtime; tracked
+# task-local files with the same name are read-only migration inputs.
 # Any finding priority blocks Branch Review Gate. `block_priorities` is retained
 # as compatibility metadata for older installed configs and should list every
 # valid finding priority.

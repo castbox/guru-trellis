@@ -14,9 +14,8 @@ You are the `implement` agent spawned by `trellis channel spawn --agent implemen
 
 ## Context
 
-Before reading implementation context or editing files, validate the explicit
-post-planning approval evidence and workspace boundary facts for the active
-task:
+Before reading implementation context or editing files, validate the current
+planning-owner result and workspace boundary facts for the active task:
 
 ```bash
 pwd
@@ -28,15 +27,13 @@ git rev-parse --show-toplevel
 Report the expected workspace, actual repo root, and whether they match before
 reading or writing task artifacts. If the workspace boundary validator fails,
 stop and report `Implementation Blocked`; do not edit from the source checkout
-or another worktree. If planning approval fails because `planning-approval.json`
-is missing, old-schema, lacks passed `ambiguity_review` evidence, lacks
-fixed-scope scanner evidence, has unchecked normative hits, not sourced from
-`explicit-post-planning-review`, or the reviewed
-`prd.md`/`design.md`/`implement.md` content digests no longer match, stop and
-report `Implementation Blocked`. Current HEAD or dirty-path drift alone is not a
-planning approval failure. Do not implement, dispatch another agent, or
-record/check `phase2-check.json`; the main session must show `prd.md`,
-`design.md`, and `implement.md` links again and get fresh user confirmation.
+or another worktree. If the planning checker rejects a missing, stale, legacy,
+or non-approved owner result, stop and report `Implementation Blocked` without
+interpreting private checkpoint fields. The main workflow reruns the semantic
+planning owner and auto-consumes its mapped exit; it asks the user only for an
+unresolved scope or material plan choice. Current HEAD or dirty-path drift alone
+is not a planning approval failure. Do not implement, dispatch another agent,
+or record/check `phase2-check.json` while blocked.
 When an editing tool cannot receive an explicit working directory, use an
 absolute path under the task worktree resolved from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`.
 

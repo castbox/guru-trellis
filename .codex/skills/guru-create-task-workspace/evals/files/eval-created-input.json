@@ -1,8 +1,4 @@
 {
-  "profile": "issue_only_initial",
-  "source_exit": "start",
-  "mode": "workflow",
-  "target_locator": "#145",
-  "confirmed_action_id": "confirmed-stage0-action",
-  "continuation_id": "stage0-current"
+  "profile": "execute_reviewed_plan",
+  "mode": "workflow"
 }

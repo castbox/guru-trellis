@@ -1,13 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-review-task-publication-output-ready-1.0",
+  "$id": "guru-production-review-task-publication-output-ready-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["exit_id", "task_ref", "reviewed_head", "publication_ref"],
+  "required": ["exit_id", "task_ref", "reviewed_content_head"],
   "properties": {
     "exit_id": {"const": "ready"},
-    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
-    "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-    "publication_ref": {"type": "string", "minLength": 1}
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "reviewed_content_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
   }
 }

@@ -13,105 +13,140 @@ from pathlib import Path
 class ApproveTaskPlanPackageContractTests(unittest.TestCase):
     def setUp(self) -> None:
         self.package = Path(__file__).resolve().parents[1]
-        self.interface = json.loads((self.package / "interface.json").read_text(encoding="utf-8"))
-        self.schema = json.loads(
-            (self.package / "schemas/planning-approval.schema.json").read_text(encoding="utf-8")
-        )
-        self.example = json.loads(
-            (self.package / "examples/planning-approval.json").read_text(encoding="utf-8")
-        )
+        self.repo = self.package.parents[1]
+        self.interface = self.read("interface.json")
+        self.schema = self.read("schemas/planning-approval.schema.json")
+        self.example = self.read("examples/planning-approval.json")
 
-    def test_identity_modes_stages_runtime_and_exits(self) -> None:
+    def read(self, relative: str) -> dict:
+        return json.loads((self.package / relative).read_text(encoding="utf-8"))
+
+    def test_interface_declares_compact_private_owner_contract(self) -> None:
         self.assertEqual(self.interface["id"], "guru-approve-task-plan")
         self.assertEqual(self.interface["schema_version"], "1.3")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
-        workflow = self.interface["modes"]["workflow"]
-        standalone = self.interface["modes"]["standalone"]
-        self.assertEqual(workflow["routing"], "global_workflow")
-        self.assertEqual(standalone["routing"], "direct_discovery")
-        self.assertEqual(workflow["entry_precondition_ids"], standalone["entry_precondition_ids"])
-        self.assertEqual(
-            workflow["entry_precondition_ids"],
-            [
-                "runtime_dependency",
-                "task_workspace",
-                "requirement_authority",
-                "planning_artifacts",
-                "docs_ssot_plan",
-                "contract_wording_evidence",
-                "scope_ledger",
-                "repository_snapshot",
-                "invocation_freshness",
-            ],
-        )
-        self.assertEqual(
-            self.interface["ordered_stages"],
-            [
-                "forward_behavior",
-                "ai_review_gate",
-                "conditional_human_confirmation",
-                "recorder_validator",
-                "typed_exit",
-            ],
-        )
-        self.assertEqual(
-            {item["id"]: item["runtime_command"] for item in self.interface["validators"]},
-            {
-                "planning_approval_recorder": "record-planning-approval",
-                "planning_approval_checker": "check-planning-approval",
-                "public_invocation": "invoke-stage0-skill",
-            },
-        )
+        expected = [
+            "runtime_dependency", "task_workspace", "current_authority",
+            "planning_documents", "docs_ssot", "wording_result",
+            "issue_scope", "invocation_freshness",
+        ]
+        self.assertEqual(self.interface["modes"]["workflow"]["entry_precondition_ids"], expected)
+        self.assertEqual(self.interface["modes"]["standalone"]["entry_precondition_ids"], expected)
         self.assertEqual(
             [(item["id"], item["consumer"]) for item in self.interface["external_exits"]],
             [
                 ("approved", {"kind": "workflow", "id": "phase-1-task-activation"}),
                 ("revision_required", {"kind": "skill", "id": "guru-approve-task-plan"}),
-                (
-                    "clarify_scope",
-                    {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"},
-                ),
+                ("clarify_scope", {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"}),
                 ("blocked", {"kind": "stop", "id": "task-plan-approval-blocked"}),
             ],
         )
+        private = self.interface["public_contracts"]["private_artifacts"]
+        self.assertEqual(private[0]["persistence"], "ignored_runtime")
+        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-planning-approval-3.0.json"))
+        self.assertRegex(self.example["reviewed_content_sha256"], r"^[0-9a-f]{64}$")
+        self.assertIn(
+            "Owner-private composite freshness token",
+            self.schema["properties"]["reviewed_content_sha256"]["description"],
+        )
 
-    def test_skill_and_contract_keep_semantic_boundary(self) -> None:
-        skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
-        contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
-        for phrase in (
-            "all nine entry preconditions",
-            "dedicated proposal confirmation",
-            "post-planning confirmation",
-            "Return exactly one",
-            "not self-contained or portable",
-        ):
-            self.assertIn(phrase, skill)
-        for phrase in (
-            "judgment_mode=semantic",
-            "explicit_requirement",
-            "necessary_implementation_choice",
-            "approved_scope_expansion",
-            "out_of_scope_proposal",
-            "dedicated-unusual-scenario",
-            "proposal_binding",
-            "authority_binding",
-            "caller-declared digest",
-            "phase-1-task-activation",
-            "schema_version=2.0",
-            "never infer or generate provenance",
-            "do not alone make planning stale",
-        ):
-            self.assertIn(phrase, contract)
-        combined = skill + contract + json.dumps(self.interface)
-        for forbidden in (
-            "script decides adequacy",
-            "script selects provenance",
-            "generic confirmation satisfies",
-            "trellis/presets/guru-team/overlays/",
-        ):
-            self.assertNotIn(forbidden, combined)
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_interface_gate_inputs_outputs_and_consumer_examples_validate(self) -> None:
+        from jsonschema import Draft202012Validator
 
-    def test_wrappers_are_dispatcher_only(self) -> None:
+        interface_schema = json.loads(
+            (self.package.parents[1] / "schemas/skill-interface-1.3.schema.json").read_text(encoding="utf-8")
+        )
+        Draft202012Validator(interface_schema).validate(self.interface)
+        Draft202012Validator.check_schema(self.schema)
+        Draft202012Validator(self.schema).validate(self.example)
+
+        for name in ("initial-review", "revision-reentry", "clarification-reentry"):
+            schema = self.read(f"schemas/public-{name}-input.schema.json")
+            example = self.read(f"examples/public-{name}-input.json")
+            Draft202012Validator(schema).validate(example)
+        for name in ("approved", "revision-required", "clarify-scope", "blocked"):
+            schema = self.read(f"schemas/public-{name}-output.schema.json")
+            example = self.read(f"examples/public-{name}-output.json")
+            Draft202012Validator(schema).validate(example)
+
+        consumer_schema = json.loads(
+            (self.repo / "consumers/workflow/production/approve-task-plan-approved.schema.json").read_text(encoding="utf-8")
+        )
+        Draft202012Validator(consumer_schema).validate(
+            self.read("examples/public-approved-output.json")
+        )
+
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_compact_gate_has_four_closed_semantic_routes(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        validator = Draft202012Validator(self.schema)
+        cases = {
+            "revision_required": {
+                "status": "revision_required",
+                "revision_actions": ["Revise the task-local plan."],
+                "scope_proposals": [],
+                "blocking_reasons": [],
+                "consumer": {"kind": "skill", "id": "guru-approve-task-plan"},
+            },
+            "clarify_scope": {
+                "status": "clarify_scope",
+                "revision_actions": [],
+                "scope_proposals": ["scope-proposal:R13"],
+                "blocking_reasons": [],
+                "consumer": {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"},
+            },
+            "blocked": {
+                "status": "blocked",
+                "revision_actions": [],
+                "scope_proposals": [],
+                "blocking_reasons": ["Current authority is unavailable."],
+                "consumer": {"kind": "stop", "id": "task-plan-approval-blocked"},
+            },
+        }
+        for typed_exit, case in cases.items():
+            with self.subTest(typed_exit=typed_exit):
+                payload = copy.deepcopy(self.example)
+                payload["typed_exit"] = typed_exit
+                payload["consumer"] = case.pop("consumer")
+                payload["semantic_review"].update(case)
+                validator.validate(payload)
+
+        invalid = copy.deepcopy(self.example)
+        invalid["semantic_review"]["scope_proposals"] = ["scope-proposal:R13"]
+        self.assertFalse(validator.is_valid(invalid))
+
+    def test_public_inputs_only_route_owner_entry(self) -> None:
+        forbidden = {
+            "adequacy_review", "ai_review_gate", "evidence_locators",
+            "exit_intent", "findings", "provenance_review",
+            "scope_dispositions", "unusual_scenario_dispositions",
+            "unverified_conclusions",
+        }
+        for path in sorted((self.package / "schemas").glob("public-*input.schema.json")):
+            properties = self.read(path.relative_to(self.package).as_posix()).get("properties", {})
+            self.assertTrue(forbidden.isdisjoint(properties), path)
+
+    def test_package_json_has_no_authorization_or_routine_handoff_fields(self) -> None:
+        forbidden = {
+            "agent_assignment", "confirmation", "confirmation_ref",
+            "confirmation_sha256", "confirmed_plan_digest", "human_authorization",
+            "human_confirmation", "implementation_handoff", "liveness",
+            "review_report", "review_reports", "user_confirmation",
+        }
+
+        def keys(value: object) -> set[str]:
+            if isinstance(value, dict):
+                return set(value) | set().union(*(keys(item) for item in value.values()), set())
+            if isinstance(value, list):
+                return set().union(*(keys(item) for item in value), set())
+            return set()
+
+        for path in sorted(self.package.rglob("*.json")):
+            self.assertTrue(forbidden.isdisjoint(keys(json.loads(path.read_text(encoding="utf-8")))), path)
+
+    def test_wrappers_are_dispatcher_only_and_package_is_not_portable(self) -> None:
         for name, validator in (
             ("record-planning-approval.sh", "planning_approval_recorder"),
             ("check-planning-approval.sh", "planning_approval_checker"),
@@ -123,174 +158,20 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             self.assertIn(f"--validator {validator}", wrapper)
             self.assertNotIn("guru_team_trellis.py", wrapper)
 
-    def test_package_only_copy_fails_with_full_preset_remediation(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             copied = Path(temp) / "guru-approve-task-plan"
             shutil.copytree(self.package, copied)
-            for name in ("record-planning-approval.sh", "check-planning-approval.sh"):
-                result = subprocess.run(
-                    [str(copied / "scripts" / name), "--help"],
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-                self.assertEqual(result.returncode, 2, result)
-                self.assertIn("not self-contained or portable", result.stderr)
-                self.assertIn("Install or upgrade the complete Guru Team preset", result.stderr)
+            result = subprocess.run(
+                [str(copied / "scripts/record-planning-approval.sh"), "--help"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("not self-contained or portable", result.stderr)
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
-    def test_closed_schema_example_and_four_exit_union(self) -> None:
-        from jsonschema import Draft202012Validator
-
-        Draft202012Validator.check_schema(self.schema)
-        validator = Draft202012Validator(self.schema)
-        self.assertEqual(list(validator.iter_errors(self.example)), [])
-
-        cases = {
-            "revision_required": (
-                "revision_required",
-                {"kind": "skill", "id": "guru-approve-task-plan"},
-                {"revision_actions": ["Revise the task-local test plan."]},
-            ),
-            "clarify_scope": (
-                "clarify_scope",
-                {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"},
-                {"scope_proposals": ["Confirm the proposed authority change."]},
-            ),
-            "blocked": (
-                "blocked",
-                {"kind": "stop", "id": "task-plan-approval-blocked"},
-                {"blocking_reasons": ["The source authority is unavailable."]},
-            ),
-        }
-        for typed_exit, (status, consumer, updates) in cases.items():
-            with self.subTest(typed_exit=typed_exit):
-                payload = copy.deepcopy(self.example)
-                payload["typed_exit"] = typed_exit
-                payload["consumer"] = consumer
-                payload["semantic_review"]["ai_review_gate"]["status"] = status
-                payload["user_confirmation"] = {
-                    "kind": "not-required",
-                    "status": "not_required",
-                    "prompt_presented_at": None,
-                    "confirmed_at": None,
-                    "evidence_summary": "This exit does not activate the task.",
-                }
-                payload["semantic_review"]["ai_review_gate"].update(updates)
-                self.assertEqual(list(validator.iter_errors(payload)), [])
-
-        invalid = copy.deepcopy(self.example)
-        invalid["consumer"] = {"kind": "skill", "id": "guru-approve-task-plan"}
-        self.assertNotEqual(list(validator.iter_errors(invalid)), [])
-
-        for field in (
-            "findings",
-            "revision_actions",
-            "scope_proposals",
-            "blocking_reasons",
-        ):
-            with self.subTest(approved_gate_field=field):
-                invalid = copy.deepcopy(self.example)
-                invalid["semantic_review"]["ai_review_gate"][field] = [
-                    "A passed gate cannot retain unresolved review state."
-                ]
-                self.assertNotEqual(list(validator.iter_errors(invalid)), [])
-
-        for field in ("prompt_presented_at", "confirmed_at"):
-            with self.subTest(approved_confirmation_field=field):
-                invalid = copy.deepcopy(self.example)
-                invalid["user_confirmation"][field] = None
-                self.assertNotEqual(list(validator.iter_errors(invalid)), [])
-
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
-    def test_provenance_and_dedicated_confirmation_are_closed(self) -> None:
-        from jsonschema import Draft202012Validator
-
-        validator = Draft202012Validator(self.schema)
-        invalid_choice = copy.deepcopy(self.example)
-        entry = invalid_choice["provenance_review"]["entries"][0]
-        entry["classification"] = "necessary_implementation_choice"
-        self.assertNotEqual(list(validator.iter_errors(invalid_choice)), [])
-
-        invalid_confirmation = copy.deepcopy(self.example)
-        invalid_confirmation["unusual_scenario_review"]["candidates"] = [
-            {
-                "id": "U1",
-                "scenario_class": "other_nonstandard",
-                "trigger_evidence": "A proposal adds non-required locking.",
-                "scope": "Task-local runtime",
-                "cost": "Additional complexity",
-                "alternatives": ["Remove the mechanism"],
-                "consequence": "The task scope expands.",
-                "source_requirement_refs": [],
-                "proposal_sha256": "1" * 64,
-                "disposition": "confirmed_scope_expansion",
-                "confirmation": {
-                    "confirmation_kind": "post-planning-approval",
-                    "proposal_sha256": "1" * 64,
-                    "confirmation_summary": "Generic confirmation is invalid here.",
-                    "confirmed_at": "2026-01-15T09:32:00Z",
-                    "authority_ref": "issue:27",
-                },
-            }
-        ]
-        self.assertNotEqual(list(validator.iter_errors(invalid_confirmation)), [])
-
-        empty_alternatives = copy.deepcopy(invalid_confirmation)
-        candidate = empty_alternatives["unusual_scenario_review"]["candidates"][0]
-        candidate["disposition"] = "mechanism_removed"
-        candidate["confirmation"] = None
-        candidate["alternatives"] = []
-        self.assertNotEqual(list(validator.iter_errors(empty_alternatives)), [])
-
-        explicit_without_authority = copy.deepcopy(empty_alternatives)
-        candidate = explicit_without_authority["unusual_scenario_review"]["candidates"][0]
-        candidate["disposition"] = "explicit_requirement"
-        candidate["alternatives"] = ["Keep the explicit requirement bounded."]
-        candidate["source_requirement_refs"] = []
-        self.assertNotEqual(list(validator.iter_errors(explicit_without_authority)), [])
-
-        valid_scope_expansion = copy.deepcopy(self.example)
-        entry = valid_scope_expansion["provenance_review"]["entries"][0]
-        entry["classification"] = "approved_scope_expansion"
-        entry["scope_expansion"] = {
-            "proposal_binding": {
-                "source_kind": "planning_artifact",
-                "artifact_path": ".trellis/tasks/example-task/prd.md",
-                "locator": "R1. Task plan approval owner",
-                "unusual_candidate_id": None,
-                "proposal_sha256": "1" * 64,
-            },
-            "confirmation": {
-                "confirmation_kind": "dedicated-scope-expansion",
-                "proposal_sha256": "1" * 64,
-                "confirmation_summary": "The user confirmed this exact proposal.",
-                "confirmed_at": "2026-01-15T09:32:00Z",
-            },
-            "authority_binding": {
-                "authority_ref": "issue:27",
-                "authority_sha256": "4" * 64,
-                "proposal_sha256": "1" * 64,
-            },
-        }
-        self.assertEqual(list(validator.iter_errors(valid_scope_expansion)), [])
-
-        legacy_caller_digest = copy.deepcopy(valid_scope_expansion)
-        legacy_caller_digest["provenance_review"]["entries"][0]["scope_expansion"] = {
-            "proposal_sha256": "1" * 64,
-            "confirmation_kind": "dedicated-scope-expansion",
-            "confirmation_summary": "A caller-only digest has no canonical proposal source.",
-            "confirmed_at": "2026-01-15T09:32:00Z",
-            "authority_ref": "issue:27",
-        }
-        self.assertNotEqual(list(validator.iter_errors(legacy_caller_digest)), [])
-
-    def test_example_is_deidentified_and_package_local(self) -> None:
+    def test_example_is_deidentified_and_current(self) -> None:
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
-        self.assertNotIn("07-19-129", encoded)
-        self.assertEqual(self.example["schema_version"], "2.0")
+        self.assertEqual(self.example["schema_version"], "3.0")
         self.assertEqual(self.example["skill_id"], "guru-approve-task-plan")
 
 

@@ -3,14 +3,20 @@
 ## Entry
 
 `publication_review` consumes the target-owned merge of Branch Review seed
-`task_ref`, `reviewed_head`, `review_ref` and caller-authored `profile`, `mode`,
-`review_intent`. `publication_review_stale` consumes future seed `task_ref`,
-`stale_reason` and caller-authored `profile`, `mode`, `review_intent`,
-`reentry_context`. Workflow and standalone use the same twelve preconditions.
-The recorder copies `stale_reason` and `reentry_context` into the private gate,
-requires `supersedes_publication_ref` to equal the exact current prior gate,
-and the public wrapper compares both public stale fields with the checked owner
-result. These fields never expand the public output.
+`task_ref`, `reviewed_content_head` and caller-authored `profile`, `mode`,
+`review_intent`. The Branch Review checkpoint and digest remain private to the
+Branch Review owner and are not read by this v2 path. `publication_review_stale`
+consumes future seed `task_ref`,
+`stale_reason` and caller-authored `profile`, `mode`, `review_intent`. Workflow
+and standalone use the same eight preconditions. The recorder uses the stale
+reason only to bind the current re-entry round; it never expands a public
+output.
+
+For one-time active-task compatibility, the Branch Review owner reads its own
+legacy gate, completes any required fresh-final re-entry, and emits the current
+minimal `passed` DTO. Publication accepts only that DTO. A legacy Publication
+input containing `reviewed_head` or `review_ref` fails closed and routes back to
+Branch Review; Publication never reads or projects another Skill's checkpoint.
 
 ## Semantic loop
 
@@ -33,7 +39,7 @@ affected artifacts, route, status, and closure evidence. The AI chooses
 
 Only `pr-body.md`, `finish-summary-index.json`, and contract-listed
 Issue-Scope-Ledger publication metadata are eligible for internal revision.
-After revision, reread all twelve objective preconditions, recompute the changed
+After revision, reread all eight objective preconditions, recompute the changed
 artifacts, and re-review only dimensions whose declared evidence dependencies
 changed. The freshness reread is not a demand to repeat unrelated semantic
 analysis. Carry forward an unchanged dimension only after its evidence bindings
@@ -41,13 +47,17 @@ remain byte-identical and current; the gate still contains all ten dimensions.
 Any source, test, durable docs, spec, workflow, schema, config, preset, CI/CD,
 deployment, or Branch Review drift returns to task work.
 
-The Phase 2 result is the publication owner's implementation and Docs SSOT
-evidence. Agent terminal output may be consumed while Phase 2 is authored, but
-publication never requires a separate `implementation-handoff.md` transcription.
+Use the immutable reviewed content identity, live base-to-HEAD Git facts,
+current task and durable docs, Issue Scope Ledger, PR body, and finish summary
+index as semantic evidence. Publication does not read Planning, Phase 2, or
+Branch Review private checkpoints and never requires an
+`implementation-handoff.md` transcription.
 
 The repository status binding uses one closed publication allowlist. New
-reviews reuse only Branch Review's compact `review-gate.json`, then add
-`issue-scope-ledger.json`, `pr-body.md`, and `finish-summary-index.json`.
+reviews allow the current Issue Scope Ledger, `pr-body.md`,
+`finish-summary-index.json`, and the current command's explicitly named ignored
+runtime input; Branch Review continuity comes only from the public
+`reviewed_content_head` and live Git.
 Completed legacy `task-commit-plans/NNN.json` and legacy review artifacts remain
 read-only compatibility inputs when the current task was created before the
 AI-first migration; they are never generated or required by a new review.
@@ -61,33 +71,32 @@ prevents `ready`.
 ## Gate and exits
 
 After the AI Gate and required confirmation, record and check the one
-task-local `pr-readiness.json`. `ready` requires every dimension passed and
-every current-scope finding closed with non-empty scope, evidence, affected
-artifacts, and closure evidence. Its closed semantic layer also records
-scope/Docs/safety conclusions, revision history, reviewer-process evidence,
-and confirmation status; all three conclusions must pass.
+owner-private `pr-readiness.json` checkpoint. `ready` requires every dimension
+passed and every current-scope finding closed with non-empty scope, evidence,
+affected artifacts, and closure evidence. All three scope/Docs/safety
+conclusions must pass.
 `return_to_task_work` requires at least one `finding` dimension and an open
 `task_work` finding whose dimension references that non-passed dimension.
 `blocked` requires at least one `blocked` dimension, one blocked
 scope/Docs/safety conclusion, and an open `external_blocker` finding whose
 dimension references blocked evidence. Open metadata-revision findings remain
-inside the Skill loop and cannot satisfy an external exit. The closed
-deterministic layer records all twelve
-recomputed preconditions, artifact/repository facts, and the opaque identity.
-Every `ready` precondition must be `passed`; a non-ready semantic route may
-preserve objective `failed` precondition facts so the checker can reproduce
-the AI-selected return/block outcome without choosing that route itself.
+inside the Skill loop and cannot satisfy an external exit. Recorder and checker
+rebuild all eight objective preconditions transiently; those live facts and
+digests do not enter the private semantic checkpoint or public DTO. Every
+`ready` precondition must be passed. A non-ready semantic route may carry its
+explicit finding or blocker without a script choosing that route.
 `return_to_task_work` carries exact finding refs. `blocked` carries a stable
 reason and remediation.
 
-`publication_ref` is an opaque current identity. The future finalization owner
-may augment only a checker-passed `ready` gate with deterministic
-`publish_inputs`; it must preserve every semantic section and never construct
-ready state. When finalization first adds the exact validated
-`closeout-plan.json`, it reruns all twelve entry preconditions and may accept
-only the resulting repository binding plus the derived
-`review_range_and_working_tree` digest change; every other entry binding must
-remain exact and passed.
+The `ready` DTO contains only `exit_id`, `task_ref`, and
+`reviewed_content_head`. Finalizer consumes that DTO directly and runs the same
+side-effect-free closeout preflight already required before `ready`; it never
+reads, augments, or understands the Publication checkpoint.
+
+After any checked typed output passes its output schema, the Publication public
+wrapper deletes its own checkpoint. A failed checker or invalid projection keeps
+that checkpoint for same-owner repair. Finalizer therefore starts from the DTO
+and live facts after Publication private state has already been retired.
 
 The public wrapper derives actual exit only from the checker-passed owner
 result. Eval `expected_exit` is compared afterward and never enters the native

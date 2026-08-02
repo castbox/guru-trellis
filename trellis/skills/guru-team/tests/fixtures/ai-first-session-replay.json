@@ -1,10 +1,16 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "source_baseline": {
-    "sessions": 12,
-    "turns": 500,
-    "confirmation_mentions": 163,
-    "session_ids_redacted": true
+    "selected_sessions": 3,
+    "source_aliases": ["A", "B", "C"],
+    "observed_turns": {"A": 43, "B": 76, "C": 160},
+    "redaction": {
+      "session_ids": true,
+      "repository_names": true,
+      "issue_and_pr_numbers": true,
+      "commit_and_digest_values": true,
+      "credentials_and_private_payloads": true
+    }
   },
   "target_contract": {
     "max_happy_path_user_confirmations": 3,
@@ -17,133 +23,400 @@
     "forbidden_routine_artifacts": [
       "implementation-handoff.md",
       "agent-progress.jsonl",
-      "liveness-journal.md"
+      "liveness-journal.md",
+      "reviews/round-01.md"
     ],
     "internal_routes_not_user_choices": [
       "verification_required",
       "publication_review_stale",
       "resume_finalization",
       "reprepare_required"
-    ],
-    "known_finding_replays": [
-      {
-        "replay_id": "side-invocation-regression",
-        "required_gate": "phase2_check",
-        "expected_route": "implementation_required",
-        "findings": [
-          {"severity": "P1", "category": "side_invocation"}
-        ]
-      },
-      {
-        "replay_id": "source-checkpoint-regressions",
-        "required_gate": "branch_review",
-        "expected_route": "implementation_required",
-        "findings": [
-          {"severity": "P1", "category": "scope_projection"},
-          {"severity": "P1", "category": "evidence_freshness"},
-          {"severity": "P1", "category": "publication_boundary"},
-          {"severity": "P1", "category": "isolation_boundary"},
-          {"severity": "P2", "category": "validation_coverage"}
-        ]
-      }
     ]
   },
-  "cases": [
+  "sources": [
     {
-      "case_id": "session-01-normal-change",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": [],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
+      "source_alias": "A",
+      "scenario": "semantic-equivalent planning whitespace edit triggers full planning and Phase 2 replay",
+      "events": [
+        {
+          "seq": "A-01",
+          "speaker": "assistant",
+          "kind": "validated_task_work",
+          "text": "Functional tests, static checks, device evidence, final behavior, planning approval, and Phase 2 had passed."
+        },
+        {
+          "seq": "A-02",
+          "speaker": "assistant",
+          "kind": "planning_byte_delta",
+          "path_role": "prd.md",
+          "before_size_bytes": 6428,
+          "after_size_bytes": 6424,
+          "removed_trailing_space_runs": 2,
+          "bytes_per_run": 2,
+          "text": "Only two Markdown line-ending double-space runs were removed from prd.md."
+        },
+        {
+          "seq": "A-03",
+          "speaker": "assistant",
+          "kind": "semantic_equivalence_judgment",
+          "classification": "semantic_equivalent",
+          "text": "AI review found no change to requirement authority, scope, design, acceptance, behavior, or verification conclusion."
+        },
+        {
+          "seq": "A-04",
+          "speaker": "assistant",
+          "kind": "historical_full_replay",
+          "actions": [
+            "request_user_confirmation",
+            "rerun_contract_wording_review",
+            "rerun_planning_approval",
+            "regenerate_implementation_handoff",
+            "rerun_phase2_check",
+            "rerun_device_validation"
+          ],
+          "text": "The old path, digest, and size binding replayed planning confirmation, wording review, planning approval, handoff, full Phase 2, and device validation."
+        },
+        {
+          "seq": "A-05",
+          "speaker": "assistant",
+          "kind": "direct_dependency_refresh",
+          "text": "The AI-first reduction refreshes only the planning source identity consumed directly by the current planning owner."
+        }
+      ]
     },
     {
-      "case_id": "session-02-duplicate-reuse",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["refresh_review"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
+      "source_alias": "B",
+      "scenario": "finish-family publication reaches false-ready and same-plan recovery edges",
+      "events": [
+        {
+          "seq": "B-01",
+          "speaker": "assistant",
+          "kind": "branch_review_passed",
+          "text": "Current task content passed Branch Review."
+        },
+        {
+          "seq": "B-02",
+          "speaker": "assistant",
+          "kind": "publication_ready_claim",
+          "text": "Publication initially returned ready before the Finalizer-equivalent content preflight."
+        },
+        {
+          "seq": "B-03",
+          "speaker": "assistant",
+          "kind": "immediate_finalizer_rejection",
+          "retrieval_chars": 3063,
+          "retrieval_limit": 3000,
+          "text": "The first Finalizer preview rejected an over-limit derived retrieval projection."
+        },
+        {
+          "seq": "B-04",
+          "speaker": "assistant",
+          "kind": "direct_projection_refresh",
+          "retrieval_chars": 2996,
+          "text": "Only the repeated derived wording was compacted before publication reran."
+        },
+        {
+          "seq": "B-05",
+          "speaker": "assistant",
+          "kind": "pr_head_propagation_delay",
+          "text": "The remote branch advanced before the bound PR head observation converged."
+        },
+        {
+          "seq": "B-06",
+          "speaker": "assistant",
+          "kind": "bounded_same_plan_recovery",
+          "text": "The same transaction resumed after live identities converged, without a new task or PR."
+        },
+        {
+          "seq": "B-07",
+          "speaker": "assistant",
+          "kind": "compact_archive_recovery",
+          "text": "Archived recovery used the committed plan and transaction state after active-only readiness was compacted."
+        }
+      ]
     },
     {
-      "case_id": "session-03-base-refresh",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["refresh_review"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
+      "source_alias": "C",
+      "scenario": "reviewed task work is replayed after a formatting-only metadata delta",
+      "events": [
+        {
+          "seq": "C-01",
+          "speaker": "assistant",
+          "kind": "phase2_and_branch_review_passed",
+          "text": "The implementation, Phase 2 check, task commit, and Branch Review had current pass evidence."
+        },
+        {
+          "seq": "C-02",
+          "speaker": "assistant",
+          "kind": "tracked_raw_phase2_report_delta",
+          "added_bytes": 1,
+          "added_sequence": "\n",
+          "text": "The tracked raw Phase 2 report gained exactly one extra blank line at EOF."
+        },
+        {
+          "seq": "C-03",
+          "speaker": "user",
+          "kind": "semantic_equivalence_observation",
+          "text": "The user observed that one extra blank line should not invalidate the reviewed task work."
+        },
+        {
+          "seq": "C-04",
+          "speaker": "assistant",
+          "kind": "historical_full_replay",
+          "actions": [
+            "request_user_confirmation",
+            "rerun_phase2_check",
+            "create_fresh_task_commit",
+            "rerun_branch_review",
+            "rerun_closure_review",
+            "rerun_fresh_final_review"
+          ],
+          "text": "The old raw-report digest binding requested deletion approval, full Phase 2, a fresh task commit, Branch Review, closure review, and a different fresh final reviewer."
+        },
+        {
+          "seq": "C-05",
+          "speaker": "assistant",
+          "kind": "direct_dependency_refresh",
+          "text": "The AI-first reduction refreshes only the ephemeral Phase 2 owner projection; task work and downstream semantic gates remain current."
+        }
+      ]
+    }
+  ],
+  "replays": [
+    {
+      "replay_id": "A-planning-trailing-space-direct-refresh",
+      "source_alias": "A",
+      "mutation": {
+        "kind": "remove_trailing_double_spaces",
+        "path": "prd.md",
+        "before_size_bytes": 6428,
+        "after_size_bytes": 6424,
+        "sequence": "  \n",
+        "occurrences": 2,
+        "byte_fact": "planning_bytes",
+        "semantic_fact": "planning_semantics",
+        "classification": "semantic_equivalent"
+      },
+      "legacy_dependency_graph": [
+        {
+          "node": "user_reconfirmation",
+          "depends_on": ["planning_bytes"],
+          "action": "request_user_confirmation"
+        },
+        {
+          "node": "contract_wording_review",
+          "depends_on": ["planning_bytes"],
+          "action": "rerun_contract_wording_review"
+        },
+        {
+          "node": "planning_approval",
+          "depends_on": ["contract_wording_review"],
+          "action": "rerun_planning_approval"
+        },
+        {
+          "node": "implementation_handoff",
+          "depends_on": ["planning_approval"],
+          "action": "regenerate_implementation_handoff"
+        },
+        {
+          "node": "phase2_check",
+          "depends_on": ["implementation_handoff"],
+          "action": "rerun_phase2_check"
+        },
+        {
+          "node": "device_validation",
+          "depends_on": ["phase2_check"],
+          "action": "rerun_device_validation"
+        }
+      ],
+      "reduced_dependency_graph": [
+        {
+          "node": "planning_source_identity",
+          "depends_on": ["planning_bytes"],
+          "action": "refresh_planning_source_identity"
+        },
+        {
+          "node": "planning_approval",
+          "depends_on": ["planning_semantics"],
+          "action": "rerun_planning_approval"
+        },
+        {
+          "node": "phase2_check",
+          "depends_on": [
+            "planning_semantics",
+            "implementation_semantics",
+            "verification_conclusion"
+          ],
+          "action": "rerun_phase2_check"
+        },
+        {
+          "node": "device_validation",
+          "depends_on": ["verification_conclusion"],
+          "action": "rerun_device_validation"
+        }
+      ],
+      "expected_reduction": {
+        "changed_facts": ["planning_bytes"],
+        "legacy_actions": [
+          "request_user_confirmation",
+          "rerun_contract_wording_review",
+          "rerun_planning_approval",
+          "regenerate_implementation_handoff",
+          "rerun_phase2_check",
+          "rerun_device_validation"
+        ],
+        "reduced_actions": ["refresh_planning_source_identity"],
+        "forbidden_reduced_actions": [
+          "request_user_confirmation",
+          "rerun_planning_approval",
+          "rerun_phase2_check",
+          "rerun_device_validation"
+        ]
+      }
     },
     {
-      "case_id": "session-04-planning-revision",
-      "user_confirmation_points": ["workspace_mutation", "material_plan_change", "closeout_plan"],
-      "internal_routes": ["revision_required"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
+      "replay_id": "B-prevent-false-ready",
+      "source_alias": "B",
+      "initial_state": {
+        "publication_ready": false,
+        "finalizer_preview_count": 0,
+        "route": null
+      },
+      "events": [
+        {
+          "op": "publication_owner_preflight",
+          "retrieval_chars": 3063,
+          "retrieval_limit": 3000
+        }
+      ],
+      "expected_state": {
+        "publication_ready": false,
+        "finalizer_preview_count": 0,
+        "route": "publication_review_stale"
+      }
     },
     {
-      "case_id": "session-05-phase2-rework",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["implementation_required"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
+      "replay_id": "B-owner-private-commit-recovery",
+      "source_alias": "B",
+      "initial_state": {
+        "checked_head": "head-checked",
+        "current_head": "head-checked",
+        "candidate_present": true,
+        "typed_exit": null
+      },
+      "events": [
+        {
+          "op": "publish_validated_commit",
+          "commit_head": "head-committed",
+          "parent": "head-checked",
+          "message_identity": "message-reviewed",
+          "path_identity": "paths-reviewed",
+          "tree_identity": "tree-reviewed"
+        },
+        {
+          "op": "interrupt_after_ref_publication"
+        },
+        {
+          "op": "recover_from_candidate",
+          "expected_parent": "head-checked",
+          "expected_message_identity": "message-reviewed",
+          "expected_path_identity": "paths-reviewed",
+          "expected_tree_identity": "tree-reviewed"
+        }
+      ],
+      "expected_state": {
+        "checked_head": "head-checked",
+        "current_head": "head-committed",
+        "candidate_present": false,
+        "typed_exit": "committed"
+      }
     },
     {
-      "case_id": "session-06-branch-finding-rework",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["implementation_required"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
-    },
-    {
-      "case_id": "session-07-scope-reclassification",
-      "user_confirmation_points": ["workspace_mutation", "scope_change", "closeout_plan"],
-      "internal_routes": ["scope_confirmation_required"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
-    },
-    {
-      "case_id": "session-08-publication-stale",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["publication_review_stale"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
-    },
-    {
-      "case_id": "session-09-install-verification",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["verification_required"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json", "marketplace-verification.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json", "marketplace-verification.json"],
-      "unfinished_replacement": false
-    },
-    {
-      "case_id": "session-10-finalization-resume",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["resume_finalization", "reprepare_required"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
-    },
-    {
-      "case_id": "session-11-unfinished-replacement",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["replacement_started"],
-      "persisted_artifacts": ["planning-approval.json", "agent-recovery.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": true
-    },
-    {
-      "case_id": "session-12-verification-not-required",
-      "user_confirmation_points": ["workspace_mutation", "closeout_plan"],
-      "internal_routes": ["verification_not_required"],
-      "persisted_artifacts": ["planning-approval.json", "phase2-check.json", "review-gate.json", "pr-readiness.json"],
-      "long_term_artifacts": ["task.json", "prd.md", "design.md", "implement.md", "issue-scope-ledger.json", "planning-approval.json", "phase2-check.json", "review-gate.json", "closeout-plan.json", "task-finalization-gate.json", "finish-summary.json"],
-      "unfinished_replacement": false
+      "replay_id": "C-raw-phase2-blank-line-direct-refresh",
+      "source_alias": "C",
+      "mutation": {
+        "kind": "append_blank_line",
+        "path": "reviews/phase2-raw-report.md",
+        "added_sequence": "\n",
+        "added_bytes": 1,
+        "byte_fact": "raw_phase2_report_bytes",
+        "semantic_fact": "phase2_semantic_conclusion",
+        "classification": "semantic_equivalent"
+      },
+      "legacy_dependency_graph": [
+        {
+          "node": "user_reconfirmation",
+          "depends_on": ["raw_phase2_report_bytes"],
+          "action": "request_user_confirmation"
+        },
+        {
+          "node": "phase2_check",
+          "depends_on": ["raw_phase2_report_bytes"],
+          "action": "rerun_phase2_check"
+        },
+        {
+          "node": "task_commit",
+          "depends_on": ["phase2_check"],
+          "action": "create_fresh_task_commit"
+        },
+        {
+          "node": "branch_review",
+          "depends_on": ["task_commit"],
+          "action": "rerun_branch_review"
+        },
+        {
+          "node": "closure_review",
+          "depends_on": ["branch_review"],
+          "action": "rerun_closure_review"
+        },
+        {
+          "node": "fresh_final_review",
+          "depends_on": ["closure_review"],
+          "action": "rerun_fresh_final_review"
+        }
+      ],
+      "reduced_dependency_graph": [
+        {
+          "node": "phase2_owner_private_projection",
+          "depends_on": ["raw_phase2_report_bytes"],
+          "action": "refresh_phase2_owner_private_projection"
+        },
+        {
+          "node": "phase2_check",
+          "depends_on": ["phase2_semantic_conclusion"],
+          "action": "rerun_phase2_check"
+        },
+        {
+          "node": "task_commit",
+          "depends_on": ["task_content"],
+          "action": "create_fresh_task_commit"
+        },
+        {
+          "node": "branch_review",
+          "depends_on": ["reviewed_content"],
+          "action": "rerun_branch_review"
+        }
+      ],
+      "expected_reduction": {
+        "changed_facts": ["raw_phase2_report_bytes"],
+        "legacy_actions": [
+          "request_user_confirmation",
+          "rerun_phase2_check",
+          "create_fresh_task_commit",
+          "rerun_branch_review",
+          "rerun_closure_review",
+          "rerun_fresh_final_review"
+        ],
+        "reduced_actions": ["refresh_phase2_owner_private_projection"],
+        "forbidden_reduced_actions": [
+          "request_user_confirmation",
+          "rerun_phase2_check",
+          "create_fresh_task_commit",
+          "rerun_branch_review",
+          "rerun_closure_review",
+          "rerun_fresh_final_review"
+        ]
+      }
     }
   ]
 }

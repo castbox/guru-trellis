@@ -41,7 +41,7 @@ Implement and check agents need task context. Trellis has two loading modes:
 
 In both modes, JSONL files in the task directory are the manifest for spec/research context. Guru Team task artifacts are read separately in this order: `prd.md` -> required `design.md` -> required `implement.md`.
 
-Some native Trellis workflows may treat `design.md` or `implement.md` as smaller-task optional artifacts. Guru Team does not: implementation/check context is valid only after the explicit post-planning approval gate has reviewed all three documents.
+Some native Trellis workflows may treat `design.md` or `implement.md` as smaller-task optional artifacts. Guru Team does not: implementation/check context is valid only after the semantic planning owners have reviewed all three documents and the checked `approved` exit has been consumed.
 
 ## JSONL Reading Rules
 
