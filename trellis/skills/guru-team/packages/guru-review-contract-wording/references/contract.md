@@ -5,7 +5,8 @@
 `guru-review-contract-wording` is the semantic owner of controlled contract
 wording review. The global workflow owns only mandatory invocation, profile
 routing, unique typed-exit consumers, and fail-closed stops. Shared runtime
-owns only deterministic scope construction, scanning, recording, and checking.
+owns only deterministic scope construction, scanning, stdout serialization,
+and checking. It writes no fixed review artifact.
 
 Workflow and standalone modes have identical entry preconditions. A copied
 package is not portable without the compatible Guru Team preset, extension
@@ -20,30 +21,22 @@ The scope is one live issue or side-effect-free draft. Title and body are
 always required and cannot be excluded. The AI may select authoritative
 comments before review; every selected comment records stable identity, author,
 updated time, selection reason, and content hash. Unselected comments are not
-contract authority. Live mutation requires exact payload confirmation,
-preimage match, mutation evidence, and live reread. For each live issue
-revision, the recorder derives one confirmed-payload digest from source
-identity, locator, field, preimage hash, and confirmed content hash, plus one
-mutation-result identity from the same target, preimage, reread content hash,
-and current source update time. Human confirmation binds the ordered set of
-confirmed payload digests; the checker requires the mutation result to match
-the rebuilt live scope. Draft review remains side-effect-free.
+contract authority. After any required dialogue authorization, the executor
+applies the exact mutation without recording that authorization. For each live
+issue revision, the recorder retains only objective source identity, locator,
+field, preimage hash, reread content hash, current source update time, and the
+derived mutation-result identity. The checker requires those result facts to
+match the rebuilt live scope. Draft review remains side-effect-free.
 
 ### `planning_artifacts`
 
 The scope is exactly the current active task's `prd.md`, `design.md`, and
 `implement.md`, in that order. All three must be regular files. The caller may
-not supply a selector, alias, replacement, or exclusion. Passed evidence is
-task-local `contract-wording-review.json`. A different stale artifact may be
-replaced only through explicit `--replace-stale`. A structurally current
-`content_changed` or `blocked` artifact is instead superseded only after its
-consumer enters a complete same-profile re-entry and supplies
-`--supersede-reentry-facts-sha256 <existing-facts-sha256>`. The recorder
-requires the existing artifact to remain current, requires the exact bound
-digest and same profile/mode, validates a complete current replacement that
-differs from the existing artifact, and rejects identical-result or current
-`pass` supersession. The script validates this transition but does not decide
-whether the semantic consumer entered re-entry.
+not supply a selector, alias, replacement, or exclusion. The completed result
+is stdout-only owner-private evidence. Its typed exit is consumed immediately
+by the workflow router; neither the result nor a replacement/supersession chain
+is persisted under the task. A mapped re-entry always rereads the three current
+files and produces one new complete result.
 
 In addition to the common wording Review Gate, this profile must explicitly
 review and record all seven planning semantics inherited from #93:
@@ -126,12 +119,12 @@ Execute exactly:
 
 1. validate entry and build the complete fixed profile scope;
 2. run the deterministic scan;
-3. prefer an authorized rewrite that makes weak clauses deterministic;
+3. prefer a permitted rewrite that makes weak clauses deterministic;
 4. classify each retained lexical hit and record a non-empty reason;
 5. after any mutation, rebuild the complete scope and rescan current content;
 6. complete the AI Review Gate;
-7. obtain exact human confirmation only when mutation or semantic preservation
-   requires it;
+7. interact only for a real unresolved choice or side effect, without writing
+   authorization state or the authorization process into the result;
 8. call the recorder and checker; and
 9. return exactly one typed exit.
 
@@ -148,8 +141,9 @@ runtime may infer those results.
 
 Schema `guru-contract-wording-review-1.0` binds profile, mode, normalized scope
 items, content hashes, scope/scan/result digests, every scanner hit, revisions,
-classifications, derived unchecked hits, the AI Review Gate, conditional human
-confirmation, and exactly one exit.
+classifications, derived unchecked hits, the AI Review Gate, and exactly one
+exit. It is a current invocation result, not workflow authority or a durable
+handoff. Authorization is dialogue-local and is never part of the result.
 
 For `planning_artifacts`, the same schema conditionally requires the exact
 seven-key `planning_checked_dimensions` object. Missing, false-on-success,
@@ -164,47 +158,34 @@ historical no-revision evidence do not acquire a synthetic mutation binding.
 
 - `pass`: current scope/scan, all hits classified, zero unchecked hits, passed
   Gate, and no revision awaiting caller handling.
-- `content_changed`: one or more authorized revisions are bound to current
+- `content_changed`: one or more completed revisions are bound to current
   post-change scope and rescan plus a passed Gate; the fixed profile consumer
   performs complete re-entry.
-- `blocked`: the Gate is blocked because scope, authority, confirmation, or a
-  violation prevents safe completion.
+- `blocked`: the Gate is blocked because scope, mutation preconditions, product
+  semantics, or a violation prevents safe completion.
 
 The exit/Gate relation is biconditional: `blocked` if and only if the Gate is
 blocked. Unknown profile, exit, consumer, selector, or stale identity fails
 closed.
 
-Task-local replacement has one active transition contract. Stale evidence uses
-`--replace-stale`; current non-pass evidence uses the exact digest-bound
-same-profile re-entry path above. The two flags are mutually exclusive. A
-supersession assertion cannot preserve the exact same result, and a current
-`pass` cannot be replaced merely to revise reviewer prose, timestamps, or route
-intent; content drift first makes it stale, while a real new review must be
-started through the owning workflow/Skill contract.
+Stale stdout evidence is discarded. The owner rebuilds current scope and scan,
+reruns the complete semantic loop, and emits one current result. No caller may
+request `--replace-stale`, bind a prior digest, or preserve a supersession
+history.
 
 ## Planning Approval Migration
 
-`record-planning-approval` consumes only current `planning_artifacts:pass`
-evidence through `--contract-wording-evidence`. It deterministically projects
-all hits, classifications, reasons, empty unchecked hits, and each already
-validated `planning_checked_dimensions` value into the existing planning
-approval audit shape, while preserving explicit post-planning user confirmation
-and the three planning document digests. It never defaults or derives a
-planning semantic result. The planning recorder does not own vocabulary,
-scanning, classification, or the seven planning judgments.
+`guru-approve-task-plan` consumes only the current invocation's checked
+`planning_artifacts:pass` exit. It then rereads the current planning documents
+and owns its own compact semantic result. It does not import scanner hits,
+classification history, file digests, or this Skill's private result.
 
-`check-planning-approval` first validates current wording evidence, then its
-projection and planning approval facts. A pre-migration active approval without
-current wording evidence must rerun this Skill and obtain fresh explicit
-post-planning approval before implementation. Archived task artifacts are not
-rewritten.
-
-Evidence recorded before the seven profile-specific fields were introduced is
-also stale migration input, even when it uses schema id
-`guru-contract-wording-review-1.0`. Regenerate the wording evidence through a
-fresh AI review of all common and planning-specific dimensions, display the
-three planning documents, obtain fresh explicit post-planning confirmation,
-and record a new approval. Never patch the missing booleans into old evidence.
+An active task that still contains `contract-wording-review.json`, a wording
+projection inside `planning-approval.json`, or a digest-bound replacement
+state treats those values as read-only migration input. Rerun this Skill once
+against current content, route its checked exit directly, and let the planning
+owner rebuild only its own current result. Archived task artifacts are not
+rewritten and no new legacy wording artifact is generated.
 
 ## Interface 1.3 Public Handoff
 
@@ -212,4 +193,4 @@ The public profiles remain the fixed `change_request`, `planning_artifacts`,
 and `explicit_paths` scopes. `scripts/invoke.sh --input ... --owner-result ...`
 runs only after the semantic owner loop, reruns the existing checker, and emits
 a router DTO containing the fixed profile selected by the checked owner result.
-The complete review artifact remains private gate evidence.
+The complete review result remains stdout-only owner-private evidence.

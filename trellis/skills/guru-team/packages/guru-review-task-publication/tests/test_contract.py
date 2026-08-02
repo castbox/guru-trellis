@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -89,13 +90,39 @@ class TaskPublicationContractTest(unittest.TestCase):
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         self.assertEqual(
             self.interface["ordered_stages"],
-            ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+            [
+                "forward_behavior",
+                "ai_review_gate",
+                "conditional_human_confirmation",
+                "recorder_validator",
+                "typed_exit",
+            ],
         )
         profiles = self.interface["public_contracts"]["input"]["profiles"]
         self.assertEqual(
             [item["id"] for item in profiles],
             ["publication_review", "publication_review_stale"],
         )
+
+    def test_stale_profile_contains_only_direct_reentry_inputs(self) -> None:
+        schema = json.loads(
+            (
+                PACKAGE
+                / "schemas/public-publication-review-stale-input.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        expected = {
+            "profile", "mode", "task_ref", "stale_reason", "review_intent",
+        }
+        self.assertEqual(set(schema["properties"]), expected)
+        self.assertEqual(set(schema["required"]), expected)
+        for relative in (
+            "examples/public-publication-review-stale-input.json",
+            "examples/public-publication-review-stale-authoring.json",
+            "evals/files/stale-reentry-ready-input.json",
+        ):
+            payload = json.loads((PACKAGE / relative).read_text(encoding="utf-8"))
+            self.assertNotIn("reentry_context", payload, relative)
 
     def test_three_minimal_exits_have_unique_consumers(self) -> None:
         exits = self.interface["external_exits"]
@@ -123,8 +150,32 @@ class TaskPublicationContractTest(unittest.TestCase):
         )
         contract = consumer["contract"]
         self.assertEqual(contract["kind"], "skill_input_authoring_seed")
-        self.assertEqual(contract["seed_fields"], ["task_ref", "reviewed_head", "review_ref"])
+        self.assertEqual(contract["seed_fields"], ["task_ref", "reviewed_content_head"])
         self.assertEqual(contract["authoring_fields"], ["profile", "mode", "review_intent"])
+
+    def test_legacy_v1_input_returns_to_branch_review_owner(self) -> None:
+        legacy = {
+            "profile": "publication_review",
+            "mode": "workflow",
+            "task_ref": ".trellis/tasks/07-24-example-publication",
+            "reviewed_head": "a" * 40,
+            "review_ref": "review-gate:legacy-caller-value",
+            "review_intent": "initial_review",
+        }
+        schema = json.loads(
+            (PACKAGE / "schemas/public-publication-review-input.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertTrue(
+            GTT.skill_json_schema_validation_errors(
+                legacy,
+                schema,
+                "legacy task publication input",
+            )
+        )
+        self.assertFalse(hasattr(GTT, "task_publication_project_legacy_public_input"))
+        self.assertFalse(hasattr(GTT, "task_publication_project_legacy_gate"))
 
     def test_public_outputs_exclude_private_review_state(self) -> None:
         forbidden = {
@@ -134,6 +185,9 @@ class TaskPublicationContractTest(unittest.TestCase):
             "publish_inputs",
             "facts_sha256",
             "artifact_path",
+            "publication_ref",
+            "review_ref",
+            "human_confirmation",
         }
         for output in self.interface["public_contracts"]["outputs"]:
             schema = json.loads((PACKAGE / output["schema"]["path"]).read_text(encoding="utf-8"))
@@ -143,7 +197,10 @@ class TaskPublicationContractTest(unittest.TestCase):
         private = self.interface["public_contracts"]["private_artifacts"]
         self.assertEqual([item["id"] for item in private], ["publication_readiness"])
         self.assertEqual(private[0]["kind"], "gate_evidence")
-        self.assertEqual(private[0]["persistence"], "task_local_tracked")
+        self.assertEqual(
+            private[0]["persistence"],
+            "ignored_runtime",
+        )
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_readiness_example_is_schema_and_runtime_semantic_valid(self) -> None:
@@ -152,12 +209,12 @@ class TaskPublicationContractTest(unittest.TestCase):
         Draft202012Validator.check_schema(self.readiness_schema)
         validator = Draft202012Validator(self.readiness_schema)
         self.assertEqual(list(validator.iter_errors(self.readiness_example)), [])
-        identity = self.readiness_example["review_identity"]
         self.assertEqual(
             GTT.task_publication_semantic_errors(
                 self.readiness_example,
-                reviewed_head=identity["reviewed_head"],
-                review_ref=identity["review_ref"],
+                reviewed_content_head=self.readiness_example[
+                    "reviewed_content_head"
+                ],
             ),
             [],
         )
@@ -178,18 +235,16 @@ class TaskPublicationContractTest(unittest.TestCase):
             "closure_evidence": ["pr-body.md#fixed"],
         }
         invalid = copy.deepcopy(self.readiness_example)
-        invalid["semantic_review"]["findings"] = [finding, copy.deepcopy(finding)]
+        invalid["findings"] = [finding, copy.deepcopy(finding)]
         self.assertEqual(
             list(Draft202012Validator(self.readiness_schema).iter_errors(invalid)),
             [],
         )
-        identity = invalid["review_identity"]
         self.assertIn(
             "publication finding refs must be unique and non-empty",
             GTT.task_publication_semantic_errors(
                 invalid,
-                reviewed_head=identity["reviewed_head"],
-                review_ref=identity["review_ref"],
+                reviewed_content_head=invalid["reviewed_content_head"],
             ),
         )
 
@@ -198,7 +253,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         invalid = copy.deepcopy(self.readiness_example)
-        invalid["semantic_review"]["findings"] = [{
+        invalid["findings"] = [{
             "finding_ref": "PUB-EMPTY",
             "dimension": "pr_body_quality",
             "summary": "",
@@ -212,34 +267,45 @@ class TaskPublicationContractTest(unittest.TestCase):
         self.assertTrue(
             list(Draft202012Validator(self.readiness_schema).iter_errors(invalid))
         )
-        identity = invalid["review_identity"]
         self.assertIn(
-            "publication finding evidence and closure must be non-empty",
+            "publication finding evidence must be non-empty",
             GTT.task_publication_semantic_errors(
                 invalid,
-                reviewed_head=identity["reviewed_head"],
-                review_ref=identity["review_ref"],
+                reviewed_content_head=invalid["reviewed_content_head"],
             ),
         )
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
-    def test_ready_exit_rejects_any_failed_entry_precondition(self) -> None:
+    def test_gate_schema_rejects_removed_process_and_binding_fields(self) -> None:
         from jsonschema import Draft202012Validator
 
-        invalid = copy.deepcopy(self.readiness_example)
-        invalid["deterministic_bindings"]["entry_preconditions"]["phase2_check"][
-            "status"
-        ] = "failed"
-        self.assertTrue(
-            list(Draft202012Validator(self.readiness_schema).iter_errors(invalid))
-        )
+        for field in (
+            "generated_at",
+            "facts_sha256",
+            "deterministic_bindings",
+            "review_identity",
+            "review_ref",
+            "publication_ref",
+            "supersedes_publication_ref",
+            "revision_history",
+            "reviewer_process",
+            "human_confirmation",
+        ):
+            with self.subTest(field=field):
+                invalid = copy.deepcopy(self.readiness_example)
+                invalid[field] = "forbidden"
+                self.assertTrue(
+                    list(
+                        Draft202012Validator(self.readiness_schema).iter_errors(
+                            invalid
+                        )
+                    )
+                )
 
     def semantic_errors(self, payload: dict) -> list[str]:
-        identity = payload["review_identity"]
         return GTT.task_publication_semantic_errors(
             payload,
-            reviewed_head=identity["reviewed_head"],
-            review_ref=identity["review_ref"],
+            reviewed_content_head=payload["reviewed_content_head"],
         )
 
     @staticmethod
@@ -258,47 +324,39 @@ class TaskPublicationContractTest(unittest.TestCase):
             "affected_artifacts": ["pr-body.md"],
             "route_class": route_class,
             "status": "open",
-            "closure_evidence": ["Open route evidence is recorded."],
+            "closure_evidence": [],
         }
 
     def return_payload(self) -> dict:
         payload = copy.deepcopy(self.readiness_example)
-        payload["typed_exit"] = "return_to_task_work"
-        payload["consumer"] = {
-            "kind": "workflow",
-            "id": "guru-task-publication-work-router",
-        }
-        payload["semantic_review"]["ai_review_gate"]["status"] = "return_to_task_work"
-        payload["semantic_review"]["dimensions"][0]["status"] = "finding"
-        payload["semantic_review"]["findings"] = [
+        payload["route"] = {"typed_exit": "return_to_task_work"}
+        payload["dimensions"][0]["status"] = "finding"
+        payload["findings"] = [
             self.open_finding(
                 finding_ref="PUB-WORK-001",
                 dimension="diff_outcome_consistency",
                 route_class="task_work",
             )
         ]
-        payload["semantic_review"]["conclusions"]["issue_scope"]["status"] = "finding"
+        payload["conclusions"]["issue_scope"]["status"] = "finding"
         return payload
 
     def blocked_payload(self) -> dict:
         payload = copy.deepcopy(self.readiness_example)
-        payload["typed_exit"] = "blocked"
-        payload["consumer"] = {
-            "kind": "stop",
-            "id": "task-publication-review-blocked",
+        payload["route"] = {
+            "typed_exit": "blocked",
+            "reason_code": "external-publication-dependency",
+            "remediation": "Restore the external dependency and re-enter.",
         }
-        payload["reason_code"] = "external-publication-dependency"
-        payload["remediation"] = "Restore the external dependency and re-enter."
-        payload["semantic_review"]["ai_review_gate"]["status"] = "blocked"
-        payload["semantic_review"]["dimensions"][-1]["status"] = "blocked"
-        payload["semantic_review"]["findings"] = [
+        payload["dimensions"][-1]["status"] = "blocked"
+        payload["findings"] = [
             self.open_finding(
                 finding_ref="PUB-BLOCK-001",
                 dimension="artifact_binding_freshness",
                 route_class="external_blocker",
             )
         ]
-        payload["semantic_review"]["conclusions"]["safety_deployment"]["status"] = "blocked"
+        payload["conclusions"]["safety_deployment"]["status"] = "blocked"
         return payload
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
@@ -306,7 +364,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         invalid = copy.deepcopy(self.readiness_example)
-        invalid["semantic_review"]["conclusions"]["issue_scope"]["status"] = "blocked"
+        invalid["conclusions"]["issue_scope"]["status"] = "blocked"
         self.assertTrue(
             list(Draft202012Validator(self.readiness_schema).iter_errors(invalid))
         )
@@ -320,7 +378,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         invalid = self.return_payload()
-        invalid["semantic_review"]["dimensions"][0]["status"] = "passed"
+        invalid["dimensions"][0]["status"] = "passed"
         self.assertTrue(
             list(Draft202012Validator(self.readiness_schema).iter_errors(invalid))
         )
@@ -339,14 +397,11 @@ class TaskPublicationContractTest(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         invalid = copy.deepcopy(self.readiness_example)
-        invalid["typed_exit"] = "blocked"
-        invalid["consumer"] = {
-            "kind": "stop",
-            "id": "task-publication-review-blocked",
+        invalid["route"] = {
+            "typed_exit": "blocked",
+            "reason_code": "external-publication-dependency",
+            "remediation": "Restore the external dependency and re-enter.",
         }
-        invalid["reason_code"] = "external-publication-dependency"
-        invalid["remediation"] = "Restore the external dependency and re-enter."
-        invalid["semantic_review"]["ai_review_gate"]["status"] = "blocked"
         self.assertTrue(
             list(Draft202012Validator(self.readiness_schema).iter_errors(invalid))
         )
@@ -374,7 +429,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         invalid_return = self.return_payload()
-        invalid_return["semantic_review"]["findings"][0][
+        invalid_return["findings"][0][
             "dimension"
         ] = "pr_body_quality"
         self.assertEqual(
@@ -387,7 +442,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         )
 
         invalid_blocked = self.blocked_payload()
-        invalid_blocked["semantic_review"]["findings"][0][
+        invalid_blocked["findings"][0][
             "dimension"
         ] = "pr_body_quality"
         self.assertEqual(
@@ -399,35 +454,67 @@ class TaskPublicationContractTest(unittest.TestCase):
             self.semantic_errors(invalid_blocked),
         )
 
-    def test_stale_semantics_require_exact_replacement_fields(self) -> None:
-        invalid = copy.deepcopy(self.readiness_example)
-        invalid.update({
-            "profile": "publication_review_stale",
-            "review_intent": "stale_reentry_review",
-        })
-        identity = invalid["review_identity"]
-        errors = GTT.task_publication_semantic_errors(
-            invalid,
-            reviewed_head=identity["reviewed_head"],
-            review_ref=identity["review_ref"],
+    def test_stale_reentry_does_not_expand_the_owner_checkpoint(self) -> None:
+        properties = set(self.readiness_schema["properties"])
+        self.assertFalse(
+            properties
+            & {
+                "profile",
+                "mode",
+                "review_intent",
+                "stale_reason",
+                "reentry_context",
+                "supersedes_publication_ref",
+            }
         )
-        for field in ("stale_reason", "reentry_context", "supersedes_publication_ref"):
-            self.assertIn(
-                f"stale publication requires non-empty {field}",
-                errors,
-            )
 
-    def test_both_modes_declare_exact_twelve_entry_preconditions(self) -> None:
+    def test_ready_checker_runs_the_shared_finalizer_preflight(self) -> None:
+        root = Path("/repo")
+        task_dir = root / self.readiness_example["task_ref"]
+        with (
+            mock.patch.object(GTT, "task_publication_schema", return_value={}),
+            mock.patch.object(
+                GTT, "skill_json_schema_validation_errors", return_value=[]
+            ),
+            mock.patch.object(GTT, "load_config", return_value={}),
+            mock.patch.object(
+                GTT,
+                "current_head",
+                return_value=self.readiness_example["reviewed_content_head"],
+            ),
+            mock.patch.object(
+                GTT,
+                "review_branch_content_continuity_errors",
+                return_value=[],
+            ),
+            mock.patch.object(
+                GTT,
+                "task_publication_entry_precondition_bindings",
+                return_value=({}, [], {}, {}),
+            ),
+            mock.patch.object(
+                GTT, "task_publication_closeout_preflight"
+            ) as preflight,
+        ):
+            errors = GTT.task_publication_check_errors(
+                root,
+                task_dir,
+                copy.deepcopy(self.readiness_example),
+            )
+        self.assertEqual(errors, [])
+        preflight.assert_called_once_with(
+            root,
+            task_dir,
+            self.readiness_example["reviewed_content_head"],
+        )
+
+    def test_both_modes_declare_exact_eight_entry_preconditions(self) -> None:
         expected = [
             "runtime_dependency",
             "task_workspace",
             "task_identity",
             "branch_review_handoff",
-            "planning_approval",
-            "phase2_check",
             "issue_scope_ledger",
-            "docs_ssot_reconciliation",
-            "branch_review_evidence",
             "publication_content",
             "review_range_and_working_tree",
             "invocation_freshness",

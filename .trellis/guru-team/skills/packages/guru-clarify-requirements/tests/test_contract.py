@@ -70,30 +70,31 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         for phrase in (
             "repository-answerable question",
             "answer_status=partial",
-            "proposal-digest-bound confirmation",
+            "dedicated dialogue-local choice",
             "optional_mechanism_origin=true",
             "mechanism_removed",
-            "context_before_task_update_sha256",
+            "current context snapshot digest",
             "generated_at",
             "updated_at",
-            "confirmation_kind=exact_source_action_and_scope",
-            "confirmed_actions[]",
+            "writes no authorization fields",
             "does not require a second context snapshot",
             "There is no mutation executor",
             "Success returns `refresh_context`",
-            "guru-approve-task-plan",
-            "guru-check-task",
-            "guru-review-branch",
-            "complete shared `check-planning-approval --require-exit approved` validator",
-            "Skill-owned `guru-planning-approval-2.0` artifact",
-            "`user_confirmation.kind=post-planning-approval`",
+            "compact `decision_trail`",
+            "remote authority locator and content checksum",
+            "transient owner result and never enter the ledger",
+            "legacy full-shape trail is projected once",
             "`blocked` if and only if",
         ):
             self.assertIn(phrase, contract)
-        self.assertIn("`guru-planning-approval-2.0` evidence", skill)
+        self.assertIn("missing compact ledger decision authority", skill)
         self.assertNotIn("schema 1.2 planning approval", skill)
         self.assertNotIn("schema 1.2 planning-approval validator", contract)
-        self.assertNotIn("explicit post-planning confirmation", contract)
+        self.assertNotIn("guru-planning-approval", skill)
+        self.assertNotIn("dialogue-local authorization", contract)
+        self.assertNotIn("user_confirmation", contract)
+        self.assertNotIn("context_before_task_update_sha256", contract)
+        self.assertNotIn("preserve the decision trail", contract)
 
     def test_wrappers_are_dispatcher_only_executable_and_have_no_mutation(self) -> None:
         wrappers = {

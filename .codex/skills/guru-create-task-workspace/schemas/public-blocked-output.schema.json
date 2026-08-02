@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-create-task-workspace-output-blocked-1.0",
+  "$id": "guru-stage0-create-task-workspace-output-blocked-2.0",
   "type": "object",
   "additionalProperties": false,
   "required": [

@@ -6,7 +6,7 @@
   "evals": [
     {
       "id": "created-route",
-      "prompt": "Review the staged confirmed issue-only plan after its exact executor and checker completed, then invoke guru-create-task-workspace with the public input plus private plan/result locators. Return the checker-derived route.",
+      "prompt": "Review the staged workspace plan after its exact executor and checker completed, then invoke guru-create-task-workspace with the minimal public input plus private plan/result locators. Return the checker-derived route.",
       "expected_exit": "created",
       "expected_output": "The public DTO is the declared created route.",
       "assertions": {
@@ -36,7 +36,7 @@
         ]
       },
       "files": ["evals/files/eval-created-input.json", "evals/files/eval-created-facts.json"],
-      "input_profile_id": "issue_only_initial"
+      "input_profile_id": "execute_reviewed_plan"
     },
     {
       "id": "refresh-review-route",
@@ -55,26 +55,7 @@
         ]
       },
       "files": ["evals/files/eval-refresh-review-input.json", "evals/files/eval-refresh-review-facts.json"],
-      "input_profile_id": "issue_only_recovery"
-    },
-    {
-      "id": "cancelled-route",
-      "prompt": "Review the staged workspace plan whose exact confirmation was refused, complete its no-side-effect executor/checker result, then invoke guru-create-task-workspace with the private plan/result locators. Return the checker-derived route.",
-      "expected_exit": "cancelled",
-      "expected_output": "The public DTO is the declared cancelled route.",
-      "assertions": {
-        "deterministic": [
-          {
-            "id": "expected-route",
-            "kind": "json_path",
-            "pointer": "/exit_id",
-            "operation": "equals",
-            "expected": "cancelled"
-          }
-        ]
-      },
-      "files": ["evals/files/eval-cancelled-input.json", "evals/files/eval-cancelled-facts.json"],
-      "input_profile_id": "workspace_task_initial"
+      "input_profile_id": "execute_reviewed_plan"
     },
     {
       "id": "blocked-route",
@@ -93,7 +74,7 @@
         ]
       },
       "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
-      "input_profile_id": "workspace_task_recovery"
+      "input_profile_id": "execute_reviewed_plan"
     }
   ]
 }

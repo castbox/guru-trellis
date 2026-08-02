@@ -12,7 +12,7 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "review_scope",
-        "mutation_authority",
+        "mutation_target",
         "semantic_evidence",
         "invocation_freshness"
       ]
@@ -22,7 +22,7 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "review_scope",
-        "mutation_authority",
+        "mutation_target",
         "semantic_evidence",
         "invocation_freshness"
       ]
@@ -42,21 +42,21 @@
       "freshness": "the checker rebuilds the selected profile scope and rejects selector narrowing or content drift"
     },
     {
-      "id": "mutation_authority",
-      "evidence": "AI-reviewed authority for each proposed content mutation, exact confirmed-payload digest, and current live mutation-result identity when required",
-      "binding": "only the issue, draft, planning artifact, or explicit Markdown content authorized by the invocation",
-      "freshness": "live issue revisions bind source/locator/field, preimage, confirmed content, current reread content and source update time through rescan and checking"
+      "id": "mutation_target",
+      "evidence": "objective source, locator, field, preimage, current reread content and source update time for each completed content mutation",
+      "binding": "only the issue, draft, planning artifact, or explicit Markdown content selected by the current invocation",
+      "freshness": "live issue revisions bind source/locator/field, preimage, current reread content and source update time through rescan and checking"
     },
     {
       "id": "semantic_evidence",
-      "evidence": "AI-authored revisions, retained-hit classifications and reasons, common Review Gate judgment, planning-profile semantic dimensions when applicable, and conditional human confirmation",
+      "evidence": "AI-authored revisions, retained-hit classifications and reasons, common Review Gate judgment, and planning-profile semantic dimensions when applicable",
       "binding": "the complete current deterministic scan",
       "freshness": "every content change rebuilds scope and scan before semantic evidence can be recorded"
     },
     {
       "id": "invocation_freshness",
-      "evidence": "mode, profile, scope, scan, semantic review, confirmation, result identities and caller route",
-      "binding": "one current closed-loop review round",
+      "evidence": "mode, profile, scope, scan, semantic review, result identities and caller route",
+      "binding": "one current closed-loop invocation",
       "freshness": "all identities and the declared profile/exit remain current at typed-exit validation"
     }
   ],
@@ -178,7 +178,7 @@
     },
     {
       "id": "content_changed",
-      "evidence": "one or more authorized revisions are bound to rebuilt scope, current content hashes, a complete rescan, and a passed AI Review Gate",
+      "evidence": "one or more completed revisions are bound to rebuilt scope, current content hashes, a complete rescan, and a passed AI Review Gate",
       "consumer": {
         "kind": "workflow",
         "id": "guru-contract-wording-change-router"
@@ -186,7 +186,7 @@
     },
     {
       "id": "blocked",
-      "evidence": "missing scope or mutation authority, unconfirmed semantic change, refused required mutation, unchecked violation, or blocked AI Review Gate",
+      "evidence": "missing scope or mutation preconditions, unresolved semantic change, unchecked violation, or blocked AI Review Gate",
       "consumer": {
         "kind": "stop",
         "id": "contract-wording-blocked"
@@ -194,8 +194,8 @@
     }
   ],
   "reentry": {
-    "identity": "mode, profile, normalized scope items, scope/scan digests, current hits, revisions, classifications, Review Gate, confirmation and result digest",
-    "freshness": "every content mutation invalidates prior hits and semantic evidence; stale replacement is explicit, while a current content_changed/blocked result may be superseded only by a different, fully current same-profile result bound to its exact prior facts_sha256; identical results and current pass are protected",
+    "identity": "the fixed profile and current normalized scope rebuilt for this invocation",
+    "freshness": "every content mutation invalidates the caller-private result; mapped re-entry discards it and reruns the complete owner loop without a replacement digest or history",
     "stale_behavior": "fail_closed"
   },
   "tests": [
@@ -394,7 +394,7 @@
           "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
           "path": "schemas/contract-wording-review.schema.json"
         },
-        "persistence": "task_local_tracked"
+        "persistence": "stdout_only_owner_private"
       }
     ]
   }

@@ -1,28 +1,15 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "skill_id": "guru-finalize-task",
-  "generated_at": "2026-07-26T00:00:00Z",
-  "invocation": {
-    "profile": "publication_ready",
-    "mode": "workflow",
+  "identity": {
     "task_ref": ".trellis/tasks/07-26-example",
-    "input_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
-  },
-  "plan": {
-    "available": true,
     "plan_ref": "closeout-plan:current",
     "plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    "reviewed_content_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "review": {
     "status": "passed",
-    "summary": "The reviewed plan is sufficient for the verification boundary.",
-    "evidence_refs": ["closeout-plan:current", "publication:current"]
-  },
-  "confirmation": {
-    "status": "confirmed",
-    "confirmed_plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "summary": "The exact closeout plan digest was confirmed before the first side effect."
+    "summary": "The reviewed plan is sufficient for the verification boundary."
   },
   "route": {
     "typed_exit": "verification_required",
@@ -35,9 +22,5 @@
       "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "verification_target": "extension-installation"
     }
-  },
-  "freshness": {
-    "current_facts_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-    "supersedes_gate_ref": null
   }
 }

@@ -278,8 +278,9 @@ def _get_task_status(trellis_dir: Path, hook_input: dict) -> str:
     if task_status == "planning":
         if has_design and has_implement:
             next_action = (
-                "Display links to prd.md, design.md, and implement.md; wait for explicit "
-                "post-planning confirmation before `task.py start`."
+                "Invoke the planning wording and plan-approval owners, auto-consume the mapped "
+                "result, and run `task.py start` on checked `approved`; ask only for unresolved "
+                "scope, a material plan choice, or a real side effect."
             )
         else:
             next_action = (

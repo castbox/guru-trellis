@@ -209,14 +209,15 @@ payloads out of the persisted artifact through field-specific validation.
 
 ## Requirements Clarification Result
 
-Schema id `guru-requirements-clarification-1.0` is a closed Draft 2020-12
+Schema id `guru-requirements-clarification-2.0` is the active closed Draft 2020-12
 result. Top-level fields are exactly `schema_version`, `skill_id`,
 `generated_at`, `mode`, `typed_exit`, `invocation_context`, `review_target`,
-`context_evidence`, `confirmed_facts`, `repository_answerable_questions`,
+`target_disposition`, `context_evidence`, `confirmed_facts`, `repository_answerable_questions`,
 `clarification_rounds`, `open_questions`, `scope_proposals`, `source_actions`,
-`human_confirmation`, `mutation_results`, `active_task_evidence`,
-`ai_review_gate`, `affected_contracts`, `content_identity`, `reason`,
-`consumer`, and `error`.
+`mutation_results`, `active_task_evidence`, `ai_review_gate`,
+`affected_contracts`, `content_identity`, `reason`, `consumer`, and `error`.
+Schema 1.0 is read-only migration history: it cannot express current target
+disposition or retarget identity and never satisfies a current invocation.
 
 `invocation_context.kind` is `initial_issue`, `proposed_draft`,
 `active_task_scope_change`, or `standalone_review` and includes a closed
@@ -240,77 +241,67 @@ closed`; close-before-open and reopen-after-close are invalid.
 Each `scope_proposals[]` row is closed and contains `proposal_id`, `scenario`,
 `trigger_evidence`, `proposed_contracts`, `cost`, `alternatives`,
 `consequence_if_omitted`, `origin_requirement_status`,
-`optional_mechanism_origin`, `decision`, recorder-derived `proposal_digest`,
-and `confirmation_ref`. `origin_requirement_status` is `explicit`,
+`optional_mechanism_origin`, `decision`, and recorder-derived
+`proposal_digest`. `origin_requirement_status` is `explicit`,
 `necessary_correctness`, `confirmed_expansion`, or `unconfirmed_expansion`.
 Decision is `pending`, `accepted_current`, `related`, `followup`, `new_task`,
 `out_of_scope`, `mechanism_removed`, or `mechanism_replaced`. An unconfirmed
-expansion accepted into current scope requires a dedicated confirmation bound
-to its exact proposal digest. An optional-mechanism-origin proposal cannot be
+expansion is finalized only after the AI obtains the real choice in the current
+dialogue; the result stores the selected disposition, never authorization
+state, text, ref, timestamp, or digest. An optional-mechanism-origin proposal cannot be
 classified into the five scope classes: its terminal disposition is
 `mechanism_removed` or `mechanism_replaced`, with
-`optional_mechanism_origin=true` and `confirmation_ref=null`. During an active task, an unconfirmed expansion classified as
-`related`, `followup`, `new_task`, or `out_of_scope` also requires exact
-proposal-digest-bound user decision evidence.
+`optional_mechanism_origin=true`.
 
 `source_actions[]` supports only `none`, `issue_comment`, `issue_body_edit`,
-`proposed_draft_update`, `new_issue_draft`, and
-`active_task_scope_update`. Every row binds exact target, payload, preimage,
-status, action digest, payload digest, and mutation evidence. The recorder
-derives action/payload digests; it does not execute the action. Human
-confirmation records `not_required`, `confirmed`, or `refused`, the exact
-action digest, proposal digests, confirmed action ids, confirmer/time, and
-evidence summary. Generic continuation/planning/review confirmation action
-kinds are invalid. Every five-class active-task scope decision that carries an
-`active_task_scope_update` must use one
-`confirmation_kind=exact_source_action_and_scope`: its classification proposal
-digests are exact, the task-update action id is present in
-`confirmed_actions[]`, and `human_confirmation.action_digest` equals the
-canonical digest of that confirmed action set. Proposal-only confirmation,
-planning approval, or the task update's validated status cannot authorize the
-task-local source-of-truth write. For comment/body mutation, mutation content SHA-256 must
-equal the exact confirmed action payload body, canonical payload digest, and
-reread live GitHub body/comment content.
+`proposed_draft_update`, `new_issue_draft`, `select_existing_issue`,
+`reopen_issue`, and `active_task_scope_update`. Every row binds exact objective
+target, payload, preimage, status, action digest, payload digest, and mutation
+evidence. These digests identify deterministic action bytes for recorder/checker
+consumers; they never represent authorization or semantic approval. The AI
+checks current-dialogue authority immediately before a write, executes the
+approved GitHub/task action, and supplies only objective mutation facts. For
+comment/body mutation, mutation content SHA-256 must equal the action payload,
+canonical payload digest, and reread live GitHub body/comment content.
 
 Active-task `clear`/`new_task` requires a non-empty array containing only the
-seven terminal decisions. Every `accepted_current`, `related`, `followup`, `new_task`, or
-`out_of_scope` proposal requires proposal-digest-bound exact user-decision
-evidence regardless of origin status, plus live GitHub authority facts and
-one structured `decision_trail` exactly present in
-`issue-scope-ledger.json.scope_decisions[]`. The trail carries proposal
-id/digest/decision/confirmation refs, user-decision evidence, GitHub
-comment/body URL, content digest, and `updated_at`, the
-`context_before_task_update_sha256`, exact
-content SHA-256 for `prd.md`, `design.md`, and `implement.md`, planning approval,
-review status, stale Phase-2/Branch-Review identities, interrupted resume target,
-and exact re-entry owners `guru-approve-task-plan`, `guru-check-task`, and
-`guru-review-branch`. The ledger itself must have the normal
-primary/close/related/followup structure. Planning evidence must pass the shared
-`guru-planning-approval-2.0` validator and exact-bind both reviewed/approved aliases plus current
-path/hash/size for all three documents; `{}`, two-line planning placeholders,
-minimal approval JSON, and hash-only files are invalid. These are validation bindings to existing artifacts, not a
-dedicated clarification file. Pre-task and standalone results remain stdout-only.
+seven terminal decisions. Every `accepted_current`, `related`, `followup`,
+`new_task`, or `out_of_scope` proposal binds live GitHub authority facts and one
+compact `decision_trail` exactly present in
+`issue-scope-ledger.json.scope_decisions[]`. The field name is retained only for
+compatibility; it is not a process trail. Its exact fields are `trail_id`, final
+proposal id/digest/decision rows, and `github_authority` containing kind, URL,
+and remote content checksum. It contains no user identity, confirmation
+reference, authorization state/digest, authority timestamp, planning identity,
+review state, context snapshot, interrupted target, or re-entry route. The
+ledger itself must have the normal primary/close/related/followup structure.
+Current planning documents, context freshness, task-update preimage, and
+re-entry owner facts remain in the transient owner result and are reread from
+their owning sources. Pre-task and standalone results remain stdout-only.
 
 A mechanism-only terminal result still requires the same task-local ledger,
-planning documents, complete planning approval, review/stale identities,
-re-entry owners, and current context evidence; only `decision_trail` is null.
+planning documents, re-entry owners, and current context evidence in the
+transient owner result; only `decision_trail` is null.
 Mixed results project only their five-classification subset into the trail.
 Every terminal active-task result receives the same live task/context freshness
-validation. When `review-gate.json` exists, `review_evidence.status` must be
-`stale` and bind that exact artifact path/content digest. `not_started` is valid
-only when the file is absent, the artifact is null, and the stale downstream
-Branch Review digest is null; `current` is invalid during re-entry.
+validation. A legacy full-shape trail and matching task-update payload are
+projected once into the compact shape by the recorder. This compatibility
+projection does not request a new user choice, mutate GitHub, or preserve the
+legacy authorization/process fields. A partial current-shape payload carrying
+removed legacy fields fails closed instead of being silently stripped.
 
 `content_identity` contains recorder-derived target, content, context, scope,
-action, payload, and result SHA-256 fields. Result identity is computed from
-the canonical result projection with its own field omitted. The checker
-recomputes every digest and validates current live facts.
+action, payload, and result SHA-256 fields. They are local deterministic
+identities for this recorder/checker pair, not workflow authority or public
+handoff. Result identity is computed from the canonical result projection with
+its own field omitted. The checker recomputes every digest and validates current
+live facts.
 
 Exit invariants are closed:
 
 - `clear` consumes `guru-requirements-clear-router` and requires no open
   questions, a passed AI Gate, current source/context,
-  all accepted proposals exactly confirmed, no pending action, and no
+  finalized proposal dispositions, no pending action, and no
   successful unrefreshed GitHub mutation. The router validates
   `resume_target`: initial/draft -> wording route, standalone -> caller,
   accepted active scope -> planning review, otherwise active task -> exact
@@ -321,15 +312,17 @@ Exit invariants are closed:
   `guru-sync-base`; successful issue comment/body mutation requires this exit.
   Re-entry requires context `generated_at >= authority.updated_at`, then binds
   task update to that same context digest without requiring a second refresh;
+- `retarget_context` binds an exactly selected open duplicate issue and consumes
+  `guru-sync-base`; the complete initial chain reruns against that new target;
 - `new_task` requires a reviewed side-effect-free `new_issue_draft`, plus a
-  fresh persisted classification trail for active-task callers, and consumes
+  fresh persisted compact classification for active-task callers, and consumes
   `guru-full-task-intake-chain`; #112 owns every issue/task creation side effect;
 - `blocked` is valid if and only if `ai_review_gate.status=blocked` and consumes
   `requirements-clarification-blocked`.
 
 Unknown/multiple/unmapped exits, mismatched consumer objects, closed-question
-drift, confirmation/digest drift, confirmed-payload/live-content drift,
-invocation/resume mismatch, or stale active-task linkage fail closed.
+drift, objective payload/live-content drift, invocation/resume mismatch, or
+stale active-task linkage fail closed.
 
 ## Extension Version Manifest
 
@@ -372,21 +365,27 @@ contract under `public_api.skill_contracts`:
   production 1.3 packages. `legacy_skill_ids` is empty after the atomic
   production activation.
 
-The canonical manifest
+The frozen canonical manifest
 `trellis/skills/guru-team/migrations/stage0-minimal-handoff.json` has schema id
-`guru-team-stage0-migration-manifest-1.0`. It is the closed activation inventory
-for exactly six Skills and 24 exits, including every public input profile or
+`guru-team-stage0-migration-manifest-1.0`. It is the immutable historical
+activation inventory for exactly six Skills and 24 exits, including every public input profile or
 scalar signature, output/example, consumer input, projection, private artifact,
 and eval case binding. It also fixes the legacy allowlist to
 `guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit`, and
 the activation policy to `preset_transaction`.
 
-Source and installed validation compare the manifest bidirectionally with the
-registry, package Interfaces, workflow markers, extension inventories, and
-package eval corpora. Missing, extra, duplicate, renamed, unknown, out-of-order,
-or mixed-version entries fail closed. Manifest contents are an activation
-contract, not a recovery journal; archived 1.2 artifacts remain readable under
-their original schemas and are never rewritten during validation or install.
+`trellis/skills/guru-team/migrations/stage0-ai-first-contract-v2.json` has schema
+id `guru-team-stage0-ai-first-contract-migration-1.0`. It supersedes the active
+contract, not the frozen bytes: the same six Skills now expose 23 exits, and a
+workspace/task mutation refusal stops in dialogue before recorder/executor
+instead of emitting `cancelled`. It also declares the public scalar change that
+allows `guru-sync-base.repo_root` and `route` to be omitted and derived by the
+runtime. Source and installed validation require both
+records, their distinct identities, and the exact current 6-by-23 closure.
+Missing, extra, duplicate, renamed, unknown, out-of-order, or mixed-version
+entries fail closed. Migration contents are contracts, not recovery journals;
+archived artifacts remain readable under their original schemas and are never
+rewritten during validation or install.
 
 The independent canonical manifest
 `trellis/skills/guru-team/migrations/production-minimal-handoff.json` has schema
@@ -394,17 +393,30 @@ id `guru-team-production-migration-manifest-1.0` and activation id
 `production-minimal-handoff-v1`. It binds exactly the three planning/check/
 commit packages, ten structured profiles, 11 stable exits, per-exit output
 schema/example identities, consumer inputs, projections, private artifact ids,
-and canonical eval cases. Both migration manifest locators are published in
-the extension in activation order. The Stage 0 manifest bytes and ordered
+and canonical eval cases. Its bytes are immutable historical authority, including
+the original `approved` and `passed` output schema ids.
+
+`trellis/skills/guru-team/migrations/production-ai-first-contract-v2.json` has
+schema id `guru-team-production-ai-first-contract-migration-1.0`. It supersedes
+the production v1 activation projection without rewriting v1: current
+`approved` removes private `approval_ref`, current `passed` removes private
+`check_ref` and accepts the repository hash width, and both output schemas move
+to v2. Legacy Task Commit message/path/semantic fields project once into the
+five-field v2 owner-entry seed and ignored-runtime candidate; authorization and
+caller-selected exit fields are discarded, and the old terminal result journal
+is never written. Both frozen activation manifest locators plus both AI-first
+migration locators are published in the extension in activation order.
+The Stage 0 v1 manifest bytes and ordered
 6-by-24 identity remain a regression authority and are not rewritten to absorb
 production packages.
 
-The source and installed closure algorithm reads the live registry, both
-manifests, Interface public contracts, and package-local corpora. It requires
-the active ids to equal the two manifest sets plus any future complete active
+The source and installed closure algorithm reads the live registry, both frozen
+activation manifests, both AI-first migrations, Interface public contracts, and
+package-local corpora. It requires the active ids to equal the two activation
+sets plus any future complete active
 1.3 rows; requires every active row to be `minimal_handoff`; and requires exact
-profile/exit/current-case set equality. Eleven Skills and 42 exits are the current
-cardinality regression, not a hard-coded future registry allowlist.
+profile/exit/current-case set equality. Thirteen Skills and 51 exits are the
+current cardinality regression, not a hard-coded future registry allowlist.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -475,32 +487,29 @@ Release order matters: merge the manifest/docs PR first, create the annotated
 `trellis workflow` marketplace commands, then retire any old competing tag
 names only after the new tag is verified.
 
-## Task Start Context and Local Runtime
+## Task Identity and Local Runtime
 
-`.trellis/tasks/<task-slug>/task-start-context.json` is the task-local, tracked, portable intake context. Its schema is `trellis/workflows/guru-team/schemas/task-start-context.schema.json`, uses `additionalProperties: false`, and allows only source issue/repo metadata, task and branch identifiers, repo-relative `task_artifact_dir`, base refs/SHAs, portable workspace ids, actor metadata, issue-ledger seed, and compact duplicate/naming/confirmation summaries. It must never contain absolute paths, `.trellis/.runtime/**`, full preflight payloads, dirty/fetch process logs, existing worktree lists, developer identity paths, or command paths.
+New AI-first tasks use official Trellis `task.json` as their tracked task
+identity and `issue-scope-ledger.json` as the only Guru-owned durable Intake
+artifact. Existing active `task-start-context.json` schema 1.0 files are
+read-only migration evidence; runtime may consume them once when reconstructing
+an interrupted legacy task, but must not generate, upgrade, or require them for
+new tasks.
 
 Local-only reusable mappings live under the gitignored producer namespace:
 
 - `.trellis/.runtime/guru-team/workspaces/<workspace-slug>.json`
 - `.trellis/.runtime/guru-team/tasks/<task-slug>.json`
 
-Runtime cache may contain absolute worktree paths and executor timestamps, but it is disposable, untracked, has no index/developer dimension, and must be reconstructable from the current checkout, task-start-context, `git worktree list`, or explicit parameters. Ordinary task commands read tracked shared config but do not rewrite it.
+Runtime cache may contain absolute worktree paths and executor timestamps, but it is disposable, untracked, has no index/developer dimension, and must be reconstructable from current `task.json`, the checkout, `git worktree list`, or explicit parameters. Ordinary task commands read tracked shared config but do not rewrite it.
 
 Query-only `prepare-task` writes neither task context nor runtime cache. Active
 `guru-create-task-workspace` is the only creator. On successful workspace/task
-creation it writes exactly four tracked task-local Intake artifacts:
-`task-start-context.json`, `issue-scope-ledger.json`,
-`context-discovery.json`, and `issue-review.json`, then writes ignored
-source/target runtime mappings. The last two artifacts preserve the exact
-checker-passed canonical bytes.
-
-Task-start-context keeps schema id/version `1.0`. Its closed `intake_summary`
-adds optional `final_source_issue_binding` and `prerequisite_evidence`
-properties for backward compatibility; new workspace results require both,
-while archived old tasks need no backfill. The final binding records the live
-open issue identity/title/body/update facts plus target-disposition and optional
-created-draft binding digests. Prerequisite evidence records the schema, exit,
-facts/content/linkage digests for the five upstream Skills.
+creation it writes official `task.json`, exactly one Guru-owned tracked
+task-local Intake artifact (`issue-scope-ledger.json`), and ignored
+source/target runtime mappings. Upstream checker results and workspace
+plan/result stay in ignored owner-private runtime and are reread only by their
+direct consumer.
 
 Assignee remains a portable task/context audit field, never a path namespace.
 The workspace executor invokes official `common.task_store.cmd_create` in an
@@ -510,7 +519,9 @@ accessor. The official creator fallback therefore produces
 read, copy, initialize, restore, or require `.trellis/.developer` or
 `.trellis/workspace/**`; existing official identity bytes remain untouched.
 
-Do not use `task-start-context.source_issue` as PR close scope. The task-level `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and `followup_issues`.
+Legacy `task-start-context.source_issue` never owns PR close scope. The
+task-level `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and
+`followup_issues`.
 
 ## Finish Summary
 
@@ -534,9 +545,9 @@ text normalization.
 The AI input is task-local `finish-summary-index.json` with schema version 1 and
 only semantic index fields. It accepts at most 19 `contract_changes`; the final
 schema accepts 20 so the recorder always has capacity for the fixed
-protected-path filtering fact. Final facts come from `task.json`,
-`task-start-context.json`, Issue Scope Ledger, Git, archived artifact existence,
-UTC time, and publish output. Final artifacts live at
+protected-path filtering fact. Final facts come from `task.json`, Issue Scope
+Ledger, ignored runtime identity, live Git, archived artifact existence, UTC
+time, and publish output. Final artifacts live at
 `.trellis/tasks/archive/<YYYY-MM>/<task>/finish-summary.json`; values may not
 contain absolute, parent, workspace, runtime, backslash, CR, or LF paths, and
 may not contain leading or trailing whitespace. Backfill `source_artifacts`
@@ -558,10 +569,12 @@ workspace/runtime protected prefixes, and writes the safe set to both
 or count details; an empty filtered set adds no such fact. Schema and Python
 validation reject protected prefixes in every path field. The final summary is
 built once in the active task after draft PR binding and moves unchanged to the
-archive locator. Readiness binds repo/base/head, reviewed HEAD, exact title,
-`pr-body.md`, body SHA-256, `draft=true`, reviewed source, and
-`closeout_plan_digest`. Active-state recovery consumes committed plan/readiness
-plus Git/remote and PR facts. Reuse and final projection require one exact PR
+archive locator. Publication's ignored-runtime readiness checkpoint owns its
+semantic conclusion and emits only task plus `reviewed_content_head`; Finalizer
+does not read or commit that checkpoint. The closeout plan independently binds
+repo/base/head, exact title, raw `pr-body.md` SHA-256, `draft=true`, and its
+internal digest. Active-state recovery consumes the untracked schema 1.2 plan
+plus Git/remote, marketplace owner, task layout, and PR facts. Reuse and final projection require one exact PR
 number/URL/title/body identity; one matching draft is reused, zero creates one,
 and multiple identities fail closed. The real-PR final summary has one
 deterministic UTF-8 JSON byte representation and digest. Pre-move continuity
@@ -590,8 +603,9 @@ casing.
 
 Archive content identity is not inferred from the no-renames path set. Before
 the exact archive commit exists, each `tracked_move_paths` item binds the
-evidence commit active blob to the archived working-tree file and prospective
-archive commit blob. All files are byte-identical except `task.json`, where
+`reviewed_content_head` active blob to the archived working-tree file and
+prospective schema 1.2 archive commit blob. Persisted schema 1.1 instead binds
+its historical evidence-commit blob. All files are byte-identical except `task.json`, where
 only the official `status` and `completedAt` archive fields may change.
 `untracked_archive_outputs` are validated by their existing template/digest
 contracts. Once the exact archive commit exists, its tree and blobs replace the
@@ -672,122 +686,78 @@ surface with no paths.
 
 ## Workspace Boundary Snapshot
 
-`check-workspace-boundary --json` resolves the task from `--task` or current task, validates the task-local context, then derives the expected workspace from current repo root, local runtime mapping, and Git worktree facts. It never trusts a committed absolute workspace path. The snapshot records `status`, `workspace_mode`, `expected_workspace`, `actual_repo_root`, optional `source_checkout`, `task_dir`, repo-relative `task_dir_relative`, source/task git status, suspicious same-task artifacts, and deterministic errors. Missing task context, a mismatched runtime workspace, a task outside the current repo `.trellis/tasks`, or source-checkout same-task metadata fails closed.
+`check-workspace-boundary --json` resolves the task from `--task` or current
+task, validates `task.json` plus ignored task/workspace mappings and live Git
+worktree identity, then derives the expected workspace. A legacy
+`task-start-context.json` may supply the same identity once during interrupted
+migration, but is never generated or required for a new task. The command never
+trusts a committed absolute workspace path. The snapshot records `status`,
+`workspace_mode`, `expected_workspace`, `actual_repo_root`, optional
+`source_checkout`, `task_dir`, repo-relative `task_dir_relative`,
+source/task Git status, suspicious same-task artifacts, and deterministic
+errors. Missing or mismatched task/runtime/worktree identity, a task outside the
+current repo `.trellis/tasks`, or source-checkout same-task metadata fails
+closed.
 
-## Planning Approval Artifact
+## Planning Approval Checkpoint
 
-`planning-approval.json` is the single task-local Phase 1 planning gate
-artifact. New artifacts use `schema_version=2.0`, `skill_id` equal to
-`guru-approve-task-plan`, and closed Draft 2020-12 schema id
-`guru-planning-approval-2.0`. This is a breaking replacement of the active 1.2
-contract because provenance, unusual proposals, AI Gate, four typed exits,
-consumers, and facts digest are mandatory. Active 1.2 artifacts fail with
-stable complete-re-entry migration guidance; archived artifacts remain
-historical and are never rewritten.
+`guru-approve-task-plan` is the sole semantic owner of Phase 1 planning
+approval. New owner evidence uses closed schema
+`guru-planning-approval-3.0` and lives only in ignored
+`.trellis/.runtime/guru-team/owner-checkpoints/<task-key>/planning-approval.json`.
+It is a short-lived owner checkpoint, not a tracked task artifact, public DTO,
+handoff, or archive file.
 
-The payload records task and repository snapshots, requirement authorities,
-`reviewed_artifacts[]` and byte-identical `approved_artifacts[]` entries for
-`prd.md`, `design.md`, and `implement.md`, the located `Docs SSOT Plan`, current
-`guru-review-contract-wording:planning_artifacts:pass` evidence,
-`ambiguity_review` compatibility projection, provenance review, unusual
-scenario review, final AI Review Gate, user confirmation, typed exit, unique
-consumer, reason, and `facts_sha256`. Recorder/checker may rebuild these
-deterministic facts and projections but never author semantic review fields.
+The AI rereads live requirement authority, current wording result, `prd.md`,
+`design.md`, `implement.md`, the Docs SSOT decision, and the issue scope ledger.
+It reviews eight dimensions: requirement authority, scope boundary, design
+adequacy, implementation plan, acceptance verifiability, Docs SSOT,
+provenance, and supported unusual scenarios. Formatting, spelling, link,
+derived-text, and workflow-metadata changes are classified by their real
+semantic effect; only changed dependencies are refreshed.
 
-`task.scope_ledger_sha256`, and the SHA-256 of any requirement-authority entry
-whose task artifact is that same ledger, are not digests of the complete
-`issue-scope-ledger.json` bytes. It digests one canonical projection containing
-the positive `primary_issue` number and the sorted, deduplicated positive issue
-numbers in `close_issues`, `related_issues`, and `followup_issues`. Acceptance
-evidence, structured decision trails, embedded planning hashes, and other
-metadata are excluded so their normal post-approval updates do not create a
-circular identity. Any category membership change remains planning scope drift.
+The compact checkpoint retains only mode, task locator, the three planning
+locators, one composite planning-content freshness token, current authority
+references, Docs SSOT strategy/durable paths/summary, the final eight-dimension
+semantic result, typed exit, reason, and unique consumer. The token has one
+local deterministic consumer: the planning checker invoked inside the Planning
+public wrapper before typed-output projection. It detects same-path drift and
+returns control to the AI owner for delta classification; it is not authorization,
+semantic approval, public handoff, or whole-chain authority. After the checked
+typed output passes its schema, the same producer wrapper deletes the checkpoint.
+Task activation and Phase 2 consume only the DTO plus current planning/live facts
+and never read or delete this private state. The checkpoint does not retain
+per-file hashes, sizes, mtimes, repository snapshots, scan history, reviewer
+metadata, raw reports, assignments, liveness, authorization, authorization
+wording, or authorization digests.
+When task activation or a real scope choice needs authorization, that occurs
+in the current conversation and is never projected into persisted or public
+state.
 
-Each authoritative provenance entry binds a stable id, repo-relative planning
-artifact path, statement locator, canonical UTF-8 statement SHA-256,
-classification, authority references, reason, and class-specific data. The
-closed classifications are:
+The closed exits are:
 
-- `explicit_requirement`: current source authority reference;
-- `necessary_implementation_choice`: ordered alternatives, a selected id that
-  resolves to one alternative, non-empty selection reason, and both
-  `product_scope_expanded=false` and `risk_scope_expanded=false`;
-- `approved_scope_expansion`: a `proposal_binding`, dedicated `confirmation`,
-  and current `authority_binding` whose proposal digests are identical and
-  runtime-recomputable;
-- `out_of_scope_proposal`: proposal reason and terminal route/disposition, and
-  exclusion from approved execution.
+- `approved` -> `workflow:phase-1-task-activation`, with every dimension true
+  and no finding, revision action, scope proposal, or blocker;
+- `revision_required` -> `skill:guru-approve-task-plan`, with one or more
+  task-local revision actions;
+- `clarify_scope` -> `workflow:guru-task-plan-clarify-scope-router`, with one
+  or more exact scope proposal refs;
+- `blocked` -> `stop:task-plan-approval-blocked`, with one or more concrete
+  authority or evidence blockers.
 
-`provenance_review.coverage` binds reviewer, summary, reviewed entry ids,
-`all_load_bearing_items_covered`, and review digest. AI selects load-bearing
-statements and classifications; runtime only resolves locators, recomputes
-digests, checks unique ids and class field combinations, and verifies the
-caller-authored coverage value.
+`record-planning-approval` writes an already completed AI semantic result.
+`check-planning-approval` validates schema closure, task/planning locators,
+required non-empty files, the recomputed composite content token,
+semantic/exit/consumer union, and requested exit.
+Neither command decides scope, sufficiency, finding severity, revision,
+authorization, or route. Unknown, multiple, stale, ambiguous, or
+consumer-mismatched results fail closed; mapped re-entry remains automatic.
 
-`approved_scope_expansion.scope_expansion` is a closed three-part binding.
-`proposal_binding.source_kind=planning_artifact` resolves one controlled
-locator under the current task's `prd.md`, `design.md`, or `implement.md` and
-recomputes the canonical UTF-8 statement digest.
-`source_kind=unusual_scenario_candidate` resolves one current candidate id and
-recomputes the existing canonical unusual-proposal projection digest. The
-former requires `dedicated-scope-expansion`; the latter projects the same
-`dedicated-unusual-scenario` confirmation already recorded by that candidate,
-so there is no duplicate proposal content or second confirmation.
-`authority_binding` records the referenced current authority SHA-256 and the
-same proposal digest. Recorder and checker reject a caller-only digest, stale
-or ambiguous locator, missing/wrong candidate, wrong confirmation kind or
-digest, stale/unknown authority digest, an authority absent from the provenance
-entry refs, or any disagreement among the three proposal digests. Ordinary and
-unusual proposal bindings may coexist but retain independent source identities.
-
-`unusual_scenario_review.candidates[]` uses the closed scenario classes
-`security_or_threat`, `attack_or_malicious_actor`,
-`toctou_or_concurrency_race`, `fault_injection_or_crash_consistency`,
-`cross_os_atomicity`, and `other_nonstandard`. Each candidate records trigger,
-scope, cost, at least one alternative, consequence, source refs, and exactly one
-disposition: `explicit_requirement`, `mechanism_removed`,
-`mechanism_replaced`, `confirmed_scope_expansion`, `clarification_required`,
-or `out_of_scope`. `confirmed_scope_expansion` requires
-`confirmation_kind=dedicated-unusual-scenario`, the exact proposal digest,
-user confirmation summary/time, and updated authority reference. The ordinary
-`user_confirmation.kind=post-planning-approval` is separate and can never
-satisfy this field. `explicit_requirement` requires at least one source
-requirement ref, and every recorded source requirement ref resolves to one
-current `requirement_authorities[].id`.
-When a confirmed unusual proposal is also a load-bearing provenance item, its
-`approved_scope_expansion` entry references that candidate id and must project
-the candidate's exact confirmation and authority ref; it does not create a
-second approval.
-
-Typed exit, AI Gate, evidence, and consumer form one closed union:
-
-- `approved` requires passed AI Gate with empty findings, revision actions,
-  scope proposals, and blocking reasons; complete provenance; no unresolved
-  unusual proposal; current wording pass; exact post-planning confirmation
-  with non-null prompt and confirmation timestamps; and consumer
-  `workflow:phase-1-task-activation`;
-- `revision_required` records task-local gaps and non-empty revision actions,
-  performs no authority mutation, and consumes itself through
-  `skill:guru-approve-task-plan`;
-- `clarify_scope` records a non-empty authority/scope mutation proposal that is
-  excluded from approved execution and uses
-  `workflow:guru-task-plan-clarify-scope-router`; the router consumes only
-  `exit_id`, `task_ref`, and `proposal_refs`, then mandatory invokes
-  `guru-clarify-requirements:active_task_scope_change` with complete fresh
-  caller-authored semantic input;
-- `blocked` records a missing authority, refusal, external blocker, or unsafe
-  revision condition and uses `stop:task-plan-approval-blocked`.
-
-Recorder invocation captures selected base, base ref/HEAD, invocation HEAD,
-and dirty paths and rereads them around the write so in-invocation drift fails.
-While the task remains in planning, the checker rebuilds and compares all five
-repository snapshot facts so approval cannot activate from a stale invocation.
-Downstream validation binds task identity, current requirement/wording
-authority, and planning/Docs SSOT content digests. Expected implementation HEAD
-or dirty-path changes after `approved` task activation do not alone make the
-plan stale. Any planning document, source authority, Docs SSOT locator, or
-wording evidence change requires complete Skill re-entry and new evidence.
-`task.py start` is only a status transition and never approval evidence.
+Schema 1.2 and 2.0 files are one-time read-only migration signals and return
+`planning_approval_legacy_requires_ai_first_reentry`. New execution never
+recreates their provenance bundles, digest chains, confirmation fields, or
+tracked artifact shape. Archived bytes remain historical. `task.py start` is
+only a status transition and never approval evidence.
 
 ### Change request readiness result
 
@@ -834,13 +804,13 @@ portable projections alone are not sufficient evidence.
 
 ## Task Workspace Plan And Result
 
-Schema `guru-task-workspace-plan-1.0` is a closed stdout-only plan produced by
+Schema `guru-task-workspace-plan-2.0` is a closed ignored-runtime plan produced by
 `record-task-workspace-plan`. It binds skill/mode/invocation identity; the five
 checker-passed prerequisite results and their digests; final issue or reviewed
 draft authority; readiness scope projection; selected base and three-way HEAD
 facts; semantic branch/workspace/task naming; one resolved assignee and source;
 exact issue/worktree/task/artifact/runtime operations; structured command argv;
-the two mutually exclusive confirmation scopes; AI Review Gate evidence; and
+the mutually exclusive action scope; AI Review Gate evidence; and
 the canonical plan digest. It contains no absolute path, runtime payload,
 secret, raw private record, or shell command string.
 
@@ -854,23 +824,24 @@ Assignee source is exactly `explicit_input`, `single_issue_assignee`,
 `current_github_login`, `user_selected_from_candidates`, or
 `user_supplied_after_unresolved`. Candidate order is explicit input, exactly
 one issue assignee, zero issue assignees to current GitHub login, then AI/user
-choice for multiple or unresolved candidates. An unresolved assignee cannot
-authorize workspace/task mutation.
+choice for multiple or unresolved candidates. An unresolved assignee blocks
+workspace/task mutation.
 
-Confirmation scope `github_issue_mutation` is legal only for a reviewed draft;
-`workspace_and_task_mutation` is fixed to not-current. Confirmation scope
-`workspace_and_task_mutation` is legal only for a live open issue; GitHub issue
-mutation is fixed to not-current. A created issue binding covers normalized
-repo, positive number, canonical URL, `state=open`, title/body SHA-256,
-`updated_at`, reviewed draft id/digest, creation confirmation digest, and its
-canonical facts digest.
+The draft invocation may perform only the reviewed GitHub issue mutation; the
+open-issue invocation may perform only the reviewed workspace/task mutation.
+The exact side effect is confirmed in the current dialogue before the
+recorder/executor, but no confirmation scope, state, identity, text, ref, or
+digest enters the plan/result/schema/DTO. A created issue binding covers only
+the objective normalized repo, positive number, canonical URL, `state=open`,
+title/body SHA-256, `updated_at`, reviewed draft id/digest, and its canonical
+facts digest.
 
 Target provenance uses two coordinated nullable fields:
 `created_issue_binding_sha256` and `created_issue_result`. A normal existing
 issue and a reviewed draft before create require both null. An existing issue
 produced by an earlier draft invocation requires both non-null: the binding SHA
 equals the embedded created issue facts digest, and `created_issue_result` is
-the complete `guru-task-workspace-result-1.0` `created_issue` variant with
+the complete `guru-task-workspace-result-2.0` `created_issue` variant with
 passed executor/checker stages, valid result and binding facts digests, and the
 fixed `refresh_review` consumer. Its current issue facts match the plan and its
 complete Intake rerun exposes the canonical live existing issue with
@@ -878,18 +849,19 @@ complete Intake rerun exposes the canonical live existing issue with
 facts digests, and null `issue_binding`. Missing or partial provenance is
 invalid.
 
-Schema `guru-task-workspace-result-1.0` is a closed stdout-only union:
+Schema `guru-task-workspace-result-2.0` is a closed ignored-runtime union:
 
 - `created_issue` binds the exact plan and live created issue and can only
   return `refresh_review`; branch/worktree/task/artifact/runtime operations are
   absent;
-- `created_workspace` binds branch/worktree/task identity, exactly the four
-  tracked artifact paths/digests/sizes/modes, ignored runtime mapping
+- `created_workspace` binds branch/worktree/task identity, exactly one tracked
+  Issue Scope Ledger path/digest/size/mode, ignored runtime mapping
   projection, trackability, and workspace-boundary facts and can only return
   `created`;
 - `no_side_effect` binds a before/after zero-write snapshot and returns
-  `refresh_review`, `cancelled`, or `blocked` according to the AI-authored
-  route.
+  `refresh_review` or `blocked` according to the AI-authored route. User refusal
+  stops before recorder/executor invocation and produces no plan, result, or
+  DTO.
 
 The result is never a fifth tracked Intake artifact. Ordinary re-entry may
 reuse only exact branch/worktree/task/artifact identity. A mismatch in issue,
@@ -905,28 +877,26 @@ newly created issue.
 
 ## Phase 2 Check Artifact
 
-New active evidence uses closed schema `guru-phase2-check-2.1` and
+New active evidence uses closed schema `guru-phase2-check-3.0` and
 `skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
-parallel pass artifact is allowed. The artifact binds current task/workspace,
-checker-validated `guru-planning-approval-2.0`, requirement provenance, Docs
-SSOT Plan, embedded implementation evidence, issue ledger, base/HEAD/diff,
-complete dirty paths and reviewed path digests, executed command facts, worker
-evidence, scope qualification, adequacy dimensions, findings, unverified items,
-AI Gate, one typed exit/consumer, full-round identity, and `facts_sha256`.
+parallel pass artifact is allowed. The ignored owner checkpoint stores only
+mode/task/current checked HEAD, reviewed paths, one composite worktree-content
+freshness token, executed validation evidence, the final Docs SSOT result,
+semantic adequacy/findings, and one typed exit/route/reason/consumer. The token
+has one local deterministic consumer: the checker invoked inside the Phase 2
+public wrapper before typed-output projection. It detects same-path drift and
+returns control to the AI owner for delta
+classification; it is not authorization, semantic approval, public handoff, or
+whole-chain authority. Live implementation output, Planning owner state, issue
+scope, repository snapshots, raw worker evidence, assignment/liveness,
+per-file or artifact digest bundles, and handoff narration are transient entry
+facts and are not copied into it.
 
-`implementation_handoff` remains the compatibility field name for this embedded
-evidence collection. The semantic owner assembles it from the implementation
-terminal result, current repository state, tests, and durable paths; it is not
-an independent `implementation-handoff.md` or a second narrative SSOT.
-
-Requirement provenance artifacts, embedded implementation evidence, Docs SSOT
-durable paths, repository reviewed paths, and command facts are non-empty.
-Every adequacy dimension references at least one known current-round source and
-the complete dimension set covers planning, provenance, embedded implementation
-evidence, Docs SSOT, repository, execution, and worker evidence. `current_scope` and
-`scope_change_required` candidates carry non-empty trigger references. The
-checker verifies only this objective existence/closure; the AI Gate decides
-whether the evidence is semantically sufficient.
+Reviewed paths and validation evidence are non-empty. The semantic owner uses
+current planning, implementation, Docs SSOT, issue scope, diff, tests, and
+worker observations directly to judge the nine adequacy dimensions and
+findings; the recorder/checker validates only the compact closed result and live
+freshness, never semantic sufficiency.
 
 Every candidate issue is classified before severity as `current_scope`,
 `scope_change_required`, `followup_proposal`, or `out_of_scope`; only
@@ -942,67 +912,58 @@ no blocking unverified item, all nine adequacy dimensions passed, and a full
 rerun over the complete current
 scope. A fixed finding cannot promote a prior partial round to pass.
 
-The checker independently derives and exactly compares `execution_sha256`,
-`scope_sha256`, `adequacy_sha256`, Gate planning/snapshot/scope/adequacy
-bindings, `findings_count`, and `full_round_sha256`. When the embedded
-`implementation_handoff` collection includes terminal worker evidence, a legal
-ancestor-HEAD post-commit audit relies on recorded repository coverage and live
-Git. Routine assignment/liveness and the exceptional private recovery
-checkpoint are not Phase 2 inputs and do not enter the tracked artifact.
+The checker rereads the current task, planning, live implementation/diff,
+validation scope, Docs SSOT, issue scope, and invocation identity. A legal
+ancestor-HEAD post-commit consumer relies on the minimal passed DTO and live Git,
+not on reopening this checkpoint. Routine assignment/liveness and the
+exceptional private recovery checkpoint are not Phase 2 inputs and do not enter
+the owner checkpoint.
 
 The closed exits are `passed`, `implementation_required`, `planning_stale`, and
 `blocked`. `planning_stale` alone carries route discriminator `reapprove_plan`
 or `clarify_requirements`, with one corresponding consumer. Schema/runtime
 reject unknown, multiple, ambiguous, or Gate/exit/consumer-inconsistent states.
 Active schema 1.0 evidence is migration-stale and must be replaced only through
-a complete semantic re-entry; archived bytes are never rewritten. Post-commit
-consumers retain the recorded-dirty-path coverage rule and never re-record pass
-merely to match a new commit HEAD.
+a complete semantic re-entry; archived bytes are never rewritten. `passed`
+projects only `task_ref + checked_head` to Task Commit. After the checked output
+passes its schema, the Phase 2 producer wrapper deletes its checkpoint. Task
+Commit consumes only that DTO and live Git; Branch Review then consumes the
+committed Task Commit DTO and validates parent, message, paths, content continuity
+and the complete range directly from live Git. Neither owner reads, deletes, or
+reopens Planning or Phase 2 private state. Downstream workflow metadata is
+validated by its owning gate and is never projected back into Phase 2.
 
-`review-branch.sh` must verify Phase 2 check evidence exists before recording
-Branch Review Gate. After the task work commit, a Phase 2 artifact recorded at
-an ancestor HEAD remains valid only when all later non-metadata committed paths
-are covered by the recorded `dirty_paths`, or the later tail is Trellis
-metadata only. Any uncovered non-metadata committed path, or any current
-non-metadata dirty path, makes the artifact stale.
-Branch Review Gate and publish readiness metadata may legitimately change after
-Phase 2 because independent final review and release readiness happen after the
-task work commit. In post-commit audit mode, the validator may ignore stale
-Phase 2 digest entries for task-local `issue-scope-ledger.json`, `pr-body.md`,
-`pr-readiness.json`, `marketplace-verification.json`, and
-`review-gate.json`; those files are instead revalidated by Branch Review Gate
-or publish-specific validators before pass or publish. This exception does not
-allow source, config, script, docs, schema, preset, overlay, or other
-non-metadata drift.
-
-## Task Commit Plan Artifact
+## Task Commit Candidate
 
 Each `guru-create-task-commit` invocation owns one temporary candidate under
 ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
 where `sequence` is a fresh three-digit
-increasing id. Schema `guru-task-commit-plan-1.0` binds task/branch/status,
-primary issue and ledger digest, base ref, pre-commit HEAD, planning/Phase 2/
-ledger/task evidence digests, the complete staged/unstaged/untracked/delete/
-rename/copy snapshot, unique path classifications, exact stage paths, exact UTF-8
-message bytes/digest, AI review, authorization, freshness and result.
+increasing id. Current schema `guru-task-commit-candidate-2.0` binds only task
+locator/branch/status, base/pre-commit/checked HEAD, the complete
+staged/unstaged/untracked/delete/rename/copy snapshot, unique path
+classifications, exact stage paths, canonical UTF-8 message fields/bytes, and
+the completed AI review. Live `task.json`, Issue Scope Ledger, the Phase 2 DTO,
+Git operation state, snapshot freshness, and shared commit-message parser facts
+are reread by the builder/validator; they are not copied into a cross-Skill
+digest chain. The candidate contains no user authorization, confirmation
+wording, terminal result journal, reviewer identity, or timestamp.
 
 Snapshot entries whose index mode is `160000` additionally require
 `gitlink_head`, `gitlink_initialized=true`, and `gitlink_dirty=false`.
 `gitlink_head` is the unique commit checked out by the submodule rooted at the
 exact worktree path. Uninitialized, dirty, unborn, or root-mismatched submodules
-cannot produce a safe candidate. These fields are conditional: existing plan
-entries for ordinary files, symlinks, deletes, and renames remain valid without
-them. The additive optional `copied_from` field likewise keeps historical
-schema 1.0 ordinary plans structurally valid; current snapshot producers always
-emit it, using a repo path only for copy destinations and `null` otherwise.
+cannot produce a safe candidate. These fields are conditional. Current snapshot
+producers always emit `copied_from`, using a repo path only for copy destinations
+and `null` otherwise. Historical schema 1.0 plans retain their original
+optional-field rules only on the read-only compatibility path.
 Candidate validation and executor revalidation compare the current
 gitlink identity, so a reviewed B revision changed to C before exact staging is
 stale before any index mutation. For non-deleted mode `160000` paths,
 `gitlink_head` is also the exact index-content authority: the executor writes
 that OID through `git update-index --cacheinfo` rather than reading the mutable
 submodule worktree through `git add`, then verifies the staged mode/OID and the
-current worktree identity. Consequently a later B-to-C race cannot place C in
-the index or commit. A deliberate gitlink delete keeps the conditional deletion
+current worktree identity. Consequently a B-to-C change detected before
+publication cannot place C in the index or commit. A deliberate gitlink delete keeps the conditional deletion
 identity and ordinary literal delete behavior.
 
 For every non-gitlink snapshot entry, `worktree_sha256`, `mode`, and `deleted`
@@ -1015,11 +976,9 @@ an independent snapshot entry and requires its own classification and Phase 2
 coverage; unrelated staged source content blocks, while a clean source is not
 added to the plan. A non-delete path must still expose the exact reviewed bytes
 and mode when the executor materializes its Git blob; a delete or rename source
-is an exact index absence. The candidate self path is authorized by the already validated in-memory plan and
-The private candidate never enters its own snapshot, classifications, or exact
-stage set. These
-rules are additive to the existing schema 1.0 fields, so legacy ordinary plans
-remain structurally valid while receiving the stronger executor behavior.
+is an exact index absence. The private candidate never enters its own snapshot,
+classifications, or exact stage set. Legacy schema 1.0 plans retain their
+historical shape only for the read-only compatibility path described below.
 
 Repository operation state is immediate runtime evidence rather than a plan
 field. Candidate validation and executor checks before staging and immediately
@@ -1032,29 +991,31 @@ candidate is ignored owner-private runtime and is excluded from the snapshot.
 Public artifacts store
 only repo-relative paths, digests and structured facts, never file bodies,
 credentials, signed URLs, customer data or machine-local absolute paths.
-The fresh `phase2-check.json` recorder output may use task-reviewed coverage
-through the candidate's evidence digest because the Phase 2 artifact cannot
-recursively bind its own final bytes in `repository_snapshot.reviewed_paths`;
-this exception does
-not cover any other task, source, docs, schema, preset or overlay path.
+The current Phase 2 passed DTO is consumed before candidate construction. The
+candidate does not reread or expose the producer-private Phase 2 checkpoint;
+task-reviewed coverage is derived from the DTO and current reviewed path set.
 
-Execution requires `result.status=planned`, no blocking classifications, fresh
-evidence/HEAD/snapshot/message digest, and exact index equality. The
+Execution requires a passed AI review, no blocking classifications, fresh
+task/HEAD/snapshot/message/parser facts, and exact index equality. The
 executor first revalidates planned gitlinks before any stage side effect, binds
 their artifact OIDs into the exact index, and then binds the complete pre-hook
 index tree and each exact path's blob/mode,
 then verifies the real commit SHA, parent, message/path evidence, tree, blobs,
 modes and unrelated preservation from Git before advancing the live ref/index.
-On success it returns only `pre_commit_head` and `commit_sha`, deletes the
-private candidate, and never writes Git-derived result/tree evidence into
-tracked metadata. On failure it leaves the private planned candidate available
-for bounded recovery without changing its bytes. A later finding-fix commit requires a new
+Before publication, the executor creates and validates the isolated commit. It
+then uses standard `git update-ref <ref> <new> <old>` followed by `git reset
+--mixed --quiet HEAD`; it owns no custom lock, atomic replacement, rollback, or
+concurrency protocol. On success it returns only `pre_commit_head` and
+`commit_sha`, deletes the private candidate, and never writes Git-derived
+result/tree evidence into tracked metadata. Failure before ref publication
+leaves the live ref/index untouched; failure after a successful conditional ref
+advance reports the created commit for bounded same-plan recovery. A later finding-fix commit requires a new
 sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
 
 ### Executor Boundary
 
-`create-task-commit --candidate-artifact <ignored-runtime-plan>` validates one
-schema `guru-task-commit-plan-1.0` private candidate. It materializes only
+`create-task-commit --candidate-artifact <ignored-runtime-candidate>` validates
+one schema `guru-task-commit-candidate-2.0` private candidate. It materializes only
 authorized blobs/modes in an isolated index, runs repository commit hooks, and
 verifies parent, raw message, committed path set, complete tree and unrelated
 preservation before conditionally advancing the live branch/index.
@@ -1065,7 +1026,8 @@ returns `pre_commit_head` and `commit_sha`, then removes the candidate. Commit
 tree, message, path and parent facts remain derivable from Git and are not
 copied into tracked task metadata.
 
-Existing task-local `task-commit-plans/*.json` are legacy read-only evidence.
+Existing task-local schema 1.0 `task-commit-plans/*.json` and their
+schema/example are legacy read-only evidence, never current package output.
 A completed plan may prove an already-created commit for one active task; a
 planned legacy file is never executed or rewritten and must be rebuilt under
 ignored runtime through the current public input.
@@ -1097,10 +1059,11 @@ handoff or archive artifact.
 ### Legacy Assignment Migration
 
 Existing active tasks may retain `agent-assignment.json`, raw review reports
-and `review.md` bytes. Schema 2.0 Phase 2 and Branch Review validators may read
-them only to validate an already-recorded legacy result. New or re-entered
-gates write schema 2.1 and do not update, normalize, copy or require those
-artifacts. Archives remain byte-for-byte unchanged.
+and `review.md` bytes. Legacy Phase 2 and Branch Review validators may read
+them only to validate an already-recorded result. New or re-entered Phase 2
+checks write schema 3.0 and Branch Reviews write schema 2.2; neither updates,
+normalizes, copies, or requires those artifacts. Archives remain byte-for-byte
+unchanged.
 
 ## Issue Scope Ledger
 
@@ -1155,16 +1118,17 @@ When blocked, the command exits non-zero and returns `status=blocked` with
 When the pull request number is omitted, the formatter sets `ready=false` and
 uses `<pull_request>` as a placeholder; with a real number it returns
 `ready=true`.
-Trellis metadata commit messages generated by finish/publish use
-`chore(trellis): #<primary_issue> 固化任务收尾元数据` and an empty body.
+The single archive transaction commit generated by finalization uses
+`chore(trellis): #<primary_issue> 固化任务收尾元数据` and an empty body. There
+is no separate readiness/evidence metadata commit.
 Commit message payloads must never use close keywords such as `Closes`,
 `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; those keywords remain PR
 body-only close semantics controlled by Issue Scope Ledger.
 
 ## Review Gate Artifact
 
-`review-branch.sh` writes compact schema 2.1 `review-gate.json` in the task
-directory after the independent semantic judgment exists. The tracked gate
+`review-branch.sh` writes compact schema 2.2 `review-gate.json` in ignored
+owner-private runtime after the independent semantic judgment exists. The gate
 contains only schema/skill identity, task/mode/review intent, typed exit,
 reviewed `head`, `base_ref`, normalized semantic candidates/findings, minimum
 independent reviewer/evidence facts, and `facts_sha256`.
@@ -1178,11 +1142,14 @@ its original `introduced_head` and records the fix commit as
 closure. `passed` after any resolved finding requires
 `review_intent=fresh_final_review` over the complete current range.
 
-The gate is valid only for the reviewed `HEAD`, except that finalization may
-allow its declared metadata-only tail. `review_source` must be
+The gate is valid only for `reviewed_content_head`, except that finalization may
+accept an exact descendant tail limited to the current task's declared
+publication/finalization metadata files. `review_source` must be
 `independent-agent`; main-session/self-review identities are rejected. Schema
 2.0 gates remain read-only compatibility evidence and are not rewritten.
-Enforcement lives in `validate_review_gate()` and `metadata_only_since()`.
+Enforcement lives in `validate_review_gate()` and
+`review_branch_content_continuity_errors()`; unknown task, nested lookalike,
+runtime, code, test, planning, or durable-spec descendants fail closed.
 
 Before `task.py archive`, `prepare_closeout()` fixes both the active and future
 archive locators. The active task remains the task-local boundary until the
@@ -1203,8 +1170,10 @@ children remain valid historical references.
 
 ## Closeout Plan
 
-`closeout-plan.json` is schema version `1.0` and is the immutable machine input
-contract shared by dry-run and formal finish. It records portable task and
+`closeout-plan.json` is current schema version `1.2` and is the immutable
+machine input contract shared by preview and formal finish. It is an untracked
+active transaction checkpoint that becomes tracked only in the single archive
+commit. It records portable task and
 repo/base/head identity, protected input SHA-256 values, Branch Review Gate
 coverage, exact draft PR inputs, marketplace pending machine evidence, future
 archive projection, exact metadata allowlist, and the fixed transition list.
@@ -1214,8 +1183,8 @@ URL/ref and the complete schema-valid finish-summary template so all local
 summary errors are known during prepare.
 
 For current tasks, `review.changed_paths` is rebuilt deterministically from the
-pinned `task-start-context.json.base_head_sha` through the reviewed Branch
-Review `HEAD`; compact gate schema 2.1 does not carry a duplicate
+live merge base of the task's current `base_branch` through immutable Branch
+Review `reviewed_content_head`; compact gate schema 2.2 does not carry a duplicate
 `changed_files` inventory. Only older tasks without a pinned base may reuse a
 legacy gate's `changed_files`. The rebuilt list is the single input to closeout
 review reporting, marketplace candidate-surface classification, ledger
@@ -1254,18 +1223,27 @@ newline before comparing the remote PR body. After archive, the remote body's
 UTF-8 bytes are hashed directly and compared with `publish.body_sha256`; the
 task-local body is not reopened.
 
+Schema 1.2 has a 10-file core compatibility allowlist: `task.json`, the three
+planning Markdown files, `issue-scope-ledger.json`, legacy task-local Planning/
+Phase 2/Branch Review artifacts when present, `closeout-plan.json`, and
+`finish-summary.json`. New AI-first tasks normally retain only the seven durable
+task/content/plan/summary files because their semantic review checkpoints live
+in ignored runtime. Marketplace verification is the only optional eleventh
+archive file. Legacy schema 1.1 retains its historical 11-file core plus that
+optional verifier, for a maximum of 12.
+
 `projection.move_paths` is the complete task-relative filesystem set moved by
-the official archive command. `projection.tracked_move_paths` is the subset in
-the Git index after the evidence commit; each requires an active deletion and
-archive addition. `projection.untracked_archive_outputs` is the subset created
-after that commit; currently it is exactly `finish-summary.json`, and Git must
-report only its archive addition. `projection.evidence_paths` is the complete
-active task path set owned by the pre-draft metadata commit. These tracking
-classes are immutable plan facts derived before archive, not inferred from
-post-move status. The evidence commit tree must contain exactly the active
-locator projection of `tracked_move_paths`; this Git-tree check proves the
-classification before final projection writes any untracked output. The
-projection also stores `summary_template`,
+the official archive command. `projection.tracked_move_paths` is the subset
+already tracked at `reviewed_content_head`; each requires an active deletion and
+archive addition in the one archive transaction. `projection.untracked_archive_outputs`
+is the complementary subset created or still untracked while the task is active;
+schema 1.2 requires it to include both `closeout-plan.json` and
+`finish-summary.json`, which appear only as archive additions. Current
+`projection.evidence_paths` is always `[]`: schema 1.2 has no pre-draft metadata
+commit. These tracking classes are immutable plan facts derived before archive,
+not inferred from post-move status. The reviewed content tree plus the exact
+pre-move index/status and archive transaction tree prove the classification.
+The projection also stores `summary_template`,
 `summary_template_sha256`, the sentinel PR identity, and the exact runtime
 fields that may change. The sentinel uses the
 maximum-width positive 64-bit number so replacing it with a real PR number
@@ -1279,28 +1257,26 @@ the official move. Archived recovery proves continuity through the exact
 path/commit/blob transaction and never reparses the summary.
 
 `plan_digest` is the SHA-256 of canonical JSON with `plan_digest` omitted.
-Dry-run returns the complete plan and digest. First formal execution accepts
-only the same digest through `--expected-plan-digest`; a mismatch or protected
-input drift fails before push or file writes. `pr-readiness.json` binds the same
-digest under `publish_inputs.closeout_plan_digest`. After the first metadata
-commit, retries load the committed plan and validate reachable successor facts;
-passed ledger evidence is never used to reconstruct the initial plan.
-Before draft binding, partial retries distinguish reviewed content pushed,
-verifier pending/failed, verifier passed but evidence uncommitted, and evidence
-committed but unpushed from the exact plan/readiness/evidence/Git/remote facts.
-They retry only the missing transition.
+Dry-run returns the complete plan and digest. The Finalizer passes that digest
+internally to formal execution; the user confirms the already displayed exact
+side effects and never repeats a digest, SHA, or branch. A mismatch or protected
+input drift fails before push or file writes. Formal schema 1.2 writes the exact
+plan only as an untracked active transaction checkpoint; Publication readiness
+and the Finalizer gate stay ignored runtime and are not plan inputs, move paths,
+or archive files. Before draft binding, partial retries derive the next missing
+transition from the untracked plan, reviewed content HEAD, marketplace owner
+evidence when applicable, live Git/GitHub facts, and the active/archive layout.
+Passed ledger evidence is never used to reconstruct the initial plan.
 
 `task.archive_locator` uses the same live `YYYY-MM` that the unmodified official
 archive command will use. Formal checks it before the first side effect and
-again immediately before official move. If a committed plan becomes stale while
-the task is still active, dry-run may produce a replacement plan only when the
-old plan is the exact current evidence commit and neither old nor new archive
-locator exists. The replacement carries `git.evidence_parent_head`, changes
-only archive-derived projection values plus `projection.evidence_paths`, and a
-formal run with the new digest appends an exact plan/readiness evidence commit.
-The predecessor plan and evidence lineage remain in Git and are recursively
-validated. This is plan supersession, not archive-directory migration or
-history rewrite.
+again immediately before official move. If the month changes while a schema 1.2
+task is still active, dry-run rebuilds only the still-untracked plan with the
+new archive-derived values and a new digest, then the same Finalizer loop reviews
+and confirms it. No evidence/readiness commit, history rewrite, verifier rerun,
+or archive-directory migration occurs. Persisted schema 1.0/1.1 plans retain
+their historical committed-plan supersession and recursive lineage validation
+only in the explicit compatibility path.
 
 `inputs.official_after_archive_hooks.sha256` binds the canonical empty command
 state parsed by the official Trellis config parser. Missing or empty
@@ -1319,11 +1295,11 @@ fail closed.
 
 Before the exact archive commit exists, archive recovery accepts only the
 complete mixed no-renames working-tree path set: both sides for every tracked
-move and archive-only for every untracked output. It validates exact
-dirty/staged paths, evidence-commit parent/path identity, active absence,
-archive completeness, tracked blob continuity, and the official `task.json`
-delta before it may create the commit. Missing or mismatched commit state keeps
-this metadata recovery path fail closed.
+move and archive-only for every untracked output. For schema 1.2 it validates
+exact dirty/staged paths, the direct `reviewed_content_head` parent, active
+absence, archive completeness, tracked blob continuity, and the official
+`task.json` delta before it may create the single archive commit. Missing or
+mismatched transaction state keeps this metadata recovery path fail closed.
 
 Before official move, the same continuity contract applies to the active task:
 the index is empty, untracked paths equal the planned final outputs, every move
@@ -1352,7 +1328,9 @@ current HEAD transaction, active/archive locator and basename relationship,
 summary task/branch/base/source-issue identity, and the exact task directory.
 Working-tree plan bytes cannot replace the committed plan. Ordinary task
 discovery and workspace-boundary commands do not enable this mode and still
-require the normal `task.json` / `task-start-context.json` contracts.
+require normal `task.json`, ignored runtime mapping, and live Git worktree
+identity. A legacy `task-start-context.json` is only a one-time compatibility
+source for that identity.
 The raw finish-work locator is preserved before ordinary resolution. Only a
 basename, exact former active locator, or exact archive locator may select the
 plan-only search. Path-like input is checked component-by-component with
@@ -1390,14 +1368,13 @@ Validate JSON assets with:
 
 ```bash
 python3 -m json.tool trellis/index.json
-python3 -m json.tool trellis/workflows/guru-team/schemas/task-start-context.schema.json
 ```
 
 ## Common Mistakes
 
 - Adding a config key to `config-template.yml` without adding a default in
   `DEFAULTS`.
-- Adding a new task-start-context field required by code but absent from the strict JSON schema.
+- Changing the legacy task-start-context compatibility reader without updating its strict JSON schema.
 - Letting PR generation close `related_issues` or `followup_issues`.
 - Recording review-gate evidence that does not mention deployment impact.
 
@@ -1458,7 +1435,7 @@ artifact bodies.
 After a fix commit, finding closure is an internal transient AI judgment by the
 finding owner or a real unfinished-agent replacement. It has no public exit or
 artifact and automatically dispatches a distinct fresh reviewer. Public input
-schema 1.1 and new gate schema 2.1 reject `finding_fix_review`; legacy schema
+schema 1.1 and new gate schema 2.2 reject `finding_fix_review`; legacy schema
 2.0 gates may retain that value as read-only evidence. Migration carries only
 the closure result into a new `fresh_final_review` invocation.
 
@@ -1478,23 +1455,21 @@ precedes severity. The last two cannot become current P0-P3 findings.
 
 ## Publication Readiness Gate
 
-`{TASK_DIR}/pr-readiness.json` is the only publication readiness gate. Active
-schema `guru-task-publication-readiness-1.0` has three ownership layers:
-
-1. `semantic_review`: the two-profile invocation identity, all ten AI-reviewed
-   dimensions, findings and closure, scope/Docs/safety/deployment conclusions,
-   metadata revision history, reviewer-process and confirmation evidence, and
-   typed conclusion. Finding summary, scope basis, evidence refs, affected
-   artifacts, and closure evidence are all non-empty;
-2. `deterministic_bindings`: current task/workspace/base/HEAD/review identity,
-   planning/Phase 2/ledger/Docs/Branch Review/body/index/tail bindings,
-   recomputable facts digest, and opaque `publication_ref`;
-3. optional `publish_inputs`, written only by the later finalization owner
-   after the current artifact passes `check-task-publication-review`.
+Ignored-runtime `pr-readiness.json` is the only publication readiness gate.
+Active schema `guru-task-publication-readiness-2.0` stores only
+`schema_version`, `skill_id`, `task_ref`, immutable `reviewed_content_head`, all
+ten AI-reviewed dimensions, findings/closure, scope/Docs/safety conclusions,
+and the selected route. Finding summary, scope basis, evidence refs, affected
+artifacts, and closure evidence are non-empty. The eight objective entry
+preconditions and shared Finalizer preflight are rebuilt transiently by the
+recorder/checker; their digests, Branch Review checkpoint, publication identity,
+reviewer process, confirmation evidence, and Finalizer publish inputs never
+enter this private checkpoint.
 
 `ready`, `return_to_task_work`, and `blocked` share this one artifact and a
-closed exit/consumer union. Replacement binds the prior publication identity;
-stale or non-ready evidence never becomes current by adding publish inputs.
+closed exit/consumer union. Stale re-entry rereads current facts and replaces
+only the Publication owner's checkpoint after delta-scoped semantic review; it
+does not carry a supersession identity or re-entry narrative.
 Every `ready` entry binding, dimension, and scope/Docs/safety conclusion is
 `passed`, and every finding is closed. `return_to_task_work` requires an open
 `task_work` finding bound to a `finding` dimension and has no blocked dimension
@@ -1502,16 +1477,18 @@ or conclusion. `blocked` requires an open `external_blocker` finding bound to
 a `blocked` dimension and at least one blocked conclusion. All open findings
 reference non-passed dimensions, and an open metadata-revision finding cannot
 escape the internal rereview loop through an external exit. A
-checker-reproducible `failed` entry
-binding may be retained only on an already AI-selected non-ready route, so the
-recorder/checker record objective drift without deciding its semantic route.
-Stale gates preserve `stale_reason`, `reentry_context`, and the exact
-`supersedes_publication_ref`; the public wrapper must match the first two
-against the checked owner result.
-When finalization adds the exact validated `closeout-plan.json`, it reruns all
-twelve entry preconditions. The only accepted deterministic delta is the
-repository binding and its derived `review_range_and_working_tree` digest for
-that sole path; every other binding remains exact and passed.
+checker-reproducible failed precondition may support only an already AI-selected
+non-ready route; recorder/checker rebuild it transiently and do not persist the
+binding or choose the semantic route. A stale invocation carries only
+`task_ref`, `stale_reason`, and target-authored profile/mode/review intent. The
+public wrapper reruns the current owner checker; no re-entry narrative or
+supersession identity enters the public input, private checkpoint, or exit.
+Publication `ready` already runs the same side-effect-free Finalizer preflight
+that the first preview uses. Finalizer consumes only the minimal ready DTO and
+never augments or interprets the Publication checkpoint.
+After the checked output passes its schema, the Publication producer wrapper
+deletes that checkpoint before Finalizer entry; a failed check or projection
+retains it only for same-owner repair.
 The compatibility reader may recognize the old `ready=true` snapshot shape,
 but the publication checker rejects it as a semantic pass.
 
@@ -1520,6 +1497,8 @@ content inputs, not public handoff state. In the global workflow the caller
 authors their initial current candidates after Branch Review `passed` and
 before publication invocation; the mandatory `publication_content` entry
 binding then validates both exact contents. `ready` binds those bytes, so
-Phase 3.7 cannot first create, regenerate, or revise them. Public output
-contains only each consumer's minimal DTO; full review bodies, paths, findings,
-histories, and digest bundles stay in the gate.
+Phase 3.7 cannot first create, regenerate, or revise them. The `ready` output is
+exactly `exit_id`, `task_ref`, and `reviewed_content_head`; Publication consumes
+Branch Review continuity from its current `passed` DTO plus live Git and never
+opens the Branch Review private checkpoint. Full review bodies, paths, findings,
+histories, and derived bindings stay owner-private or transient.

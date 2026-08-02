@@ -8,7 +8,7 @@ description: Review a committed task branch through independent review, an inter
 Use this Skill after `guru-create-task-commit:committed` and before publication.
 Read [references/contract.md](references/contract.md) completely before acting.
 
-Validate all 11 entry preconditions in workflow or standalone mode. Perform one
+Validate all eight entry preconditions in workflow or standalone mode. Perform one
 independent semantic review of the complete current range and qualify every
 candidate before assigning severity.
 Scripts never decide scope, scenario class, qualification, severity,
@@ -21,9 +21,10 @@ pass the applicable checks, a fresh task commit, and this Skill again. An
 unconfirmed nonstandard proposal returns `scope_confirmation_required` and
 cannot become a finding. After a fix commit, the finding owner or a real
 unfinished-agent replacement performs closure as an internal transient
-judgment. It retains `introduced_head` and produces `resolved_at_head` plus
-concrete closure evidence. The AI workflow then automatically dispatches a
-distinct fresh reviewer over the complete current `origin/<base>...HEAD` range.
+judgment. It retains `introduced_head`, binds the fixing `fix_head`, and
+produces a later `closure_head` plus concrete closure evidence. The AI workflow
+then automatically dispatches a distinct fresh reviewer over the complete
+current `origin/<base>...HEAD` range.
 
 Closure emits no public exit and writes no artifact. Only the distinct
 `fresh_final_review` may reach the recorder and pass. After its AI Review Gate
@@ -42,5 +43,7 @@ Public input schema 1.1 accepts only `initial_review` and
 `fresh_final_review`. A legacy `finding_fix_review` intent is migrated by
 completing closure internally and authoring a fresh-final invocation, never by
 forwarding that legacy value to the recorder. Schema 2.0 gates and their
-tracked reports remain read-only compatible for existing active tasks. New and
-re-entered reviews write schema 2.1 only.
+tracked reports, plus schema 2.1 compact gates, remain read-only compatible for
+existing active tasks. New and re-entered reviews write schema 2.2 only to the
+owner-private ignored runtime checkpoint and bind immutable
+`reviewed_content_head`.

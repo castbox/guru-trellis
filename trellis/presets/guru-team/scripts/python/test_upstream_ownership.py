@@ -223,7 +223,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         )
         self.assertRegex(first["additive_overlay_payload_aggregate_sha256"], r"^[0-9a-f]{64}$")
         self.assertEqual(first["active_payload_aggregate_sha256"], ownership.CURRENT_PAYLOAD_AGGREGATE_SHA256)
-        self.assertEqual(first["reviewed_current_payload_count"], 21)
+        self.assertEqual(first["reviewed_current_payload_count"], 35)
         self.assertEqual(
             first["reviewed_current_payloads_sha256"],
             ownership.canonical_sha256(ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH),
@@ -252,7 +252,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["legacy_entries_sha256"], ownership.canonical_sha256(inventory["legacy_entries"]))
         self.assertEqual(first["frozen_legacy_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
         self.assertEqual(first["materialized_frozen_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
-        self.assertEqual(first["facts_sha256"], "fcfedc7dbc1c4e9e6897b37745cc4cc0c89962696730e92d9d8f78af13710129")
+        self.assertEqual(first["facts_sha256"], "95e4b97a498774bc91034cea7239acd75c0284987587e37c93e8cfe503099926")
 
         additive_claims = {
             claim["path"]: claim

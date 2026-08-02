@@ -194,7 +194,7 @@ def build_plan(
         "reason": "Installed runtime no-developer execution fixture.",
     }
     plan: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "skill_id": "guru-create-task-workspace",
         "generated_at": "2026-07-18T00:00:00Z",
         "mode": "workflow",
@@ -280,29 +280,13 @@ def build_plan(
             ],
             "stop_after": "created_workspace",
         },
-        "confirmations": {
-            "github_issue_mutation": {
-                "status": "not_in_current_invocation",
-                "source": None,
-                "reviewed_plan_sha256": None,
-                "evidence": None,
-                "confirmation_sha256": None,
-            },
-            "workspace_and_task_mutation": {
-                "status": "confirmed",
-                "source": "explicit_user_confirmation",
-                "reviewed_plan_sha256": "0" * 64,
-                "evidence": "The exact disposable workspace mutation is confirmed.",
-                "confirmation_sha256": "0" * 64,
-            },
-        },
         "ai_review_gate": {
             "status": "passed",
             "reviewer": "installed task workspace verifier",
             "reviewed_plan_sha256": "0" * 64,
             "summary": "The target, names, assignee and isolated metadata are complete.",
             "evidence": [
-                "The invocation authorizes exactly one disposable workspace and task.",
+                "The invocation contains exactly one disposable workspace and task mutation.",
                 "Developer identity is outside Guru executor inputs and must remain untouched.",
             ],
         },
@@ -317,11 +301,6 @@ def build_plan(
     )
     reviewable = runtime.context_digest(
         runtime.task_workspace_reviewable_projection(plan)
-    )
-    confirmation = plan["confirmations"]["workspace_and_task_mutation"]
-    confirmation["reviewed_plan_sha256"] = reviewable
-    confirmation["confirmation_sha256"] = runtime.task_workspace_confirmation_digest(
-        confirmation
     )
     plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable
     plan["freshness"]["reviewable_plan_sha256"] = reviewable
@@ -435,7 +414,6 @@ def main() -> int:
         argparse.Namespace(
             root=str(source),
             input=str(plan_path),
-            cancelled=False,
             refresh_review=False,
             reason=None,
         )

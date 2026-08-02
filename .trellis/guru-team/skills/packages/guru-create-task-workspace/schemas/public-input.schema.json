@@ -1,18 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-create-task-workspace-input-aggregate-1.0",
+  "$id": "guru-stage0-create-task-workspace-input-aggregate-2.0",
   "oneOf": [
     {
-      "$ref": "public-issue-only-initial-input.schema.json"
-    },
-    {
-      "$ref": "public-issue-only-recovery-input.schema.json"
-    },
-    {
-      "$ref": "public-workspace-task-initial-input.schema.json"
-    },
-    {
-      "$ref": "public-workspace-task-recovery-input.schema.json"
+      "$ref": "public-execute-reviewed-plan-input.schema.json"
     }
   ]
 }

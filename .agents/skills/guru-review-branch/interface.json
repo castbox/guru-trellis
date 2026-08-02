@@ -14,10 +14,7 @@
         "workspace_boundary",
         "task_identity",
         "commit_handoff",
-        "planning_approval",
-        "phase2_check",
         "issue_scope_ledger",
-        "docs_ssot_outcome",
         "review_range",
         "working_tree",
         "invocation_freshness"
@@ -30,10 +27,7 @@
         "workspace_boundary",
         "task_identity",
         "commit_handoff",
-        "planning_approval",
-        "phase2_check",
         "issue_scope_ledger",
-        "docs_ssot_outcome",
         "review_range",
         "working_tree",
         "invocation_freshness"
@@ -45,10 +39,7 @@
     {"id": "workspace_boundary", "evidence": "task-local context and worktree mapping", "binding": "actual root equals expected task worktree", "freshness": "rebuilt before record and check"},
     {"id": "task_identity", "evidence": "task.json and active locator", "binding": "task, branch and in_progress status", "freshness": "current task reread"},
     {"id": "commit_handoff", "evidence": "guru-create-task-commit minimal committed DTO plus live Git", "binding": "task, base and committed HEAD", "freshness": "HEAD, parent, message and changed paths reread"},
-    {"id": "planning_approval", "evidence": "checker-passed planning-approval.json", "binding": "exact approved planning documents", "freshness": "planning checker rerun"},
-    {"id": "phase2_check", "evidence": "checker-passed phase2-check.json", "binding": "complete implementation scope and post-commit metadata audit", "freshness": "Phase 2 checker rerun"},
     {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},
-    {"id": "docs_ssot_outcome", "evidence": "approved Docs SSOT Plan and implementation handoff", "binding": "durable docs reconciliation", "freshness": "reviewed against current diff"},
     {"id": "review_range", "evidence": "origin base, committed HEAD and complete diff", "binding": "origin/<base>...<head>", "freshness": "rebuilt for every round"},
     {"id": "working_tree", "evidence": "complete status snapshot", "binding": "clean or exact current task gate plus invocation-declared private runtime inputs; legacy artifacts are read-only compatible", "freshness": "checked before record and check"},
     {"id": "invocation_freshness", "evidence": "public input, AI Gate, artifact and actual exit", "binding": "one complete owner invocation", "freshness": "checker rejects drift or ambiguity"}
@@ -100,8 +91,8 @@
     {"id": "blocked", "evidence": "required evidence, lifecycle, dependency or objective freshness is unavailable", "consumer": {"kind": "stop", "id": "branch-review-blocked"}}
   ],
   "reentry": {
-    "identity": "mode, task, base, committed HEAD, review intent, planning, Phase 2, ledger, Docs SSOT, findings, range, Gate and actual exit",
-    "freshness": "every implementation, scope decision, commit or HEAD change reruns the 11 preconditions and current semantic review",
+    "identity": "mode, task, base, immutable reviewed content HEAD, review intent, ledger, findings, range, Gate and actual exit",
+    "freshness": "real implementation, durable SSOT, scope, authority or content changes rerun affected checks and current semantic review; workflow metadata descendants preserve content identity",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],
@@ -129,8 +120,8 @@
       "example_argv": ["--input", "examples/public-branch-review-input.json", "--owner-result", "examples/review-gate.json"]
     },
     "outputs": [
-      {"exit_id": "passed", "schema": {"schema_id": "guru-production-review-branch-output-passed-1.0", "path": "schemas/public-passed-output.schema.json"}, "example": {"id": "passed_output", "path": "examples/public-passed-output.json"}, "consumer_use_ids": ["project_passed"]},
-      {"exit_id": "implementation_required", "schema": {"schema_id": "guru-production-review-branch-output-implementation-required-1.0", "path": "schemas/public-implementation-required-output.schema.json"}, "example": {"id": "implementation_required_output", "path": "examples/public-implementation-required-output.json"}, "consumer_use_ids": ["project_implementation_required"]},
+      {"exit_id": "passed", "schema": {"schema_id": "guru-production-review-branch-output-passed-2.0", "path": "schemas/public-passed-output.schema.json"}, "example": {"id": "passed_output", "path": "examples/public-passed-output.json"}, "consumer_use_ids": ["project_passed"]},
+      {"exit_id": "implementation_required", "schema": {"schema_id": "guru-production-review-branch-output-implementation-required-2.0", "path": "schemas/public-implementation-required-output.schema.json"}, "example": {"id": "implementation_required_output", "path": "examples/public-implementation-required-output.json"}, "consumer_use_ids": ["project_implementation_required"]},
       {"exit_id": "scope_confirmation_required", "schema": {"schema_id": "guru-production-review-branch-output-scope-confirmation-required-1.0", "path": "schemas/public-scope-confirmation-required-output.schema.json"}, "example": {"id": "scope_confirmation_required_output", "path": "examples/public-scope-confirmation-required-output.json"}, "consumer_use_ids": ["project_scope_confirmation_required"]},
       {"exit_id": "blocked", "schema": {"schema_id": "guru-production-review-branch-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
     ],
@@ -144,7 +135,7 @@
           "interface_path": "packages/guru-review-task-publication/interface.json",
           "input_kind": "structured_json",
           "profile_id": "publication_review",
-          "seed_fields": ["task_ref", "reviewed_head", "review_ref"],
+          "seed_fields": ["task_ref", "reviewed_content_head"],
           "authoring_fields": ["profile", "mode", "review_intent"],
           "authoring_example": {
             "id": "publication_review_authoring",
@@ -156,7 +147,7 @@
         "id": "implementation_required_workflow_input",
         "consumer": {"kind": "workflow", "id": "guru-branch-review-implementation-router"},
         "payload_kind": "structured_json",
-        "contract": {"kind": "json_schema", "schema_id": "guru-production-review-branch-workflow-implementation-required-input-1.0", "path": "consumers/workflow/production/review-branch-implementation-required.schema.json"}
+        "contract": {"kind": "json_schema", "schema_id": "guru-production-review-branch-workflow-implementation-required-input-2.0", "path": "consumers/workflow/production/review-branch-implementation-required.schema.json"}
       },
       {
         "id": "scope_confirmation_workflow_input",
@@ -178,8 +169,7 @@
         "operation": "select",
         "mappings": [
           {"source": "task_ref", "target": "task_ref"},
-          {"source": "reviewed_head", "target": "reviewed_head"},
-          {"source": "review_ref", "target": "review_ref"}
+          {"source": "reviewed_content_head", "target": "reviewed_content_head"}
         ]
       },
       {"id": "project_implementation_required", "exit_id": "implementation_required", "consumer_input_id": "implementation_required_workflow_input", "operation": "direct"},
@@ -190,8 +180,8 @@
       {
         "id": "review_gate",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.1.json", "path": "schemas/review-gate.schema.json"},
-        "persistence": "task_local_tracked"
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.2.json", "path": "schemas/review-gate.schema.json"},
+        "persistence": "ignored_runtime"
       }
     ]
   }

@@ -125,7 +125,7 @@
           "input_kind": "structured_json",
           "profile_id": "verification_verified",
           "seed_fields": ["task_ref", "plan_ref", "reviewed_head", "verification_ref"],
-          "authoring_fields": ["profile", "mode", "reentry_intent"],
+          "authoring_fields": ["profile", "mode"],
           "authoring_example": {
             "id": "finalization_verified_authoring",
             "path": "examples/public-verification-verified-authoring.json"

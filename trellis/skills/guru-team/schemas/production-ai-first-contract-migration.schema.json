@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-production-ai-first-contract-migration-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_id",
+    "schema_version",
+    "migration_id",
+    "supersedes_activation_unit_id",
+    "current_contract",
+    "changes"
+  ],
+  "properties": {
+    "$schema": {"const": "../schemas/production-ai-first-contract-migration.schema.json"},
+    "schema_id": {"const": "guru-team-production-ai-first-contract-migration-1.0"},
+    "schema_version": {"const": "1.0"},
+    "migration_id": {"const": "production-ai-first-contract-v2"},
+    "supersedes_activation_unit_id": {"const": "production-minimal-handoff-v1"},
+    "current_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interface_schema_id", "skill_count", "exit_count"],
+      "properties": {
+        "interface_schema_id": {"const": "guru-team-skill-interface-1.3"},
+        "skill_count": {"const": 3},
+        "exit_count": {"const": 11}
+      }
+    },
+    "changes": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill_id", "migration"],
+        "properties": {
+          "skill_id": {"enum": ["guru-approve-task-plan", "guru-check-task", "guru-create-task-commit"]},
+          "migration": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

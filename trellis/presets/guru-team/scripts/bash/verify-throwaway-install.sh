@@ -9,7 +9,7 @@ WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
-STALE_PLANNING_HINT_PATTERN='PRD-only|Lightweight tasks may be PRD-only|Lightweight tasks may have only|Lightweight task can (ask|request)|lightweight task with `?prd\.md`? complete|Missing optional artifacts|skipped for lightweight tasks|optional `?design\.md`? / `?implement\.md`?|optional `?design\.md`?|optional `?implement\.md`?|ask for start review, then run `?task\.py start`?|design\.md if present|implement\.md if present|`?design\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|`?implement\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|technical design if present|execution plan if present|technical design \(if exists\)|execution plan \(if exists\)|design\.md / implement\.md if present|when present, design\.md / implement\.md|when those files are present|technical design and implementation plan when present'
+STALE_PLANNING_HINT_PATTERN='PRD-only|Lightweight tasks may be PRD-only|Lightweight tasks may have only|Lightweight task can (ask|request)|lightweight task with `?prd\.md`? complete|Missing optional artifacts|skipped for lightweight tasks|optional `?design\.md`? / `?implement\.md`?|optional `?design\.md`?|optional `?implement\.md`?|ask for start review, then run `?task\.py start`?|design\.md if present|implement\.md if present|`?design\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|`?implement\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|technical design if present|execution plan if present|technical design \(if exists\)|execution plan \(if exists\)|design\.md / implement\.md if present|when present, design\.md / implement\.md|when those files are present|technical design and implementation plan when present|轻量任务只需 `?prd\.md`?|轻量任务可以只保留 `?prd\.md`?|轻量任务无需 `?design\.md`?|轻量任务无需 `?implement\.md`?|`?design\.md`?[（(](如有|若有)[）)]|`?implement\.md`?[（(](如有|若有)[）)]|`?design\.md`? (如存在|若存在)|`?implement\.md`? (如存在|若存在)|技术设计[（(](如有|若有)[）)]|执行计划[（(](如有|若有)[）)]|设计文档可选|实现计划可选'
 
 if [[ -z "$WORK_DIR" ]]; then
   WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/guru-trellis-install.XXXXXX")"
@@ -319,7 +319,6 @@ def disposition(
     candidates=None,
     selected_issue=None,
     original_target_role="primary",
-    confirmation_ref=None,
 ):
     payload = copy.deepcopy(payload)
     payload["target_disposition"] = {
@@ -331,40 +330,12 @@ def disposition(
         "selected_issue": selected_issue,
         "original_target_role": original_target_role,
         "decision_summary": f"The AI selected {kind} from the current evidence.",
-        "confirmation_ref": confirmation_ref,
         "disposition_digest": "0" * 64,
     }
     return derive(payload)
 
 
-def confirm(payload, *action_ids):
-    payload = derive(payload)
-    actions = {
-        action["action_id"]: action
-        for action in payload["source_actions"]
-        if isinstance(action, dict)
-    }
-    payload["human_confirmation"] = {
-        "status": "confirmed",
-        "confirmation_kind": (
-            "exact_source_action_and_target"
-            if action_ids
-            else "exact_target_disposition"
-        ),
-        "action_digest": (
-            gtt.context_digest([
-                actions[action_id]["action_digest"] for action_id in action_ids
-            ])
-            if action_ids
-            else None
-        ),
-        "target_disposition_digest": payload["target_disposition"]["disposition_digest"],
-        "proposal_digests": [],
-        "confirmed_actions": list(action_ids),
-        "confirmer": "throwaway-user",
-        "confirmed_at": "2026-01-01T00:00:01Z",
-        "evidence_summary": "The exact target disposition and actions were confirmed.",
-    }
+def finalized(payload):
     return derive(payload)
 
 
@@ -398,9 +369,8 @@ def retarget(payload):
         candidates=[selected_candidate],
         selected_issue=selected_issue,
         original_target_role="related",
-        confirmation_ref="selected_target_confirmation",
     )
-    return confirm(payload, "select_existing")
+    return finalized(payload)
 
 
 def reopened():
@@ -421,7 +391,6 @@ def reopened():
     payload = disposition(
         payload,
         "reopen_closed_issue",
-        confirmation_ref="reopen_target_confirmation",
     )
     action_digest = payload["source_actions"][0]["action_digest"]
     payload["mutation_results"] = [{
@@ -435,7 +404,7 @@ def reopened():
         "action_digest": action_digest,
         "facts_sha256": "0" * 64,
     }]
-    return confirm(payload, "reopen_source")
+    return finalized(payload)
 
 
 def followup(body=multiline_markdown):
@@ -457,9 +426,8 @@ def followup(body=multiline_markdown):
         payload,
         "create_followup_draft",
         original_target_role="related",
-        confirmation_ref="followup_target_confirmation",
     )
-    return confirm(payload, "new_issue")
+    return finalized(payload)
 
 
 def complete():
@@ -475,9 +443,8 @@ def complete():
         payload,
         "block_target_complete",
         original_target_role="reference",
-        confirmation_ref="complete_target_confirmation",
     )
-    return confirm(payload)
+    return finalized(payload)
 
 
 def add_authority_round(payload, *, impact, action_ids):
@@ -489,7 +456,7 @@ def add_authority_round(payload, *, impact, action_ids):
         "atomic_group_reason": None,
         "category": "product_intent",
         "question": "Which acceptance boundary is authoritative?",
-        "answer_summary": "The user confirmed the exact acceptance boundary.",
+        "answer_summary": "The exact acceptance boundary was selected.",
         "answer_status": "complete",
         "authority_impact": impact,
         "authority_action_ids": action_ids,
@@ -519,17 +486,6 @@ def issue_authority(kind):
     }]
     payload = disposition(payload, "keep_current_open_issue")
     action_digest = payload["source_actions"][0]["action_digest"]
-    payload["human_confirmation"] = {
-        "status": "confirmed",
-        "confirmation_kind": "exact_source_action",
-        "action_digest": gtt.context_digest([action_digest]),
-        "target_disposition_digest": None,
-        "proposal_digests": [],
-        "confirmed_actions": ["persist_authority"],
-        "confirmer": "throwaway-user",
-        "confirmed_at": "2026-01-01T00:00:01Z",
-        "evidence_summary": "The exact authority mutation was confirmed.",
-    }
     url = payload["review_target"]["url"]
     if kind == "issue_comment":
         url += "#issuecomment-99"
@@ -570,17 +526,6 @@ def draft_authority():
     }]
     payload = derive(payload)
     action_digest = payload["source_actions"][0]["action_digest"]
-    payload["human_confirmation"] = {
-        "status": "confirmed",
-        "confirmation_kind": "exact_source_action",
-        "action_digest": gtt.context_digest([action_digest]),
-        "target_disposition_digest": None,
-        "proposal_digests": [],
-        "confirmed_actions": ["persist_draft"],
-        "confirmer": "throwaway-user",
-        "confirmed_at": "2026-01-01T00:00:01Z",
-        "evidence_summary": "The exact proposed draft update was confirmed.",
-    }
     payload["mutation_results"] = [{
         "action_id": "persist_draft",
         "kind": "proposed_draft_update",
@@ -630,16 +575,14 @@ retain_draft = disposition(
     example,
     "keep_current_draft",
     candidates=[rejected],
-    confirmation_ref="retain_draft_confirmation",
 )
-retain_draft = confirm(retain_draft)
+retain_draft = finalized(retain_draft)
 retain_issue = disposition(
     issue_target(example),
     "keep_current_open_issue",
     candidates=[rejected],
-    confirmation_ref="retain_issue_confirmation",
 )
-retain_issue = confirm(retain_issue)
+retain_issue = finalized(retain_issue)
 open_without_duplicate = disposition(
     issue_target(example),
     "keep_current_open_issue",
@@ -689,13 +632,12 @@ if "requirements_target_disposition_required" not in gtt.requirements_clarificat
 ):
     raise SystemExit("installed authority refresh accepted a missing target disposition")
 
-wrong_confirmation = copy.deepcopy(cases["retarget_context"])
-wrong_confirmation["human_confirmation"]["target_disposition_digest"] = "f" * 64
-wrong_confirmation = derive(wrong_confirmation)
-if "target_disposition_requires_exact_confirmation" not in gtt.requirements_clarification_structural_errors(
-    root, wrong_confirmation, None
+wrong_disposition = copy.deepcopy(cases["retarget_context"])
+wrong_disposition["target_disposition"]["disposition_digest"] = "f" * 64
+if "requirements_target_disposition_digest_mismatch" not in gtt.requirements_clarification_structural_errors(
+    root, wrong_disposition, None
 ):
-    raise SystemExit("installed retarget fixture accepted stale target confirmation")
+    raise SystemExit("installed retarget fixture accepted a stale disposition digest")
 
 stale_action = copy.deepcopy(cases["retarget_context"])
 stale_action["source_actions"][0]["payload"]["updated_at"] = "2026-01-01T00:00:09Z"
@@ -813,12 +755,6 @@ for profile, (scope, contents) in cases.items():
                 },
             },
         },
-        "human_confirmation": {
-            "status": "not_required",
-            "confirmed_by": None,
-            "confirmed_at": None,
-            "reason": "No content mutation is required for this throwaway profile smoke.",
-        },
         "typed_exit": "pass",
     }
     (probe_dir / f"{profile}.input.json").write_text(
@@ -853,13 +789,6 @@ finally:
     gtt.issue_view = original_view
 live_scan = gtt.scan_contract_wording(live_scope, live_contents)
 body_item = next(item for item in live_scope["items"] if item["field"] == "body")
-payload_fact = {
-    "source_identity": body_item["source_identity"],
-    "locator": body_item["id"],
-    "field": "body",
-    "preimage_sha256": "0" * 64,
-    "content_sha256": body_item["content_sha256"],
-}
 live_result = gtt.contract_wording_derive_result(
     "change_request",
     "standalone",
@@ -874,14 +803,12 @@ live_result = gtt.contract_wording_derive_result(
                 "before_sha256": "0" * 64,
                 "after_sha256": body_item["content_sha256"],
                 "reason": "The installed runtime binds the exact live issue rewrite.",
-                "mutation_authority": "The exact payload was confirmed before the live mutation.",
                 "rescan_sha256": live_scan["scan_sha256"],
                 "change_request_mutation": {
                     "source_identity": body_item["source_identity"],
                     "locator": body_item["id"],
                     "field": "body",
                     "preimage_sha256": "0" * 64,
-                    "confirmed_content_sha256": body_item["content_sha256"],
                     "reread_content_sha256": body_item["content_sha256"],
                     "source_updated_at": body_item["updated_at"],
                 },
@@ -890,19 +817,12 @@ live_result = gtt.contract_wording_derive_result(
             "ai_review_gate": {
                 "status": "passed",
                 "reviewer": "throwaway-live-mutation-review",
-                "summary": "The installed runtime reviewed the exact confirmed payload and current reread result.",
+                "summary": "The installed runtime reviewed the exact mutation target and current reread result.",
                 "reviewed_scan_sha256": live_scan["scan_sha256"],
                 "checked_dimensions": {
                     name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
                 },
             },
-        },
-        "human_confirmation": {
-            "status": "confirmed",
-            "confirmed_by": "throwaway-user",
-            "confirmed_at": "2026-07-17T07:59:00Z",
-            "reason": "The exact live issue payload was confirmed.",
-            "confirmed_payload_sha256": gtt.context_digest([gtt.context_digest(payload_fact)]),
         },
         "typed_exit": "content_changed",
     },
@@ -963,6 +883,8 @@ record_planning_contract_wording() {
   local probe_dir="$WORK_DIR/contract-wording-planning"
   local input="$probe_dir/planning_artifacts.input.json"
   local changed_input="$probe_dir/planning_artifacts.content_changed.input.json"
+  local changed_result="$probe_dir/planning_artifacts.content_changed.result.json"
+  local pass_result="$probe_dir/planning_artifacts.pass.result.json"
   local bytes_before="$probe_dir/planning_artifacts.bytes.json"
   mkdir -p "$probe_dir"
   python3 - "$TARGET" "$task_rel" "$input" "$changed_input" "$bytes_before" <<'PY'
@@ -1015,12 +937,6 @@ authored = {
         "classifications": classifications,
         "ai_review_gate": gate,
     },
-    "human_confirmation": {
-        "status": "not_required",
-        "confirmed_by": None,
-        "confirmed_at": None,
-        "reason": "The complete re-entry requires no further content mutation.",
-    },
     "typed_exit": "pass",
 }
 first = scope["items"][0]
@@ -1032,20 +948,13 @@ changed_authored = {
             "locator": first["path"],
             "before_sha256": "0" * 64,
             "after_sha256": first["content_sha256"],
-            "reason": "The authorized wording rewrite is already reflected in current bytes.",
-            "mutation_authority": "The throwaway workflow authorized this planning wording rewrite.",
+            "reason": "The reviewed wording rewrite is already reflected in current bytes.",
             "rescan_sha256": scan["scan_sha256"],
         }],
         "classifications": [
             dict(row) for row in classifications
         ],
         "ai_review_gate": dict(gate),
-    },
-    "human_confirmation": {
-        "status": "not_required",
-        "confirmed_by": None,
-        "confirmed_at": None,
-        "reason": "The authorized rewrite did not require a separate confirmation.",
     },
     "typed_exit": "content_changed",
 }
@@ -1064,27 +973,27 @@ bytes_output.write_text(
 PY
   "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
     --root "$TARGET" --json --mode workflow --profile planning_artifacts \
-    --task "$task_rel" --input "$changed_input" >/dev/null
+    --task "$task_rel" --input "$changed_input" >"$changed_result"
   "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
-    --root "$TARGET" --json --task "$task_rel" >/dev/null
-  local prior_facts
-  prior_facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$TARGET/$task_rel/contract-wording-review.json")"
+    --root "$TARGET" --json --task "$task_rel" --input "$changed_result" >/dev/null
   "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
     --root "$TARGET" --json --mode workflow --profile planning_artifacts \
-    --task "$task_rel" --input "$input" \
-    --supersede-reentry-facts-sha256 "$prior_facts" >/dev/null
+    --task "$task_rel" --input "$input" >"$pass_result"
   "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
-    --root "$TARGET" --json --task "$task_rel" >/dev/null
-  python3 - "$TARGET/$task_rel/contract-wording-review.json" "$TARGET" "$task_rel" "$bytes_before" <<'PY'
+    --root "$TARGET" --json --task "$task_rel" --input "$pass_result" >/dev/null
+  test ! -e "$TARGET/$task_rel/contract-wording-review.json"
+  python3 - "$pass_result" "$changed_result" "$TARGET" "$task_rel" "$bytes_before" <<'PY'
 import json
 import sys
 
 payload = json.load(open(sys.argv[1], encoding="utf-8"))
-root = __import__("pathlib").Path(sys.argv[2])
-task_rel = sys.argv[3]
-before = json.load(open(sys.argv[4], encoding="utf-8"))
+changed = json.load(open(sys.argv[2], encoding="utf-8"))
+root = __import__("pathlib").Path(sys.argv[3])
+task_rel = sys.argv[4]
+before = json.load(open(sys.argv[5], encoding="utf-8"))
 assert payload["typed_exit"] == "pass"
 assert payload["semantic_review"]["revisions"] == []
+assert changed["typed_exit"] == "content_changed"
 assert before == {
     name: (root / task_rel / name).read_bytes().hex()
     for name in ("prd.md", "design.md", "implement.md")
@@ -1108,6 +1017,9 @@ record_and_check_planning_approval() {
   local phase="$2"
   local input="$WORK_DIR/planning-approval-$phase.input.json"
   local result="$WORK_DIR/planning-approval-$phase.result.json"
+  local public_input="$TARGET/.trellis/.runtime/guru-team/throwaway-inputs/planning-approval-$phase.json"
+  local owner_result
+  local public_output
   python3 - "$TARGET" "$task_rel" "$input" "$phase" <<'PY'
 import json
 import sys
@@ -1118,76 +1030,37 @@ task_rel = sys.argv[2]
 output = Path(sys.argv[3])
 phase = sys.argv[4]
 task_dir = root / task_rel
-prd_heading = next(
-    line.lstrip("#").strip()
-    for line in (task_dir / "prd.md").read_text(encoding="utf-8").splitlines()
-    if line.startswith("#")
-)
 authored = {
     "mode": "workflow",
-    "requirement_authorities": [{
-        "id": f"throwaway-{phase}-prd",
-        "kind": "task_artifact",
-        "locator": f"{task_rel}/prd.md",
-        "sha256": "0" * 64,
-        "updated_at": None,
-    }],
+    "authority_refs": [f"task:{task_rel}/prd.md"],
     "docs_ssot_plan": {
         "strategy": "ssot_first",
-        "artifact_path": "design.md",
-        "locator": "Docs SSOT Plan",
-        "statement_sha256": "0" * 64,
         "durable_paths": [".trellis/workflow.md"],
+        "summary": "The durable workflow contract is updated before implementation.",
     },
-    "provenance_review": {
-        "entries": [{
-            "id": f"throwaway-{phase}-requirement",
-            "artifact_path": "prd.md",
-            "locator": prd_heading,
-            "statement_sha256": "0" * 64,
-            "classification": "explicit_requirement",
-            "authority_refs": [f"throwaway-{phase}-prd"],
-            "reason": "The throwaway task explicitly requires the installed planning path.",
-            "implementation_choice": None,
-            "scope_expansion": None,
-            "out_of_scope_proposal": None,
-        }],
-        "coverage": {
-            "reviewer": "throwaway-planning-review",
-            "summary": "All load-bearing throwaway planning statements were reviewed.",
-            "reviewed_entry_ids": [f"throwaway-{phase}-requirement"],
-            "all_load_bearing_items_covered": True,
-            "review_sha256": "0" * 64,
-        },
-    },
-    "unusual_scenario_review": {
-        "reviewer": "throwaway-planning-review",
-        "summary": "No unusual scenario proposal is required by this disposable task.",
-        "candidates": [],
-        "unresolved_count": 0,
-        "review_sha256": "0" * 64,
-    },
-    "semantic_review": {"ai_review_gate": {
+    "semantic_review": {
         "status": "passed",
-        "reviewer": "throwaway-planning-review",
-        "summary": "The installed planning package may activate this disposable task.",
-        "reviewed_at": "2026-07-19T00:00:00Z",
+        "summary": "The installed planning package reviewed the disposable task for activation.",
+        "checked_dimensions": {
+            name: True for name in (
+                "requirement_authority",
+                "scope_boundary",
+                "design_adequacy",
+                "implementation_plan",
+                "acceptance_verifiability",
+                "docs_ssot",
+                "provenance",
+                "unusual_scenarios",
+            )
+        },
         "findings": [],
         "revision_actions": [],
         "scope_proposals": [],
         "blocking_reasons": [],
-    }},
-    "user_confirmation": {
-        "kind": "post-planning-approval",
-        "status": "confirmed",
-        "prompt_presented_at": "2026-07-19T00:01:00Z",
-        "confirmed_at": "2026-07-19T00:02:00Z",
-        "evidence_summary": "The disposable fixture explicitly confirms its three planning documents.",
     },
     "typed_exit": "approved",
     "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
-    "reason": "The installed v2 recorder and checker path is under test.",
-    "supersedes_facts_sha256": None,
+    "reason": f"The installed planning recorder and checker path is under test for {phase}.",
 }
 output.write_text(
     json.dumps(authored, ensure_ascii=False, indent=2) + "\n",
@@ -1198,22 +1071,60 @@ PY
     --root "$TARGET" --json --task "$task_rel" --input "$input" >"$result"
   "$TARGET/.agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh" \
     --root "$TARGET" --json --task "$task_rel" --require-exit approved >/dev/null
-  python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["schema_version"] == "2.0"; assert payload["skill_id"] == "guru-approve-task-plan"; assert payload["typed_exit"] == "approved"; assert payload["dry_run"] is False' "$result"
+  python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["schema_version"] == "3.0"; assert payload["skill_id"] == "guru-approve-task-plan"; assert payload["typed_exit"] == "approved"' "$result"
+  owner_result="$(python3 -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.load(open(sys.argv[2], encoding="utf-8"))["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$result")"
+  mkdir -p "$(dirname "$public_input")"
+  python3 - "$task_rel" "$public_input" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+Path(sys.argv[2]).write_text(
+    json.dumps(
+        {
+            "profile": "initial_review",
+            "mode": "workflow",
+            "task_ref": sys.argv[1],
+            "source_exit": "planning_ready",
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+    + "\n",
+    encoding="utf-8",
+)
+PY
+  public_output="$(
+    "$TARGET/.agents/skills/guru-approve-task-plan/scripts/invoke.sh" \
+      --input "${public_input#"$TARGET/"}" \
+      --owner-result "$owner_result"
+  )"
+  rm -f "$public_input"
+  python3 -c 'import json,pathlib,sys; payload=json.load(sys.stdin); assert payload == {"exit_id":"approved","task_ref":sys.argv[1]}; assert not (pathlib.Path(sys.argv[2]) / sys.argv[3]).exists()' "$task_rel" "$TARGET" "$owner_result" <<<"$public_output"
+  printf '%s\n' "$public_output"
 }
 
-create_task_commit_plan() {
-  local sequence="$1"
+prepare_task_commit_candidate() {
+  local profile="$1"
   local subject="$2"
-  python3 - "$TARGET" "$TASK_REL" "$sequence" "$subject" <<'PY'
-import hashlib
+  local passed_dto="$3"
+  local input_path
+  local authoring_json
+  local prepared_json
+  input_path="$(mktemp "${TMPDIR:-/tmp}/guru-task-commit-input.XXXXXX")"
+  authoring_json="$(python3 - "$TARGET" "$TASK_REL" "$profile" "$subject" "$input_path" "$passed_dto" <<'PY'
 import importlib.util
+import json
+import re
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1]).resolve()
 task_rel = sys.argv[2]
-sequence = int(sys.argv[3])
+profile = sys.argv[3]
 subject = sys.argv[4]
+input_path = Path(sys.argv[5])
+passed_dto = json.loads(sys.argv[6])
 runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
 spec = importlib.util.spec_from_file_location("installed_task_commit_runtime", runtime)
 if spec is None or spec.loader is None:
@@ -1223,13 +1134,11 @@ sys.modules[spec.name] = gtt
 spec.loader.exec_module(gtt)
 
 task_dir = root / task_rel
-task_key = hashlib.sha256(task_rel.encode("utf-8")).hexdigest()[:16]
-candidate = root / gtt.TASK_COMMIT_RUNTIME_DIR / task_key / f"{sequence:03d}.json"
-candidate_rel = candidate.relative_to(root).as_posix()
-snapshot = gtt.capture_task_commit_snapshot(root, {candidate_rel})
+snapshot = gtt.task_commit_snapshot_without_digest(
+    gtt.capture_task_commit_snapshot(root, set())
+)
 unrelated = "unrelated-preserved.log"
 classifications = []
-reviewed_paths = set()
 for entry in snapshot["entries"]:
     path = str(entry["path"])
     is_unrelated = path == unrelated
@@ -1237,81 +1146,63 @@ for entry in snapshot["entries"]:
         "path": path,
         "category": "unrelated-preserved" if is_unrelated else "task-reviewed",
         "reason": "Preserve unrelated throwaway state." if is_unrelated else "Fresh throwaway Phase 2 evidence covers this path.",
-        "coverage_source": "AI throwaway scope review" if is_unrelated else "phase2-check.json",
+        "coverage_source": "AI throwaway scope review" if is_unrelated else "guru-check-task passed DTO",
     })
-    if not is_unrelated:
-        reviewed_paths.add(path)
-snapshot_by_path = {str(item["path"]): item for item in snapshot["entries"]}
-exact_paths = set(reviewed_paths)
-for path in list(reviewed_paths):
-    renamed_from = snapshot_by_path.get(path, {}).get("renamed_from")
-    if renamed_from:
-        exact_paths.add(str(renamed_from))
 
-body = (
-    "背景：\n需要验证安装后的 task commit 闭环。\n\n"
-    "变更：\n提交当前轮次经过检查的精确路径。\n\n"
-    "边界：\n保留无关工作区状态且不执行 push。\n\n"
-    "验证：\n候选校验与真实提交后置条件均通过。\n\n"
-    "Refs #122"
-)
-message_bytes = f"{subject}\n\n{body}\n"
-task = gtt.read_json(task_dir / "task.json")
 ledger = gtt.read_json(task_dir / "issue-scope-ledger.json")
 primary_issue = int(ledger["primary_issue"]["number"])
-plan = {
-    "$schema": gtt.TASK_COMMIT_PLAN_SCHEMA_ID,
-    "schema_version": gtt.TASK_COMMIT_PLAN_SCHEMA_VERSION,
-    "skill_id": gtt.TASK_COMMIT_SKILL_ID,
-    "sequence": f"{sequence:03d}",
-    "task": {
-        "id": task["id"],
-        "path": task_rel,
-        "status": task["status"],
-        "branch": task["branch"],
-    },
-    "issue": {
-        "primary_issue": primary_issue,
-        "ledger_sha256": hashlib.sha256((task_dir / "issue-scope-ledger.json").read_bytes()).hexdigest(),
-    },
-    "git": {
-        "base_branch": task["base_branch"],
-        "base_ref": gtt.diff_base_ref(root, task["base_branch"]),
-        "pre_commit_head": gtt.current_head(root),
-    },
-    "evidence": {
-        "planning_approval": gtt.task_commit_file_evidence(root, task_dir / "planning-approval.json"),
-        "phase2_check": gtt.task_commit_file_evidence(root, task_dir / "phase2-check.json"),
-        "issue_scope_ledger": gtt.task_commit_file_evidence(root, task_dir / "issue-scope-ledger.json"),
-        "task": gtt.task_commit_file_evidence(root, task_dir / "task.json"),
-    },
-    "dirty_snapshot": snapshot,
+subject_match = re.fullmatch(
+    r"(?P<type>[a-z]+)\((?P<scope>[a-z0-9._/-]+)\): #(?P<issue>[1-9][0-9]*) (?P<summary>.+)",
+    subject,
+)
+if subject_match is None or int(subject_match.group("issue")) != primary_issue:
+    raise SystemExit(f"unsupported throwaway task commit subject: {subject}")
+if passed_dto != {
+    "exit_id": "passed",
+    "task_ref": task_rel,
+    "checked_head": passed_dto.get("checked_head"),
+}:
+    raise SystemExit(f"invalid guru-check-task passed DTO: {passed_dto}")
+public_input = {
+    "profile": profile,
+    "mode": "workflow",
+    "task_ref": passed_dto["task_ref"],
+    "source_exit": passed_dto["exit_id"],
+    "checked_head": passed_dto["checked_head"],
+}
+input_path.write_text(
+    json.dumps(public_input, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
+authoring = {
     "path_classifications": classifications,
-    "exact_stage_paths": sorted(exact_paths),
     "message": {
-        "subject": subject,
-        "body": body,
-        "bytes": message_bytes,
-        "sha256": hashlib.sha256(message_bytes.encode("utf-8")).hexdigest(),
+        "type": subject_match.group("type"),
+        "scope": subject_match.group("scope"),
+        "summary": subject_match.group("summary"),
+        "background": "需要验证安装后的 task commit 闭环。",
+        "changes": "提交当前轮次经过检查的精确路径。",
+        "boundaries": "保留无关工作区状态且不执行 push。",
+        "validations": "候选校验与真实提交后置条件均通过。",
     },
     "ai_review": {
         "status": "passed",
-        "reviewer": "throwaway-task-commit-review",
         "summary": "Reviewed the exact fixture paths, message, upgrade boundary and unrelated preservation.",
         "evidence": ["Fresh Phase 2 evidence covers every task-reviewed fixture path."],
     },
-    "authorization": {
-        "authorized": True,
-        "source": "explicit-throwaway-test-authorization",
-        "evidence": "The verifier authorizes this exact disposable repository commit plan.",
-    },
-    "freshness": {"captured_at": gtt.now_iso(), "plan_digest": ""},
-    "result": {"status": "planned", "exit": None},
 }
-plan["freshness"]["plan_digest"] = gtt.task_commit_plan_digest(plan)
-gtt.write_json(candidate, plan)
-print(candidate_rel)
+print(json.dumps(authoring, ensure_ascii=False, separators=(",", ":")))
 PY
+  )"
+  prepared_json="$(
+    "$TARGET/.agents/skills/guru-create-task-commit/scripts/prepare-task-commit.sh" \
+      --root "$TARGET" \
+      --json \
+      --input "$input_path" \
+      --candidate-json "$authoring_json"
+  )"
+  rm -f "$input_path"
+  python3 -c 'import json,sys; payload=json.load(sys.stdin); assert payload["status"] == "prepared"; assert payload["typed_exit"] == "committed"; assert payload["message"]["subject"] == sys.argv[1]; print(payload["candidate_artifact"])' "$subject" <<<"$prepared_json"
 }
 
 CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
@@ -1436,7 +1327,6 @@ grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked"
 grep -q 'guru-skill-invoke: {"skill":"guru-create-task-workspace","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
-grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"cancelled","consumer":{"kind":"stop","id":"task-workspace-cancelled"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-stop-target: {"id":"change-request-review-blocked"}' "$TARGET/.trellis/workflow.md"
 if grep -Eq 'guru-skill-exit: \{"skill":"guru-review-change-request"[^\n]*"id":"guru-full-task-intake-chain"' "$TARGET/.trellis/workflow.md"; then
@@ -1550,21 +1440,21 @@ assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_id
 assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-requirements-clarification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-phase2-check-2.1" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-planning-approval-2.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-phase2-check-3.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-planning-approval-3.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-extension-installation-verification-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-review-gate-2.1" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-task-publication-readiness-1.1" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-task-workspace-plan-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-task-workspace-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-review-gate-2.2" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-task-publication-readiness-2.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-task-workspace-plan-2.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-task-workspace-result-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.3"
 assert api["skill_contracts"]["registry_schema_id"] == "guru-team-skill-registry-1.1"
 assert api["skill_contracts"]["supported_interface_schema_ids"] == ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"]
 assert api["skill_contracts"]["current_interface_schema_id"] == "guru-team-skill-interface-1.3"
 assert api["skill_contracts"]["legacy_skill_ids"] == []
-assert len(api["skill_contracts"]["public_input_schema_ids"]) == 37
-assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 52
+assert len(api["skill_contracts"]["public_input_schema_ids"]) == 34
+assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 51
 assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 15
 assert api["skill_contracts"]["migration_manifests"] == [
     {
@@ -1576,6 +1466,16 @@ assert api["skill_contracts"]["migration_manifests"] == [
         "id": "production-minimal-handoff-v1",
         "schema_id": "guru-team-production-migration-manifest-1.0",
         "path": "migrations/production-minimal-handoff.json",
+    },
+    {
+        "id": "stage0-ai-first-contract-v2",
+        "schema_id": "guru-team-stage0-ai-first-contract-migration-1.0",
+        "path": "migrations/stage0-ai-first-contract-v2.json",
+    },
+    {
+        "id": "production-ai-first-contract-v2",
+        "schema_id": "guru-team-production-ai-first-contract-migration-1.0",
+        "path": "migrations/production-ai-first-contract-v2.json",
     },
 ]
 assert api["skill_evals"]["schema_id"] == "guru-team-skill-evals-1.0"
@@ -1617,7 +1517,7 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":13,"exit_markers":52,"target_markers":29,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":13,"exit_markers":51,"target_markers":28,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["variant"] == "minimal_handoff"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.3"' <<<"$MINIMAL_CONTRACT_JSON"
 MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
@@ -1648,11 +1548,16 @@ test -x "$TARGET/.claude/skills/guru-approve-task-plan/scripts/check-planning-ap
 test -x "$TARGET/.codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
 test -x "$TARGET/.cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
+test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh"
 test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+"$TARGET/.agents/skills/guru-create-task-commit/scripts/prepare-task-commit.sh" --help >/dev/null
 "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
+test -x "$TARGET/.claude/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
 test -x "$TARGET/.claude/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
 test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
 test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-branch/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-review-branch/scripts/invoke.sh"
@@ -1863,8 +1768,8 @@ fail_if_stale_planning_hint \
   "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md" \
   "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md" \
   "$TARGET/.cursor/skills/trellis-meta/references/platform-files/agents.md"
-grep -q "post-planning confirmation" "$TARGET/.codex/hooks/session-start.py"
-grep -q "post-planning confirmation" "$TARGET/.cursor/hooks/session-start.py"
+grep -qi "auto-consume" "$TARGET/.codex/hooks/session-start.py"
+grep -qi "auto-consume" "$TARGET/.cursor/hooks/session-start.py"
 set +e
 PHASE_CONTEXT_OUTPUT="$(cd "$TARGET" && PYTHONPATH="$NO_WORKSPACE_GUARD_DIR" python3 ./.trellis/scripts/get_context.py --mode phase 2>&1)"
 PHASE_CONTEXT_STATUS=$?
@@ -1889,8 +1794,8 @@ if grep -Eq 'shared-start-secret-journal\.md|SHARED_START_SECRET_JOURNAL_CONTENT
   exit 2
 fi
 grep -q "required design.md" "$TARGET/.cursor/hooks/inject-subagent-context.py"
-grep -q "explicit post-planning confirmation" "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md"
-grep -q "explicit post-planning confirmation" "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md"
+grep -q "Do not add a routine post-planning confirmation" "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md"
+grep -q "Do not add a routine post-planning confirmation" "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md"
 grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-before-dev/SKILL.md"
 grep -q "required \`design.md\`" "$TARGET/.cursor/skills/trellis-before-dev/SKILL.md"
 grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-check/SKILL.md"
@@ -1901,8 +1806,38 @@ grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-meta/references
 grep -q "required \`design.md\`" "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/context-injection.md"
 grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
 grep -q "required \`design.md\`" "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
-grep -q "explicit post-planning confirmation" "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-workflow.md"
-grep -q "explicit post-planning confirmation" "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
+grep -q "do not add a routine post-planning confirmation" "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-workflow.md"
+grep -q "do not add a routine post-planning confirmation" "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
+if grep -Eiq 'wait for explicit post-planning confirmation|explicitly confirmed post-planning approval|get fresh user confirmation|user confirms? start|规划完成后(再次|重新)?确认|再次取得用户确认|重新取得用户确认|等待(明确)?规划后确认|等待用户确认开始|规划后(明确)?确认后|用户确认后(开始|启动)实现|规划通过后等待用户确认|等待用户明确确认后开始|经用户确认后进入实现|用户批准后开始实现|取得用户授权后开始实现' \
+  "$TARGET/.codex/hooks/session-start.py" \
+  "$TARGET/.cursor/hooks/session-start.py" \
+  "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md" \
+  "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md" \
+  "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-workflow.md" \
+  "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md" \
+  "$TARGET/.trellis/agents/implement.md" \
+  "$TARGET/.trellis/agents/check.md" \
+  "$TARGET/.codex/agents/trellis-implement.toml" \
+  "$TARGET/.codex/agents/trellis-check.toml" \
+  "$TARGET/.cursor/agents/trellis-implement.md" \
+  "$TARGET/.cursor/agents/trellis-check.md"; then
+  echo "Guru Team overlays retained a routine English or Chinese post-planning confirmation" >&2
+  exit 2
+fi
+for planning_consumer in \
+  "$TARGET/.trellis/agents/implement.md" \
+  "$TARGET/.trellis/agents/check.md" \
+  "$TARGET/.codex/agents/trellis-implement.toml" \
+  "$TARGET/.codex/agents/trellis-check.toml" \
+  "$TARGET/.cursor/agents/trellis-implement.md" \
+  "$TARGET/.cursor/agents/trellis-check.md"; do
+  grep -qi 'private checkpoint' "$planning_consumer"
+  grep -qi 'auto-consum' "$planning_consumer"
+  if grep -Eiq 'ambiguity_review|unchecked_normative_hits|fixed-scope scanner|content digests no longer match|explicit-post-planning-review|规划歧义审查字段|扫描命中字段|规划文档(内容摘要|哈希)' "$planning_consumer"; then
+    echo "Guru Team implement/check consumer retained owner-private English or Chinese planning fields: $planning_consumer" >&2
+    exit 2
+  fi
+done
 grep -q 'required `prd.md`, `design.md`, `implement.md`' "$TARGET/.agents/skills/trellis-meta/references/platform-files/agents.md"
 grep -q 'required `prd.md`, `design.md`, `implement.md`' "$TARGET/.cursor/skills/trellis-meta/references/platform-files/agents.md"
 test -f "$TARGET/.trellis/agents/implement.md"
@@ -2187,7 +2122,6 @@ payload = {
         }],
         "findings": [], "reason": "Every required semantic dimension passed.",
     },
-    "human_confirmation": {"status": "not_required", "reason": "decision_owned_by_guru-clarify-requirements"},
     "refresh_history": [], "snapshot_identity": {}, "error": None,
 }
 payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
@@ -2897,7 +2831,7 @@ PHASE0_PLANNER_JSON="$(
     --assignee throwaway \
     "$PHASE0_ISSUE_URL"
 )"
-PHASE0_PLANNER_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["preflight"]["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert payload["workspace_ready"] is False; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True; print(freshness["post_sync_resolution_sha256"])' "$PHASE0_POST_DIGEST" <<<"$PHASE0_PLANNER_JSON")"
+PHASE0_PLANNER_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert "preflight" not in payload; assert "workspace_ready" not in payload; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True; print(freshness["post_sync_resolution_sha256"])' "$PHASE0_POST_DIGEST" <<<"$PHASE0_PLANNER_JSON")"
 
 PHASE0_STATUS_BEFORE="$(git -C "$TARGET" status --porcelain=v1)"
 PHASE0_WORKTREES_BEFORE="$(git -C "$TARGET" worktree list --porcelain)"
@@ -2945,7 +2879,7 @@ TASK_BRANCH="feat/122-installed-task-commit"
 TASK_REL=".trellis/tasks/07-13-122-installed-task-commit"
 git -C "$TARGET" switch -q -c "$TASK_BRANCH"
 
-python3 - "$TARGET" "$TASK_REL" "$TASK_BRANCH" "$BASELINE_HEAD" <<'PY'
+python3 - "$TARGET" "$TASK_REL" "$TASK_BRANCH" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -2953,38 +2887,10 @@ from pathlib import Path
 root = Path(sys.argv[1])
 task_rel = sys.argv[2]
 branch = sys.argv[3]
-base_head = sys.argv[4]
 task_dir = root / task_rel
 task_dir.mkdir(parents=True)
 (root / "src").mkdir(exist_ok=True)
 
-context = {
-    "schema_version": "1.0",
-    "source_issue": {
-        "number": 122,
-        "url": "https://github.com/castbox/guru-trellis/issues/122",
-        "title": "installed task commit smoke",
-        "created_by_workflow": False,
-    },
-    "source_repo": {
-        "repo": "castbox/guru-trellis-throwaway",
-        "url": "https://github.com/castbox/guru-trellis-throwaway",
-    },
-    "task_slug": "122-installed-task-commit",
-    "task_title": "#122 验证安装后 task commit",
-    "task_artifact_dir": task_rel,
-    "branch_name": branch,
-    "base_branch": "main",
-    "base_ref": "main",
-    "base_head_sha": base_head,
-    "remote_head_sha": base_head,
-    "workspace_slug": "",
-    "task_workspace_id": "122-installed-task-commit",
-    "assignee": "throwaway",
-    "actor": {"login": "throwaway"},
-    "issue_scope_ledger_seed": {},
-    "intake_summary": {},
-}
 task = {
     "id": "122-installed-task-commit",
     "name": "122-installed-task-commit",
@@ -3008,24 +2914,57 @@ documents = {
 for name, content in documents.items():
     (task_dir / name).write_text(content, encoding="utf-8")
 for name, payload in (
-    ("task-start-context.json", context),
     ("task.json", task),
     ("issue-scope-ledger.json", ledger),
 ):
     (task_dir / name).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+workspace_slug = task["id"]
+runtime_root = root / ".trellis/.runtime/guru-team"
+runtime_payloads = (
+    (
+        runtime_root / "workspaces" / f"{workspace_slug}.json",
+        {
+            "schema_version": "1.0",
+            "workspace_slug": workspace_slug,
+            "workspace_path": str(root.resolve()),
+            "source_checkout": str(root.resolve()),
+            "branch_name": branch,
+            "updated_at": "2026-08-01T00:00:00Z",
+        },
+    ),
+    (
+        runtime_root / "tasks" / f"{task['id']}.json",
+        {
+            "schema_version": "1.0",
+            "task_slug": task["id"],
+            "workspace_slug": workspace_slug,
+            "workspace_path": str(root.resolve()),
+            "task_artifact_dir": task_rel,
+            "updated_at": "2026-08-01T00:00:00Z",
+        },
+    ),
+)
+for path, payload in runtime_payloads:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (root / "src/task-commit-smoke.txt").write_text("initial task change\n", encoding="utf-8")
 (root / "unrelated-preserved.log").write_text("preserve this exact state\n", encoding="utf-8")
 PY
 
 record_planning_contract_wording "$TASK_REL"
-record_and_check_planning_approval "$TASK_REL" "initial"
+PLANNING_DTO="$(record_and_check_planning_approval "$TASK_REL" "initial")"
+python3 -c 'import json,sys; assert json.load(sys.stdin) == {"exit_id":"approved","task_ref":sys.argv[1]}' "$TASK_REL" <<<"$PLANNING_DTO"
 
 record_throwaway_phase2() {
   local summary="$1"
+  local profile="$2"
   local input_path
+  local public_input
   local record_json
   local check_json
-  input_path="$(mktemp "${TMPDIR:-/tmp}/guru-phase2-input.XXXXXX.json")"
+  local owner_result
+  local public_output
+  input_path="$(mktemp "${TMPDIR:-/tmp}/guru-phase2-input.XXXXXX")"
   python3 - "$TARGET" "$TASK_REL" "$summary" "$input_path" <<'PY'
 import json
 import sys
@@ -3038,47 +2977,37 @@ output = Path(sys.argv[4])
 payload = json.loads((
     root / ".trellis/guru-team/skills/packages/guru-check-task/examples/phase2-check.json"
 ).read_text(encoding="utf-8"))
+payload = {
+    key: payload[key]
+    for key in (
+        "mode", "reviewed_paths", "validation", "docs_ssot",
+        "semantic_review", "typed_exit", "route", "reason", "consumer",
+    )
+}
 payload["mode"] = "workflow"
-payload["requirement_provenance"] = {
-    "summary": "已复核 throwaway task 的 approved requirement provenance。",
-    "artifacts": [{"path": f"{task_rel}/prd.md"}],
-    "facts_sha256": "0" * 64,
-}
-payload["docs_ssot_plan"].update({
-    "strategy": "ssot_first",
-    "durable_paths": [{"path": ".trellis/workflow.md"}],
-    "sync_result": "已安装的 canonical workflow 是本次 smoke 的 durable SSOT 输入。",
-    "task_delta_merged": True,
-    "task_history_only": ["throwaway implementation and check evidence"],
-    "no_update_reason": None,
-    "followup_or_pr_limit": None,
-})
-payload["implementation_handoff"] = {
-    "summary": "已完成 throwaway implementation handoff，并覆盖文件、测试与 Docs SSOT。",
-    "artifacts": [{"path": f"{task_rel}/implement.md"}],
-    "facts_sha256": "0" * 64,
-}
-payload["repository_snapshot"]["reviewed_paths"] = [
-    {"path": "src/task-commit-smoke.txt"},
+payload["reviewed_paths"] = [
+    f"{task_rel}/contract-wording-review.json",
+    f"{task_rel}/design.md",
+    f"{task_rel}/implement.md",
+    f"{task_rel}/issue-scope-ledger.json",
+    f"{task_rel}/prd.md",
+    f"{task_rel}/task.json",
+    "src/task-commit-smoke.txt",
+    "unrelated-preserved.log",
 ]
-payload["check_execution"]["commands"] = [{
+payload["validation"]["commands"] = [{
     "id": "installed-guru-check-task-smoke",
-    "argv": ["check installed package, schema, workflow, and task commit path"],
-    "exit_code": 0,
-    "stdout_sha256": "0" * 64,
-    "stdout_size_bytes": 0,
-    "stderr_sha256": "0" * 64,
-    "stderr_size_bytes": 0,
+    "outcome": "passed",
     "summary": summary,
 }]
-payload["check_execution"]["worker_evidence"] = [{
-    "source": "official_trellis_check",
-    "agent_id": "throwaway-check",
-    "summary": "Unchanged official trellis-check supplied evidence only.",
-    "evidence_only": True,
-    "facts_sha256": "0" * 64,
-}]
-payload["semantic_review"]["ai_review_gate"]["summary"] = summary
+payload["validation"]["summary"] = summary
+payload["docs_ssot"] = {
+    "status": "passed",
+    "strategy": "ssot_first",
+    "durable_paths": [".trellis/workflow.md"],
+    "summary": "已安装的 canonical workflow 是本次 smoke 的 durable SSOT 输入。",
+}
+payload["semantic_review"]["summary"] = summary
 output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
   record_json="$("$TARGET/.agents/skills/guru-check-task/scripts/record-phase2-check.sh" \
@@ -3091,11 +3020,51 @@ PY
     --task "$TASK_REL" \
     --json)"
   rm -f "$input_path"
-  python3 -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "2.1"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
+  python3 -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "3.0"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
+  owner_result="$(python3 -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.loads(sys.argv[2])["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$record_json")"
+  mkdir -p "$TARGET/.trellis/.runtime/guru-team/throwaway-inputs"
+  public_input="$(mktemp "$TARGET/.trellis/.runtime/guru-team/throwaway-inputs/phase2.XXXXXX")"
+  python3 - "$TASK_REL" "$profile" "$public_input" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+task_ref = sys.argv[1]
+profile = sys.argv[2]
+payload = {
+    "profile": profile,
+    "mode": "workflow",
+    "task_ref": task_ref,
+}
+if profile == "initial_check":
+    payload["source_exit"] = "implementation_complete"
+elif profile == "finding_fix_rerun":
+    payload.update(
+        {
+            "source_exit": "implementation_required",
+            "rerun_reason": "finding_fix",
+            "finding_refs": ["throwaway-finding-1"],
+        }
+    )
+else:
+    raise SystemExit(f"unsupported throwaway Phase 2 profile: {profile}")
+Path(sys.argv[3]).write_text(
+    json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+  public_output="$(
+    "$TARGET/.agents/skills/guru-check-task/scripts/invoke.sh" \
+      --input "${public_input#"$TARGET/"}" \
+      --owner-result "$owner_result"
+  )"
+  rm -f "$public_input"
+  python3 -c 'import json,pathlib,re,sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id","task_ref","checked_head"}; assert payload["exit_id"] == "passed"; assert payload["task_ref"] == sys.argv[1]; assert re.fullmatch(r"[0-9a-f]{40}", payload["checked_head"]); assert not (pathlib.Path(sys.argv[2]) / sys.argv[3]).exists()' "$TASK_REL" "$TARGET" "$owner_result" <<<"$public_output"
+  printf '%s\n' "$public_output"
 }
 
-record_throwaway_phase2 "已检查初次提交的需求、设计、代码、测试、文档与安装边界。"
-INITIAL_PLAN="$(create_task_commit_plan 1 "feat(trellis): #122 验证安装后任务提交")"
+PHASE2_DTO="$(record_throwaway_phase2 "已检查初次提交的需求、设计、代码、测试、文档与安装边界。" initial_check)"
+INITIAL_PLAN="$(prepare_task_commit_candidate initial_commit "feat(trellis): #122 验证安装后任务提交" "$PHASE2_DTO")"
 INITIAL_CANDIDATE_JSON="$(
   "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
     --root "$TARGET" \
@@ -3121,8 +3090,8 @@ test "$(git -C "$TARGET" status --short -- unrelated-preserved.log)" = "?? unrel
 test "$(cat "$TARGET/unrelated-preserved.log")" = "preserve this exact state"
 
 printf '%s\n' "finding fix task change" >"$TARGET/src/task-commit-smoke.txt"
-record_throwaway_phase2 "已在 finding fix 后重新检查全部范围并绑定新的 HEAD 与 dirty state。"
-REVISION_PLAN="$(create_task_commit_plan 1 "fix(trellis): #122 验证 finding 修订提交")"
+REVISION_PHASE2_DTO="$(record_throwaway_phase2 "已在 finding fix 后重新检查全部范围并绑定新的 HEAD 与 dirty state。" finding_fix_rerun)"
+REVISION_PLAN="$(prepare_task_commit_candidate finding_fix_commit "fix(trellis): #122 验证 finding 修订提交" "$REVISION_PHASE2_DTO")"
 REVISION_CANDIDATE_JSON="$(
   "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
     --root "$TARGET" \
@@ -3157,7 +3126,7 @@ printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
 INITIAL_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-initial")"
 printf '%s\n' "$INITIAL_TASK_WORKSPACE_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["context-discovery.json", "issue-review.json", "issue-scope-ledger.json", "task-start-context.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is False; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$INITIAL_TASK_WORKSPACE_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is False; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$INITIAL_TASK_WORKSPACE_JSON"
 
 rm -f "$TARGET/.trellis/workflow.md.new"
 (
@@ -3224,7 +3193,6 @@ grep -q 'guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked"
 grep -q 'guru-skill-invoke: {"skill":"guru-create-task-workspace","required":true}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}}' "$TARGET/.trellis/workflow.md"
-grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"cancelled","consumer":{"kind":"stop","id":"task-workspace-cancelled"}}' "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}}' "$TARGET/.trellis/workflow.md"
 test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
@@ -3340,8 +3308,7 @@ verify_contract_wording_standalone_profiles "after-update"
 verify_change_request_review_package "after-update"
 POST_UPDATE_TASK_REL=".trellis/tasks/07-17-114-contract-wording-after-update"
 POST_UPDATE_BRANCH="$(git -C "$TARGET" branch --show-current)"
-POST_UPDATE_HEAD="$(git -C "$TARGET" rev-parse HEAD)"
-python3 - "$TARGET" "$POST_UPDATE_TASK_REL" "$POST_UPDATE_BRANCH" "$POST_UPDATE_HEAD" <<'PY'
+python3 - "$TARGET" "$POST_UPDATE_TASK_REL" "$POST_UPDATE_BRANCH" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -3349,7 +3316,6 @@ from pathlib import Path
 root = Path(sys.argv[1])
 task_rel = sys.argv[2]
 branch = sys.argv[3]
-head = sys.argv[4]
 task_dir = root / task_rel
 task_dir.mkdir(parents=True)
 task = {
@@ -3360,33 +3326,6 @@ task = {
     "branch": branch,
     "base_branch": "main",
 }
-context = {
-    "schema_version": "1.0",
-    "source_issue": {
-        "number": 114,
-        "url": "https://github.com/castbox/guru-trellis/issues/114",
-        "title": "Post-update contract wording review",
-        "created_by_workflow": False,
-    },
-    "source_repo": {
-        "repo": "castbox/guru-trellis-throwaway",
-        "url": "https://github.com/castbox/guru-trellis-throwaway",
-    },
-    "task_slug": "contract-wording-after-update",
-    "task_title": "Post-update contract wording review",
-    "task_artifact_dir": task_rel,
-    "branch_name": branch,
-    "base_branch": "main",
-    "base_ref": "main",
-    "base_head_sha": head,
-    "remote_head_sha": head,
-    "workspace_slug": "",
-    "task_workspace_id": "contract-wording-after-update",
-    "assignee": "throwaway",
-    "actor": {"login": "throwaway"},
-    "issue_scope_ledger_seed": {},
-    "intake_summary": {},
-}
 ledger = {
     "schema_version": "1.0",
     "primary_issue": {"number": 114},
@@ -3396,10 +3335,38 @@ ledger = {
 }
 for name, payload in (
     ("task.json", task),
-    ("task-start-context.json", context),
     ("issue-scope-ledger.json", ledger),
 ):
     (task_dir / name).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+workspace_slug = task["id"]
+runtime_root = root / ".trellis/.runtime/guru-team"
+runtime_payloads = (
+    (
+        runtime_root / "workspaces" / f"{workspace_slug}.json",
+        {
+            "schema_version": "1.0",
+            "workspace_slug": workspace_slug,
+            "workspace_path": str(root.resolve()),
+            "source_checkout": str(root.resolve()),
+            "branch_name": branch,
+            "updated_at": "2026-08-01T00:00:00Z",
+        },
+    ),
+    (
+        runtime_root / "tasks" / f"{task['id']}.json",
+        {
+            "schema_version": "1.0",
+            "task_slug": task["id"],
+            "workspace_slug": workspace_slug,
+            "workspace_path": str(root.resolve()),
+            "task_artifact_dir": task_rel,
+            "updated_at": "2026-08-01T00:00:00Z",
+        },
+    ),
+)
+for path, payload in runtime_payloads:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 (task_dir / "prd.md").write_text(
     "# Post-update wording review\n\nThe required planning scope remains exact.\n", encoding="utf-8"
 )
@@ -3414,8 +3381,6 @@ for name, payload in (
 PY
 record_planning_contract_wording "$POST_UPDATE_TASK_REL"
 record_and_check_planning_approval "$POST_UPDATE_TASK_REL" "after-update"
-"$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
-  --root "$TARGET" --json --task "$POST_UPDATE_TASK_REL" >/dev/null
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
 BACKFILL_AFTER_UPDATE_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 2; assert len(payload["skipped"]) == 2; assert all(row["reason"] == "finish-summary exists" for row in payload["skipped"]); assert payload["errors"] == []' <<<"$BACKFILL_AFTER_UPDATE_JSON"
@@ -3427,7 +3392,7 @@ printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
 UPDATED_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-after-update" --existing-developer-identity)"
 printf '%s\n' "$UPDATED_TASK_WORKSPACE_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["context-discovery.json", "issue-review.json", "issue-scope-ledger.json", "task-start-context.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is True; assert all(payload[key] for key in ("source_developer_identity", "target_developer_identity")); assert not any(payload[key] for key in ("source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is True; assert all(payload[key] for key in ("source_developer_identity", "target_developer_identity")); assert not any(payload[key] for key in ("source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
 
 ABSENCE_TARGET="$WORK_DIR/no-developer-project"
 mkdir "$ABSENCE_TARGET"
@@ -3574,7 +3539,9 @@ for relative in (
     "consumers/stop/production/finalize-task-blocked.schema.json",
     "consumers/stop/production/verify-extension-installation-blocked.schema.json",
     "migrations/production-minimal-handoff.json",
+    "migrations/production-ai-first-contract-v2.json",
     "schemas/production-migration-manifest.schema.json",
+    "schemas/production-ai-first-contract-migration.schema.json",
 ):
     path = skills_root / relative
     if path.exists():
@@ -3604,9 +3571,9 @@ contracts["artifact_schema_ids"] = [
     value for value in contracts["artifact_schema_ids"]
     if value not in {
         "guru-extension-installation-verification-1.0",
-        "guru-review-gate-2.1",
-        "guru-task-finalization-gate-1.0",
-        "guru-task-publication-readiness-1.1",
+        "guru-review-gate-2.2",
+        "guru-task-finalization-gate-2.0",
+        "guru-task-publication-readiness-2.0",
     }
 ]
 contracts["legacy_skill_ids"] = list(production_ids)
@@ -3620,12 +3587,12 @@ contracts["typed_output_schema_ids"] = [
 ]
 production_private_ids = {
     "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-2.0.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-2.1.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-1.0.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.1.json",
-    "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-1.1.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-3.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-3.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-2.0.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.2.json",
+    "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-2.0.json",
     "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
 }
 contracts["private_artifact_schema_ids"] = [
@@ -3727,8 +3694,8 @@ assert all(entries[skill_id]["io_contract_state"] == "minimal_handoff" for skill
 assert all(entries[skill_id]["interface_schema_id"] == "guru-team-skill-interface-1.3" for skill_id in stage0_ids)
 assert all(entries[skill_id]["io_contract_state"] == "legacy" for skill_id in production_ids)
 assert all(entries[skill_id]["interface_schema_id"] == "guru-team-skill-interface-1.2" for skill_id in production_ids)
-assert len(contracts["public_input_schema_ids"]) == 15
-assert len(contracts["typed_output_schema_ids"]) == 24
+assert len(contracts["public_input_schema_ids"]) == 12
+assert len(contracts["typed_output_schema_ids"]) == 23
 assert len(contracts["private_artifact_schema_ids"]) == 7
 assert contracts["legacy_skill_ids"] == list(production_ids)
 assert [item["id"] for item in contracts["migration_manifests"]] == ["stage0-minimal-handoff-v1"]
@@ -3774,7 +3741,7 @@ apply_local_workflow_sample "$ABSENCE_TARGET"
 assert_official_state_absent "$ABSENCE_TARGET" "pre-146 update and reapply"
 PRE146_SOURCE_VALIDATION_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 PRE146_INSTALLED_VALIDATION_JSON="$("$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$ABSENCE_TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source=json.loads(sys.argv[1]); installed=json.load(sys.stdin); expected={"invoke_markers":13,"exit_markers":52,"target_markers":29,"legacy_ids":[],"planned_ids":[]}; assert source["status"] == installed["status"] == "passed"; assert all(source["facts"][key] == installed["facts"][key] == value for key, value in expected.items())' "$PRE146_SOURCE_VALIDATION_JSON" <<<"$PRE146_INSTALLED_VALIDATION_JSON"
+python3 -c 'import json, sys; source=json.loads(sys.argv[1]); installed=json.load(sys.stdin); expected={"invoke_markers":13,"exit_markers":51,"target_markers":28,"legacy_ids":[],"planned_ids":[]}; assert source["status"] == installed["status"] == "passed"; assert all(source["facts"][key] == installed["facts"][key] == value for key, value in expected.items())' "$PRE146_SOURCE_VALIDATION_JSON" <<<"$PRE146_INSTALLED_VALIDATION_JSON"
 for skill_id in \
   guru-approve-task-plan \
   guru-check-task \

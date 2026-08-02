@@ -69,7 +69,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             ".trellis/tasks/archive/**/finish-summary.json",
             ".trellis/workspace/**",
             "one to three selected candidates",
-            "decision_owned_by_guru-clarify-requirements",
+            "writes no authorization field to the snapshot",
             "--expected-snapshot-sha256",
             "complete validator-passed `guru-base-sync-result-1.0`",
             "live body digest must equal the original reviewed draft body digest",

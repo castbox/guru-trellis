@@ -35,13 +35,11 @@ In Phase 2 check mode, also run:
 .trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
 ```
 
-Stop if planning approval is missing, old-schema, lacks passed
-`ambiguity_review` evidence, lacks fixed-scope scanner evidence, has unchecked
-normative hits, is not sourced from
-`explicit-post-planning-review`, or the reviewed planning document content
-digests no longer match. In Branch Review mode, verify the recorded planning
-approval evidence as part of the review scope instead of running Guru Team
-recorder/validator scripts.
+Stop if the checker rejects a missing, stale, legacy, or non-approved owner
+result. Do not interpret the planning owner's private checkpoint fields; the
+main workflow reruns the semantic owner and auto-consumes its mapped exit. In
+Branch Review mode, reread current authority and planning documents as review
+scope instead of running planning recorder/validator scripts.
 
 Before reviewing, read in this order:
 

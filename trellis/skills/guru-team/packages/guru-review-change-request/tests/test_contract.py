@@ -559,7 +559,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             "selected_issue": None,
             "original_target_role": "primary",
             "decision_summary": "No open duplicate replaces the current reviewed target.",
-            "confirmation_ref": None,
             "disposition_digest": "0" * 64,
         }
         snapshot_sha256 = context_payload["snapshot_identity"]["snapshot_sha256"]
@@ -629,128 +628,37 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         }
         GTT.write_json(task / "issue-scope-ledger.json", ledger)
 
-        wording_scope, wording_contents = GTT.contract_wording_build_scope(
-            self.root,
-            "planning_artifacts",
-            "workflow",
-            task_dir=task,
-        )
-        wording_scan = GTT.scan_contract_wording(wording_scope, wording_contents)
-        wording_evidence = GTT.contract_wording_derive_result(
-            "planning_artifacts",
-            "workflow",
-            wording_scope,
-            wording_scan,
-            {
-                "generated_at": "2026-01-01T00:00:00Z",
-                "semantic_review": {
-                    "revisions": [],
-                    "classifications": [{
-                        "hit_id": hit["hit_id"],
-                        "classification": "term_definition",
-                        "reason": "The active-task planning term is explicit.",
-                    } for hit in wording_scan["hits"]],
-                    "ai_review_gate": {
-                        "status": "passed",
-                        "reviewer": "production-package-test-ai",
-                        "summary": "The active-task planning wording was reviewed.",
-                        "reviewed_scan_sha256": wording_scan["scan_sha256"],
-                        "checked_dimensions": {
-                            name: True for name in GTT.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                        },
-                        "planning_checked_dimensions": {
-                            name: True
-                            for name in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-                        },
-                    },
-                },
-                "human_confirmation": {
-                    "status": "not_required",
-                    "confirmed_by": None,
-                    "confirmed_at": None,
-                    "reason": "The fixture requires no content mutation.",
-                },
-                "typed_exit": "pass",
-            },
-        )
-        GTT.write_json(task / GTT.CONTRACT_WORDING_EVIDENCE_ARTIFACT, wording_evidence)
         planning_approval = GTT.build_planning_approval_payload(
             self.root,
             task,
             {
                 "mode": "workflow",
-                "requirement_authorities": [{
-                    "id": "active-scope-prd",
-                    "kind": "task_artifact",
-                    "locator": f"{locator}/prd.md",
-                    "sha256": "0" * 64,
-                    "updated_at": None,
-                }],
+                "authority_refs": ["issue:27"],
                 "docs_ssot_plan": {
                     "strategy": "ssot_first",
-                    "artifact_path": "design.md",
-                    "locator": "Docs SSOT Plan",
-                    "statement_sha256": "0" * 64,
                     "durable_paths": ["docs/requirements.md"],
+                    "summary": "The current requirement remains the durable SSOT.",
                 },
-                "provenance_review": {
-                    "entries": [{
-                        "id": "active-scope-requirement",
-                        "artifact_path": "prd.md",
-                        "locator": "Active scope requirements",
-                        "statement_sha256": "0" * 64,
-                        "classification": "explicit_requirement",
-                        "authority_refs": ["active-scope-prd"],
-                        "reason": "The active task explicitly requires one exact scope classification.",
-                        "implementation_choice": None,
-                        "scope_expansion": None,
-                        "out_of_scope_proposal": None,
-                    }],
-                    "coverage": {
-                        "reviewer": "production-package-test-ai",
-                        "summary": "All load-bearing active-task planning contracts were reviewed.",
-                        "reviewed_entry_ids": ["active-scope-requirement"],
-                        "all_load_bearing_items_covered": True,
-                        "review_sha256": "0" * 64,
-                    },
-                },
-                "unusual_scenario_review": {
-                    "reviewer": "production-package-test-ai",
-                    "summary": "No unusual scenario proposal is required by this fixture.",
-                    "candidates": [],
-                    "unresolved_count": 0,
-                    "review_sha256": "0" * 64,
-                },
-                "semantic_review": {"ai_review_gate": {
+                "semantic_review": {
                     "status": "passed",
-                    "reviewer": "production-package-test-ai",
-                    "summary": "The complete active-task planning contract was reviewed.",
-                    "reviewed_at": "2026-01-01T00:00:00Z",
+                    "summary": "The active-task planning fixture is adequate and current.",
+                    "checked_dimensions": {
+                        name: True for name in GTT.PLANNING_APPROVAL_DIMENSIONS
+                    },
                     "findings": [],
                     "revision_actions": [],
                     "scope_proposals": [],
                     "blocking_reasons": [],
-                }},
-                "user_confirmation": {
-                    "kind": "post-planning-approval",
-                    "status": "confirmed",
-                    "prompt_presented_at": "2026-01-01T00:00:00Z",
-                    "confirmed_at": "2026-01-01T00:00:01Z",
-                    "evidence_summary": "The three displayed planning documents were confirmed.",
                 },
                 "typed_exit": "approved",
                 "consumer": {"kind": "workflow", "id": "phase-1-task-activation"},
                 "reason": "The active-task planning fixture passed the semantic gate.",
-                "supersedes_facts_sha256": None,
-            },
-            task_context={
-                "base_branch": "main",
-                "base_ref": "refs/heads/main",
-                "base_head_sha": self.git("rev-parse", "HEAD"),
-                "branch_name": "main",
             },
         )
-        GTT.write_json(task / GTT.PLANNING_APPROVAL_ARTIFACT, planning_approval)
+        planning_approval_path = GTT.planning_approval_path(
+            self.root, task, for_write=True
+        )
+        GTT.write_json(planning_approval_path, planning_approval)
 
         snapshot_sha256 = context_payload["snapshot_identity"]["snapshot_sha256"]
         (task / "context-discovery.json").write_text(json.dumps({
@@ -822,7 +730,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             "optional_mechanism_origin": True,
             "decision": "mechanism_removed",
             "proposal_digest": "0" * 64,
-            "confirmation_ref": None,
         }]
         planning = [{
             "path": f"{locator}/{name}",
@@ -838,14 +745,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                 ).hexdigest(),
             },
             "planning_documents": planning,
-            "stale_downstream_evidence": {
-                "planning_approval_sha256": hashlib.sha256(
-                    (task / GTT.PLANNING_APPROVAL_ARTIFACT).read_bytes()
-                ).hexdigest(),
-                "phase2_check_sha256": None,
-                "branch_review_sha256": None,
-            },
-            "review_evidence": {"status": "not_started", "artifact": None},
             "decision_trail": None,
             "reentry_owners": sorted(GTT.REQUIREMENTS_CLARIFICATION_REENTRY_OWNERS),
         }
@@ -864,6 +763,11 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             expected_result_sha256=recorded["content_identity"]["result_sha256"],
         ))
         self.assertEqual(checked["typed_exit"], "clear")
+        GTT.ai_first_retire_owner_checkpoints(
+            self.root,
+            task,
+            [GTT.PLANNING_APPROVAL_ARTIFACT],
+        )
         shutil.rmtree(task)
         return recorded
 
@@ -900,12 +804,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                         name: True for name in GTT.CONTRACT_WORDING_REVIEW_DIMENSIONS
                     },
                 },
-            },
-            "human_confirmation": {
-                "status": "not_required",
-                "confirmed_by": None,
-                "confirmed_at": None,
-                "reason": "No wording mutation is required.",
             },
             "typed_exit": "pass",
         }
@@ -1046,11 +944,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
     ) -> tuple[dict[str, object], dict[str, dict[str, object]], dict[str, object]]:
         projections = prerequisites or self.current_prerequisites()
         linkage = GTT.change_request_review_linkage(self.target, projections)
-        confirmation = {
-            "status": "required" if typed_exit == "clarify_requirements" else "not_required",
-            "reason": "A new product decision is routed to its owner." if typed_exit == "clarify_requirements" else "No new product decision is required.",
-            "proposal_sha256": "f" * 64 if typed_exit == "clarify_requirements" else None,
-        }
         authored = {
             "generated_at": "2026-01-01T00:00:00Z",
             "mode": "standalone",
@@ -1061,7 +954,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                 typed_exit,
                 gate_override=gate_override,
             ),
-            "human_confirmation": confirmation,
             "typed_exit": typed_exit,
             "reason": "The AI-authored review selected exactly one declared route.",
             "affected_evidence": [{
@@ -1121,11 +1013,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                 typed_exit,
                 target=target,
             ),
-            "human_confirmation": {
-                "status": "required" if typed_exit == "clarify_requirements" else "not_required",
-                "reason": "A new product decision is routed to its owner." if typed_exit == "clarify_requirements" else "No new product decision is required.",
-                "proposal_sha256": "f" * 64 if typed_exit == "clarify_requirements" else None,
-            },
             "typed_exit": typed_exit,
             "reason": "The AI-authored review selected one declared route.",
             "affected_evidence": [{
@@ -1270,6 +1157,10 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         self.assertEqual([row["id"] for row in exits], list(GTT.CHANGE_REQUEST_REVIEW_CONSUMERS))
         self.assertEqual({row["id"]: row["consumer"] for row in exits}, GTT.CHANGE_REQUEST_REVIEW_CONSUMERS)
         self.assertEqual(len({json.dumps(row["consumer"], sort_keys=True) for row in exits}), 5)
+        self.assertEqual(
+            interface["public_contracts"]["private_artifacts"][0]["persistence"],
+            "stdout_only_owner_private",
+        )
 
     def test_contract_owns_semantics_and_keeps_scripts_deterministic(self) -> None:
         skill = " ".join((PACKAGE_ROOT / "SKILL.md").read_text(encoding="utf-8").split())
@@ -2073,11 +1964,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             "target": self.raw_target,
             "prerequisite_payloads": prerequisite_payloads,
             "semantic_review": self.semantic_review(linkage, "review_wording"),
-            "human_confirmation": {
-                "status": "not_required",
-                "reason": "The wording owner does not require a new product decision.",
-                "proposal_sha256": None,
-            },
             "typed_exit": "review_wording",
             "reason": "Current wording evidence is missing.",
             "affected_evidence": [{

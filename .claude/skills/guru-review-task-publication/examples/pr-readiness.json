@@ -1,88 +1,89 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "2.0",
   "skill_id": "guru-review-task-publication",
-  "generated_at": "2026-07-24T00:00:00Z",
-  "task_dir": ".trellis/tasks/07-24-example-publication",
-  "profile": "publication_review",
-  "mode": "workflow",
-  "review_intent": "initial_review",
-  "review_identity": {
-    "reviewed_head": "0123456789abcdef0123456789abcdef01234567",
-    "review_ref": "review-gate:example"
-  },
-  "semantic_review": {
-    "dimensions": [
-      {"id": "diff_outcome_consistency", "status": "passed", "summary": "The diff matches the reviewed outcome.", "evidence_refs": ["review-gate.json"]},
-      {"id": "issue_scope_closure", "status": "passed", "summary": "Issue closure matches the current ledger.", "evidence_refs": ["issue-scope-ledger.json"]},
-      {"id": "pr_body_quality", "status": "passed", "summary": "The PR body is specific and reviewable.", "evidence_refs": ["pr-body.md"]},
-      {"id": "validation_claims", "status": "passed", "summary": "Validation claims match current evidence.", "evidence_refs": ["phase2-check.json"]},
-      {"id": "branch_review_summary", "status": "passed", "summary": "The branch review summary matches its gate.", "evidence_refs": ["review-gate.json"]},
-      {"id": "docs_ssot_reconciliation", "status": "passed", "summary": "Docs SSOT reconciliation is complete.", "evidence_refs": ["phase2-check.json"]},
-      {"id": "safety_deployment_impact", "status": "passed", "summary": "Safety and deployment impact are stated.", "evidence_refs": ["pr-body.md"]},
-      {"id": "finish_summary_semantics", "status": "passed", "summary": "The finish summary index is current.", "evidence_refs": ["finish-summary-index.json"]},
-      {"id": "metadata_tail_integrity", "status": "passed", "summary": "Only declared task metadata follows review.", "evidence_refs": ["review-gate.json"]},
-      {"id": "artifact_binding_freshness", "status": "passed", "summary": "All artifact bindings are current.", "evidence_refs": ["pr-readiness.json"]}
-    ],
-    "findings": [],
-    "conclusions": {
-      "issue_scope": {"status": "passed", "summary": "The current close scope is complete.", "evidence_refs": ["issue-scope-ledger.json"]},
-      "docs_ssot": {"status": "passed", "summary": "The approved Docs SSOT plan is reconciled.", "evidence_refs": ["phase2-check.json"]},
-      "safety_deployment": {"status": "passed", "summary": "The publication has no undisclosed safety or deployment impact.", "evidence_refs": ["pr-body.md"]}
-    },
-    "revision_history": [],
-    "reviewer_process": {
-      "reviewer": "publication-review-owner",
-      "summary": "The semantic owner reviewed all ten current dimensions.",
-      "evidence_refs": ["review-gate.json"]
-    },
-    "human_confirmation": {
-      "status": "not_required",
-      "summary": "No additional confirmation is required for this publication route.",
-      "confirmed_by": null,
-      "confirmed_at": null
-    },
-    "ai_review_gate": {
+  "task_ref": ".trellis/tasks/07-24-example-publication",
+  "reviewed_content_head": "0123456789abcdef0123456789abcdef01234567",
+  "dimensions": [
+    {
+      "id": "diff_outcome_consistency",
       "status": "passed",
-      "summary": "The fresh publication review passed."
+      "summary": "The diff matches the reviewed outcome.",
+      "evidence_refs": ["git:reviewed_content_head"]
+    },
+    {
+      "id": "issue_scope_closure",
+      "status": "passed",
+      "summary": "Issue closure matches the current ledger.",
+      "evidence_refs": ["issue-scope-ledger.json"]
+    },
+    {
+      "id": "pr_body_quality",
+      "status": "passed",
+      "summary": "The PR body is specific and reviewable.",
+      "evidence_refs": ["pr-body.md"]
+    },
+    {
+      "id": "validation_claims",
+      "status": "passed",
+      "summary": "Validation claims match current evidence.",
+      "evidence_refs": ["git:reviewed_content_head"]
+    },
+    {
+      "id": "branch_review_summary",
+      "status": "passed",
+      "summary": "The branch review conclusion is current.",
+      "evidence_refs": ["git:reviewed_content_head"]
+    },
+    {
+      "id": "docs_ssot_reconciliation",
+      "status": "passed",
+      "summary": "Docs SSOT reconciliation is complete.",
+      "evidence_refs": ["git:reviewed_content_head", "durable-docs"]
+    },
+    {
+      "id": "safety_deployment_impact",
+      "status": "passed",
+      "summary": "Safety and deployment impact are stated.",
+      "evidence_refs": ["pr-body.md"]
+    },
+    {
+      "id": "finish_summary_semantics",
+      "status": "passed",
+      "summary": "The finish summary projection is current.",
+      "evidence_refs": ["finish-summary-index.json"]
+    },
+    {
+      "id": "metadata_tail_integrity",
+      "status": "passed",
+      "summary": "Only the declared metadata tail follows content review.",
+      "evidence_refs": ["git-status"]
+    },
+    {
+      "id": "artifact_binding_freshness",
+      "status": "passed",
+      "summary": "Every directly consumed owner result is current.",
+      "evidence_refs": ["owner-checkers"]
+    }
+  ],
+  "findings": [],
+  "conclusions": {
+    "issue_scope": {
+      "status": "passed",
+      "summary": "The current close scope is complete.",
+      "evidence_refs": ["issue-scope-ledger.json"]
+    },
+    "docs_ssot": {
+      "status": "passed",
+      "summary": "The approved Docs SSOT plan is reconciled.",
+      "evidence_refs": ["git:reviewed_content_head", "durable-docs"]
+    },
+    "safety_deployment": {
+      "status": "passed",
+      "summary": "The publication has no undisclosed safety or deployment impact.",
+      "evidence_refs": ["pr-body.md"]
     }
   },
-  "deterministic_bindings": {
-    "artifacts": {
-      "prd.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "design.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "implement.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "planning-approval.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "phase2-check.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "issue-scope-ledger.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "review-gate.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "pr-body.md": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1},
-      "finish-summary-index.json": {"sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "size": 1}
-    },
-    "repository": {
-      "head": "0123456789abcdef0123456789abcdef01234567",
-      "branch": "example/publication",
-      "base_ref": "origin/main",
-      "diff_paths": ["src/example.py"],
-      "status_paths": [".trellis/tasks/07-24-example-publication/pr-body.md"]
-    },
-    "entry_preconditions": {
-      "runtime_dependency": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "task_workspace": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "task_identity": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "branch_review_handoff": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "planning_approval": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "phase2_check": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "issue_scope_ledger": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "docs_ssot_reconciliation": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "branch_review_evidence": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "publication_content": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "review_range_and_working_tree": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
-      "invocation_freshness": {"status": "passed", "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
-    },
-    "publication_ref": "publication:example-current"
-  },
-  "typed_exit": "ready",
-  "consumer": {"kind": "skill", "id": "guru-finalize-task"},
-  "supersedes_publication_ref": null,
-  "facts_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  "route": {
+    "typed_exit": "ready"
+  }
 }

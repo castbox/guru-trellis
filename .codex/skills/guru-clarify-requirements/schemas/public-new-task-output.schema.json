@@ -6,7 +6,6 @@
   "required": [
     "exit_id",
     "target_locator",
-    "confirmed_action_id",
     "continuation_id"
   ],
   "properties": {
@@ -14,10 +13,6 @@
       "const": "new_task"
     },
     "target_locator": {
-      "type": "string",
-      "minLength": 1
-    },
-    "confirmed_action_id": {
       "type": "string",
       "minLength": 1
     },

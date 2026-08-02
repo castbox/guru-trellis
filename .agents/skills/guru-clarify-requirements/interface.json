@@ -3,7 +3,7 @@
   "schema_version": "1.3",
   "id": "guru-clarify-requirements",
   "name": "guru-clarify-requirements",
-  "description": "Clarify initial requirements, active-task scope changes, or explicit review requests through an evidence-first semantic loop with exact confirmation and typed exits.",
+  "description": "Clarify initial requirements, active-task scope changes, or explicit review requests through an evidence-first semantic loop with dialogue-local choices and typed exits.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -182,7 +182,7 @@
       "id": "clarification_checker",
       "command": "scripts/check-requirements-clarification.sh",
       "runtime_command": "check-requirements-clarification",
-      "objective_scope": "schema 2.0 and legacy-version rejection, digest recomputation, live source/context/target/duplicate freshness, exact target/action/scope confirmation, load-bearing authority persistence, mechanism disposition isolation, decision-trail linkage, authority-before-context-before-task-update re-entry and typed-exit invariants"
+      "objective_scope": "schema 2.0 and legacy-version rejection, digest recomputation, live source/context/target/duplicate freshness, objective target/action/result bindings, compact scope-decision authority linkage, mechanism disposition isolation, authority-before-context-before-task-update re-entry and typed-exit invariants"
     },
     {
       "id": "public_invocation",
@@ -194,7 +194,7 @@
   "external_exits": [
     {
       "id": "clear",
-      "evidence": "zero open questions, passed AI Review Gate, one current keep disposition for initial intake or current active-task authority, persisted load-bearing answers, exact required confirmation, and no unrefreshed mutation",
+      "evidence": "zero open questions, passed AI Review Gate, one current keep disposition for initial intake or current active-task authority, persisted load-bearing answers, and no unrefreshed mutation",
       "consumer": {
         "kind": "workflow",
         "id": "guru-requirements-clear-router"
@@ -226,7 +226,7 @@
     },
     {
       "id": "new_task",
-      "evidence": "an independent delivery unit has a reviewed side-effect-free new issue draft and any active task preserved its classification trail before fresh re-entry",
+      "evidence": "an independent delivery unit has a reviewed side-effect-free new issue draft and any active task persisted only the compact final classification plus remote authority before fresh re-entry",
       "consumer": {
         "kind": "workflow",
         "id": "guru-full-task-intake-chain"
@@ -242,7 +242,7 @@
     }
   ],
   "reentry": {
-    "identity": "mode, invocation kind, review target, target disposition, duplicate candidates, context, clarification authority impacts, scope proposals, source actions, confirmation, active-task evidence and derived content identity",
+    "identity": "mode, invocation kind, review target, target disposition, duplicate candidates, context, clarification authority impacts, scope proposals, source actions, active-task evidence and derived content identity",
     "freshness": "clear/new_task/retarget_context is accepted only while every target/duplicate/authority/context/task binding remains current; GitHub authority mutation refreshes context first, context generated_at is not earlier than authority updated_at, task update binds that current digest, and no second context digest change is required",
     "stale_behavior": "fail_closed"
   },

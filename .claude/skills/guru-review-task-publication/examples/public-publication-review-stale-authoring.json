@@ -1,6 +1,5 @@
 {
   "profile": "publication_review_stale",
   "mode": "workflow",
-  "review_intent": "stale_reentry_review",
-  "reentry_context": "Rebuild publication evidence against current owner facts."
+  "review_intent": "stale_reentry_review"
 }

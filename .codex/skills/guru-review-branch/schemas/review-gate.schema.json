@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.1.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.2.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "typed_exit", "head", "base_ref", "semantic_review", "facts_sha256"],
+  "required": ["schema_version", "skill_id", "typed_exit", "base_ref", "semantic_review", "facts_sha256"],
   "properties": {
-    "schema_version": {"enum": ["2.0", "2.1"]},
+    "schema_version": {"enum": ["2.0", "2.1", "2.2"]},
     "skill_id": {"const": "guru-review-branch"},
     "generated_at": {"type": "string", "minLength": 1},
     "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
@@ -17,6 +17,7 @@
     },
     "base_branch": {"type": "string", "minLength": 1},
     "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "reviewed_content_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "base_ref": {"type": "string", "minLength": 1},
     "head_branch": {"type": "string", "minLength": 1},
     "diff_range": {"type": "string", "minLength": 1},
@@ -61,6 +62,10 @@
     "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"enum": ["2.0", "2.1"]}}, "required": ["schema_version"]},
+      "then": {"required": ["head"]}
+    },
     {
       "if": {"properties": {"schema_version": {"const": "2.1"}}, "required": ["schema_version"]},
       "then": {
@@ -110,6 +115,85 @@
                         {
                           "if": {"properties": {"status": {"const": "resolved"}}, "required": ["status"]},
                           "then": {"properties": {"resolved_at_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "closure_evidence": {"minItems": 1}}}
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"schema_version": {"const": "2.2"}}, "required": ["schema_version"]},
+      "then": {
+        "required": ["generated_at", "task_dir", "mode", "review_intent", "reviewed_content_head", "verification_evidence"],
+        "not": {
+          "anyOf": [
+            {"required": ["head"]},
+            {"required": ["base_branch"]},
+            {"required": ["head_branch"]},
+            {"required": ["diff_range"]},
+            {"required": ["changed_files"]},
+            {"required": ["review_scope"]},
+            {"required": ["command"]},
+            {"required": ["conclusion"]},
+            {"required": ["findings"]},
+            {"required": ["observations"]},
+            {"required": ["followup_candidates"]},
+            {"required": ["issue_scope"]},
+            {"required": ["deployment_impact"]}
+          ]
+        },
+        "properties": {
+          "review_intent": {"enum": ["initial_review", "fresh_final_review"]},
+          "verification_evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reviewer", "review_source", "evidence"],
+            "properties": {
+              "reviewer": {"type": "string", "minLength": 1},
+              "review_source": {"const": "independent-agent"},
+              "evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+            }
+          },
+          "semantic_review": {
+            "properties": {
+              "qualified_findings": {
+                "items": {
+                  "allOf": [
+                    {"$ref": "#/$defs/qualifiedFinding"},
+                    {
+                      "required": ["introduced_head", "fix_head", "closure_head"],
+                      "not": {
+                        "anyOf": [
+                          {"required": ["owner_round"]},
+                          {"required": ["reviewed_head"]},
+                          {"required": ["resolved_at_head"]}
+                        ]
+                      },
+                      "allOf": [
+                        {
+                          "if": {"properties": {"status": {"const": "open"}}, "required": ["status"]},
+                          "then": {
+                            "properties": {
+                              "fix_head": {"type": "null"},
+                              "closure_head": {"type": "null"},
+                              "closure_evidence": {"maxItems": 0}
+                            }
+                          }
+                        },
+                        {
+                          "if": {"properties": {"status": {"const": "resolved"}}, "required": ["status"]},
+                          "then": {
+                            "properties": {
+                              "fix_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                              "closure_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                              "closure_evidence": {"minItems": 1}
+                            }
+                          }
                         }
                       ]
                     }
@@ -170,6 +254,8 @@
             "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
             "introduced_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
             "resolved_at_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+            "fix_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+            "closure_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
             "status": {"enum": ["open", "resolved"]},
             "closure_evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
           }

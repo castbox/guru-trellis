@@ -1,15 +1,9 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "skill_id": "guru-finalize-task",
   "review": {
     "status": "passed",
-    "summary": "The exact current plan is sufficient and the verification boundary is the next route.",
-    "evidence_refs": ["closeout-plan:current", "publication:current"]
-  },
-  "confirmation": {
-    "status": "confirmed",
-    "confirmed_plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "summary": "The exact plan digest was confirmed before the first side effect."
+    "summary": "The exact current plan is sufficient and the verification boundary is the next route."
   },
   "route": {
     "typed_exit": "verification_required",
@@ -22,6 +16,5 @@
       "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "verification_target": "extension-installation"
     }
-  },
-  "supersedes_gate_ref": null
+  }
 }

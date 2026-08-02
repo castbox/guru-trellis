@@ -40,7 +40,7 @@
     },
     {
       "id": "content-changed-route",
-      "prompt": "Review the staged authorized-revision scenario after its complete rescan, complete the semantic owner result and confirmation evidence, and invoke guru-review-contract-wording with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged completed-revision scenario after its complete rescan, complete the semantic owner result, and invoke guru-review-contract-wording with its public input plus that private owner-result locator. Return the checker-derived route.",
       "expected_exit": "content_changed",
       "expected_output": "The public DTO is the declared content_changed route.",
       "assertions": {

@@ -65,12 +65,6 @@
       }
     }
   },
-  "human_confirmation": {
-    "status": "not_required",
-    "confirmed_by": null,
-    "confirmed_at": null,
-    "reason": "No content mutation required confirmation."
-  },
   "typed_exit": "pass",
   "facts_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
 }

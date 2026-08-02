@@ -33,12 +33,12 @@ Execute in this order:
    as `load_bearing` or `non_load_bearing` and bind its authority actions;
 6. propose exact scope decisions and source-of-truth actions;
 7. execute the AI Review Gate;
-8. when required, show exact target, target disposition, payload, scope delta,
-   affected contracts,
-   executor command and derived action/proposal digests, then obtain dedicated
-   human confirmation;
+8. when required, show the exact target, target disposition, payload, scope
+   delta, affected contracts and executor action, then obtain dedicated human
+   confirmation in the current dialogue;
 9. after confirmation only, the AI may execute a GitHub write, reread live
-   facts, and provide mutation evidence;
+   facts, and provide objective mutation evidence without serializing the
+   authorization;
 10. call recorder/checker and return one typed exit.
 
 AI owns question selection, clarity, scope classification, action selection,
@@ -51,17 +51,17 @@ Every clarification round contains one `question_id` that must be opened in
 that round or already belong to the current open set. The reducer enforces
 `open_questions = opened - closed`, rejects close-before-open and
 reopen-after-close, and does not allow an empty lifecycle to hide a partial
-answer. `answer_status=partial` cannot close its own or another question. A refused load-bearing decision can
-produce `blocked`; a rejected/deferred expansion that leaves current confirmed
+answer. `answer_status=partial` cannot close its own or another question. An
+unresolved load-bearing decision can produce `blocked`; a rejected/deferred
+expansion that leaves current confirmed
 scope complete is classified as related, followup, new task or out-of-scope and
-does not block that current scope. During an active task, an unconfirmed
-expansion cannot receive any of those five scope classifications without dedicated
-proposal-digest-bound user decision evidence.
+does not block that current scope. During an active task, an expansion cannot
+receive any of those five scope classifications until the AI has completed the
+required dialogue decision.
 
 `clear` is valid only when `open_questions=[]`, the AI Review Gate passed,
-source/context authority is current, all accepted proposals have exact
-confirmation when required, and no successful GitHub mutation remains
-unrefreshed.
+source/context authority is current, all proposals have final decisions, and
+no successful GitHub mutation remains unrefreshed.
 
 ## Target Disposition
 
@@ -85,16 +85,16 @@ cannot use `target_disposition=null` while returning `refresh_context`.
 Duplicate search is mandatory even when its candidate set is empty. Every
 candidate binds live repo/number/state/URL/updated-at facts and one `selected`
 or `rejected` AI decision. Non-empty candidate sets require exact human
-confirmation for both a keep decision and a selected replacement; empty sets
-do not manufacture confirmation for `keep_current_*`.
+confirmation for both a keep decision and a selected replacement, but the
+result stores only the final disposition and objective candidate facts.
 
-`retarget_existing_issue` owns one exactly confirmed
-`select_existing_issue` action and returns `retarget_context`. Its unique
+`retarget_existing_issue` owns one validated `select_existing_issue` action
+and returns `retarget_context`. Its unique
 consumer is `guru-sync-base`; the complete sync, context discovery,
 clarification, wording and change-request review chain reruns for the selected
 issue. No target-specific evidence from the old target transfers.
 
-`reopen_closed_issue` owns one exactly confirmed `reopen_issue` GitHub
+`reopen_closed_issue` owns one completed `reopen_issue` GitHub
 mutation and returns `refresh_context`. `create_followup_draft` owns a
 `new_issue_draft`, returns `new_task`, and cannot place the original closed
 issue in the future task's close set. `block_target_complete` requires a
@@ -103,14 +103,16 @@ blocked AI gate and returns `blocked`. Closed issues cannot reach `clear`.
 ## Scope Proposals
 
 Every proposal binds exact scenario, trigger evidence, proposed contracts,
-cost, alternatives, omission consequence, origin status, decision and derived
-digest. `unconfirmed_expansion + accepted_current` requires a dedicated
-proposal-digest-bound confirmation. A generic continuation, task creation,
-planning approval or review confirmation never qualifies.
+cost, alternatives, omission consequence, origin status, decision and one
+derived digest used only by recorder/checker to validate those current bytes.
+The digest is neither workflow authority nor authorization evidence.
+`unconfirmed_expansion + accepted_current` requires one dedicated dialogue-local
+choice before the decision is finalized. That choice is not copied into the
+result or decision trail.
 
 When `optional_mechanism_origin=true`, decision cannot be `accepted_current`.
 Remove or replace that mechanism; if independent product value remains, form a
-new proposal and confirm it separately. Unrequested threat, attack, TOCTOU,
+new proposal and decide it separately. Unrequested threat, attack, TOCTOU,
 race, fault-injection or cross-OS hardening follows this same rule.
 
 ## Source Actions And Mutation Boundary
@@ -121,11 +123,11 @@ Actions are exactly `none`, `issue_comment`, `issue_body_edit`,
 in this package.
 
 For `issue_comment` or `issue_body_edit`, the AI must reread the live preimage,
-match repo/issue/action/payload/confirmation digests, execute the exact existing
+match repo/issue/action/payload facts, execute the exact existing
 connector action or reviewed `gh` command, reread live facts, then pass only
 normalized mutation facts to recorder/checker. Success returns
 `refresh_context`, never `clear`. Checker requires exact equality among the
-human-confirmed action payload body, canonical payload digest, mutation result
+action payload body, canonical payload digest, mutation result
 content digest, and reread live body/comment bytes. `new_issue_draft` performs no issue creation
 and returns `new_task`; #112 owns the complete intake mutation route.
 
@@ -133,8 +135,8 @@ Every clarification round carries an AI-authored `authority_impact` and
 `authority_action_ids`. `load_bearing` covers any answer that changes problem,
 scope, acceptance, non-goals, issue disposition, risk/test boundary, or another
 contract future implementation must consume. For an issue target it requires
-a confirmed `issue_comment` or `issue_body_edit`, followed by live reread and
-`refresh_context`; for a draft target it requires a confirmed and validated
+a completed `issue_comment` or `issue_body_edit`, followed by live reread and
+`refresh_context`; for a draft target it requires a validated
 `proposed_draft_update` bound to current draft bytes. `none + clear` is invalid
 for a load-bearing round. `non_load_bearing` does not require or permit an
 authority action merely to satisfy the contract.
@@ -144,61 +146,50 @@ authority action merely to satisfy the contract.
 Pause implementation/check/commit/review progression. Classify new input as
 current close scope, related, followup, new task or out-of-scope. Current
 inclusion requires the same delivery unit, no material boundary/risk/test
-expansion, complete updated planning and dedicated confirmation.
+expansion, complete updated planning and the required dialogue decision.
 
 Active-task `clear` and `new_task` require a non-empty set containing only the
 seven terminal decisions: the five scope classifications `accepted_current`,
 `related`, `followup`, `new_task`, and `out_of_scope`, plus the mechanism
 dispositions `mechanism_removed` and `mechanism_replaced`. `new_task` must
 contain at least one `decision=new_task` classification. Every scope
-classification requires proposal-digest-bound exact user-decision evidence,
-regardless of its origin status, and binds one structured `decision_trail`.
-Mechanism dispositions instead require `optional_mechanism_origin=true` and
-`confirmation_ref=null`; they never enter the trail or trigger GitHub/task
-authority mutation. A mechanism-only payload may return `clear`, and a mixed
-payload projects only its five-classification subset into confirmation/trail.
+classification is finalized only after the required dialogue decision and
+binds one compact `decision_trail`. The field name is retained for active-task
+compatibility, but its value is not a process trail: it contains only the final
+proposal decisions plus the remote authority locator and content checksum. It
+contains no user identity, wording, timestamp, confirmation reference,
+authorization digest, planning identity, review state, context snapshot,
+resume target or re-entry routing. Mechanism
+dispositions instead require `optional_mechanism_origin=true`; they never enter
+the trail or trigger GitHub/task authority mutation. A mechanism-only payload
+may return `clear`, and a mixed payload projects only its five-classification
+subset into the trail.
 Mechanism-only still carries the current task-local ledger, all three planning
-documents, complete planning approval, review/stale identities, re-entry
-owners, and current context evidence; only `decision_trail` is null. Every
+documents, re-entry owners, and current context evidence in the owner-private
+result; only `decision_trail` is null. Every
 terminal active-task path receives the same live task/context freshness check.
 The exact trail is stored in current
-`issue-scope-ledger.json.scope_decisions[]` and contains proposal decisions,
-user-decision evidence, live GitHub comment/body authority including
-`updated_at`, the `context_before_task_update_sha256`, all three planning
-document digests, planning approval,
-Branch-Review state, interrupted resume target and re-entry owners
-`guru-approve-task-plan`, `guru-check-task`, and `guru-review-branch`. Checker
-parses the ledger and requires one exact trail match. It reuses the complete
-shared `check-planning-approval --require-exit approved` validator for the
-Skill-owned `guru-planning-approval-2.0` artifact. That validation covers the
-current task and requirement authorities, wording evidence, Docs SSOT Plan,
-four-class provenance, unusual-scenario dispositions, AI Gate, facts digest,
-typed exit/consumer, exact reviewed/approved aliases, and all three current
-planning-document bindings. The ordinary planning confirmation must have
-`user_confirmation.kind=post-planning-approval`, `status=confirmed`, and
-non-null prompt/confirmation timestamps; generic continuation or a legacy
-confirmation source cannot substitute. An old ledger hash, two-line planning
-placeholder, active legacy approval, or minimal approval/review JSON is
-insufficient.
-
-If `review-gate.json` exists, re-entry requires
-`review_evidence.status=stale` and the exact artifact path/content digest.
-`not_started` is valid only when that file is absent, its artifact is null, and
-the stale downstream Branch Review digest is null. `current` is never valid
-during active-task re-entry.
+`issue-scope-ledger.json.scope_decisions[]` and contains only `trail_id`, final
+`proposal_decisions[]`, and `github_authority` with kind, URL and remote
+content checksum. Checker parses the ledger and requires one exact compact
+match, then independently rereads current planning, context, task action and
+re-entry facts from their owning sources. Those rederivable bindings stay in
+the transient owner result and never enter the ledger. A legacy full-shape trail is projected once
+by the recorder into this compact form, including its
+matching task-update payload, without a new user choice or authority mutation;
+the old ledger entry remains read-only history until the normal task update
+writes the compact current entry.
 
 GitHub comment/body mutation returns `refresh_context` before any task-local
-update. On re-entry, live authority kind/URL/content/`updated_at` must match,
-current `context-discovery.json.generated_at` must be at least that authority
-time, and its snapshot digest must equal `context_before_task_update_sha256`.
-The AI then validates the current ledger/planning/review/stale identities and
-one `active_task_scope_update` action. The same exact confirmation that covers
-the five-class proposal set must use
-`confirmation_kind=exact_source_action_and_scope`, list that task-update action
-id in `confirmed_actions[]`, and bind the canonical digest of the confirmed
-action set before the task-local source-of-truth write. Proposal-only
-confirmation, planning approval, or `status=validated` cannot substitute for
-this action confirmation. A task-only update does not require a
+update. On re-entry, live authority kind/URL/content must match; its live
+`updated_at` is reread rather than copied into the ledger. Current
+`context-discovery.json.generated_at` must be at least that live authority
+time, and the task-update action preimage must equal the current context
+snapshot digest. The AI then validates the current ledger/planning identities and
+one `active_task_scope_update` action. After the dialogue decision, the
+task-local write binds that action to the same five-class proposal set and the
+current preimage. Recorder/checker retain only the objective action and result
+facts; each component writes no authorization fields. A task-only update does not require a
 second context snapshot or a changed digest before `clear` or active-task
 `new_task` resumes the exact interrupted progression. `new_task` then carries only a reviewed
 side-effect-free draft; #112 still owns issue/task creation. This Skill records
@@ -207,7 +198,7 @@ no dedicated clarification artifact and never writes another task directory.
 ## Recorder, Checker, And Exits
 
 Recorder derives proposal/action/payload/content/result SHA-256 values from the
-AI/human-reviewed payload and emits canonical result bytes. Checker recomputes
+AI-reviewed payload and emits canonical result bytes. Checker recomputes
 them and validates current live GitHub/Git/task facts. Both are deterministic,
 perform no GitHub write, and cannot synthesize a semantic pass.
 

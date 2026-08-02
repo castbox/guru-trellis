@@ -13,7 +13,6 @@
     "prerequisites",
     "evidence_linkage",
     "semantic_review",
-    "human_confirmation",
     "typed_exit",
     "reason",
     "affected_evidence",
@@ -29,7 +28,6 @@
     "prerequisites": {"$ref": "#/$defs/prerequisites"},
     "evidence_linkage": {"$ref": "#/$defs/linkage"},
     "semantic_review": {"$ref": "#/$defs/semanticReview"},
-    "human_confirmation": {"$ref": "#/$defs/humanConfirmation"},
     "typed_exit": {"enum": ["ready", "clarify_requirements", "review_wording", "refresh_context", "blocked"]},
     "reason": {"type": "string", "minLength": 1},
     "affected_evidence": {
@@ -46,7 +44,6 @@
       "then": {
         "properties": {
           "consumer": {"const": {"kind": "skill", "id": "guru-create-task-workspace"}},
-          "human_confirmation": {"properties": {"status": {"const": "not_required"}}},
           "semantic_review": {"properties": {"ai_review_gate": {"properties": {"status": {"const": "passed"}}}}}
         }
       }
@@ -293,16 +290,6 @@
         "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
         "scope_conclusion": {"$ref": "#/$defs/scopeConclusion"},
         "ai_review_gate": {"$ref": "#/$defs/aiReviewGate"}
-      }
-    },
-    "humanConfirmation": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["status", "reason", "proposal_sha256"],
-      "properties": {
-        "status": {"enum": ["not_required", "required"]},
-        "reason": {"$ref": "#/$defs/cleanText"},
-        "proposal_sha256": {"$ref": "#/$defs/nullableSha256"}
       }
     },
     "evidenceRef": {

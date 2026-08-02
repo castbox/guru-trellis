@@ -29,7 +29,6 @@
     "selected_issue": null,
     "original_target_role": "primary",
     "decision_summary": "No open duplicate exists, so the current reviewed draft remains the target.",
-    "confirmation_ref": null,
     "disposition_digest": "4af679323fd5d9a9266a7edfdec2a41fd0af97c432982e64c811e35450f8d8e4"
   },
   "context_evidence": {
@@ -73,17 +72,6 @@
       "mutation_evidence": null
     }
   ],
-  "human_confirmation": {
-    "status": "not_required",
-    "confirmation_kind": "none",
-    "action_digest": null,
-    "target_disposition_digest": null,
-    "proposal_digests": [],
-    "confirmed_actions": [],
-    "confirmer": null,
-    "confirmed_at": null,
-    "evidence_summary": "No source mutation or scope expansion requires confirmation."
-  },
   "mutation_results": [],
   "active_task_evidence": null,
   "ai_review_gate": {
@@ -97,13 +85,13 @@
   "affected_contracts": ["requirements", "workflow routing"],
   "content_identity": {
     "target_sha256": "603e08673b9ead771afe56bee61774d9a9a70b6ba0fa0b40c76cc050ac1aaaf0",
-    "disposition_sha256": "fc60202f9de59f7a860a29682f8a417ed4e0c5844afbe2712b4ef59f38e52404",
+    "disposition_sha256": "1130c882f3e8193faa9cb1b0ff74c99a10128b5a7ca2eb0ab184d84cf7009538",
     "content_sha256": "94b13eddb24ebfe946826823d9c9505253f0ced541d0cdb5bedc92bf068e95bf",
     "context_sha256": "46be0780ee8aaa5cf134e8b534e695728c4cd093d1ac6a7505d00996d782b3b5",
     "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
     "action_sha256": "8bd79fcbfc2bf6fc34dca122c1c04c6afdc1425ffcd64a49289f1ee0cc764dc2",
     "payload_sha256": "161a1bfffa621be8ff92c3a770b613a877f77c8a2d865342c10988ae7f72aa6b",
-    "result_sha256": "81d287951c5e86525cd84ab28d527bdaeda55c88e3375080c400062764886c11"
+    "result_sha256": "2ca8016efb513cfb656f2090f7de00770fa5427d9ea5af403e7efe8cf7e2165c"
   },
   "reason": "All load-bearing requirements are confirmed by current evidence.",
   "consumer": {

@@ -20,3 +20,9 @@ config, or deployment drift returns to task work.
 
 Emit exactly one declared typed exit. Missing, stale, ambiguous, multiple,
 unmapped, or checker-failed evidence fails closed.
+
+Existing v1 `publication_review` inputs are read-only migration signals only.
+If an input still contains `reviewed_head` or `review_ref`, fail closed and
+return to the Branch Review owner. That owner completes any required fresh
+review and emits the current minimal `passed` DTO. Publication never reads,
+projects, rewrites, or republishes another Skill's private checkpoint.

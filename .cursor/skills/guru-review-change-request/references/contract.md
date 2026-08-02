@@ -14,8 +14,8 @@ creates an issue, branch, worktree, or Trellis task. It reuses the current
 outputs of `guru-discover-change-context`, `guru-clarify-requirements`, and
 `guru-review-contract-wording`. Issue #112's
 `guru-create-task-workspace` consumer owns every task-creation side effect and
-any later task-local persistence of the byte-identical checker-passed
-`issue-review.json` result.
+consumes the checked typed exit directly. It does not persist the private
+`issue-review.json`-shaped result under the task.
 
 Workflow and standalone modes have identical entry preconditions. Both require
 the complete compatible Guru Team preset, extension manifest, dispatcher,
@@ -112,11 +112,10 @@ with `blocked`. A missing or incomplete Gate fails closed. Zero scanner errors,
 successful prerequisite checkers, or ten structurally present dimensions never
 generate or imply a semantic pass.
 
-Human confirmation is normally `not_required`. If the AI identifies a proposal
-that would change confirmed product semantics, #101 does not absorb that
-decision: it records `required` with the proposal digest and returns
-`clarify_requirements`, where `guru-clarify-requirements` owns the exact user
-decision.
+If the AI identifies a proposal that would change confirmed product semantics,
+#101 does not absorb that decision: it returns `clarify_requirements`, where
+`guru-clarify-requirements` owns the exact dialogue decision. The review result
+records the route and objective evidence only, never authorization state.
 
 ## Five Typed Exits
 
@@ -129,7 +128,7 @@ decision.
 The result carries one scalar exit and its exact consumer. Unknown, multiple,
 missing, unmapped, or consumer-mismatched exits fail closed. `ready` requires
 all ten dimensions passed, no blocking finding, all three prerequisites
-current, complete linkage, a passed Gate, and `human_confirmation=not_required`.
+current, complete linkage, and a passed Gate.
 The runtime validates these objective invariants but returns the AI-authored
 exit unchanged.
 
@@ -139,8 +138,8 @@ Schema `guru-change-request-review-1.0` defines the portable result and
 `issue-review.json` is its stable artifact basename. The #101 recorder and
 checker are pre-task/standalone stdout-only and reject any output or task
 locator. They do not create repository caches, workspace journals, history
-indexes, sidecars, or task artifacts. Only #112 may later persist the exact
-checker-passed bytes to the direct active task's tracked `issue-review.json`.
+indexes, sidecars, or task artifacts. The workspace owner consumes the current
+checked result directly and persists only the task-local issue scope ledger.
 
 Examples and tests use fictional repositories, issues, hashes, and findings.
 They contain no active task state, workspace journal, credential, private
@@ -162,4 +161,6 @@ The public target profiles are `current_issue`, `proposed_draft`, and
 reruns the existing checker against the same private bindings, derives the
 Agent-owned route from its checked result, and serializes one
 readiness/re-entry/stop DTO. Full prerequisite and finding evidence remains
-private.
+private. The `ready` DTO contains only the fixed `execute_reviewed_plan` profile
+and invocation mode needed by its direct workspace consumer; it does not copy
+target, repository, continuation, authorization, or owner artifact fields.

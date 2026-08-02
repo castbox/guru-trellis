@@ -85,9 +85,12 @@ ordered profile schema references, discriminator fields are required constants,
 and scalar examples prove ordered flags, declared value types, binding order,
 and public-input/invocation argv equality.
 
-For production Stage 0 activation, repeat the Interface 1.3 matrix over the
-exact six-package, 24-exit migration manifest rather than only the representative
-fixture. Every structurally distinct input profile/signature must have an
+For production Stage 0 activation, first prove the immutable
+`stage0-minimal-handoff-v1` bytes and ordered six-package/24-exit history, then
+repeat the Interface 1.3 matrix over the separate
+`stage0-ai-first-contract-v2` six-package/23-exit current contract rather than
+only the representative fixture. Every structurally distinct input
+profile/signature must have an
 executable public invocation probe, every exit/profile must have a non-empty
 current eval case binding, and all output fields must resolve to direct consumer
 use pointers. Negative tests must reject missing/extra/duplicate/renamed/unknown
@@ -100,10 +103,18 @@ from the checker-passed owner result, workspace `created` cannot be serialized
 from an example or unchecked executor result, and output examples are not read
 as production serializer input.
 
+The Stage 0 v2 migration regression must contain exactly three declared public
+changes, including the `guru-sync-base.repo_root` / `route` required-to-optional
+scalar change. Omitting that change while current Interface bytes expose it is
+a migration-contract failure.
+
 Repeat the same matrix for `production-minimal-handoff-v1`: exactly three
-packages, ten profiles, and 11 exits. Then validate the current package closure
-at thirteen active Skills and 52 external exits, while the integrated global
-workflow projection is 13 invokes, 52 exits, and 29 targets. Negative tests cover missing, extra,
+packages, ten profiles, and 11 exits, and first prove its exact immutable bytes.
+Then validate `production-ai-first-contract-v2` against the current three-package/
+11-exit projection, the two explicit output schema migrations, and the explicit
+Task Commit v1-input/private-state migration. Then validate the current package closure
+at thirteen active Skills and 51 external exits, while the integrated global
+workflow projection is 13 invokes, 51 exits, and 28 targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or legacy entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Stage 0/production
@@ -243,58 +254,60 @@ and standalone entry kinds; repository-answerable evidence before user
 questions, including rejection of `answered` without evidence;
 one-question and atomic-group rounds; partial/refused answers, empty lifecycle,
 close-before-open and reopen rejection;
-comment/body/draft/new-task/active-task actions; exact action and proposal
-confirmation; five-class active-task task-update rejection when the proposal
-is confirmed but `confirmed_actions[]` is empty, the task action is absent, or
-the confirmation action digest is null/wrong; normal combined proposal/action
-confirmation re-entry; rejection of an ambiguous continuation when multiple
-actions or proposals remain (while any clear affirmative response accepts one
-fully displayed unchanged action); optional-mechanism removal or
-replacement; active-task ledger/planning/stale-gate/re-entry bindings; all five
-typed exits and unique consumers; pre-task zero-write; live mutation freshness;
-caller-aware clear resume targets; confirmed payload/mutation/live body equality;
-unconfirmed related/followup/new-task/out-of-scope rejection; exact structured
-ledger decision-trail and live GitHub authority binding; mutation-only
+comment/body/draft/new-task/select-existing/reopen/active-task actions; current-
+dialogue scope and side-effect choices; static/runtime rejection of any
+authorization state, text, ref, timestamp, digest, or process in result, ledger,
+checkpoint, runtime, archive, schema, example, or public DTO; rejection of an
+ambiguous continuation when multiple actions or proposals remain (while any
+clear affirmative response accepts one fully displayed unchanged action);
+optional-mechanism removal or
+replacement; active-task compact-ledger plus live planning/context/action/re-entry bindings; all five
+scope dispositions; all six typed exits including `retarget_context` and unique
+consumers; schema 1.0 read-only rejection and active schema 2.0 paths; pre-task
+zero-write; live mutation freshness; caller-aware clear resume targets;
+payload/mutation/live body equality; unfinalized related/followup/new-task/
+out-of-scope rejection; exact compact
+ledger classification and live GitHub authority binding; legacy full-shape
+projection plus partial-current-shape rejection; mutation-only
 `refresh_context`; fresh re-entry before exact interrupted progression; active
-`new_task` trail preservation with side-effect-free draft-only continuation;
+`new_task` compact-classification persistence with side-effect-free draft-only continuation;
 and source/installed/discovery/throwaway update-reapply distribution. Static
 and runtime tests must also prove the package/runtime contain no GitHub write or
 issue-create executor and that recorder/checker do not generate semantic
 decisions.
 When changing Branch Review recording or gate validation, add or update tests
-that prove the semantic owner records only the compact task-local
-`review-gate.json`. Routine independent-agent assignment, liveness, per-round
-raw reports, final rollups, reviewer metadata, and Git-derived facts must not be
-persisted. Schema 2.0 `agent-assignment.json`, `reviews/*.md`, and `review.md`
-may be read only while migrating an existing active task; no current recorder,
-wrapper, platform entry, or test fixture may generate them.
+that prove the semantic owner records only one compact owner-private checkpoint
+under ignored runtime. Publication consumes the minimal typed exit and live
+facts, not that checkpoint. The Branch Review public wrapper must delete its own
+checkpoint only after the selected typed output passes schema validation; tests
+must prove Publication succeeds without it. Routine independent-agent assignment, liveness,
+per-round raw reports, final rollups, reviewer metadata, and Git-derived facts
+must not be persisted. Tracked `review-gate.json`, schema 2.0
+`agent-assignment.json`, `reviews/*.md`, and `review.md` may be read only while
+migrating an existing active task; no current recorder, wrapper, platform entry,
+or test fixture may generate them.
 When changing planning approval behavior, also run
 `.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-dir>`
-against a current `guru-planning-approval-2.0` artifact bound to
-checker-validated `guru-review-contract-wording:planning_artifacts:pass`
-evidence. Package/runtime tests must cover workflow/standalone nine-precondition
-parity; all four provenance classes; duplicate/missing/unknown/stale statement
-entries; implementation-choice alternatives, selection and no-scope-expansion
-flags; every unusual-scenario disposition; dedicated proposal confirmation
-versus ordinary post-planning confirmation; refusal and clarification routes;
-the four Gate/exit/consumer combinations; unknown/multiple/unmapped exits;
-Docs SSOT, authority, wording, planning, base/HEAD invocation and artifact
-digest freshness; active 1.2 bootstrap rejection and v2 re-recording; and the
-regression where post-activation implementation HEAD/dirty drift does not block
-while planning/authority/wording content remains current. Include a fixture in
-which a non-required lock/atomic mechanism is removed or replaced and reviewed
-again, without manufacturing a scope expansion. Static tests must prove the
-runtime does not generate provenance, choice necessity, unusual-scenario
-necessity, confirmation sufficiency, semantic pass, or route judgment.
-For `approved_scope_expansion`, production recorder/checker tests must cover a
-normal planning-artifact locator source, a canonical unusual-candidate source,
-both sources coexisting without digest confusion, workflow/standalone parity,
-and a non-approved exit carrying an otherwise complete binding. Negative cases
-must reject caller-only/wrong proposal digest, stale or invalid content locator,
-missing/wrong candidate, ambiguous/wrong-kind or digest-mismatched confirmation,
-unknown/stale authority digest, authority absent from entry refs, and an
-authority-to-proposal digest mismatch. The checker must reread content and
-authority facts rather than accepting recorder-time shape alone.
+against a current ignored-runtime `guru-planning-approval-3.0` checkpoint.
+Package/runtime tests must cover workflow/standalone eight-precondition parity,
+all three entry profiles, all four semantic/exit/consumer combinations,
+unknown/multiple/unmapped exits, missing or empty planning files, task/planning
+locator mismatch, duplicate or empty authority refs, Docs SSOT closure, and
+schema 1.2/2.0 read-only re-entry. Static tests must prove that public input,
+private evidence, public output, and archive state contain no authorization,
+authorization digest, repository snapshot, file metadata, raw review,
+assignment, liveness, or handoff fields. Semantic delta tests must distinguish
+equivalent formatting/link/derived-text changes from requirement, authority,
+scope, design, acceptance, behavior, or verification changes without replaying
+unaffected owners. Recorder/checker tests must prove they preserve an existing
+AI result and never generate findings, sufficiency, unusual-scenario meaning,
+authorization, semantic pass, or route judgment. Planning and Phase 2 tests must
+also prove that same-path content drift invalidates the current owner checkpoint
+through exactly one owner-private composite token, while that token never enters
+public DTOs or becomes authorization, semantic approval, or whole-chain
+authority. Each producer public wrapper must delete its own checkpoint only after
+checker and output-schema success; activation, Phase 2, and Task Commit tests must
+fail if they attempt to read or delete an upstream private checkpoint.
 Run source and installed package validation, dogfood drift, clean throwaway
 install, and `trellis update` plus preset reapply because the package, runtime
 commands, schema, and four discovery roots are one distribution contract.
@@ -316,39 +329,41 @@ workspace-creation generator.
 When changing workspace boundary behavior, also run
 `.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
 <task-dir>` from the selected task worktree and add regression tests for wrong
-cwd, worktree mode without current handoff, source checkout same-task artifacts,
-wrong task-local gate/check artifact locators, planner-only prepare no-write
-behavior, and controlled `create_task` cwd.
+cwd, worktree mode without a matching `task.json`, ignored runtime mapping, and
+live Git worktree identity, source checkout same-task artifacts, wrong private
+gate/check checkpoint locators, planner-only prepare no-write behavior, and
+controlled `create_task` cwd.
 
 For `guru-create-task-workspace`, tests must cover workflow/standalone
 precondition parity; every missing/stale/wrong-exit/target-mismatched
 prerequisite; open issue and reviewed-draft variants; mutually exclusive issue
-and workspace/task confirmations; draft-created issue live binding plus exact
+and workspace/task dialogue-only confirmations; proof that refusal stops before
+recorder/executor and that plan/result/runtime/public DTO contain no
+authorization fields; draft-created issue live binding plus exact
 reviewed title/body/labels bytes without adapter trimming or newline insertion;
 immediate `refresh_review`; zero branch/worktree/task writes in that invocation;
 create success followed by immediate reread failure and same-plan retry with
 exactly one remote issue; exact recovery candidate cardinality 0/1/>1;
 checker-passed created-issue result carryover into a complete Intake rerun;
 missing/partial carryover, result/binding digest drift, reviewed draft or
-creation confirmation mismatch, and fresh live existing-issue identity or null
+created-issue identity mismatch, and fresh live existing-issue identity or null
 `issue_binding` mismatch;
-target/disposition change and cancellation zero-write results; explicit, one
+target/disposition change `refresh_review` and blocked zero-write results; explicit, one
 issue assignee, zero issue assignees/current-login, multiple/user-choice, and
 unresolved assignee cases; isolated official `common.task_store.cmd_create`
 adapter with a call-scoped null developer accessor; exact
 `task.json.creator=task.json.assignee=reviewed login`; preservation of existing
-identity bytes; exact object reuse/conflict blocking; four canonical task-local
-artifacts; additive
+identity bytes; exact object reuse/conflict blocking; exactly one Guru-owned
+tracked task-local artifact (`issue-scope-ledger.json`); read-only
 task-start-context 1.0 compatibility; ignored runtime-only mappings; source and
 target with no `.trellis/.developer` or `.trellis/workspace/**`; preservation
-of existing official identity/journal bytes; all four typed exits and unique
+of existing official identity/journal bytes; exactly three typed exits and unique
 consumers; source/installed/platform distribution; legacy prepare mutation
 flags zero-write migration; and clean throwaway update/reapply.
 
-The route tests must prove a confirmed plan cannot be relabeled cancelled,
-while refused confirmation, reroute Gate, and blocked Gate produce their exact
-zero-write exits and checker-valid consumers. Public plan/result schema,
-examples, and stdout must reject or omit absolute machine-local paths.
+Route tests require `created`, `refresh_review`, or `blocked`; refusal has no
+recorder/result/DTO route. Public plan/result schema, examples, and stdout must
+reject authorization fields and absolute machine-local paths.
 
 Mutation-boundary tests use a real remote whose base advances after the initial
 checker-passed evidence while the local remote-tracking ref remains stale. They
@@ -434,18 +449,19 @@ Phase 2 regression coverage must also prove that empty provenance/docs/
 reviewed-path/command evidence, empty adequacy references, missing current or
 scope-change trigger references, unknown/incomplete evidence-source closure,
 and every incorrect recorder-derived semantic digest fail closed. A real Git
-post-commit fixture must prove the current Phase 2 artifact remains valid after
-the reviewed commit without adding assignment, status, liveness, review-round,
-or implementation-handoff metadata.
+post-commit fixture must prove the current owner-private ignored-runtime Phase 2
+checkpoint remains valid after the reviewed commit without adding assignment,
+status, liveness, review-round, or implementation-handoff metadata.
 
-Publication regression coverage must additionally reject missing stale reason
-or re-entry context, a missing/mismatched prior publication identity, any
-`ready` gate with a failed or stale one of the twelve entry bindings, open
-objects hidden by the private schema, duplicate finding refs that remain
-schema-valid, and empty finding scope/evidence/affected/closure fields.
-Source and installed real-wrapper cases must prove stale replacement and
-durable-drift return behavior without allowing the runtime to choose the
-semantic route.
+Publication regression coverage must additionally reject missing stale reason,
+legacy public inputs that carry Branch Review private identities, any `ready`
+gate with a failed one of the eight transient entry preconditions or failed
+shared Finalizer preflight, open objects hidden by the private schema, duplicate
+finding refs that remain schema-valid, and empty finding
+scope/evidence/affected/closure fields. Source and installed real-wrapper cases
+must prove stale replacement and durable-drift return behavior without allowing
+the runtime to choose the semantic route or Publication to read Branch Review
+private checkpoints.
 
 Before Branch Review Gate, obtain an independent Agent review of the full branch
 diff from the task's intake base branch, then record the result with
@@ -458,13 +474,12 @@ cannot pass the gate. Include:
   affected durable docs or checked no-update paths, task artifact deltas, and
   merge/repair/follow-up checkpoint when required
 - Phase 2 consumption of that plan: the implementation terminal result and live
-  repository facts feed the embedded `implementation_handoff` collection in
-  `phase2-check.json`; it records strategy, docs sync result, task delta merge /
-  task-history-only content, no-update or follow-up limits, and durable-docs
-  versus task-delta inputs without a separate Markdown handoff; `trellis-check`
-  verifies durable docs / task artifacts / code / test consistency by strategy
-- Phase 3 verification of that plan: final review checks the approved plan,
-  the embedded implementation evidence in `phase2-check.json`, durable docs, task artifacts,
+  repository facts are ephemeral inputs to the `guru-check-task` semantic Gate;
+  its ignored-runtime schema 3.0 checkpoint stores only the final Docs SSOT
+  conclusion, adequacy dimensions, findings, verification evidence, and route,
+  without an implementation handoff or raw worker transcript
+- Phase 3 verification of that plan: final review checks the current planning
+  documents, checker-passed minimal DTO, durable docs, task artifacts,
   code/test/schema/config/script/preset/overlay changes, and confirms Docs SSOT
   reconciliation already happened; it must record any current-scope
   inconsistency as a finding and must not perform the first docs merge
@@ -473,52 +488,41 @@ cannot pass the gate. Include:
 - preset installer and overlays
 - task work commit contract: mandatory `guru-create-task-commit` invocation,
   fresh task/issue/Phase 2/HEAD/snapshot binding, exhaustive single-category
-  path review, exact staging, shared-parser candidate validation, raw message
-  bytes, postconditions, unrelated preservation, hook mutation and fresh
-  sequence on finding-fix re-entry; real regressions must prove active Git
-  operation/sequencer state is preserved and blocked, and gitlink A/B/C changes,
-  uninitialized/dirty/ambiguous boundaries are fail closed; the gitlink race
-  regression must switch B to C after executor entry validation but before exact
-  staging, prove the candidate/HEAD/operation state is preserved, and prove C
-  is absent from both the index and commit; ordinary tracked, symlink, delete,
-  delete/add rename, multiple-path, candidate-self and entry-index A/worktree B
-  races must prove the same artifact authority. A real repository configured
-  with `status.renames=copies` must prove that a clean copy source is not staged,
-  and that an independently dirty/staged source classified as
-  `unrelated-preserved` blocks or remains byte-for-byte/index-identical without
-  entering the commit; the test must still fail if copy and rename relation
-  handling is collapsed. Partial cache writes, rejecting
-  or mutating hooks, operation drift, candidate publication failure, candidate
-  writer contention, success-window concurrent `git add`, index publication
-  failure and concurrent ref update must preserve transaction-owned preimages
-  or third-party state without overwrite. Publication regressions must prove
-  the real `index.lock` remains a sentinel while an independent final-index
-  temporary is published, so real `git add` is still blocked. A normal-return
-  candidate C writer injected at final-index publication must be detected by
-  the later final candidate identity read, roll back owned ref/index and
-  preserve C. A writer injected immediately after that successful read must be
-  preserved as a later operation while the executor remains committed. The
-  positive path proves guarded ref, commit tree, live index and candidate
-  result agree at that final identity-read linearization point, returned commit
-  blob/result digest evidence is exact, cleanup leaks no guard/temp, and no
-  later fallible success branch exists
+  path review, pre-confirmation canonicalization/shared-parser validation,
+  exact isolated-index staging, real hooks, raw message bytes, parent/path/tree
+  postconditions, unrelated preservation, and a fresh private sequence on
+  finding-fix re-entry. Real regressions prove active Git operation/sequencer
+  state blocks without mutation; ordinary files, executable mode, symlink,
+  delete, rename, copy, gitlink, multiple-path, candidate-self, and live-index
+  mismatch cases fail before standard ref publication. A clean copy source is
+  not staged, an independently dirty/staged source is classified separately,
+  and a changed gitlink cannot replace the reviewed OID. The positive path
+  proves `git update-ref <ref> <new> <old>` publishes the validated commit,
+  `git reset --mixed --quiet HEAD` refreshes the live index, Git provides final
+  tree/message/path facts, and the ignored candidate is removed. Tests must not
+  add custom locks, atomic replacement, rollback, concurrency stress, or
+  linearization assertions outside the #161 normal-path scope
 - commit message contract: work commit subject/body, Trellis metadata commit
   subject with empty body, `Refs` in commit messages, PR body-only close keywords,
   and publish/merge payload command that avoids GitHub's default merge subject
 - Trellis task artifacts
 - generated or installed-copy expectations
-- Phase 0 handoff/preflight evidence, or explicit no-task direct-edit override
-  evidence when the branch intentionally skipped issue/task/worktree/branch
-- task artifact write location: `review-gate.json` and similar current gate
-  files must be written under the task worktree derived from the current
-  checkout, `.trellis/.runtime/guru-team/**`, `git worktree list`, and portable
-  task-start-context identifiers; the committed context must not provide or be
-  treated as an absolute `workspace_path`. When a manual editing tool has no explicit working
-  directory, use a worktree-local absolute path
-- Branch Review persists only the compact `review-gate.json` consumed by
-  publication. Raw reports, per-round review files, assignment/liveness logs,
-  and final Markdown rollups are routine conversation/runtime context and must
-  not be created as task artifacts.
+- Phase 0 scope and authority evidence, or an explicit task-free direct-edit
+  boundary when the branch intentionally skipped issue/task creation; user
+  authorization and its process remain conversation-only and are never
+  persisted as evidence
+- owner-private checkpoint location: `review-gate.json` and similar current
+  gate checkpoints must be written under ignored
+  `.trellis/.runtime/guru-team/owner-checkpoints/**`, with identity derived from
+  the current `task.json`, ignored runtime mapping, and live `git worktree list`
+  facts. Legacy tracked gate files and `task-start-context.json` are read-only
+  migration inputs, never active authority. When a manual editing tool has no
+  explicit working directory, use a worktree-local absolute path
+- Branch Review retains only its compact owner-private ignored-runtime
+  checkpoint and returns the minimal typed exit consumed by Publication. Raw
+  reports, per-round review files, assignment/liveness logs, and final Markdown
+  rollups are routine conversation context and must not be created as task
+  artifacts.
 - PR body readiness must include reviewer-readable Docs SSOT / 文档同步 result
   text: plan strategy, durable docs updated or no-update reason, merged task
   deltas, task-history-only content, and follow-up/current PR limitation.
@@ -592,9 +596,9 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  thirteen-Skill/52-exit current package closure while the production activation
+  thirteen-Skill/51-exit current package closure while the production activation
   unit remains three Skills/11 exits and global markers remain integrated at
-  13 invokes, 52 exits, and 29 targets. Update and preset reapply must reproduce
+  13 invokes, 51 exits, and 28 targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Task Publication Review Quality
@@ -630,25 +634,22 @@ recorder writes and must remain invalid to the checker and public wrapper.
 
 Package/runtime/eval tests cover both profiles and modes, three exits, stale
 re-entry, metadata correction to fresh pass, metadata correction that reveals
-durable drift, legacy readiness rejection, and finalization augmentation only
-after a passing gate. Finalization tests prove that adding the exact validated
-closeout plan reruns all twelve entries. A later closeout transaction may also
-replace only the Issue Scope Ledger's `remote_marketplace_verification` with
-the plan-owned `pending_machine` object or the exact `passed` object derived
-from the current checker-passed verification projection. The semantic ledger
-without that machine evidence must still match the immutable plan, and the
-stored publication artifact and entry bindings must match one unique reviewed
-preimage. Only the ledger artifact binding, `issue_scope_ledger` entry binding,
-ledger status-path membership, repository binding, and derived
-`review_range_and_working_tree` binding may change; tests reject every other
-artifact, ledger field, entry, repository fact, or status-path drift.
+durable drift, legacy readiness rejection, and the shared side-effect-free
+Finalizer preflight before `ready`. Finalization tests prove the minimal ready
+DTO (`exit_id/task_ref/reviewed_content_head`) plus live facts is sufficient;
+the Publication wrapper retires its checkpoint after valid output, and Finalizer
+never augments, parses, or deletes that checkpoint. Finalizer terminal tests
+prove it deletes only its own gate after the `published` DTO validates. A later closeout
+transaction may update only its own plan-bound Issue Scope Ledger marketplace
+machine evidence and must revalidate the current semantic ledger directly.
 Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert thirteen active Skills and 52
-external exits while `production-minimal-handoff-v1` remains three Skills/11
-exits and global workflow markers remain 13 invokes, 52 exits, and 29 targets.
+Source/installed/platform/throwaway checks assert thirteen active Skills and 51
+external exits while `production-minimal-handoff-v1` remains byte-identical at
+three Skills/11 exits, `production-ai-first-contract-v2` owns the current
+projection, and global workflow markers remain 13 invokes, 51 exits, and 28 targets.
 
 ## Extension Installation Verification Quality
 
@@ -714,8 +715,8 @@ illegal same-plan resume state including rejection of `prepared` and `ready`.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The
-  package closure is thirteen active Skills and 52 external exits; global markers
-  remain 13 invokes, 52 exits, and 29 targets. Issue #119 combined acceptance
+  package closure is thirteen active Skills and 51 external exits; global markers
+  remain 13 invokes, 51 exits, and 28 targets. Issue #119 combined acceptance
   additionally requires the three Guru-owned daily entries, two terminal
   published evals, checked-verification projection bridge, and installed
   integration coverage. Upstream Finish assets remain unchanged, with physical

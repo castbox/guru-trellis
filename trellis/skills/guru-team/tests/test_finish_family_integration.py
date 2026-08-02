@@ -188,6 +188,197 @@ def load_selected_runtime() -> Any:
 
 
 class FinishFamilyIntegrationTests(unittest.TestCase):
+    def test_branch_review_passed_dto_reaches_side_effect_free_finalizer_preview(
+        self,
+    ) -> None:
+        runtime = load_selected_runtime()
+        branch_package = package("guru-review-branch")
+        publication_package = package("guru-review-task-publication")
+        gate = read_json(branch_package / "examples/review-gate.json")
+        self.assertEqual(gate["schema_version"], "2.2")
+        self.assertEqual(gate["typed_exit"], "passed")
+
+        branch_output = {
+            "exit_id": "passed",
+            "task_ref": gate["task_dir"],
+            "reviewed_content_head": gate["reviewed_content_head"],
+        }
+        branch_interface = read_json(branch_package / "interface.json")
+        branch_projection = next(
+            item
+            for item in branch_interface["public_contracts"]["projections"]
+            if item["id"] == "project_passed"
+        )
+        publication_seed = runtime.skill_apply_projection(
+            branch_projection,
+            branch_output,
+        )
+        self.assertEqual(
+            publication_seed,
+            {
+                "task_ref": gate["task_dir"],
+                "reviewed_content_head": gate["reviewed_content_head"],
+            },
+        )
+
+        publication_output = {"exit_id": "ready", **publication_seed}
+        publication_interface = read_json(publication_package / "interface.json")
+        publication_projection = next(
+            item
+            for item in publication_interface["public_contracts"]["projections"]
+            if item["id"] == "project_ready"
+        )
+        finalization_seed = runtime.skill_apply_projection(
+            publication_projection,
+            publication_output,
+        )
+        finalization_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            **finalization_seed,
+        }
+        self.assertFalse(PRIVATE_FIELDS & set(publication_output))
+        self.assertFalse(PRIVATE_FIELDS & set(finalization_input))
+
+        with tempfile.TemporaryDirectory(prefix="guru-direct-finalizer-") as temporary:
+            root = Path(temporary)
+            task_dir = root / gate["task_dir"]
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_text(
+                json.dumps({"status": "in_progress"}),
+                encoding="utf-8",
+            )
+            task_context = {"task_artifact_dir": gate["task_dir"]}
+            plan = {
+                "plan_digest": "c" * 64,
+                "task": {
+                    "active_locator": gate["task_dir"],
+                    "archive_locator": (
+                        ".trellis/tasks/archive/2026-08/example-task"
+                    ),
+                },
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "base_branch": "main",
+                    "head_branch": "codex/example-task",
+                    "reviewed_work_head": gate["reviewed_content_head"],
+                },
+                "marketplace": {"required": False},
+            }
+            prepared = {
+                "plan": plan,
+                "ledger": {},
+                "gate": None,
+                "finalizer_takeover": None,
+                "month_supersession": None,
+            }
+            repository = {
+                "head": gate["reviewed_content_head"],
+                "branch": "codex/example-task",
+                "base_ref": "origin/main",
+                "diff_paths": ["src/example.py"],
+                "status_paths": [],
+            }
+            before = tree_bytes(root)
+
+            def prepare(
+                _root: Path,
+                _args: argparse.Namespace,
+                _config: dict[str, Any],
+                _task_dir: Path,
+                _task_context: dict[str, Any],
+                *,
+                publication_ready: dict[str, Any] | None = None,
+                verification_owner_result: Any = None,
+            ) -> dict[str, Any]:
+                self.assertEqual(publication_ready, finalization_input)
+                self.assertIsNone(verification_owner_result)
+                return prepared
+
+            args = argparse.Namespace(
+                root=str(root),
+                input="inline-publication-ready.json",
+                include_finalization_gate=True,
+            )
+            with (
+                mock.patch.dict(os.environ, {"GURU_TEAM_EVAL_STAGING": "0"}),
+                mock.patch.object(runtime, "repo_root", return_value=root),
+                mock.patch.object(
+                    runtime,
+                    "finalization_public_input",
+                    return_value=(finalization_input, args.input),
+                ),
+                mock.patch.object(runtime, "load_config", return_value={}),
+                mock.patch.object(
+                    runtime,
+                    "load_task_runtime_identity",
+                    return_value=task_context,
+                ),
+                mock.patch.object(runtime, "assert_workspace_boundary"),
+                mock.patch.object(
+                    runtime,
+                    "finalization_verification_owner_result",
+                    return_value=None,
+                ),
+                mock.patch.object(
+                    runtime,
+                    "task_publication_repository_binding",
+                    return_value=repository,
+                ),
+                mock.patch.object(
+                    runtime,
+                    "task_publication_unexpected_status_paths",
+                    return_value=[],
+                ),
+                mock.patch.object(
+                    runtime,
+                    "current_head",
+                    return_value=gate["reviewed_content_head"],
+                ),
+                mock.patch.object(runtime, "is_ancestor", return_value=True),
+                mock.patch.object(runtime, "prepare_closeout", side_effect=prepare),
+                mock.patch.object(
+                    runtime,
+                    "resolve_closeout_pre_draft_state",
+                    return_value="prepared",
+                ),
+                mock.patch.object(
+                    runtime,
+                    "task_publication_path",
+                    side_effect=AssertionError(
+                        "Finalizer reopened Publication private evidence"
+                    ),
+                ) as private_artifact,
+                mock.patch.object(
+                    runtime,
+                    "cmd_check_task_publication_review",
+                    side_effect=AssertionError(
+                        "Finalizer reran the Publication owner checker"
+                    ),
+                ) as owner_checker,
+                mock.patch.object(
+                    runtime,
+                    "check_task_publication_for_finalization_augmentation",
+                    side_effect=AssertionError(
+                        "Finalizer invoked the legacy Publication checker"
+                    ),
+                ) as legacy_checker,
+            ):
+                preview = runtime.cmd_preview_finalization(args)
+
+            self.assertFalse(preview["side_effects"])
+            self.assertEqual(preview["transaction_state"], "prepared")
+            self.assertEqual(preview["task_ref"], gate["task_dir"])
+            self.assertEqual(
+                preview["reviewed_head"],
+                gate["reviewed_content_head"],
+            )
+            self.assertEqual(tree_bytes(root), before)
+            private_artifact.assert_not_called()
+            owner_checker.assert_not_called()
+            legacy_checker.assert_not_called()
+
     def test_selected_runtime_converges_pr_head_and_bounds_persistent_mismatch(
         self,
     ) -> None:
@@ -312,8 +503,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             "mode": "workflow",
             "task_ref": active,
             "plan_ref": f"closeout-plan:{plan_digest}",
-            "recovery_intent": "Resume the same immutable transaction.",
-            "recovery_context": "The compact archive is already committed.",
         }
         publication = {
             "owner_status": "current",
@@ -345,7 +534,15 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 path = archived / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("committed fixture\n", encoding="utf-8")
-            self.assertEqual(len(retained), runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS)
+            self.assertLessEqual(
+                len(retained), runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS,
+            )
+            legacy_retained = set(runtime.CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS)
+            legacy_retained.update(runtime.CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
+            self.assertEqual(
+                len(legacy_retained),
+                runtime.CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS,
+            )
             (archived / runtime.CLOSEOUT_PLAN_ARTIFACT).unlink()
             self.assertFalse((archived / runtime.CLOSEOUT_PLAN_ARTIFACT).exists())
             self.assertFalse((archived / runtime.PR_READINESS_ARTIFACT).exists())
@@ -454,8 +651,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             "mode": "workflow",
             "task_ref": active,
             "plan_ref": f"closeout-plan:{plan_digest}",
-            "recovery_intent": "Resume the same immutable transaction.",
-            "recovery_context": "The compact archive is already committed.",
         }
         context = {
             "task_dir": Path("unused"),
@@ -487,11 +682,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 "status": "passed",
                 "summary": "The committed recovery is ready.",
                 "evidence_refs": ["publication:current"],
-            },
-            "confirmation": {
-                "status": "not_required",
-                "confirmed_plan_digest": plan_digest,
-                "summary": "The immutable plan was already confirmed.",
             },
             "route": gate["route"],
             "supersedes_gate_ref": "task-finalization-gate:committed",
@@ -661,21 +851,21 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                             PRIVATE_FIELDS & set(branch["properties"])
                         )
 
-    def test_workflow_keeps_52_production_exits_29_targets_and_six_route_groups(
+    def test_workflow_keeps_51_production_exits_28_targets_and_six_route_groups(
         self,
     ) -> None:
         rows = workflow_exits()
         production_rows = [
             row for row in rows if row.get("skill") != "guru-example-action"
         ]
-        self.assertEqual(len(production_rows), 52)
+        self.assertEqual(len(production_rows), 51)
         targets = set(
             re.findall(
                 r'<!-- guru-(?:workflow|stop)-target: \{"id":"([^"]+)"\} -->',
                 WORKFLOW.read_text(encoding="utf-8"),
             )
         )
-        self.assertEqual(len(targets), 29)
+        self.assertEqual(len(targets), 28)
         finish_rows: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for row in rows:
             key = (row["skill"], row["exit"])

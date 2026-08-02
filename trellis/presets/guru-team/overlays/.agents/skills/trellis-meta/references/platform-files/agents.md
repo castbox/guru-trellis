@@ -15,7 +15,7 @@ File locations and formats differ by platform, but responsibility boundaries sho
 | Agent | Responsibility |
 | --- | --- |
 | `trellis-research` | Investigate the question and write findings into the current task's `research/`. |
-| `trellis-implement` | Implement against Guru Team's required `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, and related spec/research after valid explicit post-planning approval evidence exists. |
+| `trellis-implement` | Implement against Guru Team's required `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, and related spec/research after the checked semantic planning-owner `approved` exit is consumed. |
 | `trellis-check` | Review changes, fix discovered issues, and run necessary checks. |
 
 Agent files should not become generic chat prompts. They should define input sources, write boundaries, whether code may be changed, and how results are reported.

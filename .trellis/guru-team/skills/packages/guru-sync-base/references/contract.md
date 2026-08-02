@@ -108,7 +108,10 @@ and installed Skill validation.
 ## Interface 1.3 Public Handoff
 
 The public wrapper is `scripts/invoke.sh` and its validator id is
-`public_invocation`. It accepts only the declared scalar arguments. Runtime
+`public_invocation`. It accepts only the declared scalar arguments. Direct
+entry supplies repository root and route explicitly; a typed re-entry may omit
+them, in which case the owner derives the current repository (`.`) and the
+only valid re-entry route (`repo_change`). Runtime
 performs the formal resolver, executor, and checker sequence, derives live Git
 facts, and serializes one per-exit DTO. The optional `--base-branch` value is the
 caller-owned explicit selected-base scalar when present; when omitted, the

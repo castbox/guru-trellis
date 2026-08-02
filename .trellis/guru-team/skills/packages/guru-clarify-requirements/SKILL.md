@@ -1,6 +1,6 @@
 ---
 name: guru-clarify-requirements
-description: Clarify initial requirements, active-task scope changes, or explicit review requests through an evidence-first semantic loop with exact confirmation and typed exits.
+description: Clarify initial requirements, active-task scope changes, or explicit review requests through an evidence-first semantic loop with dialogue-local choices and typed exits.
 ---
 
 # Guru Clarify Requirements
@@ -11,32 +11,33 @@ requirements review.
 
 For active-task scope change, the canonical workflow mandatory invokes this
 same Skill with an exact caller-aware `resume_target`; no caller may duplicate
-classification, confirmation, ledger, or planning-update semantics.
+classification, ledger, or planning-update semantics.
 
 Load [references/contract.md](references/contract.md) and
 `trellis-brainstorm`. Execute the semantic closed loop in its declared order,
 ask at most one highest-value question per round, complete the AI Review Gate
-and any exact action/proposal confirmation before calling recorder/checker,
-then return exactly one declared typed exit.
+and any real action/proposal choice before calling recorder/checker,
+keep that authorization in the current dialogue, then return exactly one
+declared typed exit.
 
 Use only the dispatcher wrappers for deterministic recording and checking.
 Pre-task and standalone results are stdout-only. This Skill has no mutation
 executor and no dedicated tracked clarification artifact. GitHub writes remain
-AI-owned and require exact confirmed payloads plus a live reread.
+AI-owned and require an exact current payload plus a live reread; the result
+records only objective action and mutation facts.
 
 Fail closed on missing/current-context drift, repository `answered` without
 checked evidence, invalid question
-lifecycle, open load-bearing questions, confirmed-payload/live mutation or
+lifecycle, open load-bearing questions, payload/live mutation or
 digest mismatch, missing/stale/multiple target disposition, unresolved or
 stale duplicate-candidate decisions, closed targets without an explicit legal
 disposition, empty/non-final active-task proposal sets on `clear`/`new_task`,
-any of the five scope classifications without exact user-decision evidence,
-any classification task update not covered by the same combined exact
-proposal/action confirmation,
-mechanism disposition with confirmation/trail/mutation, incomplete or
-non-approved `guru-planning-approval-2.0` evidence, missing ledger decision
-trail or GitHub-visible authority,
-load-bearing clarification without a confirmed and current issue/draft
+any unresolved scope classification, any classification task update not bound
+to the same current proposal set,
+mechanism disposition with a classification trail or mutation, incomplete or
+stale planning content, missing compact `decision_trail` ledger authority or live
+GitHub-visible scope authority,
+load-bearing clarification without a current issue/draft
 authority action, authority/context/task-update order mismatch, invalid caller
 resume, stale active-task evidence, legacy 1.0 artifact input, unknown exits,
 or missing compatible runtime. This package is not self-contained or portable.

@@ -3,8 +3,7 @@
   "owner_evidence": {
     "semantic_gate": "passed",
     "checker_required": true,
-    "open_questions": 0,
-    "confirmation": "not_required"
+    "open_questions": 0
   },
   "owner_staging": {
     "recipe": "clarity-clear"

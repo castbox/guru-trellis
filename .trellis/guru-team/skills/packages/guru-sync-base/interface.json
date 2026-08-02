@@ -197,7 +197,7 @@
           "id": "repo_root",
           "flag": "--repo-root",
           "type": "string",
-          "required": true
+          "required": false
         },
         {
           "id": "base_branch",
@@ -209,7 +209,7 @@
           "id": "route",
           "flag": "--route",
           "type": "ascii_enum",
-          "required": true
+          "required": false
         }
       ],
       "example_argv": [

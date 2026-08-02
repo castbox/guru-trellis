@@ -8,7 +8,7 @@
     "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
     "repository", "base_evidence", "change_input", "live_change",
     "duplicate_search", "current_state", "canonical_query", "history_preview",
-    "history_review", "mem_review", "ai_review_gate", "human_confirmation",
+    "history_review", "mem_review", "ai_review_gate",
     "refresh_history", "snapshot_identity", "error"
   ],
   "properties": {
@@ -30,7 +30,6 @@
     "history_review": {"$ref": "#/$defs/historyReview"},
     "mem_review": {"$ref": "#/$defs/memReview"},
     "ai_review_gate": {"$ref": "#/$defs/aiGate"},
-    "human_confirmation": {"$ref": "#/$defs/humanConfirmation"},
     "refresh_history": {"type": "array", "items": {"$ref": "#/$defs/refreshEntry"}},
     "snapshot_identity": {"$ref": "#/$defs/snapshotIdentity"},
     "error": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/error"}]}
@@ -458,10 +457,6 @@
       "required": ["status", "reviewer", "reviewed_scope", "excluded_scope", "relevance", "sufficiency", "conflicts", "reusable", "not_reusable", "load_bearing_conclusions", "findings", "reason"],
       "properties": {"status": {"enum": ["passed", "blocked"]}, "reviewer": {"$ref": "#/$defs/nonEmpty"}, "reviewed_scope": {"$ref": "#/$defs/stringList"}, "excluded_scope": {"$ref": "#/$defs/stringList"}, "relevance": {"$ref": "#/$defs/nonEmpty"}, "sufficiency": {"$ref": "#/$defs/nonEmpty"}, "conflicts": {"$ref": "#/$defs/stringList"}, "reusable": {"$ref": "#/$defs/stringList"}, "not_reusable": {"$ref": "#/$defs/stringList"}, "load_bearing_conclusions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["conclusion", "evidence_refs"], "properties": {"conclusion": {"$ref": "#/$defs/nonEmpty"}, "evidence_refs": {"$ref": "#/$defs/stringList"}}}}, "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}}, "reason": {"$ref": "#/$defs/nonEmpty"}},
       "allOf": [{"if": {"properties": {"status": {"const": "passed"}}, "required": ["status"]}, "then": {"properties": {"reviewed_scope": {"minItems": 1}, "load_bearing_conclusions": {"minItems": 1}}}}]
-    },
-    "humanConfirmation": {
-      "type": "object", "additionalProperties": false, "required": ["status", "reason"],
-      "properties": {"status": {"const": "not_required"}, "reason": {"const": "decision_owned_by_guru-clarify-requirements"}}
     },
     "refreshEntry": {
       "type": "object", "additionalProperties": false, "required": ["reason", "error_codes", "superseded_query_sha256", "superseded_snapshot_sha256", "detected_at"],

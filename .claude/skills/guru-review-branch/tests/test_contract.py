@@ -59,11 +59,10 @@ class ReviewBranchContractTest(unittest.TestCase):
         legacy_closure["review_intent"] = "finding_fix_review"
         self.assertTrue(list(Draft202012Validator(self.input_schema).iter_errors(legacy_closure)))
 
-    def test_eleven_preconditions_and_semantic_profile(self) -> None:
+    def test_eight_preconditions_and_semantic_profile(self) -> None:
         expected = [
             "runtime_dependency", "workspace_boundary", "task_identity", "commit_handoff",
-            "planning_approval", "phase2_check", "issue_scope_ledger", "docs_ssot_outcome",
-            "review_range", "working_tree", "invocation_freshness",
+            "issue_scope_ledger", "review_range", "working_tree", "invocation_freshness",
         ]
         self.assertEqual([item["id"] for item in self.interface["entry_preconditions"]], expected)
         self.assertEqual(self.interface["modes"]["workflow"]["entry_precondition_ids"], expected)
@@ -88,7 +87,7 @@ class ReviewBranchContractTest(unittest.TestCase):
         self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
         self.assertEqual(
             consumer["contract"]["seed_fields"],
-            ["task_ref", "reviewed_head", "review_ref"],
+            ["task_ref", "reviewed_content_head"],
         )
         self.assertEqual(
             consumer["contract"]["authoring_fields"],
@@ -100,7 +99,7 @@ class ReviewBranchContractTest(unittest.TestCase):
         self.assertIn("targets the active `guru-review-task-publication` Skill", skill)
         self.assertIn("global Phase 3.6 order", skill)
         self.assertNotIn("planned `guru-review-task-publication`", skill)
-        self.assertIn("minimal `task_ref`, `reviewed_head`, `review_ref` seed", contract)
+        self.assertIn("minimal `task_ref`, `reviewed_content_head` seed", contract)
         self.assertIn("guru-review-task-publication", contract)
         self.assertNotIn("minimal planned publication seed", contract)
 
@@ -117,7 +116,9 @@ class ReviewBranchContractTest(unittest.TestCase):
             "internal transient",
             "distinct fresh reviewer",
             "introduced_head",
-            "resolved_at_head",
+            "fix_head",
+            "closure_head",
+            "reviewed_content_head",
         ):
             self.assertIn(phrase, text)
         for removed_artifact in ("reviews/*.md", "review.md", "agent-assignment.json"):

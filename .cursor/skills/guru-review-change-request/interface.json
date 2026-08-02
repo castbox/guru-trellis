@@ -63,7 +63,7 @@
     },
     {
       "id": "invocation_freshness",
-      "evidence": "mode, target identity, prerequisite projections, linkage digest, AI review, confirmation policy and typed consumer",
+      "evidence": "mode, target identity, prerequisite projections, linkage digest, AI review and typed consumer",
       "binding": "one current readiness review round",
       "freshness": "checker recomputes the complete objective projection from current prerequisite bytes"
     }
@@ -234,7 +234,7 @@
     }
   ],
   "reentry": {
-    "identity": "mode, target identity/content digests, three prerequisite projections, linkage digest, semantic review, confirmation, typed exit and facts digest",
+    "identity": "mode, target identity/content digests, three prerequisite projections, linkage digest, semantic review, typed exit and facts digest",
     "freshness": "ready is accepted only while the same current prerequisite bytes rebuild the exact recorded target and linkage projections; any drift requires complete owner re-entry",
     "stale_behavior": "fail_closed"
   },
@@ -333,7 +333,7 @@
       {
         "exit_id": "ready",
         "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-ready-1.0",
+          "schema_id": "guru-stage0-review-change-request-output-ready-2.0",
           "path": "schemas/public-ready-output.schema.json"
         },
         "example": {
@@ -403,7 +403,7 @@
     ],
     "consumer_inputs": [
       {
-        "id": "ready_workspace_task_initial_input",
+        "id": "ready_execute_reviewed_plan_input",
         "consumer": {
           "kind": "skill",
           "id": "guru-create-task-workspace"
@@ -413,7 +413,7 @@
           "kind": "skill_input",
           "interface_path": "packages/guru-create-task-workspace/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "workspace_task_initial"
+          "profile_id": "execute_reviewed_plan"
         }
       },
       {
@@ -470,36 +470,16 @@
       {
         "id": "project_ready",
         "exit_id": "ready",
-        "consumer_input_id": "ready_workspace_task_initial_input",
+        "consumer_input_id": "ready_execute_reviewed_plan_input",
         "operation": "rename",
         "mappings": [
           {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "handoff_profile",
+            "source": "profile",
             "target": "profile"
           },
           {
-            "source": "handoff_mode",
+            "source": "mode",
             "target": "mode"
-          },
-          {
-            "source": "handoff_target_locator",
-            "target": "target_locator"
-          },
-          {
-            "source": "handoff_repo_locator",
-            "target": "repo_locator"
-          },
-          {
-            "source": "handoff_confirmed_action_id",
-            "target": "confirmed_action_id"
-          },
-          {
-            "source": "handoff_continuation_id",
-            "target": "continuation_id"
           }
         ]
       },
@@ -603,7 +583,7 @@
           "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
           "path": "schemas/change-request-review.schema.json"
         },
-        "persistence": "task_local_tracked"
+        "persistence": "stdout_only_owner_private"
       }
     ]
   }

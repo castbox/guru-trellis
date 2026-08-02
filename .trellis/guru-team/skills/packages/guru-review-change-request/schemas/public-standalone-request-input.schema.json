@@ -9,8 +9,6 @@
     "mode",
     "target_locator",
     "context_locator",
-    "clarity_locator",
-    "wording_locator",
     "continuation_id"
   ],
   "properties": {
@@ -29,14 +27,6 @@
       "minLength": 1
     },
     "context_locator": {
-      "type": "string",
-      "minLength": 1
-    },
-    "clarity_locator": {
-      "type": "string",
-      "minLength": 1
-    },
-    "wording_locator": {
       "type": "string",
       "minLength": 1
     },

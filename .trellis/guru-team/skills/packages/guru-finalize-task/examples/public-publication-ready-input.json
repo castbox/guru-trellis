@@ -1,1 +1,6 @@
-{"profile":"publication_ready","mode":"workflow","task_ref":".trellis/tasks/07-26-example","reviewed_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","publication_ref":"publication:current","finalization_intent":"Finalize the exact reviewed task through the approved closeout plan."}
+{
+  "profile": "publication_ready",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/07-24-example-finalization",
+  "reviewed_content_head": "0123456789abcdef0123456789abcdef01234567"
+}

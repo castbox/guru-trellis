@@ -1,16 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finalize-task-input-verification-verified-1.0",
+  "$id": "guru-finalize-task-input-verification-verified-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["profile", "mode", "task_ref", "plan_ref", "reviewed_head", "verification_ref", "reentry_intent"],
+  "required": ["profile", "mode", "task_ref", "plan_ref", "reviewed_head", "verification_ref"],
   "properties": {
     "profile": {"const": "verification_verified"},
     "mode": {"const": "workflow"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
     "plan_ref": {"type": "string", "minLength": 1},
     "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-    "verification_ref": {"type": "string", "minLength": 1},
-    "reentry_intent": {"type": "string", "minLength": 1}
+    "verification_ref": {"type": "string", "minLength": 1}
   }
 }

@@ -21,18 +21,26 @@ updated to `sub-agent` so Codex can dispatch `trellis-implement` /
 `trellis-check` and satisfy Branch Review Gate by default. In that default mode
 implementation, Phase 2 check, and post-commit Branch Review are three separate
 sub-agent evidence boundaries: `trellis-implement` / channel `implement`
-returns one concise terminal result, `trellis-check` / channel `check` combines
-that result with live repository evidence in `phase2-check.json`, and an independent review sub-agent reviews
+returns one concise terminal result, `trellis-check` / channel `check` uses
+that result with live repository evidence to produce the compact final Phase 2
+semantic result, and an independent review sub-agent reviews
 the full committed branch diff before the main session records Branch Review
 Gate. An explicit `codex.dispatch_mode: inline` value is preserved as a
 user-selected downgrade or debug mode; missing sub-agent evidence must fail
 closed unless explicit inline/self-exemption artifact evidence exists.
 
-The normal path creates no independent `implementation-handoff.md` and starts
-no periodic liveness journal. The current `implementation_handoff` field inside
-`phase2-check.json` remains a compatibility name for the embedded evidence
-collection assembled by the semantic check owner from terminal output, live
-diff, tests, and durable paths.
+The normal path creates no `implementation-handoff.md`, no
+`implementation_handoff` checkpoint field, and no periodic liveness journal.
+Implementation terminal output remains ephemeral input to the semantic check
+owner; only its compact final schema 3.0 result is recorded in ignored runtime.
+
+The preset also maintains one bounded AI-first principles block in the target
+root `AGENTS.md`. Missing files are created, existing user content outside the
+stable markers is preserved byte-for-byte, a single older block is refreshed,
+and repeated apply is idempotent. Duplicate, unbalanced, embedded, or reversed
+markers fail closed before target activation. The JSON result reports
+`agents_principles`; root `AGENTS.md` remains user-owned and is not listed in
+`install.managed_assets`.
 
 The preset also installs Guru Team sub-agent definitions. Technical dispatch ids
 stay stable (`trellis-implement`, `trellis-check`, `trellis-research`, channel
@@ -86,10 +94,11 @@ baseline SHA-256 for every path, 37 Trellis `0.6.5` clean-init entries, and six 
 prompt/skill entries that clean init no longer generates. Every active entry is
 `transitional_legacy`; future issue #132 removal keeps the same record as
 `upstream_owned/removed` rather than erasing audit history.
-Current payload validation uses that baseline for 25 entries and a separately
-reviewed `current_payload_sha256` for exactly eighteen active entries: five
-issue #131 continue entries plus eight AI-first agent entries and five
-finish-router entries from issue #161. The
+Current payload validation uses that baseline for eight unchanged entries and a
+separately reviewed `current_payload_sha256` for exactly thirty-five active
+entries: five issue #131 continue entries; eight AI-first agent entries; five
+finish-router entries; three start entries; two `trellis-before-dev` entries;
+and twelve planning/context/hook entries updated by issue #161. The
 current binding is only normal version/drift detection, not an authenticity or
 anti-tamper boundary; it cannot spread beyond the reviewed allowlist and does not
 authorize issue #132 removal.
@@ -240,16 +249,25 @@ Reserved ids 与 test fixtures 永不安装，未选择的平台 root 不因 ski
 
 Preset 同时安装冻结的 interface 1.2 与独立 interface 1.3 schema，并安装 registry 1.1。
 Active registry row 以 exact `interface_schema_id` / `io_contract_state` 选择
-`1.2+legacy` 或 `1.3+minimal_handoff`；`stage0-minimal-handoff-v1` 中六个 Stage 0
-packages/24 exits 已全部使用 1.3；独立 `production-minimal-handoff-v1` 中
-planning/check/commit 三包/十 profiles/11 exits 也使用 1.3。当前 active closure 为 13/52，
-`legacy_skill_ids=[]`，Stage 0 identity 保持 6/24。
-Preset 在一次 staging transaction 中安装两个 migration manifests/schemas、十三包 public
+`1.2+legacy` 或 `1.3+minimal_handoff`；冻结的 `stage0-minimal-handoff-v1` 保留六个
+Stage 0 packages/24 exits 的原始 bytes，`stage0-ai-first-contract-v2` 显式迁移当前
+合同到六包/23 exits，并记录 `guru-sync-base.repo_root` / `route` optional scalar
+变化；独立 `production-minimal-handoff-v1` 冻结 planning/check/commit
+三包/十 profiles/11 exits 的原始 output identities，
+`production-ai-first-contract-v2` 显式迁移当前 `approved` / `passed` minimal DTO，并将旧
+Task Commit message/path/semantic 输入一次性投影为五字段 v2 owner-entry seed 与
+ignored-runtime candidate；旧授权、caller 预选出口和 terminal result journal 不进入新合同。
+当前 active closure 为 13/51，
+`legacy_skill_ids=[]`，冻结 Stage 0 v1 identity 保持 6/24，AI-first v2 当前合同为
+6/23。
+Preset 在一次 staging transaction 中安装两个冻结 activation manifests、两份 AI-first
+migration/schema、十三包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Mixed 1.2/1.3 representative fixture、fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
-其中 `production-minimal-handoff-v1` 的 activation membership 仍严格保持
-planning/check/commit 三包与 11 exits；第十包 `guru-review-branch` 不改写该 manifest。
+其中 `production-minimal-handoff-v1` 的 bytes 与 activation membership 仍严格保持
+planning/check/commit 三包与 11 exits；当前 projection 由
+`production-ai-first-contract-v2` 承接，第十包 `guru-review-branch` 不改写任一 manifest。
 同一 transaction 还安装 Interface 1.3 additive
 `skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
 commit self-reentry、commit-to-Branch-Review、Branch-Review-to-publication 与
@@ -278,11 +296,12 @@ current payload hashes 随本次 active route 更新。
 新增 additive active `guru-verify-extension-installation` package 安装两个
 structurally distinct inputs、四个 per-exit contracts、private
 `marketplace-verification.json` schema、seven-case production corpus 与 thin wrappers。
-它不修改 Stage 0 6/24 或 production 3/11 manifest。Active
+它不修改冻结 Stage 0 v1 6/24、当前 AI-first v2 6/23 或 production 3/11
+合同。Active
 `guru-finalize-task` 另行安装七个 distinct profiles、六个 `exit_id` outputs、
 private gate、八条 production eval cases 与四个 finalization runtime wrappers，并
 具体绑定 #116/#117 producer edges。Source/installed package closure 为 13 Skills /
-52 exits；global workflow marker closure 为 13 invokes / 52 exits / 29 targets。
+51 exits；global workflow marker closure 为 13 invokes / 51 exits / 28 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -301,7 +320,7 @@ projection/private-artifact locators。Missing/drift/version mismatch 使用 sta
 
 Active `guru-approve-task-plan` package 随 registry-driven install 分发到 shared root 与所选
 Codex/Cursor/Claude discovery roots，并依赖同一 preset 安装的 schema
-`guru-planning-approval-2.0`、shared dispatcher 和
+`guru-planning-approval-3.0`、shared dispatcher 和
 `record-planning-approval` / `check-planning-approval` runtime commands。该分发是
 Guru-owned additive content，不修改 frozen `trellis/presets/guru-team/overlays/**`。
 
@@ -334,7 +353,6 @@ platform selection:
 
 - `.trellis/guru-team/config.yml`
 - `.trellis/guru-team/extension.json`
-- `.trellis/guru-team/schemas/task-start-context.schema.json`
 - `.trellis/guru-team/schemas/closeout-plan.schema.json`
 - `.trellis/guru-team/schemas/finish-summary.schema.json`
 - `.trellis/guru-team/schemas/marketplace-verification.schema.json`
@@ -393,7 +411,7 @@ Production skill registry 同时保留 reserved `guru-create-work-commit`，以�
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
 `guru-finalize-task`、`guru-review-branch`、`guru-review-task-publication`、
 `guru-verify-extension-installation`。这十三个 active packages 共声明
-52 个 external exits。`guru-finalize-task` 的
+51 个 external exits。`guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前
 canonical extension version 是待发布的
@@ -464,22 +482,24 @@ active Skill consumer 与唯一 workflow/stop target marker 均可解析。
 dispatcher wrappers。Runtime assets 是
 `.trellis/guru-team/scripts/bash/record-requirements-clarification.sh` 与
 `check-requirements-clarification.sh`；不存在 mutation executor。Workflow/standalone
-preconditions相同；answered evidence、question lifecycle与confirmed payload/live mutation均
+preconditions相同；answered evidence、question lifecycle与objective payload/live mutation均
 fail-closed验证。Pre-task/standalone stdout-only，
 active-task Scope Change Gate mandatory invoke本Skill，并由caller-aware clear router恢复planning或
-exact interrupted progression；只验证现有 ledger/planning/stale-gate/re-entry linkage，不创建专用 clarification artifact。Throwaway initial install、
+exact interrupted progression；只验证 compact ledger 与当前 live owner linkage，不创建专用 clarification artifact。Throwaway initial install、
 `trellis update`、workflow re-selection与preset reapply均执行 standalone record/check probe，
 并验证 `clear` / `needs_context` / `refresh_context` / `retarget_context` / `new_task` /
 `blocked` consumers。2.0 绑定 target disposition、duplicate decision、authority impact 和新
 action/exit；1.0 artifact/caller fail closed，必须从 `guru-sync-base` 重跑，不自动迁移。
 
 Active-task `clear`/`new_task` 必须携带非空七类 terminal proposal set，每个五类 scope
-classification 无论 origin 均要求 exact 用户证据，并 exact 绑定当前
-`issue-scope-ledger.json.scope_decisions[]` structured trail、所需用户证据、live GitHub
-authority、通过 shared `guru-planning-approval-2.0` 完整 validator 且 exact reviewed/approved 三文档绑定的
-planning evidence，以及 review/stale/re-entry evidence。`mechanism_removed/replaced` 使用
-optional origin/null confirmation，不进入 trail/action mutation。GitHub authority mutation
-必须返回 `refresh_context`；context 时间覆盖 authority 后 task update 绑定同一 digest，
+classification 保存已选择的 disposition，并 exact 绑定当前
+`issue-scope-ledger.json.scope_decisions[]` compact `decision_trail`。该兼容字段只含 `trail_id`、
+proposal id/digest/decision 与 live GitHub authority kind/URL/content checksum；planning/context/
+review/stale/interrupted/re-entry evidence 由 checker 从 owner 与 live facts 重读。Result、trail、runtime、checkpoint、
+archive、schema 和 public DTO 均不得保存用户授权状态、原话、ref、时间或 digest。
+旧 full-shape trail 只在 recorder 内一次性投影为 compact task-update payload，不产生新的用户选择或 GitHub mutation。
+`mechanism_removed/replaced` 使用 optional origin，不进入 trail/action mutation。GitHub authority mutation
+必须返回 `refresh_context`；context 时间覆盖 live authority 后 task update preimage 绑定当前 context digest，
 不要求第二次 refresh；`new_task` 只向 #112
 传递 side-effect-free draft，不在本 package 创建 issue/task。
 
@@ -488,19 +508,19 @@ optional origin/null confirmation，不进入 trail/action mutation。GitHub aut
 executable dispatcher wrappers。Workflow/standalone preconditions 相同；固定 profiles
 为 `change_request`、`planning_artifacts`、`explicit_paths`，typed exits 为 `pass`、
 `content_changed`、`blocked`。Vocabulary、classification semantics、AI rewrite/review
-loop 和 confirmation policy 只存在于 canonical package contract；runtime 只负责固定 scope、
+loop 和 interaction policy 只存在于 canonical package contract；runtime 只负责固定 scope、
 scan、hash/digest、unchecked、schema/freshness 与 Gate/exit 结构校验。Installed runtime
 同时拒绝 selected comment 缺 author/updated time，并为 live issue revision 校验 exact
-confirmed payload digest、preimage 和 current reread mutation-result identity。
-Task-local current `content_changed`/`blocked` 在 consumer 进入完整 same-profile re-entry 后，
-必须用 `--supersede-reentry-facts-sha256` 精确绑定旧 result，且完整 current 新结果必须与
-旧 artifact 不同；stale evidence 只使用互斥的 `--replace-stale`，相同结果和 current `pass`
-不得无理由覆盖。Runtime 只校验 transition facts，不决定 semantic route。
-`planning_artifacts:pass` 写 task-local `contract-wording-review.json`，供 planning
-approval adapter 投影消费；它还必须包含 canonical contract 定义的 exact
+proposed payload bytes、preimage 和 current reread mutation-result identity；它不接收或校验授权 digest。
+All profiles emit stdout-only owner-private results. A mapped same-profile
+re-entry discards the prior result, rebuilds current scope/scan, and creates no
+task-local replacement or supersession digest chain. `planning_artifacts:pass`
+is consumed immediately by its typed-exit router; it is not written as
+`contract-wording-review.json`. It must still contain the canonical contract's exact
 `semantic_review.ai_review_gate.planning_checked_dimensions`，全部显式 AI-reviewed 为 true
-才能成功。Runtime 只验证该 planning-only 字段的 shape/value，projection 只逐项复制，不默认
-生成。其它 profile 禁止该字段且保持 stdout-only。Fresh install、dogfood、四平台
+才能成功。Runtime 只验证该 planning-only 字段的 shape/value；the planning owner rereads
+the current three planning files and never imports wording history. 其它 profile 禁止该字段。
+Fresh install、dogfood、四平台
 discovery copies 与 update/reapply 必须同时包含 package、commands、schema 和 route markers。
 
 `guru-review-change-request` package additive 安装
@@ -511,7 +531,8 @@ tests 和两个 executable dispatcher wrappers。Runtime assets 是
 context/clarity/wording linkage、十项 dimensions、findings、scope conclusion、AI Gate 与五出口
 由 canonical semantic package 拥有。Runtime 只重建 portable projection/linkage/facts 并校验
 schema/hash/ref/freshness/consumer/ready invariant，不生成 readiness、finding、delivery unit 或
-route。Pre-task/standalone stdout-only；#112 后续只能持久化同一 checker-passed bytes。
+route。Pre-task/standalone stdout-only；#112 直接消费 checked exit，只持久化
+`issue-scope-ledger.json`，不复制 `issue-review.json`。
 
 五出口固定为 `ready` -> active `guru-create-task-workspace`、
 `clarify_requirements` -> `guru-clarify-requirements`、`review_wording` ->
@@ -521,12 +542,12 @@ route。Pre-task/standalone stdout-only；#112 后续只能持久化同一 check
 并覆盖三类 target、五出口和 zero cache/sidecar residue。
 
 `guru-create-task-workspace` package 安装
-`guru-task-workspace-plan-1.0`、`guru-task-workspace-result-1.0`、contract、examples、tests
+ignored-runtime `guru-task-workspace-plan-2.0`、`guru-task-workspace-result-2.0`、contract、examples、tests
 和三个 executable dispatcher wrappers。Draft invocation 创建 exact issue 后固定
 `refresh_review`；open issue invocation 使用独立 workspace/task confirmation。Assignee 按
 explicit、single issue assignee、zero issue assignees/current login、multiple/unresolved user
-choice 顺序解析。成功后只写四个 tracked task-local Intake artifacts 与 ignored
-`.trellis/.runtime/guru-team/**` mappings。
+choice 顺序解析。成功后除 official `task.json` 外只写 tracked task-local
+`issue-scope-ledger.json` 与 ignored `.trellis/.runtime/guru-team/**` mappings。
 
 Draft create 前使用 exact open title/body/labels 与 creation time执行 0/1/>1 recovery；
 唯一匹配被恢复，零匹配才创建，多个匹配阻断。完整 Intake重入时，workflow-created issue
@@ -638,26 +659,22 @@ hooks, suspected bootstrap failures, or manual context reloads.
 
 Planning, check, review, and publish helpers are internal companion script
 subcommands used by the workflow; they are not daily user-facing entries.
-`guru-approve-task-plan` owns the semantic review and the single
-`planning-approval.json` artifact. It consumes current checker-validated
-`guru-review-contract-wording:planning_artifacts:pass`, reviews adequacy,
-provenance, choices and unusual proposals, runs the AI Gate, separates dedicated
-proposal confirmation from post-planning confirmation, and returns one of four
-typed exits. The installed `record-planning-approval.sh` and
-`check-planning-approval.sh` commands consume/rebuild deterministic facts for
-schema `guru-planning-approval-2.0`; they do not create semantic conclusions.
-For `approved_scope_expansion`, they recompute the proposal from one controlled
-current planning locator or canonical unusual candidate, then require the
-source-appropriate dedicated confirmation and runtime-materialized current
-authority SHA-256 to bind that same digest. An unusual candidate link reuses its
-existing confirmation rather than asking twice; a caller-only digest fails.
-Active schema 1.2 requires complete Skill re-entry and v2 recording. Scope
+`guru-approve-task-plan` owns the semantic review and the single ignored-runtime
+`planning-approval.json` checkpoint. It consumes current live authority,
+wording, planning, Docs SSOT, and issue scope, reviews eight semantic
+dimensions, and returns one of four typed exits. The installed
+`record-planning-approval.sh` and `check-planning-approval.sh` commands preserve
+and validate the compact `guru-planning-approval-3.0` result; they do not create
+semantic conclusions or persist authorization. Active schema 1.2/2.0 requires
+complete Skill re-entry and never regenerates the old digest/confirmation chain. Scope
 ledger task identity and requirement authority use the same issue-category
 projection. The checker revalidates the invocation base/HEAD/dirty snapshot
 while the task is still planning; after activation freshness is based on
 planning, Docs SSOT, authority and wording content, not later implementation
 HEAD drift, metadata tail, or unrelated dirty paths. `task.py start` remains
-only a status transition.
+only a status transition. The Planning public wrapper deletes its checkpoint
+after the checked typed output passes schema validation; activation and Phase 2
+consume only the DTO and current live facts.
 `resolve-human-artifacts.sh` is the deterministic fact layer for phase replies:
 before a planning stop, Phase 2 completion, Branch Review Gate result,
 finish-work dry-run reply, or final archive/publish reply, the AI runs it and
@@ -667,7 +684,7 @@ links, and JSON gate/evidence is not part of the standard table.
 `record-phase2-check.sh` records the AI-authored closed `guru-check-task`
 result before commit, including the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the semantic
-check. `phase2-check.json` is the single `guru-phase2-check-2.1` artifact owned
+check. `phase2-check.json` is the single ignored-runtime `guru-phase2-check-3.0` artifact owned
 by active `guru-check-task`. Official unchanged `trellis-check` is evidence-only;
 the Skill owns scope-before-severity, adequacy, findings, full rerun, Docs SSOT
 review, its AI Gate, and four typed exits. Coverage flags, worker output, or
@@ -675,7 +692,10 @@ script recorder/validator success cannot replace that loop. The preset
 distributes the additive Guru package to shared/Codex/Cursor/Claude roots
 without modifying any upstream-owned `trellis-check` overlay; the frozen
 43-entry ownership inventory remains fixed.
-Schema 2.1 keeps only nine adequacy dimensions, finding lifecycle, Docs SSOT
+The Phase 2 public wrapper deletes its checkpoint after the checked typed output
+passes schema validation. Task Commit and Branch Review consume only minimal
+DTOs and live Git; they never read or delete Phase 2 private state.
+Schema 3.0 keeps only nine adequacy dimensions, finding lifecycle, Docs SSOT
 judgment, and actual validation evidence with direct Gate consumers. Routine
 assignment, handoff, liveness, raw worker payload, and review rounds are not
 persisted. Only a real unfinished-to-replacement event uses
@@ -698,6 +718,9 @@ task-local publication content candidates, then invokes the active owner with
 only its declared target-owned fields. The caller does not decide publication
 sufficiency or readiness. The later `guru-finalize-task` consumer is active,
 installed, and globally integrated; machine recovery routes are auto-consumed.
+Branch Review and Publication each delete their own checkpoint after validating
+their selected DTO. Neither downstream Skill reads or deletes upstream private
+state.
 
 `review-branch.sh` and `check-review-gate.sh` are package-owned deterministic
 recorder/validator implementation details. They run only after the AI Review
@@ -822,9 +845,10 @@ the step-local review loop into a platform overlay.
 `prepare-task.sh --json` is query-only compatibility. It may read
 an explicit issue and search duplicates, but it does not create a GitHub issue,
 worktree, branch, Trellis task, or `.trellis/tasks/<task-slug>/task-start-context.json`. Freeform
-requests without a source issue return `proposed_issue`, `requires_confirmation`,
-`naming_quality`, `preflight.base_freshness`, and `no task context/runtime write` in
-stdout JSON. Before `gh auth status`, issue reads, or duplicate search,
+requests without a source issue return `proposed_issue`, duplicate candidates,
+selected-base facts, naming suggestions, and `naming_quality` in stdout JSON.
+They return no authorization/handoff state, absolute workspace path, task-create
+command, or task/runtime write. Before `gh auth status`, issue reads, or duplicate search,
 `prepare-task` reuses the same strict resolution/sync core used by
 `guru-sync-base`; `fetch_performed: false` or unequal decision/local/remote HEADs
 cannot be `fresh: true`. A behind local base advances only on the selected-base
@@ -859,17 +883,22 @@ worktree, branch, or Trellis task if the generated or overridden name is low
 information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
 tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
 
-Only passed Gate plus confirmed active scope may mutate. Passed plus refused,
-`reroute`, and `blocked` produce checker-validated zero-write `cancelled`,
-`refresh_review`, and `blocked` results. Public result stdout omits the absolute
+Only passed Gate plus confirmed active scope may mutate. Refusal stops before
+the recorder/executor and produces no plan, result, or DTO. `reroute` and
+`blocked` produce checker-validated zero-write `refresh_review` and `blocked`
+results. Public result stdout omits the absolute
 workspace path; the checker derives it from current config, reviewed slug, and
 live Git facts, while local absolute mappings remain ignored runtime only.
 
-The tracked `task-start-context.json` provides only portable `workspace_slug`,
-`task_workspace_id`, and repo-relative `task_artifact_dir`; it never provides an
-absolute `workspace_path`. In worktree mode, derive and validate the machine-local
-task worktree from the current checkout, `.trellis/.runtime/guru-team/**`,
-`git worktree list`, and `check-workspace-boundary.sh --task`. Before writing or validating
+Legacy `task-start-context.json` may provide portable migration identity once;
+the runtime projects only the minimum task/worktree identity and ignores every
+retired authorization or intake field. No current schema is installed for this
+read-only compatibility input; it never provides an absolute `workspace_path`
+and is not generated or required for new tasks. In worktree mode, derive and
+validate the machine-local task
+worktree from current `task.json`, the current checkout,
+`.trellis/.runtime/guru-team/**`, `git worktree list`, and
+`check-workspace-boundary.sh --task`. Before writing or validating
 `planning-approval.json`, `phase2-check.json`, or `review-gate.json`, run:
 
 ```bash
@@ -892,16 +921,17 @@ local base.
 
 The plan binds the initial checker-passed `post_sync_resolution_sha256`. The
 executor runs the shared resolver/sync core once before the first confirmed
-business mutation. A newly advanced remote may safely fast-forward the selected
+business mutation; confirmation remains only in the current dialogue and is
+never passed to or persisted by runtime. A newly advanced remote may safely fast-forward the selected
 base, but then returns `refresh_review` before issue/workspace/task/artifact or
 runtime writes. An unchanged post-sync identity continues normally.
 
-The active package uses schemas `guru-task-workspace-plan-1.0` and
-`guru-task-workspace-result-1.0` plus runtime commands
+The active package uses ignored-runtime schemas `guru-task-workspace-plan-2.0`
+and `guru-task-workspace-result-2.0` plus runtime commands
 `record-task-workspace-plan`, `create-task-workspace`, and
 `check-task-workspace-result`. It keeps workflow/standalone preconditions
 identical, uses mutually exclusive issue/workspace confirmations, and exposes
-only `created`, `refresh_review`, `cancelled`, and `blocked` exits. A draft
+only `created`, `refresh_review`, and `blocked` exits. A draft
 issue creation invocation always stops at `refresh_review`; branch/worktree/task
 creation happens only after full Intake re-entry.
 
@@ -913,8 +943,8 @@ to use those paths separately. In an isolated subprocess, the exact executor cal
 official `common.task_store.cmd_create` with the resolved assignee and disables the
 developer accessor only for that handler invocation. `task.json.assignee` and
 `task.json.creator` therefore both equal the reviewed login, while existing identity
-bytes remain unchanged. The executor writes only four tracked
-task-local Intake artifacts plus ignored runtime mappings. The real local A/B
+bytes remain unchanged. The executor writes only the tracked task-local
+`issue-scope-ledger.json` plus ignored runtime mappings. The real local A/B
 fixture verifies both merge orders without a remote PR or concurrent process.
 
 The installer manages `schemas/closeout-plan.schema.json` and
@@ -923,28 +953,32 @@ The installer manages `schemas/closeout-plan.schema.json` and
 `.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
 journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
 do not open, enumerate, read, count, or output workspace journals. Before
-archive, closeout recovery validates committed plan/readiness, the active
-locator, repo/base/head, review gate, current/remote HEAD, and exact PR
+archive, schema 1.2 recovery validates the untracked closeout plan, the active
+locator, repo/base/head, current/remote HEAD, marketplace owner evidence when
+applicable, and exact PR
 identity. Prepare parses `.trellis/config.yaml` with the installed official
 parser and supports only missing/empty `hooks.after_archive`; invalid or
 non-empty hook configuration is rejected without execution. Immediately before
 official move it also checks the live archive month, empty index, exact
 untracked set, regular-file/mode contract, and evidence blob bytes. A stale
-committed month remains active and is recoverable only by a new dry-run digest
-plus an additive plan/readiness supersession commit; no history rewrite or
-directory migration is used. After the official move but before the exact archive commit exists,
-schema 1.1 first completes idempotent compact-archive pruning, then requires the exact retained
+schema 1.2 month remains active and is recoverable by rebuilding only the
+still-untracked plan with a new dry-run digest; no evidence/readiness commit,
+history rewrite, or directory migration is used. After the official move but before the exact archive commit exists,
+schema 1.2 first completes idempotent compact-archive pruning, then requires the exact retained
 working-tree layout, dirty/staged paths, blob continuity, and official `task.json`
-delta. Normal finalizer archives retain 11 long-term files, including the compact
-`review-gate.json`, and conditionally retain marketplace verification as the twelfth;
+delta. Its core compatibility allowlist contains at most 10 long-term files;
+new AI-first tasks normally retain 7 durable files and conditionally retain
+marketplace verification as the eleventh. Publication readiness and the Finalizer
+gate remain ignored runtime and do not enter the archive;
 intake snapshots, legacy assignments, commit plans, raw review rounds and rollups,
 PR preparation, and other reconstructible
-checkpoints remain only in the evidence commit/GitHub authority. Persisted schema 1.0
-plans retain their original full-move behavior. An absent
+checkpoints are omitted. Persisted schema 1.0 plans retain their original full-move
+behavior, while schema 1.1 retains its historical evidence commit and 11+1 file
+budget only in the compatibility path. An absent
 or mismatched commit remains fail closed. Once current `HEAD` is the exact
 planned archive commit, both normal and plan-only archived reentry load the plan
-from that commit blob; the immutable plan and Git parent/path/tree/blob facts
-are authoritative, so missing or tampered archived working-tree files do not
+from that commit blob; the committed plan blob and Git parent/path/tree/blob
+facts are deterministic recovery inputs, not semantic or workflow authority, so missing or tampered archived working-tree files do not
 block the exact push, remote title/body check, HEAD alignment, or
 draft-to-ready. A plan-only archived directory is resolvable only by the
 canonical `guru-finish-work` route or a frozen compatibility router; ordinary
@@ -962,13 +996,15 @@ strict PR URL parser. GitHub owner/repository identity is case-insensitive,
 while the canonical summary URL preserves the exact valid casing returned by
 the remote PR (for example `microsoft/PowerToys`). A different repository,
 transport, invalid number, extra path, query, or fragment remains fail closed.
-The plan-only path reads the immutable plan from the current commit blob and
+The plan-only path reads the committed plan from the current commit blob and
 runs a dedicated fail-closed boundary before GitHub or fast-path actions. Git
 toplevel, configured/effective repository, current head branch, available base
 ref, current HEAD transaction, expected digest, task identity, and
 active/archive locators must all match. Missing context is never an
 unconditional boundary bypass; ordinary task discovery and commands retain
-their `task.json` and worktree-mode `task-start-context.json` requirements.
+their `task.json` requirement, while worktree boundaries derive from current
+task, ignored runtime mapping, and live Git facts. Legacy
+`task-start-context.json` remains a one-time read-only compatibility input.
 The finish entry validates the raw locator before ordinary resolution or
 canonicalization. Only a basename, exact former active locator, or exact
 archive locator may select plan-only recovery. Path-like input receives
@@ -1020,12 +1056,10 @@ in Phase 1 planning.
 
 Installed implement/check agents consume that plan during Phase 2. The
 implementation agent reports the outcome and changed paths once. The Phase 2
-semantic owner reconstructs the compatibility `implementation_handoff`
-evidence collection from that terminal result plus live repository facts; no
-independent Markdown handoff is created. It records the strategy, durable docs
-sync result, task delta merged back, task-history-only content, no-update or
-follow-up / PR limits, and whether implementation inputs came from durable
-docs or an approved temporary task delta. The Phase 2 check agent then verifies durable
+semantic owner uses that ephemeral result plus live repository facts directly
+and records only its compact final Docs SSOT, validation, semantic, and route
+result in ignored runtime; no independent or embedded handoff is created. The
+Phase 2 check agent then verifies durable
 docs, task artifacts, code/schema/config/deploy/test, and validation/test
 coverage against the same strategy. `delta_first` must merge durable docs
 before final Phase 2 check; `ssot_first` uses revised durable docs as primary
@@ -1036,7 +1070,7 @@ concrete reason after the final diff is reviewed.
 
 ## Push 后远端 Marketplace 门禁
 
-修改 marketplace/preset/overlay/schema/public API 时，recorder 在 reviewed content push 后从 immutable closeout plan 生成 pending machine evidence；verifier 成功后只替换为 passed。plan、readiness、artifact 与 ledger 形成 exact pre-draft metadata commit，push 并校验 remote HEAD 后才允许绑定 draft PR。缺失、重复、pending、失败、篡改、HEAD 不匹配或 stale 均阻止创建 PR；human reason 不参与 machine identity，该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
+修改 marketplace/preset/overlay/schema/public API 时，recorder 在 reviewed content push 后从 immutable closeout plan 生成 pending machine evidence；verifier 成功后只替换为 passed。Schema 1.2 让 verifier artifact 与 ledger 变更保持为 archive transaction state，`evidence_paths=[]`，不创建 pre-draft plan/readiness/evidence commit；passed evidence 与 remote HEAD 校验完成后才允许绑定 draft PR，并最终随单次 archive transaction 提交。缺失、重复、pending、失败、内容不一致、HEAD 不匹配或 stale 均阻止创建 PR；human reason 不参与 machine identity，该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
 
 ## Eval 安装与升级清单
 

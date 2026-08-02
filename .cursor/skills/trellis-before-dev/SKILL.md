@@ -13,13 +13,15 @@ Execute these steps:
    ```bash
    .trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
    ```
-   Stop if the artifact is missing, old schema, lacks passed
-   `ambiguity_review` evidence, lacks fixed-scope scanner evidence, has
-   unchecked normative hits, does not use
-   `user_confirmation.source=explicit-post-planning-review`, or no longer
-   matches the current `prd.md`, `design.md`, and `implement.md` content
-   digests. Current HEAD or dirty-path drift alone is not a planning approval
-   failure.
+   Stop if the ignored-runtime checkpoint is missing, is not
+   `guru-planning-approval-3.0`, does not bind the current task and exact
+   `prd.md` / `design.md` / `implement.md` locators, any planning document is
+   missing or empty, its semantic-review / typed-exit / consumer union is not an
+   approved result, or the live planning content no longer matches that current
+   semantic result. User authorization exists only in the current dialogue;
+   this gate must neither require nor persist confirmation state, text, refs,
+   or digests. Current HEAD or unrelated dirty-path drift alone is not a
+   planning approval failure.
 
 2. **Read current task artifacts**:
    - `prd.md` for requirements and acceptance criteria

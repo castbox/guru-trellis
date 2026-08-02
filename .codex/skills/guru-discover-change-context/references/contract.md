@@ -67,7 +67,7 @@ canonical issue/PR URLs without query or fragment; `git` locators are exact
 GitHub, and Git history are each recorded insufficient for one named
 load-bearing question. Otherwise record `mem_review.status=not_needed`.
 
-## AI Review Gate And Confirmation
+## AI Review Gate And Conditional Confirmation
 
 The AI Gate records reviewed/excluded scope, relevance, sufficiency, conflicts,
 reusable/non-reusable mechanisms, evidence-bound load-bearing conclusions,
@@ -76,9 +76,9 @@ validate this evidence; they never generate it or choose the semantic exit. A
 passed Gate requires non-empty reviewed scope and load-bearing conclusions.
 
 `typed_exit=blocked` if and only if `ai_review_gate.status=blocked`; schema and
-runtime enforce both directions. Conditional human confirmation is always
-`not_required` with reason
-`decision_owned_by_guru-clarify-requirements`.
+runtime enforce both directions. This step has no user-owned decision or
+mutation, so the conditional confirmation stage continues without prompting
+and writes no authorization field to the snapshot.
 
 ## Snapshot, Freshness, And Exits
 

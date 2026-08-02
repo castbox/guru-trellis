@@ -3,13 +3,12 @@
   "$id": "guru-production-review-task-publication-input-publication-review-stale-1.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["profile", "mode", "task_ref", "stale_reason", "review_intent", "reentry_context"],
+  "required": ["profile", "mode", "task_ref", "stale_reason", "review_intent"],
   "properties": {
     "profile": {"const": "publication_review_stale"},
     "mode": {"type": "string", "enum": ["workflow", "standalone"]},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
     "stale_reason": {"type": "string", "minLength": 1},
-    "review_intent": {"type": "string", "enum": ["initial_review", "metadata_revision_review", "stale_reentry_review"]},
-    "reentry_context": {"type": "string", "minLength": 1}
+    "review_intent": {"type": "string", "enum": ["initial_review", "metadata_revision_review", "stale_reentry_review"]}
   }
 }
