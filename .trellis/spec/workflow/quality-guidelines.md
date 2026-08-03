@@ -452,6 +452,11 @@ and every incorrect recorder-derived semantic digest fail closed. A real Git
 post-commit fixture must prove the current owner-private ignored-runtime Phase 2
 checkpoint remains valid after the reviewed commit without adding assignment,
 status, liveness, review-round, or implementation-handoff metadata.
+Candidate-hygiene coverage must separately prove that exact same-path official
+Trellis template bytes under valid schema-v2 provenance may retain upstream
+whitespace/EOF formatting; hash mismatch, unknown path, or invalid/missing
+provenance must not suppress applicable findings, and path escape, invalid
+UTF-8, or invalid JSON must still block.
 
 Publication regression coverage must additionally reject missing stale reason,
 legacy public inputs that carry Branch Review private identities, any `ready`

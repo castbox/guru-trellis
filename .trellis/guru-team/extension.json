@@ -321,11 +321,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-02T17:52:56Z",
+  "installed_at": "2026-08-03T01:26:35Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/161-ai-first-workflow-contracts-v2",
-    "commit": "871776f04f5c127374f460140e532ad0d37c1b55",
+    "ref": "codex/161-candidate-hygiene-template-owned-bytes",
+    "commit": "b8e665b4aa22965671085ec8287cd9cbf78fcae3",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -493,7 +493,7 @@
       {
         "id": "guru-check-task",
         "interface_sha256": "0f5bb8ad2384cee91ab7f40931970fd266f40c0b50be2e80ab4a53cc0b139b53",
-        "tree_sha256": "d0cdd27442d71a5cdb168f29d3c631007ac4cb14141f68b293ddb5492e13bfa7"
+        "tree_sha256": "b92a02c14571ef09d92d63c420c33c75c879b62f95b2b8a60b42db02c2fc639c"
       },
       {
         "id": "guru-clarify-requirements",
@@ -1777,7 +1777,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "6a05de666837dbc421c967dd0a0096b6864eb6da6ec6dfa9483b9d370de2552b",
+        "sha256": "8b4223c378e1bbd3628c01cef4a5b68cda709f4e63457f31cd248130bb745233",
         "executable": false,
         "action": "unchanged"
       },
@@ -7629,7 +7629,7 @@
       {
         "path": ".agents/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "6a05de666837dbc421c967dd0a0096b6864eb6da6ec6dfa9483b9d370de2552b",
+        "sha256": "8b4223c378e1bbd3628c01cef4a5b68cda709f4e63457f31cd248130bb745233",
         "executable": false,
         "action": "unchanged"
       },
@@ -7874,7 +7874,7 @@
       {
         "path": ".codex/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "6a05de666837dbc421c967dd0a0096b6864eb6da6ec6dfa9483b9d370de2552b",
+        "sha256": "8b4223c378e1bbd3628c01cef4a5b68cda709f4e63457f31cd248130bb745233",
         "executable": false,
         "action": "unchanged"
       },
@@ -8119,7 +8119,7 @@
       {
         "path": ".claude/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "6a05de666837dbc421c967dd0a0096b6864eb6da6ec6dfa9483b9d370de2552b",
+        "sha256": "8b4223c378e1bbd3628c01cef4a5b68cda709f4e63457f31cd248130bb745233",
         "executable": false,
         "action": "unchanged"
       },
@@ -8364,7 +8364,7 @@
       {
         "path": ".cursor/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "6a05de666837dbc421c967dd0a0096b6864eb6da6ec6dfa9483b9d370de2552b",
+        "sha256": "8b4223c378e1bbd3628c01cef4a5b68cda709f4e63457f31cd248130bb745233",
         "executable": false,
         "action": "unchanged"
       },

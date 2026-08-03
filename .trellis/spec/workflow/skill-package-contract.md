@@ -1154,6 +1154,13 @@ has current evidence from planning, implementation, Docs SSOT, repository,
 tests, and issue scope. These are direct semantic inputs; AI still owns
 sufficiency, qualification, findings, and route.
 
+Candidate hygiene treats exact bytes at an exact repo-relative path as upstream
+Trellis template-managed only when that path has a valid matching SHA-256 entry
+in schema-v2 `.trellis/.template-hashes.json`. That match suppresses only
+untracked-user trailing-whitespace and blank-EOF findings. Missing/invalid
+provenance, unknown paths, local edits, or hash mismatch remain ordinary
+candidates, while path, UTF-8, and JSON validation is never bypassed.
+
 The ignored-runtime schema 3.0 checkpoint contains only checked content
 identity, one composite worktree-content freshness token, reviewed paths,
 validation evidence, final Docs SSOT result, semantic dimensions/findings, and

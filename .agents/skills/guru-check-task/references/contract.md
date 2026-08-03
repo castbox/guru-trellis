@@ -29,6 +29,11 @@ public input and assert the actual exit only after the owner result returns.
    dirty paths, code, tests, docs, and applicable validation commands.
 2. Perform early candidate hygiene over the committed task-base diff, staged,
    unstaged, untracked, and new files before expensive or external validation.
+   Untracked text skips whitespace and blank-EOF findings only when its current
+   bytes exactly match the same repo-relative path's valid schema-v2 Trellis
+   `.trellis/.template-hashes.json` entry. Missing, invalid, unknown, or
+   mismatched provenance does not exempt the file, and path, UTF-8, and JSON
+   validation always remains active.
 3. Classify each candidate on supported normal behavior. Only current-scope
    candidates receive P0-P3 findings; scope changes route to planning and
    excluded hostile or deliberately forged cases remain out of scope.
