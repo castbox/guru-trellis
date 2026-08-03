@@ -21317,6 +21317,32 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                     "Repair the checked finalization route output and rerun the owner gate.",
                     "Task finalization could not serialize a valid actual-exit output.",
                 )
+            if (
+                exit_id == "publication_review_stale"
+                and payload.get("stale_reason")
+                == "publication_review_head_mismatch"
+            ):
+                finalization_task = owner_plan.get("task_dir")
+                if not isinstance(finalization_task, Path):
+                    raise stage0_invocation_error(
+                        "owner_result_projection_failed",
+                        "owner_result.task_dir",
+                        "Restore the checked active finalization task identity.",
+                        "Task finalization cannot retire stale downstream projection without its task identity.",
+                    )
+                try:
+                    finalization_retire_stale_downstream_projection(
+                        root,
+                        finalization_task,
+                        owner_plan,
+                    )
+                except WorkflowError as exc:
+                    raise stage0_invocation_error(
+                        "owner_result_projection_failed",
+                        "owner_result.publication_stale_reason",
+                        "Review unknown or mismatched task-local content; only the exact plan-owned stale projection may be retired automatically.",
+                        "Task finalization could not safely retire its stale downstream projection.",
+                    ) from exc
             if exit_id == "published":
                 finalization_task = owner_plan.get("task_dir")
                 if not isinstance(finalization_task, Path):
@@ -27578,6 +27604,322 @@ def finalization_publication_owner_result(
         "typed_exit": "ready",
         "task_ref": task_ref,
         "reviewed_content_head": reviewed_content_head,
+    }
+
+
+def finalization_retire_stale_downstream_projection(
+    root: Path,
+    task_dir: Path,
+    context: dict[str, Any],
+) -> dict[str, Any]:
+    """Retire one exact pre-draft projection after a real content HEAD advance."""
+    if (
+        context.get("publication_status") != "stale"
+        or context.get("publication_stale_reason")
+        != "publication_review_head_mismatch"
+        or task_dir_is_archived(root, task_dir)
+    ):
+        raise WorkflowError(
+            "Task finalization stale projection retirement is not applicable.",
+            exit_code=2,
+        )
+    if not task_dir.is_dir() or task_dir.is_symlink():
+        raise WorkflowError(
+            "Task finalization stale projection task directory is unsafe.",
+            exit_code=2,
+        )
+
+    task_ref = repo_relative(root, task_dir)
+    plan_path = closeout_plan_path(task_dir)
+    ledger_path = issue_scope_ledger_path(task_dir)
+    body_path = task_dir / PR_BODY_ARTIFACT
+    index_path = task_dir / FINISH_SUMMARY_INDEX_ARTIFACT
+    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+
+    def regular_file(path: Path, label: str) -> bytes:
+        if path.is_symlink() or not path.is_file():
+            raise WorkflowError(
+                f"Task finalization stale projection {label} is unsafe or missing.",
+                exit_code=2,
+            )
+        metadata = os.lstat(path)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise WorkflowError(
+                f"Task finalization stale projection {label} is not a regular file.",
+                exit_code=2,
+            )
+        return path.read_bytes()
+
+    plan_bytes = regular_file(plan_path, CLOSEOUT_PLAN_ARTIFACT)
+    plan = validate_closeout_plan(read_json(plan_path))
+    if (
+        plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
+        or plan_bytes != closeout_json_artifact_bytes(plan)
+        or plan.get("task", {}).get("active_locator") != task_ref
+        or plan.get("git", {}).get("head_branch") != current_branch(root)
+    ):
+        raise WorkflowError(
+            "Task finalization stale projection plan identity is not the exact current projection.",
+            exit_code=2,
+        )
+    task = task_json(task_dir)
+    if (
+        task.get("status") != "in_progress"
+        or str(task.get("id") or task.get("name") or task_dir.name)
+        != str(plan.get("task", {}).get("id") or "")
+    ):
+        raise WorkflowError(
+            "Task finalization stale projection task identity is not current.",
+            exit_code=2,
+        )
+
+    current = current_head(root)
+    reviewed = str(plan.get("git", {}).get("reviewed_work_head") or "")
+    if (
+        current == reviewed
+        or not re.fullmatch(r"[0-9a-f]{40}", reviewed)
+        or not is_ancestor(root, reviewed, current)
+    ):
+        raise WorkflowError(
+            "Task finalization stale projection does not follow one reviewed content HEAD advance.",
+            exit_code=2,
+        )
+    if plan.get("marketplace", {}).get("required") is not True:
+        raise WorkflowError(
+            "Task finalization stale projection is outside the supported pre-draft verification boundary.",
+            exit_code=2,
+        )
+    if summary_path.exists():
+        raise WorkflowError(
+            "Task finalization stale projection already reached a later closeout state.",
+            exit_code=2,
+        )
+
+    inputs = plan.get("inputs") if isinstance(plan.get("inputs"), dict) else {}
+    expected_inputs = {
+        "issue_scope_ledger": ledger_path,
+        "pr_body": body_path,
+        "finish_summary_index": index_path,
+    }
+    for input_id, path in expected_inputs.items():
+        record = inputs.get(input_id)
+        if (
+            not isinstance(record, dict)
+            or record.get("path") != repo_relative(root, path)
+        ):
+            raise WorkflowError(
+                f"Task finalization stale projection {input_id} path is not plan-bound.",
+                exit_code=2,
+            )
+
+    ledger_bytes = regular_file(ledger_path, "issue-scope-ledger.json")
+    body_bytes = regular_file(body_path, PR_BODY_ARTIFACT)
+    index_bytes = regular_file(index_path, FINISH_SUMMARY_INDEX_ARTIFACT)
+    if hashlib.sha256(body_bytes).hexdigest() != inputs["pr_body"].get("sha256"):
+        raise WorkflowError(
+            "Task finalization stale projection PR body differs from the immutable plan.",
+            exit_code=2,
+        )
+    if (
+        hashlib.sha256(index_bytes).hexdigest()
+        != inputs["finish_summary_index"].get("sha256")
+    ):
+        raise WorkflowError(
+            "Task finalization stale projection finish summary index differs from the immutable plan.",
+            exit_code=2,
+        )
+
+    ledger = read_json(ledger_path)
+    semantic_ledger = closeout_semantic_ledger(ledger)
+    if inputs["issue_scope_ledger"].get("sha256") != canonical_json_sha256(
+        semantic_ledger
+    ):
+        raise WorkflowError(
+            "Task finalization stale projection Ledger semantics differ from the immutable plan.",
+            exit_code=2,
+        )
+    targets: list[dict[str, Any]] = []
+    primary = ledger.get("primary_issue")
+    if isinstance(primary, dict):
+        targets.append(primary)
+    close_issues = ledger.get("close_issues")
+    if isinstance(close_issues, list):
+        targets.extend(item for item in close_issues if isinstance(item, dict))
+    if not targets:
+        raise WorkflowError(
+            "Task finalization stale projection Ledger has no closeout targets.",
+            exit_code=2,
+        )
+
+    verification_path = task_dir / str(
+        plan.get("marketplace", {}).get("verifier_artifact_locator") or ""
+    )
+    remove_paths = [body_path, index_path]
+    if verification_path.exists():
+        regular_file(
+            verification_path,
+            MARKETPLACE_VERIFICATION_ARTIFACT,
+        )
+        verification = read_json(verification_path)
+        expected_evidence = closeout_passed_marketplace_evidence(
+            root,
+            verification_path,
+            verification,
+        )
+        if (
+            verification.get("repo") != plan["git"]["repo"]
+            or verification.get("remote") != plan["git"]["remote"]
+            or verification.get("branch") != plan["git"]["head_branch"]
+            or verification.get("task_dir") != task_ref
+            or verification.get("verified_head") != reviewed
+            or verification.get("remote_head") != reviewed
+        ):
+            raise WorkflowError(
+                "Task finalization stale marketplace projection is not plan-bound.",
+                exit_code=2,
+            )
+        remove_paths.append(verification_path)
+    else:
+        expected_evidence = plan.get("marketplace", {}).get("pending_machine")
+        if not isinstance(expected_evidence, dict):
+            raise WorkflowError(
+                "Task finalization stale projection pending marketplace evidence is missing.",
+                exit_code=2,
+            )
+    if any(remote_marketplace_evidence(issue) != expected_evidence for issue in targets):
+        raise WorkflowError(
+            "Task finalization stale projection Ledger marketplace evidence is not plan-owned.",
+            exit_code=2,
+        )
+    expected_ledger = record_marketplace_machine_evidence(
+        semantic_ledger,
+        expected_evidence,
+    )
+    if ledger_bytes != closeout_json_artifact_bytes(expected_ledger):
+        raise WorkflowError(
+            "Task finalization stale projection Ledger bytes are not the canonical owner projection.",
+            exit_code=2,
+        )
+
+    ledger_relative = repo_relative(root, ledger_path)
+    ledger_mode, ledger_type, _ledger_oid = closeout_commit_tree_entry(
+        root,
+        current,
+        ledger_relative,
+    )
+    if ledger_type != "blob" or ledger_mode not in {"100644", "100755"}:
+        raise WorkflowError(
+            "Task finalization stale projection Ledger is not a regular current-HEAD blob.",
+            exit_code=2,
+        )
+    working_mode = os.lstat(ledger_path).st_mode
+    current_mode = "100755" if working_mode & 0o111 else "100644"
+    if current_mode != ledger_mode:
+        raise WorkflowError(
+            "Task finalization stale projection Ledger mode differs from current HEAD.",
+            exit_code=2,
+        )
+    ledger_restore_bytes = closeout_commit_blob_bytes(root, current, ledger_relative)
+
+    projection = (
+        plan.get("projection")
+        if isinstance(plan.get("projection"), dict)
+        else {}
+    )
+    untracked_archive_outputs = set(projection.get("untracked_archive_outputs") or [])
+    planned_untracked = {
+        CLOSEOUT_PLAN_ARTIFACT,
+        PR_BODY_ARTIFACT,
+        FINISH_SUMMARY_INDEX_ARTIFACT,
+    }
+    if verification_path.exists():
+        planned_untracked.add(MARKETPLACE_VERIFICATION_ARTIFACT)
+    if not planned_untracked.issubset(untracked_archive_outputs):
+        raise WorkflowError(
+            "Task finalization stale projection paths are outside the immutable untracked output set.",
+            exit_code=2,
+        )
+    untracked_paths = closeout_untracked_paths(root)
+    expected_untracked = {
+        repo_relative(root, plan_path),
+        repo_relative(root, body_path),
+        repo_relative(root, index_path),
+    }
+    if verification_path.exists():
+        expected_untracked.add(repo_relative(root, verification_path))
+    if not expected_untracked.issubset(untracked_paths):
+        raise WorkflowError(
+            "Task finalization stale projection contains a tracked or ignored owner output.",
+            exit_code=2,
+        )
+
+    staged_proc = run(
+        ["git", "diff", "--cached", "--name-only", "--no-renames", "-z"],
+        cwd=root,
+        check=False,
+    )
+    if staged_proc.returncode != 0:
+        raise WorkflowError(
+            "Task finalization stale projection could not inspect staged paths.",
+            exit_code=2,
+        )
+    staged_paths = {path for path in staged_proc.stdout.split("\0") if path}
+    if staged_paths:
+        raise WorkflowError(
+            "Task finalization stale projection retirement does not accept staged paths.",
+            exit_code=2,
+            payload={"staged_paths": sorted(staged_paths)},
+        )
+
+    expected_dirty = set(expected_untracked)
+    if ledger_bytes != ledger_restore_bytes:
+        expected_dirty.add(ledger_relative)
+    dirty_paths = set(git_status_paths(root, fail_closed=True))
+    if dirty_paths != expected_dirty:
+        raise WorkflowError(
+            "Task finalization stale projection dirty paths are not the exact owner set.",
+            exit_code=2,
+            payload={
+                "expected_dirty_paths": sorted(expected_dirty),
+                "actual_dirty_paths": sorted(dirty_paths),
+            },
+        )
+
+    gate_path = ai_first_owner_checkpoint_path(
+        root,
+        task_dir,
+        TASK_FINALIZATION_GATE_ARTIFACT,
+    )
+    if gate_path.is_symlink() or not gate_path.is_file():
+        raise WorkflowError(
+            "Task finalization stale projection owner checkpoint is missing or unsafe.",
+            exit_code=2,
+        )
+
+    if ledger_bytes != ledger_restore_bytes:
+        ledger_path.write_bytes(ledger_restore_bytes)
+    for path in [*remove_paths, plan_path]:
+        path.unlink()
+    retired = ai_first_retire_owner_checkpoints(
+        root,
+        task_dir,
+        (TASK_FINALIZATION_GATE_ARTIFACT,),
+    )
+    return {
+        "status": "retired",
+        "task_ref": task_ref,
+        "reviewed_content_head": reviewed,
+        "current_head": current,
+        "restored_paths": (
+            [ledger_relative]
+            if ledger_bytes != ledger_restore_bytes
+            else []
+        ),
+        "removed_paths": [
+            repo_relative(root, path)
+            for path in [*remove_paths, plan_path]
+        ],
+        "retired_owner_checkpoints": retired,
     }
 
 
