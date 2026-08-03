@@ -24807,11 +24807,27 @@ def prepare_closeout(
             gate,
             reviewed_head,
         )
+    ledger = load_issue_scope_ledger(task_dir, task_context)
+    allow_publication_issue_scope_ledger = (
+        publication_ready is not None
+        and (
+            existing_plan is None
+            or (
+                ai_first_plan
+                and closeout_ledger_matches_plan_semantics(
+                    root,
+                    task_dir,
+                    existing_plan,
+                    ledger,
+                )
+            )
+        )
+    )
     dirty_paths = finalizer_unreviewed_dirty_paths(
         root,
         task_dir,
         allow_publication_issue_scope_ledger=(
-            publication_ready is not None and existing_plan is None
+            allow_publication_issue_scope_ledger
         ),
     )
     if dirty_paths:
@@ -24821,7 +24837,6 @@ def prepare_closeout(
             payload={"dirty_paths": dirty_paths},
         )
     index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
-    ledger = load_issue_scope_ledger(task_dir, task_context)
     requires_marketplace = bool(review_facts["marketplace_required"])
     if requires_marketplace:
         existing_targets: list[dict[str, Any]] = []

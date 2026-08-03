@@ -11414,6 +11414,82 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 verification_owner_result=verification_owner_result,
             )
 
+    def prepare_persisted_publication_plan_recheck(
+        self,
+        *,
+        semantic_ledger_drift: bool = False,
+    ) -> dict[str, object]:
+        self.task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        plan = self.build_plan(include_finalization_gate=True)
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+
+        ledger = gtt.record_marketplace_machine_evidence(
+            gtt.closeout_semantic_ledger(self.ledger),
+            plan["marketplace"]["pending_machine"],
+        )
+        if semantic_ledger_drift:
+            ledger["close_issues"][0]["reason"] = (
+                "unreviewed ledger semantic drift"
+            )
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
+
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        dirty_paths = [
+            f"{task_ref}/issue-scope-ledger.json",
+            f"{task_ref}/{gtt.CLOSEOUT_PLAN_ARTIFACT}",
+            f"{task_ref}/{gtt.FINISH_SUMMARY_INDEX_ARTIFACT}",
+            f"{task_ref}/{gtt.PR_BODY_ARTIFACT}",
+        ]
+        args, patches = self.finalizer_takeover_runtime(ledger, dirty_paths)
+        publication_ready = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_content_head": self.head,
+        }
+        real_dirty_gate = gtt.finalizer_unreviewed_dirty_paths
+        with contextlib.ExitStack() as stack:
+            for patcher in patches:
+                stack.enter_context(patcher)
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalizer_unreviewed_dirty_paths",
+                    wraps=real_dirty_gate,
+                )
+            )
+            return gtt.prepare_closeout(
+                self.root,
+                args,
+                {},
+                self.task_dir,
+                self.context,
+                publication_ready=publication_ready,
+            )
+
+    def test_persisted_publication_plan_recheck_accepts_bound_ledger_tail(
+        self,
+    ) -> None:
+        prepared = self.prepare_persisted_publication_plan_recheck()
+        self.assertEqual(
+            prepared["plan"]["schema_version"],
+            gtt.CLOSEOUT_PLAN_SCHEMA_VERSION,
+        )
+
+    def test_persisted_publication_plan_recheck_rejects_ledger_semantic_drift(
+        self,
+    ) -> None:
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.prepare_persisted_publication_plan_recheck(
+                semantic_ledger_drift=True,
+            )
+        self.assertEqual(
+            raised.exception.payload.get("dirty_paths"),
+            [f"{task_ref}/issue-scope-ledger.json"],
+        )
+
     def exercise_prepared_finalization_gate_reentry(
         self,
         *,
