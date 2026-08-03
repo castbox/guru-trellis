@@ -27772,6 +27772,9 @@ def finalization_publication_owner_result(
             root,
             task_dir,
             repository["status_paths"],
+            finalization_owned_paths=[
+                repo_relative(root, closeout_plan_path(task_dir))
+            ],
         )
         if unexpected:
             raise WorkflowError(

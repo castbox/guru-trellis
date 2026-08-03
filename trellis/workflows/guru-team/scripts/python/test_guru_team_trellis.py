@@ -10863,6 +10863,45 @@ class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
                     finalization_error.exception.payload["errors"],
                 )
 
+    def test_finalizer_publication_owner_accepts_only_its_persisted_plan(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_relative = f"{task_ref}/{gtt.CLOSEOUT_PLAN_ARTIFACT}"
+        gtt.write_json(self.root / plan_relative, {"plan_digest": "f" * 64})
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_content_head": self.head,
+        }
+
+        owner_result = gtt.finalization_publication_owner_result(
+            self.root,
+            self.task_dir,
+            public_input,
+        )
+        self.assertEqual(owner_result["owner_status"], "current")
+        self.assertEqual(owner_result["reviewed_content_head"], self.head)
+
+        verification_relative = (
+            f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        gtt.write_json(
+            self.root / verification_relative,
+            {"status": "unreviewed"},
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.finalization_publication_owner_result(
+                self.root,
+                self.task_dir,
+                public_input,
+            )
+        self.assertEqual(
+            raised.exception.payload.get("unexpected_dirty_paths"),
+            [verification_relative],
+        )
+
 
 class CloseoutTransactionContractTest(unittest.TestCase):
     def setUp(self) -> None:
