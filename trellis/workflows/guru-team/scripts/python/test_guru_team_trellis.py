@@ -5770,6 +5770,145 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             gtt.diff_base_ref(self.root, "main"),
         )
 
+    def test_candidate_hygiene_exempts_only_exact_trellis_template_bytes(self) -> None:
+        template_relative = (
+            ".claude/skills/trellis-meta/references/"
+            "local-architecture/workspace-memory.md"
+        )
+        template_path = self.root / template_relative
+        template_path.parent.mkdir(parents=True)
+        official_bytes = b"# Workspace memory\n\nOfficial hard break  \n\n"
+        template_path.write_bytes(official_bytes)
+        gtt.write_json(
+            self.root / gtt.AI_FIRST_TEMPLATE_HASHES_PATH,
+            {
+                "__version": 2,
+                "hashes": {
+                    template_relative: hashlib.sha256(official_bytes).hexdigest(),
+                },
+            },
+        )
+
+        paths, errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            candidate_paths=[template_relative],
+        )
+        self.assertIn(template_relative, paths)
+        self.assertFalse([error for error in errors if template_relative in error])
+
+        template_path.write_bytes(official_bytes + b"local edit\n")
+        _paths, mismatch_errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            candidate_paths=[template_relative],
+        )
+        self.assertIn(
+            f"candidate-trailing-whitespace:{template_relative}:3",
+            mismatch_errors,
+        )
+
+        unknown_relative = "notes/unknown.md"
+        unknown_path = self.root / unknown_relative
+        unknown_path.parent.mkdir(parents=True)
+        unknown_path.write_bytes(b"# Unknown\n\nUnknown hard break  \n\n")
+        _paths, unknown_errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            candidate_paths=[unknown_relative],
+        )
+        self.assertIn(
+            f"candidate-trailing-whitespace:{unknown_relative}:3",
+            unknown_errors,
+        )
+        self.assertIn(
+            f"candidate-blank-line-at-eof:{unknown_relative}",
+            unknown_errors,
+        )
+
+    def test_candidate_hygiene_invalid_provenance_does_not_exempt_whitespace(self) -> None:
+        relative = ".claude/skills/trellis-channel/references/command-reference.md"
+        path = self.root / relative
+        path.parent.mkdir(parents=True)
+        content = b"# Command reference\n\n"
+        path.write_bytes(content)
+        valid_digest = hashlib.sha256(content).hexdigest()
+        invalid_manifests = (
+            {
+                "__version": gtt.AI_FIRST_TEMPLATE_HASHES_SCHEMA_VERSION,
+                "hashes": {relative: "not-a-sha256"},
+            },
+            {"__version": 1, "hashes": {relative: valid_digest}},
+            {"__version": 3, "hashes": {relative: valid_digest}},
+        )
+
+        for manifest in invalid_manifests:
+            with self.subTest(
+                version=manifest["__version"],
+                digest=manifest["hashes"][relative],
+            ):
+                gtt.write_json(
+                    self.root / gtt.AI_FIRST_TEMPLATE_HASHES_PATH,
+                    manifest,
+                )
+                _paths, errors = gtt.ai_first_candidate_hygiene_scan(
+                    self.root,
+                    candidate_paths=[relative],
+                )
+                self.assertIn(f"candidate-blank-line-at-eof:{relative}", errors)
+
+    def test_candidate_hygiene_template_hash_does_not_bypass_content_safety(self) -> None:
+        invalid_utf8_relative = ".claude/skills/trellis-meta/invalid.md"
+        invalid_json_relative = ".claude/skills/trellis-meta/invalid.json"
+        invalid_utf8 = b"\xff"
+        invalid_json = b"{\n"
+        for relative, content in (
+            (invalid_utf8_relative, invalid_utf8),
+            (invalid_json_relative, invalid_json),
+        ):
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        gtt.write_json(
+            self.root / gtt.AI_FIRST_TEMPLATE_HASHES_PATH,
+            {
+                "__version": 2,
+                "hashes": {
+                    invalid_utf8_relative: hashlib.sha256(invalid_utf8).hexdigest(),
+                    invalid_json_relative: hashlib.sha256(invalid_json).hexdigest(),
+                },
+            },
+        )
+
+        _paths, errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            candidate_paths=[invalid_utf8_relative, invalid_json_relative],
+        )
+        self.assertIn(f"candidate-invalid-utf8:{invalid_utf8_relative}", errors)
+        self.assertIn(f"candidate-invalid-json:{invalid_json_relative}:2:1", errors)
+
+    def test_candidate_hygiene_template_hash_does_not_bypass_path_safety(self) -> None:
+        outside_relative = f"../{self.root.name}-outside.md"
+        outside_path = self.root.parent / f"{self.root.name}-outside.md"
+        outside_content = b"# Outside\n\n"
+        outside_path.write_bytes(outside_content)
+        self.addCleanup(outside_path.unlink, missing_ok=True)
+        gtt.write_json(
+            self.root / gtt.AI_FIRST_TEMPLATE_HASHES_PATH,
+            {
+                "__version": 2,
+                "hashes": {
+                    outside_relative: hashlib.sha256(outside_content).hexdigest(),
+                },
+            },
+        )
+
+        _paths, errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            candidate_paths=[outside_relative],
+        )
+        self.assertIn(
+            f"candidate-path-outside-repository:{outside_relative}",
+            errors,
+        )
+
     def test_legacy_owner_artifacts_require_ai_first_reentry(self) -> None:
         planning_path = gtt.planning_approval_path(
             self.root, self.task_dir, for_write=True

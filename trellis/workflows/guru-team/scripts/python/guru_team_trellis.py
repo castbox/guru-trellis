@@ -415,6 +415,8 @@ AI_FIRST_OWNER_SKILL_BY_ARTIFACT = {
     "task-finalization-gate.json": "guru-finalize-task",
 }
 AI_FIRST_OS_NOISE_NAMES = frozenset({".DS_Store"})
+AI_FIRST_TEMPLATE_HASHES_PATH = Path(".trellis/.template-hashes.json")
+AI_FIRST_TEMPLATE_HASHES_SCHEMA_VERSION = 2
 AI_FIRST_TEXT_SUFFIXES = frozenset({
     ".c", ".cc", ".cfg", ".conf", ".cpp", ".css", ".go", ".h", ".hpp",
     ".html", ".ini", ".java", ".js", ".json", ".jsx", ".kt", ".kts",
@@ -3827,6 +3829,41 @@ def ai_first_os_noise_path(path: str) -> bool:
     return Path(path).name in AI_FIRST_OS_NOISE_NAMES
 
 
+def ai_first_template_hashes(root: Path) -> dict[str, str]:
+    manifest_path = root / AI_FIRST_TEMPLATE_HASHES_PATH
+    try:
+        manifest_stat = manifest_path.lstat()
+    except OSError:
+        return {}
+    if stat.S_ISLNK(manifest_stat.st_mode) or not stat.S_ISREG(manifest_stat.st_mode):
+        return {}
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    version = payload.get("__version")
+    hashes = payload.get("hashes")
+    if version != AI_FIRST_TEMPLATE_HASHES_SCHEMA_VERSION or not isinstance(hashes, dict):
+        return {}
+    normalized: dict[str, str] = {}
+    for relative, digest in hashes.items():
+        if not isinstance(relative, str) or not relative or "\0" in relative:
+            return {}
+        relative_path = Path(relative)
+        if (
+            relative_path.is_absolute()
+            or relative_path.as_posix() != relative
+            or any(part in {".", ".."} for part in relative_path.parts)
+            or not isinstance(digest, str)
+            or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+        ):
+            return {}
+        normalized[relative] = digest
+    return normalized
+
+
 def git_dirty(root: Path) -> bool:
     return bool(git_status_paths(root))
 
@@ -3905,6 +3942,7 @@ def ai_first_candidate_hygiene_scan(
         tracked_paths = {
             value for value in tracked_proc.stdout.split("\0") if value
         }
+    template_hashes = ai_first_template_hashes(root)
     for relative in sorted(paths, key=lambda item: item.encode("utf-8")):
         if ai_first_os_noise_path(relative):
             continue
@@ -3940,6 +3978,12 @@ def ai_first_candidate_hygiene_scan(
             except json.JSONDecodeError as exc:
                 errors.append(f"candidate-invalid-json:{relative}:{exc.lineno}:{exc.colno}")
         if tracked:
+            continue
+        expected_template_hash = template_hashes.get(relative)
+        if (
+            expected_template_hash is not None
+            and skill_file_sha256(path) == expected_template_hash
+        ):
             continue
         for line_number, line in enumerate(text.splitlines(), start=1):
             if line.endswith((" ", "\t")):
