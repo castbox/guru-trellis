@@ -3,8 +3,6 @@ name: trellis-check
 description: "Comprehensive quality verification: spec compliance, lint, type-check, tests, cross-layer data flow, code reuse, and consistency checks. Use when code is written and needs quality verification, before committing changes, or to catch context drift during long sessions."
 ---
 
-<!-- guru-team-overlay: v1 -->
-
 # Code Quality Check
 
 Comprehensive quality verification for recently written code. Combines spec compliance, cross-layer safety, and pre-commit checks.
@@ -18,26 +16,13 @@ git diff --name-only HEAD
 git status
 ```
 
-## Step 2: Validate Planning Gate
-
-For Guru Team implementation tasks, run:
-
-```bash
-.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>
-```
-
-Stop if the checker rejects a missing, stale, legacy, or non-approved owner
-result. Do not interpret the planning owner's private checkpoint fields; the
-main workflow reruns the semantic owner and auto-consumes its mapped exit.
-Current HEAD or dirty-path drift alone is not a planning approval failure.
-
-## Step 3: Read Task Artifacts and Applicable Specs
+## Step 2: Read Task Artifacts and Applicable Specs
 
 Read the current task artifacts in order:
 
 - `prd.md`
-- required `design.md`
-- required `implement.md`
+- `design.md` if present
+- `implement.md` if present
 
 ```bash
 python3 ./.trellis/scripts/get_context.py --mode packages
@@ -51,11 +36,11 @@ cat .trellis/spec/<package>/<layer>/index.md
 
 Read the specific guideline files referenced — the index is a pointer, not the goal.
 
-## Step 4: Run Project Checks
+## Step 3: Run Project Checks
 
 Run the project's lint, type-check, and test commands. Fix any failures before proceeding.
 
-## Step 5: Review Against Checklist
+## Step 4: Review Against Checklist
 
 ### Code Quality
 
@@ -77,7 +62,7 @@ Run the project's lint, type-check, and test commands. Fix any failures before p
 
 > "If I fixed a bug or discovered something non-obvious, should I document it so future me won't hit the same issue?" → If YES, update the relevant spec doc.
 
-## Step 6: Cross-Layer Dimensions (if applicable)
+## Step 5: Cross-Layer Dimensions (if applicable)
 
 Skip this step if your change is confined to a single layer.
 
@@ -108,6 +93,6 @@ Skip this step if your change is confined to a single layer.
 
 ---
 
-## Step 7: Report and Fix
+## Step 6: Report and Fix
 
 Report violations found and fix them directly. Re-run project checks after fixes.

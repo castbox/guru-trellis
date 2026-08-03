@@ -1,48 +1,56 @@
-<!-- guru-team-overlay: v1 -->
-# Guru Team Continue Current Task
+# Continue Current Task
 
-Read current state instead of replaying remembered steps:
+Resume work on the current task — pick up at the right phase/step in `.trellis/workflow.md`.
+
+---
+
+## Step 1: Load Current Context
 
 ```bash
 python3 ./.trellis/scripts/get_context.py
+```
+
+Confirms: current task, git state, recent commits.
+
+## Step 2: Load the Phase Index
+
+```bash
 python3 ./.trellis/scripts/get_context.py --mode phase
 ```
 
-Use `.trellis/workflow.md` as the global route and load each mandatory owner by
-stable Skill id. This entry never copies a package schema, evidence recipe,
-review loop, confirmation algorithm, or typed-exit payload.
+Shows the Phase Index (Plan / Execute / Finish) with routing + skill mapping.
 
-## Route
+## Step 3: Decide Where You Are
 
-- `planning`: complete proportionate planning and invoke
-  `guru-approve-task-plan`. Only `approved` may enter implementation.
-- `in_progress`: validate the workspace and current planning approval,
-  implement, then invoke `guru-check-task`. Use terminal output and the live
-  diff directly; do not create `implementation-handoff.md` or routine liveness
-  prose. Batch qualified findings before another check and commit cycle.
-- after Phase 2: invoke `guru-create-task-commit`, then
-  `guru-review-branch`. Automatically consume declared revision routes; stop
-  only for missing authority, unresolved scope, or a real blocker.
-- after Branch Review `passed`: prepare current publication candidates and
-  invoke `guru-review-task-publication`. Automatically consume internal
-  metadata-revision routes. `ready` enters the explicit finalization entry.
+`get_context.py` shows the active task's `status` field. Route by `status` + artifact presence. This command replaces the user needing to remember the Trellis flow; it does not itself approve implementation.
 
-Do not expose internal digests, recorder steps, `verification_required`,
-`resume_finalization`, or other machine routes as user decisions. Ask only for
-missing intent, a material scope/plan choice, new external authority, or the
-bounded publication/finalization side effects. A generic `确认继续` must never be
-required between automatically mapped Skill exits.
-When one current, unique side effect has been fully displayed, use `确认继续` as
-the prompt and accept any clear affirmative reply; never require the user to
-repeat a SHA, digest, or prescribed sentence. Reconfirm only after plan, HEAD,
-target, scope, or authority changes.
+- `status=planning` + no `prd.md` → **1.1** (load `trellis-brainstorm`)
+- `status=planning` + `prd.md` only → decide whether the task is lightweight or complex. Lightweight can move to **1.4** review; complex returns to **1.1** to add `design.md` + `implement.md`.
+- `status=planning` + complex artifacts complete + sub-agent jsonl not curated (only the seed `_example` row) → **1.3**
+- `status=planning` + required artifacts complete + required jsonl curated or inline mode → **1.4** (ask for start review; only run `task.py start` after user confirms)
+- `status=in_progress` + implementation not started → **2.1**
+- `status=in_progress` + implementation done, not yet checked → **2.2**
+- `status=in_progress` + check passed → **3.3** (spec update) → **3.4** (commit)
+- `status=completed` (rare; usually archived immediately) → archive flow
 
-Before a planning, review, or publication stop, run:
+Phase rules (full detail in `.trellis/workflow.md`):
+
+1. Run steps **in order** within a phase — `[required]` steps must not be skipped
+2. `[once]` steps are already done if the required output exists. `prd.md` alone can be enough only for lightweight tasks; complex tasks also need `design.md` and `implement.md`.
+3. You may go back to an earlier phase if discoveries require it
+
+## Step 4: Load the Specific Step
+
+Once you know which step to resume at:
 
 ```bash
-.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+python3 ./.trellis/scripts/get_context.py --mode phase --step <X.X> --platform cursor
 ```
 
-Show only existing human-authored artifacts. JSON gates remain internal. All
-task paths must resolve inside the task worktree. This entry never stages,
-commits, pushes, creates a PR, archives a task, or invokes finalization itself.
+Follow the loaded instructions. After each `[required]` step completes, move to the next.
+
+---
+
+## Reference
+
+Full workflow and detailed phase steps live in `.trellis/workflow.md`. This command is only an entry point — the canonical guidance is there.

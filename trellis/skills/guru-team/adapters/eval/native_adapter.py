@@ -404,27 +404,42 @@ def stage_clean_installed_owner_repo(
             extension = json.loads(extension_path.read_text(encoding="utf-8"))
             skill_packages = extension["skill_packages"]
             files = skill_packages["files"]
+            overlays = extension["overlays"]
+            overlay_files = overlays["files"]
         except (OSError, KeyError, TypeError, json.JSONDecodeError) as exc:
-            raise ValueError("installed Skill package provenance is unavailable") from exc
+            raise ValueError("installed Skill and overlay provenance is unavailable") from exc
         if (
             not isinstance(skill_packages, dict)
             or skill_packages.get("status") != "ok"
             or skill_packages.get("conflicts") != []
             or skill_packages.get("sidecars") != []
             or not isinstance(files, list)
+            or not isinstance(overlays, dict)
+            or overlays.get("status") != "ok"
+            or overlays.get("conflicts") != []
+            or overlays.get("sidecars") != []
+            or not isinstance(overlay_files, list)
             or installed_root.is_symlink() or not installed_root.is_dir()
         ):
-            raise ValueError("installed Skill package provenance is not reusable")
+            raise ValueError("installed Skill and overlay provenance is not reusable")
         shutil.copytree(
             installed_root, fixture / ".trellis/guru-team", dirs_exist_ok=True,
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
         )
-        for row in files:
+        copied_paths: set[str] = set()
+        for row in [*files, *overlay_files]:
             if not isinstance(row, dict) or not isinstance(row.get("path"), str):
-                raise ValueError("installed Skill file provenance is invalid")
+                raise ValueError("installed Skill or overlay file provenance is invalid")
             relative = Path(row["path"])
-            if relative.is_absolute() or not relative.parts or ".." in relative.parts:
-                raise ValueError("installed Skill file provenance path is unsafe")
+            relative_text = relative.as_posix()
+            if (
+                relative.is_absolute()
+                or not relative.parts
+                or ".." in relative.parts
+                or relative_text in copied_paths
+            ):
+                raise ValueError("installed Skill or overlay file provenance path is unsafe")
+            copied_paths.add(relative_text)
             source = source_repo / relative
             target = fixture / relative
             expected_sha256 = row.get("sha256")
@@ -433,7 +448,7 @@ def stage_clean_installed_owner_repo(
                 or not isinstance(expected_sha256, str)
                 or hashlib.sha256(source.read_bytes()).hexdigest() != expected_sha256
             ):
-                raise ValueError("installed Skill file provenance does not match live bytes")
+                raise ValueError("installed Skill or overlay provenance does not match live bytes")
             if relative.parts[:3] == (".trellis", "guru-team", "skills"):
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -1966,7 +1981,7 @@ def extension_verification_execution(
         "asset_digests": asset_digests,
         "asset_inventory": asset_inventory,
         "ownership": {
-            "frozen_transitional_legacy_count": 43,
+            "frozen_transitional_legacy_count": 0,
             "new_legacy_entries": [],
         },
         "sidecars": [],

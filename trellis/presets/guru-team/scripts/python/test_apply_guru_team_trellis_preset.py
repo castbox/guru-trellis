@@ -6,12 +6,9 @@ from __future__ import annotations
 import json
 import hashlib
 import os
-import re
 import shutil
 import subprocess
 import tempfile
-import importlib.util
-import types
 import unittest
 from pathlib import Path
 import sys
@@ -28,64 +25,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 
 
-STALE_PLANNING_HINTS = (
-    "Task `design.md` - Technical design (if exists)",
-    "Task `implement.md` - Execution plan (if exists)",
-    "design.md` if present",
-    "implement.md` if present",
-    "design.md if present",
-    "implement.md if present",
-    "optional `design.md` / `implement.md`",
-    "technical design and implementation plan when present",
-    "轻量任务只需 `prd.md`",
-    "轻量任务可以只保留 `prd.md`",
-    "轻量任务无需 `design.md`",
-    "轻量任务无需 `implement.md`",
-    "`design.md`（如有）",
-    "`implement.md`（如有）",
-    "`design.md` 如存在",
-    "`implement.md` 如存在",
-    "技术设计（如有）",
-    "执行计划（如有）",
-    "设计文档可选",
-    "实现计划可选",
-)
-
-STALE_ROUTINE_PLANNING_CONFIRMATION_HINTS = (
-    "wait for explicit post-planning confirmation",
-    "explicitly confirmed post-planning approval",
-    "get fresh user confirmation",
-    "user confirms start",
-    "等待明确规划后确认",
-    "等待规划后确认",
-    "规划后明确确认后",
-    "规划后确认后",
-    "规划完成后再次确认",
-    "规划完成后重新确认",
-    "再次取得用户确认",
-    "重新取得用户确认",
-    "等待用户确认开始",
-    "用户确认后开始实现",
-    "用户确认后启动实现",
-    "规划通过后等待用户确认",
-    "等待用户明确确认后开始",
-    "经用户确认后进入实现",
-    "用户批准后开始实现",
-    "取得用户授权后开始实现",
-)
-
-STALE_PRIVATE_PLANNING_CONSUMER_HINTS = (
-    "ambiguity_review",
-    "unchecked_normative_hits",
-    "fixed-scope scanner",
-    "content digests no longer match",
-    "explicit-post-planning-review",
-    "规划歧义审查字段",
-    "扫描命中字段",
-    "规划文档内容摘要",
-    "规划文档哈希",
-)
-
 STAGE0_SKILL_IDS = (
     "guru-sync-base",
     "guru-discover-change-context",
@@ -94,87 +33,6 @@ STAGE0_SKILL_IDS = (
     "guru-review-change-request",
     "guru-create-task-workspace",
 )
-
-
-def assert_required_planning_context(testcase: unittest.TestCase, text: str) -> None:
-    testcase.assertIn("Task `design.md` - required Guru Team technical design", text)
-    testcase.assertIn("Task `implement.md` - required Guru Team execution plan", text)
-    for stale_hint in STALE_PLANNING_HINTS:
-        testcase.assertNotIn(stale_hint, text)
-
-
-def assert_ai_first_planning_transition(testcase: unittest.TestCase, text: str) -> None:
-    testcase.assertIn("auto-consume", text.lower())
-    normalized = " ".join(text.lower().replace('"', " ").replace("'", " ").split())
-    testcase.assertIn("unresolved scope", normalized)
-    for stale_hint in STALE_ROUTINE_PLANNING_CONFIRMATION_HINTS:
-        testcase.assertNotIn(stale_hint, text)
-
-
-def assert_thin_planning_consumer(testcase: unittest.TestCase, text: str) -> None:
-    testcase.assertIn("private checkpoint", text.lower())
-    testcase.assertIn("auto-consum", text.lower())
-    for stale_hint in (
-        *STALE_ROUTINE_PLANNING_CONFIRMATION_HINTS,
-        *STALE_PRIVATE_PLANNING_CONSUMER_HINTS,
-    ):
-        testcase.assertNotIn(stale_hint, text)
-
-
-def assert_thin_continue_router(testcase: unittest.TestCase, path: Path) -> None:
-    text = path.read_text(encoding="utf-8")
-    testcase.assertIn("`.trellis/workflow.md` as the global route", text, path)
-    for skill_id in (
-        "guru-approve-task-plan",
-        "guru-check-task",
-        "guru-create-task-commit",
-        "guru-review-branch",
-        "guru-review-task-publication",
-    ):
-        testcase.assertIn(skill_id, text, path)
-    testcase.assertIn("Automatically consume", text, path)
-    testcase.assertIn("implementation-handoff.md", text, path)
-    for forbidden in (
-        "Typed-exit route:",
-        "only Phase 3.5 semantic owner",
-        "`committed_head`",
-        "`review_intent`",
-        "guru-branch-review-implementation-router",
-        "task-publication-review-blocked",
-        "review-branch.sh",
-        "check-review-gate.sh",
-        "agent-assignment.json",
-        "review-gate.json",
-        "reviews/*.md",
-        "finding closure",
-        "fresh final review",
-        "recorder/checker",
-    ):
-        testcase.assertNotIn(forbidden, text, path)
-
-
-def assert_thin_finish_router(testcase: unittest.TestCase, path: Path) -> None:
-    text = path.read_text(encoding="utf-8")
-    testcase.assertIn("`.trellis/workflow.md` as the global route", text, path)
-    for skill_id in (
-        "guru-review-task-publication",
-        "guru-verify-extension-installation",
-        "guru-finalize-task",
-    ):
-        testcase.assertIn(skill_id, text, path)
-    testcase.assertIn("Automatically consume", text, path)
-    testcase.assertIn("Phase 3.6", text, path)
-    testcase.assertIn("Phase 3.7", text, path)
-    for forbidden in (
-        "finish-work.sh --from-trellis-finish-work",
-        "--finish-summary-index-file",
-        "--expected-plan-digest",
-        "--recovery-after-finish-work",
-        "--skip-archive",
-        "resolve-human-artifacts.sh",
-        "closeout_plan_digest",
-    ):
-        testcase.assertNotIn(forbidden, text, path)
 
 
 def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> None:
@@ -562,6 +420,22 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
+    @staticmethod
+    def migration_tombstone(relative: str, payload: bytes, *, generated: bool) -> dict[str, object]:
+        return {
+            "path": relative,
+            "generated_in_clean_init": generated,
+            "migration_payload_sha256s": [hashlib.sha256(payload).hexdigest()],
+        }
+
+    def write_template_hashes(self, hashes: dict[str, str]) -> None:
+        path = self.repo / preset.TEMPLATE_HASHES_RELATIVE
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({"__version": "0.6.5", "hashes": hashes}, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
     def test_skill_manifest_file_order_is_stable_across_hash_seeds_and_reapply(self) -> None:
         module_path = Path(preset.__file__).resolve()
         guru_root = preset.guru_root_from_script()
@@ -743,128 +617,24 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
         self.assertIn("session_auto_commit: false", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
         self.assertIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
-        self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
-        brainstorm = (self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
-        assert_ai_first_planning_transition(self, brainstorm)
-        self.assertIn("Do not add a routine post-planning confirmation", brainstorm)
-        self.assertNotIn("Lightweight tasks may have only", brainstorm)
-        self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
-        before_dev = (self.repo / ".agents/skills/trellis-before-dev/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", before_dev)
-        self.assertNotIn("design.md` if present", before_dev)
-        self.assertTrue((self.repo / ".agents/skills/trellis-check/SKILL.md").is_file())
-        check_skill = (self.repo / ".agents/skills/trellis-check/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", check_skill)
-        self.assertNotIn("design.md` if present", check_skill)
-        self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
-        channel_implement = (self.repo / ".trellis/agents/implement.md").read_text(encoding="utf-8")
-        self.assertIn("实现代理", channel_implement)
-        assert_thin_planning_consumer(self, channel_implement)
-        channel_check = (self.repo / ".trellis/agents/check.md").read_text(encoding="utf-8")
-        assert_thin_planning_consumer(self, channel_check)
-        self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
+        migration = payload["upstream_migration"]
+        self.assertEqual(migration["status"], "ok")
+        self.assertEqual(migration["counts"], {"already_missing": 43})
+        self.assertEqual(migration["removals"], [])
+        self.assertEqual(migration["conflicts"], [])
+        self.assertEqual(migration["sidecars"], [])
+        self.assertEqual(payload["replaced_overlays"], [])
+        self.assertFalse((self.repo / ".agents/skills/trellis-start/SKILL.md").exists())
+        self.assertFalse((self.repo / ".trellis/agents/implement.md").exists())
+        self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
+        self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".codex/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/guru-create-task-workspace/SKILL.md").is_file())
         self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
         self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
         assert_thin_guru_finish_entry(self, self.repo / ".codex/prompts/guru-finish-work.md")
         assert_thin_guru_finish_entry(self, self.repo / ".cursor/commands/guru-finish-work.md")
-        self.assertTrue((self.repo / ".codex/agents/trellis-implement.toml").is_file())
-        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
-        codex_implement = (self.repo / ".codex/agents/trellis-implement.toml").read_text(encoding="utf-8")
-        self.assertIn("实现代理", codex_implement)
-        self.assertIn('nickname_candidates = ["Implement Agent"', codex_implement)
-        self.assertNotIn('nickname_candidates = ["实现代理"', codex_implement)
-        assert_thin_planning_consumer(self, codex_implement)
-        codex_check = (self.repo / ".codex/agents/trellis-check.toml").read_text(encoding="utf-8")
-        assert_thin_planning_consumer(self, codex_check)
-        codex_hook = (self.repo / ".codex/hooks/session-start.py").read_text(encoding="utf-8")
-        assert_ai_first_planning_transition(self, codex_hook)
-        self.assertNotIn("PRD-only", codex_hook)
-        self.assertNotIn("Missing optional artifacts", codex_hook)
-        self.assertNotIn("design.md if present", codex_hook)
-        codex_meta = (
-            self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("Guru Team requires this document before implementation", codex_meta)
-        self.assertNotIn("Lightweight tasks may be PRD-only", codex_meta)
-        codex_context = (
-            self.repo / ".agents/skills/trellis-meta/references/local-architecture/context-injection.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", codex_context)
-        self.assertNotIn("design.md if present", codex_context)
-        codex_change_workflow = (
-            self.repo / ".agents/skills/trellis-meta/references/customize-local/change-workflow.md"
-        ).read_text(encoding="utf-8")
-        assert_ai_first_planning_transition(self, codex_change_workflow)
-        self.assertIn("do not add a routine post-planning confirmation", codex_change_workflow)
-        self.assertNotIn("lightweight task with `prd.md` complete", codex_change_workflow)
-        codex_change_context = (
-            self.repo / ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", codex_change_context)
-        self.assertNotIn("design.md` if present", codex_change_context)
-        codex_agents_doc = (
-            self.repo / ".agents/skills/trellis-meta/references/platform-files/agents.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("required `prd.md`, `design.md`, `implement.md`", codex_agents_doc)
-        self.assertNotIn("optional `design.md` / `implement.md`", codex_agents_doc)
-        self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
-        self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
-        cursor_check_agent = (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8")
-        self.assertIn("阶段二检查代理", cursor_check_agent)
-        assert_required_planning_context(self, cursor_check_agent)
-        assert_thin_planning_consumer(self, cursor_check_agent)
-        cursor_implement_agent = (self.repo / ".cursor/agents/trellis-implement.md").read_text(encoding="utf-8")
-        assert_thin_planning_consumer(self, cursor_implement_agent)
-        self.assertTrue((self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").is_file())
-        cursor_brainstorm = (self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").read_text(encoding="utf-8")
-        assert_ai_first_planning_transition(self, cursor_brainstorm)
-        self.assertIn("Do not add a routine post-planning confirmation", cursor_brainstorm)
-        self.assertNotIn("Lightweight tasks may have only", cursor_brainstorm)
-        self.assertTrue((self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").is_file())
-        cursor_before_dev = (self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", cursor_before_dev)
-        self.assertNotIn("design.md` if present", cursor_before_dev)
-        self.assertTrue((self.repo / ".cursor/skills/trellis-check/SKILL.md").is_file())
-        cursor_check_skill = (self.repo / ".cursor/skills/trellis-check/SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", cursor_check_skill)
-        self.assertNotIn("design.md` if present", cursor_check_skill)
-        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
-        cursor_hook = (self.repo / ".cursor/hooks/session-start.py").read_text(encoding="utf-8")
-        assert_ai_first_planning_transition(self, cursor_hook)
-        self.assertNotIn("PRD-only", cursor_hook)
-        self.assertNotIn("Missing optional artifacts", cursor_hook)
-        self.assertNotIn("design.md if present", cursor_hook)
-        self.assertTrue((self.repo / ".cursor/hooks/inject-subagent-context.py").is_file())
-        cursor_context_hook = (self.repo / ".cursor/hooks/inject-subagent-context.py").read_text(encoding="utf-8")
-        self.assertIn("required design.md", cursor_context_hook)
-        self.assertNotIn("design.md if present", cursor_context_hook)
-        cursor_meta = (
-            self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("Guru Team requires this document before implementation", cursor_meta)
-        self.assertNotIn("Lightweight tasks may be PRD-only", cursor_meta)
-        cursor_context = (
-            self.repo / ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", cursor_context)
-        self.assertNotIn("design.md if present", cursor_context)
-        cursor_change_workflow = (
-            self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
-        ).read_text(encoding="utf-8")
-        assert_ai_first_planning_transition(self, cursor_change_workflow)
-        self.assertIn("do not add a routine post-planning confirmation", cursor_change_workflow)
-        self.assertNotIn("lightweight task with `prd.md` complete", cursor_change_workflow)
-        cursor_change_context = (
-            self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("required `design.md`", cursor_change_context)
-        self.assertNotIn("design.md` if present", cursor_change_context)
-        cursor_agents_doc = (
-            self.repo / ".cursor/skills/trellis-meta/references/platform-files/agents.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("required `prd.md`, `design.md`, `implement.md`", cursor_agents_doc)
-        self.assertNotIn("optional `design.md` / `implement.md`", cursor_agents_doc)
         self.assertFalse((self.repo / ".claude").exists())
 
     def test_repeated_default_apply_does_not_restore_unselected_claude_overlay(self) -> None:
@@ -909,16 +679,41 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             (self.guru_root / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md").read_bytes(),
         )
 
+    def test_marker_preserving_selected_overlay_edit_is_not_overwritten(self) -> None:
+        self.install({"codex"})
+        target = self.repo / ".codex/prompts/guru-finish-work.md"
+        local_bytes = target.read_bytes() + b"\n# Local project finish customization\n"
+        target.write_bytes(local_bytes)
+        manifest_before = (self.install_dst / "extension.json").read_bytes()
+
+        payload = self.install({"codex"})
+
+        sidecar = target.with_name("guru-finish-work.md.new")
+        self.assertEqual(payload["overlays"]["status"], "conflict")
+        self.assertEqual(
+            [item["reason"] for item in payload["overlays"]["conflicts"]],
+            ["unknown_local_edit"],
+        )
+        self.assertIn(".codex/prompts/guru-finish-work.md.new", payload["new_copies"])
+        self.assertEqual(target.read_bytes(), local_bytes)
+        self.assertEqual(
+            sidecar.read_bytes(),
+            (
+                self.guru_root
+                / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md"
+            ).read_bytes(),
+        )
+        self.assertFalse(target.with_name("guru-finish-work.md.bak").exists())
+        self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
+
     def test_explicit_claude_platform_installs_only_shared_and_claude_overlays(self) -> None:
         payload = self.install({"claude"})
 
         self.assertEqual(payload["platforms"], ["claude"])
         self.assertFalse(payload["all_platforms"])
-        self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-check/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".trellis/agents/check.md").is_file())
+        self.assertEqual(payload["upstream_migration"]["counts"], {"already_missing": 43})
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".claude/skills/guru-create-task-workspace/SKILL.md").is_file())
         installed_finish_integration = (
             self.repo
             / ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
@@ -931,51 +726,28 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 / "trellis/skills/guru-team/tests/test_finish_family_integration.py"
             ).read_bytes(),
         )
-        self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
         self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
         assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
-        self.assertTrue((self.repo / ".claude/agents/trellis-implement.md").is_file())
-        self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
-        claude_implement_agent = (self.repo / ".claude/agents/trellis-implement.md").read_text(encoding="utf-8")
-        assert_thin_planning_consumer(self, claude_implement_agent)
-        claude_check_agent = (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8")
-        self.assertIn("阶段二检查代理", claude_check_agent)
-        assert_required_planning_context(self, claude_check_agent)
-        assert_thin_planning_consumer(self, claude_check_agent)
+        self.assertFalse((self.repo / ".claude/commands/trellis/continue.md").exists())
+        self.assertFalse((self.repo / ".claude/agents/trellis-check.md").exists())
         self.assertFalse((self.repo / ".agents/skills/trellis-meta").exists())
         self.assertFalse((self.repo / ".codex").exists())
         self.assertFalse((self.repo / ".cursor").exists())
 
-    def test_all_platforms_installs_historical_full_overlay_set(self) -> None:
+    def test_all_platforms_installs_only_guru_owned_overlays(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)
         payload = self.install(platforms, all_platforms=all_platforms)
 
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         ownership_facts = payload["upstream_ownership_validation"]
-        self.assertEqual(ownership_facts["reviewed_current_payload_count"], 35)
-        self.assertRegex(ownership_facts["reviewed_current_payloads_sha256"], r"^[0-9a-f]{64}$")
-        continue_paths = (
-            ".agents/skills/trellis-continue/SKILL.md",
-            ".codex/prompts/trellis-continue.md",
-            ".codex/skills/trellis-continue/SKILL.md",
-            ".cursor/commands/trellis-continue.md",
-            ".claude/commands/trellis/continue.md",
-        )
+        self.assertEqual(ownership_facts["active_count"], 0)
+        self.assertEqual(ownership_facts["removed_count"], 43)
+        self.assertEqual(ownership_facts["migration_payload_count"], 78)
+        self.assertEqual(ownership_facts["managed_claim_count"], 9)
+        self.assertEqual(payload["upstream_migration"]["counts"], {"already_missing": 43})
+        self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
-        for relative in continue_paths:
-            assert_thin_continue_router(self, overlay_root / relative)
-            assert_thin_continue_router(self, self.repo / relative)
-        finish_paths = (
-            ".agents/skills/trellis-finish-work/SKILL.md",
-            ".codex/prompts/trellis-finish-work.md",
-            ".codex/skills/trellis-finish-work/SKILL.md",
-            ".cursor/commands/trellis-finish-work.md",
-            ".claude/commands/trellis/finish-work.md",
-        )
-        for relative in finish_paths:
-            assert_thin_finish_router(self, overlay_root / relative)
-            assert_thin_finish_router(self, self.repo / relative)
         guru_entry_bytes = []
         for relative in GURU_FINISH_ENTRIES:
             canonical = overlay_root / relative
@@ -989,43 +761,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.assertEqual(installed.read_bytes(), canonical.read_bytes())
             guru_entry_bytes.append(canonical.read_bytes())
         self.assertEqual(len(set(guru_entry_bytes)), 1)
-        self.assertTrue((self.repo / ".agents/skills/trellis-start/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-brainstorm/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-before-dev/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-check/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".trellis/agents/implement.md").is_file())
-        self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
-        self.assertTrue((self.repo / ".codex/agents/trellis-check.toml").is_file())
-        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/customize-local/change-workflow.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/local-architecture/context-injection.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/platform-files/agents.md").is_file())
-        self.assertTrue((self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
-        self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
-        self.assertTrue((self.repo / ".cursor/agents/trellis-research.md").is_file())
-        self.assertTrue((self.repo / ".cursor/agents/trellis-check.md").is_file())
-        assert_required_planning_context(
-            self,
-            (self.repo / ".cursor/agents/trellis-check.md").read_text(encoding="utf-8"),
+        inventory = json.loads(
+            (
+                self.guru_root
+                / "trellis/presets/guru-team/ownership/upstream-ownership.json"
+            ).read_text(encoding="utf-8")
         )
-        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
-        self.assertTrue((self.repo / ".cursor/hooks/inject-subagent-context.py").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-before-dev/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-check/SKILL.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/platform-files/agents.md").is_file())
-        self.assertTrue((self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md").is_file())
-        self.assertTrue((self.repo / ".claude/commands/trellis/continue.md").is_file())
-        self.assertTrue((self.repo / ".claude/agents/trellis-research.md").is_file())
-        self.assertTrue((self.repo / ".claude/agents/trellis-check.md").is_file())
-        assert_required_planning_context(
-            self,
-            (self.repo / ".claude/agents/trellis-check.md").read_text(encoding="utf-8"),
-        )
+        tombstone_paths = {entry["path"] for entry in inventory["legacy_entries"]}
+        self.assertEqual(len(tombstone_paths), 43)
+        self.assertEqual([path for path in tombstone_paths if (overlay_root / path).exists()], [])
+        self.assertEqual([path for path in tombstone_paths if (self.repo / path).exists()], [])
         installed_manifest = json.loads(
             (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
         )
@@ -1035,8 +780,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 103)
+        self.assertEqual(len(managed_assets), 60)
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
+        self.assertEqual(sorted(set(managed_assets) & tombstone_paths), [])
         self.assertNotIn(installed_integration_path, managed_assets)
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -1062,6 +808,133 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             ).hexdigest(),
         )
 
+    def test_all_platforms_to_subset_removes_clean_managed_overlay(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        self.install(platforms, all_platforms=all_platforms)
+        claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
+        self.assertTrue(claude_entry.is_file())
+
+        payload = self.install({"codex", "cursor"})
+
+        self.assertEqual(payload["overlays"]["status"], "ok")
+        self.assertFalse(claude_entry.exists())
+        self.assertEqual(
+            payload["overlays"]["removals"],
+            [
+                {
+                    "path": ".claude/commands/guru/finish-work.md",
+                    "action": "removed_managed",
+                    "previous_managed_sha256": hashlib.sha256(
+                        (
+                            self.guru_root
+                            / "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md"
+                        ).read_bytes()
+                    ).hexdigest(),
+                }
+            ],
+        )
+        installed_manifest = json.loads(
+            (self.install_dst / "extension.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(installed_manifest["overlays"]["selected_platforms"], ["codex", "cursor"])
+        self.assertNotIn(
+            ".claude/commands/guru/finish-work.md",
+            installed_manifest["install"]["managed_assets"],
+        )
+
+    def test_all_platforms_to_subset_preserves_edited_overlay_and_blocks_activation(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        self.install(platforms, all_platforms=all_platforms)
+        claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
+        local_bytes = claude_entry.read_bytes() + b"\n# Claude project customization\n"
+        claude_entry.write_bytes(local_bytes)
+        manifest_before = (self.install_dst / "extension.json").read_bytes()
+
+        payload = self.install({"codex", "cursor"})
+
+        sidecar = claude_entry.with_name("finish-work.md.new")
+        self.assertEqual(payload["overlays"]["status"], "conflict")
+        self.assertEqual(
+            [item["reason"] for item in payload["overlays"]["conflicts"]],
+            ["stale_unknown_local_edit"],
+        )
+        self.assertEqual(claude_entry.read_bytes(), local_bytes)
+        self.assertEqual(sidecar.read_bytes(), preset.GURU_OVERLAY_REMOVAL_SIDECAR)
+        self.assertIn(".claude/commands/guru/finish-work.md.new", payload["new_copies"])
+        self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
+
+    def test_legacy_manifest_claim_bootstraps_clean_platform_shrink(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        self.install(platforms, all_platforms=all_platforms)
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest.pop("overlays")
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        payload = self.install({"codex", "cursor"})
+
+        self.assertEqual(payload["overlays"]["status"], "ok")
+        self.assertEqual(
+            payload["overlays"]["removals"],
+            [
+                {
+                    "path": ".claude/commands/guru/finish-work.md",
+                    "action": "removed_managed",
+                    "legacy_managed_asset_sha256": hashlib.sha256(
+                        (
+                            self.guru_root
+                            / "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md"
+                        ).read_bytes()
+                    ).hexdigest(),
+                }
+            ],
+        )
+        self.assertFalse((self.repo / ".claude/commands/guru/finish-work.md").exists())
+
+    def test_known_overlay_hash_upgrade_uses_backup_and_recovers(self) -> None:
+        self.install({"codex"})
+        target = self.repo / ".codex/prompts/guru-finish-work.md"
+        old_bytes = b"<!-- guru-team-overlay: v0 -->\n# Previous managed finish entry\n"
+        target.write_bytes(old_bytes)
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        record = manifest["overlays"]["files"][0]
+        record["sha256"] = hashlib.sha256(old_bytes).hexdigest()
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        upgraded = self.install({"codex"})
+
+        backup = target.with_name("guru-finish-work.md.bak")
+        self.assertEqual(upgraded["overlays"]["status"], "conflict")
+        self.assertEqual(upgraded["overlays"]["conflicts"], [])
+        self.assertEqual(upgraded["overlays"]["sidecars"], [
+            ".codex/prompts/guru-finish-work.md.bak"
+        ])
+        self.assertEqual(backup.read_bytes(), old_bytes)
+        self.assertEqual(
+            target.read_bytes(),
+            (
+                self.guru_root
+                / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md"
+            ).read_bytes(),
+        )
+        self.assertNotEqual(upgraded["skill_installed_validation"]["returncode"], 0)
+        self.assertEqual(upgraded["skill_activation_validation"]["returncode"], 0)
+
+        backup.unlink()
+        recovered = self.install({"codex"})
+
+        self.assertEqual(recovered["overlays"]["status"], "ok")
+        self.assertEqual(recovered["overlays"]["sidecars"], [])
+        installed_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(installed_manifest["overlays"]["status"], "ok")
+
     def test_main_accepts_repeated_platform_arguments(self) -> None:
         with mock.patch(
             "sys.argv",
@@ -1079,181 +952,138 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 exit_code = preset.main()
 
         self.assertEqual(exit_code, 0)
-        self.assertTrue((self.repo / ".codex/prompts/trellis-start.md").is_file())
-        self.assertTrue((self.repo / ".codex/agents/trellis-research.toml").is_file())
-        self.assertTrue((self.repo / ".codex/hooks/session-start.py").is_file())
-        self.assertTrue((self.repo / ".cursor/commands/trellis-continue.md").is_file())
-        self.assertTrue((self.repo / ".cursor/agents/trellis-implement.md").is_file())
-        self.assertTrue((self.repo / ".cursor/hooks/session-start.py").is_file())
+        self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".codex/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/guru-create-task-workspace/SKILL.md").is_file())
+        self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
+        self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
         self.assertFalse((self.repo / ".claude").exists())
 
-    def test_known_trellis_agent_entries_are_replaced_with_chinese_overlays(self) -> None:
-        existing = self.repo / ".codex/agents/trellis-check.toml"
-        existing.parent.mkdir(parents=True)
-        existing.write_text(
-            'name = "trellis-check"\n'
-            'description = "Workspace-write Trellis reviewer that self-fixes spec drift."\n'
-            'sandbox_mode = "workspace-write"\n',
+    def test_clean_upstream_tombstone_is_preserved_from_template_hashes(self) -> None:
+        relative = ".codex/prompts/trellis-clean.md"
+        official_payload = b"official Trellis payload\n"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        target.write_bytes(official_payload)
+        self.write_template_hashes({relative: hashlib.sha256(official_payload).hexdigest()})
+        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
+
+        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
+
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["counts"], {"preserved_clean_upstream": 1})
+        self.assertEqual(result["paths"][0]["action"], "preserved_clean_upstream")
+        self.assertEqual(target.read_bytes(), official_payload)
+        self.assertFalse(target.with_name(f"{target.name}.new").exists())
+
+    def test_generated_known_guru_tombstone_blocks_for_official_update(self) -> None:
+        relative = ".agents/skills/trellis-start/SKILL.md"
+        historical_payload = b"historical generated Guru payload\n"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        target.write_bytes(historical_payload)
+        tombstone = self.migration_tombstone(relative, historical_payload, generated=True)
+
+        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
+
+        self.assertEqual(result["status"], "conflict")
+        self.assertEqual(result["counts"], {"blocked_known_guru_payload": 1})
+        self.assertEqual(result["conflicts"][0]["reason"], "known_guru_payload_requires_official_update")
+        self.assertEqual(target.read_bytes(), historical_payload)
+        self.assertEqual(result["sidecars"], [])
+
+    def test_legacy_only_known_guru_tombstone_is_removed(self) -> None:
+        relative = ".codex/prompts/trellis-start.md"
+        historical_payload = b"historical legacy-only Guru payload\n"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        target.write_bytes(historical_payload)
+        tombstone = self.migration_tombstone(relative, historical_payload, generated=False)
+
+        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
+
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["counts"], {"removed_legacy_guru_payload": 1})
+        self.assertEqual(result["removals"], [relative])
+        self.assertFalse(target.exists())
+
+    def test_unknown_tombstone_edit_is_preserved_with_deterministic_sidecar(self) -> None:
+        relative = ".cursor/hooks/session-start.py"
+        local_payload = b"local Trellis customization\n"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        target.write_bytes(local_payload)
+        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
+
+        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
+
+        sidecar = target.with_name(f"{target.name}.new")
+        self.assertEqual(result["status"], "conflict")
+        self.assertEqual(result["counts"], {"conflict_unknown_local_edit": 1})
+        self.assertEqual(result["conflicts"][0]["reason"], "unknown_local_edit")
+        self.assertEqual(result["sidecars"], [f"{relative}.new"])
+        self.assertEqual(target.read_bytes(), local_payload)
+        self.assertEqual(sidecar.read_bytes(), preset.upstream_tombstone_sidecar_content(relative))
+
+    def test_preexisting_tombstone_sidecars_block_reapply(self) -> None:
+        relative = ".codex/prompts/trellis-start.md"
+        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=False)
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+
+        for suffix in (".new", ".bak"):
+            with self.subTest(suffix=suffix):
+                sidecar = target.with_name(f"{target.name}{suffix}")
+                sidecar.write_text("unresolved sidecar\n", encoding="utf-8")
+
+                result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
+
+                self.assertEqual(result["status"], "conflict")
+                self.assertIn(f"{relative}{suffix}", result["sidecars"])
+                self.assertIn(
+                    "unresolved_sidecar",
+                    {item["reason"] for item in result["conflicts"]},
+                )
+                self.assertEqual(sidecar.read_text(encoding="utf-8"), "unresolved sidecar\n")
+                sidecar.unlink()
+
+    def test_unsafe_tombstone_path_is_preserved_and_blocks(self) -> None:
+        relative = ".codex/hooks/session-start.py"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        outside = self.repo / "outside-session-start.py"
+        outside.write_text("outside payload\n", encoding="utf-8")
+        target.symlink_to(outside)
+        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
+
+        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
+
+        self.assertEqual(result["status"], "conflict")
+        self.assertEqual(result["counts"], {"conflict_unsafe_path": 1})
+        self.assertEqual(result["conflicts"][0]["reason"], "unsafe_path_boundary")
+        self.assertTrue(target.is_symlink())
+        self.assertEqual(outside.read_text(encoding="utf-8"), "outside payload\n")
+
+    def test_invalid_template_hash_provenance_is_reported_for_unknown_edit(self) -> None:
+        relative = ".codex/hooks/session-start.py"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"local edit\n")
+        template_hashes = self.repo / preset.TEMPLATE_HASHES_RELATIVE
+        template_hashes.parent.mkdir(parents=True, exist_ok=True)
+        template_hashes.write_text(
+            json.dumps({"__version": "0.6.5", "hashes": {relative: "not-a-digest"}}) + "\n",
             encoding="utf-8",
         )
+        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
 
-        payload = self.install({"codex"})
+        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
 
-        self.assertIn(".codex/agents/trellis-check.toml", payload["replaced_overlays"])
-        text = existing.read_text(encoding="utf-8")
-        self.assertIn("阶段二检查代理", text)
-        self.assertIn('nickname_candidates = ["Check Agent"', text)
-        self.assertNotIn('nickname_candidates = ["阶段二检查代理"', text)
-
-    def test_generated_markdown_check_agents_replace_optional_context_hints(self) -> None:
-        stale_agent = (
-            "---\n"
-            "name: trellis-check\n"
-            "---\n"
-            "# Trellis workflow check agent\n\n"
-            "Read check.jsonl, then task artifacts.\n\n"
-            "## Context\n"
-            "- Task `prd.md` - Requirements document\n"
-            "- Task `design.md` - Technical design (if exists)\n"
-            "- Task `implement.md` - Execution plan (if exists)\n\n"
-            "- Does it follow the technical design and implementation plan when present\n"
-        )
-        claude_check = self.repo / ".claude/agents/trellis-check.md"
-        cursor_check = self.repo / ".cursor/agents/trellis-check.md"
-        claude_check.parent.mkdir(parents=True)
-        cursor_check.parent.mkdir(parents=True)
-        claude_check.write_text(stale_agent, encoding="utf-8")
-        cursor_check.write_text(stale_agent, encoding="utf-8")
-
-        payload = self.install({"claude", "cursor"})
-
-        self.assertIn(".claude/agents/trellis-check.md", payload["replaced_overlays"])
-        self.assertIn(".cursor/agents/trellis-check.md", payload["replaced_overlays"])
-        assert_required_planning_context(self, claude_check.read_text(encoding="utf-8"))
-        assert_required_planning_context(self, cursor_check.read_text(encoding="utf-8"))
-
-    def test_unknown_local_agent_edit_gets_new_copy(self) -> None:
-        existing = self.repo / ".codex/agents/trellis-check.toml"
-        existing.parent.mkdir(parents=True)
-        existing.write_text(
-            'name = "trellis-check"\n'
-            'description = "Local custom reviewer without Trellis defaults."\n'
-            'sandbox_mode = "workspace-write"\n',
-            encoding="utf-8",
-        )
-
-        payload = self.install({"codex"})
-
-        self.assertIn(".codex/agents/trellis-check.toml.new", payload["new_copies"])
-        self.assertIn("Local custom reviewer", existing.read_text(encoding="utf-8"))
-        self.assertTrue((self.repo / ".codex/agents/trellis-check.toml.new").is_file())
-
-    def test_generated_session_start_hooks_are_replaced_with_planning_gate_overlays(self) -> None:
-        codex_hook = self.repo / ".codex/hooks/session-start.py"
-        cursor_hook = self.repo / ".cursor/hooks/session-start.py"
-        codex_hook.parent.mkdir(parents=True)
-        cursor_hook.parent.mkdir(parents=True)
-        stale_hook = (
-            "#!/usr/bin/env python3\n"
-            "\"\"\"Trellis Session Start Hook\"\"\"\n"
-            "def _get_task_status(trellis_dir, hook_input):\n"
-            "    return 'Lightweight task can ask for start review with PRD-only'\n"
-        )
-        codex_hook.write_text(stale_hook, encoding="utf-8")
-        cursor_hook.write_text(stale_hook, encoding="utf-8")
-
-        payload = self.install({"codex", "cursor"})
-
-        self.assertIn(".codex/hooks/session-start.py", payload["replaced_overlays"])
-        self.assertIn(".cursor/hooks/session-start.py", payload["replaced_overlays"])
-        assert_ai_first_planning_transition(self, codex_hook.read_text(encoding="utf-8"))
-        assert_ai_first_planning_transition(self, cursor_hook.read_text(encoding="utf-8"))
-        self.assertNotIn("PRD-only", codex_hook.read_text(encoding="utf-8"))
-        self.assertNotIn("PRD-only", cursor_hook.read_text(encoding="utf-8"))
-
-    def test_no_workspace_session_start_overlays_never_access_or_disclose_journal_sentinel(self) -> None:
-        workspace_dir = self.repo / ".trellis/workspace/private"
-        workspace_dir.mkdir(parents=True)
-        sentinel = workspace_dir / "secret-journal-name.md"
-        sentinel.write_text("SECRET_JOURNAL_CONTENT\nsecond line\n", encoding="utf-8")
-
-        self.install({"codex", "cursor"})
-        for name, relative in [
-            ("codex", ".codex/hooks/session-start.py"),
-            ("cursor", ".cursor/hooks/session-start.py"),
-        ]:
-            with self.subTest(platform=name):
-                hook_path = self.repo / relative
-                source = hook_path.read_text(encoding="utf-8")
-                self.assertNotIn("get_active_journal_file", source)
-                self.assertNotIn("count_lines", source)
-                self.assertNotIn("Journal:", source)
-
-                spec = importlib.util.spec_from_file_location(f"guru_{name}_session_start", hook_path)
-                self.assertIsNotNone(spec)
-                self.assertIsNotNone(spec.loader)
-                module = importlib.util.module_from_spec(spec)
-                with mock.patch.object(sys, "dont_write_bytecode", True):
-                    spec.loader.exec_module(module)
-
-                original_read_text = Path.read_text
-                original_iterdir = Path.iterdir
-
-                def guarded_read_text(path: Path, *args: object, **kwargs: object) -> str:
-                    if ".trellis/workspace" in path.as_posix():
-                        raise AssertionError(f"workspace read attempted: {path}")
-                    return original_read_text(path, *args, **kwargs)
-
-                def guarded_iterdir(path: Path):
-                    if ".trellis/workspace" in path.as_posix():
-                        raise AssertionError(f"workspace enumeration attempted: {path}")
-                    return original_iterdir(path)
-
-                with (
-                    mock.patch.object(module, "_resolve_active_task", return_value=types.SimpleNamespace(task_path=None)),
-                    mock.patch.object(Path, "read_text", guarded_read_text),
-                    mock.patch.object(Path, "iterdir", guarded_iterdir),
-                ):
-                    output = module._build_compact_current_state(self.repo / ".trellis", {}, [])
-
-                self.assertNotIn("secret-journal-name.md", output)
-                self.assertNotIn("SECRET_JOURNAL_CONTENT", output)
-                self.assertNotIn("2 / 2000", output)
-
-    def test_shared_start_uses_fixed_no_workspace_context_commands(self) -> None:
-        workspace_dir = self.repo / ".trellis/workspace/private"
-        workspace_dir.mkdir(parents=True)
-        (workspace_dir / "shared-start-secret.md").write_text(
-            "SHARED_START_SECRET_CONTENT\n",
-            encoding="utf-8",
-        )
-        self.install({"codex"})
-        skill = (
-            self.repo / ".agents/skills/trellis-start/SKILL.md"
-        ).read_text(encoding="utf-8")
-
-        command_block = re.search(
-            r"load the fixed Guru Team\s+no-workspace context set:\n\n```bash\n(.*?)\n```",
-            skill,
-            re.DOTALL,
-        )
-        self.assertIsNotNone(command_block)
-        self.assertLess(
-            skill.index("mandatory invoke `guru-sync-base`"),
-            command_block.start(),
-        )
-        commands = [line.strip() for line in command_block.group(1).splitlines() if line.strip()]
-        self.assertEqual(commands, [
-            "python3 ./.trellis/scripts/get_context.py --mode phase",
-            "python3 ./.trellis/scripts/get_context.py --mode packages",
-            "python3 ./.trellis/scripts/task.py current --source",
-            "git branch --show-current",
-            "git status --short --branch",
-        ])
-        self.assertNotRegex(skill, r"(?m)^python3 \.\/\.trellis/scripts/get_context\.py$")
-        self.assertIn("Do not open, enumerate, read", skill)
-        self.assertNotIn("shared-start-secret.md", skill)
-        self.assertNotIn("SHARED_START_SECRET_CONTENT", skill)
+        self.assertEqual(result["status"], "conflict")
+        self.assertEqual(result["template_hashes"]["status"], "invalid")
+        self.assertEqual(result["template_hashes"]["error"], "invalid_hash_entry")
+        self.assertEqual(result["conflicts"][0]["reason"], "invalid_template_hash_provenance")
 
     def test_throwaway_verifier_cleans_preview_and_scans_sidecars_after_reapply(self) -> None:
         verifier = (
@@ -1304,12 +1134,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertLess(post_reapply_ownership, final_scan)
         self.assertEqual(verifier.count('ownership_checkpoint "'), 3)
         self.assertIn('WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"', verifier)
-        self.assertIn('event not in {"open", "os.listdir", "os.scandir"}', verifier)
-        self.assertIn("os._exit(91)", verifier)
-        self.assertIn('"$CURRENT_TASK_STATUS" -ne 0 && "$CURRENT_TASK_STATUS" -ne 1', verifier)
-        self.assertIn("get_context.py --mode phase", verifier)
-        self.assertIn("get_context.py --mode packages", verifier)
-        self.assertIn("task.py current --source", verifier)
+        self.assertIn('INITIAL_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"', verifier)
+        self.assertIn('POST_UPDATE_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"', verifier)
+        self.assertIn(
+            'assert_upstream_tombstone_state "$TARGET" "$INITIAL_UPSTREAM_STATE" "initial preset apply"',
+            verifier,
+        )
+        self.assertIn(
+            'assert_upstream_tombstone_state "$TARGET" "$POST_UPDATE_UPSTREAM_STATE" "post-update workflow and preset reapply"',
+            verifier,
+        )
         self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", verifier)
         self.assertIn('"id":"guru-requirements-clear-router"', verifier)
         self.assertNotIn(
@@ -1352,7 +1186,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 103", verifier)
+        self.assertIn("assert len(assets) == 60", verifier)
+        self.assertIn("assert not (set(assets) & tombstone_paths)", verifier)
+        self.assertIn('"already_missing": 6', verifier)
+        self.assertIn('"preserved_clean_upstream": 37', verifier)
         self.assertIn('test -f "$TARGET/.codex/prompts/guru-finish-work.md"', verifier)
         self.assertIn('test -f "$TARGET/.claude/commands/guru/finish-work.md"', verifier)
         self.assertIn('test -f "$TARGET/.cursor/commands/guru-finish-work.md"', verifier)
@@ -1434,163 +1271,104 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload_loop = checker.index('while IFS= read -r source; do')
         self.assertLess(ownership_gate, payload_loop)
         self.assertIn("Missing executable ownership validator", checker)
-        self.assertIn("current payload bindings", checker)
+        self.assertIn("43-path removed-tombstone identity", checker)
+        self.assertIn("three canonical Guru Team additive overlays", checker)
 
-    def test_generated_trellis_meta_task_system_docs_are_replaced_with_guru_team_overlay(self) -> None:
-        shared_meta = self.repo / ".agents/skills/trellis-meta/references/local-architecture/task-system.md"
-        cursor_meta = self.repo / ".cursor/skills/trellis-meta/references/local-architecture/task-system.md"
-        stale_meta = (
-            "# Local Task System\n\n"
-            "The Trellis task system is stored under `.trellis/tasks/`.\n\n"
-            "| `prd.md` | Requirements. Lightweight tasks may be PRD-only. |\n"
-        )
-        shared_meta.parent.mkdir(parents=True)
-        cursor_meta.parent.mkdir(parents=True)
-        shared_meta.write_text(stale_meta, encoding="utf-8")
-        cursor_meta.write_text(stale_meta, encoding="utf-8")
+    def test_missing_tombstone_path_is_already_complete_without_heuristics(self) -> None:
+        relative = ".agents/skills/trellis-start/SKILL.md"
+        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
 
-        payload = self.install({"codex", "cursor"})
+        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
 
-        self.assertIn(
-            ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
-            payload["replaced_overlays"],
-        )
-        self.assertIn(
-            ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
-            payload["replaced_overlays"],
-        )
-        self.assertIn("Guru Team requires this document before implementation", shared_meta.read_text(encoding="utf-8"))
-        self.assertIn("Guru Team requires this document before implementation", cursor_meta.read_text(encoding="utf-8"))
-        self.assertNotIn("Lightweight tasks may be PRD-only", shared_meta.read_text(encoding="utf-8"))
-        self.assertNotIn("Lightweight tasks may be PRD-only", cursor_meta.read_text(encoding="utf-8"))
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["counts"], {"already_missing": 1})
+        self.assertEqual(result["paths"], [{
+            "path": relative,
+            "generated_in_clean_init": True,
+            "action": "already_missing",
+        }])
+        self.assertEqual(result["conflicts"], [])
+        self.assertEqual(result["sidecars"], [])
 
-    def test_generated_brainstorm_and_trellis_meta_reference_docs_are_replaced(self) -> None:
-        shared_brainstorm = self.repo / ".agents/skills/trellis-brainstorm/SKILL.md"
-        cursor_brainstorm = self.repo / ".cursor/skills/trellis-brainstorm/SKILL.md"
-        shared_before_dev = self.repo / ".agents/skills/trellis-before-dev/SKILL.md"
-        cursor_before_dev = self.repo / ".cursor/skills/trellis-before-dev/SKILL.md"
-        shared_check_skill = self.repo / ".agents/skills/trellis-check/SKILL.md"
-        cursor_check_skill = self.repo / ".cursor/skills/trellis-check/SKILL.md"
-        shared_change_workflow = self.repo / ".agents/skills/trellis-meta/references/customize-local/change-workflow.md"
-        cursor_change_workflow = self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
-        shared_change_context = self.repo / ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
-        cursor_change_context = self.repo / ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
-        shared_context = self.repo / ".agents/skills/trellis-meta/references/local-architecture/context-injection.md"
-        cursor_context = self.repo / ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md"
-        shared_agents_doc = self.repo / ".agents/skills/trellis-meta/references/platform-files/agents.md"
-        cursor_agents_doc = self.repo / ".cursor/skills/trellis-meta/references/platform-files/agents.md"
-        cursor_context_hook = self.repo / ".cursor/hooks/inject-subagent-context.py"
-        stale_brainstorm = (
-            "# Trellis Brainstorm\n\n"
-            "## PRD Convergence Pass\n\n"
-            "Lightweight tasks may have only `prd.md`.\n"
-        )
-        stale_before_dev = (
-            "# Read the relevant development guidelines\n\n"
-            "Trellis before-dev reads task artifacts.\n"
-            "- `prd.md` for requirements and acceptance criteria\n"
-            "- `design.md` if present for technical design\n"
-            "- `implement.md` if present for execution order and validation plan\n"
-        )
-        stale_check_skill = (
-            "# Code Quality Check\n\n"
-            "Trellis check reads task artifacts.\n"
-            "- `prd.md`\n"
-            "- `design.md` if present\n"
-            "- `implement.md` if present\n"
-        )
-        stale_change_workflow = (
-            "# Change Local Workflow\n\n"
-            "Edit `.trellis/workflow.md`.\n\n"
-            "| `planning` | lightweight task with `prd.md` complete | ask for start review, then run `task.py start` |\n"
-        )
-        stale_change_context = (
-            "# Change Context Loading\n\n"
-            "Trellis context loading reads `.trellis/workflow.md` and `.trellis/tasks/`.\n\n"
-            "5. `design.md` if present\n6. `implement.md` if present\n"
-        )
-        stale_context = (
-            "# Local Context Injection System\n\n"
-            "Trellis context injection reads `.trellis/workflow.md` and `.trellis/tasks/`.\n\n"
-            "In both modes, JSONL files in the task directory are the manifest for spec/research context. "
-            "Task artifacts are read separately in this order: `prd.md` -> `design.md if present` -> `implement.md if present`.\n"
-        )
-        stale_agents_doc = (
-            "# Agents\n\n"
-            "| `trellis-implement` | Implement against `prd.md`, optional `design.md` / `implement.md`, `implement.jsonl`, and related spec/research. |\n"
-        )
-        stale_context_hook = (
-            "#!/usr/bin/env python3\n"
-            "\"\"\"Multi-Platform Sub-Agent Context Injection Hook\"\"\"\n"
-            "# Trellis active task resolver points to the current task directory.\n"
-            "implement_jsonl = 'implement.jsonl'\n"
-            "check_jsonl = 'check.jsonl'\n"
-            "READ_ORDER = 'design.md if present and implement.md if present'\n"
-        )
-        for path, text in [
-            (shared_brainstorm, stale_brainstorm),
-            (cursor_brainstorm, stale_brainstorm),
-            (shared_before_dev, stale_before_dev),
-            (cursor_before_dev, stale_before_dev),
-            (shared_check_skill, stale_check_skill),
-            (cursor_check_skill, stale_check_skill),
-            (shared_change_workflow, stale_change_workflow),
-            (cursor_change_workflow, stale_change_workflow),
-            (shared_change_context, stale_change_context),
-            (cursor_change_context, stale_change_context),
-            (shared_context, stale_context),
-            (cursor_context, stale_context),
-            (shared_agents_doc, stale_agents_doc),
-            (cursor_agents_doc, stale_agents_doc),
-            (cursor_context_hook, stale_context_hook),
-        ]:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text, encoding="utf-8")
+    def test_generated_known_guru_tombstone_blocks_staged_activation(self) -> None:
+        relative = ".agents/skills/trellis-start/SKILL.md"
+        historical_payload = b"historical generated Guru payload\n"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        target.write_bytes(historical_payload)
+        tombstone = self.migration_tombstone(relative, historical_payload, generated=True)
 
-        payload = self.install({"codex", "cursor"})
+        with mock.patch.object(preset, "load_removed_upstream_tombstones", return_value=[tombstone]):
+            result = self.install({"codex"})
 
-        for relative in [
-            ".agents/skills/trellis-brainstorm/SKILL.md",
-            ".cursor/skills/trellis-brainstorm/SKILL.md",
-            ".agents/skills/trellis-before-dev/SKILL.md",
-            ".cursor/skills/trellis-before-dev/SKILL.md",
-            ".agents/skills/trellis-check/SKILL.md",
-            ".cursor/skills/trellis-check/SKILL.md",
-            ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
-            ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
-            ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
-            ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
-            ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
-            ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
-            ".agents/skills/trellis-meta/references/platform-files/agents.md",
-            ".cursor/skills/trellis-meta/references/platform-files/agents.md",
-            ".cursor/hooks/inject-subagent-context.py",
-        ]:
-            self.assertIn(relative, payload["replaced_overlays"])
+        self.assertEqual(result["upstream_migration"]["status"], "conflict")
+        self.assertEqual(
+            result["upstream_migration"]["counts"],
+            {"blocked_known_guru_payload": 1},
+        )
+        self.assertEqual(target.read_bytes(), historical_payload)
+        self.assertFalse(self.install_dst.exists())
+        self.assertFalse((self.repo / ".codex/prompts/guru-finish-work.md").exists())
 
-        assert_ai_first_planning_transition(self, shared_brainstorm.read_text(encoding="utf-8"))
-        assert_ai_first_planning_transition(self, cursor_brainstorm.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", shared_before_dev.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", cursor_before_dev.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", shared_check_skill.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", cursor_check_skill.read_text(encoding="utf-8"))
-        assert_ai_first_planning_transition(self, shared_change_workflow.read_text(encoding="utf-8"))
-        assert_ai_first_planning_transition(self, cursor_change_workflow.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", shared_change_context.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", cursor_change_context.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", shared_context.read_text(encoding="utf-8"))
-        self.assertIn("required `design.md`", cursor_context.read_text(encoding="utf-8"))
-        self.assertIn("required `prd.md`, `design.md`, `implement.md`", shared_agents_doc.read_text(encoding="utf-8"))
-        self.assertIn("required `prd.md`, `design.md`, `implement.md`", cursor_agents_doc.read_text(encoding="utf-8"))
-        self.assertIn("required design.md", cursor_context_hook.read_text(encoding="utf-8"))
-        self.assertNotIn("Lightweight tasks may have only", shared_brainstorm.read_text(encoding="utf-8"))
-        self.assertNotIn("design.md` if present", shared_before_dev.read_text(encoding="utf-8"))
-        self.assertNotIn("design.md` if present", shared_check_skill.read_text(encoding="utf-8"))
-        self.assertNotIn("lightweight task with `prd.md` complete", shared_change_workflow.read_text(encoding="utf-8"))
-        self.assertNotIn("design.md` if present", shared_change_context.read_text(encoding="utf-8"))
-        self.assertNotIn("design.md if present", shared_context.read_text(encoding="utf-8"))
-        self.assertNotIn("optional `design.md` / `implement.md`", shared_agents_doc.read_text(encoding="utf-8"))
-        self.assertNotIn("design.md if present", cursor_context_hook.read_text(encoding="utf-8"))
+    def test_unknown_tombstone_conflict_materializes_only_remediation_sidecar(self) -> None:
+        relative = ".cursor/hooks/session-start.py"
+        local_payload = b"preserved local edit\n"
+        target = self.repo / relative
+        target.parent.mkdir(parents=True)
+        target.write_bytes(local_payload)
+        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
+
+        with mock.patch.object(preset, "load_removed_upstream_tombstones", return_value=[tombstone]):
+            result = self.install({"cursor"})
+
+        sidecar = target.with_name(f"{target.name}.new")
+        self.assertEqual(result["upstream_migration"]["status"], "conflict")
+        self.assertEqual(
+            result["upstream_migration"]["counts"],
+            {"conflict_unknown_local_edit": 1},
+        )
+        self.assertEqual(target.read_bytes(), local_payload)
+        self.assertEqual(sidecar.read_bytes(), preset.upstream_tombstone_sidecar_content(relative))
+        self.assertFalse(self.install_dst.exists())
+        self.assertFalse((self.repo / ".cursor/commands/guru-finish-work.md").exists())
+
+    def test_conflict_does_not_report_unactivated_legacy_removal(self) -> None:
+        removable_relative = ".codex/prompts/trellis-start.md"
+        removable_payload = b"historical legacy-only Guru payload\n"
+        removable_target = self.repo / removable_relative
+        removable_target.parent.mkdir(parents=True)
+        removable_target.write_bytes(removable_payload)
+
+        blocking_relative = ".agents/skills/trellis-start/SKILL.md"
+        blocking_payload = b"historical generated Guru payload\n"
+        blocking_target = self.repo / blocking_relative
+        blocking_target.parent.mkdir(parents=True)
+        blocking_target.write_bytes(blocking_payload)
+
+        tombstones = [
+            self.migration_tombstone(removable_relative, removable_payload, generated=False),
+            self.migration_tombstone(blocking_relative, blocking_payload, generated=True),
+        ]
+        with mock.patch.object(preset, "load_removed_upstream_tombstones", return_value=tombstones):
+            result = self.install({"codex"})
+
+        migration = result["upstream_migration"]
+        self.assertEqual(migration["status"], "conflict")
+        self.assertEqual(migration["removals"], [])
+        self.assertEqual(migration["pending_removals"], [removable_relative])
+        self.assertEqual(
+            migration["counts"],
+            {
+                "pending_legacy_guru_payload_removal": 1,
+                "blocked_known_guru_payload": 1,
+            },
+        )
+        actions = {item["path"]: item["action"] for item in migration["paths"]}
+        self.assertEqual(actions[removable_relative], "pending_legacy_guru_payload_removal")
+        self.assertEqual(actions[blocking_relative], "blocked_known_guru_payload")
+        self.assertEqual(removable_target.read_bytes(), removable_payload)
+        self.assertEqual(blocking_target.read_bytes(), blocking_payload)
+        self.assertFalse(self.install_dst.exists())
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(

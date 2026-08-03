@@ -127,6 +127,6 @@
     "relation_errors": [],
     "complete": true
   },
-  "ownership": {"frozen_transitional_legacy_count": 43, "new_legacy_entries": []},
+  "ownership": {"frozen_transitional_legacy_count": 0, "new_legacy_entries": []},
   "sidecars": []
 }

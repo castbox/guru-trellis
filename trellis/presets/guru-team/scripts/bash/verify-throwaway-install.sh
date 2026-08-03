@@ -9,7 +9,6 @@ WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
-STALE_PLANNING_HINT_PATTERN='PRD-only|Lightweight tasks may be PRD-only|Lightweight tasks may have only|Lightweight task can (ask|request)|lightweight task with `?prd\.md`? complete|Missing optional artifacts|skipped for lightweight tasks|optional `?design\.md`? / `?implement\.md`?|optional `?design\.md`?|optional `?implement\.md`?|ask for start review, then run `?task\.py start`?|design\.md if present|implement\.md if present|`?design\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|`?implement\.md`?[^[:cntrl:]]*(\(if exists\)|if exists|if present)|technical design if present|execution plan if present|technical design \(if exists\)|execution plan \(if exists\)|design\.md / implement\.md if present|when present, design\.md / implement\.md|when those files are present|technical design and implementation plan when present|轻量任务只需 `?prd\.md`?|轻量任务可以只保留 `?prd\.md`?|轻量任务无需 `?design\.md`?|轻量任务无需 `?implement\.md`?|`?design\.md`?[（(](如有|若有)[）)]|`?implement\.md`?[（(](如有|若有)[）)]|`?design\.md`? (如存在|若存在)|`?implement\.md`? (如存在|若存在)|技术设计[（(](如有|若有)[）)]|执行计划[（(](如有|若有)[）)]|设计文档可选|实现计划可选'
 
 if [[ -z "$WORK_DIR" ]]; then
   WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/guru-trellis-install.XXXXXX")"
@@ -54,21 +53,6 @@ fail_if_english_language_rule() {
   fi
 }
 
-fail_if_stale_planning_hint() {
-  local label="$1"
-  shift
-  local matches
-  if [[ "$#" -eq 0 ]]; then
-    return 0
-  fi
-  matches="$(grep -RInE "$STALE_PLANNING_HINT_PATTERN" "$@" 2>/dev/null || true)"
-  if [[ -n "$matches" ]]; then
-    echo "Unexpected legacy planning hint in $label:" >&2
-    printf '%s\n' "$matches" >&2
-    exit 2
-  fi
-}
-
 workspace_tree_digest() {
   python3 - "$1" <<'PY'
 import hashlib
@@ -98,6 +82,59 @@ if not path.is_file():
     raise SystemExit(f"expected regular file: {path}")
 print(hashlib.sha256(path.read_bytes()).hexdigest())
 PY
+}
+
+upstream_tombstone_state() {
+  python3 - \
+    "$REPO_ROOT/trellis/presets/guru-team/ownership/upstream-ownership.json" \
+    "$1" <<'PY'
+import hashlib
+import json
+import stat
+import sys
+from pathlib import Path
+
+inventory = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+root = Path(sys.argv[2])
+entries = inventory["legacy_entries"]
+if len(entries) != 43:
+    raise SystemExit(f"expected 43 removed tombstones, found {len(entries)}")
+state = {}
+for entry in entries:
+    relative = entry["path"]
+    path = root / relative
+    if path.is_symlink():
+        raise SystemExit(f"upstream tombstone path is a symlink: {relative}")
+    if path.is_file():
+        state[relative] = {
+            "state": "file",
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "mode": stat.S_IMODE(path.stat().st_mode),
+        }
+    elif path.exists():
+        raise SystemExit(f"upstream tombstone path is not a regular file: {relative}")
+    else:
+        state[relative] = {"state": "missing"}
+present = sum(value["state"] == "file" for value in state.values())
+missing = sum(value["state"] == "missing" for value in state.values())
+if (present, missing) != (37, 6):
+    raise SystemExit(
+        f"unexpected clean-init tombstone shape: present={present} missing={missing}"
+    )
+print(json.dumps(state, sort_keys=True, separators=(",", ":")))
+PY
+}
+
+assert_upstream_tombstone_state() {
+  local root="$1"
+  local expected="$2"
+  local label="$3"
+  local current
+  current="$(upstream_tombstone_state "$root")"
+  if [[ "$current" != "$expected" ]]; then
+    echo "Preset changed Trellis upstream-owned paths during $label" >&2
+    exit 2
+  fi
 }
 
 assert_official_state_absent() {
@@ -1259,30 +1296,12 @@ if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
 fi
 
 ownership_checkpoint "initial-init-before-preset-apply"
+INITIAL_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"
 
 test -f "$TARGET/.trellis/.developer"
 WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"
 mkdir -p "$(dirname "$WORKSPACE_SENTINEL")"
 printf '%s\n' 'SHARED_START_SECRET_JOURNAL_CONTENT' >"$WORKSPACE_SENTINEL"
-NO_WORKSPACE_GUARD_DIR="$(mktemp -d "$WORK_DIR/no-workspace-guard.XXXXXX")"
-cat >"$NO_WORKSPACE_GUARD_DIR/sitecustomize.py" <<'PY'
-import os
-import sys
-
-
-def _reject_workspace_access(event, args):
-    if event not in {"open", "os.listdir", "os.scandir"} or not args:
-        return
-    try:
-        value = os.fspath(args[0]).replace("\\", "/")
-    except TypeError:
-        return
-    if ".trellis/workspace" in value:
-        os._exit(91)
-
-
-sys.addaudithook(_reject_workspace_access)
-PY
 
 WORKSPACE_TREE_DIGEST_BEFORE="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
 DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256 "$TARGET/.trellis/.developer")"
@@ -1297,9 +1316,9 @@ test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TARGET/.trellis/workflow.md"
 ! grep -q "review-source independent-agent" "$TARGET/.trellis/workflow.md"
-grep -q 'Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`' "$TARGET/.trellis/workflow.md"
-grep -q "record-agent-recovery.sh" "$TARGET/.trellis/workflow.md"
-grep -q "check-agent-recovery.sh" "$TARGET/.trellis/workflow.md"
+grep -q 'Planning produces non-empty `prd.md`, `design.md`, and `implement.md`' "$TARGET/.trellis/workflow.md"
+! grep -q "record-agent-recovery.sh" "$TARGET/.trellis/workflow.md"
+! grep -q "check-agent-recovery.sh" "$TARGET/.trellis/workflow.md"
 ! grep -q "record-subagent-liveness-event.sh" "$TARGET/.trellis/workflow.md"
 ! grep -q "check-subagent-liveness.sh" "$TARGET/.trellis/workflow.md"
 grep -q 'guru-skill-invoke: {"skill":"guru-sync-base","required":true}' "$TARGET/.trellis/workflow.md"
@@ -1386,25 +1405,41 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 - "$TARGET/.trellis/guru-team/extension.json" "$TARGET" <<'PY'
+python3 - \
+  "$TARGET/.trellis/guru-team/extension.json" \
+  "$TARGET" \
+  "$REPO_ROOT/trellis/presets/guru-team/ownership/upstream-ownership.json" <<'PY'
 import json
 import pathlib
 import sys
 
 manifest_path = pathlib.Path(sys.argv[1])
 root = pathlib.Path(sys.argv[2])
+inventory = json.loads(pathlib.Path(sys.argv[3]).read_text(encoding="utf-8"))
 payload = json.loads(manifest_path.read_text(encoding="utf-8"))
 extension = payload["extension"]
 install = payload["install"]
 skills = payload["skill_packages"]
+upstream_migration = payload["upstream_migration"]
 api = extension["public_api"]
 assets = install["managed_assets"]
+tombstone_paths = {entry["path"] for entry in inventory["legacy_entries"]}
 assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.5-guru.25"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 103
+assert len(assets) == 60
 assert all((root / path).is_file() for path in assets)
+assert len(tombstone_paths) == 43
+assert not (set(assets) & tombstone_paths)
+assert upstream_migration["status"] == "ok"
+assert upstream_migration["counts"] == {
+    "already_missing": 6,
+    "preserved_clean_upstream": 37,
+}
+assert upstream_migration["removals"] == []
+assert upstream_migration["conflicts"] == []
+assert upstream_migration["sidecars"] == []
 for artifact in (
     "pr-body.md", "review-gate.json", "pr-readiness.json",
     "closeout-plan.json", "finish-summary.json", "context-discovery.json",
@@ -1714,155 +1749,19 @@ grep -q "def prepare_closeout" "$TARGET/.trellis/guru-team/scripts/python/guru_t
 ! grep -q "def resolve_closeout_state" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
 grep -q "publish-pr is a compatibility-only blocked command" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
 grep -q "def ensure_closeout_draft_pr" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
-grep -q '\.trellis/workflow.md.*global route' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-grep -q 'guru-review-task-publication' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-grep -q 'guru-verify-extension-installation' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-grep -q 'guru-finalize-task' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-grep -q 'Automatically consume' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-! grep -q 'finish-work.sh --from-trellis-finish-work' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-! grep -q -- '--expected-plan-digest' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-! grep -q 'resolve-human-artifacts.sh' "$TARGET/.agents/skills/trellis-finish-work/SKILL.md"
-test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
-test -d "$TARGET/.agents/skills"
-test -d "$TARGET/.claude/skills"
-test -d "$TARGET/.codex"
-test -d "$TARGET/.cursor"
-test -f "$TARGET/.codex/hooks/session-start.py"
-test -f "$TARGET/.cursor/hooks/session-start.py"
-test -f "$TARGET/.cursor/hooks/inject-subagent-context.py"
-test -f "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md"
-test -f "$TARGET/.agents/skills/trellis-before-dev/SKILL.md"
-test -f "$TARGET/.agents/skills/trellis-check/SKILL.md"
-test -f "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md"
-test -f "$TARGET/.cursor/skills/trellis-before-dev/SKILL.md"
-test -f "$TARGET/.cursor/skills/trellis-check/SKILL.md"
-test -f "$TARGET/.agents/skills/trellis-meta/references/local-architecture/task-system.md"
-test -f "$TARGET/.agents/skills/trellis-meta/references/local-architecture/context-injection.md"
-test -f "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
-test -f "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-workflow.md"
-test -f "$TARGET/.agents/skills/trellis-meta/references/platform-files/agents.md"
-test -f "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/task-system.md"
-test -f "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/context-injection.md"
-test -f "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
-test -f "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
-test -f "$TARGET/.cursor/skills/trellis-meta/references/platform-files/agents.md"
-fail_if_stale_planning_hint \
-  "workflow, Codex/Cursor hooks, brainstorm skills, and trellis-meta planning references" \
-  "$TARGET/.trellis/workflow.md" \
-  "$TARGET/.codex/hooks/session-start.py" \
-  "$TARGET/.cursor/hooks/session-start.py" \
-  "$TARGET/.cursor/hooks/inject-subagent-context.py" \
-  "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md" \
-  "$TARGET/.agents/skills/trellis-before-dev/SKILL.md" \
-  "$TARGET/.agents/skills/trellis-check/SKILL.md" \
-  "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md" \
-  "$TARGET/.cursor/skills/trellis-before-dev/SKILL.md" \
-  "$TARGET/.cursor/skills/trellis-check/SKILL.md" \
-  "$TARGET/.agents/skills/trellis-meta/references/local-architecture/task-system.md" \
-  "$TARGET/.agents/skills/trellis-meta/references/local-architecture/context-injection.md" \
-  "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-context-loading.md" \
-  "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-workflow.md" \
-  "$TARGET/.agents/skills/trellis-meta/references/platform-files/agents.md" \
-  "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/task-system.md" \
-  "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/context-injection.md" \
-  "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md" \
-  "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md" \
-  "$TARGET/.cursor/skills/trellis-meta/references/platform-files/agents.md"
-grep -qi "auto-consume" "$TARGET/.codex/hooks/session-start.py"
-grep -qi "auto-consume" "$TARGET/.cursor/hooks/session-start.py"
-set +e
-PHASE_CONTEXT_OUTPUT="$(cd "$TARGET" && PYTHONPATH="$NO_WORKSPACE_GUARD_DIR" python3 ./.trellis/scripts/get_context.py --mode phase 2>&1)"
-PHASE_CONTEXT_STATUS=$?
-PACKAGE_CONTEXT_OUTPUT="$(cd "$TARGET" && PYTHONPATH="$NO_WORKSPACE_GUARD_DIR" python3 ./.trellis/scripts/get_context.py --mode packages 2>&1)"
-PACKAGE_CONTEXT_STATUS=$?
-CURRENT_TASK_OUTPUT="$(cd "$TARGET" && PYTHONPATH="$NO_WORKSPACE_GUARD_DIR" python3 ./.trellis/scripts/task.py current --source 2>&1)"
-CURRENT_TASK_STATUS=$?
-set -e
-if [[ "$PHASE_CONTEXT_STATUS" -ne 0 || "$PACKAGE_CONTEXT_STATUS" -ne 0 ]]; then
-  echo "Guru Team no-workspace phase/packages context command failed" >&2
-  exit 2
-fi
-if [[ "$CURRENT_TASK_STATUS" -ne 0 && "$CURRENT_TASK_STATUS" -ne 1 ]]; then
-  echo "Guru Team no-workspace current-task command returned an unexpected status" >&2
-  exit 2
-fi
-NO_WORKSPACE_CONTEXT_OUTPUT="$PHASE_CONTEXT_OUTPUT
-$PACKAGE_CONTEXT_OUTPUT
-$CURRENT_TASK_OUTPUT"
-if grep -Eq 'shared-start-secret-journal\.md|SHARED_START_SECRET_JOURNAL_CONTENT|JOURNAL FILE|Line count:' <<<"$NO_WORKSPACE_CONTEXT_OUTPUT"; then
-  echo "Guru Team no-workspace context disclosed the workspace journal sentinel" >&2
-  exit 2
-fi
-grep -q "required design.md" "$TARGET/.cursor/hooks/inject-subagent-context.py"
-grep -q "Do not add a routine post-planning confirmation" "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md"
-grep -q "Do not add a routine post-planning confirmation" "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md"
-grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-before-dev/SKILL.md"
-grep -q "required \`design.md\`" "$TARGET/.cursor/skills/trellis-before-dev/SKILL.md"
-grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-check/SKILL.md"
-grep -q "required \`design.md\`" "$TARGET/.cursor/skills/trellis-check/SKILL.md"
-grep -q "Guru Team requires this document before implementation" "$TARGET/.agents/skills/trellis-meta/references/local-architecture/task-system.md"
-grep -q "Guru Team requires this document before implementation" "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/task-system.md"
-grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-meta/references/local-architecture/context-injection.md"
-grep -q "required \`design.md\`" "$TARGET/.cursor/skills/trellis-meta/references/local-architecture/context-injection.md"
-grep -q "required \`design.md\`" "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-context-loading.md"
-grep -q "required \`design.md\`" "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md"
-grep -q "do not add a routine post-planning confirmation" "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-workflow.md"
-grep -q "do not add a routine post-planning confirmation" "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md"
-if grep -Eiq 'wait for explicit post-planning confirmation|explicitly confirmed post-planning approval|get fresh user confirmation|user confirms? start|规划完成后(再次|重新)?确认|再次取得用户确认|重新取得用户确认|等待(明确)?规划后确认|等待用户确认开始|规划后(明确)?确认后|用户确认后(开始|启动)实现|规划通过后等待用户确认|等待用户明确确认后开始|经用户确认后进入实现|用户批准后开始实现|取得用户授权后开始实现' \
-  "$TARGET/.codex/hooks/session-start.py" \
-  "$TARGET/.cursor/hooks/session-start.py" \
-  "$TARGET/.agents/skills/trellis-brainstorm/SKILL.md" \
-  "$TARGET/.cursor/skills/trellis-brainstorm/SKILL.md" \
-  "$TARGET/.agents/skills/trellis-meta/references/customize-local/change-workflow.md" \
-  "$TARGET/.cursor/skills/trellis-meta/references/customize-local/change-workflow.md" \
-  "$TARGET/.trellis/agents/implement.md" \
-  "$TARGET/.trellis/agents/check.md" \
-  "$TARGET/.codex/agents/trellis-implement.toml" \
-  "$TARGET/.codex/agents/trellis-check.toml" \
-  "$TARGET/.cursor/agents/trellis-implement.md" \
-  "$TARGET/.cursor/agents/trellis-check.md"; then
-  echo "Guru Team overlays retained a routine English or Chinese post-planning confirmation" >&2
-  exit 2
-fi
-for planning_consumer in \
-  "$TARGET/.trellis/agents/implement.md" \
-  "$TARGET/.trellis/agents/check.md" \
-  "$TARGET/.codex/agents/trellis-implement.toml" \
-  "$TARGET/.codex/agents/trellis-check.toml" \
-  "$TARGET/.cursor/agents/trellis-implement.md" \
-  "$TARGET/.cursor/agents/trellis-check.md"; do
-  grep -qi 'private checkpoint' "$planning_consumer"
-  grep -qi 'auto-consum' "$planning_consumer"
-  if grep -Eiq 'ambiguity_review|unchecked_normative_hits|fixed-scope scanner|content digests no longer match|explicit-post-planning-review|规划歧义审查字段|扫描命中字段|规划文档(内容摘要|哈希)' "$planning_consumer"; then
-    echo "Guru Team implement/check consumer retained owner-private English or Chinese planning fields: $planning_consumer" >&2
-    exit 2
-  fi
+for relative in \
+  ".codex/prompts/guru-finish-work.md" \
+  ".claude/commands/guru/finish-work.md" \
+  ".cursor/commands/guru-finish-work.md"; do
+  test -f "$TARGET/$relative"
+  cmp -s "$REPO_ROOT/trellis/presets/guru-team/overlays/$relative" "$TARGET/$relative"
+  grep -q '<!-- guru-team-overlay: v1 -->' "$TARGET/$relative"
+  grep -q 'guru-review-task-publication' "$TARGET/$relative"
+  grep -q 'guru-verify-extension-installation' "$TARGET/$relative"
+  grep -q 'guru-finalize-task' "$TARGET/$relative"
 done
-grep -q 'required `prd.md`, `design.md`, `implement.md`' "$TARGET/.agents/skills/trellis-meta/references/platform-files/agents.md"
-grep -q 'required `prd.md`, `design.md`, `implement.md`' "$TARGET/.cursor/skills/trellis-meta/references/platform-files/agents.md"
-test -f "$TARGET/.trellis/agents/implement.md"
-grep -q "实现代理" "$TARGET/.trellis/agents/implement.md"
-test -f "$TARGET/.trellis/agents/check.md"
-grep -q "required Guru Team technical design" "$TARGET/.trellis/agents/check.md"
-test -f "$TARGET/.codex/agents/trellis-implement.toml"
-grep -q "实现代理" "$TARGET/.codex/agents/trellis-implement.toml"
-grep -q 'nickname_candidates.*Implement Agent' "$TARGET/.codex/agents/trellis-implement.toml"
-if grep -q 'nickname_candidates.*实现代理' "$TARGET/.codex/agents/trellis-implement.toml"; then
-  echo "Codex nickname_candidates must stay ASCII or Codex ignores the agent file" >&2
-  exit 2
-fi
-test -f "$TARGET/.codex/agents/trellis-check.toml"
-grep -q "阶段二检查代理" "$TARGET/.codex/agents/trellis-check.toml"
-grep -q "required \`design.md\`" "$TARGET/.codex/agents/trellis-check.toml"
-test -f "$TARGET/.cursor/agents/trellis-check.md"
-grep -q "阶段二检查代理" "$TARGET/.cursor/agents/trellis-check.md"
-grep -q "required .*design.md" "$TARGET/.cursor/agents/trellis-check.md"
-fail_if_stale_planning_hint \
-  "check agent files" \
-  "$TARGET/.trellis/agents/check.md" \
-  "$TARGET/.codex/agents/trellis-check.toml" \
-  "$TARGET/.cursor/agents/trellis-check.md"
-python3 "$TARGET/.trellis/scripts/get_context.py" --mode packages >/dev/null
+assert_upstream_tombstone_state "$TARGET" "$INITIAL_UPSTREAM_STATE" "initial preset apply"
+test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$CHECK_ENV_JSON"
@@ -3156,6 +3055,7 @@ grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TA
 )
 verify_task_publication_validator_wrappers "after-trellis-update"
 ownership_checkpoint "post-update-before-workflow-and-preset-reapply"
+POST_UPDATE_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"
 (
   cd "$TARGET"
   trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
@@ -3166,6 +3066,7 @@ apply_local_workflow_sample
   --platform claude \
   --platform codex \
   --platform cursor
+assert_upstream_tombstone_state "$TARGET" "$POST_UPDATE_UPSTREAM_STATE" "post-update workflow and preset reapply"
 ownership_checkpoint "post-preset-reapply-before-final-checks"
 verify_task_publication_validator_wrappers "after-preset-reapply"
 

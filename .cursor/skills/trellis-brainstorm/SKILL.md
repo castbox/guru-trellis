@@ -3,8 +3,6 @@ name: trellis-brainstorm
 description: "Guides collaborative requirements discovery before implementation. Creates task directory, seeds PRD, asks high-value questions one at a time, researches technical choices, and converges on MVP scope. Use when requirements are unclear, there are multiple valid approaches, or the user describes a new feature or complex task."
 ---
 
-<!-- guru-team-overlay: v1 -->
-
 # Trellis Brainstorm
 
 ## Non-Negotiable Interview Contract
@@ -141,15 +139,7 @@ For each component of the current plan:
 - risky files or rollback points
 - follow-up checks before `task.py start`
 
-Guru Team requires `prd.md`, `design.md`, and `implement.md` for every task before implementation. Some native Trellis workflows may allow a smaller planning set, but that is not the Guru Team start gate. After all three documents exist, invoke the mandatory `guru-review-contract-wording:planning_artifacts` and `guru-approve-task-plan` owners through `.trellis/workflow.md`. Auto-consume mapped exits; on the checked `approved` exit, display task-local links to all three documents and run `task.py start`. Do not add a routine post-planning confirmation. Ask only when unresolved scope, a material plan choice, or the next real side effect needs current-conversation authorization, and never persist that authorization.
-
-Planning artifact normative language must be deterministic. For requirements,
-design contracts, gates, acceptance criteria, implementation steps, and
-validation steps, rewrite unconditional weak wording into explicit trigger
-conditions or deterministic requirements. Treat the controlled weak constraint
-terms in `.trellis/workflow.md` as review inputs, not as execution contract
-language. External quotes or history may keep their original wording only when
-the source is labeled and the quote is not treated as the task contract.
+Lightweight tasks may have only `prd.md`. Complex tasks must have `prd.md`, `design.md`, and `implement.md` before `task.py start`.
 
 `implement.md` is not a replacement for `implement.jsonl`. On sub-agent-dispatch workflows, `implement.jsonl` and `check.jsonl` must each contain at least one real spec/research entry before `task.py start`; the seed `_example` row does not count. Inline workflows skip this JSONL gate because Phase 2 loads context through `trellis-before-dev`.
 
@@ -176,9 +166,8 @@ Before declaring planning ready:
 - `prd.md` has passed the PRD convergence pass: no unresolved temporary brainstorm sections, no duplicate facts across sections, and no lost anchors, decisions, or acceptance mappings.
 - Repository-answerable questions have already been answered through inspection.
 - Remaining open questions are genuinely about user intent or scope.
-- Guru Team tasks have `design.md` and `implement.md` before implementation.
-- Planning wording and plan-adequacy semantic gates have passed before task activation.
+- Complex tasks have `design.md` and `implement.md`.
 - Sub-agent-dispatch tasks have real curated entries in both `implement.jsonl` and `check.jsonl`; seed-only manifests are not ready.
-- The checked `approved` exit is consumed automatically; a user prompt exists only for unresolved scope, a material plan choice, or a real side effect.
+- The user has reviewed the final planning artifacts or explicitly approved proceeding.
 
-Do not start implementation until the semantic planning owners pass and `task.py start` succeeds.
+Do not start implementation until the user approves or asks for implementation.

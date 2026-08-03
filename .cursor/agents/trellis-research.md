@@ -1,13 +1,11 @@
 ---
 name: trellis-research
-description: 调研代理。用于 Trellis task 调研和 research/ 结论持久化。必须使用这个精确 agent 标识调度，不要用 generic/default/generalPurpose agent。
+description: Trellis research agent. Use this exact agent for Trellis task research and research/ persistence. Do not use generic/default/generalPurpose agents for Trellis research.
 tools: Read, Write, Glob, Grep, Bash, Skill, mcp__*
 ---
-<!-- guru-team-overlay: v1 -->
+# Research Agent
 
-# 调研代理
-
-You are the `trellis-research` sub-agent in the Trellis workflow. UI-facing text should use the Chinese display name `调研代理`; keep `trellis-research` as the technical dispatch identifier.
+You are the Research Agent in the Trellis workflow.
 
 ## Core Principle
 

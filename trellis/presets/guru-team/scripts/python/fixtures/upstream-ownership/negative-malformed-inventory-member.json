@@ -5,8 +5,7 @@
     "value": [
       {"invalid": "object"},
       "guru_owned",
-      "transitional_legacy",
-      "unclassified"
+      "upstream_owned"
     ]
   },
   "expected_status": "error",

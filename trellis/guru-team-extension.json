@@ -26,14 +26,7 @@
       ".claude/skills/guru-*/",
       ".codex/prompts/guru-finish-work.md",
       ".claude/commands/guru/finish-work.md",
-      ".cursor/commands/guru-finish-work.md",
-      ".agents/skills/trellis-start/",
-      ".agents/skills/trellis-continue/",
-      ".agents/skills/trellis-finish-work/",
-      ".codex/prompts/",
-      ".codex/skills/",
-      ".cursor/commands/",
-      ".claude/commands/trellis/"
+      ".cursor/commands/guru-finish-work.md"
     ],
     "config_files": [
       ".trellis/guru-team/config.yml",

@@ -344,6 +344,19 @@ The installed manifest should remain additive/backward-compatible for readers:
 - `selected_platforms` records installer input and should not be inferred from
   directory presence alone.
 
+The installed manifest also has an independent closed `overlays` provenance
+domain with exactly `schema_version`, `status`, `selected_platforms`, `files`,
+`removals`, `conflicts`, and `sidecars`. `files[]` is the complete current
+selected-entry set and carries exact canonical-source/hash/mode/action records;
+`removals[]` records a safe previous managed hash or the one-time
+`legacy_managed_asset_sha256` bridge. `conflicts[]` and `sidecars[]` are empty
+for an active installation. The flat `install.managed_assets` list is not
+current overlay ownership authority and may be consulted only when upgrading a
+manifest that has no `overlays` field: the claimed target must also be
+byte-equal to the current canonical overlay. Marker or content-text matching is
+never provenance. Overlay conflict state blocks staged activation, and the
+installed validator derives selected/unselected disk expectations independently.
+
 Do not use `.trellis/guru-team/extension.json` as the canonical source of the
 team extension version. The canonical source is `trellis/guru-team-extension.json`.
 
@@ -1314,11 +1327,11 @@ Archived working-tree deletion, content tampering, and the resulting dirty
 paths are ignored; recovery may only push that exact commit when needed, check
 remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An
 archived directory containing only `closeout-plan.json` is resolvable for this
-path only by the canonical `guru-finish-work` recovery entry; the frozen
-`trellis-finish-work` entries may route there as compatibility assets through
-Issue #132, while other commands still require `task.json`. Neither path
-parses, rebuilds, validates, or rewrites an archived body, summary, ledger,
-readiness, or marketplace artifact.
+path only by the canonical `guru-finish-work` recovery entry. The Guru preset
+does not install a `trellis-finish-work` compatibility asset; all other commands
+still require `task.json`. The recovery path neither parses, rebuilds,
+validates, nor rewrites an archived body, summary, ledger, readiness, or
+marketplace artifact.
 
 Plan-only recovery does not use an empty task context as authorization. It
 loads `closeout-plan.json` from the current commit blob and, before GitHub or

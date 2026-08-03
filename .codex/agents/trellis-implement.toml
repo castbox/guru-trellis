@@ -1,7 +1,5 @@
-# guru-team-overlay: v1
 name = "trellis-implement"
-description = "实现代理：按 Trellis task、spec 和 JSONL 上下文完成实现，并保持模板/运行副本同步。"
-nickname_candidates = ["Implement Agent", "Build Agent", "Patch Agent"]
+description = "Workspace-write Trellis implementer that follows specs and keeps generated templates in sync."
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
@@ -17,16 +15,14 @@ Try in order — stop at the first one that yields a task path:
 2. **Run** `python3 ./.trellis/scripts/task.py current --source` and read the `Current task:` line.
 3. **If both fail** (no `Active task:` line in the prompt and `task.py current` returns no task), ask the user which task to work on; do NOT guess.
 
-### Step 2: Validate and load task context from the resolved path
+### Step 2: Load task context from the resolved path
 
-1. Before reading implementation context or editing files, run `pwd`, `git rev-parse --show-toplevel`, and `./.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>` from the repo root. Report expected workspace, actual repo root, and whether they match. If the boundary validator fails, report the block and stop; do not edit from the source checkout or another worktree. If an editing tool cannot receive an explicit working directory, use an absolute path under the task worktree resolved from the current checkout, `.trellis/.runtime/guru-team/**`, and `git worktree list`.
-2. Run `./.trellis/guru-team/scripts/bash/check-planning-approval.sh --json --task <task-path>` from the repo root. If it rejects a missing, stale, legacy, or non-approved owner result, report the block and stop without interpreting private checkpoint fields. The main workflow reruns `guru-approve-task-plan` and auto-consumes its mapped exit; it asks the user only for unresolved scope or a material plan choice. Current HEAD or dirty-path drift alone is not a planning approval failure. Do not implement, dispatch another agent, or record/check `phase2-check.json` while blocked.
-3. Read `<task-path>/implement.jsonl` — JSONL list of spec/research files relevant to this agent.
-4. For each entry in the JSONL, Read its `file` path — these are the specs and research notes you must follow.
+1. Read `<task-path>/implement.jsonl` — JSONL list of spec/research files relevant to this agent.
+2. For each entry in the JSONL, Read its `file` path — these are the specs and research notes you must follow.
    **Skip rows without a `"file"` field** (e.g. `{"_example": "..."}` seed rows left over from `task.py create` before the curator ran).
-5. Read the task's `prd.md` (requirements), then `design.md` (technical design), then `implement.md` (execution plan).
+3. Read the task's `prd.md` (requirements), then `design.md` if present (technical design), then `implement.md` if present (execution plan).
 
-If `implement.jsonl` has no curated entries (only a seed row, or the file is missing), fall back to: read the task artifacts, list available specs with `python3 ./.trellis/scripts/get_context.py --mode packages`, and pick the specs that match the task domain yourself. Do NOT block on the missing jsonl, but do require valid planning approval evidence and the three planning documents (`prd.md`, `design.md`, `implement.md`) before implementation.
+If `implement.jsonl` has no curated entries (only a seed row, or the file is missing), fall back to: read the task artifacts, list available specs with `python3 ./.trellis/scripts/get_context.py --mode packages`, and pick the specs that match the task domain yourself. Do NOT block on the missing jsonl — lightweight tasks may be PRD-only, while complex tasks may also include `design.md` and `implement.md`.
 
 If the resolved task path has no `prd.md`, ask the user what to work on; do NOT proceed without context.
 
@@ -49,19 +45,11 @@ Rules:
 - When touching platform registries or template lists, search first so you do not miss mirrored update paths.
 - If you modify `.trellis/scripts/`, keep `packages/cli/src/templates/trellis/scripts/` in sync.
 - Do not make destructive git changes unless explicitly asked.
-- Do not report implementation complete until the requested scope is actually complete and verification status is known.
-- If the main session interrupts, terminates, replaces, or asks you to stop before completion, clearly report that the work is unfinished. Include files changed, current diff summary, last completed step, commands still running or stuck, remaining checklist, validation not yet run, and any gate blockers so the same agent can resume or a replacement can inherit the work.
-- A main-session wait timeout is not your failure signal. Continue working unless you receive an explicit stop/interrupt instruction.
-- Do not emit periodic heartbeat messages or write assignment/liveness artifacts. Only during a real exceptional recovery case, answer an explicit status request with the current step, last concrete progress, active command/tool if any, remaining work, and blockers.
-- You are responsible for the implementation boundary only. Do not run `trellis-check`, do not record `phase2-check.json`, and do not perform Branch Review Gate work. The next semantic owner reads the task artifacts, live diff, and tests directly.
-- Read and execute the task `Docs SSOT Plan` from `design.md` / `implement.md`. Do not re-decide docs strategy late; consume the approved `ssot_first`, `delta_first`, `bootstrap_or_repair_docs`, or `no_docs_update_needed` plan. `delta_first` requires durable docs merge before final Phase 2 check; `ssot_first` uses revised durable docs/spec/workflow contracts as primary implementation input; `bootstrap_or_repair_docs` completes minimum repair or records bounded follow-up and current PR limitation; `no_docs_update_needed` preserves checked durable docs paths and concrete reason.
 
-Return one concise terminal result with only: status
-(`complete|blocked|unfinished`), material changed behavior and paths, commands
-and outcomes, any material Docs SSOT outcome, and remaining blocker/risk/deferred
-validation. Do not reproduce requirements, design, execution history, or a
-next-owner checklist. For `blocked` or `unfinished`, add only the state needed
-to resume safely. Never create `implementation-handoff.md`.
+Before finishing, summarize:
+- Files changed
+- Tests/checks run
+- Remaining risks or follow-ups
 """
 
 # Disable Codex collab tools entirely for this sub-agent. With both

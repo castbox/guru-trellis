@@ -45,39 +45,6 @@ class UpstreamOwnershipTest(unittest.TestCase):
     def write_json(path: Path, value: object) -> None:
         path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    def transition_to_removed(self, repo: Path, inventory: dict[str, object], path: str) -> None:
-        entries = inventory["legacy_entries"]
-        self.assertIsInstance(entries, list)
-        entry = next(item for item in entries if item["path"] == path)
-        entry.update({
-            "category": "upstream_owned",
-            "migration_state": "removed",
-            "dogfood_status": "removed_with_audit_history",
-            "target_business_repo_status": "no_longer_installed",
-        })
-        entry.pop(ownership.CURRENT_PAYLOAD_KEY, None)
-        (repo / ownership.OVERLAY_ROOT_RELATIVE / path).unlink()
-
-        claims = inventory["managed_path_claims"]
-        self.assertIsInstance(claims, list)
-        removed_claim_paths: list[str] = []
-        for claim in claims:
-            covered = claim["covered_by_legacy_paths"]
-            if path not in covered:
-                continue
-            covered.remove(path)
-            if claim["category"] == "transitional_legacy" and not covered:
-                removed_claim_paths.append(claim["path"])
-        inventory["managed_path_claims"] = [claim for claim in claims if claim["path"] not in removed_claim_paths]
-
-        if removed_claim_paths:
-            extension_path = repo / ownership.EXTENSION_RELATIVE
-            extension = json.loads(extension_path.read_text(encoding="utf-8"))
-            extension["public_api"]["managed_paths"] = [
-                item for item in extension["public_api"]["managed_paths"] if item not in removed_claim_paths
-            ]
-            self.write_json(extension_path, extension)
-
     def apply_mutation(self, repo: Path, fixture: dict[str, object]) -> None:
         mutation = fixture["mutation"]
         self.assertIsInstance(mutation, dict)
@@ -98,14 +65,20 @@ class UpstreamOwnershipTest(unittest.TestCase):
             inventory["legacy_entries"].append(clone)
             self.write_json(inventory_path, inventory)
             return
-        if mutation_type == "append_overlay_bytes":
-            path = repo / ownership.OVERLAY_ROOT_RELATIVE / mutation["path"]
-            path.write_bytes(path.read_bytes() + mutation["content"].encode("utf-8"))
-            return
         if mutation_type == "remove_legacy_ownership_fields":
             entry = next(item for item in inventory["legacy_entries"] if item["path"] == mutation["path"])
             for field in mutation["fields"]:
                 entry.pop(field)
+            self.write_json(inventory_path, inventory)
+            return
+        if mutation_type == "set_migration_payload_sha256s":
+            entry = next(item for item in inventory["legacy_entries"] if item["path"] == mutation["path"])
+            entry["migration_payload_sha256s"] = mutation["value"]
+            self.write_json(inventory_path, inventory)
+            return
+        if mutation_type == "add_retired_current_payload":
+            entry = next(item for item in inventory["legacy_entries"] if item["path"] == mutation["path"])
+            entry[ownership.RETIRED_CURRENT_PAYLOAD_KEY] = entry["baseline_sha256"]
             self.write_json(inventory_path, inventory)
             return
         if mutation_type == "set_legacy_category":
@@ -113,20 +86,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
             entry["category"] = mutation["category"]
             self.write_json(inventory_path, inventory)
             return
-        if mutation_type == "first_removal_with_synchronized_active_drift":
-            self.transition_to_removed(repo, inventory, mutation["removed_path"])
-            drift_path = repo / ownership.OVERLAY_ROOT_RELATIVE / mutation["active_path"]
-            drift_path.write_bytes(drift_path.read_bytes() + mutation["content"].encode("utf-8"))
-            active_entry = next(item for item in inventory["legacy_entries"] if item["path"] == mutation["active_path"])
-            active_entry["baseline_sha256"] = ownership.sha256_file(drift_path)
-            self.write_json(inventory_path, inventory)
-            return
-        if mutation_type == "first_removal":
-            self.transition_to_removed(repo, inventory, mutation["path"])
-            self.write_json(inventory_path, inventory)
-            return
         if mutation_type == "rewrite_removed_baseline":
-            self.transition_to_removed(repo, inventory, mutation["path"])
             entry = next(item for item in inventory["legacy_entries"] if item["path"] == mutation["path"])
             entry["baseline_sha256"] = mutation["baseline_sha256"]
             self.write_json(inventory_path, inventory)
@@ -211,39 +171,46 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(first["status"], "ok")
         self.assertEqual(first["frozen_count"], 43)
-        self.assertEqual(first["active_count"], 43)
+        self.assertEqual(first["active_count"], 0)
+        self.assertEqual(first["removed_count"], 43)
         self.assertEqual(first["generated_in_clean_init_count"], 37)
         self.assertEqual(first["legacy_not_generated_count"], 6)
-        self.assertEqual(first["overlay_count"], 46)
-        self.assertEqual(first["legacy_overlay_count"], 43)
+        self.assertEqual(first["overlay_count"], 3)
+        self.assertEqual(first["legacy_overlay_count"], 0)
         self.assertEqual(first["additive_overlay_count"], 3)
         self.assertEqual(
             first["additive_overlay_paths_sha256"],
             ownership.path_set_sha256(sorted(ownership.EXPECTED_ADDITIVE_OVERLAY_CLAIMS)),
         )
         self.assertRegex(first["additive_overlay_payload_aggregate_sha256"], r"^[0-9a-f]{64}$")
-        self.assertEqual(first["active_payload_aggregate_sha256"], ownership.CURRENT_PAYLOAD_AGGREGATE_SHA256)
-        self.assertEqual(first["reviewed_current_payload_count"], 35)
-        self.assertEqual(
-            first["reviewed_current_payloads_sha256"],
-            ownership.canonical_sha256(ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH),
-        )
+        self.assertEqual(first["migration_payload_count"], 78)
+        self.assertEqual(first["transitional_legacy_count"], 0)
+        self.assertEqual(first["unclassified_count"], 0)
+        self.assertEqual(first["managed_claim_count"], 9)
+        self.assertEqual(first["classified_managed_claim_count"], 9)
         self.assertEqual(first["active_skill_count"], 13)
         self.assertEqual(first["planned_skill_count"], 0)
         self.assertEqual(first["managed_asset_count"], 56)
         inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text(encoding="utf-8"))
-        reviewed_current_payloads = {
-            entry["path"]: entry[ownership.CURRENT_PAYLOAD_KEY]
+        migration_payload_sets = {
+            entry["path"]: entry["migration_payload_sha256s"]
             for entry in inventory["legacy_entries"]
-            if ownership.CURRENT_PAYLOAD_KEY in entry
         }
         self.assertEqual(
-            reviewed_current_payloads,
-            ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH,
+            first["migration_payload_sets_sha256"],
+            ownership.canonical_sha256(migration_payload_sets),
         )
         self.assertEqual(
-            inventory["baseline"]["active_payload_aggregate_sha256"],
+            inventory["baseline"]["historical_overlay_payload_aggregate_sha256"],
             ownership.BASELINE_PAYLOAD_AGGREGATE_SHA256,
+        )
+        self.assertTrue(all(entry["category"] == "upstream_owned" for entry in inventory["legacy_entries"]))
+        self.assertTrue(all(entry["migration_state"] == "removed" for entry in inventory["legacy_entries"]))
+        self.assertTrue(all(entry["dogfood_status"] == "removed_with_audit_history" for entry in inventory["legacy_entries"]))
+        self.assertTrue(all(entry["target_business_repo_status"] == "no_longer_installed" for entry in inventory["legacy_entries"]))
+        self.assertTrue(all(ownership.RETIRED_CURRENT_PAYLOAD_KEY not in entry for entry in inventory["legacy_entries"]))
+        self.assertTrue(
+            all(entry["baseline_sha256"] in entry["migration_payload_sha256s"] for entry in inventory["legacy_entries"])
         )
         self.assertEqual(first["schema_sha256"], ownership.sha256_file(self.repo / ownership.SCHEMA_RELATIVE))
         self.assertEqual(first["inventory_sha256"], ownership.sha256_file(self.repo / ownership.INVENTORY_RELATIVE))
@@ -252,7 +219,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["legacy_entries_sha256"], ownership.canonical_sha256(inventory["legacy_entries"]))
         self.assertEqual(first["frozen_legacy_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
         self.assertEqual(first["materialized_frozen_identity_sha256"], ownership.FROZEN_LEGACY_IDENTITY_SHA256)
-        self.assertEqual(first["facts_sha256"], "95e4b97a498774bc91034cea7239acd75c0284987587e37c93e8cfe503099926")
+        self.assertEqual(first["facts_sha256"], "e961e180403a1ece5c6ae342219b4c4067f0eb8271a46eb93282a24159e61b7f")
 
         additive_claims = {
             claim["path"]: claim
@@ -457,34 +424,31 @@ class UpstreamOwnershipTest(unittest.TestCase):
             },
         )
 
-    def test_reviewed_current_payload_bytes_are_bound(self) -> None:
+    def test_migration_payload_hashes_are_required(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
             self.copy_minimal_source(repo)
-            path = next(iter(ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH))
-            overlay = repo / ownership.OVERLAY_ROOT_RELATIVE / path
-            overlay.write_bytes(overlay.read_bytes() + b"\nreviewed current payload drift\n")
+            inventory_path = repo / ownership.INVENTORY_RELATIVE
+            inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            entry = inventory["legacy_entries"][0]
+            entry.pop("migration_payload_sha256s")
+            self.write_json(inventory_path, inventory)
             payload = ownership.validate_repository(repo)
 
         self.assertEqual(payload["status"], "error")
-        matching = [
-            item
-            for item in payload["errors"]
-            if item["code"] == "active_payload_hash_mismatch" and item["path"] == path
-        ]
-        self.assertEqual(len(matching), 1)
+        codes = {item["code"] for item in payload["errors"] if item["path"] == entry["path"]}
+        self.assertIn("missing_migration_payload_sha256s", codes)
+        self.assertIn("fixed_key_set_mismatch", {item["code"] for item in payload["errors"]})
 
-    def test_reviewed_current_payload_binding_cannot_be_silently_rewritten(self) -> None:
+    def test_migration_payload_hashes_cannot_be_silently_rewritten(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
             self.copy_minimal_source(repo)
-            path = next(iter(ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH))
-            overlay = repo / ownership.OVERLAY_ROOT_RELATIVE / path
-            overlay.write_bytes(overlay.read_bytes() + b"\nrewritten current payload binding\n")
             inventory_path = repo / ownership.INVENTORY_RELATIVE
             inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
+            path = next(iter(ownership.REVIEWED_LATER_GURU_PAYLOAD_SHA256_BY_PATH))
             entry = next(item for item in inventory["legacy_entries"] if item["path"] == path)
-            entry[ownership.CURRENT_PAYLOAD_KEY] = ownership.sha256_file(overlay)
+            entry["migration_payload_sha256s"][-1] = "0" * 64
             self.write_json(inventory_path, inventory)
             payload = ownership.validate_repository(repo)
 
@@ -492,32 +456,25 @@ class UpstreamOwnershipTest(unittest.TestCase):
         matching = [
             item
             for item in payload["errors"]
-            if item["code"] == "reviewed_current_payload_digest_mismatch" and item["path"] == path
+            if item["code"] == "migration_payload_set_mismatch" and item["path"] == path
         ]
         self.assertEqual(len(matching), 1)
 
-    def test_current_payload_binding_is_rejected_outside_reviewed_entries(self) -> None:
+    def test_retired_current_payload_binding_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
             self.copy_minimal_source(repo)
             inventory_path = repo / ownership.INVENTORY_RELATIVE
             inventory = json.loads(inventory_path.read_text(encoding="utf-8"))
-            entry = next(
-                item
-                for item in inventory["legacy_entries"]
-                if item["path"] not in ownership.REVIEWED_CURRENT_PAYLOAD_SHA256_BY_PATH
-            )
-            entry[ownership.CURRENT_PAYLOAD_KEY] = entry["baseline_sha256"]
+            entry = inventory["legacy_entries"][0]
+            entry[ownership.RETIRED_CURRENT_PAYLOAD_KEY] = entry["baseline_sha256"]
             self.write_json(inventory_path, inventory)
             payload = ownership.validate_repository(repo)
 
         self.assertEqual(payload["status"], "error")
-        matching = [
-            item
-            for item in payload["errors"]
-            if item["code"] == "unexpected_current_payload_digest" and item["path"] == entry["path"]
-        ]
-        self.assertEqual(len(matching), 1)
+        codes = {item["code"] for item in payload["errors"] if item["path"] == entry["path"]}
+        self.assertIn("retired_current_payload_digest", codes)
+        self.assertIn("fixed_key_set_mismatch", {item["code"] for item in payload["errors"]})
 
     def test_bash_entry_preserves_json_and_exit_status(self) -> None:
         command = self.repo / "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"

@@ -30,7 +30,7 @@ max_journal_lines: 2000
 #
 # Accepts: true / false / yes / no / 1 / 0 / on / off (case-insensitive).
 #
-session_auto_commit: false
+# session_auto_commit: true
 
 #-------------------------------------------------------------------------------
 # Task Lifecycle Hooks
@@ -99,6 +99,18 @@ channel:
 #-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
 #-------------------------------------------------------------------------------
+# Codex-only knob; other platforms ignore it. Default ("inline") makes the
+# main Codex agent edit code directly because Codex sub-agents run with
+# `fork_turns="none"` isolation and can't inherit the parent session's
+# task context. Set to "sub-agent" to opt into the legacy dispatch model
+# (main agent spawns trellis-implement / trellis-check / trellis-research
+# sub-agents).
+#
+# codex:
+#   dispatch_mode: inline  # or "sub-agent" to dispatch trellis-* sub-agents
+#-------------------------------------------------------------------------------
+# Codex (dispatch behavior)
+#-------------------------------------------------------------------------------
 # Codex-only knob; other platforms ignore it. Default ("sub-agent") lets the
 # main Codex session dispatch trellis-implement / trellis-check /
 # trellis-research. Codex sub-agents run with `fork_turns="none"` isolation, so
@@ -106,7 +118,9 @@ channel:
 # and sub-agents fall back to `task.py current --source` if needed. Set
 # "inline" only as an explicit downgrade/debug mode where the main Codex agent
 # edits and checks directly.
-#
 codex:
-  # Set "inline" to avoid trellis-* sub-agent dispatch.
   dispatch_mode: sub-agent
+
+# Guru Team owns archive and finish-summary metadata commits.
+# Keep official task.py/add_session.py bookkeeping from committing implicitly.
+session_auto_commit: false

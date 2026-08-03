@@ -14343,31 +14343,37 @@ def extension_verification_ownership_facts(path: Path) -> dict[str, Any]:
         if isinstance(payload.get("legacy_entries"), list)
         else []
     )
-    legacy_paths = sorted(
+    frozen_paths = sorted(
         str(item["path"])
         for item in entries
         if isinstance(item, dict)
-        and item.get("category") == "transitional_legacy"
         and isinstance(item.get("path"), str)
     )
-    facts["frozen_transitional_legacy_count"] = len(legacy_paths)
+    transitional_paths = sorted(
+        str(item["path"])
+        for item in entries
+        if isinstance(item, dict)
+        and item.get("category") in {"transitional_legacy", "unclassified"}
+        and isinstance(item.get("path"), str)
+    )
+    facts["frozen_transitional_legacy_count"] = len(transitional_paths)
     baseline = (
         payload.get("baseline")
         if isinstance(payload.get("baseline"), dict)
         else {}
     )
     observed_digest = hashlib.sha256(
-        (("\n".join(legacy_paths) + "\n") if legacy_paths else "").encode(
+        (("\n".join(frozen_paths) + "\n") if frozen_paths else "").encode(
             "utf-8"
         )
     ).hexdigest()
     if (
-        baseline.get("frozen_path_count") != len(legacy_paths)
+        baseline.get("frozen_path_count") != len(frozen_paths)
         or baseline.get("sorted_path_set_sha256") != observed_digest
     ):
-        facts["new_legacy_entries"] = (
-            legacy_paths or ["<frozen-inventory-mismatch>"]
-        )
+        facts["new_legacy_entries"] = ["<frozen-inventory-mismatch>"]
+    elif transitional_paths:
+        facts["new_legacy_entries"] = transitional_paths
     return facts
 
 
@@ -14567,7 +14573,7 @@ def extension_verification_execute_facts(
                 and checkout_head_matches
                 and throwaway_proc.returncode == 0
                 and asset_inventory["complete"]
-                and ownership["frozen_transitional_legacy_count"] == 43
+                and ownership["frozen_transitional_legacy_count"] == 0
                 and not ownership["new_legacy_entries"]
                 and not sidecars
                 else "failed"
@@ -15313,6 +15319,12 @@ SKILL_PLATFORM_ROOTS = {
     "cursor": Path(".cursor/skills"),
     "claude": Path(".claude/skills"),
 }
+GURU_OVERLAY_ENTRY_PATHS = {
+    "codex": Path(".codex/prompts/guru-finish-work.md"),
+    "cursor": Path(".cursor/commands/guru-finish-work.md"),
+    "claude": Path(".claude/commands/guru/finish-work.md"),
+}
+GURU_OVERLAY_SCHEMA_VERSION = "1.0"
 SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$")
 SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
 SKILL_TARGET_RE = re.compile(r"^\s*<!--\s*guru-(workflow|stop)-target:\s*(\{.*\})\s*-->\s*$")
@@ -19740,6 +19752,203 @@ def _validate_skill_installed(
     if actual_sidecars != declared_sidecars:
         errors.append("installed skill sidecar inventory is incomplete")
 
+    overlay_manifest = manifest.get("overlays") if isinstance(manifest, dict) else None
+    overlay_required = {
+        "schema_version",
+        "status",
+        "selected_platforms",
+        "files",
+        "removals",
+        "conflicts",
+        "sidecars",
+    }
+    if not isinstance(overlay_manifest, dict):
+        errors.append("installed extension manifest has no overlay provenance")
+        overlay_manifest = {}
+    if set(overlay_manifest) != overlay_required:
+        errors.append("installed overlay provenance has invalid fields")
+    if (
+        overlay_manifest.get("schema_version") != GURU_OVERLAY_SCHEMA_VERSION
+        or overlay_manifest.get("status") != "ok"
+    ):
+        errors.append("installed overlay provenance is invalid or conflicted")
+    overlay_selected = overlay_manifest.get("selected_platforms")
+    if overlay_selected != selected:
+        errors.append("installed overlay platform selection does not match skill provenance")
+        overlay_selected = selected
+
+    expected_overlay_paths = {
+        path.as_posix()
+        for platform, path in GURU_OVERLAY_ENTRY_PATHS.items()
+        if platform in set(overlay_selected or [])
+    }
+    allowed_overlay_paths = {
+        path.as_posix() for path in GURU_OVERLAY_ENTRY_PATHS.values()
+    }
+    overlay_files = overlay_manifest.get("files")
+    if not isinstance(overlay_files, list):
+        errors.append("installed overlay file provenance must be an array")
+        overlay_files = []
+    seen_overlay_paths: set[str] = set()
+    for index, item in enumerate(overlay_files):
+        if (
+            not isinstance(item, dict)
+            or set(item) != {"path", "source", "sha256", "executable", "action"}
+        ):
+            errors.append(f"installed overlay file record {index} is invalid")
+            continue
+        path_text = item.get("path")
+        rel = skill_safe_relative(path_text)
+        if (
+            rel is None
+            or rel.as_posix() not in allowed_overlay_paths
+            or rel.as_posix() in seen_overlay_paths
+        ):
+            errors.append(f"installed overlay file record {index} has an invalid path")
+            continue
+        relative = rel.as_posix()
+        seen_overlay_paths.add(relative)
+        expected_source = (
+            Path("trellis/presets/guru-team/overlays") / rel
+        ).as_posix()
+        if (
+            item.get("source") != expected_source
+            or item.get("action") not in {"installed", "unchanged", "updated_managed"}
+            or not isinstance(item.get("executable"), bool)
+        ):
+            errors.append(f"installed overlay file record {index} has invalid provenance")
+        target = root / rel
+        target_stat = skill_lstat_path(
+            root,
+            target,
+            f"installed overlay file {relative}",
+            errors,
+            kind="file",
+        )
+        if target_stat is None:
+            continue
+        digest = skill_file_sha256(target)
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", str(item.get("sha256") or ""))
+            or digest != item.get("sha256")
+        ):
+            errors.append(f"installed overlay file digest drift: {relative}")
+        executable = bool(target_stat.st_mode & stat.S_IXUSR)
+        if item.get("executable") is not executable:
+            errors.append(f"installed overlay file mode drift: {relative}")
+    if seen_overlay_paths != expected_overlay_paths:
+        errors.append("installed overlay file provenance inventory is incomplete")
+
+    overlay_removals = overlay_manifest.get("removals")
+    if not isinstance(overlay_removals, list):
+        errors.append("installed overlay removal provenance must be an array")
+        overlay_removals = []
+    for index, item in enumerate(overlay_removals):
+        if not isinstance(item, dict) or item.get("action") not in {
+            "removed_managed",
+            "already_missing",
+        }:
+            errors.append(f"installed overlay removal record {index} is invalid")
+            continue
+        rel = skill_safe_relative(item.get("path"))
+        allowed_fields = {"path", "action"}
+        if item.get("action") == "removed_managed":
+            managed_hash_fields = {
+                field
+                for field in ("previous_managed_sha256", "legacy_managed_asset_sha256")
+                if field in item
+            }
+            if len(managed_hash_fields) != 1:
+                errors.append(f"installed overlay removal record {index} is invalid")
+            allowed_fields |= managed_hash_fields
+        if (
+            set(item) != allowed_fields
+            or rel is None
+            or rel.as_posix() not in allowed_overlay_paths
+            or rel.as_posix() in expected_overlay_paths
+        ):
+            errors.append(f"installed overlay removal record {index} is invalid")
+            continue
+        hash_value = next(
+            (
+                item.get(field)
+                for field in ("previous_managed_sha256", "legacy_managed_asset_sha256")
+                if field in item
+            ),
+            None,
+        )
+        if hash_value is not None and not re.fullmatch(r"[0-9a-f]{64}", str(hash_value)):
+            errors.append(f"installed overlay removal record {index} has an invalid digest")
+        if skill_lstat_path(
+            root,
+            root / rel,
+            f"removed overlay path {rel.as_posix()}",
+            errors,
+            kind="file",
+            required=False,
+        ) is not None:
+            errors.append(f"removed managed overlay path still exists: {rel.as_posix()}")
+
+    overlay_conflicts = overlay_manifest.get("conflicts")
+    if not isinstance(overlay_conflicts, list):
+        errors.append("installed overlay conflict provenance must be an array")
+        overlay_conflicts = []
+    if overlay_conflicts:
+        errors.append("installed overlays have unresolved conflicts")
+    overlay_sidecars = overlay_manifest.get("sidecars")
+    if not isinstance(overlay_sidecars, list):
+        errors.append("installed overlay sidecar provenance must be an array")
+        overlay_sidecars = []
+    if overlay_sidecars:
+        errors.append("installed overlays have unresolved sidecars")
+    declared_overlay_sidecars: set[str] = set()
+    for sidecar in overlay_sidecars:
+        rel = skill_safe_relative(sidecar)
+        if (
+            rel is None
+            or rel.as_posix() in declared_overlay_sidecars
+            or not rel.name.endswith((".new", ".bak"))
+        ):
+            errors.append("installed overlay sidecar provenance is invalid")
+            continue
+        declared_overlay_sidecars.add(rel.as_posix())
+        skill_lstat_path(
+            root,
+            root / rel,
+            f"installed overlay sidecar {rel.as_posix()}",
+            errors,
+            kind="file",
+        )
+
+    actual_overlay_sidecars: set[str] = set()
+    for path in GURU_OVERLAY_ENTRY_PATHS.values():
+        target = root / path
+        if path.as_posix() not in expected_overlay_paths and skill_lstat_path(
+            root,
+            target,
+            f"unselected overlay path {path.as_posix()}",
+            errors,
+            kind="file",
+            required=False,
+        ) is not None:
+            errors.append(f"Guru overlay exists for unselected platform: {path.as_posix()}")
+        for suffix in (".new", ".bak"):
+            sidecar = target.with_name(f"{target.name}{suffix}")
+            sidecar_stat = skill_lstat_path(
+                root,
+                sidecar,
+                f"overlay sidecar {sidecar.name}",
+                errors,
+                kind="file",
+                required=False,
+            )
+            if sidecar_stat is not None:
+                relative = skill_lexical_relative(root, sidecar)
+                if relative is not None:
+                    actual_overlay_sidecars.add(relative.as_posix())
+    if actual_overlay_sidecars != declared_overlay_sidecars:
+        errors.append("installed overlay sidecar inventory is incomplete")
+
     supported_by_id: dict[str, set[str]] = {}
     installed_entries = installed_registry.get("skills")
     for entry in installed_entries if isinstance(installed_entries, list) else []:
@@ -19828,6 +20037,10 @@ def _validate_skill_installed(
             "sidecar_count": len(sidecars),
             "removal_count": len(removals),
             "conflict_count": len(conflicts),
+            "overlay_managed_file_count": len(overlay_files),
+            "overlay_sidecar_count": len(overlay_sidecars),
+            "overlay_removal_count": len(overlay_removals),
+            "overlay_conflict_count": len(overlay_conflicts),
         },
         "errors": errors,
     }
@@ -19865,6 +20078,10 @@ def validate_skill_installed(
                 "sidecar_count": 0,
                 "removal_count": 0,
                 "conflict_count": 0,
+                "overlay_managed_file_count": 0,
+                "overlay_sidecar_count": 0,
+                "overlay_removal_count": 0,
+                "overlay_conflict_count": 0,
             },
             "errors": ["installed skill validation failed safely on malformed input"],
         }

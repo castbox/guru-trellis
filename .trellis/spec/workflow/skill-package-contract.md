@@ -104,7 +104,7 @@ workflow/standalone preconditions before a package command can run.
 
 `guru-team-skill-interface-1.2` is the frozen legacy contract. Its schema file,
 schema id, and field meanings are not reinterpreted by the minimal-handoff
-rollout. All ten active packages now select the independent
+rollout. All 13 active packages now select the independent
 `guru-team-skill-interface-1.3` contract; archived 1.2 artifacts remain
 historical and are never rewritten as public handoff state.
 
@@ -1634,7 +1634,8 @@ selects and validates the actual exit schema before the grader compares
 `expected_exit`, which never enters adapter/native input. Canonical, installed,
 shared, Codex, Claude, and Cursor corpus bytes are identical. The active package
 uses `workflow_integration_state=integrated`; the global workflow invokes it and
-  maps all six exits. Issue #119 combined integration adds three Guru-owned
-  daily entries, two terminal published evals, and the checked-verification
-  projection bridge without changing public Skill I/O. Upstream Finish overlays
-  remain separate physical cleanup scope owned by #132.
+maps all six exits. The combined integration uses three Guru-owned daily
+entries, two terminal published evals, and the checked-verification projection
+bridge without changing public Skill I/O. Upstream Finish files are not Guru
+overlays or managed assets; their official Trellis ownership is independent of
+the package contract.

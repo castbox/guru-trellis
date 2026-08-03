@@ -247,7 +247,7 @@ duplicate candidate canonical fact digest plus identity/URL/repo/number binding
 from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean
 throwaway update/reapply. Any reader of index siblings, workspace/runtime,
-repo-level history cache, or transitional legacy overlay payload fails.
+repo-level history cache, or removed upstream overlay payload fails.
 For `guru-clarify-requirements`, tests must cover workflow/standalone
 precondition parity; initial issue, proposed draft, active-task scope change,
 and standalone entry kinds; repository-answerable evidence before user
@@ -437,13 +437,14 @@ rerun, exceptional unfinished/replacement recovery, dirty/reviewed-path and
 post-commit freshness, schema 2.0 read-only migration, and the single compact
 artifact owner. Routine implementation/check identity remains live semantic
 context and must not become persisted assignment or liveness evidence.
-Distribution validation must compare canonical/shared/Codex/
-Claude/Cursor package bytes, preserve the frozen 43-entry historical
-path/baseline identity, validate the exact thirteen issue #131/#161 current
-continue/agent payload bindings without generalizing them,
-run dogfood apply/drift and sidecar checks, and exercise clean marketplace init,
-preview/switch, preset apply, installed invocation, `trellis update --force`,
-and workflow/preset reapply.
+Distribution validation must compare canonical/shared/Codex/Claude/Cursor
+package bytes, preserve the frozen 43-entry historical path/baseline identity,
+require 43 `upstream_owned/removed` tombstones with explicit migration payload
+hashes, zero active/unclassified rows, and exactly three Guru-owned overlay
+entries. It must run dogfood apply/drift and sidecar checks and exercise clean
+marketplace init, preview/switch, preset apply, installed invocation,
+`trellis update --force` or the selected version upgrade, and workflow/preset
+reapply.
 
 Phase 2 regression coverage must also prove that empty provenance/docs/
 reviewed-path/command evidence, empty adequacy references, missing current or
