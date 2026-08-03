@@ -454,9 +454,11 @@ checkpoint remains valid after the reviewed commit without adding assignment,
 status, liveness, review-round, or implementation-handoff metadata.
 Candidate-hygiene coverage must separately prove that exact same-path official
 Trellis template bytes under valid schema-v2 provenance may retain upstream
-whitespace/EOF formatting; hash mismatch, unknown path, or invalid/missing
-provenance must not suppress applicable findings, and path escape, invalid
-UTF-8, or invalid JSON must still block.
+whitespace/EOF formatting in tracked migration deltas and untracked install
+candidates, while a byte-exact worktree must not exempt a mismatched index or
+committed `HEAD`; hash mismatch, unknown path, or invalid/missing provenance
+must not suppress applicable findings, and path escape, invalid UTF-8, or
+invalid JSON must still block.
 
 Publication regression coverage must additionally reject missing stale reason,
 legacy public inputs that carry Branch Review private identities, any `ready`
