@@ -6946,11 +6946,22 @@ def review_branch_descendant_metadata_path(
     }
 
 
-def finalizer_unreviewed_dirty_paths(root: Path, task_dir: Path) -> list[str]:
+def finalizer_unreviewed_dirty_paths(
+    root: Path,
+    task_dir: Path,
+    *,
+    allow_publication_issue_scope_ledger: bool = False,
+) -> list[str]:
+    publication_issue_scope_ledger = (
+        f"{repo_relative(root, task_dir).rstrip('/')}/issue-scope-ledger.json"
+        if allow_publication_issue_scope_ledger
+        else None
+    )
     return [
         path
         for path in git_status_paths(root, fail_closed=True)
         if not review_branch_descendant_metadata_path(root, task_dir, path)
+        and path != publication_issue_scope_ledger
     ]
 
 
@@ -24796,7 +24807,13 @@ def prepare_closeout(
             gate,
             reviewed_head,
         )
-    dirty_paths = finalizer_unreviewed_dirty_paths(root, task_dir)
+    dirty_paths = finalizer_unreviewed_dirty_paths(
+        root,
+        task_dir,
+        allow_publication_issue_scope_ledger=(
+            publication_ready is not None and existing_plan is None
+        ),
+    )
     if dirty_paths:
         raise WorkflowError(
             "Working tree has uncommitted changes outside the current task's explicit publication/finalization allowlist. Commit reviewed task work before finish-work.",

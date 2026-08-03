@@ -7512,6 +7512,7 @@ class ReviewBranchAncestryTest(unittest.TestCase):
         task_ref = ".trellis/tasks/08-01-review-ancestry"
         status_paths = [
             f"{task_ref}/pr-body.md",
+            f"{task_ref}/issue-scope-ledger.json",
             f"{task_ref}/design.md",
             f"{task_ref}/nested/pr-body.md",
             ".trellis/tasks/other/pr-body.md",
@@ -7533,10 +7534,41 @@ class ReviewBranchAncestryTest(unittest.TestCase):
         self.assertEqual(
             dirty_paths,
             [
+                f"{task_ref}/issue-scope-ledger.json",
                 f"{task_ref}/design.md",
                 f"{task_ref}/nested/pr-body.md",
                 ".trellis/tasks/other/pr-body.md",
                 ".trellis/.runtime/guru-team/debug.json",
+            ],
+        )
+
+    def test_finalizer_dirty_gate_allows_publication_issue_scope_only_when_explicit(
+        self,
+    ) -> None:
+        task_ref = ".trellis/tasks/08-01-review-ancestry"
+        status_paths = [
+            f"{task_ref}/issue-scope-ledger.json",
+            f"{task_ref}/design.md",
+            ".trellis/tasks/other/issue-scope-ledger.json",
+        ]
+
+        with mock.patch.object(
+            gtt,
+            "git_status_paths",
+            return_value=status_paths,
+        ) as git_status:
+            dirty_paths = gtt.finalizer_unreviewed_dirty_paths(
+                self.root,
+                self.task_dir,
+                allow_publication_issue_scope_ledger=True,
+            )
+
+        git_status.assert_called_once_with(self.root, fail_closed=True)
+        self.assertEqual(
+            dirty_paths,
+            [
+                f"{task_ref}/design.md",
+                ".trellis/tasks/other/issue-scope-ledger.json",
             ],
         )
 
