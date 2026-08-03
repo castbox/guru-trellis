@@ -5770,6 +5770,194 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             gtt.diff_base_ref(self.root, "main"),
         )
 
+    def test_phase2_recorder_accepts_committed_exact_template_whitespace_against_base(
+        self,
+    ) -> None:
+        subprocess.run(
+            ["git", "config", "user.name", "Phase 2 Test"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "phase2@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        task = gtt.read_json(self.task_dir / "task.json")
+        task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", task)
+        template_relative = (
+            ".claude/skills/trellis-meta/references/"
+            "local-architecture/workspace-memory.md"
+        )
+        template_path = self.root / template_relative
+        template_path.parent.mkdir(parents=True)
+        template_path.write_bytes(b"# Workspace memory\n\nOld bytes.\n")
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 添加模板基线"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "checkout", "-q", "-b", "feat/gate-task"],
+            cwd=self.root,
+            check=True,
+        )
+        official_bytes = b"# Workspace memory\n\nOfficial hard break  \n\n"
+        template_path.write_bytes(official_bytes)
+        gtt.write_json(
+            self.root / gtt.AI_FIRST_TEMPLATE_HASHES_PATH,
+            {
+                "__version": gtt.AI_FIRST_TEMPLATE_HASHES_SCHEMA_VERSION,
+                "hashes": {
+                    template_relative: hashlib.sha256(official_bytes).hexdigest(),
+                },
+            },
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+
+        _paths, staged_template_errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            base_ref="main",
+        )
+        self.assertFalse(
+            [error for error in staged_template_errors if template_relative in error]
+        )
+
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 恢复官方模板字节"],
+            cwd=self.root,
+            check=True,
+        )
+        owner_input = self.root / ".trellis/.runtime/phase2-input.json"
+        owner_input.parent.mkdir(parents=True)
+        gtt.write_json(owner_input, self.phase2_authored())
+
+        with (
+            mock.patch.object(
+                gtt,
+                "load_task_runtime_identity",
+                return_value={"base_branch": "main"},
+            ),
+            mock.patch.object(gtt, "assert_workspace_boundary", return_value={"status": "ok"}),
+            mock.patch.object(
+                gtt,
+                "load_phase2_check_schema",
+                return_value=self.phase2_schema,
+            ),
+        ):
+            result = gtt.cmd_record_phase2_check(argparse.Namespace(
+                root=str(self.root),
+                task=self.task_ref,
+                input=str(owner_input),
+                dry_run=True,
+            ))
+
+        self.assertEqual(result["typed_exit"], "passed")
+        self.assertEqual(result["checked_head"], gtt.current_head(self.root))
+
+        template_path.write_bytes(official_bytes + b"local edit  \n")
+        with (
+            mock.patch.object(
+                gtt,
+                "load_task_runtime_identity",
+                return_value={"base_branch": "main"},
+            ),
+            mock.patch.object(gtt, "assert_workspace_boundary", return_value={"status": "ok"}),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.cmd_record_phase2_check(argparse.Namespace(
+                root=str(self.root),
+                task=self.task_ref,
+                input=str(owner_input),
+                dry_run=True,
+            ))
+
+        self.assertIn(
+            f"git-diff-check:{template_relative}:5: trailing whitespace.",
+            raised.exception.payload["errors"],
+        )
+
+    def test_candidate_hygiene_binds_template_exemption_to_each_git_projection(
+        self,
+    ) -> None:
+        subprocess.run(
+            ["git", "config", "user.name", "Phase 2 Test"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "phase2@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        template_relative = (
+            ".claude/skills/trellis-meta/references/"
+            "local-architecture/workspace-memory.md"
+        )
+        template_path = self.root / template_relative
+        template_path.parent.mkdir(parents=True)
+        template_path.write_bytes(b"# Workspace memory\n\nOld bytes.\n")
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 添加模板基线"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "checkout", "-q", "-b", "feat/gate-task"],
+            cwd=self.root,
+            check=True,
+        )
+        official_bytes = b"# Workspace memory\n\nOfficial hard break  \n\n"
+        template_path.write_bytes(official_bytes)
+        gtt.write_json(
+            self.root / gtt.AI_FIRST_TEMPLATE_HASHES_PATH,
+            {
+                "__version": gtt.AI_FIRST_TEMPLATE_HASHES_SCHEMA_VERSION,
+                "hashes": {
+                    template_relative: hashlib.sha256(official_bytes).hexdigest(),
+                },
+            },
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 恢复官方模板字节"],
+            cwd=self.root,
+            check=True,
+        )
+
+        local_bytes = official_bytes + b"staged local edit  \n"
+        template_path.write_bytes(local_bytes)
+        subprocess.run(["git", "add", template_relative], cwd=self.root, check=True)
+        template_path.write_bytes(official_bytes)
+
+        _paths, staged_errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            base_ref="main",
+        )
+        self.assertIn(
+            f"git-diff-check:{template_relative}:5: trailing whitespace.",
+            staged_errors,
+        )
+
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 提交本地模板改动"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "add", template_relative], cwd=self.root, check=True)
+
+        _paths, committed_errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            base_ref="main",
+        )
+        self.assertIn(
+            f"git-diff-check:{template_relative}:5: trailing whitespace.",
+            committed_errors,
+        )
+
     def test_candidate_hygiene_exempts_only_exact_trellis_template_bytes(self) -> None:
         template_relative = (
             ".claude/skills/trellis-meta/references/"
@@ -5857,11 +6045,17 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
     def test_candidate_hygiene_template_hash_does_not_bypass_content_safety(self) -> None:
         invalid_utf8_relative = ".claude/skills/trellis-meta/invalid.md"
         invalid_json_relative = ".claude/skills/trellis-meta/invalid.json"
+        nonstandard_json_relative = ".claude/skills/trellis-meta/nonstandard.json"
+        overflow_json_relative = ".claude/skills/trellis-meta/overflow.json"
         invalid_utf8 = b"\xff"
         invalid_json = b"{\n"
+        nonstandard_json = b'{"value": NaN}\n'
+        overflow_json = b'{"value": 1e9999}\n'
         for relative, content in (
             (invalid_utf8_relative, invalid_utf8),
             (invalid_json_relative, invalid_json),
+            (nonstandard_json_relative, nonstandard_json),
+            (overflow_json_relative, overflow_json),
         ):
             path = self.root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -5873,16 +6067,178 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 "hashes": {
                     invalid_utf8_relative: hashlib.sha256(invalid_utf8).hexdigest(),
                     invalid_json_relative: hashlib.sha256(invalid_json).hexdigest(),
+                    nonstandard_json_relative: hashlib.sha256(nonstandard_json).hexdigest(),
+                    overflow_json_relative: hashlib.sha256(overflow_json).hexdigest(),
                 },
             },
         )
 
         _paths, errors = gtt.ai_first_candidate_hygiene_scan(
             self.root,
-            candidate_paths=[invalid_utf8_relative, invalid_json_relative],
+            candidate_paths=[
+                invalid_utf8_relative,
+                invalid_json_relative,
+                nonstandard_json_relative,
+                overflow_json_relative,
+            ],
         )
         self.assertIn(f"candidate-invalid-utf8:{invalid_utf8_relative}", errors)
         self.assertIn(f"candidate-invalid-json:{invalid_json_relative}:2:1", errors)
+        self.assertIn(f"candidate-invalid-json:{nonstandard_json_relative}:1:1", errors)
+        self.assertIn(f"candidate-invalid-json:{overflow_json_relative}:1:1", errors)
+
+    def test_candidate_hygiene_validates_content_safety_per_git_projection(self) -> None:
+        subprocess.run(
+            ["git", "config", "user.name", "Phase 2 Test"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "phase2@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        invalid_utf8_relative = ".claude/skills/trellis-meta/invalid.md"
+        invalid_json_relative = ".claude/skills/trellis-meta/invalid.json"
+        invalid_nul_json_relative = ".claude/skills/trellis-meta/invalid-nul.json"
+        nonstandard_json_relative = ".claude/skills/trellis-meta/nonstandard.json"
+        overflow_json_relative = ".claude/skills/trellis-meta/overflow.json"
+        candidate_contents = {
+            invalid_utf8_relative: (b"# Baseline\n", b"\xff", b"# Fixed\n"),
+            invalid_json_relative: (b"{}\n", b"{\n", b'{"fixed": true}\n'),
+            invalid_nul_json_relative: (b"{}\n", b"{\x00}", b'{"fixed": true}\n'),
+            nonstandard_json_relative: (
+                b"{}\n",
+                b'{"value": NaN}\n',
+                b'{"fixed": true}\n',
+            ),
+            overflow_json_relative: (
+                b"{}\n",
+                b'{"value": 1e9999}\n',
+                b'{"fixed": true}\n',
+            ),
+        }
+        for relative, (baseline, _invalid, _fixed) in candidate_contents.items():
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(baseline)
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 添加内容安全基线"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "checkout", "-q", "-b", "feat/gate-task"],
+            cwd=self.root,
+            check=True,
+        )
+
+        for relative, (_baseline, invalid, _fixed) in candidate_contents.items():
+            (self.root / relative).write_bytes(invalid)
+        gtt.write_json(
+            self.root / gtt.AI_FIRST_TEMPLATE_HASHES_PATH,
+            {
+                "__version": gtt.AI_FIRST_TEMPLATE_HASHES_SCHEMA_VERSION,
+                "hashes": {
+                    relative: hashlib.sha256(invalid).hexdigest()
+                    for relative, (_baseline, invalid, _fixed) in candidate_contents.items()
+                },
+            },
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        for relative, (_baseline, _invalid, fixed) in candidate_contents.items():
+            (self.root / relative).write_bytes(fixed)
+
+        _paths, index_errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            base_ref="main",
+        )
+        self.assertIn(f"candidate-invalid-utf8:{invalid_utf8_relative}", index_errors)
+        self.assertIn(
+            f"candidate-invalid-json:{invalid_json_relative}:2:1",
+            index_errors,
+        )
+        self.assertIn(
+            f"candidate-invalid-json:{invalid_nul_json_relative}:1:2",
+            index_errors,
+        )
+        self.assertIn(
+            f"candidate-invalid-json:{nonstandard_json_relative}:1:1",
+            index_errors,
+        )
+        self.assertIn(
+            f"candidate-invalid-json:{overflow_json_relative}:1:1",
+            index_errors,
+        )
+
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 提交无效模板投影"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "add", *candidate_contents],
+            cwd=self.root,
+            check=True,
+        )
+        _paths, head_errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            base_ref="main",
+        )
+        self.assertIn(f"candidate-invalid-utf8:{invalid_utf8_relative}", head_errors)
+        self.assertIn(
+            f"candidate-invalid-json:{invalid_json_relative}:2:1",
+            head_errors,
+        )
+        self.assertIn(
+            f"candidate-invalid-json:{invalid_nul_json_relative}:1:2",
+            head_errors,
+        )
+        self.assertIn(
+            f"candidate-invalid-json:{nonstandard_json_relative}:1:1",
+            head_errors,
+        )
+        self.assertIn(
+            f"candidate-invalid-json:{overflow_json_relative}:1:1",
+            head_errors,
+        )
+
+    def test_candidate_hygiene_validates_only_changed_git_projections(self) -> None:
+        subprocess.run(
+            ["git", "config", "user.name", "Phase 2 Test"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "phase2@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        relative = "data/preexisting-invalid.json"
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"{\n")
+        subprocess.run(["git", "add", relative], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test(phase2): #27 添加既有无效 JSON"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "checkout", "-q", "-b", "feat/gate-task"],
+            cwd=self.root,
+            check=True,
+        )
+        path.write_bytes(b'{"fixed": true}\n')
+
+        paths, errors = gtt.ai_first_candidate_hygiene_scan(
+            self.root,
+            base_ref="main",
+        )
+
+        self.assertIn(relative, paths)
+        self.assertFalse([error for error in errors if relative in error])
 
     def test_candidate_hygiene_template_hash_does_not_bypass_path_safety(self) -> None:
         outside_relative = f"../{self.root.name}-outside.md"

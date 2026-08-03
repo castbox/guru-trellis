@@ -3864,6 +3864,56 @@ def ai_first_template_hashes(root: Path) -> dict[str, str]:
     return normalized
 
 
+def ai_first_git_blob_contents(
+    root: Path,
+    object_specs: dict[str, str],
+) -> dict[str, bytes]:
+    ordered = [
+        (relative, object_specs[relative])
+        for relative in sorted(object_specs, key=lambda item: item.encode("utf-8"))
+        if "\n" not in object_specs[relative] and "\r" not in object_specs[relative]
+    ]
+    if not ordered:
+        return {}
+    proc = subprocess.run(
+        ["git", "cat-file", "--batch"],
+        cwd=str(root),
+        input=("\n".join(spec for _relative, spec in ordered) + "\n").encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return {}
+    contents: dict[str, bytes] = {}
+    offset = 0
+    for relative, _spec in ordered:
+        header_end = proc.stdout.find(b"\n", offset)
+        if header_end < 0:
+            return {}
+        header = proc.stdout[offset:header_end]
+        offset = header_end + 1
+        if header.endswith(b" missing"):
+            continue
+        fields = header.split(b" ")
+        if len(fields) != 3:
+            return {}
+        try:
+            size = int(fields[2])
+        except ValueError:
+            return {}
+        content_end = offset + size
+        if content_end >= len(proc.stdout) or proc.stdout[content_end:content_end + 1] != b"\n":
+            return {}
+        content = proc.stdout[offset:content_end]
+        offset = content_end + 1
+        if fields[1] == b"blob":
+            contents[relative] = content
+    if offset != len(proc.stdout):
+        return {}
+    return contents
+
+
 def git_dirty(root: Path) -> bool:
     return bool(git_status_paths(root))
 
@@ -3906,22 +3956,8 @@ def ai_first_candidate_hygiene_scan(
     candidate_paths: list[str] | None = None,
 ) -> tuple[list[str], list[str]]:
     errors: list[str] = []
-    diff_commands = [
-        ["git", "diff", "--check"],
-        ["git", "diff", "--cached", "--check"],
-    ]
-    if base_ref:
-        diff_commands.insert(0, ["git", "diff", "--check", f"{base_ref}...HEAD"])
-    for command in diff_commands:
-        proc = run(command, cwd=root, check=False)
-        if proc.returncode != 0:
-            lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-            if lines:
-                errors.extend(f"git-diff-check:{line}" for line in lines)
-            else:
-                errors.append(f"git-diff-check-unavailable:{shlex.join(command)}")
-
-    paths = set(candidate_paths or [])
+    worktree_candidate_paths = set(candidate_paths or [])
+    committed_candidate_paths: set[str] = set()
     if base_ref:
         range_spec = f"{base_ref}...HEAD"
         path_proc = run(
@@ -3932,8 +3968,33 @@ def ai_first_candidate_hygiene_scan(
         if path_proc.returncode != 0:
             errors.append(f"candidate-path-scan-unavailable:{range_spec}")
         else:
-            paths.update(value for value in path_proc.stdout.split("\0") if value)
-    paths.update(git_status_paths(root, fail_closed=True))
+            committed_candidate_paths.update(
+                value for value in path_proc.stdout.split("\0") if value
+            )
+    staged_proc = run(
+        ["git", "diff", "--cached", "--name-only", "--no-renames", "-z"],
+        cwd=root,
+        check=False,
+    )
+    if staged_proc.returncode != 0:
+        errors.append("candidate-path-scan-unavailable:index")
+        staged_candidate_paths: set[str] = set()
+    else:
+        staged_candidate_paths = {
+            value for value in staged_proc.stdout.split("\0") if value
+        }
+    worktree_proc = run(
+        ["git", "diff", "--name-only", "--no-renames", "-z"],
+        cwd=root,
+        check=False,
+    )
+    if worktree_proc.returncode != 0:
+        errors.append("candidate-path-scan-unavailable:worktree")
+    else:
+        worktree_candidate_paths.update(
+            value for value in worktree_proc.stdout.split("\0") if value
+        )
+    status_paths = set(git_status_paths(root, fail_closed=True))
     tracked_proc = run(["git", "ls-files", "-z"], cwd=root, check=False)
     if tracked_proc.returncode != 0:
         errors.append("candidate-tracked-path-scan-unavailable")
@@ -3942,8 +4003,87 @@ def ai_first_candidate_hygiene_scan(
         tracked_paths = {
             value for value in tracked_proc.stdout.split("\0") if value
         }
+    worktree_candidate_paths.update(status_paths - tracked_paths)
+    paths = (
+        committed_candidate_paths
+        | staged_candidate_paths
+        | worktree_candidate_paths
+        | status_paths
+    )
     template_hashes = ai_first_template_hashes(root)
-    for relative in sorted(paths, key=lambda item: item.encode("utf-8")):
+    template_candidate_hashes = {
+        relative: template_hashes[relative]
+        for relative in paths
+        if relative in template_hashes
+    }
+    def content_candidate_paths(candidate_projection: set[str]) -> set[str]:
+        return {
+            relative
+            for relative in candidate_projection
+            if Path(relative).suffix.casefold() == ".json"
+            or relative in template_candidate_hashes
+        }
+
+    head_contents = ai_first_git_blob_contents(
+        root,
+        {
+            relative: f"HEAD:{relative}"
+            for relative in content_candidate_paths(committed_candidate_paths)
+        } if base_ref else {},
+    )
+    index_contents = ai_first_git_blob_contents(
+        root,
+        {
+            relative: f":{relative}"
+            for relative in content_candidate_paths(staged_candidate_paths)
+        },
+    )
+
+    def validated_candidate_text(
+        relative: str,
+        content: bytes,
+    ) -> tuple[str | None, bool]:
+        try:
+            text = content.decode("utf-8")
+        except UnicodeDecodeError:
+            errors.append(f"candidate-invalid-utf8:{relative}")
+            return None, False
+        valid_content = True
+        if Path(relative).suffix.casefold() == ".json":
+            try:
+                skill_json_loads(text)
+            except json.JSONDecodeError as exc:
+                errors.append(
+                    f"candidate-invalid-json:{relative}:{exc.lineno}:{exc.colno}"
+                )
+                valid_content = False
+            except ValueError:
+                errors.append(f"candidate-invalid-json:{relative}:1:1")
+                valid_content = False
+        if b"\0" in content:
+            return None, False
+        return text, valid_content
+
+    def exact_template_paths(contents: dict[str, bytes]) -> set[str]:
+        exact: set[str] = set()
+        for relative, content in contents.items():
+            _text, valid_content = validated_candidate_text(relative, content)
+            expected_hash = template_candidate_hashes.get(relative)
+            if (
+                valid_content
+                and expected_hash is not None
+                and hashlib.sha256(content).hexdigest() == expected_hash
+            ):
+                exact.add(relative)
+        return exact
+
+    head_exact_template_paths = exact_template_paths(head_contents)
+    index_exact_template_paths = exact_template_paths(index_contents)
+    worktree_exact_template_paths: set[str] = set()
+    for relative in sorted(
+        worktree_candidate_paths,
+        key=lambda item: item.encode("utf-8"),
+    ):
         if ai_first_os_noise_path(relative):
             continue
         path = (root / relative).resolve()
@@ -3952,11 +4092,12 @@ def ai_first_candidate_hygiene_scan(
         except ValueError:
             errors.append(f"candidate-path-outside-repository:{relative}")
             continue
-        if not path.is_file() or path.is_symlink():
-            continue
         tracked = relative in tracked_paths
         suffix = path.suffix.casefold()
-        if tracked and suffix != ".json":
+        expected_template_hash = template_hashes.get(relative)
+        if not path.is_file() or path.is_symlink():
+            continue
+        if tracked and suffix != ".json" and expected_template_hash is None:
             continue
         if not tracked and suffix not in AI_FIRST_TEXT_SUFFIXES:
             continue
@@ -3965,31 +4106,61 @@ def ai_first_candidate_hygiene_scan(
         except OSError:
             errors.append(f"candidate-unreadable:{relative}")
             continue
-        if b"\0" in content:
+        text, valid_content = validated_candidate_text(relative, content)
+        if text is None:
             continue
-        try:
-            text = content.decode("utf-8")
-        except UnicodeDecodeError:
-            errors.append(f"candidate-invalid-utf8:{relative}")
+        exact_template = (
+            valid_content
+            and expected_template_hash is not None
+            and hashlib.sha256(content).hexdigest() == expected_template_hash
+        )
+        if exact_template:
+            worktree_exact_template_paths.add(relative)
             continue
-        if suffix == ".json":
-            try:
-                json.loads(text)
-            except json.JSONDecodeError as exc:
-                errors.append(f"candidate-invalid-json:{relative}:{exc.lineno}:{exc.colno}")
         if tracked:
-            continue
-        expected_template_hash = template_hashes.get(relative)
-        if (
-            expected_template_hash is not None
-            and skill_file_sha256(path) == expected_template_hash
-        ):
             continue
         for line_number, line in enumerate(text.splitlines(), start=1):
             if line.endswith((" ", "\t")):
                 errors.append(f"candidate-trailing-whitespace:{relative}:{line_number}")
         if text.endswith("\n\n"):
             errors.append(f"candidate-blank-line-at-eof:{relative}")
+
+    def diff_pathspec(exact_paths: set[str]) -> list[str]:
+        return [
+            "--",
+            ".",
+            *[
+                f":(top,literal,exclude){relative}"
+                for relative in sorted(
+                    exact_paths,
+                    key=lambda item: item.encode("utf-8"),
+                )
+            ],
+        ]
+
+    diff_commands = [
+        ["git", "diff", "--check", *diff_pathspec(worktree_exact_template_paths)],
+        [
+            "git", "diff", "--cached", "--check",
+            *diff_pathspec(index_exact_template_paths),
+        ],
+    ]
+    if base_ref:
+        diff_commands.insert(
+            0,
+            [
+                "git", "diff", "--check", f"{base_ref}...HEAD",
+                *diff_pathspec(head_exact_template_paths),
+            ],
+        )
+    for command in diff_commands:
+        proc = run(command, cwd=root, check=False)
+        if proc.returncode != 0:
+            lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+            if lines:
+                errors.extend(f"git-diff-check:{line}" for line in lines)
+            else:
+                errors.append(f"git-diff-check-unavailable:{shlex.join(command)}")
     return (
         sorted(paths, key=lambda item: item.encode("utf-8")),
         sorted(set(errors), key=lambda item: item.encode("utf-8")),

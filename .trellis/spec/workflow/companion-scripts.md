@@ -961,11 +961,14 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
 - command exit zero, coverage booleans, or official worker output are facts
   only and cannot create a passed AI Gate.
 - Phase 2 candidate hygiene consults the official
-  schema-v2 `.trellis/.template-hashes.json` provenance only to suppress
-  untracked-user whitespace/blank-EOF findings for an exact same-path byte
-  match. Unknown or locally edited paths, invalid/missing provenance, and hash
-  mismatch receive no exemption; path escape, invalid UTF-8, and invalid JSON
-  remain fail-closed deterministic errors.
+  schema-v2 `.trellis/.template-hashes.json` provenance only to suppress Git
+  diff-check or untracked-text whitespace/blank-EOF findings when the checked
+  `HEAD`, index, or worktree projection has an exact same-path byte match. This
+  includes tracked upstream-template migration deltas without allowing one
+  exact projection to exempt a different staged or committed candidate.
+  Unknown or locally edited paths, invalid/missing provenance, and hash mismatch
+  receive no exemption; path escape, invalid UTF-8, and invalid JSON remain
+  fail-closed deterministic errors.
 
 - `record-contract-wording-review.sh` and
   `check-contract-wording-review.sh` are the generic deterministic recorder and
