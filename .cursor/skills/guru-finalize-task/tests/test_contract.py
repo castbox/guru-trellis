@@ -181,6 +181,38 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(set(authoring), set(consumer["contract"]["authoring_fields"]))
         self.assertNotIn("reentry_context", authoring)
 
+    def test_head_mismatch_retirement_is_internal_and_keeps_public_api(self) -> None:
+        skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
+        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
+        interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
+        invocation = next(
+            item
+            for item in interface["validators"]
+            if item["id"] == "public_invocation"
+        )
+        self.assertIn("publication_review_head_mismatch", skill)
+        self.assertIn("active schema 1.2 pre-draft", contract)
+        self.assertIn("zero-write", contract)
+        self.assertIn("failure", contract)
+        self.assertIn(
+            "exact plan-owned active schema 1.2",
+            invocation["objective_scope"],
+        )
+        self.assertEqual(
+            [
+                item["exit_id"]
+                for item in interface["public_contracts"]["outputs"]
+            ],
+            [
+                "verification_required",
+                "publication_review_stale",
+                "resume_finalization",
+                "reprepare_required",
+                "published",
+                "blocked",
+            ],
+        )
+
     def test_standalone_not_required_profile_is_closed_and_target_authored(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
         profile = next(

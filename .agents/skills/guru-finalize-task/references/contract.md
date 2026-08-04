@@ -53,6 +53,20 @@ from the archive transaction. Any
 additional path, identity drift, or archive-commit drift remains blocked; this
 does not relax `guru-verify-extension-installation` for other consumers.
 
+One active schema 1.2 pre-draft recovery is deterministic. When the checked
+owner result is `publication_review_stale` solely because the reviewed content
+HEAD is an ancestor of a newer real content HEAD, the public wrapper may retire
+the exact old downstream projection before emitting the existing stale DTO.
+The old canonical plan bytes must bind the task, branch, semantic Ledger,
+PR body, finish-summary index and pending or passed marketplace projection.
+The worktree must contain exactly those untracked outputs plus only the
+plan-owned Ledger delta, with no staged path or later final summary. The wrapper
+then restores the Ledger from the current-HEAD blob, removes the plan-owned
+untracked projection and retires its private gate. Any mismatch is a zero-write
+failure. This internal retirement does not decide whether the real content
+change needs Phase 2, Task Commit or Branch Review; the workflow follows the
+existing mapped stale route and current live task state.
+
 ## Semantic Profile
 
 The exact stage order is:
@@ -148,7 +162,9 @@ schema is upgraded in place.
 ## Recovery
 
 - Stale Publication DTO content identity, or missing/stale legacy 1.x
-  publication evidence -> `publication_review_stale`.
+  publication evidence -> `publication_review_stale`. The exact active schema
+  1.2 pre-draft head-mismatch projection described above is retired internally
+  before this existing DTO is emitted.
 - Content pushed with verification pending -> `verification_required`.
 - Same-plan transient executor failure, draft-to-ready retry, interrupted
   active/archive move, or exact-commit continuation -> `resume_finalization`.
@@ -221,7 +237,9 @@ The ignored owner-private gate never stores an early public `published` DTO.
 Before and through archive it retains only the exact finalizer-private executor
 marker. Recorder/checker and executor may validate that pending marker, while
 the public wrapper reruns strict route validation and never executes the
-transition. Only after the exact archive transaction and ready PR facts are
+publish/archive transition; the bounded head-mismatch retirement above is the
+only active pre-draft projection exception. Only after the exact archive
+transaction and ready PR facts are
 proven may the wrapper materialize the public DTO in memory, using the plan
 archive locator; the materialized DTO is not written back to the gate. The
 Finalizer then removes its checkpoint. The Publication checkpoint is neither
@@ -234,6 +252,8 @@ Package scripts are dispatcher-only wrappers. Runtime commands may:
 - preview through the existing closeout engine;
 - record/check the private semantic gate;
 - execute one checked deterministic transition through the same engine;
+- retire one exact plan-owned active schema 1.2 pre-draft projection after a
+  checked publication HEAD mismatch;
 - select the schema for the actual exit and serialize the minimal DTO.
 
 They may not decide close scope, plan sufficiency, publication readiness,

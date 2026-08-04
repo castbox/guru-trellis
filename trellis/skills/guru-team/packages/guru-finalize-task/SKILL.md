@@ -21,6 +21,14 @@ In workflow mode, the caller automatically consumes
 `reprepare_required`. These are machine routes, not user decisions. Ask again
 only when the external side-effect plan or its authority changed.
 
+For a checked `publication_review_head_mismatch` on an active schema 1.2
+pre-draft transaction, the public wrapper first retires only the exact
+plan-owned stale projection: it restores the Ledger from current HEAD, removes
+the plan-bound body/index/plan and optional verification output, and retires the
+Finalizer checkpoint. This mapped recovery needs no confirmation. Staged,
+unknown, altered, tracked, ignored, later-state, or identity-mismatched content
+fails closed without mutation.
+
 For one current, unique action, prompt with `确认继续`. Any clear affirmative
 reply applies to the displayed action in the current dialogue; no recorder or
 checkpoint stores or binds that authorization. Never require the user to repeat

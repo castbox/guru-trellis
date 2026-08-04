@@ -11144,6 +11144,684 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 include_finalization_gate=include_finalization_gate,
             )
 
+    def build_stale_projection_retirement_fixture(
+        self,
+        name: str,
+        *,
+        install_finalizer_package: bool = False,
+    ) -> dict[str, object]:
+        root = self.root / name
+        task_dir = (
+            root
+            / ".trellis/tasks/08-03-132-integrate-planning-check-review-skills"
+        )
+        task_dir.mkdir(parents=True)
+        task_ref = task_dir.relative_to(root).as_posix()
+        source_path = root / "trellis/workflows/guru-team/workflow.md"
+        source_path.parent.mkdir(parents=True)
+        source_path.write_text("# reviewed Guru Team workflow\n", encoding="utf-8")
+
+        (root / ".gitignore").write_text(
+            ".trellis/.runtime/\n",
+            encoding="utf-8",
+        )
+        trellis_config = root / ".trellis/config.yaml"
+        trellis_config.parent.mkdir(parents=True, exist_ok=True)
+        trellis_config.write_text(
+            "hooks:\n  after_archive: []\n",
+            encoding="utf-8",
+        )
+        guru_config = root / ".trellis/guru-team/config.yml"
+        guru_config.parent.mkdir(parents=True, exist_ok=True)
+        guru_config.write_text(
+            "workspace_mode: current\n"
+            "runtime_root: .trellis/.runtime\n"
+            "github_repo: castbox/guru-trellis\n",
+            encoding="utf-8",
+        )
+
+        task = {
+            "id": "132-integrate-planning-check-review-skills",
+            "title": (
+                "#132 集成 Guru planning/check/review Skills 并收敛 preset "
+                "upstream overlays"
+            ),
+            "status": "in_progress",
+            "branch": "main",
+            "base_branch": "main",
+        }
+        task_context = {
+            "task_artifact_dir": task_ref,
+            "task_workspace_id": task["id"],
+            "task_slug": task["id"],
+            "task_title": task["title"],
+            "workspace_slug": task["id"],
+            "branch_name": "main",
+            "base_branch": "main",
+            "source_issue": {"number": 132},
+            "source_repo": {
+                "repo": "castbox/guru-trellis",
+                "url": "https://github.com/castbox/guru-trellis",
+            },
+        }
+        ledger = {
+            "primary_issue": {
+                "number": 132,
+                "acceptance_evidence": ["combined acceptance passed"],
+            },
+            "close_issues": [
+                {
+                    "number": 132,
+                    "acceptance_evidence": ["combined acceptance passed"],
+                }
+            ],
+            "related_issues": [],
+            "followup_issues": [],
+        }
+        index = copy.deepcopy(self.index)
+        index["index"]["problem"] = "旧 Finalizer projection 阻塞 fresh Branch Review。"
+        index["index"]["outcome"] = "精确 owner projection 自动退休。"
+        gtt.write_json(task_dir / "task.json", task)
+        for name_part in ("prd.md", "design.md", "implement.md"):
+            (task_dir / name_part).write_text(
+                f"# {name_part}\n\nIssue #132 fixture.\n",
+                encoding="utf-8",
+            )
+        gtt.write_json(task_dir / "issue-scope-ledger.json", ledger)
+        gtt.write_json(task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT, index)
+        (task_dir / gtt.PR_BODY_ARTIFACT).write_text(
+            valid_pr_body("#132 stale projection retirement。"),
+            encoding="utf-8",
+        )
+
+        package_root: Path | None = None
+        if install_finalizer_package:
+            source_root = Path(__file__).resolve().parents[5]
+            package_root = (
+                root
+                / "trellis/skills/guru-team/packages"
+                / gtt.FINALIZE_TASK_SKILL_ID
+            )
+            shutil.copytree(
+                source_root
+                / "trellis/skills/guru-team/packages"
+                / gtt.FINALIZE_TASK_SKILL_ID,
+                package_root,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            )
+
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+        subprocess.run(
+            ["git", "config", "user.name", "Stale Projection Fixture"],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "config",
+                "user.email",
+                "stale-projection@example.invalid",
+            ],
+            cwd=root,
+            check=True,
+        )
+        tracked = [
+            ".gitignore",
+            ".trellis/config.yaml",
+            ".trellis/guru-team/config.yml",
+            f"{task_ref}/task.json",
+            f"{task_ref}/prd.md",
+            f"{task_ref}/design.md",
+            f"{task_ref}/implement.md",
+            f"{task_ref}/issue-scope-ledger.json",
+            "trellis/workflows/guru-team/workflow.md",
+        ]
+        if package_root is not None:
+            tracked.append(
+                package_root.relative_to(root).as_posix()
+            )
+        subprocess.run(["git", "add", "--", *tracked], cwd=root, check=True)
+        subprocess.run(
+            [
+                "git",
+                "commit",
+                "-qm",
+                (
+                    "feat(guru-team): #132 reviewed fixture\n\n"
+                    "背景：构造已审查的 Finalizer projection。\n\n"
+                    "变更：提交 durable task 与 workflow 内容。\n\n"
+                    "边界：发布派生文件保持 untracked。\n\n"
+                    "验证：fixture commit 成功。"
+                ),
+            ],
+            cwd=root,
+            check=True,
+        )
+        reviewed_head = gtt.current_head(root)
+        task_context["base_head_sha"] = reviewed_head
+        with (
+            mock.patch.object(
+                gtt,
+                "official_after_archive_hook_state",
+                return_value={"commands": []},
+            ),
+            mock.patch.object(gtt, "current_archive_month", return_value="2026-08"),
+        ):
+            plan = gtt.build_closeout_plan(
+                root,
+                task_dir,
+                task_context,
+                task,
+                None,
+                None,
+                ledger,
+                task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT,
+                repo="castbox/guru-trellis",
+                remote="origin",
+                base_branch="main",
+                head_branch="main",
+                reviewed_head=reviewed_head,
+                title="#132 集成 Guru planning/check/review Skills",
+                review_facts={
+                    "changed_paths": [
+                        "trellis/workflows/guru-team/workflow.md"
+                    ],
+                    "candidate_surfaces": ["workflow"],
+                    "marketplace_required": True,
+                },
+            )
+        self.assertEqual(plan["schema_version"], gtt.CLOSEOUT_PLAN_SCHEMA_VERSION)
+        self.assertTrue(plan["marketplace"]["required"])
+        self.assertTrue(
+            {
+                gtt.CLOSEOUT_PLAN_ARTIFACT,
+                gtt.PR_BODY_ARTIFACT,
+                gtt.FINISH_SUMMARY_INDEX_ARTIFACT,
+                gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            }.issubset(plan["projection"]["untracked_archive_outputs"])
+        )
+        gtt.write_json(task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        projected_ledger = gtt.record_marketplace_machine_evidence(
+            ledger,
+            plan["marketplace"]["pending_machine"],
+        )
+        gtt.write_json(task_dir / "issue-scope-ledger.json", projected_ledger)
+
+        stale_gate = {
+            "schema_version": gtt.FINALIZATION_GATE_SCHEMA_VERSION,
+            "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+            "identity": {
+                "task_ref": task_ref,
+                "plan_ref": None,
+                "plan_digest": None,
+                "reviewed_content_head": None,
+            },
+            "review": {
+                "status": "passed",
+                "summary": (
+                    "The prior plan-owned projection is stale after one real "
+                    "content HEAD advance."
+                ),
+            },
+            "route": {
+                "typed_exit": "publication_review_stale",
+                "consumer": copy.deepcopy(
+                    gtt.FINALIZATION_CONSUMERS["publication_review_stale"]
+                ),
+                "output": {
+                    "exit_id": "publication_review_stale",
+                    "task_ref": task_ref,
+                    "stale_reason": "publication_review_head_mismatch",
+                },
+            },
+        }
+        gate_path = gtt.ai_first_owner_checkpoint_path(
+            root,
+            task_dir,
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+        )
+        gtt.write_json(gate_path, stale_gate)
+
+        source_path.write_text(
+            source_path.read_text(encoding="utf-8")
+            + "\n# real post-publication content fix\n",
+            encoding="utf-8",
+        )
+        subprocess.run(
+            ["git", "add", "--", source_path.relative_to(root).as_posix()],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "commit",
+                "-qm",
+                (
+                    "fix(guru-team): #132 content correction\n\n"
+                    "背景：旧 projection 之后发现真实实现缺陷。\n\n"
+                    "变更：提交新的 task-work content。\n\n"
+                    "边界：不提交 Finalizer 派生文件。\n\n"
+                    "验证：current HEAD 为 reviewed HEAD 后代。"
+                ),
+            ],
+            cwd=root,
+            check=True,
+        )
+        current_head = gtt.current_head(root)
+        expected_dirty = {
+            f"{task_ref}/issue-scope-ledger.json",
+            f"{task_ref}/{gtt.CLOSEOUT_PLAN_ARTIFACT}",
+            f"{task_ref}/{gtt.FINISH_SUMMARY_INDEX_ARTIFACT}",
+            f"{task_ref}/{gtt.PR_BODY_ARTIFACT}",
+        }
+        self.assertEqual(set(gtt.git_status_paths(root)), expected_dirty)
+        return {
+            "root": root,
+            "task_dir": task_dir,
+            "task_ref": task_ref,
+            "task_context": task_context,
+            "plan": plan,
+            "reviewed_head": reviewed_head,
+            "current_head": current_head,
+            "gate_path": gate_path,
+            "package_root": package_root,
+            "stale_context": {
+                "publication_status": "stale",
+                "publication_stale_reason": "publication_review_head_mismatch",
+            },
+        }
+
+    @staticmethod
+    def stale_projection_fixture_snapshot(
+        fixture: dict[str, object],
+    ) -> tuple[bytes, dict[str, bytes]]:
+        root = fixture["root"]
+        task_dir = fixture["task_dir"]
+        gate_path = fixture["gate_path"]
+        assert isinstance(root, Path)
+        assert isinstance(task_dir, Path)
+        assert isinstance(gate_path, Path)
+        status = subprocess.run(
+            ["git", "status", "--porcelain=v1", "-z"],
+            cwd=root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        ).stdout
+        files = {
+            path.relative_to(root).as_posix(): path.read_bytes()
+            for path in sorted(task_dir.rglob("*"))
+            if path.is_file() and not path.is_symlink()
+        }
+        if gate_path.is_file() and not gate_path.is_symlink():
+            files[gate_path.relative_to(root).as_posix()] = gate_path.read_bytes()
+        return status, files
+
+    def stale_projection_branch_review_working_tree_errors(
+        self,
+        fixture: dict[str, object],
+    ) -> list[str]:
+        root = fixture["root"]
+        task_dir = fixture["task_dir"]
+        task_context = fixture["task_context"]
+        reviewed_head = fixture["reviewed_head"]
+        assert isinstance(root, Path)
+        assert isinstance(task_dir, Path)
+        assert isinstance(task_context, dict)
+        assert isinstance(reviewed_head, str)
+        with (
+            mock.patch.object(gtt, "review_branch_public_input_schema", return_value={}),
+            mock.patch.object(gtt, "review_branch_gate_schema", return_value={}),
+            mock.patch.object(
+                gtt,
+                "load_task_runtime_identity",
+                return_value=task_context,
+            ),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "diff_base_ref", return_value=reviewed_head),
+            mock.patch.object(
+                gtt,
+                "changed_files",
+                return_value=["trellis/workflows/guru-team/workflow.md"],
+            ),
+            mock.patch.object(
+                gtt,
+                "review_branch_task_commit_evidence_errors",
+                return_value=[],
+            ),
+        ):
+            errors = gtt.review_branch_entry_precondition_errors(
+                root,
+                task_dir,
+                {},
+            )
+        return [error for error in errors if "working tree" in error]
+
+    def add_stale_projection_verification(
+        self,
+        fixture: dict[str, object],
+        *,
+        verified_head: str | None = None,
+    ) -> Path:
+        root = fixture["root"]
+        task_dir = fixture["task_dir"]
+        task_ref = fixture["task_ref"]
+        plan = fixture["plan"]
+        reviewed_head = fixture["reviewed_head"]
+        assert isinstance(root, Path)
+        assert isinstance(task_dir, Path)
+        assert isinstance(task_ref, str)
+        assert isinstance(plan, dict)
+        assert isinstance(reviewed_head, str)
+        verification_head = verified_head or reviewed_head
+        verification = {
+            "schema_version": gtt.MARKETPLACE_VERIFICATION_SCHEMA_VERSION,
+            "generated_at": "2026-08-03T00:00:00Z",
+            "status": "passed",
+            "repo": plan["git"]["repo"],
+            "remote": plan["git"]["remote"],
+            "branch": plan["git"]["head_branch"],
+            "marketplace_source": (
+                f"gh:{plan['git']['repo']}/trellis#"
+                f"{plan['git']['head_branch']}"
+            ),
+            "verified_head": verification_head,
+            "remote_head": verification_head,
+            "task_dir": task_ref,
+            "steps": [
+                {
+                    "command": ["git", "ls-remote", "origin", "refs/heads/main"],
+                    "exit_code": 0,
+                    "stdout_sha256": "1" * 64,
+                    "stderr_sha256": "2" * 64,
+                    "stdout_size_bytes": 41,
+                    "stderr_size_bytes": 0,
+                    "passed": True,
+                }
+            ],
+            "assets": {
+                "workflow_sha256": "3" * 64,
+                "preview_sha256": "4" * 64,
+                "finish_summary_schema_sha256": "5" * 64,
+                "closeout_plan_schema_sha256": "6" * 64,
+                "runtime_gitignore_present": True,
+                "workspace_gitignore_present": True,
+                "session_auto_commit_false": True,
+                "legacy_handoff_absent": True,
+                "legacy_intake_schema_absent": True,
+            },
+        }
+        verification_path = task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+        gtt.write_json(verification_path, verification)
+        ledger_path = task_dir / "issue-scope-ledger.json"
+        semantic_ledger = gtt.closeout_semantic_ledger(gtt.read_json(ledger_path))
+        evidence = gtt.closeout_passed_marketplace_evidence(
+            root,
+            verification_path,
+            verification,
+        )
+        gtt.write_json(
+            ledger_path,
+            gtt.record_marketplace_machine_evidence(
+                semantic_ledger,
+                evidence,
+            ),
+        )
+        return verification_path
+
+    def test_stale_projection_retirement_restores_current_head_and_unblocks_review(
+        self,
+    ) -> None:
+        fixture = self.build_stale_projection_retirement_fixture(
+            "stale-projection-success"
+        )
+        root = fixture["root"]
+        task_dir = fixture["task_dir"]
+        task_ref = fixture["task_ref"]
+        reviewed_head = fixture["reviewed_head"]
+        current_head = fixture["current_head"]
+        gate_path = fixture["gate_path"]
+        stale_context = fixture["stale_context"]
+        assert isinstance(root, Path)
+        assert isinstance(task_dir, Path)
+        assert isinstance(task_ref, str)
+        assert isinstance(reviewed_head, str)
+        assert isinstance(current_head, str)
+        assert isinstance(gate_path, Path)
+        assert isinstance(stale_context, dict)
+
+        before_errors = self.stale_projection_branch_review_working_tree_errors(
+            fixture
+        )
+        self.assertEqual(len(before_errors), 1)
+        self.assertIn(gtt.CLOSEOUT_PLAN_ARTIFACT, before_errors[0])
+
+        result = gtt.finalization_retire_stale_downstream_projection(
+            root,
+            task_dir,
+            stale_context,
+        )
+
+        self.assertEqual(result["status"], "retired")
+        self.assertEqual(result["reviewed_content_head"], reviewed_head)
+        self.assertEqual(result["current_head"], current_head)
+        self.assertEqual(
+            result["restored_paths"],
+            [f"{task_ref}/issue-scope-ledger.json"],
+        )
+        self.assertEqual(set(gtt.git_status_paths(root)), set())
+        self.assertEqual(
+            (task_dir / "issue-scope-ledger.json").read_bytes(),
+            gtt.closeout_commit_blob_bytes(
+                root,
+                current_head,
+                f"{task_ref}/issue-scope-ledger.json",
+            ),
+        )
+        for artifact in (
+            gtt.CLOSEOUT_PLAN_ARTIFACT,
+            gtt.PR_BODY_ARTIFACT,
+            gtt.FINISH_SUMMARY_INDEX_ARTIFACT,
+        ):
+            self.assertFalse((task_dir / artifact).exists())
+        self.assertFalse(gate_path.exists())
+        self.assertEqual(
+            self.stale_projection_branch_review_working_tree_errors(fixture),
+            [],
+        )
+
+    def test_stale_projection_retirement_removes_plan_bound_verification(
+        self,
+    ) -> None:
+        fixture = self.build_stale_projection_retirement_fixture(
+            "stale-projection-verified"
+        )
+        verification_path = self.add_stale_projection_verification(fixture)
+        root = fixture["root"]
+        task_dir = fixture["task_dir"]
+        stale_context = fixture["stale_context"]
+        assert isinstance(root, Path)
+        assert isinstance(task_dir, Path)
+        assert isinstance(stale_context, dict)
+        self.assertIn(
+            verification_path.relative_to(root).as_posix(),
+            set(gtt.git_status_paths(root)),
+        )
+
+        result = gtt.finalization_retire_stale_downstream_projection(
+            root,
+            task_dir,
+            stale_context,
+        )
+
+        self.assertEqual(result["status"], "retired")
+        self.assertFalse(verification_path.exists())
+        self.assertEqual(set(gtt.git_status_paths(root)), set())
+
+    def test_public_wrapper_retires_exact_stale_projection_before_typed_exit(
+        self,
+    ) -> None:
+        fixture = self.build_stale_projection_retirement_fixture(
+            "stale-projection-wrapper",
+            install_finalizer_package=True,
+        )
+        root = fixture["root"]
+        task_dir = fixture["task_dir"]
+        task_ref = fixture["task_ref"]
+        plan = fixture["plan"]
+        package_root = fixture["package_root"]
+        gate_path = fixture["gate_path"]
+        assert isinstance(root, Path)
+        assert isinstance(task_dir, Path)
+        assert isinstance(task_ref, str)
+        assert isinstance(plan, dict)
+        assert isinstance(package_root, Path)
+        assert isinstance(gate_path, Path)
+
+        public_input_path = (
+            root / ".trellis/.runtime/guru-team/tests/finalization-input.json"
+        )
+        gtt.write_json(
+            public_input_path,
+            {
+                "profile": "same_plan_resume",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+            },
+        )
+        wrapper_args = argparse.Namespace(
+            input=public_input_path.relative_to(root).as_posix(),
+            owner_result=None,
+            owner_prerequisites=None,
+            owner_change_request=None,
+            owner_plan=None,
+            source_exit=None,
+            mode=None,
+            repo_root=None,
+            base_branch=None,
+            route=None,
+        )
+        with (
+            mock.patch.object(
+                gtt,
+                "stage0_invocation_identity",
+                return_value=(gtt.FINALIZE_TASK_SKILL_ID, package_root),
+            ),
+            mock.patch.object(gtt, "stage0_repo_root", return_value=root),
+        ):
+            output = gtt.cmd_invoke_stage0_skill(wrapper_args)
+
+        self.assertEqual(
+            output,
+            {
+                "exit_id": "publication_review_stale",
+                "task_ref": task_ref,
+                "stale_reason": "publication_review_head_mismatch",
+            },
+        )
+        self.assertEqual(set(gtt.git_status_paths(root)), set())
+        self.assertFalse(gate_path.exists())
+        self.assertFalse((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).exists())
+
+    def test_stale_projection_retirement_rejects_drift_without_mutation(self) -> None:
+        def alter_plan(fixture: dict[str, object]) -> None:
+            task_dir = fixture["task_dir"]
+            assert isinstance(task_dir, Path)
+            path = task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT
+            path.write_bytes(path.read_bytes() + b"\n")
+
+        def alter_body(fixture: dict[str, object]) -> None:
+            task_dir = fixture["task_dir"]
+            assert isinstance(task_dir, Path)
+            with (task_dir / gtt.PR_BODY_ARTIFACT).open(
+                "a",
+                encoding="utf-8",
+            ) as handle:
+                handle.write("\n未审查正文漂移。\n")
+
+        def alter_index(fixture: dict[str, object]) -> None:
+            task_dir = fixture["task_dir"]
+            assert isinstance(task_dir, Path)
+            path = task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT
+            path.write_bytes(path.read_bytes() + b"\n")
+
+        def alter_ledger(fixture: dict[str, object]) -> None:
+            task_dir = fixture["task_dir"]
+            assert isinstance(task_dir, Path)
+            path = task_dir / "issue-scope-ledger.json"
+            ledger = gtt.read_json(path)
+            ledger["close_issues"][0]["reason"] = "unreviewed semantic drift"
+            gtt.write_json(path, ledger)
+
+        def add_unknown(fixture: dict[str, object]) -> None:
+            task_dir = fixture["task_dir"]
+            assert isinstance(task_dir, Path)
+            (task_dir / "unknown-note.md").write_text(
+                "unknown local edit\n",
+                encoding="utf-8",
+            )
+
+        def stage_ledger(fixture: dict[str, object]) -> None:
+            root = fixture["root"]
+            task_ref = fixture["task_ref"]
+            assert isinstance(root, Path)
+            assert isinstance(task_ref, str)
+            subprocess.run(
+                ["git", "add", "--", f"{task_ref}/issue-scope-ledger.json"],
+                cwd=root,
+                check=True,
+            )
+
+        def add_later_state(fixture: dict[str, object]) -> None:
+            task_dir = fixture["task_dir"]
+            assert isinstance(task_dir, Path)
+            gtt.write_json(task_dir / gtt.FINISH_SUMMARY_ARTIFACT, {"later": True})
+
+        def add_mismatched_verification(fixture: dict[str, object]) -> None:
+            current_head = fixture["current_head"]
+            assert isinstance(current_head, str)
+            self.add_stale_projection_verification(
+                fixture,
+                verified_head=current_head,
+            )
+
+        mutations = {
+            "plan": alter_plan,
+            "body": alter_body,
+            "index": alter_index,
+            "ledger": alter_ledger,
+            "unknown": add_unknown,
+            "staged-ledger": stage_ledger,
+            "later-state": add_later_state,
+            "verification-head": add_mismatched_verification,
+        }
+        for label, mutate in mutations.items():
+            with self.subTest(label=label):
+                fixture = self.build_stale_projection_retirement_fixture(
+                    f"stale-projection-reject-{label}"
+                )
+                mutate(fixture)
+                before = self.stale_projection_fixture_snapshot(fixture)
+                root = fixture["root"]
+                task_dir = fixture["task_dir"]
+                stale_context = fixture["stale_context"]
+                assert isinstance(root, Path)
+                assert isinstance(task_dir, Path)
+                assert isinstance(stale_context, dict)
+                with self.assertRaises(gtt.WorkflowError):
+                    gtt.finalization_retire_stale_downstream_projection(
+                        root,
+                        task_dir,
+                        stale_context,
+                    )
+                self.assertEqual(
+                    self.stale_projection_fixture_snapshot(fixture),
+                    before,
+                )
+
     def build_legacy_plan(
         self,
         *,
