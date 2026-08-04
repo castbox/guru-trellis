@@ -6,11 +6,12 @@
 `task_ref`, `reviewed_content_head` and caller-authored `profile`, `mode`,
 `review_intent`. The Branch Review checkpoint and digest remain private to the
 Branch Review owner and are not read by this v2 path. `publication_review_stale`
-consumes future seed `task_ref`,
-`stale_reason` and caller-authored `profile`, `mode`, `review_intent`. Workflow
-and standalone use the same eight preconditions. The recorder uses the stale
-reason only to bind the current re-entry round; it never expands a public
-output.
+consumes Finalizer seed `task_ref`, `reviewed_content_head`, `stale_reason` and
+caller-authored `profile`, `mode`, `review_intent`. Workflow and standalone use
+the same eight preconditions. The recorder uses the stale reason only to bind
+the current re-entry round; the checked owner result remains bound to the
+supplied reviewed HEAD and never expands a public output. A legacy two-field
+stale seed is invalid and must be regenerated from current Finalizer facts.
 
 For one-time active-task compatibility, the Branch Review owner reads its own
 legacy gate, completes any required fresh-final re-entry, and emits the current
@@ -77,6 +78,13 @@ affected artifacts, and closure evidence. All three scope/Docs/safety
 conclusions must pass.
 `return_to_task_work` requires at least one `finding` dimension and an open
 `task_work` finding whose dimension references that non-passed dimension.
+For stale-profile content continuity drift this is the only non-blocked legal
+exit: the checker permits the old reviewed identity solely so the semantic
+owner can return the task to Phase 2. `ready` still requires current content
+continuity and the complete Finalizer preflight. The exception requires a valid
+reviewed HEAD that is proven to be an ancestor of current HEAD plus a successful
+descendant diff inspection. Invalid or non-ancestor identities and failed diff
+inspection remain fail-closed continuity errors on every exit.
 `blocked` requires at least one `blocked` dimension, one blocked
 scope/Docs/safety conclusion, and an open `external_blocker` finding whose
 dimension references blocked evidence. Open metadata-revision findings remain

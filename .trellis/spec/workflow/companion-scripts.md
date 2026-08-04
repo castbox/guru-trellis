@@ -1341,10 +1341,17 @@ publication invocation. Existing deterministic content validators are reused
 inside the active owner's recorder/checker after semantic review; calling a
 recorder to fabricate missing entry content or a pass remains forbidden.
 
-Stale re-entry carries only `task_ref` plus the current `stale_reason`; the
-recorder replaces its own current checkpoint after a delta-scoped semantic
-rereview. No supersession identity or re-entry narrative enters public input,
-private checkpoint, or output.
+Stale re-entry carries only `task_ref`, the Finalizer-projected
+`reviewed_content_head`, and the current `stale_reason`; the recorder replaces
+its own current checkpoint after a delta-scoped semantic rereview. The wrapper
+requires the checked owner result to retain that same reviewed identity. A
+legacy payload without the HEAD fails closed, and normal continuity drift is
+checker-compatible only with an AI-selected `return_to_task_work` after the
+reviewed HEAD is proven to be an ancestor of current HEAD and its descendant
+diff is successfully inspected. Invalid or non-ancestor identities and
+inspection failure remain fail closed on every exit. No
+supersession identity or re-entry narrative enters public input, private
+checkpoint, or output.
 
 Neither command decides review dimension status, issue disposition, PR body or
 Docs sufficiency, safety/deployment conclusions, finding route, metadata edit,

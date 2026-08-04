@@ -2639,6 +2639,7 @@ def stage_finalization_owner_execution(
             "publication_review_stale": {
                 "exit_id": "publication_review_stale",
                 "task_ref": public_input["task_ref"],
+                "reviewed_content_head": head,
                 "stale_reason": "publication_review_stale",
             },
             "resume_finalization": {
@@ -2955,9 +2956,8 @@ def stage_production_owner_execution(
             )
             reviewed_content_head = branch_check["reviewed_content_head"]
             public_input["task_ref"] = task.relative_to(fixture).as_posix()
-            if public_input["profile"] == "publication_review":
-                public_input["reviewed_content_head"] = reviewed_content_head
-            else:
+            public_input["reviewed_content_head"] = reviewed_content_head
+            if public_input["profile"] != "publication_review":
                 initial_input = {
                     "profile": "publication_review",
                     "mode": public_input["mode"],

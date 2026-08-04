@@ -103,6 +103,16 @@ class TaskPublicationContractTest(unittest.TestCase):
             [item["id"] for item in profiles],
             ["publication_review", "publication_review_stale"],
         )
+        self.assertEqual(
+            self.interface["public_contracts"]["input"]["aggregate_schema"][
+                "schema_id"
+            ],
+            "guru-production-review-task-publication-input-aggregate-3.0",
+        )
+        self.assertEqual(
+            profiles[1]["schema"]["schema_id"],
+            "guru-production-review-task-publication-input-publication-review-stale-2.0",
+        )
 
     def test_stale_profile_contains_only_direct_reentry_inputs(self) -> None:
         schema = json.loads(
@@ -112,7 +122,12 @@ class TaskPublicationContractTest(unittest.TestCase):
             ).read_text(encoding="utf-8")
         )
         expected = {
-            "profile", "mode", "task_ref", "stale_reason", "review_intent",
+            "profile",
+            "mode",
+            "task_ref",
+            "reviewed_content_head",
+            "stale_reason",
+            "review_intent",
         }
         self.assertEqual(set(schema["properties"]), expected)
         self.assertEqual(set(schema["required"]), expected)
@@ -123,6 +138,31 @@ class TaskPublicationContractTest(unittest.TestCase):
         ):
             payload = json.loads((PACKAGE / relative).read_text(encoding="utf-8"))
             self.assertNotIn("reentry_context", payload, relative)
+
+    def test_legacy_stale_v1_input_fails_closed_without_head_synthesis(self) -> None:
+        schema = json.loads(
+            (
+                PACKAGE
+                / "schemas/public-publication-review-stale-input.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        legacy = {
+            "profile": "publication_review_stale",
+            "mode": "workflow",
+            "task_ref": ".trellis/tasks/07-24-example-publication",
+            "stale_reason": "publication_review_head_mismatch",
+            "review_intent": "stale_reentry_review",
+        }
+        errors = GTT.skill_json_schema_validation_errors(
+            legacy,
+            schema,
+            "legacy stale publication input",
+        )
+        self.assertTrue(errors)
+        self.assertTrue(
+            any("reviewed_content_head" in error for error in errors),
+            errors,
+        )
 
     def test_three_minimal_exits_have_unique_consumers(self) -> None:
         exits = self.interface["external_exits"]
@@ -506,6 +546,91 @@ class TaskPublicationContractTest(unittest.TestCase):
             root,
             task_dir,
             self.readiness_example["reviewed_content_head"],
+        )
+
+    def test_only_proven_descendant_content_drift_allows_return_to_task_work(
+        self,
+    ) -> None:
+        root = Path("/repo")
+        task_dir = root / self.readiness_example["task_ref"]
+
+        def checked(
+            payload: dict,
+            *,
+            ancestor: bool = True,
+            diff_returncode: int = 0,
+            diff_stdout: str = "trellis/workflows/guru-team/workflow.md\n",
+        ) -> list[str]:
+            with (
+                mock.patch.object(GTT, "task_publication_schema", return_value={}),
+                mock.patch.object(
+                    GTT, "skill_json_schema_validation_errors", return_value=[]
+                ),
+                mock.patch.object(GTT, "load_config", return_value={}),
+                mock.patch.object(GTT, "current_head", return_value="d" * 40),
+                mock.patch.object(
+                    GTT,
+                    "is_ancestor",
+                    return_value=ancestor,
+                ),
+                mock.patch.object(
+                    GTT,
+                    "run",
+                    return_value=subprocess.CompletedProcess(
+                        args=[],
+                        returncode=diff_returncode,
+                        stdout=diff_stdout,
+                        stderr="",
+                    ),
+                ),
+                mock.patch.object(
+                    GTT,
+                    "task_publication_entry_precondition_bindings",
+                    return_value=({}, [], {}, {}),
+                ),
+                mock.patch.object(GTT, "task_publication_closeout_preflight"),
+                mock.patch.object(GTT, "task_publication_semantic_errors", return_value=[]),
+            ):
+                return GTT.task_publication_check_errors(root, task_dir, payload)
+
+        returning = self.return_payload()
+        self.assertEqual(checked(returning), [])
+
+        ready = copy.deepcopy(self.readiness_example)
+        self.assertTrue(
+            any(
+                "reviewed content HEAD is stale" in error
+                for error in checked(ready)
+            )
+        )
+
+        blocked = self.blocked_payload()
+        self.assertTrue(
+            any(
+                "reviewed content HEAD is stale" in error
+                for error in checked(blocked)
+            )
+        )
+
+        for case, kwargs in (
+            ("non-ancestor", {"ancestor": False}),
+            ("inspection-failure", {"diff_returncode": 1, "diff_stdout": ""}),
+        ):
+            with self.subTest(case=case):
+                self.assertTrue(
+                    any(
+                        "reviewed content HEAD is stale" in error
+                        for error in checked(returning, **kwargs)
+                    )
+                )
+
+        invalid = copy.deepcopy(returning)
+        invalid["reviewed_content_head"] = "not-a-sha"
+        self.assertTrue(
+            any(
+                "reviewed content HEAD is invalid" in error
+                for error in checked(invalid)
+            )
         )
 
     def test_both_modes_declare_exact_eight_entry_preconditions(self) -> None:

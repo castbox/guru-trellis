@@ -651,6 +651,11 @@ BRANCH_REVIEW_DESCENDANT_METADATA_FILES = {
     "task-finalization-gate.json",
     "finish-summary.json",
 }
+BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX = (
+    "Branch Review content changed after reviewed_content_head: "
+)
+
+
 def finish_summary_normalized_text(value: str) -> str:
     folded = value.strip().casefold()
     folded = re.sub(r"\s+", "", folded)
@@ -6995,7 +7000,7 @@ def review_branch_content_continuity_errors(
     ]
     if non_metadata:
         return [
-            "Branch Review content changed after reviewed_content_head: "
+            BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX
             + ", ".join(non_metadata[:20])
         ]
     return []
@@ -10888,6 +10893,8 @@ def task_publication_check_errors(
     )
     if payload.get("task_ref") != repo_relative(root, task_dir):
         errors.append("task publication task identity mismatch")
+    route = payload.get("route") if isinstance(payload.get("route"), dict) else {}
+    typed_exit = route.get("typed_exit")
     reviewed_content_head = str(payload.get("reviewed_content_head") or "")
     if not re.fullmatch(r"[0-9a-f]{40}", reviewed_content_head):
         errors.append("task publication reviewed content HEAD is invalid")
@@ -10901,6 +10908,11 @@ def task_publication_check_errors(
         errors.extend(
             "task publication reviewed content HEAD is stale: " + item
             for item in continuity_errors
+            if not (
+                typed_exit == "return_to_task_work"
+                and item.startswith(BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX)
+                and len(item) > len(BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX)
+            )
         )
     invocation = {
         "task_ref": payload.get("task_ref"),
@@ -10914,7 +10926,6 @@ def task_publication_check_errors(
         direct_runtime_inputs=direct_runtime_inputs,
         finalization_owned_paths=finalization_owned_paths,
     )
-    typed_exit = (payload.get("route") or {}).get("typed_exit")
     if typed_exit == "ready":
         errors.extend(entry_errors)
         try:
@@ -20585,8 +20596,7 @@ def production_owner_result(
         )
     elif skill_id == TASK_PUBLICATION_SKILL_ID:
         input_matches = (
-            public_input.get("profile") == "publication_review_stale"
-            or result.get("reviewed_content_head")
+            result.get("reviewed_content_head")
             == public_input.get("reviewed_content_head")
         )
     else:
@@ -27549,14 +27559,17 @@ def finalization_publication_owner_result(
         )
 
     profile = str(public_input.get("profile") or "")
+    reviewed_content_head = str(
+        public_input.get("reviewed_content_head")
+        or public_input.get("reviewed_head")
+        or ""
+    )
     if profile == "publication_ready":
-        reviewed_content_head = str(
-            public_input.get("reviewed_content_head") or ""
-        )
         task = task_json(task_dir)
         if task.get("status") != "in_progress":
             return {
                 "owner_status": "stale",
+                "reviewed_content_head": reviewed_content_head,
                 "stale_reason": "publication_review_stale",
             }
         repository = task_publication_repository_binding(root, task_dir)
@@ -27576,6 +27589,7 @@ def finalization_publication_owner_result(
         if plan is None:
             return {
                 "owner_status": "stale",
+                "reviewed_content_head": reviewed_content_head,
                 "stale_reason": "publication_review_missing",
             }
         reviewed_content_head = str(plan["git"]["reviewed_work_head"])
@@ -27583,6 +27597,7 @@ def finalization_publication_owner_result(
         if isinstance(supplied_head, str) and supplied_head != reviewed_content_head:
             return {
                 "owner_status": "stale",
+                "reviewed_content_head": reviewed_content_head,
                 "stale_reason": "publication_review_head_mismatch",
             }
 
@@ -27595,6 +27610,7 @@ def finalization_publication_owner_result(
     if continuity_errors:
         return {
             "owner_status": "stale",
+            "reviewed_content_head": reviewed_content_head,
             "stale_reason": "publication_review_head_mismatch",
             "errors": continuity_errors,
         }
@@ -28706,6 +28722,7 @@ def finalization_eval_preview_context(
         "publication": {"owner_status": "current"},
         "publication_status": payload["publication_status"],
         "publication_stale_reason": payload["publication_stale_reason"],
+        "publication_reviewed_content_head": payload["reviewed_head"],
         "verification": verification,
     }
 
@@ -28885,6 +28902,9 @@ def finalization_preview_context(
                 "publication": publication,
                 "publication_status": "stale",
                 "publication_stale_reason": publication["stale_reason"],
+                "publication_reviewed_content_head": publication.get(
+                    "reviewed_content_head"
+                ),
                 "verification": None,
             }
         published_transition_complete = False
@@ -28982,6 +29002,7 @@ def finalization_preview_context(
         "publication": publication,
         "publication_status": "current",
         "publication_stale_reason": None,
+        "publication_reviewed_content_head": plan["git"]["reviewed_work_head"],
         "verification": verification,
     }
 
@@ -29003,7 +29024,7 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             "closeout_plan": None,
             "closeout_plan_bytes_sha256": None,
             "closeout_plan_digest": None,
-            "reviewed_head": None,
+            "reviewed_head": context.get("publication_reviewed_content_head"),
             "transaction_state": context["transaction_state"],
             "publication_status": context["publication_status"],
             "publication_stale_reason": context["publication_stale_reason"],
@@ -29112,6 +29133,10 @@ def finalization_validate_route(
             (
                 "reviewed_head",
                 plan["git"]["reviewed_work_head"] if plan is not None else None,
+            ),
+            (
+                "reviewed_content_head",
+                context.get("publication_reviewed_content_head"),
             ),
         ):
             if field in output and output.get(field) != expected:

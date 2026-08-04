@@ -112,7 +112,9 @@ states 全部 finalizer-private；plan/digest 只绑定 deterministic executor/r
 verification boundary、唯一 Draft PR、final projection、official archive transaction、
 三方 HEAD equality 与 draft-to-ready。Missing/stale publication evidence由 #116 owner
 checker 形成客观 fact，再由 AI 选择 `publication_review_stale`；runtime 不代替 route
-judgment。Combined integration 由 canonical `guru-finish-work`、两个 terminal eval、
+judgment。该 stale DTO 只增加 Publication 直接消费的 `reviewed_content_head`，旧两字段
+payload fail closed；真实 content continuity drift 只能由 Publication 语义门禁返回 Phase 2，
+不能产生 `ready`。Combined integration 由 canonical `guru-finish-work`、两个 terminal eval、
 checked #117 private projection bridge 与 installed acceptance 共同覆盖；#132 仍独占
 legacy overlay 物理删除。
 
