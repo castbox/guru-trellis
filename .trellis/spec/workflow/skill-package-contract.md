@@ -1407,8 +1407,9 @@ The package owns two closed structured profiles. `publication_review` requires
 producer supplies only `task_ref/reviewed_content_head`, and the target-owned
 authoring example supplies `profile/mode/review_intent`.
 `publication_review_stale` requires
-`profile/mode/task_ref/stale_reason/review_intent`; its future
-producer supplies only `task_ref/stale_reason`. Both partitions are disjoint,
+`profile/mode/task_ref/reviewed_content_head/stale_reason/review_intent`; its
+Finalizer producer supplies only
+`task_ref/reviewed_content_head/stale_reason`. Both partitions are disjoint,
 cover the complete target required set, and merge without overwrite. Any legacy
 Publication input carrying `reviewed_head` or `review_ref` fails closed and
 returns to the Branch Review owner. That owner alone may read its legacy gate,
@@ -1451,12 +1452,20 @@ dimension and cannot carry blocked evidence. `blocked` requires an open
 blocked scope/Docs/safety conclusion. Open metadata-revision findings remain
 inside the Skill loop and cannot satisfy an external exit. Legacy deterministic
 `ready=true` snapshots and legacy publication refs never satisfy the v2 gate.
+For a stale-profile invocation whose immutable reviewed HEAD has normal content
+continuity drift, only a semantic `return_to_task_work` may pass the checker;
+`ready` and `blocked` do not bypass continuity. This exception requires a valid
+reviewed HEAD proven to be an ancestor of current HEAD and a successful
+descendant diff inspection; invalid or non-ancestor identities and inspection
+failure remain fail closed on every exit.
 
-For `publication_review_stale`, `stale_reason` binds the current automatic
-re-entry invocation only. It is neither persisted in the v2 checkpoint nor
-copied into any exit. The fresh semantic result replaces the single
-owner-private checkpoint; no supersession ref or user confirmation is required
-for mapped stale/re-entry handling.
+For `publication_review_stale`, `reviewed_content_head` binds producer,
+invocation, and checked owner result while `stale_reason` binds the current
+automatic re-entry invocation only. Neither is persisted as re-entry narrative
+or copied into a Publication exit. The fresh semantic result replaces the
+single owner-private checkpoint; no supersession ref or user confirmation is
+required for mapped stale/re-entry handling. A legacy two-field stale DTO fails
+closed and must be regenerated from current Finalizer facts.
 
 Metadata-only findings may revise only the contract-listed task-local PR body,
 finish-summary index, or Issue Scope Ledger publication metadata, followed by
@@ -1577,6 +1586,12 @@ authoring seed. Internal transaction states, closeout plan, publication and
 verification bodies, PR/archive facts, recovery history, HEAD facts, and
 digests remain owner-private.
 
+`publication_review_stale` v2 projects exactly
+`task_ref/reviewed_content_head/stale_reason` into Publication's target-owned
+stale profile. The reviewed HEAD is the minimal continuity identity required by
+that direct consumer; no other Finalizer facts become public. Existing v1 stale
+DTOs without the HEAD fail closed and are never upgraded by inference.
+
 The `verification_required.repo_ref` is bound to the immutable plan repository,
 and `published.task_ref` is the exact plan archive locator. The ignored-runtime
 gate retains only a private executor marker through the transaction; only a
@@ -1625,9 +1640,11 @@ resume is restricted to the declared post-content recovery states and excludes
 Stale Publication DTO content continuity, or missing/stale legacy v1 evidence,
 is retained as an objective owner fact rather than collapsed into a generic
 invocation error. The workflow automatically selects the semantic stale route;
-recorder/checker validate a no-plan, no-side-effect private gate and project
-only `task_ref/stale_reason`. Invalid private state, plan, path, HEAD, or draft
-identity remains blocked or fail closed according to the package contract.
+recorder/checker validate a no-plan, no-side-effect private gate and the
+Finalizer-to-Publication projection carries only
+`task_ref/reviewed_content_head/stale_reason`. A legacy two-field DTO without
+the reviewed HEAD, or invalid private state, plan, path, HEAD, or draft
+identity, remains blocked or fail closed according to the package contract.
 
 Package-local production eval executes the real public wrapper. The runtime
 selects and validates the actual exit schema before the grader compares

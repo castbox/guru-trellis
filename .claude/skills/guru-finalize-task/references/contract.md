@@ -162,9 +162,11 @@ schema is upgraded in place.
 ## Recovery
 
 - Stale Publication DTO content identity, or missing/stale legacy 1.x
-  publication evidence -> `publication_review_stale`. The exact active schema
-  1.2 pre-draft head-mismatch projection described above is retired internally
-  before this existing DTO is emitted.
+  publication evidence -> `publication_review_stale`, carrying the exact stale
+  `reviewed_content_head` for Publication re-entry. The exact active schema 1.2
+  pre-draft head-mismatch projection described above is retired internally
+  before this existing exit is emitted. If current Finalizer facts cannot
+  supply that reviewed identity, fail closed instead of inventing one.
 - Content pushed with verification pending -> `verification_required`.
 - Same-plan transient executor failure, draft-to-ready retry, interrupted
   active/archive move, or exact-commit continuation -> `resume_finalization`.
@@ -220,8 +222,8 @@ current; same-plan recovery reuses that private binding.
 - `verification_required`: task, plan, repository, reviewed HEAD, verification
   target; `repo_ref` is exactly the immutable plan repository; consumed by
   `guru-verify-extension-installation`.
-- `publication_review_stale`: task and stable stale reason; consumed by
-  `guru-review-task-publication`.
+- `publication_review_stale`: task, the exact stale reviewed content HEAD, and
+  stable stale reason; consumed by `guru-review-task-publication`.
 - `resume_finalization`: task and same plan; consumed by this Skill.
 - `reprepare_required`: task and `archive_month_changed`; consumed by this
   Skill's reprepare profile. The producer seed is exactly `task_ref` and
@@ -231,7 +233,9 @@ current; same-plan recovery reuses that private binding.
 - `blocked`: closed reason and remediation; consumed by the finalization stop.
 
 Every DTO uses `exit_id`. Gate, plan, review, verification, PR, archive,
-recovery, digest, path, blob, and full HEAD facts remain private.
+recovery, digest, path, blob, and unrelated Git HEAD facts remain private.
+Existing v1 stale DTOs without `reviewed_content_head` are invalid migration
+signals and must be regenerated from current Finalizer facts.
 
 The ignored owner-private gate never stores an early public `published` DTO.
 Before and through archive it retains only the exact finalizer-private executor

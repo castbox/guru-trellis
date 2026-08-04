@@ -379,6 +379,138 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             owner_checker.assert_not_called()
             legacy_checker.assert_not_called()
 
+    def test_stale_finalizer_projection_returns_content_drift_to_phase_2(
+        self,
+    ) -> None:
+        runtime = load_selected_runtime()
+        finalizer_package = package("guru-finalize-task")
+        publication_package = package("guru-review-task-publication")
+        finalizer_interface = read_json(finalizer_package / "interface.json")
+        publication_interface = read_json(publication_package / "interface.json")
+
+        stale_output = read_json(
+            finalizer_package
+            / "examples/public-publication-review-stale-output.json"
+        )
+        stale_projection = next(
+            item
+            for item in finalizer_interface["public_contracts"]["projections"]
+            if item["id"] == "project_publication_review_stale"
+        )
+        stale_seed = runtime.skill_apply_projection(
+            stale_projection,
+            stale_output,
+        )
+        stale_authoring = read_json(
+            finalizer_package
+            / "examples/public-publication-review-stale-authoring.json"
+        )
+        stale_input = {**stale_seed, **stale_authoring}
+        stale_profile = next(
+            item
+            for item in publication_interface["public_contracts"]["input"][
+                "profiles"
+            ]
+            if item["id"] == "publication_review_stale"
+        )
+        stale_input_schema = read_json(
+            publication_package / stale_profile["schema"]["path"]
+        )
+        self.assertEqual(
+            runtime.skill_json_schema_validation_errors(
+                stale_input,
+                stale_input_schema,
+                "Finalizer stale projection",
+            ),
+            [],
+        )
+        self.assertEqual(
+            stale_input["reviewed_content_head"],
+            stale_output["reviewed_content_head"],
+        )
+
+        owner = read_json(publication_package / "examples/pr-readiness.json")
+        owner["task_ref"] = stale_input["task_ref"]
+        owner["reviewed_content_head"] = stale_input["reviewed_content_head"]
+        owner["dimensions"][0]["status"] = "finding"
+        owner["findings"] = [{
+            "finding_ref": "PUB-STALE-CONTENT-001",
+            "dimension": "diff_outcome_consistency",
+            "summary": "Current content advanced beyond the reviewed HEAD.",
+            "scope_basis": "The task implementation changed after Branch Review.",
+            "evidence_refs": ["git:reviewed_content_head", "git:HEAD"],
+            "affected_artifacts": ["trellis/workflows/guru-team/workflow.md"],
+            "route_class": "task_work",
+            "status": "open",
+            "closure_evidence": [],
+        }]
+        owner["conclusions"]["issue_scope"]["status"] = "finding"
+        owner["route"] = {"typed_exit": "return_to_task_work"}
+        self.assertEqual(
+            runtime.task_publication_semantic_errors(
+                owner,
+                reviewed_content_head=stale_input["reviewed_content_head"],
+            ),
+            [],
+        )
+
+        with tempfile.TemporaryDirectory(prefix="guru-stale-publication-") as temporary:
+            root = Path(temporary)
+            task_dir = root / stale_input["task_ref"]
+            task_dir.mkdir(parents=True)
+            continuity_error = (
+                runtime.BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX
+                + "trellis/workflows/guru-team/workflow.md"
+            )
+            with (
+                mock.patch.object(
+                    runtime,
+                    "task_publication_schema",
+                    return_value=read_json(
+                        publication_package / "schemas/pr-readiness.schema.json"
+                    ),
+                ),
+                mock.patch.object(runtime, "load_config", return_value={}),
+                mock.patch.object(runtime, "current_head", return_value="d" * 40),
+                mock.patch.object(
+                    runtime,
+                    "review_branch_content_continuity_errors",
+                    return_value=[continuity_error],
+                ),
+                mock.patch.object(
+                    runtime,
+                    "task_publication_entry_precondition_bindings",
+                    return_value=({}, [continuity_error], {}, {}),
+                ),
+            ):
+                self.assertEqual(
+                    runtime.task_publication_check_errors(root, task_dir, owner),
+                    [],
+                )
+
+        return_schema = read_json(
+            publication_package
+            / "schemas/public-return-to-task-work-output.schema.json"
+        )
+        returned = runtime.stage0_build_output(
+            "guru-review-task-publication",
+            "return_to_task_work",
+            stale_input,
+            owner,
+            None,
+            None,
+            return_schema,
+        )
+        self.assertEqual(
+            returned,
+            {
+                "exit_id": "return_to_task_work",
+                "task_ref": stale_input["task_ref"],
+                "finding_refs": ["PUB-STALE-CONTENT-001"],
+                "resume_target": "phase-2",
+            },
+        )
+
     def test_selected_runtime_converges_pr_head_and_bounds_persistent_mismatch(
         self,
     ) -> None:

@@ -82,6 +82,10 @@ guru-review-task-publication；只有 ready 进入 guru-finalize-task。Finalize
 verification、stale、resume 与 reprepare exits 按 Interface 自动路由，不形成新的用户
 continuation gate。
 
+Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
+`reviewed_content_head`；旧两字段 payload fail closed，真实 descendant content
+drift 只能由 Publication 语义门禁返回现有 Phase 2 router，不能产生 `ready`。
+
 Interface 1.3 的十二条 semantic package handoff 使用 target-owned
 skill_input_authoring_seed；producer 只给 minimal seed，target authoring 补齐其自己拥有
 的 fresh semantic input，projection 只允许 direct/select/rename/normalize。冻结的

@@ -1493,9 +1493,16 @@ escape the internal rereview loop through an external exit. A
 checker-reproducible failed precondition may support only an already AI-selected
 non-ready route; recorder/checker rebuild it transiently and do not persist the
 binding or choose the semantic route. A stale invocation carries only
-`task_ref`, `stale_reason`, and target-authored profile/mode/review intent. The
-public wrapper reruns the current owner checker; no re-entry narrative or
-supersession identity enters the public input, private checkpoint, or exit.
+`task_ref`, `reviewed_content_head`, `stale_reason`, and target-authored
+profile/mode/review intent. The HEAD binds the Finalizer projection to the
+checked Publication owner; a legacy payload without it fails closed rather than
+being synthesized. Normal content continuity drift is accepted only for an
+AI-selected `return_to_task_work` after the reviewed HEAD is proven to be an
+ancestor of current HEAD and its descendant diff is successfully inspected.
+Invalid or non-ancestor identities and inspection failure remain fail closed on
+every exit; `ready` remains continuity-strict. The public
+wrapper reruns the current owner checker; no re-entry narrative or supersession
+identity enters the public input, private checkpoint, or exit.
 Publication `ready` already runs the same side-effect-free Finalizer preflight
 that the first preview uses. Finalizer consumes only the minimal ready DTO and
 never augments or interprets the Publication checkpoint.

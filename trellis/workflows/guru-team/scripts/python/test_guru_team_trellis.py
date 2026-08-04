@@ -614,6 +614,7 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             "public-publication-review-stale-input.json",
         )
         public_input["task_ref"] = self.task_rel
+        public_input["reviewed_content_head"] = "c" * 40
         owner = json.loads(
             (
                 self.packages
@@ -642,6 +643,41 @@ class ProductionPublicInvocationTest(unittest.TestCase):
         })
         self.assertFalse(
             {"stale_reason", "reentry_context", "publication_ref"} & set(output)
+        )
+
+    def test_publication_stale_wrapper_rejects_owner_head_mismatch(self) -> None:
+        public_input = self.example_input(
+            gtt.TASK_PUBLICATION_SKILL_ID,
+            "public-publication-review-stale-input.json",
+        )
+        public_input["task_ref"] = self.task_rel
+        public_input["reviewed_content_head"] = "d" * 40
+        owner = json.loads(
+            (
+                self.packages
+                / gtt.TASK_PUBLICATION_SKILL_ID
+                / "examples/pr-readiness.json"
+            ).read_text(encoding="utf-8")
+        )
+        owner["task_ref"] = self.task_rel
+        owner["reviewed_content_head"] = "c" * 40
+        checked = {
+            "status": "ok",
+            "typed_exit": "ready",
+            "reviewed_content_head": "c" * 40,
+            "owner_result": owner,
+        }
+
+        with self.assertRaises(gtt.WorkflowError) as mismatch:
+            self.invoke(
+                gtt.TASK_PUBLICATION_SKILL_ID,
+                public_input,
+                owner,
+                checked,
+            )
+        self.assertEqual(
+            mismatch.exception.payload.get("code"),
+            "owner_result_input_mismatch",
         )
 
     def test_commit_semantic_route_is_owned_by_private_candidate(self) -> None:
@@ -11372,6 +11408,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "output": {
                     "exit_id": "publication_review_stale",
                     "task_ref": task_ref,
+                    "reviewed_content_head": reviewed_head,
                     "stale_reason": "publication_review_head_mismatch",
                 },
             },
@@ -11719,6 +11756,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             {
                 "exit_id": "publication_review_stale",
                 "task_ref": task_ref,
+                "reviewed_content_head": plan["git"]["reviewed_work_head"],
                 "stale_reason": "publication_review_head_mismatch",
             },
         )
@@ -13087,6 +13125,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "output": {
                         "exit_id": "publication_review_stale",
                         "task_ref": public_input["task_ref"],
+                        "reviewed_content_head": self.head,
                         "stale_reason": "publication_review_missing",
                     },
                 },

@@ -462,6 +462,9 @@ must not suppress applicable findings, and path escape, invalid UTF-8, or
 invalid JSON must still block.
 
 Publication regression coverage must additionally reject missing stale reason,
+legacy stale input without `reviewed_content_head`, stale input/checked-owner
+HEAD mismatch, and continuity drift on any exit other than
+`return_to_task_work`,
 legacy public inputs that carry Branch Review private identities, any `ready`
 gate with a failed one of the eight transient entry preconditions or failed
 shared Finalizer preflight, open objects hidden by the private schema, duplicate
@@ -645,6 +648,9 @@ re-entry, metadata correction to fresh pass, metadata correction that reveals
 durable drift, legacy readiness rejection, and the shared side-effect-free
 Finalizer preflight before `ready`. Finalization tests prove the minimal ready
 DTO (`exit_id/task_ref/reviewed_content_head`) plus live facts is sufficient;
+the Finalizer stale v2 DTO preserves that same reviewed identity through the
+unique Publication projection, and a combined regression proves content drift
+returns `finding_refs` with `resume_target=phase-2`;
 the Publication wrapper retires its checkpoint after valid output, and Finalizer
 never augments, parses, or deletes that checkpoint. Finalizer terminal tests
 prove it deletes only its own gate after the `published` DTO validates. A later closeout

@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finalize-task-output-publication-review-stale-1.0",
+  "$id": "guru-finalize-task-output-publication-review-stale-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["exit_id", "task_ref", "stale_reason"],
+  "required": ["exit_id", "task_ref", "reviewed_content_head", "stale_reason"],
   "properties": {
     "exit_id": {"const": "publication_review_stale"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "reviewed_content_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "stale_reason": {"enum": ["publication_review_missing", "publication_review_stale", "publication_review_head_mismatch"]}
   }
 }
