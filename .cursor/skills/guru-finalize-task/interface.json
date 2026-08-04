@@ -85,7 +85,7 @@
     {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record only the completed AI review, objective task/plan/content identity and selected route; user authorization remains conversation-only"},
     {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate the minimal gate against current task, plan, content, route, consumer and transaction facts"},
     {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing closeout engine without choosing the external route"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate public input, rerun the finalization gate checker, select the actual exit schema and emit one minimal DTO"}
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate public input, rerun the finalization gate checker, retire only an exact plan-owned active schema 1.2 stale pre-draft projection when required, select the actual exit schema and emit one minimal DTO"}
   ],
   "external_exits": [
     {"id": "verification_required", "evidence": "reviewed content is pushed and the immutable plan requires extension installation verification before PR or archive", "consumer": {"kind": "skill", "id": "guru-verify-extension-installation"}},
