@@ -1,0 +1,12 @@
+{
+  "id": "negative-retired-current-payload",
+  "mutation": {
+    "type": "add_retired_current_payload",
+    "path": ".agents/skills/trellis-start/SKILL.md"
+  },
+  "expected_status": "error",
+  "expected_error_codes": [
+    "fixed_key_set_mismatch",
+    "retired_current_payload_digest"
+  ]
+}

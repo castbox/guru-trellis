@@ -7548,6 +7548,7 @@ class ReviewBranchAncestryTest(unittest.TestCase):
         task_ref = ".trellis/tasks/08-01-review-ancestry"
         status_paths = [
             f"{task_ref}/pr-body.md",
+            f"{task_ref}/issue-scope-ledger.json",
             f"{task_ref}/design.md",
             f"{task_ref}/nested/pr-body.md",
             ".trellis/tasks/other/pr-body.md",
@@ -7569,10 +7570,41 @@ class ReviewBranchAncestryTest(unittest.TestCase):
         self.assertEqual(
             dirty_paths,
             [
+                f"{task_ref}/issue-scope-ledger.json",
                 f"{task_ref}/design.md",
                 f"{task_ref}/nested/pr-body.md",
                 ".trellis/tasks/other/pr-body.md",
                 ".trellis/.runtime/guru-team/debug.json",
+            ],
+        )
+
+    def test_finalizer_dirty_gate_allows_publication_issue_scope_only_when_explicit(
+        self,
+    ) -> None:
+        task_ref = ".trellis/tasks/08-01-review-ancestry"
+        status_paths = [
+            f"{task_ref}/issue-scope-ledger.json",
+            f"{task_ref}/design.md",
+            ".trellis/tasks/other/issue-scope-ledger.json",
+        ]
+
+        with mock.patch.object(
+            gtt,
+            "git_status_paths",
+            return_value=status_paths,
+        ) as git_status:
+            dirty_paths = gtt.finalizer_unreviewed_dirty_paths(
+                self.root,
+                self.task_dir,
+                allow_publication_issue_scope_ledger=True,
+            )
+
+        git_status.assert_called_once_with(self.root, fail_closed=True)
+        self.assertEqual(
+            dirty_paths,
+            [
+                f"{task_ref}/design.md",
+                ".trellis/tasks/other/issue-scope-ledger.json",
             ],
         )
 
@@ -7726,16 +7758,12 @@ class AgentRecoveryCheckpointTest(unittest.TestCase):
 class FinishWorkEntrypointContractTest(unittest.TestCase):
     REPO_ROOT = Path(__file__).resolve().parents[5]
     ENTRYPOINT_FILES = [
-        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
-        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
-        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
-        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
-        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
-        ".agents/skills/trellis-finish-work/SKILL.md",
-        ".codex/prompts/trellis-finish-work.md",
-        ".codex/skills/trellis-finish-work/SKILL.md",
-        ".claude/commands/trellis/finish-work.md",
-        ".cursor/commands/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+        ".codex/prompts/guru-finish-work.md",
+        ".claude/commands/guru/finish-work.md",
+        ".cursor/commands/guru-finish-work.md",
     ]
     PUBLIC_DOC_FILES = [
         "README.md",
@@ -7805,13 +7833,13 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
             with self.subTest(path=relpath):
                 content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
                 for required in (
-                    "`.trellis/workflow.md` as the global route",
-                    "Phase 3.6",
-                    "Phase 3.7",
+                    "read `.trellis/workflow.md`",
+                    "Phase 3.6/3.7",
                     "guru-review-task-publication",
                     "guru-verify-extension-installation",
                     "guru-finalize-task",
-                    "Automatically consume",
+                    "Consume only their current public typed exits",
+                    "Mapped",
                 ):
                     self.assertIn(required, content, f"{relpath} must route through {required!r}")
                 for forbidden in (
@@ -7855,27 +7883,161 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                     self.assertNotIn("".join(forbidden.split()), content)
 
 
+class ThinWorkflowPublicGraphContractTest(unittest.TestCase):
+    REPO_ROOT = Path(__file__).resolve().parents[5]
+    CANONICAL_WORKFLOW = Path("trellis/workflows/guru-team/workflow.md")
+    DOGFOOD_WORKFLOW = Path(".trellis/workflow.md")
+    SKILL_ROOT = Path("trellis/skills/guru-team")
+    MARKERS = {
+        "invoke": re.compile(r"^<!-- guru-skill-invoke: (\{.*\}) -->$"),
+        "exit": re.compile(r"^<!-- guru-skill-exit: (\{.*\}) -->$"),
+        "workflow": re.compile(r"^<!-- guru-workflow-target: (\{.*\}) -->$"),
+        "stop": re.compile(r"^<!-- guru-stop-target: (\{.*\}) -->$"),
+    }
+
+    def marker_payloads(self, text: str, kind: str) -> list[dict[str, object]]:
+        pattern = self.MARKERS[kind]
+        return [
+            json.loads(match.group(1))
+            for line in text.splitlines()
+            if (match := pattern.fullmatch(line)) is not None
+        ]
+
+    def expected_public_graph(
+        self,
+    ) -> tuple[set[str], dict[tuple[str, str], dict[str, str]], set[str], set[str]]:
+        skill_root = self.REPO_ROOT / self.SKILL_ROOT
+        registry = json.loads((skill_root / "registry.json").read_text(encoding="utf-8"))
+        active_rows = [row for row in registry["skills"] if row["state"] == "active"]
+        active_ids = {row["id"] for row in active_rows}
+        exits: dict[tuple[str, str], dict[str, str]] = {}
+        workflow_targets: set[str] = set()
+        stop_targets: set[str] = set()
+        for row in active_rows:
+            interface = json.loads(
+                (skill_root / row["interface"]).read_text(encoding="utf-8")
+            )
+            for external_exit in interface["external_exits"]:
+                key = (row["id"], external_exit["id"])
+                self.assertNotIn(key, exits)
+                consumer = external_exit["consumer"]
+                exits[key] = consumer
+                if consumer["kind"] == "workflow":
+                    workflow_targets.add(consumer["id"])
+                elif consumer["kind"] == "stop":
+                    stop_targets.add(consumer["id"])
+        return active_ids, exits, workflow_targets, stop_targets
+
+    def test_canonical_and_dogfood_workflows_are_byte_identical(self) -> None:
+        canonical = (self.REPO_ROOT / self.CANONICAL_WORKFLOW).read_bytes()
+        dogfood = (self.REPO_ROOT / self.DOGFOOD_WORKFLOW).read_bytes()
+        self.assertEqual(canonical, dogfood)
+
+    def test_phase_context_entrypoints_remain_parseable(self) -> None:
+        script = self.REPO_ROOT / ".trellis/scripts/get_context.py"
+        cases = [
+            (["--mode", "phase"], "## Phase Index"),
+            (["--mode", "phase", "--step", "0.4"], "guru-review-change-request"),
+            (["--mode", "phase", "--step", "1.1"], "Planning artifacts"),
+            (["--mode", "phase", "--step", "2.2"], "guru-check-task"),
+            (["--mode", "phase", "--step", "3.5"], "guru-review-branch"),
+        ]
+        for arguments, expected in cases:
+            with self.subTest(arguments=arguments):
+                completed = subprocess.run(
+                    [sys.executable, str(script), *arguments],
+                    cwd=self.REPO_ROOT,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+                self.assertIn(expected, completed.stdout)
+
+    def test_thin_workflow_matches_the_complete_interface_graph(self) -> None:
+        text = (self.REPO_ROOT / self.CANONICAL_WORKFLOW).read_text(encoding="utf-8")
+        active_ids, expected_exits, expected_workflow_targets, expected_stop_targets = (
+            self.expected_public_graph()
+        )
+
+        invokes = self.marker_payloads(text, "invoke")
+        exits = self.marker_payloads(text, "exit")
+        workflow_targets = self.marker_payloads(text, "workflow")
+        stop_targets = self.marker_payloads(text, "stop")
+
+        self.assertEqual(len(active_ids), 13)
+        self.assertEqual(len(expected_exits), 51)
+        self.assertEqual(len(expected_workflow_targets) + len(expected_stop_targets), 28)
+        self.assertEqual(len(invokes), 13)
+        self.assertEqual(len(exits), 51)
+        self.assertEqual(len(workflow_targets) + len(stop_targets), 28)
+
+        invoke_ids = [payload["skill"] for payload in invokes]
+        self.assertEqual(set(invoke_ids), active_ids)
+        self.assertEqual(len(invoke_ids), len(set(invoke_ids)))
+        self.assertTrue(
+            all(
+                payload == {"skill": payload["skill"], "required": True}
+                for payload in invokes
+            )
+        )
+
+        actual_exits: dict[tuple[str, str], dict[str, str]] = {}
+        for payload in exits:
+            key = (payload["skill"], payload["exit"])
+            self.assertNotIn(key, actual_exits)
+            actual_exits[key] = payload["consumer"]
+        self.assertEqual(actual_exits, expected_exits)
+
+        actual_workflow_targets = [payload["id"] for payload in workflow_targets]
+        actual_stop_targets = [payload["id"] for payload in stop_targets]
+        self.assertEqual(set(actual_workflow_targets), expected_workflow_targets)
+        self.assertEqual(set(actual_stop_targets), expected_stop_targets)
+        self.assertEqual(len(actual_workflow_targets), len(set(actual_workflow_targets)))
+        self.assertEqual(len(actual_stop_targets), len(set(actual_stop_targets)))
+
+    def test_workflow_contains_only_global_graph_and_boundaries(self) -> None:
+        text = (self.REPO_ROOT / self.CANONICAL_WORKFLOW).read_text(encoding="utf-8")
+        self.assertLessEqual(len(text.splitlines()), 420)
+        for forbidden in (
+            "entry_preconditions",
+            "planning_checked_dimensions",
+            "scope-before-severity",
+            "ten-dimension",
+            "eight-dimension",
+            "record-planning-approval",
+            "check-planning-approval",
+            "record-phase2-check",
+            "check-phase2-check",
+            "planning-approval.json",
+            "phase2-check.json",
+            "review-gate.json",
+            "pr-readiness.json",
+            "agent-assignment.json",
+            ".trellis/.runtime",
+            "guru_team_trellis.py",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, text)
+
+
 class HumanArtifactResolutionContractTest(unittest.TestCase):
     REPO_ROOT = Path(__file__).resolve().parents[5]
     CONTINUE_ENTRYPOINT_FILES = [
         "trellis/workflows/guru-team/workflow.md",
         ".trellis/workflow.md",
-        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
-        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
     ]
     FINISH_WORKFLOW_FILES = [
         "trellis/workflows/guru-team/workflow.md",
         ".trellis/workflow.md",
     ]
     FINISH_ENTRYPOINT_FILES = [
-        "trellis/presets/guru-team/overlays/.agents/skills/trellis-finish-work/SKILL.md",
-        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-finish-work.md",
-        "trellis/presets/guru-team/overlays/.codex/skills/trellis-finish-work/SKILL.md",
-        "trellis/presets/guru-team/overlays/.claude/commands/trellis/finish-work.md",
-        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-finish-work.md",
+        "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+        ".codex/prompts/guru-finish-work.md",
+        ".claude/commands/guru/finish-work.md",
+        ".cursor/commands/guru-finish-work.md",
     ]
 
     def assert_file_contains(self, relpath: str, snippets: list[str]) -> None:
@@ -7935,18 +8097,6 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
         "trellis/workflows/guru-team/workflow.md",
         ".trellis/workflow.md",
     ]
-    START_ENTRYPOINT_FILES = [
-        "trellis/presets/guru-team/overlays/.agents/skills/trellis-start/SKILL.md",
-        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-start.md",
-        "trellis/presets/guru-team/overlays/.codex/skills/trellis-start/SKILL.md",
-    ]
-    CONTINUE_ENTRYPOINT_FILES = [
-        "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-        "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-        "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-        "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
-        "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-    ]
     PUBLIC_DOC_FILES = [
         "docs/requirements/requirement-main.md",
         "docs/requirements/guru-team-trellis-flow.md",
@@ -7978,42 +8128,21 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
                 self.assertNotIn("intake clarity check", guru_team_gate)
                 self.assertNotIn("trellis-brainstorm", guru_team_gate)
 
-    def test_start_entrypoints_are_thin_workflow_loaders(self) -> None:
-        for relpath in self.START_ENTRYPOINT_FILES:
+    def test_preset_does_not_ship_upstream_start_or_continue_entries(self) -> None:
+        overlay_root = self.REPO_ROOT / "trellis/presets/guru-team/overlays"
+        forbidden = [
+            ".agents/skills/trellis-start/SKILL.md",
+            ".agents/skills/trellis-continue/SKILL.md",
+            ".codex/prompts/trellis-start.md",
+            ".codex/prompts/trellis-continue.md",
+            ".codex/skills/trellis-start/SKILL.md",
+            ".codex/skills/trellis-continue/SKILL.md",
+            ".claude/commands/trellis/continue.md",
+            ".cursor/commands/trellis-continue.md",
+        ]
+        for relpath in forbidden:
             with self.subTest(path=relpath):
-                self.assert_file_contains(
-                    relpath,
-                    [
-                        "thin fallback loader",
-                        "`.trellis/workflow.md`",
-                        "mandatory invoke `guru-sync-base`",
-                        "Do not call `prepare-task`",
-                        "`确认继续`",
-                    ],
-                )
-                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
-                for duplicated_detail in (
-                    "trellis-brainstorm",
-                    "issue body/comments",
-                    "create-worktree",
-                    "create-task",
-                    "task-start-context.json",
-                ):
-                    self.assertNotIn(duplicated_detail, content)
-
-    def test_continue_entrypoints_delegate_scope_change_gate_to_workflow(self) -> None:
-        for relpath in self.CONTINUE_ENTRYPOINT_FILES:
-            with self.subTest(path=relpath):
-                self.assert_file_contains(relpath, ["`.trellis/workflow.md` as the global route"])
-                content = (self.REPO_ROOT / relpath).read_text(encoding="utf-8")
-                for duplicated_detail in (
-                    "Scope Change Gate",
-                    "close_issues",
-                    "related_issues",
-                    "followup_issues",
-                    "GitHub-visible issue evidence",
-                ):
-                    self.assertNotIn(duplicated_detail, content)
+                self.assertFalse((overlay_root / relpath).exists())
 
     def test_public_docs_point_to_canonical_scope_and_interaction_contracts(self) -> None:
         for relpath in self.PUBLIC_DOC_FILES:
@@ -8400,65 +8529,6 @@ class ActivePublicReferenceContractTest(unittest.TestCase):
             "never accepted by public input schema 1.1",
         ]:
             self.assertIn(expected, package_contract)
-
-        overlay_pairs = [
-            (
-                "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-                ".agents/skills/trellis-continue/SKILL.md",
-            ),
-            (
-                "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-                ".codex/skills/trellis-continue/SKILL.md",
-            ),
-            (
-                "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-                ".codex/prompts/trellis-continue.md",
-            ),
-            (
-                "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
-                ".claude/commands/trellis/continue.md",
-            ),
-            (
-                "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-                ".cursor/commands/trellis-continue.md",
-            ),
-        ]
-        for canonical_relative, dogfood_relative in overlay_pairs:
-            with self.subTest(canonical=canonical_relative, dogfood=dogfood_relative):
-                canonical = root / canonical_relative
-                dogfood = root / dogfood_relative
-                self.assertEqual(canonical.read_bytes(), dogfood.read_bytes())
-                text = canonical.read_text(encoding="utf-8")
-                self.assertIn("`.trellis/workflow.md` as the global route", text)
-                for skill_id in (
-                    "guru-approve-task-plan",
-                    "guru-check-task",
-                    "guru-create-task-commit",
-                    "guru-review-branch",
-                    "guru-review-task-publication",
-                ):
-                    self.assertIn(skill_id, text)
-                self.assertIn("Automatically consume", text)
-                self.assertRegex(
-                    text,
-                    r"do not create(?: a separate)?\s+`implementation-handoff\.md`",
-                )
-                for duplicated_detail in (
-                    "Typed-exit route:",
-                    "only Phase 3.5 semantic owner",
-                    "`committed_head`",
-                    "`review_intent`",
-                    "guru-branch-review-implementation-router",
-                    "task-publication-review-blocked",
-                    "review-branch.sh",
-                    "check-review-gate.sh",
-                    "agent-assignment.json",
-                    "review-gate.json",
-                    "reviews/*.md",
-                    "reuse_decision: reuse-for-closure",
-                    "reuse_decisions[] decision=new-agent",
-                ):
-                    self.assertNotIn(duplicated_detail, text)
 
     def test_scanner_detects_forbidden_reference_in_dogfood_codex_agent_copy(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -9094,7 +9164,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             "asset_digests": asset_digests,
             "asset_inventory": asset_inventory,
             "ownership": {
-                "frozen_transitional_legacy_count": 43,
+                "frozen_transitional_legacy_count": 0,
                 "new_legacy_entries": [],
             },
             "sidecars": [],
@@ -9934,14 +10004,14 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             json.dumps(raised.exception.payload),
         )
 
-    def test_frozen_legacy_inventory_detects_added_owner(self) -> None:
+    def test_frozen_ownership_inventory_detects_reintroduced_legacy_owner(self) -> None:
         canonical = (
             Path(__file__).resolve().parents[5]
             / "trellis/presets/guru-team/ownership/upstream-ownership.json"
         )
         facts = gtt.extension_verification_ownership_facts(canonical)
         self.assertEqual(facts, {
-            "frozen_transitional_legacy_count": 43,
+            "frozen_transitional_legacy_count": 0,
             "new_legacy_entries": [],
         })
         payload = gtt.read_json(canonical)
@@ -9952,7 +10022,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         modified = self.root / "ownership.json"
         gtt.write_json(modified, payload)
         drift = gtt.extension_verification_ownership_facts(modified)
-        self.assertEqual(drift["frozen_transitional_legacy_count"], 44)
+        self.assertEqual(drift["frozen_transitional_legacy_count"], 1)
         self.assertTrue(drift["new_legacy_entries"])
 
     def test_installed_asset_inventory_covers_expected_categories_and_relations(
@@ -10828,6 +10898,45 @@ class TaskPublicationMetadataAllowlistTest(unittest.TestCase):
                     "Could not inspect Git status paths.",
                     finalization_error.exception.payload["errors"],
                 )
+
+    def test_finalizer_publication_owner_accepts_only_its_persisted_plan(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_relative = f"{task_ref}/{gtt.CLOSEOUT_PLAN_ARTIFACT}"
+        gtt.write_json(self.root / plan_relative, {"plan_digest": "f" * 64})
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_content_head": self.head,
+        }
+
+        owner_result = gtt.finalization_publication_owner_result(
+            self.root,
+            self.task_dir,
+            public_input,
+        )
+        self.assertEqual(owner_result["owner_status"], "current")
+        self.assertEqual(owner_result["reviewed_content_head"], self.head)
+
+        verification_relative = (
+            f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        )
+        gtt.write_json(
+            self.root / verification_relative,
+            {"status": "unreviewed"},
+        )
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            gtt.finalization_publication_owner_result(
+                self.root,
+                self.task_dir,
+                public_input,
+            )
+        self.assertEqual(
+            raised.exception.payload.get("unexpected_dirty_paths"),
+            [verification_relative],
+        )
 
 
 class CloseoutTransactionContractTest(unittest.TestCase):
@@ -12020,6 +12129,82 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 self.context,
                 verification_owner_result=verification_owner_result,
             )
+
+    def prepare_persisted_publication_plan_recheck(
+        self,
+        *,
+        semantic_ledger_drift: bool = False,
+    ) -> dict[str, object]:
+        self.task["status"] = "in_progress"
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        plan = self.build_plan(include_finalization_gate=True)
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+
+        ledger = gtt.record_marketplace_machine_evidence(
+            gtt.closeout_semantic_ledger(self.ledger),
+            plan["marketplace"]["pending_machine"],
+        )
+        if semantic_ledger_drift:
+            ledger["close_issues"][0]["reason"] = (
+                "unreviewed ledger semantic drift"
+            )
+        gtt.write_json(self.task_dir / "issue-scope-ledger.json", ledger)
+
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        dirty_paths = [
+            f"{task_ref}/issue-scope-ledger.json",
+            f"{task_ref}/{gtt.CLOSEOUT_PLAN_ARTIFACT}",
+            f"{task_ref}/{gtt.FINISH_SUMMARY_INDEX_ARTIFACT}",
+            f"{task_ref}/{gtt.PR_BODY_ARTIFACT}",
+        ]
+        args, patches = self.finalizer_takeover_runtime(ledger, dirty_paths)
+        publication_ready = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "reviewed_content_head": self.head,
+        }
+        real_dirty_gate = gtt.finalizer_unreviewed_dirty_paths
+        with contextlib.ExitStack() as stack:
+            for patcher in patches:
+                stack.enter_context(patcher)
+            stack.enter_context(
+                mock.patch.object(
+                    gtt,
+                    "finalizer_unreviewed_dirty_paths",
+                    wraps=real_dirty_gate,
+                )
+            )
+            return gtt.prepare_closeout(
+                self.root,
+                args,
+                {},
+                self.task_dir,
+                self.context,
+                publication_ready=publication_ready,
+            )
+
+    def test_persisted_publication_plan_recheck_accepts_bound_ledger_tail(
+        self,
+    ) -> None:
+        prepared = self.prepare_persisted_publication_plan_recheck()
+        self.assertEqual(
+            prepared["plan"]["schema_version"],
+            gtt.CLOSEOUT_PLAN_SCHEMA_VERSION,
+        )
+
+    def test_persisted_publication_plan_recheck_rejects_ledger_semantic_drift(
+        self,
+    ) -> None:
+        task_ref = gtt.repo_relative(self.root, self.task_dir)
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.prepare_persisted_publication_plan_recheck(
+                semantic_ledger_drift=True,
+            )
+        self.assertEqual(
+            raised.exception.payload.get("dirty_paths"),
+            [f"{task_ref}/issue-scope-ledger.json"],
+        )
 
     def exercise_prepared_finalization_gate_reentry(
         self,
@@ -14390,17 +14575,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_closeout_runtime_contracts_reject_legacy_archive_first_semantics(self) -> None:
         repo = Path(__file__).resolve().parents[5]
-        continue_surfaces = [
-            repo / "trellis/presets/guru-team/overlays/.agents/skills/trellis-continue/SKILL.md",
-            repo / "trellis/presets/guru-team/overlays/.claude/commands/trellis/continue.md",
-            repo / "trellis/presets/guru-team/overlays/.codex/prompts/trellis-continue.md",
-            repo / "trellis/presets/guru-team/overlays/.codex/skills/trellis-continue/SKILL.md",
-            repo / "trellis/presets/guru-team/overlays/.cursor/commands/trellis-continue.md",
-            repo / ".agents/skills/trellis-continue/SKILL.md",
-            repo / ".claude/commands/trellis/continue.md",
-            repo / ".codex/prompts/trellis-continue.md",
-            repo / ".codex/skills/trellis-continue/SKILL.md",
-            repo / ".cursor/commands/trellis-continue.md",
+        guru_finish_surfaces = [
+            repo / "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+            repo / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+            repo / "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+            repo / ".claude/commands/guru/finish-work.md",
+            repo / ".codex/prompts/guru-finish-work.md",
+            repo / ".cursor/commands/guru-finish-work.md",
         ]
         surfaces = [
             repo / ".trellis/spec/workflow/companion-scripts.md",
@@ -14408,7 +14589,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             repo / ".trellis/spec/workflow/workflow-contract.md",
             repo / "trellis/workflows/guru-team/workflow.md",
             repo / ".trellis/workflow.md",
-            *continue_surfaces,
+            *guru_finish_surfaces,
         ]
         forbidden = [
             "Initial summary uses empty",
@@ -14433,23 +14614,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 if phrase in text
             )
         self.assertEqual(violations, [])
-
-        required = [
-            "Stop after Branch Review Gate",
-            "Before archive",
-            "binds one exact draft PR",
-            "builds the only final summary projection",
-            "After the archive metadata transaction",
-            "only remote HEAD/PR binding verification and draft-to-ready remain",
-            "does not rebuild or rewrite local artifacts, create another commit, or push again",
-        ]
-        for path in continue_surfaces:
-            text = path.read_text(encoding="utf-8")
-            self.assertIn("explicit finalization entry", text)
-            self.assertIn("never stages", text)
-            self.assertNotIn("finish-work.sh --json --from-trellis-finish-work", text)
-            for phrase in required:
-                self.assertNotIn(phrase, text)
 
     def test_final_summary_injects_only_plan_constrained_pr_runtime_facts(self) -> None:
         plan = self.build_plan()

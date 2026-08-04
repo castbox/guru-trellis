@@ -1096,7 +1096,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                     )
 
     @unittest.skipUnless(EXECUTION_MODE == "source", "source ownership assertion")
-    def test_legacy_finish_payloads_remain_frozen_compatibility_without_119_blocker(
+    def test_legacy_finish_tombstones_remain_frozen_without_119_blocker(
         self,
     ) -> None:
         inventory = read_json(
@@ -1116,12 +1116,21 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         overlay_root = REPO / "trellis/presets/guru-team/overlays"
         for entry in legacy:
             path = overlay_root / entry["path"]
-            self.assertEqual(
-                hashlib.sha256(path.read_bytes()).hexdigest(),
-                entry["current_payload_sha256"],
+            self.assertFalse(path.exists())
+            self.assertEqual(entry["category"], "upstream_owned")
+            self.assertEqual(entry["migration_state"], "removed")
+            self.assertNotIn("current_payload_sha256", entry)
+            self.assertIn(
+                entry["baseline_sha256"], entry["migration_payload_sha256s"],
             )
             self.assertEqual(entry["blocking_issues"], [])
             self.assertEqual(entry["removal_issue"], 132)
+            self.assertEqual(
+                entry["dogfood_status"], "removed_with_audit_history",
+            )
+            self.assertEqual(
+                entry["target_business_repo_status"], "no_longer_installed",
+            )
         legacy_paths = {entry["path"] for entry in inventory["legacy_entries"]}
         claims = {
             claim["path"]: claim for claim in inventory["managed_path_claims"]

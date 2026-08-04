@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# guru-team-overlay: v1
 """
 Codex Session Start Hook - Inject Trellis context into Codex sessions.
 
@@ -226,11 +225,8 @@ def _get_task_status(trellis_dir: Path, hook_input: dict) -> str:
     if not active.task_path:
         return (
             "Status: NO ACTIVE TASK\n"
-            "Next: Follow the per-turn workflow-state. In Guru Team projects, "
-            "issue-backed, task-like, or file-changing requests mandatory invoke "
-            "`guru-sync-base` from `.trellis/workflow.md`; only `synced` may run "
-            "`check-env.sh --json` and `prepare-task.sh --json` before task creation; "
-            "task creation consent is not current-checkout direct-edit consent."
+            "Next: Classify the current turn and ask for task-creation consent "
+            "before creating any Trellis task."
         )
 
     task_ref = active.task_path
@@ -277,15 +273,11 @@ def _get_task_status(trellis_dir: Path, hook_input: dict) -> str:
 
     if task_status == "planning":
         if has_design and has_implement:
-            next_action = (
-                "Invoke the planning wording and plan-approval owners, auto-consume the mapped "
-                "result, and run `task.py start` on checked `approved`; ask only for unresolved "
-                "scope, a material plan choice, or a real side effect."
-            )
+            next_action = "Review planning artifacts with the user before `task.py start`."
         else:
             next_action = (
-                "Complete design.md and implement.md, then display links to all three "
-                "planning docs before `task.py start`."
+                "Lightweight task can ask for start review with PRD-only; "
+                "complex task must add design.md and implement.md before `task.py start`."
             )
         return (
             f"Status: PLANNING\nTask: {task_title}\nPresent: {present_line}\n"
@@ -295,7 +287,7 @@ def _get_task_status(trellis_dir: Path, hook_input: dict) -> str:
     return (
         f"Status: {task_status.upper()}\nTask: {task_title}\nPresent: {present_line}\n"
         "Next: Follow the matching per-turn workflow-state. Context order is jsonl entries, "
-        "prd.md, required design.md, and required implement.md."
+        "prd.md, design.md if present, implement.md if present."
     )
 
 
@@ -370,11 +362,13 @@ def _build_compact_current_state(
     lines: list[str] = []
 
     try:
-        from common.paths import get_developer, get_tasks_dir  # type: ignore[import-not-found]
+        from common.paths import get_active_journal_file, get_developer, get_tasks_dir, count_lines  # type: ignore[import-not-found]
         from common.tasks import iter_active_tasks  # type: ignore[import-not-found]
     except Exception:
+        get_active_journal_file = None  # type: ignore[assignment]
         get_developer = None  # type: ignore[assignment]
         get_tasks_dir = None  # type: ignore[assignment]
+        count_lines = None  # type: ignore[assignment]
         iter_active_tasks = None  # type: ignore[assignment]
 
     developer = get_developer(repo_root) if get_developer else None
@@ -405,6 +399,13 @@ def _build_compact_current_state(
             )
         except Exception:
             pass
+
+    if get_active_journal_file and count_lines:
+        journal = get_active_journal_file(repo_root)
+        if journal:
+            lines.append(
+                f"Journal: {_repo_relative(repo_root, journal)}, {count_lines(journal)} / 2000 lines."
+            )
 
     if spec_index_paths:
         lines.append(f"Spec indexes: {len(spec_index_paths)} available.")
@@ -504,9 +505,8 @@ Trellis compact SessionStart context. Use it to orient the session; load details
     output.write("<guidelines>\n")
     output.write(
         "Task context order for implementation/check: jsonl entries -> `prd.md` -> "
-        "`design.md` -> `implement.md` for Guru Team implementation tasks. Legacy "
-        "or non-implementation tasks must follow the active workflow-state before "
-        "treating any planning artifact as optional.\n\n"
+        "`design.md if present` -> `implement.md if present`. Missing optional artifacts "
+        "are skipped for lightweight tasks.\n\n"
     )
 
     if spec_index_paths:

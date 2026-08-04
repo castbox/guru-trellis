@@ -1,7 +1,5 @@
-# guru-team-overlay: v1
 name = "trellis-research"
-description = "调研代理：检索 spec、代码模式和相关资料，并把结论写入当前 task 的 research/。"
-nickname_candidates = ["Research Agent", "Spec Research Agent", "Code Research Agent"]
+description = "Trellis researcher for specs, code patterns, and affected files. Writes findings into {TASK_DIR}/research/ — read-only elsewhere."
 sandbox_mode = "workspace-write"
 
 developer_instructions = """

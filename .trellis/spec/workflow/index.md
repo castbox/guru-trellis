@@ -86,10 +86,11 @@ Before editing workflow behavior:
   review, current-conversation plan confirmation, seven distinct input profiles, six public
   exits, and the owner-private recovery loop. It reuses the existing #105
   deterministic transaction engine. Package discovery, global invocation after
-  publication `ready`, five thin compatibility entries, and automatic machine
-  recovery routing are active. Issue #119 adds the three Guru-owned daily
-  entries, terminal published evals, and checked-verification projection bridge;
-  #132 still owns physical cleanup of the compatibility entries.
+  publication `ready`, three Guru-owned daily entries, and automatic machine
+  recovery routing are active. Terminal published evals and the
+  checked-verification projection bridge remain unchanged. Upstream
+  `trellis-finish-work` entries are owned only by official Trellis and are not
+  installed or managed by the Guru preset.
 - The runtime keeps a minimal read-only loader for existing
   `task-start-context.json` files. It projects only identity needed by a direct
   consumer and ignores retired authorization/intake fields; new tasks use

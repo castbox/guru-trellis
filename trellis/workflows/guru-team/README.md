@@ -2,10 +2,11 @@
 
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
-这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它承载 GitHub issue
-intake、Git base branch/worktree preflight、业务项目中文文档默认规则、Issue
-Scope Ledger、Middle-platform Knowledge Gate、Repo Docs SSOT reconciliation、
-Branch Review Gate，以及 finish-work 成功后的自动 publish PR 规则。
+这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
+phase/status route、13 个 mandatory Skill invocation、51 个 typed exit、28 个
+workflow/stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
+interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
+publication 与 finalization 判断由对应 active package 独占。
 
 Guru Team extension 版本不等于官方 Trellis CLI 版本，也不等于 `trellis/index.json`
 里的 marketplace index schema version。canonical extension version 和目标官方
@@ -45,173 +46,105 @@ workflow 时，才使用 `--create-new`。
 
 ## Companion Assets
 
-Workflow marketplace 只安装 global `.trellis/workflow.md`，不安装 external
-workflow skills。公共 skill 的唯一源头是 `trellis/skills/guru-team/`；global
-workflow 只通过 `guru-skill-invoke` / `guru-skill-exit` marker 定义 mandatory
-调用与唯一出口 consumer/stop，不复制 step-local skill 正文。完整运行时资产
-由 Guru Team preset 分发。Production registry 保留
-`guru-create-work-commit` reserved tombstone，并激活 `guru-sync-base`、
-`guru-discover-change-context`、`guru-clarify-requirements`、
-`guru-review-contract-wording`、`guru-review-change-request` 与
-`guru-create-task-workspace`、`guru-approve-task-plan`、`guru-check-task`、
-`guru-create-task-commit`、`guru-finalize-task`、`guru-review-branch`、
-`guru-review-task-publication`、`guru-verify-extension-installation`。这十三个
-active packages 共声明 51 个 external exits；finalizer 的 global integration
-metadata 为 integrated。Workflow 不得为
-reserved/planned id 伪造 invocation route。当前 canonical
-extension version 是待发布的 `0.6.5-guru.25`，已发布 stable source 仍是
-`v0.6.5-guru.2`。
+Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team extension
+由 preset 安装。公共 Skill 唯一 canonical root 是 trellis/skills/guru-team/，
+installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
+不能反向成为语义来源。
 
-Interface 1.2 保持冻结的 legacy 语义；独立 interface 1.3 是新建或实质修改 public
-I/O 的 minimal handoff target。Registry 1.1 的 active row exact 声明
-`interface_schema_id` 与 `io_contract_state`，合法组合只有 `1.2+legacy` 和
-`1.3+minimal_handoff`。冻结的 `stage0-minimal-handoff-v1` 保留六个 Stage 0 packages
-与 24 exits 的原始 bytes；`stage0-ai-first-contract-v2` 显式迁移当前合同到六包/
-23 exits，并声明 `guru-sync-base.repo_root` / `route` optional scalar 迁移。
-独立 `production-minimal-handoff-v1` 冻结 planning/check/commit 三包、十个 profiles
-与 11 exits 的原始 output schema identities；`production-ai-first-contract-v2`
-显式迁移当前 `approved` / `passed` minimal DTO，并将旧 Task Commit
-message/path/semantic 输入一次性投影为五字段 v2 owner-entry seed 与 ignored-runtime
-candidate；旧授权、caller 预选出口和 terminal result journal 不进入新合同，也不重写 v1。
-当前 package closure 为 13/51 且
-`legacy_skill_ids=[]`；global workflow marker closure 为 13/51/28，
-冻结 Stage 0 v1 identity 保持 6/24，AI-first v2 当前合同为 6/23。两版均保留
-`workflow` / `standalone` mode id 和必填
-`judgment_mode`，并以
-`routing=global_workflow|direct_discovery` 区分 mandatory route 与平台直接发现。
-`semantic` profile 固定五阶段，`deterministic` profile 固定三阶段；任何需要 scope、
-sufficiency、finding、revision、用户选择或 route intent 判断的 Skill 不得降级。
+当前 registry 激活 13 Skills / 51 exits，global workflow closure 为
+13/51/28（13 invokes / 51 exits / 28 targets），并保留
+guru-create-work-commit reserved tombstone。Phase 0 到 Finalization 的 active ids
+为：
 
-Phase 3.5 `guru-review-branch:passed` 现在指向 active
-`guru-review-task-publication`。在 Phase 3.6 mandatory invocation marker 之前，
-global workflow caller 只负责从 current reviewed evidence 编写 task-local
-`pr-body.md` 与 `finish-summary-index.json` 初始候选；它不判断充分性、Issue
-closure、十维结论、finding route 或 ready。Active publication Skill 仍是唯一
-semantic owner，缺失或结构错误先失败关闭。Phase 3.7 只消费 `ready` 已绑定的
-content bytes，不得首次创建或修改。`guru-finalize-task` package、public edge 与
-global invocation 已 integrated；`ready` 直接进入同一 closeout loop。
+- guru-sync-base
+- guru-discover-change-context
+- guru-clarify-requirements
+- guru-review-contract-wording
+- guru-review-change-request
+- guru-create-task-workspace
+- guru-approve-task-plan
+- guru-check-task
+- guru-create-task-commit
+- guru-review-branch
+- guru-review-task-publication
+- guru-verify-extension-installation
+- guru-finalize-task
 
-Active `guru-verify-extension-installation` 独立拥有
-`verification_required` target bootstrap 与 standalone
-`standalone_verification` input。#117 只发布 target schema/example/eval 和四出口
-contract；active finalizer 已拥有 producer edge，workflow 将
-`verification_required` 自动路由给 verifier。其 workflow `verified` 与可达的 task-bearing standalone
-`not_required` 指向 active finalizer；后者投影 repo/resolved HEAD/verification ref，
-task identity 由 target author，private plan 不进入 DTO。
-`return_to_task_work` 回 Phase 2，`blocked` 停止。Skill 内部 AI 独占
-applicability、closed capability profile、adequacy、finding 和 route；workflow 只拥有
-marker、consumer 和 fail-closed transition。
+Global workflow 只写 phase/status route、mandatory invoke marker、typed exit、唯一
+consumer/stop 与全局边界。每个 package interface.json 独占 public input、per-exit
+output、consumer input、thin projection、target-owned authoring partition 与 package
+内部行为；workflow、README 和平台入口不得从 runtime implementation 或 package
+artifact 重建路由。
 
-Active `guru-finalize-task` 是完整 closeout 的 step-local semantic owner。七个
-distinct profiles 承接 publication、verified/workflow-compatible not-required、
-可达的 task-bearing standalone not-required、same-plan resume、cross-month
-reprepare 与 standalone；六个 outputs 统一使用 `exit_id`。
-Canonical transaction plan、local digest、PR/archive/recovery facts 与内部 transaction
-states 全部 finalizer-private；plan/digest 只绑定 deterministic executor/recovery，不是 semantic 或 workflow authority。
-真实副作用确认只存在于当前对话。Deterministic runtime 只复用 #105 engine 执行 content push、
-verification boundary、唯一 Draft PR、final projection、official archive transaction、
-三方 HEAD equality 与 draft-to-ready。Missing/stale publication evidence由 #116 owner
-checker 形成客观 fact，再由 AI 选择 `publication_review_stale`；runtime 不代替 route
-judgment。该 stale DTO 只增加 Publication 直接消费的 `reviewed_content_head`，旧两字段
-payload fail closed；真实 content continuity drift 只能由 Publication 语义门禁返回 Phase 2，
-不能产生 `ready`。Combined integration 由 canonical `guru-finish-work`、两个 terminal eval、
-checked #117 private projection bridge 与 installed acceptance 共同覆盖；#132 仍独占
-legacy overlay 物理删除。
+guru-review-branch 是 sole Phase 3.5 semantic owner。Branch Review passed 后，
+workflow caller 只编写当前 pr-body.md 与 finish-summary-index.json 候选，再进入
+guru-review-task-publication；只有 ready 进入 guru-finalize-task。Finalizer 的
+verification、stale、resume 与 reprepare exits 按 Interface 自动路由，不形成新的用户
+continuation gate。
 
-十二条 semantic package handoff 使用 additive target-owned
-`skill_input_authoring_seed`：planning revision self-reentry、Phase 2 passed 到 initial
-commit、commit revision self-reentry、commit `committed` 到 active Branch Review，
-以及 Branch Review `passed` 到 active Task Publication Review。
-Producer 只投影 minimal seed，caller AI 编写 target
-profile 剩余 required fields；validator 证明两组字段无交集、union 完整、merge 无覆盖且完整
-target schema 通过。Projection operation 仍只有
-`direct|select|rename|normalize`，runtime 不读取 private artifact 或代写 semantic judgment。
-`standalone` 仍依赖完整 Guru Team preset 与 compatible extension runtime，不是单目录
-self-contained/portable 分发。Package wrapper 只能经 shared `run-skill-command`
-dispatcher 调用 manifest 已发布的 companion command；runtime/API/inventory/drift 不匹配
-必须在业务副作用前 fail closed，并提示完整 preset 安装或升级与 sidecar 处理步骤。
+Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
+`reviewed_content_head`；旧两字段 payload fail closed，真实 descendant content
+drift 只能由 Publication 语义门禁返回现有 Phase 2 router，不能产生 `ready`。
 
-Active package 的 discovery contract 要求 `SKILL.md` 只有一段闭合
-frontmatter，`name` 等于 stable id/registry/interface，`description` 非空且与
-interface 一致；`tests[]` 只引用 package-local `tests/<file>` regular file。
-Source validator 对 missing/drifted frontmatter 与 missing/outside/symlink test
-evidence fail closed。
+Interface 1.3 的十二条 semantic package handoff 使用 target-owned
+skill_input_authoring_seed；producer 只给 minimal seed，target authoring 补齐其自己拥有
+的 fresh semantic input，projection 只允许 direct/select/rename/normalize。冻结的
+production-minimal-handoff-v1 仍为三包、11 exits，current public graph 不改写其 bytes。
 
-Interface 1.3 的 closed `public_contracts` 分开声明 caller-owned input、exact
-package invocation、per-exit output、consumer-owned Skill/workflow/stop input、thin
-projection 与 runtime/gate private artifact。每个 output field 都必须有直接 consumer
-use；Skill consumer 只能引用 active registry exact canonical path 与相同 target id 的
-`skill_input`；非 direct projection 与 direct 到 scalar CLI 必须静态证明 required source
-与映射/normalizer 后的全域兼容，不能只验证 example；public/private
-schema id/path 分别互斥。Wrapper 完整 bytes 必须匹配 dispatcher-only template。
-Scalar argument 必须显式声明 boolean `required`；`guru-sync-base.base_branch` 为 optional，
-省略时进入同一 owner resolver。Active-task clear 的 null disposition 只在 scope-change
-profile 投影为 `retained`。
-1.3 `pattern` 只接受 durable spec 的 printable-ASCII portable grammar，并按 ECMA-262
-Unicode-mode search 语义执行；Python-only regex、Unicode source pattern 和未声明
-shorthand 在 source/installed validation 中 fail closed。稳定的 public discovery
-command 是：
+workflow mode 表示 mandatory global route；standalone 表示平台直接发现。两种模式都
+依赖完整、兼容的 Guru Team preset，单独复制 Skill 目录不是
+self-contained/portable 安装。公共 wrapper 通过 installed executable
+.trellis/guru-team/scripts/bash/run-skill-command.sh 调用 shared run-skill-command
+dispatcher；缺 runtime、版本漂移或未解决 sidecar 时必须在业务副作用前 fail closed。
 
-```bash
-.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
-  --root . --mode installed --skill guru-sync-base --json
-```
-
-Legacy package 只返回 version/migration identity；minimal package 返回完整 locator index。
-Source validation 会真正执行 representative fixture wrapper 并按 exit schema 复验单一
-stdout DTO。Fixture 不进入 production registry/manifest/platform roots/mandatory route。
-
-Trellis workflow marketplace 只负责安装或切换 `.trellis/workflow.md`。
-companion scripts、配置、schema 和团队自有入口 overlay 需要通过 preset installer
-写入目标仓库：
-
-```bash
-git clone --depth 1 --branch v0.6.5-guru.2 \
-  https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
-/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
-  --repo /path/to/project
-```
-
-installer 会写入 `.trellis/guru-team/`，并可安装 `.agents/skills`、
-`.claude/commands`、`.cursor/commands` 下的 Guru Team overlay。它不会修改 Trellis
-上游脚本、npm 全局包、`node_modules` 或 `.trellis/scripts/task.py`。
-
-installer 还会写入 `.trellis/guru-team/extension.json`，记录 Guru Team extension
-version、target Trellis CLI、workflow template id、source repo/ref/commit、source tree state、
-selected platforms 和安装时间。这个文件是安装事实记录，不是用户配置。
-
-installer 幂等：同内容跳过，缺失文件写入，Guru-managed companion assets 会升级 active
-文件并把旧版保存为 `.bak`，已有 `.trellis/guru-team/config.yml` 不覆盖，识别为上游
-Trellis 生成入口时替换为 Guru Team overlay；未知本地改动写 `.new`，不静默覆盖。
+当前 canonical extension version 是待发布的 0.6.5-guru.25；已发布 stable source
+仍由上文 pin 的 release tag 表示。Source/installed package validation 必须同时验证
+registry、13/51/28 marker graph、consumer uniqueness、projection、selected-platform
+byte identity 和 executable mode。
 
 ## Workflow Authoring Ownership
 
-Workflow phase、mandatory Skill routing、typed exit consumer 和 semantic gate 的
-canonical authoring 面是 Markdown workflow 与 `guru-*` closed-loop package。不得通过新增
-Trellis upstream namespace overlay、修改 hook/script 判断语义或扩张 broad managed-path claim
-实现新的流程行为。
+Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
+.trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
+current-task router、13 mandatory Skill markers、51 exits、28 workflow/stop targets、
+workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
+interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
+package/interface。
 
-当前 preset 的 43 条 overlay 是 issue #128 固定的 `transitional_legacy/active` 集合，
-inventory 位于 `trellis/presets/guru-team/ownership/upstream-ownership.json`，每条都绑定
-base payload SHA-256、replacement owners、blocking issues 与 #132 removal owner。Trellis
-`0.6.5` clean init 会生成其中 37 条；6 条历史 Codex prompt/skill path 不再生成，但在
-#132 physical removal 前仍保留审计与安装事实。
+Official Trellis 独占 trellis-start、trellis-continue、trellis-finish-work、官方
+hooks、sub-agents、runtime agents、bundled skills 与 meta references。Guru preset
+不安装、不 patch、不 managed-upgrade 这些路径；mandatory Guru routing 由 active
+workflow markers 和 installed guru-* packages 保证。
 
-维护者在 preset mutation、dogfood drift、throwaway initial/update/reapply checkpoint 前运行：
+Preset overlay tree 只保留三个 Guru-owned explicit entry：
 
-```bash
-trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
-```
+- .codex/prompts/guru-finish-work.md
+- .claude/commands/guru/finish-work.md
+- .cursor/commands/guru-finish-work.md
 
-该 source-only validator 不进入 `.trellis/workflow.md`、mandatory Skill routing、platform
-entry 或业务 task runtime。`trellis update` 的 `.trellis/.template-hashes.json` 与
-overwrite/keep/`.new` 语义仍归 upstream；preset 的 `.new`/`.bak` 仍需维护者逐个处理，
-它们不代表 semantic ownership approval。
+这些 entry 只读取 live context 和 .trellis/workflow.md、调用 public Skills、消费
+mapped exits，并返回 terminal result。它们不读取 producer-private runtime/artifact，
+不复制 package input fields、review dimensions、interaction algorithm 或 executor
+commands。
 
-`config-template.yml` 显式包含 `middle_platform_knowledge.mode: optional_warn`。
-已有目标仓库的 `.trellis/guru-team/config.yml` 不会为了补这个 key 被覆盖；如果 key
-缺失，workflow 仍按 backward-compatible 默认 `optional_warn` 执行。`required` 只作
-opt-in，`off` 只作 opt-out。
+Ownership inventory 的 43 条 frozen history 全部是
+upstream_owned/removed tombstone：保留 immutable path/baseline history 和 migration-only
+payload provenance，但不存在 current overlay payload 或 Guru managed claim。迁移与
+更新必须按以下顺序进行：
+
+1. official trellis update 或目标版本升级；
+2. 重新选择 guru-team marketplace workflow；
+3. reapply Guru preset；
+4. 处理所有 .new/.bak 与 local-edit conflict；
+5. 运行 source/installed package、ownership、platform identity、dogfood drift 与
+   recursive zero-sidecar checks。
+
+维护者在 preset mutation 和 combined acceptance 中运行：
+
+    trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
+
+该 validator 只检查客观 ownership facts，不进入 workflow route，也不替代 AI
+semantic judgment。
 
 ## Phase 0 Base Sync
 
@@ -681,11 +614,12 @@ AI workflow and never become a generic user confirmation prompt.
 Trellis 自动注入的 startup context、workflow-state、hook breadcrumb 或 skill
 matcher 判断是否进入 Guru Team issue intake 和 worktree preflight。
 
-用户常用显式入口是 `trellis-continue` 和 `guru-finish-work`。后者在 Codex、Claude、
-Cursor 分别表现为同名 prompt、`/guru:finish-work`、`/guru-finish-work`；五个冻结的
-`trellis-finish-work` entries 只保留为 Issue #132 前的 compatibility router。`trellis-start`
-仍保留为 fallback / explicit orientation 入口，用于无自动注入平台、hook 未启用或
-未审批、怀疑自动注入没有运行，或需要完整上下文报告和重新加载 Trellis 上下文的场景。
+用户可以直接描述任务、贴 issue URL，或使用官方 Trellis 提供的
+`trellis-start` / `trellis-continue` 入口；这些 upstream-owned 文件不由 Guru preset
+覆盖。显式收尾使用 Guru-owned `guru-finish-work`：Codex、Claude、Cursor 分别是同名
+prompt、`/guru:finish-work`、`/guru-finish-work`。三个 launcher 都只加载 live
+`.trellis/workflow.md` 和 active public graph，不读取 package-private runtime/artifact，
+不复制任何 step-local 合同。
 
 Planning start gate 和 Phase 2 check gate 都需要 current task facts 与 owner-private
 短生命周期 evidence。进入实现前主会话在三份 planning artifact 与 `Docs SSOT Plan`

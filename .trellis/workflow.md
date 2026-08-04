@@ -2,628 +2,65 @@
 
 ---
 
-## Core Principles
+## Global Workflow Contract
 
-1. **AI-first semantic ownership** — AI reads live authority, plans, diff, tests, and prior terminal results directly; do not simulate assignment, handoff, signature, or approval chains.
-2. **Persist only irreducible consumer data** — write only the minimum facts that a named direct consumer cannot reliably recover from Git or live reread; active checkpoints are owner-private and short-lived by default.
-3. **Conversation-only authorization** — user authorization exists only in the current dialogue and never enters tracked, ignored-runtime, gate, handoff, checkpoint, archive, schema, or public DTO state.
-4. **Digests are not workflow authority** — a digest may serve one local deterministic consumer, but never user authorization, semantic approval, cross-Skill handoff, or whole-chain freshness.
-5. **Interaction serves real choices and side effects** — ask only for an actual choice, changed scope/authority, or a real Git/GitHub side effect; mapped exits, stale/re-entry/reprepare, metadata refresh, and same-plan recovery continue automatically.
-6. **Semantic gates are decoupled from persistence** — AI still performs Planning, Phase 2, Branch Review, Publication, and independent fresh-final review; recorder/checker output cannot substitute for judgment or create proof-only tracked changes.
-7. **Plan before code** — figure out what to do before implementation starts.
-8. **Issue-backed intake** — durable work starts from a GitHub Issue or from a neutral issue proposed by the workflow and created only after AI/human review.
-9. **Git preflight before Trellis task files** — resolve base branch and workspace before `task.py create` writes task artifacts.
-10. **Specs injected, not remembered** — follow `.trellis/spec/` and task artifacts instead of chat memory.
-11. **Incremental development** — one task, one branch, one workspace unless the user explicitly approves a current-checkout direct-edit override for this turn.
-12. **Business project Chinese docs by default** — In target business repositories, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and human-readable workflow artifact fields are written in Chinese by default.
-13. **Review before finish** — committed branch work must pass Branch Review Gate before `finish-work`.
-14. **Transactional finish** — `finish-work` binds one canonical closeout plan for its deterministic executor, verifies remote evidence, creates a draft PR, validates the final archive projection, archives once, then marks that same PR ready after local/remote/PR HEAD alignment; the plan and digest are not semantic or workflow authority.
-15. **Capture learnings** — after each task, review whether `.trellis/spec/` needs updates.
-16. **Knowledge before framework changes** — when a task may touch Guru Team middle-platform SDKs or frameworks, retrieve and cite current framework knowledge before design or implementation.
-17. **Task artifacts do not replace durable docs** — reconcile Trellis task artifacts with the repo's long-lived `docs/` source of truth before finish.
-18. **Chinese Conventional Commits** — work commits, Trellis metadata commits, and merge commits must use Conventional Commits prefixes with Chinese descriptions and explicit `Refs` / `Closes` separation.
+This marketplace workflow is the global Guru Team route. It owns only:
 
----
+- tool-free initial request classification;
+- phase order and current-task status routing;
+- one mandatory invocation marker for each active stable Guru Skill id;
+- every external typed exit, its one declared consumer, and every workflow or
+  stop target;
+- workspace and task boundary selection, plus task activation;
+- Docs SSOT and Issue Scope Ledger integration points;
+- human-readable artifact presentation;
+- user interaction and external side-effect boundaries.
 
-## Public Workflow Skill Contract
+The public graph authority is the active registry plus each package
+interface.json. Producer outputs, consumer inputs, projections, and target-owned
+authoring partitions come only from those interfaces. This workflow never
+reconstructs a route from package implementation, runtime state, or package
+artifacts.
 
-`trellis/skills/guru-team/` is the canonical registry/package/interface root.
-The workflow marketplace installs this global workflow only; the Guru Team
-preset validates and installs active external skill packages. `reserved`
-registry ids are not installed and must not appear in a production route.
-
-Every mandatory active step is invoked by one stable skill id and one
-machine-readable marker:
-
-```markdown
-<!-- guru-skill-invoke: {"skill":"guru-example-action","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-example-action","exit":"completed","consumer":{"kind":"workflow","id":"phase-3"}} -->
-```
-
-The examples define syntax only and are fenced, not production markers. A real
-mandatory invocation marker must appear as an unfenced standalone HTML comment.
-Every declared external exit has exactly one consumer or explicit stop.
-Missing skills and unknown, duplicate, multiple, or unmapped exits fail closed.
-Frontmatter auto-match may aid discovery but never substitutes for the marker.
-
-The workflow owns only phase order, mandatory invocation, transitions, and
-typed-exit consumers/stops. The package owns entry/freshness/re-entry and the
-exact stage profile selected by its `judgment_mode`: semantic packages use
-`forward behavior -> AI Review Gate -> conditional human confirmation ->
-recorder/validator -> typed exit`; deterministic packages use `forward behavior
--> recorder/validator -> typed exit`. Commands, prompts, breadcrumbs, and
-platform launchers load the stable skill id and must not copy either loop.
-Deterministic scripts validate structure and evidence only; they do not make
-semantic review or routing judgments. Conditional confirmation is evaluated by
-the AI from the current dialogue; no package, recorder, validator, artifact, or
-DTO may record authorization state or process.
-
-The production registry currently activates thirteen workflow Skills, from
-`guru-sync-base` through `guru-finalize-task`. The unfenced
-markers below are the only mandatory global routes. New active routes must update
-registry, package/interface, this workflow, tests, preset distribution,
-extension public API, and migration documentation together.
-
-### Global Interaction Contract
-
-For any Skill-owned proposal or side effect, first display its current target,
-scope, authority, relevant HEAD, action, and expected result. When that display
-contains exactly one current, complete, unambiguous action, the prompt is only
-`确认继续`; any clear affirmative reply authorizes the displayed action. Internal
-state may retain only objective action facts required by one deterministic
-consumer; it never records authorization, confirmation text/state/ref/digest,
-or approval process, and the user never repeats a SHA, digest, proposal text, or
-prescribed sentence.
-
-This interaction rule does not merge distinct real choices or side effects: a
-scope expansion, Issue/workspace/task creation, commit, push, PR, merge, Issue
-mutation, or cleanup keeps its own authority. Ask an actual question only when
-choices or ambiguity remain. Reconfirm only when target, HEAD, scope,
-authority, available options, or side-effect plan changes. Planning and other
-semantic gates continue automatically after a mapped pass. Mapped exits,
-stale/re-entry/reprepare, recorder/checker transitions, and same-plan recovery
-never become generic continuation prompts.
-
----
+The workflow marketplace installs only .trellis/workflow.md. The Guru Team
+preset installs the compatible active packages and shared runtime. Frontmatter
+discovery is optional convenience; it never replaces a mandatory marker.
 
 ## Guru Team Gate
 
-Before creating a Trellis task or writing task artifacts, complete the Phase 0
-chain in order: `guru-sync-base` -> `guru-discover-change-context` ->
-`guru-clarify-requirements` -> `guru-review-contract-wording` ->
-`guru-review-change-request` -> `guru-create-task-workspace`. Only the final
-`created` exit enters Phase 1. Each package owns its entry evidence, semantic
-or deterministic stage profile, confirmation, recorder/checker, freshness,
-re-entry and typed exit; this workflow does not reproduce those rules.
-
-```bash
-.trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <post-sync-resolution-sha256> \
-  "<user request, issue number, or issue URL>"
-```
-
-`prepare-task` is a side-effect-free compatibility query only. Its legacy
-mutation flags fail closed before writes and point callers to
-`guru-create-task-workspace`; it is never an alternate task creation route.
-
-When there is no active task and the current turn requires file changes, do not
-silently edit the current checkout. First run Phase 0 intake/preflight, or ask
-for and receive explicit user approval for a current-checkout direct-edit
-override. That approval must state that the user wants to skip creating or
-reusing a GitHub issue, Trellis task, worktree, and branch for this turn. Before
-editing, summarize the expected side effects, changed-file scope, current
-checkout, current branch, and dirty state. The override only authorizes the
-described file edits; commit, push, PR creation, and issue closure still require
-their own explicit approval.
-
-The companion scripts live under `.trellis/guru-team/` and are installed by the Guru Team Trellis preset. If they are missing, tell the user to run:
-
-```bash
-/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh --repo <project>
-```
-
-The package contract is the sole owner of target authority, naming, assignee,
-two mutually exclusive confirmations, exact issue/workspace/task mutations,
-one task-local Issue Scope Ledger, ignored runtime mappings, no-developer
-boundary, ordinary recovery and fail-closed refresh. Secrets and sensitive raw
-records remain prohibited from public packages and portable artifacts.
-
-### Workspace Boundary
-
-When `workspace_mode: worktree`, new tasks derive portable workspace/task
-identity from official `task.json`, ignored runtime mapping, the current
-checkout, and `git worktree list`. Existing tracked `task-start-context.json`
-is read-only migration evidence only and is never generated or required for a
-new task. The machine-local write boundary is the derived `expected_workspace`.
-Before writing or reading an owner-private checkpoint, or a legacy task-local
-artifact such as `planning-approval.json`, `phase2-check.json`, or
-`review-gate.json`, confirm that the shell/editor repo root is exactly that
-derived `expected_workspace`:
-
-```bash
-.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
-```
-
-The validator reports expected workspace, actual repo root, source checkout,
-task dir, source-checkout status, task-worktree status, and suspicious
-source-checkout copies of the current task artifacts. It is a fact collector and
-fail-closed validator only; it does not decide stale state, migrate mistaken
-patches, clean source checkout files, or replace AI/human review. If it reports
-source checkout current-task artifacts or review metadata, treat that as a
-`workspace-boundary violation with progress` fact for the main session to
-review, not as automatic stale/failure evidence.
-
-All relative task artifact paths are relative to the task worktree. Manual edit
-tools that cannot receive an explicit `workdir` must use an absolute path inside
-the task worktree selected by local runtime workspace mapping; do not use a source
-checkout relative path for task artifacts or patches. `--checked-artifact`
-inputs must resolve inside the current task directory in that worktree. Legacy
-`--review-report`, `--agent-assignment`, and `--review-round-report` inputs have
-the same boundary when migrating an existing task. In worktree
-mode, do not run recorder/validator helpers from the source checkout or another
-worktree.
-
----
-
-## Shared Branch Commit Validation Contract
-
-All commits that enter a PR branch or `main` are checked by the installed
-`check-commit-messages` shared branch validator. Task work subject/body syntax,
-candidate construction, AI review, confirmation, exact staging, executor and
-postconditions are owned by the mandatory `guru-create-task-commit` package and
-its durable contract; this global workflow must not reproduce that step-local
-template or define a second parser.
-
-The single archive transaction generated by finalization uses an empty body and
-the subject `chore(trellis): #<primary_issue> 固化任务收尾元数据`. Legacy
-finish/publish metadata commits use the same subject contract. Commit messages
-must not use close keywords. Issue closing semantics belong only in the PR body
-and only for issues listed in `issue-scope-ledger.json.close_issues`.
-
-The repository keeps merge commits. The merge commit subject must use:
-
-```text
-chore(merge): #{pull_request} 合并 #{primary_issue} 中文 PR 摘要
-```
-
-The merge commit body must use:
-
-```text
-合并：
-合入 `{head_branch}` 到 `{base_branch}`，保留 PR 内部提交历史。
-
-范围：
-本次 PR 完成 #{primary_issue}：中文 PR 摘要。
-
-审计：
-Trellis task archive、closeout plan 和 finish-summary 提交保留在 PR 分支历史中，用于审计任务结果。
-
-PR: #{pull_request}
-Refs #{primary_issue}
-```
-
-Do not accept GitHub's default `Merge pull request #xx from ...` subject, and do
-not use a Chinese PR title such as `完成：#73 ... (#91)` directly as a commit
-subject. `format-merge-commit` outputs a `merge_commit` payload with the subject, body,
-and explicit `gh pr merge ... --subject ... --body-file ...` command; maintainers
-must use that payload when merging instead of relying on GitHub-generated merge
-text.
-
----
-
-## Trellis System
-
-### Official Developer Identity (Optional)
-
-Guru Team installation, Intake, task workspace creation, and later phases do
-not require a developer name or developer identity. Do not run an identity
-initializer as a Guru workflow prerequisite. If the user independently chooses
-to use the official Trellis identity/workspace journal capability, its official
-command remains available:
-
-```bash
-python3 ./.trellis/scripts/init_developer.py <your-name>
-```
-
-That optional official command may create `.trellis/workspace/<your-name>/`; Guru Team
-ignores that directory, never uses it for finish/readiness/context evidence, and
-the preset keeps `.trellis/workspace/` gitignored. Task completion history lives
-in archived task-local `finish-summary.json` instead. Guru Team `trellis-start`
-loads only phase, packages, current task, and Git facts. Canonical Codex/Cursor
-SessionStart overlays do not import or call journal helpers and do not open,
-enumerate, read, count, or output workspace journal data.
-
-### Spec System
-
-`.trellis/spec/` holds coding guidelines organized by package and layer.
-
-- `.trellis/spec/<package>/<layer>/index.md` — entry point with development and quality checks.
-- `.trellis/spec/guides/index.md` — cross-package thinking guides.
-
-```bash
-python3 ./.trellis/scripts/get_context.py --mode packages
-```
-
-Update spec when a task discovers a reusable pattern, pitfall, convention, or technical decision.
-
-### Task System
-
-Reference only: this command list documents the Trellis task CLI. In Guru Team
-workflows, durable, issue-backed, task-like, or file-changing work enters
-through the complete Phase 0 chain from `guru-sync-base` through
-`guru-create-task-workspace`. Do not use the bare
-`task.py create` command below from the source checkout for Guru Team worktree
-tasks. Only the exact workspace Skill executor may invoke it with a reviewed
-non-empty `--assignee` after the target, naming, current-conversation
-side-effect authorization, and freshness gates pass.
-
-Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding
-`task.json`, `prd.md`, `design.md`, `implement.md`, `research/` when
-applicable, the task-level `issue-scope-ledger.json`, generic sub-agent
-context manifests (`implement.jsonl`,
-`check.jsonl`) for sub-agent-capable platforms. Each mandatory Skill owns its
-step-local artifact contract; this global workflow does not restate those
-private artifact bodies or lifecycle rules. Guru Team implementation tasks
-require `prd.md`, `design.md`, and `implement.md` before `task.py start`,
-implementation, and check; missing or stale planning documents fail the
-explicit AI planning review gate.
-
-```bash
-python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
-python3 ./.trellis/scripts/task.py start <name>
-python3 ./.trellis/scripts/task.py current --source
-python3 ./.trellis/scripts/task.py finish
-python3 ./.trellis/scripts/task.py archive <name>
-python3 ./.trellis/scripts/task.py list [--mine] [--status <s>]
-python3 ./.trellis/scripts/task.py add-context <name> <action> <file> <reason>
-python3 ./.trellis/scripts/task.py validate <name>
-python3 ./.trellis/scripts/task.py set-branch <name> <branch>
-python3 ./.trellis/scripts/task.py set-base-branch <name> <branch>
-python3 ./.trellis/scripts/task.py set-scope <name> <scope>
-```
-
-Run `python3 ./.trellis/scripts/task.py --help` for the authoritative list.
-
-Canonical explicit closeout enters through `guru-finish-work`. Before
-finalization, create or review the task-local PR body at
-`{TASK_DIR}/pr-body.md` and the current `finish-summary-index.json`, then invoke
-the active `guru-review-task-publication` owner. Only its `ready` exit enters
-`guru-finalize-task`. The finalizer privately runs closeout preview, current
-side-effect review and confirmation when needed, gate recording/checking, and deterministic transitions; global
-workflow and platform entries must not invoke `finish-work.sh` or reproduce its
-command flags.
-
-Before any phase stop or phase completion reply, resolve the human-facing
-Markdown artifacts and include a `Markdown 产物 review 表` in the response:
-
-```bash
-.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
-```
-
-The standard table lists only the resolver's four Markdown files: `prd.md`,
-`design.md`, `implement.md`, and `pr-body.md`. It must not include
-machine JSON artifacts such as `planning-approval.json`, `phase2-check.json`,
-`agent-assignment.json`, `review-gate.json`, `pr-readiness.json`, `marketplace-verification.json`, or
-`issue-scope-ledger.json` by default. Render existing files as links using the
-resolver path/link fields; when `exists=false`, show the filename and status
-without a Markdown link so the response does not create a dead link.
-
-These are internal workflow helpers. `publish-pr.sh` is intentionally omitted
-from the normal helper sequence because it is an unconditional compatibility
-blocker; ordinary direct `finish-work.sh` calls are blocked. The explicit
-`guru-finish-work` entrypoint is the thin live-workflow router. The five frozen
-`trellis-finish-work` files remain byte-pinned compatibility routers through
-Issue #132; they do not own another route or artifact model. The active
-finalizer privately pushes reviewed evidence, binds one immutable draft PR,
-builds the final summary, performs the archive transaction, and marks the same
-PR ready only after its semantic gate and any required current side-effect confirmation.
-
-### Sub-agent Boundary
-
-Trellis ships `trellis-implement`, `trellis-check`, and `trellis-research`
-sub-agents on agent-capable platforms. Guru Team keeps that official model:
-
-- Platform dispatch identifiers are stable technical API ids. User-facing
-  labels may be localized, while display nicknames never participate in gate
-  decisions.
-- Each mandatory Skill owns the logical roles, prompt, evidence, judgment and
-  recovery rules inside its step-local closed loop. The global workflow only
-  coordinates dispatch, waiting and the declared cross-Skill transition.
-- The main session must not substitute itself or script output for a
-  package-required sub-agent result. Inline/self exemption is valid only when
-  the owning contract permits it and current evidence records it explicitly.
-- Sub-agent dispatch prompts must include locally derived `expected_workspace` evidence when the task was created through Phase 0; it must not be read from committed task context. At startup, sub-agents should report `pwd`, `git rev-parse --show-toplevel`, and whether the actual repo root matches the expected workspace before reading or writing task artifacts. When an agent file, platform, or editor tool cannot set an explicit working directory, any manual patch/edit path must be an absolute path under the task worktree confirmed by `check-workspace-boundary.sh --task`.
-- `wait_agent`, `trellis channel wait`, or an equivalent wait command timing out only means this wait window ended without a final completion event. It is not evidence that the sub-agent is stuck, failed, should stop, or that its partial output is acceptable completion evidence.
-- Routine dispatch does not start a liveness protocol. Use the platform-visible
-  terminal result together with the live diff, tests and owner gate. Do not
-  poll on a fixed cadence, transcribe progress messages, or create a separate
-  handoff/liveness journal merely because an agent is running or a wait window
-  ended.
-- New tasks do not create `{TASK_DIR}/agent-assignment.json`, raw review rounds,
-  progress journals, heartbeat files, daemons, watch loops, or background
-  liveness processes. Existing files remain legacy-only migration inputs.
-- Persist recovery only when an agent has actually ended unfinished and a
-  replacement is genuinely required. Record the unfinished event and its
-  replacement through `record-agent-recovery.sh`, then validate the gitignored
-  task-keyed checkpoint with `check-agent-recovery.sh`. The scripts validate
-  only the explicit recovery chain; they do not infer failure from elapsed time
-  or a wait timeout, and the checkpoint is not a Phase 2 or review prerequisite.
-- A replacement must carry only the context that cannot be recovered from live
-  task files, current diff and terminal output: predecessor identity/terminal
-  event, remaining work, validation still pending, and blockers. Do not repeat
-  planning, schemas, digests, or already-readable task artifacts as prose.
-- Existing active-task schema 2.0 assignment/liveness artifacts remain
-  read-only validator inputs. No assignment/liveness recorder or checker
-  command is exposed; new installations expose only the minimal private
-  recovery checkpoint.
-- `completed` means only that the sub-agent execution chain ended. It cannot
-  replace the owning Skill's semantic gate or authorize skipping a later
-  mandatory Skill invocation. Failed, unfinished, stale, or partial recovery
-  output remains intermediate evidence.
-- Codex defaults to `codex.dispatch_mode: sub-agent` in Guru Team projects.
-  Dispatch prompts start with `Active task: <task path>`; Codex sub-agents fall
-  back to `task.py current --source` when that line is unavailable. Explicit
-  `codex.dispatch_mode: inline` is a downgrade/debug mode.
-
-### Context Script
-
-```bash
-python3 ./.trellis/scripts/get_context.py
-python3 ./.trellis/scripts/get_context.py --mode packages
-python3 ./.trellis/scripts/get_context.py --mode phase --step <X.Y>
-```
-
----
-
-## Phase Index
-
-```text
-Phase 0: Intake  -> issue intake, Git base branch, worktree preflight
-Phase 1: Plan    -> create task only after intake, then write planning artifacts
-Phase 2: Execute -> implement only after task status is in_progress
-Phase 3: Finish  -> verify, update spec, commit, Branch Review Gate, finish-work, publish PR
-```
-
-### Request Triage
-
-- Do not require the user to explicitly run `trellis-start` before new work. In normal auto-bootstrap platforms, classify the user's natural-language request from the injected Trellis context, workflow-state, startup context, hook breadcrumb, or skill matcher.
-- Simple conversation or a non-file-changing small request: answer directly without creating a GitHub Issue or Trellis task and without asking whether one should be created. Ask only when missing intent prevents reliable classification.
-- Issue-backed, task-like, or file-changing request: first mandatory invoke `guru-sync-base`; after its `synced` exit, mandatory invoke `guru-discover-change-context`, `guru-clarify-requirements`, `guru-review-contract-wording`, `guru-review-change-request`, and `guru-create-task-workspace` in order. This includes pasted issue URLs, issue numbers, and clear development tasks. `check-env` and `prepare-task` are compatibility queries, not workflow hops or mutation authorization.
-- File-changing request with no active task: do not silently edit the current
-  checkout. A current-checkout direct-edit override is allowed only after the
-  user explicitly approves skipping GitHub issue, Trellis task, worktree, and
-  branch creation/reuse for this turn.
-- Ask for consent before creating a GitHub issue, worktree, branch, or Trellis task unless the user explicitly requested that side effect. Task creation consent is not current-checkout direct-edit consent.
-- User approval to create a task does not bypass Planning. After the AI planning owner returns a checked `approved` exit, task activation proceeds automatically unless unresolved scope, a material plan choice, or a changed external side effect requires interaction.
-
-### Planning Artifacts
-
-- `prd.md` — requirements, constraints, acceptance criteria, out of scope.
-- `design.md` — technical design before implementation: boundaries, contracts, data flow, compatibility, tradeoffs, rollout / rollback.
-- `implement.md` — execution plan before implementation: ordered checklist, validation commands, review gates, rollback points.
-- `Docs SSOT Plan` — required Phase 1 planning contract, preferably a section in `design.md`; `prd.md` records docs status and requirement impact, and `implement.md` records the checklist/checkpoint. Do not duplicate the full plan across all three files.
-- `planning-approval.json` — schema 3.0 ignored owner-private checkpoint owned and retired by the `guru-approve-task-plan` public wrapper after typed-output validation; the global workflow consumes only its minimal typed exit and treats `task.py start` as a status write. Existing tracked 1.2/2.0 files are one-time migration input only.
-- Current `guru-review-contract-wording:planning_artifacts` result — stdout-only owner-private evidence consumed immediately by its typed-exit router. It is never written as task-local `contract-wording-review.json`; the canonical Skill package still owns profile scope, vocabulary, classification, semantic review, planning dimensions, and exits.
-- `phase2-check.json` — schema 3.0 ignored owner-private `guru-check-task` checkpoint, retired by that Skill's public wrapper after typed-output validation. Official `trellis-check` output is ephemeral evidence; `guru-create-task-commit` consumes only `task_ref + checked_head` and never reads or deletes the checkpoint.
-- `issue-scope-ledger.json` — task-level close/ref/followup scope; do not overload `source_issue`.
-- Skill-owned private gate evidence — each active package defines and validates
-  its own ignored runtime lifecycle; the global workflow does not parse it or
-  restate per-round, lifecycle, digest, or rollup fields.
-- `pr-body.md` — reviewed Markdown PR body for GitHub reviewers.
-- `implement.jsonl` / `check.jsonl` — spec and research manifests for sub-agent context. They do not replace `implement.md`.
-
-Guru Team implementation tasks must have `prd.md`, `design.md`, `implement.md`, and one locatable `Docs SSOT Plan` before `task.py start`; Phase 0 mutation authorization never substitutes for the AI post-planning semantic review.
-
-Contract wording review is owned by the mandatory semantic Skill
-`guru-review-contract-wording`. Consumers reference only its fixed profile,
-schema `guru-contract-wording-review-1.0`, and typed exit. Vocabulary,
-classification semantics, rewrite/review loop, confirmation policy, and
-scanner evidence are defined only by the canonical package contract. A
-`planning_artifacts:pass` consumer additionally requires that contract's exact
-planning-dimension object with every AI-reviewed value recorded as true; no
-consumer or deterministic runtime may synthesize those judgments.
-
-### Business Project Documentation Language
-
-For repositories that install and use the Guru Team workflow as a business project workflow, human-readable documentation is Chinese by default:
-
-- `.trellis/spec/**` project conventions and bootstrap outputs;
-- `.trellis/tasks/**` human-readable task artifacts and human-readable fields in
-  task-local JSON evidence;
-- `docs/**` durable requirements, design, test, deploy, operations, and versioned docs;
-- docs SSOT files created or completed by `00-bootstrap-guidelines`;
-- workflow/helper artifact fields that are meant for humans to read, including summaries, evidence, findings, observations, follow-up candidates, PR titles, and PR bodies.
-
-Keep literal command names, file paths, GitHub keywords, configuration keys, external API names, code symbols, and other required tokens in English when needed, but write the surrounding explanation in Chinese.
-
-Exact headings, fields and evidence structure remain owned by the Skill that
-creates each artifact; this global language rule does not duplicate those
-step-local templates.
-
-The `guru-trellis` source repository itself is a public extension repository, not a target business project. Its public README/source comments/script help/marketplace metadata may remain English or bilingual when that is clearer for distribution, interoperability, or literal API compatibility. Do not use that exception to keep business-project `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**`, or bootstrap-generated docs SSOT in English.
-
-### Middle-platform Knowledge Gate
-
-Apply this gate during planning, design, and implementation planning when the task may involve Guru Team middle-platform SDKs or frameworks. Examples include `go-guru`, `proto-guru`, go-guru ORM / repo proto generation conventions, server framework usage, Unity3D Guru SDKs, and Flutter Guru SDKs.
-
-Configuration comes from `.trellis/guru-team/config.yml`:
-
-- `middle_platform_knowledge.mode: off` — do not check, warn, block, or require persisted citations.
-- `middle_platform_knowledge.mode: optional_warn` — default. Retrieve knowledge when available; if `guru-knowledge-center` MCP is unavailable, warn the user and continue.
-- `middle_platform_knowledge.mode: required` — opt-in only. Block design and implementation progress if required retrieval cannot be performed or if no relevant knowledge/citation can be persisted.
-
-Missing `middle_platform_knowledge.mode` MUST be interpreted as `optional_warn`. Do not ask the user to choose a mode just because the key is absent.
-
-Do not assume a shell companion script can detect MCP availability. MCP availability is an AI-platform runtime capability: inspect the tools/capabilities available in the current session. If `guru-knowledge-center` is available and the task is relevant, query `project_domain=middle-platform` with the current task context. Persist retrieved knowledge or citations into task artifacts, such as:
-
-- `design.md` section `中台知识依据` / `Framework Contracts`;
-- `implement.md` section `实现前知识核对` / `Knowledge Checklist`;
-- `{TASK_DIR}/research/middle-platform-knowledge.md`.
-
-If the gate is not relevant to the task, record that it is not applicable in the planning artifact or final report when the task would otherwise appear framework-related.
-
-### Repo Docs SSOT Reconciliation
-
-Trellis task artifacts are task-scoped planning and evidence. They must cooperate with the repo's durable documentation source of truth instead of silently becoming a parallel long-term source.
-
-During planning, create or update one `Docs SSOT Plan`. The recommended authority is `design.md`; `prd.md` should record the docs state and requirement impact, and `implement.md` should record the execution checklist and checkpoint. The plan must stay repo-neutral and may point to any durable docs structure the repo actually uses, not only `docs/`.
-
-The plan must record one docs state:
-
-- `complete_docs` — durable docs exist and are usable for the task's affected product, architecture, API, data, deploy, operations, or test contracts.
-- `partial_docs` — some durable docs exist, but relevant categories or current-scope contracts are missing.
-- `stale_docs` — durable docs exist but conflict with current code, behavior, issues, or intended changes.
-- `no_docs` — no durable docs SSOT or equivalent long-lived documentation exists for the current task scope.
-
-It must record one task strategy:
-
-- `ssot_first` — update durable docs / specs / workflow contracts first, then keep task artifacts as deltas and evidence. Prefer this for broad, clear requirements, design, workflow, API, data, deploy, operations, or test contract changes.
-- `delta_first` — keep early exploration or a narrow local change in task artifacts first, but name the merge checkpoint when durable docs will be updated or explicitly re-evaluated.
-- `bootstrap_or_repair_docs` — create minimal durable docs, repair stale docs, or define a bounded follow-up when docs are absent, partial, or stale.
-- `no_docs_update_needed` — no durable docs update is needed; the plan must state the concrete reason and the docs checked.
-
-At minimum the `Docs SSOT Plan` records:
-
-- docs state and evidence paths;
-- strategy and reason;
-- affected durable docs files, or the checked paths when none are affected;
-- task artifact deltas that must be merged back into durable docs;
-- for `delta_first`, the merge checkpoint;
-- for `bootstrap_or_repair_docs`, the minimum repair scope or follow-up limit;
-- for `no_docs_update_needed`, the concrete reason.
-
-When inspecting durable docs, look for complete, partial, or stale categories such as:
-
-- `docs/requirements/`;
-- `docs/designs/`;
-- `docs/testplans/`;
-- deploy or operations guides;
-- versioned design docs.
-
-Task artifacts should describe task-scoped deltas, decisions, evidence, and links to relevant durable docs. They must not become the long-term substitute for durable docs when the plan chose `ssot_first`, `delta_first`, or `bootstrap_or_repair_docs`.
-
-Any durable docs created or updated through this workflow, including docs SSOT files created or completed by `00-bootstrap-guidelines`, must follow the business-project Chinese documentation default above.
-
-Before commit, Branch Review Gate, finish-work, and publish, run Docs SSOT reconciliation:
-
-- Did this task change a long-term product, architecture, API, data, deployment, operational, or test contract?
-- Which `docs/` files were updated?
-- Which task-artifact content was merged back into durable docs?
-- Which content remains task history only?
-- If durable docs were not updated, why is that acceptable, and does any real scope or release choice remain unresolved?
-
-Repos with `no_docs`, `partial_docs`, or `stale_docs` must still record one explicit outcome:
-
-- create new durable docs;
-- append/update or repair existing partial/stale docs;
-- or bound the follow-up and explain why the current task artifact remains archived evidence only.
-
-<!-- Per-turn breadcrumb: shown when there is no active task (before Phase 1) -->
-
-[workflow-state:no_task]
-Classify the request. For repo changes, run Intake and auto-chain mapped internal exits in the same turn. Ask only for missing intent or one bounded issue/workspace/task mutation approval. Do not write task artifacts before approval.
-[/workflow-state:no_task]
-
-### Phase 0: Intake
-
-- 0.0 Base sync route `[required · once]`
-- 0.1 Change-context discovery `[required · once]`
-- 0.2 Requirements clarification `[required · once]`
-- 0.3 Contract wording review `[required · repeatable]`
-- 0.4 Change-request readiness review `[required · repeatable]`
-- 0.5 Task workspace creation `[required · repeatable]`
-
-Run the mapped Phase 0 chain continuously in the same turn. `synced`,
-`context_ready`, clear/pass/ready routes, refreshes, and re-entry are internal
-control flow, not user checkpoints. Ask only for missing product intent or one
-bounded mutation approval that covers the selected Issue action plus the exact
-branch, worktree and task creation. Do not ask for generic continuation between
-packages and do not persist pre-task stdout as a chain of task-local handoffs.
-
-#### 0.0 Base sync route `[required · once]`
-
-After tool-free request classification and before any repository/network
-semantic read, load and mandatory invoke the active public Skill by stable id:
+Classify the initial request before repository or network semantic reads:
+
+- simple conversation or a non-file-changing request: answer directly without
+  creating a GitHub Issue or Trellis task and without asking whether one should
+  be created;
+- repo-changing, issue-backed, task-like, or file-changing work begins with
+  guru-sync-base and follows the mapped public graph;
+- only guru-create-task-workspace:created enters task planning;
+- a task-free current-checkout edit is allowed only when the user explicitly
+  authorizes that exact bounded exception for the current turn. A failed normal
+  bootstrap is not permission to switch to task-free work.
+
+Missing packages or markers, duplicate markers, unknown or multiple exits,
+unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
+invalid interface projections stop fail closed.
+
+## Integrated Public Graph
+
+The active graph is exactly 13 mandatory Skills and 51 external exits.
+
+### Phase 0 owners
 
 <!-- guru-skill-invoke: {"skill":"guru-sync-base","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"synced","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"skipped","consumer":{"kind":"workflow","id":"original-request-route"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"blocked","consumer":{"kind":"stop","id":"base-sync-blocked"}} -->
 
-<!-- guru-workflow-target: {"id":"original-request-route"} -->
-<!-- guru-stop-target: {"id":"base-sync-blocked"} -->
-
-The caller-side AI classification decides only whether this invocation is a
-repo-changing refresh or an allowed non-repository skip. The package declares
-`judgment_mode=deterministic` and owns stdout-only selected-base resolution,
-digest-bound fetch/fast-forward, objective live Git validation, and one typed
-exit. It does not perform selected-base AI confirmation, a post-execution AI
-Review Gate, or conditional human confirmation.
-
-For a repo-changing route, run the package wrappers in this order:
-
-```bash
-.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh \
-  --json --mode workflow --resolve-only [--base <explicit-base>]
-.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh \
-  --json --mode workflow --execute [--base <same-explicit-base>] \
-  --expected-resolution-sha256 <pre-sync-resolution-sha256>
-.trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh \
-  --json --mode workflow --result-json '<executor-result-json>' \
-  --expected-resolution-sha256 <pre-sync-resolution-sha256>
-```
-
-The resolver order is exact: explicit `--base`; non-empty scalar
-`base_branch`; first existing `base_branch_candidates` entry in configured
-order (default `dev -> develop -> main -> master`); remote default only when no
-candidate exists; otherwise `blocked`. Multiple existing candidates are not
-ambiguous. Resolution and result facts remain on stdout; no cross-step evidence
-file, lease, release, quarantine, replacement-cleanup, or terminal-residue
-contract exists.
-
-The execute command retains `resolution_sha256` as the pre-sync identity and
-adds `post_sync_resolution` plus `post_sync_resolution_sha256` after the fetch /
-fast-forward. The validator checks both identities and returns the post-sync
-digest as the only digest passed to `prepare-task`. Already-equal execution may
-produce equal digests; fast-forward execution must produce different digests.
-
-This workflow consumes exactly one declared exit: `synced` enters
-`guru-discover-change-context`; `skipped`
-returns to the original non-repository request route; `blocked` stops. Unknown,
-multiple, or unmapped exits and missing package/runtime evidence stop fail
-closed. Do not run `check-env`, `prepare-task`, issue reads, duplicate search,
-or repository history/docs/code/test discovery before this route returns
-`synced`.
-
-#### 0.1 Change-context discovery `[required · once]`
-
-Load and mandatory invoke the active semantic package by stable id. The global
-workflow owns only this invocation and its unique consumers:
-
 <!-- guru-skill-invoke: {"skill":"guru-discover-change-context","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"context_ready","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"refresh_base","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-discover-change-context","exit":"blocked","consumer":{"kind":"stop","id":"change-context-blocked"}} -->
 
-Run the package contract with the validated `guru-sync-base` stdout facts,
-user request, and live issue or proposed-draft clues. The package owns its
-fixed current-state-before-history behavior, AI Review Gate, recorder/
-validator, artifact freshness, and re-entry. Do not copy that loop into this
-workflow or a platform entry.
-
-Pre-task recording remains stdout-only. After task creation, persist only the
-same expected snapshot at `{TASK_DIR}/context-discovery.json`. `context_ready`
-enters `guru-clarify-requirements`; `refresh_base` re-enters
-`guru-sync-base` and repeats this complete Skill; `blocked` stops at
-`change-context-blocked`. Unknown, multiple, or unmapped exits fail closed.
-
-<!-- guru-stop-target: {"id":"change-context-blocked"} -->
-
-#### 0.2 Requirements clarification `[required · once]`
-
-Load and mandatory invoke the active semantic package by stable id. The global
-workflow owns only this invocation and its unique consumers:
-
+<!-- guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"clear","consumer":{"kind":"workflow","id":"guru-requirements-clear-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"needs_context","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
@@ -631,93 +68,10 @@ workflow owns only this invocation and its unique consumers:
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"new_task","consumer":{"kind":"workflow","id":"guru-full-task-intake-chain"}} -->
 <!-- guru-skill-exit: {"skill":"guru-clarify-requirements","exit":"blocked","consumer":{"kind":"stop","id":"requirements-clarification-blocked"}} -->
 
-Run the package contract with the current context snapshot and exact issue or
-draft authority. The package owns evidence classification, one-question
-clarification, scope proposals, source-action selection, AI Review Gate,
-current-dialogue interaction only for a real choice or side effect,
-recorder/checker, freshness and re-entry. Do
-not copy that loop into this workflow or a platform entry.
-
-The public artifact contract is `guru-requirements-clarification-2.0`.
-Schema 1.0 artifacts and callers cannot express the checker-bound target
-disposition, authority impact, or retarget identity, so recorder/checker return
-`requirements_clarification_legacy_schema_requires_refresh`. Do not infer a
-semantic migration or resume a downstream pass: re-enter `guru-sync-base` and
-rerun the complete sync, discovery, clarification, wording, and readiness chain
-against the current target.
-
-Pre-task and standalone recording remains stdout-only. The package has no
-GitHub mutation executor and no dedicated clarification artifact. A successful
-comment/body/reopen mutation returns `refresh_context`; an exactly selected
-different open issue returns `retarget_context`. Both re-enter `guru-sync-base`,
-but retargeting must rerun the complete initial sync, discovery, clarification,
-wording, and readiness chain for the selected issue without reusing old-target
-passes. Active-task
-`clear`/`new_task` requires a non-empty set containing only seven terminal
-decisions. Every accepted-current/related/followup/new-task/out-of-scope scope
-classification must reflect the AI's current conclusion and, when a real
-product or scope choice remains, resolve that choice in the current dialogue.
-The current ledger entry is a compact compatibility field named
-`decision_trail`, not a process trail: it contains only `trail_id`, final
-proposal id/digest/decision rows, and live GitHub authority kind/URL/content
-checksum. Current planning documents, context freshness, task-update preimage,
-interrupted target, review state, and re-entry routing are reread from their
-owners and never copied into the ledger. A legacy full-shape entry is projected
-once into the compact task-update payload without a new choice or GitHub
-mutation. `mechanism_removed` and
-`mechanism_replaced` are terminal dispositions with optional origin, no trail,
-and no authority mutation. Neither the clarification result nor the ledger may
-store user authorization state, text, refs, or digests. GitHub mutation refreshes
-context first; complete re-entry requires context `generated_at` not earlier
-than authority `updated_at`, then a task update bound to that same context
-digest. It does not require a second context digest change. Only then may
-active-task `clear` or `new_task` return; the latter still carries only a reviewed
-side-effect-free new issue draft. `clear` enters the single
-caller-aware router, which validates `invocation_context.resume_target` before
-resuming the initial, active-task, or standalone caller. #112 owns the full
-task-intake continuation. Unknown, multiple, or unmapped exits fail closed.
-
-<!-- guru-workflow-target: {"id":"guru-requirements-clear-router"} -->
-<!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
-<!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
-
-#### 0.3 Contract wording review `[required · repeatable]`
-
-Load and mandatory invoke the active semantic package by stable id. The global
-workflow owns only this invocation, the profile-aware routers, and the stop:
-
 <!-- guru-skill-invoke: {"skill":"guru-review-contract-wording","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"pass","consumer":{"kind":"workflow","id":"guru-contract-wording-pass-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"content_changed","consumer":{"kind":"workflow","id":"guru-contract-wording-change-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"blocked","consumer":{"kind":"stop","id":"contract-wording-blocked"}} -->
-
-The `pass` router maps `change_request` to `guru-review-change-request`,
-`planning_artifacts` to planning document presentation/approval, and
-`explicit_paths` to the standalone caller. The `content_changed` router maps
-`change_request` to base/context refresh, `planning_artifacts` to complete
-planning review re-entry, and `explicit_paths` to standalone wording re-entry.
-The router consumes only the checker-validated profile and exit; unknown,
-multiple, stale, or unmapped results fail closed. The Skill package owns fixed
-scope, semantic revision/classification, AI Review Gate, confirmation,
-recorder/checker, evidence freshness, and re-entry.
-After `content_changed` or a resumed `blocked` stop enters complete
-same-profile re-entry, the owner discards the prior caller-private result,
-rebuilds current scope and scan, and emits one new complete result. No
-task-local replacement, supersession digest, or review-history chain is
-created.
-For `planning_artifacts`, `pass` also requires the canonical package's exact
-profile-specific planning-dimension evidence. Evidence recorded before that
-field existed is stale even when its schema id is still `1.0`.
-
-<!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
-<!-- guru-workflow-target: {"id":"guru-contract-wording-change-router"} -->
-<!-- guru-stop-target: {"id":"contract-wording-blocked"} -->
-
-#### 0.4 Change-request readiness review `[required · repeatable]`
-
-After a checker-validated `guru-review-contract-wording:change_request:pass`,
-load and mandatory invoke the active semantic package by stable id. The global
-workflow owns only this invocation, five unique consumers, and the stop:
 
 <!-- guru-skill-invoke: {"skill":"guru-review-change-request","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"skill","id":"guru-create-task-workspace"}} -->
@@ -726,176 +80,12 @@ workflow owns only this invocation, five unique consumers, and the stop:
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked","consumer":{"kind":"stop","id":"change-request-review-blocked"}} -->
 
-The package owns the ten-dimension readiness review, findings, delivery-unit
-and scope conclusion, AI Review Gate, conditional human confirmation,
-stdout-only recorder/checker, evidence linkage, freshness, and typed exit. The
-workflow does not copy or infer those judgments. Unknown, duplicate, multiple,
-stale, consumer-mismatched, or unmapped exits fail closed.
-
-`ready` invokes active `guru-create-task-workspace` only after complete
-compatible package/runtime validation. Do not use `prepare-task`, bare
-`task.py create`, or `guru-full-task-intake-chain` as a mutation fallback. The
-three reroute exits completely re-enter their declared prerequisite owner;
-`blocked` stops.
-
-<!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
-
-#### 0.5 Task workspace creation `[required · repeatable]`
-
-Load and mandatory invoke the active semantic package by stable id. The global
-workflow owns only this invocation, three unique consumers, and one typed stop:
-
 <!-- guru-skill-invoke: {"skill":"guru-create-task-workspace","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}} -->
 
-The package consumes the complete checker-passed Intake evidence and owns its
-semantic forward behavior, AI Review Gate, ephemeral invocation-specific
-confirmation, recorder/executor/checker, ordinary recovery and exact artifacts.
-If the user refuses, the invocation stops before recorder/executor without
-writing authorization state or emitting a typed result. A reviewed
-draft invocation creates and checks only the issue, then returns
-`refresh_review`; an existing open issue invocation may return `created` after
-the exact workspace/task result passes. The workspace confirmation covers only
-those side effects; Planning remains an AI semantic gate, not another routine
-authorization stop.
-
-<!-- guru-workflow-target: {"id":"guru-task-workspace-created"} -->
-<!-- guru-stop-target: {"id":"task-workspace-blocked"} -->
-
-### Phase 1: Plan
-
-- 1.0 Confirm created task workspace `[required · once]` (only after Phase 0)
-- 1.1 Requirement exploration `[required · repeatable]`
-- 1.2 Research `[optional · repeatable]`
-- 1.3 Configure context `[required · once]` for sub-agent-dispatch platforms
-- 1.4 Task plan approval `[required · repeatable]` (mandatory Skill, exactly one typed exit)
-- 1.5 Activate task `[required · once]` (`approved` only, then `task.py start`)
-- 1.6 Completion criteria
-
-[workflow-state:planning]
-Complete proportionate planning and invoke `guru-approve-task-plan`. The Skill owns schema, review, evidence, and re-entry. Auto-consume mapped exits; ask only when scope or a material plan choice needs user approval.
-[/workflow-state:planning]
-
-[workflow-state:planning-inline]
-Complete proportionate planning and invoke `guru-approve-task-plan`. Inline execution reads approved plans and specs directly. Auto-consume mapped exits; ask only for unresolved scope or a material plan choice.
-[/workflow-state:planning-inline]
-
-#### 1.0 Confirm created task workspace `[required · once]`
-
-Enter this step only through `guru-task-workspace-created`. The upstream Skill
-has already created or exactly reused the reviewed branch, worktree and
-planning-status Trellis task, and has checked the task-local Issue Scope Ledger.
-Resolve the local worktree from ignored runtime/Git facts and run
-`check-workspace-boundary.sh --json --task <task-path>` before task-local writes.
-Do not rerun `prepare-task`, bare `task.py create`, or any second creator.
-
-Task workspace confirmation covers only the displayed Intake side effects. The
-mandatory `guru-approve-task-plan` result remains the separate AI semantic
-activation gate; a mapped `approved` exit does not require a routine second
-confirmation when scope and authority are unchanged.
-
-#### 1.1 Requirement exploration `[required · repeatable]`
-
-Load `trellis-brainstorm` and update `prd.md` immediately after each important user answer or repository finding.
-
-Issue body and comments are intake evidence, not a replacement for `prd.md`. If issue comments conflict, prefer the latest explicit final closeout comment and record the chosen source in `prd.md`.
-
-When intake evidence is incomplete, use `trellis-brainstorm` before implementation planning. Ask only for product intent, scope, risk tolerance, or close/ref decisions that cannot be answered from repository evidence. After each material clarification, update `prd.md` immediately and decide whether the GitHub source of truth needs one of these updates:
-
-- append a comment to the current source issue with the clarified scope or final authority interpretation, never with user authorization text or an authorization summary;
-- ask the user to update the original issue body when the body has become misleading for future sessions;
-- create or propose a new issue when the clarification is a separate delivery unit or materially expands the current task.
-
-Do not let task artifacts become the only record of changed requirements when a GitHub issue anchors the work. The issue or a related issue must carry enough public evidence for a later session to understand why the task scope changed.
-
-Create or update the `Docs SSOT Plan` before planning converges. The plan should be easy to locate, with `design.md` as the recommended authority. `prd.md` records docs state and requirements impact; `implement.md` records the execution checklist, any `delta_first` merge checkpoint, and any `bootstrap_or_repair_docs` repair/follow-up boundary.
-
-The plan must record:
-
-- docs state: `complete_docs`, `partial_docs`, `stale_docs`, or `no_docs`;
-- evidence paths inspected for that state;
-- strategy: `ssot_first`, `delta_first`, `bootstrap_or_repair_docs`, or `no_docs_update_needed`;
-- strategy reason;
-- affected durable docs, or checked durable docs when no update is needed;
-- task artifact deltas that must be merged to durable docs;
-- `delta_first` merge checkpoint when that strategy is chosen;
-- `bootstrap_or_repair_docs` minimum repair scope or follow-up limit when that strategy is chosen;
-- `no_docs_update_needed` reason when that strategy is chosen.
-
-Run the Middle-platform Knowledge Gate when the task may involve Guru Team middle-platform SDKs or frameworks. Persist citations or the unavailable-MCP warning before design and implementation artifacts are considered ready.
-
-Scope Change Gate: when an active task receives a new requirement, referenced
-issue, discovered bug, or possible scope expansion, pause the interrupted
-progression and mandatory invoke the same active semantic Skill used by initial
-intake:
-
-<!-- guru-skill-invoke: {"skill":"guru-clarify-requirements","required":true} -->
-
-Pass `invocation_context.kind=active_task_scope_change`, the current task
-locator, and one exact `resume_target` naming the interrupted progression. The
-Skill exclusively owns repository-first evidence classification, the
-current/related/followup/new-task/out-of-scope decision, question loop, exact
-confirmation, GitHub-visible authority, ledger/planning update requirements,
-stale downstream evidence, and typed exit. This workflow must not repeat or
-pre-decide those step-local semantics.
-
-For active-task `clear`/`new_task`, the Skill requires a non-empty terminal
-proposal set. For every five-class scope classification, the Skill requires
-the selected disposition plus one compact `decision_trail` entry exactly
-present in current `issue-scope-ledger.json.scope_decisions[]`, regardless of
-proposal origin. The compatibility-named field stores only final proposal
-decisions and live GitHub comment/body authority kind, URL, and content
-checksum. The checker rereads live authority time, current planning, context,
-task-update preimage, interrupted target, review state, and re-entry routing
-from their owning sources. None of those rederivable facts, and no user
-authorization state, text, refs, or digests, enters the ledger.
-`mechanism_removed/replaced` stays outside trail/action mutation. GitHub authority mutation returns
-`refresh_context`; only authority-before-context-before-task-update re-entry may
-resume, and a task-only update does not require a second context refresh. Active-task
-`new_task` persists the same compact classification and gives #112 only the
-side-effect-free draft.
-
-The `clear` consumer is always `guru-requirements-clear-router`. The router is
-only a workflow target declaration: it validates the caller-aware target
-already recorded by the Skill and then routes as follows, without reclassifying
-scope:
-
-- initial issue or proposed draft -> `guru-review-contract-wording`;
-- standalone review -> `guru-standalone-caller`;
-- active-task accepted-current scope -> `guru-active-task-planning-review`;
-- active-task non-current classification -> the exact interrupted target among
-  `guru-resume-requirement-exploration`, `guru-resume-implementation`,
-  `guru-resume-phase2-check`, `guru-resume-spec-evaluation`,
-  `guru-resume-task-commit`, or `guru-resume-branch-review`.
-
-Any invocation kind/resume target mismatch, unknown target, missing package,
-multiple exit, or unmapped exit stops fail closed. Do not put active task state,
-PR runtime state, or project-private business rules into a spec template or
-marketplace entry.
-
-#### 1.2 Research `[optional · repeatable]`
-
-Research can use local code, docs, issue comments, Trellis specs, MCP servers, and web search when needed. Persist durable findings under `{TASK_DIR}/research/`.
-
-When `guru-knowledge-center` MCP is available and the task is middle-platform relevant, research MUST include a `project_domain=middle-platform` retrieval using the current task context. Prefer persisting a concise citation file such as `{TASK_DIR}/research/middle-platform-knowledge.md` and referencing it from `design.md` or `implement.md`.
-
-When the configured mode is `optional_warn` and MCP is unavailable, warn visibly and record the warning in task artifacts or the final report. When the mode is `required`, stop until retrieval succeeds, the user changes the configuration, or the team provides an equivalent approved knowledge source.
-
-#### 1.3 Configure context `[required · once]`
-
-For sub-agent-dispatch platforms, curate `implement.jsonl` and `check.jsonl` with real spec/research entries. Seed `_example` rows do not count.
-
-Inline Codex/Kilo/Antigravity/Devin workflows skip this step and load context through `trellis-before-dev`.
-
-#### 1.4 Task plan approval `[required · repeatable]`
-
-After the planning artifacts are ready for semantic review, load and invoke the
-active `guru-approve-task-plan` package. The package is the only
-owner of planning adequacy, provenance, unusual-scenario review, AI Gate,
-confirmation policy, evidence recording, and re-entry. This workflow owns only
-the mandatory invocation and typed transitions below.
+### Phase 1 owner
 
 <!-- guru-skill-invoke: {"skill":"guru-approve-task-plan","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"approved","consumer":{"kind":"workflow","id":"phase-1-task-activation"}} -->
@@ -903,122 +93,7 @@ the mandatory invocation and typed transitions below.
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"workflow","id":"guru-task-plan-clarify-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"blocked","consumer":{"kind":"stop","id":"task-plan-approval-blocked"}} -->
 
-Consume exactly one declared exit. Unknown, multiple, unmapped, missing-package,
-or consumer-mismatched results fail closed.
-
-<!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
-<!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->
-
-This routing-only target consumes only the checked `exit_id`, `task_ref`, and
-`proposal_refs` from `guru-approve-task-plan:clarify_scope`. Validate that
-exact exit and consumer, and resolve `task_ref` to the one current task. Fail
-closed on missing, stale, mismatched, multiple, unknown, or unmapped input.
-
-Fresh-read the live issue authority, current task and scope ledger, current
-planning artifacts and approval state, and every referenced proposal before
-continuing. These reads establish caller context only; they do not expand the
-producer DTO or authorize workflow/runtime reconstruction of semantic input.
-
-The caller AI must then author all eight existing
-`guru-clarify-requirements:active_task_scope_change` input fields from that
-fresh context: `profile`, `source_exit`, `mode`, `target_locator`,
-`context_locator`, `task_locator`, `resume_target`, and `continuation_id`.
-Enter the Scope Change Gate above and mandatory invoke the existing active
-`guru-clarify-requirements` package with that complete input. Do not add a
-clarification authoring-seed edge: this router still authors all eight fields.
-The separate `guru-create-task-commit:committed -> guru-review-branch` edge is
-the fourth `skill_input_authoring_seed`, so the declared authoring-edge
-cardinality remains exactly four. Do not infer, default, merge,
-or recover these eight clarification fields from private runtime state or the
-three-field proposal DTO.
-
-#### 1.5 Activate task `[required · once]`
-
-<!-- guru-workflow-target: {"id":"phase-1-task-activation"} -->
-
-Only the checker-validated minimal `guru-approve-task-plan:approved` DTO enters
-this global transition. Validate its `exit_id`, `task_ref`, and declared
-consumer without opening the owner-private checkpoint, then run the official
-task status transition:
-
-```bash
-python3 ./.trellis/scripts/task.py start <task-dir>
-```
-
-`task.py start` is only a status transition; it is not planning review
-evidence. All other exits are consumed by their declared Skill or stop target.
-
-#### 1.6 Completion criteria
-
-| Condition | Required |
-| --- | :---: |
-| Guru Team task-start context exists for durable tasks | yes |
-| `prd.md` exists | yes |
-| `design.md` exists | yes |
-| `implement.md` exists | yes |
-| `guru-approve-task-plan` returned exactly one declared exit | yes |
-| `guru-approve-task-plan` checked schema 3.0 owner-private evidence and returned minimal `approved` before activation | yes |
-| `task.py start` has been run | yes |
-| curated JSONL manifests exist for sub-agent dispatch | yes |
-| Middle-platform Knowledge Gate handled when relevant | yes |
-| `Docs SSOT Plan` records docs state, evidence paths, strategy, affected durable docs or no-update reason, and any required merge/repair/follow-up checkpoint | yes |
-
-### Phase 2: Execute
-
-- 2.1 Implement `[required · repeatable]`
-- 2.2 Quality check `[required · repeatable]`
-- 2.3 Rollback `[on demand]`
-
-[workflow-state:in_progress]
-Implement and check the approved scope. Treat agent output as ephemeral; the Phase 2 public wrapper retires its owner-private checkpoint after validating the typed output. Batch findings before recheck/commit; auto-consume mapped commit and review exits. Publication remains explicit.
-[/workflow-state:in_progress]
-
-[workflow-state:in_progress-inline]
-Implement inline from approved plans/specs, run the full semantic check, and keep only the short-lived owner-private Phase 2 checkpoint. Batch findings before recheck/commit and auto-consume mapped review exits. Publication remains explicit.
-[/workflow-state:in_progress-inline]
-
-#### 2.1 Implement `[required · repeatable]`
-
-Dispatch or inline-implement according to the platform mode only after
-`check-workspace-boundary.sh --json --task <task-path>` passes and the active
-task status plus current planning documents prove that the minimal
-`guru-approve-task-plan:approved` result was already consumed. Do not reopen
-the Planning owner's private checkpoint. In default
-`sub-agent` mode, the main session must dispatch `trellis-implement` or
-channel-runtime `implement`; it may not directly edit files and later present
-that work as `实现代理` evidence. Keep changes focused on the reviewed task
-artifacts and the source issue scope.
-
-The implementation agent returns one concise terminal result. Treat it as
-ephemeral input to `guru-check-task`; do not create
-`implementation-handoff.md` or transcribe live diff/test facts into another
-Markdown artifact. A wait timeout is only an observation. Persist recovery
-evidence only when an unfinished agent is actually replaced; ordinary
-assignment, progress pings and completed output do not need a liveness journal.
-
-Before writing code or generated assets, confirm the Middle-platform Knowledge Gate result for any middle-platform-relevant work:
-
-- `off`: no action required.
-- `optional_warn`: use persisted citations when present; if unavailable, continue only after the user-visible warning is recorded.
-- `required`: do not implement until retrieval evidence or an approved equivalent source is persisted.
-
-Also follow the planning artifact's `Docs SSOT Plan` responsibilities before writing implementation changes. Execute the strategy explicitly:
-
-- `ssot_first`: use the revised durable docs / specs / workflow contracts as the primary implementation input, and keep task artifacts as deltas and evidence.
-- `delta_first`: keep the task delta temporary only until the named merge checkpoint; merge the durable docs before the final Phase 2 check.
-- `bootstrap_or_repair_docs`: create or repair the minimum durable docs promised by the plan, or record the bounded follow-up and current PR limitation before check.
-- `no_docs_update_needed`: preserve the checked durable docs paths and concrete reason so Phase 2 check can re-evaluate whether the reason still holds.
-
-If implementation reveals that a long-term product, architecture, API, data, deployment, operational, test, or workflow contract changes beyond the approved plan, update `prd.md`, `design.md`, `implement.md`, and the `Docs SSOT Plan`; when the planning documents' reviewed content changes, return to Phase 1 for fresh planning approval before continuing and rerun Phase 2 check afterward. Do not defer first discovery of this scope drift to Branch Review Gate or finish-work.
-
-#### 2.2 Quality check `[required · repeatable]`
-
-In default `sub-agent` mode, dispatch the official unchanged `trellis-check` or
-channel-runtime `check` worker. Its
-report is raw evidence only; it never owns Guru pass, scope, severity, route, or
-`phase2-check.json`. Persist a private recovery checkpoint only if that worker
-actually ends unfinished and is replaced. Then load and invoke the active
-public Skill by stable id:
+### Phase 2 owner
 
 <!-- guru-skill-invoke: {"skill":"guru-check-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"passed","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
@@ -1026,105 +101,12 @@ public Skill by stable id:
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"planning_stale","consumer":{"kind":"workflow","id":"guru-task-check-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"blocked","consumer":{"kind":"stop","id":"task-check-blocked"}} -->
 
-<!-- guru-workflow-target: {"id":"guru-resume-implementation"} -->
-<!-- guru-workflow-target: {"id":"guru-task-check-planning-router"} -->
-<!-- guru-stop-target: {"id":"task-check-blocked"} -->
-
-The package owns all eight entry checks, repository-command selection,
-scope-before-severity, adequacy, Docs SSOT review, finding/full-rerun loop, AI
-Review Gate, the closed schema 3.0 ignored owner checkpoint, recorder/checker entry, and exact
-route result. The planning router consumes only checker-validated discriminator
-`reapprove_plan` -> `guru-approve-task-plan` or `clarify_requirements` ->
-`guru-clarify-requirements`; it performs no new scope judgment. Unknown,
-multiple, unmapped, ambiguous, or consumer-mismatched results fail closed.
-After checker and output-schema success, the package wrapper deletes its own
-checkpoint; every downstream route uses only the selected DTO and live facts.
-
-Before the Phase 2 stop/completion reply, run:
-
-```bash
-.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
-```
-
-Include a `Markdown 产物 review 表` so the user can open the current human
-task artifacts from the latest reply. The table lists only `prd.md`,
-`design.md`, `implement.md`, and `pr-body.md`; missing files stay
-plain text with their resolver status and no Markdown link. Do not add
-`phase2-check.json`, `agent-assignment.json`, or other JSON evidence to the
-standard table.
-
-#### 2.3 Rollback `[on demand]`
-
-If implementation reveals a requirement defect, return to Phase 1 and update artifacts before continuing.
-
-### Phase 3: Finish
-
-- 3.2 Debug retrospective `[on demand]`
-- 3.3 Spec update and Docs SSOT reconciliation `[required · once]`
-- 3.4 Commit changes `[required · once]`
-- 3.5 Branch Review Gate `[required · repeatable]`
-- 3.6 Task publication semantic review `[required · repeatable]`
-- 3.7 Finalize and publish `[required · once]`
-
-[workflow-state:completed]
-Use canonical `guru-finish-work`; auto-route mapped Finish exits and stop only for changed side effects, new authority, or a declared blocker.
-[/workflow-state:completed]
-
-#### 3.2 Debug retrospective `[on demand]`
-
-If the same bug or misunderstanding was fixed repeatedly, load `trellis-break-loop` and capture the prevention rule.
-
-#### 3.3 Spec update and Docs SSOT reconciliation `[required · once]`
-
-Load `trellis-update-spec` and decide whether `.trellis/spec/` needs a reusable update. If nothing should change, record that judgment in the final report.
-
-Run Docs SSOT reconciliation before committing task work:
-
-- record whether this task changed a long-term product, architecture, API, data, deployment, operational, or test contract;
-- list durable docs updated by this task;
-- list task-artifact content merged back into durable docs;
-- list task-artifact content that remains task history only;
-- if no durable docs were updated, record why this is acceptable and whether any real scope or release choice remains unresolved.
-
-This reconciliation may live in `implement.md`, the owning phase evidence, the
-final report, or a task research note, but the later mandatory review Skill
-must cover the outcome.
-
-#### 3.4 Create task work commit `[required · repeatable]`
-
-After the final Phase 2 report passes and before any task work stage/commit side
-effect, load and invoke the active public skill by stable id:
+### Phase 3 owners
 
 <!-- guru-skill-invoke: {"skill":"guru-create-task-commit","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"committed","consumer":{"kind":"skill","id":"guru-review-branch"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"revision-required","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"blocked","consumer":{"kind":"stop","id":"task-commit-blocked"}} -->
-
-<!-- guru-stop-target: {"id":"task-commit-blocked"} -->
-
-The package owns entry checks, candidate construction, AI Review Gate,
-conditional human confirmation, deterministic validator/executor,
-postconditions and typed-exit evidence. This global workflow owns only the
-mandatory invocation, the three unique consumers above, and the repeat route.
-Do not reproduce the step-local contract here or perform a parallel direct
-task work commit path.
-
-The stable `workflow` mode means this mandatory global route. Stable
-`standalone` mode means selected-platform direct discovery without the global
-route; it does not make the package self-contained or portable. Both modes
-require the complete compatible Guru Team preset and extension runtime, use the
-same entry preconditions and closed-loop behavior, and dispatch objective
-commands through the shared `run-skill-command` runtime.
-
-`committed` proceeds to Phase 3.5. `revision-required` re-enters the same skill
-without guessing another route. `blocked`, unknown, multiple or unmapped exits
-stop fail closed. Frontmatter auto-match is standalone discovery only and does
-not satisfy this mandatory invocation.
-
-#### 3.5 Branch Review Gate `[required · repeatable]`
-
-After a committed task-work exit, load and invoke the active public Skill by
-stable id:
 
 <!-- guru-skill-invoke: {"skill":"guru-review-branch","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
@@ -1132,108 +114,16 @@ stable id:
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-branch-review-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"blocked","consumer":{"kind":"stop","id":"branch-review-blocked"}} -->
 
-<!-- guru-workflow-target: {"id":"guru-branch-review-implementation-router"} -->
-<!-- guru-workflow-target: {"id":"guru-branch-review-scope-router"} -->
-<!-- guru-stop-target: {"id":"branch-review-blocked"} -->
-
-The caller projects the `guru-create-task-commit:committed` seed and freshly
-authors only the target package's declared authoring fields. The active Skill
-owns its complete step-local closed loop; this workflow only invokes it and
-routes one declared exit.
-
-`passed` targets active `guru-review-task-publication` through its target-owned
-authoring seed after the Branch Review wrapper validates the DTO and retires its
-own checkpoint. Publication never reads or deletes that private gate.
-`implementation_required` resumes implementation and must then pass a complete
-`guru-check-task`, fresh task commit, and this Skill again.
-`scope_confirmation_required` routes to requirements clarification; the caller
-AI freshly authors the existing clarification profile from current live
-evidence and the exact proposal refs. `blocked`, unknown, multiple, stale, or
-unmapped results stop fail closed.
-
-Before any Phase 3.5 stop or pass reply, follow the global human-artifact
-resolution requirement.
-
-#### 3.6 Task publication semantic review `[required · repeatable]`
-
-After the current Branch Review `passed` exit and before the mandatory
-invocation below, the workflow caller is the explicit owner of initial
-publication-content authoring. Read the current task-local requirements,
-planning documents, Issue Scope Ledger, Docs SSOT reconciliation, complete
-reviewed diff, live Git, and the Branch Review `passed` DTO's immutable
-`reviewed_content_head`; do not open Planning, Phase 2, Task Commit, or Branch
-Review private checkpoints. Then author current candidates at `{TASK_DIR}/pr-body.md` and
-`{TASK_DIR}/finish-summary-index.json`.
-
-This is producer-side entry preparation, not a second publication review or a
-new workflow exit. The caller authors the candidate content but must not decide
-PR-body sufficiency, Issue closure, the ten publication dimensions, finding
-routes, or readiness. Scripts must not synthesize those semantic conclusions.
-The active `guru-review-task-publication` Skill remains the sole semantic owner;
-its existing recorder/checker later reuses the deterministic PR-body,
-finish-summary-index, artifact, HEAD, and freshness validators after the AI
-Review Gate. Do not call that recorder/checker to manufacture entry evidence.
-If either candidate is absent or objectively malformed, stop fail closed,
-complete this authoring preparation, and do not invoke the Skill.
-
-After both current candidates exist, load and invoke the active public Skill by
-stable id:
-
 <!-- guru-skill-invoke: {"skill":"guru-review-task-publication","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"ready","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-task-publication-work-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"blocked","consumer":{"kind":"stop","id":"task-publication-review-blocked"}} -->
-
-<!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
-<!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
-
-The caller merges the Branch Review seed with only the target package's fresh
-authoring fields. This workflow owns the invocation and the three routes above;
-the active Skill owns publication judgment, owner-private evidence, metadata-only
-revision, recorder/checker, freshness, and re-entry.
-
-`ready` enters active `guru-finalize-task` with only `task_ref` and
-`reviewed_content_head`; the Finalizer reruns the same side-effect-free
-producer preflight after the Publication wrapper has retired its own checkpoint,
-without reading, augmenting, or deleting Publication private state.
-`return_to_task_work` represents a real task-content finding, resumes
-implementation, and must then repeat the actually affected Phase 2, task
-commit, Branch Review, and publication sequence. Publication-owned mechanical
-or metadata revision stays inside Publication. `blocked`, unknown, missing,
-multiple, stale, consumer-mismatched, or unmapped results stop fail closed.
-
-The canonical `guru-finish-work` platform entry reads live state and reaches
-this same route when publication review is not current. Until Issue #132 removes
-the frozen compatibility overlay, `trellis-continue` may reach this route from
-Branch Review `passed`, but it stops at current `ready`; the five
-`trellis-finish-work` files remain compatibility routers only. No entry owns a
-second publication route or copies active Skill behavior.
-
-The active extension verifier is independently discoverable for standalone use
-and is conditionally reached from the active finalizer:
 
 <!-- guru-skill-invoke: {"skill":"guru-verify-extension-installation","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"verified","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"not_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-extension-verification-work-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"blocked","consumer":{"kind":"stop","id":"extension-installation-verification-blocked"}} -->
-
-<!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
-<!-- guru-stop-target: {"id":"extension-installation-verification-blocked"} -->
-
-The `verification_required` DTO is a machine handoff from finalizer to verifier,
-not a user-visible stop. The verifier alone owns applicability, capability
-selection, adequacy, findings, retry and actual exit; the runtime only executes,
-records and checks objective facts.
-
-#### 3.7 Finalize and publish `[required · once]`
-
-After `guru-review-task-publication:ready`, load and mandatory invoke the active
-finalizer. The user confirms one bounded closeout plan before its first Git or
-GitHub side effect. That approval covers the declared content push,
-plan-required installation verification, one Draft PR, the task archive
-transaction, and the Ready transition. A changed side-effect set or changed
-authority requires a new plan; internal checkpoints do not.
 
 <!-- guru-skill-invoke: {"skill":"guru-finalize-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"verification_required","consumer":{"kind":"skill","id":"guru-verify-extension-installation"}} -->
@@ -1243,107 +133,295 @@ authority requires a new plan; internal checkpoints do not.
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"published","consumer":{"kind":"workflow","id":"guru-finalization-finish-response"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"blocked","consumer":{"kind":"stop","id":"task-finalization-blocked"}} -->
 
+## Workflow And Stop Targets
+
+The graph contains exactly 15 workflow targets and 13 stop targets.
+
+<!-- guru-workflow-target: {"id":"original-request-route"} -->
+<!-- guru-workflow-target: {"id":"guru-requirements-clear-router"} -->
+<!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
+<!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
+<!-- guru-workflow-target: {"id":"guru-contract-wording-change-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-workspace-created"} -->
+<!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->
+<!-- guru-workflow-target: {"id":"phase-1-task-activation"} -->
+<!-- guru-workflow-target: {"id":"guru-resume-implementation"} -->
+<!-- guru-workflow-target: {"id":"guru-task-check-planning-router"} -->
+<!-- guru-workflow-target: {"id":"guru-branch-review-implementation-router"} -->
+<!-- guru-workflow-target: {"id":"guru-branch-review-scope-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
+<!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
+
+<!-- guru-stop-target: {"id":"base-sync-blocked"} -->
+<!-- guru-stop-target: {"id":"change-context-blocked"} -->
+<!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
+<!-- guru-stop-target: {"id":"contract-wording-blocked"} -->
+<!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
+<!-- guru-stop-target: {"id":"task-workspace-blocked"} -->
+<!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
+<!-- guru-stop-target: {"id":"task-check-blocked"} -->
+<!-- guru-stop-target: {"id":"task-commit-blocked"} -->
+<!-- guru-stop-target: {"id":"branch-review-blocked"} -->
+<!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
+<!-- guru-stop-target: {"id":"extension-installation-verification-blocked"} -->
 <!-- guru-stop-target: {"id":"task-finalization-blocked"} -->
 
-The finalizer owns plan review, any required current side-effect confirmation,
-automatic recovery routing/state, and the six exits. Its deterministic engine
-owns the immutable transaction facts. The
-workflow automatically consumes `verification_required`,
-`publication_review_stale`, `resume_finalization`, and `reprepare_required` in
-the same closeout loop. Never display those exit ids as choices or ask for a
-generic `确认继续`. Stop only for the declared `blocked` result, missing external
-authority, or a materially changed side-effect plan.
+### Workflow target behavior
+
+| Target | Global behavior |
+| --- | --- |
+| original-request-route | Return to the original non-repository request. |
+| guru-requirements-clear-router | Resume the caller declared by the clarification contract: initial Intake, active-task planning, an interrupted phase, or standalone caller. |
+| guru-full-task-intake-chain | Start a separately reviewed task intake from the returned draft. |
+| guru-contract-wording-pass-router | Route the checked profile to change-request review, planning approval, or the standalone caller. |
+| guru-contract-wording-change-router | Re-enter the affected wording route and any required upstream refresh. |
+| guru-task-workspace-created | Resolve the created task worktree and enter Phase 1. |
+| guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
+| phase-1-task-activation | Validate the approved DTO and run the official task start transition. |
+| guru-resume-implementation | Resume Phase 2 implementation. |
+| guru-task-check-planning-router | Route the declared planning action to plan approval or requirements clarification. |
+| guru-branch-review-implementation-router | Resume Phase 2, then repeat the downstream graph. |
+| guru-branch-review-scope-router | Enter the Scope Change Gate, then repeat affected phases. |
+| guru-task-publication-work-router | Resume Phase 2 for task-content findings. |
+| guru-extension-verification-work-router | Resume Phase 2 for installation findings. |
+| guru-finalization-finish-response | Return the canonical PR URL and archived task locator. |
 
 The Finalizer stale projection supplies exactly `task_ref`,
 `reviewed_content_head`, and `stale_reason`; the Publication caller authors only
 its declared profile, mode, and review intent. A legacy stale projection without
-the reviewed HEAD stops fail closed. When live content advanced beyond that
+the reviewed HEAD stops fail closed. When live content advances beyond that
 HEAD, Publication may return a checked task-work finding to the existing Phase 2
 router, while `ready` remains continuity-strict.
 
-For a single current side effect, the user-facing prompt is `确认继续`; any clear
-affirmative reply authorizes that displayed action. Internal evidence still
-binds the exact HEAD, digest, target, and scope, but the user never repeats
-those tokens. A changed or ambiguous plan must be shown and confirmed again.
+Every stop target returns the owning Skill result and safe remediation, then
+waits for changed authority or external state. A stop never guesses another
+route or exposes package-private state.
 
-`guru-verify-extension-installation` is conditional: invoke it only when the
-finalizer emits `verification_required`. That workflow route accepts only
-`verified` back into the same finalizer plan. The separate task-bearing
-standalone verifier may return `not_required` only through finalizer profile
-`standalone_verification_not_required`. `return_to_task_work` resumes
-implementation and the complete downstream check/review sequence; `blocked`
-stops.
+## Phase Index
 
-The task-local `pr-body.md` and `finish-summary-index.json` are authored before
-publication review and are not regenerated after `ready`. Publication review
-owns reviewer-facing sufficiency, issue close/ref semantics, and the shared
-schema/length/duplicate/derived-content preflight. The finalizer validates the
-same objective structure and executes push, Draft PR, archive metadata,
-three-way HEAD equality and Ready; scripts never invent release judgments.
+```text
+Phase 0: Intake  -> issue-backed base sync, context, clarification, review, workspace
+Phase 1: Plan    -> planning artifacts, plan approval, task activation
+Phase 2: Execute -> implementation, task check
+Phase 3: Finish  -> docs reconciliation, commit, branch review, publication, finalization
+```
 
-Existing active tasks may still contain legacy intake snapshots, raw review
-rounds, and tracked commit plans. New task commit candidates and real agent
-replacement checkpoints live only in gitignored runtime. New closeout plan 1.2
-does not turn compatibility inputs into permanent handoff paperwork: after the
-official move a new AI-first task retains only `task.json`, `prd.md`,
-`design.md`, `implement.md`, `issue-scope-ledger.json`, `closeout-plan.json`,
-and `finish-summary.json`, plus `marketplace-verification.json` only when that
-gate applies. Its 10-file compatibility allowlist may move existing tracked
-`planning-approval.json`, `phase2-check.json`, and `review-gate.json` once, but
-new tasks never generate them in the task tree. Schema 1.0/1.1 plans keep their
-historical behavior and bytes.
+| State | Route |
+| --- | --- |
+| no active task | Tool-free classification, then Phase 0 for repo-changing work. |
+| planning | Produce the three planning documents and Docs SSOT Plan, run wording review, then invoke guru-approve-task-plan. |
+| in_progress | Validate the task worktree, implement the approved scope, then invoke guru-check-task. |
+| completed | Enter Phase 3 through the canonical guru-finish-work route. |
 
-On `published`, resolve human artifacts from the archived task and return the
-canonical PR URL plus the archive locator. Do not expose private plan, gate,
-verification, digest, or checkpoint artifacts in the standard response.
+[workflow-state:no_task]
+Classify without repository or network semantic reads. Repo-changing work starts
+at guru-sync-base and automatically consumes mapped exits. Ask only for missing
+intent or the exact Intake side-effect set.
+[/workflow-state:no_task]
 
-### Rules
+[workflow-state:planning]
+Complete prd.md, design.md, implement.md, and the Docs SSOT Plan. Run the
+planning wording route and guru-approve-task-plan. Automatically consume mapped
+exits; ask only for unresolved scope or a material plan choice.
+[/workflow-state:planning]
 
-1. Phase 0 runs before durable Trellis task creation.
-2. Issue/workspace/task creation, commit, push, PR, merge, Issue mutation, and
-   cleanup are distinct side effects; semantic Planning/Phase 2/review gates
-   auto-consume mapped exits and must not add routine confirmation stops.
-3. Current-checkout direct edits with no active task require explicit user
-   approval to skip GitHub issue, Trellis task, worktree, and branch for this
-   turn; that approval does not approve commit, push, PR creation, or issue
-   closure.
-4. Planning artifacts must be persisted before implementation.
-5. In business projects, `.trellis/spec/**`, `.trellis/tasks/**`, `docs/**` durable docs, `00-bootstrap-guidelines` generated docs SSOT, and workflow artifact human-readable fields are Chinese by default, with English reserved for literal tokens such as commands, paths, config keys, GitHub keywords, and code symbols.
-6. Daily user entry points are natural-language task requests, issue URLs or issue numbers, `trellis-continue`, and canonical `guru-finish-work`; frozen `trellis-finish-work` entries remain compatibility routers through Issue #132, and `trellis-start` remains a fallback / explicit orientation entry for no-auto-injection platforms, disabled hooks, suspected bootstrap failures, or manual context reloads.
-7. `review-branch` and `finish-work.sh` are companion script subcommands, not user-facing phases; `publish-pr` is a compatibility-only blocked command. Ordinary direct `finish-work.sh` and every `publish-pr` call are blocked before archive/push/PR.
-8. Branch Review Gate belongs after commit and before finalization; do not put it in a non-blocking hook.
-9. Push, Draft PR, verification, archive and Ready belong to one finalizer plan; do not ask users to run a separate publish flow.
-10. Hooks are reminders and context injection only; the workflow contract owns the Guru Team process.
-11. Companion scripts are local project assets under `.trellis/guru-team/`; do not modify Trellis upstream, `node_modules`, or generated copies in business repositories as the long-term source.
-12. Long-term Guru Team rules live in this marketplace workflow, preset installer, companion scripts, overlays, and team docs.
-13. If a platform command/skill entry must be overridden, use the Guru Team preset overlay and document its relationship with `trellis update`.
-14. Spec templates may contain reusable conventions, review checklists, and artifact language rules; they must not contain active task state, Issue Scope Ledger instances, PR runtime state, or project-private business rules.
-15. Missing `middle_platform_knowledge.mode` means `optional_warn`; `required` is opt-in only and `off` is opt-out only.
-16. `guru-knowledge-center` availability is checked by the AI runtime from available tools/capabilities, not by shell scripts.
-17. Trellis task artifacts may act as temporary task evidence, but durable repo docs remain the long-term SSOT when they exist.
-18. Active-task recovery artifacts are not automatically long-term archive artifacts; closeout keeps only the plan-declared compact set with a direct history or recovery consumer.
-19. Never print tokens, secrets, private keys, signed URLs, `.env` content, or database URLs.
+[workflow-state:planning-inline]
+Use the same planning route. Inline execution does not weaken mandatory Skill
+invocation or task activation.
+[/workflow-state:planning-inline]
 
-### Issue Scope Ledger Rules
+[workflow-state:in_progress]
+Validate the task worktree, implement the approved scope, collect configured
+Trellis implementation/check evidence, and invoke guru-check-task. Do not create
+implementation-handoff.md.
+[/workflow-state:in_progress]
 
-Legacy `task-start-context.source_issue` records intake provenance only and is
-never the final set of issues that the PR closes. New tasks do not generate or
-require `task-start-context.json`.
+[workflow-state:in_progress-inline]
+Use the same approved plans, specs, implementation boundary, and mandatory
+guru-check-task route.
+[/workflow-state:in_progress-inline]
 
-Task-level `issue-scope-ledger.json` owns close/ref/followup semantics:
+[workflow-state:completed]
+Use canonical guru-finish-work and automatically consume the declared
+publication, verification, resume, and reprepare exits.
+[/workflow-state:completed]
 
-- `primary_issue`: the intake issue, default close candidate.
-- `close_issues`: issues this task explicitly commits to fully resolving; PR body may use `Closes/Fixes/Resolves` only for these.
-- `related_issues`: context, reuse, partial overlap, or non-closing references; PR body may use `Refs` or `Related`, never close keywords.
-- `followup_issues`: expanded scope, newly found bug, or later work; never close from the current PR.
+#### 0.0 Base synchronization
 
-Default best practice for new issues, new bugs, or expanded requirements is to create a new Trellis task. Add a new issue to current `close_issues` only when it is the same delivery unit, does not materially expand boundary/risk/test scope, the planning artifacts are updated, any real inclusion choice is resolved in the current dialogue, GitHub-visible authority records the final classification, and Branch Review Gate records coverage.
+Invoke guru-sync-base and consume only its declared exit.
 
-If a user changes requirements during an active task, the AI must classify the new request before continuing implementation: recommend `close_issues` / `related_issues` / `followup_issues`, ask only when a real choice remains, update planning artifacts when current scope changes, and persist only the final compact classification plus remote authority checksum. Do not persist the authorization process or close a referenced issue merely because it was discussed during the task.
+#### 0.1 Change-context discovery
 
-### Remote Marketplace Verification Gate
+Invoke guru-discover-change-context and consume only its declared exit.
 
-For tasks that change the workflow marketplace, preset, overlays, installer, schema, or public extension contract, publish is fail-closed after the branch push and before `gh pr create`. The deterministic `verify-marketplace` companion command records task-local `marketplace-verification.json` with repository, remote, branch/ref, verified content HEAD, remote HEAD, command exit codes, stdout/stderr digests and sizes, and installed workflow/preview/schema digests. It executes remote branch `trellis init`, workflow preview, workflow switch, canonical preset reapply, and runtime-ignore checks in a clean temporary repository. It does not decide PR readiness.
+#### 0.2 Requirements clarification
 
-`issue-scope-ledger.json` must carry one exact structured `remote_marketplace_verification` machine object in the primary issue and every close issue. The recorder creates pending from the closeout plan after the reviewed content push; human reason text is outside the machine identity. Pending and passed use the portable task-relative `marketplace-verification.json` locator, but the verifier and artifact/digest validators resolve it only while the task is active. The verifier replaces only that object with passed facts. Schema 1.2 creates no separate pre-draft evidence metadata commit: the plan, passed verifier artifact, final ledger, archive projection, and summary enter the one archive transaction, whose parent is `reviewed_content_head`. Archived recovery proves the prevalidated artifact's continuity only through that exact Git move/blob transaction and never reparses it. Missing, duplicate, pending, failed, stale, path-bound, or digest-mismatched normal evidence blocks before archive. The AI remains responsible for close scope and evidence sufficiency; scripts only execute, record, and validate deterministic facts. No release tag is created.
+Invoke guru-clarify-requirements and consume only its declared exit.
+
+#### 0.3 Contract wording review
+
+Invoke guru-review-contract-wording and consume only its declared exit.
+
+#### 0.4 Change-request review
+
+Invoke guru-review-change-request and consume only its declared exit.
+
+#### 0.5 Task workspace creation
+
+The normal repo-changing route is:
+
+guru-sync-base -> guru-discover-change-context ->
+guru-clarify-requirements -> guru-review-contract-wording ->
+guru-review-change-request -> guru-create-task-workspace.
+
+Only the created exit enters planning. The workflow does not create the issue,
+branch, worktree, or task directly. A Scope Change Gate during any active phase
+uses guru-clarify-requirements and returns only through its mapped router.
+
+## Phase 1: Plan
+
+#### 1.1 Planning artifacts
+
+Planning produces non-empty `prd.md`, `design.md`, and `implement.md`, plus
+one explicit Docs SSOT Plan. Before presentation, invoke the planning profile
+of guru-review-contract-wording.
+
+#### 1.4 Task plan approval
+
+Invoke guru-approve-task-plan and consume only its declared exit.
+
+#### 1.5 Task activation
+
+Only approved reaches phase-1-task-activation. Resolve the selected task
+worktree, require workspace-boundary success, validate the public DTO, and run:
+
+    python3 ./.trellis/scripts/task.py start <task-path>
+
+The status write is not a second planning judgment. Revision and scope exits
+return only to their declared consumers.
+
+## Phase 2: Execute
+
+#### 2.1 Implementation
+
+Before edits, validate:
+
+    .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+
+Read the planning artifacts, curated specs, and live diff from that worktree.
+Use the configured Trellis implement/check agents when available; their
+terminal results are ephemeral evidence. Execute the approved Docs SSOT Plan
+and implement the current scope.
+
+#### 2.2 Task check
+
+Invoke guru-check-task. Only passed continues to guru-create-task-commit. Task
+or planning findings return through their declared workflow targets.
+
+## Phase 3: Finish
+
+#### 3.3 Docs SSOT reconciliation
+
+Reconcile durable specs and the approved Docs SSOT Plan.
+
+#### 3.4 Task commit
+
+Invoke guru-create-task-commit and consume only its declared exit.
+
+#### 3.5 Branch review
+
+Invoke guru-review-branch over the complete committed base-to-HEAD range.
+
+#### 3.6 Publication review
+
+After branch review passes, author current task-local `pr-body.md` and
+finish-summary-index.json candidates, then invoke guru-review-task-publication.
+
+#### 3.7 Finalization
+
+Invoke guru-finalize-task and consume its verification, stale-publication,
+resume, reprepare, published, or blocked exit through the declared graph.
+
+Only publication ready enters finalization. The finalizer is the only owner
+that may display and execute the bounded push, PR, archive, and Ready side-effect
+set. Verification, stale publication, resume, and reprepare exits are
+automatically consumed by their declared Skills. The global workflow never
+calls closeout executors directly.
+
+## Global Integration Boundaries
+
+### Workspace and task boundary
+
+- In worktree mode, every task-local write occurs only after
+  check-workspace-boundary.sh confirms that expected workspace equals the
+  current repository root.
+- Editors without an explicit working-directory option use absolute paths under
+  that confirmed task worktree.
+- Task activation consumes only guru-approve-task-plan:approved.
+- Downstream phases consume public DTOs and live facts, never an upstream
+  package artifact.
+
+### Docs SSOT
+
+Each planning cycle chooses exactly one strategy:
+
+- ssot_first;
+- delta_first;
+- bootstrap_or_repair_docs;
+- no_docs_update_needed.
+
+Phase 2 executes the chosen strategy. delta_first merges durable docs before
+the final Phase 2 check. Branch Review verifies reconciliation but never
+performs the first merge.
+
+### Issue Scope Ledger
+
+issue-scope-ledger.json is the task-local close/reference authority.
+close_issues alone may use PR close keywords. related_issues and followup_issues
+remain open. A new or changed scope decision enters the Scope Change Gate
+before implementation resumes.
+
+### Human artifacts
+
+Before a planning, Phase 2, Branch Review, publication, or finalization stop,
+resolve human-authored artifacts:
+
+    .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+
+Show a Markdown 产物 review 表 containing only existing `prd.md`,
+`design.md`, `implement.md`, and `pr-body.md`. Resolve from the active task
+first and from the archive after publication. Do not expose JSON gates,
+checkpoints, raw agent reports, or digests as standard handoff artifacts.
+
+### Interaction and side effects
+
+- Ask only for missing intent, a material scope or plan choice, new external
+  authority, or one fully displayed side-effect set.
+- For one current, unique, unambiguous side-effect plan, prompt only
+  确认继续 and accept any clear affirmative reply.
+- Automatically consume mapped exits and mapped re-entry routes.
+- Authorization exists only in the current dialogue and is never persisted.
+- Issue/workspace/task creation, task commit, push/PR/archive, merge, cleanup,
+  and any new external mutation keep their own bounded authority.
+- No Skill pass creates permission for a later unrelated side effect.
+
+### Platform entry and ownership
+
+Official Trellis owns trellis-start, trellis-continue, trellis-finish-work,
+official hooks, agents, runtime agents, bundled skills, and meta references.
+The Guru preset does not install or managed-upgrade those paths.
+
+Guru routing is guaranteed by this workflow graph and the installed active
+guru-* packages. The only explicit Guru platform entries are the Codex, Claude,
+and Cursor guru-finish-work launchers. They read live context and
+.trellis/workflow.md, invoke the public graph, and do not depend on package
+runtime implementation or package-private artifacts.
+
+## Final Fail-Closed Rule
+
+At every hop, select exactly one Interface-declared exit and exactly one
+Interface-declared consumer. If the package, marker, exit, target, projection,
+or required live boundary is missing, stale, ambiguous, mismatched, duplicated,
+or unknown, stop. Never infer an alternate route from prose, examples, old
+artifacts, runtime source, or platform-specific behavior.

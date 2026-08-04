@@ -1,14 +1,18 @@
 # Guru Team Trellis Preset
 
-The preset installs companion assets and Guru Team entry overlays for the
-`guru-team` Trellis workflow into an existing Trellis project.
+The preset installs companion assets, Guru Skill packages, and three additive
+Guru finish entries for the `guru-team` Trellis workflow into an existing
+Trellis project.
 
 It does not run `trellis init` and does not modify Trellis upstream files.
 It is idempotent: identical files are skipped, missing files are installed,
 Guru-managed companion assets are upgraded in place with `.bak` backups,
-existing `.trellis/guru-team/config.yml` is preserved, known upstream
-Trellis-generated entry files are replaced with Guru Team overlays, and unknown
-local modifications are preserved by writing `.new` copies.
+and existing `.trellis/guru-team/config.yml` is preserved. The retired 43-path
+upstream overlay inventory is now a removed-tombstone migration contract:
+official template bytes stay unchanged, reviewed legacy-only Guru bytes are
+removed, upstream-generated paths that still contain known Guru bytes block
+until official `trellis update` or the required version upgrade restores them,
+and unknown local edits are preserved with deterministic `.new` remediation.
 
 The current config template includes `middle_platform_knowledge.mode:
 optional_warn`. Existing target repo configs are not overwritten just to add
@@ -42,23 +46,38 @@ markers fail closed before target activation. The JSON result reports
 `agents_principles`; root `AGENTS.md` remains user-owned and is not listed in
 `install.managed_assets`.
 
-The preset also installs Guru Team sub-agent definitions. Technical dispatch ids
-stay stable (`trellis-implement`, `trellis-check`, `trellis-research`, channel
-runtime `implement` / `check`), while UI-facing labels are Chinese where the
-platform supports them. Codex uses Chinese `description`, but keeps
-`nickname_candidates` ASCII because current Codex rejects non-ASCII nicknames and
-ignores malformed agent files. Markdown-based agent files use Chinese
-descriptions and headings. Implement/check definitions require an unfinished
-handoff instead of a false completion claim when the main session interrupts or
-replaces a worker, including current diff, remaining work, validation state, and
-gate blockers for same-agent resume or replacement handoff.
+Trellis-owned sub-agent, hook, command, prompt, bundled Skill, and channel-runtime
+agent files remain owned by official `trellis init` / `trellis update` / version
+upgrade. The preset does not replace those files. Guru-specific semantic behavior
+lives in the active marketplace workflow and additive `guru-*` Skill packages;
+the preset only configures the supported Codex dispatch mode needed to invoke the
+official Trellis agents.
 
-Platform overlays are selectable. By default, the installer applies shared
-`.agents/skills` entries plus Codex and Cursor overlays. Repeat
+Platform distribution is selectable. Shared `.agents/skills/guru-*` packages are
+always installed; selected platforms receive their matching `guru-*` package
+copies and additive finish entry. Defaults are Codex and Cursor. Repeat
 `--platform <name>` to select a specific set; supported values are `codex`,
-`cursor`, and `claude`. Use `--all-platforms` to preserve the historical
-full-overlay behavior. `--platform` and `--all-platforms` are mutually
-exclusive, and invalid platform names fail closed.
+`cursor`, and `claude`. `--all-platforms` selects all three. `--platform` and
+`--all-platforms` are mutually exclusive, and invalid platform names fail
+closed.
+
+The installed manifest records the three additive entries in a separate
+top-level `overlays` provenance domain with closed fields
+`schema_version/status/selected_platforms/files/removals/conflicts/sidecars`.
+Missing entries install, canonical-equal entries remain unchanged, and only a
+target matching its exact previous managed hash is upgraded after writing
+`.bak`. Unknown or invalid provenance is preserved with deterministic `.new`
+and blocks staged activation. Platform shrink deletes only previous-hash-equal
+entries; unknown edits remain in place and block.
+
+For a pre-domain manifest, legacy `install.managed_assets` is accepted once only
+as a claim seed, and only when the current target bytes also equal the current
+canonical overlay. Clean shrink then records
+`legacy_managed_asset_sha256`; differing bytes are treated as local edits. The
+installer never infers ownership from the overlay marker or `Guru Team` text.
+Current installed validation reconstructs the selected platform inventory and
+checks hashes, modes, removals, unselected paths, and exact `.new/.bak` state
+independently of the flat managed-assets list.
 
 The preset records the installed Guru Team extension version and source
 provenance in `.trellis/guru-team/extension.json`. The canonical extension
@@ -80,43 +99,62 @@ example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`. That release targets
 official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
 is a latest/canary source and should be reported as mutable provenance.
 
-## Upstream Ownership Freeze
+## Upstream Ownership Tombstones
 
-The overlay tree is a frozen transitional migration surface, not an open-ended
-way to patch Trellis-owned entries. The strict inventory and schema live at:
+The overlay tree is no longer a transitional patch surface. The strict schema
+2.0 inventory and schema live at:
 
 - `trellis/presets/guru-team/ownership/upstream-ownership.json`
 - `trellis/presets/guru-team/ownership/upstream-ownership.schema.json`
 
-The inventory retains exactly 43 paths from base commit
-`291b57b6c02872320a4dce0626a2f718399b8f56`, including an immutable historical
-baseline SHA-256 for every path, 37 Trellis `0.6.5` clean-init entries, and six historical Codex
-prompt/skill entries that clean init no longer generates. Every active entry is
-`transitional_legacy`; future issue #132 removal keeps the same record as
-`upstream_owned/removed` rather than erasing audit history.
-Current payload validation uses that baseline for eight unchanged entries and a
-separately reviewed `current_payload_sha256` for exactly thirty-five active
-entries: five issue #131 continue entries; eight AI-first agent entries; five
-finish-router entries; three start entries; two `trellis-before-dev` entries;
-and twelve planning/context/hook entries updated by issue #161. The
-current binding is only normal version/drift detection, not an authenticity or
-anti-tamper boundary; it cannot spread beyond the reviewed allowlist and does not
-authorize issue #132 removal.
+The inventory retains exactly 43 historical paths from base commit
+`291b57b6c02872320a4dce0626a2f718399b8f56`. Every entry is now
+`upstream_owned/removed`; none has `current_payload_sha256`, and none may have a
+canonical overlay or Guru managed-path claim. Each tombstone preserves the
+immutable baseline hash plus its explicit `migration_payload_sha256s`. Across the
+43 entries the inventory binds 78 reviewed historical Guru payload hashes: 37
+paths are generated by a clean Trellis `0.6.5` init and six legacy Codex
+prompt/Skill paths are not.
 
-Before any target mutation, `apply_guru_team_trellis_preset.py` validates the
-source inventory, overlay bytes, public managed claims, `MANAGED_ASSET_PATHS`,
-active Skill ids, and anchored Guru discovery namespaces. Maintainers can run
-the same read-only gate directly:
+The canonical overlay tree contains only these three Guru-owned additive entries:
+
+- `.codex/prompts/guru-finish-work.md`
+- `.claude/commands/guru/finish-work.md`
+- `.cursor/commands/guru-finish-work.md`
+
+The extension manifest and inventory contain exactly nine anchored Guru namespace
+claims. No claim covers an upstream Trellis namespace.
+
+Before any target activation, the installer validates the source inventory,
+schema, exact managed claims, overlay tree, `MANAGED_ASSET_PATHS`, active Skill
+ids, and anchored Guru discovery namespaces. It then classifies every removed
+tombstone before staging any migration mutation:
+
+- missing path: already complete;
+- current bytes equal `.trellis/.template-hashes.json`: preserve official bytes;
+- known Guru bytes on a path generated by clean init: preserve and block, requiring
+  official `trellis update` or the required version upgrade;
+- known Guru bytes on a legacy-only path: remove as the reviewed migration;
+- unknown/local bytes: preserve and create deterministic adjacent `.new` remediation;
+- invalid provenance, pre-existing `.new` / `.bak`, symlink, unsafe ancestor, or
+  non-regular path: preserve and fail closed.
+
+A successful installed manifest never lists any of the 43 tombstone paths in
+`install.managed_assets`. Conflicts prevent staged activation; only reviewed
+remediation sidecars are materialized back to the target repository.
+
+Maintainers can run the read-only ownership gate directly:
 
 ```bash
 ./trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 python3 ./trellis/presets/guru-team/scripts/python/test_upstream_ownership.py
 ```
 
-The validator and its positive/negative fixtures are source-only assets; they
-are not copied into target business repositories. The validator reports path,
-schema, category, hash, owner, prerequisite, manifest, and namespace facts. AI
-review still owns whether a proposed owner or migration is semantically valid.
+The validator reports 43 removed, zero active legacy, zero unclassified, three
+additive overlays, nine managed claims, and 78 migration payload hashes. These
+bindings provide normal version and drift detection, not an authenticity or
+anti-tamper boundary. AI review still owns whether a proposed owner or migration
+is semantically valid.
 
 ## Commit Message Helpers
 
@@ -155,12 +193,12 @@ git clone --depth 1 --branch v0.6.5-guru.2 \
 Examples:
 
 ```bash
-# Shared overlays plus Claude only.
+# Shared Guru packages plus Claude packages and finish entry.
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
   --platform claude
 
-# Shared overlays plus every known platform overlay.
+# Shared Guru packages plus all platform packages and finish entries.
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
   --all-platforms
@@ -176,15 +214,17 @@ Maintainers can verify the current extension's non-interactive install path with
 
 The script creates a temporary Git repo, runs `trellis init -y` with the
 `guru-team` marketplace workflow, applies the preset with
-`--platform codex --platform cursor`, checks that `.trellis/workflow.md`
+`--platform claude --platform codex --platform cursor`, checks that `.trellis/workflow.md`
 exists, verifies that the active workflow requires the three Guru Team planning
 artifacts, verifies that `check-env.sh` and `version.sh` are executable,
-asserts `.trellis/guru-team/extension.json` exists, asserts `.claude/` was not
-created, asserts the active workflow, Codex / Cursor SessionStart hooks, Cursor
-sub-agent context hook, brainstorm/check/before-dev skills, and Trellis meta
-planning references no longer contain legacy `PRD-only` / lightweight /
-optional-design planning hints,
-asserts target `.trellis/spec/**` and
+asserts `.trellis/guru-team/extension.json` records 60 managed assets with no
+removed tombstone path, and verifies the three selected Guru finish entries
+match their canonical additive overlays. It snapshots all 43 upstream-owned
+paths after clean init (37 regular official files plus six missing legacy-only
+paths) and proves the preset leaves the snapshot byte/mode-identical. After
+`trellis update --force`, it takes a fresh official snapshot and proves workflow
+and preset reapply leave that new snapshot unchanged.
+It also asserts target `.trellis/spec/**` and
 `00-bootstrap-guidelines` do not retain known English documentation language
 requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
 `gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
@@ -201,7 +241,9 @@ forced switch, `trellis update --force`, workflow reapply, and preset reapply.
 It records ownership-gate JSON at three checkpoints: before the initial preset
 apply, after `trellis update` before workflow/preset reapply, and after preset
 reapply before final drift/sidecar checks. The installer itself repeats the
-pre-mutation gate for both apply operations.
+pre-mutation gate for both apply operations. The expected clean migration result
+is 37 `preserved_clean_upstream`, six `already_missing`, zero removals, zero
+conflicts, and zero sidecars.
 A controlled bare remote and fake GitHub adapter drive the already-installed
 `finish-work.sh` through dry-run digest, formal draft binding, official archive,
 three-way HEAD equality, ready transition, and clean-tree assertions once after
@@ -217,9 +259,18 @@ companion asset.
 
 ## Dogfood Overlay Drift Check
 
-After changing any file under `trellis/presets/guru-team/overlays/`, maintainers
-must re-apply the preset to this source repository and verify that installed
-dogfood copies still match the canonical overlays:
+Only the three additive Guru finish entries remain under
+`trellis/presets/guru-team/overlays/`. Before reapplying the preset to a
+repository that may still contain historical Guru bytes on upstream-owned paths,
+restore official ownership first:
+
+1. run the official `trellis update` or required Trellis version upgrade;
+2. reapply the `guru-team` marketplace workflow;
+3. run the Guru preset for the selected platforms;
+4. inspect and resolve every `.new` / `.bak` sidecar;
+5. run ownership, installed-package, dogfood drift, and recursive sidecar checks.
+
+For this source repository, the final preset/drift commands are:
 
 ```bash
 ./trellis/presets/guru-team/scripts/bash/apply.sh \
@@ -228,20 +279,23 @@ dogfood copies still match the canonical overlays:
 ./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
-`check-dogfood-overlay-drift.sh` is read-only. It first runs the ownership gate,
-then compares canonical overlay files with same-path installed copies in this
-repository and exits non-zero for ownership failure, missing copies, or changed
-copies. It is a source-repository maintainer check and is not installed into
-target business repositories as a managed companion asset.
+`check-dogfood-overlay-drift.sh` is read-only. It first validates the final
+43-path removed-tombstone inventory, exact nine Guru managed claims, and
+three-entry canonical overlay tree. It then compares those three additive
+overlays with same-path installed dogfood copies and exits non-zero for
+ownership failure, missing copies, or changed bytes. It never treats an
+upstream-owned path as a dogfood overlay.
 
-If `apply.sh` creates `.new` or `.bak` files, inspect and resolve them before
-committing. A passing drift check is not a replacement for AI review or the
-Branch Review Gate.
+Do not run preset reapply first when a generated upstream path still contains a
+known historical Guru payload: the installer intentionally preserves that path
+and blocks with official update/upgrade remediation. A passing drift check is not
+a replacement for AI review or the Branch Review Gate.
 
 ## Installed Files
 
-Preset 是完整 Guru Team extension configurator。除 companion assets 和
-platform overlays 外，它验证 `trellis/skills/guru-team/registry.json`，将
+Preset 是完整 Guru Team extension configurator。除 companion assets、
+Guru Skill packages 和三个 additive finish entries 外，它验证
+`trellis/skills/guru-team/registry.json`，将
 registry/schema/active packages 安装到 `.trellis/guru-team/skills/`，并把
 active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude roots。
 Reserved ids 与 test fixtures 永不安装，未选择的平台 root 不因 skill 分发
@@ -282,16 +336,13 @@ Fixture source validation 强制 Skill consumer 使用 active registry exact can
 required 与映射/normalizer 后全域兼容证明，分别检查 public/private
 schema id/path 互斥，并要求 wrapper 完整匹配 dispatcher-only template。
 
-Preset 保持原 frozen 43-path overlay inventory，同时更新其中五条已有
-`trellis-continue` current payload：Branch Review `passed` 进入 active Phase 3.6，
-workflow caller 先编写 task-local `pr-body.md` 与
-`finish-summary-index.json` 初始候选，再 mandatory invoke active
-`guru-review-task-publication`。Caller preparation 不判断 publication semantic
-结论；缺失或结构错误先失败关闭。Phase 3.7 不得在 `ready` 后首次创建或修改两份
-content。Active `guru-finalize-task` package 与 public edge 由 preset additive
-distribution 安装，global `ready -> guru-finalize-task` invocation/order 同步 integrated。
-Baseline SHA 与 overlay path 集合保持不变，reviewed
-current payload hashes 随本次 active route 更新。
+Preset 保留 frozen 43-path 历史 identity 作为 removed tombstones，不再安装或
+更新任何 `trellis-continue`、`trellis-start`、`trellis-finish-work`、agent、hook
+或 runtime-agent payload。Branch Review `passed` 后的 publication/finalization
+路由由 active marketplace workflow 的 mandatory Skill markers 与 additive
+`guru-review-task-publication` / `guru-finalize-task` packages 承接。Installer
+只验证 tombstone identity、迁移 provenance 与 Guru namespace，不复制 owner
+Skill 的 semantic 结论。
 
 新增 additive active `guru-verify-extension-installation` package 安装两个
 structurally distinct inputs、四个 per-exit contracts、private
@@ -554,72 +605,32 @@ Draft create 前使用 exact open title/body/labels 与 creation time执行 0/1/
 携带完整 checker-passed created-issue result，并与 fresh context 的 canonical live
 existing-issue identity一致；该 context使用`kind=issue`与 null `issue_binding`。
 
-Shared overlays are always installed:
+Guru Skill packages are distributed independently of overlays:
 
-- `.trellis/agents/implement.md`
-- `.trellis/agents/check.md`
-- `.agents/skills/trellis-start/SKILL.md`
-- `.agents/skills/trellis-brainstorm/SKILL.md`
-- `.agents/skills/trellis-before-dev/SKILL.md`
-- `.agents/skills/trellis-check/SKILL.md`
-- `.agents/skills/trellis-continue/SKILL.md`
-- `.agents/skills/trellis-finish-work/SKILL.md`
+- canonical registry/schema/packages/tests are installed under
+  `.trellis/guru-team/skills/`;
+- active packages are always copied to `.agents/skills/guru-*/`;
+- selected Codex, Cursor, and Claude platforms receive matching
+  `.codex/skills/guru-*/`, `.cursor/skills/guru-*/`, and
+  `.claude/skills/guru-*/` copies.
 
-Default Codex overlays are installed when no platform flag is provided, or when
-`--platform codex` / `--all-platforms` is used:
+The canonical overlay tree has exactly three files. Each is installed only when
+its platform is selected:
 
-- `.codex/agents/trellis-implement.toml`
-- `.codex/agents/trellis-check.toml`
-- `.codex/agents/trellis-research.toml`
-- `.codex/hooks/session-start.py`
-- `.codex/prompts/trellis-start.md`
-- `.codex/prompts/trellis-continue.md`
-- `.codex/prompts/trellis-finish-work.md`
-- `.codex/prompts/guru-finish-work.md`
-- `.codex/skills/trellis-start/SKILL.md`
-- `.codex/skills/trellis-continue/SKILL.md`
-- `.codex/skills/trellis-finish-work/SKILL.md`
-- `.agents/skills/trellis-meta/references/customize-local/change-workflow.md`
-- `.agents/skills/trellis-meta/references/customize-local/change-context-loading.md`
-- `.agents/skills/trellis-meta/references/local-architecture/context-injection.md`
-- `.agents/skills/trellis-meta/references/local-architecture/task-system.md`
-- `.agents/skills/trellis-meta/references/platform-files/agents.md`
+- Codex: `.codex/prompts/guru-finish-work.md`;
+- Cursor: `.cursor/commands/guru-finish-work.md`;
+- Claude: `.claude/commands/guru/finish-work.md`.
 
-Default Cursor overlays are installed when no platform flag is provided, or when
-`--platform cursor` / `--all-platforms` is used:
+Official Trellis owns every `trellis-*` Skill, command, prompt, hook, platform
+agent, bundled reference, and `.trellis/agents/*` runtime file. The preset never
+installs, replaces, or managed-upgrades those paths. Existing repositories must
+restore them through official update/upgrade before preset reapply if a generated
+path still contains historical Guru bytes.
 
-- `.cursor/agents/trellis-implement.md`
-- `.cursor/agents/trellis-check.md`
-- `.cursor/agents/trellis-research.md`
-- `.cursor/hooks/session-start.py`
-- `.cursor/hooks/inject-subagent-context.py`
-- `.cursor/commands/trellis-continue.md`
-- `.cursor/commands/trellis-finish-work.md`
-- `.cursor/commands/guru-finish-work.md`
-- `.cursor/skills/trellis-brainstorm/SKILL.md`
-- `.cursor/skills/trellis-before-dev/SKILL.md`
-- `.cursor/skills/trellis-check/SKILL.md`
-- `.cursor/skills/trellis-meta/references/customize-local/change-workflow.md`
-- `.cursor/skills/trellis-meta/references/customize-local/change-context-loading.md`
-- `.cursor/skills/trellis-meta/references/local-architecture/context-injection.md`
-- `.cursor/skills/trellis-meta/references/local-architecture/task-system.md`
-- `.cursor/skills/trellis-meta/references/platform-files/agents.md`
-
-Claude overlays are installed only when `--platform claude` or `--all-platforms`
-is used:
-
-- `.claude/agents/trellis-implement.md`
-- `.claude/agents/trellis-check.md`
-- `.claude/agents/trellis-research.md`
-- `.claude/commands/trellis/continue.md`
-- `.claude/commands/trellis/finish-work.md`
-- `.claude/commands/guru/finish-work.md`
-
-With all three platforms selected, the installed extension manifest contains
-103 deterministic managed assets. The three `guru-finish-work` entries are
-Guru-owned additive paths. The five listed `trellis-finish-work` files remain
-byte-pinned compatibility routers until issue #132 and are not the canonical
-daily entry.
+With all three platforms selected, `install.managed_assets` contains exactly 60
+deterministic companion/additive assets, including the three Guru finish entries
+and excluding every removed tombstone. Distributed Skill-package files are
+recorded separately in `skill_packages.files`.
 
 The active `.trellis/workflow.md` is installed or switched through the official
 Trellis workflow marketplace:
@@ -650,12 +661,11 @@ Literal commands, paths, config keys, GitHub keywords, external API names, and
 code symbols may remain English.
 
 The daily user-facing entry points are natural-language task requests, issue
-URLs or issue numbers, `trellis-continue`, and `guru-finish-work` (Codex prompt,
-Claude `/guru:finish-work`, Cursor `/guru-finish-work`). The five
-`trellis-finish-work` entries remain compatibility-only until issue #132. The
-`trellis-start` overlay remains installed as a fallback / explicit orientation
-entry for platforms without automatic startup injection, disabled or unapproved
-hooks, suspected bootstrap failures, or manual context reloads.
+URLs or issue numbers, official Trellis platform entries that load the active
+workflow, and additive `guru-finish-work` (Codex prompt, Claude
+`/guru:finish-work`, Cursor `/guru-finish-work`). The preset does not patch
+`trellis-start`, `trellis-continue`, or `trellis-finish-work`; stable mandatory
+Guru routing is defined by `.trellis/workflow.md`.
 
 Planning, check, review, and publish helpers are internal companion script
 subcommands used by the workflow; they are not daily user-facing entries.
@@ -690,8 +700,8 @@ the Skill owns scope-before-severity, adequacy, findings, full rerun, Docs SSOT
 review, its AI Gate, and four typed exits. Coverage flags, worker output, or
 script recorder/validator success cannot replace that loop. The preset
 distributes the additive Guru package to shared/Codex/Cursor/Claude roots
-without modifying any upstream-owned `trellis-check` overlay; the frozen
-43-entry ownership inventory remains fixed.
+without modifying any upstream-owned `trellis-check` file; the frozen
+43-entry ownership inventory remains as `upstream_owned/removed` tombstones.
 The Phase 2 public wrapper deletes its checkpoint after the checked typed output
 passes schema validation. Task Commit and Branch Review consume only minimal
 DTOs and live Git; they never read or delete Phase 2 private state.
@@ -704,10 +714,10 @@ persisted. Only a real unfinished-to-replacement event uses
 checkpoint stores one minimal `unfinished`/`replacement` chain and never enters
 the task tree, public DTO, commit, or archive.
 
-Active `guru-review-branch` is the sole Phase 3.5 semantic owner. Global
-workflow and platform `trellis-continue` entries only mandatory invoke its
+Active `guru-review-branch` is the sole Phase 3.5 semantic owner. The global
+workflow mandatory-invokes its
 six-field public input (`profile`, `mode`, `task_ref`, `base_ref`,
-`committed_head`, `review_intent`) and consume its four typed exits (`passed`,
+`committed_head`, `review_intent`) and consumes its four typed exits (`passed`,
 `implementation_required`, `scope_confirmation_required`, `blocked`).
 Reviewer lifecycle, finding qualification, Docs SSOT Gate, recovery checkpoint,
 private artifacts and re-entry remain package-owned step-local contracts.
@@ -729,7 +739,7 @@ or route. Platform entries and this installer do not duplicate those semantic
 rules or expose private artifacts as public handoff data.
 `finish-work.sh` rejects ordinary direct calls, while `publish-pr.sh` is an
 unconditional compatibility blocker, so
-`trellis-continue` cannot chain closeout, commit review metadata, push, or
+an ordinary continuation cannot chain closeout, commit review metadata, push, or
 create a PR before the explicit `guru-finish-work` entrypoint. That entry is
 a thin live-workflow router: it runs Phase 3.6 through
 `guru-review-task-publication`, then invokes `guru-finalize-task` only from
@@ -980,9 +990,9 @@ planned archive commit, both normal and plan-only archived reentry load the plan
 from that commit blob; the committed plan blob and Git parent/path/tree/blob
 facts are deterministic recovery inputs, not semantic or workflow authority, so missing or tampered archived working-tree files do not
 block the exact push, remote title/body check, HEAD alignment, or
-draft-to-ready. A plan-only archived directory is resolvable only by the
-canonical `guru-finish-work` route or a frozen compatibility router; ordinary
-task commands still require `task.json`. The real-PR final summary's
+draft-to-ready. A plan-only archived directory is resolvable only by the canonical
+`guru-finish-work` route; no upstream `trellis-finish-work` compatibility asset
+remains, and ordinary task commands still require `task.json`. The real-PR final summary's
 deterministic bytes/digest participate
 in pre-move, incomplete-recovery, and exact-commit continuity. The first two
 paths rebuild expected bytes against the already-bound remote PR. Exact
@@ -1054,7 +1064,8 @@ follow-up limit, or no-update reason. Finish and Branch Review Gate evidence
 must later record the reconciliation outcome, but the strategy choice belongs
 in Phase 1 planning.
 
-Installed implement/check agents consume that plan during Phase 2. The
+Official upstream-owned implement/check agents consume that plan during Phase 2
+under the active Guru workflow. The preset does not replace their files. The
 implementation agent reports the outcome and changed paths once. The Phase 2
 semantic owner uses that ephemeral result plus live repository facts directly
 and records only its compact final Docs SSOT, validation, semantic, and route

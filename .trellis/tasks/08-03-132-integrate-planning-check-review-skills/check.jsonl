@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Combined acceptance、independent current-HEAD review 与 evidence adequacy。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"验证 global graph 只保留 invocation、typed exits、唯一 consumers 与 stops。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"验证 producer/consumer projection 不读取 private artifact/runtime source。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"验证 active=0、removed=43、无 transitional_legacy/unclassified。"}
+{"file":".trellis/spec/preset/installer.md","reason":"验证 local-edit preservation、managed hashes、update/upgrade/reapply 与 sidecars。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"验证 README 命令、四平台真实 discovery 与 remote/local evidence 分离。"}

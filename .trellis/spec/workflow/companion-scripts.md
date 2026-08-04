@@ -664,10 +664,11 @@ ordinary direct calls before closeout-plan, push, draft PR, archive, or publish
 side effects; only `guru-finalize-task`'s checked private transition executor
 may pass the `--from-trellis-finish-work` intent marker. `publish-pr` is retained
 only as an unconditional compatibility blocker: it performs no repo/task
-resolution or side effect. Its legacy `required_entrypoint=trellis-finish-work`
-error value remains a compatibility identifier for the frozen routers; the
-canonical user route is `guru-finish-work`. Every interruption returns through
-the same finalizer semantic loop and its mapped recovery consumer.
+resolution or side effect. The legacy `required_entrypoint=trellis-finish-work`
+error value remains a compatibility identifier; the Guru preset no longer
+installs a physical `trellis-finish-work` router. The canonical user route is
+`guru-finish-work`. Every interruption returns through the same finalizer
+semantic loop and mapped recovery consumer.
 
 Finish-summary separates AI judgment from deterministic facts. Publication
 preparation writes task-local `finish-summary-index.json` with reviewed
@@ -1227,8 +1228,10 @@ evidence records the conflict and returns `blocked` without fabricating an
 execution profile. A taskless installation failure also returns a standalone
 `blocked` report rather than a false task-work route.
 
-The ownership fact reader consumes the canonical `legacy_entries` inventory and
-frozen baseline digest. Any new transitional legacy entry fails verification.
+The ownership fact reader consumes the compatibility-named `legacy_entries`
+historical table, immutable baseline digest, and migration-payload digest. Any
+active `transitional_legacy`, `unclassified`, or new legacy owner fails
+verification.
 Raw command output, credential URLs, tokens, and temporary repository locators
 are never retained; only safe locators and digest/size facts cross the runtime
 boundary.

@@ -1,46 +1,66 @@
-<!-- guru-team-overlay: v1 -->
-# Guru Team Finish Work
+# Finish Work
 
-Read live state before choosing a closeout step:
+Wrap up the current session: archive the active task (and any other completed-but-unarchived tasks the user wants to clean up) and record the session journal. Code commits are NOT done here — those happen in workflow Phase 3.4 before you invoke this command.
+
+## Step 1: Survey current state
 
 ```bash
-python3 ./.trellis/scripts/get_context.py
-python3 ./.trellis/scripts/get_context.py --mode phase
+python3 ./.trellis/scripts/get_context.py --mode record
 ```
 
-Use `.trellis/workflow.md` as the global route and load each mandatory semantic
-owner by stable Skill id. This entry does not copy package schemas, evidence
-recipes, confirmation algorithms, transaction commands, or recovery internals.
+This prints:
 
-## Route
+- **My active tasks** — review whether any besides the current one are actually done (code merged, AC met) and should be archived this round.
+- **Git status** — quick visual on what's dirty.
+- **Recent commits** — you'll need their hashes in Step 4 for `--commit`.
 
-- If current Branch Review evidence is not `passed`, return to the workflow step
-  that owns the missing review or task work. Do not manufacture publication
-  readiness here.
-- After Branch Review `passed`, follow Phase 3.6: prepare only the current
-  publication candidates required by the workflow, then invoke
-  `guru-review-task-publication`. Automatically consume its metadata revision
-  route; real task findings return to the complete downstream review sequence.
-- Only `guru-review-task-publication:ready` enters Phase 3.7 and invokes
-  `guru-finalize-task`. That Skill owns plan review, exact side-effect
-  confirmation, the deterministic transaction boundary, and recovery intent.
-- Automatically consume finalizer `verification_required` through
-  `guru-verify-extension-installation`, `publication_review_stale` through
-  `guru-review-task-publication`, and same-plan `resume_finalization` or
-  `reprepare_required` through `guru-finalize-task`. Do not render these internal
-  exits as user choices.
-- Return only the final `published` result. A declared `blocked` result, missing
-  external authority, or a materially changed side-effect plan stops with its
-  concrete reason.
+If `--mode record` surfaces other completed tasks not tied to the current session, surface them to the user with a one-shot confirmation: "These N tasks look done — archive them too in this round? [y/N]". Default is no; the current active task is always archived in Step 3 regardless.
 
-Ask the user only for the exact bounded finalization side-effect plan when the
-semantic owner requires confirmation, for new external authority, or for a
-material scope decision. Never ask for a generic `确认继续` between mapped Skill
-exits or ask the user to select an internal recovery command.
-For one fully displayed current side-effect plan, prompt `确认继续` and accept any
-clear affirmative reply without requiring a SHA, digest, or fixed sentence.
+## Step 2: Sanity check — classify dirty paths
 
-Deterministic closeout scripts are private implementation details of
-`guru-finalize-task`; this entry never invokes them directly. It does not create
-a handoff artifact or duplicate live Git, GitHub, task, review, publication, or
-finalizer evidence.
+Run:
+
+```bash
+git status --porcelain
+```
+
+Filter out paths under `.trellis/workspace/` and `.trellis/tasks/` — those are managed by `add_session.py` and `task.py archive` auto-commits and will appear dirty as part of this skill's own work.
+
+For each remaining dirty path, decide whether it belongs to **the current task** or to **other parallel work** (e.g., another terminal window editing the same repo). Heuristics:
+
+- Paths referenced in the current task's `prd.md` / `implement.jsonl` / `check.jsonl` → current task
+- Paths in code areas matching the task's stated scope, or that you remember editing this session → current task
+- Paths in unrelated areas you have no recollection of touching this session → other parallel work
+
+Then route:
+
+- **Any remaining path looks like current-task work** — bail out with:
+  > "Working tree has uncommitted code changes from this task: `<list>`. Return to workflow Phase 3.4 to commit them before running `/trellis:finish-work`."
+
+  Do NOT run `git commit` here. Do NOT prompt the user to commit. The user goes back to Phase 3.4 and the AI drives the batched commit there.
+- **All remaining paths look unrelated** (other parallel-window work) — report them once and continue to Step 3:
+  > "FYI, dirty files outside this task's scope — leaving them for the other window: `<list>`."
+- **Genuinely unsure** — ask the user once: "Are `<list>` this task's work I forgot to commit, or another window's? (commit / ignore)" — then route per their answer.
+
+## Step 3: Archive task(s)
+
+```bash
+python3 ./.trellis/scripts/task.py archive <task-name>
+```
+
+At minimum: the current active task (if any). Plus any extra tasks the user confirmed in Step 1. Each archive produces a `chore(task): archive ...` commit via the script's auto-commit.
+
+If there is no active task and the user did not confirm any cleanup archives, skip this step.
+
+## Step 4: Record session journal
+
+```bash
+python3 ./.trellis/scripts/add_session.py \
+  --title "Session Title" \
+  --commit "hash1,hash2" \
+  --summary "Brief summary"
+```
+
+Use the work-commit hashes produced in Phase 3.4 (visible in Step 1's `Recent commits` list, or via `git log --oneline`) for `--commit`. Do not include the archive commit hashes from Step 3. This produces a `chore: record journal` commit.
+
+Final git log order: `<work commits from 3.4>` → `chore(task): archive ...` (one or more) → `chore: record journal`.

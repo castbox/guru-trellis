@@ -21,10 +21,12 @@ SCRIPT_MODULE_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_MODULE_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_MODULE_DIR))
 
-from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
+from validate_upstream_ownership import (
+    INVENTORY_RELATIVE as UPSTREAM_OWNERSHIP_INVENTORY,
+    validate_repository as validate_upstream_ownership_repository,
+)
 
 
-GURU_OVERLAY_MARKER = "guru-team-overlay:"
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
 WORKFLOW_MARKETPLACE = "gh:castbox/guru-trellis/trellis"
 WORKFLOW_TEMPLATE = "guru-team"
@@ -35,9 +37,20 @@ PLATFORM_OVERLAY_PREFIXES = {
     "claude": (Path(".claude"),),
 }
 ALL_PLATFORMS = tuple(PLATFORM_OVERLAY_PREFIXES)
+GURU_OVERLAY_ENTRY_PATHS = {
+    "codex": Path(".codex/prompts/guru-finish-work.md"),
+    "cursor": Path(".cursor/commands/guru-finish-work.md"),
+    "claude": Path(".claude/commands/guru/finish-work.md"),
+}
+GURU_OVERLAY_SCHEMA_VERSION = "1.0"
+GURU_OVERLAY_REMOVAL_SIDECAR = (
+    "Guru Team platform selection no longer manages this entry. Review the "
+    "preserved local file, remove it or migrate its content, then delete this "
+    "sidecar and reapply the preset.\n"
+).encode("utf-8")
 SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
-CODEX_ONLY_SHARED_OVERLAY_PREFIXES = (Path(".agents/skills/trellis-meta"),)
+TEMPLATE_HASHES_RELATIVE = Path(".trellis/.template-hashes.json")
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
 #-------------------------------------------------------------------------------
@@ -177,15 +190,6 @@ def run_git(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(["git", *args], 127, "", str(exc))
 
 
-def read_text_if_exists(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8")
-    except UnicodeDecodeError:
-        return ""
-    except FileNotFoundError:
-        return ""
-
-
 def repo_root_from_args(value: str | None) -> Path:
     root = Path(value or os.getcwd()).resolve()
     if not (root / ".trellis").is_dir():
@@ -224,6 +228,18 @@ def run_upstream_ownership_validator(guru_root: Path) -> dict[str, Any]:
             f"{code} {path}"
         )
     return payload
+
+
+def load_removed_upstream_tombstones(guru_root: Path) -> list[dict[str, Any]]:
+    path = guru_root / UPSTREAM_OWNERSHIP_INVENTORY
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"Cannot read validated upstream ownership inventory: {path}") from exc
+    entries = payload.get("legacy_entries") if isinstance(payload, dict) else None
+    if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
+        raise SystemExit(f"Validated upstream ownership inventory has invalid tombstones: {path}")
+    return entries
 
 
 def is_mutable_ref(ref: str | None, exact_tag: str | None) -> bool | None:
@@ -305,6 +321,17 @@ def build_installed_extension_manifest(
         | set(result["replaced_overlays"])
         | {".trellis/guru-team/extension.json"}
     )
+    tombstone_paths = {
+        str(item.get("path"))
+        for item in result["upstream_migration"].get("paths", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    leaked_upstream_paths = sorted(set(managed_assets) & tombstone_paths)
+    if leaked_upstream_paths:
+        raise SystemExit(
+            "Installed extension manifest must not manage removed upstream paths: "
+            + ", ".join(leaked_upstream_paths)
+        )
     return {
         "schema_version": "1.0",
         "extension": manifest,
@@ -319,7 +346,20 @@ def build_installed_extension_manifest(
             "workflow_marketplace": WORKFLOW_MARKETPLACE,
             "workflow_template": WORKFLOW_TEMPLATE,
         },
+        "upstream_migration": result["upstream_migration"],
         "skill_packages": result["skill_packages"],
+        "overlays": {
+            key: result["overlays"][key]
+            for key in (
+                "schema_version",
+                "status",
+                "selected_platforms",
+                "files",
+                "removals",
+                "conflicts",
+                "sidecars",
+            )
+        },
         "notes": (
             "This file records deterministic install provenance for the Guru Team Trellis extension. "
             "source.commit and source.tree_state describe the extension source observed at apply time; "
@@ -427,6 +467,124 @@ def previous_skill_hashes(
     return hashes, paths, valid, recoverable_sidecars
 
 
+def previous_overlay_hashes(
+    manifest: dict[str, Any] | None,
+    canonical_hashes: dict[str, str],
+) -> tuple[dict[str, str], set[str], bool, set[str], set[str]]:
+    """Read exact overlay provenance with one additive legacy-manifest bridge.
+
+    Installed manifests created before overlay hashes existed named the three
+    Guru entries only in install.managed_assets. Those claims may bootstrap a
+    clean platform shrink only when the current target bytes still equal the
+    current canonical overlay. Differing bytes remain unknown local edits.
+    """
+
+    if manifest is None:
+        return {}, set(), True, set(), set()
+
+    overlays = manifest.get("overlays")
+    if overlays is None:
+        install = manifest.get("install")
+        managed_assets = install.get("managed_assets") if isinstance(install, dict) else None
+        if not isinstance(managed_assets, list) or any(
+            not isinstance(path, str) for path in managed_assets
+        ):
+            return {}, set(), False, set(), set()
+        legacy_claims = {
+            path for path in managed_assets if path in canonical_hashes
+        }
+        return {}, legacy_claims, True, set(), legacy_claims
+
+    required_fields = {
+        "schema_version",
+        "status",
+        "selected_platforms",
+        "files",
+        "removals",
+        "conflicts",
+        "sidecars",
+    }
+    valid = (
+        isinstance(overlays, dict)
+        and set(overlays) == required_fields
+        and overlays.get("schema_version") == GURU_OVERLAY_SCHEMA_VERSION
+        and isinstance(overlays.get("files"), list)
+        and isinstance(overlays.get("removals"), list)
+        and isinstance(overlays.get("conflicts"), list)
+        and isinstance(overlays.get("sidecars"), list)
+    )
+    if not isinstance(overlays, dict):
+        return {}, set(), False, set(), set()
+
+    selected = overlays.get("selected_platforms")
+    if (
+        not isinstance(selected, list)
+        or any(not isinstance(item, str) or item not in ALL_PLATFORMS for item in selected)
+        or selected != sorted(set(selected))
+    ):
+        valid = False
+
+    hashes: dict[str, str] = {}
+    paths: set[str] = set()
+    files = overlays.get("files") if isinstance(overlays.get("files"), list) else []
+    for item in files:
+        if not isinstance(item, dict):
+            valid = False
+            continue
+        path = item.get("path")
+        digest = item.get("sha256")
+        source = item.get("source")
+        executable = item.get("executable")
+        action = item.get("action")
+        if (
+            set(item) != {"path", "source", "sha256", "executable", "action"}
+            or not isinstance(path, str)
+            or path not in canonical_hashes
+            or path in paths
+            or not isinstance(source, str)
+            or source != f"trellis/presets/guru-team/overlays/{path}"
+            or not isinstance(digest, str)
+            or not re_full_hex_digest(digest)
+            or not isinstance(executable, bool)
+            or action not in {"installed", "unchanged", "updated_managed"}
+        ):
+            valid = False
+            continue
+        paths.add(path)
+        hashes[path] = digest
+
+    status = overlays.get("status")
+    conflicts = overlays.get("conflicts")
+    sidecars = overlays.get("sidecars")
+    clean = status == "ok" and conflicts == [] and sidecars == []
+    recovering_backups = (
+        status == "conflict"
+        and conflicts == []
+        and isinstance(sidecars, list)
+        and bool(sidecars)
+    )
+    if not clean and not recovering_backups:
+        valid = False
+
+    recoverable_sidecars: set[str] = set()
+    if recovering_backups:
+        for sidecar in sidecars:
+            relative = Path(sidecar) if isinstance(sidecar, str) else None
+            if (
+                relative is None
+                or not sidecar.endswith(".bak")
+                or sidecar.startswith("/")
+                or ".." in relative.parts
+                or relative.as_posix() != sidecar
+                or sidecar in recoverable_sidecars
+                or sidecar[:-4] not in paths
+            ):
+                valid = False
+                continue
+            recoverable_sidecars.add(sidecar)
+    return hashes, paths, valid, recoverable_sidecars, set()
+
+
 def re_full_hex_digest(value: str) -> bool:
     return len(value) == 64 and all(ch in "0123456789abcdef" for ch in value)
 
@@ -495,6 +653,246 @@ def write_safe_repo_file(repo: Path, path: Path, content: bytes, mode: int) -> N
     path.chmod(mode)
 
 
+def is_sha256(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and value == value.lower()
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def load_official_template_hashes(repo: Path) -> dict[str, Any]:
+    path = Path(os.path.abspath(repo)) / TEMPLATE_HASHES_RELATIVE
+    relative, path_stat, error = lstat_repo_path(repo, path)
+    result: dict[str, Any] = {
+        "path": TEMPLATE_HASHES_RELATIVE.as_posix(),
+        "status": "missing",
+        "version": None,
+        "hashes": {},
+        "error": None,
+    }
+    if error or relative != TEMPLATE_HASHES_RELATIVE:
+        result.update({"status": "invalid", "error": error or "path_mismatch"})
+        return result
+    if path_stat is None:
+        return result
+    if not stat.S_ISREG(path_stat.st_mode):
+        result.update({"status": "invalid", "error": "not_regular_file"})
+        return result
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        result.update({"status": "invalid", "error": "invalid_json"})
+        return result
+    if not isinstance(payload, dict) or not isinstance(payload.get("hashes"), dict):
+        result.update({"status": "invalid", "error": "invalid_structure"})
+        return result
+    hashes = payload["hashes"]
+    if any(not isinstance(key, str) or not is_sha256(value) for key, value in hashes.items()):
+        result.update({"status": "invalid", "error": "invalid_hash_entry"})
+        return result
+    result.update({
+        "status": "valid",
+        "version": payload.get("__version"),
+        "hashes": dict(hashes),
+    })
+    return result
+
+
+def upstream_tombstone_sidecar_content(relative: str) -> bytes:
+    return (
+        "Guru Team no longer owns this Trellis upstream path.\n"
+        f"Path: {relative}\n"
+        "The existing path was preserved because its bytes are neither the official "
+        ".trellis/.template-hashes.json payload nor an explicitly reviewed historical "
+        "Guru payload. Run the official trellis update or required version upgrade, "
+        "reconcile the preserved local path, then delete this .new sidecar and reapply "
+        "the Guru Team preset.\n"
+    ).encode("utf-8")
+
+
+def upstream_migration_conflict(
+    path: str,
+    reason: str,
+    remediation: str,
+    *,
+    sidecar: str | None = None,
+    current_sha256: str | None = None,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "path": path,
+        "reason": reason,
+        "remediation": remediation,
+    }
+    if sidecar is not None:
+        result["sidecar"] = sidecar
+    if current_sha256 is not None:
+        result["current_sha256"] = current_sha256
+    return result
+
+
+def migrate_removed_upstream_paths(
+    repo: Path,
+    tombstones: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Classify all removed tombstones before staging any migration mutation."""
+
+    repo = Path(os.path.abspath(repo))
+    template = load_official_template_hashes(repo)
+    template_hashes = template.get("hashes") if isinstance(template.get("hashes"), dict) else {}
+    records: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    sidecars: set[str] = set()
+    planned_removals: list[tuple[Path, str]] = []
+    planned_sidecars: list[tuple[Path, bytes, str]] = []
+
+    def add_existing_sidecar(relative: str, target: Path, suffix: str) -> bool:
+        sidecar = target.with_name(f"{target.name}{suffix}")
+        sidecar_relative, sidecar_stat, sidecar_error = lstat_repo_path(repo, sidecar)
+        expected_relative = f"{relative}{suffix}"
+        if sidecar_error or sidecar_relative.as_posix() != expected_relative:
+            conflicts.append(upstream_migration_conflict(
+                relative,
+                "unsafe_existing_sidecar",
+                "Resolve the unsafe adjacent sidecar before reapplying the preset.",
+                sidecar=expected_relative,
+            ))
+            return True
+        if sidecar_stat is None:
+            return False
+        sidecars.add(expected_relative)
+        conflicts.append(upstream_migration_conflict(
+            relative,
+            "unresolved_sidecar",
+            "Review and remove the adjacent .new/.bak sidecar before reapplying the preset.",
+            sidecar=expected_relative,
+        ))
+        return True
+
+    for entry in tombstones:
+        relative = str(entry["path"])
+        target = repo / Path(relative)
+        has_new_sidecar = add_existing_sidecar(relative, target, ".new")
+        add_existing_sidecar(relative, target, ".bak")
+        checked_relative, target_stat, target_error = lstat_repo_path(repo, target)
+        record: dict[str, Any] = {
+            "path": relative,
+            "generated_in_clean_init": bool(entry["generated_in_clean_init"]),
+        }
+        if target_error or checked_relative.as_posix() != relative:
+            record["action"] = "conflict_unsafe_path"
+            conflicts.append(upstream_migration_conflict(
+                relative,
+                "unsafe_path_boundary",
+                "Replace the symlink or unsafe path with a regular repository path before reapplying the preset.",
+            ))
+            records.append(record)
+            continue
+        if target_stat is None:
+            record["action"] = "already_missing"
+            records.append(record)
+            continue
+        if not stat.S_ISREG(target_stat.st_mode):
+            record["action"] = "conflict_non_regular_path"
+            conflicts.append(upstream_migration_conflict(
+                relative,
+                "target_not_regular_file",
+                "Preserve and manually reconcile the non-regular upstream path before reapplying the preset.",
+            ))
+            records.append(record)
+            continue
+
+        current_sha256 = hashlib.sha256(target.read_bytes()).hexdigest()
+        record["current_sha256"] = current_sha256
+        official_sha256 = template_hashes.get(relative)
+        if is_sha256(official_sha256) and current_sha256 == official_sha256:
+            record.update({
+                "action": "preserved_clean_upstream",
+                "official_template_sha256": official_sha256,
+            })
+            records.append(record)
+            continue
+
+        migration_payloads = entry.get("migration_payload_sha256s")
+        known_guru_payloads = {
+            value for value in migration_payloads if is_sha256(value)
+        } if isinstance(migration_payloads, list) else set()
+        if current_sha256 in known_guru_payloads:
+            record["matched_migration_payload_sha256"] = current_sha256
+            if entry["generated_in_clean_init"]:
+                record["action"] = "blocked_known_guru_payload"
+                conflicts.append(upstream_migration_conflict(
+                    relative,
+                    "known_guru_payload_requires_official_update",
+                    "Run the official trellis update or required version upgrade so Trellis restores this upstream-generated path, then reapply the Guru Team preset.",
+                    current_sha256=current_sha256,
+                ))
+            else:
+                record["action"] = "removed_legacy_guru_payload"
+                planned_removals.append((target, current_sha256))
+            records.append(record)
+            continue
+
+        record["action"] = "conflict_unknown_local_edit"
+        reason = (
+            "invalid_template_hash_provenance"
+            if template["status"] == "invalid"
+            else "unknown_local_edit"
+        )
+        sidecar_relative = f"{relative}.new"
+        if not has_new_sidecar:
+            planned_sidecars.append(
+                (target.with_name(f"{target.name}.new"), upstream_tombstone_sidecar_content(relative), sidecar_relative)
+            )
+            sidecars.add(sidecar_relative)
+        conflicts.append(upstream_migration_conflict(
+            relative,
+            reason,
+            "Preserve the local file, review the deterministic .new remediation, and resolve it before reapplying the preset.",
+            sidecar=sidecar_relative,
+            current_sha256=current_sha256,
+        ))
+        records.append(record)
+
+    # Classification above is complete and read-only. Only now mutate the staging copy.
+    for target, expected_sha256 in planned_removals:
+        checked_relative, target_stat, target_error = lstat_repo_path(repo, target)
+        if target_error or target_stat is None or not stat.S_ISREG(target_stat.st_mode):
+            raise SystemExit(f"Removed tombstone changed after preflight: {checked_relative.as_posix()}")
+        if hashlib.sha256(target.read_bytes()).hexdigest() != expected_sha256:
+            raise SystemExit(f"Removed tombstone bytes changed after preflight: {checked_relative.as_posix()}")
+        target.unlink()
+    for sidecar, content, sidecar_relative in planned_sidecars:
+        _, sidecar_stat, sidecar_error = lstat_repo_path(repo, sidecar)
+        if sidecar_error or sidecar_stat is not None:
+            raise SystemExit(f"Tombstone remediation sidecar changed after preflight: {sidecar_relative}")
+        write_safe_repo_file(repo, sidecar, content, 0o644)
+
+    counts: dict[str, int] = {}
+    for record in records:
+        action = str(record["action"])
+        counts[action] = counts.get(action, 0) + 1
+    return {
+        "schema_version": "1.0",
+        "status": "ok" if not conflicts and not sidecars else "conflict",
+        "template_hashes": {
+            "path": template["path"],
+            "status": template["status"],
+            "version": template["version"],
+            "error": template["error"],
+        },
+        "counts": counts,
+        "paths": records,
+        "removals": sorted(
+            lexical_repo_relative(repo, target).as_posix()
+            for target, _ in planned_removals
+        ),
+        "conflicts": conflicts,
+        "sidecars": sorted(sidecars),
+    }
+
+
 def skill_conflict(
     path: str,
     reason: str,
@@ -514,7 +912,7 @@ def skill_conflict(
     return payload
 
 
-def copy_skill_managed(
+def copy_provenance_managed(
     source: Path,
     target: Path,
     repo: Path,
@@ -794,7 +1192,7 @@ def install_skill_packages(
         ))
 
     def install_one(source: Path, target: Path) -> None:
-        result = copy_skill_managed(source, target, repo, previous_hash_map, provenance_valid)
+        result = copy_provenance_managed(source, target, repo, previous_hash_map, provenance_valid)
         if result["action"] == "conflict":
             sidecar = result.get("sidecar")
             conflict = skill_conflict(
@@ -993,8 +1391,6 @@ def path_has_prefix(path: Path, prefix: Path) -> bool:
 
 
 def overlay_selected(relative: Path, platforms: set[str]) -> bool:
-    if any(path_has_prefix(relative, prefix) for prefix in CODEX_ONLY_SHARED_OVERLAY_PREFIXES):
-        return "codex" in platforms
     if any(path_has_prefix(relative, prefix) for prefix in ALWAYS_OVERLAY_PREFIXES):
         return True
     selected_prefixes = [
@@ -1107,168 +1503,84 @@ def copy_managed(source: Path, target: Path) -> dict[str, str]:
     return {"path": str(target), "action": "updated_managed", "backup": str(backup)}
 
 
-def looks_like_trellis_generated_entry(relative: Path, target: Path) -> bool:
-    """Return true for known Trellis-generated command/skill entry files.
-
-    The preset may replace upstream-generated entry prompts so Guru Team routing is
-    active after install. Unknown local edits still get a .new copy.
-    """
-
-    text = read_text_if_exists(target)
-    if not text:
-        return False
-    if GURU_OVERLAY_MARKER in text or "Guru Team" in text:
-        return True
-
-    rel = relative.as_posix()
-    lower = text.lower()
-    if "trellis" not in lower:
-        return False
-
-    is_trellis_agent = (
-        rel.startswith(".codex/agents/trellis-")
-        or rel.startswith(".cursor/agents/trellis-")
-        or rel.startswith(".claude/agents/trellis-")
-        or rel in {".trellis/agents/implement.md", ".trellis/agents/check.md"}
+def prune_empty_overlay_parents(repo: Path, path: Path) -> None:
+    relative = lexical_repo_relative(repo, path)
+    platform_root = next(
+        (
+            prefix
+            for prefixes in PLATFORM_OVERLAY_PREFIXES.values()
+            for prefix in prefixes
+            if prefix in relative.parents
+        ),
+        None,
     )
-    if is_trellis_agent and any(
-        signal in text
-        for signal in [
-            "Required: Load Trellis Context First",
-            "Recursion Guard",
-            "Trellis workflow",
-            "Trellis channel",
-            "implement.jsonl",
-            "check.jsonl",
-            "{TASK_DIR}/research",
-            "Workspace-write Trellis",
-        ]
-    ):
-        return True
+    if platform_root is None:
+        return
+    current = path.parent
+    stop = Path(os.path.abspath(repo)) / platform_root
+    while current != stop and stop in current.parents:
+        _, current_stat, error = lstat_repo_path(repo, current)
+        if error or current_stat is None or not stat.S_ISDIR(current_stat.st_mode):
+            return
+        try:
+            current.rmdir()
+        except OSError:
+            return
+        current = current.parent
 
-    is_start = rel.endswith("trellis-start/SKILL.md") or rel.endswith("trellis-start.md")
-    is_continue = rel.endswith("trellis-continue/SKILL.md") or rel.endswith("trellis-continue.md") or rel.endswith("continue.md")
-    is_finish = rel.endswith("trellis-finish-work/SKILL.md") or rel.endswith("trellis-finish-work.md") or rel.endswith("finish-work.md")
-    is_known_entry_path = is_start or is_continue or is_finish
-    has_trellis_generated_signal = any(
-        signal in text
-        for signal in [
-            ".trellis/workflow.md",
-            "get_context.py",
-            "task.py",
-            "add_session.py",
-            "workflow-state",
-            "trellis-brainstorm",
-            "trellis-check",
-            "trellis-update-spec",
-        ]
+
+def remove_stale_overlay_path(
+    repo: Path,
+    relative_text: str,
+    previous_hashes: dict[str, str],
+    provenance_valid: bool,
+    canonical_hashes: dict[str, str],
+    legacy_claims: set[str],
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None, str | None]:
+    if relative_text not in canonical_hashes:
+        return None, skill_conflict(relative_text, "previous_path_outside_overlay_inventory"), None
+    relative = Path(relative_text)
+    target = Path(os.path.abspath(repo)) / relative
+    checked_relative, target_stat, error = lstat_repo_path(repo, target)
+    if error or checked_relative != relative:
+        return None, skill_conflict(relative_text, "unsafe_stale_path_boundary"), None
+    if target_stat is None:
+        return {"path": relative_text, "action": "already_missing"}, None, None
+    if not stat.S_ISREG(target_stat.st_mode):
+        return None, skill_conflict(relative_text, "stale_target_not_regular_file"), None
+
+    current_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+    previous_hash = previous_hashes.get(relative_text)
+    legacy_clean = (
+        relative_text in legacy_claims
+        and current_hash == canonical_hashes[relative_text]
     )
-    if is_known_entry_path and has_trellis_generated_signal:
-        return True
-
-    is_brainstorm_skill = rel in {
-        ".agents/skills/trellis-brainstorm/SKILL.md",
-        ".cursor/skills/trellis-brainstorm/SKILL.md",
-    }
-    if (
-        is_brainstorm_skill
-        and "# Trellis Brainstorm" in text
-        and ("PRD Convergence Pass" in text or "trellis-brainstorm" in lower)
+    if provenance_valid and (
+        (previous_hash is not None and current_hash == previous_hash)
+        or legacy_clean
     ):
-        return True
+        target.unlink()
+        prune_empty_overlay_parents(repo, target)
+        record = {"path": relative_text, "action": "removed_managed"}
+        if previous_hash is not None:
+            record["previous_managed_sha256"] = previous_hash
+        else:
+            record["legacy_managed_asset_sha256"] = current_hash
+        return record, None, None
 
-    is_check_or_before_dev_skill = rel in {
-        ".agents/skills/trellis-check/SKILL.md",
-        ".cursor/skills/trellis-check/SKILL.md",
-        ".agents/skills/trellis-before-dev/SKILL.md",
-        ".cursor/skills/trellis-before-dev/SKILL.md",
-    }
-    if (
-        is_check_or_before_dev_skill
-        and ("# Code Quality Check" in text or "Read the relevant development guidelines" in text)
-        and "prd.md" in text
-    ):
-        return True
-
-    is_session_start_hook = rel in {
-        ".codex/hooks/session-start.py",
-        ".cursor/hooks/session-start.py",
-    }
-    if (
-        is_session_start_hook
-        and "session" in lower
-        and "trellis" in lower
-        and "_get_task_status" in text
-    ):
-        return True
-
-    is_cursor_subagent_context_hook = rel == ".cursor/hooks/inject-subagent-context.py"
-    if (
-        is_cursor_subagent_context_hook
-        and "Multi-Platform Sub-Agent Context Injection Hook" in text
-        and "implement.jsonl" in text
-        and "check.jsonl" in text
-    ):
-        return True
-
-    is_trellis_meta_reference = rel in {
-        ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
-        ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
-        ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
-        ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
-        ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
-        ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
-        ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
-        ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
-        ".agents/skills/trellis-meta/references/platform-files/agents.md",
-        ".cursor/skills/trellis-meta/references/platform-files/agents.md",
-    }
-    has_trellis_meta_reference_signal = any(
-        signal in text
-        for signal in [
-            "# Local Task System",
-            "# Local Context Injection System",
-            "# Change Local Workflow",
-            "# Change Local Context Loading",
-            "# Change Context Loading",
-            "# Agents",
-        ]
-    ) and any(
-        signal in text
-        for signal in [
-            ".trellis/tasks/",
-            ".trellis/workflow.md",
-            "trellis-implement",
-        ]
-    )
-    if (
-        is_trellis_meta_reference
-        and has_trellis_meta_reference_signal
-    ):
-        return True
-
-    if is_start:
-        return "start" in lower and ("get_context.py" in text or "workflow" in lower or "session" in lower)
-    if is_continue:
-        return "continue" in lower and ("get_context.py" in text or "workflow" in lower or "task.py" in text)
-    if is_finish:
-        return "finish" in lower and ("archive" in lower or "journal" in lower or "add_session.py" in text)
-    return False
-
-
-def copy_overlay(source: Path, target: Path, relative: Path) -> dict[str, str]:
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if not target.exists():
-        shutil.copyfile(source, target)
-        return {"path": str(target), "action": "installed"}
-    if filecmp.cmp(source, target, shallow=False):
-        return {"path": str(target), "action": "unchanged"}
-    if looks_like_trellis_generated_entry(relative, target):
-        shutil.copyfile(source, target)
-        return {"path": str(target), "action": "replaced_overlay"}
-    new_target = target.with_name(f"{target.name}.new")
-    shutil.copyfile(source, new_target)
-    return {"path": str(new_target), "action": "new_copy", "existing": str(target)}
+    sidecar = target.with_name(f"{target.name}.new")
+    try:
+        write_safe_repo_file(repo, sidecar, GURU_OVERLAY_REMOVAL_SIDECAR, 0o644)
+        sidecar_relative = lexical_repo_relative(repo, sidecar).as_posix()
+    except ValueError:
+        sidecar_relative = None
+    reason = "stale_unknown_local_edit" if provenance_valid else "stale_invalid_provenance"
+    return None, skill_conflict(
+        relative_text,
+        reason,
+        sidecar=sidecar_relative,
+        previous_managed_sha256=previous_hash,
+    ), sidecar_relative
 
 
 def language_guidance_targets(repo: Path) -> list[Path]:
@@ -1467,6 +1779,20 @@ def materialize_staged_conflict_sidecars(
             for path in skill_packages.get("sidecars", [])
             if isinstance(path, str) and path.endswith(".new")
         )
+    overlays = result.get("overlays")
+    if isinstance(overlays, dict):
+        sidecars.update(
+            str(path)
+            for path in overlays.get("sidecars", [])
+            if isinstance(path, str) and path.endswith(".new")
+        )
+    upstream_migration = result.get("upstream_migration")
+    if isinstance(upstream_migration, dict):
+        sidecars.update(
+            str(path)
+            for path in upstream_migration.get("sidecars", [])
+            if isinstance(path, str) and path.endswith(".new")
+        )
     for sidecar_text in sorted(sidecars):
         relative = Path(sidecar_text)
         if relative.is_absolute() or ".." in relative.parts:
@@ -1486,16 +1812,64 @@ def materialize_staged_conflict_sidecars(
         )
 
 
+def mark_upstream_migration_not_applied(result: dict[str, Any]) -> None:
+    """Keep conflict output honest when the staged transaction was not activated."""
+
+    migration = result.get("upstream_migration")
+    if not isinstance(migration, dict):
+        raise SystemExit("Missing upstream migration result before conflict normalization")
+    removals = migration.get("removals")
+    if not isinstance(removals, list) or any(not isinstance(path, str) for path in removals):
+        raise SystemExit("Invalid upstream migration removals before conflict normalization")
+    if not removals:
+        return
+
+    pending = sorted(removals)
+    pending_set = set(pending)
+    migration["removals"] = []
+    migration["pending_removals"] = pending
+    paths = migration.get("paths")
+    if not isinstance(paths, list):
+        raise SystemExit("Invalid upstream migration paths before conflict normalization")
+    for record in paths:
+        if (
+            isinstance(record, dict)
+            and record.get("path") in pending_set
+            and record.get("action") == "removed_legacy_guru_payload"
+        ):
+            record["action"] = "pending_legacy_guru_payload_removal"
+
+    counts: dict[str, int] = {}
+    for record in paths:
+        if not isinstance(record, dict) or not isinstance(record.get("action"), str):
+            raise SystemExit("Invalid upstream migration path record before conflict normalization")
+        action = str(record["action"])
+        counts[action] = counts.get(action, 0) + 1
+    migration["counts"] = counts
+
+
 def managed_backup_recovery_candidate(result: dict[str, Any]) -> bool:
-    skill_packages = result.get("skill_packages")
-    if not isinstance(skill_packages, dict):
+    sections = [result.get("skill_packages"), result.get("overlays")]
+    if any(not isinstance(section, dict) for section in sections):
         return False
-    sidecars = skill_packages.get("sidecars")
+    sidecars: list[str] = []
+    has_conflict_status = False
+    for section in sections:
+        assert isinstance(section, dict)
+        section_sidecars = section.get("sidecars")
+        if (
+            section.get("status") not in {"ok", "conflict"}
+            or section.get("conflicts") != []
+            or not isinstance(section_sidecars, list)
+        ):
+            return False
+        if section.get("status") == "conflict":
+            has_conflict_status = True
+        sidecars.extend(section_sidecars)
     return (
-        skill_packages.get("status") == "conflict"
-        and skill_packages.get("conflicts") == []
-        and isinstance(sidecars, list)
+        has_conflict_status
         and bool(sidecars)
+        and len(sidecars) == len(set(sidecars))
         and all(isinstance(path, str) and path.endswith(".bak") for path in sidecars)
     )
 
@@ -1510,8 +1884,12 @@ def validate_staged_graph_without_recovery_backups(
     manifest_path = staging_repo / ".trellis/guru-team/extension.json"
     original_manifest = manifest_path.read_bytes()
     manifest = json.loads(original_manifest)
-    skill_packages = manifest["skill_packages"]
-    sidecars = list(skill_packages["sidecars"])
+    sections = [manifest["skill_packages"], manifest["overlays"]]
+    sidecars = sorted({
+        str(path)
+        for section in sections
+        for path in section["sidecars"]
+    })
     recovery_root = staging_repo.parent / "recovery-sidecars"
     moved: list[tuple[Path, Path]] = []
     try:
@@ -1535,8 +1913,9 @@ def validate_staged_graph_without_recovery_backups(
             parked = recovery_root / str(index)
             sidecar.replace(parked)
             moved.append((parked, sidecar))
-        skill_packages["status"] = "ok"
-        skill_packages["sidecars"] = []
+        for section in sections:
+            section["status"] = "ok"
+            section["sidecars"] = []
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
@@ -1581,9 +1960,13 @@ def install_assets(
             git_facts_repo=repo,
         )
         skill_packages = result["skill_packages"]
+        overlays = result["overlays"]
         installed_validation = result["skill_installed_validation"]
         activation_ready = (
-            skill_packages["status"] == "ok"
+            result["upstream_migration"]["status"] == "ok"
+            and not result["upstream_migration"]["sidecars"]
+            and skill_packages["status"] == "ok"
+            and overlays["status"] == "ok"
             and installed_validation.get("returncode") == 0
         )
         activation_validation = (
@@ -1593,13 +1976,16 @@ def install_assets(
         )
         result["skill_activation_validation"] = activation_validation
         recoverable_activation_ready = (
-            managed_backup_recovery_candidate(result)
+            result["upstream_migration"]["status"] == "ok"
+            and not result["upstream_migration"]["sidecars"]
+            and managed_backup_recovery_candidate(result)
             and activation_validation.get("returncode") == 0
         )
         if activation_ready or recoverable_activation_ready:
             activate_staged_repository(staging_repo, repo)
         else:
             materialize_staged_conflict_sidecars(staging_repo, repo, result)
+            mark_upstream_migration_not_applied(result)
         return result
 
 
@@ -1616,6 +2002,8 @@ def _install_assets_in_place(
 ) -> dict[str, Any]:
     guru_root = guru_root_from_script()
     previous_manifest = load_previous_installed_manifest(dst)
+    tombstones = load_removed_upstream_tombstones(guru_root)
+    upstream_migration = migrate_removed_upstream_paths(repo, tombstones)
     dst.mkdir(parents=True, exist_ok=True)
 
     installed: list[str] = []
@@ -1719,7 +2107,7 @@ def _install_assets_in_place(
 
     selected = platforms or set(DEFAULT_PLATFORMS)
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
-    overlays = install_overlays(repo, guru_root, selected)
+    overlays = install_overlays(repo, guru_root, selected, previous_manifest)
     installed.extend(overlays["installed"])
     unchanged.extend(overlays["unchanged"])
     new_copies.extend(overlays["new_copies"])
@@ -1751,6 +2139,8 @@ def _install_assets_in_place(
         "platforms": sorted(selected),
         "all_platforms": all_platforms,
         "skill_packages": skill_packages,
+        "overlays": overlays,
+        "upstream_migration": upstream_migration,
         "skill_source_validation": source_validation,
         "upstream_ownership_validation": upstream_ownership_validation,
     }
@@ -1765,7 +2155,12 @@ def _install_assets_in_place(
     return result
 
 
-def install_overlays(repo: Path, guru_root: Path, platforms: set[str]) -> dict[str, list[str]]:
+def install_overlays(
+    repo: Path,
+    guru_root: Path,
+    platforms: set[str],
+    previous_manifest: dict[str, Any] | None,
+) -> dict[str, Any]:
     overlay_root = guru_root / "trellis/presets/guru-team/overlays"
     installed: list[str] = []
     unchanged: list[str] = []
@@ -1774,32 +2169,146 @@ def install_overlays(repo: Path, guru_root: Path, platforms: set[str]) -> dict[s
     updated_managed: list[str] = []
     managed_backups: list[str] = []
     if not overlay_root.is_dir():
-        return {
-            "installed": installed,
-            "unchanged": unchanged,
-            "new_copies": new_copies,
-            "replaced_overlays": replaced_overlays,
-            "updated_managed": updated_managed,
-            "managed_backups": managed_backups,
+        raise SystemExit("Canonical Guru Team overlay root is missing.")
+
+    canonical_sources = sorted(
+        path
+        for path in overlay_root.rglob("*")
+        if path.is_file()
+        and not path.is_symlink()
+        and "__pycache__" not in path.relative_to(overlay_root).parts
+        and path.suffix not in {".pyc", ".pyo"}
+    )
+    canonical_by_path = {
+        source.relative_to(overlay_root).as_posix(): source
+        for source in canonical_sources
     }
-    for source in sorted(path for path in overlay_root.rglob("*") if path.is_file()):
-        if "__pycache__" in source.parts or source.suffix == ".pyc":
-            continue
+    expected_paths = {
+        path.as_posix() for path in GURU_OVERLAY_ENTRY_PATHS.values()
+    }
+    if set(canonical_by_path) != expected_paths:
+        raise SystemExit(
+            "Canonical Guru Team overlay inventory must contain exactly the three Guru finish entries."
+        )
+    canonical_hashes = {
+        relative: hashlib.sha256(source.read_bytes()).hexdigest()
+        for relative, source in canonical_by_path.items()
+    }
+    (
+        previous_hashes,
+        previous_paths,
+        provenance_valid,
+        recoverable_sidecars,
+        legacy_claims,
+    ) = previous_overlay_hashes(previous_manifest, canonical_hashes)
+
+    pending_recovery_sidecars: list[str] = []
+    if provenance_valid:
+        for sidecar_text in sorted(recoverable_sidecars):
+            sidecar = Path(os.path.abspath(repo)) / Path(sidecar_text)
+            checked_relative, sidecar_stat, sidecar_error = lstat_repo_path(repo, sidecar)
+            if (
+                sidecar_error
+                or checked_relative.as_posix() != sidecar_text
+                or (sidecar_stat is not None and not stat.S_ISREG(sidecar_stat.st_mode))
+            ):
+                provenance_valid = False
+                pending_recovery_sidecars = []
+                break
+            if sidecar_stat is not None:
+                pending_recovery_sidecars.append(sidecar_text)
+
+    records: list[dict[str, Any]] = []
+    removals: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    sidecars: list[str] = list(pending_recovery_sidecars)
+    managed_backups.extend(pending_recovery_sidecars)
+    if not provenance_valid:
+        conflicts.append(
+            skill_conflict(
+                ".trellis/guru-team/extension.json",
+                "invalid_previous_overlay_provenance",
+            )
+        )
+
+    desired_paths = {
+        relative
+        for relative in canonical_by_path
+        if overlay_selected(Path(relative), platforms)
+    }
+    for relative in sorted(desired_paths):
+        source = canonical_by_path[relative]
         relative = source.relative_to(overlay_root)
-        if not overlay_selected(relative, platforms):
-            continue
         target = repo / relative
-        result = copy_overlay(source, target, relative)
-        rel_path = Path(result["path"]).relative_to(repo).as_posix()
+        result = copy_provenance_managed(
+            source,
+            target,
+            repo,
+            previous_hashes,
+            provenance_valid,
+        )
+        rel_path = str(result["path"])
+        if result["action"] == "conflict":
+            sidecar = result.get("sidecar")
+            conflicts.append(
+                skill_conflict(
+                    rel_path,
+                    str(result.get("reason") or "overlay_install_conflict"),
+                    sidecar=str(sidecar) if sidecar else None,
+                    previous_managed_sha256=result.get("previous_managed_sha256"),
+                )
+            )
+            if sidecar:
+                sidecars.append(str(sidecar))
+                if str(sidecar).endswith(".new"):
+                    new_copies.append(str(sidecar))
+            continue
+
+        record = {
+            "path": rel_path,
+            "source": source.relative_to(guru_root).as_posix(),
+            "sha256": result["sha256"],
+            "executable": result["executable"],
+            "action": result["action"],
+        }
+        records.append(record)
         if result["action"] == "installed":
             installed.append(rel_path)
         elif result["action"] == "unchanged":
             unchanged.append(rel_path)
-        elif result["action"] == "replaced_overlay":
-            replaced_overlays.append(rel_path)
-        else:
-            new_copies.append(rel_path)
+        elif result["action"] == "updated_managed":
+            updated_managed.append(rel_path)
+        if result.get("sidecar"):
+            sidecar = str(result["sidecar"])
+            sidecars.append(sidecar)
+            managed_backups.append(sidecar)
+
+    for stale_path in sorted(previous_paths - desired_paths):
+        removal, conflict, sidecar = remove_stale_overlay_path(
+            repo,
+            stale_path,
+            previous_hashes,
+            provenance_valid,
+            canonical_hashes,
+            legacy_claims,
+        )
+        if removal:
+            removals.append(removal)
+        if conflict:
+            conflicts.append(conflict)
+        if sidecar:
+            sidecars.append(sidecar)
+            new_copies.append(sidecar)
+
+    status = "ok" if provenance_valid and not conflicts and not sidecars else "conflict"
     return {
+        "schema_version": GURU_OVERLAY_SCHEMA_VERSION,
+        "status": status,
+        "selected_platforms": sorted(platforms),
+        "files": records,
+        "removals": removals,
+        "conflicts": conflicts,
+        "sidecars": sorted(set(sidecars)),
         "installed": installed,
         "unchanged": unchanged,
         "new_copies": new_copies,
@@ -1824,7 +2333,7 @@ def main() -> int:
     platform_group.add_argument(
         "--all-platforms",
         action="store_true",
-        help="Install every known platform overlay, preserving the historical full-overlay behavior.",
+        help="Install every known platform overlay.",
     )
     args = parser.parse_args()
 
@@ -1841,7 +2350,14 @@ def main() -> int:
     result = install_assets(src, dst, repo, platforms, all_platforms=all_platforms)
 
     payload: dict[str, Any] = {
-        "status": "ok",
+        "status": (
+            "ok"
+            if result["upstream_migration"]["status"] == "ok"
+            and result["skill_packages"]["status"] == "ok"
+            and result["overlays"]["status"] == "ok"
+            and result["skill_installed_validation"].get("returncode") == 0
+            else "conflict"
+        ),
         "repo": str(repo),
         "platforms": result["platforms"],
         "all_platforms": result["all_platforms"],
@@ -1860,6 +2376,8 @@ def main() -> int:
         "extension_manifest": result["extension_manifest"],
         "guru_team_extension": result["guru_team_extension"],
         "skill_packages": result["skill_packages"],
+        "overlays": result["overlays"],
+        "upstream_migration": result["upstream_migration"],
         "skill_source_validation": result["skill_source_validation"],
         "upstream_ownership_validation": result["upstream_ownership_validation"],
         "skill_installed_validation": result["skill_installed_validation"],
@@ -1870,7 +2388,9 @@ def main() -> int:
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     if (
-        result["skill_packages"]["status"] != "ok"
+        result["upstream_migration"]["status"] != "ok"
+        or result["skill_packages"]["status"] != "ok"
+        or result["overlays"]["status"] != "ok"
         or result["skill_installed_validation"].get("returncode") != 0
     ):
         return 2

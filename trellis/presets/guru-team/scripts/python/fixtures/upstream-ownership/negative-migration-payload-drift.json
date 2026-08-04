@@ -1,0 +1,10 @@
+{
+  "id": "negative-migration-payload-drift",
+  "mutation": {
+    "type": "set_migration_payload_sha256s",
+    "path": ".agents/skills/trellis-start/SKILL.md",
+    "value": ["0000000000000000000000000000000000000000000000000000000000000000"]
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["migration_payload_set_mismatch"]
+}

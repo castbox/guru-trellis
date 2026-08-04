@@ -28,14 +28,7 @@
         ".claude/skills/guru-*/",
         ".codex/prompts/guru-finish-work.md",
         ".claude/commands/guru/finish-work.md",
-        ".cursor/commands/guru-finish-work.md",
-        ".agents/skills/trellis-start/",
-        ".agents/skills/trellis-continue/",
-        ".agents/skills/trellis-finish-work/",
-        ".codex/prompts/",
-        ".codex/skills/",
-        ".cursor/commands/",
-        ".claude/commands/trellis/"
+        ".cursor/commands/guru-finish-work.md"
       ],
       "config_files": [
         ".trellis/guru-team/config.yml",
@@ -321,11 +314,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-04T05:33:55Z",
+  "installed_at": "2026-08-04T09:05:14Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/161-publication-stale-reentry-contract",
-    "commit": "4a0b1d96a8d6dce078ccbe314b8b8852beb49552",
+    "ref": "codex/132-integrate-planning-check-review-skills",
+    "commit": "5037f657f548c05352b255b9c6df8634616795df",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -337,52 +330,9 @@
     ],
     "all_platforms": true,
     "managed_assets": [
-      ".agents/skills/trellis-before-dev/SKILL.md",
-      ".agents/skills/trellis-brainstorm/SKILL.md",
-      ".agents/skills/trellis-check/SKILL.md",
-      ".agents/skills/trellis-continue/SKILL.md",
-      ".agents/skills/trellis-finish-work/SKILL.md",
-      ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
-      ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
-      ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
-      ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
-      ".agents/skills/trellis-meta/references/platform-files/agents.md",
-      ".agents/skills/trellis-start/SKILL.md",
-      ".claude/agents/trellis-check.md",
-      ".claude/agents/trellis-implement.md",
-      ".claude/agents/trellis-research.md",
       ".claude/commands/guru/finish-work.md",
-      ".claude/commands/trellis/continue.md",
-      ".claude/commands/trellis/finish-work.md",
-      ".codex/agents/trellis-check.toml",
-      ".codex/agents/trellis-implement.toml",
-      ".codex/agents/trellis-research.toml",
-      ".codex/hooks/session-start.py",
       ".codex/prompts/guru-finish-work.md",
-      ".codex/prompts/trellis-continue.md",
-      ".codex/prompts/trellis-finish-work.md",
-      ".codex/prompts/trellis-start.md",
-      ".codex/skills/trellis-continue/SKILL.md",
-      ".codex/skills/trellis-finish-work/SKILL.md",
-      ".codex/skills/trellis-start/SKILL.md",
-      ".cursor/agents/trellis-check.md",
-      ".cursor/agents/trellis-implement.md",
-      ".cursor/agents/trellis-research.md",
       ".cursor/commands/guru-finish-work.md",
-      ".cursor/commands/trellis-continue.md",
-      ".cursor/commands/trellis-finish-work.md",
-      ".cursor/hooks/inject-subagent-context.py",
-      ".cursor/hooks/session-start.py",
-      ".cursor/skills/trellis-before-dev/SKILL.md",
-      ".cursor/skills/trellis-brainstorm/SKILL.md",
-      ".cursor/skills/trellis-check/SKILL.md",
-      ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
-      ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
-      ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
-      ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
-      ".cursor/skills/trellis-meta/references/platform-files/agents.md",
-      ".trellis/agents/check.md",
-      ".trellis/agents/implement.md",
       ".trellis/guru-team/config-template.yml",
       ".trellis/guru-team/extension.json",
       ".trellis/guru-team/schemas/closeout-plan.schema.json",
@@ -445,6 +395,314 @@
     "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
+  },
+  "upstream_migration": {
+    "schema_version": "1.0",
+    "status": "ok",
+    "template_hashes": {
+      "path": ".trellis/.template-hashes.json",
+      "status": "valid",
+      "version": 2,
+      "error": null
+    },
+    "counts": {
+      "preserved_clean_upstream": 37,
+      "already_missing": 6
+    },
+    "paths": [
+      {
+        "path": ".agents/skills/trellis-before-dev/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "859894f2e8258cbfa142d710363433761c54984c69f7ed7bd44512fb4eb165cd",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "859894f2e8258cbfa142d710363433761c54984c69f7ed7bd44512fb4eb165cd"
+      },
+      {
+        "path": ".agents/skills/trellis-brainstorm/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "3bbfb6506af3c318c6f9b3c280517ce93a02e40e27535de7ff5fc029d3027860",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "3bbfb6506af3c318c6f9b3c280517ce93a02e40e27535de7ff5fc029d3027860"
+      },
+      {
+        "path": ".agents/skills/trellis-check/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "b21ff04b7680ebacb8c5ecbc48a22d627eb13e2b47fceb78c8ced0b43b60b282",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "b21ff04b7680ebacb8c5ecbc48a22d627eb13e2b47fceb78c8ced0b43b60b282"
+      },
+      {
+        "path": ".agents/skills/trellis-continue/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "7723ccf49fbf19d8f086cacc7a080bd8be8db6fc70a32908b80f68efa318d7bf",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "7723ccf49fbf19d8f086cacc7a080bd8be8db6fc70a32908b80f68efa318d7bf"
+      },
+      {
+        "path": ".agents/skills/trellis-finish-work/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "161060fbcd44f787440d3a5c297a9f5223ea7774bb3021a50e376875a9ac5b2d",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "161060fbcd44f787440d3a5c297a9f5223ea7774bb3021a50e376875a9ac5b2d"
+      },
+      {
+        "path": ".agents/skills/trellis-meta/references/customize-local/change-context-loading.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "350d319dc1ab99609ddbf52cf8c06c71bd97ba1a29ce2eac8b97d0bb192938bf",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "350d319dc1ab99609ddbf52cf8c06c71bd97ba1a29ce2eac8b97d0bb192938bf"
+      },
+      {
+        "path": ".agents/skills/trellis-meta/references/customize-local/change-workflow.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "43fa780a2ca580de121b10893d49b99f978873deebbf45008c466e5ac6651519",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "43fa780a2ca580de121b10893d49b99f978873deebbf45008c466e5ac6651519"
+      },
+      {
+        "path": ".agents/skills/trellis-meta/references/local-architecture/context-injection.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "8497289bf333b3aa456f317039d1239b7ece79254aa0eb62cfc647714c866084",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "8497289bf333b3aa456f317039d1239b7ece79254aa0eb62cfc647714c866084"
+      },
+      {
+        "path": ".agents/skills/trellis-meta/references/local-architecture/task-system.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "2b561d49c390f7d0db5391912946133be4bf73189231e2b8cc9afa1c5ac6165a",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "2b561d49c390f7d0db5391912946133be4bf73189231e2b8cc9afa1c5ac6165a"
+      },
+      {
+        "path": ".agents/skills/trellis-meta/references/platform-files/agents.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "ce1a22c2b3ff0bff68755b5663e1f3b63ef2f1658cff43e511cee9013537c698",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "ce1a22c2b3ff0bff68755b5663e1f3b63ef2f1658cff43e511cee9013537c698"
+      },
+      {
+        "path": ".agents/skills/trellis-start/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "79a5ba7a2aff3c72e06d7f4cd6942dc4f4f4092dd40f9c8e94f1838024a81e4d",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "79a5ba7a2aff3c72e06d7f4cd6942dc4f4f4092dd40f9c8e94f1838024a81e4d"
+      },
+      {
+        "path": ".claude/agents/trellis-check.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "9e48342243f311d55386f8fb42933945e87aba73d5ade547133aa98345a06128",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "9e48342243f311d55386f8fb42933945e87aba73d5ade547133aa98345a06128"
+      },
+      {
+        "path": ".claude/agents/trellis-implement.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "73b56b3047c0e852382c4630aa181fb847d1e5ea1f63459dac4bf728f43fd097",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "73b56b3047c0e852382c4630aa181fb847d1e5ea1f63459dac4bf728f43fd097"
+      },
+      {
+        "path": ".claude/agents/trellis-research.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "add4aa4259ded425b04ec992802c646490352bb4eb3730a7ab450beea87d4faa",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "add4aa4259ded425b04ec992802c646490352bb4eb3730a7ab450beea87d4faa"
+      },
+      {
+        "path": ".claude/commands/trellis/continue.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "6c34c41824f8eff4b2df792e032e0c36787b59f8a8879b0338347073f76ad52c",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "6c34c41824f8eff4b2df792e032e0c36787b59f8a8879b0338347073f76ad52c"
+      },
+      {
+        "path": ".claude/commands/trellis/finish-work.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "d6aa570ab684f57e4845de2d84a1ff6d9f0908e04c5a56e14fd70ae739c369fc",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "d6aa570ab684f57e4845de2d84a1ff6d9f0908e04c5a56e14fd70ae739c369fc"
+      },
+      {
+        "path": ".codex/agents/trellis-check.toml",
+        "generated_in_clean_init": true,
+        "current_sha256": "372dbd32a68f156727fd9f5d755a184543db96013abfeaffb09974c78fd5b873",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "372dbd32a68f156727fd9f5d755a184543db96013abfeaffb09974c78fd5b873"
+      },
+      {
+        "path": ".codex/agents/trellis-implement.toml",
+        "generated_in_clean_init": true,
+        "current_sha256": "87dc719802b355c61607c85ae0ab3e42b2a374a578a9fde349c3ae412638f8b4",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "87dc719802b355c61607c85ae0ab3e42b2a374a578a9fde349c3ae412638f8b4"
+      },
+      {
+        "path": ".codex/agents/trellis-research.toml",
+        "generated_in_clean_init": true,
+        "current_sha256": "5492f7f6ab8bdea975b0e853bf171b050f7ddf6c2079ac770ed912c48d815eae",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "5492f7f6ab8bdea975b0e853bf171b050f7ddf6c2079ac770ed912c48d815eae"
+      },
+      {
+        "path": ".codex/hooks/session-start.py",
+        "generated_in_clean_init": true,
+        "current_sha256": "1c951ff35f490c5fbf576b4764ec190895df7c2a48e279fb20625209f51c321a",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "1c951ff35f490c5fbf576b4764ec190895df7c2a48e279fb20625209f51c321a"
+      },
+      {
+        "path": ".codex/prompts/trellis-continue.md",
+        "generated_in_clean_init": false,
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/prompts/trellis-finish-work.md",
+        "generated_in_clean_init": false,
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/prompts/trellis-start.md",
+        "generated_in_clean_init": false,
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/skills/trellis-continue/SKILL.md",
+        "generated_in_clean_init": false,
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/skills/trellis-finish-work/SKILL.md",
+        "generated_in_clean_init": false,
+        "action": "already_missing"
+      },
+      {
+        "path": ".codex/skills/trellis-start/SKILL.md",
+        "generated_in_clean_init": false,
+        "action": "already_missing"
+      },
+      {
+        "path": ".cursor/agents/trellis-check.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "e54d3de996bab4abd7653eef4d64c171638fbc2859e9b1fe4aae2483df72de99",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "e54d3de996bab4abd7653eef4d64c171638fbc2859e9b1fe4aae2483df72de99"
+      },
+      {
+        "path": ".cursor/agents/trellis-implement.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "636d55ebb56d9d3ea6ef9ec615c53bcaeab2b1afb3dc7e30ad51091efe5ab5ea",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "636d55ebb56d9d3ea6ef9ec615c53bcaeab2b1afb3dc7e30ad51091efe5ab5ea"
+      },
+      {
+        "path": ".cursor/agents/trellis-research.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "1311b229a5d8c2c388ceb52460c3d837aa982c988aac39fb9ae30385072fbacf",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "1311b229a5d8c2c388ceb52460c3d837aa982c988aac39fb9ae30385072fbacf"
+      },
+      {
+        "path": ".cursor/commands/trellis-continue.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "338f80aab71e576de25c736e3aa7ea73fc2d5b433ff03f90e78d8958870945bc",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "338f80aab71e576de25c736e3aa7ea73fc2d5b433ff03f90e78d8958870945bc"
+      },
+      {
+        "path": ".cursor/commands/trellis-finish-work.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "5a8a72fd87d009c15068bae75165af97f1b03e975b24f5dc3b901b01c6914160",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "5a8a72fd87d009c15068bae75165af97f1b03e975b24f5dc3b901b01c6914160"
+      },
+      {
+        "path": ".cursor/hooks/inject-subagent-context.py",
+        "generated_in_clean_init": true,
+        "current_sha256": "c8ea04062990530dffb26c4d1efa3e6887e042d3086da2f2325b491c9d544931",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "c8ea04062990530dffb26c4d1efa3e6887e042d3086da2f2325b491c9d544931"
+      },
+      {
+        "path": ".cursor/hooks/session-start.py",
+        "generated_in_clean_init": true,
+        "current_sha256": "688e9d5c2273575b2c1cc8db17fa39da7b1798542a67f65286d97cdbdc347995",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "688e9d5c2273575b2c1cc8db17fa39da7b1798542a67f65286d97cdbdc347995"
+      },
+      {
+        "path": ".cursor/skills/trellis-before-dev/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "859894f2e8258cbfa142d710363433761c54984c69f7ed7bd44512fb4eb165cd",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "859894f2e8258cbfa142d710363433761c54984c69f7ed7bd44512fb4eb165cd"
+      },
+      {
+        "path": ".cursor/skills/trellis-brainstorm/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "3bbfb6506af3c318c6f9b3c280517ce93a02e40e27535de7ff5fc029d3027860",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "3bbfb6506af3c318c6f9b3c280517ce93a02e40e27535de7ff5fc029d3027860"
+      },
+      {
+        "path": ".cursor/skills/trellis-check/SKILL.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "b21ff04b7680ebacb8c5ecbc48a22d627eb13e2b47fceb78c8ced0b43b60b282",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "b21ff04b7680ebacb8c5ecbc48a22d627eb13e2b47fceb78c8ced0b43b60b282"
+      },
+      {
+        "path": ".cursor/skills/trellis-meta/references/customize-local/change-context-loading.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "350d319dc1ab99609ddbf52cf8c06c71bd97ba1a29ce2eac8b97d0bb192938bf",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "350d319dc1ab99609ddbf52cf8c06c71bd97ba1a29ce2eac8b97d0bb192938bf"
+      },
+      {
+        "path": ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "43fa780a2ca580de121b10893d49b99f978873deebbf45008c466e5ac6651519",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "43fa780a2ca580de121b10893d49b99f978873deebbf45008c466e5ac6651519"
+      },
+      {
+        "path": ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "8497289bf333b3aa456f317039d1239b7ece79254aa0eb62cfc647714c866084",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "8497289bf333b3aa456f317039d1239b7ece79254aa0eb62cfc647714c866084"
+      },
+      {
+        "path": ".cursor/skills/trellis-meta/references/local-architecture/task-system.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "2b561d49c390f7d0db5391912946133be4bf73189231e2b8cc9afa1c5ac6165a",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "2b561d49c390f7d0db5391912946133be4bf73189231e2b8cc9afa1c5ac6165a"
+      },
+      {
+        "path": ".cursor/skills/trellis-meta/references/platform-files/agents.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "ce1a22c2b3ff0bff68755b5663e1f3b63ef2f1658cff43e511cee9013537c698",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "ce1a22c2b3ff0bff68755b5663e1f3b63ef2f1658cff43e511cee9013537c698"
+      },
+      {
+        "path": ".trellis/agents/check.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "edb4f57361407249a53bf5998ebf91c40d2b969e826a2c5e1b4e813a08bcb175",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "edb4f57361407249a53bf5998ebf91c40d2b969e826a2c5e1b4e813a08bcb175"
+      },
+      {
+        "path": ".trellis/agents/implement.md",
+        "generated_in_clean_init": true,
+        "current_sha256": "66e25ad046c94869442834bc3cdfbd5a9a7412d3ff54561d64d2886552c27e87",
+        "action": "preserved_clean_upstream",
+        "official_template_sha256": "66e25ad046c94869442834bc3cdfbd5a9a7412d3ff54561d64d2886552c27e87"
+      }
+    ],
+    "removals": [],
+    "conflicts": [],
+    "sidecars": []
   },
   "skill_packages": {
     "schema_version": "1.0",
@@ -523,7 +781,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "5868690de7b2d7b4a17d9b1939eacc8e44e3dfdf1c1507360dab1310efc11d99",
-        "tree_sha256": "22eca512c81c44fead4376144e6d28af8fc4c5fb7e325fc73eacb5d116b802f9"
+        "tree_sha256": "e7cf569e71d10375643bb572d56b56718df9c8e4327dad0ad221e28200ae4467"
       },
       {
         "id": "guru-finalize-task",
@@ -552,7 +810,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "eec8af16c9605e8c72860e5ff1f66c5f0df7cf2cf133759d46b029c05d5a5c61",
+        "sha256": "4c097ee355cd2846564eaef8987e948acbc07c43b654abd495dffa67e6bae99c",
         "executable": false,
         "action": "unchanged"
       },
@@ -706,7 +964,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "1cc229dec2cdef2dbe6cd501f656f5702172a84301ead2f8f6b8dd1b7c870adb",
+        "sha256": "9fe32a637f344d84a19fed160232171ece111379d30f519f88abd9aa9f155126",
         "executable": false,
         "action": "unchanged"
       },
@@ -3436,14 +3694,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
-        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "sha256": "bdedef2013c7bf868a22a4c560d34580f767a4c26c4eff25326f999e34bf5098",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
-        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "sha256": "b18b228ac4be1a20e0359433eb1af0db130e3c905f53398700890511becb565f",
         "executable": false,
         "action": "unchanged"
       },
@@ -14349,14 +14607,14 @@
       {
         "path": ".agents/skills/guru-verify-extension-installation/examples/execution-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
-        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "sha256": "bdedef2013c7bf868a22a4c560d34580f767a4c26c4eff25326f999e34bf5098",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
-        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "sha256": "b18b228ac4be1a20e0359433eb1af0db130e3c905f53398700890511becb565f",
         "executable": false,
         "action": "unchanged"
       },
@@ -14664,14 +14922,14 @@
       {
         "path": ".codex/skills/guru-verify-extension-installation/examples/execution-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
-        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "sha256": "bdedef2013c7bf868a22a4c560d34580f767a4c26c4eff25326f999e34bf5098",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
-        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "sha256": "b18b228ac4be1a20e0359433eb1af0db130e3c905f53398700890511becb565f",
         "executable": false,
         "action": "unchanged"
       },
@@ -14979,14 +15237,14 @@
       {
         "path": ".claude/skills/guru-verify-extension-installation/examples/execution-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
-        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "sha256": "bdedef2013c7bf868a22a4c560d34580f767a4c26c4eff25326f999e34bf5098",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
-        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "sha256": "b18b228ac4be1a20e0359433eb1af0db130e3c905f53398700890511becb565f",
         "executable": false,
         "action": "unchanged"
       },
@@ -15294,14 +15552,14 @@
       {
         "path": ".cursor/skills/guru-verify-extension-installation/examples/execution-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
-        "sha256": "97d34552b3b3df82bc4dcdcae2897228c151feee2c51ed44a544dd0b9a3c7320",
+        "sha256": "bdedef2013c7bf868a22a4c560d34580f767a4c26c4eff25326f999e34bf5098",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
-        "sha256": "2217c6c3cee9e1fef6f10a9f88fac469e89731494875831565013911f6c333f9",
+        "sha256": "b18b228ac4be1a20e0359433eb1af0db130e3c905f53398700890511becb565f",
         "executable": false,
         "action": "unchanged"
       },
@@ -18907,6 +19165,41 @@
         "path": ".cursor/skills/guru-discover-change-context/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/tests/test_contract.py",
         "sha256": "be5732731def24e47ae31cc6d0c0e939adef5e52bf19b52d5a53195b3c935f76",
+        "executable": false,
+        "action": "unchanged"
+      }
+    ],
+    "removals": [],
+    "conflicts": [],
+    "sidecars": []
+  },
+  "overlays": {
+    "schema_version": "1.0",
+    "status": "ok",
+    "selected_platforms": [
+      "claude",
+      "codex",
+      "cursor"
+    ],
+    "files": [
+      {
+        "path": ".claude/commands/guru/finish-work.md",
+        "source": "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/prompts/guru-finish-work.md",
+        "source": "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/commands/guru-finish-work.md",
+        "source": "trellis/presets/guru-team/overlays/.cursor/commands/guru-finish-work.md",
+        "sha256": "c4094a97931df9f64c51b72357b3959a71fc70def97e25c92f14d2e42b910c74",
         "executable": false,
         "action": "unchanged"
       }

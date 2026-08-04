@@ -86,6 +86,22 @@ not a self-contained or portable package. The docs must name
 `run-skill-command` as the shared dispatcher, describe fail-closed full-preset
 install/upgrade remediation, and list its installed executable path.
 
+All three public README files must describe the final ownership boundary:
+
+- the 43 historical upstream paths remain only as
+  `upstream_owned/removed` tombstones with immutable path/baseline identity and
+  migration-only payload hashes;
+- the preset never installs or managed-upgrades `trellis-start`,
+  `trellis-continue`, `trellis-finish-work`, official hooks, agents, runtime
+  agents, bundled skills, or Trellis meta references;
+- the overlay tree contains only the three Guru-owned `guru-finish-work`
+  entries;
+- known local edits are migrated by provenance, unknown edits are preserved
+  with `.new`, and no unresolved `.new`/`.bak` may be reported as success;
+- official update/version-upgrade, workflow re-selection, preset reapply, and
+  source/installed/ownership/platform/dogfood validation are one documented
+  sequence.
+
 Public docs that describe task work commits must name
 `guru-create-task-commit` as the active closed-loop owner, retain
 `guru-create-work-commit` only as a reserved tombstone, distinguish AI review
@@ -464,9 +480,10 @@ and redaction.
 Public validation text treats package-local real-wrapper production eval and
 real pushed-remote clean installation as independent acceptance surfaces. It
 must not claim the remote-ref gate passed when only local or public stable
-marketplace sampling ran. It identifies #119 combined local/install integration
-separately from the pushed-remote gate and must not imply that #132 upstream
-overlay cleanup was implemented.
+marketplace sampling ran. It identifies local/install combined acceptance
+separately from the pushed-remote gate and states that upstream overlay cleanup
+is complete only when the 43 tombstones, three-entry overlay tree, migration
+matrix, update/upgrade/reapply, and zero-sidecar checks all pass.
 
 Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
 byte identity, source and installed validation, real-wrapper eval, workflow
@@ -474,9 +491,9 @@ consumer uniqueness, preset reapply after `trellis update`, dogfood drift, and
 zero unresolved `.new`/`.bak`. It names the three canonical
 `guru-finish-work` platform entries, executes the installed combined integration
 suite before and after update/reapply, explicitly leaves pushed-remote branch
-verification to the finalization gate, and does not claim #132 cleanup
-completion. The five `trellis-finish-work` entries are described only as
-byte-pinned compatibility routers until that cleanup.
+verification to the finalization gate, and states that upstream
+`trellis-finish-work` files are official Trellis assets outside Guru managed
+ownership.
 
 ## Task Finalization Documentation
 
@@ -498,6 +515,6 @@ external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
 They identify the integrated global workflow projection as 13 invokes, 51 exits,
 and 28 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
 Cursor finish entry; document the two terminal `published` evals and the private
-checked-verification projection; and keep every public DTO unchanged. The five
-legacy finish payloads remain byte-pinned compatibility routers with no #119
-blocker, while #132 owns their physical upstream-overlay cleanup.
+checked-verification projection; and keep every public DTO unchanged. Official
+`trellis-finish-work` payloads remain upstream-owned and are not installed or
+managed by the Guru preset.

@@ -39,11 +39,12 @@ The installer is idempotent:
 - missing managed files are installed
 - changed managed companion assets are updated with `.bak` backups
 - existing `.trellis/guru-team/config.yml` is preserved
-- only the 43 inventory-pinned transitional Trellis paths may be replaced by
-  Guru Team overlays; 25 use their immutable historical baseline and the exact
-  eighteen issue #131/#161 continue, agent, and finish-router entries use a
-  separately reviewed current binding;
-  the frozen set cannot expand and issue #132 removal is not implied
+- the 43 historical Trellis paths are retained only as
+  `upstream_owned/removed` tombstones and are never installed or managed
+- clean upstream bytes are preserved, known legacy-only Guru payloads are
+  removed, known Guru payloads at upstream-generated paths block until official
+  update/upgrade, and unknown local edits are preserved with `.new`
+- the overlay tree contains only the three Guru-owned `guru-finish-work` entries
 - unknown local edits receive `.new` copies instead of being overwritten
 
 The source ownership validator must pass before any preset mutation:

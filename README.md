@@ -74,12 +74,14 @@ mutable ref 还是 immutable release tag，以及是否仍以官方 Trellis `0.6
 ```
 
 Trellis CLI 支持 `gh:user/repo/path#ref` workflow marketplace source。该脚本默认验证
-`gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`；需要验证其它 branch/tag 时，设置
-`TRELLIS_WORKFLOW_SOURCE` 为对应 `#ref`。如果使用不带 `#ref` 的公开远端 source，在非
-`main` 分支或本地 marketplace 文件有改动时，该脚本会 fail closed，避免把公开远端验证
-误报为当前分支验证。需要刻意采样公开 latest/canary marketplace 时，设置
-`TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1`，并在结果中说明这不是当前分支或 release tag
-验证。脚本还会用已安装的 wrapper、companion、schema、config、workflow 与官方
+`gh:castbox/guru-trellis/trellis#main`，作为显式 mutable canary baseline。验证 feature
+branch 或 release 时，必须把 `TRELLIS_WORKFLOW_SOURCE` 设置为已经存在于远端的精确
+branch/tag `#ref`；只有该 ref 已 push 后的运行才能作为对应 ref 的 marketplace evidence。
+在非 `main` 分支或本地 marketplace 文件有改动时，公开 `#main` sample 会 fail closed，避免
+误报为当前分支验证。若当前 dirty branch 尚未 push，只能显式设置
+`TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1` 来采样公开 `main`，并在结果中说明这是“公开
+main marketplace + 本地 preset/runtime projection”，不是当前分支或 release tag 验证。
+脚本还会用已安装的 wrapper、companion、schema、config、workflow 与官方
 `task.py`，在初次安装和 `trellis update` + preset reapply 后各完成一次 dry-run digest、
 formal draft、archive、三方 HEAD、ready 与 clean-tree 事务；不会把 canonical runtime
 资产手工复制进 fixture。
@@ -91,14 +93,15 @@ source-only ownership gate：
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 ```
 
-该 gate 以 Trellis CLI `0.6.5` 为基线，冻结 43 条 legacy overlay path 与 issue #128
-历史 baseline identity；其中 37 条由 clean init 生成，6 条历史 Codex prompt/skill path
-已不再由 `0.6.5` 初装生成。当前 payload 对 38 条使用 baseline，对 issue #131 审核的
-五条 active continue entry 使用独立 `current_payload_sha256`。该字段只用于正常版本绑定和
-漂移检测，不是 authenticity/anti-tamper 边界，也不允许泛化或提前执行 #132 removal。
-新增 upstream namespace patch、扩张/替换冻结集合、active payload 漂移、缺失
-replacement/removal owner、`unclassified` 或新增 upstream-owned managed claim 都会阻止
-preset mutation。它只校验结构化事实，不替代 AI ownership、scope 或迁移充分性判断。
+该 gate 以 Trellis CLI `0.6.5` 为历史基线，保留 issue #128 的 43 条
+path/baseline immutable identity；所有条目当前均为
+`upstream_owned/removed` tombstone，其中 37 条属于 clean-init generated path，6 条属于
+legacy-only path。每条 tombstone 显式保留 installer 迁移所需的历史 Guru payload hash，
+但 preset 不再安装、声明或 managed-upgrade 这些路径。Validator 要求 active legacy 与
+`unclassified` 均为 0、overlay tree 只含 3 个 Guru-owned `guru-finish-work` entry，并在
+preset mutation 前阻止未知 managed claim、历史 identity 漂移或缺失 migration provenance。
+这些 hash 只用于正常迁移和漂移识别，不是 authenticity/anti-tamper 边界，也不替代 AI
+ownership、scope 或迁移充分性判断。
 
 #### AI 安装 prompt
 
@@ -117,7 +120,7 @@ preset mutation。它只校验结构化事实，不替代 AI ownership、scope �
 - 官方 Trellis 可能仍根据 Git config 创建 `.trellis/.developer` 与 `.trellis/workspace/**`；这是官方 identity/journal 行为，不是 Guru 前置。Guru apply/update/reapply 与 task workspace executor 不读取、不创建、不恢复这些路径，也不删除已有官方数据。
 - 如果我明确要求交互式选择 spec template，才可以去掉 `-y`；默认安装和自动验收必须使用 `-y` 或显式 `--template <name>`。
 - 获取与 workflow source 相同 release tag 的公开 preset 仓库内容，例如 `git clone --depth 1 --branch v0.6.5-guru.2 https://github.com/castbox/guru-trellis.git <guru-trellis>`。只有明确要跟随 latest/canary 时，才复用 `main` 或不带 `#ref` 的远端 source，并在最终报告中说明来源是 mutable ref。
-- 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo> --platform codex --platform cursor`，把 Guru Team companion assets 和所选平台 overlay 应用到当前 Repo；如需 Claude，改为追加 `--platform claude`，如需历史全量 overlay，改用 `--all-platforms`。
+- 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo> --platform codex --platform cursor`，把 Guru Team companion assets、`guru-*` discovery copies 和所选平台的 Guru-owned finish entry 应用到当前 Repo；如需 Claude，追加 `--platform claude`；如需启用全部受支持平台，改用 `--all-platforms`。Preset 不安装或覆盖 upstream-owned `trellis-*` entries、hooks 或 agents。
 - 安装后检查是否存在 `.trellis/tasks/00-bootstrap-guidelines/`。这是 `trellis init` 生成的一次性 Repo 级 spec bootstrap 任务，用于把 `.trellis/spec/` 从通用模板改成当前 Repo 的真实工程规范；它不是每个 task 都要做，也不能作为安装副作用静默完成。先向我说明它的目的、将检查哪些源码/文档、将修改哪些 `.trellis/spec/` 文件，并询问我是现在让 AI 完成，还是保留该 task 后续单独处理。
 - 业务项目内人类可读文档默认使用中文：`.trellis/spec/**`、`.trellis/tasks/**`、`docs/**` durable docs、`00-bootstrap-guidelines` 创建或补齐的 docs SSOT，以及 workflow artifact 的 summary/evidence/finding/PR title/body 等字段都写中文；命令、路径、配置键、GitHub keyword、API 名称、代码符号等 literal token 可保留英文。
 - 只有在我明确确认现在执行 spec bootstrap 时，才扫描当前 Repo 的真实代码和文档，填充 `.trellis/spec/`、更新 `00-bootstrap-guidelines` checklist，并把这些改动纳入本次安装提交；如果我未确认，不要修改 `.trellis/spec/` 模板内容或 bootstrap task 状态。bootstrap 过程中如创建或补齐 `docs/**` SSOT 主文档，也必须按业务项目中文规则写作。
@@ -155,7 +158,7 @@ preset mutation。它只校验结构化事实，不替代 AI ownership、scope �
 - 默认只保留当前 Repo 的 Codex 和 Cursor 支持。
 - 当前 Repo 已有 .trellis/ 时，先用 Guru Team stable marketplace 生成 workflow 预览：`trellis workflow --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 --template guru-team --create-new`，再对比现有 `.trellis/workflow.md` 和 `.trellis/workflow.md.new`；确认风险后运行 `trellis workflow --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 --template guru-team` 切换 active workflow。
 - 获取与 workflow source 相同 release tag 的公开 preset 仓库内容，例如 `git clone --depth 1 --branch v0.6.5-guru.2 https://github.com/castbox/guru-trellis.git <guru-trellis>`。只有明确要跟随 latest/canary 时，才复用 `main` 或不带 `#ref` 的远端 source，并在最终报告中说明来源是 mutable ref。
-- 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo> --platform codex --platform cursor`，重新应用 Guru Team companion assets 和所选平台 overlay；如需 Claude，改为追加 `--platform claude`，如需历史全量 overlay，改用 `--all-platforms`。
+- 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo> --platform codex --platform cursor`，重新应用 Guru Team companion assets、`guru-*` discovery copies 和所选平台的 Guru-owned finish entry；如需 Claude，追加 `--platform claude`；如需启用全部受支持平台，改用 `--all-platforms`。先由官方 `trellis update` / 版本升级恢复 upstream ownership，preset 不覆盖 upstream-owned `trellis-*` entries、hooks 或 agents。
 - 如果 preset 生成 .new 或 .bak，逐个检查原因；不要静默覆盖未知本地改动。
 - 业务项目内人类可读文档默认使用中文：`.trellis/spec/**`、`.trellis/tasks/**`、`docs/**` durable docs、`00-bootstrap-guidelines` 创建或补齐的 docs SSOT，以及 workflow artifact 的 summary/evidence/finding/PR title/body 等字段都写中文；命令、路径、配置键、GitHub keyword、API 名称、代码符号等 literal token 可保留英文。
 - 升级流程不要重新静默执行 spec bootstrap。若发现 `.trellis/tasks/00-bootstrap-guidelines/` 仍处于 active，或 `.trellis/spec/` 仍是通用模板，先报告这是尚未完成的一次性 Repo 级 bootstrap，并询问是否单独处理；未确认前不要修改 `.trellis/spec/` 模板内容或 bootstrap task 状态。
@@ -219,7 +222,7 @@ Repo 时不要默认重做；只有发现 `00-bootstrap-guidelines` 仍未完成
 - `trellis/index.json`：Trellis marketplace 入口，提供 `guru-team` workflow。
 - `trellis/workflows/guru-team/`：workflow 主合同、配置模板、schema 和 companion scripts。
 - `trellis/presets/guru-team/`：把 companion scripts 和平台入口 overlay 安装到目标业务仓库的 preset installer。
-- `trellis/presets/guru-team/ownership/`：43 条 legacy overlay 的 frozen ownership inventory 与 strict schema。
+- `trellis/presets/guru-team/ownership/`：43 条 removed upstream tombstone、历史 migration payload provenance 与 strict schema。
 - `trellis/skills/guru-team/`：公共 workflow skill registry、interface schema、canonical package 与 test-only fixtures。
 
 ## Guru Team Extension Version
@@ -295,8 +298,9 @@ transaction engine 负责完整 semantic closeout。当前 package closure 为 1
 AI-first v2 当前合同为 6 Skills / 23 exits；global workflow production markers 为
 13/51/28。
 Finish-family combined integration 由 canonical `guru-finish-work` 入口、两个 terminal
-eval、checked #117 private projection bridge 与安装验收共同覆盖；#132 仍独占五个
-legacy overlay 的物理删除。
+eval、checked #117 private projection bridge 与安装验收共同覆盖。Upstream
+`trellis-finish-work` 文件由官方 Trellis 独占 ownership，不再属于 Guru overlay 或
+installed managed inventory。
 
 `guru-verify-extension-installation` 的 workflow input
 `verification_required` 只携带 `task_ref/plan_ref/repo_ref/reviewed_head/
@@ -321,8 +325,8 @@ publication Skill。缺失或结构错误在 invocation 前失败关闭，Phase 
 `ready` 后首次创建、重写或修改这两份已绑定内容。Finalizer package 与 public edge
 已 active，global `ready -> guru-finalize-task` invocation/order 与 Codex、Claude、Cursor
 的 Guru-owned `guru-finish-work` 薄入口均已 integrated。入口只读取 live workflow 并调用
-semantic owner，不直接调用 closeout engine；四类 machine recovery exit 自动消费。五个
-`trellis-finish-work` 文件仅保留为 #132 前的 byte-pinned compatibility router。
+semantic owner，不直接调用 closeout engine；四类 machine recovery exit 自动消费。
+Official `trellis-finish-work` 文件保持 upstream-owned，Guru preset 不安装、不修改也不管理。
 
 Planning self-reentry、`guru-check-task:passed` 到 initial commit、commit
 self-reentry、`guru-create-task-commit:committed` 到 active
@@ -725,8 +729,8 @@ AI 在改文件前要说明将跳过哪些 artifact、当前 checkout / branch /
 - `guru-finish-work`（Claude 使用 `/guru:finish-work`，Cursor 使用
   `/guru-finish-work`；Codex 使用同名 prompt）
 
-冻结的 `trellis-finish-work` entries 只保留为 Issue #132 前的 compatibility
-router，不再是日常入口。
+`trellis-finish-work` 是官方 Trellis 入口，不属于 Guru preset ownership；Guru Team
+日常收尾只使用 `guru-finish-work`。
 
 `trellis-start` 仍保留为 fallback / explicit orientation 入口，用于平台没有自动
 session/startup 注入、hook 未启用或未审批、怀疑自动注入没有运行，或用户需要完整
@@ -778,11 +782,11 @@ findings/evidence 返回 semantic owner。main session 只协调、在真实 unf
 边界。只有显式配置 `codex.dispatch_mode: inline` 或已有明确 artifact evidence 的
 self-exemption 时，Codex 才降级为 main session 直接实现和检查；缺少 implement/check/review
 sub-agent evidence 时默认 fail closed。
-Guru Team preset 会安装项目级 agent 定义：Codex agent 保持 `trellis-implement` /
-`trellis-check` / `trellis-research` 技术标识，使用中文 `description`。当前 Codex
-官方 `nickname_candidates` 只能使用 ASCII 字符；中文候选会让 Codex 忽略 agent 文件，
-因此 Codex nickname 候选保持 ASCII。Cursor / Claude / channel runtime agent 保持技术
-`name`，用中文 description 和标题展示。不要为了中文 UI 改掉这些调度 id。
+项目级 `trellis-implement` / `trellis-check` / `trellis-research` 与 channel runtime agent
+定义由官方 Trellis init/update/upgrade 管理。Guru preset 不再安装、覆盖或
+managed-upgrade 这些 upstream files；它只安装 canonical `guru-*` package discovery
+copies。平台原生 agent 的技术 id、description、nickname 与运行协议以当前官方 Trellis
+版本为准，mandatory Guru route 由 `.trellis/workflow.md` 的 stable markers 保证。
 routine sub-agent dispatch、等待、进展和每轮 review 不持久化。`wait_agent`、
 `trellis channel wait` 或等价等待命令 timeout 只表示本次等待窗口未返回结果，AI 在
 workflow 内继续观察或重入，不向用户索要“确认继续”。只有 agent 明确 unfinished 且必须
@@ -795,11 +799,12 @@ workflow 内继续观察或重入，不向用户索要“确认继续”。只�
 adequacy、findings 和 typed route；脚本成功不能替代 Skill 的 AI Review Gate。Phase 2
 public wrapper 校验 typed DTO 后删除自己的 checkpoint，Task Commit 只消费
 `task_ref + checked_head` 与 live Git，不读取或代删上游私有状态。
-Active `guru-review-branch` 是唯一的 Phase 3.5 semantic owner。Global workflow 与
-五个平台 `trellis-continue` entry 只提供 `profile`、`mode`、`task_ref`、
+Active `guru-review-branch` 是唯一的 Phase 3.5 semantic owner。Global workflow 通过
+package Interface 的 target-owned authoring seed 形成 `profile`、`mode`、`task_ref`、
 `base_ref`、`committed_head`、`review_intent` 六字段 public input，并消费
 `passed`、`implementation_required`、`scope_confirmation_required`、`blocked`
-四个 typed exits；它们不复制 finding qualification、reviewer lifecycle、Docs SSOT
+四个 typed exits；官方 `trellis-continue` entry 不属于 Guru managed surface，也不复制
+finding qualification、reviewer lifecycle、Docs SSOT
 Gate、recovery checkpoint 或 revision 规则。
 
 `review-branch.sh` 与 `check-review-gate.sh` 是该 package 拥有的 deterministic
@@ -920,8 +925,8 @@ handoff，因此成功提交不会主动制造 post-commit dirty。失败时 pri
 GitHub reviewer，而不是 Trellis session 内部摘要；应包含具体的 `变更摘要`、
 `影响范围`、`验证结果`、`Review Gate`、`Issue 关闭范围` 和 `安全说明`。禁止用
 “当前 Trellis task”“已提交实现与文档更新”“详见 artifact”作为主要摘要。
-canonical `guru-finish-work` route 与冻结 compatibility routers 共用同一合同：唯一 PR body
-来源是当前 task-local `pr-body.md`；dry-run 与 formal 都必须通过
+canonical `guru-finish-work` route 的唯一 PR body 来源是当前 task-local
+`pr-body.md`；dry-run 与 formal 都必须通过
 `--body-file <current-task>/pr-body.md` 直接传入。`--body-artifact`、外部同文文件、
 脚本生成的 body fallback，以及从 readiness artifact 相对解析 `body_file` 均不属于 closeout
 合同并 fail closed。脚本只校验客观结构、低信息量短语、close/ref 语义和 reviewed source
@@ -949,9 +954,9 @@ GitHub 默认 `Merge pull request #xx from ...` subject，也不能把中文 PR 
 - 中台知识检索和 durable docs SSOT 对齐规则维护在通用 workflow 中，具体业务仓库只保留 task 证据和必要的 docs 更新。
 - 长期规则维护在本仓库的 marketplace workflow、preset、companion scripts 和 overlay 中。
 - 目标业务仓库中的 generated copy 只是安装结果，不作为长期维护源。
-- 当前 43 条 upstream namespace overlay 是有 removal owner 的冻结迁移例外，不是新增
-  extension 行为的常规入口；新行为优先进入 Markdown workflow 或 canonical `guru-*`
-  package。删除迁移必须保留 inventory audit entry，并由 #132 完成 physical removal。
+- 43 条历史 upstream path 只保留为 `upstream_owned/removed` inventory tombstone；overlay
+  tree 只含 3 个 Guru-owned `guru-finish-work` entry。新行为进入 Markdown workflow 或
+  canonical `guru-*` package，不得重新引入 upstream namespace overlay。
 - 修改 `trellis/presets/guru-team/overlays/` 后，先重新应用 preset 到本仓库 dogfood copy，再运行 drift check：
 
 ```bash
@@ -998,9 +1003,9 @@ Workflow-required target 若 AI 判断 `not_required` 会以 applicability confl
 
 Package-local seven-case real-wrapper production eval 与真实 pushed-remote clean
 installation 是两份独立验收。只有 exact remote ref/HEAD 的后者完成后才能声明远端门禁
-通过；local/dogfood 或 public stable sampling 不能替代。该 gate 不创建 tag，也不表示
-#118 或 #132 已完成；#119 的 local candidate/installed acceptance 也不能替代 exact
-pushed-remote verification。
+通过；local/dogfood 或 public stable sampling 不能替代。该 gate 不创建 tag，也不能单独
+替代本地 43-tombstone、installer migration、update/upgrade/reapply 与 zero-sidecar combined
+acceptance。
 
 ### Skill 行为评测（#147）
 
