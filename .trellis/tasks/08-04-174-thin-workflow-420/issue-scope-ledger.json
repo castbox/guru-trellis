@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 174,
+    "url": "https://github.com/castbox/guru-trellis/issues/174",
+    "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+    "reason": "Primary independently deliverable Issue #174 scope.",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 174,
+      "url": "https://github.com/castbox/guru-trellis/issues/174",
+      "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+      "reason": "Issue #174 is fully covered by this task.",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}

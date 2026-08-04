@@ -1,0 +1,10 @@
+{"file":".trellis/spec/workflow/index.md","reason":"workflow package scope, mandatory validation and canonical/dogfood ownership"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"global workflow ownership, public graph and thin routing contract"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"workflow lifecycle, regression, distribution and update validation"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"graph, target and boundary data contracts that must remain unchanged"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"step-local Skill ownership and public I/O boundary that workflow must not duplicate"}
+{"file":".trellis/spec/preset/index.md","reason":"preset scope and canonical versus installed asset boundary"}
+{"file":".trellis/spec/preset/installer.md","reason":"managed installation, reapply and sidecar validation"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"no-new-upstream-patch and ownership validation boundary"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"public documentation and README consistency checks"}
+{"file":".trellis/spec/guides/index.md","reason":"shared cross-layer guidance index required before implementation"}
