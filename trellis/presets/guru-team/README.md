@@ -95,9 +95,13 @@ Chinese documentation contract.
 
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`. That release targets
-official `@mindfoldhq/trellis` `0.6.5`. Unpinned `gh:castbox/guru-trellis/trellis`
-is a latest/canary source and should be reported as mutable provenance.
+example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`. The current stable
+mapping is annotated tag `v0.6.5-guru.3`, peeled commit
+`dbcbbb2d2776a3952b643b6bcce0a2693d103273`, extension revision
+`0.6.5-guru.25`, and official `@mindfoldhq/trellis` `0.6.5`. Workflow
+marketplace and preset sources must use that same immutable tag. Unpinned
+`gh:castbox/guru-trellis/trellis` is a latest/canary source and should be
+reported as mutable provenance.
 
 ## Upstream Ownership Tombstones
 
@@ -182,7 +186,7 @@ command.
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.5-guru.2 \
+git clone --depth 1 --branch v0.6.5-guru.3 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -264,11 +268,13 @@ Only the three additive Guru finish entries remain under
 repository that may still contain historical Guru bytes on upstream-owned paths,
 restore official ownership first:
 
-1. run the official `trellis update` or required Trellis version upgrade;
-2. reapply the `guru-team` marketplace workflow;
-3. run the Guru preset for the selected platforms;
-4. inspect and resolve every `.new` / `.bak` sidecar;
-5. run ownership, installed-package, dogfood drift, and recursive sidecar checks.
+1. install the target official Trellis CLI, currently `0.6.5`;
+2. run the official `trellis update` or required Trellis version upgrade;
+3. preview and switch the `guru-team` marketplace workflow from the selected
+   immutable release tag;
+4. reapply the Guru preset from that same tag for the selected platforms;
+5. preserve unknown local edits and inspect every `.new` / `.bak` sidecar;
+6. run ownership, installed-package, dogfood drift, and recursive sidecar checks.
 
 For this source repository, the final preset/drift commands are:
 
@@ -464,9 +470,11 @@ Production skill registry 同时保留 reserved `guru-create-work-commit`，以�
 `guru-verify-extension-installation`。这十三个 active packages 共声明
 51 个 external exits。`guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前
-canonical extension version 是待发布的
-`0.6.5-guru.25`；已发布 stable source 仍是 `v0.6.5-guru.2`。Preset 将 active package
+invoke 与六个 exit marker。当前 canonical extension version
+`0.6.5-guru.25` 已由 stable source `v0.6.5-guru.3` 发布；该 annotated tag peeled 到
+`dbcbbb2d2776a3952b643b6bcce0a2693d103273`，并以官方 Trellis CLI `0.6.5` 为目标。
+Repo release tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一
+immutable tag。Preset 将 active package
 （含 interface、artifact schema、
 example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
 root 和所选 Codex/Cursor/Claude skill roots；reserved id 不安装。升级后必须处理
@@ -637,7 +645,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.3 \
   --template guru-team
 ```
 

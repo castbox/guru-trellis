@@ -314,13 +314,13 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-04T09:05:14Z",
+  "installed_at": "2026-08-04T10:16:26Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "codex/132-integrate-planning-check-review-skills",
-    "commit": "5037f657f548c05352b255b9c6df8634616795df",
-    "tree_state": "dirty",
-    "is_mutable_ref": true
+    "ref": "v0.6.5-guru.3",
+    "commit": "dbcbbb2d2776a3952b643b6bcce0a2693d103273",
+    "tree_state": "clean",
+    "is_mutable_ref": false
   },
   "install": {
     "selected_platforms": [

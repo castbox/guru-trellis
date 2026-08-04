@@ -27,10 +27,10 @@ npm install -g @mindfoldhq/trellis@0.6.5
 
 trellis init -y --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.2
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.3
 
 GURU_TRELLIS_DIR="$(mktemp -d)/guru-trellis"
-git clone --depth 1 --branch v0.6.5-guru.2 \
+git clone --depth 1 --branch v0.6.5-guru.3 \
   https://github.com/castbox/guru-trellis.git "$GURU_TRELLIS_DIR"
 "$GURU_TRELLIS_DIR/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo "$PWD" \
@@ -50,6 +50,18 @@ test -x .trellis/guru-team/scripts/bash/version.sh
 python3 ./.trellis/scripts/get_context.py --mode packages
 .trellis/guru-team/scripts/bash/check-env.sh --json
 .trellis/guru-team/scripts/bash/version.sh --json
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+installed = json.loads(Path(".trellis/guru-team/extension.json").read_text())
+assert installed["extension"]["version"] == "0.6.5-guru.25"
+assert installed["extension"]["target_trellis_cli"] == "0.6.5"
+assert installed["source"]["ref"] == "v0.6.5-guru.3"
+assert installed["source"]["commit"] == "dbcbbb2d2776a3952b643b6bcce0a2693d103273"
+assert installed["source"]["tree_state"] == "clean"
+assert installed["source"]["is_mutable_ref"] is False
+PY
 ```
 
 如果 `check-env` 输出的 `github_repo` 为空，或 JSON 中出现 `warnings` / `next_steps`，
@@ -62,8 +74,11 @@ GitHub `origin` remote。
 `.trellis/guru-team/extension.json`，并由 `check-env --json` 与 `version.sh --json`
 输出。
 
-默认安装命令同时 pin 官方 Trellis CLI `@0.6.5` 和 Guru Team repo release tag
-`#v0.6.5-guru.2`，用于可复现的稳定安装。维护者刻意采样最新 `main` / canary
+当前 stable 发布映射为 repo release tag `v0.6.5-guru.3`、peeled source commit
+`dbcbbb2d2776a3952b643b6bcce0a2693d103273`、Guru Team extension
+`0.6.5-guru.25`、官方 Trellis CLI `0.6.5`。Workflow marketplace 与 preset 必须来自
+同一个 immutable release tag；不要把 tag-pinned workflow 与 `main`、无 `#ref` 或其它
+preset source 混装。维护者刻意采样最新 `main` / canary
 时，可以去掉 `#ref` 或设置其它 branch/tag ref，但最终报告必须说明安装来源是
 mutable ref 还是 immutable release tag，以及是否仍以官方 Trellis `0.6.5` 为目标基线。
 
@@ -108,24 +123,24 @@ ownership、scope 或迁移充分性判断。
 把这段 prompt 发给目标业务仓库里的 AI 会话：
 
 ```text
-在当前 Repo 中安装官方 Trellis CLI v0.6.5，并安装 Guru Team extension stable v0.6.5-guru.2。
+在当前 Repo 中安装官方 Trellis CLI v0.6.5，并从 stable release tag v0.6.5-guru.3 安装 Guru Team extension 0.6.5-guru.25。
 
 要求：
-- 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，不要凭记忆判断版本；如果 latest 已不是 0.6.5，本次仍按 Guru Team stable v0.6.5-guru.2 的目标基线安装 @mindfoldhq/trellis@0.6.5，除非我明确要求升级官方 Trellis 基线。
+- 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，不要凭记忆判断版本；如果 latest 已不是 0.6.5，本次仍按 Guru Team stable v0.6.5-guru.3 的目标基线安装 @mindfoldhq/trellis@0.6.5，除非我明确要求升级官方 Trellis 基线。
 - 安装前检查当前 Repo 是否已经使用 Superpowers、Spec Kit、OpenSpec、GSD 或其它 SDD / agent harness；如果存在，不要继续安装 Trellis，先报告冲突并让我确认迁移或清理方案。
 - 安装/升级全局 Trellis CLI 到 @mindfoldhq/trellis@0.6.5。
 - 默认只启用 Codex 和 Cursor 支持。
 - Guru Team preset 与 task workspace executor 不要求 developer name，也不要求 `TRELLIS_USER`、`-u` 或 `--user`。
-- 如果当前 Repo 还没有 .trellis/，直接用 Guru Team workflow 的稳定非交互命令初始化：`trellis init -y --codex --cursor --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`。
+- 如果当前 Repo 还没有 .trellis/，直接用 Guru Team workflow 的稳定非交互命令初始化：`trellis init -y --codex --cursor --workflow guru-team --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`。
 - 官方 Trellis 可能仍根据 Git config 创建 `.trellis/.developer` 与 `.trellis/workspace/**`；这是官方 identity/journal 行为，不是 Guru 前置。Guru apply/update/reapply 与 task workspace executor 不读取、不创建、不恢复这些路径，也不删除已有官方数据。
 - 如果我明确要求交互式选择 spec template，才可以去掉 `-y`；默认安装和自动验收必须使用 `-y` 或显式 `--template <name>`。
-- 获取与 workflow source 相同 release tag 的公开 preset 仓库内容，例如 `git clone --depth 1 --branch v0.6.5-guru.2 https://github.com/castbox/guru-trellis.git <guru-trellis>`。只有明确要跟随 latest/canary 时，才复用 `main` 或不带 `#ref` 的远端 source，并在最终报告中说明来源是 mutable ref。
+- 获取与 workflow source 相同 immutable release tag 的公开 preset 仓库内容：`git clone --depth 1 --branch v0.6.5-guru.3 https://github.com/castbox/guru-trellis.git <guru-trellis>`。不得混用其它 tag、`main` 或无 `#ref` source；只有明确要跟随 latest/canary 时才可改用 mutable ref，并在最终报告中说明。
 - 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo> --platform codex --platform cursor`，把 Guru Team companion assets、`guru-*` discovery copies 和所选平台的 Guru-owned finish entry 应用到当前 Repo；如需 Claude，追加 `--platform claude`；如需启用全部受支持平台，改用 `--all-platforms`。Preset 不安装或覆盖 upstream-owned `trellis-*` entries、hooks 或 agents。
 - 安装后检查是否存在 `.trellis/tasks/00-bootstrap-guidelines/`。这是 `trellis init` 生成的一次性 Repo 级 spec bootstrap 任务，用于把 `.trellis/spec/` 从通用模板改成当前 Repo 的真实工程规范；它不是每个 task 都要做，也不能作为安装副作用静默完成。先向我说明它的目的、将检查哪些源码/文档、将修改哪些 `.trellis/spec/` 文件，并询问我是现在让 AI 完成，还是保留该 task 后续单独处理。
 - 业务项目内人类可读文档默认使用中文：`.trellis/spec/**`、`.trellis/tasks/**`、`docs/**` durable docs、`00-bootstrap-guidelines` 创建或补齐的 docs SSOT，以及 workflow artifact 的 summary/evidence/finding/PR title/body 等字段都写中文；命令、路径、配置键、GitHub keyword、API 名称、代码符号等 literal token 可保留英文。
 - 只有在我明确确认现在执行 spec bootstrap 时，才扫描当前 Repo 的真实代码和文档，填充 `.trellis/spec/`、更新 `00-bootstrap-guidelines` checklist，并把这些改动纳入本次安装提交；如果我未确认，不要修改 `.trellis/spec/` 模板内容或 bootstrap task 状态。bootstrap 过程中如创建或补齐 `docs/**` SSOT 主文档，也必须按业务项目中文规则写作。
 - 安装后确认 preset installer 没有创建未选择的平台入口目录；默认 Codex + Cursor 安装不应创建 `.claude/`。如果目标 Repo 历史上已经存在未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明这是历史残留或其它工具创建，并先请我确认是否清理。
-- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env、`.trellis/guru-team/extension.json`、Guru Team version；如果 check-env 的 `github_repo` 为空或输出 `warnings` / `next_steps`，必须明确报告需要配置 `.trellis/guru-team/config.yml` 或 GitHub origin remote。
+- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env、`.trellis/guru-team/extension.json`、Guru Team version；确认 extension version 为 `0.6.5-guru.25`、target CLI 为 `0.6.5`、source ref 为 `v0.6.5-guru.3`、source commit 为 `dbcbbb2d2776a3952b643b6bcce0a2693d103273`、`tree_state=clean` 且 `is_mutable_ref=false`。如果 check-env 的 `github_repo` 为空或输出 `warnings` / `next_steps`，必须明确报告需要配置 `.trellis/guru-team/config.yml` 或 GitHub origin remote。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
 - 提交前先做 Git 发布预检：检查当前分支、默认分支、远端、是否可能是受保护分支，以及是否已有未提交用户改动。不要默认直接 push 到 main/master/dev/develop 等共享分支。
 - 如果当前分支可能受保护或不适合直接推送，先询问我是在当前分支提交，还是创建单独分支并在完成后 push 分支、创建 PR。
@@ -152,18 +167,19 @@ ownership、scope 或迁移充分性判断。
 在当前 Repo 中升级 Trellis 和 Guru Team Trellis workflow/preset。
 
 要求：
-- 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，并检查当前 trellis --version、which -a trellis、npm list -g @mindfoldhq/trellis --depth=0；如果 latest 已不是 0.6.5，本次仍按 Guru Team stable v0.6.5-guru.2 的目标基线安装 @mindfoldhq/trellis@0.6.5，除非我明确要求升级官方 Trellis 基线。
+- 先实时确认 npm 上 @mindfoldhq/trellis 的 latest 版本，并检查当前 trellis --version、which -a trellis、npm list -g @mindfoldhq/trellis --depth=0；如果 latest 已不是 0.6.5，本次仍按 Guru Team stable v0.6.5-guru.3 的目标基线安装 @mindfoldhq/trellis@0.6.5，除非我明确要求升级官方 Trellis 基线。
 - 升级前检查当前 Repo 是否同时存在 Superpowers、Spec Kit、OpenSpec、GSD 或其它 SDD / agent harness；如果存在，不要继续升级 Trellis，先报告冲突并让我确认迁移或清理方案。
-- 如果本机 Trellis CLI 不是 0.6.5，安装/升级到 @mindfoldhq/trellis@0.6.5。
+- 如果本机 Trellis CLI 不是 0.6.5，先安装/升级到 @mindfoldhq/trellis@0.6.5。
 - 默认只保留当前 Repo 的 Codex 和 Cursor 支持。
-- 当前 Repo 已有 .trellis/ 时，先用 Guru Team stable marketplace 生成 workflow 预览：`trellis workflow --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 --template guru-team --create-new`，再对比现有 `.trellis/workflow.md` 和 `.trellis/workflow.md.new`；确认风险后运行 `trellis workflow --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 --template guru-team` 切换 active workflow。
-- 获取与 workflow source 相同 release tag 的公开 preset 仓库内容，例如 `git clone --depth 1 --branch v0.6.5-guru.2 https://github.com/castbox/guru-trellis.git <guru-trellis>`。只有明确要跟随 latest/canary 时，才复用 `main` 或不带 `#ref` 的远端 source，并在最终报告中说明来源是 mutable ref。
-- 执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo> --platform codex --platform cursor`，重新应用 Guru Team companion assets、`guru-*` discovery copies 和所选平台的 Guru-owned finish entry；如需 Claude，追加 `--platform claude`；如需启用全部受支持平台，改用 `--all-platforms`。先由官方 `trellis update` / 版本升级恢复 upstream ownership，preset 不覆盖 upstream-owned `trellis-*` entries、hooks 或 agents。
-- 如果 preset 生成 .new 或 .bak，逐个检查原因；不要静默覆盖未知本地改动。
+- CLI 到达 0.6.5 后，先运行官方 `trellis update`，恢复 Trellis upstream-owned entries、hooks、agents 和 template-managed 文件；先检查现有本地改动，并逐个处理 update 产生的 `.new` / `.bak`，未知本地改动不得静默覆盖或删除。
+- 官方 upstream ownership 恢复后，用 tag-pinned stable marketplace 生成 workflow 预览：`trellis workflow --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.3 --template guru-team --create-new`，对比现有 `.trellis/workflow.md` 和 `.trellis/workflow.md.new`；确认风险后运行 `trellis workflow --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.3 --template guru-team` 切换 active workflow。
+- 获取与 workflow source 相同 immutable release tag 的公开 preset 仓库内容：`git clone --depth 1 --branch v0.6.5-guru.3 https://github.com/castbox/guru-trellis.git <guru-trellis>`。不得混用其它 tag、`main` 或无 `#ref` source。
+- 最后执行 `<guru-trellis>/trellis/presets/guru-team/scripts/bash/apply.sh --repo <current-repo> --platform codex --platform cursor`，重新应用 Guru Team companion assets、`guru-*` discovery copies 和所选平台的 Guru-owned finish entry；如需 Claude，追加 `--platform claude`；如需启用全部受支持平台，改用 `--all-platforms`。Preset 不覆盖 upstream-owned `trellis-*` entries、hooks 或 agents。
+- 如果 update 或 preset 生成 `.new` / `.bak`，逐个检查来源和处置结果；不要静默覆盖或删除未知本地改动，未解决 sidecar 时不得报告升级成功。
 - 业务项目内人类可读文档默认使用中文：`.trellis/spec/**`、`.trellis/tasks/**`、`docs/**` durable docs、`00-bootstrap-guidelines` 创建或补齐的 docs SSOT，以及 workflow artifact 的 summary/evidence/finding/PR title/body 等字段都写中文；命令、路径、配置键、GitHub keyword、API 名称、代码符号等 literal token 可保留英文。
 - 升级流程不要重新静默执行 spec bootstrap。若发现 `.trellis/tasks/00-bootstrap-guidelines/` 仍处于 active，或 `.trellis/spec/` 仍是通用模板，先报告这是尚未完成的一次性 Repo 级 bootstrap，并询问是否单独处理；未确认前不要修改 `.trellis/spec/` 模板内容或 bootstrap task 状态。
 - 升级后确认 preset installer 没有创建或恢复未选择的平台入口目录；默认 Codex + Cursor 升级不应创建 `.claude/`。如果目标 Repo 历史上已经存在未选择的平台目录，例如 .claude/、.opencode/、.gemini/、.kiro/、.qoder/、.codebuddy/、.factory/、.pi/、.reasonix/、.kilocode/、.agent/、.devin/、.zcode/、.trae/ 等，说明这是历史残留或其它工具创建，并先请我确认是否清理。
-- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env、`.trellis/guru-team/extension.json`、Guru Team version。
+- 运行最小验证：trellis --version、.trellis/.version、Trellis 上下文读取、Guru Team check-env、`.trellis/guru-team/extension.json`、Guru Team version；确认 extension version 为 `0.6.5-guru.25`、target CLI 为 `0.6.5`、source ref 为 `v0.6.5-guru.3`、source commit 为 `dbcbbb2d2776a3952b643b6bcce0a2693d103273`、`tree_state=clean` 且 `is_mutable_ref=false`。
 - 检查 git diff，确认没有敏感信息、.env、token、私钥或本机-only 身份文件被提交。
 - 提交前先做 Git 发布预检：检查当前分支、默认分支、远端、是否可能是受保护分支，以及是否已有未提交用户改动。不要默认直接 push 到 main/master/dev/develop 等共享分支。
 - 如果当前分支可能受保护或不适合直接推送，先询问我是在当前分支提交，还是创建单独分支并在完成后 push 分支、创建 PR。
@@ -552,8 +568,8 @@ Trellis CLI 版本为前缀，并追加 Guru 修订号：
 v<official-trellis-version>-guru.<revision>
 ```
 
-例如 `v0.6.5-guru.2` 表示“针对官方 Trellis `0.6.5` 的 Guru Team 第 2 个稳定修订”。
-同一个官方 Trellis 基线下，Guru Team 可用 `.2`、`.3` 递增发布兼容修订；只有切换官方
+例如当前 `v0.6.5-guru.3` 表示“针对官方 Trellis `0.6.5` 的 Guru Team 第 3 个 repo
+发布修订”。同一个官方 Trellis 基线下，repo release tag 可用 `.3`、`.4` 递增发布兼容修订；只有切换官方
 Trellis 基线时才移动前缀，例如未来的 `v0.6.6-guru.1`。
 
 Guru 修订号按兼容性维护：
@@ -562,18 +578,21 @@ Guru 修订号按兼容性维护：
 - minor：兼容新增字段、script 能力、platform overlay 或可选门禁；
 - major：破坏 workflow id、script CLI、artifact schema、installed path、默认行为或升级语义。
 
-本仓库的 release tag 使用 repo 级 tag，例如 `v0.6.5-guru.2`。tag 名称必须与该 tag
-所指提交中的 `trellis/guru-team-extension.json.version` 对应；该 manifest 同时用 `target_trellis_cli`
-记录目标官方 Trellis CLI 版本。稳定安装文档使用
-`gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`。不带 `#ref` 的
+本仓库的 release tag 使用 repo 级 tag，例如 `v0.6.5-guru.3`。Repo release tag 与
+`trellis/guru-team-extension.json.version` 是两个独立版本轴：tag 标识可安装的 immutable
+仓库发布快照，manifest version 标识 extension 内部修订；发布元数据必须把 tag 精确映射到
+tagged commit 中实际存在的 manifest version，不能假定两个后缀相等。该 manifest 同时用
+`target_trellis_cli` 记录目标官方 Trellis CLI 版本。稳定安装文档使用
+`gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`。不带 `#ref` 的
 `gh:castbox/guru-trellis/trellis` 只表示 latest/canary，不应用作需要复现的问题定位坐标。
 发布顺序必须是：先 merge 包含 manifest/docs 更新的 PR，再在 merge commit 上创建并 push
-annotated tag `v0.6.5-guru.2` 这类 release tag，验证 `trellis init` / `trellis workflow`
+annotated tag `v0.6.5-guru.3` 这类 release tag，验证 `trellis init` / `trellis workflow`
 的 tag-pinned 安装后，再退休旧 tag 名称。
 
-当前已发布、可复现的 stable tag 是 `v0.6.5-guru.2`。工作分支中的 canonical
-manifest 已递增到下一待发布版本 `0.6.5-guru.25`；在对应 merge commit 创建并验证
-release tag 前，不得把 `.7` 写成已发布 stable source。
+当前已发布、可复现的 stable 映射是：annotated tag `v0.6.5-guru.3`，peeled source
+commit `dbcbbb2d2776a3952b643b6bcce0a2693d103273`，canonical extension version
+`0.6.5-guru.25`，target Trellis CLI `0.6.5`。Workflow marketplace 与 preset 必须 pin
+同一个 `v0.6.5-guru.3` immutable tag。
 
 `apply.sh` 每次安装/升级都会写入 `.trellis/guru-team/extension.json`。该文件记录
 extension version、target Trellis CLI、workflow template id、source repo/ref/commit、source

@@ -285,7 +285,10 @@ must not decide whether an upgrade or rollback is semantically safe.
 
 Stable install and upgrade docs must pin workflow marketplace sources to the
 repo release tag that combines the target official Trellis CLI version and Guru
-Team revision, for example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.2`.
+Team revision, for example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`.
+The preset source must use the same immutable release tag as the workflow
+marketplace source; mixing a tag-pinned workflow with `main`, an unpinned source,
+or another preset tag is not a stable install or upgrade.
 Keep `trellis/index.json.version` as the marketplace index schema version; do
 not reuse it as the Guru Team extension release number. If validation samples unpinned
 `gh:castbox/guru-trellis/trellis`, report it as latest/canary sampling rather

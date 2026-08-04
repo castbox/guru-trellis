@@ -19,25 +19,28 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 ```bash
 trellis init -y --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.2
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.3
 ```
 
 `-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
 throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
-稳定安装 source 使用 repo release tag `#v0.6.5-guru.2`，并要求官方 Trellis CLI 安装到
+稳定安装 source 使用 repo release tag `#v0.6.5-guru.3`，并要求官方 Trellis CLI 安装到
 `0.6.5`。维护者刻意跟随最新 `main` / canary 时可以去掉 `#ref` 或改用其它 branch/tag ref，
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
-并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 对应。当前已发布
-stable 是 `.2`；本分支 canonical `.25` 在 merge/tag/远端验证完成前不是 stable source。
+并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。当前已发布
+stable 是 annotated tag `v0.6.5-guru.3`，peeled source commit 为
+`dbcbbb2d2776a3952b643b6bcce0a2693d103273`，canonical extension version 为
+`0.6.5-guru.25`。Repo release tag 与 extension revision 是独立版本轴；workflow marketplace
+与 preset 必须来自同一个 immutable tag。
 
 已有 Trellis 项目切换 active workflow：
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.2 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.3 \
   --template guru-team
 ```
 
@@ -97,8 +100,8 @@ self-contained/portable 安装。公共 wrapper 通过 installed executable
 .trellis/guru-team/scripts/bash/run-skill-command.sh 调用 shared run-skill-command
 dispatcher；缺 runtime、版本漂移或未解决 sidecar 时必须在业务副作用前 fail closed。
 
-当前 canonical extension version 是待发布的 0.6.5-guru.25；已发布 stable source
-仍由上文 pin 的 release tag 表示。Source/installed package validation 必须同时验证
+当前 canonical extension version `0.6.5-guru.25` 已由上文 pin 的 stable release tag
+`v0.6.5-guru.3` 发布。Source/installed package validation 必须同时验证
 registry、13/51/28 marker graph、consumer uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 

@@ -34,6 +34,16 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
+Stable install and upgrade docs must list the complete current release mapping:
+repo release tag, peeled source commit, extension revision, and target official
+Trellis CLI. The current mapping is annotated tag `v0.6.5-guru.3`, peeled commit
+`dbcbbb2d2776a3952b643b6bcce0a2693d103273`, extension revision
+`0.6.5-guru.25`, and target CLI `0.6.5`. Repo release tags and extension
+revisions are independent version axes; docs must bind the exact pair instead of
+assuming their Guru suffixes match. Workflow marketplace and preset sources must
+use the same immutable release tag. Unpinned or branch sources remain mutable
+latest/canary inputs and must not be presented as stable release provenance.
+
 Prompts in `README.md` are meant to be copied into an AI coding session in a
 target business repository. They should tell the AI to:
 
