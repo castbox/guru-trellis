@@ -27,7 +27,7 @@
       "id": "publication-review-stale",
       "prompt": "Invoke the finalizer from stale publication evidence and return the checked publication-review re-entry.",
       "expected_exit": "publication_review_stale",
-      "expected_output": "The minimal DTO contains only the task identity and stable stale reason.",
+      "expected_output": "The minimal DTO contains the task identity, reviewed content HEAD and stable stale reason required by Publication re-entry.",
       "input_profile_id": "publication_ready",
       "assertions": {
         "deterministic": [

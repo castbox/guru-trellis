@@ -1,1 +1,1 @@
-{"profile":"publication_review_stale","mode":"workflow","task_ref":".trellis/tasks/current","stale_reason":"The prior publication identity no longer describes current metadata.","review_intent":"stale_reentry_review"}
+{"profile":"publication_review_stale","mode":"workflow","task_ref":".trellis/tasks/current","reviewed_content_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","stale_reason":"The prior publication identity no longer describes current metadata.","review_intent":"stale_reentry_review"}

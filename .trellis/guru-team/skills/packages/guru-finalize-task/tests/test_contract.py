@@ -168,7 +168,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
             for item in interface["public_contracts"]["consumer_inputs"]
             if item["id"] == "publication_review_stale_input"
         )
-        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref", "stale_reason"])
+        self.assertEqual(
+            consumer["contract"]["seed_fields"],
+            ["task_ref", "reviewed_content_head", "stale_reason"],
+        )
         self.assertEqual(
             consumer["contract"]["authoring_fields"],
             ["profile", "mode", "review_intent"],
@@ -180,6 +183,25 @@ class FinalizeTaskContractTests(unittest.TestCase):
         )
         self.assertEqual(set(authoring), set(consumer["contract"]["authoring_fields"]))
         self.assertNotIn("reentry_context", authoring)
+
+        output = json.loads(
+            (PACKAGE / "examples/public-publication-review-stale-output.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(
+            set(output),
+            {"exit_id", "task_ref", "reviewed_content_head", "stale_reason"},
+        )
+        stale_contract = next(
+            item
+            for item in interface["public_contracts"]["outputs"]
+            if item["exit_id"] == "publication_review_stale"
+        )
+        self.assertEqual(
+            stale_contract["schema"]["schema_id"],
+            "guru-finalize-task-output-publication-review-stale-2.0",
+        )
 
     def test_head_mismatch_retirement_is_internal_and_keeps_public_api(self) -> None:
         skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")

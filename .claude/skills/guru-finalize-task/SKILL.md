@@ -21,6 +21,13 @@ In workflow mode, the caller automatically consumes
 `reprepare_required`. These are machine routes, not user decisions. Ask again
 only when the external side-effect plan or its authority changed.
 
+`publication_review_stale` carries the exact `reviewed_content_head` that the
+Finalizer found stale, together with task identity and the stable reason. The
+Publication owner uses that immutable identity to distinguish a task-work
+continuity finding from metadata-only re-review. A legacy stale payload without
+that HEAD fails closed and must be regenerated from current Finalizer facts;
+never infer or synthesize the missing identity.
+
 For a checked `publication_review_head_mismatch` on an active schema 1.2
 pre-draft transaction, the public wrapper first retires only the exact
 plan-owned stale projection: it restores the Ledger from current HEAD, removes

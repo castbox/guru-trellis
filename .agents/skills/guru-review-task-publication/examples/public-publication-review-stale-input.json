@@ -2,6 +2,7 @@
   "profile": "publication_review_stale",
   "mode": "workflow",
   "task_ref": ".trellis/tasks/07-24-example-publication",
+  "reviewed_content_head": "0123456789abcdef0123456789abcdef01234567",
   "stale_reason": "finalization-precondition-drift",
   "review_intent": "stale_reentry_review"
 }

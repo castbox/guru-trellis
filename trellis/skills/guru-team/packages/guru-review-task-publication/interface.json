@@ -76,7 +76,7 @@
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-production-review-task-publication-input-aggregate-2.0", "path": "schemas/public-input.schema.json"},
+      "aggregate_schema": {"schema_id": "guru-production-review-task-publication-input-aggregate-3.0", "path": "schemas/public-input.schema.json"},
       "profiles": [
         {
           "id": "publication_review",
@@ -86,7 +86,7 @@
         },
         {
           "id": "publication_review_stale",
-          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-stale-1.0", "path": "schemas/public-publication-review-stale-input.schema.json"},
+          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-stale-2.0", "path": "schemas/public-publication-review-stale-input.schema.json"},
           "example": {"id": "publication_review_stale_input", "path": "examples/public-publication-review-stale-input.json"},
           "discriminator": {"field": "profile", "value": "publication_review_stale"}
         }

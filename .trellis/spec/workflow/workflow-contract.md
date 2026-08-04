@@ -1053,7 +1053,10 @@ authoring seed. It owns only these transitions:
 - `blocked` -> stop `task-publication-review-blocked`.
 
 Finalization stale handback uses the target-owned
-`publication_review_stale` profile and the same complete semantic review.
+`publication_review_stale` profile, preserving the Finalizer-projected
+`reviewed_content_head`, and the same complete semantic review. A legacy stale
+handoff without that identity fails closed. Content continuity drift may leave
+Publication only through `return_to_task_work`; `ready` remains strict.
 Workflow prose never copies the dimensions, findings, metadata revision loop,
 artifact fields, or recorder/checker procedure. Unknown, missing, multiple,
 unmapped, consumer-mismatched, or stale invocation fails

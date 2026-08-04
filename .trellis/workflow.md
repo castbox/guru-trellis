@@ -1255,6 +1255,13 @@ the same closeout loop. Never display those exit ids as choices or ask for a
 generic `确认继续`. Stop only for the declared `blocked` result, missing external
 authority, or a materially changed side-effect plan.
 
+The Finalizer stale projection supplies exactly `task_ref`,
+`reviewed_content_head`, and `stale_reason`; the Publication caller authors only
+its declared profile, mode, and review intent. A legacy stale projection without
+the reviewed HEAD stops fail closed. When live content advanced beyond that
+HEAD, Publication may return a checked task-work finding to the existing Phase 2
+router, while `ready` remains continuity-strict.
+
 For a single current side effect, the user-facing prompt is `确认继续`; any clear
 affirmative reply authorizes that displayed action. Internal evidence still
 binds the exact HEAD, digest, target, and scope, but the user never repeats
