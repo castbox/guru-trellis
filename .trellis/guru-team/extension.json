@@ -314,13 +314,13 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-04T10:16:26Z",
+  "installed_at": "2026-08-05T03:07:49Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "v0.6.5-guru.3",
-    "commit": "dbcbbb2d2776a3952b643b6bcce0a2693d103273",
-    "tree_state": "clean",
-    "is_mutable_ref": false
+    "ref": "codex/174-thin-workflow-420",
+    "commit": "e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336",
+    "tree_state": "dirty",
+    "is_mutable_ref": true
   },
   "install": {
     "selected_platforms": [
@@ -810,7 +810,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "4c097ee355cd2846564eaef8987e948acbc07c43b654abd495dffa67e6bae99c",
+        "sha256": "fb560b517fbb5a0c0de8e1d0dcbe0c58c2b280f44d2a230600b455ed47350405",
         "executable": false,
         "action": "unchanged"
       },

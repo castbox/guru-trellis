@@ -23479,6 +23479,41 @@ def closeout_ledger_matches_plan_semantics(
     }
 
 
+def finalizer_plan_owned_issue_scope_ledger_allowed(
+    root: Path,
+    task_dir: Path,
+    existing_plan: dict[str, Any] | None,
+    ledger: dict[str, Any],
+    *,
+    publication_ready: dict[str, Any] | None,
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None,
+) -> bool:
+    plan_owns_ledger = (
+        isinstance(existing_plan, dict)
+        and existing_plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
+        and closeout_ledger_matches_plan_semantics(
+            root,
+            task_dir,
+            existing_plan,
+            ledger,
+        )
+    )
+    if publication_ready is not None:
+        return existing_plan is None or plan_owns_ledger
+    if not plan_owns_ledger or not isinstance(verification_owner_result, tuple):
+        return False
+    if len(verification_owner_result) != 2:
+        return False
+    owner_result, checked_result = verification_owner_result
+    return (
+        isinstance(owner_result, dict)
+        and owner_result.get("profile") == "verification_required"
+        and owner_result.get("typed_exit") == "verified"
+        and isinstance(checked_result, dict)
+        and checked_result.get("typed_exit") == "verified"
+    )
+
+
 def closeout_input_record(root: Path, path: Path, *, payload: dict[str, Any] | None = None) -> dict[str, str]:
     if not path.is_file() and payload is None:
         raise WorkflowError("Closeout protected input is missing.", exit_code=2, payload={"path": str(path)})
@@ -24844,20 +24879,13 @@ def prepare_closeout(
             reviewed_head,
         )
     ledger = load_issue_scope_ledger(task_dir, task_context)
-    allow_publication_issue_scope_ledger = (
-        publication_ready is not None
-        and (
-            existing_plan is None
-            or (
-                ai_first_plan
-                and closeout_ledger_matches_plan_semantics(
-                    root,
-                    task_dir,
-                    existing_plan,
-                    ledger,
-                )
-            )
-        )
+    allow_publication_issue_scope_ledger = finalizer_plan_owned_issue_scope_ledger_allowed(
+        root,
+        task_dir,
+        existing_plan,
+        ledger,
+        publication_ready=publication_ready,
+        verification_owner_result=verification_owner_result,
     )
     dirty_paths = finalizer_unreviewed_dirty_paths(
         root,

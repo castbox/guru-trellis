@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 174,
+    "url": "https://github.com/castbox/guru-trellis/issues/174",
+    "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+    "reason": "Primary independently deliverable Issue #174 scope.",
+    "acceptance_evidence": [
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "ee73d136a54b9eb8a8c974e01139b221243c289e024ac50d4c526a3adbb85f80",
+        "verified_content_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+        "remote_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+        "publish_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+        "commands_passed": true
+      }
+    ]
+  },
+  "close_issues": [
+    {
+      "number": 174,
+      "url": "https://github.com/castbox/guru-trellis/issues/174",
+      "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+      "reason": "Issue #174 is fully covered by this task.",
+      "acceptance_evidence": [
+        "实现提交 8e091c44e2888c8448151d91ca3540a14f9818fa 已验证 canonical 与 dogfood workflow 均为 411 行且字节一致，13 个 mandatory Skill invocation、51 个 typed exit、28 个 workflow/stop target、line-budget、Phase parser、task validate 与 git diff --check 结果符合 #174 范围；后续 8f4bf93 仅撤回错误提交的 active closeout projection 与 context snapshot，d17fb76 与 61a5589 仅修正 review scope wording/evidence。",
+        "Branch Review 范围为 cleanup 后完整 origin/main...HEAD；488/186 测试套件中的 README 基线失败继续逐项区分，不宣称为本 Issue 的 workflow 回归。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "passed",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "ee73d136a54b9eb8a8c974e01139b221243c289e024ac50d4c526a3adbb85f80",
+          "verified_content_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+          "remote_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+          "publish_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+          "commands_passed": true
+        }
+      ]
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [],
+  "scope_decisions": [
+    {
+      "trail_id": "scope-change-20260805-174-finalizer-reentry",
+      "proposal_decisions": [
+        {
+          "proposal_id": "include-finalizer-pending-ledger-reentry",
+          "proposal_digest": "7a6dab65d5af6c0a02a2580c07e735cf9517ca391381990ee8dba38dad65d9d7",
+          "decision": "accepted_current"
+        }
+      ],
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/174#issuecomment-5186821430",
+        "content_sha256": "e9e7a52dd62421aff63b379322bf5039d136606011114cb7c349d35c54ea23fa"
+      }
+    }
+  ],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}
