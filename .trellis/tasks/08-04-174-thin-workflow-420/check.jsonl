@@ -1,9 +1,0 @@
-{"file":".trellis/spec/workflow/index.md","reason":"required workflow validation commands and package scope"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"review the complete global graph and fail-closed routing contract"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"review semantic check, distribution and update/reapply gates"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"review public graph, target and evidence boundary invariants"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"ensure no step-local contract was reintroduced into workflow prose"}
-{"file":".trellis/spec/preset/installer.md","reason":"review managed installation and sidecar expectations"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"review ownership and no-new-upstream-patch evidence"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"review no-doc-update conclusion against public docs"}
-{"file":".trellis/spec/guides/index.md","reason":"shared review guidance"}

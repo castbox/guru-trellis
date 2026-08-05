@@ -1,0 +1,388 @@
+{
+  "schema_version": "1.2",
+  "task": {
+    "id": "174-thin-workflow-420",
+    "title": "#174 修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+    "source_issue": 174,
+    "active_locator": ".trellis/tasks/08-04-174-thin-workflow-420",
+    "archive_locator": ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420"
+  },
+  "git": {
+    "repo": "castbox/guru-trellis",
+    "remote": "origin",
+    "base_branch": "main",
+    "head_branch": "codex/174-thin-workflow-420",
+    "reviewed_work_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+    "evidence_parent_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9"
+  },
+  "inputs": {
+    "task": {
+      "path": ".trellis/tasks/08-04-174-thin-workflow-420/task.json",
+      "sha256": "15e1de72e0a1c24adc44b8f2e4868ecadfc1252ccb96b795ed484c0591cad05e"
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+      "sha256": "5055e6d77af70ddcb7a3625fc3e2c2c7eb0fd51788d9858079ef93b4f0f60e6d"
+    },
+    "pr_body": {
+      "path": ".trellis/tasks/08-04-174-thin-workflow-420/pr-body.md",
+      "sha256": "009a54e7479a51c4163e99b15851949d9b01b3c8413197082505cc4de11a2e5a"
+    },
+    "finish_summary_index": {
+      "path": ".trellis/tasks/08-04-174-thin-workflow-420/finish-summary-index.json",
+      "sha256": "897d9c36268c51ba3ce1d24c0a03ea720a5b0a39ce9c39599dc333c8fa174dd2"
+    },
+    "official_after_archive_hooks": {
+      "path": ".trellis/config.yaml",
+      "sha256": "a9c3a7631d2a488d1a25c667c554f206b08ddd4ed9f3f6b3c9a4bec2e7f3bd84"
+    },
+    "guru_team_config": {
+      "path": ".trellis/guru-team/config.yml",
+      "sha256": "1d30ea4d4522a2e1f3861ed08f2be15063900c3dee0a622437e2ad9c5e1e024b"
+    }
+  },
+  "review": {
+    "reviewed_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/tasks/08-04-174-thin-workflow-420/check.jsonl",
+      ".trellis/tasks/08-04-174-thin-workflow-420/design.md",
+      ".trellis/tasks/08-04-174-thin-workflow-420/implement.jsonl",
+      ".trellis/tasks/08-04-174-thin-workflow-420/implement.md",
+      ".trellis/tasks/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+      ".trellis/tasks/08-04-174-thin-workflow-420/prd.md",
+      ".trellis/tasks/08-04-174-thin-workflow-420/task.json",
+      ".trellis/workflow.md",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/workflow.md"
+    ],
+    "close_issues_reviewed": [
+      174
+    ]
+  },
+  "publish": {
+    "title": "完成：#174 修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+    "body_sha256": "009a54e7479a51c4163e99b15851949d9b01b3c8413197082505cc4de11a2e5a",
+    "draft": true,
+    "draft_to_ready": true,
+    "match": {
+      "repo": "castbox/guru-trellis",
+      "head": "codex/174-thin-workflow-420",
+      "base": "main"
+    }
+  },
+  "marketplace": {
+    "required": true,
+    "pending_machine": {
+      "type": "remote_marketplace_verification",
+      "status": "pending",
+      "required": true,
+      "artifact_path": "marketplace-verification.json",
+      "artifact_sha256": "",
+      "verified_content_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+      "remote_head": "",
+      "publish_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+      "commands_passed": false
+    },
+    "verifier_artifact_locator": "marketplace-verification.json"
+  },
+  "projection": {
+    "active_locator": ".trellis/tasks/08-04-174-thin-workflow-420",
+    "archive_locator": ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420",
+    "finish_summary_locator": ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/finish-summary.json",
+    "metadata_allowlist": [
+      ".trellis/tasks/08-04-174-thin-workflow-420/check.jsonl",
+      ".trellis/tasks/08-04-174-thin-workflow-420/design.md",
+      ".trellis/tasks/08-04-174-thin-workflow-420/implement.jsonl",
+      ".trellis/tasks/08-04-174-thin-workflow-420/implement.md",
+      ".trellis/tasks/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+      ".trellis/tasks/08-04-174-thin-workflow-420/prd.md",
+      ".trellis/tasks/08-04-174-thin-workflow-420/task.json",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/closeout-plan.json",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/design.md",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/implement.md",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/marketplace-verification.json",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/prd.md",
+      ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/task.json"
+    ],
+    "move_paths": [
+      "check.jsonl",
+      "closeout-plan.json",
+      "design.md",
+      "finish-summary-index.json",
+      "finish-summary.json",
+      "implement.jsonl",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "marketplace-verification.json",
+      "pr-body.md",
+      "prd.md",
+      "task.json"
+    ],
+    "tracked_move_paths": [
+      "check.jsonl",
+      "design.md",
+      "implement.jsonl",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "task.json"
+    ],
+    "untracked_archive_outputs": [
+      "closeout-plan.json",
+      "finish-summary-index.json",
+      "finish-summary.json",
+      "marketplace-verification.json",
+      "pr-body.md"
+    ],
+    "evidence_paths": [],
+    "summary_placeholder": {
+      "number": 9223372036854775807,
+      "url": "https://github.com/castbox/guru-trellis/pull/9223372036854775807",
+      "ref": "PR #9223372036854775807"
+    },
+    "summary_template_sha256": "58f70b532285f3a8e982df9c6f846f4104b51681869293bdbb1688e29db00a60",
+    "summary_template": {
+      "schema_version": 1,
+      "generated_at": "2026-08-05T05:17:23Z",
+      "generator": "guru-team.finish-work",
+      "task": {
+        "slug": "08-04-174-thin-workflow-420",
+        "title": "#174 修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+        "status": "completed",
+        "artifact_dir": ".trellis/tasks/08-04-174-thin-workflow-420",
+        "archive_dir": ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420"
+      },
+      "git": {
+        "base_branch": "main",
+        "branch": "codex/174-thin-workflow-420",
+        "commits": [
+          "3da73405929543a711bac7124a1c8ac78524ff7c",
+          "e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336",
+          "8e091c44e2888c8448151d91ca3540a14f9818fa",
+          "8f4bf933256f37e6538ffc0545276de81e9eeee7",
+          "559007ffcd2e9a5b909a378842532dac9455e765",
+          "d17fb7642a552a8135c06fa44c8e00bd514b8f2e",
+          "61a5589864312df56d48d88b856c32a91aa141ec",
+          "236a8e63f13e1860d14a6164049efff5a7bef8a9"
+        ],
+        "changed_paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+          ".trellis/tasks/08-04-174-thin-workflow-420/check.jsonl",
+          ".trellis/tasks/08-04-174-thin-workflow-420/design.md",
+          ".trellis/tasks/08-04-174-thin-workflow-420/implement.jsonl",
+          ".trellis/tasks/08-04-174-thin-workflow-420/implement.md",
+          ".trellis/tasks/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+          ".trellis/tasks/08-04-174-thin-workflow-420/prd.md",
+          ".trellis/tasks/08-04-174-thin-workflow-420/task.json",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/closeout-plan.json",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/design.md",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/implement.md",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/marketplace-verification.json",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/prd.md",
+          ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/task.json",
+          ".trellis/workflow.md",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/workflow.md"
+        ]
+      },
+      "github": {
+        "source_issues": [
+          174
+        ],
+        "close_issues": [
+          174
+        ],
+        "related_issues": [],
+        "followup_issues": [],
+        "pr_url": "https://github.com/castbox/guru-trellis/pull/9223372036854775807"
+      },
+      "artifacts": {
+        "prd": "prd.md",
+        "design": "design.md",
+        "implement": "implement.md",
+        "issue_scope_ledger": "issue-scope-ledger.json",
+        "closeout_plan": "closeout-plan.json",
+        "marketplace_verification": "marketplace-verification.json"
+      },
+      "index": {
+        "problem": "#174 要求在不改变 Guru Team thin workflow 公共 graph 和 #161 合同的前提下，将 canonical 与 dogfood workflow 恢复到 420 行预算以内，并补齐 current-HEAD 与 Finalizer pending-Ledger 重入回归。",
+        "outcome": "已完成 #174：canonical/dogfood workflow 收敛到 411 行且字节一致，公共 Skill graph 与 stop 边界保持不变，Finalizer 计划拥有的 pending Ledger 重入与 unrelated dirty path 约束均有 source/installed 回归，并以 fresh reviewed HEAD 重新绑定发布材料。",
+        "changed_behavior": [
+          "canonical 与 dogfood workflow 均为 411 行并保持字节一致。",
+          "13 个 mandatory Skill invocation、51 个 typed exit 与 28 个 workflow/stop target 保持不变。",
+          "verification_verified 加 schema 1.2 重入只允许当前 closeout plan 拥有的 pending issue-scope Ledger。",
+          "未授权的其它 dirty path 继续由 Finalizer fail closed 阻断。",
+          "Branch Review、publication 与 closeout 输入均绑定 reviewed HEAD 236a8e63f13e1860d14a6164049efff5a7bef8a9。",
+          "README-only baseline failures 被保留并单独标注，没有被伪称为完整套件通过。"
+        ],
+        "affected_surfaces": [
+          {
+            "kind": "workflow",
+            "name": "Guru Team thin workflow",
+            "paths": [
+              ".trellis/workflow.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "change": "删除不承载语义的重复空行，恢复 420 行预算并保持 machine-readable graph 不变。"
+          },
+          {
+            "kind": "script",
+            "name": "Finalizer runtime",
+            "paths": [
+              ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+              "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+            ],
+            "change": "修复计划拥有的 pending Ledger 重入识别，保留 reviewed HEAD、schema 1.2 与 unrelated dirty path 的边界。"
+          },
+          {
+            "kind": "test",
+            "name": "Finish-family regression tests",
+            "paths": [
+              ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+              "trellis/skills/guru-team/tests/test_finish_family_integration.py"
+            ],
+            "change": "覆盖 source/installed 的 pending-Ledger allow 与 unrelated dirty path deny。"
+          },
+          {
+            "kind": "task-artifact",
+            "name": "Issue #174 task evidence",
+            "paths": [
+              ".trellis/tasks/08-04-174-thin-workflow-420/check.jsonl",
+              ".trellis/tasks/08-04-174-thin-workflow-420/design.md",
+              ".trellis/tasks/08-04-174-thin-workflow-420/implement.jsonl",
+              ".trellis/tasks/08-04-174-thin-workflow-420/implement.md",
+              ".trellis/tasks/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+              ".trellis/tasks/08-04-174-thin-workflow-420/prd.md",
+              ".trellis/tasks/08-04-174-thin-workflow-420/task.json"
+            ],
+            "change": "记录需求、设计、实现、验证、close scope 与当前任务身份。"
+          },
+          {
+            "kind": "config",
+            "name": "Guru Team extension manifest",
+            "paths": [
+              ".trellis/guru-team/extension.json"
+            ],
+            "change": "同步当前 dogfood extension inventory，供 source/installed package 与 lifecycle checks 复核。"
+          }
+        ],
+        "contract_changes": [
+          {
+            "contract": "Thin workflow line budget",
+            "before": "canonical 与 dogfood workflow 为 427 行，超过既有 420 行预算。",
+            "after": "两份 workflow 均为 411 行且字节一致，mandatory invocation、typed exit、唯一 consumer 与 stop graph 不变。",
+            "source_artifact": "design.md"
+          },
+          {
+            "contract": "Finalizer pending Ledger re-entry",
+            "before": "verification_verified 重入时计划拥有的 pending issue-scope Ledger 可能被误报为未授权 dirty path。",
+            "after": "仅在 schema 1.2、plan semantics、verification owner 与 checked result 均匹配时允许该 Ledger，其它 dirty path 继续阻断。",
+            "source_artifact": "implement.md"
+          },
+          {
+            "contract": "Current-HEAD publication freshness",
+            "before": "旧 closeout projection 仍绑定历史 reviewed HEAD 与 retired plan digest。",
+            "after": "Branch Review、publication 与 closeout 输入重新绑定当前 reviewed HEAD；旧 digest 不被合成或复用。",
+            "source_artifact": "issue-scope-ledger.json"
+          },
+          {
+            "contract": "Validation honesty",
+            "before": "中断或 README-only baseline 结果容易被误读为完整 aggregate suite 结论。",
+            "after": "当前 PR 材料逐项区分通过项、environment skip 与既有 README baseline failure。",
+            "source_artifact": "implement.md"
+          }
+        ],
+        "search_terms": {
+          "issue_refs": [
+            "#174"
+          ],
+          "pr_refs": [
+            "PR #9223372036854775807"
+          ],
+          "branches": [
+            "codex/174-thin-workflow-420"
+          ],
+          "paths": [
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+            ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+            ".trellis/tasks/08-04-174-thin-workflow-420/check.jsonl",
+            ".trellis/tasks/08-04-174-thin-workflow-420/design.md",
+            ".trellis/tasks/08-04-174-thin-workflow-420/implement.jsonl",
+            ".trellis/tasks/08-04-174-thin-workflow-420/implement.md",
+            ".trellis/tasks/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+            ".trellis/tasks/08-04-174-thin-workflow-420/prd.md",
+            ".trellis/tasks/08-04-174-thin-workflow-420/task.json",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/closeout-plan.json",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/design.md",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/finish-summary.json",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/implement.md",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/marketplace-verification.json",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/prd.md",
+            ".trellis/tasks/archive/2026-08/08-04-174-thin-workflow-420/task.json",
+            ".trellis/workflow.md",
+            "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+            "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+            "trellis/workflows/guru-team/workflow.md"
+          ],
+          "commands": [
+            "check-skill-packages",
+            "verify-throwaway-install",
+            "record-finalization-gate",
+            "check-finalization-gate",
+            "git diff --check"
+          ],
+          "config_keys": [],
+          "schema_fields": [
+            "reviewed_content_head",
+            "typed_exit",
+            "close_issues",
+            "related_issues",
+            "followup_issues"
+          ],
+          "symbols": [
+            "guru-review-task-publication",
+            "guru-finalize-task",
+            "plan_owned_issue_scope_ledger"
+          ],
+          "phrases": [
+            "thin workflow 420 行预算已完成收敛",
+            "canonical 与 dogfood workflow 411 行且字节一致",
+            "pending Ledger 重入仅允许计划拥有路径",
+            "current HEAD semantic review 已通过",
+            "README 基线失败未冒充全绿",
+            "check-finalization-gate 已通过"
+          ]
+        },
+        "retrieval_text": "#174 修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归\n#174 要求在不改变 Guru Team thin workflow 公共 graph 和 #161 合同的前提下，将 canonical 与 dogfood workflow 恢复到 420 行预算以内，并补齐 current-HEAD 与 Finalizer pending-Ledger 重入回归。\n已完成 #174：canonical/dogfood workflow 收敛到 411 行且字节一致，公共 Skill graph 与 stop 边界保持不变，Finalizer 计划拥有的 pending Ledger 重入与 unrelated dirty path 约束均有 source/installed 回归，并以 fresh reviewed HEAD 重新绑定发布材料。\ncanonical 与 dogfood workflow 均为 411 行并保持字节一致。\n13 个 mandatory Skill invocation、51 个 typed exit 与 28 个 workflow/stop target 保持不变。\nverification_verified 加 schema 1.2 重入只允许当前 closeout plan 拥有的 pending issue-scope Ledger。\n未授权的其它 dirty path 继续由 Finalizer fail closed 阻断。\nBranch Review、publication 与 closeout 输入均绑定 reviewed HEAD 236a8e63f13e1860d14a6164049efff5a7bef8a9。\nREADME-only baseline failures 被保留并单独标注，没有被伪称为完整套件通过。\n删除不承载语义的重复空行，恢复 420 行预算并保持 machine-readable graph 不变。\n修复计划拥有的 pending Ledger 重入识别，保留 reviewed HEAD、schema 1.2 与 unrelated dirty path 的边界。\n覆盖 source/installed 的 pending-Ledger allow 与 unrelated dirty path deny。\n记录需求、设计、实现、验证、close scope 与当前任务身份。\n同步当前 dogfood extension inventory，供 source/installed package 与 lifecycle checks 复核。\ncanonical 与 dogfood workflow 为 427 行，超过既有 420 行预算。\n两份 workflow 均为 411 行且字节一致，mandatory invocation、typed exit、唯一 consumer 与 stop graph 不变。\nverification_verified 重入时计划拥有的 pending issue-scope Ledger 可能被误报为未授权 dirty path。\n仅在 schema 1.2、plan semantics、verification owner 与 checked result 均匹配时允许该 Ledger，其它 dirty path 继续阻断。\n旧 closeout projection 仍绑定历史 reviewed HEAD 与 retired plan digest。\nBranch Review、publication 与 closeout 输入重新绑定当前 reviewed HEAD；旧 digest 不被合成或复用。\n中断或 README-only baseline 结果容易被误读为完整 aggregate suite 结论。\n当前 PR 材料逐项区分通过项、environment skip 与既有 README baseline failure。\nthin workflow 420 行预算已完成收敛\ncanonical 与 dogfood workflow 411 行且字节一致\npending Ledger 重入仅允许计划拥有路径\ncurrent HEAD semantic review 已通过\nREADME 基线失败未冒充全绿\ncheck-finalization-gate 已通过"
+      }
+    },
+    "runtime_fact_fields": [
+      "github.pr_url",
+      "index.search_terms.pr_refs"
+    ]
+  },
+  "transitions": [
+    "prepared",
+    "content_pushed",
+    "evidence_pushed",
+    "draft_bound",
+    "projection_validated",
+    "archive_moved",
+    "archive_pushed",
+    "ready"
+  ],
+  "plan_digest": "301e5be5d31b57993d40fe5dcbb5065dcfecd9828b7f5f70b0c75a73aef788b8"
+}

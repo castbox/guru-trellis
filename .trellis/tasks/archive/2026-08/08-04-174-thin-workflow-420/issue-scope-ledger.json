@@ -5,7 +5,19 @@
     "url": "https://github.com/castbox/guru-trellis/issues/174",
     "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
     "reason": "Primary independently deliverable Issue #174 scope.",
-    "acceptance_evidence": []
+    "acceptance_evidence": [
+      {
+        "type": "remote_marketplace_verification",
+        "status": "passed",
+        "required": true,
+        "artifact_path": "marketplace-verification.json",
+        "artifact_sha256": "ee73d136a54b9eb8a8c974e01139b221243c289e024ac50d4c526a3adbb85f80",
+        "verified_content_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+        "remote_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+        "publish_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+        "commands_passed": true
+      }
+    ]
   },
   "close_issues": [
     {
@@ -18,14 +30,14 @@
         "Branch Review 范围为 cleanup 后完整 origin/main...HEAD；488/186 测试套件中的 README 基线失败继续逐项区分，不宣称为本 Issue 的 workflow 回归。",
         {
           "type": "remote_marketplace_verification",
-          "status": "pending",
+          "status": "passed",
           "required": true,
           "artifact_path": "marketplace-verification.json",
-          "artifact_sha256": "",
-          "verified_content_head": "e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336",
-          "remote_head": "",
-          "publish_head": "e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336",
-          "commands_passed": false
+          "artifact_sha256": "ee73d136a54b9eb8a8c974e01139b221243c289e024ac50d4c526a3adbb85f80",
+          "verified_content_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+          "remote_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+          "publish_head": "236a8e63f13e1860d14a6164049efff5a7bef8a9",
+          "commands_passed": true
         }
       ]
     }
