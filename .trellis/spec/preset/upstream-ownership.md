@@ -155,6 +155,6 @@ fails closed before target mutation.
 
 Guru public packages, consumer schemas, migrations, eval corpora, adapter
 runtime, native trace contracts, companion scripts, and selected-platform
-`guru-*` discovery copies remain additive Guru-owned assets. Their existing
-Interface 1.3 semantics and migration identities are unchanged by overlay
-removal.
+`guru-*` discovery copies remain additive Guru-owned assets. Current Interface
+1.3 package semantics and contract identities are owned by their canonical
+packages, not by overlay tombstones.

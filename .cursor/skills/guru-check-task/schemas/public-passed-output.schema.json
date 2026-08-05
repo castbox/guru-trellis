@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-check-task-output-passed-2.0",
+  "$id": "guru-production-check-task-output-passed-3.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["exit_id", "task_ref", "checked_head"],
+  "required": ["exit_id", "task_ref", "phase2_commit_anchor"],
   "properties": {
     "exit_id": {"const": "passed"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
-    "checked_head": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"}
+    "phase2_commit_anchor": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
   }
 }

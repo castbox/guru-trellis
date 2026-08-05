@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.1.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.2.json",
   "title": "Guru Team workflow skill registry",
   "type": "object",
   "additionalProperties": false,
   "required": ["$schema", "schema_version", "skills"],
   "properties": {
     "$schema": {"const": "schemas/skill-registry.schema.json"},
-    "schema_version": {"const": "1.1"},
+    "schema_version": {"const": "1.2"},
     "skills": {
       "type": "array",
       "items": {"$ref": "#/$defs/skill"}
@@ -15,16 +15,6 @@
   },
   "$defs": {
     "skillId": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
-    "reserved": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "state", "reason"],
-      "properties": {
-        "id": {"$ref": "#/$defs/skillId"},
-        "state": {"const": "reserved"},
-        "reason": {"type": "string", "minLength": 1}
-      }
-    },
     "planned": {
       "type": "object",
       "additionalProperties": false,
@@ -38,15 +28,14 @@
     "active": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "state", "name", "package", "interface", "interface_schema_id", "io_contract_state", "supported_platforms", "validator_command", "workflow_route_id"],
+      "required": ["id", "state", "name", "package", "interface", "interface_schema_id", "supported_platforms", "validator_command", "workflow_route_id"],
       "properties": {
         "id": {"$ref": "#/$defs/skillId"},
         "state": {"const": "active"},
         "name": {"$ref": "#/$defs/skillId"},
         "package": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
         "interface": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+/interface\\.json$"},
-        "interface_schema_id": {"enum": ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"]},
-        "io_contract_state": {"enum": ["legacy", "minimal_handoff"]},
+        "interface_schema_id": {"const": "guru-team-skill-interface-1.3"},
         "workflow_integration_state": {"enum": ["integrated", "deferred"]},
         "supported_platforms": {
           "type": "array",
@@ -58,6 +47,6 @@
         "workflow_route_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"}
       }
     },
-    "skill": {"oneOf": [{"$ref": "#/$defs/reserved"}, {"$ref": "#/$defs/planned"}, {"$ref": "#/$defs/active"}]}
+    "skill": {"oneOf": [{"$ref": "#/$defs/planned"}, {"$ref": "#/$defs/active"}]}
   }
 }

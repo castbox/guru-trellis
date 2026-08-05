@@ -1,11 +1,11 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "skill_id": "guru-finalize-task",
   "identity": {
     "task_ref": ".trellis/tasks/07-26-example",
     "plan_ref": "closeout-plan:current",
     "plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-    "reviewed_content_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "review": {
     "status": "passed",
@@ -19,7 +19,7 @@
       "task_ref": ".trellis/tasks/07-26-example",
       "plan_ref": "closeout-plan:current",
       "repo_ref": "castbox/guru-trellis",
-      "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "verification_target": "extension-installation"
     }
   }

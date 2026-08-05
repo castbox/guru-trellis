@@ -124,17 +124,17 @@ commit/push/PR/archive/ready side-effect plan. The global workflow never calls
 deterministic closeout scripts directly.
 
 Finalizer stale handback preserves exactly `task_ref`,
-`reviewed_content_head`, and `stale_reason` for Publication's unique consumer
-profile. A legacy two-field handback fails closed. Proven descendant content
-drift may leave Publication only through `return_to_task_work` and the existing
-Phase 2 router; `ready` continues to require current content continuity.
+`branch_review_commit`, and `stale_reason` for Publication's unique consumer
+profile. Inputs outside that current profile fail closed. Proven descendant
+content drift may leave Publication only through `return_to_task_work` and the
+existing Phase 2 router; `ready` continues to require current content
+continuity.
 
 `guru-finalize-task` owns the single resumable transaction loop entered by the
-canonical thin `guru-finish-work` router. `publish-pr` is only a compatibility
-blocker. Formal closeout accepts exactly one reviewed body source: `--body-file`
-must point directly to the current task-local `pr-body.md`. `--body-artifact`,
-external same-content files, generated body fallbacks, and readiness-relative
-`body_file` resolution are rejected and do not participate in closeout.
+canonical thin `guru-finish-work` router. Formal closeout accepts exactly one
+reviewed body source: `--body-file` must point directly to the current
+task-local `pr-body.md` and bind its exact raw UTF-8 bytes. No alternate body
+locator or generated source participates in closeout.
 
 GitHub PR discovery must bind the exact repository identity as well as the
 branch and HEAD: `headRepository.nameWithOwner` must match the selected repo,

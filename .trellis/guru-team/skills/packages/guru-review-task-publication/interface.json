@@ -17,14 +17,14 @@
     }
   },
   "entry_preconditions": [
-    {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and publication commands", "binding": "complete compatible Guru Team preset", "freshness": "validated before each command"},
+    {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and publication commands", "binding": "complete current Guru Team preset", "freshness": "validated before each command"},
     {"id": "task_workspace", "evidence": "task start context and portable worktree mapping", "binding": "actual root equals expected task worktree", "freshness": "rebuilt before record and check"},
     {"id": "task_identity", "evidence": "active task.json and issue scope identity", "binding": "task, branch, issue and in_progress status", "freshness": "current task reread"},
-    {"id": "branch_review_handoff", "evidence": "guru-review-branch passed DTO", "binding": "task and reviewed_content_head", "freshness": "reviewed_content_head remains current branch history with only allowed metadata descendants"},
+    {"id": "branch_review_handoff", "evidence": "guru-review-branch passed DTO plus checked owner result", "binding": "task, branch_review_commit and reviewed-content identity", "freshness": "the Branch Review checker and reviewed-content engine are rerun before each publication check"},
     {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},
     {"id": "publication_content", "evidence": "task-local pr-body.md and finish-summary-index.json", "binding": "current reviewer-facing content and semantic history index", "freshness": "reread after every metadata revision"},
-    {"id": "review_range_and_working_tree", "evidence": "current base-to-HEAD diff, status and metadata tail", "binding": "reviewed HEAD plus contract allowlist only", "freshness": "rebuilt before record and check"},
-    {"id": "invocation_freshness", "evidence": "current task and reviewed_content_head", "binding": "one current owner invocation", "freshness": "checker rereads live owner state"}
+    {"id": "review_range_and_working_tree", "evidence": "current base-to-HEAD diff, status and reviewed-content identity", "binding": "Branch Review commit plus current content identity", "freshness": "rebuilt before record and check"},
+    {"id": "invocation_freshness", "evidence": "current task and branch_review_commit", "binding": "one current owner invocation", "freshness": "checker rereads live owner state"}
   ],
   "runtime_dependency": {
     "extension_id": "guru-team",
@@ -67,7 +67,7 @@
     {"id": "blocked", "evidence": "external decision, dependency or objective freshness prevents current completion", "consumer": {"kind": "stop", "id": "task-publication-review-blocked"}}
   ],
   "reentry": {
-    "identity": "task_ref and reviewed_content_head",
+    "identity": "task_ref and branch_review_commit",
     "freshness": "metadata revision and stale handback reread current objective preconditions and rerun the shared Finalizer producer preflight",
     "stale_behavior": "fail_closed"
   },
@@ -76,17 +76,17 @@
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-production-review-task-publication-input-aggregate-3.0", "path": "schemas/public-input.schema.json"},
+      "aggregate_schema": {"schema_id": "guru-production-review-task-publication-input-aggregate-4.0", "path": "schemas/public-input.schema.json"},
       "profiles": [
         {
           "id": "publication_review",
-          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-2.0", "path": "schemas/public-publication-review-input.schema.json"},
+          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-3.0", "path": "schemas/public-publication-review-input.schema.json"},
           "example": {"id": "publication_review_input", "path": "examples/public-publication-review-input.json"},
           "discriminator": {"field": "profile", "value": "publication_review"}
         },
         {
           "id": "publication_review_stale",
-          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-stale-2.0", "path": "schemas/public-publication-review-stale-input.schema.json"},
+          "schema": {"schema_id": "guru-production-review-task-publication-input-publication-review-stale-3.0", "path": "schemas/public-publication-review-stale-input.schema.json"},
           "example": {"id": "publication_review_stale_input", "path": "examples/public-publication-review-stale-input.json"},
           "discriminator": {"field": "profile", "value": "publication_review_stale"}
         }
@@ -102,7 +102,7 @@
       "example_argv": ["--input", "examples/public-publication-review-input.json", "--owner-result", "examples/pr-readiness.json"]
     },
     "outputs": [
-      {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-2.0", "path": "schemas/public-ready-output.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},
+      {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-3.0", "path": "schemas/public-ready-output.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},
       {"exit_id": "return_to_task_work", "schema": {"schema_id": "guru-production-review-task-publication-output-return-to-task-work-1.0", "path": "schemas/public-return-to-task-work-output.schema.json"}, "example": {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"}, "consumer_use_ids": ["project_return_to_task_work"]},
       {"exit_id": "blocked", "schema": {"schema_id": "guru-production-review-task-publication-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
     ],
@@ -116,7 +116,7 @@
           "interface_path": "packages/guru-finalize-task/interface.json",
           "input_kind": "structured_json",
           "profile_id": "publication_ready",
-          "seed_fields": ["task_ref", "reviewed_content_head"],
+          "seed_fields": ["task_ref", "branch_review_commit"],
           "authoring_fields": ["profile", "mode"],
           "authoring_example": {
             "id": "finalization_publication_ready_authoring",
@@ -145,7 +145,7 @@
         "operation": "select",
         "mappings": [
           {"source": "task_ref", "target": "task_ref"},
-          {"source": "reviewed_content_head", "target": "reviewed_content_head"}
+          {"source": "branch_review_commit", "target": "branch_review_commit"}
         ]
       },
       {"id": "project_return_to_task_work", "exit_id": "return_to_task_work", "consumer_input_id": "return_to_task_work_input", "operation": "direct"},
@@ -155,7 +155,7 @@
       {
         "id": "publication_readiness",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-2.0.json", "path": "schemas/pr-readiness.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-3.0.json", "path": "schemas/pr-readiness.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]

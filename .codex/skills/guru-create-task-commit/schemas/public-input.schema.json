@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-create-task-commit-input-aggregate-2.0",
+  "$id": "guru-production-create-task-commit-input-aggregate-3.0",
   "oneOf": [
     {
       "$ref": "public-initial-commit-input.schema.json"

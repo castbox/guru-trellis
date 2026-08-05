@@ -29,7 +29,7 @@ class ReviewBranchContractTest(unittest.TestCase):
         self.assertEqual([item["id"] for item in profiles], ["branch_review"])
         self.assertEqual(
             self.input_schema["required"],
-            ["profile", "mode", "task_ref", "base_ref", "committed_head", "review_intent"],
+            ["profile", "mode", "task_ref", "base_ref", "branch_review_commit", "review_intent"],
         )
         self.assertFalse(self.input_schema["additionalProperties"])
         self.assertEqual(
@@ -38,7 +38,7 @@ class ReviewBranchContractTest(unittest.TestCase):
         )
         self.assertEqual(
             self.input_schema["$id"],
-            "guru-production-review-branch-input-branch-review-1.1",
+            "guru-production-review-branch-input-branch-review-2.0",
         )
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
@@ -55,9 +55,6 @@ class ReviewBranchContractTest(unittest.TestCase):
         invalid = copy.deepcopy(self.input_example)
         invalid["planning_approval"] = {}
         self.assertTrue(list(Draft202012Validator(self.input_schema).iter_errors(invalid)))
-        legacy_closure = copy.deepcopy(self.input_example)
-        legacy_closure["review_intent"] = "finding_fix_review"
-        self.assertTrue(list(Draft202012Validator(self.input_schema).iter_errors(legacy_closure)))
 
     def test_eight_preconditions_and_semantic_profile(self) -> None:
         expected = [
@@ -87,7 +84,7 @@ class ReviewBranchContractTest(unittest.TestCase):
         self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
         self.assertEqual(
             consumer["contract"]["seed_fields"],
-            ["task_ref", "reviewed_content_head"],
+            ["task_ref", "branch_review_commit"],
         )
         self.assertEqual(
             consumer["contract"]["authoring_fields"],
@@ -99,7 +96,7 @@ class ReviewBranchContractTest(unittest.TestCase):
         self.assertIn("targets the active `guru-review-task-publication` Skill", skill)
         self.assertIn("global Phase 3.6 order", skill)
         self.assertNotIn("planned `guru-review-task-publication`", skill)
-        self.assertIn("minimal `task_ref`, `reviewed_content_head` seed", contract)
+        self.assertIn("minimal `task_ref`, `branch_review_commit` seed", contract)
         self.assertIn("guru-review-task-publication", contract)
         self.assertNotIn("minimal planned publication seed", contract)
 
@@ -118,7 +115,7 @@ class ReviewBranchContractTest(unittest.TestCase):
             "introduced_head",
             "fix_head",
             "closure_head",
-            "reviewed_content_head",
+            "branch_review_commit",
         ):
             self.assertIn(phrase, text)
         for removed_artifact in ("reviews/*.md", "review.md", "agent-assignment.json"):

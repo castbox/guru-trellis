@@ -1,17 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-extension-verify-installation-output-verified-1.0",
+  "$id": "guru-extension-verify-installation-output-verified-2.0",
   "oneOf": [
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["exit_id", "mode", "task_ref", "plan_ref", "reviewed_head", "verification_ref"],
+      "required": ["exit_id", "mode", "task_ref", "plan_ref", "branch_review_commit", "verification_ref"],
       "properties": {
         "exit_id": {"const": "verified"},
         "mode": {"const": "workflow"},
         "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
         "plan_ref": {"type": "string", "minLength": 1},
-        "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
         "verification_ref": {"type": "string", "minLength": 1}
       }
     },

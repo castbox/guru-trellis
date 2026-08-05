@@ -83,11 +83,11 @@
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-extension-verify-installation-input-aggregate-1.0", "path": "schemas/public-input.schema.json"},
+      "aggregate_schema": {"schema_id": "guru-extension-verify-installation-input-aggregate-2.0", "path": "schemas/public-input.schema.json"},
       "profiles": [
         {
           "id": "verification_required",
-          "schema": {"schema_id": "guru-extension-verify-installation-input-verification-required-1.0", "path": "schemas/public-verification-required-input.schema.json"},
+          "schema": {"schema_id": "guru-extension-verify-installation-input-verification-required-2.0", "path": "schemas/public-verification-required-input.schema.json"},
           "example": {"id": "verification_required_input", "path": "examples/public-verification-required-input.json"},
           "discriminator": {"field": "profile", "value": "verification_required"}
         },
@@ -109,8 +109,8 @@
       "example_argv": ["--input", "examples/public-verification-required-input.json", "--owner-result", "examples/marketplace-verification.json"]
     },
     "outputs": [
-      {"exit_id": "verified", "schema": {"schema_id": "guru-extension-verify-installation-output-verified-1.0", "path": "schemas/public-verified-output.schema.json"}, "example": {"id": "verified_output", "path": "examples/public-verified-output.json"}, "consumer_use_ids": ["project_verified"]},
-      {"exit_id": "not_required", "schema": {"schema_id": "guru-extension-verify-installation-output-not-required-1.0", "path": "schemas/public-not-required-output.schema.json"}, "example": {"id": "not_required_output", "path": "examples/public-not-required-output.json"}, "consumer_use_ids": ["project_not_required"]},
+      {"exit_id": "verified", "schema": {"schema_id": "guru-extension-verify-installation-output-verified-2.0", "path": "schemas/public-verified-output.schema.json"}, "example": {"id": "verified_output", "path": "examples/public-verified-output.json"}, "consumer_use_ids": ["project_verified"]},
+      {"exit_id": "not_required", "schema": {"schema_id": "guru-extension-verify-installation-output-not-required-3.0", "path": "schemas/public-not-required-output.schema.json"}, "example": {"id": "not_required_output", "path": "examples/public-not-required-output.json"}, "consumer_use_ids": ["project_not_required"]},
       {"exit_id": "return_to_task_work", "schema": {"schema_id": "guru-extension-verify-installation-output-return-to-task-work-1.0", "path": "schemas/public-return-to-task-work-output.schema.json"}, "example": {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"}, "consumer_use_ids": ["project_return_to_task_work"]},
       {"exit_id": "blocked", "schema": {"schema_id": "guru-extension-verify-installation-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
     ],
@@ -124,7 +124,7 @@
           "interface_path": "packages/guru-finalize-task/interface.json",
           "input_kind": "structured_json",
           "profile_id": "verification_verified",
-          "seed_fields": ["task_ref", "plan_ref", "reviewed_head", "verification_ref"],
+          "seed_fields": ["task_ref", "plan_ref", "branch_review_commit", "verification_ref"],
           "authoring_fields": ["profile", "mode"],
           "authoring_example": {
             "id": "finalization_verified_authoring",
@@ -171,7 +171,7 @@
         "mappings": [
           {"source": "task_ref", "target": "task_ref"},
           {"source": "plan_ref", "target": "plan_ref"},
-          {"source": "reviewed_head", "target": "reviewed_head"},
+          {"source": "branch_review_commit", "target": "branch_review_commit"},
           {"source": "verification_ref", "target": "verification_ref"}
         ]
       },
@@ -214,7 +214,7 @@
       {
         "id": "marketplace_verification",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json", "path": "schemas/marketplace-verification.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-2.0.json", "path": "schemas/marketplace-verification.schema.json"},
         "persistence": "task_local_tracked"
       }
     ]

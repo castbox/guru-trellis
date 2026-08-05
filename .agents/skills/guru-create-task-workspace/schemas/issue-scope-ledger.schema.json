@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-issue-scope-ledger-2.0.json",
+  "title": "Guru Team scope-only Issue Scope Ledger 2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "primary_issue", "close_issues", "related_issues", "followup_issues"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "primary_issue": {"$ref": "#/$defs/issue"},
+    "close_issues": {"$ref": "#/$defs/issues"},
+    "related_issues": {"$ref": "#/$defs/issues"},
+    "followup_issues": {"$ref": "#/$defs/issues"}
+  },
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "url", "title", "reason"],
+      "properties": {
+        "number": {"type": "integer", "minimum": 1},
+        "url": {"type": "string", "format": "uri"},
+        "title": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "issues": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/issue"}
+    }
+  }
+}

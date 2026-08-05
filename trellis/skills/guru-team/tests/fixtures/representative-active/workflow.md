@@ -1,11 +1,5 @@
 # Fixture Workflow
 
-<!-- guru-skill-invoke: {"skill":"guru-example-legacy","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-example-legacy","exit":"completed","consumer":{"kind":"workflow","id":"fixture-legacy-next"}} -->
-<!-- guru-skill-exit: {"skill":"guru-example-legacy","exit":"blocked","consumer":{"kind":"stop","id":"fixture-legacy-stop"}} -->
-<!-- guru-workflow-target: {"id":"fixture-legacy-next"} -->
-<!-- guru-stop-target: {"id":"fixture-legacy-stop"} -->
-
 <!-- guru-skill-invoke: {"skill":"guru-example-action","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-example-action","exit":"forwarded","consumer":{"kind":"skill","id":"guru-example-sync"}} -->
 <!-- guru-skill-exit: {"skill":"guru-example-action","exit":"repeat","consumer":{"kind":"skill","id":"guru-example-action"}} -->

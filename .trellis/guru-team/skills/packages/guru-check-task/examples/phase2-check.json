@@ -1,11 +1,11 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "skill_id": "guru-check-task",
   "mode": "workflow",
   "task_ref": ".trellis/tasks/example-task",
-  "checked_head": "2222222222222222222222222222222222222222",
+  "phase2_capture_commit": "2222222222222222222222222222222222222222",
   "reviewed_paths": ["docs/requirements/example.md", "src/example.py"],
-  "reviewed_worktree_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "reviewed_content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "validation": {
     "commands": [
       {"id": "unit", "outcome": "passed", "summary": "Targeted unit tests passed."}

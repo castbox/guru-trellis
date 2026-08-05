@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "skill_id": "guru-verify-extension-installation",
   "generated_at": "2026-07-25T00:00:00Z",
   "mode": "workflow",
@@ -10,16 +10,17 @@
     "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
     "plan_ref": "closeout-plan:0123456789abcdef",
     "repo_ref": "castbox/guru-trellis",
-    "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "verification_target": "extension-installation"
   },
   "repository": {
     "repo_ref": "castbox/guru-trellis",
     "remote": "origin",
     "ref": "refs/heads/feature-117",
-    "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "remote_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "task_worktree_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+    "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
   },
   "applicability": {
     "status": "required",
@@ -156,6 +157,8 @@
     },
   "ownership": {"frozen_transitional_legacy_count": 0, "new_legacy_entries": []},
     "sidecars": []
+    ,"reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    ,"remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
   },
   "semantic_review": {
     "adequacy": [

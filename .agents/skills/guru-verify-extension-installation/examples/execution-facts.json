@@ -1,10 +1,12 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "repo_ref": "castbox/guru-trellis",
   "remote": "origin",
   "ref": "refs/heads/feature-117",
-  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "remote_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
   "status": "passed",
   "commands": [
     {

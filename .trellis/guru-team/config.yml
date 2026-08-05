@@ -57,20 +57,6 @@ marketplace_verification_artifact: "marketplace-verification.json"
 # Language used for Trellis task planning artifacts and human-readable review fields.
 artifact_language: zh-CN
 
-# Branch Review Gate runs after task work is committed and before finish-work.
-# Any finding priority blocks Branch Review Gate. `block_priorities` is retained
-# as compatibility metadata for older installed configs and should list every
-# valid finding priority.
-review_gate:
-  artifact_path: review-gate.json
-  block_priorities:
-    - P0
-    - P1
-    - P2
-    - P3
-  require_head_match: true
-  require_deployment_impact_evidence: true
-
 # Publish PR runs after finish-work archives the task and records the journal.
 publish:
   draft: false

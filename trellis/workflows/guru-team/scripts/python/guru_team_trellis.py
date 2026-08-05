@@ -34,11 +34,9 @@ from urllib.parse import urlsplit
 DEFAULTS: dict[str, Any] = {
     "github_repo": "",
     "source_issue_required": False,
-    "auto_create_issue": False,
     "duplicate_search_required": True,
     "duplicate_candidate_limit": 5,
     "duplicate_high_similarity_action": "confirm",
-    "branch_prefix": "",
     "branch_type_default": "chore",
     "base_branch": "",
     "base_branch_candidates": ["dev", "develop", "main", "master"],
@@ -48,12 +46,6 @@ DEFAULTS: dict[str, Any] = {
     "runtime_root": ".trellis/.runtime/guru-team",
     "marketplace_verification_artifact": "marketplace-verification.json",
     "artifact_language": "zh-CN",
-    "review_gate": {
-        "artifact_path": "review-gate.json",
-        "block_priorities": ["P0", "P1", "P2", "P3"],
-        "require_head_match": True,
-        "require_deployment_impact_evidence": True,
-    },
     "publish": {
         "remote": "origin",
     },
@@ -66,7 +58,6 @@ PLANNING_APPROVAL_ARTIFACT = "planning-approval.json"
 PLANNING_APPROVAL_SKILL_ID = "guru-approve-task-plan"
 PLANNING_APPROVAL_SCHEMA_VERSION = "3.0"
 PLANNING_APPROVAL_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-3.0.json"
-PLANNING_APPROVAL_LEGACY_SCHEMA_VERSIONS = {"1.2", "2.0"}
 PLANNING_APPROVAL_DIMENSIONS = (
     "requirement_authority",
     "scope_boundary",
@@ -158,9 +149,8 @@ CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = [
 ]
 PHASE2_CHECK_ARTIFACT = "phase2-check.json"
 PHASE2_CHECK_SKILL_ID = "guru-check-task"
-PHASE2_CHECK_SCHEMA_VERSION = "3.0"
-PHASE2_CHECK_LEGACY_SCHEMA_VERSIONS = {"2.0", "2.1"}
-PHASE2_CHECK_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-3.0.json"
+PHASE2_CHECK_SCHEMA_VERSION = "4.0"
+PHASE2_CHECK_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json"
 PHASE2_CHECK_DIMENSIONS = (
     "requirements",
     "design",
@@ -371,15 +361,8 @@ TASK_WORKSPACE_CONSUMERS = {
     "refresh_review": {"kind": "skill", "id": "guru-sync-base"},
     "blocked": {"kind": "stop", "id": "task-workspace-blocked"},
 }
-TASK_WORKSPACE_LEGACY_PUBLIC_INPUT_PROFILES = frozenset({
-    "issue_only_initial",
-    "issue_only_recovery",
-    "workspace_task_initial",
-    "workspace_task_recovery",
-})
-TASK_COMMIT_PLAN_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-plan-1.0.json"
-TASK_COMMIT_CANDIDATE_SCHEMA_VERSION = "2.0"
-TASK_COMMIT_CANDIDATE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json"
+TASK_COMMIT_CANDIDATE_SCHEMA_VERSION = "3.0"
+TASK_COMMIT_CANDIDATE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
 TASK_COMMIT_RUNTIME_DIR = ".trellis/.runtime/guru-team/task-commit-plans"
 AGENT_RECOVERY_RUNTIME_DIR = ".trellis/.runtime/guru-team/agent-recovery"
@@ -407,14 +390,15 @@ AI_FIRST_OWNER_ARTIFACTS = frozenset({
     "pr-readiness.json",
     "task-finalization-gate.json",
 })
-AI_FIRST_OWNER_SKILL_BY_ARTIFACT = {
-    PLANNING_APPROVAL_ARTIFACT: PLANNING_APPROVAL_SKILL_ID,
-    PHASE2_CHECK_ARTIFACT: PHASE2_CHECK_SKILL_ID,
-    "review-gate.json": "guru-review-branch",
-    "pr-readiness.json": "guru-review-task-publication",
-    "task-finalization-gate.json": "guru-finalize-task",
-}
 AI_FIRST_OS_NOISE_NAMES = frozenset({".DS_Store"})
+REVIEWED_CONTENT_ALGORITHM = "guru-reviewed-content-1.0"
+REVIEWED_CONTENT_METADATA_PREFIXES = (
+    ".trellis/tasks",
+    ".trellis/workspace",
+    ".trellis/.runtime",
+)
+BRANCH_REVIEW_SCHEMA_VERSION = "3.0"
+BRANCH_REVIEW_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json"
 AI_FIRST_TEMPLATE_HASHES_PATH = Path(".trellis/.template-hashes.json")
 AI_FIRST_TEMPLATE_HASHES_SCHEMA_VERSION = 2
 AI_FIRST_TEXT_SUFFIXES = frozenset({
@@ -430,18 +414,7 @@ FINISH_SUMMARY_ARTIFACT = "finish-summary.json"
 FINISH_SUMMARY_INDEX_ARTIFACT = "finish-summary-index.json"
 CLOSEOUT_PLAN_ARTIFACT = "closeout-plan.json"
 TASK_FINALIZATION_GATE_ARTIFACT = "task-finalization-gate.json"
-CLOSEOUT_PLAN_SCHEMA_VERSION = "1.2"
-CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION = "1.1"
-CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION = "1.0"
-CLOSEOUT_PLAN_SCHEMA_VERSIONS = {
-    CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION,
-    CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION,
-    CLOSEOUT_PLAN_SCHEMA_VERSION,
-}
-CLOSEOUT_COMPACT_SCHEMA_VERSIONS = {
-    CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION,
-    CLOSEOUT_PLAN_SCHEMA_VERSION,
-}
+CLOSEOUT_PLAN_SCHEMA_VERSION = "2.0"
 CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS = {
     "task.json",
     "prd.md",
@@ -453,19 +426,11 @@ CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS = {
 }
 CLOSEOUT_ARCHIVE_CORE_ARTIFACTS = {
     *CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS,
-    "planning-approval.json",
-    PHASE2_CHECK_ARTIFACT,
-    "review-gate.json",
-}
-CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS = {
-    *CLOSEOUT_ARCHIVE_CORE_ARTIFACTS,
-    TASK_FINALIZATION_GATE_ARTIFACT,
 }
 CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS = {
     MARKETPLACE_VERIFICATION_ARTIFACT,
 }
-CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 11
-CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS = 12
+CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 8
 CLOSEOUT_PR_PLACEHOLDER_NUMBER = 9223372036854775807
 CLOSEOUT_PR_HEAD_READ_ATTEMPTS = 6
 CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS = 1
@@ -476,7 +441,7 @@ CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS = [
 CLOSEOUT_TRANSITIONS = [
     "prepared",
     "content_pushed",
-    "evidence_pushed",
+    "evidence_ready",
     "draft_bound",
     "projection_validated",
     "archive_moved",
@@ -571,7 +536,7 @@ PR_READINESS_PUBLISH_INPUT_KEYS = {
     "repo",
     "base_branch",
     "head_branch",
-    "reviewed_head_sha",
+    "branch_review_commit",
     "title",
     "body_source",
     "body_sha256",
@@ -639,20 +604,9 @@ SELF_REVIEWER_PATTERNS = [
     re.compile(r"(^|[-_./\s])main[-_./\s]*session($|[-_./\s])", re.IGNORECASE),
     re.compile(r"(^|[-_./\s])self[-_./\s]*review($|[-_./\s])", re.IGNORECASE),
 ]
-BRANCH_REVIEW_TASK_METADATA_FILES = {"review-gate.json"}
 BRANCH_REVIEW_RUNTIME_INPUT_PREFIX = ".trellis/.runtime/guru-team/"
-BRANCH_REVIEW_DESCENDANT_METADATA_FILES = {
-    "review-gate.json",
-    "pr-readiness.json",
-    "pr-body.md",
-    "finish-summary-index.json",
-    "closeout-plan.json",
-    "marketplace-verification.json",
-    "task-finalization-gate.json",
-    "finish-summary.json",
-}
 BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX = (
-    "Branch Review content changed after reviewed_content_head: "
+    "Branch Review content changed after branch_review_commit: "
 )
 
 
@@ -1829,7 +1783,7 @@ def build_finish_summary(
     task_context: dict[str, Any],
     ledger: dict[str, Any],
     index_payload: dict[str, Any],
-    reviewed_head: str,
+    review_commit: str,
     *,
     pr_url: str = "",
     changed_paths: list[str] | None = None,
@@ -1840,7 +1794,7 @@ def build_finish_summary(
     task = task_json(task_dir)
     base_branch = str(task_context.get("base_branch") or task.get("base_branch") or "").strip()
     base_ref = str(task_context.get("base_ref") or diff_base_ref(root, base_branch)).strip()
-    commits_proc = run(["git", "rev-list", "--reverse", f"{base_ref}..{reviewed_head}"], cwd=root, check=False)
+    commits_proc = run(["git", "rev-list", "--reverse", f"{base_ref}..{review_commit}"], cwd=root, check=False)
     if commits_proc.returncode != 0:
         raise WorkflowError("Could not calculate finish-summary task commits.", exit_code=2)
     commits = [line.strip() for line in commits_proc.stdout.splitlines() if line.strip()]
@@ -2169,7 +2123,7 @@ BRANCH_TYPE_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("feat", ("feat", "feature", "add", "support", "enable", "新增", "支持")),
 )
 PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
-REVIEWED_PR_BODY_SOURCE_PREFIXES = ("body-file:", "body-artifact:")
+REVIEWED_PR_BODY_SOURCE_PREFIXES = ("body-file:",)
 CONVENTIONAL_COMMIT_TYPES = set(VALID_BRANCH_TYPES)
 CONVENTIONAL_COMMIT_SCOPE_PATTERN = r"[a-z0-9._/-]+"
 CONVENTIONAL_COMMIT_SUBJECT_RE = re.compile(
@@ -3834,6 +3788,199 @@ def ai_first_os_noise_path(path: str) -> bool:
     return Path(path).name in AI_FIRST_OS_NOISE_NAMES
 
 
+def reviewed_content_metadata_path(path: str) -> bool:
+    return ai_first_os_noise_path(path) or any(
+        path == prefix or path.startswith(prefix + "/")
+        for prefix in REVIEWED_CONTENT_METADATA_PREFIXES
+    )
+
+
+def reviewed_content_tree_entries(
+    root: Path,
+    commit: str,
+) -> dict[str, dict[str, str]]:
+    if not isinstance(commit, str) or not commit.strip():
+        raise WorkflowError(
+            "Reviewed-content commit must be a non-empty Git revision.",
+            exit_code=2,
+        )
+    proc = subprocess.run(
+        ["git", "ls-tree", "-r", "-z", "--full-tree", commit.strip()],
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not read the reviewed-content commit tree.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    entries: dict[str, dict[str, str]] = {}
+    for raw_record in proc.stdout.split(b"\0"):
+        if not raw_record:
+            continue
+        metadata_raw, separator, path_raw = raw_record.partition(b"\t")
+        if not separator:
+            raise WorkflowError(
+                "Git returned an invalid reviewed-content tree record.",
+                exit_code=2,
+            )
+        try:
+            path = path_raw.decode("utf-8", "strict")
+            metadata = metadata_raw.decode("ascii", "strict").split()
+        except UnicodeDecodeError as exc:
+            raise WorkflowError(
+                "Reviewed-content tree paths must be valid UTF-8.",
+                exit_code=2,
+            ) from exc
+        if len(metadata) != 3:
+            raise WorkflowError(
+                "Git returned incomplete reviewed-content tree metadata.",
+                exit_code=2,
+            )
+        mode, object_type, oid = metadata
+        path_parts = path.split("/")
+        valid_type = (
+            (mode == "160000" and object_type == "commit")
+            or (mode in {"100644", "100755", "120000"} and object_type == "blob")
+        )
+        if (
+            not valid_type
+            or re.fullmatch(r"[0-9a-f]{40,64}", oid) is None
+            or not path
+            or path.startswith("/")
+            or any(part in {"", ".", ".."} for part in path_parts)
+            or path in entries
+        ):
+            raise WorkflowError(
+                "Reviewed-content tree contains an unsupported or ambiguous entry.",
+                exit_code=2,
+                payload={"path": path},
+            )
+        if reviewed_content_metadata_path(path):
+            continue
+        entries[path] = {"path": path, "mode": mode, "oid": oid}
+    return entries
+
+
+def reviewed_content_blob_oid(root: Path, content: bytes) -> str:
+    proc = subprocess.run(
+        ["git", "hash-object", "--stdin"],
+        cwd=str(root),
+        input=content,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    oid = proc.stdout.decode("ascii", "strict").strip() if proc.returncode == 0 else ""
+    if proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", oid) is None:
+        raise WorkflowError(
+            "Could not calculate a reviewed-content blob identity.",
+            exit_code=2,
+            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
+        )
+    return oid
+
+
+def reviewed_content_worktree_overlays(root: Path) -> list[dict[str, Any]]:
+    overlays: list[dict[str, Any]] = []
+    for record in task_commit_porcelain_status_records(root):
+        path = str(record.get("path") or "")
+        renamed_from = record.get("renamed_from")
+        if isinstance(renamed_from, str) and not reviewed_content_metadata_path(
+            renamed_from
+        ):
+            overlays.append({"path": renamed_from, "deleted": True})
+        if reviewed_content_metadata_path(path):
+            continue
+        entry = task_commit_snapshot_entry(root, record)
+        if entry.get("deleted") is True:
+            overlays.append({"path": path, "deleted": True})
+            continue
+        mode = str(entry.get("mode") or "")
+        if mode == "160000":
+            oid = str(entry.get("gitlink_head") or "")
+            if (
+                entry.get("gitlink_initialized") is not True
+                or entry.get("gitlink_dirty") is not False
+                or re.fullmatch(r"[0-9a-f]{40,64}", oid) is None
+            ):
+                raise WorkflowError(
+                    "Reviewed-content gitlink identity is unavailable or dirty.",
+                    exit_code=2,
+                    payload={"path": path},
+                )
+        else:
+            content, _sha256, worktree_mode = task_commit_worktree_content(root, path)
+            if content is None or worktree_mode not in {"100644", "100755", "120000"}:
+                raise WorkflowError(
+                    "Reviewed-content worktree entry is unavailable or unsupported.",
+                    exit_code=2,
+                    payload={"path": path},
+                )
+            mode = worktree_mode
+            oid = reviewed_content_blob_oid(root, content)
+        overlays.append(
+            {
+                "path": path,
+                "deleted": False,
+                "mode": mode,
+                "oid": oid,
+            }
+        )
+    return sorted(
+        overlays,
+        key=lambda item: (
+            str(item["path"]).encode("utf-8"),
+            0 if item.get("deleted") is True else 1,
+        ),
+    )
+
+
+def reviewed_content_identity(
+    root: Path,
+    commit: str = "HEAD",
+    include_worktree: bool = True,
+) -> dict[str, str]:
+    if include_worktree:
+        resolved_commit = run_stdout(["git", "rev-parse", commit], cwd=root)
+        if resolved_commit != current_head(root):
+            raise WorkflowError(
+                "Reviewed-content worktree overlays require the current HEAD commit.",
+                exit_code=2,
+            )
+    entries = reviewed_content_tree_entries(root, commit)
+    if include_worktree:
+        for overlay in reviewed_content_worktree_overlays(root):
+            path = str(overlay["path"])
+            if overlay.get("deleted") is True:
+                entries.pop(path, None)
+            else:
+                entries[path] = {
+                    "path": path,
+                    "mode": str(overlay["mode"]),
+                    "oid": str(overlay["oid"]),
+                }
+        for path, entry in entries.items():
+            if entry["mode"] != "160000":
+                continue
+            identity = task_commit_gitlink_worktree_identity(root, path)
+            entry["oid"] = str(identity["gitlink_head"])
+    canonical_entries = sorted(
+        entries.values(),
+        key=lambda item: item["path"].encode("utf-8"),
+    )
+    sha256 = canonical_json_sha256(
+        {
+            "algorithm": REVIEWED_CONTENT_ALGORITHM,
+            "entries": canonical_entries,
+        }
+    )
+    return {"algorithm": REVIEWED_CONTENT_ALGORITHM, "sha256": sha256}
+
+
 def ai_first_template_hashes(root: Path) -> dict[str, str]:
     manifest_path = root / AI_FIRST_TEMPLATE_HASHES_PATH
     try:
@@ -4355,20 +4502,6 @@ def ai_first_owner_checkpoint_path(
     )
 
 
-def ai_first_owner_artifact_path(
-    root: Path,
-    task_dir: Path,
-    artifact_name: str,
-    *,
-    for_write: bool = False,
-) -> Path:
-    checkpoint = ai_first_owner_checkpoint_path(root, task_dir, artifact_name)
-    if for_write or checkpoint.is_file():
-        return checkpoint
-    legacy = task_dir / artifact_name
-    return legacy if legacy.is_file() else checkpoint
-
-
 def ai_first_retire_owner_checkpoints(
     root: Path,
     task_dir: Path,
@@ -4398,43 +4531,6 @@ def ai_first_retire_owner_checkpoints(
         except OSError:
             pass
     return retired
-
-
-def ai_first_converge_legacy_owner_residue(
-    root: Path,
-    task_dir: Path,
-    artifact_name: str,
-) -> dict[str, str]:
-    """Remove only a recognized active-task projection after its private replacement exists."""
-    checkpoint = ai_first_owner_checkpoint_path(root, task_dir, artifact_name)
-    legacy = task_dir / artifact_name
-    if not checkpoint.is_file() or not legacy.exists() or legacy.is_symlink():
-        return {"status": "not_applicable", "artifact": artifact_name}
-    relative = repo_relative(root, legacy)
-    if relative.startswith(".trellis/tasks/archive/"):
-        return {"status": "archived_preserved", "artifact": artifact_name}
-    try:
-        payload = read_json(legacy)
-    except (OSError, ValueError, WorkflowError):
-        return {"status": "unknown_preserved", "artifact": artifact_name}
-    if payload.get("skill_id") != AI_FIRST_OWNER_SKILL_BY_ARTIFACT[artifact_name]:
-        return {"status": "unknown_preserved", "artifact": artifact_name}
-    tracked = run(
-        ["git", "ls-files", "--error-unmatch", "--", relative],
-        cwd=root,
-        check=False,
-    ).returncode == 0
-    if tracked:
-        dirty = run(
-            ["git", "diff", "--quiet", "HEAD", "--", relative],
-            cwd=root,
-            check=False,
-        ).returncode != 0
-        if dirty:
-            return {"status": "tracked_dirty_preserved", "artifact": artifact_name}
-        return {"status": "tracked_unchanged", "artifact": artifact_name}
-    legacy.unlink()
-    return {"status": "untracked_removed", "artifact": artifact_name}
 
 
 def runtime_workspace_path(root: Path, config: dict[str, Any], workspace_slug: str) -> Path:
@@ -5297,7 +5393,7 @@ def task_json(task_dir: Path) -> dict[str, Any]:
     return read_json(task_dir / "task.json")
 
 
-def issue_entry(number: Any, url: str = "", title: str = "", reason: str = "", evidence: list[str] | None = None) -> dict[str, Any]:
+def issue_entry(number: Any, url: str = "", title: str = "", reason: str = "") -> dict[str, Any]:
     try:
         parsed_number = int(number)
     except (TypeError, ValueError):
@@ -5307,7 +5403,6 @@ def issue_entry(number: Any, url: str = "", title: str = "", reason: str = "", e
         "url": url,
         "title": title,
         "reason": reason,
-        "acceptance_evidence": evidence or [],
     }
 
 
@@ -5317,20 +5412,14 @@ def default_issue_scope_ledger(task_context: dict[str, Any]) -> dict[str, Any]:
         source.get("number"),
         str(source.get("url") or ""),
         str(source.get("title") or ""),
-        "intake 主 issue，默认进入 close 候选；publish 前必须补齐验收证据。",
+        "intake 主 issue，默认进入 close 候选。",
     )
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "primary_issue": primary,
         "close_issues": [primary] if primary.get("number") is not None else [],
         "related_issues": [],
         "followup_issues": [],
-        "rules": [
-            "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
-            "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
-            "followup_issues 表示新范围或后续任务，不能自动关闭。",
-            "新增 issue 进入 close_issues 前，AI 必须根据当前 authority 重新判断 scope，并更新 prd/design/implement 与验收证据。",
-        ],
     }
 
 
@@ -5340,22 +5429,99 @@ def issue_scope_ledger_path(task_dir: Path) -> Path:
 
 def ensure_issue_scope_ledger(task_dir: Path, task_context: dict[str, Any]) -> Path:
     path = issue_scope_ledger_path(task_dir)
-    if not path.exists():
-        ledger = task_context.get("issue_scope_ledger")
-        if not isinstance(ledger, dict):
-            ledger = default_issue_scope_ledger(task_context)
-        write_json(path, ledger)
+    load_issue_scope_ledger(task_dir, task_context)
     return path
 
 
+def issue_scope_ledger_errors(ledger: Any) -> list[str]:
+    if not isinstance(ledger, dict):
+        return ["issue_scope_ledger_root_invalid"]
+    expected_keys = {
+        "schema_version",
+        "primary_issue",
+        "close_issues",
+        "related_issues",
+        "followup_issues",
+    }
+    errors: list[str] = []
+    if set(ledger) != expected_keys:
+        errors.append("issue_scope_ledger_fields_invalid")
+    if ledger.get("schema_version") != "2.0":
+        errors.append("issue_scope_ledger_schema_version_invalid")
+
+    entry_keys = {"number", "url", "title", "reason"}
+    entries_by_bucket: dict[str, list[dict[str, Any]]] = {}
+    for key in ("close_issues", "related_issues", "followup_issues"):
+        values = ledger.get(key)
+        if not isinstance(values, list):
+            errors.append(f"issue_scope_ledger_{key}_invalid")
+            entries_by_bucket[key] = []
+            continue
+        entries_by_bucket[key] = [item for item in values if isinstance(item, dict)]
+        if len(entries_by_bucket[key]) != len(values):
+            errors.append(f"issue_scope_ledger_{key}_entry_invalid")
+
+    primary = ledger.get("primary_issue")
+    candidates: list[tuple[str, Any]] = [("primary_issue", primary)]
+    candidates.extend(
+        (key, item)
+        for key, values in entries_by_bucket.items()
+        for item in values
+    )
+    for bucket, item in candidates:
+        if not isinstance(item, dict) or set(item) != entry_keys:
+            errors.append(f"issue_scope_ledger_{bucket}_entry_fields_invalid")
+            continue
+        number = item.get("number")
+        if not is_strict_int(number) or number <= 0:
+            errors.append(f"issue_scope_ledger_{bucket}_number_invalid")
+        if not all(
+            isinstance(item.get(key), str) and str(item.get(key)).strip()
+            for key in ("url", "title", "reason")
+        ):
+            errors.append(f"issue_scope_ledger_{bucket}_entry_text_invalid")
+
+    seen: dict[int, str] = {}
+    for bucket, values in entries_by_bucket.items():
+        local: set[int] = set()
+        for item in values:
+            number = item.get("number")
+            if not is_strict_int(number):
+                continue
+            if number in local or number in seen:
+                errors.append("issue_scope_ledger_issue_disposition_not_unique")
+            local.add(number)
+            seen[number] = bucket
+    if isinstance(primary, dict) and is_strict_int(primary.get("number")):
+        number = int(primary["number"])
+        matches = [
+            item
+            for values in entries_by_bucket.values()
+            for item in values
+            if item.get("number") == number
+        ]
+        if len(matches) != 1 or matches[0] != primary:
+            errors.append("issue_scope_ledger_primary_disposition_invalid")
+    return context_sort(errors)
+
+
 def load_issue_scope_ledger(task_dir: Path, task_context: dict[str, Any]) -> dict[str, Any]:
+    del task_context
     path = issue_scope_ledger_path(task_dir)
-    if path.exists():
-        return read_json(path)
-    ledger = task_context.get("issue_scope_ledger")
-    if isinstance(ledger, dict):
-        return ledger
-    return default_issue_scope_ledger(task_context)
+    if path.is_symlink() or not path.is_file():
+        raise WorkflowError(
+            "Current Issue Scope Ledger 2.0 is missing.",
+            exit_code=2,
+        )
+    ledger = read_json(path)
+    errors = issue_scope_ledger_errors(ledger)
+    if errors:
+        raise WorkflowError(
+            "Issue Scope Ledger is invalid.",
+            exit_code=2,
+            payload={"error_codes": errors},
+        )
+    return ledger
 
 
 def issue_numbers(items: Any) -> list[int]:
@@ -5372,109 +5538,16 @@ def issue_numbers(items: Any) -> list[int]:
     return numbers
 
 
-def issue_has_evidence(issue: dict[str, Any]) -> bool:
-    for key in ("acceptance_evidence", "verification", "evidence"):
-        value = issue.get(key)
-        if isinstance(value, list) and any(
-            (isinstance(item, str) and item.strip())
-            or (isinstance(item, dict) and item.get("status") == "passed")
-            for item in value
-        ):
-            return True
-        if isinstance(value, str) and value.strip():
-            return True
-    return False
-
-
-REMOTE_MARKETPLACE_EVIDENCE_TYPE = "remote_marketplace_verification"
-
-
-def remote_marketplace_evidence(issue: dict[str, Any]) -> dict[str, Any] | None:
-    evidence = issue.get("acceptance_evidence")
-    if not isinstance(evidence, list):
-        return None
-    matches = [item for item in evidence if isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE]
-    return matches[0] if len(matches) == 1 else None
-
-
-def legacy_pending_marketplace_evidence() -> dict[str, Any]:
-    return {
-        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
-        "status": "pending",
-        "required": True,
-        "artifact_path": "marketplace-verification.json",
-        "reason": "push 后由 deterministic marketplace verifier 生成真实 evidence；pending 不满足最终 publish。",
-    }
-
-
-def remote_marketplace_evidence_errors(issue: dict[str, Any], *, allow_pending: bool) -> list[str]:
-    item = remote_marketplace_evidence(issue)
-    if item is None:
-        return ["缺少唯一 remote_marketplace_verification 结构化 evidence。"]
-    status = item.get("status")
-    if status == "pending" and allow_pending:
-        legacy_pending = legacy_pending_marketplace_evidence()
-        machine_pending_keys = {
-            "type", "status", "required", "artifact_path", "artifact_sha256",
-            "verified_content_head", "remote_head", "publish_head", "commands_passed",
-        }
-        machine_pending_ok = (
-            set(item) == machine_pending_keys
-            and item.get("required") is True
-            and isinstance(item.get("artifact_path"), str)
-            and item.get("artifact_path") == MARKETPLACE_VERIFICATION_ARTIFACT
-            and item.get("artifact_sha256") == ""
-            and bool(re.fullmatch(r"[0-9a-f]{40}", str(item.get("verified_content_head") or "")))
-            and item.get("remote_head") == ""
-            and item.get("publish_head") == item.get("verified_content_head")
-            and item.get("commands_passed") is False
-        )
-        if item != legacy_pending and not machine_pending_ok:
-            return ["pending remote marketplace evidence 不符合固定合同。"]
-        return []
-    if status != "passed":
-        return ["required remote marketplace evidence 必须是 passed；pending/文字说明不能发布。"]
-    required = {
-        "type", "status", "required", "artifact_path", "artifact_sha256",
-        "verified_content_head", "remote_head", "publish_head", "commands_passed",
-    }
-    if set(item) != required:
-        return ["passed remote marketplace evidence 字段不符合固定合同。"]
-    errors: list[str] = []
-    if item.get("required") is not True:
-        errors.append("remote marketplace evidence required 必须为 true。")
-    if not re.fullmatch(r"[0-9a-f]{64}", str(item.get("artifact_sha256") or "")):
-        errors.append("remote marketplace evidence artifact_sha256 无效。")
-    for key in ["verified_content_head", "remote_head", "publish_head"]:
-        if not re.fullmatch(r"[0-9a-f]{40}", str(item.get(key) or "")):
-            errors.append(f"remote marketplace evidence {key} 无效。")
-    if item.get("commands_passed") is not True:
-        errors.append("remote marketplace evidence commands_passed 必须为 true。")
-    return errors
-
-
 def validate_ledger_for_publish(
     ledger: dict[str, Any],
-    gate: dict[str, Any] | None,
-    *,
-    allow_pending_remote_marketplace: bool = False,
-    marketplace_required: bool | None = None,
 ) -> list[str]:
-    errors: list[str] = []
+    errors: list[str] = issue_scope_ledger_errors(ledger)
     close_issues = ledger.get("close_issues")
     if not isinstance(close_issues, list):
         errors.append("issue-scope-ledger.json 缺少 close_issues 数组。")
         close_issues = []
     related_numbers = set(issue_numbers(ledger.get("related_issues")))
     followup_numbers = set(issue_numbers(ledger.get("followup_issues")))
-    compact_review_gate = gate is None or gate.get("schema_version") in {"2.1", "2.2"}
-    gate_reviewed = set(
-        issue_numbers((gate or {}).get("issue_scope", {}).get("close_issues_reviewed"))
-    )
-    if marketplace_required is None:
-        marketplace_required = bool(
-            marketplace_verification_required(gate or {})["candidate_surfaces"]
-        )
     for issue in close_issues:
         if not isinstance(issue, dict):
             errors.append("close_issues 中存在非对象条目。")
@@ -5486,24 +5559,7 @@ def validate_ledger_for_publish(
             continue
         if number in related_numbers or number in followup_numbers:
             errors.append(f"issue #{number} 同时出现在 close_issues 与 related/followup 中。")
-        if not issue_has_evidence(issue):
-            errors.append(f"close_issues 中 issue #{number} 缺少验收或验证证据。")
-        if marketplace_required:
-            errors.extend(
-                f"close_issues 中 issue #{number}：{error}"
-                for error in remote_marketplace_evidence_errors(issue, allow_pending=allow_pending_remote_marketplace)
-            )
-        # Schema 2.1 deliberately leaves issue-closure judgment to the
-        # Publication Gate. Older review gates retain their compatibility
-        # check while active tasks migrate.
-        if not compact_review_gate and number not in gate_reviewed:
-            errors.append(f"Branch Review Gate 未记录对 close issue #{number} 的覆盖结论。")
-    return errors
-
-
-def review_gate_config(config: dict[str, Any]) -> dict[str, Any]:
-    value = config.get("review_gate")
-    return value if isinstance(value, dict) else dict(DEFAULTS["review_gate"])
+    return context_sort(errors)
 
 
 def publish_config(config: dict[str, Any]) -> dict[str, Any]:
@@ -5511,41 +5567,17 @@ def publish_config(config: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else dict(DEFAULTS["publish"])
 
 
-def validate_publish_invocation(_args: argparse.Namespace) -> None:
-    raise WorkflowError(
-        "publish-pr is a compatibility-only blocked command. Run the explicit state-aware "
-        "`trellis-finish-work` entry for both initial closeout and recovery.",
-        exit_code=2,
-        payload={
-            "blocked_step": "publish-pr",
-            "required_entrypoint": "trellis-finish-work",
-        },
-    )
-
-
 def validate_finish_work_invocation(args: argparse.Namespace) -> None:
-    if getattr(args, "skip_archive", False):
-        raise WorkflowError(
-            "--skip-archive is no longer a closeout recovery path; rerun the same trellis-finish-work entry.",
-            exit_code=2,
-            payload={"required_entrypoint": "trellis-finish-work"},
-        )
-    if getattr(args, "draft", None) is not None:
-        raise WorkflowError(
-            "finish-work owns the draft-to-ready strategy; --draft/--no-draft overrides are forbidden.",
-            exit_code=2,
-        )
-    if getattr(args, "from_trellis_finish_work", False):
+    if getattr(args, "from_guru_finalizer", False):
         return
     raise WorkflowError(
         "finish-work is an internal closeout helper. Re-enter the explicit "
-        "`trellis-finish-work` skill/command so it can route current publication readiness "
-        "to `guru-finalize-task`; do not invoke this helper or its private intent marker "
-        "directly.",
+        "`guru-finish-work` entry so it can route current publication readiness "
+        "to `guru-finalize-task`; do not invoke this helper directly.",
         exit_code=2,
         payload={
             "blocked_step": "finish-work",
-            "required_entrypoint": "trellis-finish-work",
+            "required_entrypoint": "guru-finish-work",
         },
     )
 
@@ -5553,17 +5585,8 @@ def validate_finish_work_invocation(args: argparse.Namespace) -> None:
 def configured_review_gate_path(
     root: Path,
     task_dir: Path,
-    config: dict[str, Any],
-    *,
-    for_write: bool = False,
 ) -> Path:
-    gate_config = review_gate_config(config)
-    configured = Path(str(gate_config.get("artifact_path") or "review-gate.json"))
-    legacy = configured if configured.is_absolute() else task_dir / configured
-    checkpoint = ai_first_owner_checkpoint_path(root, task_dir, "review-gate.json")
-    if for_write or checkpoint.is_file():
-        return checkpoint
-    return legacy if legacy.is_file() else checkpoint
+    return ai_first_owner_checkpoint_path(root, task_dir, "review-gate.json")
 
 
 def resolve_task_local_path(root: Path, task_dir: Path, value: str) -> Path:
@@ -5624,29 +5647,15 @@ def active_task_relative_for_archive(root: Path, task_dir: Path) -> str | None:
 def planning_approval_path(
     root: Path,
     task_dir: Path,
-    *,
-    for_write: bool = False,
 ) -> Path:
-    return ai_first_owner_artifact_path(
-        root,
-        task_dir,
-        PLANNING_APPROVAL_ARTIFACT,
-        for_write=for_write,
-    )
+    return ai_first_owner_checkpoint_path(root, task_dir, PLANNING_APPROVAL_ARTIFACT)
 
 
 def phase2_check_path(
     root: Path,
     task_dir: Path,
-    *,
-    for_write: bool = False,
 ) -> Path:
-    return ai_first_owner_artifact_path(
-        root,
-        task_dir,
-        PHASE2_CHECK_ARTIFACT,
-        for_write=for_write,
-    )
+    return ai_first_owner_checkpoint_path(root, task_dir, PHASE2_CHECK_ARTIFACT)
 
 
 def reviewer_identity_errors(reviewer: str) -> list[str]:
@@ -6521,12 +6530,7 @@ def validate_planning_approval(
     payload = read_json(path)
     version = str(payload.get("schema_version") or "")
     if version != PLANNING_APPROVAL_SCHEMA_VERSION:
-        code = (
-            "planning_approval_legacy_requires_ai_first_reentry"
-            if version in PLANNING_APPROVAL_LEGACY_SCHEMA_VERSIONS
-            else "planning_approval_schema_version_invalid"
-        )
-        return path, payload, [code]
+        return path, payload, ["planning_approval_schema_version_invalid"]
 
     errors: list[str] = []
     try:
@@ -6751,39 +6755,6 @@ def phase2_reviewed_paths(
     return sorted(normalized)
 
 
-def phase2_worktree_content_sha256(root: Path) -> str:
-    retained_fields = (
-        "path",
-        "worktree_sha256",
-        "mode",
-        "deleted",
-        "renamed_from",
-        "copied_from",
-        "gitlink_head",
-        "gitlink_initialized",
-        "gitlink_dirty",
-    )
-    entries: list[dict[str, Any]] = []
-    for entry in capture_task_commit_snapshot(root)["entries"]:
-        path = str(entry.get("path") or "")
-        if ai_first_os_noise_path(path):
-            continue
-        entries.append(
-            {
-                field: copy.deepcopy(entry.get(field))
-                for field in retained_fields
-                if field in entry
-            }
-        )
-    encoded = json.dumps(
-        entries,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
 def materialize_phase2_check_payload(
     root: Path,
     task_dir: Path,
@@ -6815,7 +6786,7 @@ def materialize_phase2_check_payload(
     current_dirty = {
         path
         for path in git_status_paths(root, fail_closed=True)
-        if not ai_first_os_noise_path(path)
+        if not reviewed_content_metadata_path(path)
     }
     uncovered = sorted(current_dirty - set(reviewed_paths))
     if uncovered:
@@ -6829,9 +6800,9 @@ def materialize_phase2_check_payload(
         "skill_id": PHASE2_CHECK_SKILL_ID,
         "mode": mode,
         "task_ref": repo_relative(root, task_dir),
-        "checked_head": current_head(root),
+        "phase2_capture_commit": current_head(root),
         "reviewed_paths": reviewed_paths,
-        "reviewed_worktree_sha256": phase2_worktree_content_sha256(root),
+        "reviewed_content_sha256": reviewed_content_identity(root)["sha256"],
         "validation": copy.deepcopy(authored.get("validation")),
         "docs_ssot": copy.deepcopy(authored.get("docs_ssot")),
         "semantic_review": copy.deepcopy(authored.get("semantic_review")),
@@ -6867,14 +6838,8 @@ def validate_phase2_check(
             exit_code=2,
         )
     payload = read_json(path)
-    version = str(payload.get("schema_version") or "")
-    if version != PHASE2_CHECK_SCHEMA_VERSION:
-        code = (
-            "phase2_check_legacy_requires_ai_first_reentry"
-            if version in PHASE2_CHECK_LEGACY_SCHEMA_VERSIONS
-            else "phase2_check_schema_version_invalid"
-        )
-        return path, payload, [code]
+    if payload.get("schema_version") != PHASE2_CHECK_SCHEMA_VERSION:
+        return path, payload, ["phase2_check_schema_version_invalid"]
 
     errors: list[str] = []
     errors.extend(
@@ -6888,37 +6853,31 @@ def validate_phase2_check(
     task_ref = repo_relative(root, task_dir)
     if payload.get("task_ref") != task_ref:
         errors.append("phase2_check_task_ref_mismatch")
-    checked_head = str(payload.get("checked_head") or "")
+    phase2_capture_commit = str(payload.get("phase2_capture_commit") or "")
     head = current_head(root)
-    if checked_head != head:
-        errors.append("phase2_check_head_stale")
-    else:
-        if payload.get("reviewed_worktree_sha256") != phase2_worktree_content_sha256(
-            root
-        ):
-            errors.append("phase2_check_reviewed_content_stale")
-        excluded = set(additional_dirty_excluded or set())
-        legacy = task_dir / PHASE2_CHECK_ARTIFACT
-        if legacy.is_file() and not legacy.is_symlink():
-            try:
-                legacy_payload = read_json(legacy)
-            except (OSError, ValueError, WorkflowError):
-                legacy_payload = {}
-            if legacy_payload.get("skill_id") == PHASE2_CHECK_SKILL_ID:
-                excluded.add(repo_relative(root, legacy))
-        dirty_now = {
-            item
-            for item in git_status_paths(root, fail_closed=True)
-            if item not in excluded
-            and not ai_first_os_noise_path(item)
-        }
-        reviewed = set(payload.get("reviewed_paths") or [])
-        uncovered = sorted(dirty_now - reviewed)
-        if uncovered:
-            errors.append(
-                "phase2_check_dirty_paths_not_reviewed:"
-                + ",".join(uncovered[:20])
-            )
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", phase2_capture_commit) is None
+        or not is_ancestor(root, phase2_capture_commit, head)
+    ):
+        errors.append("phase2_check_capture_commit_not_current_history")
+    if payload.get("reviewed_content_sha256") != reviewed_content_identity(root)[
+        "sha256"
+    ]:
+        errors.append("phase2_check_reviewed_content_stale")
+    excluded = set(additional_dirty_excluded or set())
+    dirty_now = {
+        item
+        for item in git_status_paths(root, fail_closed=True)
+        if item not in excluded
+        and not reviewed_content_metadata_path(item)
+    }
+    reviewed = set(payload.get("reviewed_paths") or [])
+    uncovered = sorted(dirty_now - reviewed)
+    if uncovered:
+        errors.append(
+            "phase2_check_dirty_paths_not_reviewed:"
+            + ",".join(uncovered[:20])
+        )
     return path, payload, context_sort(errors)
 
 def repo_relative(root: Path, path: Path) -> str:
@@ -6933,22 +6892,10 @@ def load_review_gate(
     task_dir: Path,
     config: dict[str, Any],
 ) -> tuple[Path, dict[str, Any]]:
-    path = configured_review_gate_path(root, task_dir, config)
+    path = configured_review_gate_path(root, task_dir)
     if not path.exists():
         raise WorkflowError(f"Branch Review Gate artifact not found: {path}")
     return path, read_json(path)
-
-
-def review_branch_descendant_metadata_path(
-    root: Path,
-    task_dir: Path,
-    path: str,
-) -> bool:
-    task_ref = repo_relative(root, task_dir).rstrip("/")
-    return path in {
-        f"{task_ref}/{name}"
-        for name in BRANCH_REVIEW_DESCENDANT_METADATA_FILES
-    }
 
 
 def finalizer_unreviewed_dirty_paths(
@@ -6957,63 +6904,52 @@ def finalizer_unreviewed_dirty_paths(
     *,
     allow_publication_issue_scope_ledger: bool = False,
 ) -> list[str]:
-    publication_issue_scope_ledger = (
-        f"{repo_relative(root, task_dir).rstrip('/')}/issue-scope-ledger.json"
-        if allow_publication_issue_scope_ledger
-        else None
-    )
+    del task_dir, allow_publication_issue_scope_ledger
     return [
         path
         for path in git_status_paths(root, fail_closed=True)
-        if not review_branch_descendant_metadata_path(root, task_dir, path)
-        and path != publication_issue_scope_ledger
+        if not reviewed_content_metadata_path(path)
     ]
 
 
-def review_gate_content_head(gate: dict[str, Any]) -> str:
-    if gate.get("schema_version") == "2.2":
-        return str(gate.get("reviewed_content_head") or "")
-    return str(gate.get("head") or "")
+def review_gate_commit(gate: dict[str, Any]) -> str:
+    return str(gate.get("review_commit") or "")
 
 
 def review_branch_content_continuity_errors(
     root: Path,
     task_dir: Path,
-    reviewed_content_head: str,
+    review_commit: str,
+    reviewed_content_sha256: str,
     current: str | None = None,
 ) -> list[str]:
+    del task_dir
     current_head_value = current or current_head(root)
-    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_content_head):
-        return ["Branch Review reviewed_content_head is invalid."]
-    if not is_ancestor(root, reviewed_content_head, current_head_value):
+    if not re.fullmatch(r"[0-9a-f]{40}", review_commit):
+        return ["Branch Review review_commit is invalid."]
+    if not re.fullmatch(r"[0-9a-f]{64}", reviewed_content_sha256):
+        return ["Branch Review reviewed_content_sha256 is invalid."]
+    if not is_ancestor(root, review_commit, current_head_value):
         return [
-            "Branch Review reviewed_content_head is not an ancestor of the current HEAD."
+            "Branch Review review_commit is not an ancestor of the current HEAD."
         ]
-    if reviewed_content_head == current_head_value:
-        return []
-    proc = run(
-        [
-            "git",
-            "diff",
-            "--name-only",
-            f"{reviewed_content_head}..{current_head_value}",
-        ],
-        cwd=root,
-        check=False,
-    )
-    if proc.returncode != 0:
-        return ["Branch Review could not inspect the descendant metadata tail."]
-    paths = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
-    non_metadata = [
-        path
-        for path in paths
-        if not review_branch_descendant_metadata_path(root, task_dir, path)
-    ]
-    if non_metadata:
-        return [
-            BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX
-            + ", ".join(non_metadata[:20])
-        ]
+    try:
+        anchor_identity = reviewed_content_identity(
+            root,
+            review_commit,
+            include_worktree=False,
+        )["sha256"]
+        current_identity = reviewed_content_identity(
+            root,
+            current_head_value,
+            include_worktree=True,
+        )["sha256"]
+    except WorkflowError:
+        return ["Branch Review could not calculate reviewed-content continuity."]
+    if anchor_identity != reviewed_content_sha256:
+        return ["Branch Review gate identity does not match review_commit."]
+    if current_identity != reviewed_content_sha256:
+        return [BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX + "identity mismatch"]
     return []
 
 
@@ -7037,7 +6973,7 @@ def review_branch_owner_evidence_precondition_errors(
     reviewer = str(verification.get("reviewer") or "").strip()
     review_source = str(verification.get("review_source") or "").strip()
     errors.extend(independent_review_source_errors(review_source, reviewer))
-    if gate.get("schema_version") in {"2.1", "2.2"}:
+    if gate.get("schema_version") == BRANCH_REVIEW_SCHEMA_VERSION:
         semantic = gate.get("semantic_review")
         if isinstance(semantic, dict):
             errors.extend(
@@ -7045,17 +6981,13 @@ def review_branch_owner_evidence_precondition_errors(
                     root,
                     task_dir,
                     semantic,
-                    reviewed_content_head=review_gate_content_head(gate),
+                    review_commit=review_gate_commit(gate),
                 )
             )
         else:
             errors.append("Branch Review Gate 缺少 semantic_review。")
         return errors
-    errors.append(
-        "Legacy Branch Review Gate requires current guru-review-branch owner "
-        "re-entry; assignment, liveness and raw review reports are migration "
-        "residue, not workflow authority."
-    )
+    errors.append("Branch Review Gate schema_version is invalid.")
     return errors
 
 
@@ -7063,14 +6995,30 @@ def validate_review_gate(
     root: Path,
     task_dir: Path,
     config: dict[str, Any],
-    allow_metadata_after_gate: bool,
     require_pass: bool = True,
 ) -> tuple[Path, dict[str, Any], list[str]]:
     path, gate = load_review_gate(root, task_dir, config)
     errors: list[str] = []
-    schema_v22 = gate.get("schema_version") == "2.2"
-    compact_schema = gate.get("schema_version") in {"2.1", "2.2"}
-    semantic = gate.get("semantic_review") if isinstance(gate.get("semantic_review"), dict) else {}
+    try:
+        errors.extend(
+            skill_json_schema_validation_errors(
+                gate,
+                review_branch_gate_schema(root),
+                "guru-review-branch review gate",
+            )
+        )
+    except WorkflowError as exc:
+        errors.append(f"guru-review-branch review gate schema unavailable: {exc}")
+    if gate.get("schema_version") != BRANCH_REVIEW_SCHEMA_VERSION:
+        errors.append("guru-review-branch schema_version is invalid.")
+    if gate.get("skill_id") != BRANCH_REVIEW_SKILL_ID:
+        errors.append("guru-review-branch skill identity is invalid.")
+
+    semantic = (
+        gate.get("semantic_review")
+        if isinstance(gate.get("semantic_review"), dict)
+        else {}
+    )
     semantic_gate = (
         semantic.get("ai_review_gate")
         if isinstance(semantic.get("ai_review_gate"), dict)
@@ -7086,48 +7034,22 @@ def validate_review_gate(
         for item in qualified
         if isinstance(item, dict) and item.get("status") == "open"
     ]
-    if compact_schema:
-        typed_exit = str(gate.get("typed_exit") or "")
-        conclusion = {
-            "passed": typed_exit == "passed",
-            "summary": semantic_gate.get("summary"),
-            "findings_count": len(open_qualified),
-            "blocking_findings_count": len(open_qualified),
-        }
-        findings_raw: Any = open_qualified
-        if semantic_gate.get("status") != typed_exit:
-            errors.append("Branch Review Gate semantic status 与 typed_exit 不一致。")
-    else:
-        conclusion = gate.get("conclusion") if isinstance(gate.get("conclusion"), dict) else {}
-        findings_raw = gate.get("findings", [])
-    if require_pass and conclusion.get("passed") is not True:
+    proposals = (
+        semantic.get("scope_proposals")
+        if isinstance(semantic.get("scope_proposals"), list)
+        else []
+    )
+    typed_exit = str(gate.get("typed_exit") or "")
+    passed = typed_exit == "passed"
+    if semantic_gate.get("status") != typed_exit:
+        errors.append("Branch Review Gate semantic status 与 typed_exit 不一致。")
+    if require_pass and not passed:
         errors.append("Branch Review Gate 结论不是 passed=true。")
-    if not require_pass and not isinstance(conclusion.get("passed"), bool):
-        errors.append("Branch Review Gate conclusion.passed 必须是 boolean。")
-    if not str(conclusion.get("summary") or "").strip():
+    if not str(semantic_gate.get("summary") or "").strip():
         errors.append("Branch Review Gate 缺少中文 summary。")
-    findings = findings_raw if isinstance(findings_raw, list) else []
-    if not compact_schema and "findings" in gate and not isinstance(findings_raw, list):
-        errors.append("Branch Review Gate findings 必须是数组。")
-    if require_pass and findings:
+    if require_pass and open_qualified:
         errors.append("Branch Review Gate passed=true 但 findings[] 非空；任意 finding 均阻断。")
-    for key in ["findings_count", "blocking_findings_count"]:
-        raw_count = conclusion.get(key)
-        if raw_count is None:
-            continue
-        if isinstance(raw_count, bool) or not isinstance(raw_count, int):
-            errors.append(f"Branch Review Gate conclusion.{key} 必须是整数。")
-            continue
-        if raw_count < 0:
-            errors.append(f"Branch Review Gate conclusion.{key} 不能为负数。")
-            continue
-        if require_pass and raw_count > 0:
-            errors.append(f"Branch Review Gate passed=true 但 conclusion.{key}={raw_count}；任意 finding 均阻断。")
-        if raw_count != len(findings):
-            errors.append(
-                f"Branch Review Gate conclusion.{key}={raw_count} 与 findings[] 数量 {len(findings)} 不一致。"
-            )
-    reviewed_head = review_gate_content_head(gate)
+
     errors.extend(
         review_branch_owner_evidence_precondition_errors(
             root,
@@ -7135,97 +7057,36 @@ def validate_review_gate(
             gate,
         )
     )
-    head = current_head(root)
-    gate_config = review_gate_config(config)
-    require_head_match = bool(gate_config.get("require_head_match", True))
-    if schema_v22:
-        errors.extend(
-            review_branch_content_continuity_errors(
-                root,
-                task_dir,
-                reviewed_head,
-                head,
-            )
+    errors.extend(
+        review_branch_content_continuity_errors(
+            root,
+            task_dir,
+            review_gate_commit(gate),
+            str(gate.get("reviewed_content_sha256") or ""),
+            current_head(root),
         )
-    elif require_head_match and reviewed_head != head:
-        accepted_metadata_tail = False
-        if allow_metadata_after_gate:
-            continuity_errors = review_branch_content_continuity_errors(
-                root,
-                task_dir,
-                reviewed_head,
-                head,
-            )
-            accepted_metadata_tail = not continuity_errors
-            errors.extend(continuity_errors)
-        if not accepted_metadata_tail:
-            errors.append(f"Branch Review Gate 记录的 HEAD {reviewed_head or '(missing)'} 与当前 HEAD {head} 不一致。")
-    if gate.get("schema_version") in {"2.0", "2.1", "2.2"}:
-        try:
-            errors.extend(skill_json_schema_validation_errors(
-                gate,
-                review_branch_gate_schema(root),
-                "guru-review-branch review gate",
-            ))
-        except WorkflowError as exc:
-            errors.append(f"guru-review-branch review gate schema unavailable: {exc}")
-        typed_exit = str(gate.get("typed_exit") or "")
-        semantic = gate.get("semantic_review")
-        qualified = (
-            semantic.get("qualified_findings")
-            if isinstance(semantic, dict)
-            and isinstance(semantic.get("qualified_findings"), list)
-            else []
-        )
-        proposals = (
-            semantic.get("scope_proposals")
-            if isinstance(semantic, dict)
-            and isinstance(semantic.get("scope_proposals"), list)
-            else []
-        )
-        open_qualified = [
-            item for item in qualified
-            if isinstance(item, dict) and item.get("status") == "open"
-        ]
-        gate_status = (
-            (semantic.get("ai_review_gate") or {}).get("status")
-            if isinstance(semantic, dict)
-            else None
-        )
-        if (
-            gate.get("skill_id") != BRANCH_REVIEW_SKILL_ID
-            or typed_exit not in {
-                "passed", "implementation_required",
-                "scope_confirmation_required", "blocked",
-            }
-            or gate_status != typed_exit
-        ):
-            errors.append("guru-review-branch typed exit identity is invalid.")
-        if typed_exit == "passed" and (
-            conclusion.get("passed") is not True or open_qualified or proposals
-        ):
-            errors.append("guru-review-branch passed retains blocking semantic state.")
-        if typed_exit == "implementation_required" and (
-            conclusion.get("passed") is not False or not open_qualified
-        ):
-            errors.append("guru-review-branch implementation_required lacks an open qualified finding.")
-        if typed_exit == "scope_confirmation_required" and (
-            conclusion.get("passed") is not False or open_qualified or not proposals
-        ):
-            errors.append("guru-review-branch scope route is inconsistent.")
-        if typed_exit == "blocked" and (
-            conclusion.get("passed") is not False or open_qualified or proposals
-        ):
-            errors.append("guru-review-branch blocked hides a semantic route.")
-        expected_facts = context_digest({
+    )
+    if typed_exit not in {
+        "passed", "implementation_required", "scope_confirmation_required", "blocked"
+    }:
+        errors.append("guru-review-branch typed exit identity is invalid.")
+    if typed_exit == "passed" and (open_qualified or proposals):
+        errors.append("guru-review-branch passed retains blocking semantic state.")
+    if typed_exit == "implementation_required" and not open_qualified:
+        errors.append("guru-review-branch implementation_required lacks an open qualified finding.")
+    if typed_exit == "scope_confirmation_required" and (open_qualified or not proposals):
+        errors.append("guru-review-branch scope route is inconsistent.")
+    if typed_exit == "blocked" and (open_qualified or proposals):
+        errors.append("guru-review-branch blocked hides a semantic route.")
+    expected_facts = context_digest(
+        {
             key: value
             for key, value in gate.items()
             if key not in {"generated_at", "facts_sha256"}
-        })
-        if gate.get("facts_sha256") != expected_facts:
-            errors.append("guru-review-branch facts_sha256 mismatch.")
-    elif not require_pass:
-        errors.append("guru-review-branch non-pass checking requires schema 2.x owner evidence.")
+        }
+    )
+    if gate.get("facts_sha256") != expected_facts:
+        errors.append("guru-review-branch facts_sha256 mismatch.")
     return path, gate, errors
 
 
@@ -7340,7 +7201,7 @@ def validate_commit_subject(
         errors.append("commit subject 不得直接使用中文 PR title / squash title。")
     if re.match(r"^#\d+\s+", value):
         errors.append("issue id 必须放在 Conventional Commits 前缀之后。")
-    if re.match(rf"^[a-z]+\(#[0-9]+\):", value):
+    if re.match(r"^[a-z]+\(#[0-9]+\):", value):
         errors.append("issue id 不得放在 scope 中。")
     if close_keyword_pattern().search(value):
         errors.append("commit subject 不得使用 Closes/Fixes/Resolves/Close/Fix/Resolve；issue 关闭语义只能放在 PR body。")
@@ -7697,104 +7558,50 @@ def build_pr_readiness_snapshot(
     repo: str,
     base_branch: str,
     head_branch: str,
-    reviewed_head_sha: str,
+    branch_review_commit: str,
     title: str,
     draft: bool,
     closeout_plan_digest: str | None = None,
     allow_closeout_digest_replacement: bool = False,
 ) -> tuple[Path, dict[str, Any]]:
-    readiness_path = task_dir / PR_READINESS_ARTIFACT
-    if not readiness_path.is_file() or readiness_path.is_symlink():
+    owner_path = task_publication_path(root, task_dir)
+    if not owner_path.is_file() or owner_path.is_symlink():
         raise WorkflowError(
-            "PR readiness augmentation requires the checked task publication gate.",
-            exit_code=2,
-            payload={"artifact_path": str(readiness_path)},
-        )
-    artifact = read_json(readiness_path)
-    current_inputs = artifact.get("publish_inputs")
-    if current_inputs is None:
-        if closeout_plan_path(task_dir).is_file():
-            checked = check_task_publication_for_finalization_augmentation(
-                root,
-                task_dir,
-                artifact,
-                expected_closeout_plan_digest=closeout_plan_digest,
-            )
-        else:
-            checked = cmd_check_task_publication_review(
-                argparse.Namespace(
-                    root=str(root),
-                    task=repo_relative(root, task_dir),
-                    expected_exit="ready",
-                )
-            )
-        checked_head = checked.get("reviewed_head")
-        checked_publication_ref = checked.get("publication_ref")
-    else:
-        if artifact.get("skill_id") != TASK_PUBLICATION_SKILL_ID:
-            raise WorkflowError(
-                "Legacy PR readiness cannot be upgraded into the semantic publication gate.",
-                exit_code=2,
-            )
-        config = load_config(root)
-        review_path, review_gate, review_errors = validate_review_gate(
-            root,
-            task_dir,
-            config,
-            True,
-            require_pass=True,
-        )
-        if review_errors:
-            raise WorkflowError(
-                "Existing task publication finalization layer lost its Branch Review binding.",
-                exit_code=2,
-                payload={"artifact_path": str(review_path), "errors": review_errors},
-            )
-        read_pr_readiness_publish_inputs(
-            root,
-            task_dir,
-            str(readiness_path),
-            review_gate,
-            require_committed=False,
-        )
-        checked_head = (artifact.get("review_identity") or {}).get("reviewed_head")
-        checked_publication_ref = (
-            artifact.get("deterministic_bindings") or {}
-        ).get("publication_ref")
-    if reviewed_head_sha != checked_head:
-        raise WorkflowError(
-            "Finalization reviewed HEAD does not match the checked task publication gate.",
+            "PR readiness snapshot requires the current Publication owner artifact.",
             exit_code=2,
         )
-    if checked_publication_ref != (
-        artifact.get("deterministic_bindings") or {}
-    ).get("publication_ref"):
+    artifact = read_json(owner_path)
+    checked = cmd_check_task_publication_review(
+        argparse.Namespace(
+            root=str(root),
+            task=repo_relative(root, task_dir),
+            expected_exit="ready",
+        )
+    )
+    if checked.get("branch_review_commit") != branch_review_commit:
         raise WorkflowError(
-            "PR readiness publication identity changed after its objective check.",
+            "Finalization branch_review_commit does not match Publication.",
             exit_code=2,
         )
-    body_path = (task_dir / PR_BODY_ARTIFACT).resolve()
-    if not body_path.is_file():
-        raise WorkflowError(
-            "PR readiness requires task-local pr-body.md.",
-            exit_code=2,
-            payload={"body_path": str(body_path)},
-        )
+    body_path = task_dir / PR_BODY_ARTIFACT
+    if not body_path.is_file() or body_path.is_symlink():
+        raise WorkflowError("PR readiness requires task-local pr-body.md.", exit_code=2)
     publish_inputs = {
         "repo": repo,
         "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
         "head_branch": head_branch,
-        "reviewed_head_sha": reviewed_head_sha,
+        "branch_review_commit": branch_review_commit,
         "title": title,
         "body_source": PR_BODY_ARTIFACT,
         "body_sha256": hashlib.sha256(body_path.read_bytes()).hexdigest(),
         "draft": draft,
-        "reviewed_source": f"body-artifact:{PR_READINESS_ARTIFACT}",
+        "reviewed_source": f"body-file:{repo_relative(root, body_path)}",
     }
     if closeout_plan_digest is not None:
         if not re.fullmatch(r"[0-9a-f]{64}", closeout_plan_digest):
             raise WorkflowError("PR readiness closeout plan digest is invalid.", exit_code=2)
         publish_inputs["closeout_plan_digest"] = closeout_plan_digest
+    current_inputs = artifact.get("publish_inputs")
     if current_inputs is not None and current_inputs != publish_inputs:
         changed_fields = {
             key
@@ -7806,11 +7613,11 @@ def build_pr_readiness_snapshot(
             or changed_fields != {"closeout_plan_digest"}
         ):
             raise WorkflowError(
-                "Existing task publication publish_inputs differ from the requested finalization inputs.",
+                "Existing Publication publish_inputs differ from finalization inputs.",
                 exit_code=2,
             )
     artifact["publish_inputs"] = publish_inputs
-    return readiness_path, artifact
+    return task_dir / PR_READINESS_ARTIFACT, artifact
 
 
 def read_pr_readiness_publish_inputs(
@@ -7823,151 +7630,91 @@ def read_pr_readiness_publish_inputs(
 ) -> tuple[Path, dict[str, Any], str]:
     path = task_local_pr_readiness_path(root, task_dir, artifact_arg)
     artifact = read_json(path)
-    active_publication_gate = artifact.get("skill_id") == TASK_PUBLICATION_SKILL_ID
-    if active_publication_gate:
-        schema_errors = skill_json_schema_validation_errors(
-            artifact,
-            task_publication_schema(root),
-            "task publication readiness",
-        )
-        semantic_errors = task_publication_legacy_semantic_errors(
-            {
-                "profile": artifact.get("profile"),
-                "mode": artifact.get("mode"),
-                "review_intent": artifact.get("review_intent"),
-                "reviewed_head": (artifact.get("review_identity") or {}).get("reviewed_head"),
-                "review_ref": (artifact.get("review_identity") or {}).get("review_ref"),
-                "typed_exit": artifact.get("typed_exit"),
-                "consumer": artifact.get("consumer"),
-                "semantic_review": artifact.get("semantic_review"),
-                "reason_code": artifact.get("reason_code"),
-                "remediation": artifact.get("remediation"),
-                "stale_reason": artifact.get("stale_reason"),
-                "reentry_context": artifact.get("reentry_context"),
-                "supersedes_publication_ref": artifact.get(
-                    "supersedes_publication_ref"
-                ),
-            },
-            reviewed_head=str((artifact.get("review_identity") or {}).get("reviewed_head") or ""),
-            review_ref=str((artifact.get("review_identity") or {}).get("review_ref") or ""),
-        )
-        bindings = artifact.get("deterministic_bindings")
-        artifacts = bindings.get("artifacts") if isinstance(bindings, dict) else None
-        repository = bindings.get("repository") if isinstance(bindings, dict) else None
-        entry_preconditions = (
-            bindings.get("entry_preconditions")
-            if isinstance(bindings, dict)
-            else None
-        )
-        invocation_identity = {
-            "task_ref": artifact.get("task_dir"),
-            "profile": artifact.get("profile"),
-            "mode": artifact.get("mode"),
-            "review_intent": artifact.get("review_intent"),
-            "stale_reason": artifact.get("stale_reason"),
-            "reentry_context": artifact.get("reentry_context"),
-            "supersedes_publication_ref": artifact.get(
-                "supersedes_publication_ref"
-            ),
-            "reviewed_head": (
-                artifact.get("review_identity") or {}
-            ).get("reviewed_head"),
-            "review_ref": (
-                artifact.get("review_identity") or {}
-            ).get("review_ref"),
-        }
-        expected_publication_ref = (
-            f"publication:{context_digest({'task': repo_relative(root, task_dir), 'invocation': invocation_identity, 'head': (artifact.get('review_identity') or {}).get('reviewed_head'), 'review_ref': (artifact.get('review_identity') or {}).get('review_ref'), 'artifacts': artifacts, 'repository': repository, 'entry_preconditions': entry_preconditions})}"
-            if (
-                isinstance(artifacts, dict)
-                and isinstance(repository, dict)
-                and isinstance(entry_preconditions, dict)
-            )
-            else None
-        )
-        identity_errors = []
-        if artifact.get("task_dir") != repo_relative(root, task_dir):
-            identity_errors.append("task publication task identity mismatch")
-        if artifact.get("typed_exit") != "ready":
-            identity_errors.append("task publication gate is not ready")
-        review_identity = artifact.get("review_identity")
-        if not isinstance(review_identity, dict) or review_identity.get("reviewed_head") != gate.get("head"):
-            identity_errors.append("task publication reviewed HEAD does not match Branch Review Gate")
-        review_gate_path = task_dir / "review-gate.json"
-        expected_review_ref = (
-            f"review-gate:{hashlib.sha256(review_gate_path.read_bytes()).hexdigest()}"
-            if review_gate_path.is_file() and not review_gate_path.is_symlink()
-            else None
-        )
-        if not isinstance(review_identity, dict) or review_identity.get("review_ref") != expected_review_ref:
-            identity_errors.append("task publication review_ref does not match Branch Review artifact")
-        if (
-            not isinstance(bindings, dict)
-            or bindings.get("publication_ref") != expected_publication_ref
-        ):
-            identity_errors.append("task publication identity is invalid")
-        if artifact.get("facts_sha256") != context_digest(
-            task_publication_legacy_facts_payload(artifact)
-        ):
-            identity_errors.append("task publication facts digest is invalid")
-        errors = sorted(set([*schema_errors, *semantic_errors, *identity_errors]))
-        if errors:
-            raise WorkflowError(
-                "Active pr-readiness.json is not a valid checked ready gate.",
-                exit_code=2,
-                payload={"errors": errors},
-            )
-    else:
-        if set(artifact) != {"ready", "body_file", "publish_inputs", "publish_inputs_sha256"}:
-            raise WorkflowError("Legacy pr-readiness.json keys are invalid.", exit_code=2)
-        if artifact.get("ready") is not True or artifact.get("body_file") != PR_BODY_ARTIFACT:
-            raise WorkflowError(
-                "Legacy pr-readiness.json must bind ready=true to task-local pr-body.md.",
-                exit_code=2,
-            )
     publish_inputs = artifact.get("publish_inputs")
+    owner_payload = {
+        key: value for key, value in artifact.items() if key != "publish_inputs"
+    }
+    errors = skill_json_schema_validation_errors(
+        owner_payload,
+        task_publication_schema(root),
+        "task publication readiness",
+    )
+    errors.extend(task_publication_check_errors(root, task_dir, owner_payload))
+    if (owner_payload.get("route") or {}).get("typed_exit") != "ready":
+        errors.append("task publication gate is not ready")
+    if owner_payload.get("branch_review_commit") != review_gate_commit(gate):
+        errors.append(
+            "task publication branch_review_commit does not match Branch Review"
+        )
+    if errors:
+        raise WorkflowError(
+            "pr-readiness.json is not a current checked Publication gate.",
+            exit_code=2,
+            payload={"errors": sorted(set(errors))},
+        )
     if not isinstance(publish_inputs, dict) or frozenset(publish_inputs) not in {
         frozenset(PR_READINESS_PUBLISH_INPUT_KEYS),
         frozenset(PR_READINESS_CLOSEOUT_INPUT_KEYS),
     }:
         raise WorkflowError("pr-readiness.json publish_inputs keys are invalid.", exit_code=2)
-    if not active_publication_gate:
-        digest = str(artifact.get("publish_inputs_sha256") or "")
-        if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != canonical_json_sha256(publish_inputs):
-            raise WorkflowError("pr-readiness.json publish_inputs digest does not match canonical content.", exit_code=2)
     if publish_inputs.get("body_source") != PR_BODY_ARTIFACT:
         raise WorkflowError("pr-readiness.json body_source must equal pr-body.md.", exit_code=2)
-    if publish_inputs.get("reviewed_source") != f"body-artifact:{PR_READINESS_ARTIFACT}":
+    body_path = task_dir / PR_BODY_ARTIFACT
+    if not body_path.is_file() or body_path.is_symlink():
+        raise WorkflowError("pr-readiness.json bound pr-body.md is missing.", exit_code=2)
+    if publish_inputs.get("reviewed_source") != f"body-file:{repo_relative(root, body_path)}":
         raise WorkflowError("pr-readiness.json reviewed_source is invalid.", exit_code=2)
-    for key in ["repo", "base_branch", "head_branch", "reviewed_head_sha", "title", "body_sha256"]:
-        if not isinstance(publish_inputs.get(key), str) or not str(publish_inputs[key]).strip():
-            raise WorkflowError(f"pr-readiness.json publish_inputs.{key} is invalid.", exit_code=2)
-    if not re.fullmatch(r"[0-9a-f]{40}", str(publish_inputs["reviewed_head_sha"])):
-        raise WorkflowError("pr-readiness.json reviewed_head_sha is invalid.", exit_code=2)
+    for key in [
+        "repo",
+        "base_branch",
+        "head_branch",
+        "branch_review_commit",
+        "title",
+        "body_sha256",
+    ]:
+        if not isinstance(publish_inputs.get(key), str) or not str(
+            publish_inputs[key]
+        ).strip():
+            raise WorkflowError(
+                f"pr-readiness.json publish_inputs.{key} is invalid.",
+                exit_code=2,
+            )
+    if not re.fullmatch(
+        r"[0-9a-f]{40}", str(publish_inputs["branch_review_commit"])
+    ):
+        raise WorkflowError(
+            "pr-readiness.json branch_review_commit is invalid.", exit_code=2
+        )
     if not re.fullmatch(r"[0-9a-f]{64}", str(publish_inputs["body_sha256"])):
         raise WorkflowError("pr-readiness.json body_sha256 is invalid.", exit_code=2)
     if not isinstance(publish_inputs.get("draft"), bool):
         raise WorkflowError("pr-readiness.json draft must be boolean.", exit_code=2)
     closeout_digest = publish_inputs.get("closeout_plan_digest")
-    if closeout_digest is not None and not re.fullmatch(r"[0-9a-f]{64}", str(closeout_digest)):
-        raise WorkflowError("pr-readiness.json closeout_plan_digest is invalid.", exit_code=2)
+    if closeout_digest is not None and not re.fullmatch(
+        r"[0-9a-f]{64}", str(closeout_digest)
+    ):
+        raise WorkflowError(
+            "pr-readiness.json closeout_plan_digest is invalid.", exit_code=2
+        )
 
-    body_path = task_dir / PR_BODY_ARTIFACT
-    if not body_path.is_file():
-        raise WorkflowError("pr-readiness.json bound pr-body.md is missing.", exit_code=2)
     body_bytes = body_path.read_bytes()
     if hashlib.sha256(body_bytes).hexdigest() != publish_inputs["body_sha256"]:
-        raise WorkflowError("pr-readiness.json body digest does not match pr-body.md.", exit_code=2)
+        raise WorkflowError(
+            "pr-readiness.json body digest does not match pr-body.md.", exit_code=2
+        )
     try:
         body = body_bytes.decode("utf-8")
     except UnicodeDecodeError as exc:
-        raise WorkflowError("pr-readiness.json bound pr-body.md is not valid UTF-8.", exit_code=2) from exc
+        raise WorkflowError(
+            "pr-readiness.json bound pr-body.md is not valid UTF-8.", exit_code=2
+        ) from exc
     if not body.strip():
         raise WorkflowError("pr-readiness.json bound pr-body.md is empty.", exit_code=2)
-
-    reviewed_head = str(gate.get("head") or "")
-    if reviewed_head != publish_inputs["reviewed_head_sha"]:
-        raise WorkflowError("pr-readiness.json reviewed HEAD does not match Branch Review Gate.", exit_code=2)
+    if publish_inputs["branch_review_commit"] != review_gate_commit(gate):
+        raise WorkflowError(
+            "pr-readiness.json branch_review_commit does not match Branch Review.",
+            exit_code=2,
+        )
 
     if require_committed:
         relative_paths = [repo_relative(root, path), repo_relative(root, body_path)]
@@ -7979,7 +7726,10 @@ def read_pr_readiness_publish_inputs(
                 exit_code=2,
                 payload={"dirty_paths": dirty_bound},
             )
-        for bound_path, relative in [(path, relative_paths[0]), (body_path, relative_paths[1])]:
+        for bound_path, relative in [
+            (path, relative_paths[0]),
+            (body_path, relative_paths[1]),
+        ]:
             blob = subprocess.run(
                 ["git", "show", f"HEAD:{relative}"],
                 cwd=str(root),
@@ -7988,30 +7738,17 @@ def read_pr_readiness_publish_inputs(
             )
             if blob.returncode != 0 or blob.stdout != bound_path.read_bytes():
                 raise WorkflowError(
-                    "PR readiness artifact or body does not match its current HEAD Git blob.",
+                    "PR readiness artifact or body does not match its current HEAD blob.",
                     exit_code=2,
                     payload={"path": relative},
                 )
-        history = run(
-            ["git", "log", "--format=%H", "--", relative_paths[0]],
-            cwd=root,
-            check=False,
-        )
-        commits = [line for line in history.stdout.splitlines() if line.strip()]
-        if history.returncode != 0 or len(commits) != 1:
+        if not is_ancestor(root, str(publish_inputs["branch_review_commit"])):
             raise WorkflowError(
-                "pr-readiness.json must be immutable after its initial metadata commit.",
+                "PR readiness branch_review_commit is not current history.",
                 exit_code=2,
-                payload={"artifact_commit_count": len(commits)},
             )
-        ancestor = run(
-            ["git", "merge-base", "--is-ancestor", str(publish_inputs["reviewed_head_sha"]), "HEAD"],
-            cwd=root,
-            check=False,
-        )
-        if ancestor.returncode != 0:
-            raise WorkflowError("PR readiness reviewed HEAD is not an ancestor of current HEAD.", exit_code=2)
     return path, publish_inputs, body
+
 
 
 def closeout_lexical_path(path: Path) -> Path:
@@ -8098,12 +7835,6 @@ def resolve_closeout_reviewed_body(
     args: argparse.Namespace,
 ) -> tuple[str, str]:
     body_file = getattr(args, "body_file", None)
-    body_artifact = getattr(args, "body_artifact", None)
-    if body_artifact:
-        raise WorkflowError(
-            "finish-work does not accept --body-artifact; pass the current task-local pr-body.md with --body-file.",
-            exit_code=2,
-        )
     if not body_file:
         raise WorkflowError(
             "finish-work requires --body-file pointing to the current task-local pr-body.md.",
@@ -8163,7 +7894,7 @@ def validate_reviewed_body_source_for_publish(body_source: str, draft: bool) -> 
     if draft or is_reviewed_pr_body_source(body_source):
         return []
     return [
-        "non-draft publish requires an AI-reviewed --body-file or --body-artifact; generated PR body is preview-only.",
+        "non-draft publish requires the reviewed task-local --body-file; generated PR body is preview-only.",
     ]
 
 
@@ -8313,33 +8044,6 @@ def cmd_resolve_human_artifacts(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
-    legacy_mutations = [
-        option
-        for enabled, option in (
-            (args.create_issue_confirmed, "--create-issue-confirmed"),
-            (args.create_worktree, "--create-worktree"),
-            (args.create_task, "--create-task"),
-        )
-        if enabled
-    ]
-    if legacy_mutations:
-        raise WorkflowError(
-            "prepare-task mutation flags are disabled. Enter guru-create-task-workspace with the complete checker-passed Intake evidence.",
-            exit_code=2,
-            payload={
-                "migration": "guru-create-task-workspace",
-                "legacy_mutation_flags": legacy_mutations,
-                "required_prerequisite_skills": [
-                    "guru-sync-base",
-                    "guru-discover-change-context",
-                    "guru-clarify-requirements",
-                    "guru-review-contract-wording",
-                    "guru-review-change-request",
-                ],
-                "writes_performed": False,
-            },
-        )
-
     require_tool("git")
     requirement = " ".join(args.requirement).strip()
     if not requirement:
@@ -8426,12 +8130,6 @@ def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
             "body": proposed_body,
             "labels": list(config.get("created_issue_labels") or []),
         }
-        if config.get("auto_create_issue", False):
-            proposed_issue["legacy_auto_create_issue_config_ignored"] = True
-            proposed_issue["legacy_auto_create_issue_note"] = (
-                "auto_create_issue is kept only for backward-compatible config parsing; "
-                "prepare is query-only and guru-create-task-workspace owns issue creation."
-            )
 
     if issue is not None:
         issue_number = int(issue["number"])
@@ -8532,219 +8230,49 @@ def review_branch_task_commit_evidence_errors(
     public_input: dict[str, Any] | None = None,
 ) -> list[str]:
     errors: list[str] = []
-    if public_input is not None:
-        current = current_head(root)
-        committed_head = str(public_input.get("committed_head") or "")
-        try:
-            base_branch = base_branch_from_sources(
-                argparse.Namespace(base_branch=None),
-                task,
-                task_context,
-            )
-            expected_task = repo_relative(root, task_dir)
-            expected_base_ref = diff_base_ref(root, base_branch)
-            if (
-                public_input.get("task_ref") != expected_task
-                or public_input.get("base_ref") != expected_base_ref
-            ):
-                errors.append(
-                    "review entry public task/base/committed HEAD identity is stale."
-                )
-            errors.extend(
-                review_branch_content_continuity_errors(
-                    root,
-                    task_dir,
-                    committed_head,
-                    current,
-                )
-            )
-            parents = run_stdout(
-                ["git", "show", "-s", "--format=%P", committed_head], cwd=root
-            ).split()
-            raw_message = task_commit_raw_message(root, committed_head)
-            subject, body = task_commit_message_parts(
-                raw_message.decode("utf-8", "strict")
-            )
-            primary_issue = primary_issue_number_from_ledger(
-                load_issue_scope_ledger(task_dir, task_context)
-            )
-            _kind, message_errors = validate_commit_message(
-                subject, body, primary_issue=primary_issue
-            )
-            committed_paths = git_nul_path_set(
-                root,
-                [
-                    "diff-tree", "--root", "--no-commit-id", "--name-only",
-                    "--no-renames", "-r", "-z", committed_head,
-                ],
-            )
-            if len(parents) != 1:
-                errors.append(
-                    "review entry current task commit must have exactly one parent."
-                )
-            if not committed_paths:
-                errors.append("review entry current commit has no changed paths.")
-            errors.extend(
-                "review entry current commit message: " + item
-                for item in message_errors
-            )
-        except (UnicodeDecodeError, WorkflowError) as exc:
-            errors.append(f"review entry live commit validation failed: {exc}")
-        return errors
-
-    # Compatibility only: pre-2.1 active tasks may identify the committed
-    # result through their tracked terminal plan. New calls use live Git above.
-    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
-    candidates = (
-        sorted(plan_dir.glob("[0-9][0-9][0-9].json"))
-        if plan_dir.is_dir()
-        else []
-    )
-    if not candidates:
-        return ["review entry task commit evidence is missing."]
-
+    if public_input is None:
+        return ["review entry requires the current branch_review_commit input."]
     current = current_head(root)
-    current_candidates: list[tuple[Path, dict[str, Any]]] = []
-    unreadable: list[str] = []
-    for candidate in candidates:
-        try:
-            payload = read_json(candidate)
-        except WorkflowError:
-            unreadable.append(repo_relative(root, candidate))
-            continue
-        result = payload.get("result") if isinstance(payload.get("result"), dict) else {}
-        if result.get("status") == "committed" and result.get("commit_sha") == current:
-            current_candidates.append((candidate, payload))
-    if len(current_candidates) != 1:
-        detail = (
-            "none"
-            if not current_candidates
-            else ", ".join(repo_relative(root, item[0]) for item in current_candidates)
-        )
-        errors.append(
-            "review entry task commit evidence does not identify exactly one current committed result: "
-            + detail
-            + "."
-        )
-        if unreadable:
-            errors.append(
-                "review entry task commit evidence contains unreadable candidates: "
-                + ", ".join(unreadable)
-                + "."
-            )
-        return errors
-
-    candidate_path, plan = current_candidates[0]
-    candidate_relative = repo_relative(root, candidate_path)
-    if plan.get("sequence") != candidate_path.stem:
-        errors.append("review entry task commit sequence does not match its artifact filename.")
-    errors.extend(
-        "review entry task commit result: " + item
-        for item in task_commit_result_validation_errors(root, plan)
-    )
-
-    planned = copy.deepcopy(plan)
-    planned["result"] = {"status": "planned", "exit": None}
-    freshness = plan.get("freshness") if isinstance(plan.get("freshness"), dict) else {}
-    if freshness.get("plan_digest") != task_commit_plan_digest(planned):
-        errors.append("review entry task commit plan digest is stale.")
-
-    task_plan = plan.get("task") if isinstance(plan.get("task"), dict) else {}
-    expected_task_path = repo_relative(root, task_dir)
-    expected_branch = current_branch(root)
-    if (
-        task_plan.get("id") != task.get("id")
-        or task_plan.get("path") != expected_task_path
-        or task_plan.get("status") != "in_progress"
-        or task.get("status") != "in_progress"
-        or task_plan.get("branch") != expected_branch
-        or task.get("branch") != expected_branch
-    ):
-        errors.append("review entry task commit task/branch identity is stale.")
-
-    base_branch = base_branch_from_sources(
-        argparse.Namespace(base_branch=None),
-        task,
-        task_context,
-    )
-    expected_base_ref = diff_base_ref(root, base_branch)
-    git_plan = plan.get("git") if isinstance(plan.get("git"), dict) else {}
-    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
-    if (
-        git_plan.get("base_branch") != base_branch
-        or git_plan.get("base_ref") != expected_base_ref
-        or result.get("parent") != git_plan.get("pre_commit_head")
-        or result.get("commit_sha") != current
-    ):
-        errors.append("review entry task commit Git identity is stale.")
-    if public_input is not None and (
-        public_input.get("task_ref") != expected_task_path
-        or public_input.get("base_ref") != expected_base_ref
-        or public_input.get("committed_head") != current
-    ):
-        errors.append("review entry public task/base/committed HEAD identity is stale.")
-
-    evidence = plan.get("evidence") if isinstance(plan.get("evidence"), dict) else {}
-    evidence_paths = {
-        "planning_approval": planning_approval_path(root, task_dir),
-        "phase2_check": phase2_check_path(root, task_dir),
-        "issue_scope_ledger": issue_scope_ledger_path(task_dir),
-        "task": task_dir / "task.json",
-    }
-    for label, path in evidence_paths.items():
-        errors.extend(
-            "review entry task commit " + item
-            for item in task_commit_evidence_errors(
-                root,
-                evidence.get(label),
-                path,
-                label,
-            )
-        )
-
+    branch_review_commit = str(public_input.get("branch_review_commit") or "")
     try:
+        base_branch = base_branch_from_sources(
+            argparse.Namespace(base_branch=None), task, task_context
+        )
+        expected_task_path = repo_relative(root, task_dir)
+        expected_base_ref = diff_base_ref(root, base_branch)
+        if (
+            public_input.get("task_ref") != expected_task_path
+            or public_input.get("base_ref") != expected_base_ref
+            or branch_review_commit != current
+        ):
+            errors.append("review entry public task/base/commit identity is stale.")
         parents = run_stdout(
-            ["git", "show", "-s", "--format=%P", current],
-            cwd=root,
+            ["git", "show", "-s", "--format=%P", branch_review_commit], cwd=root
         ).split()
-        if parents != [str(result.get("parent") or "")]:
-            errors.append("review entry task commit parent does not match the current commit.")
-        raw_message = task_commit_raw_message(root, current)
-        if hashlib.sha256(raw_message).hexdigest() != result.get("message_sha256"):
-            errors.append("review entry task commit message digest is stale.")
+        raw_message = task_commit_raw_message(root, branch_review_commit)
+        subject, body = task_commit_message_parts(raw_message.decode("utf-8", "strict"))
+        primary_issue = primary_issue_number_from_ledger(
+            load_issue_scope_ledger(task_dir, task_context)
+        )
+        _kind, message_errors = validate_commit_message(
+            subject, body, primary_issue=primary_issue
+        )
         committed_paths = git_nul_path_set(
             root,
             [
                 "diff-tree", "--root", "--no-commit-id", "--name-only",
-                "--no-renames", "-r", "-z", current,
+                "--no-renames", "-r", "-z", branch_review_commit,
             ],
         )
-        exact_paths = {
-            item for item in plan.get("exact_stage_paths", []) if isinstance(item, str)
-        }
-        if committed_paths != exact_paths or set(result.get("committed_paths", [])) != exact_paths:
-            errors.append("review entry task commit path identity is stale.")
-        recorded_tree = (
-            result.get("tree_evidence")
-            if isinstance(result.get("tree_evidence"), dict)
-            else {}
+        if len(parents) != 1:
+            errors.append("review entry current task commit must have exactly one parent.")
+        if not committed_paths:
+            errors.append("review entry current commit has no changed paths.")
+        errors.extend(
+            "review entry current commit message: " + item for item in message_errors
         )
-        expected_tree = str(recorded_tree.get("expected_tree") or "")
-        actual_tree = task_commit_commit_tree(root, current)
-        recomputed_tree = task_commit_tree_evidence(
-            root,
-            expected_tree,
-            actual_tree,
-            exact_paths,
-            actual_source="commit",
-        )
-        if recorded_tree != recomputed_tree or recomputed_tree.get("matches") is not True:
-            errors.append("review entry task commit tree evidence is stale.")
-    except WorkflowError as exc:
-        errors.append(f"review entry task commit object validation failed: {exc}")
-
-    if candidate_relative not in set(result.get("committed_paths", [])):
-        errors.append("review entry task commit result does not retain its own evidence artifact.")
+    except (UnicodeDecodeError, WorkflowError) as exc:
+        errors.append(f"review entry live commit validation failed: {exc}")
     return errors
 
 
@@ -8754,7 +8282,6 @@ def review_branch_entry_precondition_errors(
     config: dict[str, Any],
     public_input: dict[str, Any] | None = None,
     owner_result: dict[str, Any] | None = None,
-    direct_runtime_inputs: list[str] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     try:
@@ -8787,7 +8314,7 @@ def review_branch_entry_precondition_errors(
     try:
         expected_base_ref = diff_base_ref(root, expected_base_branch)
         review_target = (
-            str(public_input.get("committed_head") or "")
+            str(public_input.get("branch_review_commit") or "")
             if public_input is not None
             else current
         )
@@ -8801,15 +8328,24 @@ def review_branch_entry_precondition_errors(
     ):
         errors.append("review entry invocation freshness does not match task/base.")
     if public_input is not None:
-        errors.extend(
-            "review entry invocation freshness: " + item
-            for item in review_branch_content_continuity_errors(
-                root,
-                task_dir,
-                str(public_input.get("committed_head") or ""),
-                current,
+        branch_review_commit = str(public_input.get("branch_review_commit") or "")
+        try:
+            entry_identity = reviewed_content_identity(
+                root, branch_review_commit, include_worktree=False
+            )["sha256"]
+        except WorkflowError as exc:
+            errors.append(f"review entry invocation freshness is unavailable: {exc}")
+        else:
+            errors.extend(
+                "review entry invocation freshness: " + item
+                for item in review_branch_content_continuity_errors(
+                    root,
+                    task_dir,
+                    branch_review_commit,
+                    entry_identity,
+                    current,
+                )
             )
-        )
 
     try:
         errors.extend(
@@ -8855,106 +8391,16 @@ def review_branch_entry_precondition_errors(
     except WorkflowError as exc:
         errors.append(f"review entry working tree cannot be inspected: {exc}")
     else:
-        allowed_paths = review_branch_task_metadata_allowlist(
-            root,
-            task_dir,
-        ) | review_branch_runtime_input_allowlist(
-            root,
-            direct_runtime_inputs or [],
-        )
-        undeclared_paths = [
-            path for path in dirty_paths if path not in allowed_paths
+        dirty_reviewed_paths = [
+            path for path in dirty_paths if not reviewed_content_metadata_path(path)
         ]
-        if undeclared_paths:
+        if dirty_reviewed_paths:
             errors.append(
-                "review entry working tree has paths outside the exact "
-                "owner metadata and direct runtime-input allowlist: "
-                + ", ".join(undeclared_paths[:20])
+                "review entry working tree has uncommitted reviewed content: "
+                + ", ".join(dirty_reviewed_paths[:20])
                 + "."
             )
     return errors
-
-
-def review_branch_task_metadata_allowlist(
-    root: Path,
-    task_dir: Path,
-) -> set[str]:
-    task_ref = repo_relative(root, task_dir).rstrip("/")
-    allowed = {
-        f"{task_ref}/{filename}"
-        for filename in BRANCH_REVIEW_TASK_METADATA_FILES
-    }
-
-    legacy_gate = task_dir / "review-gate.json"
-    legacy_artifacts = not legacy_gate.is_file()
-    if legacy_gate.is_file():
-        try:
-            legacy_artifacts = read_json(legacy_gate).get("schema_version") not in {
-                "2.1",
-                "2.2",
-            }
-        except WorkflowError:
-            legacy_artifacts = True
-    if legacy_artifacts:
-        for filename in (AGENT_ASSIGNMENT_ARTIFACT, REVIEW_REPORT_ARTIFACT):
-            path = task_dir / filename
-            if path.is_file() and not path.is_symlink():
-                allowed.add(f"{task_ref}/{filename}")
-        reports_dir = task_dir / "reviews"
-        if reports_dir.is_dir() and not reports_dir.is_symlink():
-            for report in sorted(reports_dir.glob("*.md")):
-                if report.is_file() and not report.is_symlink():
-                    allowed.add(repo_relative(root, report))
-
-    current = current_head(root)
-    plan_dir = task_dir / TASK_COMMIT_PLAN_DIR
-    owned_plans: list[Path] = []
-    if plan_dir.is_dir():
-        for candidate in sorted(plan_dir.glob("[0-9][0-9][0-9].json")):
-            try:
-                payload = read_json(candidate)
-            except WorkflowError:
-                continue
-            result = (
-                payload.get("result")
-                if isinstance(payload.get("result"), dict)
-                else {}
-            )
-            commit_sha = str(result.get("commit_sha") or "")
-            if result.get("status") != "committed" or not re.fullmatch(
-                r"[0-9a-f]{40}", commit_sha
-            ):
-                continue
-            ancestor = run(
-                ["git", "merge-base", "--is-ancestor", commit_sha, current],
-                cwd=root,
-                check=False,
-            )
-            if ancestor.returncode == 0:
-                owned_plans.append(candidate)
-    for candidate in owned_plans:
-        allowed.add(repo_relative(root, candidate))
-    return allowed
-
-
-def review_branch_runtime_input_allowlist(
-    root: Path,
-    input_values: list[str],
-) -> set[str]:
-    allowed: set[str] = set()
-    for input_value in input_values:
-        relative = skill_safe_relative(input_value)
-        if (
-            relative is None
-            or not relative.as_posix().startswith(
-                BRANCH_REVIEW_RUNTIME_INPUT_PREFIX
-            )
-        ):
-            continue
-        path = root / relative
-        if path.is_file() and not path.is_symlink():
-            allowed.add(relative.as_posix())
-    return allowed
 
 
 def review_branch_finding_lifecycle_errors(
@@ -8962,7 +8408,7 @@ def review_branch_finding_lifecycle_errors(
     task_dir: Path,
     semantic_review: dict[str, Any],
     *,
-    reviewed_content_head: str | None = None,
+    review_commit: str | None = None,
 ) -> list[str]:
     findings = (
         semantic_review.get("qualified_findings")
@@ -8977,13 +8423,13 @@ def review_branch_finding_lifecycle_errors(
         for item in findings
     ):
         current = current_head(root)
-        content_head = str(reviewed_content_head or current)
+        content_head = str(review_commit or current)
         errors: list[str] = []
         if not re.fullmatch(r"[0-9a-f]{40}", content_head) or not is_ancestor(
             root, content_head, current
         ):
             errors.append(
-                "fresh-final reviewed_content_head is not a current-history commit."
+                "fresh-final review_commit is not a current-history commit."
             )
         for finding in findings:
             if not isinstance(finding, dict):
@@ -8997,7 +8443,7 @@ def review_branch_finding_lifecycle_errors(
                 root, introduced, content_head
             ):
                 errors.append(
-                    f"qualified finding {finding_ref} introduced_head is not an ancestor of reviewed_content_head."
+                    f"qualified finding {finding_ref} introduced_head is not an ancestor of review_commit."
                 )
             if finding.get("status") == "open":
                 if (
@@ -9030,46 +8476,14 @@ def review_branch_finding_lifecycle_errors(
                     f"resolved finding {finding_ref} must bind introduced -> fix -> closure -> reviewed content ancestry and concrete closure evidence."
                 )
         return errors
-    if any(isinstance(item, dict) and "introduced_head" in item for item in findings):
-        current = current_head(root)
-        errors: list[str] = []
-        for finding in findings:
-            if not isinstance(finding, dict):
-                continue
-            finding_ref = str(finding.get("finding_ref") or "(missing)")
-            introduced = str(finding.get("introduced_head") or "")
-            resolved_at = finding.get("resolved_at_head")
-            closure = finding.get("closure_evidence")
-            if not re.fullmatch(r"[0-9a-f]{40}", introduced) or not is_ancestor(
-                root, introduced, current
-            ):
-                errors.append(
-                    f"qualified finding {finding_ref} introduced_head is not a current-history commit."
-                )
-            if finding.get("status") == "open":
-                if introduced != current or resolved_at is not None or closure:
-                    errors.append(
-                        f"open qualified finding {finding_ref} has contradictory closure state."
-                    )
-            elif finding.get("status") == "resolved":
-                if resolved_at != current or not isinstance(closure, list) or not closure:
-                    errors.append(
-                        f"resolved finding {finding_ref} must bind closure evidence to the current HEAD."
-                    )
-            else:
-                errors.append(f"qualified finding {finding_ref} has an invalid status.")
-        return errors
-    return [
-        "legacy qualified finding shape requires current guru-review-branch "
-        "owner re-entry"
-    ]
+    return ["qualified finding shape is invalid for the current guru-review-branch contract."]
 
 
 def review_branch_semantic_payload(
     root: Path,
     value: str | None,
     typed_exit: str,
-    reviewed_head: str,
+    review_commit: str,
 ) -> dict[str, Any]:
     authored = contract_wording_read_input(root, value, "guru-review-branch semantic review")
     if set(authored) != {"candidates", "ai_review_gate"}:
@@ -9170,7 +8584,7 @@ def review_branch_semantic_payload(
                 or (
                     status == "open"
                     and (
-                        raw.get("introduced_head") != reviewed_head
+                        raw.get("introduced_head") != review_commit
                         or raw.get("fix_head") is not None
                         or raw.get("closure_head") is not None
                         or raw.get("closure_evidence")
@@ -9289,10 +8703,6 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         config,
         public_input=public_input,
-        direct_runtime_inputs=[
-            str(getattr(args, "skill_input", "") or ""),
-            str(getattr(args, "semantic_review_file", "") or ""),
-        ],
     )
     if entry_errors:
         raise WorkflowError(
@@ -9306,7 +8716,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     if (
         public_input.get("task_ref") != repo_relative(root, task_dir)
         or public_input.get("base_ref") != diff_base_ref(root, base_branch)
-        or public_input.get("committed_head") != current_head(root)
+        or public_input.get("branch_review_commit") != current_head(root)
     ):
         raise WorkflowError(
             "guru-review-branch public task/base/HEAD identity is stale.",
@@ -9348,7 +8758,7 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         root,
         task_dir,
         semantic_review,
-        reviewed_content_head=current_head(root),
+        review_commit=current_head(root),
     )
     if lifecycle_errors:
         raise WorkflowError(
@@ -9379,14 +8789,15 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
         )
     payload = {
-        "schema_version": "2.2",
+        "schema_version": BRANCH_REVIEW_SCHEMA_VERSION,
         "skill_id": BRANCH_REVIEW_SKILL_ID,
         "generated_at": now_iso(),
         "task_dir": repo_relative(root, task_dir),
         "mode": public_input["mode"],
         "review_intent": public_input["review_intent"],
         "typed_exit": typed_exit,
-        "reviewed_content_head": current_head(root),
+        "review_commit": current_head(root),
+        "reviewed_content_sha256": reviewed_content_identity(root)["sha256"],
         "base_ref": diff_base_ref(root, base_branch),
         "semantic_review": semantic_review,
         "verification_evidence": {
@@ -9400,21 +8811,12 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
         for key, value in payload.items()
         if key not in {"generated_at", "facts_sha256"}
     })
-    path = configured_review_gate_path(root, task_dir, config, for_write=True)
+    path = configured_review_gate_path(root, task_dir)
     status_before = git_status_paths(root, fail_closed=True)
-    convergence = {"status": "not_run", "artifact": "review-gate.json"}
     if not args.dry_run:
         write_json(path, payload)
-        convergence = ai_first_converge_legacy_owner_residue(
-            root,
-            task_dir,
-            "review-gate.json",
-        )
         status_after = git_status_paths(root, fail_closed=True)
-        if (
-            convergence["status"] != "untracked_removed"
-            and status_after != status_before
-        ):
+        if status_after != status_before:
             raise WorkflowError(
                 "Branch Review owner checkpoint changed tracked status.",
                 exit_code=2,
@@ -9424,7 +8826,6 @@ def cmd_review_branch(args: argparse.Namespace) -> dict[str, Any]:
     payload["tracked_status_unchanged"] = (
         True if args.dry_run else git_status_paths(root, fail_closed=True) == status_before
     )
-    payload["legacy_convergence"] = convergence
     return payload
 
 
@@ -9650,11 +9051,7 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
         authored=authored,
         task_context=task_context,
     )
-    path = planning_approval_path(root, task_dir, for_write=True)
-    convergence = {
-        "status": "not_applicable",
-        "artifact": PLANNING_APPROVAL_ARTIFACT,
-    }
+    path = planning_approval_path(root, task_dir)
     if not args.dry_run:
         write_json(path, payload)
         _checked_path, checked_payload, errors = validate_planning_approval(
@@ -9669,14 +9066,8 @@ def cmd_record_planning_approval(args: argparse.Namespace) -> dict[str, Any]:
                 payload={"error_codes": errors},
             )
         payload = checked_payload
-        convergence = ai_first_converge_legacy_owner_residue(
-            root,
-            task_dir,
-            PLANNING_APPROVAL_ARTIFACT,
-        )
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
-    payload["legacy_convergence"] = convergence
     return payload
 
 
@@ -9735,7 +9126,7 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": sorted(set(errors))},
         )
-    path = phase2_check_path(root, task_dir, for_write=True)
+    path = phase2_check_path(root, task_dir)
     if not args.dry_run:
         write_json(path, payload)
         checked_path, checked_payload, checked_errors = validate_phase2_check(root, task_dir)
@@ -9746,11 +9137,6 @@ def cmd_record_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
                 payload={"artifact_path": str(checked_path), "errors": checked_errors},
             )
         payload = checked_payload
-        ai_first_converge_legacy_owner_residue(
-            root,
-            task_dir,
-            PHASE2_CHECK_ARTIFACT,
-        )
     payload["artifact_path"] = str(path)
     payload["dry_run"] = bool(args.dry_run)
     return payload
@@ -9774,7 +9160,7 @@ def cmd_check_phase2_check(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "task_dir": str(task_dir),
         "head": current_head(root),
-        "checked_head": payload.get("checked_head"),
+        "phase2_capture_commit": payload.get("phase2_capture_commit"),
         "typed_exit": payload.get("typed_exit"),
         "route": payload.get("route"),
         "consumer": payload.get("consumer"),
@@ -9792,20 +9178,16 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
         root,
         task_dir,
         config,
-        bool(getattr(args, "allow_metadata_after_gate", False)),
         require_pass=not allow_nonpass,
     )
-    entry_input = None
-    if gate.get("schema_version") in {"2.1", "2.2"}:
-        reviewed_content_head = review_gate_content_head(gate)
-        entry_input = {
-            "profile": "branch_review",
-            "mode": gate.get("mode"),
-            "task_ref": gate.get("task_dir"),
-            "base_ref": gate.get("base_ref"),
-            "committed_head": reviewed_content_head,
-            "review_intent": gate.get("review_intent"),
-        }
+    entry_input = {
+        "profile": "branch_review",
+        "mode": gate.get("mode"),
+        "task_ref": gate.get("task_dir"),
+        "base_ref": gate.get("base_ref"),
+        "branch_review_commit": review_gate_commit(gate),
+        "review_intent": gate.get("review_intent"),
+    }
     entry_errors = review_branch_entry_precondition_errors(
         root,
         task_dir,
@@ -9830,7 +9212,7 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
         "artifact_path": str(path),
         "task_dir": str(task_dir),
         "head": current_head(root),
-        "reviewed_content_head": review_gate_content_head(gate),
+        "review_commit": review_gate_commit(gate),
         "typed_exit": gate.get("typed_exit") or "passed",
         "facts_sha256": gate.get("facts_sha256"),
         "artifact_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -9857,24 +9239,6 @@ TASK_PUBLICATION_CONSUMERS = {
     },
     "blocked": {"kind": "stop", "id": "task-publication-review-blocked"},
 }
-TASK_PUBLICATION_LEGACY_EVIDENCE_FILES = (
-    "prd.md",
-    "design.md",
-    "implement.md",
-    "planning-approval.json",
-    "phase2-check.json",
-    "issue-scope-ledger.json",
-    "review-gate.json",
-    "pr-body.md",
-    "finish-summary-index.json",
-)
-TASK_PUBLICATION_TASK_METADATA_FILES = {
-    "issue-scope-ledger.json",
-    "pr-body.md",
-    "finish-summary-index.json",
-}
-
-
 def task_publication_schema(root: Path) -> dict[str, Any]:
     candidates = (
         root
@@ -9897,43 +9261,11 @@ def task_publication_schema(root: Path) -> dict[str, Any]:
 def task_publication_path(
     root: Path,
     task_dir: Path,
-    *,
-    for_write: bool = False,
 ) -> Path:
-    return ai_first_owner_artifact_path(
-        root,
-        task_dir,
-        PR_READINESS_ARTIFACT,
-        for_write=for_write,
-    )
+    return ai_first_owner_checkpoint_path(root, task_dir, PR_READINESS_ARTIFACT)
 
 
-def task_publication_legacy_artifact_bindings(
-    root: Path,
-    task_dir: Path,
-    config: dict[str, Any],
-) -> dict[str, dict[str, Any]]:
-    bindings: dict[str, dict[str, Any]] = {}
-    for name in TASK_PUBLICATION_LEGACY_EVIDENCE_FILES:
-        if name == PLANNING_APPROVAL_ARTIFACT:
-            path = planning_approval_path(root, task_dir)
-        elif name == PHASE2_CHECK_ARTIFACT:
-            path = phase2_check_path(root, task_dir)
-        elif name == "review-gate.json":
-            path = configured_review_gate_path(root, task_dir, config)
-        else:
-            path = task_dir / name
-        if not path.is_file() or path.is_symlink():
-            raise WorkflowError(
-                f"Task publication review requires task-local {name}.",
-                exit_code=2,
-            )
-        content = path.read_bytes()
-        bindings[name] = task_publication_legacy_artifact_binding(content)
-    return bindings
-
-
-def task_publication_legacy_artifact_binding(content: bytes) -> dict[str, Any]:
+def task_publication_artifact_binding(content: bytes) -> dict[str, Any]:
     return {
         "sha256": hashlib.sha256(content).hexdigest(),
         "size": len(content),
@@ -9988,65 +9320,12 @@ def task_publication_repository_binding(
     }
 
 
-def task_publication_task_metadata_allowlist(
-    root: Path,
-    task_dir: Path,
-) -> set[str]:
-    """Return the closed task-local metadata tail accepted at publication."""
-    task_ref = repo_relative(root, task_dir).rstrip("/")
-    return review_branch_task_metadata_allowlist(root, task_dir) | {
-        f"{task_ref}/{filename}"
-        for filename in TASK_PUBLICATION_TASK_METADATA_FILES
-    }
-
-
-def task_publication_runtime_input_allowlist(
-    root: Path,
-    input_values: list[str],
-) -> set[str]:
-    """Reuse the direct, repo-local runtime-input contract from Branch Review."""
-    return review_branch_runtime_input_allowlist(root, input_values)
-
-
-def task_publication_finalization_owned_status_allowlist(
-    root: Path,
-    task_dir: Path,
-    input_values: list[str],
-) -> set[str]:
-    """Accept only explicitly named finalizer compatibility paths."""
-    candidates = (
-        closeout_plan_path(task_dir),
-        task_dir / TASK_FINALIZATION_GATE_ARTIFACT,
-        marketplace_verification_path(task_dir, load_config(root)),
-    )
-    allowed: set[str] = set()
-    for path in candidates:
-        relative = repo_relative(root, path)
-        if relative in input_values and path.is_file() and not path.is_symlink():
-            allowed.add(relative)
-    return allowed
-
-
 def task_publication_unexpected_status_paths(
-    root: Path,
-    task_dir: Path,
     status_paths: list[str],
-    *,
-    direct_runtime_inputs: list[str] | None = None,
-    finalization_owned_paths: list[str] | None = None,
 ) -> list[str]:
-    allowed_paths = task_publication_task_metadata_allowlist(
-        root,
-        task_dir,
-    ) | task_publication_runtime_input_allowlist(
-        root,
-        direct_runtime_inputs or [],
-    ) | task_publication_finalization_owned_status_allowlist(
-        root,
-        task_dir,
-        finalization_owned_paths or [],
+    return sorted(
+        path for path in status_paths if not reviewed_content_metadata_path(path)
     )
-    return sorted(path for path in status_paths if path not in allowed_paths)
 
 
 def task_publication_binding(
@@ -10065,11 +9344,6 @@ def task_publication_entry_precondition_bindings(
     task_dir: Path,
     config: dict[str, Any],
     invocation: dict[str, Any],
-    *,
-    prior_payload: dict[str, Any] | None = None,
-    require_prior_artifact: bool = False,
-    direct_runtime_inputs: list[str] | None = None,
-    finalization_owned_paths: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, str]], list[str], dict[str, Any], dict[str, Any]]:
     """Rebuild the objective publication-entry preconditions.
 
@@ -10079,7 +9353,6 @@ def task_publication_entry_precondition_bindings(
     """
     bindings: dict[str, dict[str, str]] = {}
     errors: list[str] = []
-    del prior_payload, require_prior_artifact
 
     step_errors: list[str] = []
     try:
@@ -10165,23 +9438,28 @@ def task_publication_entry_precondition_bindings(
             "base_branch": expected_base,
         })
 
-    reviewed_head = str(invocation.get("reviewed_content_head") or "")
+    branch_review_commit = str(invocation.get("branch_review_commit") or "")
     review_handoff: dict[str, Any] = {
         "typed_exit": "passed",
-        "reviewed_content_head": reviewed_head,
+        "branch_review_commit": branch_review_commit,
     }
     review_errors: list[str] = []
-    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
-        review_errors.append("Branch Review DTO reviewed_content_head is invalid.")
+    if not re.fullmatch(r"[0-9a-f]{40}", branch_review_commit):
+        review_errors.append("Branch Review DTO branch_review_commit is invalid.")
     else:
-        review_errors.extend(
-            review_branch_content_continuity_errors(
+        try:
+            _gate_path, current_gate, gate_errors = validate_review_gate(
                 root,
                 task_dir,
-                reviewed_head,
-                current_head(root),
+                config,
             )
-        )
+            if review_gate_commit(current_gate) != branch_review_commit:
+                gate_errors.append(
+                    "Branch Review DTO does not match the current owner gate anchor."
+                )
+            review_errors.extend(gate_errors)
+        except WorkflowError as exc:
+            review_errors.append(str(exc))
     if review_errors:
         errors.extend(
             f"branch_review_handoff:{item}" for item in sorted(set(review_errors))
@@ -10201,7 +9479,7 @@ def task_publication_entry_precondition_bindings(
     ledger_errors: list[str] = []
     ledger_path = issue_scope_ledger_path(task_dir)
     try:
-        ledger = read_json(ledger_path)
+        ledger = load_issue_scope_ledger(task_dir, task_context)
     except WorkflowError as exc:
         ledger_errors.append(str(exc))
     if (
@@ -10212,17 +9490,9 @@ def task_publication_entry_precondition_bindings(
     ):
         ledger_errors.append("issue scope ledger identity is incomplete")
     if not ledger_errors:
-        marketplace_required = bool(
-            marketplace_verification_required(
-                {"changed_files": repository.get("diff_paths", [])}
-            )["candidate_surfaces"]
-        )
         ledger_errors.extend(
             validate_ledger_for_publish(
                 ledger,
-                {"schema_version": "2.2"},
-                allow_pending_remote_marketplace=True,
-                marketplace_required=marketplace_required,
             )
         )
     if ledger_errors:
@@ -10273,17 +9543,12 @@ def task_publication_entry_precondition_bindings(
 
     if repository:
         unexpected_status_paths = task_publication_unexpected_status_paths(
-            root,
-            task_dir,
             repository["status_paths"],
-            direct_runtime_inputs=direct_runtime_inputs,
-            finalization_owned_paths=finalization_owned_paths,
         )
         if unexpected_status_paths:
             errors.append(
                 "review_range_and_working_tree:working tree has paths outside "
-                "the exact publication task metadata and direct runtime-input "
-                "allowlist: "
+                "the reviewed-content boundary: "
                 + ", ".join(unexpected_status_paths[:20])
                 + "."
             )
@@ -10294,7 +9559,7 @@ def task_publication_entry_precondition_bindings(
 
     bindings["invocation_freshness"] = task_publication_binding({
         "task_ref": expected_task,
-        "reviewed_content_head": reviewed_head,
+        "branch_review_commit": branch_review_commit,
     })
 
     expected_ids = {
@@ -10323,343 +9588,18 @@ def task_publication_entry_precondition_bindings(
     return bindings, sorted(set(errors)), review_handoff, repository
 
 
-def task_publication_legacy_semantic_errors(
-    authored: dict[str, Any],
-    *,
-    reviewed_head: str,
-    review_ref: str,
-) -> list[str]:
-    errors: list[str] = []
-    if authored.get("profile") not in {"publication_review", "publication_review_stale"}:
-        errors.append("publication profile is invalid")
-    if authored.get("mode") not in {"workflow", "standalone"}:
-        errors.append("publication mode is invalid")
-    if authored.get("review_intent") not in {
-        "initial_review",
-        "metadata_revision_review",
-        "stale_reentry_review",
-    }:
-        errors.append("publication review_intent is invalid")
-    authored_reviewed_head = authored.get(
-        "reviewed_content_head",
-        authored.get("reviewed_head", reviewed_head),
-    )
-    if authored_reviewed_head != reviewed_head:
-        errors.append(
-            "publication reviewed_content_head does not match current Branch Review"
-        )
-    if "review_ref" in authored and authored.get("review_ref") != review_ref:
-        errors.append("publication review_ref does not match current Branch Review")
-    if authored.get("profile") == "publication_review_stale":
-        if authored.get("review_intent") != "stale_reentry_review":
-            errors.append("stale publication requires stale_reentry_review intent")
-        for key in ("stale_reason", "reentry_context", "supersedes_publication_ref"):
-            if not isinstance(authored.get(key), str) or not str(
-                authored.get(key) or ""
-            ).strip():
-                errors.append(f"stale publication requires non-empty {key}")
-    elif (
-        authored.get("stale_reason") is not None
-        or authored.get("reentry_context") is not None
-        or authored.get("supersedes_publication_ref") is not None
-    ):
-        errors.append("initial publication review cannot carry stale replacement fields")
-    typed_exit = authored.get("typed_exit")
-    if typed_exit not in TASK_PUBLICATION_CONSUMERS:
-        errors.append("publication typed_exit is invalid")
-    if authored.get("consumer") != TASK_PUBLICATION_CONSUMERS.get(str(typed_exit)):
-        errors.append("publication consumer does not match typed_exit")
-    semantic = authored.get("semantic_review")
-    if not isinstance(semantic, dict):
-        return [*errors, "publication semantic_review must be an object"]
-    semantic = copy.deepcopy(semantic)
-    semantic.pop("human_confirmation", None)
-    required_semantic_fields = {
-        "dimensions",
-        "findings",
-        "conclusions",
-        "revision_history",
-        "reviewer_process",
-        "ai_review_gate",
-    }
-    if set(semantic) != required_semantic_fields:
-        errors.append("publication semantic_review fields are incomplete or unknown")
-    dimensions = semantic.get("dimensions")
-    if not isinstance(dimensions, list):
-        errors.append("publication dimensions must be a list")
-        dimensions = []
-    ids = [
-        item.get("id")
-        for item in dimensions
-        if isinstance(item, dict)
-    ]
-    if ids != list(TASK_PUBLICATION_DIMENSIONS):
-        errors.append("publication dimensions must contain the exact ordered ten ids")
-    for item in dimensions:
-        if (
-            not isinstance(item, dict)
-            or item.get("status") not in {"passed", "finding", "blocked"}
-            or not isinstance(item.get("summary"), str)
-            or not item.get("summary")
-            or not isinstance(item.get("evidence_refs"), list)
-            or not item.get("evidence_refs")
-        ):
-            errors.append("publication dimension evidence is incomplete")
-            break
-    findings = semantic.get("findings")
-    if not isinstance(findings, list):
-        errors.append("publication findings must be a list")
-        findings = []
-    refs: list[str] = []
-    for finding in findings:
-        if not isinstance(finding, dict):
-            errors.append("publication finding must be an object")
-            continue
-        required = {
-            "finding_ref",
-            "dimension",
-            "summary",
-            "scope_basis",
-            "evidence_refs",
-            "affected_artifacts",
-            "route_class",
-            "status",
-            "closure_evidence",
-        }
-        if set(finding) != required:
-            errors.append("publication finding fields are incomplete or unknown")
-            continue
-        refs.append(str(finding.get("finding_ref") or ""))
-        if (
-            finding.get("dimension") not in TASK_PUBLICATION_DIMENSIONS
-            or finding.get("route_class")
-            not in {"metadata_revision", "task_work", "external_blocker"}
-            or finding.get("status") not in {"open", "closed"}
-        ):
-            errors.append("publication finding enum is invalid")
-        if (
-            not isinstance(finding.get("summary"), str)
-            or not str(finding.get("summary") or "").strip()
-            or not isinstance(finding.get("scope_basis"), str)
-            or not str(finding.get("scope_basis") or "").strip()
-            or not isinstance(finding.get("evidence_refs"), list)
-            or not finding.get("evidence_refs")
-            or any(
-                not isinstance(item, str) or not item.strip()
-                for item in finding.get("evidence_refs", [])
-            )
-            or not isinstance(finding.get("affected_artifacts"), list)
-            or not finding.get("affected_artifacts")
-            or any(
-                not isinstance(item, str) or not item.strip()
-                for item in finding.get("affected_artifacts", [])
-            )
-            or not isinstance(finding.get("closure_evidence"), list)
-            or not finding.get("closure_evidence")
-            or any(
-                not isinstance(item, str) or not item.strip()
-                for item in finding.get("closure_evidence", [])
-            )
-        ):
-            errors.append("publication finding evidence and closure must be non-empty")
-    if len(refs) != len(set(refs)) or any(not value for value in refs):
-        errors.append("publication finding refs must be unique and non-empty")
-    dimension_statuses = {
-        str(item.get("id")): str(item.get("status"))
-        for item in dimensions
-        if isinstance(item, dict)
-        and item.get("id") in TASK_PUBLICATION_DIMENSIONS
-        and item.get("status") in {"passed", "finding", "blocked"}
-    }
-    open_findings = [
-        item
-        for item in findings
-        if isinstance(item, dict) and item.get("status") == "open"
-    ]
-    for finding in open_findings:
-        dimension = str(finding.get("dimension") or "")
-        if dimension_statuses.get(dimension) == "passed":
-            errors.append(
-                "open publication finding must reference a non-passed dimension"
-            )
-    open_finding_dimensions = {
-        str(item.get("dimension") or "")
-        for item in open_findings
-    }
-    if any(
-        status != "passed" and dimension not in open_finding_dimensions
-        for dimension, status in dimension_statuses.items()
-    ):
-        errors.append(
-            "every non-passed publication dimension requires open finding evidence"
-        )
-    conclusions = semantic.get("conclusions")
-    if not isinstance(conclusions, dict) or set(conclusions) != {
-        "issue_scope",
-        "docs_ssot",
-        "safety_deployment",
-    }:
-        errors.append("publication conclusions are incomplete")
-    else:
-        for conclusion in conclusions.values():
-            if (
-                not isinstance(conclusion, dict)
-                or set(conclusion) != {"status", "summary", "evidence_refs"}
-                or conclusion.get("status") not in {"passed", "finding", "blocked"}
-                or not isinstance(conclusion.get("summary"), str)
-                or not conclusion.get("summary")
-                or not isinstance(conclusion.get("evidence_refs"), list)
-                or not conclusion.get("evidence_refs")
-            ):
-                errors.append("publication conclusion evidence is incomplete")
-                break
-    revisions = semantic.get("revision_history")
-    if not isinstance(revisions, list):
-        errors.append("publication revision_history must be a list")
-    else:
-        for revision in revisions:
-            if (
-                not isinstance(revision, dict)
-                or set(revision)
-                != {"revision_ref", "kind", "summary", "evidence_refs"}
-                or revision.get("kind")
-                not in {"metadata_revision", "stale_reentry", "replacement"}
-                or not isinstance(revision.get("revision_ref"), str)
-                or not revision.get("revision_ref")
-                or not isinstance(revision.get("summary"), str)
-                or not revision.get("summary")
-                or not isinstance(revision.get("evidence_refs"), list)
-                or not revision.get("evidence_refs")
-            ):
-                errors.append("publication revision_history evidence is incomplete")
-                break
-    reviewer_process = semantic.get("reviewer_process")
-    if (
-        not isinstance(reviewer_process, dict)
-        or set(reviewer_process) != {"reviewer", "summary", "evidence_refs"}
-        or not isinstance(reviewer_process.get("reviewer"), str)
-        or not reviewer_process.get("reviewer")
-        or not isinstance(reviewer_process.get("summary"), str)
-        or not reviewer_process.get("summary")
-        or not isinstance(reviewer_process.get("evidence_refs"), list)
-        or not reviewer_process.get("evidence_refs")
-    ):
-        errors.append("publication reviewer_process evidence is incomplete")
-    gate = semantic.get("ai_review_gate")
-    if (
-        not isinstance(gate, dict)
-        or gate.get("status") not in {"passed", "return_to_task_work", "blocked"}
-        or not isinstance(gate.get("summary"), str)
-        or not gate.get("summary")
-    ):
-        errors.append("publication AI Review Gate is incomplete")
-    elif (
-        (typed_exit == "ready" and gate.get("status") != "passed")
-        or (typed_exit == "return_to_task_work" and gate.get("status") != "return_to_task_work")
-        or (typed_exit == "blocked" and gate.get("status") != "blocked")
-    ):
-        errors.append("publication AI Review Gate does not match typed_exit")
-    if typed_exit == "ready":
-        if any(
-            isinstance(item, dict) and item.get("status") != "passed"
-            for item in dimensions
-        ):
-            errors.append("ready requires every publication dimension to pass")
-        if any(
-            isinstance(item, dict) and item.get("status") != "closed"
-            for item in findings
-        ):
-            errors.append("ready requires every publication finding to close")
-        if isinstance(conclusions, dict) and any(
-            isinstance(item, dict) and item.get("status") != "passed"
-            for item in conclusions.values()
-        ):
-            errors.append("ready requires every publication conclusion to pass")
-    if typed_exit == "return_to_task_work":
-        if not any(status == "finding" for status in dimension_statuses.values()):
-            errors.append(
-                "return_to_task_work requires a finding publication dimension"
-            )
-        if any(status == "blocked" for status in dimension_statuses.values()):
-            errors.append(
-                "return_to_task_work cannot carry a blocked publication dimension"
-            )
-        if not any(
-            item.get("route_class") == "task_work"
-            for item in open_findings
-        ):
-            errors.append("return_to_task_work requires an open task_work finding")
-        if any(
-            item.get("route_class") != "task_work"
-            or dimension_statuses.get(str(item.get("dimension") or "")) != "finding"
-            for item in open_findings
-        ):
-            errors.append(
-                "return_to_task_work open findings must reference finding dimensions"
-            )
-        if isinstance(conclusions, dict) and any(
-            isinstance(item, dict) and item.get("status") == "blocked"
-            for item in conclusions.values()
-        ):
-            errors.append(
-                "return_to_task_work cannot carry a blocked publication conclusion"
-            )
-    if typed_exit == "blocked" and (
-        not isinstance(authored.get("reason_code"), str)
-        or not str(authored.get("reason_code") or "").strip()
-        or not isinstance(authored.get("remediation"), str)
-        or not str(authored.get("remediation") or "").strip()
-    ):
-        errors.append("blocked requires non-empty reason_code and remediation")
-    if typed_exit == "blocked":
-        if not any(status == "blocked" for status in dimension_statuses.values()):
-            errors.append("blocked requires a blocked publication dimension")
-        if not any(
-            item.get("route_class") == "external_blocker"
-            for item in open_findings
-        ):
-            errors.append("blocked requires an open external_blocker finding")
-        if any(
-            item.get("route_class") != "external_blocker"
-            or dimension_statuses.get(str(item.get("dimension") or "")) != "blocked"
-            for item in open_findings
-        ):
-            errors.append(
-                "blocked open findings must reference blocked dimensions"
-            )
-        if not isinstance(conclusions, dict) or not any(
-            isinstance(item, dict) and item.get("status") == "blocked"
-            for item in conclusions.values()
-        ):
-            errors.append("blocked requires a blocked publication conclusion")
-        elif any(
-            isinstance(item, dict) and item.get("status") == "finding"
-            for item in conclusions.values()
-        ):
-            errors.append("blocked cannot carry a finding publication conclusion")
-    return sorted(set(errors))
-
-
-def task_publication_legacy_facts_payload(payload: dict[str, Any]) -> dict[str, Any]:
-    normalized = copy.deepcopy(payload)
-    normalized.pop("generated_at", None)
-    normalized.pop("facts_sha256", None)
-    normalized.pop("publish_inputs", None)
-    return normalized
-
-
 def task_publication_semantic_errors(
     authored: dict[str, Any],
     *,
-    reviewed_content_head: str,
+    branch_review_commit: str,
 ) -> list[str]:
     errors: list[str] = []
-    candidate_head = str(
-        authored.get("reviewed_content_head") or reviewed_content_head
+    candidate_commit = str(
+        authored.get("branch_review_commit") or branch_review_commit
     )
-    if candidate_head != reviewed_content_head:
+    if candidate_commit != branch_review_commit:
         errors.append(
-            "publication reviewed_content_head does not match current Branch Review"
+            "publication branch_review_commit does not match current Branch Review"
         )
     dimensions = authored.get("dimensions")
     if not isinstance(dimensions, list):
@@ -10858,7 +9798,7 @@ def task_publication_semantic_errors(
 def task_publication_closeout_preflight(
     root: Path,
     task_dir: Path,
-    reviewed_content_head: str,
+    branch_review_commit: str,
 ) -> dict[str, Any]:
     """Run the exact side-effect-free Finalizer producer preflight."""
     config = load_config(root)
@@ -10867,7 +9807,6 @@ def task_publication_closeout_preflight(
     args = argparse.Namespace(
         finish_summary_index_file=str(task_dir / FINISH_SUMMARY_INDEX_ARTIFACT),
         body_file=str(task_dir / PR_BODY_ARTIFACT),
-        body_artifact=None,
         repo=None,
         remote=None,
         base_branch=None,
@@ -10884,7 +9823,7 @@ def task_publication_closeout_preflight(
             "profile": "publication_ready",
             "mode": "workflow",
             "task_ref": repo_relative(root, task_dir),
-            "reviewed_content_head": reviewed_content_head,
+            "branch_review_commit": branch_review_commit,
         },
     )
 
@@ -10893,9 +9832,6 @@ def task_publication_check_errors(
     root: Path,
     task_dir: Path,
     payload: dict[str, Any],
-    *,
-    direct_runtime_inputs: list[str] | None = None,
-    finalization_owned_paths: list[str] | None = None,
 ) -> list[str]:
     errors = skill_json_schema_validation_errors(
         payload,
@@ -10906,18 +9842,20 @@ def task_publication_check_errors(
         errors.append("task publication task identity mismatch")
     route = payload.get("route") if isinstance(payload.get("route"), dict) else {}
     typed_exit = route.get("typed_exit")
-    reviewed_content_head = str(payload.get("reviewed_content_head") or "")
-    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_content_head):
-        errors.append("task publication reviewed content HEAD is invalid")
+    branch_review_commit = str(payload.get("branch_review_commit") or "")
+    reviewed_content_sha256 = str(payload.get("reviewed_content_sha256") or "")
+    if not re.fullmatch(r"[0-9a-f]{40}", branch_review_commit):
+        errors.append("task publication branch_review_commit is invalid")
     else:
         continuity_errors = review_branch_content_continuity_errors(
             root,
             task_dir,
-            reviewed_content_head,
+            branch_review_commit,
+            reviewed_content_sha256,
             current_head(root),
         )
         errors.extend(
-            "task publication reviewed content HEAD is stale: " + item
+            "task publication reviewed content is stale: " + item
             for item in continuity_errors
             if not (
                 typed_exit == "return_to_task_work"
@@ -10925,17 +9863,21 @@ def task_publication_check_errors(
                 and len(item) > len(BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX)
             )
         )
+    if (
+        typed_exit != "return_to_task_work"
+        and payload.get("reviewed_content_sha256")
+        != reviewed_content_identity(root)["sha256"]
+    ):
+        errors.append("task publication reviewed content identity is stale")
     invocation = {
         "task_ref": payload.get("task_ref"),
-        "reviewed_content_head": reviewed_content_head,
+        "branch_review_commit": branch_review_commit,
     }
     _, entry_errors, _, _ = task_publication_entry_precondition_bindings(
         root,
         task_dir,
         load_config(root),
         invocation,
-        direct_runtime_inputs=direct_runtime_inputs,
-        finalization_owned_paths=finalization_owned_paths,
     )
     if typed_exit == "ready":
         errors.extend(entry_errors)
@@ -10943,7 +9885,7 @@ def task_publication_check_errors(
             task_publication_closeout_preflight(
                 root,
                 task_dir,
-                reviewed_content_head,
+                branch_review_commit,
             )
         except WorkflowError as exc:
             errors.append(f"finalizer_preflight:{exc}")
@@ -10955,7 +9897,7 @@ def task_publication_check_errors(
     errors.extend(
         task_publication_semantic_errors(
             payload,
-            reviewed_content_head=str(payload.get("reviewed_content_head") or ""),
+            branch_review_commit=str(payload.get("branch_review_commit") or ""),
         )
     )
     return sorted(set(errors))
@@ -10972,7 +9914,7 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         args.input,
         "guru-review-task-publication recorder",
     )
-    path = task_publication_path(root, task_dir, for_write=True)
+    path = task_publication_path(root, task_dir)
     profile = authored.get("profile")
     mode = authored.get("mode")
     review_intent = authored.get("review_intent")
@@ -11025,8 +9967,8 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         "review_intent": review_intent,
         "stale_reason": authored.get("stale_reason"),
         "task_ref": repo_relative(root, task_dir),
-        "reviewed_content_head": str(
-            getattr(args, "reviewed_content_head", "") or ""
+        "branch_review_commit": str(
+            getattr(args, "branch_review_commit", "") or ""
         ),
     }
     entry_bindings, entry_errors, review_gate, repository = (
@@ -11035,7 +9977,6 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
             task_dir,
             config,
             invocation,
-            direct_runtime_inputs=[str(args.input)],
         )
     )
     route = authored.get("route") if isinstance(authored.get("route"), dict) else {}
@@ -11049,12 +9990,13 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
                 "error_codes": entry_errors,
             },
         )
-    reviewed_content_head = str(invocation["reviewed_content_head"])
+    branch_review_commit = str(invocation["branch_review_commit"])
     payload: dict[str, Any] = {
-        "schema_version": "2.0",
+        "schema_version": "3.0",
         "skill_id": TASK_PUBLICATION_SKILL_ID,
         "task_ref": repo_relative(root, task_dir),
-        "reviewed_content_head": reviewed_content_head,
+        "branch_review_commit": branch_review_commit,
+        "reviewed_content_sha256": reviewed_content_identity(root)["sha256"],
         "dimensions": copy.deepcopy(authored.get("dimensions")),
         "findings": copy.deepcopy(authored.get("findings")),
         "conclusions": copy.deepcopy(authored.get("conclusions")),
@@ -11064,7 +10006,6 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         root,
         task_dir,
         payload,
-        direct_runtime_inputs=[str(args.input)],
     )
     if errors:
         raise WorkflowError(
@@ -11074,11 +10015,6 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         )
     if not args.dry_run:
         write_json(path, payload)
-        ai_first_converge_legacy_owner_residue(
-            root,
-            task_dir,
-            PR_READINESS_ARTIFACT,
-        )
     return {
         **payload,
         "artifact_path": str(path),
@@ -11099,24 +10035,10 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
         )
     payload = read_json(path)
-    if payload.get("schema_version") in {"1.0", "1.1"}:
-        raise WorkflowError(
-            "Legacy task publication readiness requires Branch Review owner re-entry.",
-            exit_code=2,
-            payload={
-                "artifact_path": str(path),
-                "errors": [
-                    "legacy_publication_requires_current_branch_review_dto"
-                ],
-            },
-        )
     errors = task_publication_check_errors(
         root,
         task_dir,
         payload,
-        direct_runtime_inputs=list(
-            getattr(args, "direct_runtime_inputs", None) or []
-        ),
     )
     expected_exit = str(getattr(args, "expected_exit", "") or "")
     typed_exit = (payload.get("route") or {}).get("typed_exit")
@@ -11133,493 +10055,9 @@ def cmd_check_task_publication_review(args: argparse.Namespace) -> dict[str, Any
         "artifact_path": str(path),
         "task_dir": str(task_dir),
         "task_ref": payload["task_ref"],
-        "reviewed_content_head": payload["reviewed_content_head"],
+        "branch_review_commit": payload["branch_review_commit"],
         "typed_exit": typed_exit,
         "owner_result": payload,
-    }
-
-
-def task_publication_finalization_ledger_augmentation(
-    root: Path,
-    task_dir: Path,
-    payload: dict[str, Any],
-    plan: dict[str, Any],
-    *,
-    marketplace_verification: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Validate the one machine-only ledger delta owned by closeout."""
-    if plan.get("marketplace", {}).get("required") is not True:
-        raise WorkflowError(
-            "Task publication ledger augmentation requires marketplace verification.",
-            exit_code=2,
-        )
-    ledger_path = issue_scope_ledger_path(task_dir)
-    if not ledger_path.is_file() or ledger_path.is_symlink():
-        raise WorkflowError(
-            "Task publication ledger augmentation requires a safe issue scope ledger.",
-            exit_code=2,
-        )
-    ledger = read_json(ledger_path)
-    semantic_ledger = closeout_semantic_ledger(ledger)
-    plan_input = (
-        plan.get("inputs", {}).get("issue_scope_ledger")
-        if isinstance(plan.get("inputs"), dict)
-        else None
-    )
-    expected_plan_input = {
-        "path": repo_relative(root, ledger_path),
-        "sha256": canonical_json_sha256(semantic_ledger),
-    }
-    if plan_input != expected_plan_input:
-        raise WorkflowError(
-            "Task publication ledger semantic content differs from the immutable closeout plan.",
-            exit_code=2,
-        )
-
-    allowed_current_evidence = [plan["marketplace"]["pending_machine"]]
-    if marketplace_verification is not None:
-        allowed_current_evidence.append(
-            closeout_passed_marketplace_evidence(
-                root,
-                marketplace_verification_path(task_dir, load_config(root)),
-                marketplace_verification,
-            )
-        )
-    targets: list[dict[str, Any]] = []
-    primary = ledger.get("primary_issue")
-    if isinstance(primary, dict):
-        targets.append(primary)
-    close_issues = ledger.get("close_issues")
-    if isinstance(close_issues, list):
-        targets.extend(item for item in close_issues if isinstance(item, dict))
-    evidence = [remote_marketplace_evidence(issue) for issue in targets]
-    matching_evidence = next(
-        (
-            candidate
-            for candidate in allowed_current_evidence
-            if evidence and all(item == candidate for item in evidence)
-        ),
-        None,
-    )
-    if matching_evidence is None:
-        raise WorkflowError(
-            "Task publication ledger does not contain the exact plan-owned marketplace evidence.",
-            exit_code=2,
-        )
-
-    bindings = payload.get("deterministic_bindings")
-    artifacts = bindings.get("artifacts") if isinstance(bindings, dict) else None
-    entries = (
-        bindings.get("entry_preconditions")
-        if isinstance(bindings, dict)
-        else None
-    )
-    stored_artifact = (
-        artifacts.get("issue-scope-ledger.json")
-        if isinstance(artifacts, dict)
-        else None
-    )
-    stored_entry = (
-        entries.get("issue_scope_ledger")
-        if isinstance(entries, dict)
-        else None
-    )
-    prior_candidates = [semantic_ledger]
-    for candidate_evidence in [
-        legacy_pending_marketplace_evidence(),
-        *allowed_current_evidence,
-    ]:
-        candidate = record_marketplace_machine_evidence(
-            semantic_ledger,
-            candidate_evidence,
-        )
-        if candidate not in prior_candidates:
-            prior_candidates.append(candidate)
-    prior_matches = []
-    for candidate in prior_candidates:
-        content = closeout_json_artifact_bytes(candidate)
-        if (
-            stored_artifact == task_publication_legacy_artifact_binding(content)
-            and stored_entry
-            == task_publication_issue_scope_ledger_binding(candidate, content)
-        ):
-            prior_matches.append(candidate)
-    if len(prior_matches) != 1:
-        raise WorkflowError(
-            "Task publication ledger augmentation does not match one reviewed ledger preimage.",
-            exit_code=2,
-        )
-
-    current_content = ledger_path.read_bytes()
-    return {
-        "path": repo_relative(root, ledger_path),
-        "artifact_binding": task_publication_legacy_artifact_binding(current_content),
-        "entry_binding": task_publication_issue_scope_ledger_binding(
-            ledger,
-            current_content,
-        ),
-        "evidence_status": matching_evidence["status"],
-    }
-
-
-def check_legacy_task_publication_for_finalization_augmentation(
-    root: Path,
-    task_dir: Path,
-    payload: dict[str, Any],
-    *,
-    expected_closeout_plan_digest: str | None,
-    additional_owned_paths: list[str] | None = None,
-    allow_verification_metadata: bool = False,
-    marketplace_verification: dict[str, Any] | None = None,
-    require_plan: bool = True,
-) -> dict[str, Any]:
-    """Recheck a ready gate across an exact finalizer-owned metadata delta."""
-    artifacts_stale = "task publication artifact bindings are stale"
-    repository_stale = "task publication repository binding is stale"
-    entries_stale = "task publication entry precondition bindings are stale"
-    plan_path = closeout_plan_path(task_dir)
-    plan_relative = repo_relative(root, plan_path)
-    gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-    gate_relative = repo_relative(root, gate_path)
-    verification_path = marketplace_verification_path(task_dir, load_config(root))
-    verification_relative = repo_relative(root, verification_path)
-    accepted_additional_paths = {plan_relative, gate_relative}
-    if allow_verification_metadata:
-        accepted_additional_paths.add(verification_relative)
-    finalization_paths = [plan_relative] if require_plan else []
-    if gate_path.is_file() and not gate_path.is_symlink():
-        finalization_paths.append(gate_relative)
-    for value in additional_owned_paths or []:
-        relative = skill_safe_relative(value)
-        if (
-            relative is None
-            or relative.as_posix() != value
-            or value not in accepted_additional_paths
-        ):
-            raise WorkflowError(
-                "Task publication finalization metadata path is invalid.",
-                exit_code=2,
-            )
-        if value not in finalization_paths:
-            finalization_paths.append(value)
-    errors = task_publication_check_errors(
-        root,
-        task_dir,
-        payload,
-        finalization_owned_paths=finalization_paths,
-    )
-    bindings = payload.get("deterministic_bindings")
-    stored_repository = (
-        bindings.get("repository") if isinstance(bindings, dict) else None
-    )
-    try:
-        current_repository = task_publication_repository_binding(root, task_dir)
-    except WorkflowError as exc:
-        current_repository = None
-        errors.append(str(exc))
-    plan: dict[str, Any] | None = None
-    if require_plan:
-        if (
-            not plan_path.is_file()
-            or plan_path.is_symlink()
-            or not re.fullmatch(r"[0-9a-f]{64}", expected_closeout_plan_digest or "")
-        ):
-            errors.append(
-                "task publication finalization augmentation requires the exact closeout plan"
-            )
-        else:
-            try:
-                plan = validate_closeout_plan(read_json(plan_path))
-            except WorkflowError as exc:
-                errors.append(str(exc))
-            if (
-                plan is not None
-                and plan.get("plan_digest") != expected_closeout_plan_digest
-            ):
-                errors.append(
-                    "task publication finalization closeout plan digest mismatch"
-                )
-    if payload.get("typed_exit") != "ready":
-        errors.append("task publication finalization augmentation requires ready")
-
-    stored_artifacts = (
-        bindings.get("artifacts") if isinstance(bindings, dict) else None
-    )
-    current_artifacts: dict[str, dict[str, Any]] | None = None
-    if artifacts_stale in errors:
-        try:
-            current_artifacts = task_publication_legacy_artifact_bindings(
-                root,
-                task_dir,
-                load_config(root),
-            )
-        except WorkflowError as exc:
-            errors.append(str(exc))
-
-    stored_entries = (
-        bindings.get("entry_preconditions")
-        if isinstance(bindings, dict)
-        else None
-    )
-    current_entries: dict[str, dict[str, str]] | None = None
-    entry_errors: list[str] = []
-    if entries_stale in errors:
-        review_identity = (
-            payload.get("review_identity")
-            if isinstance(payload.get("review_identity"), dict)
-            else {}
-        )
-        invocation = {
-            "task_ref": payload.get("task_dir"),
-            "profile": payload.get("profile"),
-            "mode": payload.get("mode"),
-            "review_intent": payload.get("review_intent"),
-            "stale_reason": payload.get("stale_reason"),
-            "reentry_context": payload.get("reentry_context"),
-            "supersedes_publication_ref": payload.get(
-                "supersedes_publication_ref"
-            ),
-            "reviewed_head": review_identity.get("reviewed_head"),
-            "review_ref": review_identity.get("review_ref"),
-        }
-        current_entries, entry_errors, _review_gate, _repository = (
-            task_publication_entry_precondition_bindings(
-                root,
-                task_dir,
-                load_config(root),
-                invocation,
-                finalization_owned_paths=finalization_paths,
-            )
-        )
-
-    ledger_augmentation: dict[str, Any] | None = None
-    stored_ledger_artifact = (
-        stored_artifacts.get("issue-scope-ledger.json")
-        if isinstance(stored_artifacts, dict)
-        else None
-    )
-    current_ledger_artifact = (
-        current_artifacts.get("issue-scope-ledger.json")
-        if isinstance(current_artifacts, dict)
-        else stored_ledger_artifact
-    )
-    stored_ledger_entry = (
-        stored_entries.get("issue_scope_ledger")
-        if isinstance(stored_entries, dict)
-        else None
-    )
-    current_ledger_entry = (
-        current_entries.get("issue_scope_ledger")
-        if isinstance(current_entries, dict)
-        else stored_ledger_entry
-    )
-    ledger_binding_changed = (
-        stored_ledger_artifact != current_ledger_artifact
-        or stored_ledger_entry != current_ledger_entry
-    )
-    if ledger_binding_changed and plan is not None:
-        try:
-            ledger_augmentation = task_publication_finalization_ledger_augmentation(
-                root,
-                task_dir,
-                payload,
-                plan,
-                marketplace_verification=marketplace_verification,
-            )
-        except WorkflowError as exc:
-            errors.append(str(exc))
-
-    repository_delta_accepted = False
-    if repository_stale in errors:
-        stored_without_status = (
-            {key: value for key, value in stored_repository.items() if key != "status_paths"}
-            if isinstance(stored_repository, dict)
-            else None
-        )
-        current_without_status = (
-            {key: value for key, value in current_repository.items() if key != "status_paths"}
-            if isinstance(current_repository, dict)
-            else None
-        )
-        stored_status = (
-            stored_repository.get("status_paths")
-            if isinstance(stored_repository, dict)
-            else None
-        )
-        current_status = (
-            current_repository.get("status_paths")
-            if isinstance(current_repository, dict)
-            else None
-        )
-        status_additions = set(finalization_paths)
-        if (
-            ledger_augmentation is not None
-            and isinstance(stored_status, list)
-            and ledger_augmentation["path"] not in stored_status
-        ):
-            status_additions.add(ledger_augmentation["path"])
-        exact_finalization_delta = (
-            stored_without_status == current_without_status
-            and isinstance(stored_status, list)
-            and isinstance(current_status, list)
-            and current_status == sorted({*stored_status, *status_additions})
-            and all(path not in stored_status for path in finalization_paths)
-        )
-        if exact_finalization_delta:
-            errors.remove(repository_stale)
-            repository_delta_accepted = True
-
-    if artifacts_stale in errors and ledger_augmentation is not None:
-        expected_artifacts = (
-            copy.deepcopy(stored_artifacts)
-            if isinstance(stored_artifacts, dict)
-            else None
-        )
-        if isinstance(expected_artifacts, dict):
-            expected_artifacts["issue-scope-ledger.json"] = (
-                ledger_augmentation["artifact_binding"]
-            )
-        if current_artifacts == expected_artifacts:
-            errors.remove(artifacts_stale)
-
-    if entries_stale in errors:
-        expected_entries = (
-            copy.deepcopy(stored_entries)
-            if isinstance(stored_entries, dict)
-            else None
-        )
-        if isinstance(expected_entries, dict):
-            if ledger_augmentation is not None:
-                expected_entries["issue_scope_ledger"] = (
-                    ledger_augmentation["entry_binding"]
-                )
-            if repository_delta_accepted:
-                expected_entries["review_range_and_working_tree"] = (
-                    task_publication_binding(current_repository)
-                )
-        if not entry_errors and current_entries == expected_entries:
-            errors.remove(entries_stale)
-
-    errors = sorted(set(errors))
-    if errors:
-        raise WorkflowError(
-            "Task publication gate is not fresh for finalization augmentation.",
-            exit_code=2,
-            payload={
-                "artifact_path": str(task_publication_path(root, task_dir)),
-                "errors": errors,
-                "allowed_finalization_paths": finalization_paths,
-            },
-        )
-    review_identity = payload["review_identity"]
-    return {
-        "status": "ok",
-        "artifact_path": str(task_publication_path(root, task_dir)),
-        "task_dir": str(task_dir),
-        "reviewed_head": review_identity["reviewed_head"],
-        "review_ref": review_identity["review_ref"],
-        "typed_exit": payload["typed_exit"],
-        "publication_ref": bindings["publication_ref"],
-        "facts_sha256": payload["facts_sha256"],
-        "artifact_sha256": hashlib.sha256(
-            task_publication_path(root, task_dir).read_bytes()
-        ).hexdigest(),
-        "finalization_owned_delta": finalization_paths,
-    }
-
-
-def check_task_publication_for_finalization_augmentation(
-    root: Path,
-    task_dir: Path,
-    payload: dict[str, Any],
-    *,
-    expected_closeout_plan_digest: str | None,
-    additional_owned_paths: list[str] | None = None,
-    allow_verification_metadata: bool = False,
-    marketplace_verification: dict[str, Any] | None = None,
-    require_plan: bool = True,
-) -> dict[str, Any]:
-    """Recheck one current publication gate across finalizer-owned metadata."""
-    if payload.get("schema_version") in {"1.0", "1.1"}:
-        return check_legacy_task_publication_for_finalization_augmentation(
-            root,
-            task_dir,
-            payload,
-            expected_closeout_plan_digest=expected_closeout_plan_digest,
-            additional_owned_paths=additional_owned_paths,
-            allow_verification_metadata=allow_verification_metadata,
-            marketplace_verification=marketplace_verification,
-            require_plan=require_plan,
-        )
-    plan_path = closeout_plan_path(task_dir)
-    gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-    verification_path = marketplace_verification_path(task_dir, load_config(root))
-    accepted = {
-        repo_relative(root, plan_path),
-        repo_relative(root, gate_path),
-    }
-    if allow_verification_metadata:
-        accepted.add(repo_relative(root, verification_path))
-    finalization_paths: list[str] = []
-    if require_plan:
-        finalization_paths.append(repo_relative(root, plan_path))
-    if gate_path.is_file() and not gate_path.is_symlink():
-        finalization_paths.append(repo_relative(root, gate_path))
-    for value in additional_owned_paths or []:
-        relative = skill_safe_relative(value)
-        if (
-            relative is None
-            or relative.as_posix() != value
-            or value not in accepted
-        ):
-            raise WorkflowError(
-                "Task publication finalization metadata path is invalid.",
-                exit_code=2,
-            )
-        if value not in finalization_paths:
-            finalization_paths.append(value)
-    if require_plan:
-        if not plan_path.is_file() or plan_path.is_symlink():
-            raise WorkflowError(
-                "Task publication finalization requires the immutable plan.",
-                exit_code=2,
-            )
-        plan = validate_closeout_plan(read_json(plan_path))
-        if (
-            not re.fullmatch(r"[0-9a-f]{64}", expected_closeout_plan_digest or "")
-            or plan.get("plan_digest") != expected_closeout_plan_digest
-        ):
-            raise WorkflowError(
-                "Task publication finalization closeout plan identity changed.",
-                exit_code=2,
-            )
-    errors = task_publication_check_errors(
-        root,
-        task_dir,
-        payload,
-        finalization_owned_paths=finalization_paths,
-    )
-    if (payload.get("route") or {}).get("typed_exit") != "ready":
-        errors.append("task publication finalization requires ready")
-    if errors:
-        raise WorkflowError(
-            "Task publication gate is not current for finalization.",
-            exit_code=2,
-            payload={
-                "artifact_path": str(task_publication_path(root, task_dir)),
-                "errors": sorted(set(errors)),
-                "allowed_finalization_paths": finalization_paths,
-            },
-        )
-    return {
-        "status": "ok",
-        "artifact_path": str(task_publication_path(root, task_dir)),
-        "task_dir": str(task_dir),
-        "task_ref": payload["task_ref"],
-        "reviewed_content_head": payload["reviewed_content_head"],
-        "typed_exit": "ready",
-        "owner_result": payload,
-        "finalization_owned_delta": finalization_paths,
     }
 
 
@@ -11964,17 +10402,17 @@ def require_task_commit_gitlink_bindings(
     require_index: bool,
 ) -> None:
     errors: list[str] = []
-    for path, reviewed_head in sorted(bindings.items()):
+    for path, expected_gitlink_head in sorted(bindings.items()):
         try:
             identity = task_commit_gitlink_worktree_identity(root, path)
         except WorkflowError as exc:
             errors.append(f"{path}: {exc}")
             continue
-        if identity.get("gitlink_head") != reviewed_head:
+        if identity.get("gitlink_head") != expected_gitlink_head:
             errors.append(f"{path}: worktree HEAD no longer matches the reviewed gitlink_head")
         if require_index:
             index_blob, index_mode = task_commit_index_identity(root, path)
-            if index_blob != reviewed_head or index_mode != "160000":
+            if index_blob != expected_gitlink_head or index_mode != "160000":
                 errors.append(f"{path}: index mode/OID does not match the reviewed gitlink_head")
     if errors:
         raise WorkflowError(
@@ -12126,7 +10564,7 @@ def require_task_commit_index_bindings(
         )
 
 
-def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -> dict[str, Any]:
+def task_commit_porcelain_status_records(root: Path) -> list[dict[str, Any]]:
     proc = subprocess.run(
         ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
         cwd=str(root),
@@ -12141,7 +10579,7 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
             payload={"stderr": proc.stderr.decode("utf-8", "replace")},
         )
     fields = proc.stdout.split(b"\0")
-    entries: list[dict[str, Any]] = []
+    records: list[dict[str, Any]] = []
     index = 0
     while index < len(fields):
         field = fields[index]
@@ -12151,6 +10589,11 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
         if len(field) < 4:
             raise WorkflowError("Git returned an invalid porcelain status record.", exit_code=2)
         status_text = field[:2].decode("ascii", "strict")
+        if status_text in {"DD", "AU", "UD", "UA", "DU", "AA", "UU"}:
+            raise WorkflowError(
+                "Reviewed Git state contains an unresolved merge entry.",
+                exit_code=2,
+            )
         path = field[3:].decode("utf-8", "strict")
         renamed_from: str | None = None
         copied_from: str | None = None
@@ -12170,38 +10613,60 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
                 renamed_from = relation_source
             else:
                 copied_from = relation_source
-        if path in (excluded or set()):
-            continue
-        index_status = "" if status_text[0] == " " else status_text[0]
-        worktree_status = "" if status_text[1] == " " else status_text[1]
-        untracked = status_text == "??"
-        index_blob, index_mode = task_commit_index_identity(root, path)
-        worktree_sha256, worktree_mode = task_commit_worktree_identity(root, path)
-        deleted = "D" in status_text
-        entry = {
+        records.append({
+            "status_text": status_text,
             "path": path,
-            "index_status": index_status,
-            "worktree_status": worktree_status,
-            "untracked": untracked,
-            "deleted": deleted,
             "renamed_from": renamed_from,
             "copied_from": copied_from,
-            "index_blob": index_blob,
-            "worktree_sha256": worktree_sha256,
-            "mode": worktree_mode or index_mode,
-        }
-        if index_mode == "160000":
-            if deleted and not (root / path).exists():
-                entry.update(
-                    {
-                        "gitlink_head": None,
-                        "gitlink_initialized": False,
-                        "gitlink_dirty": None,
-                    }
-                )
-            else:
-                entry.update(task_commit_gitlink_worktree_identity(root, path))
-        entries.append(entry)
+        })
+    return records
+
+
+def task_commit_snapshot_entry(
+    root: Path,
+    record: dict[str, Any],
+) -> dict[str, Any]:
+    status_text = str(record["status_text"])
+    path = str(record["path"])
+    index_status = "" if status_text[0] == " " else status_text[0]
+    worktree_status = "" if status_text[1] == " " else status_text[1]
+    untracked = status_text == "??"
+    index_blob, index_mode = task_commit_index_identity(root, path)
+    worktree_sha256, worktree_mode = task_commit_worktree_identity(root, path)
+    deleted = "D" in status_text
+    entry = {
+        "path": path,
+        "index_status": index_status,
+        "worktree_status": worktree_status,
+        "untracked": untracked,
+        "deleted": deleted,
+        "renamed_from": record.get("renamed_from"),
+        "copied_from": record.get("copied_from"),
+        "index_blob": index_blob,
+        "worktree_sha256": worktree_sha256,
+        "mode": worktree_mode or index_mode,
+    }
+    if index_mode == "160000":
+        if deleted and not (root / path).exists():
+            entry.update(
+                {
+                    "gitlink_head": None,
+                    "gitlink_initialized": False,
+                    "gitlink_dirty": None,
+                }
+            )
+        else:
+            entry.update(task_commit_gitlink_worktree_identity(root, path))
+    return entry
+
+
+def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -> dict[str, Any]:
+    excluded_paths = excluded or set()
+    entries = [
+        task_commit_snapshot_entry(root, record)
+        for record in task_commit_porcelain_status_records(root)
+        if str(record["path"]) not in excluded_paths
+    ]
     entries.sort(
         key=lambda item: (
             str(item["path"]),
@@ -12335,20 +10800,11 @@ def resolve_task_commit_candidate(root: Path, value: str) -> tuple[Path, Path]:
         raise WorkflowError("--candidate-artifact must end with a three-digit JSON sequence.", exit_code=2)
     try:
         path.relative_to(runtime)
-    except ValueError:
-        try:
-            path.relative_to(tasks)
-        except ValueError as exc:
-            raise WorkflowError(
-                "--candidate-artifact must stay inside the private task-commit runtime or a legacy task-commit-plans directory.",
-                exit_code=2,
-            ) from exc
-        if path.parent.name != TASK_COMMIT_PLAN_DIR:
-            raise WorkflowError(
-                "Legacy --candidate-artifact must match task-commit-plans/<sequence>.json.",
-                exit_code=2,
-            )
-        return path, path.parent.parent
+    except ValueError as exc:
+        raise WorkflowError(
+            "--candidate-artifact must stay inside the private task-commit runtime.",
+            exit_code=2,
+        ) from exc
     plan = read_json(path)
     task_value = (
         str((plan.get("task") or {}).get("path") or "").strip()
@@ -12368,7 +10824,7 @@ def validate_task_commit_candidate(
     candidate_path: Path,
     task_dir: Path,
     *,
-    recovery_checked_head: str | None = None,
+    recovery_phase2_commit_anchor: str | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
     errors: list[str] = []
     try:
@@ -12425,7 +10881,9 @@ def validate_task_commit_candidate(
     if plan.get("$schema") != TASK_COMMIT_CANDIDATE_SCHEMA_ID:
         errors.append("task commit candidate has the wrong $schema identity.")
     if plan.get("schema_version") != TASK_COMMIT_CANDIDATE_SCHEMA_VERSION:
-        errors.append("task commit candidate schema_version must be 2.0.")
+        errors.append(
+            f"task commit candidate schema_version must be {TASK_COMMIT_CANDIDATE_SCHEMA_VERSION}."
+        )
     if plan.get("skill_id") != TASK_COMMIT_SKILL_ID:
         errors.append("task commit plan skill_id must be guru-create-task-commit.")
     if plan.get("sequence") != candidate_path.stem:
@@ -12451,9 +10909,15 @@ def validate_task_commit_candidate(
         errors.append("task commit plan branch does not match the current branch.")
 
     git_plan = plan.get("git") if isinstance(plan.get("git"), dict) else {}
-    candidate_head = recovery_checked_head or current
-    if git_plan.get("pre_commit_head") != candidate_head:
-        errors.append("task commit plan pre_commit_head is stale.")
+    pre_commit_head = str(git_plan.get("pre_commit_head") or "")
+    if recovery_phase2_commit_anchor is None:
+        if pre_commit_head != current:
+            errors.append("task commit plan pre_commit_head is stale.")
+    elif (
+        re.fullmatch(r"[0-9a-f]{40}", pre_commit_head) is None
+        or not is_ancestor(root, pre_commit_head, current)
+    ):
+        errors.append("task commit recovery pre_commit_head is not current history.")
     base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
     if git_plan.get("base_branch") != base_branch:
         errors.append("task commit plan base_branch does not match task evidence.")
@@ -12463,13 +10927,39 @@ def validate_task_commit_candidate(
 
     ledger = load_issue_scope_ledger(task_dir, task_context)
     primary_issue = primary_issue_number_from_ledger(ledger)
-    if git_plan.get("checked_head") != candidate_head:
+    try:
+        _phase2_path, phase2_payload, phase2_errors = validate_phase2_check(
+            root,
+            task_dir,
+            additional_dirty_excluded={candidate_relative},
+        )
+    except WorkflowError as exc:
+        phase2_payload = {}
+        phase2_errors = [str(exc)]
+    errors.extend(
+        "task commit Phase 2: " + item
+        for item in phase2_errors
+    )
+    expected_phase2_commit_anchor = str(
+        phase2_payload.get("phase2_capture_commit") or ""
+    )
+    if (
+        recovery_phase2_commit_anchor is not None
+        and recovery_phase2_commit_anchor != expected_phase2_commit_anchor
+    ):
         errors.append(
-            "task commit plan checked_head does not match the current passed DTO identity."
+            "task commit recovery public phase2_commit_anchor differs from Phase 2."
+        )
+    if (
+        phase2_payload.get("typed_exit") != "passed"
+        or git_plan.get("phase2_commit_anchor") != expected_phase2_commit_anchor
+    ):
+        errors.append(
+            "task commit plan phase2_commit_anchor does not match the current passed Phase 2 anchor."
         )
 
     snapshot = plan.get("dirty_snapshot") if isinstance(plan.get("dirty_snapshot"), dict) else {}
-    if recovery_checked_head is None:
+    if recovery_phase2_commit_anchor is None:
         current_snapshot = task_commit_snapshot_without_digest(
             capture_task_commit_snapshot(root, {candidate_relative})
         )
@@ -12586,7 +11076,7 @@ def validate_task_commit_candidate(
         "task_dir": task_relative,
         "candidate_artifact": candidate_relative,
         "sequence": plan.get("sequence"),
-        "pre_commit_head": candidate_head,
+        "pre_commit_head": pre_commit_head,
         "primary_issue": primary_issue,
         "semantic_exit": semantic_exit,
         "candidate_raw_sha256": candidate_raw_sha256,
@@ -12657,13 +11147,25 @@ def build_task_commit_candidate(
         "finding_fix_commit": "passed",
         "recovery_resume": "transaction_recovery",
     }.get(str(public_input.get("profile") or ""))
+    try:
+        _phase2_path, phase2_payload, phase2_errors = validate_phase2_check(
+            root,
+            task_dir,
+        )
+    except WorkflowError as exc:
+        phase2_payload = {}
+        phase2_errors = [str(exc)]
     if (
         public_input.get("source_exit") != expected_source_exit
-        or public_input.get("checked_head") != current
+        or phase2_errors
+        or phase2_payload.get("typed_exit") != "passed"
+        or public_input.get("phase2_commit_anchor")
+        != phase2_payload.get("phase2_capture_commit")
     ):
         raise WorkflowError(
             "Public commit input does not bind the current passed Phase 2 identity.",
             exit_code=2,
+            payload={"errors": phase2_errors},
         )
     candidate_path, sequence = task_commit_prepare_candidate_path(root, task_dir)
     candidate_relative = repo_relative(root, candidate_path)
@@ -12725,7 +11227,9 @@ def build_task_commit_candidate(
             "base_branch": base_branch,
             "base_ref": diff_base_ref(root, base_branch),
             "pre_commit_head": current,
-            "checked_head": str(public_input.get("checked_head") or ""),
+            "phase2_commit_anchor": str(
+                public_input.get("phase2_commit_anchor") or ""
+            ),
         },
         "dirty_snapshot": snapshot,
         "path_classifications": sorted(classifications, key=lambda item: item["path"].encode("utf-8")),
@@ -12761,158 +11265,6 @@ def build_task_commit_candidate(
     return candidate_path, checked_plan, facts
 
 
-TASK_COMMIT_LEGACY_PUBLIC_FIELDS = frozenset({
-    "message_intent",
-    "path_authorizations",
-    "semantic_review",
-    "human_authorization",
-    "exit_intent",
-    "check_ref",
-    "reentry_reason",
-    "commit_intent",
-    "recovery_intent",
-})
-
-
-def task_commit_legacy_public_input_errors(payload: Any) -> list[str]:
-    if not isinstance(payload, dict) or not TASK_COMMIT_LEGACY_PUBLIC_FIELDS.intersection(payload):
-        return ["not a legacy task commit public input"]
-    errors: list[str] = []
-    if payload.get("profile") not in {
-        "initial_commit", "revision_reentry", "finding_fix_commit", "recovery_resume",
-    }:
-        errors.append("legacy profile is unsupported")
-    if payload.get("mode") not in {"workflow", "standalone"}:
-        errors.append("legacy mode is unsupported")
-    if not isinstance(payload.get("task_ref"), str):
-        errors.append("legacy task_ref is missing")
-    if re.fullmatch(r"[0-9a-f]{40,64}", str(payload.get("checked_head") or "")) is None:
-        errors.append("legacy checked_head is invalid")
-    if not isinstance(payload.get("message_intent"), dict):
-        errors.append("legacy message_intent is missing")
-    paths = payload.get("path_authorizations")
-    if not isinstance(paths, list) or any(not isinstance(item, str) or not item for item in paths):
-        errors.append("legacy path_authorizations are invalid")
-    semantic = payload.get("semantic_review")
-    if (
-        not isinstance(semantic, dict)
-        or semantic.get("status") not in {"passed", "revision-required", "blocked"}
-        or not isinstance(semantic.get("summary"), str)
-        or not semantic.get("summary", "").strip()
-    ):
-        errors.append("legacy semantic_review is invalid")
-    return errors
-
-
-def task_commit_legacy_body_section(body: str, section: str, next_section: str | None) -> str:
-    lines = body.replace("\r\n", "\n").replace("\r", "\n").splitlines()
-    starts = [index for index, line in enumerate(lines) if line.strip() == section]
-    if len(starts) != 1:
-        return ""
-    start = starts[0] + 1
-    end = len(lines)
-    if next_section is not None:
-        next_matches = [
-            index for index, line in enumerate(lines[start:], start=start)
-            if line.strip() == next_section
-        ]
-        if next_matches:
-            end = next_matches[0]
-    else:
-        refs = [
-            index for index, line in enumerate(lines[start:], start=start)
-            if re.fullmatch(r"Refs #\d+", line.strip())
-        ]
-        if refs:
-            end = refs[0]
-    return "\n".join(lines[start:end]).strip()
-
-
-def task_commit_legacy_authoring(
-    root: Path,
-    task_dir: Path,
-    public_input: dict[str, Any],
-) -> dict[str, Any]:
-    candidate_path, _ = task_commit_prepare_candidate_path(root, task_dir)
-    snapshot = task_commit_snapshot_without_digest(
-        capture_task_commit_snapshot(root, {repo_relative(root, candidate_path)})
-    )
-    authorized = {
-        str(path) for path in public_input.get("path_authorizations", []) if isinstance(path, str)
-    }
-    phase2_source = repo_relative(root, phase2_check_path(root, task_dir))
-    classifications = [
-        {
-            "path": str(entry["path"]),
-            "category": "task-reviewed" if entry["path"] in authorized else "unrelated-preserved",
-            "reason": (
-                str((public_input.get("semantic_review") or {}).get("summary") or "").strip()
-                if entry["path"] in authorized
-                else "旧版输入未将此当前 dirty path 纳入任务提交，迁移时保持原样。"
-            ),
-            "coverage_source": phase2_source if entry["path"] in authorized else "legacy-v1-projection",
-        }
-        for entry in snapshot["entries"]
-        if isinstance(entry, dict) and isinstance(entry.get("path"), str)
-    ]
-
-    message_intent = public_input.get("message_intent") or {}
-    subject = str(message_intent.get("subject") or "").strip()
-    body = str(message_intent.get("body") or "")
-    match = re.match(
-        r"^(?P<type>[a-z]+)\((?P<scope>[^)]+)\):(?:\s+#\d+)?\s*(?P<summary>.*)$",
-        subject,
-    )
-    commit_type = str(match.group("type") if match else "feat").casefold()
-    if commit_type not in CONVENTIONAL_COMMIT_TYPES:
-        commit_type = "feat"
-    scope = str(match.group("scope") if match else "workflow").strip().casefold()
-    if re.fullmatch(CONVENTIONAL_COMMIT_SCOPE_PATTERN, scope) is None or (
-        commit_type == "chore" and scope in METADATA_COMMIT_SCOPES
-    ):
-        scope = "workflow"
-    summary = str(match.group("summary") if match else subject).strip()
-    if not contains_chinese_text(summary):
-        summary = "提交当前任务变更" + (f"：{summary}" if summary else "")
-
-    fallbacks = {
-        "背景：": "兼容迁移旧版任务提交候选。",
-        "变更：": "提交当前由 AI 分类且由 Phase 2 覆盖的任务变更。",
-        "边界：": "保留未纳入本次任务提交的工作区路径。",
-        "验证：": "沿用当前 checked content HEAD 的 Phase 2 通过结论。",
-    }
-    sections = {
-        section: task_commit_legacy_body_section(
-            body,
-            section,
-            WORK_COMMIT_BODY_SECTIONS[index + 1]
-            if index + 1 < len(WORK_COMMIT_BODY_SECTIONS)
-            else None,
-        ) or fallback
-        for index, (section, fallback) in enumerate(fallbacks.items())
-    }
-    semantic = public_input.get("semantic_review") or {}
-    return {
-        "path_classifications": classifications,
-        "message": {
-            "type": commit_type,
-            "scope": scope,
-            "summary": summary,
-            "background": sections["背景："],
-            "changes": sections["变更："],
-            "boundaries": sections["边界："],
-            "validations": sections["验证："],
-        },
-        "ai_review": {
-            "status": semantic.get("status"),
-            "summary": str(semantic.get("summary") or "").strip(),
-            "evidence": [
-                "旧版 message/path/semantic 字段已一次性投影为当前 candidate。"
-            ],
-        },
-    }
-
-
 def cmd_prepare_task_commit(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     input_path = resolve_repo_path(root, str(args.input))
@@ -12935,7 +11287,7 @@ def cmd_prepare_task_commit(args: argparse.Namespace) -> dict[str, Any]:
         "typed_exit": task_commit_ai_exit(candidate.get("ai_review")),
         "task_ref": repo_relative(root, task_dir),
         "candidate_artifact": repo_relative(root, candidate_path),
-        "checked_head": candidate["git"]["checked_head"],
+        "phase2_commit_anchor": candidate["git"]["phase2_commit_anchor"],
         "exact_stage_paths": facts["exact_stage_paths"],
         "message": {
             "subject": candidate["message"]["subject"],
@@ -12976,151 +11328,6 @@ def task_commit_raw_message(root: Path, commit: str) -> bytes:
     if proc.returncode != 0 or b"\n\n" not in proc.stdout:
         raise WorkflowError("Could not read the raw task commit object.", exit_code=2)
     return proc.stdout.split(b"\n\n", 1)[1]
-
-
-def task_commit_result_validation_errors(root: Path, plan: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    if plan.get("$schema") != TASK_COMMIT_PLAN_SCHEMA_ID:
-        errors.append("legacy task commit plan has the wrong schema identity.")
-    if plan.get("schema_version") != "1.0" or plan.get("skill_id") != TASK_COMMIT_SKILL_ID:
-        errors.append("legacy task commit plan identity is invalid.")
-    if not isinstance(plan.get("git"), dict):
-        errors.append("legacy task commit plan git identity is missing.")
-    if not isinstance(plan.get("message"), dict):
-        errors.append("legacy task commit plan message is missing.")
-    if not isinstance(plan.get("exact_stage_paths"), list):
-        errors.append("legacy task commit plan exact_stage_paths are missing.")
-
-    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
-    status = result.get("status")
-    exact_paths = {
-        path for path in plan.get("exact_stage_paths", []) if isinstance(path, str)
-    }
-    if status == "committed":
-        if result.get("parent") != plan.get("git", {}).get("pre_commit_head"):
-            errors.append("committed result parent does not match the planned pre_commit_head.")
-        if result.get("message_sha256") != plan.get("message", {}).get("sha256"):
-            errors.append("committed result message digest does not match the planned message.")
-        if set(result.get("committed_paths", [])) != exact_paths:
-            errors.append("committed result paths do not match exact_stage_paths.")
-    if status == "blocked":
-        pre_commit_head = result.get("pre_commit_head")
-        commit_sha = result.get("commit_sha")
-        if result.get("head_changed") != (commit_sha != pre_commit_head):
-            errors.append("blocked result head_changed does not match its commit identities.")
-
-    tree_evidence = result.get("tree_evidence")
-    tree_matches: bool | None = None
-    if isinstance(tree_evidence, dict):
-        path_entries = tree_evidence.get("paths")
-        evidence_paths = [
-            item.get("path") for item in path_entries or [] if isinstance(item, dict)
-        ] if isinstance(path_entries, list) else []
-        if (
-            not isinstance(path_entries, list)
-            or len(evidence_paths) != len(exact_paths)
-            or set(evidence_paths) != exact_paths
-        ):
-            errors.append("task commit result tree evidence does not cover exact_stage_paths.")
-        path_match_facts: list[bool] = []
-        for item in path_entries or []:
-            if not isinstance(item, dict):
-                path_match_facts.append(False)
-                continue
-            identity_matches = (
-                item.get("expected_blob") == item.get("actual_blob")
-                and item.get("expected_mode") == item.get("actual_mode")
-            )
-            path_match_facts.append(identity_matches)
-            if item.get("matches") is not identity_matches:
-                errors.append(
-                    "task commit result path match flag contradicts blob/mode evidence."
-                )
-        path_matches = bool(path_entries) and all(path_match_facts)
-        tree_matches = (
-            tree_evidence.get("expected_tree") == tree_evidence.get("actual_tree")
-            and path_matches
-        )
-        if tree_evidence.get("matches") is not tree_matches:
-            errors.append("task commit result tree match flag contradicts tree/blob/mode evidence.")
-        if status == "committed" and not tree_matches:
-            errors.append("committed result requires identical expected and actual tree evidence.")
-    elif status == "committed":
-        errors.append("committed result requires tree evidence.")
-    if status == "blocked":
-        failure_stage = result.get("failure_stage")
-        if failure_stage == "pre-commit":
-            if result.get("head_changed") is not False:
-                errors.append("pre-commit blocked result requires an unchanged HEAD.")
-            if result.get("commit_sha") != result.get("pre_commit_head"):
-                errors.append("pre-commit blocked result commit identity must remain at pre_commit_head.")
-            if result.get("parent") is not None or result.get("message_sha256") is not None:
-                errors.append("pre-commit blocked result cannot contain created commit identity evidence.")
-            if result.get("committed_paths") != []:
-                errors.append("pre-commit blocked result cannot contain committed paths.")
-            if isinstance(tree_evidence, dict):
-                if tree_evidence.get("actual_source") != "index" or tree_matches is not True:
-                    errors.append(
-                        "pre-commit blocked result tree evidence must be a matching index observation."
-                    )
-            elif tree_evidence is not None:
-                errors.append("pre-commit blocked result tree evidence must be null or an object.")
-            expected_hook_mutation = False
-        elif failure_stage == "commit":
-            if not isinstance(tree_evidence, dict):
-                errors.append("commit-stage blocked result requires tree evidence.")
-            if result.get("head_changed") is True:
-                if isinstance(tree_evidence, dict) and tree_evidence.get("actual_source") != "commit":
-                    errors.append("commit-stage changed-HEAD tree evidence must come from the commit.")
-                if not isinstance(result.get("message_sha256"), str):
-                    errors.append("commit-stage changed-HEAD result requires message identity evidence.")
-                if not result.get("committed_paths"):
-                    errors.append("commit-stage changed-HEAD result requires committed path evidence.")
-            else:
-                if isinstance(tree_evidence, dict) and tree_evidence.get("actual_source") != "index":
-                    errors.append("commit-stage unchanged-HEAD tree evidence must come from the index.")
-                if result.get("parent") is not None or result.get("message_sha256") is not None:
-                    errors.append("commit-stage unchanged-HEAD result cannot contain created commit identity evidence.")
-                if result.get("committed_paths") != []:
-                    errors.append("commit-stage unchanged-HEAD result cannot contain committed paths.")
-            expected_hook_mutation = bool(
-                isinstance(tree_evidence, dict) and tree_matches is not True
-                or result.get("unrelated_preserved") is not True
-                or result.get("unexpected_staged_paths")
-                or result.get("unexpected_dirty_paths")
-                or result.get("planned_unstaged_paths")
-                or (
-                    result.get("head_changed") is True
-                    and set(result.get("committed_paths", [])) != exact_paths
-                )
-            )
-        elif failure_stage == "postcondition":
-            if result.get("head_changed") is not True:
-                errors.append("postcondition blocked result requires a changed HEAD.")
-            if not isinstance(result.get("message_sha256"), str):
-                errors.append("postcondition blocked result requires message identity evidence.")
-            if not result.get("committed_paths"):
-                errors.append("postcondition blocked result requires committed path evidence.")
-            if not isinstance(tree_evidence, dict):
-                errors.append("postcondition blocked result requires tree evidence.")
-            elif tree_evidence.get("actual_source") != "commit":
-                errors.append("postcondition blocked result tree evidence must come from the commit.")
-            expected_hook_mutation = bool(
-                isinstance(tree_evidence, dict) and tree_matches is not True
-                or result.get("unrelated_preserved") is not True
-                or result.get("unexpected_staged_paths")
-                or result.get("unexpected_dirty_paths")
-                or result.get("planned_unstaged_paths")
-                or (
-                    result.get("head_changed") is True
-                    and set(result.get("committed_paths", [])) != exact_paths
-                )
-            )
-        else:
-            expected_hook_mutation = False
-        if result.get("hook_mutation") is not expected_hook_mutation:
-            errors.append("blocked result hook_mutation contradicts its recorded mutation evidence.")
-    return errors
 
 
 def task_commit_common_git_dir(root: Path) -> Path:
@@ -13255,7 +11462,7 @@ def execute_task_commit_candidate(
         candidate_path.resolve().relative_to(runtime)
     except ValueError as exc:
         raise WorkflowError(
-            "Legacy tracked task commit plans are read-only compatibility evidence and cannot be executed.",
+            "Task commit candidates must stay inside the private task-commit runtime.",
             exit_code=2,
         ) from exc
     plan, facts, errors = validate_task_commit_candidate(root, candidate_path, task_dir)
@@ -13451,6 +11658,11 @@ def execute_task_commit_candidate(
             pre_commit_head=pre_commit_head,
             commit_sha=commit_sha,
         )
+        ai_first_retire_owner_checkpoints(
+            root,
+            task_dir,
+            (PHASE2_CHECK_ARTIFACT,),
+        )
         task_commit_consume_candidate(candidate_path)
         return committed_payload
 
@@ -13581,7 +11793,7 @@ MARKETPLACE_VERIFICATION_PREFIXES = (
 )
 
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
-EXTENSION_VERIFICATION_SCHEMA_VERSION = "1.0"
+EXTENSION_VERIFICATION_SCHEMA_VERSION = "2.0"
 EXTENSION_VERIFICATION_CAPABILITIES = (
     "marketplace_index",
     "new_repo_init",
@@ -13706,48 +11918,37 @@ def marketplace_verification_required(gate: dict[str, Any]) -> dict[str, Any]:
 def closeout_reviewed_change_facts(
     root: Path,
     task_context: dict[str, Any],
-    gate: dict[str, Any] | None,
-    reviewed_head: str,
+    branch_review_commit: str,
 ) -> dict[str, Any]:
     """Rebuild one reviewed-path fact set for closeout and its projections."""
     base_head = str(task_context.get("base_head_sha") or "").strip()
-    if re.fullmatch(r"[0-9a-f]{40}", base_head):
-        proc = run(
-            ["git", "diff", "--name-only", f"{base_head}...{reviewed_head}"],
-            cwd=root,
-            check=False,
+    if re.fullmatch(r"[0-9a-f]{40}", base_head) is None:
+        raise WorkflowError(
+            "Closeout reviewed paths require the pinned task base commit.",
+            exit_code=2,
         )
-        if proc.returncode != 0:
-            raise WorkflowError(
-                "Could not rebuild closeout reviewed paths from the pinned task base.",
-                exit_code=2,
-                payload={
-                    "base_head": base_head,
-                    "reviewed_head": reviewed_head,
-                    "stderr": proc.stderr.strip(),
-                },
-            )
-        changed_paths = sorted(
-            {
-                path.strip()
-                for path in proc.stdout.splitlines()
-                if path.strip()
-            }
+    proc = run(
+        ["git", "diff", "--name-only", f"{base_head}...{branch_review_commit}"],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not rebuild closeout reviewed paths from the pinned task base.",
+            exit_code=2,
+            payload={
+                "base_head": base_head,
+                "branch_review_commit": branch_review_commit,
+                "stderr": proc.stderr.strip(),
+            },
         )
-    else:
-        legacy_paths = (gate or {}).get("changed_files")
-        if not isinstance(legacy_paths, list):
-            raise WorkflowError(
-                "Closeout reviewed paths require a pinned task base or a legacy changed_files gate.",
-                exit_code=2,
-            )
-        changed_paths = sorted(
-            {
-                str(path)
-                for path in legacy_paths
-                if isinstance(path, str) and path
-            }
-        )
+    changed_paths = sorted(
+        {
+            path.strip()
+            for path in proc.stdout.splitlines()
+            if path.strip()
+        }
+    )
     marketplace = marketplace_verification_required(
         {"changed_files": changed_paths}
     )
@@ -14302,12 +12503,12 @@ def extension_verification_remote_identity(
         remote = str(publish_config(load_config(root)).get("remote") or "origin")
         branch = current_branch(root)
         ref = f"refs/heads/{branch}"
-        reviewed_head = str(public_input["reviewed_head"])
+        branch_review_commit = str(public_input["branch_review_commit"])
     else:
         remote = str(public_input["remote"])
         ref = str(public_input["ref"])
-        reviewed_head = None
-    return str(public_input["repo_ref"]), remote, ref, reviewed_head
+        branch_review_commit = None
+    return str(public_input["repo_ref"]), remote, ref, branch_review_commit
 
 
 def extension_verification_workflow_source(repo_ref: str, ref: str) -> str:
@@ -14404,7 +12605,7 @@ def extension_verification_execute_facts(
     public_input: dict[str, Any],
     selected_capabilities: list[str],
     *,
-    expected_head: str | None = None,
+    expected_branch_review_commit: str | None = None,
 ) -> dict[str, Any]:
     if (
         not selected_capabilities
@@ -14415,12 +12616,12 @@ def extension_verification_execute_facts(
             "Extension verification capabilities must be a non-empty unique subset of the closed catalog.",
             exit_code=2,
         )
-    extension_verification_task_identity(root, public_input)
-    repo_ref, remote, ref, reviewed_head = extension_verification_remote_identity(
+    task_dir = extension_verification_task_identity(root, public_input)
+    repo_ref, remote, ref, branch_review_commit = extension_verification_remote_identity(
         root,
         public_input,
     )
-    required_head = expected_head or reviewed_head
+    required_commit = expected_branch_review_commit or branch_review_commit
     commands: list[dict[str, Any]] = []
     remote_command = extension_verification_remote_ref_command(remote, ref)
     remote_proc = run(remote_command, cwd=root, check=False)
@@ -14433,16 +12634,19 @@ def extension_verification_execute_facts(
     )
     remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
     status = "blocked"
+    reviewed_content_sha256 = (
+        reviewed_content_identity(root)["sha256"]
+        if task_dir is not None
+        else None
+    )
+    remote_reviewed_content_sha256: str | None = None
     ownership: dict[str, Any] = {
         "frozen_transitional_legacy_count": 0,
         "new_legacy_entries": [],
     }
     sidecars: list[str] = []
     remote_url = ""
-    if (
-        remote_head is not None
-        and (required_head is None or remote_head == required_head)
-    ):
+    if remote_head is not None:
         remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
         commands.append(
             extension_verification_command_evidence(
@@ -14531,6 +12735,35 @@ def extension_verification_execute_facts(
                 and re.fullmatch(r"[0-9a-f]{40}", checkout_head) is not None
                 and checkout_head == remote_head
             )
+            content_identity_matches = False
+            if checkout_head_matches:
+                try:
+                    remote_reviewed_content_sha256 = reviewed_content_identity(
+                        source_checkout,
+                        remote_head,
+                        include_worktree=False,
+                    )["sha256"]
+                    review_commit_content_sha256 = reviewed_content_identity(
+                        source_checkout,
+                        required_commit or remote_head,
+                        include_worktree=False,
+                    )["sha256"]
+                    content_identity_matches = (
+                        (required_commit is None or is_ancestor(
+                            source_checkout,
+                            required_commit,
+                            remote_head,
+                        ))
+                        and remote_reviewed_content_sha256
+                        == review_commit_content_sha256
+                        and (
+                            reviewed_content_sha256 is None
+                            or reviewed_content_sha256
+                            == review_commit_content_sha256
+                        )
+                    )
+                except WorkflowError:
+                    remote_reviewed_content_sha256 = None
             throwaway_proc = subprocess.CompletedProcess([], 1, "", "checkout failed")
             throwaway = (
                 source_checkout
@@ -14593,6 +12826,7 @@ def extension_verification_execute_facts(
                 if clone_proc.returncode == 0
                 and checkout_proc.returncode == 0
                 and checkout_head_matches
+                and content_identity_matches
                 and throwaway_proc.returncode == 0
                 and asset_inventory["complete"]
                 and ownership["frozen_transitional_legacy_count"] == 0
@@ -14626,8 +12860,10 @@ def extension_verification_execute_facts(
         "repo_ref": repo_ref,
         "remote": remote,
         "ref": ref,
-        "reviewed_head": required_head,
+        "branch_review_commit": required_commit,
         "remote_head": remote_head,
+        "reviewed_content_sha256": reviewed_content_sha256,
+        "remote_reviewed_content_sha256": remote_reviewed_content_sha256,
         "status": status,
         "commands": commands,
         "capabilities": capabilities,
@@ -15039,21 +13275,45 @@ def extension_verification_payload_errors(
         errors.append("private evidence profile does not match public input.")
     repository = payload.get("repository") if isinstance(payload.get("repository"), dict) else {}
     task_ref = payload.get("public_input", {}).get("task_ref")
-    task_worktree_sha256 = repository.get("task_worktree_sha256")
+    reviewed_content_sha256 = repository.get("reviewed_content_sha256")
+    remote_reviewed_content_sha256 = repository.get(
+        "remote_reviewed_content_sha256"
+    )
     if isinstance(task_ref, str):
-        if not isinstance(task_worktree_sha256, str):
+        if not isinstance(reviewed_content_sha256, str):
             errors.append(
-                "task-bearing verification requires a task worktree content binding."
+                "task-bearing verification requires a reviewed-content binding."
             )
-    elif task_worktree_sha256 is not None:
+    elif reviewed_content_sha256 is not None:
         errors.append(
-            "taskless verification cannot retain a task worktree content binding."
+            "taskless verification cannot retain a task reviewed-content binding."
         )
-    if payload.get("mode") == "workflow" and (
-        repository.get("reviewed_head") != payload.get("public_input", {}).get("reviewed_head")
-        or repository.get("remote_head") != repository.get("reviewed_head")
+    execution = (
+        payload.get("execution")
+        if isinstance(payload.get("execution"), dict)
+        else {}
+    )
+    if execution.get("reviewed_content_sha256") != reviewed_content_sha256:
+        errors.append("execution local reviewed-content identity is inconsistent.")
+    if (
+        execution.get("remote_reviewed_content_sha256")
+        != remote_reviewed_content_sha256
     ):
-        errors.append("workflow verification remote/reviewed HEAD binding is stale.")
+        errors.append("execution remote reviewed-content identity is inconsistent.")
+    if payload.get("mode") == "workflow":
+        if repository.get("branch_review_commit") != payload.get("public_input", {}).get(
+            "branch_review_commit"
+        ):
+            errors.append("workflow verification reviewed commit binding is stale.")
+        if not (
+            isinstance(reviewed_content_sha256, str)
+            and re.fullmatch(r"[0-9a-f]{64}", reviewed_content_sha256)
+            and execution.get("reviewed_content_sha256")
+            == reviewed_content_sha256
+            and execution.get("remote_reviewed_content_sha256")
+            == reviewed_content_sha256
+        ):
+            errors.append("workflow verification reviewed-content identity is stale.")
     expected_consumer = extension_verification_expected_consumer(
         str(payload.get("mode") or ""),
         str(payload.get("typed_exit") or ""),
@@ -15105,218 +13365,6 @@ def extension_verification_payload_errors(
     return errors
 
 
-MARKETPLACE_VERIFICATION_KEYS = {
-    "schema_version", "generated_at", "status", "repo", "remote", "branch",
-    "marketplace_source", "verified_head", "remote_head", "task_dir", "steps", "assets",
-}
-MARKETPLACE_VERIFICATION_SCHEMA_VERSION = "1.1"
-MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION = "1.0"
-MARKETPLACE_ASSET_KEYS = {
-    "workflow_sha256", "preview_sha256", "finish_summary_schema_sha256", "closeout_plan_schema_sha256",
-    "runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false",
-    "legacy_handoff_absent", "legacy_intake_schema_absent",
-}
-MARKETPLACE_LEGACY_ASSET_KEYS = {
-    *MARKETPLACE_ASSET_KEYS,
-    "task_start_context_schema_sha256",
-}
-
-
-def marketplace_verification_contract_errors(payload: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    if set(payload) != MARKETPLACE_VERIFICATION_KEYS:
-        errors.append("marketplace verification keys do not match schema 1.0.")
-    schema_version = payload.get("schema_version")
-    if (
-        schema_version
-        not in {
-            MARKETPLACE_VERIFICATION_SCHEMA_VERSION,
-            MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION,
-        }
-        or payload.get("status") not in {"passed", "failed"}
-    ):
-        errors.append("marketplace verification schema_version/status is invalid.")
-    for key in ["generated_at", "repo", "remote", "branch", "marketplace_source", "task_dir"]:
-        if not isinstance(payload.get(key), str) or not payload.get(key):
-            errors.append(f"marketplace verification {key} must be a non-empty string.")
-    if not re.fullmatch(r"[0-9a-f]{40}", str(payload.get("verified_head") or "")):
-        errors.append("marketplace verification verified_head must be a 40-character lowercase SHA.")
-    remote_head = str(payload.get("remote_head") or "")
-    if remote_head and not re.fullmatch(r"[0-9a-f]{40}", remote_head):
-        errors.append("marketplace verification remote_head must be empty or a 40-character lowercase SHA.")
-    steps = payload.get("steps")
-    if not isinstance(steps, list) or not steps or any(not isinstance(step, dict) for step in steps):
-        errors.append("marketplace verification steps must be a non-empty object array.")
-    else:
-        required_step_keys = {
-            "command", "exit_code", "stdout_sha256", "stderr_sha256",
-            "stdout_size_bytes", "stderr_size_bytes", "passed",
-        }
-        for index, step in enumerate(steps):
-            if not required_step_keys.issubset(step):
-                errors.append(f"marketplace verification step {index} is missing required audit fields.")
-                continue
-            command = step.get("command")
-            if not isinstance(command, list) or not command or any(not isinstance(part, str) for part in command):
-                errors.append(f"marketplace verification step {index} command is invalid.")
-            if not isinstance(step.get("exit_code"), int):
-                errors.append(f"marketplace verification step {index} exit_code is invalid.")
-            for key in ["stdout_sha256", "stderr_sha256"]:
-                if not re.fullmatch(r"[0-9a-f]{64}", str(step.get(key) or "")):
-                    errors.append(f"marketplace verification step {index} {key} is invalid.")
-            for key in ["stdout_size_bytes", "stderr_size_bytes"]:
-                if not isinstance(step.get(key), int) or step.get(key) < 0:
-                    errors.append(f"marketplace verification step {index} {key} is invalid.")
-            if not isinstance(step.get("passed"), bool):
-                errors.append(f"marketplace verification step {index} passed is invalid.")
-    assets = payload.get("assets")
-    expected_asset_keys = (
-        MARKETPLACE_LEGACY_ASSET_KEYS
-        if schema_version == MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION
-        else MARKETPLACE_ASSET_KEYS
-    )
-    if not isinstance(assets, dict) or set(assets) != expected_asset_keys:
-        errors.append(
-            "marketplace verification assets keys do not match its schema version."
-        )
-        assets = {}
-    digest_pattern = re.compile(r"^[0-9a-f]{64}$")
-    digest_keys = [
-        "workflow_sha256",
-        "preview_sha256",
-        "finish_summary_schema_sha256",
-        "closeout_plan_schema_sha256",
-    ]
-    if schema_version == MARKETPLACE_VERIFICATION_LEGACY_SCHEMA_VERSION:
-        digest_keys.append("task_start_context_schema_sha256")
-    for key in digest_keys:
-        value = str(assets.get(key) or "")
-        if payload.get("status") == "passed" and not digest_pattern.fullmatch(value):
-            errors.append(f"passed marketplace verification requires asset digest: {key}.")
-        elif payload.get("status") == "failed" and value and not digest_pattern.fullmatch(value):
-            errors.append(f"failed marketplace verification asset digest must be empty or valid: {key}.")
-    for key in ["runtime_gitignore_present", "workspace_gitignore_present", "session_auto_commit_false", "legacy_handoff_absent", "legacy_intake_schema_absent"]:
-        if not isinstance(assets.get(key), bool):
-            errors.append(f"marketplace verification asset flag must be boolean: {key}.")
-        elif payload.get("status") == "passed" and assets.get(key) is not True:
-            errors.append(f"passed marketplace verification requires true asset flag: {key}.")
-    return errors
-
-
-def execute_marketplace_verification(
-    root: Path,
-    task_dir: Path,
-    repo: str,
-    remote: str,
-    branch: str,
-    expected_head: str,
-    config: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    ref = f"refs/heads/{branch}"
-    source = f"gh:{repo}/trellis#{branch}"
-    facts = extension_verification_execute_facts(
-        root,
-        {
-            "profile": "standalone_verification",
-            "mode": "standalone",
-            "repo_ref": repo,
-            "remote": remote,
-            "ref": ref,
-            "caller_intent": "verify-extension-installation",
-            "task_ref": repo_relative(root, task_dir),
-        },
-        list(EXTENSION_VERIFICATION_CAPABILITIES),
-        expected_head=expected_head,
-    )
-    passed = facts["status"] == "passed"
-    steps = [
-        {
-            "command": list(item["argv"]),
-            "exit_code": item["exit_code"],
-            "stdout_sha256": item["stdout_sha256"],
-            "stderr_sha256": item["stderr_sha256"],
-            "stdout_size_bytes": item["stdout_size_bytes"],
-            "stderr_size_bytes": item["stderr_size_bytes"],
-            "passed": item["exit_code"] == 0,
-        }
-        for item in facts["commands"]
-    ]
-    if steps:
-        steps[0]["remote_head"] = facts["remote_head"]
-        steps[0]["expected_head"] = expected_head
-        steps[0]["passed"] = (
-            steps[0]["passed"] and facts["remote_head"] == expected_head
-        )
-    digests = {
-        str(item["source_path"]): str(item["expected_sha256"])
-        for item in facts["asset_expectations"]
-        if isinstance(item, dict)
-        and isinstance(item.get("source_path"), str)
-        and isinstance(item.get("expected_sha256"), str)
-    }
-    workflow_digest = str(
-        digests.get("trellis/workflows/guru-team/workflow.md") or ""
-    )
-    assets = {
-        "workflow_sha256": workflow_digest,
-        "preview_sha256": workflow_digest,
-        "finish_summary_schema_sha256": str(
-            digests.get(
-                "trellis/workflows/guru-team/schemas/"
-                "finish-summary.schema.json"
-            )
-            or ""
-        ),
-        "closeout_plan_schema_sha256": str(
-            digests.get(
-                "trellis/workflows/guru-team/schemas/"
-                "closeout-plan.schema.json"
-            )
-            or ""
-        ),
-        "runtime_gitignore_present": passed,
-        "workspace_gitignore_present": passed,
-        "session_auto_commit_false": passed,
-        "legacy_handoff_absent": passed,
-        "legacy_intake_schema_absent": passed,
-    }
-    payload = {
-        "schema_version": MARKETPLACE_VERIFICATION_SCHEMA_VERSION,
-        "generated_at": now_iso(),
-        "status": "passed" if passed else "failed",
-        "repo": repo,
-        "remote": remote,
-        "branch": branch,
-        "marketplace_source": source,
-        "verified_head": expected_head,
-        "remote_head": facts["remote_head"] or "",
-        "task_dir": repo_relative(root, task_dir),
-        "steps": steps,
-        "assets": assets,
-    }
-    contract_errors = marketplace_verification_contract_errors(payload)
-    if contract_errors:
-        payload["status"] = "failed"
-        payload["assets"] = {
-            "workflow_sha256": assets.get("workflow_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("workflow_sha256") or "")) else "",
-            "preview_sha256": assets.get("preview_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("preview_sha256") or "")) else "",
-            "finish_summary_schema_sha256": assets.get("finish_summary_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("finish_summary_schema_sha256") or "")) else "",
-            "closeout_plan_schema_sha256": assets.get("closeout_plan_schema_sha256") if re.fullmatch(r"[0-9a-f]{64}", str(assets.get("closeout_plan_schema_sha256") or "")) else "",
-            "runtime_gitignore_present": bool(assets.get("runtime_gitignore_present")),
-            "workspace_gitignore_present": bool(assets.get("workspace_gitignore_present")),
-            "session_auto_commit_false": bool(assets.get("session_auto_commit_false")),
-            "legacy_handoff_absent": bool(assets.get("legacy_handoff_absent")),
-            "legacy_intake_schema_absent": bool(assets.get("legacy_intake_schema_absent")),
-        }
-        contract_errors = marketplace_verification_contract_errors(payload)
-        if contract_errors:
-            raise WorkflowError("Internal marketplace verification payload contract failure.", exit_code=2, payload={"errors": contract_errors})
-    write_json(marketplace_verification_path(task_dir, config), payload)
-    if not passed:
-        raise WorkflowError("Remote marketplace verification failed after push.", exit_code=2, payload=payload)
-    return payload
-
-
 SKILL_ID_PATTERN = re.compile(r"^guru-[a-z0-9]+(?:-[a-z0-9]+)+$")
 SKILL_ROUTE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SKILL_EXIT_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$")
@@ -15351,23 +13399,13 @@ SKILL_INVOKE_RE = re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*
 SKILL_EXIT_RE = re.compile(r"^\s*<!--\s*guru-skill-exit:\s*(\{.*\})\s*-->\s*$")
 SKILL_TARGET_RE = re.compile(r"^\s*<!--\s*guru-(workflow|stop)-target:\s*(\{.*\})\s*-->\s*$")
 SKILL_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
-SKILL_INTERFACE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.2.json"
 SKILL_INTERFACE_SCHEMAS = {
-    "guru-team-skill-interface-1.2": {
-        "version": "1.2",
-        "schema_path": Path("schemas/skill-interface.schema.json"),
-        "interface_ref": "../../schemas/skill-interface.schema.json",
-        "id": SKILL_INTERFACE_SCHEMA_ID,
-        "sha256": "33e5daf1362d6580027254fc15d63824cb4688c9e97e896489e9e817b034841e",
-        "io_contract_state": "legacy",
-    },
     "guru-team-skill-interface-1.3": {
         "version": "1.3",
         "schema_path": Path("schemas/skill-interface-1.3.schema.json"),
         "interface_ref": "../../schemas/skill-interface-1.3.schema.json",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
         "sha256": "2892c524fa4ac2553b7aa2c1dd2004c0b53fb84388af506dc8a836ea61d4eb73",
-        "io_contract_state": "minimal_handoff",
     },
 }
 SKILL_RUNTIME_DEPENDENCY = {
@@ -15401,7 +13439,7 @@ STAGE0_MIGRATION_SKILL_IDS = (
     "guru-review-change-request",
     "guru-create-task-workspace",
 )
-PRODUCTION_MIGRATION_SKILL_IDS = (
+PRODUCTION_CONTRACT_SKILL_IDS = (
     "guru-approve-task-plan",
     "guru-check-task",
     "guru-create-task-commit",
@@ -15409,12 +13447,11 @@ PRODUCTION_MIGRATION_SKILL_IDS = (
 BRANCH_REVIEW_SKILL_ID = "guru-review-branch"
 TASK_PUBLICATION_SKILL_ID = "guru-review-task-publication"
 FINALIZE_TASK_SKILL_ID = "guru-finalize-task"
-PUBLIC_MIGRATION_SKILL_IDS = (
+PUBLIC_CONTRACT_SKILL_IDS = (
     STAGE0_MIGRATION_SKILL_IDS
-    + PRODUCTION_MIGRATION_SKILL_IDS
+    + PRODUCTION_CONTRACT_SKILL_IDS
     + (BRANCH_REVIEW_SKILL_ID, TASK_PUBLICATION_SKILL_ID)
 )
-STAGE0_LEGACY_SKILL_IDS = PRODUCTION_MIGRATION_SKILL_IDS
 STAGE0_MIGRATION_MANIFEST = Path("migrations/stage0-minimal-handoff.json")
 STAGE0_MIGRATION_SCHEMA = Path("schemas/stage0-migration-manifest.schema.json")
 STAGE0_MIGRATION_SCHEMA_ID = "guru-team-stage0-migration-manifest-1.0"
@@ -15427,20 +13464,10 @@ STAGE0_AI_FIRST_MIGRATION_SCHEMA_ID = (
     "guru-team-stage0-ai-first-contract-migration-1.0"
 )
 STAGE0_AI_FIRST_MIGRATION_ID = "stage0-ai-first-contract-v2"
-PRODUCTION_MIGRATION_MANIFEST = Path("migrations/production-minimal-handoff.json")
-PRODUCTION_MIGRATION_SCHEMA = Path("schemas/production-migration-manifest.schema.json")
-PRODUCTION_MIGRATION_SCHEMA_ID = "guru-team-production-migration-manifest-1.0"
-PRODUCTION_MIGRATION_MANIFEST_SHA256 = "b6eab31fd84023fd7238c075ed725262eaac3e56bfe8004d75d492fb948de2ba"
-PRODUCTION_AI_FIRST_MIGRATION_MANIFEST = Path(
-    "migrations/production-ai-first-contract-v2.json"
-)
-PRODUCTION_AI_FIRST_MIGRATION_SCHEMA = Path(
-    "schemas/production-ai-first-contract-migration.schema.json"
-)
-PRODUCTION_AI_FIRST_MIGRATION_SCHEMA_ID = (
-    "guru-team-production-ai-first-contract-migration-1.0"
-)
-PRODUCTION_AI_FIRST_MIGRATION_ID = "production-ai-first-contract-v2"
+PRODUCTION_CONTRACT_MANIFEST = Path("contracts/production-current.json")
+PRODUCTION_CONTRACT_SCHEMA = Path("schemas/production-contract-manifest.schema.json")
+PRODUCTION_CONTRACT_SCHEMA_ID = "guru-team-production-contract-manifest-1.0"
+PRODUCTION_CONTRACT_ID = "production-current-v1"
 SKILL_RUNTIME_REMEDIATION = (
     "Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete "
     "Guru Team preset, resolve every .new/.bak sidecar, run source and installed Skill package "
@@ -15448,10 +13475,9 @@ SKILL_RUNTIME_REMEDIATION = (
 )
 SKILL_CONTRACT_SCHEMAS = {
     "registry": {
-        "sha256": "a67f52decae5612e2fe0760ed46eb4c2fe686f7dbd3325a520e0f432cb80b407",
-        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.1.json",
+        "sha256": "5e9924f53177188d302798118aab31a88cb40a1eb6dfe3c0d618bf301fe41ff9",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.2.json",
     },
-    "interface-1.2": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.2"],
     "interface-1.3": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.3"],
 }
 
@@ -16740,19 +14766,33 @@ def skill_extension_runtime_contract(
         errors.append(f"{label} has no public API contract")
         return None, set(), None
     skill_contracts = public_api.get("skill_contracts")
-    expected_supported = list(SKILL_INTERFACE_SCHEMAS)
     if not isinstance(skill_contracts, dict):
         skill_contracts = None
     elif (
+        set(skill_contracts)
+        != {
+            "canonical_root",
+            "installed_root",
+            "registry_schema_id",
+            "interface_schema_id",
+            "public_input_schema_ids",
+            "typed_output_schema_ids",
+            "private_artifact_schema_ids",
+            "artifact_schema_ids",
+            "active_skill_ids",
+            "planned_skill_ids",
+            "registry_lifecycle",
+            "contract_manifests",
+            "workflow_markers",
+        }
+        or skill_contracts.get("registry_schema_id")
+        != "guru-team-skill-registry-1.2"
+        or
         skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.3"
-        or skill_contracts.get("supported_interface_schema_ids") != expected_supported
-        or skill_contracts.get("current_interface_schema_id") != "guru-team-skill-interface-1.3"
-        or skill_contracts.get("registry_schema_id") != "guru-team-skill-registry-1.1"
     ):
         errors.append(f"{label} has an incompatible Skill interface schema id")
     if isinstance(skill_contracts, dict):
         for field in (
-            "legacy_skill_ids",
             "public_input_schema_ids",
             "typed_output_schema_ids",
             "private_artifact_schema_ids",
@@ -17529,7 +15569,7 @@ def validate_skill_public_contracts(
             continue
         if payload_kind == "zero_payload":
             if identity.get("kind") != "stop":
-                errors.append(f"[consumer_zero_payload] only stop consumers may declare zero payload")
+                errors.append("[consumer_zero_payload] only stop consumers may declare zero payload")
             consumer_contracts[consumer_id] = (None, set(), "zero_payload", set())
             continue
         contract = consumer.get("contract")
@@ -18077,7 +16117,7 @@ def validate_skill_interface(
     expected_interface = f"{expected_package}/interface.json"
     required_entry = {
         "id", "state", "name", "package", "interface", "supported_platforms",
-        "interface_schema_id", "io_contract_state", "validator_command", "workflow_route_id",
+        "interface_schema_id", "validator_command", "workflow_route_id",
     }
     optional_entry = {"workflow_integration_state"}
     if not required_entry.issubset(entry) or not set(entry).issubset(
@@ -18101,8 +16141,6 @@ def validate_skill_interface(
     schema_contract = SKILL_INTERFACE_SCHEMAS.get(interface_schema_id)
     if schema_contract is None:
         errors.append(f"active registry entry {skill_id} has an unknown interface_schema_id")
-    elif entry.get("io_contract_state") != schema_contract["io_contract_state"]:
-        errors.append(f"active registry entry {skill_id} has an incompatible interface version/state")
     if not SKILL_ROUTE_ID_PATTERN.fullmatch(str(entry.get("workflow_route_id") or "")):
         errors.append(f"active registry entry {skill_id} has invalid workflow route id")
     supported = entry.get("supported_platforms")
@@ -18120,7 +16158,7 @@ def validate_skill_interface(
     package = skills_root / expected_package
     if skill_lstat_path(boundary, package, f"active package {skill_id}", errors, kind="directory") is None:
         return None
-    package_files = skill_collect_tree_files(boundary, package, f"active package {skill_id}", errors)
+    skill_collect_tree_files(boundary, package, f"active package {skill_id}", errors)
     skill_path = package / "SKILL.md"
     skill_frontmatter = None
     if skill_lstat_path(boundary, skill_path, f"SKILL.md for {skill_id}", errors, kind="file") is not None:
@@ -18146,8 +16184,7 @@ def validate_skill_interface(
         "entry_preconditions", "runtime_dependency", "ordered_stages", "artifacts", "schemas", "validators",
         "external_exits", "reentry", "tests", "platform_destinations",
     }
-    if entry.get("io_contract_state") == "minimal_handoff":
-        required_interface.add("public_contracts")
+    required_interface.add("public_contracts")
     if set(interface) != required_interface:
         errors.append(f"interface for {skill_id} has invalid fields")
     if schema_contract is None or interface.get("$schema") != schema_contract["interface_ref"]:
@@ -18327,16 +16364,15 @@ def validate_skill_interface(
     destinations = interface.get("platform_destinations")
     if not isinstance(destinations, list) or destinations != supported:
         errors.append(f"interface platform destinations for {skill_id} do not match registry")
-    if entry.get("io_contract_state") == "minimal_handoff":
-        validate_skill_public_contracts(
-            skills_root,
-            package,
-            interface,
-            errors,
-            boundary=boundary,
-            runtime_commands=runtime_commands or set(),
-            active_registry_entries=active_registry_entries,
-        )
+    validate_skill_public_contracts(
+        skills_root,
+        package,
+        interface,
+        errors,
+        boundary=boundary,
+        runtime_commands=runtime_commands or set(),
+        active_registry_entries=active_registry_entries,
+    )
     return interface
 
 
@@ -18486,7 +16522,6 @@ def stage0_current_activation_projection(
     return {
         "activation_unit_id": STAGE0_AI_FIRST_MIGRATION_ID,
         "skill_ids": list(STAGE0_MIGRATION_SKILL_IDS),
-        "legacy_skill_ids": list(STAGE0_LEGACY_SKILL_IDS),
         "skills": entries,
     }
 
@@ -18496,7 +16531,6 @@ def validate_stage0_migration_manifest(
     boundary: Path,
     active: dict[str, dict[str, Any]],
     interfaces: dict[str, dict[str, Any]],
-    skill_contracts: dict[str, Any] | None,
     errors: list[str],
 ) -> str | None:
     schema_path = skills_root / STAGE0_MIGRATION_SCHEMA
@@ -18606,11 +16640,8 @@ def validate_stage0_migration_manifest(
     manifest = stage0_current_activation_projection(skills_root, interfaces, errors)
 
     expected_skill_ids = list(STAGE0_MIGRATION_SKILL_IDS)
-    expected_legacy_ids = list(STAGE0_LEGACY_SKILL_IDS)
     if manifest.get("skill_ids") != expected_skill_ids:
         errors.append("Stage 0 migration manifest skill_ids do not match the ordered activation unit")
-    if manifest.get("legacy_skill_ids") != expected_legacy_ids:
-        errors.append("Stage 0 migration manifest legacy_skill_ids do not match the #146 boundary")
     if manifest.get("activation_unit_id") != STAGE0_AI_FIRST_MIGRATION_ID:
         errors.append("Stage 0 migration manifest has an unknown activation unit")
 
@@ -18744,174 +16775,70 @@ def validate_stage0_migration_manifest(
     return str(manifest.get("activation_unit_id") or "") or None
 
 
-def validate_production_migration_manifest(
+def validate_production_contract_manifest(
     skills_root: Path,
     boundary: Path,
     interfaces: dict[str, dict[str, Any]],
     errors: list[str],
 ) -> str | None:
-    schema_path = skills_root / PRODUCTION_MIGRATION_SCHEMA
-    manifest_path = skills_root / PRODUCTION_MIGRATION_MANIFEST
+    schema_path = skills_root / PRODUCTION_CONTRACT_SCHEMA
+    manifest_path = skills_root / PRODUCTION_CONTRACT_MANIFEST
     if skill_lstat_path(
-        boundary, schema_path, "production migration manifest schema", errors, kind="file"
+        boundary, schema_path, "production contract manifest schema", errors, kind="file"
     ) is None:
         return None
     if skill_lstat_path(
-        boundary, manifest_path, "production migration manifest", errors, kind="file"
+        boundary, manifest_path, "production contract manifest", errors, kind="file"
     ) is None:
         return None
-    schema = skill_read_schema(schema_path, "production migration manifest schema", errors)
-    manifest = skill_read_json(manifest_path, "production migration manifest", errors)
+    schema = skill_read_schema(schema_path, "production contract manifest schema", errors)
+    manifest = skill_read_json(manifest_path, "production contract manifest", errors)
     if not isinstance(schema, dict) or not isinstance(manifest, dict):
         return None
-    if schema.get("$schema") != SKILL_SCHEMA_DIALECT or schema.get("$id") != PRODUCTION_MIGRATION_SCHEMA_ID:
-        errors.append("production migration manifest schema has an incompatible identity")
+    if schema.get("$schema") != SKILL_SCHEMA_DIALECT or schema.get("$id") != PRODUCTION_CONTRACT_SCHEMA_ID:
+        errors.append("production contract manifest schema has an incompatible identity")
         return None
-    schema_errors = skill_json_schema_subset_errors(schema, "production migration manifest schema")
+    schema_errors = skill_json_schema_subset_errors(schema, "production contract manifest schema")
     errors.extend(schema_errors)
     if not schema_errors:
         errors.extend(skill_json_schema_validation_errors(
-            manifest, schema, "production migration manifest"
+            manifest, schema, "production contract manifest"
         ))
-    if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != PRODUCTION_MIGRATION_MANIFEST_SHA256:
-        errors.append("frozen production v1 migration manifest bytes changed")
 
-    ai_first_schema_path = skills_root / PRODUCTION_AI_FIRST_MIGRATION_SCHEMA
-    ai_first_manifest_path = skills_root / PRODUCTION_AI_FIRST_MIGRATION_MANIFEST
-    if skill_lstat_path(
-        boundary,
-        ai_first_schema_path,
-        "production AI-first migration schema",
-        errors,
-        kind="file",
-    ) is None or skill_lstat_path(
-        boundary,
-        ai_first_manifest_path,
-        "production AI-first migration manifest",
-        errors,
-        kind="file",
-    ) is None:
-        return None
-    ai_first_schema = skill_read_schema(
-        ai_first_schema_path,
-        "production AI-first migration schema",
-        errors,
-    )
-    ai_first_manifest = skill_read_json(
-        ai_first_manifest_path,
-        "production AI-first migration manifest",
-        errors,
-    )
-    if (
-        not isinstance(ai_first_schema, dict)
-        or not isinstance(ai_first_manifest, dict)
-        or ai_first_schema.get("$schema") != SKILL_SCHEMA_DIALECT
-        or ai_first_schema.get("$id") != PRODUCTION_AI_FIRST_MIGRATION_SCHEMA_ID
-    ):
-        errors.append("production AI-first migration contract has an incompatible identity")
-        return None
-    ai_first_schema_errors = skill_json_schema_subset_errors(
-        ai_first_schema,
-        "production AI-first migration schema",
-    )
-    errors.extend(ai_first_schema_errors)
-    if not ai_first_schema_errors:
-        errors.extend(skill_json_schema_validation_errors(
-            ai_first_manifest,
-            ai_first_schema,
-            "production AI-first migration manifest",
-        ))
-    expected_changes = [
-        {
-            "skill_id": "guru-approve-task-plan",
-            "migration": "approved removes the producer-private approval_ref; the output schema moves from v1 to v2",
-        },
-        {
-            "skill_id": "guru-check-task",
-            "migration": "passed removes the producer-private check_ref and accepts the repository hash width; the output schema moves from v1 to v2",
-        },
-        {
-            "skill_id": "guru-create-task-commit",
-            "migration": "v1 message/path/semantic fields project once into the five-field v2 owner-entry seed and ignored-runtime candidate; authorization and caller-selected exit fields are discarded, and no terminal result journal is written",
-        },
-    ]
-    if ai_first_manifest.get("changes") != expected_changes:
-        errors.append("production AI-first migration changes do not match the closed compatibility contract")
-    current_production_exit_count = sum(
-        len(interfaces.get(skill_id, {}).get("external_exits", []))
-        for skill_id in PRODUCTION_MIGRATION_SKILL_IDS
-    )
-    if (
-        ai_first_manifest.get("current_contract")
-        != {
-            "interface_schema_id": "guru-team-skill-interface-1.3",
-            "skill_count": len(PRODUCTION_MIGRATION_SKILL_IDS),
-            "exit_count": current_production_exit_count,
-        }
-        or current_production_exit_count != 11
-    ):
-        errors.append("production AI-first migration does not bind the current 3-Skill/11-exit closure")
-
-    # Keep v1 byte-for-byte as historical authority. This three-Skill migration
-    # records Task Commit input/private-state projection; only the planning and
-    # check exits require replacement output schema identities.
-    manifest = copy.deepcopy(manifest)
-    manifest["activation_unit_id"] = PRODUCTION_AI_FIRST_MIGRATION_ID
-    current_output_schema_ids = {
-        ("guru-approve-task-plan", "approved"):
-            "guru-production-approve-task-plan-output-approved-2.0",
-        ("guru-check-task", "passed"):
-            "guru-production-check-task-output-passed-2.0",
-    }
-    for skill_entry in manifest.get("skills", []):
-        if not isinstance(skill_entry, dict):
-            continue
-        skill_id = str(skill_entry.get("id") or "")
-        for binding in skill_entry.get("exit_bindings", []):
-            if not isinstance(binding, dict):
-                continue
-            current_schema_id = current_output_schema_ids.get(
-                (skill_id, str(binding.get("exit_id") or ""))
-            )
-            if current_schema_id:
-                binding["output_schema_id"] = current_schema_id
-
-    expected_skill_ids = list(PRODUCTION_MIGRATION_SKILL_IDS)
+    expected_skill_ids = list(PRODUCTION_CONTRACT_SKILL_IDS)
     if manifest.get("skill_ids") != expected_skill_ids:
-        errors.append("production migration manifest skill_ids do not match the ordered activation unit")
-    if manifest.get("legacy_skill_ids") != []:
-        errors.append("production migration manifest legacy_skill_ids must be empty")
-    if manifest.get("activation_unit_id") != PRODUCTION_AI_FIRST_MIGRATION_ID:
-        errors.append("production migration manifest has an unknown activation unit")
+        errors.append("production contract manifest skill_ids do not match the ordered contract")
+    if manifest.get("contract_id") != PRODUCTION_CONTRACT_ID:
+        errors.append("production contract manifest has an unknown contract id")
     if manifest.get("interface_schema_id") != "guru-team-skill-interface-1.3":
-        errors.append("production migration manifest does not require Interface 1.3")
-    if manifest.get("registry_schema_id") != "guru-team-skill-registry-1.1":
-        errors.append("production migration manifest has an unknown registry schema")
+        errors.append("production contract manifest does not require Interface 1.3")
+    if manifest.get("registry_schema_id") != "guru-team-skill-registry-1.2":
+        errors.append("production contract manifest has an unknown registry schema")
     if manifest.get("eval_schema_id") != SKILL_EVAL_SCHEMA_ID:
-        errors.append("production migration manifest has an unknown eval schema")
+        errors.append("production contract manifest has an unknown eval schema")
 
     raw_entries = manifest.get("skills")
     manifest_entries: dict[str, dict[str, Any]] = {}
     if not isinstance(raw_entries, list):
-        errors.append("production migration manifest skills must be an array")
+        errors.append("production contract manifest skills must be an array")
         raw_entries = []
     for index, item in enumerate(raw_entries):
         if not isinstance(item, dict):
-            errors.append(f"production migration manifest skill at index {index} is invalid")
+            errors.append(f"production contract manifest skill at index {index} is invalid")
             continue
         skill_id = str(item.get("id") or "")
         if skill_id in manifest_entries:
-            errors.append(f"production migration manifest repeats skill {skill_id}")
+            errors.append(f"production contract manifest repeats skill {skill_id}")
         manifest_entries[skill_id] = item
     if list(manifest_entries) != expected_skill_ids:
-        errors.append("production migration manifest skill entries do not match the ordered activation unit")
+        errors.append("production contract manifest skill entries do not match the ordered contract")
 
     expected_authoring_edges: list[dict[str, Any]] = []
     for skill_id in expected_skill_ids:
         item = manifest_entries.get(skill_id)
         interface = interfaces.get(skill_id)
         if not isinstance(item, dict) or not isinstance(interface, dict):
-            errors.append(f"production migration manifest cannot resolve active Interface {skill_id}")
+            errors.append(f"production contract manifest cannot resolve active Interface {skill_id}")
             continue
         contracts = interface.get("public_contracts")
         if not isinstance(contracts, dict):
@@ -19027,7 +16954,7 @@ def validate_production_migration_manifest(
 
     if manifest.get("authoring_seed_edges") != expected_authoring_edges or len(expected_authoring_edges) != 4:
         errors.append("production manifest authoring_seed_edges do not match the exact four Interface edges")
-    return str(manifest.get("activation_unit_id") or "") or None
+    return str(manifest.get("contract_id") or "") or None
 
 
 def _validate_skill_source(
@@ -19050,7 +16977,6 @@ def _validate_skill_source(
             "mode": "source",
             "facts": {
                 "schema_version": None,
-                "reserved_ids": [],
                 "planned_ids": [],
                 "active_ids": [],
                 "invoke_markers": 0,
@@ -19094,7 +17020,6 @@ def _validate_skill_source(
         installed=installed_extension,
     )
     entries: list[dict[str, Any]] = []
-    reserved: set[str] = set()
     planned: set[str] = set()
     active: dict[str, dict[str, Any]] = {}
     interfaces: dict[str, dict[str, Any]] = {}
@@ -19107,7 +17032,7 @@ def _validate_skill_source(
             ))
         if set(registry) != {"$schema", "schema_version", "skills"}:
             errors.append("skill registry has invalid fields")
-        if registry.get("$schema") != "schemas/skill-registry.schema.json" or registry.get("schema_version") != "1.1":
+        if registry.get("$schema") != "schemas/skill-registry.schema.json" or registry.get("schema_version") != "1.2":
             errors.append("skill registry has unknown schema id/version")
         entries = skill_unique_ids(registry.get("skills"), "skill registry", errors)
         active_registry_entries = {
@@ -19120,15 +17045,7 @@ def _validate_skill_source(
             if not SKILL_ID_PATTERN.fullmatch(skill_id):
                 errors.append(f"invalid public skill id {skill_id or '<empty>'}")
             state = entry.get("state")
-            if state == "reserved":
-                if (
-                    set(entry) != {"id", "state", "reason"}
-                    or not isinstance(entry.get("reason"), str)
-                    or not entry["reason"].strip()
-                ):
-                    errors.append(f"reserved registry entry {skill_id} has invalid fields")
-                reserved.add(skill_id)
-            elif state == "planned":
+            if state == "planned":
                 if (
                     set(entry) != {"id", "state", "reason"}
                     or not isinstance(entry.get("reason"), str)
@@ -19154,13 +17071,6 @@ def _validate_skill_source(
                 errors.append(f"registry entry {skill_id} has unknown state")
 
     if isinstance(skill_contracts, dict):
-        legacy_ids = sorted(
-            skill_id
-            for skill_id, entry in active.items()
-            if entry.get("io_contract_state") == "legacy"
-        )
-        if skill_contracts.get("legacy_skill_ids") != legacy_ids:
-            errors.append("extension legacy_skill_ids do not match registry migration state")
         expected_public_inputs: set[str] = set()
         expected_outputs: set[str] = set()
         expected_private: set[str] = set()
@@ -19188,56 +17098,37 @@ def _validate_skill_source(
             if skill_contracts.get(field) != expected:
                 errors.append(f"extension {field} does not match active package contracts")
 
-    stage0_activation_unit = None
-    production_activation_unit = None
-    if set(STAGE0_MIGRATION_SKILL_IDS) & set(active) or (
-        isinstance(skill_contracts, dict) and "migration_manifests" in skill_contracts
-    ):
-        stage0_activation_unit = validate_stage0_migration_manifest(
+    production_contract_id = None
+    if set(STAGE0_MIGRATION_SKILL_IDS) & set(active) and not installed_extension:
+        validate_stage0_migration_manifest(
             skills_root,
             boundary,
             active,
             interfaces,
-            skill_contracts,
             errors,
         )
-        production_activation_unit = validate_production_migration_manifest(
+        production_contract_id = validate_production_contract_manifest(
             skills_root,
             boundary,
             interfaces,
             errors,
         )
-        expected_manifest_locators = [
+        expected_contract_locators = [
             {
-                "id": "stage0-minimal-handoff-v1",
-                "schema_id": STAGE0_MIGRATION_SCHEMA_ID,
-                "path": STAGE0_MIGRATION_MANIFEST.as_posix(),
-            },
-            {
-                "id": "production-minimal-handoff-v1",
-                "schema_id": PRODUCTION_MIGRATION_SCHEMA_ID,
-                "path": PRODUCTION_MIGRATION_MANIFEST.as_posix(),
-            },
-            {
-                "id": STAGE0_AI_FIRST_MIGRATION_ID,
-                "schema_id": STAGE0_AI_FIRST_MIGRATION_SCHEMA_ID,
-                "path": STAGE0_AI_FIRST_MIGRATION_MANIFEST.as_posix(),
-            },
-            {
-                "id": PRODUCTION_AI_FIRST_MIGRATION_ID,
-                "schema_id": PRODUCTION_AI_FIRST_MIGRATION_SCHEMA_ID,
-                "path": PRODUCTION_AI_FIRST_MIGRATION_MANIFEST.as_posix(),
+                "id": PRODUCTION_CONTRACT_ID,
+                "schema_id": PRODUCTION_CONTRACT_SCHEMA_ID,
+                "path": PRODUCTION_CONTRACT_MANIFEST.as_posix(),
             },
         ]
         if (
             not isinstance(skill_contracts, dict)
-            or skill_contracts.get("migration_manifests") != expected_manifest_locators
+            or skill_contracts.get("contract_manifests") != expected_contract_locators
         ):
             errors.append(
-                "extension migration_manifests do not publish the frozen Stage 0/production contracts before their AI-first migrations"
+                "extension contract_manifests do not publish the current production contract"
             )
         stage0_ids = set(STAGE0_MIGRATION_SKILL_IDS)
-        production_ids = set(PRODUCTION_MIGRATION_SKILL_IDS)
+        production_ids = set(PRODUCTION_CONTRACT_SKILL_IDS)
         if stage0_ids & production_ids:
             errors.append("Stage 0 and production activation manifests overlap")
         active_ids = set(active)
@@ -19245,10 +17136,9 @@ def _validate_skill_source(
             errors.append("active registry is missing a manifest-owned Skill")
         if any(
             entry.get("interface_schema_id") != "guru-team-skill-interface-1.3"
-            or entry.get("io_contract_state") != "minimal_handoff"
             for entry in active.values()
         ):
-            errors.append("active registry contains a legacy, unknown, or missing I/O contract state")
+            errors.append("active registry contains an unknown interface schema id")
         current_active_ids = stage0_ids | production_ids | {
             BRANCH_REVIEW_SKILL_ID,
             TASK_PUBLICATION_SKILL_ID,
@@ -19289,9 +17179,7 @@ def _validate_skill_source(
         if set(marker) != {"skill", "required", "_line"} or marker.get("required") is not True:
             errors.append(f"invalid invoke marker for {skill_id or '<empty>'}")
         invoke_counts[skill_id] = invoke_counts.get(skill_id, 0) + 1
-        if skill_id in reserved:
-            errors.append(f"reserved skill {skill_id} is referenced by a mandatory route")
-        elif skill_id in planned:
+        if skill_id in planned:
             errors.append(f"planned skill {skill_id} is referenced by a mandatory route")
         elif skill_id not in active:
             errors.append(f"unknown skill {skill_id} is referenced by a mandatory route")
@@ -19332,9 +17220,7 @@ def _validate_skill_source(
         ):
             errors.append(f"invalid exit marker for {skill_id or '<empty>'}/{exit_id or '<empty>'}")
         marker_map.setdefault((skill_id, exit_id), []).append(marker)
-        if skill_id in reserved:
-            errors.append(f"reserved skill {skill_id} has an exit route")
-        elif skill_id in planned:
+        if skill_id in planned:
             errors.append(f"planned skill {skill_id} has an exit route")
         elif skill_id not in active:
             errors.append(f"unknown skill {skill_id} has an exit route")
@@ -19446,19 +17332,9 @@ def _validate_skill_source(
         "mode": "source",
         "facts": {
             "schema_version": registry.get("schema_version") if registry else None,
-            "reserved_ids": sorted(reserved),
             "planned_ids": sorted(planned),
             "active_ids": sorted(active),
-            "legacy_ids": sorted(
-                skill_id for skill_id, entry in active.items()
-                if entry.get("io_contract_state") == "legacy"
-            ),
-            "minimal_handoff_ids": sorted(
-                skill_id for skill_id, entry in active.items()
-                if entry.get("io_contract_state") == "minimal_handoff"
-            ),
-            "stage0_activation_unit": stage0_activation_unit,
-            "production_activation_unit": production_activation_unit,
+            "production_contract_id": production_contract_id,
             "invoke_markers": len(invokes),
             "exit_markers": len(exit_markers),
             "target_markers": len(target_markers),
@@ -19491,7 +17367,6 @@ def validate_skill_source(
             "mode": "source",
             "facts": {
                 "schema_version": None,
-                "reserved_ids": [],
                 "planned_ids": [],
                 "active_ids": [],
                 "invoke_markers": 0,
@@ -19535,7 +17410,7 @@ def _validate_skill_installed(
         skill_manifest = {}
     required = {
         "schema_version", "status", "canonical_registry_sha256", "registry_schema_version",
-        "reserved_ids", "active_ids", "selected_platforms", "packages", "files", "removals",
+        "active_ids", "selected_platforms", "packages", "files", "removals",
         "conflicts", "sidecars",
     }
     if set(skill_manifest) != required:
@@ -19549,7 +17424,7 @@ def _validate_skill_installed(
     facts = source_result["facts"]
     if skill_manifest.get("registry_schema_version") != facts.get("schema_version"):
         errors.append("installed registry schema version does not match provenance")
-    if skill_manifest.get("reserved_ids") != facts.get("reserved_ids") or skill_manifest.get("active_ids") != facts.get("active_ids"):
+    if skill_manifest.get("active_ids") != facts.get("active_ids"):
         errors.append("installed registry lifecycle ids do not match provenance")
     selected = skill_manifest.get("selected_platforms")
     if (
@@ -19566,7 +17441,6 @@ def _validate_skill_installed(
         if isinstance(entry, dict) and entry.get("state") == "active"
     }
     active_ids = facts.get("active_ids") or []
-    reserved_ids = facts.get("reserved_ids") or []
     installed_root_rel = skill_lexical_relative(root, skills_root)
     if installed_root_rel is None:
         errors.append("installed skill root is outside the repository")
@@ -19600,7 +17474,7 @@ def _validate_skill_installed(
             Path("tests/test_finish_family_integration.py"),
             finish_integration_test,
         )
-    for shared_root_name in ("schemas", "adapters", "migrations"):
+    for shared_root_name in ("schemas", "adapters", "migrations", "contracts"):
         shared_root = skills_root / shared_root_name
         shared_files = skill_collect_tree_files(
             root,
@@ -19875,14 +17749,9 @@ def _validate_skill_installed(
         rel = skill_safe_relative(item.get("path"))
         allowed_fields = {"path", "action"}
         if item.get("action") == "removed_managed":
-            managed_hash_fields = {
-                field
-                for field in ("previous_managed_sha256", "legacy_managed_asset_sha256")
-                if field in item
-            }
-            if len(managed_hash_fields) != 1:
+            if "previous_managed_sha256" not in item:
                 errors.append(f"installed overlay removal record {index} is invalid")
-            allowed_fields |= managed_hash_fields
+            allowed_fields.add("previous_managed_sha256")
         if (
             set(item) != allowed_fields
             or rel is None
@@ -19891,14 +17760,7 @@ def _validate_skill_installed(
         ):
             errors.append(f"installed overlay removal record {index} is invalid")
             continue
-        hash_value = next(
-            (
-                item.get(field)
-                for field in ("previous_managed_sha256", "legacy_managed_asset_sha256")
-                if field in item
-            ),
-            None,
-        )
+        hash_value = item.get("previous_managed_sha256")
         if hash_value is not None and not re.fullmatch(r"[0-9a-f]{64}", str(hash_value)):
             errors.append(f"installed overlay removal record {index} has an invalid digest")
         if skill_lstat_path(
@@ -19981,12 +17843,6 @@ def _validate_skill_installed(
             item for item in supported_raw
             if isinstance(item, str)
         } if isinstance(supported_raw, list) else set()
-    for skill_id in reserved_ids:
-        candidates = [skills_root / "packages" / skill_id]
-        candidates.extend(root / platform_root / skill_id for platform_root in SKILL_PLATFORM_ROOTS.values())
-        for path in candidates:
-            if skill_lstat_path(root, path, f"reserved skill path {skill_id}", errors, kind="directory", required=False) is not None:
-                errors.append(f"reserved skill {skill_id} was installed")
     for skill_id in active_ids:
         shared = root / SKILL_PLATFORM_ROOTS["shared"] / skill_id
         if skill_lstat_path(root, shared, f"shared runtime copy for {skill_id}", errors, kind="directory") is None:
@@ -20090,7 +17946,6 @@ def validate_skill_installed(
             "mode": "installed",
             "facts": {
                 "schema_version": None,
-                "reserved_ids": [],
                 "planned_ids": [],
                 "active_ids": [],
                 "invoke_markers": 0,
@@ -20262,7 +18117,7 @@ def stage0_invocation_error(code: str, field_path: str, remediation: str, messag
 def stage0_invocation_identity() -> tuple[str, Path]:
     skill_id = os.environ.get("GURU_TEAM_INVOKED_SKILL_ID", "")
     package_value = os.environ.get("GURU_TEAM_INVOKED_PACKAGE_ROOT", "")
-    if skill_id not in PUBLIC_MIGRATION_SKILL_IDS + (FINALIZE_TASK_SKILL_ID,) or not package_value:
+    if skill_id not in PUBLIC_CONTRACT_SKILL_IDS + (FINALIZE_TASK_SKILL_ID,) or not package_value:
         raise stage0_invocation_error(
             "invalid_invocation_identity",
             "invocation",
@@ -20345,19 +18200,6 @@ def stage0_structured_input(
     path = stage0_safe_input_path(root, package, interface, input_value)
     errors: list[str] = []
     payload = skill_read_json(path, "Stage 0 public input", errors)
-    if (
-        skill_id == TASK_WORKSPACE_SKILL_ID
-        and isinstance(payload, dict)
-        and payload.get("profile") in TASK_WORKSPACE_LEGACY_PUBLIC_INPUT_PROFILES
-    ):
-        legacy_errors = task_workspace_legacy_public_input_errors(payload)
-        if legacy_errors:
-            errors.extend(legacy_errors)
-        else:
-            payload = {
-                "profile": "execute_reviewed_plan",
-                "mode": payload["mode"],
-            }
     public_input = interface["public_contracts"].get("input")
     profiles = public_input.get("profiles", []) if isinstance(public_input, dict) else []
     profile_id = payload.get("profile") if isinstance(payload, dict) else None
@@ -20376,15 +18218,11 @@ def stage0_structured_input(
     schema_path = package / str(schema_ref.get("path") if isinstance(schema_ref, dict) else "")
     schema = skill_read_schema(schema_path, "Stage 0 public input profile", errors)
     if isinstance(schema, dict):
-        validation_errors = skill_json_schema_validation_errors(
-            payload, schema, "Stage 0 public input"
+        errors.extend(
+            skill_json_schema_validation_errors(
+                payload, schema, "Stage 0 public input"
+            )
         )
-        if not (
-            skill_id == TASK_COMMIT_SKILL_ID
-            and validation_errors
-            and not task_commit_legacy_public_input_errors(payload)
-        ):
-            errors.extend(validation_errors)
     if errors or not isinstance(schema, dict):
         raise stage0_invocation_error(
             "invalid_public_input",
@@ -20393,17 +18231,6 @@ def stage0_structured_input(
             "Stage 0 structured public input failed its declared profile schema.",
         )
     return payload
-
-
-def task_workspace_legacy_public_input_errors(payload: Any) -> list[str]:
-    if not isinstance(payload, dict):
-        return ["legacy workspace input must be an object"]
-    profile = payload.get("profile")
-    if profile not in TASK_WORKSPACE_LEGACY_PUBLIC_INPUT_PROFILES:
-        return ["legacy workspace input profile is unknown"]
-    if payload.get("mode") not in {"workflow", "standalone"}:
-        return ["legacy workspace input mode is invalid"]
-    return []
 
 
 def stage0_output_contract(
@@ -20682,7 +18509,7 @@ def review_branch_owner_invocation_errors(
         or result.get("mode") != public_input.get("mode")
         or result.get("review_intent") != public_input.get("review_intent")
         or result.get("base_ref") != public_input.get("base_ref")
-        or review_gate_content_head(result) != public_input.get("committed_head")
+        or review_gate_commit(result) != public_input.get("branch_review_commit")
     ):
         errors.append(
             "guru-review-branch owner artifact identity does not match "
@@ -20712,9 +18539,7 @@ def production_owner_result(
     elif skill_id == "guru-check-task":
         expected_path = phase2_check_path(root, task_dir)
     elif skill_id == BRANCH_REVIEW_SKILL_ID:
-        expected_path = configured_review_gate_path(
-            root, task_dir, load_config(root)
-        )
+        expected_path = configured_review_gate_path(root, task_dir)
     elif skill_id == TASK_PUBLICATION_SKILL_ID:
         expected_path = task_publication_path(root, task_dir)
     else:
@@ -20759,19 +18584,17 @@ def production_owner_result(
                 load_config(root),
                 public_input,
                 result,
-                direct_runtime_inputs=[
-                    str(getattr(args, "input", "") or ""),
-                ],
             )
             if entry_errors:
                 result = {
-                    "schema_version": "2.2",
+                    "schema_version": BRANCH_REVIEW_SCHEMA_VERSION,
                     "mode": public_input["mode"],
                     "review_intent": public_input["review_intent"],
                     "typed_exit": "blocked",
                     "task_dir": public_input["task_ref"],
                     "base_ref": public_input["base_ref"],
-                    "reviewed_content_head": public_input["committed_head"],
+                    "review_commit": public_input["branch_review_commit"],
+                    "reviewed_content_sha256": reviewed_content_identity(root)["sha256"],
                     "entry_precondition_errors": entry_errors,
                 }
                 checked = {
@@ -20783,7 +18606,6 @@ def production_owner_result(
                 checked = cmd_check_review_gate(argparse.Namespace(
                     root=str(root),
                     task=repo_relative(root, task_dir),
-                    allow_metadata_after_gate=False,
                     allow_nonpass=True,
                     expected_exit=result.get("typed_exit"),
                 ))
@@ -20794,9 +18616,6 @@ def production_owner_result(
                     root=str(root),
                     task=repo_relative(root, task_dir),
                     expected_exit=result.get("typed_exit"),
-                    direct_runtime_inputs=[
-                        str(getattr(args, "input", "") or ""),
-                    ],
                 )
             )
             result = checked.get("owner_result", result)
@@ -20820,12 +18639,13 @@ def production_owner_result(
             result.get("mode") == public_input.get("mode")
             and result.get("review_intent") == public_input.get("review_intent")
             and result.get("base_ref") == public_input.get("base_ref")
-            and review_gate_content_head(result) == public_input.get("committed_head")
+            and review_gate_commit(result)
+            == public_input.get("branch_review_commit")
         )
     elif skill_id == TASK_PUBLICATION_SKILL_ID:
         input_matches = (
-            result.get("reviewed_content_head")
-            == public_input.get("reviewed_content_head")
+            result.get("branch_review_commit")
+            == public_input.get("branch_review_commit")
         )
     else:
         input_matches = result.get("mode") == public_input.get("mode")
@@ -20895,14 +18715,19 @@ def task_commit_recovery_commit_errors(
     root: Path,
     commit_sha: str,
     plan: dict[str, Any],
-    checked_head: str,
+    phase2_commit_anchor: str,
 ) -> list[str]:
     errors: list[str] = []
     parents = run_stdout(
         ["git", "show", "-s", "--format=%P", commit_sha], cwd=root
     ).split()
-    if parents != [checked_head]:
-        errors.append("recovery commit parent does not equal the candidate checked_head")
+    pre_commit_head = str((plan.get("git") or {}).get("pre_commit_head") or "")
+    if (plan.get("git") or {}).get("phase2_commit_anchor") != phase2_commit_anchor:
+        errors.append(
+            "recovery candidate phase2_commit_anchor does not equal the public Phase 2 anchor"
+        )
+    if parents != [pre_commit_head]:
+        errors.append("recovery commit parent does not equal the candidate pre_commit_head")
 
     message = plan.get("message") if isinstance(plan.get("message"), dict) else {}
     expected_message = str(message.get("bytes") or "").encode("utf-8")
@@ -20979,19 +18804,19 @@ def production_verify_committed_candidate(
     candidate_path: Path | None,
 ) -> dict[str, Any]:
     current = current_head(root)
-    checked_head = str(public_input.get("checked_head") or "")
+    phase2_commit_anchor = str(public_input.get("phase2_commit_anchor") or "")
     if candidate_path is not None:
         plan, _facts, candidate_errors = validate_task_commit_candidate(
             root,
             candidate_path,
             task_dir,
-            recovery_checked_head=checked_head,
+            recovery_phase2_commit_anchor=phase2_commit_anchor,
         )
         recovery_errors = task_commit_recovery_commit_errors(
             root,
             current,
             plan,
-            checked_head,
+            phase2_commit_anchor,
         )
         errors = [*candidate_errors, *recovery_errors]
         if production_commit_semantic_exit(plan) != "committed":
@@ -21002,6 +18827,11 @@ def production_verify_committed_candidate(
                 exit_code=2,
                 payload={"errors": errors},
             )
+        ai_first_retire_owner_checkpoints(
+            root,
+            task_dir,
+            (PHASE2_CHECK_ARTIFACT,),
+        )
         task_commit_consume_candidate(candidate_path)
         return {
             "status": "committed",
@@ -21009,26 +18839,10 @@ def production_verify_committed_candidate(
             "base_ref": plan["git"]["base_ref"],
         }
 
-    # Compatibility only: old active tasks may still carry a tracked terminal
-    # plan. New successful commits never create or update this directory.
-    candidates = sorted((task_dir / TASK_COMMIT_PLAN_DIR).glob("[0-9][0-9][0-9].json"))
-    if not candidates:
-        raise WorkflowError("No committed task candidate is available for recovery.", exit_code=2)
-    candidate = candidates[-1]
-    plan = read_json(candidate)
-    result = plan.get("result") if isinstance(plan.get("result"), dict) else {}
-    if (
-        result.get("status") != "committed"
-        or task_commit_result_validation_errors(root, plan)
-        or result.get("commit_sha") != current_head(root)
-        or public_input.get("checked_head") != plan.get("git", {}).get("pre_commit_head")
-    ):
-        raise WorkflowError("Committed task candidate recovery evidence is stale.", exit_code=2)
-    return {
-        "status": "committed",
-        "commit_sha": result["commit_sha"],
-        "base_ref": plan["git"]["base_ref"],
-    }
+    raise WorkflowError(
+        "Task commit recovery requires the surviving owner-private candidate.",
+        exit_code=2,
+    )
 
 
 def production_commit_result(
@@ -21037,24 +18851,12 @@ def production_commit_result(
     public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     task_dir = production_task_from_public_input(root, public_input)
-    legacy_input = not task_commit_legacy_public_input_errors(public_input)
-    effective_input = public_input
-    if legacy_input:
-        effective_input = {
-            "profile": public_input["profile"],
-            "mode": public_input["mode"],
-            "task_ref": public_input["task_ref"],
-            "source_exit": {
-                "initial_commit": "passed",
-                "revision_reentry": "revision-required",
-                "finding_fix_commit": "passed",
-                "recovery_resume": "transaction_recovery",
-            }[str(public_input["profile"])],
-            "checked_head": public_input["checked_head"],
-        }
     try:
         owner_value = str(getattr(args, "owner_result", "") or "").strip()
-        if public_input.get("profile") == "recovery_resume" and current_head(root) != public_input.get("checked_head"):
+        if (
+            public_input.get("profile") == "recovery_resume"
+            and current_head(root) != public_input.get("phase2_commit_anchor")
+        ):
             candidate_path: Path | None = None
             if owner_value:
                 candidate_path, candidate_task_dir = resolve_task_commit_candidate(
@@ -21064,7 +18866,7 @@ def production_commit_result(
                     raise WorkflowError(
                         "Task commit private candidate belongs to another task.", exit_code=2
                     )
-            elif not legacy_input:
+            else:
                 raise WorkflowError(
                     "Task commit recovery requires the surviving owner-private candidate.",
                     exit_code=2,
@@ -21093,13 +18895,6 @@ def production_commit_result(
                     exit_code=2,
                     payload={"errors": errors},
                 )
-        elif legacy_input:
-            candidate_path, plan, facts = build_task_commit_candidate(
-                root,
-                task_dir,
-                effective_input,
-                task_commit_legacy_authoring(root, task_dir, public_input),
-            )
         else:
             raise WorkflowError(
                 "Task commit public wrapper requires the prepared owner-private candidate.",
@@ -21116,11 +18911,6 @@ def production_commit_result(
         executed["base_ref"] = plan["git"]["base_ref"]
         return {"typed_exit": "committed"}, executed
     except WorkflowError as exc:
-        if legacy_input:
-            return {"typed_exit": "revision-required"}, {
-                "status": "revision-required",
-                "errors": [str(exc)],
-            }
         return {"typed_exit": "blocked"}, {
             "status": "blocked",
             "errors": [str(exc)],
@@ -21275,7 +19065,9 @@ def stage0_build_output(
         if exit_id == "passed":
             values.update({
                 "task_ref": public_input.get("task_ref"),
-                "checked_head": (owner_plan or {}).get("checked_head"),
+                "phase2_commit_anchor": (owner_plan or {}).get(
+                    "phase2_capture_commit"
+                ),
             })
         elif exit_id == "implementation_required":
             findings = owner_result.get("semantic_review", {}).get("findings", [])
@@ -21298,7 +19090,7 @@ def stage0_build_output(
             values.update({
                 "task_ref": public_input.get("task_ref"),
                 "base_ref": (owner_plan or {}).get("base_ref"),
-                "committed_head": (owner_plan or {}).get("commit_sha"),
+                "branch_review_commit": (owner_plan or {}).get("commit_sha"),
             })
         elif exit_id == "revision-required":
             values["task_ref"] = public_input.get("task_ref")
@@ -21311,12 +19103,12 @@ def stage0_build_output(
         if exit_id == "passed":
             values.update({
                 "task_ref": public_input.get("task_ref"),
-                "reviewed_content_head": review_gate_content_head(owner_result),
+                "branch_review_commit": review_gate_commit(owner_result),
             })
         elif exit_id == "implementation_required":
             values.update({
                 "task_ref": public_input.get("task_ref"),
-                "reviewed_content_head": review_gate_content_head(owner_result),
+                "branch_review_commit": review_gate_commit(owner_result),
                 "finding_refs": [
                     str(item.get("finding_ref"))
                     for item in semantic.get("qualified_findings", [])
@@ -21340,8 +19132,8 @@ def stage0_build_output(
             values.update(
                 {
                     "task_ref": public_input.get("task_ref"),
-                    "reviewed_content_head": owner_result.get(
-                        "reviewed_content_head"
+                    "branch_review_commit": owner_result.get(
+                        "branch_review_commit"
                     ),
                 }
             )
@@ -21555,32 +19347,6 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                     "Repair the checked finalization route output and rerun the owner gate.",
                     "Task finalization could not serialize a valid actual-exit output.",
                 )
-            if (
-                exit_id == "publication_review_stale"
-                and payload.get("stale_reason")
-                == "publication_review_head_mismatch"
-            ):
-                finalization_task = owner_plan.get("task_dir")
-                if not isinstance(finalization_task, Path):
-                    raise stage0_invocation_error(
-                        "owner_result_projection_failed",
-                        "owner_result.task_dir",
-                        "Restore the checked active finalization task identity.",
-                        "Task finalization cannot retire stale downstream projection without its task identity.",
-                    )
-                try:
-                    finalization_retire_stale_downstream_projection(
-                        root,
-                        finalization_task,
-                        owner_plan,
-                    )
-                except WorkflowError as exc:
-                    raise stage0_invocation_error(
-                        "owner_result_projection_failed",
-                        "owner_result.publication_stale_reason",
-                        "Review unknown or mismatched task-local content; only the exact plan-owned stale projection may be retired automatically.",
-                        "Task finalization could not safely retire its stale downstream projection.",
-                    ) from exc
             if exit_id == "published":
                 finalization_task = owner_plan.get("task_dir")
                 if not isinstance(finalization_task, Path):
@@ -21667,7 +19433,9 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
         BRANCH_REVIEW_SKILL_ID: "review-gate.json",
         TASK_PUBLICATION_SKILL_ID: PR_READINESS_ARTIFACT,
     }.get(skill_id)
-    if owner_artifact is not None:
+    if owner_artifact is not None and not (
+        skill_id == "guru-check-task" and exit_id == "passed"
+    ):
         ai_first_retire_owner_checkpoints(
             root,
             production_task_from_public_input(root, public_input),
@@ -21751,7 +19519,7 @@ def skill_contract_validation_error(
         return skill_contract_error(
             "version_state_mismatch",
             f"{root}/registry.json",
-            "Restore the exact registry/interface schema version and io_contract_state relation, then rerun package validation.",
+            "Restore the exact current registry and Interface schema relation, then rerun package validation.",
             "Skill contract discovery found an incompatible registry/interface version relation.",
         )
     if any(
@@ -21812,35 +19580,17 @@ def build_skill_contract_discovery(
             "Skill contract discovery could not read the selected interface.",
         )
     interface_schema_id = str(entry.get("interface_schema_id") or "")
-    io_contract_state = str(entry.get("io_contract_state") or "")
     common = {
         "status": "ok",
         "skill_id": skill_id,
         "interface_schema_id": interface_schema_id,
-        "io_contract_state": io_contract_state,
     }
-    if io_contract_state == "legacy":
-        if interface_schema_id != "guru-team-skill-interface-1.2" or "public_contracts" in interface:
-            raise skill_contract_error(
-                "version_state_mismatch",
-                f"skills.{skill_id}.io_contract_state",
-                "Bind legacy only to interface 1.2 and do not synthesize minimal handoff contracts.",
-                "Legacy Skill contract identity is inconsistent.",
-            )
-        return {
-            **common,
-            "variant": "legacy",
-            "migration": {
-                "target_interface_schema_id": "guru-team-skill-interface-1.3",
-                "followup_issues": ["#145", "#146"],
-            },
-        }
-    if io_contract_state != "minimal_handoff" or interface_schema_id != "guru-team-skill-interface-1.3":
+    if interface_schema_id != "guru-team-skill-interface-1.3":
         raise skill_contract_error(
             "version_state_mismatch",
-            f"skills.{skill_id}.io_contract_state",
-            "Use the exact registry interface_schema_id/io_contract_state relation.",
-            "Minimal handoff Skill contract identity is inconsistent.",
+            f"skills.{skill_id}.interface_schema_id",
+            "Use the current Interface 1.3 contract.",
+            "Skill contract identity is inconsistent with the current registry.",
         )
     contracts = interface.get("public_contracts")
     if not isinstance(contracts, dict):
@@ -21852,7 +19602,6 @@ def build_skill_contract_discovery(
         )
     return {
         **common,
-        "variant": "minimal_handoff",
         "input": contracts.get("input"),
         "invocation": contracts.get("invocation"),
         "outputs": contracts.get("outputs"),
@@ -21905,11 +19654,11 @@ def skill_eval_package_context(skills_root: Path, skill_id: str) -> tuple[Path, 
             "Skill eval discovery could not find one active registry entry.",
         )
     entry = matches[0]
-    if entry.get("interface_schema_id") != "guru-team-skill-interface-1.3" or entry.get("io_contract_state") != "minimal_handoff":
+    if entry.get("interface_schema_id") != "guru-team-skill-interface-1.3":
         raise skill_eval_error(
-            "evals_unsupported", f"skills.{skill_id}.io_contract_state",
-            "Migrate the Skill through #145/#146 before running behavior evals.",
-            "This Skill does not publish an Interface 1.3 eval contract.",
+            "evals_unsupported", f"skills.{skill_id}.interface_schema_id",
+            "Use the current Interface 1.3 Skill contract before running behavior evals.",
+            "This Skill does not publish the current eval contract.",
         )
     package_relative = skill_safe_relative(entry.get("package"))
     interface_relative = skill_safe_relative(entry.get("interface"))
@@ -22636,20 +20385,6 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
     return result
 
 
-def cmd_verify_marketplace(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    config = load_config(root)
-    task_dir = resolve_task_dir(root, args.task)
-    task_context = load_task_runtime_identity(task_dir, config)
-    assert_workspace_boundary(root, config, task_context, task_dir)
-    repo = str(args.repo or config.get("github_repo") or "").strip() or infer_github_repo(root)
-    if not repo:
-        raise WorkflowError("Could not resolve GitHub repo for marketplace verification.")
-    branch = str(args.branch or current_branch(root))
-    remote = str(args.remote or publish_config(config).get("remote") or "origin")
-    return execute_marketplace_verification(root, task_dir, repo, remote, branch, current_head(root), config)
-
-
 def cmd_execute_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input = extension_verification_public_input(root, args.input)
@@ -22808,37 +20543,12 @@ def extension_verification_task_identity(
     return task_dir
 
 
-def extension_verification_task_worktree_sha256(
+def extension_verification_reviewed_content_sha256(
     root: Path,
     task_dir: Path,
 ) -> str:
-    artifact_relative = repo_relative(
-        root,
-        marketplace_verification_path(task_dir, load_config(root)),
-    )
-    captured = capture_task_commit_snapshot(root, {artifact_relative})
-
-    def private_runtime_path(value: Any) -> bool:
-        return isinstance(value, str) and (
-            value == ".trellis/.runtime"
-            or value.startswith(".trellis/.runtime/")
-        )
-
-    entries = [
-        entry
-        for entry in captured["entries"]
-        if not any(
-            private_runtime_path(entry.get(field))
-            for field in ("path", "renamed_from", "copied_from")
-        )
-    ]
-    return context_digest(
-        {
-            "head": current_head(root),
-            "task_ref": repo_relative(root, task_dir),
-            "entries": entries,
-        }
-    )
+    del task_dir
+    return reviewed_content_identity(root)["sha256"]
 
 
 def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
@@ -22848,12 +20558,12 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
     execution = extension_verification_execution_input(root, args.execution_input)
     reviewed = extension_verification_review_input(root, args.review_input)
     identity = extension_verification_remote_identity(root, public_input)
-    repo_ref, remote, ref, reviewed_head = identity
+    repo_ref, remote, ref, branch_review_commit = identity
     if (
         execution.get("repo_ref") != repo_ref
         or execution.get("remote") != remote
         or execution.get("ref") != ref
-        or execution.get("reviewed_head") != reviewed_head
+        or execution.get("branch_review_commit") != branch_review_commit
     ):
         raise WorkflowError(
             "Extension verification execution facts do not match the public invocation.",
@@ -22870,8 +20580,8 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
             payload={"errors": semantic_errors},
         )
-    task_worktree_sha256 = (
-        extension_verification_task_worktree_sha256(root, task_dir)
+    reviewed_content_sha256 = (
+        extension_verification_reviewed_content_sha256(root, task_dir)
         if task_dir is not None
         else None
     )
@@ -22926,9 +20636,12 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
             "repo_ref": repo_ref,
             "remote": remote,
             "ref": ref,
-            "reviewed_head": reviewed_head,
+            "branch_review_commit": branch_review_commit,
             "remote_head": execution["remote_head"],
-            "task_worktree_sha256": task_worktree_sha256,
+            "reviewed_content_sha256": reviewed_content_sha256,
+            "remote_reviewed_content_sha256": execution[
+                "remote_reviewed_content_sha256"
+            ],
         },
         "applicability": copy.deepcopy(reviewed["applicability"]),
         "verification_profile": copy.deepcopy(reviewed["verification_profile"]),
@@ -22943,6 +20656,8 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
                 "asset_inventory",
                 "ownership",
                 "sidecars",
+                "reviewed_content_sha256",
+                "remote_reviewed_content_sha256",
             )
         },
         "semantic_review": copy.deepcopy(reviewed["semantic_review"]),
@@ -23030,20 +20745,12 @@ def check_extension_verification_result(
             errors.append(
                 "task-bearing verification must use the unique task-local marketplace-verification.json."
             )
-        if owner_input.get("mode") == "workflow":
-            try:
-                if current_head(root) != owner_input.get("reviewed_head"):
-                    errors.append(
-                        "workflow verification evidence is stale after local HEAD drift."
-                    )
-            except WorkflowError:
-                errors.append("current local HEAD is unreadable.")
         try:
-            live_task_worktree_sha256 = (
-                extension_verification_task_worktree_sha256(root, task_dir)
+            live_reviewed_content_sha256 = (
+                extension_verification_reviewed_content_sha256(root, task_dir)
             )
         except WorkflowError:
-            errors.append("current task worktree content is unreadable.")
+            errors.append("current reviewed content is unreadable.")
         else:
             repository = (
                 payload.get("repository")
@@ -23051,11 +20758,11 @@ def check_extension_verification_result(
                 else {}
             )
             if (
-                live_task_worktree_sha256
-                != repository.get("task_worktree_sha256")
+                live_reviewed_content_sha256
+                != repository.get("reviewed_content_sha256")
             ):
                 errors.append(
-                    "task-bearing verification evidence is stale after worktree content drift."
+                    "task-bearing verification evidence is stale after reviewed-content drift."
                 )
     elif locator != "<stdin>":
         allowed_eval = (
@@ -23161,17 +20868,14 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
                 {
                     "task_ref": public_input["task_ref"],
                     "plan_ref": public_input["plan_ref"],
-                    "reviewed_head": public_input["reviewed_head"],
+                    "branch_review_commit": public_input["branch_review_commit"],
                     "verification_ref": owner["identity"]["verification_ref"],
                 }
             )
         elif exit_id == "not_required":
-            payload.update(
-                {
-                    "task_ref": public_input["task_ref"],
-                    "plan_ref": public_input["plan_ref"],
-                    "reviewed_head": public_input["reviewed_head"],
-                }
+            raise WorkflowError(
+                "Workflow extension verification cannot emit not_required.",
+                exit_code=2,
             )
         elif exit_id == "return_to_task_work":
             payload.update(
@@ -23419,10 +21123,6 @@ def validate_publish_identity_and_remote_head(
     }
 
 
-def cmd_publish_pr(args: argparse.Namespace) -> dict[str, Any]:
-    validate_publish_invocation(args)
-
-
 def closeout_plan_path(task_dir: Path) -> Path:
     return task_dir / CLOSEOUT_PLAN_ARTIFACT
 
@@ -23430,38 +21130,15 @@ def closeout_plan_path(task_dir: Path) -> Path:
 def task_finalization_path(
     root: Path,
     task_dir: Path,
-    *,
-    for_write: bool = False,
 ) -> Path:
-    return ai_first_owner_artifact_path(
+    return ai_first_owner_checkpoint_path(
         root,
         task_dir,
         TASK_FINALIZATION_GATE_ARTIFACT,
-        for_write=for_write,
     )
 
 
-def closeout_semantic_ledger(ledger: dict[str, Any]) -> dict[str, Any]:
-    normalized = copy.deepcopy(ledger)
-    targets: list[dict[str, Any]] = []
-    primary = normalized.get("primary_issue")
-    if isinstance(primary, dict):
-        targets.append(primary)
-    close_issues = normalized.get("close_issues")
-    if isinstance(close_issues, list):
-        targets.extend(item for item in close_issues if isinstance(item, dict))
-    for issue in targets:
-        evidence = issue.get("acceptance_evidence")
-        if isinstance(evidence, list):
-            issue["acceptance_evidence"] = [
-                item
-                for item in evidence
-                if not (isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE)
-            ]
-    return normalized
-
-
-def closeout_ledger_matches_plan_semantics(
+def closeout_ledger_matches_plan_bytes(
     root: Path,
     task_dir: Path,
     plan: dict[str, Any],
@@ -23473,44 +21150,10 @@ def closeout_ledger_matches_plan_semantics(
         if isinstance(inputs, dict)
         else None
     )
-    return bound == {
-        "path": repo_relative(root, issue_scope_ledger_path(task_dir)),
-        "sha256": canonical_json_sha256(closeout_semantic_ledger(ledger)),
-    }
-
-
-def finalizer_plan_owned_issue_scope_ledger_allowed(
-    root: Path,
-    task_dir: Path,
-    existing_plan: dict[str, Any] | None,
-    ledger: dict[str, Any],
-    *,
-    publication_ready: dict[str, Any] | None,
-    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None,
-) -> bool:
-    plan_owns_ledger = (
-        isinstance(existing_plan, dict)
-        and existing_plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
-        and closeout_ledger_matches_plan_semantics(
-            root,
-            task_dir,
-            existing_plan,
-            ledger,
-        )
-    )
-    if publication_ready is not None:
-        return existing_plan is None or plan_owns_ledger
-    if not plan_owns_ledger or not isinstance(verification_owner_result, tuple):
-        return False
-    if len(verification_owner_result) != 2:
-        return False
-    owner_result, checked_result = verification_owner_result
-    return (
-        isinstance(owner_result, dict)
-        and owner_result.get("profile") == "verification_required"
-        and owner_result.get("typed_exit") == "verified"
-        and isinstance(checked_result, dict)
-        and checked_result.get("typed_exit") == "verified"
+    path = issue_scope_ledger_path(task_dir)
+    return issue_scope_ledger_errors(ledger) == [] and bound == closeout_input_record(
+        root,
+        path,
     )
 
 
@@ -23662,21 +21305,43 @@ def validate_closeout_task_children(task_dir: Path, task: dict[str, Any]) -> Non
         )
 
 
-def closeout_evidence_parent_head(plan: dict[str, Any]) -> str:
-    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
-    return str(git.get("evidence_parent_head") or git.get("reviewed_work_head") or "")
-
-
-def closeout_uses_evidence_commit(plan: dict[str, Any]) -> bool:
-    return plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
-
-
 def closeout_transaction_parent_head(plan: dict[str, Any]) -> str:
-    return (
-        closeout_evidence_parent_head(plan)
-        if closeout_uses_evidence_commit(plan)
-        else str(plan.get("git", {}).get("reviewed_work_head") or "")
-    )
+    return str(plan.get("git", {}).get("branch_review_commit") or "")
+
+
+def validate_closeout_reviewed_content(
+    root: Path,
+    plan: dict[str, Any],
+    commit: str,
+    *,
+    include_worktree: bool,
+) -> str:
+    branch_review_commit = closeout_transaction_parent_head(plan)
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", branch_review_commit) is None
+        or re.fullmatch(r"[0-9a-f]{40}", commit) is None
+        or not is_ancestor(root, branch_review_commit, commit)
+    ):
+        raise WorkflowError(
+            "Closeout commit is not a descendant of branch_review_commit.",
+            exit_code=2,
+        )
+    anchor_identity = reviewed_content_identity(
+        root,
+        branch_review_commit,
+        include_worktree=False,
+    )["sha256"]
+    current_identity = reviewed_content_identity(
+        root,
+        commit,
+        include_worktree=include_worktree,
+    )["sha256"]
+    if current_identity != anchor_identity:
+        raise WorkflowError(
+            "Closeout reviewed content changed after Branch Review.",
+            exit_code=2,
+        )
+    return anchor_identity
 
 
 def normalize_closeout_archive_identity(value: Any, archive_locator: str) -> Any:
@@ -23699,9 +21364,6 @@ def normalize_closeout_archive_identity(value: Any, archive_locator: str) -> Any
 def closeout_month_supersession_errors(
     previous: dict[str, Any],
     current: dict[str, Any],
-    *,
-    previous_evidence_head: str,
-    committed: bool,
 ) -> list[str]:
     errors: list[str] = []
     try:
@@ -23711,15 +21373,6 @@ def closeout_month_supersession_errors(
         return [str(exc)]
     if previous_month == current_month:
         errors.append("closeout archive month supersession requires a changed month.")
-    if closeout_evidence_parent_head(current) != previous_evidence_head:
-        errors.append("closeout archive month supersession parent does not match prior evidence HEAD.")
-    if committed:
-        expected_paths = sorted(
-            f"{current['task']['active_locator']}/{name}"
-            for name in (CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT)
-        )
-        if current.get("projection", {}).get("evidence_paths") != expected_paths:
-            errors.append("committed archive month supersession must change only plan/readiness evidence paths.")
 
     normalized: list[dict[str, Any]] = []
     for plan, locator in (
@@ -23728,130 +21381,11 @@ def closeout_month_supersession_errors(
     ):
         candidate = copy.deepcopy(plan)
         candidate.pop("plan_digest", None)
-        candidate["git"]["evidence_parent_head"] = "<evidence-parent>"
-        candidate["projection"]["evidence_paths"] = []
         candidate["projection"]["summary_template_sha256"] = "<archive-template-digest>"
         normalized.append(normalize_closeout_archive_identity(candidate, locator))
     if normalized[0] != normalized[1]:
-        errors.append("archive month supersession changed immutable facts beyond archive identity and evidence parent.")
+        errors.append("archive month supersession changed facts beyond archive identity.")
     return errors
-
-
-def build_closeout_finalizer_gate_takeover_plan(
-    previous: dict[str, Any],
-    *,
-    evidence_parent_head: str,
-    committed: bool,
-) -> dict[str, Any]:
-    """Build the one legal same-month migration from a pre-finalizer plan."""
-    validate_closeout_plan(previous)
-    if previous.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        raise WorkflowError(
-            "Finalizer takeover is available only for an explicit legacy closeout plan.",
-            exit_code=2,
-        )
-    projection = previous["projection"]
-    active_gate = (
-        f"{previous['task']['active_locator']}/{TASK_FINALIZATION_GATE_ARTIFACT}"
-    )
-    archive_gate = (
-        f"{previous['task']['archive_locator']}/{TASK_FINALIZATION_GATE_ARTIFACT}"
-    )
-    summary = projection["summary_template"]
-    artifacts = summary["artifacts"]
-    changed_paths = summary["git"]["changed_paths"]
-    search_paths = summary["index"]["search_terms"]["paths"]
-    gate_already_owned = (
-        TASK_FINALIZATION_GATE_ARTIFACT in projection["move_paths"]
-        or TASK_FINALIZATION_GATE_ARTIFACT in projection["tracked_move_paths"]
-        or TASK_FINALIZATION_GATE_ARTIFACT
-        in projection["untracked_archive_outputs"]
-        or active_gate in projection["evidence_paths"]
-        or active_gate in projection["metadata_allowlist"]
-        or archive_gate in projection["metadata_allowlist"]
-        or artifacts.get("task_finalization_gate")
-        == TASK_FINALIZATION_GATE_ARTIFACT
-        or TASK_FINALIZATION_GATE_ARTIFACT in artifacts.values()
-        or active_gate in changed_paths
-        or archive_gate in changed_paths
-        or active_gate in search_paths
-        or archive_gate in search_paths
-    )
-    if gate_already_owned:
-        raise WorkflowError(
-            "Finalizer takeover requires a complete pre-finalizer closeout plan.",
-            exit_code=2,
-        )
-    if committed and not re.fullmatch(r"[0-9a-f]{40}", evidence_parent_head):
-        raise WorkflowError(
-            "Committed finalizer takeover requires the exact prior evidence HEAD.",
-            exit_code=2,
-        )
-
-    current = copy.deepcopy(previous)
-    current_projection = current["projection"]
-    current_projection["move_paths"] = sorted(
-        {*current_projection["move_paths"], TASK_FINALIZATION_GATE_ARTIFACT}
-    )
-    current_projection["untracked_archive_outputs"] = sorted(
-        {
-            *current_projection["untracked_archive_outputs"],
-            TASK_FINALIZATION_GATE_ARTIFACT,
-        }
-    )
-    current_projection["metadata_allowlist"] = sorted(
-        {*current_projection["metadata_allowlist"], archive_gate}
-    )
-    current_summary = current_projection["summary_template"]
-    current_summary["artifacts"] = {
-        key: filename
-        for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
-        if filename
-        in {
-            *current_summary["artifacts"].values(),
-            TASK_FINALIZATION_GATE_ARTIFACT,
-        }
-    }
-    current_summary["git"]["changed_paths"] = sorted(
-        {*current_summary["git"]["changed_paths"], archive_gate}
-    )
-    current_summary["index"]["search_terms"]["paths"] = sorted(
-        {*current_summary["index"]["search_terms"]["paths"], archive_gate}
-    )
-    if committed:
-        current["git"]["evidence_parent_head"] = evidence_parent_head
-        current_projection["evidence_paths"] = sorted(
-            f"{current['task']['active_locator']}/{name}"
-            for name in (CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT)
-        )
-    current_projection["summary_template_sha256"] = closeout_json_artifact_sha256(
-        current_summary
-    )
-    current["plan_digest"] = ""
-    current["plan_digest"] = closeout_plan_digest(current)
-    return validate_closeout_plan(current)
-
-
-def closeout_finalizer_gate_takeover_errors(
-    previous: dict[str, Any],
-    current: dict[str, Any],
-    *,
-    evidence_parent_head: str,
-    committed: bool,
-) -> list[str]:
-    try:
-        expected = build_closeout_finalizer_gate_takeover_plan(
-            previous,
-            evidence_parent_head=evidence_parent_head,
-            committed=committed,
-        )
-    except WorkflowError as exc:
-        return [str(exc)]
-    if current != expected:
-        return [
-            "same-month finalizer takeover changed facts beyond the exact private gate augmentation."
-        ]
-    return []
 
 
 def official_after_archive_hook_state(root: Path) -> dict[str, Any]:
@@ -23961,20 +21495,6 @@ def official_after_archive_hook_state(root: Path) -> dict[str, Any]:
             },
         )
     return {"commands": []}
-
-
-def closeout_pending_marketplace_evidence(root: Path, task_dir: Path, reviewed_head: str) -> dict[str, Any]:
-    return {
-        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
-        "status": "pending",
-        "required": True,
-        "artifact_path": MARKETPLACE_VERIFICATION_ARTIFACT,
-        "artifact_sha256": "",
-        "verified_content_head": reviewed_head,
-        "remote_head": "",
-        "publish_head": reviewed_head,
-        "commands_passed": False,
-    }
 
 
 def closeout_pr_placeholder(repo: str) -> dict[str, Any]:
@@ -24128,15 +21648,9 @@ def closeout_archive_retained_paths(plan: dict[str, Any]) -> list[str]:
     move_paths = plan.get("projection", {}).get("move_paths", [])
     if not isinstance(move_paths, list):
         return []
-    schema_version = plan.get("schema_version")
-    if schema_version == CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION:
-        return list(move_paths)
-    if schema_version == CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION:
-        allowed = set(CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS)
-    elif schema_version == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        allowed = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
-    else:
+    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
         return []
+    allowed = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
     marketplace = plan.get("marketplace")
     if isinstance(marketplace, dict) and marketplace.get("required") is True:
         allowed.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
@@ -24167,8 +21681,8 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     errors: list[str] = []
     if set(plan) != expected:
         errors.append("closeout plan top-level keys do not match a supported schema.")
-    if plan.get("schema_version") not in CLOSEOUT_PLAN_SCHEMA_VERSIONS:
-        errors.append("closeout plan schema_version must be 1.0, 1.1, or 1.2.")
+    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+        errors.append("closeout plan schema_version must match the current contract.")
     digest = str(plan.get("plan_digest") or "")
     if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != closeout_plan_digest(plan):
         errors.append("closeout plan digest does not match canonical content.")
@@ -24182,25 +21696,15 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     projection = plan.get("projection") if isinstance(plan.get("projection"), dict) else {}
     nested_keys = {
         "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
-        "review": (
-            review,
-            (
-                {"reviewed_head", "changed_paths", "close_issues_reviewed"}
-                if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
-                else {
-                    "gate_locator", "reviewed_head", "changed_paths",
-                    "close_issues_reviewed",
-                }
-            ),
-        ),
+        "review": (review, {"branch_review_commit", "changed_paths", "close_issues_reviewed"}),
         "publish": (publish, {"title", "body_sha256", "draft", "draft_to_ready", "match"}),
-        "marketplace": (marketplace, {"required", "pending_machine", "verifier_artifact_locator"}),
+        "marketplace": (marketplace, {"required", "verifier_artifact_locator"}),
         "projection": (
             projection,
             {
                 "active_locator", "archive_locator", "finish_summary_locator",
-                "metadata_allowlist", "move_paths", "tracked_move_paths",
-                "untracked_archive_outputs", "evidence_paths",
+                "move_paths", "tracked_move_paths",
+                "untracked_archive_outputs",
                 "summary_placeholder", "summary_template_sha256",
                 "summary_template", "runtime_fact_fields",
             },
@@ -24209,8 +21713,8 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     for label, (value, keys) in nested_keys.items():
         if set(value) != keys:
             errors.append(f"closeout plan {label} keys are invalid.")
-    git_keys = {"repo", "remote", "base_branch", "head_branch", "reviewed_work_head"}
-    if frozenset(git) not in {frozenset(git_keys), frozenset(git_keys | {"evidence_parent_head"})}:
+    git_keys = {"repo", "remote", "base_branch", "head_branch", "branch_review_commit"}
+    if set(git) != git_keys:
         errors.append("closeout plan git keys are invalid.")
     for label, value in [
         ("task.active_locator", task.get("active_locator")),
@@ -24229,12 +21733,10 @@ def closeout_plan_errors(plan: Any) -> list[str]:
             errors.append(f"closeout git.{key} is invalid.")
     if normalize_github_repository(git.get("repo")) != git.get("repo"):
         errors.append("closeout git.repo must be a normalized GitHub owner/repository identity.")
-    if not re.fullmatch(r"[0-9a-f]{40}", str(git.get("reviewed_work_head") or "")):
-        errors.append("closeout reviewed_work_head is invalid.")
-    if not re.fullmatch(r"[0-9a-f]{40}", closeout_evidence_parent_head(plan)):
-        errors.append("closeout evidence_parent_head is invalid.")
-    if review.get("reviewed_head") != git.get("reviewed_work_head"):
-        errors.append("closeout review HEAD does not match git identity.")
+    if not re.fullmatch(r"[0-9a-f]{40}", str(git.get("branch_review_commit") or "")):
+        errors.append("closeout branch_review_commit is invalid.")
+    if review.get("branch_review_commit") != git.get("branch_review_commit"):
+        errors.append("closeout review commit does not match git identity.")
     changed = review.get("changed_paths")
     if not isinstance(changed, list) or any(not isinstance(path, str) for path in changed) or changed != sorted(set(changed)):
         errors.append("closeout review changed paths must be sorted and unique.")
@@ -24248,38 +21750,14 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     expected_match = {"repo": git.get("repo"), "head": git.get("head_branch"), "base": git.get("base_branch")}
     if publish.get("match") != expected_match:
         errors.append("closeout publish match identity does not match git identity.")
-    pending = marketplace.get("pending_machine") if isinstance(marketplace.get("pending_machine"), dict) else {}
-    pending_keys = {
-        "type", "status", "required", "artifact_path", "artifact_sha256",
-        "verified_content_head", "remote_head", "publish_head", "commands_passed",
-    }
-    if (
-        set(pending) != pending_keys
-        or pending.get("type") != REMOTE_MARKETPLACE_EVIDENCE_TYPE
-        or pending.get("status") != "pending"
-        or pending.get("required") is not True
-        or pending.get("artifact_sha256") != ""
-        or pending.get("verified_content_head") != git.get("reviewed_work_head")
-        or pending.get("remote_head") != ""
-        or pending.get("publish_head") != git.get("reviewed_work_head")
-        or pending.get("commands_passed") is not False
-    ):
-        errors.append("closeout pending marketplace machine identity is invalid.")
     if not isinstance(marketplace.get("required"), bool):
         errors.append("closeout marketplace required must be boolean.")
-    if pending.get("artifact_path") != MARKETPLACE_VERIFICATION_ARTIFACT:
+    if marketplace.get("verifier_artifact_locator") != MARKETPLACE_VERIFICATION_ARTIFACT:
         errors.append("closeout marketplace artifact locator must be task-relative.")
-    if marketplace.get("verifier_artifact_locator") != pending.get("artifact_path"):
-        errors.append("closeout verifier locator does not match pending machine identity.")
     if projection.get("active_locator") != task.get("active_locator") or projection.get("archive_locator") != task.get("archive_locator"):
         errors.append("closeout projection task locators do not match task identity.")
     if projection.get("finish_summary_locator") != f"{task.get('archive_locator')}/{FINISH_SUMMARY_ARTIFACT}":
         errors.append("closeout projection finish-summary locator is invalid.")
-    allowlist = projection.get("metadata_allowlist")
-    if not isinstance(allowlist, list) or not allowlist or any(not isinstance(path, str) for path in allowlist) or allowlist != sorted(set(allowlist)):
-        errors.append("closeout metadata allowlist must be sorted and unique.")
-    elif any(finish_summary_path_errors(path, "projection.metadata_allowlist[]") for path in allowlist):
-        errors.append("closeout metadata allowlist contains an unsafe path.")
     move_paths = projection.get("move_paths")
     if (
         not isinstance(move_paths, list)
@@ -24296,11 +21774,10 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     tracked_move_paths = projection.get("tracked_move_paths")
     if (
         not isinstance(tracked_move_paths, list)
-        or not tracked_move_paths
         or tracked_move_paths != sorted(set(tracked_move_paths))
         or any(path not in move_paths for path in tracked_move_paths)
     ):
-        errors.append("closeout tracked move paths must be a sorted non-empty subset of move paths.")
+        errors.append("closeout tracked move paths must be a sorted subset of move paths.")
         tracked_move_paths = []
     untracked_archive_outputs = projection.get("untracked_archive_outputs")
     if (
@@ -24318,58 +21795,30 @@ def closeout_plan_errors(plan: Any) -> list[str]:
         errors.append("closeout tracked/untracked move classes must be disjoint and cover every move path.")
     if FINISH_SUMMARY_ARTIFACT not in untracked_archive_outputs:
         errors.append("closeout final summary must be classified as an untracked archive output.")
-    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        if CLOSEOUT_PLAN_ARTIFACT not in untracked_archive_outputs:
-            errors.append("closeout plan 1.2 must archive its plan without an evidence commit.")
-        forbidden_finalizer_artifacts = {
-            PR_READINESS_ARTIFACT,
-            TASK_FINALIZATION_GATE_ARTIFACT,
-        }
-        if forbidden_finalizer_artifacts & set(move_paths):
-            errors.append(
-                "closeout plan 1.2 must not move publication readiness or finalization gates."
-            )
+    if CLOSEOUT_PLAN_ARTIFACT not in untracked_archive_outputs:
+        errors.append(
+            "closeout plan must remain an untracked final output until the single archive commit."
+        )
+    forbidden_finalizer_artifacts = {
+        PR_READINESS_ARTIFACT,
+        TASK_FINALIZATION_GATE_ARTIFACT,
+    }
+    if forbidden_finalizer_artifacts & set(move_paths):
+        errors.append(
+            "closeout plan must not move owner-private publication or finalization gates."
+        )
     retained_paths = closeout_archive_retained_paths(plan)
-    if plan.get("schema_version") in CLOSEOUT_COMPACT_SCHEMA_VERSIONS:
-        required_retained = {
-            CLOSEOUT_PLAN_ARTIFACT,
-            FINISH_SUMMARY_ARTIFACT,
-        }
-        if not required_retained.issubset(retained_paths):
-            errors.append("closeout compact archive is missing required recovery artifacts.")
-        artifact_budget = (
-            CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS
-            if plan.get("schema_version") == CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION
-            else CLOSEOUT_ARCHIVE_MAX_ARTIFACTS
-        )
-        if len(retained_paths) > artifact_budget:
-            errors.append("closeout compact archive exceeds the long-term artifact budget.")
-        marketplace_retained = MARKETPLACE_VERIFICATION_ARTIFACT in retained_paths
-        if marketplace.get("required") is not marketplace_retained:
-            errors.append(
-                "closeout compact archive marketplace evidence must match applicability."
-            )
-    expected_allowlist = sorted(
-        [f"{task.get('active_locator')}/{path}" for path in tracked_move_paths]
-        + [f"{task.get('archive_locator')}/{path}" for path in retained_paths]
-    )
-    if allowlist != expected_allowlist:
-        errors.append("closeout metadata allowlist must equal tracked active deletions plus all archive outputs.")
-    evidence_paths = projection.get("evidence_paths")
-    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        if evidence_paths != []:
-            errors.append("closeout plan 1.2 must not create a pre-draft evidence commit.")
-    elif (
-        not isinstance(evidence_paths, list)
-        or not evidence_paths
-        or evidence_paths != sorted(set(evidence_paths))
-        or any(
-            path not in expected_allowlist
-            or not path.startswith(f"{task.get('active_locator')}/")
-            for path in evidence_paths
-        )
-    ):
-        errors.append("closeout evidence paths must be the exact active-task pre-draft set.")
+    required_retained = {
+        CLOSEOUT_PLAN_ARTIFACT,
+        FINISH_SUMMARY_ARTIFACT,
+    }
+    if not required_retained.issubset(retained_paths):
+        errors.append("closeout archive is missing required recovery artifacts.")
+    if len(retained_paths) > CLOSEOUT_ARCHIVE_MAX_ARTIFACTS:
+        errors.append("closeout archive exceeds the long-term artifact budget.")
+    marketplace_retained = MARKETPLACE_VERIFICATION_ARTIFACT in retained_paths
+    if marketplace.get("required") is not marketplace_retained:
+        errors.append("closeout archive marketplace artifact must match applicability.")
     placeholder = projection.get("summary_placeholder")
     expected_placeholder = closeout_pr_placeholder(str(git.get("repo") or "invalid/invalid"))
     if placeholder != expected_placeholder:
@@ -24408,13 +21857,8 @@ def closeout_plan_errors(plan: Any) -> list[str]:
         }
         if not required_inputs.issubset(inputs):
             errors.append("closeout inputs are missing required direct-consumer facts.")
-        if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
-            if "task_context" in inputs:
-                errors.append(
-                    "closeout plan 1.2 must not persist synthetic task runtime identity."
-                )
-        elif "task_context" not in inputs:
-            errors.append("legacy closeout plan requires task_context compatibility input.")
+        if "task_context" in inputs or "review_gate" in inputs:
+            errors.append("closeout plan must not persist producer-private runtime identity.")
         for key, item in inputs.items():
             if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
                 errors.append(f"closeout input {key} is invalid.")
@@ -24437,8 +21881,6 @@ def build_closeout_plan(
     task_dir: Path,
     task_context: dict[str, Any],
     task: dict[str, Any],
-    gate_path: Path | None,
-    gate: dict[str, Any] | None,
     ledger: dict[str, Any],
     finish_summary_index_path: Path,
     *,
@@ -24446,17 +21888,14 @@ def build_closeout_plan(
     remote: str,
     base_branch: str,
     head_branch: str,
-    reviewed_head: str,
+    branch_review_commit: str,
     title: str,
-    include_finalization_gate: bool = False,
     review_facts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    if review_facts is None:
-        review_facts = closeout_reviewed_change_facts(
-            root,
-            task_context,
-            gate,
-            reviewed_head,
+    if not isinstance(review_facts, dict):
+        raise WorkflowError(
+            "Current closeout requires reviewed Publication facts.",
+            exit_code=2,
         )
     reviewed_paths = list(review_facts["changed_paths"])
     requires_marketplace = bool(review_facts["marketplace_required"])
@@ -24465,51 +21904,19 @@ def build_closeout_plan(
     existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
     if existing_plan:
         validate_closeout_plan(existing_plan)
-    legacy_task_local_owner_residue = any(
-        (task_dir / name).is_file()
-        for name in (PR_READINESS_ARTIFACT, TASK_FINALIZATION_GATE_ARTIFACT)
-    )
-    plan_schema_version = str(
-        existing_plan.get("schema_version")
-        or (
-            CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION
-            if legacy_task_local_owner_residue
-            else CLOSEOUT_PLAN_SCHEMA_VERSION
-        )
-    )
+    plan_schema_version = CLOSEOUT_PLAN_SCHEMA_VERSION
     existing_task = existing_plan.get("task") if isinstance(existing_plan.get("task"), dict) else {}
     existing_projection = (
         existing_plan.get("projection")
         if isinstance(existing_plan.get("projection"), dict)
         else {}
     )
-    reviewed_head_now = current_head(root)
     archive_month_now = current_archive_month()
-    superseding_committed_month = False
     archive_locator = str(existing_task.get("archive_locator") or "")
-    evidence_parent_head = reviewed_head
     if archive_locator and closeout_archive_month(existing_plan) != archive_month_now:
-        if reviewed_head_now != reviewed_head:
-            validate_closeout_evidence_commit(root, existing_plan, reviewed_head_now)
-            superseding_committed_month = True
-            evidence_parent_head = reviewed_head_now
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     if not archive_locator:
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
-    legacy_finalizer_gate_takeover = bool(
-        plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION
-        and include_finalization_gate
-        and existing_projection
-        and closeout_archive_month(existing_plan) == archive_month_now
-        and TASK_FINALIZATION_GATE_ARTIFACT
-        not in existing_projection.get("move_paths", [])
-    )
-    committed_finalizer_gate_takeover = bool(
-        legacy_finalizer_gate_takeover and reviewed_head_now != reviewed_head
-    )
-    if committed_finalizer_gate_takeover:
-        validate_closeout_evidence_commit(root, existing_plan, reviewed_head_now)
-        evidence_parent_head = reviewed_head_now
     assert_closeout_archive_path_preflight(root, archive_locator)
     observed_task_files = {
         path.relative_to(task_dir).as_posix()
@@ -24525,22 +21932,12 @@ def build_closeout_plan(
     if existing_projection:
         task_files = set(existing_projection.get("move_paths", []))
         unexpected_task_files = sorted(observed_task_files - task_files)
-        allowed_takeover_files = (
-            {TASK_FINALIZATION_GATE_ARTIFACT}
-            if legacy_finalizer_gate_takeover
-            else set()
-        )
-        blocking_task_files = sorted(
-            set(unexpected_task_files) - allowed_takeover_files
-        )
-        if blocking_task_files:
+        if unexpected_task_files:
             raise WorkflowError(
                 "Persisted closeout plan does not own newly added task artifacts.",
                 exit_code=2,
-                payload={"unexpected_task_files": blocking_task_files},
+                payload={"unexpected_task_files": unexpected_task_files},
             )
-        if legacy_finalizer_gate_takeover:
-            task_files.add(TASK_FINALIZATION_GATE_ARTIFACT)
     else:
         if (task_dir / FINISH_SUMMARY_ARTIFACT).exists():
             raise WorkflowError(
@@ -24549,89 +21946,37 @@ def build_closeout_plan(
             )
         task_files = set(observed_task_files)
         task_files.update({CLOSEOUT_PLAN_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
-        if plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION:
-            task_files.add(PR_READINESS_ARTIFACT)
-        if (
-            include_finalization_gate
-            and plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION
-        ):
-            task_files.add(TASK_FINALIZATION_GATE_ARTIFACT)
         if requires_marketplace:
             task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
     move_paths = sorted(task_files)
     if existing_projection:
         tracked_move_paths = list(existing_projection.get("tracked_move_paths", []))
         untracked_archive_outputs = list(existing_projection.get("untracked_archive_outputs", []))
-        if legacy_finalizer_gate_takeover:
-            untracked_archive_outputs = sorted(
-                {*untracked_archive_outputs, TASK_FINALIZATION_GATE_ARTIFACT}
-            )
     else:
-        if plan_schema_version == CLOSEOUT_PLAN_SCHEMA_VERSION:
-            tracked_prefix = f"{active_locator}/"
-            tracked_task_files = {
-                path.removeprefix(tracked_prefix)
-                for path in run_stdout(
-                    ["git", "ls-files", "--", active_locator],
-                    cwd=root,
-                ).splitlines()
-                if path.startswith(tracked_prefix)
-            }
-            tracked_move_paths = sorted(set(move_paths) & tracked_task_files)
-            untracked_archive_outputs = sorted(
-                set(move_paths) - set(tracked_move_paths)
-            )
-        else:
-            untracked_archive_outputs = [FINISH_SUMMARY_ARTIFACT]
-            if include_finalization_gate:
-                untracked_archive_outputs.append(TASK_FINALIZATION_GATE_ARTIFACT)
-                untracked_archive_outputs.sort()
-            tracked_move_paths = sorted(set(move_paths) - set(untracked_archive_outputs))
-    if plan_schema_version == CLOSEOUT_PLAN_LEGACY_SCHEMA_VERSION:
-        retained_archive_paths = list(move_paths)
-    else:
-        retained_allowlist = set(
-            CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS
-            if plan_schema_version == CLOSEOUT_PLAN_COMPACT_LEGACY_SCHEMA_VERSION
-            else CLOSEOUT_ARCHIVE_CORE_ARTIFACTS
-        )
-        if requires_marketplace:
-            retained_allowlist.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
-        retained_archive_paths = sorted(set(move_paths) & retained_allowlist)
-    metadata_allowlist = sorted(
+        tracked_prefix = f"{active_locator}/"
+        tracked_task_files = {
+            path.removeprefix(tracked_prefix)
+            for path in run_stdout(
+                ["git", "ls-files", "--", active_locator],
+                cwd=root,
+            ).splitlines()
+            if path.startswith(tracked_prefix)
+        }
+        tracked_move_paths = sorted(set(move_paths) & tracked_task_files)
+        untracked_archive_outputs = sorted(set(move_paths) - set(tracked_move_paths))
+    retained_names = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+    if requires_marketplace:
+        retained_names.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
+    retained_archive_paths = sorted(set(move_paths) & retained_names)
+    transaction_paths = sorted(
         {f"{active_locator}/{name}" for name in tracked_move_paths}
         | {f"{archive_locator}/{name}" for name in retained_archive_paths}
     )
-    if plan_schema_version == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        evidence_paths = []
-    elif existing_projection and (
-        superseding_committed_month or committed_finalizer_gate_takeover
-    ):
-        evidence_paths = sorted(
-            f"{active_locator}/{name}"
-            for name in (CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT)
-        )
-    elif existing_projection:
-        evidence_paths = list(existing_projection.get("evidence_paths", []))
-    else:
-        current_dirty = set(git_status_paths(root))
-        evidence_names = {
-            path.removeprefix(active_prefix)
-            for path in current_dirty
-            if path.startswith(active_prefix)
-        }
-        evidence_names.difference_update(untracked_archive_outputs)
-        evidence_names.update({CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT})
-        if requires_marketplace:
-            evidence_names.update({MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"})
-        evidence_paths = sorted(f"{active_locator}/{name}" for name in evidence_names)
     body_path = task_dir / PR_BODY_ARTIFACT
     ledger_path = issue_scope_ledger_path(task_dir)
     inputs = {
         "task": closeout_input_record(root, task_dir / "task.json"),
-        "issue_scope_ledger": closeout_input_record(
-            root, ledger_path, payload=closeout_semantic_ledger(ledger)
-        ),
+        "issue_scope_ledger": closeout_input_record(root, ledger_path),
         "pr_body": closeout_input_record(root, body_path),
         "finish_summary_index": closeout_input_record(root, finish_summary_index_path),
         "official_after_archive_hooks": closeout_input_record(
@@ -24640,24 +21985,10 @@ def build_closeout_plan(
             payload=official_after_archive_hook_state(root),
         ),
     }
-    if plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION:
-        context_path = task_dir / str(DEFAULTS["task_start_context_artifact"])
-        inputs["task_context"] = closeout_input_record(
-            root,
-            context_path,
-            payload=task_context,
-        )
-        if gate_path is None or gate is None:
-            raise WorkflowError(
-                "Legacy closeout plan requires its task-local Branch Review compatibility artifact.",
-                exit_code=2,
-            )
-        inputs["review_gate"] = closeout_input_record(root, gate_path, payload=gate)
     config_path = root / ".trellis/guru-team/config.yml"
     if config_path.is_file():
         inputs["guru_team_config"] = closeout_input_record(root, config_path)
     source_issue = primary_issue_number_from_ledger(ledger)
-    pending = closeout_pending_marketplace_evidence(root, task_dir, reviewed_head)
     placeholder = closeout_pr_placeholder(repo)
     existing_summary_template = (
         existing_projection.get("summary_template")
@@ -24666,12 +21997,11 @@ def build_closeout_plan(
     )
     generated_at = str(
         existing_summary_template.get("generated_at")
-        or (gate or {}).get("generated_at")
         or ""
     )
     if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", generated_at):
         commit_time = run_stdout(
-            ["git", "show", "-s", "--format=%cI", reviewed_head],
+            ["git", "show", "-s", "--format=%cI", branch_review_commit],
             cwd=root,
         )
         try:
@@ -24685,11 +22015,6 @@ def build_closeout_plan(
                 "Reviewed content commit time is invalid for the deterministic final-summary projection.",
                 exit_code=2,
             ) from exc
-    projected_ledger = (
-        record_marketplace_machine_evidence(ledger, pending)
-        if requires_marketplace
-        else ledger
-    )
     projected_artifacts = {
         key: filename
         for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
@@ -24699,11 +22024,11 @@ def build_closeout_plan(
         root,
         task_dir,
         task_context,
-        projected_ledger,
+        ledger,
         read_json(finish_summary_index_path),
-        reviewed_head,
+        branch_review_commit,
         pr_url=placeholder["url"],
-        changed_paths=sorted(set(reviewed_paths) | set(metadata_allowlist)),
+        changed_paths=sorted(set(reviewed_paths) | set(transaction_paths)),
         archive_dir_override=archive_locator,
         generated_at_override=generated_at,
         artifacts_override=projected_artifacts,
@@ -24722,17 +22047,11 @@ def build_closeout_plan(
             "remote": remote,
             "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
             "head_branch": head_branch,
-            "reviewed_work_head": reviewed_head,
-            "evidence_parent_head": evidence_parent_head,
+            "branch_review_commit": branch_review_commit,
         },
         "inputs": inputs,
         "review": {
-            **(
-                {"gate_locator": repo_relative(root, gate_path)}
-                if plan_schema_version != CLOSEOUT_PLAN_SCHEMA_VERSION
-                else {}
-            ),
-            "reviewed_head": reviewed_head,
+            "branch_review_commit": branch_review_commit,
             "changed_paths": reviewed_paths,
             "close_issues_reviewed": sorted(
                 set(issue_numbers(ledger.get("close_issues")))
@@ -24747,18 +22066,15 @@ def build_closeout_plan(
         },
         "marketplace": {
             "required": requires_marketplace,
-            "pending_machine": pending,
             "verifier_artifact_locator": MARKETPLACE_VERIFICATION_ARTIFACT,
         },
         "projection": {
             "active_locator": active_locator,
             "archive_locator": archive_locator,
             "finish_summary_locator": f"{archive_locator}/{FINISH_SUMMARY_ARTIFACT}",
-            "metadata_allowlist": metadata_allowlist,
             "move_paths": move_paths,
             "tracked_move_paths": tracked_move_paths,
             "untracked_archive_outputs": untracked_archive_outputs,
-            "evidence_paths": evidence_paths,
             "summary_placeholder": placeholder,
             "summary_template_sha256": closeout_json_artifact_sha256(summary_template),
             "summary_template": summary_template,
@@ -24780,7 +22096,6 @@ def prepare_closeout(
     *,
     publication_ready: dict[str, Any] | None = None,
     verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
-    marketplace_verification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
     existing_plan_path = closeout_plan_path(task_dir)
@@ -24789,149 +22104,54 @@ def prepare_closeout(
         if existing_plan_path.is_file() and not existing_plan_path.is_symlink()
         else None
     )
-    ai_first_plan = bool(
-        isinstance(existing_plan, dict)
-        and existing_plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
-    )
-    legacy_task_local_owner_residue = any(
-        (task_dir / name).is_file()
-        for name in (PR_READINESS_ARTIFACT, TASK_FINALIZATION_GATE_ARTIFACT)
-    )
-    gate_path: Path | None = None
-    gate: dict[str, Any] | None = None
-    if ai_first_plan or (
-        publication_ready is not None and not legacy_task_local_owner_residue
-    ):
-        expected_task_ref = repo_relative(root, task_dir)
-        if publication_ready is not None:
-            if (
-                publication_ready.get("profile") != "publication_ready"
-                or publication_ready.get("task_ref") != expected_task_ref
-            ):
-                raise WorkflowError(
-                    "Finalizer publication-ready DTO does not match the active task.",
-                    exit_code=2,
-                )
-            reviewed_head = str(publication_ready.get("reviewed_content_head") or "")
-        else:
-            reviewed_head = str(existing_plan["git"]["reviewed_work_head"])
-        continuity_errors = review_branch_content_continuity_errors(
-            root,
-            task_dir,
-            reviewed_head,
-            current_head(root),
-        )
-        if continuity_errors:
-            raise WorkflowError(
-                "Finalizer publication-ready content identity is stale.",
-                exit_code=2,
-                payload={"errors": continuity_errors},
-            )
-        if ai_first_plan:
-            reviewed_paths = list(existing_plan["review"]["changed_paths"])
-            marketplace = marketplace_verification_required(
-                {"changed_files": reviewed_paths}
-            )
-            if bool(marketplace["candidate_surfaces"]) != bool(
-                existing_plan["marketplace"]["required"]
-            ):
-                raise WorkflowError(
-                    "Finalizer live extension-surface facts differ from the immutable plan.",
-                    exit_code=2,
-                )
-            review_facts = {
-                "changed_paths": reviewed_paths,
-                "candidate_surfaces": marketplace["candidate_surfaces"],
-                "marketplace_required": bool(marketplace["candidate_surfaces"]),
-            }
-        else:
-            review_facts = closeout_reviewed_change_facts(
-                root,
-                task_context,
-                None,
-                reviewed_head,
-            )
-    else:
-        gate_path, gate, gate_errors = validate_review_gate(
-            root, task_dir, config, True
-        )
-        if gate_errors:
-            raise WorkflowError(
-                "finish-work blocked because the legacy Branch Review Gate is not valid for the reviewed HEAD.",
-                exit_code=2,
-                payload={"artifact_path": str(gate_path), "errors": gate_errors},
-            )
-        reviewed_head = review_gate_content_head(gate)
-        if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
-            raise WorkflowError("Legacy Branch Review Gate reviewed HEAD is invalid.", exit_code=2)
-        if (
-            publication_ready is not None
-            and publication_ready.get("reviewed_content_head") != reviewed_head
-        ):
-            raise WorkflowError(
-                "Legacy closeout compatibility projection does not match the Publication ready DTO.",
-                exit_code=2,
-            )
-        review_facts = closeout_reviewed_change_facts(
-            root,
-            task_context,
-            gate,
-            reviewed_head,
-        )
-    ledger = load_issue_scope_ledger(task_dir, task_context)
-    allow_publication_issue_scope_ledger = finalizer_plan_owned_issue_scope_ledger_allowed(
+    gate_path, gate, gate_errors = validate_review_gate(
         root,
         task_dir,
-        existing_plan,
-        ledger,
-        publication_ready=publication_ready,
-        verification_owner_result=verification_owner_result,
+        config,
     )
+    if gate_errors:
+        raise WorkflowError(
+            "finish-work requires the current Branch Review Gate.",
+            exit_code=2,
+            payload={"artifact_path": str(gate_path), "errors": gate_errors},
+        )
+    branch_review_commit = review_gate_commit(gate)
+    expected_task_ref = repo_relative(root, task_dir)
+    if publication_ready is not None and (
+        publication_ready.get("profile") != "publication_ready"
+        or publication_ready.get("task_ref") != expected_task_ref
+        or publication_ready.get("branch_review_commit") != branch_review_commit
+    ):
+        raise WorkflowError(
+            "Finalizer publication-ready DTO does not match the current Branch Review.",
+            exit_code=2,
+        )
+    if (
+        existing_plan is not None
+        and existing_plan["git"]["branch_review_commit"] != branch_review_commit
+    ):
+        raise WorkflowError(
+            "Persisted closeout plan does not match the current Branch Review.",
+            exit_code=2,
+        )
+    review_facts = closeout_reviewed_change_facts(
+        root,
+        task_context,
+        branch_review_commit,
+    )
+    ledger = load_issue_scope_ledger(task_dir, task_context)
     dirty_paths = finalizer_unreviewed_dirty_paths(
         root,
         task_dir,
-        allow_publication_issue_scope_ledger=(
-            allow_publication_issue_scope_ledger
-        ),
     )
     if dirty_paths:
         raise WorkflowError(
-            "Working tree has uncommitted changes outside the current task's explicit publication/finalization allowlist. Commit reviewed task work before finish-work.",
+            "Working tree has uncommitted reviewed content. Commit reviewed task work before finish-work.",
             exit_code=2,
             payload={"dirty_paths": dirty_paths},
         )
     index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
-    requires_marketplace = bool(review_facts["marketplace_required"])
-    if requires_marketplace:
-        existing_targets: list[dict[str, Any]] = []
-        if isinstance(ledger.get("primary_issue"), dict):
-            existing_targets.append(ledger["primary_issue"])
-        existing_targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
-        tampered_errors: list[str] = []
-        for issue in existing_targets:
-            if remote_marketplace_evidence(issue) is None:
-                continue
-            pending_errors = remote_marketplace_evidence_errors(issue, allow_pending=True)
-            passed_errors = remote_marketplace_evidence_errors(issue, allow_pending=False)
-            if pending_errors and passed_errors:
-                tampered_errors.extend(pending_errors)
-        if tampered_errors:
-            raise WorkflowError(
-                "Existing marketplace machine evidence is malformed or tampered.",
-                exit_code=2,
-                payload={"errors": tampered_errors},
-            )
-        validation_ledger = record_marketplace_machine_evidence(
-            ledger, closeout_pending_marketplace_evidence(root, task_dir, reviewed_head)
-        )
-    else:
-        validation_ledger = ledger
-    ledger_errors = validate_ledger_for_publish(
-        validation_ledger,
-        gate,
-        allow_pending_remote_marketplace=requires_marketplace,
-        marketplace_required=requires_marketplace,
-    )
+    ledger_errors = validate_ledger_for_publish(ledger)
     if ledger_errors:
         raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
     body, body_source = resolve_closeout_reviewed_body(root, task_dir, args)
@@ -24961,152 +22181,53 @@ def prepare_closeout(
     validate_github_remote_repository(root, remote, repo)
     title = pr_title_from_task(task, args)
     plan = build_closeout_plan(
-        root, task_dir, task_context, task, gate_path, gate, ledger, index_path,
+        root, task_dir, task_context, task, ledger, index_path,
         repo=repo, remote=remote, base_branch=base, head_branch=branch,
-        reviewed_head=reviewed_head, title=title,
-        include_finalization_gate=bool(
-            getattr(args, "include_finalization_gate", False)
-        ),
+        branch_review_commit=branch_review_commit, title=title,
         review_facts=review_facts,
     )
     month_supersession: dict[str, Any] | None = None
-    finalizer_takeover: dict[str, Any] | None = None
     existing = closeout_plan_path(task_dir)
     if existing.is_file():
         persisted = validate_closeout_plan(read_json(existing))
         if persisted != plan:
             previous_month = closeout_archive_month(persisted)
             next_month = closeout_archive_month(plan)
-            persisted_marketplace_verification = marketplace_verification
-            checked_verification = (
-                verification_owner_result[1]
-                if isinstance(verification_owner_result, tuple)
-                and len(verification_owner_result) == 2
-                and isinstance(verification_owner_result[1], dict)
-                else {}
-            )
+            supersession_errors = closeout_month_supersession_errors(persisted, plan)
             if (
-                persisted["marketplace"]["required"]
-                and checked_verification.get("typed_exit") == "verified"
+                previous_month == next_month
+                or task.get("status") != "in_progress"
+                or (root / persisted["task"]["archive_locator"]).exists()
+                or supersession_errors
             ):
-                projected_marketplace_verification = (
-                    finalization_marketplace_verification_compatibility_projection(
-                        root,
-                        task_dir,
-                        plan if previous_month == next_month else persisted,
-                        verification_owner_result,
-                    )
+                raise WorkflowError(
+                    "Persisted closeout plan no longer matches protected inputs.",
+                    exit_code=2,
+                    payload={
+                        "persisted_digest": persisted.get("plan_digest"),
+                        "rebuilt_digest": plan.get("plan_digest"),
+                        "month_supersession_errors": supersession_errors,
+                    },
                 )
-                if (
-                    persisted_marketplace_verification is not None
-                    and persisted_marketplace_verification
-                    != projected_marketplace_verification
-                ):
-                    raise WorkflowError(
-                        "Task finalization received conflicting marketplace verification projections.",
-                        exit_code=2,
-                    )
-                persisted_marketplace_verification = (
-                    projected_marketplace_verification
-                )
-            committed = current_head(root) != reviewed_head
-            takeover_errors = (
-                closeout_finalizer_gate_takeover_errors(
-                    persisted,
-                    plan,
-                    evidence_parent_head=current_head(root),
-                    committed=committed,
-                )
-                if bool(getattr(args, "include_finalization_gate", False))
-                and previous_month == next_month
-                else ["same-month finalizer takeover is not applicable."]
+            prior_state = resolve_closeout_pre_draft_state(
+                root,
+                task_dir,
+                persisted,
+                ledger,
+                verification_owner_result=verification_owner_result,
             )
-            if (
-                not takeover_errors
-                and task.get("status") == "in_progress"
-                and not (root / persisted["task"]["archive_locator"]).exists()
-            ):
-                prior_state = resolve_closeout_pre_draft_state(
-                    root,
-                    task_dir,
-                    persisted,
-                    ledger,
-                    gate,
-                    marketplace_verification=persisted_marketplace_verification,
+            if prior_state not in {"content_pushed", "evidence_ready"}:
+                raise WorkflowError(
+                    "Stale-month plan has no unique current-contract reprepare state.",
+                    exit_code=2,
+                    payload={"state": prior_state},
                 )
-                legal_states = (
-                    {"evidence_pushed"}
-                    if committed
-                    else {"content_pushed", "evidence_ready"}
-                )
-                if prior_state not in legal_states:
-                    raise WorkflowError(
-                        "Same-month finalizer takeover requires one exact pre-draft legacy state.",
-                        exit_code=2,
-                        payload={
-                            "state": prior_state,
-                            "committed": committed,
-                        },
-                    )
-                finalizer_takeover = {
-                    "previous_plan": persisted,
-                    "previous_plan_digest": persisted["plan_digest"],
-                    "current_plan_digest": plan["plan_digest"],
-                    "committed": committed,
-                    "prior_state": prior_state,
-                }
-            else:
-                supersession_errors = closeout_month_supersession_errors(
-                    persisted,
-                    plan,
-                    previous_evidence_head=current_head(root),
-                    committed=committed,
-                )
-                if (
-                    previous_month == next_month
-                    or task.get("status") != "in_progress"
-                    or (root / persisted["task"]["archive_locator"]).exists()
-                    or supersession_errors
-                ):
-                    raise WorkflowError(
-                        "Persisted closeout plan no longer matches protected inputs.",
-                        exit_code=2,
-                        payload={
-                            "persisted_digest": persisted.get("plan_digest"),
-                            "rebuilt_digest": plan.get("plan_digest"),
-                            "finalizer_takeover_errors": takeover_errors,
-                            "month_supersession_errors": supersession_errors,
-                        },
-                    )
-                if committed:
-                    if not closeout_evidence_is_committed(root, task_dir, persisted, ledger, gate):
-                        raise WorkflowError(
-                            "Committed stale-month plan is not an exact evidence commit and cannot be superseded.",
-                            exit_code=2,
-                        )
-                    prior_state = "evidence_pushed"
-                else:
-                    prior_state = resolve_closeout_pre_draft_state(
-                        root,
-                        task_dir,
-                        persisted,
-                        ledger,
-                        gate,
-                        marketplace_verification=persisted_marketplace_verification,
-                    )
-                    if prior_state not in {"content_pushed", "evidence_ready"}:
-                        raise WorkflowError(
-                            "Uncommitted stale-month plan has no unique reprepare state.",
-                            exit_code=2,
-                            payload={"state": prior_state},
-                        )
-                month_supersession = {
-                    "previous_plan": persisted,
-                    "previous_month": previous_month,
-                    "current_month": next_month,
-                    "committed": committed,
-                    "prior_state": prior_state,
-                }
+            month_supersession = {
+                "previous_plan": persisted,
+                "previous_month": previous_month,
+                "current_month": next_month,
+                "prior_state": prior_state,
+            }
         else:
             plan = persisted
     return {
@@ -25122,158 +22243,7 @@ def prepare_closeout(
         "body": body,
         "body_source": body_source,
         "month_supersession": month_supersession,
-        "finalizer_takeover": finalizer_takeover,
     }
-
-
-def record_marketplace_machine_evidence(
-    ledger: dict[str, Any], evidence: dict[str, Any]
-) -> dict[str, Any]:
-    updated = copy.deepcopy(ledger)
-    targets: list[dict[str, Any]] = []
-    primary = updated.get("primary_issue")
-    if isinstance(primary, dict):
-        targets.append(primary)
-    close_issues = updated.get("close_issues")
-    if isinstance(close_issues, list):
-        targets.extend(item for item in close_issues if isinstance(item, dict))
-    for issue in targets:
-        values = issue.get("acceptance_evidence")
-        if not isinstance(values, list):
-            raise WorkflowError("Issue Scope Ledger acceptance_evidence must be an array.", exit_code=2)
-        values[:] = [
-            item for item in values
-            if not (isinstance(item, dict) and item.get("type") == REMOTE_MARKETPLACE_EVIDENCE_TYPE)
-        ]
-        values.append(copy.deepcopy(evidence))
-    return updated
-
-
-def closeout_passed_marketplace_evidence(
-    root: Path, verification_path: Path, verification: dict[str, Any]
-) -> dict[str, Any]:
-    if verification.get("status") != "passed" or marketplace_verification_contract_errors(verification):
-        raise WorkflowError("Cannot record invalid marketplace verification.", exit_code=2)
-    return {
-        "type": REMOTE_MARKETPLACE_EVIDENCE_TYPE,
-        "status": "passed",
-        "required": True,
-        "artifact_path": MARKETPLACE_VERIFICATION_ARTIFACT,
-        "artifact_sha256": hashlib.sha256(verification_path.read_bytes()).hexdigest(),
-        "verified_content_head": verification["verified_head"],
-        "remote_head": verification["remote_head"],
-        "publish_head": verification["verified_head"],
-        "commands_passed": all(step.get("passed") is True for step in verification.get("steps", [])),
-    }
-
-
-def commit_closeout_evidence_metadata(
-    root: Path,
-    task_dir: Path,
-    plan: dict[str, Any],
-    *,
-    finalizer_mode: bool = False,
-) -> dict[str, Any]:
-    names = [CLOSEOUT_PLAN_ARTIFACT, PR_READINESS_ARTIFACT]
-    if plan["marketplace"]["required"]:
-        names.extend([MARKETPLACE_VERIFICATION_ARTIFACT, "issue-scope-ledger.json"])
-    required = {repo_relative(root, task_dir / name) for name in names}
-    expected = set(plan["projection"]["evidence_paths"])
-    dirty = set(git_status_paths(root))
-    untracked_outputs = (
-        {
-            f"{plan['task']['active_locator']}/{name}"
-            for name in plan["projection"]["untracked_archive_outputs"]
-            if (root / plan["task"]["active_locator"] / name).is_file()
-        }
-        if finalizer_mode
-        else set()
-    )
-    if dirty != expected | untracked_outputs:
-        raise WorkflowError(
-            "Closeout evidence metadata does not match the prevalidated exact path set.",
-            exit_code=2,
-            payload={
-                "expected_paths": sorted(expected),
-                "dirty_paths": sorted(dirty),
-                "allowed_untracked_archive_outputs": sorted(untracked_outputs),
-                "unexpected_dirty_paths": sorted(dirty - expected - untracked_outputs),
-                "missing_dirty_paths": sorted(expected - dirty),
-            },
-        )
-    missing = sorted(path for path in required if not (root / path).is_file())
-    if missing:
-        raise WorkflowError("Closeout evidence metadata is incomplete.", exit_code=2, payload={"missing_paths": missing})
-    if not expected:
-        raise WorkflowError("Closeout evidence metadata has no exact task-local changes to commit.", exit_code=2)
-    if finalizer_mode:
-        run_stdout(["git", "add", "--", *sorted(expected)], cwd=root)
-    else:
-        run_stdout(["git", "add", "-A", "--", plan["task"]["active_locator"]], cwd=root)
-    staged = set(run_stdout(["git", "diff", "--cached", "--name-only", "--no-renames"], cwd=root).splitlines())
-    if staged != expected:
-        raise WorkflowError("Closeout evidence staged paths do not match the exact allowlist.", exit_code=2, payload={"staged_paths": sorted(staged), "expected_paths": sorted(expected)})
-    parent = current_head(root)
-    expected_parent = closeout_evidence_parent_head(plan)
-    if parent != expected_parent:
-        raise WorkflowError(
-            "Closeout evidence commit parent drifted from the immutable evidence parent.",
-            exit_code=2,
-            payload={"expected_parent": expected_parent, "actual_parent": parent},
-        )
-    run_stdout(["git", "commit", "-m", format_metadata_commit_subject(int(plan["task"]["source_issue"]))], cwd=root)
-    commit = current_head(root)
-    validate_closeout_evidence_commit(root, plan, commit)
-    return {"commit": commit, "parent": parent, "paths": sorted(expected)}
-
-
-def closeout_evidence_is_committed(
-    root: Path,
-    task_dir: Path,
-    plan: dict[str, Any],
-    ledger: dict[str, Any],
-    gate: dict[str, Any] | None,
-) -> bool:
-    if gate is None:
-        raise WorkflowError(
-            "Legacy closeout evidence validation requires its Branch Review compatibility artifact.",
-            exit_code=2,
-        )
-    required = [closeout_plan_path(task_dir), task_dir / PR_READINESS_ARTIFACT]
-    if plan["marketplace"]["required"]:
-        required.append(marketplace_verification_path(task_dir))
-    if any(not path.is_file() for path in required):
-        return False
-    dirty = set(git_status_paths(root))
-    if any(repo_relative(root, path) in dirty for path in required + [issue_scope_ledger_path(task_dir)]):
-        return False
-    targets = []
-    if isinstance(ledger.get("primary_issue"), dict):
-        targets.append(ledger["primary_issue"])
-    targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
-    if plan["marketplace"]["required"] and any(remote_marketplace_evidence_errors(issue, allow_pending=False) for issue in targets):
-        return False
-    _path, inputs, _body = read_pr_readiness_publish_inputs(
-        root,
-        task_dir,
-        str(task_dir / PR_READINESS_ARTIFACT),
-        gate,
-        require_committed=True,
-    )
-    expected = {
-        "repo": plan["git"]["repo"],
-        "base_branch": plan["git"]["base_branch"],
-        "head_branch": plan["git"]["head_branch"],
-        "reviewed_head_sha": plan["git"]["reviewed_work_head"],
-        "title": plan["publish"]["title"],
-        "body_sha256": plan["publish"]["body_sha256"],
-        "draft": True,
-        "closeout_plan_digest": plan["plan_digest"],
-    }
-    if any(inputs.get(key) != value for key, value in expected.items()):
-        raise WorkflowError("Committed closeout readiness does not match immutable plan.", exit_code=2)
-    validate_closeout_evidence_commit(root, plan, current_head(root))
-    return True
 
 
 def resolve_closeout_pre_draft_state(
@@ -25281,157 +22251,73 @@ def resolve_closeout_pre_draft_state(
     task_dir: Path,
     plan: dict[str, Any],
     ledger: dict[str, Any],
-    gate: dict[str, Any] | None,
     *,
-    marketplace_verification: dict[str, Any] | None = None,
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> str:
-    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        plan_path = closeout_plan_path(task_dir)
-        if not plan_path.exists():
-            return "prepared"
-        if not plan_path.is_file() or plan_path.is_symlink():
-            raise WorkflowError("Interrupted closeout plan is unavailable or unsafe.", exit_code=2)
-        if validate_closeout_plan(read_json(plan_path)) != plan:
-            raise WorkflowError(
-                "Interrupted closeout plan differs from the rebuilt immutable plan.",
-                exit_code=2,
-            )
-        if current_head(root) != plan["git"]["reviewed_work_head"]:
-            raise WorkflowError(
-                "Closeout plan 1.2 must remain directly based on the reviewed content HEAD.",
-                exit_code=2,
-            )
-        if not plan["marketplace"]["required"]:
-            return "evidence_ready"
-        targets: list[dict[str, Any]] = []
-        if isinstance(ledger.get("primary_issue"), dict):
-            targets.append(ledger["primary_issue"])
-        targets.extend(
-            item
-            for item in ledger.get("close_issues", [])
-            if isinstance(item, dict)
-        )
-        evidence = [remote_marketplace_evidence(issue) for issue in targets]
-        if evidence and all(
-            item == plan["marketplace"]["pending_machine"] for item in evidence
-        ):
-            return "content_pushed"
-        verification_path = marketplace_verification_path(task_dir)
-        if verification_path.is_file():
-            verification = (
-                marketplace_verification
-                if isinstance(marketplace_verification, dict)
-                else read_json(verification_path)
-            )
-            if (
-                verification.get("status") == "passed"
-                and not marketplace_verification_contract_errors(verification)
-            ):
-                passed = closeout_passed_marketplace_evidence(
-                    root,
-                    verification_path,
-                    verification,
-                )
-                if evidence and all(item == passed for item in evidence):
-                    return "evidence_ready"
-        if closeout_ledger_matches_plan_semantics(root, task_dir, plan, ledger):
-            return "content_pushed"
-        raise WorkflowError(
-            "Interrupted closeout marketplace evidence has no unique resumable state.",
-            exit_code=2,
-        )
-    if gate is None:
-        raise WorkflowError(
-            "Legacy closeout recovery requires its Branch Review compatibility artifact.",
-            exit_code=2,
-        )
-    if closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
-        return "evidence_pushed"
-
     plan_path = closeout_plan_path(task_dir)
-    readiness_path = task_dir / PR_READINESS_ARTIFACT
-    if not plan_path.exists() and not readiness_path.exists():
+    if not plan_path.exists():
         return "prepared"
-    if not plan_path.exists() and readiness_path.is_file():
-        readiness = read_json(readiness_path)
-        if (
-            readiness.get("skill_id") == TASK_PUBLICATION_SKILL_ID
-            and "publish_inputs" not in readiness
-        ):
-            finalization_gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-            if (
-                finalization_gate_path.is_file()
-                and not finalization_gate_path.is_symlink()
-            ):
-                check_task_publication_for_finalization_augmentation(
-                    root,
-                    task_dir,
-                    readiness,
-                    expected_closeout_plan_digest=None,
-                    additional_owned_paths=[
-                        repo_relative(root, finalization_gate_path)
-                    ],
-                    require_plan=False,
-                )
-            else:
-                cmd_check_task_publication_review(
-                    argparse.Namespace(
-                        root=str(root),
-                        task=repo_relative(root, task_dir),
-                        expected_exit="ready",
-                    )
-                )
-            return "prepared"
-    if not plan_path.is_file() or not readiness_path.is_file():
-        raise WorkflowError("Interrupted closeout has an incomplete plan/readiness pair.", exit_code=2)
+    if not plan_path.is_file() or plan_path.is_symlink():
+        raise WorkflowError("Interrupted closeout plan is unavailable or unsafe.", exit_code=2)
     if validate_closeout_plan(read_json(plan_path)) != plan:
-        raise WorkflowError("Interrupted closeout plan differs from the rebuilt immutable plan.", exit_code=2)
-    _path, inputs, _body = read_pr_readiness_publish_inputs(
+        raise WorkflowError(
+            "Interrupted closeout plan differs from the rebuilt immutable plan.",
+            exit_code=2,
+        )
+    if not closeout_ledger_matches_plan_bytes(root, task_dir, plan, ledger):
+        raise WorkflowError(
+            "Issue Scope Ledger bytes differ from the immutable closeout plan.",
+            exit_code=2,
+        )
+    branch_review_commit = str(plan["git"]["branch_review_commit"])
+    anchor_identity = reviewed_content_identity(
+        root,
+        branch_review_commit,
+        include_worktree=False,
+    )["sha256"]
+    continuity_errors = review_branch_content_continuity_errors(
         root,
         task_dir,
-        str(readiness_path),
-        gate,
-        require_committed=False,
+        branch_review_commit,
+        anchor_identity,
+        current_head(root),
     )
-    expected_inputs = {
-        "repo": plan["git"]["repo"],
-        "base_branch": plan["git"]["base_branch"],
-        "head_branch": plan["git"]["head_branch"],
-        "reviewed_head_sha": plan["git"]["reviewed_work_head"],
-        "title": plan["publish"]["title"],
-        "body_sha256": plan["publish"]["body_sha256"],
-        "draft": True,
-        "closeout_plan_digest": plan["plan_digest"],
-    }
-    if any(inputs.get(key) != value for key, value in expected_inputs.items()):
-        raise WorkflowError("Interrupted closeout readiness differs from the immutable plan.", exit_code=2)
-    if current_head(root) != plan["git"]["reviewed_work_head"]:
-        raise WorkflowError("Uncommitted closeout evidence is not based on the reviewed work HEAD.", exit_code=2)
-
+    if continuity_errors:
+        raise WorkflowError(
+            "Closeout reviewed content is stale.",
+            exit_code=2,
+            payload={"errors": continuity_errors},
+        )
     if not plan["marketplace"]["required"]:
         return "evidence_ready"
-    targets: list[dict[str, Any]] = []
-    if isinstance(ledger.get("primary_issue"), dict):
-        targets.append(ledger["primary_issue"])
-    targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
-    evidence = [remote_marketplace_evidence(issue) for issue in targets]
-    if evidence and all(item == plan["marketplace"]["pending_machine"] for item in evidence):
+    artifact = marketplace_verification_path(task_dir, load_config(root))
+    if not artifact.exists():
         return "content_pushed"
-
-    verification_path = marketplace_verification_path(task_dir)
-    if verification_path.is_file():
-        verification = (
-            marketplace_verification
-            if isinstance(marketplace_verification, dict)
-            else read_json(verification_path)
+    if artifact.is_symlink() or not artifact.is_file():
+        raise WorkflowError(
+            "Extension verification owner artifact is unsafe.",
+            exit_code=2,
         )
-        if verification.get("status") == "passed" and not marketplace_verification_contract_errors(verification):
-            passed = closeout_passed_marketplace_evidence(root, verification_path, verification)
-            if evidence and all(item == passed for item in evidence):
-                return "evidence_ready"
-    if closeout_ledger_matches_plan_semantics(root, task_dir, plan, ledger):
-        return "content_pushed"
-    raise WorkflowError("Interrupted closeout marketplace evidence has no unique resumable state.", exit_code=2)
+    verification = verification_owner_result
+    if verification is None:
+        verification = finalization_current_verification_owner_result(
+            root,
+            task_dir,
+            task_ref=plan["task"]["active_locator"],
+            plan_ref=f"closeout-plan:{plan['plan_digest']}",
+            branch_review_commit=branch_review_commit,
+            plan=plan,
+        )
+    if (
+        not isinstance(verification, tuple)
+        or len(verification) != 2
+        or verification[1].get("typed_exit") != "verified"
+    ):
+        raise WorkflowError(
+            "Extension verification owner artifact is not current for closeout.",
+            exit_code=2,
+        )
+    return "evidence_ready"
 
 
 def closeout_remote_branch_head(root: Path, plan: dict[str, Any]) -> str:
@@ -25763,40 +22649,74 @@ def validate_closeout_marketplace_artifact(
     root: Path,
     task_dir: Path,
     plan: dict[str, Any],
-    ledger: dict[str, Any],
-    marketplace_verification: dict[str, Any] | None = None,
-) -> None:
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
     if not plan["marketplace"]["required"]:
-        return
+        return None
     locator = plan["marketplace"]["verifier_artifact_locator"]
     if locator != MARKETPLACE_VERIFICATION_ARTIFACT:
-        raise WorkflowError("Marketplace verifier locator is not task-relative.", exit_code=2)
+        raise WorkflowError("Extension verification locator is not task-relative.", exit_code=2)
     artifact = task_dir / locator
-    if not artifact.is_file():
-        raise WorkflowError("Marketplace verifier artifact is missing from the task.", exit_code=2)
-    verification = (
-        marketplace_verification
-        if isinstance(marketplace_verification, dict)
-        else read_json(artifact)
+    if artifact.is_symlink() or not artifact.is_file():
+        raise WorkflowError("Extension verification owner artifact is missing or unsafe.", exit_code=2)
+    owner = read_json(artifact)
+    owner_input = (
+        owner.get("public_input")
+        if isinstance(owner.get("public_input"), dict)
+        else None
     )
-    if verification.get("status") != "passed" or marketplace_verification_contract_errors(verification):
-        raise WorkflowError("Marketplace verifier artifact is not a passed canonical artifact.", exit_code=2)
-    expected = closeout_passed_marketplace_evidence(root, artifact, verification)
-    targets: list[dict[str, Any]] = []
-    if isinstance(ledger.get("primary_issue"), dict):
-        targets.append(ledger["primary_issue"])
-    targets.extend(item for item in ledger.get("close_issues", []) if isinstance(item, dict))
-    mismatches = [
-        int(issue.get("number") or 0)
-        for issue in targets
-        if remote_marketplace_evidence(issue) != expected
-    ]
-    if mismatches:
+    if owner_input is None:
         raise WorkflowError(
-            "Marketplace ledger evidence does not match the task-relative artifact digest.",
+            "Extension verification owner input is missing.",
             exit_code=2,
-            payload={"issue_numbers": mismatches, "artifact_path": locator},
         )
+    checked = check_extension_verification_result(
+        root,
+        owner,
+        repo_relative(root, artifact),
+        owner_input,
+    )
+    expected_plan_ref = f"closeout-plan:{plan['plan_digest']}"
+    repository = (
+        owner.get("repository")
+        if isinstance(owner.get("repository"), dict)
+        else {}
+    )
+    errors: list[str] = []
+    if (
+        owner.get("schema_version") != EXTENSION_VERIFICATION_SCHEMA_VERSION
+        or owner.get("typed_exit") != "verified"
+        or owner.get("mode") != "workflow"
+        or checked.get("typed_exit") != "verified"
+    ):
+        errors.append("extension verification owner result is not verified")
+    if (
+        owner_input.get("task_ref") != plan["task"]["active_locator"]
+        or owner_input.get("plan_ref") != expected_plan_ref
+        or owner_input.get("branch_review_commit")
+        != plan["git"]["branch_review_commit"]
+        or normalize_github_repository(owner_input.get("repo_ref"))
+        != plan["git"]["repo"]
+    ):
+        errors.append("extension verification public input is not plan-bound")
+    if (
+        normalize_github_repository(repository.get("repo_ref"))
+        != plan["git"]["repo"]
+        or repository.get("remote") != plan["git"]["remote"]
+        or repository.get("ref") != f"refs/heads/{plan['git']['head_branch']}"
+        or repository.get("branch_review_commit")
+        != plan["git"]["branch_review_commit"]
+    ):
+        errors.append("extension verification repository identity is not plan-bound")
+    if verification_owner_result is not None and verification_owner_result != (owner, checked):
+        errors.append("supplied extension verification result differs from its owner artifact")
+    if errors:
+        raise WorkflowError(
+            "Extension verification owner artifact is not current for closeout.",
+            exit_code=2,
+            payload={"errors": sorted(set(errors))},
+        )
+    return owner, checked
 
 
 def build_final_archive_projection(
@@ -25805,46 +22725,32 @@ def build_final_archive_projection(
     prepared: dict[str, Any],
     pr: dict[str, Any],
     *,
-    marketplace_verification: dict[str, Any] | None = None,
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     plan = prepared["plan"]
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
-    ledger_errors = validate_ledger_for_publish(
-        ledger,
-        (
-            prepared.get("gate")
-            if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
-            else None
-        ),
-        marketplace_required=bool(plan["marketplace"]["required"]),
-    )
+    ledger_errors = validate_ledger_for_publish(ledger)
     if ledger_errors:
         raise WorkflowError("Final projection ledger validation failed.", exit_code=2, payload={"errors": ledger_errors})
-    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        continuity_errors = review_branch_content_continuity_errors(
-            root,
-            task_dir,
-            plan["git"]["reviewed_work_head"],
-            current_head(root),
+    branch_review_commit = str(plan["git"]["branch_review_commit"])
+    anchor_identity = reviewed_content_identity(
+        root,
+        branch_review_commit,
+        include_worktree=False,
+    )["sha256"]
+    continuity_errors = review_branch_content_continuity_errors(
+        root,
+        task_dir,
+        branch_review_commit,
+        anchor_identity,
+        current_head(root),
+    )
+    if continuity_errors:
+        raise WorkflowError(
+            "Final projection content changed after Publication review.",
+            exit_code=2,
+            payload={"errors": continuity_errors},
         )
-        if continuity_errors:
-            raise WorkflowError(
-                "Final projection content changed after the Publication ready DTO.",
-                exit_code=2,
-                payload={"errors": continuity_errors},
-            )
-    else:
-        readiness = read_json(task_dir / PR_READINESS_ARTIFACT)
-        inputs = (
-            readiness.get("publish_inputs")
-            if isinstance(readiness.get("publish_inputs"), dict)
-            else {}
-        )
-        if inputs.get("closeout_plan_digest") != plan["plan_digest"]:
-            raise WorkflowError(
-                "Final projection readiness digest does not match closeout plan.",
-                exit_code=2,
-            )
     validate_closeout_pull_request_identity(
         root,
         task_dir,
@@ -25858,8 +22764,7 @@ def build_final_archive_projection(
         root,
         task_dir,
         plan,
-        ledger,
-        marketplace_verification,
+        verification_owner_result,
     )
     summary = closeout_summary_for_pr(plan, pr)
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
@@ -25870,8 +22775,6 @@ def build_final_archive_projection(
         "issue-scope-ledger.json",
         PR_BODY_ARTIFACT,
     }
-    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
-        required_artifacts.update({PR_READINESS_ARTIFACT, "review-gate.json"})
     missing = sorted(name for name in required_artifacts if not (task_dir / name).is_file())
     if missing:
         raise WorkflowError("Final archive projection is missing task artifacts.", exit_code=2, payload={"missing": missing})
@@ -25934,79 +22837,12 @@ def closeout_commit_tracked_task_paths(
     )
 
 
-def validate_closeout_evidence_commit(
-    root: Path,
-    plan: dict[str, Any],
-    commit: str,
-    *,
-    _seen: set[str] | None = None,
-) -> None:
-    seen = set(_seen or set())
-    if commit in seen or len(seen) >= 24:
-        raise WorkflowError("Closeout evidence supersession chain is cyclic or too deep.", exit_code=2)
-    seen.add(commit)
-    parent = closeout_commit_parent(root, commit)
-    expected_parent = closeout_evidence_parent_head(plan)
-    paths = closeout_commit_paths(root, commit)
-    expected_paths = set(plan["projection"]["evidence_paths"])
-    active = plan["task"]["active_locator"]
-    tracked_paths = closeout_commit_tracked_task_paths(root, commit, active)
-    expected_tracked_paths = {
-        f"{active}/{path}" for path in plan["projection"]["tracked_move_paths"]
-    }
-    if (
-        parent != expected_parent
-        or paths != expected_paths
-        or tracked_paths != expected_tracked_paths
-    ):
-        raise WorkflowError(
-            "Closeout evidence commit does not match the prevalidated parent/path/tracking snapshot.",
-            exit_code=2,
-            payload={
-                "commit": commit,
-                "expected_parent": expected_parent,
-                "actual_parent": parent,
-                "expected_paths": sorted(expected_paths),
-                "actual_paths": sorted(paths),
-                "expected_tracked_paths": sorted(expected_tracked_paths),
-                "actual_tracked_paths": sorted(tracked_paths),
-            },
-        )
-    if expected_parent != plan["git"]["reviewed_work_head"]:
-        previous_path = f"{plan['task']['active_locator']}/{CLOSEOUT_PLAN_ARTIFACT}"
-        previous_bytes = closeout_optional_commit_blob_bytes(root, expected_parent, previous_path)
-        if previous_bytes is None:
-            raise WorkflowError(
-                "Closeout evidence supersession parent is missing its committed active plan.",
-                exit_code=2,
-            )
-        try:
-            previous = validate_closeout_plan(json.loads(previous_bytes.decode("utf-8")))
-        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise WorkflowError(
-                "Closeout evidence supersession parent plan is invalid.", exit_code=2
-            ) from exc
-        supersession_errors = closeout_month_supersession_errors(
-            previous,
-            plan,
-            previous_evidence_head=expected_parent,
-            committed=True,
-        )
-        if supersession_errors:
-            raise WorkflowError(
-                "Closeout evidence supersession lineage is invalid.",
-                exit_code=2,
-                payload={"errors": supersession_errors},
-            )
-        validate_closeout_evidence_commit(root, previous, expected_parent, _seen=seen)
-
-
 def validate_closeout_active_projection(
     root: Path,
     task_dir: Path,
     plan: dict[str, Any],
     *,
-    marketplace_verification: dict[str, Any] | None = None,
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> None:
     if repo_relative(root, task_dir) != plan["task"]["active_locator"] or not task_dir.is_dir():
         raise WorkflowError("Closeout active projection locator is invalid.", exit_code=2)
@@ -26019,13 +22855,11 @@ def validate_closeout_active_projection(
             payload={"expected_files": expected_files, "actual_files": actual_files},
         )
     read_and_validate_closeout_final_summary(task_dir / FINISH_SUMMARY_ARTIFACT, plan)
-    ledger = read_json(task_dir / "issue-scope-ledger.json")
     validate_closeout_marketplace_artifact(
         root,
         task_dir,
         plan,
-        ledger,
-        marketplace_verification,
+        verification_owner_result,
     )
 
 
@@ -26034,7 +22868,7 @@ def closeout_commit_tree_entry(root: Path, commit: str, path: str) -> tuple[str,
     rows = [line for line in proc.stdout.splitlines() if line]
     if proc.returncode != 0 or len(rows) != 1:
         raise WorkflowError(
-            "Closeout evidence commit is missing one exact tracked move path.",
+            "Closeout transaction parent is missing one exact tracked move path.",
             exit_code=2,
             payload={"commit": commit, "path": path, "stage": "pre-archive-continuity"},
         )
@@ -26060,13 +22894,11 @@ def closeout_untracked_paths(root: Path) -> set[str]:
     return {path for path in proc.stdout.split("\0") if path}
 
 
-def closeout_v12_projection_content_is_current(
+def closeout_projection_content_is_current(
     plan: dict[str, Any],
     relative: str,
     content: bytes,
 ) -> bool:
-    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
-        return False
     input_key = {
         "task.json": "task",
         "issue-scope-ledger.json": "issue_scope_ledger",
@@ -26078,16 +22910,7 @@ def closeout_v12_projection_content_is_current(
     record = plan.get("inputs", {}).get(input_key)
     if not isinstance(record, dict):
         return False
-    if relative == "issue-scope-ledger.json":
-        try:
-            payload = json.loads(content.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError):
-            return False
-        if not isinstance(payload, dict):
-            return False
-        actual = canonical_json_sha256(closeout_semantic_ledger(payload))
-    else:
-        actual = hashlib.sha256(content).hexdigest()
+    actual = hashlib.sha256(content).hexdigest()
     return actual == record.get("sha256")
 
 
@@ -26095,7 +22918,7 @@ def validate_closeout_pre_move_continuity(
     root: Path,
     task_dir: Path,
     plan: dict[str, Any],
-    evidence_commit: str,
+    transaction_parent: str,
     *,
     expected_summary_pr: dict[str, Any] | None = None,
 ) -> None:
@@ -26141,7 +22964,7 @@ def validate_closeout_pre_move_continuity(
     for relative in plan["projection"]["tracked_move_paths"]:
         repo_path = f"{active_locator}/{relative}"
         git_mode, object_type, _object_id = closeout_commit_tree_entry(
-            root, evidence_commit, repo_path
+            root, transaction_parent, repo_path
         )
         if object_type != "blob" or git_mode not in {"100644", "100755"}:
             raise WorkflowError(
@@ -26159,7 +22982,7 @@ def validate_closeout_pre_move_continuity(
         expected_working_mode = "100755" if working_mode & 0o111 else "100644"
         if expected_working_mode != git_mode:
             raise WorkflowError(
-                "Closeout tracked file mode differs from the immutable evidence commit.",
+                "Closeout tracked file mode differs from the transaction-parent blob.",
                 exit_code=2,
                 payload={
                     "path": relative,
@@ -26168,18 +22991,18 @@ def validate_closeout_pre_move_continuity(
                     "stage": "pre-archive-continuity",
                 },
             )
-        before = closeout_commit_blob_bytes(root, evidence_commit, repo_path)
+        before = closeout_commit_blob_bytes(root, transaction_parent, repo_path)
         current_bytes = target.read_bytes()
         if (
             current_bytes != before
-            and not closeout_v12_projection_content_is_current(
+            and not closeout_projection_content_is_current(
                 plan,
                 relative,
                 current_bytes,
             )
         ):
             raise WorkflowError(
-                "Closeout tracked output differs from the immutable evidence blob before archive.",
+                "Closeout tracked output differs from the transaction-parent blob before archive.",
                 exit_code=2,
                 payload={"path": relative, "stage": "pre-archive-continuity"},
             )
@@ -26195,14 +23018,11 @@ def validate_closeout_pre_move_continuity(
         ).splitlines()
     )
     untracked = closeout_untracked_paths(root)
-    if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION:
-        allowed_dirty = {
-            f"{active_locator}/{relative}"
-            for relative in plan["projection"]["move_paths"]
-        }
-        dirty_is_valid = dirty.issubset(allowed_dirty)
-    else:
-        dirty_is_valid = dirty == expected_outputs
+    allowed_dirty = {
+        f"{active_locator}/{relative}"
+        for relative in plan["projection"]["move_paths"]
+    }
+    dirty_is_valid = dirty.issubset(allowed_dirty)
     if not dirty_is_valid or staged or untracked != expected_outputs:
         raise WorkflowError(
             "Closeout pre-archive dirty/staged/untracked paths do not match the immutable final outputs.",
@@ -26220,8 +23040,6 @@ def validate_closeout_pre_move_continuity(
 
 def compact_closeout_archive(archived: Path, plan: dict[str, Any]) -> None:
     """Remove task-local intermediates that have no long-term archive consumer."""
-    if plan.get("schema_version") not in CLOSEOUT_COMPACT_SCHEMA_VERSIONS:
-        return
     parents: set[Path] = set()
     for relative in closeout_archive_pruned_paths(plan):
         target = archived / relative
@@ -26330,7 +23148,7 @@ def validate_closeout_archive_blob_continuity(
     root: Path,
     archived: Path,
     plan: dict[str, Any],
-    evidence_commit: str,
+    transaction_parent: str,
     *,
     archive_commit: str | None = None,
     expected_summary_pr: dict[str, Any] | None = None,
@@ -26356,7 +23174,11 @@ def validate_closeout_archive_blob_continuity(
                     payload={"path": relative},
                 )
             continue
-        before = closeout_commit_blob_bytes(root, evidence_commit, f"{active_locator}/{relative}")
+        before = closeout_commit_blob_bytes(
+            root,
+            transaction_parent,
+            f"{active_locator}/{relative}",
+        )
         if archive_commit is None:
             target = archived / relative
             if not target.is_file():
@@ -26372,14 +23194,14 @@ def validate_closeout_archive_blob_continuity(
             validate_closeout_task_json_archive_change(before, after)
         elif (
             before != after
-            and not closeout_v12_projection_content_is_current(
+            and not closeout_projection_content_is_current(
                 plan,
                 relative,
                 after,
             )
         ):
             raise WorkflowError(
-                "Archived tracked output differs from the immutable evidence blob.",
+                "Archived tracked output differs from the transaction-parent blob.",
                 exit_code=2,
                 payload={"path": relative},
             )
@@ -26434,22 +23256,33 @@ def resolve_committed_closeout_archive_transaction(
     if committed_paths != closeout_archive_transaction_paths(plan):
         return None
     validate_closeout_archive_git_paths(committed_paths, plan, stage="archive-committed-head")
-    evidence_commit = closeout_commit_parent(root, archive_commit)
-    if closeout_uses_evidence_commit(plan):
-        validate_closeout_evidence_commit(root, plan, evidence_commit)
-    elif evidence_commit != closeout_transaction_parent_head(plan):
+    transaction_parent = closeout_commit_parent(root, archive_commit)
+    try:
+        validate_closeout_reviewed_content(
+            root,
+            plan,
+            transaction_parent,
+            include_worktree=False,
+        )
+        validate_closeout_reviewed_content(
+            root,
+            plan,
+            archive_commit,
+            include_worktree=False,
+        )
+    except WorkflowError:
         return None
     validate_closeout_archive_commit_tree(root, plan, archive_commit)
     summary_pr = validate_closeout_archive_blob_continuity(
         root,
         root / plan["task"]["archive_locator"],
         plan,
-        evidence_commit,
+        transaction_parent,
         archive_commit=archive_commit,
     )
     return {
         "commit": archive_commit,
-        "parent": evidence_commit,
+        "parent": transaction_parent,
         "paths": sorted(committed_paths),
         "summary_pr": summary_pr,
     }
@@ -26503,12 +23336,8 @@ def assert_archived_committed_workspace_boundary(
         plan_blob = working_plan_path.read_bytes()
         plan_source = "archive_worktree"
     if plan_blob is None:
-        active_plan_path = f".trellis/tasks/{task_dir.name}/{CLOSEOUT_PLAN_ARTIFACT}"
-        plan_blob = closeout_optional_commit_blob_bytes(root, archive_commit, active_plan_path)
-        plan_source = "active"
-    if plan_blob is None:
         raise WorkflowError(
-            "Archived closeout current commit contains neither the exact archive plan nor the evidence-commit active plan.",
+            "Archived closeout has neither the exact committed archive plan nor the current archived working-tree plan.",
             exit_code=2,
             payload={"head": archive_commit, "task_dir": task_locator},
         )
@@ -26554,11 +23383,7 @@ def assert_archived_committed_workspace_boundary(
     source_issues = summary_github.get("source_issues")
     plan_projection_valid = (
         CLOSEOUT_PLAN_ARTIFACT in projection["move_paths"]
-        and (
-            CLOSEOUT_PLAN_ARTIFACT in projection["untracked_archive_outputs"]
-            if plan.get("schema_version") == CLOSEOUT_PLAN_SCHEMA_VERSION
-            else CLOSEOUT_PLAN_ARTIFACT in projection["tracked_move_paths"]
-        )
+        and CLOSEOUT_PLAN_ARTIFACT in projection["untracked_archive_outputs"]
     )
     locator_identity_valid = (
         task_locator == archive_locator
@@ -26621,19 +23446,18 @@ def assert_archived_committed_workspace_boundary(
             exit_code=2,
             payload={"head": archive_commit, "task_dir": task_locator},
         )
-    if plan_source in {"active", "archive_worktree"}:
+    if plan_source == "archive_worktree":
         if transaction is not None:
             raise WorkflowError(
-                "Archived closeout evidence-plan fallback cannot replace an exact archive plan.",
+                "Archived closeout working plan cannot replace an exact archive plan.",
                 exit_code=2,
             )
-        if closeout_uses_evidence_commit(plan):
-            validate_closeout_evidence_commit(root, plan, archive_commit)
-        elif archive_commit != closeout_transaction_parent_head(plan):
-            raise WorkflowError(
-                "Archived closeout working-tree move is not based on the reviewed content HEAD.",
-                exit_code=2,
-            )
+        validate_closeout_reviewed_content(
+            root,
+            plan,
+            archive_commit,
+            include_worktree=True,
+        )
     return {
         "status": "ok",
         "mode": (
@@ -26655,31 +23479,30 @@ def execute_archive_metadata_transaction(
     plan: dict[str, Any],
     *,
     bound_pr: dict[str, Any] | None = None,
-    marketplace_verification: dict[str, Any] | None = None,
+    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     archive_script = root / ".trellis/scripts/task.py"
     if not archive_script.is_file():
         raise WorkflowError(f"Trellis task.py not found: {archive_script}")
-    evidence_commit = current_head(root)
-    if closeout_uses_evidence_commit(plan):
-        validate_closeout_evidence_commit(root, plan, evidence_commit)
-    elif evidence_commit != closeout_transaction_parent_head(plan):
-        raise WorkflowError(
-            "Closeout archive transaction parent is not the reviewed content HEAD.",
-            exit_code=2,
-        )
+    transaction_parent = current_head(root)
+    validate_closeout_reviewed_content(
+        root,
+        plan,
+        transaction_parent,
+        include_worktree=True,
+    )
     validate_closeout_active_projection(
         root,
         task_dir,
         plan,
-        marketplace_verification=marketplace_verification,
+        verification_owner_result=verification_owner_result,
     )
     assert_closeout_archive_path_preflight(root, plan["task"]["archive_locator"])
     validate_closeout_pre_move_continuity(
         root,
         task_dir,
         plan,
-        evidence_commit,
+        transaction_parent,
         expected_summary_pr=bound_pr,
     )
     proc = run(
@@ -26696,7 +23519,7 @@ def execute_archive_metadata_transaction(
         root,
         archived,
         plan,
-        evidence_commit,
+        transaction_parent,
         expected_summary_pr=bound_pr,
     )
     active_locator = plan["task"]["active_locator"]
@@ -26712,20 +23535,20 @@ def execute_archive_metadata_transaction(
     validate_closeout_archive_git_paths(committed, plan, stage="archive-commit")
     if committed != staged:
         raise WorkflowError("Archive metadata commit differs from its staged transaction.", exit_code=2, payload={"staged": sorted(staged), "committed": sorted(committed)})
-    if closeout_commit_parent(root, archive_commit) != evidence_commit:
-        raise WorkflowError("Archive metadata commit parent is not the validated evidence commit.", exit_code=2)
+    if closeout_commit_parent(root, archive_commit) != transaction_parent:
+        raise WorkflowError("Archive metadata commit parent is not the validated transaction parent.", exit_code=2)
     validate_closeout_archive_blob_continuity(
         root,
         archived,
         plan,
-        evidence_commit,
+        transaction_parent,
         archive_commit=archive_commit,
         expected_summary_pr=bound_pr,
     )
     if git_status_paths(root):
         raise WorkflowError("Archive metadata commit left repository paths dirty.", exit_code=2)
     run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
-    return archived, {"commit": archive_commit, "parent": evidence_commit, "paths": sorted(committed)}
+    return archived, {"commit": archive_commit, "parent": transaction_parent, "paths": sorted(committed)}
 
 
 def ensure_closeout_pr_ready(
@@ -26835,19 +23658,18 @@ def resume_archive_metadata_transaction(
     dirty = set(git_status_paths(root))
     if dirty:
         validate_closeout_archive_git_paths(dirty, plan, stage="archive-recovery-dirty")
-        evidence_commit = current_head(root)
-        if closeout_uses_evidence_commit(plan):
-            validate_closeout_evidence_commit(root, plan, evidence_commit)
-        elif evidence_commit != closeout_transaction_parent_head(plan):
-            raise WorkflowError(
-                "Recovered archive transaction parent is not the reviewed content HEAD.",
-                exit_code=2,
-            )
+        transaction_parent = current_head(root)
+        validate_closeout_reviewed_content(
+            root,
+            plan,
+            transaction_parent,
+            include_worktree=True,
+        )
         validate_closeout_archive_blob_continuity(
             root,
             task_dir,
             plan,
-            evidence_commit,
+            transaction_parent,
             expected_summary_pr=bound_pr,
         )
         active = plan["task"]["active_locator"]
@@ -26868,33 +23690,32 @@ def resume_archive_metadata_transaction(
         archive_commit = current_head(root)
         archive_paths = closeout_commit_paths(root, archive_commit)
         validate_closeout_archive_git_paths(archive_paths, plan, stage="archive-recovery-commit")
-        if closeout_commit_parent(root, archive_commit) != evidence_commit:
+        if closeout_commit_parent(root, archive_commit) != transaction_parent:
             raise WorkflowError("Recovered archive commit does not match the exact parent/path transaction.", exit_code=2)
         validate_closeout_archive_blob_continuity(
             root,
             task_dir,
             plan,
-            evidence_commit,
+            transaction_parent,
             archive_commit=archive_commit,
             expected_summary_pr=bound_pr,
         )
     else:
         archive_commit = current_head(root)
         last_paths = closeout_commit_paths(root, archive_commit)
-        evidence_commit = closeout_commit_parent(root, archive_commit)
+        transaction_parent = closeout_commit_parent(root, archive_commit)
         validate_closeout_archive_git_paths(last_paths, plan, stage="archive-recovery-head")
-        if closeout_uses_evidence_commit(plan):
-            validate_closeout_evidence_commit(root, plan, evidence_commit)
-        elif evidence_commit != closeout_transaction_parent_head(plan):
-            raise WorkflowError(
-                "Archived closeout parent is not the reviewed content HEAD.",
-                exit_code=2,
-            )
+        validate_closeout_reviewed_content(
+            root,
+            plan,
+            transaction_parent,
+            include_worktree=False,
+        )
         validate_closeout_archive_blob_continuity(
             root,
             task_dir,
             plan,
-            evidence_commit,
+            transaction_parent,
             archive_commit=archive_commit,
             expected_summary_pr=bound_pr,
         )
@@ -26910,7 +23731,7 @@ def resume_archive_metadata_transaction(
         run_stdout(["git", "push", plan["git"]["remote"], plan["git"]["head_branch"]], cwd=root)
     return {
         "commit": archive_commit,
-        "parent": evidence_commit,
+        "parent": transaction_parent,
         "paths": sorted(closeout_commit_paths(root, archive_commit)),
     }
 
@@ -26932,7 +23753,6 @@ def resume_archived_closeout(
     archive_commit = committed_archive or resolve_committed_closeout_archive_transaction(root, plan)
     finalizer_recovery = (
         archive_commit is not None
-        and bool(getattr(args, "include_finalization_gate", False))
         and isinstance(getattr(args, "finalization_gate", None), dict)
     )
     if finalizer_recovery:
@@ -26999,13 +23819,7 @@ def apply_active_closeout_month_supersession(
         raise WorkflowError("Closeout month supersession state is missing.", exit_code=2)
     previous = supersession["previous_plan"]
     plan = prepared["plan"]
-    committed = supersession.get("committed") is True
-    errors = closeout_month_supersession_errors(
-        previous,
-        plan,
-        previous_evidence_head=current_head(root),
-        committed=committed,
-    )
+    errors = closeout_month_supersession_errors(previous, plan)
     if errors:
         raise WorkflowError(
             "Closeout archive month supersession is no longer valid.",
@@ -27024,113 +23838,7 @@ def apply_active_closeout_month_supersession(
         read_and_validate_closeout_final_summary(summary_path, previous)
         summary_path.unlink()
     write_json(closeout_plan_path(task_dir), plan)
-    if closeout_uses_evidence_commit(plan):
-        readiness_path, readiness = build_pr_readiness_snapshot(
-            root,
-            task_dir,
-            repo=plan["git"]["repo"],
-            base_branch=plan["git"]["base_branch"],
-            head_branch=plan["git"]["head_branch"],
-            reviewed_head_sha=plan["git"]["reviewed_work_head"],
-            title=plan["publish"]["title"],
-            draft=True,
-            closeout_plan_digest=plan["plan_digest"],
-            allow_closeout_digest_replacement=True,
-        )
-        write_json(readiness_path, readiness)
-    return "evidence_ready" if committed else str(supersession["prior_state"])
-
-
-def apply_active_closeout_finalizer_takeover(
-    root: Path,
-    task_dir: Path,
-    prepared: dict[str, Any],
-    finalization_gate: Any,
-    *,
-    marketplace_verification: dict[str, Any] | None = None,
-) -> str:
-    takeover = prepared.get("finalizer_takeover")
-    if not isinstance(takeover, dict):
-        raise WorkflowError("Closeout finalizer takeover state is missing.", exit_code=2)
-    previous = takeover["previous_plan"]
-    plan = prepared["plan"]
-    committed = takeover.get("committed") is True
-    current = current_head(root)
-    errors = closeout_finalizer_gate_takeover_errors(
-        previous,
-        plan,
-        evidence_parent_head=current,
-        committed=committed,
-    )
-    if closeout_archive_month(previous) != closeout_archive_month(plan):
-        errors.append("finalizer takeover must preserve the existing archive month")
-    if committed != (current != plan["git"]["reviewed_work_head"]):
-        errors.append("finalizer takeover commit state changed after preview")
-    persisted_path = closeout_plan_path(task_dir)
-    persisted = (
-        validate_closeout_plan(read_json(persisted_path))
-        if persisted_path.is_file()
-        else None
-    )
-    if persisted != previous:
-        errors.append("persisted predecessor plan changed after preview")
-    gate_path = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-    persisted_gate = read_json(gate_path) if gate_path.is_file() else None
-    expected_gate_plan = {
-        "available": True,
-        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-        "plan_digest": plan["plan_digest"],
-        "reviewed_head": plan["git"]["reviewed_work_head"],
-    }
-    expected_gate_identity = {
-        "task_ref": plan["task"]["active_locator"],
-        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-        "plan_digest": plan["plan_digest"],
-        "reviewed_content_head": plan["git"]["reviewed_work_head"],
-    }
-    gate_binding_matches = isinstance(finalization_gate, dict) and (
-        finalization_gate.get("plan") == expected_gate_plan
-        or finalization_gate.get("identity") == expected_gate_identity
-    )
-    if (
-        not isinstance(finalization_gate, dict)
-        or finalization_gate.get("skill_id") != FINALIZE_TASK_SKILL_ID
-        or not gate_binding_matches
-        or persisted_gate != finalization_gate
-    ):
-        errors.append("finalizer takeover gate is not bound to the augmented plan")
-    actual_prior_state = resolve_closeout_pre_draft_state(
-        root,
-        task_dir,
-        previous,
-        prepared["ledger"],
-        prepared["gate"],
-        marketplace_verification=marketplace_verification,
-    )
-    if actual_prior_state != takeover.get("prior_state"):
-        errors.append("finalizer takeover predecessor state changed after preview")
-    if errors:
-        raise WorkflowError(
-            "Closeout finalizer takeover is no longer valid.",
-            exit_code=2,
-            payload={"errors": sorted(set(errors)), "stage": "finalizer-takeover"},
-        )
-
-    readiness_path, readiness = build_pr_readiness_snapshot(
-        root,
-        task_dir,
-        repo=plan["git"]["repo"],
-        base_branch=plan["git"]["base_branch"],
-        head_branch=plan["git"]["head_branch"],
-        reviewed_head_sha=plan["git"]["reviewed_work_head"],
-        title=plan["publish"]["title"],
-        draft=True,
-        closeout_plan_digest=plan["plan_digest"],
-        allow_closeout_digest_replacement=True,
-    )
-    write_json(persisted_path, plan)
-    write_json(readiness_path, readiness)
-    return "evidence_ready" if committed else str(takeover["prior_state"])
+    return str(supersession["prior_state"])
 
 
 def resume_active_archive_move(
@@ -27147,41 +23855,32 @@ def resume_active_archive_move(
     task = task_json(task_dir)
     if task.get("status") != "completed":
         raise WorkflowError("Archive-move recovery requires active task status=completed.", exit_code=2)
-    gate: dict[str, Any] | None = None
-    if closeout_uses_evidence_commit(plan):
-        gate_path, gate, gate_errors = validate_review_gate(
-            root, task_dir, config, True
-        )
-        if gate_errors:
-            raise WorkflowError(
-                "Legacy archive-move recovery review gate is invalid.",
-                exit_code=2,
-                payload={"artifact_path": str(gate_path), "errors": gate_errors},
-            )
-    ledger = load_issue_scope_ledger(task_dir, task_context)
-    if closeout_uses_evidence_commit(plan):
-        if not closeout_evidence_is_committed(root, task_dir, plan, ledger, gate):
-            raise WorkflowError(
-                "Archive-move recovery requires committed plan/readiness/evidence.",
-                exit_code=2,
-            )
-    elif current_head(root) != closeout_transaction_parent_head(plan):
-        raise WorkflowError(
-            "Archive-move recovery is not based on the reviewed content HEAD.",
-            exit_code=2,
-        )
+    del config
+    validate_closeout_reviewed_content(
+        root,
+        plan,
+        current_head(root),
+        include_worktree=True,
+    )
     summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if not summary_path.is_file():
         raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
-    marketplace_verification = getattr(args, "external_verification", None)
+    verification_owner_result = getattr(args, "verification_owner_result", None)
+    if plan["marketplace"]["required"] and verification_owner_result is None:
+        verification_owner_result = finalization_current_verification_owner_result(
+            root,
+            task_dir,
+            task_ref=plan["task"]["active_locator"],
+            plan_ref=f"closeout-plan:{plan['plan_digest']}",
+            branch_review_commit=plan["git"]["branch_review_commit"],
+            plan=plan,
+        )
     validate_closeout_active_projection(
         root,
         task_dir,
         plan,
-        marketplace_verification=marketplace_verification,
+        verification_owner_result=verification_owner_result,
     )
-    if closeout_uses_evidence_commit(plan):
-        validate_closeout_evidence_commit(root, plan, current_head(root))
     assert_closeout_archive_month_current(plan)
     official_after_archive_hook_state(root)
     require_gh_auth(root)
@@ -27208,7 +23907,7 @@ def resume_active_archive_move(
         task_dir,
         plan,
         bound_pr=pr,
-        marketplace_verification=marketplace_verification,
+        verification_owner_result=verification_owner_result,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -27232,15 +23931,12 @@ def execute_closeout_content_push(
 ) -> dict[str, Any]:
     """Run the existing first closeout transition and stop at the verification boundary."""
     plan = prepared["plan"]
-    if current_head(root) != plan["git"]["reviewed_work_head"]:
-        raise WorkflowError(
-            "Closeout content HEAD drifted before evidence commit.",
-            exit_code=2,
-            payload={
-                "expected": plan["git"]["reviewed_work_head"],
-                "actual": current_head(root),
-            },
-        )
+    validate_closeout_reviewed_content(
+        root,
+        plan,
+        current_head(root),
+        include_worktree=True,
+    )
     run_stdout(
         ["git", "push", "-u", plan["git"]["remote"], plan["git"]["head_branch"]],
         cwd=root,
@@ -27255,20 +23951,6 @@ def execute_closeout_content_push(
         plan["git"]["remote"],
     )
     write_json(closeout_plan_path(task_dir), plan)
-    if closeout_uses_evidence_commit(plan):
-        readiness_path, readiness = build_pr_readiness_snapshot(
-            root,
-            task_dir,
-            repo=plan["git"]["repo"],
-            base_branch=plan["git"]["base_branch"],
-            head_branch=plan["git"]["head_branch"],
-            reviewed_head_sha=plan["git"]["reviewed_work_head"],
-            title=plan["publish"]["title"],
-            draft=True,
-            closeout_plan_digest=plan["plan_digest"],
-        )
-        write_json(readiness_path, readiness)
-    ledger = load_issue_scope_ledger(task_dir, task_context)
     return {
         "status": "ok",
         "stage": "content_pushed",
@@ -27276,9 +23958,8 @@ def execute_closeout_content_push(
         "task_dir": str(task_dir),
         "closeout_plan_digest": plan["plan_digest"],
         "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-        "reviewed_head": plan["git"]["reviewed_work_head"],
+        "branch_review_commit": plan["git"]["branch_review_commit"],
         "verification_required": bool(plan["marketplace"]["required"]),
-        "ledger": ledger,
     }
 
 
@@ -27310,7 +23991,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)
         return resume_active_archive_move(root, args, config, task_dir, task_context)
 
-    marketplace_verification = getattr(args, "external_verification", None)
+    verification_owner_result = getattr(args, "verification_owner_result", None)
     prepared = prepare_closeout(
         root,
         args,
@@ -27318,7 +23999,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         task_context,
         publication_ready=getattr(args, "publication_ready", None),
-        marketplace_verification=marketplace_verification,
+        verification_owner_result=verification_owner_result,
     )
     plan = prepared["plan"]
     if args.dry_run:
@@ -27341,7 +24022,6 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     assert_closeout_archive_month_current(plan)
     require_gh_auth(root)
     ledger = load_issue_scope_ledger(task_dir, task_context)
-    evidence_commit: dict[str, Any] | None = None
     if prepared.get("month_supersession") is not None:
         supersession = prepared["month_supersession"]
         if supersession.get("committed") is True:
@@ -27351,31 +24031,22 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
         )
         entry_state = apply_active_closeout_month_supersession(root, task_dir, prepared)
-    elif prepared.get("finalizer_takeover") is not None:
-        entry_state = apply_active_closeout_finalizer_takeover(
-            root,
-            task_dir,
-            prepared,
-            getattr(args, "finalization_gate", None),
-            marketplace_verification=marketplace_verification,
-        )
     else:
         entry_state = resolve_closeout_pre_draft_state(
             root,
             task_dir,
             plan,
             ledger,
-            prepared["gate"],
-            marketplace_verification=marketplace_verification,
+            verification_owner_result=verification_owner_result,
         )
     if entry_state == "prepared":
-        content_push = execute_closeout_content_push(
+        execute_closeout_content_push(
             root,
             task_dir,
             task_context,
             prepared,
         )
-        ledger = content_push["ledger"]
+        entry_state = "content_pushed"
 
     if entry_state in {"content_pushed", "evidence_ready"}:
         validate_publish_identity_and_remote_head(
@@ -27383,50 +24054,35 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
         )
 
-    if entry_state in {"prepared", "content_pushed"}:
-        if plan["marketplace"]["required"]:
-            if not isinstance(marketplace_verification, dict):
-                marketplace_verification = execute_marketplace_verification(
-                    root,
-                    task_dir,
-                    plan["git"]["repo"],
-                    plan["git"]["remote"],
-                    plan["git"]["head_branch"],
-                    plan["git"]["reviewed_work_head"],
-                    config,
-                )
-            verification_path = marketplace_verification_path(task_dir, config)
-            passed = closeout_passed_marketplace_evidence(
-                root,
-                verification_path,
-                marketplace_verification,
-            )
-            write_json(issue_scope_ledger_path(task_dir), record_marketplace_machine_evidence(ledger, passed))
-
-    if entry_state in {"prepared", "content_pushed", "evidence_ready"}:
-        if closeout_uses_evidence_commit(plan):
-            evidence_commit = commit_closeout_evidence_metadata(
+    if plan["marketplace"]["required"]:
+        if verification_owner_result is None:
+            verification_owner_result = finalization_current_verification_owner_result(
                 root,
                 task_dir,
-                plan,
-                finalizer_mode=bool(getattr(args, "include_finalization_gate", False)),
+                task_ref=plan["task"]["active_locator"],
+                plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                branch_review_commit=plan["git"]["branch_review_commit"],
+                plan=plan,
             )
-            push_closeout_branch_if_needed(root, plan)
-            validate_publish_identity_and_remote_head(
-                root, prepared["task"], task_context, plan["git"]["repo"],
-                plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
-            )
-        elif current_head(root) != plan["git"]["reviewed_work_head"]:
+        if verification_owner_result is None:
             raise WorkflowError(
-                "Closeout plan 1.2 content identity changed before archive.",
+                "Task finalization requires current extension verification owner evidence.",
                 exit_code=2,
             )
-    elif entry_state == "evidence_pushed":
-        push_closeout_branch_if_needed(root, plan)
-        validate_publish_identity_and_remote_head(
-            root, prepared["task"], task_context, plan["git"]["repo"],
-            plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
+        validate_closeout_marketplace_artifact(
+            root,
+            task_dir,
+            plan,
+            verification_owner_result,
         )
+        entry_state = "evidence_ready"
+
+    validate_closeout_reviewed_content(
+        root,
+        plan,
+        current_head(root),
+        include_worktree=True,
+    )
 
     pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
     finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
@@ -27435,7 +24091,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             root,
             task_dir,
             plan,
-            marketplace_verification=marketplace_verification,
+            verification_owner_result=verification_owner_result,
         )
         validate_closeout_pull_request_identity(
             root,
@@ -27452,7 +24108,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             prepared,
             pr,
-            marketplace_verification=marketplace_verification,
+            verification_owner_result=verification_owner_result,
         )
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
@@ -27470,7 +24126,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         plan,
         bound_pr=pr,
-        marketplace_verification=marketplace_verification,
+        verification_owner_result=verification_owner_result,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -27481,7 +24137,6 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         "closeout_plan_digest": plan["plan_digest"],
         "entry_state": entry_state,
         "finish_summary": str(archived_task_dir / finish_summary_path.name),
-        "evidence_commit": evidence_commit,
         "archive_commit": archive_commit,
         "publish": publish_payload,
     }
@@ -27515,12 +24170,11 @@ FINALIZATION_CONSUMERS = {
 }
 
 FINALIZATION_EXECUTOR_OUTPUT_MARKER = {"materialization": "executor"}
-FINALIZATION_GATE_SCHEMA_VERSION = "2.0"
+FINALIZATION_GATE_SCHEMA_VERSION = "3.0"
 FINALIZATION_COMMITTED_RECOVERY_STATES = {"archived", "ready"}
 FINALIZATION_RESUME_RECOVERY_STATES = {
     "content_pushed",
     "evidence_ready",
-    "evidence_pushed",
     "draft_bound",
     "projection_validated",
     "archive_moved",
@@ -27602,87 +24256,11 @@ def finalization_interface(root: Path) -> dict[str, Any]:
     return interface
 
 
-FINALIZATION_LEGACY_PUBLICATION_READY_FIELDS = frozenset({
-    "profile",
-    "mode",
-    "task_ref",
-    "reviewed_head",
-    "publication_ref",
-    "finalization_intent",
-})
-
-
-def finalization_legacy_publication_ready_errors(payload: Any) -> list[str]:
-    if (
-        not isinstance(payload, dict)
-        or set(payload) != FINALIZATION_LEGACY_PUBLICATION_READY_FIELDS
-    ):
-        return ["not a legacy finalization publication_ready input"]
-    errors: list[str] = []
-    if payload.get("profile") != "publication_ready":
-        errors.append("legacy finalization profile is unsupported")
-    if payload.get("mode") not in {"workflow", "standalone"}:
-        errors.append("legacy finalization mode is unsupported")
-    if re.fullmatch(
-        r"\.trellis/tasks/[A-Za-z0-9._/-]+",
-        str(payload.get("task_ref") or ""),
-    ) is None:
-        errors.append("legacy finalization task_ref is invalid")
-    if re.fullmatch(r"[0-9a-f]{40}", str(payload.get("reviewed_head") or "")) is None:
-        errors.append("legacy finalization reviewed_head is invalid")
-    if not isinstance(payload.get("publication_ref"), str) or not str(
-        payload.get("publication_ref") or ""
-    ).strip():
-        errors.append("legacy finalization publication_ref is invalid")
-    if payload.get("finalization_intent") not in {
-        "initial_finalize",
-        "resume_same_plan",
-    }:
-        errors.append("legacy finalization intent is unsupported")
-    return errors
-
-
-def finalization_project_legacy_publication_ready(
-    root: Path,
-    payload: dict[str, Any],
-) -> dict[str, Any]:
-    errors = finalization_legacy_publication_ready_errors(payload)
-    if errors:
-        raise WorkflowError(
-            "Legacy task finalization input is incomplete or mixed.",
-            exit_code=2,
-            payload={"errors": errors},
-        )
-    task_ref = str(payload["task_ref"])
-    task_dir = resolve_finish_work_task_dir(root, task_ref)
-    if repo_relative(root, task_dir) != task_ref:
-        raise WorkflowError(
-            "Legacy task finalization input does not resolve exactly.",
-            exit_code=2,
-        )
-    checked = cmd_check_task_publication_review(
-        argparse.Namespace(
-            root=str(root),
-            task=task_ref,
-            expected_exit="ready",
-            direct_runtime_inputs=[],
-        )
-    )
-    return {
-        "profile": "publication_ready",
-        "mode": payload["mode"],
-        "task_ref": task_ref,
-        "reviewed_content_head": checked["reviewed_content_head"],
-    }
-
-
 def finalization_public_input(
     root: Path,
     value: str | None,
 ) -> tuple[dict[str, Any], str]:
     payload, locator = finalization_json_input(root, value, "task finalization public input")
-    if not finalization_legacy_publication_ready_errors(payload):
-        payload = finalization_project_legacy_publication_ready(root, payload)
     package = finalization_package_root(root)
     interface = finalization_interface(root)
     profiles = interface["public_contracts"]["input"]["profiles"]
@@ -27751,54 +24329,6 @@ def finalization_semantic_review_input(
     return payload
 
 
-def finalization_project_legacy_gate(root: Path, payload: Any) -> dict[str, Any]:
-    if (
-        not isinstance(payload, dict)
-        or payload.get("schema_version") != "1.0"
-        or payload.get("skill_id") != FINALIZE_TASK_SKILL_ID
-    ):
-        raise WorkflowError(
-            "Legacy task finalization gate is not a supported 1.0 artifact.",
-            exit_code=2,
-        )
-    invocation = payload.get("invocation")
-    plan = payload.get("plan")
-    review = payload.get("review")
-    route = payload.get("route")
-    if not all(isinstance(value, dict) for value in (invocation, plan, review, route)):
-        raise WorkflowError(
-            "Legacy task finalization gate is incomplete.",
-            exit_code=2,
-        )
-    projected = {
-        "schema_version": FINALIZATION_GATE_SCHEMA_VERSION,
-        "skill_id": FINALIZE_TASK_SKILL_ID,
-        "identity": {
-            "task_ref": invocation.get("task_ref"),
-            "plan_ref": plan.get("plan_ref"),
-            "plan_digest": plan.get("plan_digest"),
-            "reviewed_content_head": plan.get("reviewed_head"),
-        },
-        "review": {
-            "status": review.get("status"),
-            "summary": review.get("summary"),
-        },
-        "route": copy.deepcopy(route),
-    }
-    errors = skill_json_schema_validation_errors(
-        projected,
-        finalization_gate_schema(root),
-        "projected legacy task finalization gate",
-    )
-    if errors:
-        raise WorkflowError(
-            "Legacy task finalization gate cannot be projected to 2.0.",
-            exit_code=2,
-            payload={"errors": errors},
-        )
-    return projected
-
-
 def finalization_task_dir(root: Path, public_input: dict[str, Any]) -> Path:
     task_ref = str(public_input.get("task_ref") or "")
     task_dir = resolve_finish_work_task_dir(root, task_ref)
@@ -27806,7 +24336,7 @@ def finalization_task_dir(root: Path, public_input: dict[str, Any]) -> Path:
     if resolved_ref == task_ref:
         return task_dir
     if task_dir_is_archived(root, task_dir):
-        plan = finalization_verification_augmentation_plan(root, task_dir)
+        plan = finalization_closeout_plan(root, task_dir)
         if (
             plan is not None
             and task_ref == plan["task"]["active_locator"]
@@ -27836,62 +24366,64 @@ def finalization_publication_owner_result(
         )
 
     profile = str(public_input.get("profile") or "")
-    reviewed_content_head = str(
-        public_input.get("reviewed_content_head")
-        or public_input.get("reviewed_head")
-        or ""
-    )
+    branch_review_commit = str(public_input.get("branch_review_commit") or "")
     if profile == "publication_ready":
         task = task_json(task_dir)
         if task.get("status") != "in_progress":
             return {
                 "owner_status": "stale",
-                "reviewed_content_head": reviewed_content_head,
+                "branch_review_commit": branch_review_commit,
                 "stale_reason": "publication_review_stale",
             }
         repository = task_publication_repository_binding(root, task_dir)
         unexpected = task_publication_unexpected_status_paths(
-            root,
-            task_dir,
             repository["status_paths"],
-            finalization_owned_paths=[
-                repo_relative(root, closeout_plan_path(task_dir))
-            ],
         )
         if unexpected:
             raise WorkflowError(
-                "Task finalization found dirty paths outside the Publication handoff allowlist.",
+                "Task finalization found dirty paths outside the reviewed-content boundary.",
                 exit_code=2,
                 payload={"unexpected_dirty_paths": unexpected},
             )
     else:
-        plan = finalization_verification_augmentation_plan(root, task_dir)
+        plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             return {
                 "owner_status": "stale",
-                "reviewed_content_head": reviewed_content_head,
+                "branch_review_commit": branch_review_commit,
                 "stale_reason": "publication_review_missing",
             }
-        reviewed_content_head = str(plan["git"]["reviewed_work_head"])
-        supplied_head = public_input.get("reviewed_head")
-        if isinstance(supplied_head, str) and supplied_head != reviewed_content_head:
+        branch_review_commit = str(plan["git"]["branch_review_commit"])
+        supplied_commit = public_input.get("branch_review_commit")
+        if (
+            isinstance(supplied_commit, str)
+            and supplied_commit != branch_review_commit
+        ):
             return {
                 "owner_status": "stale",
-                "reviewed_content_head": reviewed_content_head,
-                "stale_reason": "publication_review_head_mismatch",
+                "branch_review_commit": branch_review_commit,
+                "stale_reason": "publication_review_stale",
             }
-
-    continuity_errors = review_branch_content_continuity_errors(
-        root,
-        task_dir,
-        reviewed_content_head,
-        current_head(root),
-    )
+    try:
+        reviewed_content_sha256 = reviewed_content_identity(
+            root,
+            branch_review_commit,
+            include_worktree=False,
+        )["sha256"]
+        continuity_errors = review_branch_content_continuity_errors(
+            root,
+            task_dir,
+            branch_review_commit,
+            reviewed_content_sha256,
+            current_head(root),
+        )
+    except WorkflowError as exc:
+        continuity_errors = [str(exc)]
     if continuity_errors:
         return {
             "owner_status": "stale",
-            "reviewed_content_head": reviewed_content_head,
-            "stale_reason": "publication_review_head_mismatch",
+            "branch_review_commit": branch_review_commit,
+            "stale_reason": "publication_review_stale",
             "errors": continuity_errors,
         }
     return {
@@ -27899,327 +24431,11 @@ def finalization_publication_owner_result(
         "owner_status": "current",
         "typed_exit": "ready",
         "task_ref": task_ref,
-        "reviewed_content_head": reviewed_content_head,
+        "branch_review_commit": branch_review_commit,
     }
 
 
-def finalization_retire_stale_downstream_projection(
-    root: Path,
-    task_dir: Path,
-    context: dict[str, Any],
-) -> dict[str, Any]:
-    """Retire one exact pre-draft projection after a real content HEAD advance."""
-    if (
-        context.get("publication_status") != "stale"
-        or context.get("publication_stale_reason")
-        != "publication_review_head_mismatch"
-        or task_dir_is_archived(root, task_dir)
-    ):
-        raise WorkflowError(
-            "Task finalization stale projection retirement is not applicable.",
-            exit_code=2,
-        )
-    if not task_dir.is_dir() or task_dir.is_symlink():
-        raise WorkflowError(
-            "Task finalization stale projection task directory is unsafe.",
-            exit_code=2,
-        )
-
-    task_ref = repo_relative(root, task_dir)
-    plan_path = closeout_plan_path(task_dir)
-    ledger_path = issue_scope_ledger_path(task_dir)
-    body_path = task_dir / PR_BODY_ARTIFACT
-    index_path = task_dir / FINISH_SUMMARY_INDEX_ARTIFACT
-    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
-
-    def regular_file(path: Path, label: str) -> bytes:
-        if path.is_symlink() or not path.is_file():
-            raise WorkflowError(
-                f"Task finalization stale projection {label} is unsafe or missing.",
-                exit_code=2,
-            )
-        metadata = os.lstat(path)
-        if not stat.S_ISREG(metadata.st_mode):
-            raise WorkflowError(
-                f"Task finalization stale projection {label} is not a regular file.",
-                exit_code=2,
-            )
-        return path.read_bytes()
-
-    plan_bytes = regular_file(plan_path, CLOSEOUT_PLAN_ARTIFACT)
-    plan = validate_closeout_plan(read_json(plan_path))
-    if (
-        plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
-        or plan_bytes != closeout_json_artifact_bytes(plan)
-        or plan.get("task", {}).get("active_locator") != task_ref
-        or plan.get("git", {}).get("head_branch") != current_branch(root)
-    ):
-        raise WorkflowError(
-            "Task finalization stale projection plan identity is not the exact current projection.",
-            exit_code=2,
-        )
-    task = task_json(task_dir)
-    if (
-        task.get("status") != "in_progress"
-        or str(task.get("id") or task.get("name") or task_dir.name)
-        != str(plan.get("task", {}).get("id") or "")
-    ):
-        raise WorkflowError(
-            "Task finalization stale projection task identity is not current.",
-            exit_code=2,
-        )
-
-    current = current_head(root)
-    reviewed = str(plan.get("git", {}).get("reviewed_work_head") or "")
-    if (
-        current == reviewed
-        or not re.fullmatch(r"[0-9a-f]{40}", reviewed)
-        or not is_ancestor(root, reviewed, current)
-    ):
-        raise WorkflowError(
-            "Task finalization stale projection does not follow one reviewed content HEAD advance.",
-            exit_code=2,
-        )
-    if plan.get("marketplace", {}).get("required") is not True:
-        raise WorkflowError(
-            "Task finalization stale projection is outside the supported pre-draft verification boundary.",
-            exit_code=2,
-        )
-    if summary_path.exists():
-        raise WorkflowError(
-            "Task finalization stale projection already reached a later closeout state.",
-            exit_code=2,
-        )
-
-    inputs = plan.get("inputs") if isinstance(plan.get("inputs"), dict) else {}
-    expected_inputs = {
-        "issue_scope_ledger": ledger_path,
-        "pr_body": body_path,
-        "finish_summary_index": index_path,
-    }
-    for input_id, path in expected_inputs.items():
-        record = inputs.get(input_id)
-        if (
-            not isinstance(record, dict)
-            or record.get("path") != repo_relative(root, path)
-        ):
-            raise WorkflowError(
-                f"Task finalization stale projection {input_id} path is not plan-bound.",
-                exit_code=2,
-            )
-
-    ledger_bytes = regular_file(ledger_path, "issue-scope-ledger.json")
-    body_bytes = regular_file(body_path, PR_BODY_ARTIFACT)
-    index_bytes = regular_file(index_path, FINISH_SUMMARY_INDEX_ARTIFACT)
-    if hashlib.sha256(body_bytes).hexdigest() != inputs["pr_body"].get("sha256"):
-        raise WorkflowError(
-            "Task finalization stale projection PR body differs from the immutable plan.",
-            exit_code=2,
-        )
-    if (
-        hashlib.sha256(index_bytes).hexdigest()
-        != inputs["finish_summary_index"].get("sha256")
-    ):
-        raise WorkflowError(
-            "Task finalization stale projection finish summary index differs from the immutable plan.",
-            exit_code=2,
-        )
-
-    ledger = read_json(ledger_path)
-    semantic_ledger = closeout_semantic_ledger(ledger)
-    if inputs["issue_scope_ledger"].get("sha256") != canonical_json_sha256(
-        semantic_ledger
-    ):
-        raise WorkflowError(
-            "Task finalization stale projection Ledger semantics differ from the immutable plan.",
-            exit_code=2,
-        )
-    targets: list[dict[str, Any]] = []
-    primary = ledger.get("primary_issue")
-    if isinstance(primary, dict):
-        targets.append(primary)
-    close_issues = ledger.get("close_issues")
-    if isinstance(close_issues, list):
-        targets.extend(item for item in close_issues if isinstance(item, dict))
-    if not targets:
-        raise WorkflowError(
-            "Task finalization stale projection Ledger has no closeout targets.",
-            exit_code=2,
-        )
-
-    verification_path = task_dir / str(
-        plan.get("marketplace", {}).get("verifier_artifact_locator") or ""
-    )
-    remove_paths = [body_path, index_path]
-    if verification_path.exists():
-        regular_file(
-            verification_path,
-            MARKETPLACE_VERIFICATION_ARTIFACT,
-        )
-        verification = read_json(verification_path)
-        expected_evidence = closeout_passed_marketplace_evidence(
-            root,
-            verification_path,
-            verification,
-        )
-        if (
-            verification.get("repo") != plan["git"]["repo"]
-            or verification.get("remote") != plan["git"]["remote"]
-            or verification.get("branch") != plan["git"]["head_branch"]
-            or verification.get("task_dir") != task_ref
-            or verification.get("verified_head") != reviewed
-            or verification.get("remote_head") != reviewed
-        ):
-            raise WorkflowError(
-                "Task finalization stale marketplace projection is not plan-bound.",
-                exit_code=2,
-            )
-        remove_paths.append(verification_path)
-    else:
-        expected_evidence = plan.get("marketplace", {}).get("pending_machine")
-        if not isinstance(expected_evidence, dict):
-            raise WorkflowError(
-                "Task finalization stale projection pending marketplace evidence is missing.",
-                exit_code=2,
-            )
-    if any(remote_marketplace_evidence(issue) != expected_evidence for issue in targets):
-        raise WorkflowError(
-            "Task finalization stale projection Ledger marketplace evidence is not plan-owned.",
-            exit_code=2,
-        )
-    expected_ledger = record_marketplace_machine_evidence(
-        semantic_ledger,
-        expected_evidence,
-    )
-    if ledger_bytes != closeout_json_artifact_bytes(expected_ledger):
-        raise WorkflowError(
-            "Task finalization stale projection Ledger bytes are not the canonical owner projection.",
-            exit_code=2,
-        )
-
-    ledger_relative = repo_relative(root, ledger_path)
-    ledger_mode, ledger_type, _ledger_oid = closeout_commit_tree_entry(
-        root,
-        current,
-        ledger_relative,
-    )
-    if ledger_type != "blob" or ledger_mode not in {"100644", "100755"}:
-        raise WorkflowError(
-            "Task finalization stale projection Ledger is not a regular current-HEAD blob.",
-            exit_code=2,
-        )
-    working_mode = os.lstat(ledger_path).st_mode
-    current_mode = "100755" if working_mode & 0o111 else "100644"
-    if current_mode != ledger_mode:
-        raise WorkflowError(
-            "Task finalization stale projection Ledger mode differs from current HEAD.",
-            exit_code=2,
-        )
-    ledger_restore_bytes = closeout_commit_blob_bytes(root, current, ledger_relative)
-
-    projection = (
-        plan.get("projection")
-        if isinstance(plan.get("projection"), dict)
-        else {}
-    )
-    untracked_archive_outputs = set(projection.get("untracked_archive_outputs") or [])
-    planned_untracked = {
-        CLOSEOUT_PLAN_ARTIFACT,
-        PR_BODY_ARTIFACT,
-        FINISH_SUMMARY_INDEX_ARTIFACT,
-    }
-    if verification_path.exists():
-        planned_untracked.add(MARKETPLACE_VERIFICATION_ARTIFACT)
-    if not planned_untracked.issubset(untracked_archive_outputs):
-        raise WorkflowError(
-            "Task finalization stale projection paths are outside the immutable untracked output set.",
-            exit_code=2,
-        )
-    untracked_paths = closeout_untracked_paths(root)
-    expected_untracked = {
-        repo_relative(root, plan_path),
-        repo_relative(root, body_path),
-        repo_relative(root, index_path),
-    }
-    if verification_path.exists():
-        expected_untracked.add(repo_relative(root, verification_path))
-    if not expected_untracked.issubset(untracked_paths):
-        raise WorkflowError(
-            "Task finalization stale projection contains a tracked or ignored owner output.",
-            exit_code=2,
-        )
-
-    staged_proc = run(
-        ["git", "diff", "--cached", "--name-only", "--no-renames", "-z"],
-        cwd=root,
-        check=False,
-    )
-    if staged_proc.returncode != 0:
-        raise WorkflowError(
-            "Task finalization stale projection could not inspect staged paths.",
-            exit_code=2,
-        )
-    staged_paths = {path for path in staged_proc.stdout.split("\0") if path}
-    if staged_paths:
-        raise WorkflowError(
-            "Task finalization stale projection retirement does not accept staged paths.",
-            exit_code=2,
-            payload={"staged_paths": sorted(staged_paths)},
-        )
-
-    expected_dirty = set(expected_untracked)
-    if ledger_bytes != ledger_restore_bytes:
-        expected_dirty.add(ledger_relative)
-    dirty_paths = set(git_status_paths(root, fail_closed=True))
-    if dirty_paths != expected_dirty:
-        raise WorkflowError(
-            "Task finalization stale projection dirty paths are not the exact owner set.",
-            exit_code=2,
-            payload={
-                "expected_dirty_paths": sorted(expected_dirty),
-                "actual_dirty_paths": sorted(dirty_paths),
-            },
-        )
-
-    gate_path = ai_first_owner_checkpoint_path(
-        root,
-        task_dir,
-        TASK_FINALIZATION_GATE_ARTIFACT,
-    )
-    if gate_path.is_symlink() or not gate_path.is_file():
-        raise WorkflowError(
-            "Task finalization stale projection owner checkpoint is missing or unsafe.",
-            exit_code=2,
-        )
-
-    if ledger_bytes != ledger_restore_bytes:
-        ledger_path.write_bytes(ledger_restore_bytes)
-    for path in [*remove_paths, plan_path]:
-        path.unlink()
-    retired = ai_first_retire_owner_checkpoints(
-        root,
-        task_dir,
-        (TASK_FINALIZATION_GATE_ARTIFACT,),
-    )
-    return {
-        "status": "retired",
-        "task_ref": task_ref,
-        "reviewed_content_head": reviewed,
-        "current_head": current,
-        "restored_paths": (
-            [ledger_relative]
-            if ledger_bytes != ledger_restore_bytes
-            else []
-        ),
-        "removed_paths": [
-            repo_relative(root, path)
-            for path in [*remove_paths, plan_path]
-        ],
-        "retired_owner_checkpoints": retired,
-    }
-
-
-def finalization_verification_augmentation_plan(
+def finalization_closeout_plan(
     root: Path,
     task_dir: Path,
 ) -> dict[str, Any] | None:
@@ -28271,7 +24487,7 @@ def finalization_verification_augmentation_plan(
         ) from exc
 
 
-def finalization_verification_augmentation_payload(
+def finalization_verification_owner_payload(
     root: Path,
     task_dir: Path,
 ) -> tuple[dict[str, Any], str]:
@@ -28320,7 +24536,7 @@ def finalization_uncommitted_output_paths(
     }
 
 
-def check_extension_verification_for_finalization_augmentation(
+def check_extension_verification_for_closeout(
     root: Path,
     task_dir: Path,
     payload: dict[str, Any],
@@ -28329,7 +24545,7 @@ def check_extension_verification_for_finalization_augmentation(
     plan: dict[str, Any],
     task_ref: str,
     plan_ref: str,
-    reviewed_head: str,
+    branch_review_commit: str,
 ) -> dict[str, Any]:
     """Validate #117 evidence across only the immutable finalizer metadata tail."""
     owner_input = payload.get("public_input")
@@ -28357,7 +24573,7 @@ def check_extension_verification_for_finalization_augmentation(
     if (
         task_ref != plan["task"]["active_locator"]
         or plan_ref != expected_plan_ref
-        or reviewed_head != plan["git"]["reviewed_work_head"]
+        or branch_review_commit != plan["git"]["branch_review_commit"]
     ):
         errors.append("finalization verification recovery identity is not plan-bound")
     repository = (
@@ -28368,9 +24584,10 @@ def check_extension_verification_for_finalization_augmentation(
     owner_mode = owner_input.get("mode")
     if owner_mode == "workflow":
         if (
-            owner_input.get("task_ref") != task_ref
+            payload.get("typed_exit") != "verified"
+            or owner_input.get("task_ref") != task_ref
             or owner_input.get("plan_ref") != plan_ref
-            or owner_input.get("reviewed_head") != reviewed_head
+            or owner_input.get("branch_review_commit") != branch_review_commit
             or normalize_github_repository(owner_input.get("repo_ref"))
             != plan["git"]["repo"]
         ):
@@ -28387,7 +24604,7 @@ def check_extension_verification_for_finalization_augmentation(
             or repository.get("remote") != plan["git"]["remote"]
             or repository.get("ref")
             != f"refs/heads/{plan['git']['head_branch']}"
-            or repository.get("remote_head") != reviewed_head
+            or repository.get("remote_head") != branch_review_commit
             or plan.get("marketplace", {}).get("required") is not False
         ):
             errors.append(
@@ -28403,36 +24620,43 @@ def check_extension_verification_for_finalization_augmentation(
             cwd=root,
             check=False,
         )
-        if (
-            extension_verification_resolved_remote_head(remote_proc, ref)
-            != repository.get("remote_head")
-        ):
+        live_remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
+        if live_remote_head != repository.get("remote_head"):
             errors.append("remote ref HEAD no longer matches private evidence")
+        elif not is_ancestor(root, branch_review_commit, live_remote_head):
+            errors.append("remote ref HEAD is not a descendant of branch_review_commit")
+        else:
+            try:
+                validate_closeout_reviewed_content(
+                    root,
+                    plan,
+                    live_remote_head,
+                    include_worktree=False,
+                )
+            except WorkflowError as exc:
+                errors.append(str(exc))
 
     head = current_head(root)
     if task_dir_is_archived(root, task_dir):
         transaction = resolve_committed_closeout_archive_transaction(root, plan)
         if transaction is None or transaction.get("commit") != head:
             errors.append("archived finalization verification recovery is not the exact archive commit")
-    elif head == reviewed_head:
-        expected_dirty = set(plan["projection"]["evidence_paths"])
-        expected_dirty.update(finalization_uncommitted_output_paths(root, plan))
-        actual_dirty = set(git_status_paths(root))
-        if locator in actual_dirty:
-            expected_dirty.add(locator)
-        if actual_dirty != expected_dirty:
-            errors.append("finalization verification metadata tail exceeds the plan allowlist")
-    else:
-        try:
-            validate_closeout_evidence_commit(root, plan, head)
-        except WorkflowError as exc:
-            errors.append(str(exc))
+    try:
+        validate_closeout_reviewed_content(
+            root,
+            plan,
+            head,
+            include_worktree=not task_dir_is_archived(root, task_dir),
+        )
+    except WorkflowError as exc:
+        errors.append(str(exc))
+    if not task_dir_is_archived(root, task_dir):
         expected_dirty = finalization_uncommitted_output_paths(root, plan)
         actual_dirty = set(git_status_paths(root))
         if locator in actual_dirty:
             expected_dirty.add(locator)
         if actual_dirty != expected_dirty:
-            errors.append("post-evidence finalization worktree exceeds the plan allowlist")
+            errors.append("finalization verification task metadata exceeds the plan output set")
 
     if errors:
         raise WorkflowError(
@@ -28482,7 +24706,7 @@ def finalization_standalone_not_required_owner_is_current(
         and repository.get("remote") == plan["git"]["remote"]
         and repository.get("ref")
         == f"refs/heads/{plan['git']['head_branch']}"
-        and repository.get("remote_head") == plan["git"]["reviewed_work_head"]
+        and repository.get("remote_head") == plan["git"]["branch_review_commit"]
         and plan.get("marketplace", {}).get("required") is False
         and checked.get("verification_ref")
         == payload.get("identity", {}).get("verification_ref")
@@ -28497,11 +24721,10 @@ def finalization_verification_owner_result(
     profile = public_input.get("profile")
     if profile not in {
         "verification_verified",
-        "verification_not_required",
         "standalone_verification_not_required",
     }:
         return None
-    payload, locator = finalization_verification_augmentation_payload(
+    payload, locator = finalization_verification_owner_payload(
         root,
         task_dir,
     )
@@ -28519,13 +24742,13 @@ def finalization_verification_owner_result(
             owner_input,
         )
     except WorkflowError:
-        plan = finalization_verification_augmentation_plan(root, task_dir)
+        plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             raise
         standalone_not_required = (
             profile == "standalone_verification_not_required"
         )
-        checked = check_extension_verification_for_finalization_augmentation(
+        checked = check_extension_verification_for_closeout(
             root,
             task_dir,
             payload,
@@ -28537,14 +24760,14 @@ def finalization_verification_owner_result(
                 if standalone_not_required
                 else str(public_input.get("plan_ref") or "")
             ),
-            reviewed_head=(
-                str(plan["git"]["reviewed_work_head"])
+            branch_review_commit=(
+                str(plan["git"]["branch_review_commit"])
                 if standalone_not_required
-                else str(public_input.get("reviewed_head") or "")
+                else str(public_input.get("branch_review_commit") or "")
             ),
         )
     if profile == "standalone_verification_not_required":
-        plan = finalization_verification_augmentation_plan(root, task_dir)
+        plan = finalization_closeout_plan(root, task_dir)
         matches = (
             plan is not None
             and finalization_standalone_not_required_owner_is_current(
@@ -28556,24 +24779,19 @@ def finalization_verification_owner_result(
             and normalize_github_repository(public_input.get("repo_ref"))
             == plan["git"]["repo"]
             and public_input.get("resolved_head")
-            == plan["git"]["reviewed_work_head"]
+            == plan["git"]["branch_review_commit"]
             and public_input.get("verification_ref")
             == checked.get("verification_ref")
         )
     else:
-        expected_exit = (
-            "verified" if profile == "verification_verified" else "not_required"
-        )
         matches = (
-            checked.get("typed_exit") == expected_exit
+            checked.get("typed_exit") == "verified"
             and owner_input.get("task_ref") == public_input.get("task_ref")
             and owner_input.get("plan_ref") == public_input.get("plan_ref")
-            and owner_input.get("reviewed_head") == public_input.get("reviewed_head")
-            and (
-                expected_exit != "verified"
-                or checked.get("verification_ref")
-                == public_input.get("verification_ref")
-            )
+            and owner_input.get("branch_review_commit")
+            == public_input.get("branch_review_commit")
+            and checked.get("verification_ref")
+            == public_input.get("verification_ref")
         )
     if not matches:
         raise WorkflowError(
@@ -28589,11 +24807,11 @@ def finalization_current_verification_owner_result(
     *,
     task_ref: str,
     plan_ref: str,
-    reviewed_head: str,
+    branch_review_commit: str,
     plan: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]] | None:
     try:
-        payload, locator = finalization_verification_augmentation_payload(
+        payload, locator = finalization_verification_owner_payload(
             root,
             task_dir,
         )
@@ -28610,13 +24828,13 @@ def finalization_current_verification_owner_result(
             owner_input,
         )
     except WorkflowError:
-        current_plan = plan or finalization_verification_augmentation_plan(
+        current_plan = plan or finalization_closeout_plan(
             root,
             task_dir,
         )
         if current_plan is None:
             raise
-        checked = check_extension_verification_for_finalization_augmentation(
+        checked = check_extension_verification_for_closeout(
             root,
             task_dir,
             payload,
@@ -28624,17 +24842,18 @@ def finalization_current_verification_owner_result(
             plan=current_plan,
             task_ref=task_ref,
             plan_ref=plan_ref,
-            reviewed_head=reviewed_head,
+            branch_review_commit=branch_review_commit,
         )
     if checked.get("typed_exit") == "not_required" and owner_input.get("mode") == "standalone":
-        current_plan = plan or finalization_verification_augmentation_plan(
+        current_plan = plan or finalization_closeout_plan(
             root,
             task_dir,
         )
         if (
             current_plan is None
             or current_plan.get("plan_digest") != plan_ref.removeprefix("closeout-plan:")
-            or current_plan.get("git", {}).get("reviewed_work_head") != reviewed_head
+            or current_plan.get("git", {}).get("branch_review_commit")
+            != branch_review_commit
             or not finalization_standalone_not_required_owner_is_current(
                 payload,
                 checked,
@@ -28644,170 +24863,13 @@ def finalization_current_verification_owner_result(
         ):
             return None
     elif (
-        checked.get("typed_exit") not in {"verified", "not_required"}
+        checked.get("typed_exit") != "verified"
         or owner_input.get("task_ref") != task_ref
         or owner_input.get("plan_ref") != plan_ref
-        or owner_input.get("reviewed_head") != reviewed_head
+        or owner_input.get("branch_review_commit") != branch_review_commit
     ):
         return None
     return payload, checked
-
-
-def finalization_marketplace_verification_compatibility_projection(
-    root: Path,
-    task_dir: Path,
-    plan: dict[str, Any],
-    verification: tuple[dict[str, Any], dict[str, Any]],
-) -> dict[str, Any]:
-    """Project current #117 owner evidence into the private #105 input shape."""
-    owner, checked = verification
-    owner_input = (
-        owner.get("public_input")
-        if isinstance(owner.get("public_input"), dict)
-        else {}
-    )
-    repository = (
-        owner.get("repository")
-        if isinstance(owner.get("repository"), dict)
-        else {}
-    )
-    execution = (
-        owner.get("execution")
-        if isinstance(owner.get("execution"), dict)
-        else {}
-    )
-    identity = (
-        owner.get("identity")
-        if isinstance(owner.get("identity"), dict)
-        else {}
-    )
-    plan_ref = f"closeout-plan:{plan['plan_digest']}"
-    verification_path = marketplace_verification_path(
-        task_dir,
-        load_config(root),
-    )
-    binding_errors: list[str] = []
-    if verification_path.is_symlink() or not verification_path.is_file():
-        binding_errors.append("owner evidence path is unavailable")
-    else:
-        try:
-            if read_json(verification_path) != owner:
-                binding_errors.append("owner evidence bytes do not match the checked payload")
-        except (OSError, json.JSONDecodeError, WorkflowError):
-            binding_errors.append("owner evidence path is unreadable")
-    if (
-        checked.get("status") != "ok"
-        or checked.get("typed_exit") != "verified"
-        or checked.get("mode") != "workflow"
-        or checked.get("verification_ref") != identity.get("verification_ref")
-        or checked.get("artifact_sha256") != context_digest(owner)
-        or (
-            checked.get("finalization_plan_ref") is not None
-            and checked.get("finalization_plan_ref") != plan_ref
-        )
-    ):
-        binding_errors.append("owner checker result is not the current verified result")
-    if (
-        owner.get("typed_exit") != "verified"
-        or owner.get("mode") != "workflow"
-        or owner.get("profile") != "verification_required"
-        or owner_input.get("task_ref") != plan["task"]["active_locator"]
-        or owner_input.get("plan_ref") != plan_ref
-        or normalize_github_repository(owner_input.get("repo_ref"))
-        != plan["git"]["repo"]
-        or owner_input.get("reviewed_head") != plan["git"]["reviewed_work_head"]
-        or normalize_github_repository(repository.get("repo_ref"))
-        != plan["git"]["repo"]
-        or repository.get("remote") != plan["git"]["remote"]
-        or repository.get("ref") != f"refs/heads/{plan['git']['head_branch']}"
-        or repository.get("reviewed_head") != plan["git"]["reviewed_work_head"]
-        or repository.get("remote_head") != plan["git"]["reviewed_work_head"]
-        or execution.get("status") != "passed"
-    ):
-        binding_errors.append("owner evidence does not match the immutable finalization plan")
-    if binding_errors:
-        raise WorkflowError(
-            "Task finalization cannot project stale extension verification evidence.",
-            exit_code=2,
-            payload={"errors": sorted(set(binding_errors))},
-        )
-
-    steps = [
-        {
-            "command": list(item["argv"]),
-            "exit_code": item["exit_code"],
-            "stdout_sha256": item["stdout_sha256"],
-            "stderr_sha256": item["stderr_sha256"],
-            "stdout_size_bytes": item["stdout_size_bytes"],
-            "stderr_size_bytes": item["stderr_size_bytes"],
-            "passed": item["exit_code"] == 0,
-        }
-        for item in execution.get("commands", [])
-        if isinstance(item, dict)
-    ]
-    expectation_paths = {
-        "workflow_sha256": "trellis/workflows/guru-team/workflow.md",
-        "finish_summary_schema_sha256": (
-            "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
-        ),
-        "closeout_plan_schema_sha256": (
-            "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
-        ),
-    }
-    expectations = execution.get("asset_expectations", [])
-    digests: dict[str, str] = {}
-    projection_errors: list[str] = []
-    for legacy_key, source_path in expectation_paths.items():
-        matches = [
-            item.get("expected_sha256")
-            for item in expectations
-            if isinstance(item, dict) and item.get("source_path") == source_path
-        ]
-        if len(matches) != 1 or not isinstance(matches[0], str):
-            projection_errors.append(
-                f"owner asset expectation is not unique: {source_path}"
-            )
-        else:
-            digests[legacy_key] = matches[0]
-    workflow_digest = digests.get("workflow_sha256", "")
-    projected = {
-        "schema_version": MARKETPLACE_VERIFICATION_SCHEMA_VERSION,
-        "generated_at": owner.get("generated_at"),
-        "status": "passed",
-        "repo": plan["git"]["repo"],
-        "remote": plan["git"]["remote"],
-        "branch": plan["git"]["head_branch"],
-        "marketplace_source": (
-            f"gh:{plan['git']['repo']}/trellis#{plan['git']['head_branch']}"
-        ),
-        "verified_head": plan["git"]["reviewed_work_head"],
-        "remote_head": repository["remote_head"],
-        "task_dir": plan["task"]["active_locator"],
-        "steps": steps,
-        "assets": {
-            "workflow_sha256": workflow_digest,
-            "preview_sha256": workflow_digest,
-            "finish_summary_schema_sha256": digests.get(
-                "finish_summary_schema_sha256", ""
-            ),
-            "closeout_plan_schema_sha256": digests.get(
-                "closeout_plan_schema_sha256", ""
-            ),
-            "runtime_gitignore_present": True,
-            "workspace_gitignore_present": True,
-            "session_auto_commit_false": True,
-            "legacy_handoff_absent": True,
-            "legacy_intake_schema_absent": True,
-        },
-    }
-    projection_errors.extend(marketplace_verification_contract_errors(projected))
-    if projection_errors:
-        raise WorkflowError(
-            "Task finalization cannot project extension verification evidence.",
-            exit_code=2,
-            payload={"errors": sorted(set(projection_errors))},
-        )
-    return projected
 
 
 def finalization_eval_preview_context(
@@ -28825,7 +24887,7 @@ def finalization_eval_preview_context(
         "task_ref",
         "plan_ref",
         "plan_digest",
-        "reviewed_head",
+        "branch_review_commit",
         "archive_locator",
         "repo_ref",
         "remote",
@@ -28840,7 +24902,6 @@ def finalization_eval_preview_context(
         "prepared",
         "content_pushed",
         "evidence_ready",
-        "evidence_pushed",
         "draft_bound",
         "projection_validated",
         "archive_moved",
@@ -28851,7 +24912,6 @@ def finalization_eval_preview_context(
     }
     verification_exit = {
         "verification_verified": "verified",
-        "verification_not_required": "not_required",
         "standalone_verification_not_required": "not_required",
     }.get(public_input.get("profile"))
     verification_ref = payload.get("verification_ref")
@@ -28862,7 +24922,9 @@ def finalization_eval_preview_context(
         or not re.fullmatch(r"closeout-plan:[0-9a-f]{64}", str(payload.get("plan_ref") or ""))
         or payload.get("plan_ref") != f"closeout-plan:{payload.get('plan_digest')}"
         or not re.fullmatch(r"[0-9a-f]{64}", str(payload.get("plan_digest") or ""))
-        or not re.fullmatch(r"[0-9a-f]{40}", str(payload.get("reviewed_head") or ""))
+        or not re.fullmatch(
+            r"[0-9a-f]{40}", str(payload.get("branch_review_commit") or "")
+        )
         or normalize_github_repository(payload.get("repo_ref")) != payload.get("repo_ref")
         or payload.get("publication_status") not in {"current", "stale"}
         or (
@@ -28874,7 +24936,6 @@ def finalization_eval_preview_context(
             and payload.get("publication_stale_reason")
             not in {
                 "publication_review_missing",
-                "publication_review_head_mismatch",
                 "publication_review_stale",
             }
         )
@@ -28915,7 +24976,7 @@ def finalization_eval_preview_context(
             "repo": payload["repo_ref"],
             "remote": payload["remote"],
             "head_branch": payload["head_branch"],
-            "reviewed_work_head": payload["reviewed_head"],
+            "branch_review_commit": payload["branch_review_commit"],
         },
         "marketplace": {"required": payload["marketplace_required"]},
         "task": {
@@ -28924,7 +24985,7 @@ def finalization_eval_preview_context(
         },
     }
     if public_input.get("profile") == "standalone_verification_not_required":
-        owner, locator = finalization_verification_augmentation_payload(
+        owner, locator = finalization_verification_owner_payload(
             root,
             task_dir,
         )
@@ -28958,7 +25019,8 @@ def finalization_eval_preview_context(
                 task_ref=payload["task_ref"],
             )
             or public_input.get("repo_ref") != payload["repo_ref"]
-            or public_input.get("resolved_head") != payload["reviewed_head"]
+            or public_input.get("resolved_head")
+            != payload["branch_review_commit"]
             or public_input.get("verification_ref")
             != checked.get("verification_ref")
         ):
@@ -29002,7 +25064,7 @@ def finalization_eval_preview_context(
         "publication": {"owner_status": "current"},
         "publication_status": payload["publication_status"],
         "publication_stale_reason": payload["publication_stale_reason"],
-        "publication_reviewed_content_head": payload["reviewed_head"],
+        "publication_branch_review_commit": payload["branch_review_commit"],
         "verification": verification,
     }
 
@@ -29086,39 +25148,7 @@ def finalization_archived_owner_results(
     transaction: dict[str, Any],
     public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], tuple[dict[str, Any], dict[str, Any]] | None]:
-    del public_input
-    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
-        gate = finalization_normalize_gate(
-            root,
-            finalization_archived_gate(root, plan, transaction),
-        )
-        errors = skill_json_schema_validation_errors(
-            gate,
-            finalization_gate_schema(root),
-            "archived task finalization gate",
-        )
-        expected_identity = {
-            "task_ref": plan["task"]["active_locator"],
-            "plan_ref": f"closeout-plan:{plan['plan_digest']}",
-            "plan_digest": plan["plan_digest"],
-            "reviewed_content_head": plan["git"]["reviewed_work_head"],
-        }
-        route = gate.get("route") if isinstance(gate, dict) else None
-        if gate.get("identity") != expected_identity:
-            errors.append("archived finalization gate objective identity mismatch")
-        if (
-            not isinstance(route, dict)
-            or route.get("typed_exit") != "published"
-            or route.get("consumer") != FINALIZATION_CONSUMERS["published"]
-            or route.get("output") != FINALIZATION_EXECUTOR_OUTPUT_MARKER
-        ):
-            errors.append("archived finalization gate does not select publication")
-        if errors:
-            raise WorkflowError(
-                "Archived task finalization owner facts are invalid.",
-                exit_code=2,
-                payload={"errors": sorted(set(errors))},
-            )
+    del root, plan, transaction, public_input
     return {"owner_status": "current"}, None
 
 
@@ -29134,7 +25164,7 @@ def finalization_preview_context(
     archived = task_dir_is_archived(root, task_dir)
     config = load_config(root)
     if archived:
-        plan = finalization_verification_augmentation_plan(root, task_dir)
+        plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             raise WorkflowError(
                 "Archived task finalization is missing its immutable plan.",
@@ -29182,8 +25212,8 @@ def finalization_preview_context(
                 "publication": publication,
                 "publication_status": "stale",
                 "publication_stale_reason": publication["stale_reason"],
-                "publication_reviewed_content_head": publication.get(
-                    "reviewed_content_head"
+                "publication_branch_review_commit": publication.get(
+                    "branch_review_commit"
                 ),
                 "verification": None,
             }
@@ -29197,7 +25227,6 @@ def finalization_preview_context(
             state = "archive_moved"
             prepared = None
         else:
-            setattr(args, "include_finalization_gate", True)
             prepared = prepare_closeout(
                 root,
                 args,
@@ -29212,9 +25241,7 @@ def finalization_preview_context(
                 verification_owner_result=verification,
             )
             plan = prepared["plan"]
-            if prepared.get("finalizer_takeover") is not None:
-                state = prepared["finalizer_takeover"]["prior_state"]
-            elif prepared.get("month_supersession") is not None:
+            if prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
             else:
                 if verification is None and reuse_current_verification:
@@ -29223,10 +25250,9 @@ def finalization_preview_context(
                         task_dir,
                         task_ref=public_input["task_ref"],
                         plan_ref=f"closeout-plan:{plan['plan_digest']}",
-                        reviewed_head=plan["git"]["reviewed_work_head"],
+                        branch_review_commit=plan["git"]["branch_review_commit"],
                         plan=plan,
                     )
-                marketplace_verification = None
                 checked_verification = (
                     verification[1]
                     if isinstance(verification, tuple)
@@ -29234,25 +25260,16 @@ def finalization_preview_context(
                     and isinstance(verification[1], dict)
                     else {}
                 )
-                if (
-                    plan["marketplace"]["required"]
-                    and checked_verification.get("typed_exit") == "verified"
-                ):
-                    marketplace_verification = (
-                        finalization_marketplace_verification_compatibility_projection(
-                            root,
-                            task_dir,
-                            plan,
-                            verification,
-                        )
-                    )
                 state = resolve_closeout_pre_draft_state(
                     root,
                     task_dir,
                     plan,
                     prepared["ledger"],
-                    prepared["gate"],
-                    marketplace_verification=marketplace_verification,
+                    verification_owner_result=(
+                        verification
+                        if checked_verification.get("typed_exit") == "verified"
+                        else None
+                    ),
                 )
     plan_ref = f"closeout-plan:{plan['plan_digest']}"
     input_plan_ref = public_input.get("plan_ref")
@@ -29267,7 +25284,7 @@ def finalization_preview_context(
             task_dir,
             task_ref=public_input["task_ref"],
             plan_ref=plan_ref,
-            reviewed_head=plan["git"]["reviewed_work_head"],
+            branch_review_commit=plan["git"]["branch_review_commit"],
             plan=plan,
         )
     return {
@@ -29282,7 +25299,7 @@ def finalization_preview_context(
         "publication": publication,
         "publication_status": "current",
         "publication_stale_reason": None,
-        "publication_reviewed_content_head": plan["git"]["reviewed_work_head"],
+        "publication_branch_review_commit": plan["git"]["branch_review_commit"],
         "verification": verification,
     }
 
@@ -29304,7 +25321,9 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             "closeout_plan": None,
             "closeout_plan_bytes_sha256": None,
             "closeout_plan_digest": None,
-            "reviewed_head": context.get("publication_reviewed_content_head"),
+            "branch_review_commit": context.get(
+                "publication_branch_review_commit"
+            ),
             "transaction_state": context["transaction_state"],
             "publication_status": context["publication_status"],
             "publication_stale_reason": context["publication_stale_reason"],
@@ -29324,7 +25343,7 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             closeout_json_artifact_bytes(plan)
         ).hexdigest(),
         "closeout_plan_digest": plan["plan_digest"],
-        "reviewed_head": plan["git"]["reviewed_work_head"],
+        "branch_review_commit": plan["git"]["branch_review_commit"],
         "transaction_state": context["transaction_state"],
         "verification_required": bool(plan["marketplace"]["required"]),
         "expected_actions": list(CLOSEOUT_TRANSITIONS[1:]),
@@ -29411,12 +25430,8 @@ def finalization_validate_route(
             ("task_ref", expected_task_ref),
             ("plan_ref", context.get("plan_ref")),
             (
-                "reviewed_head",
-                plan["git"]["reviewed_work_head"] if plan is not None else None,
-            ),
-            (
-                "reviewed_content_head",
-                context.get("publication_reviewed_content_head"),
+                "branch_review_commit",
+                plan["git"]["branch_review_commit"] if plan is not None else None,
             ),
         ):
             if field in output and output.get(field) != expected:
@@ -29531,8 +25546,7 @@ def finalization_gate_schema(root: Path) -> dict[str, Any]:
 
 
 def finalization_normalize_gate(root: Path, payload: Any) -> dict[str, Any]:
-    if isinstance(payload, dict) and payload.get("schema_version") == "1.0":
-        return finalization_project_legacy_gate(root, payload)
+    del root
     if not isinstance(payload, dict):
         raise WorkflowError("Task finalization gate must be an object.", exit_code=2)
     return payload
@@ -29558,8 +25572,8 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
             "task_ref": public_input["task_ref"],
             "plan_ref": context["plan_ref"] if plan is not None else None,
             "plan_digest": plan["plan_digest"] if plan is not None else None,
-            "reviewed_content_head": (
-                plan["git"]["reviewed_work_head"] if plan is not None else None
+            "branch_review_commit": (
+                plan["git"]["branch_review_commit"] if plan is not None else None
             ),
         },
         "review": copy.deepcopy(reviewed["review"]),
@@ -29577,17 +25591,7 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
             payload={"errors": errors},
         )
     task_dir = context["task_dir"]
-    legacy_takeover = bool(
-        plan is not None
-        and plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
-        and TASK_FINALIZATION_GATE_ARTIFACT
-        in plan.get("projection", {}).get("move_paths", [])
-    )
-    artifact_path = (
-        task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-        if legacy_takeover
-        else task_finalization_path(root, task_dir, for_write=True)
-    )
+    artifact_path = task_finalization_path(root, task_dir)
     committed_recovery = (
         context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
     )
@@ -29618,7 +25622,7 @@ def finalization_gate_input(
                     "Task finalization gate must use the exact owner-private artifact.",
                     exit_code=2,
                 )
-        plan = finalization_verification_augmentation_plan(root, task_dir)
+        plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             raise WorkflowError(
                 "Archived task finalization is missing its immutable plan.",
@@ -29632,12 +25636,6 @@ def finalization_gate_input(
             )
         if expected.is_file() and not expected.is_symlink():
             return finalization_normalize_gate(root, read_json(expected)), expected
-        if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
-            legacy = task_dir / TASK_FINALIZATION_GATE_ARTIFACT
-            return finalization_normalize_gate(
-                root,
-                finalization_archived_gate(root, plan, transaction),
-            ), legacy
         return {
             "schema_version": FINALIZATION_GATE_SCHEMA_VERSION,
             "skill_id": FINALIZE_TASK_SKILL_ID,
@@ -29645,7 +25643,7 @@ def finalization_gate_input(
                 "task_ref": plan["task"]["active_locator"],
                 "plan_ref": f"closeout-plan:{plan['plan_digest']}",
                 "plan_digest": plan["plan_digest"],
-                "reviewed_content_head": plan["git"]["reviewed_work_head"],
+                "branch_review_commit": plan["git"]["branch_review_commit"],
             },
             "review": {
                 "status": "passed",
@@ -29679,7 +25677,6 @@ def finalization_public_wrapper_checker_args(
     checker_args.root = str(root)
     checker_args.finish_summary_index_file = None
     checker_args.body_file = None
-    checker_args.body_artifact = None
     checker_args.repo = None
     checker_args.remote = None
     checker_args.title = None
@@ -29731,8 +25728,8 @@ def check_finalization_gate_result(
         ),
         "plan_ref": context["plan_ref"] if plan is not None else None,
         "plan_digest": plan["plan_digest"] if plan is not None else None,
-        "reviewed_content_head": (
-            plan["git"]["reviewed_work_head"] if plan is not None else None
+        "branch_review_commit": (
+            plan["git"]["branch_review_commit"] if plan is not None else None
         ),
     }
     if gate.get("identity") != expected_identity:
@@ -29862,7 +25859,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             "task_ref": public_input["task_ref"],
             "plan_ref": context["plan_ref"],
             "repo_ref": context["plan"]["git"]["repo"],
-            "reviewed_head": context["plan"]["git"]["reviewed_work_head"],
+            "branch_review_commit": context["plan"]["git"]["branch_review_commit"],
             "verification_target": "extension-installation",
         }
         return {
@@ -29873,20 +25870,14 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
     if exit_id == "published":
         finish_args = copy.copy(args)
         finish_args.task = public_input["task_ref"]
-        finish_args.from_trellis_finish_work = True
+        finish_args.from_guru_finalizer = True
         finish_args.expected_plan_digest = context["plan"]["plan_digest"]
         finish_args.dry_run = False
-        finish_args.skip_archive = False
-        finish_args.draft = None
-        finish_args.body_artifact = None
         finish_args.finalization_gate = gate
         finish_args.publication_ready = (
             public_input
             if public_input["profile"] == "publication_ready"
             else None
-        )
-        finish_args.include_finalization_gate = closeout_uses_evidence_commit(
-            context["plan"]
         )
         if (
             context["plan"]["marketplace"]["required"]
@@ -29899,14 +25890,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                     "Task finalization requires current extension verification evidence.",
                     exit_code=2,
                 )
-            finish_args.external_verification = (
-                finalization_marketplace_verification_compatibility_projection(
-                    root,
-                    task_dir,
-                    context["plan"],
-                    verification,
-                )
-            )
+            finish_args.verification_owner_result = verification
         result = cmd_finish_work(finish_args)
         materialized_gate = finalization_gate_with_published_output(
             root,
@@ -31394,7 +27378,6 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": context_sort(structural + route_live)},
         )
-    snapshot_sha256 = payload["snapshot_identity"]["snapshot_sha256"]
     if task_dir is None:
         if args.expected_snapshot_sha256:
             raise WorkflowError("Pre-task context recording does not accept an expected task snapshot.", exit_code=2)
@@ -31526,7 +27509,7 @@ def requirements_clarification_schema(root: Path) -> dict[str, Any]:
     )
     if schema_path is None:
         raise WorkflowError(
-            "Requirements clarification schema is missing from the compatible Guru Team runtime.",
+            "Requirements clarification schema is missing from the current Guru Team runtime.",
             exit_code=2,
             payload={"error_codes": ["requirements_clarification_schema_unavailable"]},
         )
@@ -31539,7 +27522,7 @@ def requirements_clarification_schema(root: Path) -> dict[str, Any]:
         or schema.get("$id") != REQUIREMENTS_CLARIFICATION_SCHEMA_ID
     ):
         raise WorkflowError(
-            "Requirements clarification schema is incompatible.",
+            "Requirements clarification schema is invalid.",
             exit_code=2,
             payload={"error_codes": ["requirements_clarification_schema_invalid"]},
         )
@@ -31742,83 +27725,11 @@ def derive_requirements_clarification_result(payload: dict[str, Any]) -> dict[st
             projection = requirements_clarification_proposal_projection(proposal)
             if isinstance(proposal, dict) and projection is not None:
                 proposal["proposal_digest"] = context_digest(projection)
-    legacy_trail_projected = False
-    active_task_evidence = result.get("active_task_evidence")
-    if isinstance(active_task_evidence, dict):
-        trail = active_task_evidence.get("decision_trail")
-        legacy_trail_keys = {
-            "trail_id",
-            "proposal_decisions",
-            "user_decision",
-            "github_authority",
-            "context_before_task_update_sha256",
-            "planning_documents",
-            "stale_downstream_evidence",
-            "review_evidence",
-            "reentry_owners",
-            "interrupted_resume_target",
-        }
-        authority = trail.get("github_authority") if isinstance(trail, dict) else None
-        proposal_decisions = (
-            trail.get("proposal_decisions") if isinstance(trail, dict) else None
-        )
-        if (
-            isinstance(trail, dict)
-            and set(trail) == legacy_trail_keys
-            and isinstance(authority, dict)
-            and set(authority) == {"kind", "url", "content_sha256", "updated_at"}
-            and isinstance(proposal_decisions, list)
-            and bool(proposal_decisions)
-            and all(
-                isinstance(item, dict)
-                and set(item)
-                == {"proposal_id", "proposal_digest", "decision", "confirmation_ref"}
-                for item in proposal_decisions
-            )
-        ):
-            active_task_evidence["decision_trail"] = {
-                "trail_id": trail.get("trail_id"),
-                "proposal_decisions": [
-                    {
-                        "proposal_id": item.get("proposal_id"),
-                        "proposal_digest": item.get("proposal_digest"),
-                        "decision": item.get("decision"),
-                    }
-                    for item in proposal_decisions
-                ],
-                "github_authority": {
-                    "kind": authority.get("kind"),
-                    "url": authority.get("url"),
-                    "content_sha256": authority.get("content_sha256"),
-                },
-            }
-            legacy_active_task_evidence_keys = {
-                "task_locator",
-                "github_authority_facts_sha256",
-                "ledger",
-                "planning_documents",
-                "stale_downstream_evidence",
-                "review_evidence",
-                "decision_trail",
-                "reentry_owners",
-            }
-            if set(active_task_evidence) == legacy_active_task_evidence_keys:
-                active_task_evidence.pop("stale_downstream_evidence")
-                active_task_evidence.pop("review_evidence")
-            legacy_trail_projected = True
     actions = result.get("source_actions")
     if isinstance(actions, list):
         for action in actions:
             if not isinstance(action, dict):
                 continue
-            if legacy_trail_projected and action.get("kind") == "active_task_scope_update":
-                action["payload"] = requirements_clarification_active_task_payload_projection(
-                    active_task_evidence
-                )
-                if action.get("mutation_evidence") == {
-                    "source": "confirmed-task-local-update"
-                }:
-                    action["mutation_evidence"] = {"source": "task-local-update"}
             payload_value = action.get("payload")
             action["payload_sha256"] = (
                 context_digest(payload_value) if isinstance(payload_value, dict) else None
@@ -32966,21 +28877,11 @@ def requirements_clarification_active_task_live_errors(
                 ledger_payload = json.loads(path.read_text(encoding="utf-8"))
             except (OSError, UnicodeError, json.JSONDecodeError):
                 errors.append("active_task_ledger_unreadable")
-    required_ledger_keys = {
-        "primary_issue", "close_issues", "related_issues", "followup_issues",
-    }
-    if not isinstance(ledger_payload, dict) or not required_ledger_keys.issubset(ledger_payload):
+    if issue_scope_ledger_errors(ledger_payload):
         errors.append("active_task_ledger_structure_invalid")
     trail = evidence.get("decision_trail")
     authority_updated_at: str | None = None
     if isinstance(trail, dict):
-        scope_decisions = ledger_payload.get("scope_decisions") if isinstance(ledger_payload, dict) else None
-        matching = [
-            item for item in scope_decisions
-            if isinstance(item, dict) and item.get("trail_id") == trail.get("trail_id")
-        ] if isinstance(scope_decisions, list) else []
-        if len(matching) != 1 or matching[0] != trail:
-            errors.append("active_task_decision_trail_ledger_mismatch")
         authority_errors, authority_updated_at = (
             requirements_clarification_decision_authority_live_result(
                 root, payload.get("review_target"), trail.get("github_authority")
@@ -33289,11 +29190,11 @@ def cmd_check_contract_wording_review(args: argparse.Namespace) -> dict[str, Any
 def cmd_record_requirements_clarification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     payload, task_dir = requirements_clarification_payload_from_args(root, args)
-    if payload.get("schema_version") == "1.0":
+    if payload.get("schema_version") != REQUIREMENTS_CLARIFICATION_SCHEMA_VERSION:
         raise WorkflowError(
-            "Requirements clarification schema 1.0 is stale; rerun the complete Intake chain.",
+            "Requirements clarification input must use the current schema version.",
             exit_code=2,
-            payload={"error_codes": ["requirements_clarification_legacy_schema_requires_refresh"]},
+            payload={"error_codes": ["requirements_clarification_schema_version_invalid"]},
         )
     if payload.get("mode") != args.mode:
         raise WorkflowError("requirements clarification mode does not match recorder mode.", exit_code=2)
@@ -33319,11 +29220,11 @@ def cmd_record_requirements_clarification(args: argparse.Namespace) -> dict[str,
 def cmd_check_requirements_clarification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     payload, task_dir = requirements_clarification_payload_from_args(root, args)
-    if payload.get("schema_version") == "1.0":
+    if payload.get("schema_version") != REQUIREMENTS_CLARIFICATION_SCHEMA_VERSION:
         raise WorkflowError(
-            "Requirements clarification schema 1.0 is stale; rerun the complete Intake chain.",
+            "Requirements clarification input must use the current schema version.",
             exit_code=2,
-            payload={"error_codes": ["requirements_clarification_legacy_schema_requires_refresh"]},
+            payload={"error_codes": ["requirements_clarification_schema_version_invalid"]},
         )
     structural = requirements_clarification_structural_errors(root, payload, task_dir)
     if structural:
@@ -34574,64 +30475,6 @@ def task_workspace_plan_digest(plan: dict[str, Any]) -> str:
     return context_digest(projection)
 
 
-def task_workspace_project_legacy_result(result: dict[str, Any]) -> dict[str, Any]:
-    if result.get("schema_version") != "1.0":
-        return result
-    if result.get("typed_exit") == "cancelled":
-        raise WorkflowError(
-            "Legacy cancelled task workspace results have no v2 execution route.",
-            exit_code=2,
-            payload={"typed_exit": "blocked", "error_code": "task_workspace_legacy_cancelled_terminal"},
-        )
-    projected = copy.deepcopy(result)
-    projected["schema_version"] = TASK_WORKSPACE_RESULT_SCHEMA_VERSION
-    created_issue = projected.get("created_issue")
-    if isinstance(created_issue, dict):
-        created_issue.pop("creation_confirmation_sha256", None)
-        created_issue["facts_sha256"] = context_digest({
-            key: value for key, value in created_issue.items() if key != "facts_sha256"
-        })
-    created_workspace = projected.get("created_workspace")
-    if isinstance(created_workspace, dict):
-        created_workspace["artifacts"] = [
-            row for row in created_workspace.get("artifacts", [])
-            if isinstance(row, dict) and str(row.get("path") or "").endswith("/issue-scope-ledger.json")
-        ]
-    projected["facts_sha256"] = task_workspace_result_digest(projected)
-    return projected
-
-
-def task_workspace_project_legacy_plan(plan: dict[str, Any]) -> dict[str, Any]:
-    if plan.get("schema_version") != "1.0":
-        return plan
-    projected = copy.deepcopy(plan)
-    projected["schema_version"] = TASK_WORKSPACE_PLAN_SCHEMA_VERSION
-    projected.pop("confirmations", None)
-    target = projected.get("target") if isinstance(projected.get("target"), dict) else {}
-    created_result = target.get("created_issue_result")
-    if isinstance(created_result, dict):
-        target["created_issue_result"] = task_workspace_project_legacy_result(created_result)
-        binding = target["created_issue_result"].get("created_issue")
-        target["created_issue_binding_sha256"] = (
-            binding.get("facts_sha256") if isinstance(binding, dict) else None
-        )
-    side_effects = projected.get("side_effects")
-    if isinstance(side_effects, dict):
-        side_effects["task_artifacts"] = [
-            value for value in side_effects.get("task_artifacts", [])
-            if str(value).endswith("/issue-scope-ledger.json")
-        ]
-    reviewable_sha = context_digest(task_workspace_reviewable_projection(projected))
-    gate = projected.get("ai_review_gate")
-    if isinstance(gate, dict):
-        gate["reviewed_plan_sha256"] = reviewable_sha
-    freshness = projected.get("freshness")
-    if isinstance(freshness, dict):
-        freshness["reviewable_plan_sha256"] = reviewable_sha
-        freshness["plan_sha256"] = task_workspace_plan_digest(projected)
-    return projected
-
-
 def task_workspace_scope_digest(scope: dict[str, Any]) -> str:
     projection = copy.deepcopy(scope)
     projection.pop("scope_sha256", None)
@@ -34992,7 +30835,7 @@ def task_workspace_snapshot(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
 def cmd_record_task_workspace_plan(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     input_path = task_workspace_input_path(root, args.input, "task workspace authored plan")
-    plan = task_workspace_project_legacy_plan(read_json(input_path))
+    plan = read_json(input_path)
     before = task_workspace_snapshot(root, plan)
     _, errors = task_workspace_validate_plan(root, plan)
     after = task_workspace_snapshot(root, plan)
@@ -35268,16 +31111,11 @@ def task_workspace_issue_scope_ledger(plan: dict[str, Any]) -> dict[str, Any]:
         return issue_entry(item["number"], item["url"], item["title"], item["reason"])
 
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "primary_issue": entry(scope["primary"]) if isinstance(scope.get("primary"), dict) else None,
         "close_issues": [entry(item) for item in scope["close"]],
         "related_issues": [entry(item) for item in scope["related"]],
         "followup_issues": [entry(item) for item in scope["followup"]],
-        "rules": [
-            "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
-            "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
-            "followup_issues 表示新范围或后续任务，不能自动关闭。",
-        ],
     }
 
 
@@ -35664,9 +31502,7 @@ def task_workspace_created_workspace_result(
 
 def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    plan = task_workspace_project_legacy_plan(
-        read_json(task_workspace_input_path(root, args.input, "task workspace plan"))
-    )
+    plan = read_json(task_workspace_input_path(root, args.input, "task workspace plan"))
     payloads, errors = task_workspace_validate_plan(root, plan)
     if errors:
         raise WorkflowError(
@@ -35932,12 +31768,8 @@ def task_workspace_result_check_errors(
 
 def cmd_check_task_workspace_result(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    plan = task_workspace_project_legacy_plan(
-        read_json(task_workspace_input_path(root, args.plan_input, "task workspace plan"))
-    )
-    result = task_workspace_project_legacy_result(
-        read_json(task_workspace_input_path(root, args.input, "task workspace result"))
-    )
+    plan = read_json(task_workspace_input_path(root, args.plan_input, "task workspace plan"))
+    result = read_json(task_workspace_input_path(root, args.input, "task workspace result"))
     payloads, errors = task_workspace_validate_plan(root, plan)
     if not errors:
         errors.extend(task_workspace_result_check_errors(root, plan, result, payloads))
@@ -36166,7 +31998,6 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--input", required=True)
         command.add_argument("--finish-summary-index-file")
         command.add_argument("--body-file")
-        command.add_argument("--body-artifact")
         command.add_argument("--repo")
         command.add_argument("--base-branch")
         command.add_argument("--remote")
@@ -36200,14 +32031,6 @@ def build_parser() -> argparse.ArgumentParser:
     human_artifacts.add_argument("--root")
     human_artifacts.add_argument("--json", action="store_true")
     human_artifacts.add_argument("--task")
-
-    verify_marketplace = sub.add_parser("verify-marketplace")
-    verify_marketplace.add_argument("--root")
-    verify_marketplace.add_argument("--json", action="store_true")
-    verify_marketplace.add_argument("--task")
-    verify_marketplace.add_argument("--repo")
-    verify_marketplace.add_argument("--remote")
-    verify_marketplace.add_argument("--branch")
 
     execute_extension_verification = sub.add_parser(
         "execute-extension-verification"
@@ -36256,16 +32079,7 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--short-name")
     prepare.add_argument("--reuse-issue", type=int)
     prepare.add_argument("--force-new", action="store_true")
-    prepare.add_argument(
-        "--create-issue-confirmed",
-        action="store_true",
-        help="Deprecated disabled mutation flag; always fails closed and routes to guru-create-task-workspace.",
-    )
     prepare.add_argument("--issue-title", help="Optional title override for the query-only proposed issue.")
-    prepare.add_argument(
-        "--issue-body-file",
-        help="Deprecated companion to --create-issue-confirmed; accepted only so the disabled legacy call can fail closed.",
-    )
     prepare.add_argument(
         "--expected-resolution-sha256",
         required=True,
@@ -36280,8 +32094,6 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--priority")
     prepare.add_argument("--description")
     prepare.add_argument("--worktree", action="store_true")
-    prepare.add_argument("--create-worktree", action="store_true")
-    prepare.add_argument("--create-task", action="store_true")
     prepare.add_argument("requirement", nargs="*")
 
     review = sub.add_parser("review-branch")
@@ -36336,7 +32148,7 @@ def build_parser() -> argparse.ArgumentParser:
     phase2.add_argument(
         "--input",
         required=True,
-        help="AI-authored guru-phase2-check-3.0 input JSON file, or - for stdin. Legacy --pass/--coverage invocation is rejected.",
+        help="AI-authored guru-phase2-check-4.0 input JSON file, or - for stdin.",
     )
     phase2.add_argument("--dry-run", action="store_true")
 
@@ -36355,9 +32167,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="AI-authored guru-review-task-publication semantic review JSON file, or - for stdin.",
     )
     publication.add_argument(
-        "--reviewed-content-head",
+        "--branch-review-commit",
         required=True,
-        help="Immutable reviewed_content_head from guru-review-branch:passed.",
+        help="Git anchor from guru-review-branch:passed.",
     )
     publication.add_argument("--dry-run", action="store_true")
 
@@ -36391,7 +32203,6 @@ def build_parser() -> argparse.ArgumentParser:
     check_gate.add_argument("--root")
     check_gate.add_argument("--json", action="store_true")
     check_gate.add_argument("--task")
-    check_gate.add_argument("--allow-metadata-after-gate", action="store_true")
     check_gate.add_argument("--allow-nonpass", action="store_true", help=argparse.SUPPRESS)
     check_gate.add_argument(
         "--expected-exit",
@@ -36407,7 +32218,7 @@ def build_parser() -> argparse.ArgumentParser:
     check_commits.add_argument("--base-ref", help="Git ref used as the start of the checked range. Defaults to the task base branch.")
     check_commit_mode = check_commits.add_mutually_exclusive_group()
     check_commit_mode.add_argument("--range", help="Explicit git log range, for example origin/main..HEAD.")
-    check_commit_mode.add_argument("--candidate-artifact", help="Ignored runtime task-commit-plans/<task-key>/<sequence>.json, or a legacy tracked plan for read-only compatibility.")
+    check_commit_mode.add_argument("--candidate-artifact", help="Ignored runtime task-commit-plans/<task-key>/<sequence>.json.")
 
     prepare_commit = sub.add_parser("prepare-task-commit")
     prepare_commit.add_argument("--root")
@@ -36433,22 +32244,6 @@ def build_parser() -> argparse.ArgumentParser:
     merge_commit.add_argument("--title", help=argparse.SUPPRESS)
     merge_commit.add_argument("--body-file-hint", default=MERGE_COMMIT_BODY_FILE_HINT)
 
-    publish = sub.add_parser("publish-pr")
-    publish.add_argument("--root")
-    publish.add_argument("--json", action="store_true")
-    publish.add_argument("--task")
-    publish.add_argument("--repo")
-    publish.add_argument("--base-branch")
-    publish.add_argument("--remote")
-    publish.add_argument("--title")
-    publish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
-    publish.add_argument("--body-file", help="AI-reviewed Markdown PR body. Preferred over generated fallback.")
-    publish.add_argument("--body-artifact", help="AI-reviewed JSON readiness artifact containing body or body_file.")
-    publish.add_argument("--draft", dest="draft", action="store_true", default=None)
-    publish.add_argument("--no-draft", dest="draft", action="store_false")
-    publish.add_argument("--allow-metadata-after-gate", action="store_true")
-    publish.add_argument("--dry-run", action="store_true")
-
     finish = sub.add_parser("finish-work")
     finish.add_argument("--root")
     finish.add_argument("--json", action="store_true")
@@ -36460,19 +32255,10 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument("--title", help="Chinese PR title override.")
     finish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
     finish.add_argument("--body-file", help="Exact current task-local non-symlink pr-body.md required by finish-work.")
-    finish.add_argument("--body-artifact", help="Rejected by finish-work; retained only for an explicit compatibility error.")
-    finish.add_argument("--draft", dest="draft", action="store_true", default=None)
-    finish.add_argument("--no-draft", dest="draft", action="store_false")
     finish.add_argument(
         "--finish-summary-index-file",
         help="Task-local AI-authored finish-summary-index.json. Required for dry-run and formal finish.",
     )
-    finish.add_argument(
-        "--from-trellis-finish-work",
-        action="store_true",
-        help="Required intent marker set by the explicit trellis-finish-work entrypoint.",
-    )
-    finish.add_argument("--skip-archive", action="store_true", help=argparse.SUPPRESS)
     finish.add_argument(
         "--expected-plan-digest",
         help="Canonical digest returned by the immediately reviewed finish-work dry-run.",
@@ -36554,8 +32340,6 @@ def main() -> int:
             payload = cmd_execute_finalization_transition(args)
         elif args.command == "resolve-human-artifacts":
             payload = cmd_resolve_human_artifacts(args)
-        elif args.command == "verify-marketplace":
-            payload = cmd_verify_marketplace(args)
         elif args.command == "execute-extension-verification":
             payload = cmd_execute_extension_verification(args)
         elif args.command == "record-extension-verification":
@@ -36596,8 +32380,6 @@ def main() -> int:
             payload = cmd_create_task_commit(args)
         elif args.command == "format-merge-commit":
             payload = cmd_format_merge_commit(args)
-        elif args.command == "publish-pr":
-            payload = cmd_publish_pr(args)
         elif args.command == "finish-work":
             payload = cmd_finish_work(args)
         elif args.command == "backfill-finish-summary":

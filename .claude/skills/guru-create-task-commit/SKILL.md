@@ -14,7 +14,7 @@ closed-loop stages exactly once for the current candidate and live authority.
 
 `workflow` means mandatory global workflow routing. `standalone` means direct
 platform discovery without that routing; it still requires the complete,
-compatible Guru Team preset and extension runtime. This Skill directory is not
+current Guru Team preset and extension runtime. This Skill directory is not
 a self-contained or portable package.
 
 Use `scripts/prepare-task-commit.sh` to record the AI-owned path classifications,
@@ -28,7 +28,7 @@ replace AI scope/message review or required human confirmation. The user may
 answer with any clear affirmative response after the Skill presents one
 current, unique commit action. That conversational authority is never written
 to public input, private runtime, task metadata, or archive. Missing or
-incompatible runtime state fails closed with full-preset install/upgrade
+mismatched runtime state fails closed with full-preset install/upgrade
 remediation before a task/Git side effect.
 
 Return exactly one declared exit: `committed`, `revision-required`, or
@@ -38,5 +38,3 @@ The v2 candidate lives only under ignored
 `.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
 removed after success. Its schema has no authorization, freshness digest, or
 terminal result fields. Git supplies committed tree/message/path facts.
-Existing tracked `task-commit-plans/*.json` and v1 public inputs are one-time
-read-only migration sources and are never rewritten.

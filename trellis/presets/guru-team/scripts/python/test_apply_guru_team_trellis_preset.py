@@ -64,9 +64,7 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
     testcase.assertIn("Standalone `not_required`", text, path)
     for forbidden in (
         "finish-work.sh",
-        "publish-pr.sh",
         "--expected-plan-digest",
-        "--skip-archive",
         "closeout_plan_digest",
         "artifact schema field",
     ):
@@ -780,7 +778,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 60)
+        self.assertEqual(len(managed_assets), 58)
+        preset_readme = (
+            self.guru_root / "trellis/presets/guru-team/README.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            f"`install.managed_assets` contains exactly {len(managed_assets)}",
+            preset_readme,
+        )
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertEqual(sorted(set(managed_assets) & tombstone_paths), [])
         self.assertNotIn(installed_integration_path, managed_assets)
@@ -862,37 +867,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertEqual(sidecar.read_bytes(), preset.GURU_OVERLAY_REMOVAL_SIDECAR)
         self.assertIn(".claude/commands/guru/finish-work.md.new", payload["new_copies"])
         self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
-
-    def test_legacy_manifest_claim_bootstraps_clean_platform_shrink(self) -> None:
-        platforms, all_platforms = preset.selected_platforms(None, True)
-        self.install(platforms, all_platforms=all_platforms)
-        manifest_path = self.install_dst / "extension.json"
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        manifest.pop("overlays")
-        manifest_path.write_text(
-            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-
-        payload = self.install({"codex", "cursor"})
-
-        self.assertEqual(payload["overlays"]["status"], "ok")
-        self.assertEqual(
-            payload["overlays"]["removals"],
-            [
-                {
-                    "path": ".claude/commands/guru/finish-work.md",
-                    "action": "removed_managed",
-                    "legacy_managed_asset_sha256": hashlib.sha256(
-                        (
-                            self.guru_root
-                            / "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md"
-                        ).read_bytes()
-                    ).hexdigest(),
-                }
-            ],
-        )
-        self.assertFalse((self.repo / ".claude/commands/guru/finish-work.md").exists())
 
     def test_known_overlay_hash_upgrade_uses_backup_and_recovers(self) -> None:
         self.install({"codex"})
@@ -1168,7 +1142,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn('--task "$task_rel" --input "$input" >"$result"', verifier)
-        self.assertIn('recorded["schema_version"] == "3.0"', verifier)
+        self.assertIn('recorded["schema_version"] == "4.0"', verifier)
         self.assertNotIn("--ambiguity-reviewer", verifier)
         self.assertNotIn("--normative-hit", verifier)
         self.assertIn("verify_installed_closeout.py", verifier)
@@ -1186,7 +1160,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 60", verifier)
+        self.assertIn("assert len(assets) == 58", verifier)
         self.assertIn("assert not (set(assets) & tombstone_paths)", verifier)
         self.assertIn('"already_missing": 6', verifier)
         self.assertIn('"preserved_clean_upstream": 37', verifier)
@@ -1253,13 +1227,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('after-archive-hook-preflight', installed_closeout)
         self.assertIn('hook_executed', installed_closeout)
         self.assertIn('installed-after-archive-hook-', installed_closeout)
+        self.assertIn('"schema_version": "2.0"', installed_closeout)
         self.assertNotIn("copytree", installed_closeout)
         self.assertIn(
-            '"reviewed_content_head": branch_check["reviewed_content_head"]',
+            '"branch_review_commit": branch_check["review_commit"]',
             installed_closeout,
         )
-        self.assertNotIn('"reviewed_head": branch_check', installed_closeout)
-        self.assertNotIn('"review_ref":', installed_closeout)
 
     def test_dogfood_drift_checks_ownership_before_payload_bytes(self) -> None:
         checker = (
@@ -1445,7 +1418,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             all_platforms=True,
         )
         self.assertEqual(fresh["skill_packages"]["status"], "ok")
-        self.materialize_equivalent_pre145_install()
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -1458,96 +1430,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             {"codex", "cursor", "claude"},
             all_platforms=True,
         )
-
-    def materialize_equivalent_pre145_install(self) -> None:
-        installed_skills = self.install_dst / "skills"
-        registry_path = installed_skills / "registry.json"
-        registry = json.loads(registry_path.read_text(encoding="utf-8"))
-        entries = {
-            str(entry["id"]): entry
-            for entry in registry["skills"]
-            if isinstance(entry, dict)
-        }
-        for skill_id in STAGE0_SKILL_IDS:
-            entry = entries[skill_id]
-            entry["interface_schema_id"] = "guru-team-skill-interface-1.2"
-            entry["io_contract_state"] = "legacy"
-        registry_path.write_text(
-            json.dumps(registry, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-
-        platform_roots = (
-            self.repo / ".agents/skills",
-            self.repo / ".codex/skills",
-            self.repo / ".cursor/skills",
-            self.repo / ".claude/skills",
-        )
-        for skill_id in STAGE0_SKILL_IDS:
-            installed_interface = installed_skills / f"packages/{skill_id}/interface.json"
-            interface = json.loads(installed_interface.read_text(encoding="utf-8"))
-            interface["$schema"] = "../../schemas/skill-interface-1.2.schema.json"
-            interface["schema_version"] = "1.2"
-            interface.pop("public_contracts", None)
-            legacy_bytes = (json.dumps(interface, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
-            installed_interface.write_bytes(legacy_bytes)
-            for platform_root in platform_roots:
-                (platform_root / skill_id / "interface.json").write_bytes(legacy_bytes)
-
-        for relative in (
-            Path("migrations/stage0-minimal-handoff.json"),
-            Path("migrations/stage0-ai-first-contract-v2.json"),
-            Path("schemas/stage0-migration-manifest.schema.json"),
-            Path("schemas/stage0-ai-first-contract-migration.schema.json"),
-        ):
-            path = installed_skills / relative
-            if path.exists():
-                path.unlink()
-
-        extension_path = self.install_dst / "extension.json"
-        extension = json.loads(extension_path.read_text(encoding="utf-8"))
-        public_contracts = extension["extension"]["public_api"]["skill_contracts"]
-        public_contracts["current_interface_schema_id"] = "guru-team-skill-interface-1.2"
-        public_contracts["legacy_skill_ids"] = sorted(public_contracts["active_skill_ids"])
-        public_contracts["migration_manifests"] = []
-        extension["extension"]["version"] = "0.6.5-guru.19"
-
-        skill_manifest = extension["skill_packages"]
-        records = []
-        for record in skill_manifest["files"]:
-            target = self.repo / record["path"]
-            if not target.is_file():
-                continue
-            updated = dict(record)
-            updated["sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
-            records.append(updated)
-        skill_manifest["files"] = records
-        skill_manifest["canonical_registry_sha256"] = hashlib.sha256(registry_path.read_bytes()).hexdigest()
-        skill_manifest["status"] = "ok"
-        skill_manifest["conflicts"] = []
-        skill_manifest["sidecars"] = []
-
-        package_records = []
-        for entry in registry["skills"]:
-            if entry.get("state") != "active":
-                continue
-            package_root = installed_skills / str(entry["package"])
-            interface_path = installed_skills / str(entry["interface"])
-            tree_hash = hashlib.sha256()
-            for source in preset.skill_package_source_files(package_root):
-                relative = source.relative_to(package_root).as_posix()
-                tree_hash.update(relative.encode("utf-8") + b"\0" + source.read_bytes() + b"\0")
-            package_records.append({
-                "id": str(entry["id"]),
-                "interface_sha256": hashlib.sha256(interface_path.read_bytes()).hexdigest(),
-                "tree_sha256": tree_hash.hexdigest(),
-            })
-        skill_manifest["packages"] = package_records
-        extension_path.write_text(
-            json.dumps(extension, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.2", "legacy", "1.2")
 
     def managed_graph_snapshot(self) -> dict[str, tuple[bytes, int]]:
         extension_path = self.install_dst / "extension.json"
@@ -1565,14 +1447,12 @@ class PresetTransactionInstallerTest(unittest.TestCase):
     def assert_stage0_contract_state(
         self,
         interface_schema_id: str,
-        io_contract_state: str,
         interface_version: str,
     ) -> None:
         registry = json.loads((self.install_dst / "skills/registry.json").read_text(encoding="utf-8"))
         entries = {str(entry["id"]): entry for entry in registry["skills"]}
         for skill_id in STAGE0_SKILL_IDS:
             self.assertEqual(entries[skill_id]["interface_schema_id"], interface_schema_id)
-            self.assertEqual(entries[skill_id]["io_contract_state"], io_contract_state)
             for root in (
                 self.install_dst / "skills/packages",
                 self.repo / ".agents/skills",
@@ -1582,12 +1462,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             ):
                 interface = json.loads((root / skill_id / "interface.json").read_text(encoding="utf-8"))
                 self.assertEqual(interface["schema_version"], interface_version)
-
-    def remove_declared_sidecars(self, result: dict[str, object]) -> None:
-        skill_packages = result["skill_packages"]
-        self.assertIsInstance(skill_packages, dict)
-        for relative in skill_packages["sidecars"]:
-            (self.repo / relative).unlink()
 
     def test_transaction_staging_excludes_existing_developer_identity(self) -> None:
         developer_identity = self.repo / ".trellis/.developer/identity.json"
@@ -1604,25 +1478,28 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         self.assertEqual(developer_identity.read_bytes(), identity_bytes)
 
-    def test_successful_pre145_upgrade_after_backup_acknowledgement(self) -> None:
-        upgraded = self.install_current()
-        self.assertEqual(upgraded["skill_packages"]["status"], "conflict")
-        self.remove_declared_sidecars(upgraded)
-
+    def test_current_reapply_remains_valid(self) -> None:
         completed = self.install_current()
 
         self.assertEqual(completed["skill_packages"]["status"], "ok")
+        self.assertEqual(completed["skill_packages"]["sidecars"], [])
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "minimal_handoff", "1.3")
-        self.assertTrue((self.install_dst / "skills/migrations/stage0-minimal-handoff.json").is_file())
-        self.assertTrue((self.install_dst / "skills/migrations/stage0-ai-first-contract-v2.json").is_file())
-        self.assertTrue((self.install_dst / "skills/migrations/production-minimal-handoff.json").is_file())
-        self.assertTrue((self.install_dst / "skills/migrations/production-ai-first-contract-v2.json").is_file())
-        self.assertTrue((self.install_dst / "skills/schemas/production-ai-first-contract-migration.schema.json").is_file())
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assertTrue((self.install_dst / "skills/contracts/production-current.json").is_file())
+        self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest.schema.json").is_file())
+        self.assertFalse((self.install_dst / "skills/migrations").exists())
+        self.assertEqual(
+            {
+                path.name
+                for path in (self.install_dst / "skills/schemas").iterdir()
+                if path.is_file()
+            },
+            set(preset.CURRENT_SKILL_SHARED_SCHEMAS),
+        )
 
-    def test_unknown_local_edit_conflict_preserves_complete_pre145_graph(self) -> None:
+    def test_unknown_local_edit_conflict_preserves_current_graph(self) -> None:
         target = self.install_dst / "skills/packages/guru-sync-base/SKILL.md"
-        target.write_text(target.read_text(encoding="utf-8") + "\nlocal pre-145 edit\n", encoding="utf-8")
+        target.write_text(target.read_text(encoding="utf-8") + "\nlocal current edit\n", encoding="utf-8")
         before = self.managed_graph_snapshot()
         extension_before = (self.install_dst / "extension.json").read_bytes()
 
@@ -1632,54 +1509,28 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertNotEqual(result["skill_installed_validation"]["returncode"], 0)
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assertEqual((self.install_dst / "extension.json").read_bytes(), extension_before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.2", "legacy", "1.2")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
         sidecar = target.with_name("SKILL.md.new")
         self.assertEqual(
             sidecar.read_bytes(),
             (self.guru_root / "trellis/skills/guru-team/packages/guru-sync-base/SKILL.md").read_bytes(),
         )
 
-    def test_known_managed_pre145_upgrade_activates_complete_graph_with_backups(self) -> None:
-        result = self.install_current()
-
-        self.assertEqual(result["skill_packages"]["status"], "conflict")
-        self.assertEqual(result["skill_packages"]["conflicts"], [])
-        self.assertTrue(result["skill_packages"]["sidecars"])
-        self.assertTrue(all(path.endswith(".bak") for path in result["skill_packages"]["sidecars"]))
-        self.assertNotEqual(result["skill_installed_validation"]["returncode"], 0)
-        self.assertIn(
-            "installed skill package has unresolved sidecars",
-            result["skill_installed_validation"]["errors"],
-        )
-        self.assertEqual(result["skill_activation_validation"]["returncode"], 0)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "minimal_handoff", "1.3")
-        installed_extension = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
-        self.assertEqual(installed_extension["skill_packages"]["status"], "conflict")
-        self.assertEqual(
-            installed_extension["extension"]["public_api"]["skill_contracts"]["current_interface_schema_id"],
-            "guru-team-skill-interface-1.3",
-        )
-
-    def test_reapply_after_unknown_edit_sidecar_handling_completes_upgrade(self) -> None:
+    def test_reapply_after_unknown_edit_sidecar_handling_recovers_current_install(self) -> None:
         target = self.install_dst / "skills/packages/guru-sync-base/SKILL.md"
-        target.write_text(target.read_text(encoding="utf-8") + "\nlocal pre-145 edit\n", encoding="utf-8")
+        target.write_text(target.read_text(encoding="utf-8") + "\nlocal current edit\n", encoding="utf-8")
         conflicted = self.install_current()
         self.assertEqual(conflicted["skill_packages"]["status"], "conflict")
         sidecar = target.with_name("SKILL.md.new")
         target.write_bytes(sidecar.read_bytes())
         sidecar.unlink()
 
-        upgraded = self.install_current()
-        self.assertEqual(upgraded["skill_packages"]["status"], "conflict")
-        self.assertEqual(upgraded["skill_packages"]["conflicts"], [])
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "minimal_handoff", "1.3")
-        self.remove_declared_sidecars(upgraded)
-
         recovered = self.install_current()
         self.assertEqual(recovered["skill_packages"]["status"], "ok")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
         self.assertEqual(recovered["skill_installed_validation"]["returncode"], 0)
 
-    def test_forced_installed_validation_failure_preserves_complete_pre145_graph(self) -> None:
+    def test_forced_installed_validation_failure_preserves_current_graph(self) -> None:
         before = self.managed_graph_snapshot()
         original_validator = preset.run_skill_package_validator
 
@@ -1699,7 +1550,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         self.assertEqual(result["skill_installed_validation"]["errors"], ["forced installed validation failure"])
         self.assertEqual(self.managed_graph_snapshot(), before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.2", "legacy", "1.2")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
 
 
 class ExtensionManifestInstallerTest(unittest.TestCase):
@@ -1763,17 +1614,30 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-phase2-check-3.0",
+            "guru-phase2-check-4.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
-        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.1")
+        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.2")
         self.assertEqual(
-            public_api["skill_contracts"]["supported_interface_schema_ids"],
-            ["guru-team-skill-interface-1.2", "guru-team-skill-interface-1.3"],
+            set(public_api["skill_contracts"]),
+            {
+                "canonical_root",
+                "installed_root",
+                "registry_schema_id",
+                "interface_schema_id",
+                "public_input_schema_ids",
+                "typed_output_schema_ids",
+                "private_artifact_schema_ids",
+                "artifact_schema_ids",
+                "active_skill_ids",
+                "planned_skill_ids",
+                "registry_lifecycle",
+                "contract_manifests",
+                "workflow_markers",
+            },
         )
-        self.assertEqual(public_api["skill_contracts"]["current_interface_schema_id"], "guru-team-skill-interface-1.3")
         for field, expected_count in (
-            ("public_input_schema_ids", 34),
+            ("public_input_schema_ids", 33),
             ("typed_output_schema_ids", 51),
             ("private_artifact_schema_ids", 15),
         ):
@@ -1855,7 +1719,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-task-publication-readiness-2.0",
+            "guru-task-publication-readiness-3.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         schema_relative = Path("schemas/contract-wording-review.schema.json")
@@ -1907,7 +1771,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 readiness_schema_bytes,
             )
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.3")
-        self.assertEqual(public_api["skill_contracts"]["reserved_skill_ids"], ["guru-create-work-commit"])
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("backfill-finish-summary", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
@@ -1928,27 +1791,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(first["action"], "installed")
         self.assertEqual(second["action"], "unchanged")
         self.assertEqual((self.repo / ".gitignore").read_text().count(".trellis/.runtime/"), 1)
-
-    def test_install_removes_unmodified_obsolete_schema(self) -> None:
-        obsolete = self.install_dst / "schemas/intake-handoff.schema.json"
-        obsolete.parent.mkdir(parents=True)
-        fixture = Path(__file__).resolve().parent / "fixtures/intake-handoff.schema.json"
-        obsolete.write_bytes(fixture.read_bytes())
-
-        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
-
-        self.assertFalse(obsolete.exists())
-        self.assertIn(".trellis/guru-team/schemas/intake-handoff.schema.json", payload["removed_obsolete"])
-
-    def test_install_preserves_modified_obsolete_schema_as_conflict(self) -> None:
-        obsolete = self.install_dst / "schemas/intake-handoff.schema.json"
-        obsolete.parent.mkdir(parents=True)
-        obsolete.write_text('{"user_modified": true}\n', encoding="utf-8")
-
-        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
-
-        self.assertTrue(obsolete.exists())
-        self.assertIn(".trellis/guru-team/schemas/intake-handoff.schema.json", payload["obsolete_conflicts"])
 
     def test_main_version_prints_canonical_extension_version(self) -> None:
         with mock.patch("sys.argv", ["apply_guru_team_trellis_preset.py", "--version"]):

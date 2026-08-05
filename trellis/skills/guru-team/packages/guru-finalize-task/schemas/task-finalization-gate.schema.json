@@ -1,21 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-2.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-3.0.json",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "skill_id", "identity", "review", "route"],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"const": "3.0"},
     "skill_id": {"const": "guru-finalize-task"},
     "identity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["task_ref", "plan_ref", "plan_digest", "reviewed_content_head"],
+      "required": ["task_ref", "plan_ref", "plan_digest", "branch_review_commit"],
       "properties": {
         "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
         "plan_ref": {"type": ["string", "null"], "minLength": 1},
         "plan_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-        "reviewed_content_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}
+        "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}
       }
     },
     "review": {

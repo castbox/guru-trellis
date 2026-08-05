@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-create-task-commit-input-revision-reentry-2.0",
+  "$id": "guru-production-create-task-commit-input-revision-reentry-3.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["profile", "mode", "task_ref", "source_exit", "checked_head"],
+  "required": ["profile", "mode", "task_ref", "source_exit", "phase2_commit_anchor"],
   "properties": {
     "profile": {"const": "revision_reentry"},
     "mode": {"enum": ["workflow", "standalone"]},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
     "source_exit": {"const": "revision-required"},
-    "checked_head": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"}
+    "phase2_commit_anchor": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
   }
 }

@@ -1,12 +1,13 @@
 {
-  "schema_version": "2.2",
+  "schema_version": "3.0",
   "skill_id": "guru-review-branch",
   "generated_at": "2026-07-30T00:00:00Z",
   "task_dir": ".trellis/tasks/example-task",
   "mode": "workflow",
   "review_intent": "fresh_final_review",
   "typed_exit": "passed",
-  "reviewed_content_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_content_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "base_ref": "origin/main",
   "semantic_review": {
     "qualified_findings": [],

@@ -132,16 +132,15 @@ part of this contract.
 - `blocked` stops at `task-workspace-blocked`.
 
 Unknown, multiple, unmapped, or consumer-mismatched exits fail closed.
-`prepare-task` is query-only; its legacy mutation flags fail before writes and
-direct callers must enter this Skill.
+`prepare-task` is query-only and exposes no mutation path; direct callers must
+enter this Skill.
 
 ## Interface 1.3 Public Handoff
 
 The single `execute_reviewed_plan` public profile carries only `profile` and
 `mode`; target, naming, and recovery remain owner-private, while authorization
-exists only in the current dialogue. The wrapper accepts each of the four retired v1 profiles once as a strict read-only
-compatibility projection and discards every legacy handoff field before v2
-validation. After the owner mutation/check loop,
+exists only in the current dialogue. Any input outside that current profile is
+rejected by the declared schema. After the owner mutation/check loop,
 `scripts/invoke.sh --input ... --owner-result ... --owner-plan ...` reruns the
 existing result checker and serializes one minimal result derived from its
 checked executor outcome. Plan, result, and runtime mappings remain ignored,

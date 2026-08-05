@@ -22,7 +22,7 @@ not copy or directly execute this package's deterministic closeout internals.
 
 Workflow and standalone modes enforce the same objective preconditions:
 
-- complete compatible Guru Team runtime and active package inventory;
+- complete current Guru Team runtime and active package inventory;
 - portable task/worktree or archived-task identity;
 - current Publication `ready` DTO, scope ledger, durable task/content state,
   body, finish-summary-index, and live reviewed-content Git identity;
@@ -31,41 +31,19 @@ Workflow and standalone modes enforce the same objective preconditions:
   hook;
 - allowed metadata tail only.
 
-Publication 2.0 entry consumes the minimal `ready` DTO directly, verifies live
+The current Publication entry consumes the minimal `ready` DTO directly, verifies live
 content continuity, and runs the exact side-effect-free preview preflight. It
-does not locate or rerun the Publication owner checkpoint. A complete legacy
-1.x input may use its explicit one-time checker-backed projection.
-Verification re-entry reruns the
+does not locate or rerun the Publication owner checkpoint. Verification re-entry reruns the
 `guru-verify-extension-installation` owner checker for the same task, plan, and
-reviewed HEAD. Opaque verification and same-plan references select only the
+`branch_review_commit`. Opaque verification and same-plan references select only the
 owning Skill's private checkpoints; callers do not parse checkpoint bodies.
 
-The generic verification checker remains strict. Only this finalizer may apply
-the compatibility augmentation for a normal metadata tail created after #117:
-the owner seed must match the immutable plan's active task locator, plan ref,
-reviewed HEAD, and repository; the remote ref must still resolve to the recorded
-HEAD; and the worktree may contain only the plan-declared transaction paths.
-Schema 1.2 keeps `evidence_paths=[]` and current HEAD at the reviewed content
-commit until archive. Persisted schema 1.1 compatibility alone may use a later
-evidence HEAD, which must be the exact validated legacy evidence commit.
-Archived recovery reads the committed plan and applicable #117 evidence blob
-from the archive transaction. Any
-additional path, identity drift, or archive-commit drift remains blocked; this
-does not relax `guru-verify-extension-installation` for other consumers.
-
-One active schema 1.2 pre-draft recovery is deterministic. When the checked
-owner result is `publication_review_stale` solely because the reviewed content
-HEAD is an ancestor of a newer real content HEAD, the public wrapper may retire
-the exact old downstream projection before emitting the existing stale DTO.
-The old canonical plan bytes must bind the task, branch, semantic Ledger,
-PR body, finish-summary index and pending or passed marketplace projection.
-The worktree must contain exactly those untracked outputs plus only the
-plan-owned Ledger delta, with no staged path or later final summary. The wrapper
-then restores the Ledger from the current-HEAD blob, removes the plan-owned
-untracked projection and retires its private gate. Any mismatch is a zero-write
-failure. This internal retirement does not decide whether the real content
-change needs Phase 2, Task Commit or Branch Review; the workflow follows the
-existing mapped stale route and current live task state.
+The verification checker binds the current owner seed, immutable plan,
+repository, remote ref, `branch_review_commit`, local and remote
+reviewed-content identities, and the plan-declared transaction paths. Archived
+recovery reads the committed plan and current verification evidence from the
+archive transaction. Any additional path, content-identity drift, remote drift,
+or archive-commit drift blocks without changing state.
 
 ## Semantic Profile
 
@@ -97,7 +75,7 @@ therefore re-enters confirmation.
 
 ## Immutable Preview And Transaction
 
-Preview shows repository, base, branch, reviewed HEAD, task, archive locator,
+Preview shows repository, base, branch, `branch_review_commit`, reviewed-content identity, task, archive locator,
 upstream evidence references, verification requirement, metadata paths, PR
 identity strategy, complete side effects, plan digest, and the exact canonical
 plan bytes. Formal execution rebuilds the same bytes and digest before any side
@@ -106,13 +84,13 @@ effect. Drift blocks.
 The deterministic order is fixed:
 
 1. Build and prevalidate the immutable plan.
-2. Push the exact reviewed content HEAD.
+2. Verify that current HEAD preserves the reviewed-content identity, then push that exact current HEAD.
 3. If required, stop before PR/archive and emit `verification_required`.
 4. When the plan requires extension verification, consume same-plan verified
    evidence. A plan whose current reviewed paths require no extension
    verification continues without manufacturing a `not_required` handoff.
-   Schema 1.2 does not create or push a separate evidence-metadata commit; its
-   archive transaction remains a direct child of `reviewed_content_head`.
+   The current plan does not create or push a separate evidence-metadata commit; its
+   archive transaction remains a direct child of `branch_review_commit`.
 5. Create or reuse the unique open draft for repo/head/base. When that one
    candidate is an earlier confirmed-plan Draft, first prove its stable
    repo/head/base/current-HEAD/number/canonical-URL identity, then converge its
@@ -129,7 +107,7 @@ The deterministic order is fixed:
 
 Active-task artifacts may be necessary for current-step validation or crash
 recovery without becoming permanent handoff documents. New closeout plans use
-schema 1.2. `closeout-plan.json` and `finish-summary.json` are untracked active
+schema 2.0. `closeout-plan.json` and `finish-summary.json` are untracked active
 transaction outputs that move with the task and become tracked only in the
 single archive commit. `pr-readiness.json` and
 `task-finalization-gate.json` never enter move paths, evidence paths, or the
@@ -138,35 +116,24 @@ its own typed output, before Finalizer entry. The Finalizer retains only its own
 checkpoint across same-plan recovery and deletes it after the terminal public
 `published` projection is validated.
 
-Schema 1.2 has a 10-file compatibility allowlist: `task.json`, `prd.md`,
-`design.md`, `implement.md`, `issue-scope-ledger.json`,
-`planning-approval.json`, `phase2-check.json`, `review-gate.json`,
-`closeout-plan.json`, and `finish-summary.json`. A newly produced AI-first task
-normally has only the seven durable task/content/plan/summary files because the
-three review checkpoints are ignored runtime state. Existing task-local review
-artifacts may move once through this compatibility allowlist. When marketplace
-verification applies, `marketplace-verification.json` is the only optional
-schema 1.2 archive file, so the current archive contains at most 10 core files
-or 11 files with marketplace evidence.
+The archive contains exactly the durable files that exist from this seven-file
+set: `task.json`, `prd.md`, `design.md`, `implement.md`,
+`issue-scope-ledger.json`, `closeout-plan.json`, and `finish-summary.json`.
+When marketplace verification applies, `marketplace-verification.json` is the
+only optional archive file, so the archive contains at most eight files.
 
 Intake/context snapshots, assignment or liveness state, commit plans, raw
-review rounds, legacy `review.md`, `pr-body.md`, `pr-readiness.json`, and
+review rounds, `review.md`, `pr-body.md`, `pr-readiness.json`, and
 `finish-summary-index.json` are current-step inputs or reconstructible facts and
 are not copied into the long-term archive tree. A crash after move and before or
-during pruning re-enters the same idempotent pruning step. Persisted schema 1.0
-plans retain their original full-move transaction semantics, and schema 1.1
-remains unchanged with its historical evidence commit and 11 core archive files
-(plus optional marketplace evidence, for a maximum of 12). Neither legacy
-schema is upgraded in place.
+during pruning re-enters the same idempotent pruning step.
 
 ## Recovery
 
-- Stale Publication DTO content identity, or missing/stale legacy 1.x
-  publication evidence -> `publication_review_stale`, carrying the exact stale
-  `reviewed_content_head` for Publication re-entry. The exact active schema 1.2
-  pre-draft head-mismatch projection described above is retired internally
-  before this existing exit is emitted. If current Finalizer facts cannot
-  supply that reviewed identity, fail closed instead of inventing one.
+- Stale Publication DTO content identity, or missing/stale current Publication
+  evidence -> `publication_review_stale`, carrying the exact stale
+  `branch_review_commit` for Publication re-entry. If current Finalizer facts
+  cannot supply that Git anchor, fail closed instead of inventing one.
 - Content pushed with verification pending -> `verification_required`.
 - Same-plan transient executor failure, draft-to-ready retry, interrupted
   active/archive move, or exact-commit continuation -> `resume_finalization`.
@@ -179,13 +146,13 @@ schema is upgraded in place.
 - A completed ready recovery -> `published`.
 
 `resume_finalization` is legal only from `content_pushed` with current verified
-or not-required evidence, `evidence_ready`, `evidence_pushed`, `draft_bound`,
+or not-required evidence, `evidence_ready`, `draft_bound`,
 `projection_validated`, `archive_moved`, `archive_pushed`, or `archived`.
 `prepared`, `reprepare_required`, stale state, and terminal `ready` never select
 same-plan resume.
 
 Recovery never exposes the private transition labels `prepared`,
-`content_pushed`, `evidence_pushed`, `draft_bound`, `projection_validated`,
+`content_pushed`, `evidence_ready`, `draft_bound`, `projection_validated`,
 `archive_moved`, or `archive_pushed`. Users do not choose internal recovery
 commands.
 
@@ -194,14 +161,12 @@ Workflow mode automatically consumes every non-terminal recovery exit.
 
 ## Public Inputs
 
-The seven closed profiles are:
+The six closed profiles are:
 
 - `publication_ready`: `profile`, `mode`, `task_ref`, and
-  `reviewed_content_head` from the current Publication owner output.
+  `branch_review_commit` from the current Publication owner output.
 - `verification_verified`: the minimal #117 verified seed; no routine re-entry
   intent is authored.
-- `verification_not_required`: the minimal #117 not-required seed; this
-  workflow-shaped compatibility profile remains stable.
 - `standalone_verification_not_required`: the reachable task-bearing #117
   standalone seed `repo_ref/resolved_head/verification_ref` plus target-authored
   `profile/mode/task_ref`. The finalizer loads the private current plan and
@@ -219,10 +184,10 @@ current; same-plan recovery reuses that private binding.
 
 ## Public Exits
 
-- `verification_required`: task, plan, repository, reviewed HEAD, verification
+- `verification_required`: task, plan, repository, `branch_review_commit`, verification
   target; `repo_ref` is exactly the immutable plan repository; consumed by
   `guru-verify-extension-installation`.
-- `publication_review_stale`: task, the exact stale reviewed content HEAD, and
+- `publication_review_stale`: task, the exact stale `branch_review_commit`, and
   stable stale reason; consumed by `guru-review-task-publication`.
 - `resume_finalization`: task and same plan; consumed by this Skill.
 - `reprepare_required`: task and `archive_month_changed`; consumed by this
@@ -234,15 +199,12 @@ current; same-plan recovery reuses that private binding.
 
 Every DTO uses `exit_id`. Gate, plan, review, verification, PR, archive,
 recovery, digest, path, blob, and unrelated Git HEAD facts remain private.
-Existing v1 stale DTOs without `reviewed_content_head` are invalid migration
-signals and must be regenerated from current Finalizer facts.
 
 The ignored owner-private gate never stores an early public `published` DTO.
 Before and through archive it retains only the exact finalizer-private executor
 marker. Recorder/checker and executor may validate that pending marker, while
 the public wrapper reruns strict route validation and never executes the
-publish/archive transition; the bounded head-mismatch retirement above is the
-only active pre-draft projection exception. Only after the exact archive
+publish/archive transition. Only after the exact archive
 transaction and ready PR facts are
 proven may the wrapper materialize the public DTO in memory, using the plan
 archive locator; the materialized DTO is not written back to the gate. The
@@ -256,8 +218,6 @@ Package scripts are dispatcher-only wrappers. Runtime commands may:
 - preview through the existing closeout engine;
 - record/check the private semantic gate;
 - execute one checked deterministic transition through the same engine;
-- retire one exact plan-owned active schema 1.2 pre-draft projection after a
-  checked publication HEAD mismatch;
 - select the schema for the actual exit and serialize the minimal DTO.
 
 They may not decide close scope, plan sufficiency, publication readiness,

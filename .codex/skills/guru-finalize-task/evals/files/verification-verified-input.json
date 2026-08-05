@@ -1,1 +1,1 @@
-{"profile":"verification_verified","mode":"workflow","task_ref":".trellis/tasks/current","plan_ref":"closeout-plan:placeholder","reviewed_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","verification_ref":"verification:placeholder"}
+{"profile":"verification_verified","mode":"workflow","task_ref":".trellis/tasks/current","plan_ref":"closeout-plan:placeholder","branch_review_commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","verification_ref":"verification:placeholder"}

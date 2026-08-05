@@ -49,6 +49,18 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
     "sidecar and reapply the preset.\n"
 ).encode("utf-8")
 SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
+CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
+    "production-contract-manifest.schema.json",
+    "skill-eval-adapter-request.schema.json",
+    "skill-eval-adapter-response.schema.json",
+    "skill-eval-human-feedback.schema.json",
+    "skill-eval-native-trace.schema.json",
+    "skill-eval-run.schema.json",
+    "skill-eval-semantic-grading.schema.json",
+    "skill-evals.schema.json",
+    "skill-interface-1.3.schema.json",
+    "skill-registry.schema.json",
+})
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
 TEMPLATE_HASHES_RELATIVE = Path(".trellis/.template-hashes.json")
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
@@ -93,7 +105,6 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/create-task-workspace.sh"),
     Path("scripts/bash/check-task-workspace-result.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
-    Path("scripts/bash/verify-marketplace.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
     Path("scripts/bash/check-planning-approval.sh"),
     Path("scripts/bash/record-phase2-check.sh"),
@@ -116,7 +127,6 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/format-merge-commit.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
-    Path("scripts/bash/publish-pr.sh"),
     Path("scripts/bash/finish-work.sh"),
     Path("scripts/bash/backfill-finish-summary.sh"),
     Path("scripts/python/guru_team_trellis.py"),
@@ -125,9 +135,6 @@ OBSOLETE_MANAGED_ASSETS = {
     Path("handoff.json"): set(),
     Path("schemas/task-start-context.schema.json"): {
         "38c0baa21215a8d97178a56826606d23547fffae1c76db83b88902d0586ab617"
-    },
-    Path("schemas/intake-handoff.schema.json"): {
-        "6d9484b82ea7e71b4661035f370d8b21240aa1af844dfa131c1131bba1c3dcfc"
     },
     Path("scripts/bash/record-agent-assignment.sh"): {
         "66152aacbf2ee12f7dba6cd09baeb2f3d7829d3ee2ef914542b2dbfb365de9ae"
@@ -399,7 +406,7 @@ def previous_skill_hashes(
         return {}, set(), True, set()
     required_fields = {
         "schema_version", "status", "canonical_registry_sha256", "registry_schema_version",
-        "reserved_ids", "active_ids", "selected_platforms", "packages", "files", "removals",
+        "active_ids", "selected_platforms", "packages", "files", "removals",
         "conflicts", "sidecars",
     }
     if (
@@ -470,31 +477,13 @@ def previous_skill_hashes(
 def previous_overlay_hashes(
     manifest: dict[str, Any] | None,
     canonical_hashes: dict[str, str],
-) -> tuple[dict[str, str], set[str], bool, set[str], set[str]]:
-    """Read exact overlay provenance with one additive legacy-manifest bridge.
-
-    Installed manifests created before overlay hashes existed named the three
-    Guru entries only in install.managed_assets. Those claims may bootstrap a
-    clean platform shrink only when the current target bytes still equal the
-    current canonical overlay. Differing bytes remain unknown local edits.
-    """
+) -> tuple[dict[str, str], set[str], bool, set[str]]:
+    """Read the exact current overlay provenance contract."""
 
     if manifest is None:
-        return {}, set(), True, set(), set()
+        return {}, set(), True, set()
 
     overlays = manifest.get("overlays")
-    if overlays is None:
-        install = manifest.get("install")
-        managed_assets = install.get("managed_assets") if isinstance(install, dict) else None
-        if not isinstance(managed_assets, list) or any(
-            not isinstance(path, str) for path in managed_assets
-        ):
-            return {}, set(), False, set(), set()
-        legacy_claims = {
-            path for path in managed_assets if path in canonical_hashes
-        }
-        return {}, legacy_claims, True, set(), legacy_claims
-
     required_fields = {
         "schema_version",
         "status",
@@ -514,7 +503,7 @@ def previous_overlay_hashes(
         and isinstance(overlays.get("sidecars"), list)
     )
     if not isinstance(overlays, dict):
-        return {}, set(), False, set(), set()
+        return {}, set(), False, set()
 
     selected = overlays.get("selected_platforms")
     if (
@@ -582,7 +571,7 @@ def previous_overlay_hashes(
                 valid = False
                 continue
             recoverable_sidecars.add(sidecar)
-    return hashes, paths, valid, recoverable_sidecars, set()
+    return hashes, paths, valid, recoverable_sidecars
 
 
 def re_full_hex_digest(value: str) -> bool:
@@ -1139,7 +1128,6 @@ def install_skill_packages(
             if sidecar_stat is not None:
                 pending_recovery_sidecars.append(sidecar_text)
     active_entries = [entry for entry in entries if entry.get("state") == "active"]
-    reserved_ids = sorted(str(entry.get("id")) for entry in entries if entry.get("state") == "reserved")
     active_ids = sorted(str(entry.get("id")) for entry in active_entries)
     source_files: list[tuple[Path, Path]] = [
         (canonical_root / "registry.json", Path("registry.json")),
@@ -1153,10 +1141,15 @@ def install_skill_packages(
             finish_integration_test.relative_to(canonical_root),
         )
     )
-    for shared_root_name in ("schemas", "adapters", "migrations"):
+    for shared_root_name in ("schemas", "adapters", "contracts"):
         shared_root = canonical_root / shared_root_name
         if shared_root.is_dir():
             for source in skill_package_source_files(shared_root):
+                if (
+                    shared_root_name == "schemas"
+                    and source.name not in CURRENT_SKILL_SHARED_SCHEMAS
+                ):
+                    continue
                 source_files.append((source, source.relative_to(canonical_root)))
     consumer_root = canonical_root / "consumers"
     if consumer_root.is_dir():
@@ -1268,7 +1261,6 @@ def install_skill_packages(
         "status": status,
         "canonical_registry_sha256": hashlib.sha256((canonical_root / "registry.json").read_bytes()).hexdigest(),
         "registry_schema_version": registry.get("schema_version"),
-        "reserved_ids": reserved_ids,
         "active_ids": active_ids,
         "selected_platforms": sorted(platforms),
         "packages": packages,
@@ -1535,7 +1527,6 @@ def remove_stale_overlay_path(
     previous_hashes: dict[str, str],
     provenance_valid: bool,
     canonical_hashes: dict[str, str],
-    legacy_claims: set[str],
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None, str | None]:
     if relative_text not in canonical_hashes:
         return None, skill_conflict(relative_text, "previous_path_outside_overlay_inventory"), None
@@ -1551,22 +1542,14 @@ def remove_stale_overlay_path(
 
     current_hash = hashlib.sha256(target.read_bytes()).hexdigest()
     previous_hash = previous_hashes.get(relative_text)
-    legacy_clean = (
-        relative_text in legacy_claims
-        and current_hash == canonical_hashes[relative_text]
-    )
-    if provenance_valid and (
-        (previous_hash is not None and current_hash == previous_hash)
-        or legacy_clean
-    ):
+    if provenance_valid and previous_hash is not None and current_hash == previous_hash:
         target.unlink()
         prune_empty_overlay_parents(repo, target)
-        record = {"path": relative_text, "action": "removed_managed"}
-        if previous_hash is not None:
-            record["previous_managed_sha256"] = previous_hash
-        else:
-            record["legacy_managed_asset_sha256"] = current_hash
-        return record, None, None
+        return {
+            "path": relative_text,
+            "action": "removed_managed",
+            "previous_managed_sha256": previous_hash,
+        }, None, None
 
     sidecar = target.with_name(f"{target.name}.new")
     try:
@@ -2074,7 +2057,6 @@ def _install_assets_in_place(
         dst / "scripts/bash/create-task-workspace.sh",
         dst / "scripts/bash/check-task-workspace-result.sh",
         dst / "scripts/bash/resolve-human-artifacts.sh",
-        dst / "scripts/bash/verify-marketplace.sh",
         dst / "scripts/bash/record-planning-approval.sh",
         dst / "scripts/bash/check-planning-approval.sh",
         dst / "scripts/bash/record-phase2-check.sh",
@@ -2097,7 +2079,6 @@ def _install_assets_in_place(
         dst / "scripts/bash/format-merge-commit.sh",
         dst / "scripts/bash/review-branch.sh",
         dst / "scripts/bash/check-review-gate.sh",
-        dst / "scripts/bash/publish-pr.sh",
         dst / "scripts/bash/finish-work.sh",
         dst / "scripts/bash/backfill-finish-summary.sh",
         dst / "scripts/python/guru_team_trellis.py",
@@ -2199,7 +2180,6 @@ def install_overlays(
         previous_paths,
         provenance_valid,
         recoverable_sidecars,
-        legacy_claims,
     ) = previous_overlay_hashes(previous_manifest, canonical_hashes)
 
     pending_recovery_sidecars: list[str] = []
@@ -2290,7 +2270,6 @@ def install_overlays(
             previous_hashes,
             provenance_valid,
             canonical_hashes,
-            legacy_claims,
         )
         if removal:
             removals.append(removal)

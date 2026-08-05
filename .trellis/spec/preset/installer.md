@@ -50,7 +50,7 @@ Public workflow skill packages are a separate managed-hash domain. The preset
 validates `trellis/skills/guru-team/`, installs its registry/schema/active
 packages under `.trellis/guru-team/skills/`, and distributes active package
 bytes to `.agents/skills/<id>/` plus only the selected Codex/Cursor/Claude
-roots. Reserved and planned ids plus test fixtures are never installed.
+roots. Planned ids and test fixtures are never installed.
 
 The three additive platform entries use their own top-level `overlays`
 provenance domain in `.trellis/guru-team/extension.json`. Its closed fields are
@@ -60,13 +60,11 @@ inventory and records path, canonical source, managed hash, executable bit, and
 install action. This domain, rather than the flat `install.managed_assets`
 inventory or an entry marker/text match, is the current ownership authority.
 
-An older installed manifest with no `overlays` field has one narrow migration
-bridge: a path must still be listed in legacy `install.managed_assets`, and its
-current bytes must equal the current canonical overlay before platform shrink
-may remove it. The removal records `legacy_managed_asset_sha256`; any differing
-bytes remain an unknown local edit. Once an `overlays` domain exists, malformed
-or incomplete provenance fails closed instead of falling back to the legacy
-bridge.
+Every existing installed manifest must contain the complete current `overlays`
+domain. Missing, malformed, or incomplete provenance fails closed. The
+installer does not infer overlay ownership from `install.managed_assets`, entry
+markers, or content text, and platform shrink removes only a target whose bytes
+match its recorded `previous_managed_sha256`.
 
 Skill files use the exact previous hash recorded in
 `.trellis/guru-team/extension.json`. Missing files install; canonical-equal
@@ -121,9 +119,9 @@ Every `workflow` / `stop` consumer must resolve to one matching-kind
 `guru-workflow-target` / `guru-stop-target` marker. Missing, unknown, multiple,
 kind-mismatched, or dangling targets block installation/runtime use.
 
-The production registry keeps `guru-create-work-commit` reserved and installs
-the active `guru-create-task-commit` package to the audited runtime root and
-selected shared/Codex/Cursor/Claude discovery roots. Its artifact schema,
+The production registry installs the active `guru-create-task-commit` package
+to the audited runtime root and selected shared/Codex/Cursor/Claude discovery
+roots. Its artifact schema,
 package thin wrappers and package tests are part of the managed tree. The
 companion `scripts/bash/create-task-commit.sh` is a managed executable asset;
 source/installed validation and the manifest inventory must prove its bytes and
@@ -163,8 +161,7 @@ sidecar.
 The registry also installs active semantic `guru-clarify-requirements` to the
 same audited runtime and selected discovery roots. Its managed tree includes
 `SKILL.md`, interface, contract, deidentified example,
-active `guru-requirements-clarification-2.0` schema, read-only v1 migration
-handling, tests, and executable
+active current-only `guru-requirements-clarification-2.0` schema, tests, and executable
 dispatcher-only record/check wrappers. Companion managed assets are exactly
 `record-requirements-clarification.sh` and
 `check-requirements-clarification.sh`. No GitHub mutation or issue-creation
@@ -530,19 +527,17 @@ eval file digest/mode and reject missing, unexpected, drifted, symlink-backed,
 or sidecar state. Normal install/update never moves eval corpus into workflow
 prompt context or ordinary Skill invocation payloads.
 
-## Stage 0 Atomic Activation And AI-First Migration
+## Stage 0 Current Activation
 
-The preset preserves `stage0-minimal-handoff-v1` as an immutable managed
-activation record with six production packages and 24 exits. It also stages
-`stage0-ai-first-contract-v2`, which migrates the current Stage 0 contract to
-the same six packages and 23 exits, including the `guru-sync-base.repo_root` /
-`route` optional scalar change, without rewriting the frozen manifest. The
-six production packages, registry, both migration records and schemas, public and
-consumer schemas/examples, package wrappers, shared runtime, extension
+The preset installs only the current six-package/23-exit Stage 0 contract,
+including optional `guru-sync-base.repo_root` / `route` scalar arguments. Frozen
+Stage 0 source records remain byte-preserved in the canonical repository but
+are not preset-managed installed assets. The six production packages, registry,
+current public and consumer schemas/examples, package wrappers, shared runtime, extension
 inventories, eval corpora, and selected platform copies are validated together
 before target activation. The installed validator runs immediately after apply.
 Failure preserves the prior complete graph and reports conflicts or sidecars;
-it must not leave a runnable mixture of Stage 0 Interface 1.2 and 1.3 packages.
+it must not leave a partially updated current Stage 0 graph.
 
 The transaction includes the executable shared native evaluator and preserves
 its mode. Interface 1.3 accepts explicit boolean scalar `required`; the staged
@@ -559,33 +554,23 @@ The verifier scans recursively for `.new` and `.bak` after each transition.
 
 ## Production Skill Atomic Activation
 
-`production-minimal-handoff-v1` is staged as an immutable historical record in
-the same preset transaction as `production-ai-first-contract-v2` and its schema,
-three complete package trees, consumer
+`production-current-v1` is the sole current planning/check/commit contract. The
+preset stages its schema, manifest, three complete package trees, consumer
 schemas, registry, extension inventory, installed provenance, and selected
-platform copies. The transaction validates the complete eleven-Skill/42-exit
-graph before publishing any destination. A pre-#146 six-minimal/three-legacy
-install upgrades through nine minimal packages and then active
-`guru-review-branch`; any intermediate mixed
-graph fails staging and leaves the prior complete install in place.
-
-The Stage 0 and production v1 manifests remain separately managed immutable
-activation records. Installer migration updates may add the production and
-AI-first migration locators/assets but may not change either v1 manifest's
-activation id, ordered skill ids, exit bindings, output schema identities, or
-legacy-boundary history. Update/reapply must reproduce identical
-canonical, installed, shared, Codex, Cursor, and Claude package bytes and
-executable modes without `.new` or `.bak` sidecars.
+platform copies in one transaction. The transaction validates the complete
+current package graph before publishing any destination; only the current
+contract manifest and its declared assets are installed. Update/reapply removes obsolete preset-owned production contract
+assets and reproduces identical canonical, installed, shared, Codex, Cursor,
+and Claude bytes and executable modes without `.new` or `.bak` sidecars.
 
 ## Branch Review Package Activation
 
 `guru-review-branch` is an additive active package installed in the same preset
 transaction as registry, extension inventory, shared consumers, Interface
 schema, runtime, workflow and selected platform copies. It extends the active
-closure to ten Skills and 39 exits without changing either existing migration
-activation id or the production manifest's three-Skill/11-exit membership.
-That manifest changes only its committed consumer/projection binding and
-authoring-seed edge inventory from three to four.
+closure to ten Skills and 39 exits without changing the current production
+manifest's three-Skill/11-exit membership. That manifest includes the current
+committed consumer/projection binding and four authoring-seed edges.
 
 The historical pre-#116 state installed
 `guru-review-task-publication` as a planned identity only, and #116 initially
@@ -611,12 +596,9 @@ tests, and canonical eval corpus.
 
 The activation contributes to the current package closure of thirteen active
 Skills and 51 external exits.
-The existing
-`production-minimal-handoff-v1` remains exactly three Skills and 11 exits with
-its original activation identity; #116 is derived as an additional complete
-active Interface 1.3 row. The #131 `passed` DTO bytes remain unchanged while
-its planned bridge becomes the target-owned `publication_review` authoring
-seed.
+`production-current-v1` remains exactly three Skills and 11 exits; #116 is an
+additional complete active Interface 1.3 row. The current Branch Review
+`passed` DTO feeds the target-owned `publication_review` authoring seed.
 
 The preset transaction does not install any `trellis-continue` payload. Initial
 `pr-body.md` / `finish-summary-index.json` authoring and the integrated
@@ -639,11 +621,11 @@ the current thirteen-Skill/51-exit package graph without changing the frozen
 Stage 0 v1 six-Skill/24-exit identity, the AI-first v2 six-Skill/23-exit
 contract, or the production three-Skill/11-exit membership.
 Its workflow `verified` and reachable task-bearing standalone `not_required`
-producer edges now target active `guru-finalize-task`; the workflow-shaped
-not-required branch remains compatible but cannot be emitted by a workflow
-applicability conflict. The combined Finish route now returns checker-passed
-owner evidence to the finalizer through a private in-memory compatibility
-projection; it does not add fields to either Skill's public DTO.
+producer edges target active `guru-finalize-task`; a workflow applicability
+conflict produces `blocked` and has no `not_required` output branch. The combined
+Finish route passes checker-validated owner evidence to the finalizer through
+current private in-memory state; it does not add fields to either Skill's public
+DTO.
 
 Managed executable companion assets include
 `execute-extension-verification.sh`,
@@ -651,15 +633,13 @@ Managed executable companion assets include
 `check-extension-verification.sh`, and
 `invoke-extension-verification.sh`. They are installed before the package is
 usable and published in the extension runtime command inventory.
-`verify-marketplace.sh` remains a compatibility wrapper into the same executor,
-not a second implementation.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
 wrapper executable modes, the thirteen-Skill/51-exit package closure, the
 integrated global closure of 13 invokes, 51 exits, and 28 targets, and the
 43-entry removed-tombstone ownership inventory. The executor reads
-`legacy_entries` as the compatibility-named historical table, requires all rows
+`legacy_entries` as the historically named tombstone table, requires all rows
 to be `upstream_owned/removed`, and binds its immutable and migration-payload
 digests. Unknown edits retain `.new`, known Guru upgrades retain `.bak`, and
 completion requires their explicit resolution plus a recursive zero-sidecar
@@ -673,16 +653,16 @@ remote ref/HEAD or report that verification as deferred.
 ## Task Finalization Package Activation
 
 `guru-finalize-task` is installed as an additive active Interface 1.3 package
-with seven distinct public input profiles, six `exit_id` output contracts,
+with six distinct public input profiles, six `exit_id` output contracts,
 twelve target-owned `skill_input_authoring_seed` handoffs across the
 complete package graph, one owner-private finalization gate, the closeout-plan
 schema, real-wrapper eval corpus, and the deterministic runtime wrappers. Its
 canonical, installed shared, Codex, Cursor, and Claude package/corpus bytes must
 remain identical and every wrapper must retain executable mode.
-The reachable #117 not-required edge installs as a task-bearing standalone
+The current not-required edge installs as a task-bearing standalone
 projection of `repo_ref/resolved_head/verification_ref`; the finalizer target
-authors `profile/mode/task_ref`, retains plan identity privately, and preserves
-the existing workflow-shaped compatibility profile.
+authors `profile/mode/task_ref` and retains plan identity privately through the
+declared current profile.
 
 The current source/installed package graph contains thirteen active Skills and
 51 external exits. The global workflow projection is 13 invokes, 51 exits, and
@@ -690,5 +670,5 @@ The current source/installed package graph contains thirteen active Skills and
 `guru-finish-work` entries and the combined integration suite. Upstream
 `trellis-finish-work` Skill/Command/Prompt files remain entirely under official
 Trellis ownership and are absent from Guru overlays and managed inventory. This
-activation does not expand public Skill I/O or rewrite either migration
-manifest.
+activation does not expand public Skill I/O or rewrite the frozen Stage 0
+source records.

@@ -46,10 +46,12 @@ action 和 route 仍由 owning Skill 判断。
 Implementation 与 official `trellis-check` 的 terminal result 是 AI 的直接输入，不生成
 `implementation-handoff.md`、routine assignment、routine liveness 或重复 completion prose。
 `guru-check-task` 保留完整 task scope、adequacy、Docs SSOT 和 finding judgment；其最终
-`phase2-check.json` 只作为 ignored owner-private checkpoint 存活到本 Skill public wrapper
-完成 checker、DTO 投影与 output schema 校验，随后由 producer 自行删除。跨 Skill 只传
-`task_ref` 与 `checked_head`，下游不得读取、解释或删除该 checkpoint，也不得把它作为 handoff
-或 archive evidence。
+`guru-phase2-check-4.0` `phase2-check.json` 只作为 ignored owner-private checkpoint 存活到本
+Skill public wrapper 完成 checker、DTO 投影与 output schema 校验，随后由 producer 自行删除。
+Checkpoint 记录统一 `reviewed_content_sha256` 与 `phase2_capture_commit`；跨 Skill 只传
+`task_ref` 与 `phase2_commit_anchor`。下游不得读取、解释或删除该 checkpoint，也不得把它作为
+handoff 或 archive evidence。仅 task/runtime metadata 变化不令 checkpoint stale；任一 reviewed
+content 变化必须 fail closed。
 
 只有 agent 真实 unfinished 且必须 replacement 时，才在 gitignored runtime 保存最小 recovery
 checkpoint。正常 completion、wait timeout、mapped re-entry 和 fresh dispatch 不写 recovery
@@ -62,43 +64,46 @@ commit SHA、tree、parent、message 和 path facts 不回写 tracked handoff。
 不得在 commit 后向同一 tracked plan 写 `committed/result/tree_evidence`，因此正常 commit 不会
 主动制造 post-commit dirty。
 
-既有 active task 中的 tracked schema 1.0 commit plan 只读兼容，不原地升级；下一次合法
-re-entry 使用 ignored candidate。历史 archive 字节保持不变。
+Task Commit 只接受 current public input 和 ignored candidate schema；其它输入由 current schema
+直接拒绝，不读取或投影旧 plan。历史 archive 字节保持不变。
 
 ## 6. Branch Review
 
 Branch Review 保留 qualification-first、完整 `origin/<base>...HEAD` 审查、current-scope P0-P3
 finding、scope proposal、closure 和 fresh final review 的语义价值；新流程只在 ignored runtime
-保留 compact `review-gate.json` owner checkpoint，并向 Publication 输出
-`task_ref + reviewed_content_head`。
+保留 `guru-review-gate-3.0` compact `review-gate.json` owner checkpoint，记录
+`review_commit + reviewed_content_sha256`，并向 Publication 输出
+`task_ref + branch_review_commit`。后续 freshness 由统一 reviewed-content identity 判定，commit
+anchor 只承担 review range、ancestry 和 remote 定位。
 
 初次 open finding 返回 `implementation_required`。Fix 通过 Phase 2 并产生新 commit 后，finding
 owner 或真实 unfinished-agent replacement 在 AI 内部完成瞬态 closure：保留原始
-`introduced_head`，把 `resolved_at_head` 绑定 fix commit，并给出 concrete closure evidence。
+`introduced_head`，把 `fix_head` 绑定修复 commit，再以 `closure_head` 和 concrete closure
+evidence 绑定瞬态 closure。不同的 fresh final reviewer 以 `review_commit` 覆盖完整当前 range。
 Closure 不产生 public exit 或 artifact；workflow 立即调度不同的 fresh final reviewer 完整审查
 当前 range。只有 `fresh_final_review` 可以写最终 compact passed gate。
 
-新 public input schema 1.1 只允许 `initial_review|fresh_final_review`。旧 schema 2.0 gate 中的
-`finding_fix_review`、assignment 和 raw reports 仅只读；active task re-entry 在内存完成 closure，
-再生成 1.1 fresh-final input，不改写旧 evidence。正常
-finding -> fix -> closure -> fresh final 路径不得出现 validator 自相矛盾、逐轮文书或通用确认。
+Current public input 只允许 `initial_review|fresh_final_review`。其它 profile 或旧 gate shape 由
+current schema 直接拒绝，不存在 reader、projection 或专用 re-entry。正常 finding -> fix ->
+closure -> fresh final 路径不得出现 validator 自相矛盾、逐轮文书或通用确认。
 
 ## 7. Publication 与 Finalization
 
 `guru-review-task-publication` 保留 Issue closure、PR body、验证、安全、部署和 release readiness
 判断，在返回 `ready` 前执行与 Finalizer 首次 side-effect-free preview 相同的确定性 preflight。
-`guru-finalize-task` 直接消费 `task_ref + reviewed_content_head`，以一个已确认 plan 驱动 push、
+`guru-finalize-task` 直接消费 `task_ref + branch_review_commit`，并重算统一 reviewed-content
+identity，以一个已确认 plan 驱动 push、
 条件 marketplace verification、Draft PR、archive transaction 和 Ready；内部 recovery exit
 自动承接。Publication wrapper 在 valid DTO 形成后已删除自己的 checkpoint；Finalizer 不读取、
 增补、理解或代删 Publication 私有状态，只管理自己的 same-plan checkpoint。
 
-新 schema 1.2 archive 长期只保留 7 个有直接 history/recovery consumer 的文件：`task.json`、
+Current closeout schema 2.0 长期只保留 7 个有直接 history/recovery consumer 的文件：`task.json`、
 三份 planning、`issue-scope-ledger.json`、`closeout-plan.json` 和 `finish-summary.json`；适用时可
 额外保留 `marketplace-verification.json`。Planning、Phase 2、Branch Review、Publication 和
-Finalizer checkpoint 均为 ignored owner-private state，不进入 archive。Schema 1.2 仅允许既有
-active task 的三份旧 tracked review artifact 通过一次性 10-file compatibility allowlist 随任务
-移动；schema 1.0/1.1 历史字节保持不变。Raw rounds、legacy rollup、commit candidate、PR
-preparation 和其它可由 Git/GitHub/current files 推导的状态不复制进 archive。
+Finalizer checkpoint 均为 ignored owner-private state，不进入 archive。Closeout plan 直接由
+`tracked_move_paths` 与 retained archive outputs 推导 transaction paths，不持久化 metadata
+allowlist。Raw rounds、review rollup、commit candidate、PR preparation 和其它可由
+Git/GitHub/current files 推导的状态不复制进 archive。
 
 ## 8. Distribution 与升级
 

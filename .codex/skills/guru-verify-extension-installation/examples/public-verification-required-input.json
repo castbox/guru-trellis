@@ -4,6 +4,6 @@
   "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
   "plan_ref": "closeout-plan:0123456789abcdef",
   "repo_ref": "castbox/guru-trellis",
-  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "verification_target": "extension-installation"
 }

@@ -80,17 +80,15 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "does not require a second context snapshot",
             "There is no mutation executor",
             "Success returns `refresh_context`",
-            "compact `decision_trail`",
+            "compact owner-result `decision_trail`",
             "remote authority locator and content checksum",
-            "transient owner result and never enter the ledger",
-            "legacy full-shape trail is projected once",
+            "closed scope-only 2.0 document",
+            "the trail stay in the transient owner result and never enter the ledger",
+            "reject any schema mismatch before normalization",
             "`blocked` if and only if",
         ):
             self.assertIn(phrase, contract)
-        self.assertIn("missing compact ledger decision authority", skill)
-        self.assertNotIn("schema 1.2 planning approval", skill)
-        self.assertNotIn("schema 1.2 planning-approval validator", contract)
-        self.assertNotIn("guru-planning-approval", skill)
+        self.assertIn("missing scope-only Ledger binding", skill)
         self.assertNotIn("dialogue-local authorization", contract)
         self.assertNotIn("user_confirmation", contract)
         self.assertNotIn("context_before_task_update_sha256", contract)

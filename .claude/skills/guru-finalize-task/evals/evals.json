@@ -8,7 +8,7 @@
       "id": "publication-verification-required",
       "prompt": "Invoke the finalizer from current publication evidence and return the checker-derived verification boundary.",
       "expected_exit": "verification_required",
-      "expected_output": "The minimal DTO identifies the same plan, repository, reviewed HEAD and verification target.",
+      "expected_output": "The minimal DTO identifies the same plan, repository, branch_review_commit and verification target.",
       "input_profile_id": "publication_ready",
       "assertions": {
         "deterministic": [
@@ -27,7 +27,7 @@
       "id": "publication-review-stale",
       "prompt": "Invoke the finalizer from stale publication evidence and return the checked publication-review re-entry.",
       "expected_exit": "publication_review_stale",
-      "expected_output": "The minimal DTO contains the task identity, reviewed content HEAD and stable stale reason required by Publication re-entry.",
+      "expected_output": "The minimal DTO contains the task identity, branch_review_commit and stable stale reason required by Publication re-entry.",
       "input_profile_id": "publication_ready",
       "assertions": {
         "deterministic": [
@@ -149,7 +149,7 @@
     },
     {
       "id": "verified-reentry-published",
-      "prompt": "Invoke the finalizer from current verified installation evidence for the same plan and reviewed HEAD.",
+      "prompt": "Invoke the finalizer from current verified installation evidence for the same plan and branch_review_commit.",
       "expected_exit": "published",
       "expected_output": "The checked terminal DTO contains the exact published pull request identity.",
       "input_profile_id": "verification_verified",

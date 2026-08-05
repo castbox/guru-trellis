@@ -35,12 +35,12 @@ disposition, empty/non-final active-task proposal sets on `clear`/`new_task`,
 any unresolved scope classification, any classification task update not bound
 to the same current proposal set,
 mechanism disposition with a classification trail or mutation, incomplete or
-stale planning content, missing compact `decision_trail` ledger authority or live
-GitHub-visible scope authority,
+stale planning content, missing scope-only Ledger binding, missing compact
+owner-result `decision_trail`, or missing live GitHub-visible scope authority,
 load-bearing clarification without a current issue/draft
 authority action, authority/context/task-update order mismatch, invalid caller
-resume, stale active-task evidence, legacy 1.0 artifact input, unknown exits,
-or missing compatible runtime. This package is not self-contained or portable.
+resume, stale active-task evidence, non-current artifact input, unknown exits,
+or missing current runtime. This package is not self-contained or portable.
 
 After the semantic gate and owner recorder/checker complete, invoke
 `scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-clarification-result>`

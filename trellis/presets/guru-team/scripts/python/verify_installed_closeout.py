@@ -107,7 +107,7 @@ def valid_pr_body(issue: int) -> str:
 ## Review Gate
 
 - 最终放行审查 fixture 结论通过。
-- Reviewed HEAD 绑定真实 Git commit。
+- `branch_review_commit` 绑定真实 Git commit，reviewed-content identity 已复核。
 
 ## Docs SSOT
 
@@ -145,9 +145,16 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "branch": branch,
         "base_branch": BASE_BRANCH,
     }
+    issue_entry = {
+        "number": issue,
+        "url": f"https://github.com/{REPO}/issues/{issue}",
+        "title": f"#{issue} 验证安装后 closeout",
+        "reason": "Installed closeout smoke fully covers this issue.",
+    }
     ledger = {
-        "primary_issue": {"number": issue, "acceptance_evidence": ["installed closeout smoke passed"]},
-        "close_issues": [{"number": issue, "acceptance_evidence": ["installed closeout smoke passed"]}],
+        "schema_version": "2.0",
+        "primary_issue": issue_entry,
+        "close_issues": [dict(issue_entry)],
         "related_issues": [],
         "followup_issues": [],
     }
@@ -241,7 +248,7 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "mode": "workflow",
         "task_ref": task_dir.relative_to(root).as_posix(),
         "base_ref": "origin/main",
-        "committed_head": "0" * 40,
+        "branch_review_commit": "0" * 40,
         "review_intent": "initial_review",
     }
     branch_check = adapter.production_record_review(
@@ -255,7 +262,7 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "profile": "publication_review",
         "mode": "workflow",
         "task_ref": task_dir.relative_to(root).as_posix(),
-        "reviewed_content_head": branch_check["reviewed_content_head"],
+        "branch_review_commit": branch_check["review_commit"],
         "review_intent": "initial_review",
     }
     authoring_path = adapter.production_publication_authoring(
@@ -279,7 +286,7 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
             root=str(root),
             task=task_dir.relative_to(root).as_posix(),
             input=authoring_path.relative_to(root).as_posix(),
-            reviewed_content_head=publication_input["reviewed_content_head"],
+            branch_review_commit=publication_input["branch_review_commit"],
             dry_run=False,
         ))
         checked_publication = gtt.cmd_check_task_publication_review(
@@ -291,7 +298,7 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         )
     finally:
         git(root, real_git, "remote", "set-url", "origin", original_remote_url)
-    return task_dir, branch, str(checked_publication["reviewed_content_head"])
+    return task_dir, branch, str(checked_publication["branch_review_commit"])
 
 
 def install_fake_commands(fake_bin: Path) -> None:
@@ -392,7 +399,7 @@ def run_closeout(
     task_dir: Path,
     branch: str,
     issue: int,
-    reviewed_content_head: str,
+    branch_review_commit: str,
     real_git: str,
     remote: Path,
 ) -> dict[str, Any]:
@@ -435,7 +442,7 @@ def run_closeout(
                 "profile": "publication_ready",
                 "mode": "workflow",
                 "task_ref": task_rel,
-                "reviewed_content_head": reviewed_content_head,
+                "branch_review_commit": branch_review_commit,
             },
             ensure_ascii=False,
             indent=2,
@@ -755,7 +762,7 @@ def main() -> int:
     ensure_baseline(root, real_git, remote, after_update)
     gtt = load_installed_companion(root)
     issue = 106 if after_update else 105
-    task_dir, branch, reviewed_content_head = write_fixture(
+    task_dir, branch, branch_review_commit = write_fixture(
         root, gtt, real_git, args.case, issue
     )
     payload = run_closeout(
@@ -763,7 +770,7 @@ def main() -> int:
         task_dir,
         branch,
         issue,
-        reviewed_content_head,
+        branch_review_commit,
         real_git,
         remote,
     )

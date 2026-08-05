@@ -71,11 +71,57 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         )
 
     def test_public_examples_match_closed_schemas(self) -> None:
-        for stem in ("task-workspace-plan", "task-workspace-result"):
+        for stem in ("task-workspace-plan", "task-workspace-result", "issue-scope-ledger"):
             schema = json.loads((PACKAGE_ROOT / "schemas" / f"{stem}.schema.json").read_text(encoding="utf-8"))
             example = json.loads((PACKAGE_ROOT / "examples" / f"{stem}.json").read_text(encoding="utf-8"))
             errors = GTT.skill_json_schema_validation_errors(example, schema, stem)
             self.assertEqual(errors, [], errors)
+
+    def test_issue_scope_ledger_is_closed_scope_data(self) -> None:
+        schema = json.loads(
+            (PACKAGE_ROOT / "schemas/issue-scope-ledger.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        example = json.loads(
+            (PACKAGE_ROOT / "examples/issue-scope-ledger.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(GTT.issue_scope_ledger_errors(example), [])
+        self.assertEqual(
+            set(example),
+            {
+                "schema_version",
+                "primary_issue",
+                "close_issues",
+                "related_issues",
+                "followup_issues",
+            },
+        )
+        expected_issue_fields = {"number", "url", "title", "reason"}
+        self.assertEqual(set(example["primary_issue"]), expected_issue_fields)
+        for field in ("close_issues", "related_issues", "followup_issues"):
+            for issue in example[field]:
+                self.assertEqual(set(issue), expected_issue_fields)
+
+        unknown_top = copy.deepcopy(example)
+        unknown_top["unexpected"] = []
+        self.assertTrue(GTT.issue_scope_ledger_errors(unknown_top))
+        self.assertTrue(
+            GTT.skill_json_schema_validation_errors(unknown_top, schema, "unknown top field")
+        )
+
+        unknown_issue = copy.deepcopy(example)
+        unknown_issue["close_issues"][0]["unexpected"] = "value"
+        self.assertTrue(GTT.issue_scope_ledger_errors(unknown_issue))
+        self.assertTrue(
+            GTT.skill_json_schema_validation_errors(
+                unknown_issue,
+                schema,
+                "unknown issue field",
+            )
+        )
 
     def test_plan_schema_closes_target_variants_and_portable_paths(self) -> None:
         schema = json.loads((PACKAGE_ROOT / "schemas/task-workspace-plan.schema.json").read_text(encoding="utf-8"))

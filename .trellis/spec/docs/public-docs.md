@@ -113,8 +113,7 @@ All three public README files must describe the final ownership boundary:
   sequence.
 
 Public docs that describe task work commits must name
-`guru-create-task-commit` as the active closed-loop owner, retain
-`guru-create-work-commit` only as a reserved tombstone, distinguish AI review
+`guru-create-task-commit` as the active closed-loop owner, distinguish AI review
 from deterministic candidate/executor checks, and document fresh-sequence
 re-entry after finding fixes. Platform entry docs should reference the stable
 skill and typed exits instead of repeating its step-local contract.
@@ -134,8 +133,8 @@ invokes `guru-clarify-requirements:active_task_scope_change`; the caller AI
 authors the complete clarification input from fresh live context. Workflow
 prose and platform entry text reference the Skill and route only; the package
 contract owns adequacy, provenance, unusual-scenario review, authorization
-necessity, and re-entry. Upgrade docs state that active schema 1.2/2.0 approval
-requires full AI-first re-entry while archives are not rewritten. Public docs
+necessity, and re-entry. Public docs state that only current schema 3.0 is
+accepted and every other shape fails closed without upgrade or projection. Public docs
 also state that equivalent metadata/formatting deltas refresh only directly
 affected owner identity, while material authority/scope/design/acceptance
 changes rerun their semantic owners.
@@ -155,8 +154,9 @@ exact issue and immediately returns `refresh_review`; the later open-issue
 invocation obtains a fresh workspace/task confirmation. They state the fixed
 assignee order, the one tracked task-local Issue Scope Ledger, ignored
 `.trellis/.runtime/guru-team/**` mappings, exact object reuse/blocking, and the
-A/B two-order local merge fixture. `prepare-task` is query-only and its legacy
-mutation flags fail closed with migration guidance.
+A/B two-order local merge fixture. `prepare-task` is query-only; all issue,
+branch, worktree, task, artifact, and runtime mutations belong exclusively to
+`guru-create-task-workspace`.
 
 Docs also state that the reviewed-draft GitHub adapter forwards the reviewed
 title/body bytes without trimming or appending a newline before the live reread
@@ -233,7 +233,7 @@ They also identify active semantic `guru-clarify-requirements` as the only
 standalone entry coverage, repository-answerable-before-user-question rule,
 one-question loop, current-dialogue action/scope choices, AI-owned GitHub mutation
 boundary, stdout-only pre-task result, no dedicated clarification artifact,
-active schema `guru-requirements-clarification-2.0`, read-only v1 migration,
+closed current schema `guru-requirements-clarification-2.0`,
 record/check runtime commands, and exits `clear` / `needs_context` /
 `refresh_context` / `retarget_context` / `new_task` / `blocked` with unique
 staged consumers. They must state that successful GitHub
@@ -245,19 +245,21 @@ that `answered` requires checked evidence, every question id participates in
 the reducer lifecycle, and confirmed GitHub payload bytes equal mutation/live
 content. For active tasks they must state that `clear`/`new_task` requires a
 non-empty terminal proposal set and every five-class scope classification has a
-finalized disposition, live GitHub authority, and one exact compact
-`issue-scope-ledger.json.scope_decisions[]` classification containing only
-`trail_id`, proposal id/digest/decision, and remote authority kind/URL/content
-checksum. Planning/context/review/interrupted/re-entry facts are live or
-owner-private checks and must not be copied into the ledger. Public docs must explicitly forbid persisting user authorization
+finalized disposition, live GitHub authority, and one compact owner-result
+`decision_trail` containing only `trail_id`, proposal id/digest/decision, and
+remote authority kind/URL/content checksum. The closed Ledger 2.0 contains only
+`schema_version`, `primary_issue`, `close_issues`, `related_issues`, and
+`followup_issues`. The trail and planning/context/review/interrupted/re-entry
+facts are owner-private or live checks and must not be copied into the ledger.
+Public docs must explicitly forbid persisting user authorization
 state, text, refs, timestamps, digests, or process in the clarification result,
 ledger, runtime, checkpoint, archive, schema, example, or DTO. GitHub authority mutation returns
 `refresh_context`; context time must not predate authority time, the task update
 binds that digest without a second refresh, and mechanism dispositions require
 no trail/mutation before exact progression or a #112 side-effect-free new-task
-draft. Legacy full-shape trails are projected once to compact form without a
-new user choice or GitHub mutation; partial legacy fields on current shapes fail
-closed. Docs also document source-specific task/GitHub/Git deep-read
+draft. Inputs must satisfy the current closed schema before normalization; any
+mismatch fails closed. Docs also document source-specific
+task/GitHub/Git deep-read
 locators, structured no-raw-payload persistence, and field-specific
 validation. Workflow and stop route markers must
 be described as validator-resolved target declarations, not new Skill packages.
@@ -273,11 +275,13 @@ When workflow behavior changes, update the docs that users actually read:
 
 Public docs describing Phase 2 must name active semantic Skill
 `guru-check-task`, its single `phase2-check.json` artifact, active
-`guru-phase2-check-3.0` schema for new records, read-only compatibility for
-existing `guru-phase2-check-2.0` artifacts, scope-before-severity rule,
-full-rerun finding loop, four exits, and official unchanged `trellis-check`
-evidence-only role. They must not claim that coverage flags, successful
-commands, worker output, or deterministic scripts can produce Guru pass.
+`guru-phase2-check-4.0` current-only schema, shared
+`guru-reviewed-content-1.0` identity, `phase2_capture_commit`, public
+`phase2_commit_anchor`, scope-before-severity rule, full-rerun finding loop,
+four exits, and official unchanged `trellis-check` evidence-only role. They must
+state that non-current artifact shapes fail current schema validation and must
+not claim that coverage flags, successful commands, worker output, or
+deterministic scripts can produce Guru pass.
 Install/update docs must describe additive registry distribution to
 shared/Codex/Cursor/Claude roots and explicitly preserve the upstream ownership
 inventory.
@@ -300,7 +304,7 @@ For docs-only changes:
 
 ```bash
 git diff --check
-rg "publish-pr|review-branch|finish-work|trellis-start|trellis-continue" README.md trellis/workflows/guru-team/README.md trellis/presets/guru-team/README.md
+rg "review-branch|finish-work|trellis-start|trellis-continue" README.md trellis/workflows/guru-team/README.md trellis/presets/guru-team/README.md
 ```
 
 When docs mention installed files, compare with the actual overlay and managed
@@ -318,12 +322,9 @@ All three public README files document `discover-skill-evals` and
 the four run statuses, repo-external evidence, and the distinction between
 deterministic grading, external semantic grading, and human feedback. Examples
 use a caller-selected Interface 1.3 package and explicit external run root; they
-use one of the six production Stage 0 packages after the frozen
-`stage0-minimal-handoff-v1` activation and current
-`stage0-ai-first-contract-v2` migration. Upgrade text states that the separate
-#146 production unit migrates the three non-Stage-0 packages to Interface 1.3,
-and requires source/installed/platform discovery plus zero-sidecar validation
-after update/reapply.
+use one of the six current production Stage 0 packages. Upgrade text requires
+source/installed/platform discovery plus zero-sidecar validation after
+update/reapply and does not advertise an alternate contract path.
 
 The README usage contract also names the four installed executable wrappers,
 their `PATH`-resolved native commands, discovery capability reporting, the
@@ -345,16 +346,14 @@ selects the output schema before expected-exit comparison, Codex uses a trusted
 Git root, Claude uses safe non-interactive input, and unauthenticated Cursor is
 `unsupported`.
 
-## Stage 0 Minimal Handoff Documentation
+## Stage 0 Current Contract Documentation
 
-All three public README files distinguish the frozen historical
-`stage0-minimal-handoff-v1` boundary from the current AI-first contract. The
-frozen manifest remains byte-identical at six Stage 0 packages and 24 exits;
-`stage0-ai-first-contract-v2` records the current six-package/23-exit contract,
-including the dialogue-local pre-recorder stop that replaces `cancelled` and the
-`guru-sync-base.repo_root` / `route` required-to-optional scalar migration.
-Both use Interface 1.3 `minimal_handoff`. The READMEs name both migration
-locators, the package-local discovery and public invocation boundary, and the
+All three public README files describe the current six-package/23-exit Stage 0
+contract, including the dialogue-local pre-recorder stop and optional
+`guru-sync-base.repo_root` / `route` scalar arguments. They state that frozen
+source records are historical integrity assets only and are not installed or
+accepted as current registry, discovery, or invocation contracts. The READMEs
+also document the package-local discovery/public invocation boundary and the
 rule that normal Agents do not read/import the shared Python runtime or receive
 private recorder/checker artifacts.
 They also document explicit boolean scalar `required`, optional
@@ -369,29 +368,23 @@ reapply, existing-task re-entry, archive read-only behavior, and recursive zero
 `.new`/`.bak` checks. README commands must run from a clean repository without
 machine-local hidden state.
 
-## Production Minimal Handoff Documentation
+## Production Current Contract Documentation
 
-All three public README files describe `production-minimal-handoff-v1` as a
-separate immutable historical unit containing planning, check, and commit with
-ten profiles and 11 exits. They also publish
-`production-ai-first-contract-v2` as the current three-Skill migration. It
-removes private `approval_ref` / `check_ref` fields from `approved` / `passed`
-and moves those two output schemas to v2 without changing v1 bytes. It also
-describes the one-time Task Commit projection from legacy message/path/semantic fields into
-the five-field v2 owner-entry seed and ignored-runtime candidate, with retired
-authorization, caller-selected exit, and terminal result state discarded. They
-state that all thirteen active packages use Interface 1.3
-`minimal_handoff`, the current package closure is 13-by-51, the integrated global
-workflow closure is 13 invokes, 51 exits, and 28 targets, and the Stage 0
-manifest remains frozen at 6-by-24. They publish discovery, invocation, eval,
-pre-#146 upgrade, update/reapply, and drift-validation commands.
+All three public README files describe
+`trellis/skills/guru-team/contracts/production-current.json` with contract id
+`production-current-v1` as the sole current planning/check/commit manifest. It
+contains exactly the current three Skills, profiles, exits, output schemas,
+authoring-seed edges, private-artifact ids, examples, and eval bindings. The
+READMEs publish only this current manifest and its declared assets. Inputs
+outside current package schemas fail closed and the owning Skill is rerun from
+its current public profile.
 
-The docs show the exact `committed` DTO fields `exit_id`, `task_ref`,
-`base_ref`, and `committed_head`, and name active `guru-review-branch` as the
-consumer while keeping the #146 committed seed shape unchanged. They state that
-#131, rather than #146, activates Branch Review, do not expose private
-approval/check/commit/review artifact bodies, and do not present eval
-`expected_exit` as a production input.
+The docs show the current Phase 2 `passed` DTO fields `exit_id`, `task_ref`, and
+`phase2_commit_anchor`; the current Task Commit `committed` DTO fields
+`exit_id`, `task_ref`, `base_ref`, and `branch_review_commit`; and the current Branch
+Review seed field `branch_review_commit`. They do not expose private
+approval/check/commit/review artifact bodies or present eval `expected_exit` as
+a production input.
 
 The docs also name target-owned `skill_input_authoring_seed` for the complete
 set of twelve semantic handoffs: the five production/review/publication edges
@@ -402,7 +395,7 @@ disjoint exact required-field partition and a no-overwrite full-schema merge,
 and no new projection operation, private-artifact lookup, default, or runtime
 semantic reconstruction is introduced.
 
-The public READMEs also describe the compatible active-task context re-entry
+The public READMEs also describe the current active-task context re-entry
 contract: exact validated task/snapshot locators, private full dirty-worktree
 binding, and exact-prior formal replacement of the fixed snapshot. They state
 that the existing target must be regular and trackable, a successful
@@ -421,9 +414,9 @@ They also state that Branch Review `passed` points to active
 workflow caller authors initial task-local `pr-body.md` and
 `finish-summary-index.json` candidates before invocation without deciding
 readiness; publication `ready` points to active `guru-finalize-task` through the
-integrated global invocation. The production migration identity and three-Skill/11-exit membership
-remain unchanged; the current package graph contains twelve target-owned
-authoring handoffs without rewriting that manifest.
+integrated global invocation. `production-current-v1` binds the current
+three-Skill/11-exit membership, and the current package graph contains twelve
+target-owned authoring handoffs.
 
 ## Task Publication Review Documentation
 
@@ -437,25 +430,22 @@ minimal exits. They state that `ready` targets active, globally integrated
 `blocked` stops.
 
 Docs identify ignored-runtime `pr-readiness.json` as the sole semantic gate
-under schema `guru-task-publication-readiness-2.0`. It stores only the reviewed
+under schema `guru-task-publication-readiness-3.0`. It stores only the reviewed
 content identity, ten semantic dimensions, findings, conclusions, and route;
 objective live bindings are rebuilt transiently and Finalizer-owned publish
-inputs do not augment the checkpoint. A legacy deterministic `ready=true`
-snapshot cannot pass. They do not expose artifact bodies or duplicate the
-package's ten-dimension review and metadata revision procedure.
+inputs do not augment the checkpoint. Inputs outside the current schemas fail
+closed. They do not expose artifact bodies or duplicate the package's
+ten-dimension review and metadata revision procedure.
 
 The `ready` DTO is exactly `exit_id`, `task_ref`, and
-`reviewed_content_head`. Publication consumes the current Branch Review passed
+`branch_review_commit`. Publication consumes the current Branch Review passed
 DTO and live Git only; it never opens Branch Review private checkpoint state.
 
 README package closure numbers are thirteen active Skills and 51 external exits;
 global workflow markers remain 13 invokes, 51 exits, and 28 targets.
-The separate
-`production-minimal-handoff-v1` remains byte-identical at three Skills/11 exits,
-while `production-ai-first-contract-v2` owns the current production projection; the frozen Stage
-0 v1 manifest remains six Skills/24 exits while the AI-first v2 contract is six
-Skills/23 exits. The #131 `passed` bytes remain unchanged while its target-owned
-authoring partition is documented.
+`production-current-v1` owns the current planning/check/commit contract; the
+frozen Stage 0 v1 manifest remains six Skills/24 exits while the AI-first v2
+contract is six Skills/23 exits.
 
 ## Extension Installation Verification Documentation
 
@@ -465,10 +455,9 @@ All three public README files name active Interface 1.3 semantic
 `execute-extension-verification`, `record-extension-verification`,
 `check-extension-verification`, and `invoke-extension-verification`, and four
 minimal exits. They state that workflow `verified` and reachable task-bearing
-standalone `not_required` target active `guru-finalize-task`, while the
-workflow-shaped not-required schema branch remains compatible but unreachable
-from a workflow applicability conflict. `return_to_task_work` repeats Phase 2 and downstream
-review, and `blocked` stops.
+standalone `not_required` target active `guru-finalize-task`.
+`return_to_task_work` repeats Phase 2 and downstream review, and `blocked`
+stops. A workflow applicability conflict has no `not_required` output branch.
 
 Docs explain that the package owns applicability, capability profile, adequacy,
 findings, and route. Changed paths, successful commands, checker pass, and
@@ -508,14 +497,13 @@ ownership.
 ## Task Finalization Documentation
 
 All three public README files name active Interface 1.3 semantic
-`guru-finalize-task`, its seven distinct public input profiles, six `exit_id`
+`guru-finalize-task`, its six distinct public input profiles, six `exit_id`
 outputs, owner-private closeout/gate/recovery facts, current-dialogue side-effect
 confirmation without digest recital, and reuse of the existing #105 deterministic transaction engine. They state
 that scripts execute, validate, and record only after AI review and any required
 human confirmation; scripts do not choose plan, scope, readiness, recovery
 route, or semantic pass.
-They distinguish the preserved workflow-compatible not-required profile from
-the reachable task-bearing standalone #117 edge. That edge publishes only
+They document the task-bearing standalone #117 not-required edge. That edge publishes only
 `repo_ref/resolved_head/verification_ref`; the finalizer target authors
 `profile/mode/task_ref`, binds current task-local evidence to the private plan,
 and does not expose plan identity in the producer handoff.

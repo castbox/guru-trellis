@@ -619,12 +619,18 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         ):
             (task / name).write_text(content, encoding="utf-8")
 
+        primary_issue = {
+            "number": 27,
+            "url": self.issue_live["url"],
+            "title": self.issue_live["title"],
+            "reason": "The active task is scoped to the reviewed issue.",
+        }
         ledger = {
-            "primary_issue": {"number": 27},
-            "close_issues": [{"number": 27}],
+            "schema_version": "2.0",
+            "primary_issue": primary_issue,
+            "close_issues": [primary_issue],
             "related_issues": [],
             "followup_issues": [],
-            "scope_decisions": [],
         }
         GTT.write_json(task / "issue-scope-ledger.json", ledger)
 
@@ -655,9 +661,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                 "reason": "The active-task planning fixture passed the semantic gate.",
             },
         )
-        planning_approval_path = GTT.planning_approval_path(
-            self.root, task, for_write=True
-        )
+        planning_approval_path = GTT.planning_approval_path(self.root, task)
         GTT.write_json(planning_approval_path, planning_approval)
 
         snapshot_sha256 = context_payload["snapshot_identity"]["snapshot_sha256"]

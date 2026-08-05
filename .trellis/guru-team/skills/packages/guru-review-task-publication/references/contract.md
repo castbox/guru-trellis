@@ -3,21 +3,16 @@
 ## Entry
 
 `publication_review` consumes the target-owned merge of Branch Review seed
-`task_ref`, `reviewed_content_head` and caller-authored `profile`, `mode`,
+`task_ref`, `branch_review_commit` and caller-authored `profile`, `mode`,
 `review_intent`. The Branch Review checkpoint and digest remain private to the
 Branch Review owner and are not read by this v2 path. `publication_review_stale`
-consumes Finalizer seed `task_ref`, `reviewed_content_head`, `stale_reason` and
+consumes Finalizer seed `task_ref`, `branch_review_commit`, `stale_reason` and
 caller-authored `profile`, `mode`, `review_intent`. Workflow and standalone use
 the same eight preconditions. The recorder uses the stale reason only to bind
 the current re-entry round; the checked owner result remains bound to the
-supplied reviewed HEAD and never expands a public output. A legacy two-field
-stale seed is invalid and must be regenerated from current Finalizer facts.
-
-For one-time active-task compatibility, the Branch Review owner reads its own
-legacy gate, completes any required fresh-final re-entry, and emits the current
-minimal `passed` DTO. Publication accepts only that DTO. A legacy Publication
-input containing `reviewed_head` or `review_ref` fails closed and routes back to
-Branch Review; Publication never reads or projects another Skill's checkpoint.
+supplied reviewed commit and never expands a public output. Inputs outside the
+current profile schema fail closed. Publication never reads or projects another
+Skill's checkpoint.
 
 ## Semantic loop
 
@@ -54,20 +49,12 @@ index as semantic evidence. Publication does not read Planning, Phase 2, or
 Branch Review private checkpoints and never requires an
 `implementation-handoff.md` transcription.
 
-The repository status binding uses one closed publication allowlist. New
-reviews allow the current Issue Scope Ledger, `pr-body.md`,
-`finish-summary-index.json`, and the current command's explicitly named ignored
-runtime input; Branch Review continuity comes only from the public
-`reviewed_content_head` and live Git.
-Completed legacy `task-commit-plans/NNN.json` and legacy review artifacts remain
-read-only compatibility inputs when the current task was created before the
-AI-first migration; they are never generated or required by a new review.
+The repository status binding classifies task/runtime metadata through the
+shared reviewed-content boundary; Branch Review continuity comes only from the
+public `branch_review_commit`, the shared content identity, and live Git.
 `pr-readiness.json` is the recorder-owned artifact and is excluded from its own
-repository snapshot. A runtime path is allowed only when it is the current
-command's explicit regular-file input under `.trellis/.runtime/guru-team/`;
-the runtime prefix itself is never an allowlist. Any other task-local, runtime,
-or repository status path makes `review_range_and_working_tree` fail and
-prevents `ready`.
+repository snapshot. Any dirty reviewed-content path makes
+`review_range_and_working_tree` fail and prevents `ready`.
 
 ## Gate and exits
 
@@ -79,10 +66,10 @@ conclusions must pass.
 `return_to_task_work` requires at least one `finding` dimension and an open
 `task_work` finding whose dimension references that non-passed dimension.
 For stale-profile content continuity drift this is the only non-blocked legal
-exit: the checker permits the old reviewed identity solely so the semantic
+exit: the checker permits the recorded reviewed identity solely so the semantic
 owner can return the task to Phase 2. `ready` still requires current content
 continuity and the complete Finalizer preflight. The exception requires a valid
-reviewed HEAD that is proven to be an ancestor of current HEAD plus a successful
+reviewed commit that is proven to be an ancestor of current HEAD plus a successful
 descendant diff inspection. Invalid or non-ancestor identities and failed diff
 inspection remain fail-closed continuity errors on every exit.
 `blocked` requires at least one `blocked` dimension, one blocked
@@ -97,7 +84,7 @@ explicit finding or blocker without a script choosing that route.
 reason and remediation.
 
 The `ready` DTO contains only `exit_id`, `task_ref`, and
-`reviewed_content_head`. Finalizer consumes that DTO directly and runs the same
+`branch_review_commit`. Finalizer consumes that DTO directly and runs the same
 side-effect-free closeout preflight already required before `ready`; it never
 reads, augments, or understands the Publication checkpoint.
 

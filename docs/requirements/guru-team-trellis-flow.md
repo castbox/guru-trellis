@@ -42,15 +42,15 @@ sequenceDiagram
   R1->>AI: open finding
   AI->>Git: fix, full check, fresh commit
   AI->>R1: ephemeral closure at fix HEAD
-  R1-->>AI: introduced_head + resolved_at_head + evidence
+  R1-->>AI: introduced_head + fix_head + closure_head + evidence
   AI->>R2: complete current range
   R2-->>AI: fresh_final_review
   AI->>AI: retain one private review-gate checkpoint
 ```
 
 Closure 与 fresh final 是两个语义 judgment，但 closure 没有 public exit 或 artifact。原 reviewer
-真实 unfinished 时才由 replacement closure，并留下 ignored recovery checkpoint。新 public input
-不接受 `finding_fix_review`；旧 2.0 gate 只读迁移到 `fresh_final_review`。
+真实 unfinished 时才由 replacement closure，并留下 ignored recovery checkpoint。Current public
+input 只接受 `initial_review|fresh_final_review`；其它 profile 或 gate shape 直接 fail closed。
 
 ## 交互预算
 
