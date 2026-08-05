@@ -14,8 +14,8 @@
       "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
       "reason": "Issue #174 is fully covered by this task.",
       "acceptance_evidence": [
-        "Current HEAD e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336 已验证 canonical 与 dogfood workflow 均为 411 行且字节一致，13 个 mandatory Skill invocation、51 个 typed exit、28 个 workflow/stop target、line-budget、Phase parser、task validate 与 git diff --check 结果符合 #174 范围。",
-        "独立 Branch Review 已覆盖完整 origin/main...HEAD 两提交范围，无未关闭 P0-P3 finding；488/186 测试套件中的 README 基线失败已在 PR body 中逐项区分，未被宣称为本 Issue 的 workflow 回归。",
+        "实现提交 8e091c44e2888c8448151d91ca3540a14f9818fa 已验证 canonical 与 dogfood workflow 均为 411 行且字节一致，13 个 mandatory Skill invocation、51 个 typed exit、28 个 workflow/stop target、line-budget、Phase parser、task validate 与 git diff --check 结果符合 #174 范围；后续 8f4bf93 仅撤回错误提交的 active closeout projection 与 context snapshot。",
+        "独立 Branch Review 将覆盖 cleanup 后完整 origin/main...HEAD 范围；488/186 测试套件中的 README 基线失败继续逐项区分，不宣称为本 Issue 的 workflow 回归。",
         {
           "type": "remote_marketplace_verification",
           "status": "pending",
