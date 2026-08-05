@@ -15,7 +15,7 @@
       "reason": "Issue #174 is fully covered by this task.",
       "acceptance_evidence": [
         "实现提交 8e091c44e2888c8448151d91ca3540a14f9818fa 已验证 canonical 与 dogfood workflow 均为 411 行且字节一致，13 个 mandatory Skill invocation、51 个 typed exit、28 个 workflow/stop target、line-budget、Phase parser、task validate 与 git diff --check 结果符合 #174 范围；后续 8f4bf93 仅撤回错误提交的 active closeout projection 与 context snapshot。",
-        "独立 Branch Review 将覆盖 cleanup 后完整 origin/main...HEAD 范围；488/186 测试套件中的 README 基线失败继续逐项区分，不宣称为本 Issue 的 workflow 回归。",
+        "Branch Review 范围为 cleanup 后完整 origin/main...HEAD；488/186 测试套件中的 README 基线失败继续逐项区分，不宣称为本 Issue 的 workflow 回归。",
         {
           "type": "remote_marketplace_verification",
           "status": "pending",
