@@ -13,11 +13,42 @@
       "url": "https://github.com/castbox/guru-trellis/issues/174",
       "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
       "reason": "Issue #174 is fully covered by this task.",
-      "acceptance_evidence": []
+      "acceptance_evidence": [
+        "Current HEAD e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336 已验证 canonical 与 dogfood workflow 均为 411 行且字节一致，13 个 mandatory Skill invocation、51 个 typed exit、28 个 workflow/stop target、line-budget、Phase parser、task validate 与 git diff --check 结果符合 #174 范围。",
+        "独立 Branch Review 已覆盖完整 origin/main...HEAD 两提交范围，无未关闭 P0-P3 finding；488/186 测试套件中的 README 基线失败已在 PR body 中逐项区分，未被宣称为本 Issue 的 workflow 回归。",
+        {
+          "type": "remote_marketplace_verification",
+          "status": "pending",
+          "required": true,
+          "artifact_path": "marketplace-verification.json",
+          "artifact_sha256": "",
+          "verified_content_head": "e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336",
+          "remote_head": "",
+          "publish_head": "e68b3b2fbafc12f0b0e28e5df7f1f20a285fd336",
+          "commands_passed": false
+        }
+      ]
     }
   ],
   "related_issues": [],
   "followup_issues": [],
+  "scope_decisions": [
+    {
+      "trail_id": "scope-change-20260805-174-finalizer-reentry",
+      "proposal_decisions": [
+        {
+          "proposal_id": "include-finalizer-pending-ledger-reentry",
+          "proposal_digest": "7a6dab65d5af6c0a02a2580c07e735cf9517ca391381990ee8dba38dad65d9d7",
+          "decision": "accepted_current"
+        }
+      ],
+      "github_authority": {
+        "kind": "issue_comment",
+        "url": "https://github.com/castbox/guru-trellis/issues/174#issuecomment-5186821430",
+        "content_sha256": "e9e7a52dd62421aff63b379322bf5039d136606011114cb7c349d35c54ea23fa"
+      }
+    }
+  ],
   "rules": [
     "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
     "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",

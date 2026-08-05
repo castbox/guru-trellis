@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "index": {
+    "problem": "Issue #174 的 thin workflow 在当前 main 合并候选中超过既有 420 行预算，需要在不改变公共 graph 的前提下补齐 current-HEAD 回归证明。",
+    "outcome": "canonical 与 dogfood workflow 均收敛到 411 行并保持字节一致；13 个 mandatory Skill、51 个 typed exit、唯一 consumer、stop graph 与 #161 public contract 未改变。",
+    "changed_behavior": [
+      "canonical 与 dogfood workflow 删除重复空行，行数从 427 降至 411，满足既有 420 行预算。",
+      "workflow public graph 继续包含 13 个 mandatory Skill invocation、51 个 typed exit 与 fail-closed 路由。",
+      "Phase 0 至 Phase 3 的 global routing、#161 stale re-entry、Docs SSOT 与 Issue Scope Ledger 边界保持不变。",
+      "本次 current-HEAD 验证将 #174 新证据与 #132 历史 combined acceptance 分开记录。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "workflow",
+        "name": "Guru Team global workflow",
+        "paths": [
+          ".trellis/workflow.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "删除不承载语义的重复空行，使 canonical 与 dogfood workflow 字节一致并满足 420 行预算。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "Issue #174 task metadata",
+        "paths": [
+          ".trellis/tasks/08-04-174-thin-workflow-420/check.jsonl",
+          ".trellis/tasks/08-04-174-thin-workflow-420/design.md",
+          ".trellis/tasks/08-04-174-thin-workflow-420/implement.jsonl",
+          ".trellis/tasks/08-04-174-thin-workflow-420/implement.md",
+          ".trellis/tasks/08-04-174-thin-workflow-420/issue-scope-ledger.json",
+          ".trellis/tasks/08-04-174-thin-workflow-420/prd.md",
+          ".trellis/tasks/08-04-174-thin-workflow-420/task.json"
+        ],
+        "change": "绑定本 Issue 的范围、规划、验证和 task-local provenance，供 review 与后续 closeout 消费。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Workflow line-budget contract",
+        "before": "canonical 与 dogfood workflow 各为 427 行，触发既有不超过 420 行的 regression。",
+        "after": "canonical 与 dogfood workflow 均为 411 行，字节一致并满足既有 420 行预算。",
+        "source_artifact": "prd.md"
+      },
+      {
+        "contract": "Public graph stability",
+        "before": "压缩可能误删 mandatory invocation、typed exit、唯一 consumer 或 stop route。",
+        "after": "13 个 Skill invocation、51 个 typed exit、唯一 consumer 与 fail-closed stop graph 保持不变。",
+        "source_artifact": "design.md"
+      },
+      {
+        "contract": "Global workflow ownership",
+        "before": "行预算修复可能把 step-local 判断或实现细节重新写入 global workflow。",
+        "after": "本次只收敛 global Markdown 排版，不改变 Skill、Docs SSOT、Issue Scope Ledger 与 #161 边界。",
+        "source_artifact": "design.md"
+      }
+    ],
+    "search_terms": {
+      "commands": [
+        "get_context.py",
+        "task.py validate",
+        "git diff --check"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "guru-skill-invoke",
+        "guru-skill-exit",
+        "guru-stop-target"
+      ],
+      "symbols": [
+        "guru-review-task-publication",
+        "reviewed_content_head"
+      ],
+      "phrases": [
+        "#174 thin workflow 420 行预算修复",
+        "workflow.md 行数收敛到 411",
+        "get_context.py、task.py validate、git diff --check 通过",
+        "guru-review-task-publication 绑定 current HEAD"
+      ]
+    }
+  }
+}

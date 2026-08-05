@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack
 import hashlib
 import importlib.util
 import json
@@ -378,6 +379,252 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             private_artifact.assert_not_called()
             owner_checker.assert_not_called()
             legacy_checker.assert_not_called()
+
+    def test_verification_verified_reentry_allows_plan_owned_pending_ledger_only(
+        self,
+    ) -> None:
+        runtime = load_selected_runtime()
+        task_ref = ".trellis/tasks/example-finalizer-reentry"
+        ledger_locator = f"{task_ref}/issue-scope-ledger.json"
+        reviewed_head = "a" * 40
+        ledger = {"close_issues": []}
+
+        with tempfile.TemporaryDirectory(prefix="guru-finalizer-reentry-") as temporary:
+            root = Path(temporary)
+            task_dir = root / task_ref
+            task_dir.mkdir(parents=True)
+            (task_dir / "issue-scope-ledger.json").write_text(
+                json.dumps(ledger),
+                encoding="utf-8",
+            )
+            plan = {
+                "schema_version": runtime.CLOSEOUT_PLAN_SCHEMA_VERSION,
+                "plan_digest": "d" * 64,
+                "task": {
+                    "active_locator": task_ref,
+                    "archive_locator": (
+                        ".trellis/tasks/archive/2026-08/"
+                        "example-finalizer-reentry"
+                    ),
+                },
+                "git": {"reviewed_work_head": reviewed_head},
+                "review": {"changed_paths": []},
+                "marketplace": {"required": True},
+                "inputs": {
+                    "issue_scope_ledger": {
+                        "path": ledger_locator,
+                        "sha256": runtime.canonical_json_sha256(
+                            runtime.closeout_semantic_ledger(ledger)
+                        ),
+                    },
+                },
+            }
+            (task_dir / runtime.CLOSEOUT_PLAN_ARTIFACT).write_text(
+                json.dumps(plan),
+                encoding="utf-8",
+            )
+            with mock.patch.object(
+                runtime,
+                "git_status_paths",
+                return_value=[ledger_locator],
+            ):
+                self.assertEqual(
+                    runtime.finalizer_unreviewed_dirty_paths(root, task_dir),
+                    [ledger_locator],
+                )
+            owner_result = {
+                "profile": "verification_required",
+                "typed_exit": "verified",
+            }
+            checked_result = {"status": "ok", "typed_exit": "verified"}
+            args = argparse.Namespace(
+                finish_summary_index_file=None,
+                repo=None,
+                remote=None,
+                title=None,
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "official_after_archive_hook_state",
+                        return_value={},
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "validate_closeout_plan",
+                        side_effect=lambda value: value,
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "review_branch_content_continuity_errors",
+                        return_value=[],
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "current_head",
+                        return_value=reviewed_head,
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "marketplace_verification_required",
+                        return_value={"candidate_surfaces": ["workflow"]},
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "git_status_paths",
+                        return_value=[ledger_locator],
+                    )
+                )
+                dirty_paths = stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "finalizer_unreviewed_dirty_paths",
+                        wraps=runtime.finalizer_unreviewed_dirty_paths,
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "load_finish_summary_index",
+                        return_value=(task_dir / "finish-summary-index.json", {}),
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "closeout_pending_marketplace_evidence",
+                        return_value={},
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "load_issue_scope_ledger",
+                        return_value=ledger,
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "validate_ledger_for_publish",
+                        return_value=[],
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "resolve_closeout_reviewed_body",
+                        return_value=("body", "body-file"),
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "validate_pr_body_quality",
+                        return_value=[],
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "validate_reviewed_body_source_for_publish",
+                        return_value=[],
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "task_json",
+                        return_value={"status": "in_progress"},
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(runtime, "validate_closeout_task_children")
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "infer_github_repo",
+                        return_value="castbox/guru-trellis",
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "normalize_github_repository",
+                        return_value="castbox/guru-trellis",
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "base_branch_from_sources",
+                        return_value="main",
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "current_branch",
+                        return_value="codex/example",
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(runtime, "validate_github_remote_repository")
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "pr_title_from_task",
+                        return_value="title",
+                    )
+                )
+                stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "build_closeout_plan",
+                        return_value=plan,
+                    )
+                )
+                prepared = runtime.prepare_closeout(
+                    root,
+                    args,
+                    {},
+                    task_dir,
+                    {},
+                    verification_owner_result=(owner_result, checked_result),
+                )
+
+            self.assertEqual(prepared["plan"], plan)
+            dirty_paths.assert_called_once_with(
+                root,
+                task_dir,
+                allow_publication_issue_scope_ledger=True,
+            )
+            with mock.patch.object(
+                runtime,
+                "git_status_paths",
+                return_value=[ledger_locator, "unrelated.txt"],
+            ):
+                self.assertEqual(
+                    runtime.finalizer_unreviewed_dirty_paths(
+                        root,
+                        task_dir,
+                        allow_publication_issue_scope_ledger=True,
+                    ),
+                    ["unrelated.txt"],
+                )
 
     def test_stale_finalizer_projection_returns_content_drift_to_phase_2(
         self,
