@@ -60,13 +60,13 @@ def load_runtime():
         ])
     runtime_path = next((path for path in candidates if path.is_file()), None)
     if runtime_path is None:
-        raise RuntimeError("Compatible Guru Team runtime not found for package tests.")
+            raise RuntimeError("Current Guru Team runtime not found for package tests.")
     spec = importlib.util.spec_from_file_location(
         "task_publication_package_runtime",
         runtime_path,
     )
     if spec is None or spec.loader is None:
-        raise RuntimeError("Compatible Guru Team runtime could not be loaded.")
+            raise RuntimeError("Current Guru Team runtime could not be loaded.")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -107,11 +107,11 @@ class TaskPublicationContractTest(unittest.TestCase):
             self.interface["public_contracts"]["input"]["aggregate_schema"][
                 "schema_id"
             ],
-            "guru-production-review-task-publication-input-aggregate-3.0",
+            "guru-production-review-task-publication-input-aggregate-4.0",
         )
         self.assertEqual(
             profiles[1]["schema"]["schema_id"],
-            "guru-production-review-task-publication-input-publication-review-stale-2.0",
+            "guru-production-review-task-publication-input-publication-review-stale-3.0",
         )
 
     def test_stale_profile_contains_only_direct_reentry_inputs(self) -> None:
@@ -125,7 +125,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             "profile",
             "mode",
             "task_ref",
-            "reviewed_content_head",
+            "branch_review_commit",
             "stale_reason",
             "review_intent",
         }
@@ -138,31 +138,6 @@ class TaskPublicationContractTest(unittest.TestCase):
         ):
             payload = json.loads((PACKAGE / relative).read_text(encoding="utf-8"))
             self.assertNotIn("reentry_context", payload, relative)
-
-    def test_legacy_stale_v1_input_fails_closed_without_head_synthesis(self) -> None:
-        schema = json.loads(
-            (
-                PACKAGE
-                / "schemas/public-publication-review-stale-input.schema.json"
-            ).read_text(encoding="utf-8")
-        )
-        legacy = {
-            "profile": "publication_review_stale",
-            "mode": "workflow",
-            "task_ref": ".trellis/tasks/07-24-example-publication",
-            "stale_reason": "publication_review_head_mismatch",
-            "review_intent": "stale_reentry_review",
-        }
-        errors = GTT.skill_json_schema_validation_errors(
-            legacy,
-            schema,
-            "legacy stale publication input",
-        )
-        self.assertTrue(errors)
-        self.assertTrue(
-            any("reviewed_content_head" in error for error in errors),
-            errors,
-        )
 
     def test_three_minimal_exits_have_unique_consumers(self) -> None:
         exits = self.interface["external_exits"]
@@ -190,32 +165,8 @@ class TaskPublicationContractTest(unittest.TestCase):
         )
         contract = consumer["contract"]
         self.assertEqual(contract["kind"], "skill_input_authoring_seed")
-        self.assertEqual(contract["seed_fields"], ["task_ref", "reviewed_content_head"])
+        self.assertEqual(contract["seed_fields"], ["task_ref", "branch_review_commit"])
         self.assertEqual(contract["authoring_fields"], ["profile", "mode", "review_intent"])
-
-    def test_legacy_v1_input_returns_to_branch_review_owner(self) -> None:
-        legacy = {
-            "profile": "publication_review",
-            "mode": "workflow",
-            "task_ref": ".trellis/tasks/07-24-example-publication",
-            "reviewed_head": "a" * 40,
-            "review_ref": "review-gate:legacy-caller-value",
-            "review_intent": "initial_review",
-        }
-        schema = json.loads(
-            (PACKAGE / "schemas/public-publication-review-input.schema.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        self.assertTrue(
-            GTT.skill_json_schema_validation_errors(
-                legacy,
-                schema,
-                "legacy task publication input",
-            )
-        )
-        self.assertFalse(hasattr(GTT, "task_publication_project_legacy_public_input"))
-        self.assertFalse(hasattr(GTT, "task_publication_project_legacy_gate"))
 
     def test_public_outputs_exclude_private_review_state(self) -> None:
         forbidden = {
@@ -252,8 +203,8 @@ class TaskPublicationContractTest(unittest.TestCase):
         self.assertEqual(
             GTT.task_publication_semantic_errors(
                 self.readiness_example,
-                reviewed_content_head=self.readiness_example[
-                    "reviewed_content_head"
+                branch_review_commit=self.readiness_example[
+                    "branch_review_commit"
                 ],
             ),
             [],
@@ -284,7 +235,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             "publication finding refs must be unique and non-empty",
             GTT.task_publication_semantic_errors(
                 invalid,
-                reviewed_content_head=invalid["reviewed_content_head"],
+                branch_review_commit=invalid["branch_review_commit"],
             ),
         )
 
@@ -311,7 +262,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             "publication finding evidence must be non-empty",
             GTT.task_publication_semantic_errors(
                 invalid,
-                reviewed_content_head=invalid["reviewed_content_head"],
+                branch_review_commit=invalid["branch_review_commit"],
             ),
         )
 
@@ -345,7 +296,7 @@ class TaskPublicationContractTest(unittest.TestCase):
     def semantic_errors(self, payload: dict) -> list[str]:
         return GTT.task_publication_semantic_errors(
             payload,
-            reviewed_content_head=payload["reviewed_content_head"],
+            branch_review_commit=payload["branch_review_commit"],
         )
 
     @staticmethod
@@ -520,12 +471,20 @@ class TaskPublicationContractTest(unittest.TestCase):
             mock.patch.object(
                 GTT,
                 "current_head",
-                return_value=self.readiness_example["reviewed_content_head"],
+                return_value=self.readiness_example["branch_review_commit"],
             ),
             mock.patch.object(
                 GTT,
                 "review_branch_content_continuity_errors",
                 return_value=[],
+            ),
+            mock.patch.object(
+                GTT,
+                "reviewed_content_identity",
+                return_value={
+                    "algorithm": "guru-reviewed-content-1.0",
+                    "sha256": self.readiness_example["reviewed_content_sha256"],
+                },
             ),
             mock.patch.object(
                 GTT,
@@ -545,10 +504,10 @@ class TaskPublicationContractTest(unittest.TestCase):
         preflight.assert_called_once_with(
             root,
             task_dir,
-            self.readiness_example["reviewed_content_head"],
+            self.readiness_example["branch_review_commit"],
         )
 
-    def test_only_proven_descendant_content_drift_allows_return_to_task_work(
+    def test_only_content_identity_drift_allows_return_to_task_work(
         self,
     ) -> None:
         root = Path("/repo")
@@ -557,10 +516,11 @@ class TaskPublicationContractTest(unittest.TestCase):
         def checked(
             payload: dict,
             *,
-            ancestor: bool = True,
-            diff_returncode: int = 0,
-            diff_stdout: str = "trellis/workflows/guru-team/workflow.md\n",
+            continuity_errors: list[str] | None = None,
         ) -> list[str]:
+            continuity_errors = continuity_errors or [
+                GTT.BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX + "identity mismatch"
+            ]
             with (
                 mock.patch.object(GTT, "task_publication_schema", return_value={}),
                 mock.patch.object(
@@ -570,18 +530,16 @@ class TaskPublicationContractTest(unittest.TestCase):
                 mock.patch.object(GTT, "current_head", return_value="d" * 40),
                 mock.patch.object(
                     GTT,
-                    "is_ancestor",
-                    return_value=ancestor,
+                    "review_branch_content_continuity_errors",
+                    return_value=continuity_errors,
                 ),
                 mock.patch.object(
                     GTT,
-                    "run",
-                    return_value=subprocess.CompletedProcess(
-                        args=[],
-                        returncode=diff_returncode,
-                        stdout=diff_stdout,
-                        stderr="",
-                    ),
+                    "reviewed_content_identity",
+                    return_value={
+                        "algorithm": "guru-reviewed-content-1.0",
+                        "sha256": "d" * 64,
+                    },
                 ),
                 mock.patch.object(
                     GTT,
@@ -599,7 +557,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         ready = copy.deepcopy(self.readiness_example)
         self.assertTrue(
             any(
-                "reviewed content HEAD is stale" in error
+                "reviewed content" in error and "stale" in error
                 for error in checked(ready)
             )
         )
@@ -607,28 +565,37 @@ class TaskPublicationContractTest(unittest.TestCase):
         blocked = self.blocked_payload()
         self.assertTrue(
             any(
-                "reviewed content HEAD is stale" in error
+                "reviewed content" in error and "stale" in error
                 for error in checked(blocked)
             )
         )
 
-        for case, kwargs in (
-            ("non-ancestor", {"ancestor": False}),
-            ("inspection-failure", {"diff_returncode": 1, "diff_stdout": ""}),
+        for case, continuity_errors in (
+            (
+                "non-ancestor",
+                ["Branch Review review_commit is not an ancestor of the current HEAD."],
+            ),
+            (
+                "identity-unreadable",
+                ["Branch Review could not calculate reviewed-content continuity."],
+            ),
         ):
             with self.subTest(case=case):
                 self.assertTrue(
                     any(
-                        "reviewed content HEAD is stale" in error
-                        for error in checked(returning, **kwargs)
+                        "reviewed content is stale" in error
+                        for error in checked(
+                            returning,
+                            continuity_errors=continuity_errors,
+                        )
                     )
                 )
 
         invalid = copy.deepcopy(returning)
-        invalid["reviewed_content_head"] = "not-a-sha"
+        invalid["branch_review_commit"] = "not-a-sha"
         self.assertTrue(
             any(
-                "reviewed content HEAD is invalid" in error
+                "branch_review_commit is invalid" in error
                 for error in checked(invalid)
             )
         )

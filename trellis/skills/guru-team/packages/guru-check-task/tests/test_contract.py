@@ -42,11 +42,11 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         )
         private = self.interface["public_contracts"]["private_artifacts"]
         self.assertEqual(private[0]["persistence"], "ignored_runtime")
-        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-3.0.json"))
-        self.assertRegex(self.example["reviewed_worktree_sha256"], r"^[0-9a-f]{64}$")
+        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-4.0.json"))
+        self.assertRegex(self.example["reviewed_content_sha256"], r"^[0-9a-f]{64}$")
         self.assertIn(
-            "Owner-private composite freshness token",
-            self.schema["properties"]["reviewed_worktree_sha256"]["description"],
+            "guru-reviewed-content-1.0",
+            self.schema["properties"]["reviewed_content_sha256"]["description"],
         )
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
@@ -174,7 +174,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
     def test_example_is_deidentified_and_current(self) -> None:
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
-        self.assertEqual(self.example["schema_version"], "3.0")
+        self.assertEqual(self.example["schema_version"], "4.0")
         self.assertEqual(self.example["skill_id"], "guru-check-task")
 
 

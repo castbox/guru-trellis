@@ -133,7 +133,7 @@
       "id": "phase2_check_checker",
       "command": "scripts/check-phase2-check.sh",
       "runtime_command": "check-phase2-check",
-      "objective_scope": "validate schema 3.0 closure, task and planning linkage, checked HEAD ancestry, dirty-path coverage, semantic union, typed exit, and unique consumer"
+      "objective_scope": "validate schema 4.0 closure, task and planning linkage, capture-commit ancestry, reviewed-content identity, dirty-path coverage, semantic union, typed exit, and unique consumer"
     },
     {
       "id": "public_invocation",
@@ -211,7 +211,7 @@
     "outputs": [
       {
         "exit_id": "passed",
-        "schema": {"schema_id": "guru-production-check-task-output-passed-2.0", "path": "schemas/public-passed-output.schema.json"},
+        "schema": {"schema_id": "guru-production-check-task-output-passed-3.0", "path": "schemas/public-passed-output.schema.json"},
         "example": {"id": "passed_output", "path": "examples/public-passed-output.json"},
         "consumer_use_ids": ["project_passed"]
       },
@@ -244,7 +244,7 @@
           "interface_path": "packages/guru-create-task-commit/interface.json",
           "input_kind": "structured_json",
           "profile_id": "initial_commit",
-          "seed_fields": ["source_exit", "task_ref", "checked_head"],
+          "seed_fields": ["source_exit", "task_ref", "phase2_commit_anchor"],
           "authoring_fields": ["profile", "mode"],
           "authoring_example": {"id": "initial_commit_authoring", "path": "examples/public-initial-commit-authoring.json"}
         }
@@ -276,7 +276,7 @@
         "mappings": [
           {"source": "exit_id", "target": "source_exit"},
           {"source": "task_ref", "target": "task_ref"},
-          {"source": "checked_head", "target": "checked_head"}
+          {"source": "phase2_commit_anchor", "target": "phase2_commit_anchor"}
         ]
       },
       {"id": "project_implementation_required", "exit_id": "implementation_required", "consumer_input_id": "implementation_required_workflow_input", "operation": "direct"},
@@ -287,7 +287,7 @@
       {
         "id": "phase2_check",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-3.0.json", "path": "schemas/phase2-check.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json", "path": "schemas/phase2-check.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]

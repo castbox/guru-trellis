@@ -32,7 +32,7 @@
     {
       "id": "runtime_dependency",
       "evidence": "installed extension manifest, dispatcher, active package inventory and declared record/check runtime commands",
-      "binding": "complete compatible Guru Team preset runtime",
+      "binding": "complete current Guru Team preset runtime",
       "freshness": "validated by run-skill-command before every runtime command"
     },
     {
@@ -182,7 +182,7 @@
       "id": "clarification_checker",
       "command": "scripts/check-requirements-clarification.sh",
       "runtime_command": "check-requirements-clarification",
-      "objective_scope": "schema 2.0 and legacy-version rejection, digest recomputation, live source/context/target/duplicate freshness, objective target/action/result bindings, compact scope-decision authority linkage, mechanism disposition isolation, authority-before-context-before-task-update re-entry and typed-exit invariants"
+      "objective_scope": "closed schema 2.0 validation, digest recomputation, live source/context/target/duplicate freshness, objective target/action/result bindings, scope-only Ledger validation, owner-result decision authority, mechanism disposition isolation, authority-before-context-before-task-update re-entry and typed-exit invariants"
     },
     {
       "id": "public_invocation",

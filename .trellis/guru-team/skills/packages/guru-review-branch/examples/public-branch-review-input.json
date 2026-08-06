@@ -3,6 +3,6 @@
   "mode": "workflow",
   "task_ref": ".trellis/tasks/example-task",
   "base_ref": "origin/main",
-  "committed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "review_intent": "initial_review"
 }

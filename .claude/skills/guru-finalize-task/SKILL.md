@@ -21,20 +21,12 @@ In workflow mode, the caller automatically consumes
 `reprepare_required`. These are machine routes, not user decisions. Ask again
 only when the external side-effect plan or its authority changed.
 
-`publication_review_stale` carries the exact `reviewed_content_head` that the
+`publication_review_stale` carries the exact `branch_review_commit` that the
 Finalizer found stale, together with task identity and the stable reason. The
-Publication owner uses that immutable identity to distinguish a task-work
-continuity finding from metadata-only re-review. A legacy stale payload without
-that HEAD fails closed and must be regenerated from current Finalizer facts;
-never infer or synthesize the missing identity.
-
-For a checked `publication_review_head_mismatch` on an active schema 1.2
-pre-draft transaction, the public wrapper first retires only the exact
-plan-owned stale projection: it restores the Ledger from current HEAD, removes
-the plan-bound body/index/plan and optional verification output, and retires the
-Finalizer checkpoint. This mapped recovery needs no confirmation. Staged,
-unknown, altered, tracked, ignored, later-state, or identity-mismatched content
-fails closed without mutation.
+Publication owner uses that current Git anchor to distinguish a task-work
+continuity finding from metadata-only re-review. Missing or mismatched current
+identity fails closed; never infer or synthesize it. The wrapper emits the
+stale route without mutating plan, publication, verification, or gate state.
 
 For one current, unique action, prompt with `确认继续`. Any clear affirmative
 reply applies to the displayed action in the current dialogue; no recorder or

@@ -88,7 +88,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     )
                 )
 
-    def test_seven_profiles_and_six_exits_are_closed(self) -> None:
+    def test_six_current_profiles_and_six_exits_are_closed(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
         profiles = interface["public_contracts"]["input"]["profiles"]
         outputs = interface["public_contracts"]["outputs"]
@@ -97,7 +97,6 @@ class FinalizeTaskContractTests(unittest.TestCase):
             [
                 "publication_ready",
                 "verification_verified",
-                "verification_not_required",
                 "standalone_verification_not_required",
                 "same_plan_resume",
                 "reprepare_preview",
@@ -116,13 +115,11 @@ class FinalizeTaskContractTests(unittest.TestCase):
             ],
         )
 
-    def test_archive_contract_matches_runtime_v12_and_legacy_limits(self) -> None:
+    def test_archive_contract_matches_current_runtime_limit(self) -> None:
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
-        self.assertIn("schema 1.2", contract)
-        self.assertIn("10-file compatibility allowlist", contract)
-        self.assertIn("`review-gate.json`", contract)
-        self.assertIn("schema 1.1", contract)
-        self.assertIn("maximum of 12", contract)
+        self.assertIn("schema 2.0", contract)
+        self.assertIn("seven-file", contract)
+        self.assertIn("at most eight files", contract)
 
         spec = importlib.util.spec_from_file_location(
             "guru_team_trellis_archive_contract_test",
@@ -132,14 +129,19 @@ class FinalizeTaskContractTests(unittest.TestCase):
         assert spec is not None and spec.loader is not None
         runtime = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(runtime)
-        self.assertEqual(len(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS), 10)
-        self.assertEqual(len(runtime.CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS), 11)
-        self.assertEqual(runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS, 11)
-        self.assertEqual(runtime.CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS, 12)
-        self.assertIn("review-gate.json", runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
-        self.assertNotIn(
-            "task-finalization-gate.json",
+        self.assertEqual(len(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS), 7)
+        self.assertEqual(runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS, 8)
+        self.assertEqual(
             runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS,
+            {
+                "task.json",
+                "prd.md",
+                "design.md",
+                "implement.md",
+                "issue-scope-ledger.json",
+                "closeout-plan.json",
+                "finish-summary.json",
+            },
         )
 
     def test_reprepare_seed_is_exact_and_target_owned(self) -> None:
@@ -170,7 +172,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
         )
         self.assertEqual(
             consumer["contract"]["seed_fields"],
-            ["task_ref", "reviewed_content_head", "stale_reason"],
+            ["task_ref", "branch_review_commit", "stale_reason"],
         )
         self.assertEqual(
             consumer["contract"]["authoring_fields"],
@@ -191,7 +193,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
         )
         self.assertEqual(
             set(output),
-            {"exit_id", "task_ref", "reviewed_content_head", "stale_reason"},
+            {"exit_id", "task_ref", "branch_review_commit", "stale_reason"},
         )
         stale_contract = next(
             item
@@ -200,10 +202,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
         )
         self.assertEqual(
             stale_contract["schema"]["schema_id"],
-            "guru-finalize-task-output-publication-review-stale-2.0",
+            "guru-finalize-task-output-publication-review-stale-3.0",
         )
 
-    def test_head_mismatch_retirement_is_internal_and_keeps_public_api(self) -> None:
+    def test_stale_route_is_current_only_and_side_effect_free(self) -> None:
         skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
@@ -212,14 +214,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
             for item in interface["validators"]
             if item["id"] == "public_invocation"
         )
-        self.assertIn("publication_review_head_mismatch", skill)
-        self.assertIn("active schema 1.2 pre-draft", contract)
-        self.assertIn("zero-write", contract)
-        self.assertIn("failure", contract)
-        self.assertIn(
-            "exact plan-owned active schema 1.2",
-            invocation["objective_scope"],
-        )
+        self.assertIn("without mutating", skill)
+        self.assertIn("branch_review_commit", contract)
+        self.assertIn("reviewed-content identity", contract)
+        self.assertIn("current public input", invocation["objective_scope"])
         self.assertEqual(
             [
                 item["exit_id"]

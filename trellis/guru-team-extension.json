@@ -51,37 +51,30 @@
     "skill_contracts": {
       "canonical_root": "trellis/skills/guru-team/",
       "installed_root": ".trellis/guru-team/skills/",
-      "registry_schema_id": "guru-team-skill-registry-1.1",
+      "registry_schema_id": "guru-team-skill-registry-1.2",
       "interface_schema_id": "guru-team-skill-interface-1.3",
-      "supported_interface_schema_ids": [
-        "guru-team-skill-interface-1.2",
-        "guru-team-skill-interface-1.3"
-      ],
-      "current_interface_schema_id": "guru-team-skill-interface-1.3",
-      "legacy_skill_ids": [],
       "public_input_schema_ids": [
         "guru-extension-verify-installation-input-standalone-verification-1.0",
-        "guru-extension-verify-installation-input-verification-required-1.0",
-        "guru-finalize-task-input-publication-ready-2.0",
+        "guru-extension-verify-installation-input-verification-required-2.0",
+        "guru-finalize-task-input-publication-ready-3.0",
         "guru-finalize-task-input-reprepare-preview-2.0",
         "guru-finalize-task-input-same-plan-resume-2.0",
         "guru-finalize-task-input-standalone-finalization-2.0",
         "guru-finalize-task-input-standalone-verification-not-required-1.0",
-        "guru-finalize-task-input-verification-not-required-2.0",
-        "guru-finalize-task-input-verification-verified-2.0",
+        "guru-finalize-task-input-verification-verified-3.0",
         "guru-production-approve-task-plan-input-clarification-reentry-2.0",
         "guru-production-approve-task-plan-input-initial-review-2.0",
         "guru-production-approve-task-plan-input-revision-reentry-2.0",
         "guru-production-check-task-input-finding-fix-rerun-2.0",
         "guru-production-check-task-input-initial-check-2.0",
         "guru-production-check-task-input-planning-reentry-2.0",
-        "guru-production-create-task-commit-input-finding-fix-commit-2.0",
-        "guru-production-create-task-commit-input-initial-commit-2.0",
-        "guru-production-create-task-commit-input-recovery-resume-2.0",
-        "guru-production-create-task-commit-input-revision-reentry-2.0",
-        "guru-production-review-branch-input-branch-review-1.1",
-        "guru-production-review-task-publication-input-publication-review-2.0",
-        "guru-production-review-task-publication-input-publication-review-stale-2.0",
+        "guru-production-create-task-commit-input-finding-fix-commit-3.0",
+        "guru-production-create-task-commit-input-initial-commit-3.0",
+        "guru-production-create-task-commit-input-recovery-resume-3.0",
+        "guru-production-create-task-commit-input-revision-reentry-3.0",
+        "guru-production-review-branch-input-branch-review-2.0",
+        "guru-production-review-task-publication-input-publication-review-3.0",
+        "guru-production-review-task-publication-input-publication-review-stale-3.0",
         "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
         "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
         "guru-stage0-clarify-requirements-input-standalone-review-1.0",
@@ -97,32 +90,32 @@
       ],
       "typed_output_schema_ids": [
         "guru-extension-verify-installation-output-blocked-1.0",
-        "guru-extension-verify-installation-output-not-required-1.0",
+        "guru-extension-verify-installation-output-not-required-3.0",
         "guru-extension-verify-installation-output-return-to-task-work-1.0",
-        "guru-extension-verify-installation-output-verified-1.0",
+        "guru-extension-verify-installation-output-verified-2.0",
         "guru-finalize-task-output-blocked-1.0",
-        "guru-finalize-task-output-publication-review-stale-2.0",
+        "guru-finalize-task-output-publication-review-stale-3.0",
         "guru-finalize-task-output-published-1.0",
         "guru-finalize-task-output-reprepare-required-1.0",
         "guru-finalize-task-output-resume-finalization-1.0",
-        "guru-finalize-task-output-verification-required-1.0",
+        "guru-finalize-task-output-verification-required-2.0",
         "guru-production-approve-task-plan-output-approved-2.0",
         "guru-production-approve-task-plan-output-blocked-1.0",
         "guru-production-approve-task-plan-output-clarify-scope-1.0",
         "guru-production-approve-task-plan-output-revision-required-1.0",
         "guru-production-check-task-output-blocked-1.0",
         "guru-production-check-task-output-implementation-required-1.0",
-        "guru-production-check-task-output-passed-2.0",
+        "guru-production-check-task-output-passed-3.0",
         "guru-production-check-task-output-planning-stale-1.0",
         "guru-production-create-task-commit-output-blocked-1.0",
-        "guru-production-create-task-commit-output-committed-1.0",
+        "guru-production-create-task-commit-output-committed-2.0",
         "guru-production-create-task-commit-output-revision-required-1.0",
         "guru-production-review-branch-output-blocked-1.0",
-        "guru-production-review-branch-output-implementation-required-2.0",
-        "guru-production-review-branch-output-passed-2.0",
+        "guru-production-review-branch-output-implementation-required-3.0",
+        "guru-production-review-branch-output-passed-3.0",
         "guru-production-review-branch-output-scope-confirmation-required-1.0",
         "guru-production-review-task-publication-output-blocked-1.0",
-        "guru-production-review-task-publication-output-ready-2.0",
+        "guru-production-review-task-publication-output-ready-3.0",
         "guru-production-review-task-publication-output-return-to-task-work-1.0",
         "guru-stage0-clarify-requirements-output-blocked-1.0",
         "guru-stage0-clarify-requirements-output-clear-1.0",
@@ -153,14 +146,14 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-3.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-2.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-2.2.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-2.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-2.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-3.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json",
         "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
@@ -170,13 +163,14 @@
         "guru-change-request-review-1.0",
         "guru-context-discovery-1.0",
         "guru-contract-wording-review-1.0",
-        "guru-extension-installation-verification-1.0",
-        "guru-phase2-check-3.0",
+        "guru-extension-installation-verification-2.0",
+        "guru-issue-scope-ledger-2.0",
+        "guru-phase2-check-4.0",
         "guru-planning-approval-3.0",
         "guru-requirements-clarification-2.0",
-        "guru-review-gate-2.2",
-        "guru-task-finalization-gate-2.0",
-        "guru-task-publication-readiness-2.0",
+        "guru-review-gate-3.0",
+        "guru-task-finalization-gate-3.0",
+        "guru-task-publication-readiness-3.0",
         "guru-task-workspace-plan-2.0",
         "guru-task-workspace-result-2.0"
       ],
@@ -196,11 +190,7 @@
         "guru-verify-extension-installation"
       ],
       "planned_skill_ids": [],
-      "reserved_skill_ids": [
-        "guru-create-work-commit"
-      ],
       "registry_lifecycle": [
-        "reserved",
         "planned",
         "active"
       ],
@@ -208,26 +198,11 @@
         "guru-skill-invoke",
         "guru-skill-exit"
       ],
-      "migration_manifests": [
+      "contract_manifests": [
         {
-          "id": "stage0-minimal-handoff-v1",
-          "schema_id": "guru-team-stage0-migration-manifest-1.0",
-          "path": "migrations/stage0-minimal-handoff.json"
-        },
-        {
-          "id": "production-minimal-handoff-v1",
-          "schema_id": "guru-team-production-migration-manifest-1.0",
-          "path": "migrations/production-minimal-handoff.json"
-        },
-        {
-          "id": "stage0-ai-first-contract-v2",
-          "schema_id": "guru-team-stage0-ai-first-contract-migration-1.0",
-          "path": "migrations/stage0-ai-first-contract-v2.json"
-        },
-        {
-          "id": "production-ai-first-contract-v2",
-          "schema_id": "guru-team-production-ai-first-contract-migration-1.0",
-          "path": "migrations/production-ai-first-contract-v2.json"
+          "id": "production-current-v1",
+          "schema_id": "guru-team-production-contract-manifest-1.0",
+          "path": "contracts/production-current.json"
         }
       ]
     },
@@ -304,10 +279,7 @@
       "record-finalization-gate",
       "check-finalization-gate",
       "execute-finalization-transition",
-      "verify-marketplace",
-      "finish-work",
-      "backfill-finish-summary",
-      "publish-pr"
+      "finish-work"
     ]
   },
   "release_notes": "README.md#guru-team-extension-version"

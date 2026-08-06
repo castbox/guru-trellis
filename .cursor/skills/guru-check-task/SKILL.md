@@ -17,7 +17,7 @@ transcript.
 
 The public input only routes initial, finding-fix, or planning re-entry. It does
 not author evidence conclusions, findings, the AI gate, or an exit. After the AI
-semantic result exists, record and validate only the compact 3.0 owner-private
+semantic result exists, record and validate only the compact 4.0 owner-private
 projection. Its one composite worktree-content token serves only the adjacent
 freshness checker; it is not semantic or workflow authority. Return exactly one
 of `passed`, `implementation_required`,

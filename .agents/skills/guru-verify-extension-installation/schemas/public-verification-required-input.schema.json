@@ -1,16 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-extension-verify-installation-input-verification-required-1.0",
+  "$id": "guru-extension-verify-installation-input-verification-required-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["profile", "mode", "task_ref", "plan_ref", "repo_ref", "reviewed_head", "verification_target"],
+  "required": ["profile", "mode", "task_ref", "plan_ref", "repo_ref", "branch_review_commit", "verification_target"],
   "properties": {
     "profile": {"const": "verification_required"},
     "mode": {"const": "workflow"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
     "plan_ref": {"type": "string", "minLength": 1},
     "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
-    "reviewed_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "verification_target": {"const": "extension-installation"}
   }
 }

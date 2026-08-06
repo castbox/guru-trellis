@@ -8,7 +8,7 @@
       "id": "workflow-required-verified",
       "prompt": "Complete workflow extension verification and invoke the checker-passed owner result.",
       "expected_exit": "verified",
-      "expected_output": "The DTO contains only task, plan, reviewed HEAD and opaque verification identity.",
+      "expected_output": "The DTO contains only task, plan, branch_review_commit and opaque verification identity.",
       "input_profile_id": "verification_required",
       "assertions": {"deterministic": [
         {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "verified"},

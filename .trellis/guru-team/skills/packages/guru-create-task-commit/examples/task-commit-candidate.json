@@ -1,6 +1,6 @@
 {
-  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json",
-  "schema_version": "2.0",
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json",
+  "schema_version": "3.0",
   "skill_id": "guru-create-task-commit",
   "sequence": "001",
   "task": {
@@ -13,7 +13,7 @@
     "base_branch": "main",
     "base_ref": "origin/main",
     "pre_commit_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "checked_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    "phase2_commit_anchor": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "dirty_snapshot": {
     "entries": [

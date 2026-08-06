@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finalize-task-input-publication-ready-2.0",
+  "$id": "guru-finalize-task-input-publication-ready-3.0",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "profile",
     "mode",
     "task_ref",
-    "reviewed_content_head"
+    "branch_review_commit"
   ],
   "properties": {
     "profile": {"const": "publication_ready"},
@@ -16,7 +16,7 @@
       "type": "string",
       "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
     },
-    "reviewed_content_head": {
+    "branch_review_commit": {
       "type": "string",
       "pattern": "^[0-9a-f]{40}$"
     }

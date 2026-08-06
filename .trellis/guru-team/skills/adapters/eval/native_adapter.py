@@ -467,7 +467,7 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
         if workspace_recipe else "Issue 145 owner staging"
     )
     issue_body = (
-        "The Stage 0 migration is one independently deliverable unit."
+        "The current Intake workflow is one independently deliverable unit."
         if workspace_recipe else "Issue 145 owner staging body"
     )
     issue_assignees = [{"login": "stage0-eval"}] if workspace_recipe else []
@@ -967,7 +967,7 @@ def build_readiness_owner(
     source = {
         "kind": "draft", "draft_id": "stage0-readiness-eval",
         "title": "Review Stage 0 readiness",
-        "body": "The Stage 0 migration is one independently deliverable unit.",
+        "body": "The current Intake workflow is one independently deliverable unit.",
         "selected_comments": [],
     }
     source_path = fixture / ".trellis/.runtime/guru-team/evals/change-request.json"
@@ -1020,7 +1020,7 @@ def workspace_prerequisites(
     issue_url = f"https://github.com/{repo}/issues/{issue_number}"
     updated_at = "2026-01-01T00:00:00Z"
     title = "Stage 0 workspace owner staging"
-    body = "The Stage 0 migration is one independently deliverable unit."
+    body = "The current Intake workflow is one independently deliverable unit."
     title_sha256 = hashlib.sha256(title.encode("utf-8")).hexdigest()
     body_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
 
@@ -1304,16 +1304,16 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
         ),
     }.items():
         (task / name).write_text(content, encoding="utf-8")
+    issue = {
+        "number": 146,
+        "url": "https://github.com/example/guru-extension/issues/146",
+        "title": "Production minimal handoff eval",
+        "reason": "The current production eval delivery scope.",
+    }
     runtime.write_json(task / "issue-scope-ledger.json", {
-        "schema_version": "1.0",
-        "primary_issue": {
-            "number": 146,
-            "acceptance_evidence": ["The production eval acceptance passed."],
-        },
-        "close_issues": [{
-            "number": 146,
-            "acceptance_evidence": ["The production eval acceptance passed."],
-        }],
+        "schema_version": "2.0",
+        "primary_issue": issue,
+        "close_issues": [issue],
         "related_issues": [],
         "followup_issues": [],
     })
@@ -1552,7 +1552,8 @@ def production_task_commit_authoring(
     review_status: str,
 ) -> dict[str, Any]:
     coverage_source = (
-        "guru-check-task:passed DTO at " + str(checked["checked_head"])
+        "guru-check-task:passed DTO at "
+        + str(checked["phase2_capture_commit"])
     )
     classifications = [
         {
@@ -1595,7 +1596,7 @@ def production_commit_for_review(
         "mode": "workflow",
         "task_ref": task.relative_to(fixture).as_posix(),
         "source_exit": "passed",
-        "checked_head": checked["checked_head"],
+        "phase2_commit_anchor": checked["phase2_capture_commit"],
     }
     try:
         candidate, plan, _ = runtime.build_task_commit_candidate(
@@ -1629,7 +1630,7 @@ def production_review_candidate(
         "candidate_ref": "candidate-001",
         "affected_behavior": "The public Branch Review route must preserve the reviewed task behavior.",
         "path": "src/production-eval.txt",
-        "evidence_refs": ["git:committed_head", "src/production-eval.txt"],
+        "evidence_refs": ["git:branch_review_commit", "src/production-eval.txt"],
         "requirement_refs": ["PRD R1"],
         "scope_basis": "The approved production eval requirement owns this behavior.",
         "qualification_reason": "The candidate was classified before any severity was assigned.",
@@ -1729,7 +1730,7 @@ def production_record_review(
     public_input.update({
         "task_ref": task.relative_to(fixture).as_posix(),
         "base_ref": runtime.diff_base_ref(fixture, "main"),
-        "committed_head": head,
+        "branch_review_commit": head,
         "review_intent": (
             "fresh_final_review"
             if resolved or recipe == "review-fresh-final-passed"
@@ -1769,7 +1770,6 @@ def production_record_review(
     return runtime.cmd_check_review_gate(argparse.Namespace(
         root=str(fixture),
         task=task.relative_to(fixture).as_posix(),
-        allow_metadata_after_gate=False,
         allow_nonpass=True,
         expected_exit=exit_id,
     ))
@@ -1848,7 +1848,7 @@ def production_publication_authoring(
         "evidence_refs": [
             "pr-body.md",
             "finish-summary-index.json",
-            "git:reviewed_content_head",
+            "git:branch_review_commit",
         ],
     } for dimension in runtime.TASK_PUBLICATION_DIMENSIONS]
     authoring: dict[str, Any] = {
@@ -1877,7 +1877,7 @@ def production_publication_authoring(
                 ),
                 "summary": "The owner reviewed the approved Docs SSOT outcome.",
                 "evidence_refs": [
-                    "git:reviewed_content_head",
+                    "git:branch_review_commit",
                     "docs/requirements.md",
                 ],
             },
@@ -1903,6 +1903,7 @@ def production_publication_authoring(
 
 def extension_verification_execution(
     runtime: Any,
+    fixture: Path,
     public_input: dict[str, Any],
     status: str,
     selected: list[str],
@@ -1910,15 +1911,16 @@ def extension_verification_execution(
     *,
     standalone_resolved_head: str | None = None,
 ) -> dict[str, Any]:
-    reviewed_head = (
-        public_input["reviewed_head"]
+    content_sha256 = runtime.reviewed_content_identity(fixture)["sha256"]
+    branch_review_commit = (
+        public_input["branch_review_commit"]
         if public_input["mode"] == "workflow"
         else None
     )
     remote_head = (
         None
         if status == "blocked" and public_input["mode"] == "standalone"
-        else reviewed_head or standalone_resolved_head or "a" * 40
+        else branch_review_commit or standalone_resolved_head or "a" * 40
     )
     capability_status = {
         "passed": "passed",
@@ -1963,12 +1965,22 @@ def extension_verification_execution(
             [],
         )
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "repo_ref": public_input["repo_ref"],
         "remote": public_input.get("remote", "origin"),
         "ref": public_input.get("ref", "refs/heads/main"),
-        "reviewed_head": reviewed_head,
+        "branch_review_commit": branch_review_commit,
         "remote_head": remote_head,
+        "reviewed_content_sha256": (
+            content_sha256
+            if isinstance(public_input.get("task_ref"), str)
+            else None
+        ),
+        "remote_reviewed_content_sha256": (
+            content_sha256
+            if public_input["mode"] == "workflow"
+            else None
+        ),
         "status": status,
         "commands": commands,
         "capabilities": runtime.extension_verification_capability_facts(
@@ -1981,8 +1993,11 @@ def extension_verification_execution(
         "asset_digests": asset_digests,
         "asset_inventory": asset_inventory,
         "ownership": {
-            "frozen_transitional_legacy_count": 0,
-            "new_legacy_entries": [],
+            "current_contract": True,
+            "schema_version": "3.0",
+            "inventory_id": "guru-team-upstream-ownership",
+            "guru_owned_rule_count": 11,
+            "managed_claim_count": 9,
         },
         "sidecars": [],
     }
@@ -2172,7 +2187,7 @@ def stage_extension_verification_owner_execution(
     if task_start.returncode != 0:
         raise ValueError("extension owner staging could not activate its task")
     if public_input["mode"] == "workflow":
-        public_input["reviewed_head"] = head
+        public_input["branch_review_commit"] = head
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
     all_capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
@@ -2214,6 +2229,7 @@ def stage_extension_verification_owner_execution(
             execution_path,
             extension_verification_execution(
                 runtime,
+                fixture,
                 invocation_input,
                 status,
                 selected,
@@ -2562,10 +2578,8 @@ def stage_finalization_owner_execution(
     plan_ref = f"closeout-plan:{plan_digest}"
     if "plan_ref" in public_input:
         public_input["plan_ref"] = plan_ref
-    if "reviewed_content_head" in public_input:
-        public_input["reviewed_content_head"] = head
-    if "reviewed_head" in public_input:
-        public_input["reviewed_head"] = head
+    if "branch_review_commit" in public_input:
+        public_input["branch_review_commit"] = head
     if "resolved_head" in public_input:
         public_input["resolved_head"] = head
     if "verification_ref" in public_input and producer_output is None:
@@ -2604,7 +2618,7 @@ def stage_finalization_owner_execution(
         "task_ref": public_input["task_ref"],
         "plan_ref": plan_ref,
         "plan_digest": plan_digest,
-        "reviewed_head": head,
+        "branch_review_commit": head,
         "archive_locator": archive_locator,
         "repo_ref": "example/guru-extension",
         "remote": "origin",
@@ -2614,7 +2628,6 @@ def stage_finalization_owner_execution(
             if public_input.get("profile")
             in {
                 "verification_verified",
-                "verification_not_required",
                 "standalone_verification_not_required",
             }
             else None
@@ -2648,13 +2661,13 @@ def stage_finalization_owner_execution(
                 "task_ref": public_input["task_ref"],
                 "plan_ref": plan_ref,
                 "repo_ref": "example/guru-extension",
-                "reviewed_head": head,
+                "branch_review_commit": head,
                 "verification_target": "extension-installation",
             },
             "publication_review_stale": {
                 "exit_id": "publication_review_stale",
                 "task_ref": public_input["task_ref"],
-                "reviewed_content_head": head,
+                "branch_review_commit": head,
                 "stale_reason": "publication_review_stale",
             },
             "resume_finalization": {
@@ -2677,13 +2690,13 @@ def stage_finalization_owner_execution(
             },
         }
         gate = {
-            "schema_version": "2.0",
+            "schema_version": "3.0",
             "skill_id": "guru-finalize-task",
             "identity": {
                 "task_ref": public_input["task_ref"],
                 "plan_ref": plan_ref,
                 "plan_digest": plan_digest,
-                "reviewed_content_head": head,
+                "branch_review_commit": head,
             },
             "review": {
                 "status": (
@@ -2708,7 +2721,6 @@ def stage_finalization_owner_execution(
         gate_path = runtime.task_finalization_path(
             fixture,
             task,
-            for_write=True,
         )
         runtime.write_json(gate_path, gate)
         runtime.check_finalization_gate_result(
@@ -2885,7 +2897,9 @@ def stage_production_owner_execution(
         )
         owner_result_path = Path(checked["artifact_path"])
         if skill_id == "guru-create-task-commit":
-            public_input["checked_head"] = checked["checked_head"]
+            public_input["phase2_commit_anchor"] = checked[
+                "phase2_capture_commit"
+            ]
             review_status = {
                 "commit-revision-required": "revision-required",
                 "commit-blocked-recovery": "blocked",
@@ -2899,7 +2913,9 @@ def stage_production_owner_execution(
                         "mode": public_input["mode"],
                         "task_ref": task.relative_to(fixture).as_posix(),
                         "source_exit": "passed",
-                        "checked_head": checked["checked_head"],
+                        "phase2_commit_anchor": checked[
+                            "phase2_capture_commit"
+                        ],
                     },
                     production_task_commit_authoring(
                         runtime,
@@ -2959,7 +2975,7 @@ def stage_production_owner_execution(
                 "mode": public_input["mode"],
                 "task_ref": task.relative_to(fixture).as_posix(),
                 "base_ref": "origin/main",
-                "committed_head": "0" * 40,
+                "branch_review_commit": "0" * 40,
                 "review_intent": "initial_review",
             }
             branch_check = production_record_review(
@@ -2969,15 +2985,15 @@ def stage_production_owner_execution(
                 branch_input,
                 "review-passed",
             )
-            reviewed_content_head = branch_check["reviewed_content_head"]
+            branch_review_commit = branch_check["review_commit"]
             public_input["task_ref"] = task.relative_to(fixture).as_posix()
-            public_input["reviewed_content_head"] = reviewed_content_head
+            public_input["branch_review_commit"] = branch_review_commit
             if public_input["profile"] != "publication_review":
                 initial_input = {
                     "profile": "publication_review",
                     "mode": public_input["mode"],
                     "task_ref": task.relative_to(fixture).as_posix(),
-                    "reviewed_content_head": reviewed_content_head,
+                    "branch_review_commit": branch_review_commit,
                     "review_intent": "initial_review",
                 }
                 initial_authoring_path = production_publication_authoring(
@@ -2991,7 +3007,7 @@ def stage_production_owner_execution(
                     root=str(fixture),
                     task=task.relative_to(fixture).as_posix(),
                     input=initial_authoring_path.relative_to(fixture).as_posix(),
-                    reviewed_content_head=initial_input["reviewed_content_head"],
+                    branch_review_commit=initial_input["branch_review_commit"],
                     dry_run=False,
                 ))
             if recipe == "publication-metadata-fix-ready":
@@ -3018,7 +3034,7 @@ def stage_production_owner_execution(
                 root=str(fixture),
                 task=task.relative_to(fixture).as_posix(),
                 input=authoring_path.relative_to(fixture).as_posix(),
-                reviewed_content_head=reviewed_content_head,
+                branch_review_commit=branch_review_commit,
                 dry_run=False,
             ))
             owner_result_path = Path(publication_owner["artifact_path"])

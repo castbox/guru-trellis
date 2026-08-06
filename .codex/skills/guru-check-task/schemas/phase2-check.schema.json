@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-3.0.json",
-  "title": "Guru Phase 2 Check 3.0 Compact Semantic Projection",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json",
+  "title": "Guru Phase 2 Check 4.0 Compact Semantic Projection",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,9 +9,9 @@
     "skill_id",
     "mode",
     "task_ref",
-    "checked_head",
+    "phase2_capture_commit",
     "reviewed_paths",
-    "reviewed_worktree_sha256",
+    "reviewed_content_sha256",
     "validation",
     "docs_ssot",
     "semantic_review",
@@ -21,24 +21,28 @@
     "consumer"
   ],
   "properties": {
-    "schema_version": {"const": "3.0"},
+    "schema_version": {"const": "4.0"},
     "skill_id": {"const": "guru-check-task"},
     "mode": {"enum": ["workflow", "standalone"]},
     "task_ref": {
       "type": "string",
       "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
     },
-    "checked_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "phase2_capture_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Owner-private Git commit captured with this Phase 2 result; it is used only for ancestry and commit preparation."
+    },
     "reviewed_paths": {
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
       "items": {"type": "string", "minLength": 1}
     },
-    "reviewed_worktree_sha256": {
+    "reviewed_content_sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
-      "description": "Owner-private composite freshness token over the reviewed worktree candidate; it is not authorization, semantic approval, or a public handoff."
+      "description": "Owner-private guru-reviewed-content-1.0 identity and the only Phase 2 content freshness authority."
     },
     "validation": {"$ref": "#/$defs/validation"},
     "docs_ssot": {"$ref": "#/$defs/docsSsot"},

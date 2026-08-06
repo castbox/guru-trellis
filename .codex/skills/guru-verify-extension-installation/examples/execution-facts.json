@@ -1,10 +1,12 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "repo_ref": "castbox/guru-trellis",
   "remote": "origin",
   "ref": "refs/heads/feature-117",
-  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "remote_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
   "status": "passed",
   "commands": [
     {
@@ -127,6 +129,12 @@
     "relation_errors": [],
     "complete": true
   },
-  "ownership": {"frozen_transitional_legacy_count": 0, "new_legacy_entries": []},
+  "ownership": {
+    "current_contract": true,
+    "schema_version": "3.0",
+    "inventory_id": "guru-team-upstream-ownership",
+    "guru_owned_rule_count": 11,
+    "managed_claim_count": 9
+  },
   "sidecars": []
 }

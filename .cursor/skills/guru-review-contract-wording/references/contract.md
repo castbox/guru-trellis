@@ -151,10 +151,9 @@ extra, or non-planning use fails closed. The recorder/checker validate the
 recorded shape and values; they do not perform the semantic review or generate
 `true` values.
 
-The schema keeps the `1.0` id while adding backward-compatible optional live
-issue mutation fields. They are mandatory only for a current
-`change_request` live issue revision. Planning, explicit-path, draft, and
-historical no-revision evidence do not acquire a synthetic mutation binding.
+Current `change_request` live issue revisions require the exact live mutation
+binding. Planning, explicit-path, draft, and no-revision invocations do not
+acquire a synthetic mutation binding.
 
 - `pass`: current scope/scan, all hits classified, zero unchecked hits, passed
   Gate, and no revision awaiting caller handling.
@@ -173,19 +172,12 @@ reruns the complete semantic loop, and emits one current result. No caller may
 request `--replace-stale`, bind a prior digest, or preserve a supersession
 history.
 
-## Planning Approval Migration
+## Planning Approval Consumer
 
 `guru-approve-task-plan` consumes only the current invocation's checked
 `planning_artifacts:pass` exit. It then rereads the current planning documents
 and owns its own compact semantic result. It does not import scanner hits,
 classification history, file digests, or this Skill's private result.
-
-An active task that still contains `contract-wording-review.json`, a wording
-projection inside `planning-approval.json`, or a digest-bound replacement
-state treats those values as read-only migration input. Rerun this Skill once
-against current content, route its checked exit directly, and let the planning
-owner rebuild only its own current result. Archived task artifacts are not
-rewritten and no new legacy wording artifact is generated.
 
 ## Interface 1.3 Public Handoff
 

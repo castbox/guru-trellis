@@ -196,13 +196,13 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         branch_package = package("guru-review-branch")
         publication_package = package("guru-review-task-publication")
         gate = read_json(branch_package / "examples/review-gate.json")
-        self.assertEqual(gate["schema_version"], "2.2")
+        self.assertEqual(gate["schema_version"], "3.0")
         self.assertEqual(gate["typed_exit"], "passed")
 
         branch_output = {
             "exit_id": "passed",
             "task_ref": gate["task_dir"],
-            "reviewed_content_head": gate["reviewed_content_head"],
+            "branch_review_commit": gate["review_commit"],
         }
         branch_interface = read_json(branch_package / "interface.json")
         branch_projection = next(
@@ -218,7 +218,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             publication_seed,
             {
                 "task_ref": gate["task_dir"],
-                "reviewed_content_head": gate["reviewed_content_head"],
+                "branch_review_commit": gate["review_commit"],
             },
         )
 
@@ -263,7 +263,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                     "remote": "origin",
                     "base_branch": "main",
                     "head_branch": "codex/example-task",
-                    "reviewed_work_head": gate["reviewed_content_head"],
+                    "branch_review_commit": gate["review_commit"],
                 },
                 "marketplace": {"required": False},
             }
@@ -271,11 +271,10 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 "plan": plan,
                 "ledger": {},
                 "gate": None,
-                "finalizer_takeover": None,
                 "month_supersession": None,
             }
             repository = {
-                "head": gate["reviewed_content_head"],
+                "head": gate["review_commit"],
                 "branch": "codex/example-task",
                 "base_ref": "origin/main",
                 "diff_paths": ["src/example.py"],
@@ -335,9 +334,18 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 mock.patch.object(
                     runtime,
                     "current_head",
-                    return_value=gate["reviewed_content_head"],
+                    return_value=gate["review_commit"],
                 ),
-                mock.patch.object(runtime, "is_ancestor", return_value=True),
+                mock.patch.object(
+                    runtime,
+                    "review_branch_content_continuity_errors",
+                    return_value=[],
+                ),
+                mock.patch.object(
+                    runtime,
+                    "reviewed_content_identity",
+                    return_value={"sha256": gate["reviewed_content_sha256"]},
+                ),
                 mock.patch.object(runtime, "prepare_closeout", side_effect=prepare),
                 mock.patch.object(
                     runtime,
@@ -358,13 +366,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                         "Finalizer reran the Publication owner checker"
                     ),
                 ) as owner_checker,
-                mock.patch.object(
-                    runtime,
-                    "check_task_publication_for_finalization_augmentation",
-                    side_effect=AssertionError(
-                        "Finalizer invoked the legacy Publication checker"
-                    ),
-                ) as legacy_checker,
             ):
                 preview = runtime.cmd_preview_finalization(args)
 
@@ -372,22 +373,33 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             self.assertEqual(preview["transaction_state"], "prepared")
             self.assertEqual(preview["task_ref"], gate["task_dir"])
             self.assertEqual(
-                preview["reviewed_head"],
-                gate["reviewed_content_head"],
+                preview["branch_review_commit"],
+                gate["review_commit"],
             )
             self.assertEqual(tree_bytes(root), before)
             private_artifact.assert_not_called()
             owner_checker.assert_not_called()
-            legacy_checker.assert_not_called()
 
-    def test_verification_verified_reentry_allows_plan_owned_pending_ledger_only(
+    def test_verification_verified_reentry_keeps_scope_ledger_unchanged(
         self,
     ) -> None:
         runtime = load_selected_runtime()
         task_ref = ".trellis/tasks/example-finalizer-reentry"
         ledger_locator = f"{task_ref}/issue-scope-ledger.json"
-        reviewed_head = "a" * 40
-        ledger = {"close_issues": []}
+        branch_review_commit = "a" * 40
+        issue = {
+            "number": 177,
+            "url": "https://github.com/castbox/guru-trellis/issues/177",
+            "title": "Content identity boundary",
+            "reason": "Primary delivered scope.",
+        }
+        ledger = {
+            "schema_version": "2.0",
+            "primary_issue": issue,
+            "close_issues": [issue],
+            "related_issues": [],
+            "followup_issues": [],
+        }
 
         with tempfile.TemporaryDirectory(prefix="guru-finalizer-reentry-") as temporary:
             root = Path(temporary)
@@ -397,6 +409,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 json.dumps(ledger),
                 encoding="utf-8",
             )
+            ledger_before = (task_dir / "issue-scope-ledger.json").read_bytes()
             plan = {
                 "schema_version": runtime.CLOSEOUT_PLAN_SCHEMA_VERSION,
                 "plan_digest": "d" * 64,
@@ -407,15 +420,13 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                         "example-finalizer-reentry"
                     ),
                 },
-                "git": {"reviewed_work_head": reviewed_head},
+                "git": {"branch_review_commit": branch_review_commit},
                 "review": {"changed_paths": []},
                 "marketplace": {"required": True},
                 "inputs": {
                     "issue_scope_ledger": {
                         "path": ledger_locator,
-                        "sha256": runtime.canonical_json_sha256(
-                            runtime.closeout_semantic_ledger(ledger)
-                        ),
+                        "sha256": hashlib.sha256(ledger_before).hexdigest(),
                     },
                 },
             }
@@ -430,7 +441,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             ):
                 self.assertEqual(
                     runtime.finalizer_unreviewed_dirty_paths(root, task_dir),
-                    [ledger_locator],
+                    [],
                 )
             owner_result = {
                 "profile": "verification_required",
@@ -458,25 +469,38 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                         side_effect=lambda value: value,
                     )
                 )
+                private_review_gate = stack.enter_context(
+                    mock.patch.object(
+                        runtime,
+                        "validate_review_gate",
+                        side_effect=AssertionError(
+                            "Finalizer reopened Branch Review private evidence"
+                        ),
+                    )
+                )
                 stack.enter_context(
                     mock.patch.object(
                         runtime,
-                        "review_branch_content_continuity_errors",
-                        return_value=[],
+                        "validate_closeout_reviewed_content",
+                        return_value="c" * 64,
                     )
                 )
                 stack.enter_context(
                     mock.patch.object(
                         runtime,
                         "current_head",
-                        return_value=reviewed_head,
+                        return_value=branch_review_commit,
                     )
                 )
                 stack.enter_context(
                     mock.patch.object(
                         runtime,
-                        "marketplace_verification_required",
-                        return_value={"candidate_surfaces": ["workflow"]},
+                        "closeout_reviewed_change_facts",
+                        return_value={
+                            "changed_paths": [],
+                            "candidate_surfaces": ["workflow"],
+                            "marketplace_required": True,
+                        },
                     )
                 )
                 stack.enter_context(
@@ -498,13 +522,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                         runtime,
                         "load_finish_summary_index",
                         return_value=(task_dir / "finish-summary-index.json", {}),
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "closeout_pending_marketplace_evidence",
-                        return_value={},
                     )
                 )
                 stack.enter_context(
@@ -607,10 +624,11 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 )
 
             self.assertEqual(prepared["plan"], plan)
-            dirty_paths.assert_called_once_with(
-                root,
-                task_dir,
-                allow_publication_issue_scope_ledger=True,
+            private_review_gate.assert_not_called()
+            dirty_paths.assert_called_once_with(root, task_dir)
+            self.assertEqual(
+                (task_dir / "issue-scope-ledger.json").read_bytes(),
+                ledger_before,
             )
             with mock.patch.object(
                 runtime,
@@ -618,11 +636,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 return_value=[ledger_locator, "unrelated.txt"],
             ):
                 self.assertEqual(
-                    runtime.finalizer_unreviewed_dirty_paths(
-                        root,
-                        task_dir,
-                        allow_publication_issue_scope_ledger=True,
-                    ),
+                    runtime.finalizer_unreviewed_dirty_paths(root, task_dir),
                     ["unrelated.txt"],
                 )
 
@@ -672,20 +686,20 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             [],
         )
         self.assertEqual(
-            stale_input["reviewed_content_head"],
-            stale_output["reviewed_content_head"],
+            stale_input["branch_review_commit"],
+            stale_output["branch_review_commit"],
         )
 
         owner = read_json(publication_package / "examples/pr-readiness.json")
         owner["task_ref"] = stale_input["task_ref"]
-        owner["reviewed_content_head"] = stale_input["reviewed_content_head"]
+        owner["branch_review_commit"] = stale_input["branch_review_commit"]
         owner["dimensions"][0]["status"] = "finding"
         owner["findings"] = [{
             "finding_ref": "PUB-STALE-CONTENT-001",
             "dimension": "diff_outcome_consistency",
-            "summary": "Current content advanced beyond the reviewed HEAD.",
+            "summary": "Current reviewed-content identity differs from the Branch Review anchor.",
             "scope_basis": "The task implementation changed after Branch Review.",
-            "evidence_refs": ["git:reviewed_content_head", "git:HEAD"],
+            "evidence_refs": ["git:branch_review_commit", "git:HEAD"],
             "affected_artifacts": ["trellis/workflows/guru-team/workflow.md"],
             "route_class": "task_work",
             "status": "open",
@@ -696,7 +710,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         self.assertEqual(
             runtime.task_publication_semantic_errors(
                 owner,
-                reviewed_content_head=stale_input["reviewed_content_head"],
+                branch_review_commit=stale_input["branch_review_commit"],
             ),
             [],
         )
@@ -859,7 +873,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
     ) -> None:
         runtime = load_selected_runtime()
         plan_digest = "a" * 64
-        reviewed_head = "b" * 40
+        branch_review_commit = "b" * 40
         active = ".trellis/tasks/07-31-119-combined-finish-family-integration"
         archive = (
             ".trellis/tasks/archive/2026-08/"
@@ -873,7 +887,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 "remote": "origin",
                 "head_branch": "feat/119-finish-family-integration-main",
                 "base_branch": "main",
-                "reviewed_work_head": reviewed_head,
+                "branch_review_commit": branch_review_commit,
             },
             "marketplace": {"required": True},
         }
@@ -915,12 +929,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 path.write_text("committed fixture\n", encoding="utf-8")
             self.assertLessEqual(
                 len(retained), runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS,
-            )
-            legacy_retained = set(runtime.CLOSEOUT_ARCHIVE_LEGACY_COMPACT_ARTIFACTS)
-            legacy_retained.update(runtime.CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
-            self.assertEqual(
-                len(legacy_retained),
-                runtime.CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS,
             )
             (archived / runtime.CLOSEOUT_PLAN_ARTIFACT).unlink()
             self.assertFalse((archived / runtime.CLOSEOUT_PLAN_ARTIFACT).exists())
@@ -991,10 +999,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                     runtime,
                     "execute_archive_metadata_transaction",
                 ) as archive_transaction,
-                mock.patch.object(
-                    runtime,
-                    "commit_closeout_evidence_metadata",
-                ) as evidence_commit,
             ):
                 context = runtime.finalization_preview_context(
                     root,
@@ -1007,7 +1011,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             verification_owner.assert_not_called()
             create_pr.assert_not_called()
             archive_transaction.assert_not_called()
-            evidence_commit.assert_not_called()
 
     def test_selected_runtime_archived_transition_skips_gate_and_verifier_mutation(
         self,
@@ -1022,7 +1025,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         plan = {
             "plan_digest": plan_digest,
             "task": {"active_locator": active, "archive_locator": archive},
-            "git": {"reviewed_work_head": "b" * 40},
+            "git": {"branch_review_commit": "b" * 40},
             "marketplace": {"required": True},
         }
         public_input = {
@@ -1150,11 +1153,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 ),
                 mock.patch.object(
                     runtime,
-                    "finalization_marketplace_verification_compatibility_projection",
-                    side_effect=AssertionError("archived #117 evidence was reopened"),
-                ) as projection,
-                mock.patch.object(
-                    runtime,
                     "cmd_finish_work",
                     return_value=finish_result,
                 ) as finish,
@@ -1166,7 +1164,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             ):
                 transitioned = runtime.cmd_execute_finalization_transition(args)
             self.assertEqual(transitioned["output"]["pr_number"], 166)
-            projection.assert_not_called()
             self.assertIsNone(getattr(finish.call_args.args[0], "external_verification", None))
             self.assertEqual(gate_path.read_bytes(), committed_bytes)
 
@@ -1341,52 +1338,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                     self.assertEqual(
                         result["cases"][0]["actual_exit"], "published",
                     )
-
-    @unittest.skipUnless(EXECUTION_MODE == "source", "source ownership assertion")
-    def test_legacy_finish_tombstones_remain_frozen_without_119_blocker(
-        self,
-    ) -> None:
-        inventory = read_json(
-            REPO / "trellis/presets/guru-team/ownership/upstream-ownership.json"
-        )
-        legacy = [
-            entry
-            for entry in inventory["legacy_entries"]
-            if entry["replacement_owners"]
-            == [
-                "guru-review-task-publication",
-                "guru-verify-extension-installation",
-                "guru-finalize-task",
-            ]
-        ]
-        self.assertEqual(len(legacy), 5)
-        overlay_root = REPO / "trellis/presets/guru-team/overlays"
-        for entry in legacy:
-            path = overlay_root / entry["path"]
-            self.assertFalse(path.exists())
-            self.assertEqual(entry["category"], "upstream_owned")
-            self.assertEqual(entry["migration_state"], "removed")
-            self.assertNotIn("current_payload_sha256", entry)
-            self.assertIn(
-                entry["baseline_sha256"], entry["migration_payload_sha256s"],
-            )
-            self.assertEqual(entry["blocking_issues"], [])
-            self.assertEqual(entry["removal_issue"], 132)
-            self.assertEqual(
-                entry["dogfood_status"], "removed_with_audit_history",
-            )
-            self.assertEqual(
-                entry["target_business_repo_status"], "no_longer_installed",
-            )
-        legacy_paths = {entry["path"] for entry in inventory["legacy_entries"]}
-        claims = {
-            claim["path"]: claim for claim in inventory["managed_path_claims"]
-        }
-        for relative in GURU_ENTRIES:
-            self.assertNotIn(relative, legacy_paths)
-            self.assertEqual(claims[relative]["category"], "guru_owned")
-            self.assertEqual(claims[relative]["covered_by_legacy_paths"], [])
-
 
 if __name__ == "__main__":
     unittest.main()

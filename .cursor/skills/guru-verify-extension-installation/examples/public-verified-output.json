@@ -3,6 +3,6 @@
   "mode": "workflow",
   "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
   "plan_ref": "closeout-plan:0123456789abcdef",
-  "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "verification_ref": "extension-verification:0123456789abcdef"
 }

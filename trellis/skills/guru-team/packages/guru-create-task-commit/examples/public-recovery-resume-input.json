@@ -1,1 +1,1 @@
-{"profile":"recovery_resume","mode":"workflow","task_ref":".trellis/tasks/07-26-example","source_exit":"transaction_recovery","checked_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+{"profile":"recovery_resume","mode":"workflow","task_ref":".trellis/tasks/07-26-example","source_exit":"transaction_recovery","phase2_commit_anchor":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}

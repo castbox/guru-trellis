@@ -37,7 +37,7 @@
       "id": "implementation-required",
       "prompt": "Complete a qualification-first Branch Review round with one current-scope defect and invoke the public wrapper.",
       "expected_exit": "implementation_required",
-      "expected_output": "The public DTO contains the current reviewed HEAD and exact finding references.",
+      "expected_output": "The public DTO contains the current branch_review_commit and exact finding references.",
       "input_profile_id": "branch_review",
       "assertions": {
         "deterministic": [

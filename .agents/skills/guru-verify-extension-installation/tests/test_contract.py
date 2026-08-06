@@ -36,6 +36,16 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             {item["id"] for item in interface["external_exits"]},
             {"verified", "not_required", "return_to_task_work", "blocked"},
         )
+        contracts = interface["public_contracts"]
+        self.assertEqual(
+            contracts["input"]["aggregate_schema"]["schema_id"],
+            "guru-extension-verify-installation-input-aggregate-2.0",
+        )
+        self.assertEqual(
+            contracts["private_artifacts"][0]["schema"]["schema_id"],
+            "https://github.com/castbox/guru-trellis/schemas/"
+            "guru-extension-installation-verification-2.0.json",
+        )
 
     def test_distinct_inputs_and_taskless_standalone_branch(self) -> None:
         workflow_schema = load("schemas/public-verification-required-input.schema.json")
@@ -50,8 +60,8 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         with_task = {**standalone, "task_ref": ".trellis/tasks/current"}
         jsonschema.Draft202012Validator(standalone_schema).validate(with_task)
 
-    def test_every_exit_uses_closed_mode_branches(self) -> None:
-        for exit_id in ("verified", "not-required", "return-to-task-work", "blocked"):
+    def test_current_outputs_use_only_reachable_mode_contracts(self) -> None:
+        for exit_id in ("verified", "return-to-task-work", "blocked"):
             schema = load(f"schemas/public-{exit_id}-output.schema.json")
             branches = schema["oneOf"]
             self.assertEqual(len(branches), 2)
@@ -62,6 +72,13 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             for branch in branches:
                 self.assertFalse(branch["additionalProperties"])
                 self.assertIn("exit_id", branch["required"])
+        not_required = load("schemas/public-not-required-output.schema.json")
+        self.assertEqual(
+            not_required["$id"],
+            "guru-extension-verify-installation-output-not-required-3.0",
+        )
+        self.assertEqual(not_required["properties"]["mode"]["const"], "standalone")
+        self.assertFalse(not_required["additionalProperties"])
 
     def test_public_outputs_exclude_private_state(self) -> None:
         forbidden = {
@@ -75,9 +92,10 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         }
         for path in (PACKAGE / "schemas").glob("public-*-output.schema.json"):
             schema = json.loads(path.read_text(encoding="utf-8"))
+            branches = schema.get("oneOf", [schema])
             fields = {
                 field
-                for branch in schema["oneOf"]
+                for branch in branches
                 for field in branch["properties"]
             }
             self.assertFalse(fields & forbidden, path)
@@ -190,6 +208,11 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         )
         execution = load("examples/execution-facts.json")
         validator.validate(execution)
+        self.assertEqual(execution["schema_version"], "2.0")
+        self.assertEqual(
+            execution["reviewed_content_sha256"],
+            execution["remote_reviewed_content_sha256"],
+        )
 
         inventory = execution["asset_inventory"]
         self.assertTrue(inventory["complete"])
@@ -215,12 +238,12 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         missing_inventory = json.loads(json.dumps(execution))
         del missing_inventory["asset_inventory"]
         self.assertFalse(validator.is_valid(missing_inventory))
-        legacy_capability = json.loads(json.dumps(execution))
-        capability = legacy_capability["capabilities"][0]
+        invalid_capability = json.loads(json.dumps(execution))
+        capability = invalid_capability["capabilities"][0]
         capability["evidence_step"] = 0
         del capability["command_refs"]
         del capability["asset_paths"]
-        self.assertFalse(validator.is_valid(legacy_capability))
+        self.assertFalse(validator.is_valid(invalid_capability))
 
     def test_no_secret_marker_in_contract_assets(self) -> None:
         marker = "synthetic-" + "secret-marker"

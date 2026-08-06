@@ -125,6 +125,10 @@
       "path": "examples/task-workspace-result.json"
     },
     {
+      "id": "issue_scope_ledger_example",
+      "path": "examples/issue-scope-ledger.json"
+    },
+    {
       "id": "public_input_execute_reviewed_plan_example",
       "path": "examples/public-execute-reviewed-plan-input.json"
     },
@@ -153,6 +157,10 @@
     {
       "id": "task_workspace_result_schema",
       "path": "schemas/task-workspace-result.schema.json"
+    },
+    {
+      "id": "issue_scope_ledger_schema",
+      "path": "schemas/issue-scope-ledger.schema.json"
     },
     {
       "id": "public_input_execute_reviewed_plan",

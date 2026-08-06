@@ -35,7 +35,7 @@
   "entry_preconditions": [
     {
       "id": "workspace_boundary",
-      "evidence": "task.json, ignored runtime mappings and live Git worktree facts; legacy task-start-context is read-only compatibility",
+      "evidence": "task.json, ignored runtime mappings and live Git worktree facts",
       "binding": "actual repository root equals the mapped task worktree",
       "freshness": "checked for the current invocation"
     },
@@ -48,8 +48,8 @@
     {
       "id": "phase2_result",
       "evidence": "guru-check-task passed DTO",
-      "binding": "task_ref, profile-owned source_exit, and checked_head",
-      "freshness": "checked_head equals live pre-commit HEAD; no producer-private artifact is read"
+      "binding": "task_ref, profile-owned source_exit, and phase2_commit_anchor",
+      "freshness": "the Phase 2 checker confirms phase2_commit_anchor remains in current history and the current reviewed-content identity still matches the owner checkpoint"
     },
     {
       "id": "issue_scope_ledger",
@@ -232,7 +232,7 @@
     }
   ],
   "reentry": {
-    "identity": "task id, sequence, passed DTO checked_head and pre-commit HEAD",
+    "identity": "task id, sequence, passed DTO phase2_commit_anchor and pre-commit HEAD",
     "freshness": "the minimal Phase 2 result, live task, ledger, Git state and complete dirty snapshot still match",
     "stale_behavior": "fail_closed"
   },
@@ -249,14 +249,14 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-production-create-task-commit-input-aggregate-2.0",
+        "schema_id": "guru-production-create-task-commit-input-aggregate-3.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
           "id": "initial_commit",
           "schema": {
-            "schema_id": "guru-production-create-task-commit-input-initial-commit-2.0",
+            "schema_id": "guru-production-create-task-commit-input-initial-commit-3.0",
             "path": "schemas/public-initial-commit-input.schema.json"
           },
           "example": {
@@ -271,7 +271,7 @@
         {
           "id": "revision_reentry",
           "schema": {
-            "schema_id": "guru-production-create-task-commit-input-revision-reentry-2.0",
+            "schema_id": "guru-production-create-task-commit-input-revision-reentry-3.0",
             "path": "schemas/public-revision-reentry-input.schema.json"
           },
           "example": {
@@ -286,7 +286,7 @@
         {
           "id": "finding_fix_commit",
           "schema": {
-            "schema_id": "guru-production-create-task-commit-input-finding-fix-commit-2.0",
+            "schema_id": "guru-production-create-task-commit-input-finding-fix-commit-3.0",
             "path": "schemas/public-finding-fix-commit-input.schema.json"
           },
           "example": {
@@ -301,7 +301,7 @@
         {
           "id": "recovery_resume",
           "schema": {
-            "schema_id": "guru-production-create-task-commit-input-recovery-resume-2.0",
+            "schema_id": "guru-production-create-task-commit-input-recovery-resume-3.0",
             "path": "schemas/public-recovery-resume-input.schema.json"
           },
           "example": {
@@ -340,7 +340,7 @@
       {
         "exit_id": "committed",
         "schema": {
-          "schema_id": "guru-production-create-task-commit-output-committed-1.0",
+          "schema_id": "guru-production-create-task-commit-output-committed-2.0",
           "path": "schemas/public-committed-output.schema.json"
         },
         "example": {
@@ -396,7 +396,7 @@
           "seed_fields": [
             "task_ref",
             "base_ref",
-            "committed_head"
+            "branch_review_commit"
           ],
           "authoring_fields": [
             "profile",
@@ -428,7 +428,7 @@
           "authoring_fields": [
             "profile",
             "mode",
-            "checked_head"
+            "phase2_commit_anchor"
           ],
           "authoring_example": {
             "id": "revision_reentry_authoring",
@@ -461,8 +461,8 @@
             "target": "base_ref"
           },
           {
-            "source": "committed_head",
-            "target": "committed_head"
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
           }
         ]
       },
@@ -495,7 +495,7 @@
         "id": "task_commit_candidate",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json",
           "path": "schemas/task-commit-candidate.schema.json"
         },
         "persistence": "ignored_runtime"

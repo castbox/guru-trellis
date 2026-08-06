@@ -8,12 +8,7 @@ github_repo: ""
 # return a side-effect-free proposed issue for the current AI owner to review.
 source_issue_required: false
 
-# Deprecated compatibility field. prepare is query-only and never creates a
-# GitHub issue. The disabled --create-issue-confirmed flag exists only to return
-# migration guidance; guru-create-task-workspace owns current issue creation.
-auto_create_issue: false
-
-# Search open issues for likely duplicates before proposing or creating an issue.
+# Search open issues for likely duplicates before proposing an issue.
 duplicate_search_required: true
 
 # Number of duplicate candidates to show or record.
@@ -22,11 +17,6 @@ duplicate_candidate_limit: 5
 # Behavior when a high-similarity duplicate is found.
 # Allowed values: confirm, block
 duplicate_high_similarity_action: confirm
-
-# Legacy compatibility field. Older installs may still define branch_prefix,
-# but automatic prepare-task branches now use <branch-type>/<slug>. Explicit
-# --branch remains the override for special cases.
-branch_prefix: ""
 
 # Fallback branch type when deterministic inference does not match a supported
 # type. Allowed values: feat, fix, refactor, perf, test, docs, style, build, ci,
@@ -53,8 +43,7 @@ workspace_mode: worktree
 # Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
 worktree_root: ""
 
-# Read-only legacy context filename and gitignored local runtime namespace.
-task_start_context_artifact: "task-start-context.json"
+# Gitignored local runtime namespace and task-local verification artifact.
 runtime_root: ".trellis/.runtime/guru-team"
 marketplace_verification_artifact: "marketplace-verification.json"
 
@@ -72,22 +61,6 @@ artifact_language: zh-CN
 # Missing middle_platform_knowledge.mode is interpreted as optional_warn.
 middle_platform_knowledge:
   mode: optional_warn
-
-# Branch Review Gate runs after task work is committed and before finish-work.
-# Current gates use this filename under owner-private ignored runtime; tracked
-# task-local files with the same name are read-only migration inputs.
-# Any finding priority blocks Branch Review Gate. `block_priorities` is retained
-# as compatibility metadata for older installed configs and should list every
-# valid finding priority.
-review_gate:
-  artifact_path: review-gate.json
-  block_priorities:
-    - P0
-    - P1
-    - P2
-    - P3
-  require_head_match: true
-  require_deployment_impact_evidence: true
 
 # Remote used by the finish-work closeout transaction.
 publish:

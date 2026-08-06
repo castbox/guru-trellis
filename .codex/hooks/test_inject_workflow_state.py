@@ -59,7 +59,6 @@ class CodexModeBannerTest(unittest.TestCase):
         self.assertIn("Use canonical guru-finish-work", breadcrumb)
         self.assertIn("publication, verification, resume, and reprepare exits", breadcrumb)
         self.assertNotIn("review-gate.json", breadcrumb)
-        self.assertNotIn("publish-pr", breadcrumb)
 
 
 class CodexSessionStartNoTaskTest(unittest.TestCase):

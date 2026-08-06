@@ -172,11 +172,11 @@ The graph contains exactly 15 workflow targets and 13 stop targets.
 | guru-finalization-finish-response | Return the canonical PR URL and archived task locator. |
 
 The Finalizer stale projection supplies exactly `task_ref`,
-`reviewed_content_head`, and `stale_reason`; the Publication caller authors only
-its declared profile, mode, and review intent. A legacy stale projection without
-the reviewed HEAD stops fail closed. When live content advances beyond that
-HEAD, Publication may return a checked task-work finding to the existing Phase 2
-router, while `ready` remains continuity-strict.
+`branch_review_commit`, and `stale_reason`; the Publication caller authors only
+its declared profile, mode, and review intent. Inputs outside the current stale
+profile stop fail closed. When live reviewed content advances beyond that
+commit, Publication may return a checked task-work finding to the existing Phase
+2 router, while `ready` remains continuity-strict.
 
 Every stop target returns the owning Skill result and safe remediation, then
 waits for changed authority or external state. A stop never guesses another

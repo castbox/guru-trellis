@@ -1,0 +1,33 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 177,
+    "url": "https://github.com/castbox/guru-trellis/issues/177",
+    "title": "隔离 reviewed content identity 与 task/publication metadata",
+    "reason": "Issue #177 is the primary independently deliverable scope and is fully covered by this task."
+  },
+  "close_issues": [
+    {
+      "number": 177,
+      "url": "https://github.com/castbox/guru-trellis/issues/177",
+      "title": "隔离 reviewed content identity 与 task/publication metadata",
+      "reason": "Issue #177 is the primary independently deliverable scope and is fully covered by this task."
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 174,
+      "url": "https://github.com/castbox/guru-trellis/issues/174",
+      "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+      "reason": "Issue #174 is the completed prerequisite whose closeout replay exposed the identity coupling."
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 180,
+      "url": "https://github.com/castbox/guru-trellis/issues/180",
+      "title": "压缩 Finalizer 与 PR 合并闭环，并以 #174 回放验证最少确认",
+      "reason": "Issue #180 is the downstream Finalizer and merge-loop redesign and remains outside this task."
+    }
+  ]
+}

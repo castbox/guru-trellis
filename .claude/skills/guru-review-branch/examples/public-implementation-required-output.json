@@ -1,6 +1,6 @@
 {
   "exit_id": "implementation_required",
   "task_ref": ".trellis/tasks/example-task",
-  "reviewed_content_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "finding_refs": ["BR-001"]
 }

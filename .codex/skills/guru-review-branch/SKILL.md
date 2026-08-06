@@ -39,11 +39,9 @@ content authoring preparation required by the global Phase 3.6 order before
 invoking that active owner.
 This package is not self-contained or portable.
 
-Public input schema 1.1 accepts only `initial_review` and
-`fresh_final_review`. A legacy `finding_fix_review` intent is migrated by
-completing closure internally and authoring a fresh-final invocation, never by
-forwarding that legacy value to the recorder. Schema 2.0 gates and their
-tracked reports, plus schema 2.1 compact gates, remain read-only compatible for
-existing active tasks. New and re-entered reviews write schema 2.2 only to the
-owner-private ignored runtime checkpoint and bind immutable
-`reviewed_content_head`.
+Public input schema 2.0 accepts only `initial_review` and
+`fresh_final_review`. The owner-private gate is current-only schema 3.0 and
+records `review_commit` plus `reviewed_content_sha256`. Any other gate shape or
+input field fails closed through the normal invalid-input path. The commit is
+used for range and finding ancestry; the reviewed-content identity alone owns
+content freshness.

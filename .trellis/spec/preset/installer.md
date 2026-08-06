@@ -30,10 +30,9 @@ performs any other target mutation, it must run the source ownership validator
 defined in [upstream-ownership.md](./upstream-ownership.md). The validator is
 read-only and source-repository scoped; it is not installed into business
 repositories or exposed as a workflow/Skill runtime command. It validates the
-immutable 43-path issue #128 history, 43 `upstream_owned/removed` tombstones,
-their explicit `migration_payload_sha256s`, the absence of every tombstone path
-from the overlay tree, and the exact three Guru-owned overlay claims before
-installer staging.
+current-only ownership schema 3.0, exactly 11 Guru-owned rules, nine managed
+claims, three additive overlay files, and the live registry/package identities
+before installer staging. A non-current ownership contract fails closed.
 
 ## Managed Assets
 
@@ -50,7 +49,7 @@ Public workflow skill packages are a separate managed-hash domain. The preset
 validates `trellis/skills/guru-team/`, installs its registry/schema/active
 packages under `.trellis/guru-team/skills/`, and distributes active package
 bytes to `.agents/skills/<id>/` plus only the selected Codex/Cursor/Claude
-roots. Reserved and planned ids plus test fixtures are never installed.
+roots. Planned ids and test fixtures are never installed.
 
 The three additive platform entries use their own top-level `overlays`
 provenance domain in `.trellis/guru-team/extension.json`. Its closed fields are
@@ -60,13 +59,11 @@ inventory and records path, canonical source, managed hash, executable bit, and
 install action. This domain, rather than the flat `install.managed_assets`
 inventory or an entry marker/text match, is the current ownership authority.
 
-An older installed manifest with no `overlays` field has one narrow migration
-bridge: a path must still be listed in legacy `install.managed_assets`, and its
-current bytes must equal the current canonical overlay before platform shrink
-may remove it. The removal records `legacy_managed_asset_sha256`; any differing
-bytes remain an unknown local edit. Once an `overlays` domain exists, malformed
-or incomplete provenance fails closed instead of falling back to the legacy
-bridge.
+Every existing installed manifest must contain the complete current `overlays`
+domain. Missing, malformed, or incomplete provenance fails closed. The
+installer does not infer overlay ownership from `install.managed_assets`, entry
+markers, or content text, and platform shrink removes only a target whose bytes
+match its recorded `previous_managed_sha256`.
 
 Skill files use the exact previous hash recorded in
 `.trellis/guru-team/extension.json`. Missing files install; canonical-equal
@@ -92,7 +89,7 @@ successfully managed files, and installed validation derives the complete
 expected inventory independently.
 
 Overlay conflicts participate in the same staged activation gate as package and
-upstream-migration conflicts. Missing selected entries install, canonical-equal
+current ownership conflicts. Missing selected entries install, canonical-equal
 entries remain unchanged, and only an exact previous managed hash may be
 upgraded after writing `.bak`. Unknown/invalid provenance preserves the target
 and writes `.new`. A transaction with overlay conflicts or unresolved sidecars
@@ -121,9 +118,9 @@ Every `workflow` / `stop` consumer must resolve to one matching-kind
 `guru-workflow-target` / `guru-stop-target` marker. Missing, unknown, multiple,
 kind-mismatched, or dangling targets block installation/runtime use.
 
-The production registry keeps `guru-create-work-commit` reserved and installs
-the active `guru-create-task-commit` package to the audited runtime root and
-selected shared/Codex/Cursor/Claude discovery roots. Its artifact schema,
+The production registry installs the active `guru-create-task-commit` package
+to the audited runtime root and selected shared/Codex/Cursor/Claude discovery
+roots. Its artifact schema,
 package thin wrappers and package tests are part of the managed tree. The
 companion `scripts/bash/create-task-commit.sh` is a managed executable asset;
 source/installed validation and the manifest inventory must prove its bytes and
@@ -163,8 +160,7 @@ sidecar.
 The registry also installs active semantic `guru-clarify-requirements` to the
 same audited runtime and selected discovery roots. Its managed tree includes
 `SKILL.md`, interface, contract, deidentified example,
-active `guru-requirements-clarification-2.0` schema, read-only v1 migration
-handling, tests, and executable
+active current-only `guru-requirements-clarification-2.0` schema, tests, and executable
 dispatcher-only record/check wrappers. Companion managed assets are exactly
 `record-requirements-clarification.sh` and
 `check-requirements-clarification.sh`. No GitHub mutation or issue-creation
@@ -252,12 +248,6 @@ package-only copy, missing dispatcher/manifest, incompatible API, command drift,
 or managed-copy drift must fail before the target companion command with the
 documented full-preset install/upgrade remediation.
 
-`scripts/bash/backfill-finish-summary.sh` is a managed executable asset. Fresh
-install and preset reapply/update validation must prove that the wrapper and
-canonical Python subcommand are both present, the wrapper is executable, and
-an empty archive can run `--json --dry-run` successfully. Reapply must restore
-the managed wrapper without changing user-owned `.trellis/guru-team/config.yml`.
-
 ## Extension Version Manifest
 
 `trellis/guru-team-extension.json` is the canonical source for the Guru Team
@@ -278,6 +268,11 @@ record, not user configuration:
   unnecessary local-only source paths;
 - tolerate source directories that are Git archives or lack `git` by recording
   `archive` / `unknown` provenance instead of failing the install.
+
+A fresh target may omit this file. Once present, only the complete current
+installed-manifest schema 2.0 is accepted. Non-current schema versions,
+missing/extra top-level fields, or malformed current provenance fail closed
+before target mutation.
 
 When adding user-facing version fields, expose them through `check-env --json`
 or `version.sh --json`; scripts may record and validate objective facts, but
@@ -316,7 +311,7 @@ allowed scope is limited to:
 
 It must only replace the known Trellis-generated English language-rule
 sentences enumerated in the installer's `ENGLISH_LANGUAGE_RULES` constant with
-the Guru Team Chinese documentation rule. Do not write those exact legacy
+the Guru Team Chinese documentation rule. Do not write those exact source
 sentences into source-repo `.trellis/spec/**` guidance, because dogfood
 installer apply intentionally scans specs for target-project normalization. It
 must not scan ordinary historical task directories, rewrite unknown task
@@ -328,43 +323,34 @@ checked paths, updated paths, replacement count, and the normalized rule. This
 is deterministic install evidence only; the script must not judge whether an
 unknown document should be translated.
 
-## Removed Upstream Overlay Migration
+## Current Ownership Gate
 
 The overlay tree is a Guru-only extension surface. It contains exactly the
-three `guru-finish-work` entries and never contains a tombstone path.
+three `guru-finish-work` entries. The current schema 3.0 inventory contains
+exactly 11 anchored Guru-owned rules and nine managed claims. Official
+`trellis-*` paths are outside both the overlay tree and the managed inventory.
 
-Before installing Guru-owned assets, the installer evaluates all 43 removed
-upstream paths without content heuristics:
+Before installing Guru-owned assets, the installer validates that exact
+current inventory, the extension manifest claims, the three overlay paths, and
+the live registry/package graph. A fresh target may have no installed manifest;
+an existing target must provide the complete current installed-manifest schema
+2.0. Any non-current ownership or installed manifest, unknown claim, broad
+upstream namespace, unexpected overlay, malformed provenance, or sidecar fails
+closed before target mutation. The installer consumes only the current closed
+ownership fields.
 
-- missing paths remain missing and unmanaged;
-- a clean upstream path whose current bytes match official template provenance
-  is preserved unchanged and released from any old Guru managed inventory;
-- an upstream-generated path whose current bytes match one of its explicit
-  `migration_payload_sha256s` is preserved and blocks activation with official
-  `trellis update` or version-upgrade remediation;
-- a legacy-only path whose current bytes match its explicit migration payload
-  is removed and recorded as an intentional migration;
-- an unknown or locally edited path is preserved, receives a deterministic
-  `.new` remediation/conflict sidecar when safe, and blocks activation.
+Current managed assets still follow their current provenance: missing assets
+install, canonical-equal assets remain unchanged, an exact previous managed
+hash creates `.bak` before replacement, and an unknown local edit is preserved
+with canonical bytes in `.new` when safe. These rules apply only to current
+Guru-owned paths.
 
-The repository transaction applies a legacy removal only when the complete
-staged preset graph activates. If any upstream, package, or installed-validation
-conflict prevents activation, the target file remains unchanged,
-`upstream_migration.removals` is empty, and the not-yet-applied candidates are
-reported as `pending_removals` with
-`action=pending_legacy_guru_payload_removal`; the result must not describe a
-staging-only deletion as a target mutation.
-
-This migration must not call `looks_like_trellis_generated_entry()` and must
-not derive historical payloads from Git history, an aggregate digest, or the
-deleted canonical overlay tree. New installed manifests omit all 43 paths from
-`install.managed_assets`.
-
-Do not overwrite unknown platform entry edits. Throwaway verification must
+Do not overwrite unknown current Guru-owned edits. Throwaway verification must
 validate the expected workflow preview `.new`, perform the initial switch, run
 official `trellis update --force` or the selected version upgrade, reapply the
 marketplace workflow, then reapply the preset. Successful completion requires
-all migration conflicts and recursive `.new`/`.bak` sidecars to be resolved.
+all current ownership conflicts and recursive `.new`/`.bak` sidecars to be
+resolved.
 
 ## Platform Overlay Selection
 
@@ -470,14 +456,15 @@ or disposable copy and verify:
   markers; root `AGENTS.md` never enters `install.managed_assets`
 - managed companion assets update and produce `.bak`
 - unknown Guru-owned entry edits produce `.new`
-- missing, clean upstream, known legacy-only, known upstream-generated legacy,
-  and unknown/local-edit tombstone paths follow the migration state machine
+- ownership schema 3.0 has exactly 11 Guru-owned rules, nine managed claims,
+  and three additive overlays; a non-current ownership or installed manifest
+  fails current-contract validation before mutation
 - scripts remain executable
 - `.codex/prompts/guru-finish-work.md`,
   `.claude/commands/guru/finish-work.md`, and
   `.cursor/commands/guru-finish-work.md` are installed from canonical bytes,
-  remain outside the removed tombstone inventory, and route only through the
-  live workflow and three stable Finish Skill ids
+  are the complete additive overlay set, and route only through the live
+  workflow and three stable Finish Skill ids
 - `language_guidance` reports checked/updated `.trellis/spec/**` and bootstrap
   paths without modifying business `docs/**` or `.trellis/workspace/**`
 - throwaway validation fails if `.trellis/spec/**` or
@@ -530,51 +517,40 @@ eval file digest/mode and reject missing, unexpected, drifted, symlink-backed,
 or sidecar state. Normal install/update never moves eval corpus into workflow
 prompt context or ordinary Skill invocation payloads.
 
-## Stage 0 Atomic Activation And AI-First Migration
+## Current Intake Package Activation
 
-The preset preserves `stage0-minimal-handoff-v1` as an immutable managed
-activation record with six production packages and 24 exits. It also stages
-`stage0-ai-first-contract-v2`, which migrates the current Stage 0 contract to
-the same six packages and 23 exits, including the `guru-sync-base.repo_root` /
-`route` optional scalar change, without rewriting the frozen manifest. The
-six production packages, registry, both migration records and schemas, public and
-consumer schemas/examples, package wrappers, shared runtime, extension
+The preset installs only the live six-package/23-exit Intake contract,
+including optional `guru-sync-base.repo_root` / `route` scalar arguments. The
+six production packages, registry, current public and consumer
+schemas/examples, package wrappers, shared runtime, extension
 inventories, eval corpora, and selected platform copies are validated together
 before target activation. The installed validator runs immediately after apply.
 Failure preserves the prior complete graph and reports conflicts or sidecars;
-it must not leave a runnable mixture of Stage 0 Interface 1.2 and 1.3 packages.
+it must not leave a partially updated current Intake graph.
 
 The transaction includes the executable shared native evaluator and preserves
 its mode. Interface 1.3 accepts explicit boolean scalar `required`; the staged
 `guru-sync-base` package marks `repo_root`, `base_branch`, and `route` optional,
-and fresh/upgrade probes execute explicit and omitted paths through the same
-resolver.
+and fresh/current-update probes execute explicit and omitted paths through the
+same resolver.
 
-A pre-activation installation is a supported upgrade input. Reapply replaces
-the complete six-package activation unit while retaining read-only archived
-artifact schemas. Fresh install, upgrade,
+A fresh target or a complete current installed manifest is the only accepted
+input. A non-current installed manifest fails closed before staging. Reapply
+replaces the complete six-package activation unit. Fresh install, current update,
 `trellis update`, and repeated preset apply all end with the same manifest,
 registry, extension, package, corpus, and selected-platform bytes and modes.
 The verifier scans recursively for `.new` and `.bak` after each transition.
 
 ## Production Skill Atomic Activation
 
-`production-minimal-handoff-v1` is staged as an immutable historical record in
-the same preset transaction as `production-ai-first-contract-v2` and its schema,
-three complete package trees, consumer
+`production-current-v1` is the sole current planning/check/commit contract. The
+preset stages its schema, manifest, three complete package trees, consumer
 schemas, registry, extension inventory, installed provenance, and selected
-platform copies. The transaction validates the complete eleven-Skill/42-exit
-graph before publishing any destination. A pre-#146 six-minimal/three-legacy
-install upgrades through nine minimal packages and then active
-`guru-review-branch`; any intermediate mixed
-graph fails staging and leaves the prior complete install in place.
-
-The Stage 0 and production v1 manifests remain separately managed immutable
-activation records. Installer migration updates may add the production and
-AI-first migration locators/assets but may not change either v1 manifest's
-activation id, ordered skill ids, exit bindings, output schema identities, or
-legacy-boundary history. Update/reapply must reproduce identical
-canonical, installed, shared, Codex, Cursor, and Claude package bytes and
+platform copies in one transaction. The transaction validates the complete
+current package graph before publishing any destination; only the current
+contract manifest and its declared assets are installed. Update/reapply accepts
+only the complete current manifest and reproduces
+identical canonical, installed, shared, Codex, Cursor, and Claude bytes and
 executable modes without `.new` or `.bak` sidecars.
 
 ## Branch Review Package Activation
@@ -582,17 +558,13 @@ executable modes without `.new` or `.bak` sidecars.
 `guru-review-branch` is an additive active package installed in the same preset
 transaction as registry, extension inventory, shared consumers, Interface
 schema, runtime, workflow and selected platform copies. It extends the active
-closure to ten Skills and 39 exits without changing either existing migration
-activation id or the production manifest's three-Skill/11-exit membership.
-That manifest changes only its committed consumer/projection binding and
-authoring-seed edge inventory from three to four.
+closure to ten Skills and 39 exits without changing the current production
+manifest's three-Skill/11-exit membership. That manifest includes the current
+committed consumer/projection binding and four authoring-seed edges.
 
-The historical pre-#116 state installed
-`guru-review-task-publication` as a planned identity only, and #116 initially
-left `guru-finalize-task` planned. The current installation must preserve
-neither obsolete boundary: it installs both active packages and routes Branch
-Review `passed` through the five continue entries to the active publication
-owner. The finalizer package is directly discoverable, globally invoked after
+The current installation includes both active packages and routes Branch Review
+`passed` through the five continue entries to the active publication owner. The
+finalizer package is directly discoverable, globally invoked after
 publication `ready`, and reached through the five thin finish entries. Internal
 verification and recovery exits are automatically consumed rather than exposed
 as user continuation gates. The combined layer adds the canonical
@@ -611,12 +583,9 @@ tests, and canonical eval corpus.
 
 The activation contributes to the current package closure of thirteen active
 Skills and 51 external exits.
-The existing
-`production-minimal-handoff-v1` remains exactly three Skills and 11 exits with
-its original activation identity; #116 is derived as an additional complete
-active Interface 1.3 row. The #131 `passed` DTO bytes remain unchanged while
-its planned bridge becomes the target-owned `publication_review` authoring
-seed.
+`production-current-v1` remains exactly three Skills and 11 exits; #116 is an
+additional complete active Interface 1.3 row. The current Branch Review
+`passed` DTO feeds the target-owned `publication_review` authoring seed.
 
 The preset transaction does not install any `trellis-continue` payload. Initial
 `pr-body.md` / `finish-summary-index.json` authoring and the integrated
@@ -635,15 +604,15 @@ marketplace verification remains a later finish-work gate.
 Interface 1.3 package with its two input profiles, four per-exit contracts,
 workflow/stop consumers, private gate schema, seven-case corpus, thin wrappers,
 registry row, workflow markers, and extension inventories. It participates in
-the current thirteen-Skill/51-exit package graph without changing the frozen
-Stage 0 v1 six-Skill/24-exit identity, the AI-first v2 six-Skill/23-exit
-contract, or the production three-Skill/11-exit membership.
+the current thirteen-Skill/51-exit package graph without changing the live
+Intake six-Skill/23-exit contract or the production three-Skill/11-exit
+membership.
 Its workflow `verified` and reachable task-bearing standalone `not_required`
-producer edges now target active `guru-finalize-task`; the workflow-shaped
-not-required branch remains compatible but cannot be emitted by a workflow
-applicability conflict. The combined Finish route now returns checker-passed
-owner evidence to the finalizer through a private in-memory compatibility
-projection; it does not add fields to either Skill's public DTO.
+producer edges target active `guru-finalize-task`; a workflow applicability
+conflict produces `blocked` and has no `not_required` output branch. The combined
+Finish route passes checker-validated owner evidence to the finalizer through
+current private in-memory state; it does not add fields to either Skill's public
+DTO.
 
 Managed executable companion assets include
 `execute-extension-verification.sh`,
@@ -651,19 +620,15 @@ Managed executable companion assets include
 `check-extension-verification.sh`, and
 `invoke-extension-verification.sh`. They are installed before the package is
 usable and published in the extension runtime command inventory.
-`verify-marketplace.sh` remains a compatibility wrapper into the same executor,
-not a second implementation.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
 wrapper executable modes, the thirteen-Skill/51-exit package closure, the
-integrated global closure of 13 invokes, 51 exits, and 28 targets, and the
-43-entry removed-tombstone ownership inventory. The executor reads
-`legacy_entries` as the compatibility-named historical table, requires all rows
-to be `upstream_owned/removed`, and binds its immutable and migration-payload
-digests. Unknown edits retain `.new`, known Guru upgrades retain `.bak`, and
-completion requires their explicit resolution plus a recursive zero-sidecar
-scan.
+integrated global closure of 13 invokes, 51 exits, and 28 targets, and current
+ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
+Non-current manifests and unknown claims fail closed. Unknown edits to current
+Guru-owned assets retain `.new`, known Guru upgrades retain `.bak`, and
+completion requires their explicit resolution plus a recursive zero-sidecar scan.
 
 The installed production eval smoke is distinct from pushed-remote clean
 installation. Throwaway local/update coverage may validate the former and the
@@ -673,16 +638,16 @@ remote ref/HEAD or report that verification as deferred.
 ## Task Finalization Package Activation
 
 `guru-finalize-task` is installed as an additive active Interface 1.3 package
-with seven distinct public input profiles, six `exit_id` output contracts,
+with six distinct public input profiles, six `exit_id` output contracts,
 twelve target-owned `skill_input_authoring_seed` handoffs across the
 complete package graph, one owner-private finalization gate, the closeout-plan
 schema, real-wrapper eval corpus, and the deterministic runtime wrappers. Its
 canonical, installed shared, Codex, Cursor, and Claude package/corpus bytes must
 remain identical and every wrapper must retain executable mode.
-The reachable #117 not-required edge installs as a task-bearing standalone
+The current not-required edge installs as a task-bearing standalone
 projection of `repo_ref/resolved_head/verification_ref`; the finalizer target
-authors `profile/mode/task_ref`, retains plan identity privately, and preserves
-the existing workflow-shaped compatibility profile.
+authors `profile/mode/task_ref` and retains plan identity privately through the
+declared current profile.
 
 The current source/installed package graph contains thirteen active Skills and
 51 external exits. The global workflow projection is 13 invokes, 51 exits, and
@@ -690,5 +655,5 @@ The current source/installed package graph contains thirteen active Skills and
 `guru-finish-work` entries and the combined integration suite. Upstream
 `trellis-finish-work` Skill/Command/Prompt files remain entirely under official
 Trellis ownership and are absent from Guru overlays and managed inventory. This
-activation does not expand public Skill I/O or rewrite either migration
-manifest.
+activation does not expand public Skill I/O or introduce alternate package
+manifests.

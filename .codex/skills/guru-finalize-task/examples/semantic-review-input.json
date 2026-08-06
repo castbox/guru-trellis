@@ -13,7 +13,7 @@
       "task_ref": ".trellis/tasks/07-26-example",
       "plan_ref": "closeout-plan:current",
       "repo_ref": "castbox/guru-trellis",
-      "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "verification_target": "extension-installation"
     }
   }

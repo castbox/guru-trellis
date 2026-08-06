@@ -21,10 +21,7 @@ SCRIPT_MODULE_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_MODULE_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_MODULE_DIR))
 
-from validate_upstream_ownership import (
-    INVENTORY_RELATIVE as UPSTREAM_OWNERSHIP_INVENTORY,
-    validate_repository as validate_upstream_ownership_repository,
-)
+from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
 
 
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
@@ -43,14 +40,36 @@ GURU_OVERLAY_ENTRY_PATHS = {
     "claude": Path(".claude/commands/guru/finish-work.md"),
 }
 GURU_OVERLAY_SCHEMA_VERSION = "1.0"
+INSTALLED_EXTENSION_SCHEMA_VERSION = "2.0"
+INSTALLED_EXTENSION_KEYS = {
+    "schema_version",
+    "extension",
+    "installed_at",
+    "source",
+    "install",
+    "skill_packages",
+    "overlays",
+    "notes",
+}
 GURU_OVERLAY_REMOVAL_SIDECAR = (
     "Guru Team platform selection no longer manages this entry. Review the "
     "preserved local file, remove it or migrate its content, then delete this "
     "sidecar and reapply the preset.\n"
 ).encode("utf-8")
 SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
+CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
+    "production-contract-manifest.schema.json",
+    "skill-eval-adapter-request.schema.json",
+    "skill-eval-adapter-response.schema.json",
+    "skill-eval-human-feedback.schema.json",
+    "skill-eval-native-trace.schema.json",
+    "skill-eval-run.schema.json",
+    "skill-eval-semantic-grading.schema.json",
+    "skill-evals.schema.json",
+    "skill-interface-1.3.schema.json",
+    "skill-registry.schema.json",
+})
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
-TEMPLATE_HASHES_RELATIVE = Path(".trellis/.template-hashes.json")
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
 #-------------------------------------------------------------------------------
@@ -93,7 +112,6 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/create-task-workspace.sh"),
     Path("scripts/bash/check-task-workspace-result.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
-    Path("scripts/bash/verify-marketplace.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
     Path("scripts/bash/check-planning-approval.sh"),
     Path("scripts/bash/record-phase2-check.sh"),
@@ -116,32 +134,9 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/format-merge-commit.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
-    Path("scripts/bash/publish-pr.sh"),
     Path("scripts/bash/finish-work.sh"),
-    Path("scripts/bash/backfill-finish-summary.sh"),
     Path("scripts/python/guru_team_trellis.py"),
 ]
-OBSOLETE_MANAGED_ASSETS = {
-    Path("handoff.json"): set(),
-    Path("schemas/task-start-context.schema.json"): {
-        "38c0baa21215a8d97178a56826606d23547fffae1c76db83b88902d0586ab617"
-    },
-    Path("schemas/intake-handoff.schema.json"): {
-        "6d9484b82ea7e71b4661035f370d8b21240aa1af844dfa131c1131bba1c3dcfc"
-    },
-    Path("scripts/bash/record-agent-assignment.sh"): {
-        "66152aacbf2ee12f7dba6cd09baeb2f3d7829d3ee2ef914542b2dbfb365de9ae"
-    },
-    Path("scripts/bash/check-agent-assignment.sh"): {
-        "6e400bd3f00f8ba635811c983f6d2119d068dc98b41d0fab401b2d45b210500c"
-    },
-    Path("scripts/bash/record-subagent-liveness-event.sh"): {
-        "9a64334664ffd53a84ce32c626b99c6238af8576cc3739f3be31e9cc9b1f9237"
-    },
-    Path("scripts/bash/check-subagent-liveness.sh"): {
-        "279c0f123514f0425951be69d3ec3a73585336ccffc71b9e8f701e176b8953ac"
-    },
-}
 ENGLISH_LANGUAGE_RULES = (
     "**Language**: All documentation must be written in **English**.",
     "**Language**: All documentation should be written in **English**.",
@@ -230,18 +225,6 @@ def run_upstream_ownership_validator(guru_root: Path) -> dict[str, Any]:
     return payload
 
 
-def load_removed_upstream_tombstones(guru_root: Path) -> list[dict[str, Any]]:
-    path = guru_root / UPSTREAM_OWNERSHIP_INVENTORY
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise SystemExit(f"Cannot read validated upstream ownership inventory: {path}") from exc
-    entries = payload.get("legacy_entries") if isinstance(payload, dict) else None
-    if not isinstance(entries, list) or any(not isinstance(entry, dict) for entry in entries):
-        raise SystemExit(f"Validated upstream ownership inventory has invalid tombstones: {path}")
-    return entries
-
-
 def is_mutable_ref(ref: str | None, exact_tag: str | None) -> bool | None:
     if not ref:
         return None
@@ -292,14 +275,12 @@ def source_provenance(guru_root: Path) -> dict[str, Any]:
 
 
 def extension_summary(manifest: dict[str, Any], source: dict[str, Any]) -> dict[str, Any]:
-    requires = manifest.get("requires") if isinstance(manifest.get("requires"), dict) else {}
     tested = manifest.get("tested") if isinstance(manifest.get("tested"), dict) else {}
     return {
         "extension_id": manifest.get("extension_id"),
         "version": manifest.get("version"),
         "workflow_template_id": manifest.get("workflow_template_id"),
         "target_trellis_cli": manifest.get("target_trellis_cli"),
-        "trellis_cli_compatibility": requires.get("trellis_cli"),
         "tested_trellis_cli": tested.get("trellis_cli") if isinstance(tested.get("trellis_cli"), list) else [],
         "source_repo": source.get("repo"),
         "source_ref": source.get("ref"),
@@ -321,19 +302,8 @@ def build_installed_extension_manifest(
         | set(result["replaced_overlays"])
         | {".trellis/guru-team/extension.json"}
     )
-    tombstone_paths = {
-        str(item.get("path"))
-        for item in result["upstream_migration"].get("paths", [])
-        if isinstance(item, dict) and isinstance(item.get("path"), str)
-    }
-    leaked_upstream_paths = sorted(set(managed_assets) & tombstone_paths)
-    if leaked_upstream_paths:
-        raise SystemExit(
-            "Installed extension manifest must not manage removed upstream paths: "
-            + ", ".join(leaked_upstream_paths)
-        )
     return {
-        "schema_version": "1.0",
+        "schema_version": INSTALLED_EXTENSION_SCHEMA_VERSION,
         "extension": manifest,
         "installed_at": now_iso(),
         "source": source,
@@ -346,7 +316,6 @@ def build_installed_extension_manifest(
             "workflow_marketplace": WORKFLOW_MARKETPLACE,
             "workflow_template": WORKFLOW_TEMPLATE,
         },
-        "upstream_migration": result["upstream_migration"],
         "skill_packages": result["skill_packages"],
         "overlays": {
             key: result["overlays"][key]
@@ -384,9 +353,17 @@ def load_previous_installed_manifest(dst: Path) -> dict[str, Any] | None:
     path = dst / "extension.json"
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, UnicodeDecodeError, json.JSONDecodeError):
+    except FileNotFoundError:
         return None
-    return payload if isinstance(payload, dict) else None
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"Installed extension manifest is not valid current JSON: {path}") from exc
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != INSTALLED_EXTENSION_KEYS
+        or payload.get("schema_version") != INSTALLED_EXTENSION_SCHEMA_VERSION
+    ):
+        raise SystemExit(f"Installed extension manifest does not match the current contract: {path}")
+    return payload
 
 
 def previous_skill_hashes(
@@ -399,7 +376,7 @@ def previous_skill_hashes(
         return {}, set(), True, set()
     required_fields = {
         "schema_version", "status", "canonical_registry_sha256", "registry_schema_version",
-        "reserved_ids", "active_ids", "selected_platforms", "packages", "files", "removals",
+        "active_ids", "selected_platforms", "packages", "files", "removals",
         "conflicts", "sidecars",
     }
     if (
@@ -470,31 +447,13 @@ def previous_skill_hashes(
 def previous_overlay_hashes(
     manifest: dict[str, Any] | None,
     canonical_hashes: dict[str, str],
-) -> tuple[dict[str, str], set[str], bool, set[str], set[str]]:
-    """Read exact overlay provenance with one additive legacy-manifest bridge.
-
-    Installed manifests created before overlay hashes existed named the three
-    Guru entries only in install.managed_assets. Those claims may bootstrap a
-    clean platform shrink only when the current target bytes still equal the
-    current canonical overlay. Differing bytes remain unknown local edits.
-    """
+) -> tuple[dict[str, str], set[str], bool, set[str]]:
+    """Read the exact current overlay provenance contract."""
 
     if manifest is None:
-        return {}, set(), True, set(), set()
+        return {}, set(), True, set()
 
     overlays = manifest.get("overlays")
-    if overlays is None:
-        install = manifest.get("install")
-        managed_assets = install.get("managed_assets") if isinstance(install, dict) else None
-        if not isinstance(managed_assets, list) or any(
-            not isinstance(path, str) for path in managed_assets
-        ):
-            return {}, set(), False, set(), set()
-        legacy_claims = {
-            path for path in managed_assets if path in canonical_hashes
-        }
-        return {}, legacy_claims, True, set(), legacy_claims
-
     required_fields = {
         "schema_version",
         "status",
@@ -514,7 +473,7 @@ def previous_overlay_hashes(
         and isinstance(overlays.get("sidecars"), list)
     )
     if not isinstance(overlays, dict):
-        return {}, set(), False, set(), set()
+        return {}, set(), False, set()
 
     selected = overlays.get("selected_platforms")
     if (
@@ -582,7 +541,7 @@ def previous_overlay_hashes(
                 valid = False
                 continue
             recoverable_sidecars.add(sidecar)
-    return hashes, paths, valid, recoverable_sidecars, set()
+    return hashes, paths, valid, recoverable_sidecars
 
 
 def re_full_hex_digest(value: str) -> bool:
@@ -651,246 +610,6 @@ def write_safe_repo_file(repo: Path, path: Path, content: bytes, mode: int) -> N
     with os.fdopen(fd, "wb") as handle:
         handle.write(content)
     path.chmod(mode)
-
-
-def is_sha256(value: Any) -> bool:
-    return (
-        isinstance(value, str)
-        and len(value) == 64
-        and value == value.lower()
-        and all(character in "0123456789abcdef" for character in value)
-    )
-
-
-def load_official_template_hashes(repo: Path) -> dict[str, Any]:
-    path = Path(os.path.abspath(repo)) / TEMPLATE_HASHES_RELATIVE
-    relative, path_stat, error = lstat_repo_path(repo, path)
-    result: dict[str, Any] = {
-        "path": TEMPLATE_HASHES_RELATIVE.as_posix(),
-        "status": "missing",
-        "version": None,
-        "hashes": {},
-        "error": None,
-    }
-    if error or relative != TEMPLATE_HASHES_RELATIVE:
-        result.update({"status": "invalid", "error": error or "path_mismatch"})
-        return result
-    if path_stat is None:
-        return result
-    if not stat.S_ISREG(path_stat.st_mode):
-        result.update({"status": "invalid", "error": "not_regular_file"})
-        return result
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        result.update({"status": "invalid", "error": "invalid_json"})
-        return result
-    if not isinstance(payload, dict) or not isinstance(payload.get("hashes"), dict):
-        result.update({"status": "invalid", "error": "invalid_structure"})
-        return result
-    hashes = payload["hashes"]
-    if any(not isinstance(key, str) or not is_sha256(value) for key, value in hashes.items()):
-        result.update({"status": "invalid", "error": "invalid_hash_entry"})
-        return result
-    result.update({
-        "status": "valid",
-        "version": payload.get("__version"),
-        "hashes": dict(hashes),
-    })
-    return result
-
-
-def upstream_tombstone_sidecar_content(relative: str) -> bytes:
-    return (
-        "Guru Team no longer owns this Trellis upstream path.\n"
-        f"Path: {relative}\n"
-        "The existing path was preserved because its bytes are neither the official "
-        ".trellis/.template-hashes.json payload nor an explicitly reviewed historical "
-        "Guru payload. Run the official trellis update or required version upgrade, "
-        "reconcile the preserved local path, then delete this .new sidecar and reapply "
-        "the Guru Team preset.\n"
-    ).encode("utf-8")
-
-
-def upstream_migration_conflict(
-    path: str,
-    reason: str,
-    remediation: str,
-    *,
-    sidecar: str | None = None,
-    current_sha256: str | None = None,
-) -> dict[str, Any]:
-    result: dict[str, Any] = {
-        "path": path,
-        "reason": reason,
-        "remediation": remediation,
-    }
-    if sidecar is not None:
-        result["sidecar"] = sidecar
-    if current_sha256 is not None:
-        result["current_sha256"] = current_sha256
-    return result
-
-
-def migrate_removed_upstream_paths(
-    repo: Path,
-    tombstones: list[dict[str, Any]],
-) -> dict[str, Any]:
-    """Classify all removed tombstones before staging any migration mutation."""
-
-    repo = Path(os.path.abspath(repo))
-    template = load_official_template_hashes(repo)
-    template_hashes = template.get("hashes") if isinstance(template.get("hashes"), dict) else {}
-    records: list[dict[str, Any]] = []
-    conflicts: list[dict[str, Any]] = []
-    sidecars: set[str] = set()
-    planned_removals: list[tuple[Path, str]] = []
-    planned_sidecars: list[tuple[Path, bytes, str]] = []
-
-    def add_existing_sidecar(relative: str, target: Path, suffix: str) -> bool:
-        sidecar = target.with_name(f"{target.name}{suffix}")
-        sidecar_relative, sidecar_stat, sidecar_error = lstat_repo_path(repo, sidecar)
-        expected_relative = f"{relative}{suffix}"
-        if sidecar_error or sidecar_relative.as_posix() != expected_relative:
-            conflicts.append(upstream_migration_conflict(
-                relative,
-                "unsafe_existing_sidecar",
-                "Resolve the unsafe adjacent sidecar before reapplying the preset.",
-                sidecar=expected_relative,
-            ))
-            return True
-        if sidecar_stat is None:
-            return False
-        sidecars.add(expected_relative)
-        conflicts.append(upstream_migration_conflict(
-            relative,
-            "unresolved_sidecar",
-            "Review and remove the adjacent .new/.bak sidecar before reapplying the preset.",
-            sidecar=expected_relative,
-        ))
-        return True
-
-    for entry in tombstones:
-        relative = str(entry["path"])
-        target = repo / Path(relative)
-        has_new_sidecar = add_existing_sidecar(relative, target, ".new")
-        add_existing_sidecar(relative, target, ".bak")
-        checked_relative, target_stat, target_error = lstat_repo_path(repo, target)
-        record: dict[str, Any] = {
-            "path": relative,
-            "generated_in_clean_init": bool(entry["generated_in_clean_init"]),
-        }
-        if target_error or checked_relative.as_posix() != relative:
-            record["action"] = "conflict_unsafe_path"
-            conflicts.append(upstream_migration_conflict(
-                relative,
-                "unsafe_path_boundary",
-                "Replace the symlink or unsafe path with a regular repository path before reapplying the preset.",
-            ))
-            records.append(record)
-            continue
-        if target_stat is None:
-            record["action"] = "already_missing"
-            records.append(record)
-            continue
-        if not stat.S_ISREG(target_stat.st_mode):
-            record["action"] = "conflict_non_regular_path"
-            conflicts.append(upstream_migration_conflict(
-                relative,
-                "target_not_regular_file",
-                "Preserve and manually reconcile the non-regular upstream path before reapplying the preset.",
-            ))
-            records.append(record)
-            continue
-
-        current_sha256 = hashlib.sha256(target.read_bytes()).hexdigest()
-        record["current_sha256"] = current_sha256
-        official_sha256 = template_hashes.get(relative)
-        if is_sha256(official_sha256) and current_sha256 == official_sha256:
-            record.update({
-                "action": "preserved_clean_upstream",
-                "official_template_sha256": official_sha256,
-            })
-            records.append(record)
-            continue
-
-        migration_payloads = entry.get("migration_payload_sha256s")
-        known_guru_payloads = {
-            value for value in migration_payloads if is_sha256(value)
-        } if isinstance(migration_payloads, list) else set()
-        if current_sha256 in known_guru_payloads:
-            record["matched_migration_payload_sha256"] = current_sha256
-            if entry["generated_in_clean_init"]:
-                record["action"] = "blocked_known_guru_payload"
-                conflicts.append(upstream_migration_conflict(
-                    relative,
-                    "known_guru_payload_requires_official_update",
-                    "Run the official trellis update or required version upgrade so Trellis restores this upstream-generated path, then reapply the Guru Team preset.",
-                    current_sha256=current_sha256,
-                ))
-            else:
-                record["action"] = "removed_legacy_guru_payload"
-                planned_removals.append((target, current_sha256))
-            records.append(record)
-            continue
-
-        record["action"] = "conflict_unknown_local_edit"
-        reason = (
-            "invalid_template_hash_provenance"
-            if template["status"] == "invalid"
-            else "unknown_local_edit"
-        )
-        sidecar_relative = f"{relative}.new"
-        if not has_new_sidecar:
-            planned_sidecars.append(
-                (target.with_name(f"{target.name}.new"), upstream_tombstone_sidecar_content(relative), sidecar_relative)
-            )
-            sidecars.add(sidecar_relative)
-        conflicts.append(upstream_migration_conflict(
-            relative,
-            reason,
-            "Preserve the local file, review the deterministic .new remediation, and resolve it before reapplying the preset.",
-            sidecar=sidecar_relative,
-            current_sha256=current_sha256,
-        ))
-        records.append(record)
-
-    # Classification above is complete and read-only. Only now mutate the staging copy.
-    for target, expected_sha256 in planned_removals:
-        checked_relative, target_stat, target_error = lstat_repo_path(repo, target)
-        if target_error or target_stat is None or not stat.S_ISREG(target_stat.st_mode):
-            raise SystemExit(f"Removed tombstone changed after preflight: {checked_relative.as_posix()}")
-        if hashlib.sha256(target.read_bytes()).hexdigest() != expected_sha256:
-            raise SystemExit(f"Removed tombstone bytes changed after preflight: {checked_relative.as_posix()}")
-        target.unlink()
-    for sidecar, content, sidecar_relative in planned_sidecars:
-        _, sidecar_stat, sidecar_error = lstat_repo_path(repo, sidecar)
-        if sidecar_error or sidecar_stat is not None:
-            raise SystemExit(f"Tombstone remediation sidecar changed after preflight: {sidecar_relative}")
-        write_safe_repo_file(repo, sidecar, content, 0o644)
-
-    counts: dict[str, int] = {}
-    for record in records:
-        action = str(record["action"])
-        counts[action] = counts.get(action, 0) + 1
-    return {
-        "schema_version": "1.0",
-        "status": "ok" if not conflicts and not sidecars else "conflict",
-        "template_hashes": {
-            "path": template["path"],
-            "status": template["status"],
-            "version": template["version"],
-            "error": template["error"],
-        },
-        "counts": counts,
-        "paths": records,
-        "removals": sorted(
-            lexical_repo_relative(repo, target).as_posix()
-            for target, _ in planned_removals
-        ),
-        "conflicts": conflicts,
-        "sidecars": sorted(sidecars),
-    }
 
 
 def skill_conflict(
@@ -1057,12 +776,12 @@ def remove_stale_skill_path(
             "previous_managed_sha256": previous_hash,
         }, None, None
     sidecar = target.with_name(f"{target.name}.new")
-    tombstone = (
+    removal_notice = (
         "Guru Team managed removal requested. Review the adjacent preserved local file, "
         "remove it or migrate its content, then delete this sidecar and reapply the preset.\n"
     ).encode("utf-8")
     try:
-        write_safe_repo_file(repo, sidecar, tombstone, 0o644)
+        write_safe_repo_file(repo, sidecar, removal_notice, 0o644)
         sidecar_relative = lexical_repo_relative(repo, sidecar).as_posix()
     except ValueError:
         sidecar_relative = None
@@ -1139,7 +858,6 @@ def install_skill_packages(
             if sidecar_stat is not None:
                 pending_recovery_sidecars.append(sidecar_text)
     active_entries = [entry for entry in entries if entry.get("state") == "active"]
-    reserved_ids = sorted(str(entry.get("id")) for entry in entries if entry.get("state") == "reserved")
     active_ids = sorted(str(entry.get("id")) for entry in active_entries)
     source_files: list[tuple[Path, Path]] = [
         (canonical_root / "registry.json", Path("registry.json")),
@@ -1153,10 +871,15 @@ def install_skill_packages(
             finish_integration_test.relative_to(canonical_root),
         )
     )
-    for shared_root_name in ("schemas", "adapters", "migrations"):
+    for shared_root_name in ("schemas", "adapters", "contracts"):
         shared_root = canonical_root / shared_root_name
         if shared_root.is_dir():
             for source in skill_package_source_files(shared_root):
+                if (
+                    shared_root_name == "schemas"
+                    and source.name not in CURRENT_SKILL_SHARED_SCHEMAS
+                ):
+                    continue
                 source_files.append((source, source.relative_to(canonical_root)))
     consumer_root = canonical_root / "consumers"
     if consumer_root.is_dir():
@@ -1268,7 +991,6 @@ def install_skill_packages(
         "status": status,
         "canonical_registry_sha256": hashlib.sha256((canonical_root / "registry.json").read_bytes()).hexdigest(),
         "registry_schema_version": registry.get("schema_version"),
-        "reserved_ids": reserved_ids,
         "active_ids": active_ids,
         "selected_platforms": sorted(platforms),
         "packages": packages,
@@ -1535,7 +1257,6 @@ def remove_stale_overlay_path(
     previous_hashes: dict[str, str],
     provenance_valid: bool,
     canonical_hashes: dict[str, str],
-    legacy_claims: set[str],
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None, str | None]:
     if relative_text not in canonical_hashes:
         return None, skill_conflict(relative_text, "previous_path_outside_overlay_inventory"), None
@@ -1551,22 +1272,14 @@ def remove_stale_overlay_path(
 
     current_hash = hashlib.sha256(target.read_bytes()).hexdigest()
     previous_hash = previous_hashes.get(relative_text)
-    legacy_clean = (
-        relative_text in legacy_claims
-        and current_hash == canonical_hashes[relative_text]
-    )
-    if provenance_valid and (
-        (previous_hash is not None and current_hash == previous_hash)
-        or legacy_clean
-    ):
+    if provenance_valid and previous_hash is not None and current_hash == previous_hash:
         target.unlink()
         prune_empty_overlay_parents(repo, target)
-        record = {"path": relative_text, "action": "removed_managed"}
-        if previous_hash is not None:
-            record["previous_managed_sha256"] = previous_hash
-        else:
-            record["legacy_managed_asset_sha256"] = current_hash
-        return record, None, None
+        return {
+            "path": relative_text,
+            "action": "removed_managed",
+            "previous_managed_sha256": previous_hash,
+        }, None, None
 
     sidecar = target.with_name(f"{target.name}.new")
     try:
@@ -1786,13 +1499,6 @@ def materialize_staged_conflict_sidecars(
             for path in overlays.get("sidecars", [])
             if isinstance(path, str) and path.endswith(".new")
         )
-    upstream_migration = result.get("upstream_migration")
-    if isinstance(upstream_migration, dict):
-        sidecars.update(
-            str(path)
-            for path in upstream_migration.get("sidecars", [])
-            if isinstance(path, str) and path.endswith(".new")
-        )
     for sidecar_text in sorted(sidecars):
         relative = Path(sidecar_text)
         if relative.is_absolute() or ".." in relative.parts:
@@ -1810,44 +1516,6 @@ def materialize_staged_conflict_sidecars(
             staged.read_bytes(),
             stat.S_IMODE(staged_stat.st_mode),
         )
-
-
-def mark_upstream_migration_not_applied(result: dict[str, Any]) -> None:
-    """Keep conflict output honest when the staged transaction was not activated."""
-
-    migration = result.get("upstream_migration")
-    if not isinstance(migration, dict):
-        raise SystemExit("Missing upstream migration result before conflict normalization")
-    removals = migration.get("removals")
-    if not isinstance(removals, list) or any(not isinstance(path, str) for path in removals):
-        raise SystemExit("Invalid upstream migration removals before conflict normalization")
-    if not removals:
-        return
-
-    pending = sorted(removals)
-    pending_set = set(pending)
-    migration["removals"] = []
-    migration["pending_removals"] = pending
-    paths = migration.get("paths")
-    if not isinstance(paths, list):
-        raise SystemExit("Invalid upstream migration paths before conflict normalization")
-    for record in paths:
-        if (
-            isinstance(record, dict)
-            and record.get("path") in pending_set
-            and record.get("action") == "removed_legacy_guru_payload"
-        ):
-            record["action"] = "pending_legacy_guru_payload_removal"
-
-    counts: dict[str, int] = {}
-    for record in paths:
-        if not isinstance(record, dict) or not isinstance(record.get("action"), str):
-            raise SystemExit("Invalid upstream migration path record before conflict normalization")
-        action = str(record["action"])
-        counts[action] = counts.get(action, 0) + 1
-    migration["counts"] = counts
-
-
 def managed_backup_recovery_candidate(result: dict[str, Any]) -> bool:
     sections = [result.get("skill_packages"), result.get("overlays")]
     if any(not isinstance(section, dict) for section in sections):
@@ -1957,15 +1625,12 @@ def install_assets(
             all_platforms=all_platforms,
             source_validation=source_validation,
             upstream_ownership_validation=upstream_ownership_validation,
-            git_facts_repo=repo,
         )
         skill_packages = result["skill_packages"]
         overlays = result["overlays"]
         installed_validation = result["skill_installed_validation"]
         activation_ready = (
-            result["upstream_migration"]["status"] == "ok"
-            and not result["upstream_migration"]["sidecars"]
-            and skill_packages["status"] == "ok"
+            skill_packages["status"] == "ok"
             and overlays["status"] == "ok"
             and installed_validation.get("returncode") == 0
         )
@@ -1976,16 +1641,13 @@ def install_assets(
         )
         result["skill_activation_validation"] = activation_validation
         recoverable_activation_ready = (
-            result["upstream_migration"]["status"] == "ok"
-            and not result["upstream_migration"]["sidecars"]
-            and managed_backup_recovery_candidate(result)
+            managed_backup_recovery_candidate(result)
             and activation_validation.get("returncode") == 0
         )
         if activation_ready or recoverable_activation_ready:
             activate_staged_repository(staging_repo, repo)
         else:
             materialize_staged_conflict_sidecars(staging_repo, repo, result)
-            mark_upstream_migration_not_applied(result)
         return result
 
 
@@ -1998,12 +1660,9 @@ def _install_assets_in_place(
     *,
     source_validation: dict[str, Any],
     upstream_ownership_validation: dict[str, Any],
-    git_facts_repo: Path,
 ) -> dict[str, Any]:
     guru_root = guru_root_from_script()
     previous_manifest = load_previous_installed_manifest(dst)
-    tombstones = load_removed_upstream_tombstones(guru_root)
-    upstream_migration = migrate_removed_upstream_paths(repo, tombstones)
     dst.mkdir(parents=True, exist_ok=True)
 
     installed: list[str] = []
@@ -2012,24 +1671,6 @@ def _install_assets_in_place(
     replaced_overlays: list[str] = []
     updated_managed: list[str] = []
     managed_backups: list[str] = []
-    removed_obsolete: list[str] = []
-    obsolete_conflicts: list[str] = []
-    for relative, managed_hashes in OBSOLETE_MANAGED_ASSETS.items():
-        target = dst / relative
-        repo_relative_path = target.relative_to(repo).as_posix()
-        if not target.exists():
-            continue
-        digest = __import__("hashlib").sha256(target.read_bytes()).hexdigest()
-        tracked_clean = False
-        if not managed_hashes:
-            tracked = run_git(["ls-files", "--error-unmatch", repo_relative_path], git_facts_repo)
-            changed = run_git(["diff", "--quiet", "HEAD", "--", repo_relative_path], git_facts_repo)
-            tracked_clean = tracked.returncode == 0 and changed.returncode == 0
-        if digest in managed_hashes or tracked_clean:
-            target.unlink()
-            removed_obsolete.append(repo_relative_path)
-        else:
-            obsolete_conflicts.append(repo_relative_path)
     for relative in MANAGED_ASSET_PATHS:
         result = copy_managed(src / relative, dst / relative)
         rel_path = Path(result["path"]).relative_to(repo).as_posix()
@@ -2074,7 +1715,6 @@ def _install_assets_in_place(
         dst / "scripts/bash/create-task-workspace.sh",
         dst / "scripts/bash/check-task-workspace-result.sh",
         dst / "scripts/bash/resolve-human-artifacts.sh",
-        dst / "scripts/bash/verify-marketplace.sh",
         dst / "scripts/bash/record-planning-approval.sh",
         dst / "scripts/bash/check-planning-approval.sh",
         dst / "scripts/bash/record-phase2-check.sh",
@@ -2097,9 +1737,7 @@ def _install_assets_in_place(
         dst / "scripts/bash/format-merge-commit.sh",
         dst / "scripts/bash/review-branch.sh",
         dst / "scripts/bash/check-review-gate.sh",
-        dst / "scripts/bash/publish-pr.sh",
         dst / "scripts/bash/finish-work.sh",
-        dst / "scripts/bash/backfill-finish-summary.sh",
         dst / "scripts/python/guru_team_trellis.py",
     ]:
         if script.exists():
@@ -2128,8 +1766,6 @@ def _install_assets_in_place(
         "replaced_overlays": replaced_overlays,
         "updated_managed": updated_managed,
         "managed_backups": managed_backups,
-        "removed_obsolete": removed_obsolete,
-        "obsolete_conflicts": obsolete_conflicts,
         "agents_principles": agents_principles,
         "codex_dispatch": codex_dispatch,
         "session_auto_commit": session_auto_commit,
@@ -2140,7 +1776,6 @@ def _install_assets_in_place(
         "all_platforms": all_platforms,
         "skill_packages": skill_packages,
         "overlays": overlays,
-        "upstream_migration": upstream_migration,
         "skill_source_validation": source_validation,
         "upstream_ownership_validation": upstream_ownership_validation,
     }
@@ -2199,7 +1834,6 @@ def install_overlays(
         previous_paths,
         provenance_valid,
         recoverable_sidecars,
-        legacy_claims,
     ) = previous_overlay_hashes(previous_manifest, canonical_hashes)
 
     pending_recovery_sidecars: list[str] = []
@@ -2290,7 +1924,6 @@ def install_overlays(
             previous_hashes,
             provenance_valid,
             canonical_hashes,
-            legacy_claims,
         )
         if removal:
             removals.append(removal)
@@ -2352,8 +1985,7 @@ def main() -> int:
     payload: dict[str, Any] = {
         "status": (
             "ok"
-            if result["upstream_migration"]["status"] == "ok"
-            and result["skill_packages"]["status"] == "ok"
+            if result["skill_packages"]["status"] == "ok"
             and result["overlays"]["status"] == "ok"
             and result["skill_installed_validation"].get("returncode") == 0
             else "conflict"
@@ -2377,7 +2009,6 @@ def main() -> int:
         "guru_team_extension": result["guru_team_extension"],
         "skill_packages": result["skill_packages"],
         "overlays": result["overlays"],
-        "upstream_migration": result["upstream_migration"],
         "skill_source_validation": result["skill_source_validation"],
         "upstream_ownership_validation": result["upstream_ownership_validation"],
         "skill_installed_validation": result["skill_installed_validation"],
@@ -2388,8 +2019,7 @@ def main() -> int:
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     if (
-        result["upstream_migration"]["status"] != "ok"
-        or result["skill_packages"]["status"] != "ok"
+        result["skill_packages"]["status"] != "ok"
         or result["overlays"]["status"] != "ok"
         or result["skill_installed_validation"].get("returncode") != 0
     ):

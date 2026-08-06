@@ -10,9 +10,8 @@ entries:
 - `.cursor/commands/guru-finish-work.md`.
 
 They are additive platform launchers, not replacements for Trellis upstream
-files. Every former upstream namespace overlay is represented only by an
-`upstream_owned/removed` tombstone in the ownership inventory and must be absent
-from the overlay tree.
+files. The current ownership inventory describes only Guru-owned rules, claims,
+and additive overlays.
 
 Do not add or restore overlays for `trellis-start`, `trellis-continue`,
 `trellis-finish-work`, bundled skills, hooks, sub-agents, channel runtime agents,
@@ -40,7 +39,7 @@ exact installed-manifest provenance.
 They must not copy step-local input fields, semantic dimensions, findings,
 confirmation rules, recorder/checker commands, artifact lifecycles, recovery
 mechanics, deterministic closeout flags, or private runtime facts. They must not
-call `finish-work.sh` or `publish-pr.sh` directly.
+call `finish-work.sh` directly.
 
 Codex uses the `guru-finish-work` prompt, Claude uses
 `/guru:finish-work`, and Cursor uses `/guru-finish-work`.
@@ -86,7 +85,7 @@ closed top-level `overlays` object:
 - `schema_version` and `status` identify the current provenance contract;
 - `selected_platforms` is the exact requested platform set;
 - `files[]` is the complete currently managed selected-entry inventory;
-- `removals[]` records safe previous-hash or one-time legacy-manifest shrink;
+- `removals[]` records only safe previous-hash removal;
 - `conflicts[]` records preserved unknown/invalid paths and remediation;
 - `sidecars[]` exactly matches adjacent `.new`/`.bak` files on disk.
 
@@ -94,10 +93,8 @@ Selected entries follow four cases only: missing installs, canonical-equal stays
 unchanged, exact previous managed hash upgrades after `.bak`, and unknown or
 invalid provenance is preserved with `.new`. Unselected prior entries are
 deleted only when their current bytes equal the recorded previous managed hash.
-For manifests created before this domain existed, a one-time bridge permits
-clean shrink only when legacy `install.managed_assets` still claims the path and
-the target bytes equal the current canonical overlay; the removal records
-`legacy_managed_asset_sha256`. No marker/text heuristic is a migration bridge.
+Missing or malformed `overlays` provenance fails closed. No
+`install.managed_assets`, marker, or text fallback may infer overlay ownership.
 
 Any conflict or unresolved sidecar blocks staged activation. Installed
 validation reconstructs the selected inventory from canonical platform mapping
@@ -134,13 +131,13 @@ trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --js
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
-Success requires three overlay files, zero tombstone overlays, exact
-canonical/dogfood bytes, correct executable modes for managed scripts, and no
-unresolved `.new`/`.bak` anywhere in the installed extension surface.
+Success requires exactly three overlay files, no unexpected overlay path,
+exact canonical/dogfood bytes, correct executable modes for managed scripts,
+and no unresolved `.new`/`.bak` anywhere in the installed extension surface.
 
 ## Anti-Patterns
 
-- Restoring a `trellis-*` compatibility router.
+- Adding any `trellis-*` launcher outside the three canonical Guru entries.
 - Broadly claiming a prompt, command, skill, hook, or agent directory.
 - Copying workflow or Skill internals into the three launchers.
 - Treating a package discovery copy as a self-contained extension.

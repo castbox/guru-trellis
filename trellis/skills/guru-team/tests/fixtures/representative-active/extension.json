@@ -4,14 +4,10 @@
   "version": "fixture",
   "public_api": {
     "skill_contracts": {
+      "canonical_root": "trellis/skills/guru-team/",
+      "installed_root": ".trellis/guru-team/skills/",
+      "registry_schema_id": "guru-team-skill-registry-1.2",
       "interface_schema_id": "guru-team-skill-interface-1.3",
-      "supported_interface_schema_ids": [
-        "guru-team-skill-interface-1.2",
-        "guru-team-skill-interface-1.3"
-      ],
-      "current_interface_schema_id": "guru-team-skill-interface-1.3",
-      "registry_schema_id": "guru-team-skill-registry-1.1",
-      "legacy_skill_ids": ["guru-example-legacy"],
       "public_input_schema_ids": [
         "guru-fixture-action-initial-input-1.0",
         "guru-fixture-action-reentry-input-1.0"
@@ -28,7 +24,20 @@
         "guru-fixture-action-checkpoint-1.0",
         "guru-fixture-action-gate-evidence-1.0",
         "guru-fixture-sync-checkpoint-1.0"
-      ]
+      ],
+      "artifact_schema_ids": [],
+      "active_skill_ids": [
+        "guru-example-action",
+        "guru-example-sync"
+      ],
+      "planned_skill_ids": [],
+      "registry_lifecycle": ["planned", "active"],
+      "contract_manifests": [],
+      "workflow_markers": {
+        "invokes": 2,
+        "exits": 6,
+        "targets": 4
+      }
     },
     "skill_runtime": {
       "api_version": "1.0",

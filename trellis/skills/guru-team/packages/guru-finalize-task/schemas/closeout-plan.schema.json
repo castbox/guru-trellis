@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "task", "git", "inputs", "review", "publish", "marketplace", "projection", "transitions", "plan_digest"],
   "properties": {
-    "schema_version": {"enum": ["1.0", "1.1", "1.2"]},
+    "schema_version": {"const": "2.0"},
     "task": {
       "type": "object",
       "additionalProperties": false,
@@ -22,14 +22,13 @@
     "git": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repo", "remote", "base_branch", "head_branch", "reviewed_work_head"],
+      "required": ["repo", "remote", "base_branch", "head_branch", "branch_review_commit"],
       "properties": {
         "repo": {"type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$"},
         "remote": {"type": "string", "minLength": 1},
         "base_branch": {"type": "string", "minLength": 1},
         "head_branch": {"type": "string", "minLength": 1},
-        "reviewed_work_head": {"$ref": "#/$defs/sha40"},
-        "evidence_parent_head": {"$ref": "#/$defs/sha40"}
+        "branch_review_commit": {"$ref": "#/$defs/sha40"}
       }
     },
     "inputs": {
@@ -48,10 +47,9 @@
     "review": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["reviewed_head", "changed_paths", "close_issues_reviewed"],
+      "required": ["branch_review_commit", "changed_paths", "close_issues_reviewed"],
       "properties": {
-        "gate_locator": {"$ref": "#/$defs/taskPath"},
-        "reviewed_head": {"$ref": "#/$defs/sha40"},
+        "branch_review_commit": {"$ref": "#/$defs/sha40"},
         "changed_paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
         "close_issues_reviewed": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 1}}
       }
@@ -80,26 +78,23 @@
     "marketplace": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["required", "pending_machine", "verifier_artifact_locator"],
+      "required": ["required", "verifier_artifact_locator"],
       "properties": {
         "required": {"type": "boolean"},
-        "pending_machine": {"type": "object"},
         "verifier_artifact_locator": {"const": "marketplace-verification.json"}
       }
     },
     "projection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["active_locator", "archive_locator", "finish_summary_locator", "metadata_allowlist", "move_paths", "tracked_move_paths", "untracked_archive_outputs", "evidence_paths", "summary_placeholder", "summary_template_sha256", "summary_template", "runtime_fact_fields"],
+      "required": ["active_locator", "archive_locator", "finish_summary_locator", "move_paths", "tracked_move_paths", "untracked_archive_outputs", "summary_placeholder", "summary_template_sha256", "summary_template", "runtime_fact_fields"],
       "properties": {
         "active_locator": {"$ref": "#/$defs/taskPath"},
         "archive_locator": {"$ref": "#/$defs/archivePath"},
         "finish_summary_locator": {"$ref": "#/$defs/archivePath"},
-        "metadata_allowlist": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
         "move_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
         "tracked_move_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
-        "untracked_archive_outputs": {"type": "array", "minItems": 1, "uniqueItems": true, "contains": {"const": "finish-summary.json"}, "items": {"$ref": "#/$defs/safePath"}},
-        "evidence_paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/taskPath"}},
+        "untracked_archive_outputs": {"type": "array", "minItems": 2, "uniqueItems": true, "contains": {"enum": ["closeout-plan.json", "finish-summary.json"]}, "items": {"$ref": "#/$defs/safePath"}},
         "summary_placeholder": {
           "type": "object",
           "additionalProperties": false,
@@ -115,35 +110,9 @@
         "runtime_fact_fields": {"const": ["github.pr_url", "index.search_terms.pr_refs"]}
       }
     },
-    "transitions": {"const": ["prepared", "content_pushed", "evidence_pushed", "draft_bound", "projection_validated", "archive_moved", "archive_pushed", "ready"]},
+    "transitions": {"const": ["prepared", "content_pushed", "evidence_ready", "draft_bound", "projection_validated", "archive_moved", "archive_pushed", "ready"]},
     "plan_digest": {"$ref": "#/$defs/sha256"}
   },
-  "allOf": [
-    {
-      "if": {"properties": {"schema_version": {"enum": ["1.0", "1.1"]}}},
-      "then": {
-        "properties": {
-          "inputs": {"required": ["task_context"]},
-          "review": {"required": ["gate_locator"]},
-          "projection": {"properties": {"evidence_paths": {"minItems": 1}}}
-        }
-      }
-    },
-    {
-      "if": {"properties": {"schema_version": {"const": "1.2"}}},
-      "then": {
-        "properties": {
-          "inputs": {"not": {"required": ["task_context"]}},
-          "projection": {
-            "properties": {
-              "evidence_paths": {"maxItems": 0},
-              "untracked_archive_outputs": {"contains": {"const": "closeout-plan.json"}}
-            }
-          }
-        }
-      }
-    }
-  ],
   "$defs": {
     "sha40": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},

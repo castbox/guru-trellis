@@ -4,7 +4,7 @@
 
 `verification_required` is the workflow target bootstrap owned by this package
 for active `guru-finalize-task`. Its five business seed fields are
-`task_ref`, `plan_ref`, `repo_ref`, `reviewed_head`, and
+`task_ref`, `plan_ref`, `repo_ref`, `branch_review_commit`, and
 `verification_target`; `profile` and `mode` are fixed discriminators. Global
 Finish-family routing automatically consumes this target through the active
 finalizer loop; the verifier result is not exposed as a user continuation gate.
@@ -17,8 +17,7 @@ repository, remote/ref, ownership, redaction, and freshness preconditions.
 
 Every task-bearing execute, record, and check entry rebuilds repository
 identity from the exact direct active task. It uses current `task.json`, the
-ignored runtime mapping, the current checkout, and live Git worktree facts;
-an existing `task-start-context.json` is one-time read-only migration input only.
+ignored runtime mapping, the current checkout, and live Git worktree facts.
 It requires the public `task_ref` to equal the current active task, rejects
 archived or completed task locators, and proves the live branch, task identity,
 source repository, and workspace boundary all describe the same repository
@@ -86,6 +85,7 @@ result in the current invocation and do not create a repository cache, latest
 pointer, index, task artifact, or task-work route.
 
 The private evidence binds the public input, safe repository/ref/HEAD identity,
+the local and remote `guru-reviewed-content-1.0` identities,
 AI applicability and reason, selected closed capability profile, sanitized
 command facts, installed asset expectations/digests/category completeness,
 per-capability command/asset references, ownership/sidecar facts, AI adequacy,
@@ -94,7 +94,8 @@ and opaque `verification_ref`. Machine and semantic digests are recorded
 separately and then bound by the final evidence digest.
 
 The checker validates schema, task/session persistence, public-input identity,
-remote/ref/HEAD binding, plan and supersession freshness, redaction, route
+`branch_review_commit`, remote/ref/HEAD, local/remote reviewed-content binding,
+plan and supersession freshness, redaction, route
 shape, consumer mapping, and evidence digests. It does not decide
 applicability, sufficiency, findings, or semantic pass.
 

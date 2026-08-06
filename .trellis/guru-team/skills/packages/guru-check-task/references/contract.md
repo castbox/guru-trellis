@@ -54,9 +54,9 @@ changes, unknown dirty content, missing checks, or reproduced findings do.
 
 ## Private Result
 
-New evidence uses schema `guru-phase2-check-3.0` in ignored runtime. It retains
+New evidence uses schema `guru-phase2-check-4.0` in ignored runtime. It retains
 only task and checked content identity, one composite
-`reviewed_worktree_sha256` freshness token, reviewed path locators, validation
+`reviewed_content_sha256` freshness token, reviewed path locators, validation
 summaries and unverified items, Docs SSOT conclusion, nine-dimension semantic
 result, scope decisions, findings, route, reason, and consumer.
 
@@ -67,22 +67,24 @@ the checker invoked inside this Skill's public wrapper before typed-output
 projection. A mismatch returns to this owner for AI delta classification; it is
 not authorization, semantic approval, a public DTO field, cross-Skill authority,
 or a digest chain. After the checked typed output passes its output schema, the
-same producer wrapper deletes the checkpoint. Task Commit consumes only the
-minimal `passed` DTO and live Git facts; it never reads or deletes Phase 2 private
-state. Schema 2.0 and 2.1 artifacts are read only to detect one-time AI-first
-re-entry; new execution does not regenerate their fields.
+producer retains the checkpoint only for `passed` and deletes it for the other
+three exits. Task Commit rereads the retained checkpoint, current content
+identity, and commit parent before its candidate and executor proceed, then
+deletes the checkpoint after successful publication or successful same-plan
+recovery. Failed attempts retain it. Only schema 4.0 is valid; any other artifact
+shape is rejected and the owner must run again from the current public profile.
 
 ## Recorder And Validator
 
 The recorder writes the completed semantic result and derives the one composite
 worktree-content token. The validator recomputes that token before public output
 projection and checks closed schema shape, task/planning linkage, reviewed dirty-path
-coverage, checked HEAD or allowed task-commit ancestry, finding/scope linkage,
+coverage, the current content identity and commit-anchor ancestry, finding/scope linkage,
 and exit/consumer invariants. It never decides scope, severity, sufficiency,
 Docs SSOT, semantic pass, or route.
 
 The ignored runtime result is distinct from the public DTO. `passed` projects
-only `task_ref` and `checked_head` to `guru-create-task-commit`; finding and
+only `task_ref` and `phase2_commit_anchor` to `guru-create-task-commit`; finding and
 planning routes project only their direct consumer references.
 
 ## Exits

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-1.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-2.0.json",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,7 +11,7 @@
     "semantic_review_sha256", "facts_sha256"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "skill_id": {"const": "guru-verify-extension-installation"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
@@ -21,16 +21,20 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "repo_ref", "remote", "ref", "reviewed_head", "remote_head",
-        "task_worktree_sha256"
+        "repo_ref", "remote", "ref", "branch_review_commit", "remote_head",
+        "reviewed_content_sha256", "remote_reviewed_content_sha256"
       ],
       "properties": {
         "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
         "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
         "ref": {"type": "string", "minLength": 1},
-        "reviewed_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
         "remote_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
-        "task_worktree_sha256": {
+        "reviewed_content_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "remote_reviewed_content_sha256": {
           "type": ["string", "null"],
           "pattern": "^[0-9a-f]{64}$"
         }
@@ -59,7 +63,7 @@
     "execution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
+      "required": ["status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars", "reviewed_content_sha256", "remote_reviewed_content_sha256"],
       "properties": {
         "status": {"enum": ["not_run", "passed", "failed", "blocked"]},
         "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
@@ -70,17 +74,18 @@
         "ownership": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["frozen_transitional_legacy_count", "new_legacy_entries"],
+          "required": ["current_contract", "schema_version", "inventory_id", "guru_owned_rule_count", "managed_claim_count"],
           "properties": {
-            "frozen_transitional_legacy_count": {"type": "integer", "minimum": 0},
-            "new_legacy_entries": {
-              "type": "array",
-              "uniqueItems": true,
-              "items": {"type": "string", "minLength": 1}
-            }
+            "current_contract": {"type": "boolean"},
+            "schema_version": {"enum": ["3.0", null]},
+            "inventory_id": {"enum": ["guru-team-upstream-ownership", null]},
+            "guru_owned_rule_count": {"type": "integer", "minimum": 0},
+            "managed_claim_count": {"type": "integer", "minimum": 0}
           }
         },
         "sidecars": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        ,"reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+        ,"remote_reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
       }
     },
     "semantic_review": {

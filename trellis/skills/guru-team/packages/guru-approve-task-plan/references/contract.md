@@ -75,13 +75,9 @@ retain per-file hashes, sizes, mtimes, repository snapshots, full scan history,
 reviewer metadata, raw reports, handoffs, assignments, authorization, or
 authorization digests.
 
-Schema 1.2 and 2.0 artifacts are read only for one-time migration detection and
-return `planning_approval_legacy_requires_ai_first_reentry`; new execution never
-emits those formats or asks the caller to recreate their fields.
-Legacy CLI callers must also remove the former no-op
-`--allow-committed-head` option before re-entry. The current checker rejects
-that unknown option and evaluates the owner-private planning content token
-instead of HEAD-based freshness.
+Only schema 3.0 is a valid current owner result. Any other schema version or
+unknown CLI option is rejected by the current validator; callers rerun this
+owner with the current public profile instead of projecting prior fields.
 
 ## Recorder And Validator
 

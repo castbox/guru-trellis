@@ -154,31 +154,27 @@ seven terminal decisions: the five scope classifications `accepted_current`,
 dispositions `mechanism_removed` and `mechanism_replaced`. `new_task` must
 contain at least one `decision=new_task` classification. Every scope
 classification is finalized only after the required dialogue decision and
-binds one compact `decision_trail`. The field name is retained for active-task
-compatibility, but its value is not a process trail: it contains only the final
-proposal decisions plus the remote authority locator and content checksum. It
+binds one compact owner-result `decision_trail`. It is not a process trail: it
+contains only the final proposal decisions plus the remote authority locator
+and content checksum. It
 contains no user identity, wording, timestamp, confirmation reference,
 authorization digest, planning identity, review state, context snapshot,
 resume target or re-entry routing. Mechanism
 dispositions instead require `optional_mechanism_origin=true`; they never enter
 the trail or trigger GitHub/task authority mutation. A mechanism-only payload
-may return `clear`, and a mixed payload projects only its five-classification
-subset into the trail.
+may return `clear`, and a mixed payload places only its five-classification
+subset in the trail.
 Mechanism-only still carries the current task-local ledger, all three planning
 documents, re-entry owners, and current context evidence in the owner-private
 result; only `decision_trail` is null. Every
 terminal active-task path receives the same live task/context freshness check.
-The exact trail is stored in current
-`issue-scope-ledger.json.scope_decisions[]` and contains only `trail_id`, final
-`proposal_decisions[]`, and `github_authority` with kind, URL and remote
-content checksum. Checker parses the ledger and requires one exact compact
-match, then independently rereads current planning, context, task action and
-re-entry facts from their owning sources. Those rederivable bindings stay in
-the transient owner result and never enter the ledger. A legacy full-shape trail is projected once
-by the recorder into this compact form, including its
-matching task-update payload, without a new user choice or authority mutation;
-the old ledger entry remains read-only history until the normal task update
-writes the compact current entry.
+The current `issue-scope-ledger.json` is a closed scope-only 2.0 document with
+exactly `schema_version`, `primary_issue`, `close_issues`, `related_issues`, and
+`followup_issues`. The checker validates those current bytes and independently
+validates the owner-result trail against the current proposal set and live
+GitHub authority. Current planning, context, task action and re-entry facts are
+reread from their owning sources. Those rederivable bindings and the trail stay
+in the transient owner result and never enter the ledger.
 
 GitHub comment/body mutation returns `refresh_context` before any task-local
 update. On re-entry, live authority kind/URL/content must match; its live
@@ -212,16 +208,11 @@ perform no GitHub write, and cannot synthesize a semantic pass.
 `blocked` if and only if `ai_review_gate.status=blocked`. Unknown, multiple or
 unmapped exits fail closed. Pre-task/standalone results remain stdout-only and
 never write a repo cache, workspace journal or fixed handoff. The package
-requires the complete compatible Guru Team preset and is not self-contained or
+requires the complete current Guru Team preset and is not self-contained or
 portable.
 
-Schema 2.0 is a breaking artifact-contract version. Schema 1.0 callers and
-artifacts cannot express required target disposition, duplicate decisions,
-authority impact, `select_existing_issue`, `reopen_issue`, or
-`retarget_context`; recorder/checker reject them with
-`requirements_clarification_legacy_schema_requires_refresh`. There is no
-semantic auto-migration. The caller reruns from `guru-sync-base` and produces a
-fresh 2.0 result.
+The recorder/checker accept only the closed Schema 2.0 artifact contract and
+reject any schema mismatch before normalization.
 
 The clear router validates `invocation_context.resume_target` without making a
 new semantic decision: initial issue/draft uses `guru-review-contract-wording`

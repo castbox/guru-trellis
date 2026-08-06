@@ -83,11 +83,11 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         self.assertIn("shared parser", validators[0]["objective_scope"])
         self.assertIn("private runtime cleanup", validators[2]["objective_scope"])
 
-    def test_public_inputs_are_five_field_v2_seeds(self) -> None:
+    def test_public_inputs_are_five_field_current_seeds(self) -> None:
         public = self.interface["public_contracts"]["input"]
         self.assertEqual(
             public["aggregate_schema"]["schema_id"],
-            "guru-production-create-task-commit-input-aggregate-2.0",
+            "guru-production-create-task-commit-input-aggregate-3.0",
         )
         expected_profiles = {
             "initial_commit",
@@ -103,7 +103,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
                 self.assertEqual(schema["$id"], profile["schema"]["schema_id"])
                 self.assertEqual(
                     set(schema["required"]),
-                    {"profile", "mode", "task_ref", "source_exit", "checked_head"},
+                    {"profile", "mode", "task_ref", "source_exit", "phase2_commit_anchor"},
                 )
                 self.assertEqual(set(schema["properties"]), set(schema["required"]))
                 self.assertFalse(schema["additionalProperties"])
@@ -126,7 +126,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
     @unittest.skipUnless(
         importlib.util.find_spec("jsonschema"), "jsonschema is optional"
     )
-    def test_v2_schemas_validate_examples_and_reject_old_candidate_fields(self) -> None:
+    def test_current_schemas_validate_examples_and_reject_removed_candidate_fields(self) -> None:
         from jsonschema import Draft202012Validator
 
         aggregate = self.read_json("schemas/public-input.schema.json")
@@ -190,7 +190,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
     def test_outputs_are_minimal_and_each_projection_has_one_consumer(self) -> None:
         contracts = self.interface["public_contracts"]
         expected_fields = {
-            "committed": {"exit_id", "task_ref", "base_ref", "committed_head"},
+            "committed": {"exit_id", "task_ref", "base_ref", "branch_review_commit"},
             "revision-required": {"exit_id", "task_ref"},
             "blocked": {"exit_id"},
         }
@@ -209,7 +209,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         private = contracts["private_artifacts"]
         self.assertEqual([item["id"] for item in private], ["task_commit_candidate"])
         self.assertEqual(private[0]["persistence"], "ignored_runtime")
-        self.assertIn("candidate-2.0", private[0]["schema"]["schema_id"])
+        self.assertIn("candidate-3.0", private[0]["schema"]["schema_id"])
 
     def test_wrappers_are_executable_thin_and_fail_outside_complete_preset(self) -> None:
         wrapper_names = (
@@ -246,7 +246,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
                         result.stderr,
                     )
 
-    def test_legacy_plan_is_read_only_compatibility_not_public_state(self) -> None:
+    def test_candidate_is_private_current_runtime_state(self) -> None:
         contract = (self.package / "references/contract.md").read_text(
             encoding="utf-8"
         )
@@ -254,7 +254,6 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             ".trellis/.runtime/guru-team/task-commit-plans/",
             "before any required confirmation",
             "deletes the private candidate",
-            "read-only compatibility",
             "authorization",
             "ignored",
         ):
@@ -277,7 +276,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             value = self.read_json(input_paths[0])
             self.assertEqual(
                 set(value),
-                {"profile", "mode", "task_ref", "source_exit", "checked_head"},
+                {"profile", "mode", "task_ref", "source_exit", "phase2_commit_anchor"},
             )
             self.assertTrue(
                 self.nested_keys(value).isdisjoint(

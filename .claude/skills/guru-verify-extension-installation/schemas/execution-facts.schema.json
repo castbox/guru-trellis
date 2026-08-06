@@ -1,16 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-extension-verify-installation-execution-facts-1.0",
+  "$id": "guru-extension-verify-installation-execution-facts-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "repo_ref", "remote", "ref", "reviewed_head", "remote_head", "status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
+  "required": ["schema_version", "repo_ref", "remote", "ref", "branch_review_commit", "remote_head", "reviewed_content_sha256", "remote_reviewed_content_sha256", "status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
     "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
     "ref": {"type": "string", "minLength": 1},
-    "reviewed_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
     "remote_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+    "reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "remote_reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
     "status": {"enum": ["not_run", "passed", "failed", "blocked"]},
     "commands": {"type": "array", "items": {"$ref": "marketplace-verification.schema.json#/$defs/command"}},
     "capabilities": {"type": "array", "items": {"$ref": "marketplace-verification.schema.json#/$defs/capabilityFact"}},
@@ -20,14 +22,13 @@
     "ownership": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["frozen_transitional_legacy_count", "new_legacy_entries"],
+      "required": ["current_contract", "schema_version", "inventory_id", "guru_owned_rule_count", "managed_claim_count"],
       "properties": {
-        "frozen_transitional_legacy_count": {"type": "integer", "minimum": 0},
-        "new_legacy_entries": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1}
-        }
+        "current_contract": {"type": "boolean"},
+        "schema_version": {"enum": ["3.0", null]},
+        "inventory_id": {"enum": ["guru-team-upstream-ownership", null]},
+        "guru_owned_rule_count": {"type": "integer", "minimum": 0},
+        "managed_claim_count": {"type": "integer", "minimum": 0}
       }
     },
     "sidecars": {"type": "array", "items": {"type": "string", "minLength": 1}}

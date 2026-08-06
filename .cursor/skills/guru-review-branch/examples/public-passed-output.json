@@ -1,5 +1,5 @@
 {
   "exit_id": "passed",
   "task_ref": ".trellis/tasks/example-task",
-  "reviewed_content_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 }

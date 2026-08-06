@@ -4,16 +4,11 @@
 # Target GitHub repository in owner/repo format. If empty, infer from git remote.
 github_repo: ""
 
-# Require users to provide an issue number or URL. When false, prepare can
-# propose a new issue for AI/human review.
+# Require callers to provide an issue number or URL. When false, prepare can
+# return a side-effect-free proposed issue for the current AI owner to review.
 source_issue_required: false
 
-# Deprecated compatibility field. prepare never creates a GitHub issue from the
-# default command; issue creation requires --create-issue-confirmed plus a
-# reviewed --issue-body-file.
-auto_create_issue: false
-
-# Search open issues for likely duplicates before proposing or creating an issue.
+# Search open issues for likely duplicates before proposing an issue.
 duplicate_search_required: true
 
 # Number of duplicate candidates to show or record.
@@ -23,19 +18,18 @@ duplicate_candidate_limit: 5
 # Allowed values: confirm, block
 duplicate_high_similarity_action: confirm
 
-# Legacy compatibility field. Older installs may still define branch_prefix,
-# but automatic prepare-task branches now use <branch-type>/<slug>. Explicit
-# --branch remains the override for special cases.
-branch_prefix: ""
-
 # Fallback branch type when deterministic inference does not match a supported
 # type. Allowed values: feat, fix, refactor, perf, test, docs, style, build, ci,
 # chore, revert.
 branch_type_default: chore
 
-# Preferred base branch candidates, in order. The workflow selects the first local
-# or origin branch that exists. If the current branch is not the selected base,
-# the AI must report candidates and ask the user before proceeding.
+# Optional single base branch. A non-empty value wins after an explicit --base.
+# Leave empty to select the first existing candidate below, then remote default.
+base_branch: ""
+
+# Preferred base branch candidates, in order. The first exact local or
+# remote-tracking ref that exists wins; multiple existing candidates are not
+# ambiguous. Remote default is consulted only when none exists.
 base_branch_candidates:
   - dev
   - develop
@@ -49,33 +43,26 @@ workspace_mode: worktree
 # Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
 worktree_root: ""
 
-# Task-local portable context artifact and gitignored local runtime namespace.
-task_start_context_artifact: "task-start-context.json"
+# Gitignored local runtime namespace and task-local verification artifact.
 runtime_root: ".trellis/.runtime/guru-team"
 marketplace_verification_artifact: "marketplace-verification.json"
 
-# Language used for Trellis task planning artifacts and human-readable review fields.
+# Business-project human-readable documentation default for workflow artifacts,
+# .trellis/spec/**, .trellis/tasks/**, docs/**, and bootstrap-created docs SSOT.
 artifact_language: zh-CN
 
-# Branch Review Gate runs after task work is committed and before finish-work.
-# Any finding priority blocks Branch Review Gate. `block_priorities` is retained
-# as compatibility metadata for older installed configs and should list every
-# valid finding priority.
-review_gate:
-  artifact_path: review-gate.json
-  block_priorities:
-    - P0
-    - P1
-    - P2
-    - P3
-  require_head_match: true
-  require_deployment_impact_evidence: true
+# Middle-platform framework knowledge lookup.
+# Allowed values:
+#   off           - do not check or warn.
+#   optional_warn - default; query guru-knowledge-center MCP when available,
+#                   warn and continue when unavailable.
+#   required      - opt-in; block design/implementation if required retrieval
+#                   cannot be performed or persisted.
+middle_platform_knowledge:
+  mode: optional_warn
 
-# Publish PR runs after finish-work archives the task and records the journal.
+# Remote used by the finish-work closeout transaction.
 publish:
-  draft: false
-  close_keyword: Closes
-  pr_language: zh-CN
   remote: origin
 
 # Labels applied when the workflow creates a new issue. Empty list means no labels.

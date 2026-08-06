@@ -1,72 +1,42 @@
-# Upstream Ownership And Removed Overlay Tombstones
+# Current Guru Ownership Contract
 
-This document is the durable semantic source of truth for Trellis/Guru path
-ownership. The machine-readable inventory records reviewed facts and historical
-migration hashes; it does not replace AI scope or design judgment.
+This document is the durable semantic source of truth for current Guru-owned
+paths. The machine-readable contract is:
 
-## Final Ownership Categories
+- `trellis/presets/guru-team/ownership/upstream-ownership.json`;
+- `trellis/presets/guru-team/ownership/upstream-ownership.schema.json`.
 
-Every preset overlay, public managed-path claim, canonical Guru package, and
-installed discovery path has exactly one current owner:
+Both use current-only schema 3.0. They describe the assets this extension owns
+now, and every field has a current validator or installer consumer.
 
-- `upstream_owned`: Trellis creates and updates the path. Guru Team must not
-  install, claim, patch, delete, or managed-upgrade it.
-- `guru_owned`: the path is inside an anchored Guru namespace and is authored,
-  distributed, and upgraded by this repository.
+## Ownership Boundary
 
-`transitional_legacy` and `unclassified` are not valid final states. The source
-validator must report zero entries in either state before preset mutation.
+Official Trellis owns every `trellis-*` Skill, command, prompt, hook, agent,
+runtime agent, bundled reference, and meta entry. Guru Team must not install,
+claim, patch, delete, or managed-upgrade those paths.
 
-## Frozen 43-Path History
+Guru Team owns only paths inside an anchored Guru namespace. Current ownership
+contains exactly 11 rules:
 
-`trellis/presets/guru-team/ownership/upstream-ownership.json` retains the exact
-43 paths present at base commit
-`291b57b6c02872320a4dce0626a2f718399b8f56`. The field name
-`legacy_entries` is a compatibility name for this historical table; every row
-is now a removal tombstone:
+1. installed runtime under `.trellis/guru-team/`;
+2. canonical workflow under `trellis/workflows/guru-team/`;
+3. canonical Skill packages under `trellis/skills/guru-team/`;
+4. stable Skill ids with the `guru-` prefix;
+5. shared discovery packages under `.agents/skills/guru-*/**`;
+6. Codex discovery packages under `.codex/skills/guru-*/**`;
+7. Cursor discovery packages under `.cursor/skills/guru-*/**`;
+8. Claude discovery packages under `.claude/skills/guru-*/**`;
+9. the Codex `guru-finish-work` entry;
+10. the Claude `guru-finish-work` entry;
+11. the Cursor `guru-finish-work` entry.
 
-- `category: upstream_owned`;
-- `migration_state: removed`;
-- unchanged `path`, `baseline_sha256`, `generated_in_clean_init`, upstream
-  producer, replacement owners, blocker/removal issue history, and migration
-  notes;
-- no `current_payload_sha256`;
-- `dogfood_status: removed_with_audit_history`;
-- `target_business_repo_status: no_longer_installed`.
+Rules are matched by complete anchored path components. They never authorize a
+broad prompt, command, Skill, hook, agent, or platform directory.
 
-The immutable historical identity remains the canonical SHA-256 of the 43
-sorted `path + baseline_sha256` pairs. Removal must not change the count, path
-set, baseline hashes, or immutable identity.
+## Managed Claims
 
-## Migration-Only Payload Provenance
-
-Removing `current_payload_sha256` must not make existing installations
-unmigratable. Each tombstone therefore owns a non-empty, unique
-`migration_payload_sha256s` list containing every exact historical Guru payload
-hash that the installer may recognize for that path, including the baseline
-payload and any later reviewed payload when distinct.
-
-This list is consumed only by preset migration and deterministic ownership
-validation. It is not a current managed hash, public workflow authority,
-authenticity boundary, anti-tamper mechanism, or permission to restore an
-overlay. Git history, aggregate digests, content heuristics, and installed
-copies are not substitutes for this explicit per-path provenance.
-
-## Canonical Overlay Set
-
-The canonical overlay tree contains exactly three `guru_owned` files:
-
-- `.codex/prompts/guru-finish-work.md`;
-- `.claude/commands/guru/finish-work.md`;
-- `.cursor/commands/guru-finish-work.md`.
-
-None of the 43 tombstone paths may exist below
-`trellis/presets/guru-team/overlays/`. A new upstream namespace overlay is a
-contract violation.
-
-## Guru-Owned Namespaces
-
-The exact public managed claims are:
+The extension manifest and ownership contract expose exactly nine current
+managed claims:
 
 - `.trellis/guru-team/`;
 - `.trellis/guru-team/skills/`;
@@ -78,51 +48,41 @@ The exact public managed claims are:
 - `.claude/commands/guru/finish-work.md`;
 - `.cursor/commands/guru-finish-work.md`.
 
-Rules are matched by complete anchored path components. They do not authorize a
-broad prompt/command/skill directory or any `trellis-*` path.
+Canonical `trellis/workflows/guru-team/**` and
+`trellis/skills/guru-team/**` remain Guru-owned source content. They are not
+additional installed managed-path claims.
 
-Canonical `trellis/workflows/guru-team/**`,
-`trellis/skills/guru-team/**`, and installed `.trellis/guru-team/**` assets are
-Guru-owned source/runtime content even when not all are expressed as platform
-managed-path claims.
+## Additive Overlay Set
 
-## Installer Migration State Machine
+The canonical overlay tree contains exactly three files:
 
-Before any target mutation, the installer validates this source inventory and
-classifies every removed tombstone path using `lstat`, official template
-provenance, and `migration_payload_sha256s`:
+- `.codex/prompts/guru-finish-work.md`;
+- `.claude/commands/guru/finish-work.md`;
+- `.cursor/commands/guru-finish-work.md`.
 
-| Target state | Required behavior |
+They are additive Guru entries. They do not replace an official Trellis file.
+Any other file below `trellis/presets/guru-team/overlays/` is a current contract
+violation.
+
+## Current Manifest Boundary
+
+A fresh target may begin without an installed Guru manifest. Once an installed
+manifest exists, every installer and validator path accepts only the complete
+current schema and current ownership contract. Missing required fields,
+non-current schema versions, unknown claims, unexpected overlays, or malformed
+provenance fail closed before target mutation.
+
+The installer evaluates only paths declared by the current inventory. Current
+managed assets use their previous-managed hash provenance:
+
+| Current target state | Required behavior |
 | --- | --- |
-| path missing | Do not create it; record already missing/unmanaged. |
-| clean upstream | Preserve exact bytes and remove any old Guru ownership record. |
-| upstream-generated path still equals a known Guru payload | Preserve the file and fail closed with official `trellis update`/version-upgrade remediation; the preset must not synthesize upstream bytes. |
-| legacy-only path equals a known Guru payload | Remove that exact obsolete file and record the reviewed migration. |
-| unknown or locally edited path | Preserve the original, materialize a deterministic `.new` remediation/conflict sidecar when safe, and block activation. |
+| missing | Install canonical bytes and record current provenance. |
+| equals canonical | Preserve bytes and refresh deterministic provenance. |
+| equals the current manifest's previous managed hash | Write `.bak`, then install current canonical bytes. |
+| unknown local edit or invalid current provenance | Preserve the target, write canonical bytes to `.new` when safe, and block activation. |
 
-`generated_in_clean_init=true` distinguishes upstream-generated paths from the
-six historical legacy-only paths. The installer may not use
-`looks_like_trellis_generated_entry()` or another content heuristic for this
-migration.
-
-Successful activation removes all 43 paths from the new installed extension
-manifest's `install.managed_assets`. Unresolved `.new`/`.bak`, invalid
-provenance, unsafe/symlink paths, or a recognized old Guru payload at an
-upstream-generated path keeps the install blocked.
-
-## Update And Upgrade
-
-For an existing repository:
-
-1. run official `trellis update` or the required Trellis version upgrade;
-2. reselect the `guru-team` marketplace workflow;
-3. reapply the Guru preset;
-4. resolve all `.new`/`.bak` and local-edit conflicts;
-5. rerun source/installed package validation, ownership validation, platform
-   discovery checks, dogfood drift, and a recursive zero-sidecar scan.
-
-Official Trellis owns the bytes of generated `trellis-*` files after update.
-The preset restores only Guru-owned assets.
+Only current Guru-owned paths participate in this table.
 
 ## Deterministic Validator Boundary
 
@@ -132,29 +92,35 @@ Maintainers run:
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 ```
 
-The validator is read-only. It may validate schema, 43-path immutable history,
-tombstone state, migration payload hashes, overlay presence/absence, exact
-Guru-owned claims, registry state, and objective counts/digests. It must not
-judge design quality, route intent, finding severity, update safety, or Issue
-closure.
-
-Success reports at least:
-
-- `frozen_count=43`, `active_count=0`, `removed_count=43`;
-- `legacy_overlay_count=0`, `additive_overlay_count=3`;
-- `transitional_legacy_count=0`, `unclassified_count=0`;
-- immutable historical identity and migration-payload-set digests;
-- exact managed claims and additive overlay identities.
+The validator is read-only. It verifies schema 3.0, the exact 11 rules, nine
+managed claims, three additive overlays, anchored namespace matching, current
+registry/package identities, and objective counts/digests derived from current
+assets. It must not judge design quality, route intent, finding severity,
+update safety, or Issue closure.
 
 Malformed data returns structured `code`, `path`, and `detail` errors without a
-traceback. Any active transitional row, unclassified row, tombstone overlay,
-unknown managed claim, missing additive entry, or changed immutable identity
-fails closed before target mutation.
+traceback. Any non-current schema, unknown rule or claim, missing or unexpected
+overlay, broad upstream namespace claim, manifest mismatch, or sidecar fails
+closed before target mutation.
+
+## Update And Reapply
+
+For a current installation:
+
+1. run official `trellis update` or the selected Trellis version update;
+2. reselect the `guru-team` marketplace workflow;
+3. reapply the current Guru preset;
+4. resolve current managed-asset `.new`/`.bak` conflicts;
+5. rerun source/installed package validation, ownership validation, platform
+   discovery checks, dogfood drift, and a recursive zero-sidecar scan.
+
+A non-current installed or ownership manifest is invalid input and stops this
+flow. Continuing requires a fresh target or a complete current manifest; the
+validator has no schema-version-specific branch.
 
 ## Public Skill And Eval Assets
 
-Guru public packages, consumer schemas, migrations, eval corpora, adapter
-runtime, native trace contracts, companion scripts, and selected-platform
-`guru-*` discovery copies remain additive Guru-owned assets. Their existing
-Interface 1.3 semantics and migration identities are unchanged by overlay
-removal.
+Guru public packages, consumer schemas, eval corpora, adapter runtime, native
+trace contracts, companion scripts, and selected-platform `guru-*` discovery
+copies are additive Guru-owned assets. Their current Interface 1.3 identities
+come from the live registry and package contracts.

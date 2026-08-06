@@ -4,12 +4,14 @@
 
 Workflow and standalone mode perform the same seven preconditions. Read the
 current task, the minimal passed Phase 2 DTO, Issue Scope Ledger and complete
-Git state. The DTO supplies `task_ref`, its profile-owned `source_exit`, and the
-checked content HEAD; Task Commit never reads the Planning or Phase 2 owner's
-private checkpoint. Dirty files are facts, not commit authorization.
+Git state. The DTO supplies `task_ref`, its profile-owned `source_exit`, and
+`phase2_commit_anchor`; Task Commit rereads the Phase 2 owner's retained
+checkpoint to verify its current reviewed-content identity and capture-commit
+ancestry. It never reads the Planning owner's private checkpoint. Dirty files
+are facts, not commit authorization.
 
 The public input is only `profile`, `mode`, `task_ref`, `source_exit`, and the
-checked content HEAD. It never carries message authoring, path selection,
+`phase2_commit_anchor`. It never carries message authoring, path selection,
 semantic outcome, user authorization, an expected exit, or a Phase 2 digest.
 
 Build the next three-digit candidate under the ignored owner-private path
@@ -81,17 +83,12 @@ same-plan recovery.
 
 On success, immutable Git history is the source for parent, message, paths and
 tree facts. The executor returns only `pre_commit_head` and `commit_sha`, then
-deletes the private candidate. It does not append `committed`, `result`,
-`tree_evidence` or other Git-derived facts to tracked task metadata.
+deletes the private candidate and consumed Phase 2 checkpoint. A failed attempt
+retains both for bounded retry; successful same-plan recovery verifies the
+published commit before deleting both. The executor does not append `committed`,
+`result`, `tree_evidence` or other Git-derived facts to tracked task metadata.
 
-## Compatibility And Exit
-
-Existing task-local `task-commit-plans/*.json` remain read-only compatibility
-evidence. A legacy completed plan may help an existing active task prove commit
-ancestry, but no new invocation rewrites or stages it. A v1 public input may be
-projected once from its message/path/semantic fields into v2; its authorization,
-expected exit, and digest fields are ignored. A planned legacy candidate is
-rebuilt under ignored runtime and the old file remains untouched.
+## Exit
 
 Return exactly one declared exit: `committed`, `revision-required`, or
 `blocked`. The committed DTO is projected to Branch Review, which verifies the

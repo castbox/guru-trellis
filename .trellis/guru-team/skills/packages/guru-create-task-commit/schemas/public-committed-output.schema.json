@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-create-task-commit-output-committed-1.0",
+  "$id": "guru-production-create-task-commit-output-committed-2.0",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "exit_id",
     "task_ref",
     "base_ref",
-    "committed_head"
+    "branch_review_commit"
   ],
   "properties": {
     "exit_id": {
@@ -21,7 +21,7 @@
       "type": "string",
       "minLength": 1
     },
-    "committed_head": {
+    "branch_review_commit": {
       "type": "string",
       "pattern": "^[0-9a-f]{40}$"
     }

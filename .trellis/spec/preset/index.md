@@ -39,11 +39,10 @@ The installer is idempotent:
 - missing managed files are installed
 - changed managed companion assets are updated with `.bak` backups
 - existing `.trellis/guru-team/config.yml` is preserved
-- the 43 historical Trellis paths are retained only as
-  `upstream_owned/removed` tombstones and are never installed or managed
-- clean upstream bytes are preserved, known legacy-only Guru payloads are
-  removed, known Guru payloads at upstream-generated paths block until official
-  update/upgrade, and unknown local edits are preserved with `.new`
+- ownership inventory schema 3.0 contains exactly 11 current Guru rules, nine
+  managed claims, and three additive overlays
+- existing ownership or installed manifests must satisfy the current schema;
+  non-current input fails current-contract validation before mutation
 - the overlay tree contains only the three Guru-owned `guru-finish-work` entries
 - unknown local edits receive `.new` copies instead of being overwritten
 

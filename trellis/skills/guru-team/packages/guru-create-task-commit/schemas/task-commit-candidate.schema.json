@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json",
   "title": "Guru Team owner-private task commit candidate",
   "description": "Short-lived AI-owned candidate. It contains no user authorization, cross-Skill digest authority, or terminal result journal.",
   "type": "object",
@@ -19,8 +19,8 @@
     "ai_review"
   ],
   "properties": {
-    "$schema": {"const": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-2.0.json"},
-    "schema_version": {"const": "2.0"},
+    "$schema": {"const": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json"},
+    "schema_version": {"const": "3.0"},
     "skill_id": {"const": "guru-create-task-commit"},
     "sequence": {"type": "string", "pattern": "^[0-9]{3}$"},
     "task": {"$ref": "#/$defs/task"},
@@ -60,12 +60,12 @@
     "git": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["base_branch", "base_ref", "pre_commit_head", "checked_head"],
+      "required": ["base_branch", "base_ref", "pre_commit_head", "phase2_commit_anchor"],
       "properties": {
         "base_branch": {"type": "string", "minLength": 1},
         "base_ref": {"type": "string", "minLength": 1},
         "pre_commit_head": {"$ref": "#/$defs/gitSha"},
-        "checked_head": {"$ref": "#/$defs/gitSha"}
+        "phase2_commit_anchor": {"$ref": "#/$defs/gitSha"}
       }
     },
     "snapshotEntry": {

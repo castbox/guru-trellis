@@ -1,14 +1,15 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "skill_id": "guru-review-task-publication",
   "task_ref": ".trellis/tasks/07-24-example-publication",
-  "reviewed_content_head": "0123456789abcdef0123456789abcdef01234567",
+  "branch_review_commit": "0123456789abcdef0123456789abcdef01234567",
+  "reviewed_content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "dimensions": [
     {
       "id": "diff_outcome_consistency",
       "status": "passed",
       "summary": "The diff matches the reviewed outcome.",
-      "evidence_refs": ["git:reviewed_content_head"]
+      "evidence_refs": ["git:branch_review_commit"]
     },
     {
       "id": "issue_scope_closure",
@@ -26,19 +27,19 @@
       "id": "validation_claims",
       "status": "passed",
       "summary": "Validation claims match current evidence.",
-      "evidence_refs": ["git:reviewed_content_head"]
+      "evidence_refs": ["git:branch_review_commit"]
     },
     {
       "id": "branch_review_summary",
       "status": "passed",
       "summary": "The branch review conclusion is current.",
-      "evidence_refs": ["git:reviewed_content_head"]
+      "evidence_refs": ["git:branch_review_commit"]
     },
     {
       "id": "docs_ssot_reconciliation",
       "status": "passed",
       "summary": "Docs SSOT reconciliation is complete.",
-      "evidence_refs": ["git:reviewed_content_head", "durable-docs"]
+      "evidence_refs": ["git:branch_review_commit", "durable-docs"]
     },
     {
       "id": "safety_deployment_impact",
@@ -75,7 +76,7 @@
     "docs_ssot": {
       "status": "passed",
       "summary": "The approved Docs SSOT plan is reconciled.",
-      "evidence_refs": ["git:reviewed_content_head", "durable-docs"]
+      "evidence_refs": ["git:branch_review_commit", "durable-docs"]
     },
     "safety_deployment": {
       "status": "passed",
