@@ -300,7 +300,7 @@ Preset 安装 current Interface 1.3 schema 与 registry 1.2。每个 active regi
 planning/check/commit 唯一 current manifest，精确绑定
 三包、十 profiles、11 exits、current output schemas、四条 authoring-seed edges、private
 artifact ids、examples 与 eval cases；不存在 alternate production projector 或 fixture。
-当前 active closure 为 13/51，live Intake 合同为 6/23。Preset 在一次 staging
+当前 active closure 为 14/54，live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
 Interface 1.3、production-current manifest/schema、十三包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
@@ -337,8 +337,8 @@ structurally distinct inputs、四个 per-exit contracts、private
 它不修改 live Intake 6/23 或 production 3/11 合同。Active
 `guru-finalize-task` 另行安装六个 distinct profiles、六个 `exit_id` outputs、
 private gate、八条 production eval cases 与四个 finalization runtime wrappers，并
-具体绑定 #116/#117 producer edges。Source/installed package closure 为 13 Skills /
-51 exits；global workflow marker closure 为 13 invokes / 51 exits / 28 targets。
+具体绑定 #116/#117 producer edges。Source/installed package closure 为 14 Skills /
+54 exits；global workflow marker closure 为 14 invokes / 54 exits / 31 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -450,8 +450,8 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-review-contract-wording`、`guru-review-change-request`、
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
 `guru-finalize-task`、`guru-review-branch`、`guru-review-task-publication`、
-`guru-verify-extension-installation`。这十三个 active packages 共声明
-51 个 external exits。`guru-finalize-task` 的
+`guru-select-workflow-mode`、`guru-verify-extension-installation`。这十四个 active packages 共声明
+54 个 external exits。`guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前 canonical extension version
 `0.6.5-guru.25` 已由 stable source `v0.6.5-guru.3` 发布；该 annotated tag peeled 到

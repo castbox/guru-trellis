@@ -581,8 +581,8 @@ Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation contributes to the current package closure of thirteen active
-Skills and 51 external exits.
+The activation contributes to the current package closure of fourteen active
+Skills and 54 external exits.
 `production-current-v1` remains exactly three Skills and 11 exits; #116 is an
 additional complete active Interface 1.3 row. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
@@ -624,7 +624,7 @@ usable and published in the extension runtime command inventory.
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
 wrapper executable modes, the thirteen-Skill/51-exit package closure, the
-integrated global closure of 13 invokes, 51 exits, and 28 targets, and current
+integrated global closure of 14 invokes, 54 exits, and 31 targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Non-current manifests and unknown claims fail closed. Unknown edits to current
 Guru-owned assets retain `.new`, known Guru upgrades retain `.bak`, and
@@ -649,9 +649,9 @@ projection of `repo_ref/resolved_head/verification_ref`; the finalizer target
 authors `profile/mode/task_ref` and retains plan identity privately through the
 declared current profile.
 
-The current source/installed package graph contains thirteen active Skills and
-51 external exits. The global workflow projection is 13 invokes, 51 exits, and
-28 targets. The preset additionally installs the three Guru-owned
+The current source/installed package graph contains fourteen active Skills and
+54 external exits. The global workflow projection is 14 invokes, 54 exits, and
+31 targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and the combined integration suite. Upstream
 `trellis-finish-work` Skill/Command/Prompt files remain entirely under official
 Trellis ownership and are absent from Guru overlays and managed inventory. This

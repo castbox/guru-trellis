@@ -12326,7 +12326,7 @@ FINALIZE_TASK_SKILL_ID = "guru-finalize-task"
 PUBLIC_CONTRACT_SKILL_IDS = (
     CURRENT_INTAKE_SKILL_IDS
     + PRODUCTION_CONTRACT_SKILL_IDS
-    + (BRANCH_REVIEW_SKILL_ID, TASK_PUBLICATION_SKILL_ID)
+    + (BRANCH_REVIEW_SKILL_ID, TASK_PUBLICATION_SKILL_ID, "guru-select-workflow-mode")
 )
 PRODUCTION_CONTRACT_MANIFEST = Path("contracts/production-current.json")
 PRODUCTION_CONTRACT_SCHEMA = Path("schemas/production-contract-manifest.schema.json")
@@ -15676,8 +15676,8 @@ def _validate_skill_source(
                 for interface in interfaces.values()
                 if isinstance(interface.get("external_exits"), list)
             )
-            if len(active_ids) != 13 or exit_count != 51:
-                errors.append("current active Skill closure must remain exactly 13 Skills and 51 exits")
+            if len(active_ids) != 14 or exit_count != 54:
+                errors.append("current active Skill closure must remain exactly 14 Skills and 54 exits")
 
     workflow_stat = None
     if not require_workflow:
@@ -16953,6 +16953,15 @@ def stage0_owner_result(
                 plan_input=repo_relative(root, plan_path),
             ))
             result = checked
+        elif skill_id == "guru-select-workflow-mode":
+            required = {"schema_version", "typed_exit", "mode", "selection", "continuation_id"}
+            if set(result) != required or result.get("schema_version") != "1.0" or result.get("mode") not in {"workflow", "standalone"}:
+                raise WorkflowError("Workflow mode selection failed closed-shape validation.", exit_code=2)
+            if result.get("typed_exit") not in {"standard_intake", "task_free", "blocked"}:
+                raise WorkflowError("Workflow mode selection has an unknown exit.", exit_code=2)
+            if result.get("typed_exit") != "blocked" and result.get("selection") != result.get("typed_exit"):
+                raise WorkflowError("Workflow mode selection exit is unmapped.", exit_code=2)
+            checked = {"status": "passed", "typed_exit": result.get("typed_exit")}
         else:
             raise stage0_invocation_error(
                 "invalid_invocation_identity",
@@ -17690,6 +17699,8 @@ def stage0_build_output(
                     "remediation": route.get("remediation"),
                 }
             )
+    elif skill_id == "guru-select-workflow-mode":
+        values = {"exit_id": exit_id}
 
     selected_schema = skill_output_mode_branch(
         schema,

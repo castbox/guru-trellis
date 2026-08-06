@@ -87,6 +87,7 @@
         "guru-stage0-review-contract-wording-input-change-request-1.0",
         "guru-stage0-review-contract-wording-input-explicit-paths-1.0",
         "guru-stage0-review-contract-wording-input-planning-artifacts-1.0"
+        ,"guru-workflow-mode-input-initial-1.0"
       ],
       "typed_output_schema_ids": [
         "guru-extension-verify-installation-output-blocked-1.0",
@@ -140,6 +141,9 @@
         "guru-stage0-sync-base-output-blocked-1.0",
         "guru-stage0-sync-base-output-skipped-1.0",
         "guru-stage0-sync-base-output-synced-1.0"
+        ,"guru-workflow-mode-output-blocked-1.0"
+        ,"guru-workflow-mode-output-standard-intake-1.0"
+        ,"guru-workflow-mode-output-task-free-1.0"
       ],
       "private_artifact_schema_ids": [
         "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",
@@ -186,6 +190,7 @@
         "guru-review-change-request",
         "guru-review-contract-wording",
         "guru-review-task-publication",
+        "guru-select-workflow-mode",
         "guru-sync-base",
         "guru-verify-extension-installation"
       ],

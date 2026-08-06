@@ -414,7 +414,7 @@ that the existing target must be regular and trackable, a successful
 different-byte replacement records `superseded_snapshot_sha256`, failed
 pre-write validation preserves prior bytes, and same-byte retry is idempotent.
 
-Public READMEs describe thirteen active Skills and 51 external exits, identify
+Public READMEs describe fourteen active Skills and 54 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -453,8 +453,8 @@ The `ready` DTO is exactly `exit_id`, `task_ref`, and
 `branch_review_commit`. Publication consumes the current Branch Review passed
 DTO and live Git only; it never opens Branch Review private checkpoint state.
 
-README package closure numbers are thirteen active Skills and 51 external exits;
-global workflow markers remain 13 invokes, 51 exits, and 28 targets.
+README package closure numbers are fourteen active Skills and 54 external exits;
+global workflow markers remain 14 invokes, 54 exits, and 31 targets.
 `production-current-v1` owns the current planning/check/commit contract; the
 live Intake contract remains six Skills/23 exits.
 
@@ -519,10 +519,10 @@ They document the task-bearing standalone #117 not-required edge. That edge publ
 `profile/mode/task_ref`, binds current task-local evidence to the private plan,
 and does not expose plan identity in the producer handoff.
 
-The READMEs describe the current package graph as thirteen active Skills and 51
+The READMEs describe the current package graph as fourteen active Skills and 51
 external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
-They identify the integrated global workflow projection as 13 invokes, 51 exits,
-and 28 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
+They identify the integrated global workflow projection as 14 invokes, 54 exits,
+and 31 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
 Cursor finish entry; document the two terminal `published` evals and the private
 checked-verification projection; and keep every public DTO unchanged. Official
 `trellis-finish-work` payloads remain upstream-owned and are not installed or

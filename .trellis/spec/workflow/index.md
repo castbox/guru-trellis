@@ -37,8 +37,8 @@ Before editing workflow behavior:
   that core and does not define a second resolver.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Registry 1.2 accepts only planned and active rows. Every active row selects
-  Interface 1.3, covering thirteen workflow packages and 51 external exits;
-  global workflow markers are 13 invokes, 51 exits, and 28 targets. Registry,
+  Interface 1.3, covering fourteen workflow packages and 54 external exits;
+  global workflow markers are 14 invokes, 54 exits, and 31 targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit closure is defined only by
   `contracts/production-current.json` with contract id
@@ -140,7 +140,7 @@ The durable contracts for `guru-review-task-publication` are split across
 Interface 1.3 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
   thirteen-Skill/51-exit package closure, and install/update checks. The global
-workflow projection is 13 invokes, 51 exits, and 28 targets.
+workflow projection is 14 invokes, 54 exits, and 31 targets.
 
 ## Extension Installation Verification Closed-Loop Owner
 
@@ -161,9 +161,9 @@ and `docs/public-docs.md`. Together they own its seven profiles, six external
 exits, immutable closeout plan, dialogue-only side-effect confirmation, owner-private
 recovery facts, real-wrapper eval, and additive distribution.
 
-The current package graph contains thirteen active Skills and 51 external exits
+The current package graph contains fourteen active Skills and 54 external exits
 with twelve target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 13 invokes, 51 exits, and 28 targets. Issue #119 combined acceptance
+markers are 14 invokes, 54 exits, and 31 targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, two terminal
 published evals, checked-verification projection bridge, current ownership
 validation, and installed integration coverage.

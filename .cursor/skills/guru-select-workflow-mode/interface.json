@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/skill-interface-1.3.schema.json",
+  "schema_version": "1.3",
+  "id": "guru-select-workflow-mode",
+  "name": "guru-select-workflow-mode",
+  "description": "Select standard Guru Team intake or a bounded task-free current-checkout route through one AI-owned semantic decision.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["request_context", "selection_freshness"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["request_context", "selection_freshness"]}
+  },
+  "entry_preconditions": [
+    {"id": "request_context", "evidence": "current user request and current checkout/task status", "binding": "one initial no-task request before normal Intake", "freshness": "read in the current turn"},
+    {"id": "selection_freshness", "evidence": "one current semantic selection result", "binding": "the current scope and continuation identity", "freshness": "invalidated by scope, authority, or side-effect change"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [{"id": "owner_result_example", "path": "examples/workflow-mode-selection.json"}, {"id": "public_input_example", "path": "examples/public-input.json"}, {"id": "public_invocation_error_example", "path": "examples/public-invocation-error.json"}, {"id": "standard_output_example", "path": "examples/public-standard-intake-output.json"}, {"id": "task_free_output_example", "path": "examples/public-task-free-output.json"}, {"id": "blocked_output_example", "path": "examples/public-blocked-output.json"}],
+  "schemas": [
+    {"id": "workflow_mode_selection", "path": "schemas/workflow-mode-selection.schema.json"},
+    {"id": "public_input", "path": "schemas/public-input.schema.json"},
+    {"id": "public_input_initial", "path": "schemas/public-input-initial.schema.json"},
+    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
+    {"id": "public_standard_intake_output", "path": "schemas/public-standard-intake-output.schema.json"},
+    {"id": "public_task_free_output", "path": "schemas/public-task-free-output.schema.json"},
+    {"id": "public_blocked_output", "path": "schemas/public-blocked-output.schema.json"}
+  ],
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate one current owner selection, reject missing/unknown/multiple/unmapped exits, and serialize the selected typed output."}],
+  "external_exits": [
+    {"id": "standard_intake", "evidence": "AI selected the normal Guru Team Intake route", "consumer": {"kind": "workflow", "id": "guru-workflow-standard-intake-router"}},
+    {"id": "task_free", "evidence": "AI selected the bounded current-checkout task-free route", "consumer": {"kind": "workflow", "id": "guru-task-free-current-checkout"}},
+    {"id": "blocked", "evidence": "Selection result is missing, stale, ambiguous, unknown, or unmapped", "consumer": {"kind": "stop", "id": "workflow-mode-selection-blocked"}}
+  ],
+  "reentry": {"identity": "current request scope and continuation identity", "freshness": "mapped exits and same-scope retries reuse the selection; material scope or authority changes invalidate it", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {"kind": "structured_json", "aggregate_schema": {"schema_id": "guru-workflow-mode-input-aggregate-1.0", "path": "schemas/public-input.schema.json"}, "profiles": [{"id": "initial_request", "schema": {"schema_id": "guru-workflow-mode-input-initial-1.0", "path": "schemas/public-input-initial.schema.json"}, "example": {"id": "public_input", "path": "examples/public-input.json"}, "discriminator": {"field": "profile", "value": "initial_request"}}]},
+    "invocation": {"command_id": "run-skill-command", "wrapper": "scripts/invoke.sh", "input_binding": {"kind": "structured_json", "profile_id": "initial_request"}, "stdout_contract": "single_typed_exit", "error_schema": {"schema_id": "guru-workflow-mode-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"}, "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"}, "example_argv": ["--input", "examples/public-input.json", "--owner-result", "examples/workflow-mode-selection.json"]},
+    "outputs": [
+      {"exit_id": "standard_intake", "schema": {"schema_id": "guru-workflow-mode-output-standard-intake-1.0", "path": "schemas/public-standard-intake-output.schema.json"}, "example": {"id": "standard_intake_output", "path": "examples/public-standard-intake-output.json"}, "consumer_use_ids": ["standard_intake_projection"]},
+      {"exit_id": "task_free", "schema": {"schema_id": "guru-workflow-mode-output-task-free-1.0", "path": "schemas/public-task-free-output.schema.json"}, "example": {"id": "task_free_output", "path": "examples/public-task-free-output.json"}, "consumer_use_ids": ["task_free_projection"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-workflow-mode-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["blocked_projection"]}
+    ],
+    "consumer_inputs": [
+      {"id": "standard_intake_input", "consumer": {"kind": "workflow", "id": "guru-workflow-standard-intake-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-standard-intake-input-1.0", "path": "consumers/workflow/stage0/workflow-mode-standard-intake.schema.json"}},
+      {"id": "task_free_input", "consumer": {"kind": "workflow", "id": "guru-task-free-current-checkout"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-task-free-input-1.0", "path": "consumers/workflow/stage0/workflow-mode-task-free.schema.json"}},
+      {"id": "blocked_input", "consumer": {"kind": "stop", "id": "workflow-mode-selection-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-mode-blocked-input-1.0", "path": "consumers/stop/stage0/workflow-mode-selection-blocked.schema.json"}}
+    ],
+    "projections": [{"id": "standard_intake_projection", "exit_id": "standard_intake", "consumer_input_id": "standard_intake_input", "operation": "direct"}, {"id": "task_free_projection", "exit_id": "task_free", "consumer_input_id": "task_free_input", "operation": "direct"}, {"id": "blocked_projection", "exit_id": "blocked", "consumer_input_id": "blocked_input", "operation": "direct"}],
+    "private_artifacts": []
+  }
+}

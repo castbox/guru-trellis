@@ -388,7 +388,7 @@ package contracts, the production current manifest, Interface public
 contracts, and package-local corpora. It requires every active row to select
 Interface 1.3 and requires exact profile, exit, consumer, projection,
 current-case, and authoring-edge equality. Thirteen Skills
-and 51 exits are the current cardinality regression, not a hard-coded future
+and 54 exits are the current cardinality regression, not a hard-coded future
 registry allowlist.
 
 The production manifest also binds the exact four

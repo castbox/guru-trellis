@@ -289,11 +289,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["planned_ids"], [])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 13)
-        self.assertEqual(result["facts"]["exit_markers"], 51)
-        self.assertEqual(result["facts"]["target_markers"], 28)
+        self.assertEqual(result["facts"]["invoke_markers"], 14)
+        self.assertEqual(result["facts"]["exit_markers"], 54)
+        self.assertEqual(result["facts"]["target_markers"], 31)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         self.assertEqual(
@@ -575,7 +575,7 @@ class SourceValidationTests(unittest.TestCase):
             for entry in registry["skills"]
             if entry["state"] == "active"
         )
-        self.assertEqual(len(owner_ids), 13)
+        self.assertEqual(len(owner_ids), 14)
         forbidden_keys = {
             "agent_assignment",
             "authorization",
@@ -761,11 +761,11 @@ class SourceValidationTests(unittest.TestCase):
             self.assertIn("guru-review-branch", text, path)
             self.assertRegex(
                 text,
-                r"(?:13 Skills\s*/\s*51 exits|13/51|十三个 active packages 共声明\s*51)",
+                r"(?:14 Skills\s*/\s*54 exits|14/54|十四个 active packages 共声明\s*54)",
             )
             self.assertRegex(
                 text,
-                r"(?:13/51/28|13 invokes?\s*/\s*51 exits?\s*/\s*28 targets?)",
+                r"(?:14/54/31|14 invokes?\s*/\s*54 exits?\s*/\s*31 targets?)",
             )
             self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
             self.assertIn("deterministic", text, path)
@@ -779,8 +779,8 @@ class SourceValidationTests(unittest.TestCase):
         ]
         for path in durable_docs:
             text = path.read_text(encoding="utf-8")
-            self.assertIn("thirteen active", text, path)
-            self.assertRegex(text, r"51\s+external\s+exits")
+            self.assertIn("fourteen active", text, path)
+            self.assertRegex(text, r"54\s+external\s+exits")
             self.assertIn("guru-review-branch", text, path)
             for phrase in stale_phrases:
                 self.assertNotIn(phrase, text, path)
@@ -810,12 +810,12 @@ class SourceValidationTests(unittest.TestCase):
             with self.subTest(path=path):
                 text = path.read_text(encoding="utf-8")
                 normalized = " ".join(text.split())
-                self.assertIn("thirteen active Skills and 51 external exits", normalized)
+                self.assertIn("fourteen active Skills and 54 external exits", normalized)
                 self.assertIn(
                     "twelve target-owned `skill_input_authoring_seed` handoffs",
                     normalized,
                 )
-                self.assertIn("13 invokes, 51 exits, and 28 targets", normalized)
+                self.assertIn("14 invokes, 54 exits, and 31 targets", normalized)
                 self.assertIn("guru-finalize-task", text)
                 self.assertIn("#119", text)
                 for claim in stale_current_claims:
@@ -3943,7 +3943,7 @@ class ProductionDistributionTests(unittest.TestCase):
 
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-sync-base", "guru-verify-extension-installation"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"])
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
                 self.assertTrue((task_commit / "SKILL.md").is_file())

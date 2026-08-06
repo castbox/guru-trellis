@@ -107,8 +107,8 @@ manifest: exactly three packages, ten profiles, 11 exits, current output schema
 ids, four authoring-seed edges, private artifact ids, examples, and eval case
 bindings. No alternate production manifest, input projector, or fixture may be
 present. Then validate the current package closure
-at thirteen active Skills and 51 external exits, while the integrated global
-workflow projection is 13 invokes, 51 exits, and 28 targets. Negative tests cover missing, extra,
+at fourteen active Skills and 54 external exits, while the integrated global
+workflow projection is 14 invokes, 54 exits, and 31 targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -606,7 +606,7 @@ Python or shell.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
   thirteen-Skill/51-exit current package closure while the production activation
   unit remains three Skills/11 exits and global markers remain integrated at
-  13 invokes, 51 exits, and 28 targets. Update and preset reapply must reproduce
+  14 invokes, 54 exits, and 31 targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Task Publication Review Quality
@@ -658,10 +658,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert thirteen active Skills and 51
+Source/installed/platform/throwaway checks assert fourteen active Skills and 51
 external exits, exactly one `production-current-v1` three-Skill/11-exit current
 manifest, and global workflow markers of 13
-invokes, 51 exits, and 28 targets.
+invokes, 54 exits, and 31 targets.
 
 ## Extension Installation Verification Quality
 
@@ -728,8 +728,8 @@ illegal same-plan resume state including rejection of `prepared` and `ready`.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The
-  package closure is thirteen active Skills and 51 external exits; global markers
-  remain 13 invokes, 51 exits, and 28 targets. Issue #119 combined acceptance
+  package closure is fourteen active Skills and 54 external exits; global markers
+  remain 14 invokes, 54 exits, and 31 targets. Issue #119 combined acceptance
   additionally requires the three Guru-owned daily entries, two terminal
   published evals, checked-verification projection bridge, and installed
   integration coverage. Upstream Finish assets remain unchanged, with physical

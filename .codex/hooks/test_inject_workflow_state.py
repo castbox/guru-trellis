@@ -44,9 +44,9 @@ class CodexModeBannerTest(unittest.TestCase):
         breadcrumb = self.hook.build_breadcrumb(None, "no_task", templates)
 
         self.assertIn("Status: no_task", breadcrumb)
-        self.assertIn("Repo-changing work starts", breadcrumb)
+        self.assertIn("guru-select-workflow-mode", breadcrumb)
         self.assertIn("guru-sync-base", breadcrumb)
-        self.assertIn("automatically consumes mapped exits", breadcrumb)
+        self.assertIn("Mapped exits and same-scope retries", breadcrumb)
         self.assertNotIn("check-env.sh", breadcrumb)
         self.assertNotIn("prepare-task", breadcrumb)
 

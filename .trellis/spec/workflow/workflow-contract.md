@@ -38,8 +38,8 @@ private checkpoint, digest, recorder result, example, or runtime implementation.
 
 ## Integrated Public Graph
 
-The current graph contains exactly 13 active mandatory Skill ids, 51 external
-exits, and 28 workflow/stop targets. Each exit below has one consumer; the
+The current graph contains exactly 14 active mandatory Skill ids, 54 external
+exits, and 31 workflow/stop targets. Each exit below has one consumer; the
 package Interface owns the exact projection and any target-owned authoring
 partition.
 

@@ -54,8 +54,8 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 13 Skills / 51 exits，global workflow closure 为
-13/51/28（13 invokes / 51 exits / 28 targets）。Phase 0 到 Finalization 的
+当前 registry 激活 14 Skills / 54 exits，global workflow closure 为
+14/54/31（14 invokes / 54 exits / 31 targets）。Phase 0 到 Finalization 的
 active ids 为：
 
 - guru-sync-base
@@ -69,6 +69,7 @@ active ids 为：
 - guru-create-task-commit
 - guru-review-branch
 - guru-review-task-publication
+- guru-select-workflow-mode
 - guru-verify-extension-installation
 - guru-finalize-task
 
@@ -102,14 +103,14 @@ dispatcher；缺 runtime、版本漂移或未解决 sidecar 时必须在业务�
 
 当前 canonical extension version `0.6.5-guru.25` 已由上文 pin 的 stable release tag
 `v0.6.5-guru.3` 发布。Source/installed package validation 必须同时验证
-registry、13/51/28 marker graph、consumer uniqueness、projection、selected-platform
+registry、14/54/31 marker graph、consumer uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
 ## Workflow Authoring Ownership
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、13 mandatory Skill markers、51 exits、28 workflow/stop targets、
+current-task router、14 mandatory Skill markers、54 exits、31 workflow/stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -456,7 +457,11 @@ GitHub keyword、外部 API 名称和代码符号等 literal token 可保留英�
 可按分发需要保留英文或双语。
 
 对 issue-backed、task-like 或需要文件修改的 `no_task` 请求，tool-free classification 后的
-第一跳是 mandatory `guru-sync-base`。只有 typed exit `synced` 才进入：
+第一跳是 semantic `guru-select-workflow-mode`。`standard_intake` 才进入 mandatory
+`guru-sync-base`；`task_free` 只进入当前 checkout 的限定编辑目标。明确 task-free 意图不再
+确认，隐含意图最多确认一次，拒绝自动回到 `standard_intake`，不确定时保守走标准 Intake；
+模式确定后 mapped exit、普通恢复和同范围重试不重复询问。只有 standard Intake 的
+typed exit `synced` 才进入：
 
 `guru-discover-change-context -> guru-clarify-requirements ->
 guru-review-contract-wording -> guru-review-change-request ->
@@ -570,11 +575,9 @@ A/B merge fixture 从同一 clean base 分别走 production recorder/executor/ch
 task-local archive/commit，再验证 A -> B、B -> A 两个本地 merge 顺序无 Guru metadata
 conflict；不创建远程 PR或并发进程。
 
-`no_task` 下的 current-checkout direct edit 是显式 override，而不是 AI 可自行选择的
-默认捷径。只有当用户明确批准本轮跳过创建或复用 GitHub issue、Trellis task、worktree
-和 branch 时，AI 才能在当前 checkout 改文件；改动前仍要说明 skipped artifacts、
-current checkout / branch / dirty state、side effects 和 changed-file scope。该批准
-不包含 commit、push、PR creation 或 issue closure。
+`no_task` 下的 current-checkout direct edit 由 `guru-select-workflow-mode:task_free`
+唯一承接。它只覆盖当前 checkout 的明确限定编辑，保留无关 dirty/untracked 文件，不授权
+task/worktree/branch、commit、push、PR、merge、tag、release、installation 或 cleanup。
 
 Branch Review Gate、exceptional recovery 与 publish helper 是内部子命令。routine
 dispatch/wait/review 不调用 recovery recorder：
@@ -843,7 +846,7 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十三个 packages 已维护 canonical corpora 并覆盖全部 51 exits/profile；六个 Intake
+中的十四个 packages 已维护 canonical corpora 并覆盖全部 54 exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

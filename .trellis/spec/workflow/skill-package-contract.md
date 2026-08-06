@@ -96,7 +96,7 @@ workflow/standalone preconditions before a package command can run.
 
 ### 0. Current Interface And Registry Contract
 
-All 13 active packages select `guru-team-skill-interface-1.3`. Registry schema
+All 14 active packages select `guru-team-skill-interface-1.3`. Registry schema
 `guru-team-skill-registry-1.2` is the exact current selector: every active row
 declares `interface_schema_id=guru-team-skill-interface-1.3`, while planned rows
 remain lifecycle-only and carry no package or I/O fields. Any other row or
@@ -106,7 +106,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all thirteen active packages and their 51 external exits. The
+for all fourteen active packages and their 54 external exits. The
 `production-current-v1` manifest remains exactly three packages and 11 exits;
 additive activation of later packages, including `guru-finalize-task`, does not
 rewrite that membership.
@@ -629,7 +629,7 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.3 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is thirteen active Skills and 51
+The current package cardinality assertion is fourteen active Skills and 51
 exits. The integrated global workflow projection contains 13 invoke markers,
 51 exit markers, and 28 target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
@@ -1443,8 +1443,8 @@ allowed only when the current command explicitly names that regular file under
 prefix is allowed. Any other status path records a failed
 `review_range_and_working_tree` binding and prevents `ready`.
 
-The current additive activation set contributes to the live closure of thirteen
-active Skills and 51 exits. The production current manifest remains exactly
+The current additive activation set contributes to the live closure of fourteen
+active Skills and 54 exits. The production current manifest remains exactly
 three Skills and 11 exits.
 
 ## Extension Installation Verification Owner

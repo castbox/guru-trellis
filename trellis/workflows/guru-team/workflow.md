@@ -1,5 +1,4 @@
 # Guru Team Development Workflow
-
 ---
 
 ## Global Workflow Contract
@@ -33,12 +32,14 @@ Classify the initial request before repository or network semantic reads:
 - simple conversation or a non-file-changing request: answer directly without
   creating a GitHub Issue or Trellis task and without asking whether one should
   be created;
-- repo-changing, issue-backed, task-like, or file-changing work begins with
-  guru-sync-base and follows the mapped public graph;
+- repo-changing, issue-backed, task-like, or file-changing work first invokes
+  `guru-select-workflow-mode`; `standard_intake` enters guru-sync-base and the
+  existing mapped graph, while `task_free` enters only the bounded current-
+  checkout edit route;
 - only guru-create-task-workspace:created enters task planning;
-- a task-free current-checkout edit is allowed only when the user explicitly
-  authorizes that exact bounded exception for the current turn. A failed normal
-  bootstrap is not permission to switch to task-free work.
+- `guru-select-workflow-mode` owns the semantic choice. Explicit task-free
+  intent routes directly; implicit intent gets at most one confirmation,
+  refusal routes to standard Intake, and uncertainty never bypasses Intake.
 
 Missing packages or markers, duplicate markers, unknown or multiple exits,
 unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
@@ -46,9 +47,13 @@ invalid interface projections stop fail closed.
 
 ## Integrated Public Graph
 
-The active graph is exactly 13 mandatory Skills and 51 external exits.
+The active graph is exactly 14 mandatory Skills and 54 external exits.
 
 ### Phase 0 owners
+<!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"task_free","consumer":{"kind":"workflow","id":"guru-task-free-current-checkout"}} -->
+<!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"blocked","consumer":{"kind":"stop","id":"workflow-mode-selection-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-sync-base","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"synced","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"skipped","consumer":{"kind":"workflow","id":"original-request-route"}} -->
@@ -119,9 +124,11 @@ The active graph is exactly 13 mandatory Skills and 51 external exits.
 
 ## Workflow And Stop Targets
 
-The graph contains exactly 15 workflow targets and 13 stop targets.
+The graph contains exactly 17 workflow targets and 14 stop targets.
 
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
+<!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-free-current-checkout"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-clear-router"} -->
 <!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
 <!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
@@ -137,6 +144,7 @@ The graph contains exactly 15 workflow targets and 13 stop targets.
 <!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
 
+<!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->
 <!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
@@ -199,9 +207,10 @@ Phase 3: Finish  -> docs reconciliation, commit, branch review, publication, fin
 | completed | Enter Phase 3 through the canonical guru-finish-work route. |
 
 [workflow-state:no_task]
-Classify without repository or network semantic reads. Repo-changing work starts
-at guru-sync-base and automatically consumes mapped exits. Ask only for missing
-intent or the exact Intake side-effect set.
+`guru-select-workflow-mode` precedes Intake. Task-free is direct; implicit gets
+one confirmation; refusal/uncertainty -> `standard_intake` -> `guru-sync-base`.
+Mapped exits and same-scope retries do not ask again. Task-free preserves
+unrelated dirty/untracked and authorizes current-checkout edits.
 [/workflow-state:no_task]
 
 [workflow-state:planning]
