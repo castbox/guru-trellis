@@ -44,7 +44,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         self.assertEqual(
             contracts["private_artifacts"][0]["schema"]["schema_id"],
             "https://github.com/castbox/guru-trellis/schemas/"
-            "guru-extension-installation-verification-2.0.json",
+            "guru-extension-installation-verification-3.0.json",
         )
 
     def test_distinct_inputs_and_taskless_standalone_branch(self) -> None:
@@ -208,10 +208,40 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         )
         execution = load("examples/execution-facts.json")
         validator.validate(execution)
-        self.assertEqual(execution["schema_version"], "2.0")
+        self.assertEqual(execution["schema_version"], "3.0")
         self.assertEqual(
-            execution["reviewed_content_sha256"],
-            execution["remote_reviewed_content_sha256"],
+            execution["target_repository"]["reviewed_content_sha256"],
+            execution["target_repository"]["remote_reviewed_content_sha256"],
+        )
+        self.assertEqual(
+            execution["extension_source"]["manifest_provenance"],
+            "available",
+        )
+        self.assertNotEqual(
+            execution["extension_source"]["direct_oid"],
+            execution["extension_source"]["commit"],
+        )
+        self.assertTrue(execution["extension_source"]["ref_matches_commit"])
+        self.assertTrue(all(
+            item["checkout_owner"]
+            in {"target_checkout", "extension_source_checkout"}
+            for item in execution["commands"]
+        ))
+        self.assertTrue(all(
+            item["checkout_owner"] == "extension_source_checkout"
+            for item in execution["asset_expectations"]
+        ))
+        self.assertTrue(all(
+            item["checkout_owner"] == "extension_source_checkout"
+            for item in execution["asset_digests"]
+        ))
+        self.assertEqual(
+            execution["ownership"]["checkout_owner"],
+            "extension_source_checkout",
+        )
+        self.assertEqual(
+            execution["sidecars"],
+            {"checkout_owner": "extension_source_checkout", "paths": []},
         )
 
         inventory = execution["asset_inventory"]
@@ -244,6 +274,37 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         del capability["command_refs"]
         del capability["asset_paths"]
         self.assertFalse(validator.is_valid(invalid_capability))
+
+        for label, mutate in (
+            (
+                "asset expectation",
+                lambda value: value["asset_expectations"][0].update(
+                    checkout_owner="target_checkout"
+                ),
+            ),
+            (
+                "asset digest",
+                lambda value: value["asset_digests"][0].update(
+                    checkout_owner="target_checkout"
+                ),
+            ),
+            (
+                "ownership",
+                lambda value: value["ownership"].update(
+                    checkout_owner="target_checkout"
+                ),
+            ),
+            (
+                "sidecar",
+                lambda value: value["sidecars"].update(
+                    checkout_owner="target_checkout"
+                ),
+            ),
+        ):
+            with self.subTest(label=label):
+                cross_owned = json.loads(json.dumps(execution))
+                mutate(cross_owned)
+                self.assertFalse(validator.is_valid(cross_owned))
 
     def test_no_secret_marker_in_contract_assets(self) -> None:
         marker = "synthetic-" + "secret-marker"

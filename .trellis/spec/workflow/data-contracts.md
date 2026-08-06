@@ -339,6 +339,28 @@ The installed manifest is one closed current contract:
 - `selected_platforms` records installer input and should not be inferred from
   directory presence alone.
 
+Extension installation verification treats this manifest as source provenance,
+not target identity. Workflow and task-bearing standalone calls read it from
+the verified target checkout and require closed `source.repo/ref/commit/`
+`tree_state/is_mutable_ref` facts. The source repo is canonicalized to
+credential-free GitHub HTTPS; annotated tags bind both direct object and peeled
+commit, while branches/lightweight tags use the direct commit. The selected
+commit must equal `source.commit` before source clone. Only taskless standalone
+with explicit source-repository intent may use `manifest_provenance=not_available`
+when the manifest is absent; malformed content never falls back.
+
+Private extension verification schema 3.0 contains separate
+`target_repository` and `extension_source` objects in execution facts and
+`marketplace-verification.json`. Target reviewed-content identity never comes
+from the source checkout, and installer/canonical assets/ownership/source
+sidecars never come from the target checkout. The four public exits and their
+minimal consumer DTOs are unchanged.
+Command evidence uses only `target_checkout` or
+`extension_source_checkout` as its closed owner label. Every asset expectation,
+installed digest, ownership fact, and sidecar fact carries the exact
+`extension_source_checkout` owner; an empty sidecar path set still retains that
+owner binding.
+
 The installed manifest also has an independent closed `overlays` provenance
 domain with exactly `schema_version`, `status`, `selected_platforms`, `files`,
 `removals`, `conflicts`, and `sidecars`. `files[]` is the complete current

@@ -1959,6 +1959,7 @@ def extension_verification_execution(
         if status == "not_run"
         else [{
             "id": "verify_throwaway_installation",
+            "checkout_owner": "extension_source_checkout",
             "argv": [
                 "git",
                 "ls-remote",
@@ -1990,23 +1991,66 @@ def extension_verification_execution(
             [],
             [],
         )
-    return {
-        "schema_version": "2.0",
+    task_bearing = isinstance(public_input.get("task_ref"), str)
+    reviewed_content_sha256 = content_sha256 if task_bearing else None
+    if task_bearing:
+        selected_source = runtime.extension_verification_manifest_source(
+            fixture,
+            public_input,
+            task_bearing=True,
+        )
+        source_commit = selected_source.pop("manifest_commit")
+        requested_ref = str(selected_source["requested_ref"])
+        resolved_ref = (
+            requested_ref
+            if requested_ref.startswith("refs/")
+            else f"refs/tags/{requested_ref}"
+            if selected_source["is_mutable_ref"] is False
+            else f"refs/heads/{requested_ref}"
+        )
+    else:
+        source_commit = remote_head
+        requested_ref = str(public_input.get("ref", "refs/heads/main"))
+        resolved_ref = (
+            requested_ref
+            if requested_ref.startswith("refs/")
+            else f"refs/heads/{requested_ref}"
+        )
+        selected_source = {
+            "selection": "standalone_fallback",
+            "manifest_provenance": "not_available",
+            "repo": public_input["repo_ref"],
+            "locator": runtime.extension_verification_canonical_github_locator(
+                public_input["repo_ref"]
+            ),
+            "requested_ref": requested_ref,
+            "tree_state": "clean",
+            "is_mutable_ref": True,
+        }
+    target_repository = {
         "repo_ref": public_input["repo_ref"],
         "remote": public_input.get("remote", "origin"),
         "ref": public_input.get("ref", "refs/heads/main"),
         "branch_review_commit": branch_review_commit,
-        "remote_head": remote_head,
-        "reviewed_content_sha256": (
-            content_sha256
-            if isinstance(public_input.get("task_ref"), str)
-            else None
-        ),
-        "remote_reviewed_content_sha256": (
-            content_sha256
-            if public_input["mode"] == "workflow"
-            else None
-        ),
+        "resolved_head": remote_head,
+        "checkout_head": remote_head,
+        "reviewed_content_sha256": reviewed_content_sha256,
+        "remote_reviewed_content_sha256": reviewed_content_sha256,
+        "content_identity_matches": status == "passed",
+    }
+    extension_source = {
+        **selected_source,
+        "resolved_ref": resolved_ref,
+        "direct_oid": source_commit,
+        "commit": source_commit,
+        "checkout_head": source_commit if status == "passed" else None,
+        "ref_matches_commit": status == "passed",
+        "checkout_head_matches": status == "passed",
+    }
+    return {
+        "schema_version": "3.0",
+        "target_repository": target_repository,
+        "extension_source": extension_source,
         "status": status,
         "commands": commands,
         "capabilities": runtime.extension_verification_capability_facts(
@@ -2019,13 +2063,17 @@ def extension_verification_execution(
         "asset_digests": asset_digests,
         "asset_inventory": asset_inventory,
         "ownership": {
+            "checkout_owner": "extension_source_checkout",
             "current_contract": True,
             "schema_version": "3.0",
             "inventory_id": "guru-team-upstream-ownership",
             "guru_owned_rule_count": 11,
             "managed_claim_count": 9,
         },
-        "sidecars": [],
+        "sidecars": {
+            "checkout_owner": "extension_source_checkout",
+            "paths": [],
+        },
     }
 
 

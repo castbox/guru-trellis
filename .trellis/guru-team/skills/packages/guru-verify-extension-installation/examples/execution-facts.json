@@ -1,35 +1,40 @@
 {
-  "schema_version": "2.0",
-  "repo_ref": "castbox/guru-trellis",
-  "remote": "origin",
-  "ref": "refs/heads/feature-117",
-  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "remote_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
-  "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "schema_version": "3.0",
   "status": "passed",
   "commands": [
     {
-      "id": "resolve_remote_ref",
-      "argv": ["git", "ls-remote", "origin", "refs/heads/feature-117"],
+      "id": "resolve_extension_source_ref",
+      "argv": [
+        "git",
+        "ls-remote",
+        "origin",
+        "refs/heads/feature-117"
+      ],
       "exit_code": 0,
       "stdout_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "stderr_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "stdout_size_bytes": 41,
-      "stderr_size_bytes": 0
+      "stderr_size_bytes": 0,
+      "checkout_owner": "extension_source_checkout"
     }
   ],
   "capabilities": [
     {
       "id": "marketplace_index",
       "status": "passed",
-      "command_refs": ["resolve_remote_ref"],
-      "asset_paths": [".trellis/workflow.md"]
+      "command_refs": [
+        "resolve_extension_source_ref"
+      ],
+      "asset_paths": [
+        ".trellis/workflow.md"
+      ]
     },
     {
       "id": "redaction",
       "status": "passed",
-      "command_refs": ["resolve_remote_ref"],
+      "command_refs": [
+        "resolve_extension_source_ref"
+      ],
       "asset_paths": [
         ".trellis/guru-team/schemas/marketplace-verification.schema.json",
         ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json"
@@ -38,6 +43,7 @@
   ],
   "asset_expectations": [
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "workflow",
       "platform": null,
       "path": ".trellis/workflow.md",
@@ -46,6 +52,7 @@
       "relation": "canonical_workflow"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "preset",
       "platform": null,
       "path": ".trellis/guru-team/config-template.yml",
@@ -54,6 +61,7 @@
       "relation": "managed_manifest"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "schema",
       "platform": null,
       "path": ".trellis/guru-team/schemas/marketplace-verification.schema.json",
@@ -62,6 +70,7 @@
       "relation": "managed_manifest"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "skill",
       "platform": null,
       "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
@@ -70,6 +79,7 @@
       "relation": "skill_manifest"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "platform",
       "platform": "shared",
       "path": ".agents/skills/guru-verify-extension-installation/interface.json",
@@ -80,30 +90,35 @@
   ],
   "asset_digests": [
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "workflow",
       "platform": null,
       "path": ".trellis/workflow.md",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "preset",
       "platform": null,
       "path": ".trellis/guru-team/config-template.yml",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "schema",
       "platform": null,
       "path": ".trellis/guru-team/schemas/marketplace-verification.schema.json",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "skill",
       "platform": null,
       "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/interface.json",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
     },
     {
+      "checkout_owner": "extension_source_checkout",
       "category": "platform",
       "platform": "shared",
       "path": ".agents/skills/guru-verify-extension-installation/interface.json",
@@ -111,16 +126,46 @@
     }
   ],
   "asset_inventory": {
-    "expected_set_sha256": "5ae0fb9360aaa0db3192edb3980a5fece12edbc467b9c0c79dd4dfc06073c3bb",
+    "expected_set_sha256": "66aa43757ed92b43cdfe26347e4ffddbde7da26047743d02c73e9227e13341da",
     "expected_count": 5,
     "observed_count": 5,
     "matched_count": 5,
     "categories": [
-      {"id": "workflow", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
-      {"id": "preset", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
-      {"id": "schema", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
-      {"id": "skill", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true},
-      {"id": "platform", "expected_count": 1, "observed_count": 1, "matched_count": 1, "complete": true}
+      {
+        "id": "workflow",
+        "expected_count": 1,
+        "observed_count": 1,
+        "matched_count": 1,
+        "complete": true
+      },
+      {
+        "id": "preset",
+        "expected_count": 1,
+        "observed_count": 1,
+        "matched_count": 1,
+        "complete": true
+      },
+      {
+        "id": "schema",
+        "expected_count": 1,
+        "observed_count": 1,
+        "matched_count": 1,
+        "complete": true
+      },
+      {
+        "id": "skill",
+        "expected_count": 1,
+        "observed_count": 1,
+        "matched_count": 1,
+        "complete": true
+      },
+      {
+        "id": "platform",
+        "expected_count": 1,
+        "observed_count": 1,
+        "matched_count": 1,
+        "complete": true
+      }
     ],
     "missing_paths": [],
     "duplicate_paths": [],
@@ -130,11 +175,41 @@
     "complete": true
   },
   "ownership": {
+    "checkout_owner": "extension_source_checkout",
     "current_contract": true,
     "schema_version": "3.0",
     "inventory_id": "guru-team-upstream-ownership",
     "guru_owned_rule_count": 11,
     "managed_claim_count": 9
   },
-  "sidecars": []
+  "sidecars": {
+    "checkout_owner": "extension_source_checkout",
+    "paths": []
+  },
+  "target_repository": {
+    "repo_ref": "castbox/guru-trellis",
+    "remote": "origin",
+    "ref": "refs/heads/feature-117",
+    "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "resolved_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "checkout_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "content_identity_matches": true
+  },
+  "extension_source": {
+    "selection": "manifest",
+    "manifest_provenance": "available",
+    "repo": "castbox/guru-trellis",
+    "locator": "https://github.com/castbox/guru-trellis.git",
+    "requested_ref": "v0.6.5-guru.3",
+    "resolved_ref": "refs/tags/v0.6.5-guru.3",
+    "direct_oid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "commit": "cccccccccccccccccccccccccccccccccccccccc",
+    "checkout_head": "cccccccccccccccccccccccccccccccccccccccc",
+    "tree_state": "clean",
+    "is_mutable_ref": false,
+    "ref_matches_commit": true,
+    "checkout_head_matches": true
+  }
 }

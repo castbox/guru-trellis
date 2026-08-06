@@ -1,45 +1,24 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-2.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-3.0.json",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version", "skill_id", "generated_at", "mode", "profile",
-    "public_input", "repository", "applicability", "verification_profile",
+    "public_input", "target_repository", "extension_source", "applicability", "verification_profile",
     "execution", "semantic_review", "typed_exit", "consumer",
     "identity", "blocker", "freshness", "redaction", "machine_facts_sha256",
     "semantic_review_sha256", "facts_sha256"
   ],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"const": "3.0"},
     "skill_id": {"const": "guru-verify-extension-installation"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
     "profile": {"enum": ["verification_required", "standalone_verification"]},
     "public_input": {"type": "object"},
-    "repository": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "repo_ref", "remote", "ref", "branch_review_commit", "remote_head",
-        "reviewed_content_sha256", "remote_reviewed_content_sha256"
-      ],
-      "properties": {
-        "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
-        "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
-        "ref": {"type": "string", "minLength": 1},
-        "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
-        "remote_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
-        "reviewed_content_sha256": {
-          "type": ["string", "null"],
-          "pattern": "^[0-9a-f]{64}$"
-        },
-        "remote_reviewed_content_sha256": {
-          "type": ["string", "null"],
-          "pattern": "^[0-9a-f]{64}$"
-        }
-      }
-    },
+    "target_repository": {"$ref": "#/$defs/targetRepository"},
+    "extension_source": {"$ref": "#/$defs/extensionSource"},
     "applicability": {
       "type": "object",
       "additionalProperties": false,
@@ -63,8 +42,10 @@
     "execution": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars", "reviewed_content_sha256", "remote_reviewed_content_sha256"],
+      "required": ["target_repository", "extension_source", "status", "commands", "capabilities", "asset_expectations", "asset_digests", "asset_inventory", "ownership", "sidecars"],
       "properties": {
+        "target_repository": {"$ref": "#/$defs/targetRepository"},
+        "extension_source": {"$ref": "#/$defs/extensionSource"},
         "status": {"enum": ["not_run", "passed", "failed", "blocked"]},
         "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
         "capabilities": {"type": "array", "items": {"$ref": "#/$defs/capabilityFact"}},
@@ -74,8 +55,9 @@
         "ownership": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["current_contract", "schema_version", "inventory_id", "guru_owned_rule_count", "managed_claim_count"],
+          "required": ["checkout_owner", "current_contract", "schema_version", "inventory_id", "guru_owned_rule_count", "managed_claim_count"],
           "properties": {
+            "checkout_owner": {"const": "extension_source_checkout"},
             "current_contract": {"type": "boolean"},
             "schema_version": {"enum": ["3.0", null]},
             "inventory_id": {"enum": ["guru-team-upstream-ownership", null]},
@@ -83,9 +65,15 @@
             "managed_claim_count": {"type": "integer", "minimum": 0}
           }
         },
-        "sidecars": {"type": "array", "items": {"type": "string", "minLength": 1}}
-        ,"reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
-        ,"remote_reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+        "sidecars": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checkout_owner", "paths"],
+          "properties": {
+            "checkout_owner": {"const": "extension_source_checkout"},
+            "paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+          }
+        }
       }
     },
     "semantic_review": {
@@ -154,6 +142,50 @@
     "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
+    "targetRepository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref", "remote", "ref", "branch_review_commit", "resolved_head",
+        "checkout_head", "reviewed_content_sha256", "remote_reviewed_content_sha256",
+        "content_identity_matches"
+      ],
+      "properties": {
+        "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
+        "ref": {"type": "string", "minLength": 1},
+        "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "resolved_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "checkout_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "remote_reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "content_identity_matches": {"type": "boolean"}
+      }
+    },
+    "extensionSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selection", "manifest_provenance", "repo", "locator", "requested_ref",
+        "resolved_ref", "direct_oid", "commit", "checkout_head", "tree_state",
+        "is_mutable_ref", "ref_matches_commit", "checkout_head_matches"
+      ],
+      "properties": {
+        "selection": {"enum": ["manifest", "standalone_fallback", null]},
+        "manifest_provenance": {"enum": ["available", "not_available", null]},
+        "repo": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "locator": {"type": ["string", "null"], "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\\.git$"},
+        "requested_ref": {"type": ["string", "null"], "minLength": 1},
+        "resolved_ref": {"type": ["string", "null"], "pattern": "^refs/(heads|tags)/[A-Za-z0-9._/-]+$"},
+        "direct_oid": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "checkout_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "tree_state": {"enum": ["clean", "dirty", null]},
+        "is_mutable_ref": {"type": ["boolean", "null"]},
+        "ref_matches_commit": {"type": "boolean"},
+        "checkout_head_matches": {"type": "boolean"}
+      }
+    },
     "capability": {
       "enum": [
         "marketplace_index", "new_repo_init", "existing_repo_preview_switch",
@@ -166,15 +198,18 @@
     "command": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "argv", "exit_code", "stdout_sha256", "stderr_sha256", "stdout_size_bytes", "stderr_size_bytes"],
+      "required": ["id", "checkout_owner", "argv", "exit_code", "stdout_sha256", "stderr_sha256", "stdout_size_bytes", "stderr_size_bytes"],
       "properties": {
         "id": {
           "enum": [
-            "resolve_remote_ref", "resolve_remote_url", "clone_source",
-            "checkout_resolved_commit", "verify_checkout_commit",
+            "resolve_target_ref", "resolve_target_locator", "clone_target",
+            "checkout_target", "verify_target_checkout",
+            "resolve_extension_source_ref", "clone_extension_source",
+            "checkout_extension_source", "verify_extension_source_checkout",
             "verify_throwaway_installation"
           ]
         },
+        "checkout_owner": {"enum": ["target_checkout", "extension_source_checkout"]},
         "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
         "exit_code": {"type": "integer"},
         "stdout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
@@ -212,10 +247,11 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "category", "platform", "path", "source_path",
+        "checkout_owner", "category", "platform", "path", "source_path",
         "expected_sha256", "relation"
       ],
       "properties": {
+        "checkout_owner": {"const": "extension_source_checkout"},
         "category": {"$ref": "#/$defs/assetCategory"},
         "platform": {"$ref": "#/$defs/assetPlatform"},
         "path": {"type": "string", "minLength": 1},
@@ -235,8 +271,9 @@
     "assetDigest": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["category", "platform", "path", "sha256"],
+      "required": ["checkout_owner", "category", "platform", "path", "sha256"],
       "properties": {
+        "checkout_owner": {"const": "extension_source_checkout"},
         "category": {"$ref": "#/$defs/assetCategory"},
         "platform": {"$ref": "#/$defs/assetPlatform"},
         "path": {"type": "string", "minLength": 1},

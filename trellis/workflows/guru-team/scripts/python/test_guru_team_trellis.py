@@ -8875,6 +8875,19 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             "github_repo: example/guru-extension\n",
             encoding="utf-8",
         )
+        gtt.write_json(
+            self.root / ".trellis/guru-team/extension.json",
+            {
+                "schema_version": "2.0",
+                "source": {
+                    "repo": "https://github.com/example/guru-extension.git",
+                    "ref": "refs/heads/main",
+                    "commit": "b" * 40,
+                    "tree_state": "clean",
+                    "is_mutable_ref": True,
+                },
+            },
+        )
         (self.root / ".gitignore").write_text(
             ".trellis/.runtime/\n",
             encoding="utf-8",
@@ -8967,6 +8980,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             if status == "not_run"
             else [{
                 "id": "verify_throwaway_installation",
+                "checkout_owner": "extension_source_checkout",
                 "argv": [
                     sensitive_argv
                     or "git",
@@ -9006,19 +9020,42 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 [],
                 [],
             )
-        return {
-            "schema_version": "2.0",
+        target_head = (
+                None
+                if status == "blocked" and public_input["mode"] == "standalone"
+                else branch_review_commit or "a" * 40
+            )
+        target_repository = {
             "repo_ref": public_input["repo_ref"],
             "remote": public_input.get("remote", "origin"),
             "ref": public_input.get("ref", "refs/heads/main"),
             "branch_review_commit": branch_review_commit,
-            "remote_head": (
-                None
-                if status == "blocked" and public_input["mode"] == "standalone"
-                else branch_review_commit or "a" * 40
-            ),
+            "resolved_head": target_head,
+            "checkout_head": target_head,
             "reviewed_content_sha256": reviewed_content_sha256,
             "remote_reviewed_content_sha256": remote_reviewed_content_sha256,
+            "content_identity_matches": status == "passed",
+        }
+        source_commit = "b" * 40 if "task_ref" in public_input else target_head
+        extension_source = {
+            "selection": "manifest" if "task_ref" in public_input else "standalone_fallback",
+            "manifest_provenance": "available" if "task_ref" in public_input else "not_available",
+            "repo": "example/guru-extension",
+            "locator": "https://github.com/example/guru-extension.git",
+            "requested_ref": "refs/heads/main",
+            "resolved_ref": "refs/heads/main",
+            "direct_oid": source_commit,
+            "commit": source_commit,
+            "checkout_head": source_commit if status == "passed" else None,
+            "tree_state": "clean",
+            "is_mutable_ref": True,
+            "ref_matches_commit": status == "passed",
+            "checkout_head_matches": status == "passed",
+        }
+        return {
+            "schema_version": "3.0",
+            "target_repository": target_repository,
+            "extension_source": extension_source,
             "status": status,
             "commands": commands,
             "capabilities": gtt.extension_verification_capability_facts(
@@ -9031,13 +9068,17 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             "asset_digests": asset_digests,
             "asset_inventory": asset_inventory,
             "ownership": {
+                "checkout_owner": "extension_source_checkout",
                 "current_contract": True,
                 "schema_version": "3.0",
                 "inventory_id": "guru-team-upstream-ownership",
                 "guru_owned_rule_count": 11,
                 "managed_claim_count": 9,
             },
-            "sidecars": [],
+            "sidecars": {
+                "checkout_owner": "extension_source_checkout",
+                "paths": [],
+            },
         }
 
     def materialize_installed_asset_target(
@@ -9387,13 +9428,22 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         public_input["ref"] = "refs/tags/v0.6.5-annotated"
         direct_tag_object = "b" * 40
         resolved_commit = "a" * 40
+        execution = self.execution(public_input, "not_run", [])
+        execution["target_repository"]["resolved_head"] = resolved_commit
+        execution["target_repository"]["checkout_head"] = resolved_commit
+        execution["extension_source"].update({
+            "requested_ref": public_input["ref"],
+            "resolved_ref": public_input["ref"],
+            "direct_oid": direct_tag_object,
+            "commit": resolved_commit,
+        })
         owner = self.record(
             public_input,
-            self.execution(public_input, "not_run", []),
+            execution,
             self.review("not_required", []),
         )
         self.assertEqual(
-            owner["repository"]["remote_head"],
+            owner["target_repository"]["resolved_head"],
             resolved_commit,
         )
 
@@ -9432,6 +9482,68 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         self.assertEqual(output["resolved_head"], resolved_commit)
         self.assertNotIn(direct_tag_object, json.dumps(output))
 
+    def test_checker_rejects_installed_manifest_commit_drift(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+        owner = self.record(
+            public_input,
+            self.execution(public_input, "passed", selected),
+            self.review("verified", selected),
+        )
+        live_source = {
+            "selection": "manifest",
+            "manifest_provenance": "available",
+            "repo": "example/guru-extension",
+            "locator": "https://github.com/example/guru-extension.git",
+            "requested_ref": "refs/heads/main",
+            "manifest_commit": "c" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": True,
+        }
+        real_run = gtt.run
+
+        def current_ref_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> Any:
+            if command[:2] == ["git", "ls-remote"]:
+                oid = self.head if command[2] == "origin" else "b" * 40
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{oid}\trefs/heads/main\n",
+                    stderr="",
+                )
+            return real_run(command, cwd=cwd, check=check, env=env)
+
+        with (
+            mock.patch.object(gtt, "run", side_effect=current_ref_run),
+            mock.patch.object(
+                gtt,
+                "extension_verification_reviewed_content_sha256",
+                return_value=owner["target_repository"][
+                    "reviewed_content_sha256"
+                ],
+            ),
+            mock.patch.object(
+                gtt,
+                "extension_verification_manifest_source",
+                return_value=live_source,
+            ),
+            self.assertRaises(gtt.WorkflowError) as stale,
+        ):
+            gtt.check_extension_verification_result(
+                self.root,
+                owner,
+                ".trellis/tasks/current/marketplace-verification.json",
+                public_input,
+            )
+        self.assertIn(
+            "installed extension manifest provenance is stale",
+            json.dumps(stale.exception.payload),
+        )
+
     def test_taskless_remote_unavailable_emits_blocked_without_fake_head(self) -> None:
         public_input = self.public_input("standalone", task=False)
         public_input["remote"] = "missing-remote"
@@ -9442,7 +9554,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             selected,
         )
         self.assertEqual(execution["status"], "blocked")
-        self.assertIsNone(execution["remote_head"])
+        self.assertIsNone(execution["target_repository"]["resolved_head"])
         owner = self.record(
             public_input,
             execution,
@@ -9814,6 +9926,9 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
     def test_task_modes_reject_same_head_tracked_content_drift(self) -> None:
         for mode in ("workflow", "standalone"):
             with self.subTest(mode=mode):
+                (self.task_dir / "marketplace-verification.json").unlink(
+                    missing_ok=True
+                )
                 public_input = self.public_input(mode, task=True)
                 selected = ["marketplace_index"]
                 readme = self.root / "README.md"
@@ -9823,7 +9938,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                     self.execution(public_input, "passed", selected),
                     self.review("verified", selected),
                 )
-                recorded_binding = owner["repository"]["reviewed_content_sha256"]
+                recorded_binding = owner["target_repository"]["reviewed_content_sha256"]
                 self.assertRegex(recorded_binding, r"^[0-9a-f]{64}$")
 
                 readme.write_text("later dirty content\n", encoding="utf-8")
@@ -9888,6 +10003,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         self.assertEqual(
             facts,
             {
+                "checkout_owner": "extension_source_checkout",
                 "current_contract": True,
                 "schema_version": "3.0",
                 "inventory_id": "guru-team-upstream-ownership",
@@ -9909,6 +10025,22 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             )
         self.assertIn(
             "current ownership contract",
+            json.dumps(raised.exception.payload),
+        )
+
+    def test_verified_rejects_cross_owned_source_command(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        selected = ["marketplace_index"]
+        execution = self.execution(public_input, "passed", selected)
+        execution["commands"][0]["checkout_owner"] = "target_checkout"
+        with self.assertRaises(gtt.WorkflowError) as raised:
+            self.record(
+                public_input,
+                execution,
+                self.review("verified", selected),
+            )
+        self.assertIn(
+            "extension_source_checkout",
             json.dumps(raised.exception.payload),
         )
 
@@ -10229,7 +10361,14 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                     observed_env.append(env)
                     return mock.Mock(returncode=0, stdout="", stderr="")
 
-                with mock.patch.object(gtt, "run", side_effect=fake_run):
+                with (
+                    mock.patch.object(gtt, "run", side_effect=fake_run),
+                    mock.patch.object(
+                        gtt,
+                        "reviewed_content_identity",
+                        return_value={"sha256": "f" * 64},
+                    ),
+                ):
                     facts = gtt.extension_verification_execute_facts(
                         self.root,
                         public_input,
@@ -10237,7 +10376,10 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                         expected_branch_review_commit=resolved_head,
                     )
 
-                self.assertEqual(facts["remote_head"], resolved_head)
+                self.assertEqual(
+                    facts["target_repository"]["resolved_head"],
+                    resolved_head,
+                )
                 self.assertIn(
                     ["git", "ls-remote", "origin", ref, f"{ref}^{{}}"],
                     observed_commands,
@@ -10319,7 +10461,10 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             )
 
         self.assertEqual(facts["status"], "failed")
-        self.assertEqual(facts["remote_head"], requested_head)
+        self.assertEqual(
+            facts["target_repository"]["resolved_head"],
+            requested_head,
+        )
         self.assertFalse(throwaway_called)
         self.assertEqual(
             facts["commands"][-1]["argv"],
@@ -10355,8 +10500,14 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             )
 
         self.assertEqual(facts["status"], "blocked")
-        self.assertEqual(facts["branch_review_commit"], self.head)
-        self.assertEqual(facts["remote_head"], different_head)
+        self.assertEqual(
+            facts["target_repository"]["branch_review_commit"],
+            self.head,
+        )
+        self.assertEqual(
+            facts["target_repository"]["resolved_head"],
+            different_head,
+        )
         self.assertTrue(
             any(command[:3] == ["git", "remote", "get-url"] for command in commands)
         )
@@ -10413,7 +10564,14 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             observed_env.append(env)
             return mock.Mock(returncode=0, stdout="", stderr="")
 
-        with mock.patch.object(gtt, "run", side_effect=fake_run):
+        with (
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(
+                gtt,
+                "reviewed_content_identity",
+                return_value={"sha256": "f" * 64},
+            ),
+        ):
             gtt.extension_verification_execute_facts(
                 self.root,
                 public_input,
@@ -10430,6 +10588,324 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                     )
                 }
             ],
+        )
+
+    def test_task_bearing_executor_uses_manifest_source_in_distinct_checkout(self) -> None:
+        public_input = self.public_input("standalone", task=True)
+        target_head = "a" * 40
+        direct_tag = "b" * 40
+        source_commit = "c" * 40
+        source_ref = "refs/tags/v0.6.5-guru.3"
+        clone_destinations: list[Path] = []
+        real_run = gtt.run
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            if command[:2] == ["git", "ls-remote"]:
+                if command[2] == "origin":
+                    return mock.Mock(
+                        returncode=0,
+                        stdout=f"{target_head}\trefs/heads/main\n",
+                        stderr="",
+                    )
+                self.assertEqual(
+                    command[2],
+                    "https://github.com/example/extension-source.git",
+                )
+                return mock.Mock(
+                    returncode=0,
+                    stdout=(
+                        f"{direct_tag}\t{source_ref}\n"
+                        f"{source_commit}\t{source_ref}^{{}}\n"
+                    ),
+                    stderr="",
+                )
+            if command[:3] == ["git", "remote", "get-url"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/example/guru-extension.git\n",
+                    stderr="",
+                )
+            if command[:2] == ["git", "clone"]:
+                destination = Path(command[-1])
+                clone_destinations.append(destination)
+                if destination.name == "target-checkout":
+                    (destination / ".trellis/guru-team").mkdir(parents=True)
+                    gtt.write_json(
+                        destination / ".trellis/guru-team/extension.json",
+                        {
+                            "schema_version": "2.0",
+                            "source": {
+                                "repo": "https://github.com/example/extension-source.git",
+                                "ref": source_ref,
+                                "commit": source_commit,
+                                "tree_state": "clean",
+                                "is_mutable_ref": False,
+                            },
+                        },
+                    )
+                    self.assertFalse(
+                        (
+                            destination
+                            / "trellis/presets/guru-team/scripts/bash/"
+                            "verify-throwaway-install.sh"
+                        ).exists()
+                    )
+                else:
+                    self.copy_extension_source_fixture(destination)
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "checkout", "--detach"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "rev-parse", "--verify"]:
+                head = (
+                    target_head
+                    if Path(cwd).name == "target-checkout"
+                    else source_commit
+                )
+                return mock.Mock(returncode=0, stdout=f"{head}\n", stderr="")
+            if command and command[0].endswith("verify-throwaway-install.sh"):
+                install_work = Path(command[1])
+                self.materialize_installed_asset_target(
+                    Path(cwd),
+                    install_work / "project",
+                )
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            return real_run(command, cwd=cwd, check=check, env=env)
+
+        with (
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(
+                gtt,
+                "extension_verification_task_identity",
+                return_value=self.task_dir,
+            ),
+            mock.patch.object(
+                gtt,
+                "reviewed_content_identity",
+                return_value={"sha256": "d" * 64},
+            ),
+        ):
+            facts = gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                list(gtt.EXTENSION_VERIFICATION_CAPABILITIES),
+            )
+
+        self.assertEqual(facts["status"], "passed", facts)
+        self.assertEqual(facts["target_repository"]["resolved_head"], target_head)
+        self.assertEqual(facts["extension_source"]["repo"], "example/extension-source")
+        self.assertEqual(facts["extension_source"]["direct_oid"], direct_tag)
+        self.assertEqual(facts["extension_source"]["commit"], source_commit)
+        self.assertEqual(facts["extension_source"]["checkout_head"], source_commit)
+        self.assertEqual(
+            {path.name for path in clone_destinations},
+            {"target-checkout", "extension-source-checkout"},
+        )
+        self.assertTrue(all(
+            command["checkout_owner"] == "extension_source_checkout"
+            for command in facts["commands"]
+            if command["id"] in {
+                "resolve_extension_source_ref",
+                "clone_extension_source",
+                "checkout_extension_source",
+                "verify_extension_source_checkout",
+                "verify_throwaway_installation",
+            }
+        ))
+
+    def test_manifest_source_absence_fallback_and_task_bearing_failure(self) -> None:
+        taskless = self.public_input("standalone", task=False)
+        (self.root / ".trellis/guru-team/extension.json").unlink()
+        source = gtt.extension_verification_manifest_source(
+            self.root,
+            taskless,
+            task_bearing=False,
+        )
+        self.assertEqual(source["selection"], "standalone_fallback")
+        self.assertEqual(source["manifest_provenance"], "not_available")
+        self.assertEqual(
+            source["locator"],
+            "https://github.com/example/guru-extension.git",
+        )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.extension_verification_manifest_source(
+                self.root,
+                taskless,
+                task_bearing=True,
+            )
+
+    def test_malformed_or_credential_manifest_never_falls_back_or_leaks(self) -> None:
+        manifest = self.root / ".trellis/guru-team/extension.json"
+        taskless = self.public_input("standalone", task=False)
+        manifest.write_text("{", encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError) as malformed:
+            gtt.extension_verification_manifest_source(
+                self.root,
+                taskless,
+                task_bearing=False,
+            )
+        self.assertIn("malformed", str(malformed.exception))
+
+        secret_locator = "https://user:secret@github.com/example/source.git"
+        gtt.write_json(
+            manifest,
+            {
+                "source": {
+                    "repo": secret_locator,
+                    "ref": "main",
+                    "commit": "a" * 40,
+                    "tree_state": "clean",
+                    "is_mutable_ref": True,
+                }
+            },
+        )
+        with self.assertRaises(gtt.WorkflowError) as unsafe:
+            gtt.extension_verification_manifest_source(
+                self.root,
+                taskless,
+                task_bearing=False,
+            )
+        self.assertNotIn(secret_locator, str(unsafe.exception))
+        self.assertNotIn("secret", json.dumps(unsafe.exception.payload))
+
+    def test_manifest_commit_drift_blocks_before_source_clone(self) -> None:
+        resolved = "a" * 40
+        source = {
+            "locator": "https://github.com/example/source.git",
+            "requested_ref": "refs/tags/v1",
+        }
+        command = gtt.extension_verification_source_ref_command(
+            source["locator"],
+            source["requested_ref"],
+        )
+        proc = mock.Mock(
+            returncode=0,
+            stdout=f"{resolved}\trefs/tags/v1\n",
+            stderr="",
+        )
+        resolved_ref, direct_oid, commit = (
+            gtt.extension_verification_resolved_source_ref(
+                proc,
+                source["requested_ref"],
+            )
+        )
+        self.assertEqual(command[0:3], ["git", "ls-remote", source["locator"]])
+        self.assertEqual((resolved_ref, direct_oid, commit), (
+            "refs/tags/v1",
+            resolved,
+            resolved,
+        ))
+        self.assertNotEqual(commit, "b" * 40)
+
+    def test_source_checkout_head_mismatch_fails_before_installer(self) -> None:
+        public_input = self.public_input("standalone", task=True)
+        target_head = "a" * 40
+        source_commit = "b" * 40
+        reported_source_head = "c" * 40
+        installer_commands: list[list[str]] = []
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            del check, env
+            if command[:2] == ["git", "ls-remote"]:
+                oid = target_head if command[2] == "origin" else source_commit
+                ref = "refs/heads/main"
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{oid}\t{ref}\n",
+                    stderr="",
+                )
+            if command[:3] == ["git", "remote", "get-url"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/example/guru-extension.git\n",
+                    stderr="",
+                )
+            if command[:2] == ["git", "clone"]:
+                Path(command[-1]).mkdir(parents=True)
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "checkout", "--detach"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "rev-parse", "--verify"]:
+                head = (
+                    target_head
+                    if Path(cwd).name == "target-checkout"
+                    else reported_source_head
+                )
+                return mock.Mock(returncode=0, stdout=f"{head}\n", stderr="")
+            if command and command[0].endswith("verify-throwaway-install.sh"):
+                installer_commands.append(command)
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            return mock.Mock(returncode=1, stdout="", stderr="unexpected command")
+
+        source = {
+            "selection": "manifest",
+            "manifest_provenance": "available",
+            "repo": "example/extension-source",
+            "locator": "https://github.com/example/extension-source.git",
+            "requested_ref": "refs/heads/main",
+            "manifest_commit": source_commit,
+            "tree_state": "clean",
+            "is_mutable_ref": True,
+        }
+        with (
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(
+                gtt,
+                "extension_verification_task_identity",
+                return_value=self.task_dir,
+            ),
+            mock.patch.object(
+                gtt,
+                "extension_verification_manifest_source",
+                return_value=source,
+            ),
+            mock.patch.object(
+                gtt,
+                "reviewed_content_identity",
+                return_value={"sha256": "d" * 64},
+            ),
+        ):
+            facts = gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                ["marketplace_index"],
+            )
+
+        self.assertEqual(facts["status"], "failed")
+        self.assertEqual(
+            facts["extension_source"]["checkout_head"],
+            reported_source_head,
+        )
+        self.assertFalse(facts["extension_source"]["checkout_head_matches"])
+        self.assertEqual(installer_commands, [])
+
+    def test_recorded_source_checkout_head_mismatch_is_rejected(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        execution = self.execution(
+            public_input,
+            "passed",
+            ["marketplace_index"],
+        )
+        execution["extension_source"]["checkout_head"] = "c" * 40
+        execution["extension_source"]["checkout_head_matches"] = False
+        with self.assertRaises(gtt.WorkflowError) as mismatch:
+            self.record(
+                public_input,
+                execution,
+                self.review("verified", ["marketplace_index"]),
+            )
+        self.assertIn(
+            "current target and source identities",
+            json.dumps(mismatch.exception.payload),
         )
 
 

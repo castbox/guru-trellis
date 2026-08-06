@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Verify target/source fields have one owner and no stale compatibility path."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Verify scripts remain deterministic and semantic success remains AI-owned."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Verify public inputs/exits remain minimal and all installed copies match."}
+{"file":".trellis/spec/preset/installer.md","reason":"Verify manifest inventory, apply/reapply and zero-sidecar closure."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Verify non-synonymous regression coverage and full rerun requirements."}
+{"file":".trellis/spec/docs/public-docs.md","reason":"Verify README and durable contract statements match runtime behavior."}

@@ -484,6 +484,15 @@ owner result；taskless standalone 不写 repo cache/index。Production eval 证
 inputs、四 exits、retry/unavailable/stale route；真实 pushed-remote clean install 另行
 证明 init/preview/switch/update/reapply/ownership/sidecar/README/redaction。两者互不替代。
 
+Verifier public repo/ref 指向 target repository；task-bearing source provenance
+来自 target checkout 的 installed manifest。Runtime 使用隔离的 target/source
+checkouts：reviewed-content 只属于 target，installer/canonical package/ownership/source
+sidecars 只属于 source。Annotated source tag 记录 direct object 但选择 peeled commit，
+并要求 selected commit 等于 manifest commit。Taskless fallback 仅适用于显式 source
+verification 且 manifest absent；malformed manifest 不降级。Source clone locator 必须为
+credential-free canonical GitHub HTTPS，unsafe locator 在 clone/artifact 前阻断。
+Private/execution schema 3.0 current-only，public inputs 与四个 exit DTO 未改变。
+
 `guru-discover-change-context` package 同时安装
 `guru-context-discovery-1.0` schema、example、contract、tests 与三个 executable thin
 wrappers。Direct discovery 与 workflow route 使用相同 fresh-base/change-input/evidence

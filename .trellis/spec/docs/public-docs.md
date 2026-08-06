@@ -487,6 +487,16 @@ requirements, source/installed discovery, canonical/installed/shared/Codex/
 Cursor/Claude byte identity, update/reapply, current ownership, sidecar cleanup,
 and redaction.
 
+They also distinguish the business target from the Guru Team extension source.
+The target public repo/ref/HEAD and reviewed content stay target-owned;
+task-bearing source repo/ref/commit comes from the target's installed manifest.
+Annotated source tags select the peeled commit and compare it to manifest
+`source.commit`; branch/lightweight tags select the direct commit. Taskless
+standalone fallback is explicit-source and absent-manifest only. Installer,
+canonical assets, ownership, and source sidecars are source-checkout-owned, and
+unsafe credential-bearing source locators stop before clone or retained output.
+Public exit DTOs intentionally do not expose source inventory or machine paths.
+
 Public validation text treats package-local real-wrapper production eval and
 real pushed-remote clean installation as independent acceptance surfaces. It
 must not claim the remote-ref gate passed when only local or public stable

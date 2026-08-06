@@ -11,16 +11,16 @@ finalizer loop; the verifier result is not exposed as a user continuation gate.
 
 `standalone_verification` carries `repo_ref`, `remote`, `ref`, and
 `caller_intent`. Its closed schema has separate task-bearing and session-only
-branches. The caller does not select a command matrix, supply remote facts, or
-author adequacy. Workflow and standalone calls apply the same runtime,
-repository, remote/ref, ownership, redaction, and freshness preconditions.
+branches. The caller does not select a command matrix, supply source facts, or
+author adequacy. Workflow and standalone calls apply the same runtime, target
+repository, extension source, ownership, redaction, and freshness preconditions.
 
 Every task-bearing execute, record, and check entry rebuilds repository
 identity from the exact direct active task. It uses current `task.json`, the
 ignored runtime mapping, the current checkout, and live Git worktree facts.
 It requires the public `task_ref` to equal the current active task, rejects
 archived or completed task locators, and proves the live branch, task identity,
-source repository, and workspace boundary all describe the same repository
+target repository, and workspace boundary all describe the same repository
 worktree. A wrong task, stale
 active-task pointer, wrong branch/repository, or wrong worktree fails before
 execution, persistence, or route projection. Taskless standalone calls do not
@@ -46,15 +46,26 @@ profile and maps every affected surface to at least one of:
 - `readme_commands`
 - `redaction`
 
-The deterministic executor resolves the requested ref once, using the peeled
-commit for an annotated tag and the direct commit for a branch or lightweight
-tag. It freezes that commit, checks it out by object ID, and verifies the clone
-with `git rev-parse --verify HEAD^{commit}` before any throwaway installation.
-A checkout mismatch fails closed. The executor gives the throwaway installer an
-explicit temporary work root and reads assets only from its resulting clean
-`project` target. It derives a deterministic expected set from the checked-out
-canonical workflow/runtime/schema/package bytes and the installed extension
-manifest, then records installed workflow, preset, schema, shared Skill, and
+The deterministic executor first resolves and clones the public target into an
+isolated `target-checkout`, verifies its exact HEAD, and derives reviewed-content
+identity only from that checkout and the current task root. Task-bearing calls
+then require `.trellis/guru-team/extension.json` in the target checkout. A
+taskless standalone call may use its explicit public repository locator only
+when that manifest is absent; malformed manifest bytes never select fallback.
+
+The executor canonicalizes the manifest source to credential-safe GitHub HTTPS,
+resolves its requested ref, selects the peeled commit for an annotated tag and
+the direct commit for a branch or lightweight tag, and compares that commit to
+`source.commit` before clone. It checks out the selected object in a separate
+`extension-source-checkout` and verifies `HEAD^{commit}`. Either checkout or
+manifest/commit mismatch fails closed. The throwaway installer, canonical
+workflow/runtime/schema/package bytes, ownership inventory, and source sidecar
+facts come only from the extension source checkout. Removing an installer from
+the target cannot change execution; a missing source installer blocks it.
+
+The executor gives the throwaway installer an explicit temporary work root and
+reads installed assets only from its resulting clean `project` target. It then
+records installed workflow, preset, schema, shared Skill, and
 Agents/Codex/Claude/Cursor package digests. Every expectation names its
 canonical source, manifest/platform relation, expected digest, category, and
 optional platform. Category counts, missing/duplicate/unexpected/mismatched
@@ -84,31 +95,38 @@ Workflow and task-bearing standalone calls persist exactly one task-local
 result in the current invocation and do not create a repository cache, latest
 pointer, index, task artifact, or task-work route.
 
-The private evidence binds the public input, safe repository/ref/HEAD identity,
-the local and remote `guru-reviewed-content-1.0` identities,
+The current-only private 3.0 evidence binds the public input, separate
+`target_repository` and `extension_source` identities, the target local and
+remote `guru-reviewed-content-1.0` identities, source selection and manifest
+provenance, direct object, selected commit and source checkout HEAD,
 AI applicability and reason, selected closed capability profile, sanitized
 command facts, installed asset expectations/digests/category completeness,
 per-capability command/asset references, ownership/sidecar facts, AI adequacy,
 findings, actual exit, consumer, redaction scan, retry/supersession identity,
 and opaque `verification_ref`. Machine and semantic digests are recorded
 separately and then bound by the final evidence digest.
+Command facts use only `target_checkout` or `extension_source_checkout` owner
+labels. Asset expectations/digests, ownership, and the sidecar fact object each
+carry `checkout_owner=extension_source_checkout`; the binding remains present
+when the sidecar path set is empty.
 
 The checker validates schema, task/session persistence, public-input identity,
-`branch_review_commit`, remote/ref/HEAD, local/remote reviewed-content binding,
-plan and supersession freshness, redaction, route
+`branch_review_commit`, target ref/HEAD and reviewed-content binding, installed
+manifest provenance, source direct/peeled resolution and checkout HEAD, plan and
+supersession freshness, redaction, route
 shape, consumer mapping, and evidence digests. It does not decide
 applicability, sufficiency, findings, or semantic pass.
 
-Private `remote_head` and standalone public `resolved_head` both denote the
-resolved checkout commit. An annotated tag's direct tag-object ID is not
-published in a public DTO. Freshness checks re-resolve the requested ref with
-the same direct-versus-peeled rule before comparing the current commit.
+Private `target_repository.resolved_head` and standalone public `resolved_head`
+both denote the target checkout commit. The source direct tag object and peeled
+commit remain private and never enter a public DTO. Freshness checks re-resolve
+both target and source refs with the same direct-versus-peeled rules and reread
+task-bearing installed manifest provenance.
 
-Credential URL scanning treats any HTTP(S) authority userinfo, including empty,
-username-only, username/password, percent-encoded, and multiple-`@` forms, as
-sensitive while whitespace and `/` terminate the authority candidate. Such
-content is rejected before artifact write; public wrapper errors and eval
-traces retain only generic errors or digests and never the credential URL.
+The source locator must be canonical `https://github.com/<owner>/<repo>.git`
+without userinfo, query, fragment, or alternate host. Unsafe source content is
+rejected before clone and artifact write; public errors and eval traces retain
+only generic errors or digests and never the credential URL.
 
 ## Exits and re-entry
 
@@ -138,7 +156,8 @@ resolution makes the blocker stale and requires a complete re-entry. The
 standalone blocked DTO does not publish a fabricated `resolved_head`.
 
 Auth/network retry under the same plan/ref/HEAD reruns the complete Skill.
-Remote HEAD, plan, reviewed content, or task implementation drift makes prior
-evidence stale and requires publication review, closeout preparation, push,
-and extension verification to run again. Production real-wrapper eval and a
+Target HEAD/content, installed manifest, source ref/commit, plan, or task
+implementation drift makes prior evidence stale and requires publication
+review, closeout preparation, push, and extension verification to run again.
+Production real-wrapper eval and a
 real remote-ref clean installation are independent acceptance surfaces.

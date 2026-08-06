@@ -832,6 +832,16 @@ Workflow 或 task-bearing standalone 只持久化 task-local
 `check-extension-verification`、`invoke-extension-verification`，只执行、记录、
 校验和按 actual exit 序列化，不判断语义通过。
 
+Public `repo_ref` 始终表示业务 target。Workflow 与 task-bearing standalone
+从 target checkout 的 `.trellis/guru-team/extension.json` 解析 extension source，
+并分别校验 target checkout 与 extension-source checkout。Target reviewed-content
+不得从 source 计算；installer、canonical assets、ownership 与 source sidecars
+不得从 target 读取。Annotated source tag 选择 peeled commit 并与 manifest
+`source.commit` 比较；branch/lightweight tag 使用 direct commit。Taskless
+standalone 只有在明确验证 source repo 且 manifest 缺失时才允许 fallback，malformed
+manifest 与 credential-bearing/non-canonical GitHub locator 均在 clone 前 fail closed。
+Private schema 3.0 记录这两套 identity；四个 public exits/consumer DTO 保持不变。
+
 Remote matrix 必须绑定 pushed ref/HEAD，覆盖 new init、preview/switch、preset
 apply/reapply、`trellis update`、ownership/sidecar、contract discovery、platform
 equality、README command 与 redaction。Workflow-required applicability conflict 会

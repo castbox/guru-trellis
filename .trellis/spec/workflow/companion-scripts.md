@@ -1131,9 +1131,24 @@ does not decide applicability for the active Skill. Closeout uses those same
 candidate-surface facts after rebuilding the reviewed path set from the pinned
 task base through `branch_review_commit`.
 
-The executor accepts an already AI-selected closed capability list, resolves a
-credentials-safe remote locator, freezes the requested ref with
-`git ls-remote`, checks out that exact HEAD, and runs the selected clean install,
+The executor accepts an already AI-selected closed capability list and creates
+three disjoint roots: `target-checkout`, `extension-source-checkout`, and
+`install/project`. It resolves and verifies target ref/HEAD/reviewed content
+first, reads installed source provenance only from the target checkout, then
+resolves source direct/peeled facts and requires the selected source commit to
+equal the manifest commit before cloning. Taskless standalone fallback is
+allowed only for an absent manifest and explicit source-repository intent.
+Malformed provenance and unsafe non-canonical or credential-bearing source
+locators fail before clone or artifact reflection.
+
+Installer, canonical workflow/runtime/schema/package bytes, ownership and
+source sidecars are read only from `extension-source-checkout`; target
+reviewed-content facts are read only from the target checkout/current task.
+Recorded command ownership is the closed `target_checkout` or
+`extension_source_checkout` label, and every asset expectation/digest,
+ownership fact, and sidecar fact explicitly carries
+`extension_source_checkout`.
+The executor then runs the selected clean install,
 preview/switch, preset, update/reapply, ownership, sidecar, discovery, platform,
 README, and redaction probes. It records sanitized argv, exit code, output
 digest/size, capability status, asset digests, current ownership inventory, and
@@ -1146,7 +1161,8 @@ adequacy, findings, route, redaction, and optional supersession. It rebuilds
 current identity and writes the sole task-local
 `marketplace-verification.json`, or returns the same owner result without a
 repository write for taskless standalone. The checker validates the closed
-schema, task/session persistence, repo/remote/ref/HEAD and plan bindings,
+schema, task/session persistence, target repo/ref/HEAD/content, installed
+manifest/source repo/ref/direct/peeled/checkout HEAD, and plan bindings,
 machine/semantic/final digests, redaction, unique consumer, and current
 supersession. It does not revisit semantic conclusions.
 

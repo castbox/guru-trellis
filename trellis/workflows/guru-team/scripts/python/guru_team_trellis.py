@@ -10646,7 +10646,7 @@ MARKETPLACE_VERIFICATION_PREFIXES = (
 )
 
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
-EXTENSION_VERIFICATION_SCHEMA_VERSION = "2.0"
+EXTENSION_VERIFICATION_SCHEMA_VERSION = "3.0"
 EXTENSION_VERIFICATION_CAPABILITIES = (
     "marketplace_index",
     "new_repo_init",
@@ -10668,6 +10668,8 @@ EXTENSION_VERIFICATION_ASSET_CATEGORIES = (
     "skill",
     "platform",
 )
+EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER = "target_checkout"
+EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER = "extension_source_checkout"
 EXTENSION_VERIFICATION_CAPABILITY_ASSET_CATEGORIES = {
     "marketplace_index": ("workflow",),
     "new_repo_init": ("workflow", "preset"),
@@ -10684,42 +10686,45 @@ EXTENSION_VERIFICATION_CAPABILITY_ASSET_CATEGORIES = {
 }
 EXTENSION_VERIFICATION_CAPABILITY_COMMAND_REFS = {
     "marketplace_index": (
-        "resolve_remote_ref",
-        "clone_source",
-        "verify_checkout_commit",
+        "resolve_target_ref",
+        "clone_target",
+        "verify_target_checkout",
+        "resolve_extension_source_ref",
+        "clone_extension_source",
+        "verify_extension_source_checkout",
         "verify_throwaway_installation",
     ),
     "new_repo_init": (
-        "clone_source",
-        "verify_checkout_commit",
+        "clone_extension_source",
+        "verify_extension_source_checkout",
         "verify_throwaway_installation",
     ),
     "existing_repo_preview_switch": (
-        "clone_source",
-        "verify_checkout_commit",
+        "clone_extension_source",
+        "verify_extension_source_checkout",
         "verify_throwaway_installation",
     ),
     "preset_initial_apply": ("verify_throwaway_installation",),
     "preset_reapply": ("verify_throwaway_installation",),
     "trellis_update_reapply": (
-        "resolve_remote_ref",
+        "resolve_extension_source_ref",
         "verify_throwaway_installation",
     ),
     "managed_conflict_sidecars": ("verify_throwaway_installation",),
     "skill_contract_discovery": (
-        "clone_source",
+        "clone_extension_source",
         "verify_throwaway_installation",
     ),
     "platform_equality": (
-        "clone_source",
+        "clone_extension_source",
         "verify_throwaway_installation",
     ),
     "ownership_inventory": (
-        "clone_source",
+        "clone_extension_source",
         "verify_throwaway_installation",
     ),
     "readme_commands": (
-        "resolve_remote_ref",
+        "resolve_extension_source_ref",
         "verify_throwaway_installation",
     ),
     "redaction": ("verify_throwaway_installation",),
@@ -10828,6 +10833,7 @@ def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str],
 
 def extension_verification_command_evidence(
     evidence_id: str,
+    checkout_owner: str,
     command: list[str],
     proc: subprocess.CompletedProcess[str],
     display_command: list[str] | None = None,
@@ -10835,6 +10841,7 @@ def extension_verification_command_evidence(
     evidence = command_evidence(command, proc, display_command)
     return {
         "id": evidence_id,
+        "checkout_owner": checkout_owner,
         "argv": evidence["command"],
         "exit_code": evidence["exit_code"],
         "stdout_sha256": evidence["stdout_sha256"],
@@ -10986,6 +10993,7 @@ def extension_verification_installed_asset_facts(
         if expected_sha256 is None:
             relation_errors.append(f"{installed_path}:missing_canonical_source")
         expectations.append({
+            "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
             "category": category,
             "platform": platform,
             "path": installed_path,
@@ -11172,6 +11180,7 @@ def extension_verification_installed_asset_facts(
         path = installed_root / installed_path
         if path.is_file() and not path.is_symlink():
             asset_digests.append({
+                "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
                 "category": expectation["category"],
                 "platform": expectation["platform"],
                 "path": installed_path,
@@ -11374,11 +11383,168 @@ def extension_verification_workflow_source(repo_ref: str, ref: str) -> str:
     )
 
 
+def extension_verification_canonical_github_locator(repo_ref: str) -> str:
+    normalized = normalize_github_repository(repo_ref)
+    if not normalized:
+        raise WorkflowError(
+            "Extension verification repository identity is invalid.",
+            exit_code=2,
+        )
+    return f"https://github.com/{normalized}.git"
+
+
+def extension_verification_validate_remote_locator(
+    candidate: str,
+    repo_ref: str,
+) -> str:
+    """Validate a local remote without retaining it as the clone locator."""
+    normalized = normalize_github_repository(repo_ref)
+    if (
+        not normalized
+        or parse_github_remote_repository_url(candidate) != normalized
+        or extension_verification_sensitive_text(candidate)
+    ):
+        raise WorkflowError(
+            "Extension verification remote locator is invalid or unsafe.",
+            exit_code=2,
+        )
+    return extension_verification_canonical_github_locator(normalized)
+
+
+def extension_verification_manifest_source(
+    target_checkout: Path,
+    public_input: dict[str, Any],
+    *,
+    task_bearing: bool,
+) -> dict[str, Any]:
+    manifest_path = target_checkout / GURU_TEAM_EXTENSION_MANIFEST
+    manifest, error = read_optional_json(manifest_path)
+    if manifest is None:
+        if error != "missing":
+            raise WorkflowError(
+                "Installed extension manifest is malformed.",
+                exit_code=2,
+            )
+        if task_bearing:
+            raise WorkflowError(
+                "Task-bearing extension verification requires an installed manifest.",
+                exit_code=2,
+            )
+        repo_ref = normalize_github_repository(public_input.get("repo_ref"))
+        return {
+            "selection": "standalone_fallback",
+            "manifest_provenance": "not_available",
+            "repo": repo_ref,
+            "locator": extension_verification_canonical_github_locator(repo_ref),
+            "requested_ref": str(public_input.get("ref") or ""),
+            "manifest_commit": None,
+            "tree_state": "clean",
+            "is_mutable_ref": str(public_input.get("ref") or "").startswith(
+                "refs/heads/"
+            ),
+        }
+
+    source = manifest.get("source")
+    if not isinstance(source, dict):
+        raise WorkflowError(
+            "Installed extension manifest source provenance is malformed.",
+            exit_code=2,
+        )
+    source_repo = source.get("repo")
+    requested_ref = source.get("ref")
+    manifest_commit = source.get("commit")
+    tree_state = source.get("tree_state")
+    is_mutable_ref = source.get("is_mutable_ref")
+    normalized_repo = parse_github_remote_repository_url(source_repo)
+    canonical_locator = (
+        extension_verification_canonical_github_locator(normalized_repo)
+        if normalized_repo
+        else ""
+    )
+    if (
+        not isinstance(source_repo, str)
+        or extension_verification_sensitive_text(source_repo)
+        or source_repo != canonical_locator
+        or not isinstance(requested_ref, str)
+        or not requested_ref.strip()
+        or re.fullmatch(r"[0-9a-f]{40}", str(manifest_commit or "")) is None
+        or tree_state not in {"clean", "dirty"}
+        or not isinstance(is_mutable_ref, bool)
+    ):
+        raise WorkflowError(
+            "Installed extension manifest source provenance is malformed or unsafe.",
+            exit_code=2,
+        )
+    return {
+        "selection": "manifest",
+        "manifest_provenance": "available",
+        "repo": normalized_repo,
+        "locator": canonical_locator,
+        "requested_ref": requested_ref,
+        "manifest_commit": manifest_commit,
+        "tree_state": tree_state,
+        "is_mutable_ref": is_mutable_ref,
+    }
+
+
 def extension_verification_remote_ref_command(
     remote: str,
     ref: str,
 ) -> list[str]:
     return ["git", "ls-remote", remote, ref, f"{ref}^{{}}"]
+
+
+def extension_verification_source_ref_command(
+    locator: str,
+    requested_ref: str,
+) -> list[str]:
+    if requested_ref.startswith(("refs/heads/", "refs/tags/")):
+        candidates = [requested_ref]
+    else:
+        candidates = [
+            f"refs/heads/{requested_ref}",
+            f"refs/tags/{requested_ref}",
+        ]
+    return [
+        "git",
+        "ls-remote",
+        locator,
+        *candidates,
+        *(f"{candidate}^{{}}" for candidate in candidates),
+    ]
+
+
+def extension_verification_resolved_source_ref(
+    remote_proc: subprocess.CompletedProcess[str],
+    requested_ref: str,
+) -> tuple[str | None, str | None, str | None]:
+    if remote_proc.returncode != 0:
+        return None, None, None
+    if requested_ref.startswith(("refs/heads/", "refs/tags/")):
+        candidates = [requested_ref]
+    else:
+        candidates = [
+            f"refs/heads/{requested_ref}",
+            f"refs/tags/{requested_ref}",
+        ]
+    rows: dict[str, str] = {}
+    allowed = set(candidates) | {f"{candidate}^{{}}" for candidate in candidates}
+    for line in remote_proc.stdout.splitlines():
+        fields = line.split()
+        if (
+            len(fields) != 2
+            or fields[1] not in allowed
+            or fields[1] in rows
+            or re.fullmatch(r"[0-9a-f]{40}", fields[0]) is None
+        ):
+            return None, None, None
+        rows[fields[1]] = fields[0]
+    resolved = [candidate for candidate in candidates if candidate in rows]
+    if len(resolved) != 1:
+        return None, None, None
+    resolved_ref = resolved[0]
+    direct_oid = rows[resolved_ref]
+    return resolved_ref, direct_oid, rows.get(f"{resolved_ref}^{{}}", direct_oid)
 
 
 def extension_verification_resolved_remote_head(
@@ -11408,6 +11574,7 @@ def extension_verification_resolved_remote_head(
 
 def extension_verification_ownership_facts(path: Path) -> dict[str, Any]:
     facts: dict[str, Any] = {
+        "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
         "current_contract": False,
         "schema_version": None,
         "inventory_id": None,
@@ -11490,16 +11657,17 @@ def extension_verification_execute_facts(
     )
     required_commit = expected_branch_review_commit or branch_review_commit
     commands: list[dict[str, Any]] = []
-    remote_command = extension_verification_remote_ref_command(remote, ref)
-    remote_proc = run(remote_command, cwd=root, check=False)
+    target_command = extension_verification_remote_ref_command(remote, ref)
+    target_proc = run(target_command, cwd=root, check=False)
     commands.append(
         extension_verification_command_evidence(
-            "resolve_remote_ref",
-            remote_command,
-            remote_proc,
+            "resolve_target_ref",
+            EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
+            target_command,
+            target_proc,
         )
     )
-    remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
+    target_head = extension_verification_resolved_remote_head(target_proc, ref)
     status = "blocked"
     reviewed_content_sha256 = (
         reviewed_content_identity(root)["sha256"]
@@ -11507,154 +11675,287 @@ def extension_verification_execute_facts(
         else None
     )
     remote_reviewed_content_sha256: str | None = None
+    target_checkout_head: str | None = None
+    target_content_matches = False
+    extension_source: dict[str, Any] = {
+        "selection": None,
+        "manifest_provenance": None,
+        "repo": None,
+        "locator": None,
+        "requested_ref": None,
+        "resolved_ref": None,
+        "direct_oid": None,
+        "commit": None,
+        "checkout_head": None,
+        "tree_state": None,
+        "is_mutable_ref": None,
+        "ref_matches_commit": False,
+        "checkout_head_matches": False,
+    }
     ownership: dict[str, Any] = {
+        "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
         "current_contract": False,
         "schema_version": None,
         "inventory_id": None,
         "guru_owned_rule_count": 0,
         "managed_claim_count": 0,
     }
-    sidecars: list[str] = []
-    remote_url = ""
-    if remote_head is not None:
+    sidecars: dict[str, Any] = {
+        "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+        "paths": [],
+    }
+    target_locator = ""
+    if target_head is not None:
         remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
         commands.append(
             extension_verification_command_evidence(
-                "resolve_remote_url",
+                "resolve_target_locator",
+                EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
                 ["git", "remote", "get-url", remote],
                 remote_url_proc,
             )
         )
         candidate_url = remote_url_proc.stdout.strip()
-        if (
-            remote_url_proc.returncode == 0
-            and parse_github_remote_repository_url(candidate_url)
-            == normalize_github_repository(repo_ref)
-        ):
-            remote_url = candidate_url
-    if remote_url:
+        if remote_url_proc.returncode == 0:
+            try:
+                target_locator = extension_verification_validate_remote_locator(
+                    candidate_url,
+                    repo_ref,
+                )
+            except WorkflowError:
+                target_locator = ""
+    if target_locator:
         with tempfile.TemporaryDirectory(prefix="guru-extension-verification-") as tmp:
             temp_root = Path(tmp)
-            source_checkout = temp_root / "source"
-            clone_command = [
+            target_checkout = temp_root / "target-checkout"
+            source_checkout = temp_root / "extension-source-checkout"
+            target_clone_command = [
                 "git",
                 "clone",
                 "--filter=blob:none",
                 "--no-checkout",
-                remote_url,
-                str(source_checkout),
+                target_locator,
+                str(target_checkout),
             ]
-            clone_proc = run(clone_command, cwd=temp_root, check=False)
+            target_clone_proc = run(target_clone_command, cwd=temp_root, check=False)
             commands.append(
                 extension_verification_command_evidence(
-                    "clone_source",
-                    clone_command,
-                    clone_proc,
+                    "clone_target",
+                    EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
+                    target_clone_command,
+                    target_clone_proc,
                     [
                         "git",
                         "clone",
                         "--filter=blob:none",
                         "--no-checkout",
                         "<remote-url>",
-                        "<temp-source>",
+                        "<temp-target-checkout>",
                     ],
                 )
             )
-            checkout_proc = subprocess.CompletedProcess([], 1, "", "clone failed")
-            checkout_head_proc = subprocess.CompletedProcess(
+            target_checkout_proc = subprocess.CompletedProcess([], 1, "", "clone failed")
+            target_head_proc = subprocess.CompletedProcess(
                 [],
                 1,
                 "",
                 "checkout failed",
             )
-            if clone_proc.returncode == 0:
-                checkout_proc = run(
-                    ["git", "checkout", "--detach", remote_head],
-                    cwd=source_checkout,
+            if target_clone_proc.returncode == 0:
+                target_checkout_proc = run(
+                    ["git", "checkout", "--detach", target_head],
+                    cwd=target_checkout,
                     check=False,
                 )
                 commands.append(
                     extension_verification_command_evidence(
-                        "checkout_resolved_commit",
-                        ["git", "checkout", "--detach", remote_head],
-                        checkout_proc,
+                        "checkout_target",
+                        EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
+                        ["git", "checkout", "--detach", target_head],
+                        target_checkout_proc,
                     )
                 )
-            if checkout_proc.returncode == 0:
-                checkout_head_command = [
+            if target_checkout_proc.returncode == 0:
+                target_head_command = [
                     "git",
                     "rev-parse",
                     "--verify",
                     "HEAD^{commit}",
                 ]
-                checkout_head_proc = run(
-                    checkout_head_command,
-                    cwd=source_checkout,
+                target_head_proc = run(
+                    target_head_command,
+                    cwd=target_checkout,
                     check=False,
                 )
                 commands.append(
                     extension_verification_command_evidence(
-                        "verify_checkout_commit",
-                        checkout_head_command,
-                        checkout_head_proc,
+                        "verify_target_checkout",
+                        EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
+                        target_head_command,
+                        target_head_proc,
                     )
                 )
-            checkout_head = checkout_head_proc.stdout.strip()
-            checkout_head_matches = (
-                checkout_head_proc.returncode == 0
-                and re.fullmatch(r"[0-9a-f]{40}", checkout_head) is not None
-                and checkout_head == remote_head
+            target_checkout_head = target_head_proc.stdout.strip() or None
+            target_checkout_matches = (
+                target_head_proc.returncode == 0
+                and re.fullmatch(r"[0-9a-f]{40}", target_checkout_head or "")
+                is not None
+                and target_checkout_head == target_head
+                and (required_commit is None or required_commit == target_head)
             )
-            content_identity_matches = False
-            if checkout_head_matches:
+            if target_checkout_matches:
                 try:
                     remote_reviewed_content_sha256 = reviewed_content_identity(
-                        source_checkout,
-                        remote_head,
+                        target_checkout,
+                        target_head,
                         include_worktree=False,
                     )["sha256"]
-                    review_commit_content_sha256 = reviewed_content_identity(
-                        source_checkout,
-                        required_commit or remote_head,
-                        include_worktree=False,
-                    )["sha256"]
-                    content_identity_matches = (
-                        (required_commit is None or is_ancestor(
-                            source_checkout,
-                            required_commit,
-                            remote_head,
-                        ))
-                        and remote_reviewed_content_sha256
-                        == review_commit_content_sha256
-                        and (
-                            reviewed_content_sha256 is None
-                            or reviewed_content_sha256
-                            == review_commit_content_sha256
-                        )
+                    target_content_matches = (
+                        reviewed_content_sha256 is None
+                        or reviewed_content_sha256
+                        == remote_reviewed_content_sha256
                     )
                 except WorkflowError:
                     remote_reviewed_content_sha256 = None
-            throwaway_proc = subprocess.CompletedProcess([], 1, "", "checkout failed")
+            source_clone_proc = subprocess.CompletedProcess([], 1, "", "target failed")
+            source_checkout_proc = subprocess.CompletedProcess([], 1, "", "source failed")
+            source_head_proc = subprocess.CompletedProcess([], 1, "", "source failed")
+            source_ref_proc = subprocess.CompletedProcess([], 1, "", "target failed")
+            if target_checkout_matches and target_content_matches:
+                selected_source = extension_verification_manifest_source(
+                    target_checkout,
+                    public_input,
+                    task_bearing=task_dir is not None,
+                )
+                source_command = extension_verification_source_ref_command(
+                    selected_source["locator"],
+                    selected_source["requested_ref"],
+                )
+                source_ref_proc = run(source_command, cwd=target_checkout, check=False)
+                commands.append(
+                    extension_verification_command_evidence(
+                        "resolve_extension_source_ref",
+                        EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+                        source_command,
+                        source_ref_proc,
+                    )
+                )
+                resolved_ref, direct_oid, source_commit = (
+                    extension_verification_resolved_source_ref(
+                        source_ref_proc,
+                        selected_source["requested_ref"],
+                    )
+                )
+                manifest_commit = selected_source["manifest_commit"]
+                ref_matches_commit = (
+                    source_commit is not None
+                    and (manifest_commit is None or source_commit == manifest_commit)
+                )
+                extension_source = {
+                    **selected_source,
+                    "resolved_ref": resolved_ref,
+                    "direct_oid": direct_oid,
+                    "commit": source_commit,
+                    "checkout_head": None,
+                    "ref_matches_commit": ref_matches_commit,
+                    "checkout_head_matches": False,
+                }
+                extension_source.pop("manifest_commit")
+                if ref_matches_commit:
+                    source_clone_command = [
+                        "git",
+                        "clone",
+                        "--filter=blob:none",
+                        "--no-checkout",
+                        extension_source["locator"],
+                        str(source_checkout),
+                    ]
+                    source_clone_proc = run(
+                        source_clone_command,
+                        cwd=temp_root,
+                        check=False,
+                    )
+                    commands.append(
+                        extension_verification_command_evidence(
+                            "clone_extension_source",
+                            EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+                            source_clone_command,
+                            source_clone_proc,
+                            [
+                                "git",
+                                "clone",
+                                "--filter=blob:none",
+                                "--no-checkout",
+                                extension_source["locator"],
+                                "<temp-extension-source-checkout>",
+                            ],
+                        )
+                    )
+                if source_clone_proc.returncode == 0:
+                    source_checkout_proc = run(
+                        ["git", "checkout", "--detach", extension_source["commit"]],
+                        cwd=source_checkout,
+                        check=False,
+                    )
+                    commands.append(
+                        extension_verification_command_evidence(
+                            "checkout_extension_source",
+                            EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+                            ["git", "checkout", "--detach", extension_source["commit"]],
+                            source_checkout_proc,
+                        )
+                    )
+                if source_checkout_proc.returncode == 0:
+                    source_head_command = [
+                        "git",
+                        "rev-parse",
+                        "--verify",
+                        "HEAD^{commit}",
+                    ]
+                    source_head_proc = run(
+                        source_head_command,
+                        cwd=source_checkout,
+                        check=False,
+                    )
+                    commands.append(
+                        extension_verification_command_evidence(
+                            "verify_extension_source_checkout",
+                            EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+                            source_head_command,
+                            source_head_proc,
+                        )
+                    )
+                source_checkout_head = source_head_proc.stdout.strip() or None
+                extension_source["checkout_head"] = source_checkout_head
+                extension_source["checkout_head_matches"] = (
+                    source_head_proc.returncode == 0
+                    and source_checkout_head == extension_source["commit"]
+                )
+            throwaway_proc = subprocess.CompletedProcess([], 1, "", "source failed")
             throwaway = (
                 source_checkout
                 / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
             )
             install_work = temp_root / "install"
             installed_root = install_work / "project"
-            if checkout_head_matches and throwaway.is_file():
+            if extension_source["checkout_head_matches"] and throwaway.is_file():
                 throwaway_proc = run(
                     [str(throwaway), str(install_work)],
                     cwd=source_checkout,
                     check=False,
                     env={
                         "TRELLIS_WORKFLOW_SOURCE": (
-                            extension_verification_workflow_source(repo_ref, ref)
+                            extension_verification_workflow_source(
+                                extension_source["repo"],
+                                extension_source["resolved_ref"],
+                            )
                         )
                     },
                 )
                 commands.append(
                     extension_verification_command_evidence(
                         "verify_throwaway_installation",
+                        EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
                         [str(throwaway), str(install_work)],
                         throwaway_proc,
                         [
@@ -11684,7 +11985,7 @@ def extension_verification_execute_facts(
                 / "trellis/presets/guru-team/ownership/upstream-ownership.json"
             )
             ownership = extension_verification_ownership_facts(ownership_path)
-            sidecars = sorted(
+            sidecars["paths"] = sorted(
                 path.relative_to(source_checkout).as_posix()
                 for path in source_checkout.rglob("*")
                 if path.is_file()
@@ -11693,14 +11994,19 @@ def extension_verification_execute_facts(
             )
             status = (
                 "passed"
-                if clone_proc.returncode == 0
-                and checkout_proc.returncode == 0
-                and checkout_head_matches
-                and content_identity_matches
+                if target_clone_proc.returncode == 0
+                and target_checkout_proc.returncode == 0
+                and target_checkout_matches
+                and target_content_matches
+                and source_ref_proc.returncode == 0
+                and extension_source["ref_matches_commit"]
+                and source_clone_proc.returncode == 0
+                and source_checkout_proc.returncode == 0
+                and extension_source["checkout_head_matches"]
                 and throwaway_proc.returncode == 0
                 and asset_inventory["complete"]
                 and ownership["current_contract"] is True
-                and not sidecars
+                and not sidecars["paths"]
                 else "failed"
             )
     else:
@@ -11726,13 +12032,18 @@ def extension_verification_execute_facts(
         )
     return {
         "schema_version": EXTENSION_VERIFICATION_SCHEMA_VERSION,
-        "repo_ref": repo_ref,
-        "remote": remote,
-        "ref": ref,
-        "branch_review_commit": required_commit,
-        "remote_head": remote_head,
-        "reviewed_content_sha256": reviewed_content_sha256,
-        "remote_reviewed_content_sha256": remote_reviewed_content_sha256,
+        "target_repository": {
+            "repo_ref": repo_ref,
+            "remote": remote,
+            "ref": ref,
+            "branch_review_commit": required_commit,
+            "resolved_head": target_head,
+            "checkout_head": target_checkout_head,
+            "reviewed_content_sha256": reviewed_content_sha256,
+            "remote_reviewed_content_sha256": remote_reviewed_content_sha256,
+            "content_identity_matches": target_content_matches,
+        },
+        "extension_source": extension_source,
         "status": status,
         "commands": commands,
         "capabilities": capabilities,
@@ -11767,7 +12078,8 @@ def extension_verification_payload_digests(
 ) -> tuple[str, str, str]:
     machine = {
         "public_input": payload.get("public_input"),
-        "repository": payload.get("repository"),
+        "target_repository": payload.get("target_repository"),
+        "extension_source": payload.get("extension_source"),
         "execution": payload.get("execution"),
         "redaction": payload.get("redaction"),
         "freshness": payload.get("freshness"),
@@ -11900,6 +12212,11 @@ def extension_verification_semantic_shape_errors(
         if isinstance(execution.get("ownership"), dict)
         else {}
     )
+    sidecars = (
+        execution.get("sidecars")
+        if isinstance(execution.get("sidecars"), dict)
+        else {}
+    )
     if len(command_ids) != len(set(command_ids)):
         errors.append("execution command ids must be unique.")
     if len(capability_ids) != len(set(capability_ids)):
@@ -11908,6 +12225,41 @@ def extension_verification_semantic_shape_errors(
         errors.append("installed asset expectations must be unique by path.")
     if len(observed_asset_paths) != len(set(observed_asset_paths)):
         errors.append("installed asset digests must be unique by path.")
+    target_command_ids = {
+        "resolve_target_ref",
+        "resolve_target_locator",
+        "clone_target",
+        "checkout_target",
+        "verify_target_checkout",
+    }
+    for item in execution.get("commands", []):
+        if not isinstance(item, dict):
+            continue
+        expected_owner = (
+            EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER
+            if item.get("id") in target_command_ids
+            else EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER
+        )
+        if item.get("checkout_owner") != expected_owner:
+            errors.append(
+                f"command {item.get('id')} is not bound to {expected_owner}."
+            )
+    if any(
+        item.get("checkout_owner")
+        != EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER
+        for item in asset_expectations
+    ):
+        errors.append("asset expectations must be bound to extension_source_checkout.")
+    if any(
+        item.get("checkout_owner")
+        != EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER
+        for item in asset_digests
+    ):
+        errors.append("asset digests must be bound to extension_source_checkout.")
+    if ownership.get("checkout_owner") != EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER:
+        errors.append("ownership facts must be bound to extension_source_checkout.")
+    if sidecars.get("checkout_owner") != EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER:
+        errors.append("sidecar facts must be bound to extension_source_checkout.")
     for item in capability_rows:
         command_refs = (
             item.get("command_refs")
@@ -11958,6 +12310,8 @@ def extension_verification_semantic_shape_errors(
             )
         if ownership.get("current_contract") is not True:
             errors.append("verified requires the current ownership contract.")
+        if sidecars.get("paths"):
+            errors.append("verified requires zero extension source sidecars.")
         for item in capability_rows:
             if not item.get("command_refs") or not item.get("asset_paths"):
                 errors.append(
@@ -12149,10 +12503,19 @@ def extension_verification_payload_errors(
         errors.append("private evidence mode does not match public input.")
     if payload.get("profile") != payload.get("public_input", {}).get("profile"):
         errors.append("private evidence profile does not match public input.")
-    repository = payload.get("repository") if isinstance(payload.get("repository"), dict) else {}
+    target_repository = (
+        payload.get("target_repository")
+        if isinstance(payload.get("target_repository"), dict)
+        else {}
+    )
+    extension_source = (
+        payload.get("extension_source")
+        if isinstance(payload.get("extension_source"), dict)
+        else {}
+    )
     task_ref = payload.get("public_input", {}).get("task_ref")
-    reviewed_content_sha256 = repository.get("reviewed_content_sha256")
-    remote_reviewed_content_sha256 = repository.get(
+    reviewed_content_sha256 = target_repository.get("reviewed_content_sha256")
+    remote_reviewed_content_sha256 = target_repository.get(
         "remote_reviewed_content_sha256"
     )
     if isinstance(task_ref, str):
@@ -12169,25 +12532,47 @@ def extension_verification_payload_errors(
         if isinstance(payload.get("execution"), dict)
         else {}
     )
-    if execution.get("reviewed_content_sha256") != reviewed_content_sha256:
-        errors.append("execution local reviewed-content identity is inconsistent.")
+    if execution.get("target_repository") != target_repository:
+        errors.append("execution target repository identity is inconsistent.")
+    if execution.get("extension_source") != extension_source:
+        errors.append("execution extension source identity is inconsistent.")
+    if task_ref and extension_source.get("manifest_provenance") != "available":
+        errors.append("task-bearing verification requires installed manifest provenance.")
     if (
-        execution.get("remote_reviewed_content_sha256")
-        != remote_reviewed_content_sha256
+        not task_ref
+        and extension_source.get("manifest_provenance") not in {
+            "available",
+            "not_available",
+        }
+        and execution.get("status") not in {"failed", "blocked"}
     ):
-        errors.append("execution remote reviewed-content identity is inconsistent.")
+        errors.append("taskless verification has invalid manifest provenance.")
+    source_repo = extension_source.get("repo")
+    if isinstance(source_repo, str) and extension_source.get("locator") != (
+        extension_verification_canonical_github_locator(source_repo)
+        if normalize_github_repository(source_repo)
+        else None
+    ):
+        errors.append("extension source locator is not canonical GitHub HTTPS.")
+    if execution.get("status") == "passed" and not (
+        target_repository.get("content_identity_matches") is True
+        and extension_source.get("ref_matches_commit") is True
+        and extension_source.get("checkout_head_matches") is True
+        and extension_source.get("checkout_head") == extension_source.get("commit")
+    ):
+        errors.append("passed execution requires current target and source identities.")
     if payload.get("mode") == "workflow":
-        if repository.get("branch_review_commit") != payload.get("public_input", {}).get(
+        if target_repository.get("branch_review_commit") != payload.get("public_input", {}).get(
             "branch_review_commit"
         ):
             errors.append("workflow verification reviewed commit binding is stale.")
         if not (
             isinstance(reviewed_content_sha256, str)
             and re.fullmatch(r"[0-9a-f]{64}", reviewed_content_sha256)
-            and execution.get("reviewed_content_sha256")
+            and target_repository.get("remote_reviewed_content_sha256")
             == reviewed_content_sha256
-            and execution.get("remote_reviewed_content_sha256")
-            == reviewed_content_sha256
+            and target_repository.get("resolved_head")
+            == target_repository.get("branch_review_commit")
         ):
             errors.append("workflow verification reviewed-content identity is stale.")
     expected_consumer = extension_verification_expected_consumer(
@@ -19108,11 +19493,16 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
     reviewed = extension_verification_review_input(root, args.review_input)
     identity = extension_verification_remote_identity(root, public_input)
     repo_ref, remote, ref, branch_review_commit = identity
+    execution_target = (
+        execution.get("target_repository")
+        if isinstance(execution.get("target_repository"), dict)
+        else {}
+    )
     if (
-        execution.get("repo_ref") != repo_ref
-        or execution.get("remote") != remote
-        or execution.get("ref") != ref
-        or execution.get("branch_review_commit") != branch_review_commit
+        execution_target.get("repo_ref") != repo_ref
+        or execution_target.get("remote") != remote
+        or execution_target.get("ref") != ref
+        or execution_target.get("branch_review_commit") != branch_review_commit
     ):
         raise WorkflowError(
             "Extension verification execution facts do not match the public invocation.",
@@ -19181,17 +19571,11 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
         "mode": public_input["mode"],
         "profile": public_input["profile"],
         "public_input": copy.deepcopy(public_input),
-        "repository": {
-            "repo_ref": repo_ref,
-            "remote": remote,
-            "ref": ref,
-            "branch_review_commit": branch_review_commit,
-            "remote_head": execution["remote_head"],
+        "target_repository": {
+            **copy.deepcopy(execution_target),
             "reviewed_content_sha256": reviewed_content_sha256,
-            "remote_reviewed_content_sha256": execution[
-                "remote_reviewed_content_sha256"
-            ],
         },
+        "extension_source": copy.deepcopy(execution["extension_source"]),
         "applicability": copy.deepcopy(reviewed["applicability"]),
         "verification_profile": copy.deepcopy(reviewed["verification_profile"]),
         "execution": {
@@ -19205,9 +19589,13 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
                 "asset_inventory",
                 "ownership",
                 "sidecars",
-                "reviewed_content_sha256",
-                "remote_reviewed_content_sha256",
             )
+        } | {
+            "target_repository": {
+                **copy.deepcopy(execution_target),
+                "reviewed_content_sha256": reviewed_content_sha256,
+            },
+            "extension_source": copy.deepcopy(execution["extension_source"]),
         },
         "semantic_review": copy.deepcopy(reviewed["semantic_review"]),
         "typed_exit": exit_id,
@@ -19301,14 +19689,14 @@ def check_extension_verification_result(
         except WorkflowError:
             errors.append("current reviewed content is unreadable.")
         else:
-            repository = (
-                payload.get("repository")
-                if isinstance(payload.get("repository"), dict)
+            target_repository = (
+                payload.get("target_repository")
+                if isinstance(payload.get("target_repository"), dict)
                 else {}
             )
             if (
                 live_reviewed_content_sha256
-                != repository.get("reviewed_content_sha256")
+                != target_repository.get("reviewed_content_sha256")
             ):
                 errors.append(
                     "task-bearing verification evidence is stale after reviewed-content drift."
@@ -19322,14 +19710,19 @@ def check_extension_verification_result(
             errors.append(
                 "taskless standalone verification owner result must be session-only stdin."
             )
-    repository = (
-        payload.get("repository")
-        if isinstance(payload.get("repository"), dict)
+    target_repository = (
+        payload.get("target_repository")
+        if isinstance(payload.get("target_repository"), dict)
+        else {}
+    )
+    extension_source = (
+        payload.get("extension_source")
+        if isinstance(payload.get("extension_source"), dict)
         else {}
     )
     if os.environ.get("GURU_TEAM_EVAL_STAGING") != "1":
-        remote = str(repository.get("remote") or "")
-        ref = str(repository.get("ref") or "")
+        remote = str(target_repository.get("remote") or "")
+        ref = str(target_repository.get("ref") or "")
         remote_proc = run(
             extension_verification_remote_ref_command(remote, ref),
             cwd=root,
@@ -19339,8 +19732,68 @@ def check_extension_verification_result(
             remote_proc,
             ref,
         )
-        if live_head != repository.get("remote_head"):
-            errors.append("remote ref HEAD no longer matches private evidence.")
+        if live_head != target_repository.get("resolved_head"):
+            errors.append("target remote ref HEAD no longer matches private evidence.")
+        source_locator = str(extension_source.get("locator") or "")
+        source_requested_ref = str(extension_source.get("requested_ref") or "")
+        if extension_source.get("selection") is not None:
+            try:
+                canonical_source_locator = extension_verification_canonical_github_locator(
+                    str(extension_source.get("repo") or "")
+                )
+            except WorkflowError:
+                canonical_source_locator = ""
+            if source_locator != canonical_source_locator:
+                errors.append("extension source locator is invalid or unsafe.")
+            else:
+                source_proc = run(
+                    extension_verification_source_ref_command(
+                        source_locator,
+                        source_requested_ref,
+                    ),
+                    cwd=root,
+                    check=False,
+                )
+                resolved_ref, direct_oid, source_commit = (
+                    extension_verification_resolved_source_ref(
+                        source_proc,
+                        source_requested_ref,
+                    )
+                )
+                if (
+                    resolved_ref != extension_source.get("resolved_ref")
+                    or direct_oid != extension_source.get("direct_oid")
+                    or source_commit != extension_source.get("commit")
+                ):
+                    errors.append("extension source ref no longer matches private evidence.")
+        if task_dir is not None:
+            try:
+                live_source = extension_verification_manifest_source(
+                    root,
+                    owner_input,
+                    task_bearing=True,
+                )
+            except WorkflowError:
+                errors.append("installed extension manifest provenance is no longer current.")
+            else:
+                live_manifest_commit = live_source.pop("manifest_commit", None)
+                expected_source = {
+                    key: extension_source.get(key)
+                    for key in (
+                        "selection",
+                        "manifest_provenance",
+                        "repo",
+                        "locator",
+                        "requested_ref",
+                        "tree_state",
+                        "is_mutable_ref",
+                    )
+                }
+                if (
+                    live_source != expected_source
+                    or live_manifest_commit != extension_source.get("commit")
+                ):
+                    errors.append("installed extension manifest provenance is stale.")
     if errors:
         raise WorkflowError(
             "Extension verification private evidence failed objective checks.",
@@ -19451,7 +19904,7 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
             payload.update(
                 {
                     "repo_ref": public_input["repo_ref"],
-                    "resolved_head": owner["repository"]["remote_head"],
+                    "resolved_head": owner["target_repository"]["resolved_head"],
                     "verification_ref": owner["identity"]["verification_ref"],
                 }
             )
@@ -21250,8 +21703,8 @@ def validate_closeout_marketplace_artifact(
     )
     expected_plan_ref = f"closeout-plan:{plan['plan_digest']}"
     repository = (
-        owner.get("repository")
-        if isinstance(owner.get("repository"), dict)
+        owner.get("target_repository")
+        if isinstance(owner.get("target_repository"), dict)
         else {}
     )
     errors: list[str] = []
@@ -23149,8 +23602,8 @@ def check_extension_verification_for_closeout(
     ):
         errors.append("finalization verification recovery identity is not plan-bound")
     repository = (
-        payload.get("repository")
-        if isinstance(payload.get("repository"), dict)
+        payload.get("target_repository")
+        if isinstance(payload.get("target_repository"), dict)
         else {}
     )
     owner_mode = owner_input.get("mode")
@@ -23176,7 +23629,7 @@ def check_extension_verification_for_closeout(
             or repository.get("remote") != plan["git"]["remote"]
             or repository.get("ref")
             != f"refs/heads/{plan['git']['head_branch']}"
-            or repository.get("remote_head") != branch_review_commit
+            or repository.get("resolved_head") != branch_review_commit
             or plan.get("marketplace", {}).get("required") is not False
         ):
             errors.append(
@@ -23193,7 +23646,7 @@ def check_extension_verification_for_closeout(
             check=False,
         )
         live_remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
-        if live_remote_head != repository.get("remote_head"):
+        if live_remote_head != repository.get("resolved_head"):
             errors.append("remote ref HEAD no longer matches private evidence")
         elif not is_ancestor(root, branch_review_commit, live_remote_head):
             errors.append("remote ref HEAD is not a descendant of branch_review_commit")
@@ -23259,8 +23712,8 @@ def finalization_standalone_not_required_owner_is_current(
         else {}
     )
     repository = (
-        payload.get("repository")
-        if isinstance(payload.get("repository"), dict)
+        payload.get("target_repository")
+        if isinstance(payload.get("target_repository"), dict)
         else {}
     )
     return (
@@ -23278,7 +23731,7 @@ def finalization_standalone_not_required_owner_is_current(
         and repository.get("remote") == plan["git"]["remote"]
         and repository.get("ref")
         == f"refs/heads/{plan['git']['head_branch']}"
-        and repository.get("remote_head") == plan["git"]["branch_review_commit"]
+        and repository.get("resolved_head") == plan["git"]["branch_review_commit"]
         and plan.get("marketplace", {}).get("required") is False
         and checked.get("verification_ref")
         == payload.get("identity", {}).get("verification_ref")
