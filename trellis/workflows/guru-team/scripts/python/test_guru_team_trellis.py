@@ -8274,12 +8274,12 @@ class ThinWorkflowPublicGraphContractTest(unittest.TestCase):
         workflow_targets = self.marker_payloads(text, "workflow")
         stop_targets = self.marker_payloads(text, "stop")
 
-        self.assertEqual(len(active_ids), 13)
-        self.assertEqual(len(expected_exits), 51)
-        self.assertEqual(len(expected_workflow_targets) + len(expected_stop_targets), 28)
-        self.assertEqual(len(invokes), 13)
-        self.assertEqual(len(exits), 51)
-        self.assertEqual(len(workflow_targets) + len(stop_targets), 28)
+        self.assertEqual(len(active_ids), 14)
+        self.assertEqual(len(expected_exits), 54)
+        self.assertEqual(len(expected_workflow_targets) + len(expected_stop_targets), 31)
+        self.assertEqual(len(invokes), 14)
+        self.assertEqual(len(exits), 54)
+        self.assertEqual(len(workflow_targets) + len(stop_targets), 31)
 
         invoke_ids = [payload["skill"] for payload in invokes]
         self.assertEqual(set(invoke_ids), active_ids)

@@ -519,7 +519,7 @@ They document the task-bearing standalone #117 not-required edge. That edge publ
 `profile/mode/task_ref`, binds current task-local evidence to the private plan,
 and does not expose plan identity in the producer handoff.
 
-The READMEs describe the current package graph as fourteen active Skills and 51
+The READMEs describe the current package graph as fourteen active Skills and 54
 external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
 They identify the integrated global workflow projection as 14 invokes, 54 exits,
 and 31 targets. They name `guru-finish-work` as the canonical Codex, Claude, and

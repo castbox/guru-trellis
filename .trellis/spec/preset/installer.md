@@ -604,7 +604,7 @@ marketplace verification remains a later finish-work gate.
 Interface 1.3 package with its two input profiles, four per-exit contracts,
 workflow/stop consumers, private gate schema, seven-case corpus, thin wrappers,
 registry row, workflow markers, and extension inventories. It participates in
-the current thirteen-Skill/51-exit package graph without changing the live
+the current fourteen-Skill/54-exit package graph without changing the live
 Intake six-Skill/23-exit contract or the production three-Skill/11-exit
 membership.
 Its workflow `verified` and reachable task-bearing standalone `not_required`
@@ -623,7 +623,7 @@ usable and published in the extension runtime command inventory.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-wrapper executable modes, the thirteen-Skill/51-exit package closure, the
+wrapper executable modes, the fourteen-Skill/54-exit package closure, the
 integrated global closure of 14 invokes, 54 exits, and 31 targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Non-current manifests and unknown claims fail closed. Unknown edits to current

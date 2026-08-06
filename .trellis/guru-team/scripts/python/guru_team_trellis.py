@@ -16954,14 +16954,16 @@ def stage0_owner_result(
             ))
             result = checked
         elif skill_id == "guru-select-workflow-mode":
-            required = {"schema_version", "typed_exit", "mode", "selection", "continuation_id"}
-            if set(result) != required or result.get("schema_version") != "1.0" or result.get("mode") not in {"workflow", "standalone"}:
+            common = {"schema_version", "typed_exit", "mode", "continuation_id"}
+            typed_exit = result.get("typed_exit")
+            expected = common if typed_exit == "blocked" else common | {"selection"}
+            if set(result) != expected or result.get("schema_version") != "1.0" or result.get("mode") not in {"workflow", "standalone"}:
                 raise WorkflowError("Workflow mode selection failed closed-shape validation.", exit_code=2)
-            if result.get("typed_exit") not in {"standard_intake", "task_free", "blocked"}:
+            if not isinstance(typed_exit, str) or typed_exit not in {"standard_intake", "task_free", "blocked"}:
                 raise WorkflowError("Workflow mode selection has an unknown exit.", exit_code=2)
-            if result.get("typed_exit") != "blocked" and result.get("selection") != result.get("typed_exit"):
+            if typed_exit != "blocked" and result.get("selection") != typed_exit:
                 raise WorkflowError("Workflow mode selection exit is unmapped.", exit_code=2)
-            checked = {"status": "passed", "typed_exit": result.get("typed_exit")}
+            checked = {"status": "passed", "typed_exit": typed_exit}
         else:
             raise stage0_invocation_error(
                 "invalid_invocation_identity",
@@ -17926,6 +17928,16 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 "owner_result.mode",
                 "Rerun the owner step for the exact public invocation mode.",
                 "Stage 0 public input and owner result modes do not match.",
+            )
+        if (
+            skill_id == "guru-select-workflow-mode"
+            and public_input.get("continuation_id") != owner_result.get("continuation_id")
+        ):
+            raise stage0_invocation_error(
+                "owner_result_input_mismatch",
+                "owner_result.continuation_id",
+                "Reuse the selection only for the exact current continuation identity.",
+                "Workflow mode selection does not match the caller continuation.",
             )
         if (
             skill_id == "guru-review-contract-wording"

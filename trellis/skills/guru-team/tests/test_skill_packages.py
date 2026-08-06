@@ -4898,6 +4898,136 @@ class IntakePublicInvocationTests(unittest.TestCase):
         )
         self.assertNotIn("expected_exit", request)
 
+    def test_workflow_mode_shared_evals_cover_semantic_routes(self) -> None:
+        expected = {
+            "explicit-task-free": "task_free",
+            "implicit-confirmed": "task_free",
+            "implicit-refused": "standard_intake",
+            "ordinary-issue-request": "standard_intake",
+            "unrelated-dirty-preserved": "task_free",
+            "same-scope-retry": "task_free",
+            "selection-unavailable": "blocked",
+        }
+        for case_id, exit_id in expected.items():
+            with self.subTest(case=case_id):
+                result = self.run_shared_eval("guru-select-workflow-mode", case_id)
+                case = result["cases"][0]
+                self.assertEqual(case["actual_exit"], exit_id)
+                transcript = json.loads(
+                    Path(case["transcript_locator"]).read_text(encoding="utf-8")
+                )
+                self.assertEqual(json.loads(transcript["stdout"]), {"exit_id": exit_id})
+                request = json.loads(
+                    Path(case["transcript_locator"])
+                    .with_name("adapter-request.json")
+                    .read_text(encoding="utf-8")
+                )
+                self.assertNotIn("expected_exit", request)
+                if case_id == "unrelated-dirty-preserved":
+                    sentinel = (
+                        Path(case["transcript_locator"]).parent
+                        / "execution/owner-repo/unrelated-user-note.txt"
+                    )
+                    self.assertEqual(
+                        sentinel.read_text(encoding="utf-8"),
+                        "preserve this unrelated dirty file\n",
+                    )
+
+    def test_workflow_mode_wrapper_accepts_truthful_blocked_result(self) -> None:
+        runtime_root = self.repo / ".trellis/.runtime/guru-team/selector-tests"
+        runtime_root.mkdir(parents=True, exist_ok=True)
+        public_input = runtime_root / "input.json"
+        public_input.write_text(json.dumps({
+            "profile": "initial_request",
+            "mode": "workflow",
+            "continuation_id": "selector-test",
+        }) + "\n", encoding="utf-8")
+        owner = runtime_root / "owner.json"
+        owner.write_text(json.dumps({
+            "schema_version": "1.0",
+            "typed_exit": "blocked",
+            "mode": "workflow",
+            "continuation_id": "selector-test",
+        }) + "\n", encoding="utf-8")
+        payload = self.invoke("guru-select-workflow-mode", [
+            "--input", public_input.relative_to(self.repo).as_posix(),
+            "--owner-result", owner.relative_to(self.repo).as_posix(),
+        ])
+        self.assertEqual(payload, {"exit_id": "blocked"})
+
+    def test_workflow_mode_wrapper_fails_closed_for_invalid_results(self) -> None:
+        runtime_root = self.repo / ".trellis/.runtime/guru-team/selector-invalid"
+        runtime_root.mkdir(parents=True, exist_ok=True)
+        public_input = runtime_root / "input.json"
+        public_input.write_text(json.dumps({
+            "profile": "initial_request",
+            "mode": "workflow",
+            "continuation_id": "selector-current",
+        }) + "\n", encoding="utf-8")
+        base = {
+            "schema_version": "1.0",
+            "typed_exit": "task_free",
+            "mode": "workflow",
+            "selection": "task_free",
+            "continuation_id": "selector-current",
+        }
+        cases = {
+            "unknown": {**base, "typed_exit": "unknown", "selection": "task_free"},
+            "multiple": {**base, "typed_exit": ["task_free", "standard_intake"]},
+            "unmapped": {**base, "selection": "standard_intake"},
+            "missing-selection": {key: value for key, value in base.items() if key != "selection"},
+            "stale-continuation": {**base, "continuation_id": "selector-stale"},
+        }
+        for name, payload in cases.items():
+            with self.subTest(case=name):
+                owner = runtime_root / f"{name}.json"
+                owner.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+                process = self.invoke_process("guru-select-workflow-mode", [
+                    "--input", public_input.relative_to(self.repo).as_posix(),
+                    "--owner-result", owner.relative_to(self.repo).as_posix(),
+                ])
+                self.assertEqual(process.returncode, 2, process.stderr)
+                self.assertNotIn("Traceback", process.stderr)
+        missing = self.invoke_process("guru-select-workflow-mode", [
+            "--input", public_input.relative_to(self.repo).as_posix(),
+            "--owner-result", runtime_root.joinpath("missing.json").relative_to(self.repo).as_posix(),
+        ])
+        self.assertEqual(missing.returncode, 2)
+        self.assertIn('"code": "invalid_owner_result"', missing.stderr)
+
+    def test_workflow_mode_missing_package_and_marker_fail_closed(self) -> None:
+        skills_root = self.repo / ".trellis/guru-team/skills"
+        workflow = self.repo / ".trellis/workflow.md"
+        manifest = self.repo / ".trellis/guru-team/extension.json"
+        package = skills_root / "packages/guru-select-workflow-mode"
+        shutil.rmtree(package)
+        missing_package = runtime.validate_skill_installed(
+            self.repo, skills_root, workflow, manifest
+        )
+        self.assertEqual(missing_package["status"], "failed")
+        self.assertTrue(any(
+            "guru-select-workflow-mode" in error and "missing" in error
+            for error in missing_package["errors"]
+        ), missing_package["errors"])
+
+        shutil.copytree(
+            REPO / "trellis/skills/guru-team/packages/guru-select-workflow-mode",
+            package,
+        )
+        text = workflow.read_text(encoding="utf-8")
+        workflow.write_text("\n".join(
+            line for line in text.splitlines()
+            if 'guru-skill-invoke: {"skill":"guru-select-workflow-mode"' not in line
+        ) + "\n", encoding="utf-8")
+        missing_marker = runtime.validate_skill_installed(
+            self.repo, skills_root, workflow, manifest
+        )
+        self.assertEqual(missing_marker["status"], "failed")
+        self.assertTrue(any(
+            "guru-select-workflow-mode has no mandatory invoke" in error
+            for error in missing_marker["errors"]
+        ), missing_marker["errors"])
+
     def test_wording_wrapper_derives_route_from_checked_owner_result(self) -> None:
         wording_path = self.repo / "docs/requirements/requirement-main.md"
         wording_path.parent.mkdir(parents=True)

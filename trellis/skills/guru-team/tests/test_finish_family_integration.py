@@ -1227,21 +1227,21 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                             PRIVATE_FIELDS & set(branch["properties"])
                         )
 
-    def test_workflow_keeps_51_production_exits_28_targets_and_six_route_groups(
+    def test_workflow_keeps_54_production_exits_31_targets_and_six_route_groups(
         self,
     ) -> None:
         rows = workflow_exits()
         production_rows = [
             row for row in rows if row.get("skill") != "guru-example-action"
         ]
-        self.assertEqual(len(production_rows), 51)
+        self.assertEqual(len(production_rows), 54)
         targets = set(
             re.findall(
                 r'<!-- guru-(?:workflow|stop)-target: \{"id":"([^"]+)"\} -->',
                 WORKFLOW.read_text(encoding="utf-8"),
             )
         )
-        self.assertEqual(len(targets), 28)
+        self.assertEqual(len(targets), 31)
         finish_rows: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for row in rows:
             key = (row["skill"], row["exit"])

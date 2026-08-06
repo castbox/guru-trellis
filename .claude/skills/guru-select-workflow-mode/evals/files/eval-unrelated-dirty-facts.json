@@ -1,0 +1,1 @@
+{"scenario":"The bounded checkout contains an unrelated dirty file that must remain untouched.","owner_staging":{"recipe":"workflow-mode-unrelated-dirty"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

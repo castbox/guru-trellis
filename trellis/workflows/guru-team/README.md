@@ -3,7 +3,7 @@
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、13 个 mandatory Skill invocation、51 个 typed exit、28 个
+phase/status route、14 个 mandatory Skill invocation、54 个 typed exit、31 个
 workflow/stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
@@ -58,6 +58,7 @@ installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed project
 14/54/31（14 invokes / 54 exits / 31 targets）。Phase 0 到 Finalization 的
 active ids 为：
 
+- guru-select-workflow-mode
 - guru-sync-base
 - guru-discover-change-context
 - guru-clarify-requirements
@@ -69,7 +70,6 @@ active ids 为：
 - guru-create-task-commit
 - guru-review-branch
 - guru-review-task-publication
-- guru-select-workflow-mode
 - guru-verify-extension-installation
 - guru-finalize-task
 

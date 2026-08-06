@@ -629,9 +629,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.3 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is fourteen active Skills and 51
-exits. The integrated global workflow projection contains 13 invoke markers,
-51 exit markers, and 28 target markers. Missing,
+The current package cardinality assertion is fourteen active Skills and 54
+exits. The integrated global workflow projection contains 14 invoke markers,
+54 exit markers, and 31 target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -651,6 +651,16 @@ validation. Planned ids may appear only as a Skill consumer; a planned invoke
 or exit marker is invalid.
 Frontmatter auto-match is discovery assistance only and never replaces
 mandatory invocation markers.
+
+`guru-select-workflow-mode` is the semantic owner before normal Intake. Its
+owner-private result binds `mode` and `continuation_id`; selected results carry
+exactly one matching `selection`, while `blocked` carries no invented mode.
+The public DTO contains only `exit_id`. A current seven-case semantic corpus
+covers explicit and implicit task-free intent, one refused confirmation,
+ordinary issue-backed work, unrelated dirty preservation, same-scope reuse, and
+selection-unavailable blocking. Wrapper regressions independently reject
+missing, unknown, multiple, unmapped, or stale-continuation owner results and
+missing package/marker state.
 
 `guru-approve-task-plan` is the only semantic owner of Phase 1 planning
 approval. Its interface uses `judgment_mode=semantic`, declares the same eight

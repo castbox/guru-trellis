@@ -139,7 +139,7 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.3 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-  thirteen-Skill/51-exit package closure, and install/update checks. The global
+  fourteen-Skill/54-exit package closure, and install/update checks. The global
 workflow projection is 14 invokes, 54 exits, and 31 targets.
 
 ## Extension Installation Verification Closed-Loop Owner

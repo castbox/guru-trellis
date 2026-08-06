@@ -644,6 +644,32 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
     raise ValueError(f"unsupported clarification owner staging recipe: {recipe}")
 
 
+def build_workflow_mode_owner(
+    public_input: dict[str, Any], recipe: str,
+) -> dict[str, Any]:
+    exits = {
+        "workflow-mode-explicit-task-free": "task_free",
+        "workflow-mode-implicit-confirmed": "task_free",
+        "workflow-mode-implicit-refused": "standard_intake",
+        "workflow-mode-ordinary-request": "standard_intake",
+        "workflow-mode-unrelated-dirty": "task_free",
+        "workflow-mode-repeated-turn": "task_free",
+        "workflow-mode-blocked": "blocked",
+    }
+    typed_exit = exits.get(recipe)
+    if typed_exit is None:
+        raise ValueError(f"unsupported workflow mode owner staging recipe: {recipe}")
+    owner = {
+        "schema_version": "1.0",
+        "typed_exit": typed_exit,
+        "mode": public_input["mode"],
+        "continuation_id": public_input["continuation_id"],
+    }
+    if typed_exit != "blocked":
+        owner["selection"] = typed_exit
+    return owner
+
+
 def context_sync_result(runtime: Any, head: str) -> dict[str, Any]:
     identity = runtime.resolution_identity(
         source="explicit", selected_base="main", remote="origin", candidates=["main"],
@@ -3153,7 +3179,13 @@ def stage_owner_execution(
     previous_path = os.environ.get("PATH")
     os.environ["PATH"] = environment["PATH"]
     try:
-        if skill_id == "guru-clarify-requirements":
+        if skill_id == "guru-select-workflow-mode":
+            owner = build_workflow_mode_owner(public_payload, recipe)
+            if recipe == "workflow-mode-unrelated-dirty":
+                (fixture / "unrelated-user-note.txt").write_text(
+                    "preserve this unrelated dirty file\n", encoding="utf-8"
+                )
+        elif skill_id == "guru-clarify-requirements":
             owner = build_clarity_owner(runtime, package, recipe)
         elif skill_id == "guru-discover-change-context":
             context_task_dir = (

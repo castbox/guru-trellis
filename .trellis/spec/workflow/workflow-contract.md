@@ -66,23 +66,26 @@ never substitutes for a mandatory workflow invocation marker.
 
 ## Phase Route
 
-### Phase 0 — Issue-backed intake
+### Workflow mode selection and Phase 0 — Issue-backed intake
 
 Classify the user request before repository/network semantic reads. A
-repo-changing, issue-backed, task-like, or file-changing route begins with
-`guru-sync-base`, then automatically follows the public graph through current
-context discovery, requirements clarification, wording review, change-request
-review, and `guru-create-task-workspace`.
+repo-changing, issue-backed, task-like, or file-changing route first invokes
+`guru-select-workflow-mode`. Its `standard_intake` exit enters `guru-sync-base`,
+then automatically follows the public graph through current context discovery,
+requirements clarification, wording review, change-request review, and
+`guru-create-task-workspace`. Its `task_free` exit enters only the bounded
+current-checkout edit target.
 
 Only `guru-create-task-workspace:created` enters planning. The workflow does not
 create an issue, branch, worktree, or task directly and does not copy the
 workspace owner's target selection, recovery, confirmation, executor, or
 checker behavior.
 
-The normal route is Issue + Trellis task + task worktree. A task-free/direct
-edit path exists only when the user explicitly authorizes that exact bounded
-exception for the current turn. A failure to bootstrap the normal workflow is
-not permission to switch to task-free.
+Explicit task-free intent selects that route without another confirmation.
+Implicit intent may trigger one confirmation; refusal selects standard Intake.
+Uncertainty selects standard Intake, and mapped exits, ordinary recovery, and
+same-scope retries reuse the current selection. A failure to bootstrap the
+normal workflow is not permission to switch to task-free.
 
 ### Phase 1 — Planning
 

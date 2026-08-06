@@ -19,14 +19,14 @@ surfaces that expose it:
 - README docs for installation, upgrade, and daily entrypoints
 - companion scripts and schemas when behavior is executable
 
-For `no_task` file-changing behavior, the canonical workflow must state the
-default Phase 0 intake/preflight path and the only allowed current-checkout
-direct-edit override: explicit user approval to skip GitHub issue, Trellis
-task, worktree, and branch for that turn. Do not express that decision as an
-AI-internal convenience path.
+For `no_task` file-changing behavior, the canonical workflow must invoke
+`guru-select-workflow-mode` before normal Intake. Explicit task-free intent
+selects the bounded current-checkout route directly; implicit intent may ask
+once, refusal or uncertainty selects standard Intake, and same-scope recovery
+reuses the selection. Scripts must not classify intent.
 
-When Guru Team overlay is enabled, issue-backed, task-like, or file-changing
-`no_task` prompts must name both entry commands:
+When standard Intake is selected, the deterministic base and workspace helpers
+remain:
 
 - `.trellis/guru-team/scripts/bash/check-env.sh --json`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh --json`
@@ -515,8 +515,8 @@ cannot pass the gate. Include:
   and publish/merge payload command that avoids GitHub's default merge subject
 - Trellis task artifacts
 - generated or installed-copy expectations
-- Phase 0 scope and authority evidence, or an explicit task-free direct-edit
-  boundary when the branch intentionally skipped issue/task creation; user
+- Phase 0 scope and authority evidence, or the current semantic task-free
+  selection when the branch intentionally skipped issue/task creation; user
   authorization and its process remain conversation-only and are never
   persisted as evidence
 - owner-private checkpoint location: `review-gate.json` and similar current
@@ -548,8 +548,8 @@ Python or shell.
   Treat those as AI runtime/tool capabilities and express the decision in
   workflow or prompt text.
 - Relying on chat memory for issue close scope, base branch, or `branch_review_commit`.
-- Treating "small fix" as permission to modify the current checkout under
-  `no_task` without Phase 0 evidence or explicit direct-edit override evidence.
+- Treating "small fix" as task-free intent without an explicit or once-confirmed
+  semantic selection from `guru-select-workflow-mode`.
 - Writing task review artifacts into the source checkout because a manual edit
   used a relative path while the active task lives in a separate worktree.
 - Leaving `.new` or `.bak` installer outputs unresolved in committed changes.
@@ -604,7 +604,7 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  thirteen-Skill/51-exit current package closure while the production activation
+  fourteen-Skill/54-exit current package closure while the production activation
   unit remains three Skills/11 exits and global markers remain integrated at
   14 invokes, 54 exits, and 31 targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
@@ -658,9 +658,9 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert fourteen active Skills and 51
+Source/installed/platform/throwaway checks assert fourteen active Skills and 54
 external exits, exactly one `production-current-v1` three-Skill/11-exit current
-manifest, and global workflow markers of 13
+manifest, and global workflow markers of 14
 invokes, 54 exits, and 31 targets.
 
 ## Extension Installation Verification Quality
