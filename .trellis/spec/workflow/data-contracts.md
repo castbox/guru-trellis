@@ -345,7 +345,9 @@ the verified target checkout and require closed `source.repo/ref/commit/`
 `tree_state/is_mutable_ref` facts. The source repo is canonicalized to
 credential-free GitHub HTTPS; annotated tags bind both direct object and peeled
 commit, while branches/lightweight tags use the direct commit. The selected
-commit must equal `source.commit` before source clone. Only taskless standalone
+commit must equal `source.commit` before source clone. Task-bearing source
+provenance must have `tree_state=clean`; dirty provenance stops before source
+ref resolution, clone, or verification and cannot produce `verified`. Only taskless standalone
 with explicit source-repository intent may use `manifest_provenance=not_available`
 when the manifest is absent; malformed content never falls back.
 

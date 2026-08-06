@@ -15,7 +15,8 @@ dispatcher.
 Treat the public repository as the target. Task-bearing calls resolve the
 extension source only from the target's installed manifest; taskless standalone
 calls may fall back to their explicit source-repository locator only when that
-manifest is absent. Target reviewed content and source-owned installer/assets
+manifest is absent. Task-bearing source provenance must report `tree_state=clean`
+before source ref resolution or checkout. Target reviewed content and source-owned installer/assets
 must come from their separate verified checkouts.
 
 Changed-path matches, command exit code zero, empty findings, production eval,

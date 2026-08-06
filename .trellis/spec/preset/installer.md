@@ -625,7 +625,8 @@ Installed `.trellis/guru-team/extension.json` is the task-bearing source
 authority for this package. The public invocation remains target-oriented; the
 runtime verifies target and extension source in separate checkouts and obtains
 installer, canonical package bytes, ownership, and source sidecars only from
-the manifest-selected source checkout. Taskless fallback is absent-manifest
+the manifest-selected source checkout. Task-bearing source provenance must be
+`tree_state=clean` before source ref resolution or clone. Taskless fallback is absent-manifest
 only, and every accepted source locator is canonical credential-free GitHub
 HTTPS. Schema 3.0 package assets replace the prior private shape without a
 legacy reader while all public input/exit DTO assets remain byte-compatible.

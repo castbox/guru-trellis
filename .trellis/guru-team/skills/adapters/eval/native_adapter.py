@@ -2228,6 +2228,13 @@ def stage_extension_verification_owner_execution(
         "branch": "main",
         "base_branch": "main",
     })
+    manifest_path = fixture / ".trellis/guru-team/extension.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    source = manifest.get("source")
+    if not isinstance(source, dict):
+        raise ValueError("extension owner staging source provenance is unavailable")
+    source["tree_state"] = "clean"
+    runtime.write_json(manifest_path, manifest)
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage extension verification owner")
     head = run_git(fixture, "rev-parse", "HEAD")

@@ -485,7 +485,8 @@ inputs、四 exits、retry/unavailable/stale route；真实 pushed-remote clean 
 证明 init/preview/switch/update/reapply/ownership/sidecar/README/redaction。两者互不替代。
 
 Verifier public repo/ref 指向 target repository；task-bearing source provenance
-来自 target checkout 的 installed manifest。Runtime 使用隔离的 target/source
+来自 target checkout 的 installed manifest，并要求 `tree_state=clean` 后才解析 source
+ref 或 clone。Runtime 使用隔离的 target/source
 checkouts：reviewed-content 只属于 target，installer/canonical package/ownership/source
 sidecars 只属于 source。Annotated source tag 记录 direct object 但选择 peeled commit，
 并要求 selected commit 等于 manifest commit。Taskless fallback 仅适用于显式 source

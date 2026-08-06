@@ -11475,6 +11475,12 @@ def extension_verification_manifest_source(
             "Installed extension manifest source provenance is malformed or unsafe.",
             exit_code=2,
         )
+    if task_bearing and tree_state != "clean":
+        raise WorkflowError(
+            "Task-bearing extension verification requires clean source provenance.",
+            exit_code=2,
+            payload={"reason_code": "extension_source_not_clean"},
+        )
     return {
         "selection": "manifest",
         "manifest_provenance": "available",
@@ -12538,6 +12544,8 @@ def extension_verification_payload_errors(
         errors.append("execution extension source identity is inconsistent.")
     if task_ref and extension_source.get("manifest_provenance") != "available":
         errors.append("task-bearing verification requires installed manifest provenance.")
+    if task_ref and extension_source.get("tree_state") != "clean":
+        errors.append("task-bearing verification requires clean source provenance.")
     if (
         not task_ref
         and extension_source.get("manifest_provenance") not in {
@@ -19736,7 +19744,10 @@ def check_extension_verification_result(
             errors.append("target remote ref HEAD no longer matches private evidence.")
         source_locator = str(extension_source.get("locator") or "")
         source_requested_ref = str(extension_source.get("requested_ref") or "")
-        if extension_source.get("selection") is not None:
+        source_provenance_is_eligible = (
+            task_dir is None or extension_source.get("tree_state") == "clean"
+        )
+        if extension_source.get("selection") is not None and source_provenance_is_eligible:
             try:
                 canonical_source_locator = extension_verification_canonical_github_locator(
                     str(extension_source.get("repo") or "")

@@ -54,6 +54,7 @@ taskless standalone call may use its explicit public repository locator only
 when that manifest is absent; malformed manifest bytes never select fallback.
 
 The executor canonicalizes the manifest source to credential-safe GitHub HTTPS,
+requires task-bearing manifest provenance to report `tree_state=clean`, then
 resolves its requested ref, selects the peeled commit for an annotated tag and
 the direct commit for a branch or lightweight tag, and compares that commit to
 `source.commit` before clone. It checks out the selected object in a separate

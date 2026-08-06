@@ -834,7 +834,8 @@ Workflow 或 task-bearing standalone 只持久化 task-local
 
 Public `repo_ref` 始终表示业务 target。Workflow 与 task-bearing standalone
 从 target checkout 的 `.trellis/guru-team/extension.json` 解析 extension source，
-并分别校验 target checkout 与 extension-source checkout。Target reviewed-content
+且 task-bearing source 必须为 `tree_state=clean`，否则在 source ref resolution
+与 clone 前阻断。Runtime 分别校验 target checkout 与 extension-source checkout。Target reviewed-content
 不得从 source 计算；installer、canonical assets、ownership 与 source sidecars
 不得从 target 读取。Annotated source tag 选择 peeled commit 并与 manifest
 `source.commit` 比较；branch/lightweight tag 使用 direct commit。Taskless

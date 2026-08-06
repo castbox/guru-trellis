@@ -490,6 +490,8 @@ and redaction.
 They also distinguish the business target from the Guru Team extension source.
 The target public repo/ref/HEAD and reviewed content stay target-owned;
 task-bearing source repo/ref/commit comes from the target's installed manifest.
+Task-bearing source provenance must be clean before any source ref resolution or
+checkout; dirty provenance blocks verification.
 Annotated source tags select the peeled commit and compare it to manifest
 `source.commit`; branch/lightweight tags select the direct commit. Taskless
 standalone fallback is explicit-source and absent-manifest only. Installer,

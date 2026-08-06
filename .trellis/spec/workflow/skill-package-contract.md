@@ -1492,7 +1492,9 @@ manifest is absent. Private/execution schema 3.0 is current-only and has closed
 `target_repository` and `extension_source` objects. The latter binds
 manifest provenance, canonical safe locator, requested/resolved ref, direct
 object, selected direct-or-peeled commit, checkout HEAD, mutability and
-commit-match facts. No legacy private reader or public DTO field is added.
+commit-match facts. Task-bearing execution requires `tree_state=clean` before
+source resolution; recorder/checker reject dirty passed evidence. No legacy
+private reader or public DTO field is added.
 Private command rows use the closed `target_checkout` and
 `extension_source_checkout` owner labels. Asset expectation/digest rows,
 ownership facts, and the sidecar fact object require

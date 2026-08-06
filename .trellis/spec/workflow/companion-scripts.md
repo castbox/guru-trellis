@@ -1135,11 +1135,14 @@ The executor accepts an already AI-selected closed capability list and creates
 three disjoint roots: `target-checkout`, `extension-source-checkout`, and
 `install/project`. It resolves and verifies target ref/HEAD/reviewed content
 first, reads installed source provenance only from the target checkout, then
-resolves source direct/peeled facts and requires the selected source commit to
+requires clean task-bearing source provenance, resolves source direct/peeled facts,
+and requires the selected source commit to
 equal the manifest commit before cloning. Taskless standalone fallback is
 allowed only for an absent manifest and explicit source-repository intent.
 Malformed provenance and unsafe non-canonical or credential-bearing source
 locators fail before clone or artifact reflection.
+Dirty task-bearing provenance fails before source ref resolution and cannot be
+accepted as passed private evidence by the recorder or checker.
 
 Installer, canonical workflow/runtime/schema/package bytes, ownership and
 source sidecars are read only from `extension-source-checkout`; target
