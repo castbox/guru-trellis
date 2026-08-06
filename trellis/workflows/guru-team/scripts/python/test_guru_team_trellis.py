@@ -1608,12 +1608,134 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             review_input,
         )
         self.assertIn(
-            "review entry public task/base/commit identity is stale.",
+            "review entry branch_review_commit is not the current HEAD.",
             errors,
         )
         self.assertTrue(
             any("review entry live commit validation failed" in error for error in errors)
         )
+
+    def test_review_gate_checker_accepts_metadata_descendant_and_rejects_content_descendant(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate, _, _ = gtt.build_task_commit_candidate(
+            self.root,
+            self.task_dir,
+            self.public_commit_input(),
+            self.task_commit_authoring(["src/task.txt"]),
+        )
+        committed = gtt.execute_task_commit_candidate(
+            self.root,
+            candidate,
+            self.task_dir,
+        )
+        review_commit = str(committed["commit_sha"])
+        reviewed_content_sha256 = gtt.reviewed_content_identity(
+            self.root,
+            review_commit,
+            include_worktree=False,
+        )["sha256"]
+        package = (
+            Path(gtt.__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-review-branch"
+        )
+        gate = gtt.read_json(package / "examples/review-gate.json")
+        gate.update({
+            "task_dir": self.task_rel,
+            "base_ref": gtt.diff_base_ref(self.root, "main"),
+            "review_commit": review_commit,
+            "reviewed_content_sha256": reviewed_content_sha256,
+        })
+        gate["facts_sha256"] = gtt.context_digest({
+            key: value
+            for key, value in gate.items()
+            if key not in {"generated_at", "facts_sha256"}
+        })
+        gtt.write_json(
+            gtt.configured_review_gate_path(self.root, self.task_dir),
+            gate,
+        )
+
+        metadata_path = self.task_dir / "pr-body.md"
+        metadata_path.write_text("publication metadata\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "add", "--", metadata_path.relative_to(self.root).as_posix()],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-qm", "chore(task): #122 记录发布元数据"],
+            cwd=self.root,
+            check=True,
+        )
+
+        initial_errors = gtt.review_branch_task_commit_evidence_errors(
+            self.root,
+            self.task_dir,
+            self.task,
+            self.context,
+            {
+                "task_ref": self.task_rel,
+                "base_ref": gtt.diff_base_ref(self.root, "main"),
+                "branch_review_commit": review_commit,
+            },
+        )
+        self.assertIn(
+            "review entry branch_review_commit is not the current HEAD.",
+            initial_errors,
+        )
+
+        schema_patchers = (
+            mock.patch.object(
+                gtt,
+                "review_branch_public_input_schema",
+                return_value=gtt.read_json(
+                    package / "schemas/public-branch-review-input.schema.json"
+                ),
+            ),
+            mock.patch.object(
+                gtt,
+                "review_branch_gate_schema",
+                return_value=gtt.read_json(package / "schemas/review-gate.schema.json"),
+            ),
+        )
+        for patcher in schema_patchers:
+            patcher.start()
+        try:
+            checked = gtt.cmd_check_review_gate(argparse.Namespace(
+                root=str(self.root),
+                task=self.task_rel,
+                allow_nonpass=False,
+                expected_exit="passed",
+            ))
+            self.assertEqual(checked["review_commit"], review_commit)
+            self.assertEqual(checked["head"], gtt.current_head(self.root))
+
+            (self.root / "src/task.txt").write_text(
+                "changed after review\n",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "add", "--", "src/task.txt"], cwd=self.root, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "fix(workflow): #122 修改已审查内容"],
+                cwd=self.root,
+                check=True,
+            )
+            with self.assertRaises(gtt.WorkflowError) as stale:
+                gtt.cmd_check_review_gate(argparse.Namespace(
+                    root=str(self.root),
+                    task=self.task_rel,
+                    allow_nonpass=False,
+                    expected_exit="passed",
+                ))
+            self.assertTrue(
+                any(
+                    gtt.BRANCH_REVIEW_CONTENT_CHANGED_ERROR_PREFIX in error
+                    for error in stale.exception.payload["errors"]
+                )
+            )
+        finally:
+            for patcher in reversed(schema_patchers):
+                patcher.stop()
 
     def test_public_wrapper_builds_executes_and_serializes_minimal_committed_dto(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
@@ -6650,6 +6772,288 @@ class PublishBoundaryTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def publication_ready_input(self, commit: str = "a" * 40) -> dict[str, str]:
+        return {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": self.task_dir.relative_to(self.root).as_posix(),
+            "branch_review_commit": commit,
+        }
+
+    def test_publication_entry_consumes_passed_dto_without_review_gate(self) -> None:
+        branch_review_commit = "a" * 40
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        package = (
+            self.root
+            / "trellis/skills/guru-team/packages/guru-review-task-publication"
+        )
+        (package / "schemas").mkdir(parents=True)
+        (package / "interface.json").write_text("{}\n", encoding="utf-8")
+        (package / "schemas/public-input.schema.json").write_text(
+            "{}\n",
+            encoding="utf-8",
+        )
+        repository = {
+            "head": branch_review_commit,
+            "branch": "topic",
+            "base_ref": "origin/main",
+            "diff_paths": ["src/example.py"],
+            "status_paths": [],
+        }
+        continuity = mock.Mock(return_value=[])
+        private_gate = gtt.configured_review_gate_path(self.root, self.task_dir)
+        self.assertFalse(private_gate.exists())
+
+        with (
+            mock.patch.object(gtt, "task_publication_schema", return_value={}),
+            mock.patch.object(
+                gtt,
+                "load_task_runtime_identity",
+                return_value={
+                    "task_artifact_dir": task_ref,
+                    "task_workspace_id": "publish-boundary",
+                    "branch_name": "topic",
+                    "base_branch": "main",
+                },
+            ),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "current_branch", return_value="topic"),
+            mock.patch.object(gtt, "current_head", return_value=branch_review_commit),
+            mock.patch.object(
+                gtt,
+                "reviewed_content_identity",
+                return_value={"sha256": "b" * 64},
+            ) as identity,
+            mock.patch.object(
+                gtt,
+                "review_branch_content_continuity_errors",
+                continuity,
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_review_gate",
+                side_effect=AssertionError(
+                    "Publication reopened Branch Review private evidence"
+                ),
+            ) as review_gate,
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=repository,
+            ),
+            mock.patch.object(
+                gtt,
+                "task_publication_unexpected_status_paths",
+                return_value=[],
+            ),
+            mock.patch.object(
+                gtt,
+                "load_issue_scope_ledger",
+                return_value=gtt.read_json(self.task_dir / "issue-scope-ledger.json"),
+            ),
+            mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
+            mock.patch.object(gtt, "validate_pr_body_quality", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "load_finish_summary_index",
+                return_value=(
+                    self.task_dir / "finish-summary-index.json",
+                    gtt.read_json(self.task_dir / "finish-summary-index.json"),
+                ),
+            ),
+        ):
+            bindings, errors, handoff, bound_repository = (
+                gtt.task_publication_entry_precondition_bindings(
+                    self.root,
+                    self.task_dir,
+                    {**gtt.DEFAULTS, "workspace_mode": "worktree"},
+                    {
+                        "profile": "publication_review",
+                        "mode": "workflow",
+                        "task_ref": task_ref,
+                        "branch_review_commit": branch_review_commit,
+                    },
+                )
+            )
+
+        self.assertEqual(errors, [])
+        self.assertEqual(bindings["branch_review_handoff"]["status"], "passed")
+        self.assertEqual(
+            handoff,
+            {
+                "typed_exit": "passed",
+                "branch_review_commit": branch_review_commit,
+            },
+        )
+        self.assertEqual(bound_repository, repository)
+        identity.assert_called_once_with(
+            self.root,
+            branch_review_commit,
+            include_worktree=False,
+        )
+        continuity.assert_called_once_with(
+            self.root,
+            self.task_dir,
+            branch_review_commit,
+            "b" * 64,
+            branch_review_commit,
+        )
+        review_gate.assert_not_called()
+        self.assertFalse(private_gate.exists())
+
+    def test_closeout_anchor_uses_publication_dto_or_immutable_plan(self) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        initial_commit = "a" * 40
+        publication_ready = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "branch_review_commit": initial_commit,
+        }
+        self.assertEqual(
+            gtt.resolve_closeout_branch_review_commit(
+                task_ref,
+                publication_ready=publication_ready,
+                existing_plan=None,
+            ),
+            initial_commit,
+        )
+        plan = {
+            "task": {"active_locator": task_ref},
+            "git": {"branch_review_commit": initial_commit},
+        }
+        self.assertEqual(
+            gtt.resolve_closeout_branch_review_commit(
+                task_ref,
+                publication_ready=None,
+                existing_plan=plan,
+            ),
+            initial_commit,
+        )
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.resolve_closeout_branch_review_commit(
+                task_ref,
+                publication_ready={
+                    **publication_ready,
+                    "branch_review_commit": "b" * 40,
+                },
+                existing_plan=plan,
+            )
+        with self.assertRaises(gtt.WorkflowError) as missing:
+            gtt.resolve_closeout_branch_review_commit(
+                task_ref,
+                publication_ready=None,
+                existing_plan=None,
+            )
+        self.assertIn("Publication ready DTO or immutable plan", str(missing.exception))
+
+    def test_prepare_closeout_initial_entry_uses_publication_dto_without_review_gate(self) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        branch_review_commit = "a" * 40
+        publication_ready = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "branch_review_commit": branch_review_commit,
+        }
+        task_context = {
+            "task_artifact_dir": task_ref,
+            "base_branch": "main",
+        }
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": task_ref},
+            "git": {"branch_review_commit": branch_review_commit},
+            "marketplace": {"required": False},
+        }
+        args = argparse.Namespace(
+            finish_summary_index_file="finish-summary-index.json",
+            body_file=str(self.body_path),
+            repo="owner/repo",
+            remote="origin",
+            base_branch="main",
+            title="Publish boundary",
+        )
+        ledger = gtt.read_json(self.task_dir / "issue-scope-ledger.json")
+        continuity = mock.Mock(return_value="b" * 64)
+        with (
+            mock.patch.object(gtt, "official_after_archive_hook_state"),
+            mock.patch.object(
+                gtt,
+                "validate_review_gate",
+                side_effect=AssertionError(
+                    "Finalizer reopened Branch Review private evidence"
+                ),
+            ) as review_gate,
+            mock.patch.object(gtt, "current_head", return_value=branch_review_commit),
+            mock.patch.object(
+                gtt,
+                "validate_closeout_reviewed_content",
+                continuity,
+            ),
+            mock.patch.object(
+                gtt,
+                "closeout_reviewed_change_facts",
+                return_value={
+                    "changed_paths": [],
+                    "candidate_surfaces": [],
+                    "marketplace_required": False,
+                },
+            ),
+            mock.patch.object(gtt, "load_issue_scope_ledger", return_value=ledger),
+            mock.patch.object(gtt, "finalizer_unreviewed_dirty_paths", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "load_finish_summary_index",
+                return_value=(
+                    self.task_dir / "finish-summary-index.json",
+                    gtt.read_json(self.task_dir / "finish-summary-index.json"),
+                ),
+            ),
+            mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "resolve_closeout_reviewed_body",
+                return_value=(self.body_path.read_text(encoding="utf-8"), "body-file"),
+            ),
+            mock.patch.object(gtt, "validate_pr_body_quality", return_value=[]),
+            mock.patch.object(
+                gtt,
+                "validate_reviewed_body_source_for_publish",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "validate_closeout_task_children"),
+            mock.patch.object(
+                gtt,
+                "normalize_github_repository",
+                return_value="owner/repo",
+            ),
+            mock.patch.object(gtt, "base_branch_from_sources", return_value="main"),
+            mock.patch.object(gtt, "current_branch", return_value="topic"),
+            mock.patch.object(gtt, "validate_github_remote_repository"),
+            mock.patch.object(gtt, "pr_title_from_task", return_value="Publish boundary"),
+            mock.patch.object(gtt, "build_closeout_plan", return_value=plan),
+        ):
+            prepared = gtt.prepare_closeout(
+                self.root,
+                args,
+                {**gtt.DEFAULTS, "github_repo": "owner/repo"},
+                self.task_dir,
+                task_context,
+                publication_ready=publication_ready,
+            )
+
+        self.assertEqual(prepared["plan"], plan)
+        self.assertNotIn("gate", prepared)
+        self.assertNotIn("gate_path", prepared)
+        continuity.assert_called_once_with(
+            self.root,
+            {"git": {"branch_review_commit": branch_review_commit}},
+            branch_review_commit,
+            include_worktree=True,
+        )
+        review_gate.assert_not_called()
+
     def test_pr_body_quality_rejects_incomplete_docs_ssot_keys(self) -> None:
         body = valid_pr_body("验证 Docs SSOT section 固定键 presence。").replace(
             "- follow-up / limitation：无 follow-up 或当前 PR limitation。\n",
@@ -6701,10 +7105,6 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertIn("guru-finalize-task", str(raised.exception))
 
     def test_finish_work_rejects_missing_reviewed_source_before_archive(self) -> None:
-        gate = {
-            "review_commit": "a" * 40,
-            "reviewed_content_sha256": "b" * 64,
-        }
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
@@ -6712,15 +7112,16 @@ class PublishBoundaryTest(unittest.TestCase):
                 "base_branch": "main",
                 "workspace_mode": "worktree",
                 "workspace_path": str(self.root),
-                "task_dir": ".trellis/tasks/07-04-review-gate",
+                "task_dir": ".trellis/tasks/07-04-publish-boundary",
                 "preflight": {"current_checkout": str(self.root)},
             }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
             mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "current_head", return_value="a" * 40),
             mock.patch.object(
                 gtt,
-                "validate_review_gate",
-                return_value=(gtt.configured_review_gate_path(self.root, self.task_dir), gate, []),
+                "validate_closeout_reviewed_content",
+                return_value="b" * 64,
             ),
             mock.patch.object(
                 gtt,
@@ -6734,7 +7135,10 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "run") as run,
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
-            gtt.cmd_finish_work(finish_args(validation=["python3 -m unittest 通过"]))
+            gtt.cmd_finish_work(finish_args(
+                validation=["python3 -m unittest 通过"],
+                publication_ready=self.publication_ready_input(),
+            ))
 
         run_commands = [call.args[0] for call in run.call_args_list]
         self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
@@ -6746,11 +7150,6 @@ class PublishBoundaryTest(unittest.TestCase):
     def test_finish_work_dry_run_returns_plan_without_archive_journal_commit_or_publish(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
         body_path.write_text(valid_pr_body("finish-work dry-run 只输出 readiness preview。"), encoding="utf-8")
-        gate = {
-            "review_commit": "a" * 40,
-            "reviewed_content_sha256": "b" * 64,
-            "generated_at": "2026-07-11T00:00:00Z",
-        }
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
@@ -6759,10 +7158,11 @@ class PublishBoundaryTest(unittest.TestCase):
                 "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
             }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "current_head", return_value="a" * 40),
             mock.patch.object(
                 gtt,
-                "validate_review_gate",
-                return_value=(gtt.configured_review_gate_path(self.root, self.task_dir), gate, []),
+                "validate_closeout_reviewed_content",
+                return_value="b" * 64,
             ),
             mock.patch.object(
                 gtt,
@@ -6787,7 +7187,10 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "run") as run,
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            payload = gtt.cmd_finish_work(finish_args(body_file=str(self.body_path)))
+            payload = gtt.cmd_finish_work(finish_args(
+                body_file=str(self.body_path),
+                publication_ready=self.publication_ready_input(),
+            ))
 
         run_commands = [call.args[0] for call in run.call_args_list]
         self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
@@ -6804,14 +7207,9 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(plan["transitions"], gtt.CLOSEOUT_TRANSITIONS)
         self.assertEqual(gtt.closeout_plan_errors(plan), [])
 
-    def test_finish_work_validates_current_review_gate(self) -> None:
+    def test_finish_work_uses_publication_dto_without_review_gate(self) -> None:
         body_path = self.task_dir / "reviewed-pr-body.md"
-        body_path.write_text(valid_pr_body("finish-work 校验 gate metadata tail。"), encoding="utf-8")
-        gate = {
-            "review_commit": "a" * 40,
-            "reviewed_content_sha256": "b" * 64,
-            "generated_at": "2026-07-11T00:00:00Z",
-        }
+        body_path.write_text(valid_pr_body("finish-work 消费 Publication DTO。"), encoding="utf-8")
         archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
@@ -6821,11 +7219,19 @@ class PublishBoundaryTest(unittest.TestCase):
                 "task_artifact_dir": ".trellis/tasks/07-04-publish-boundary",
             }),
             mock.patch.object(gtt, "resolve_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "current_head", return_value="a" * 40),
             mock.patch.object(
                 gtt,
                 "validate_review_gate",
-                return_value=(gtt.configured_review_gate_path(self.root, self.task_dir), gate, []),
+                side_effect=AssertionError(
+                    "Finalizer reopened Branch Review private evidence"
+                ),
             ) as validate_gate,
+            mock.patch.object(
+                gtt,
+                "validate_closeout_reviewed_content",
+                return_value="b" * 64,
+            ),
             mock.patch.object(
                 gtt,
                 "closeout_reviewed_change_facts",
@@ -6851,13 +7257,13 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "validate_finish_summary"),
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
-            gtt.cmd_finish_work(finish_args(body_file=str(self.body_path), dry_run=True))
+            gtt.cmd_finish_work(finish_args(
+                body_file=str(self.body_path),
+                dry_run=True,
+                publication_ready=self.publication_ready_input(),
+            ))
 
-        validate_gate.assert_called_once_with(
-            self.root,
-            self.task_dir,
-            {**gtt.DEFAULTS, "github_repo": "owner/repo"},
-        )
+        validate_gate.assert_not_called()
 
     def test_publish_identity_validation_rejects_repo_branch_or_base_mismatch_before_remote_query(self) -> None:
         task = {"base_branch": "main"}
@@ -12736,11 +13142,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         gtt.write_json(self.task_dir / "task.json", completed)
         args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
         with (
-            mock.patch.object(
-                gtt,
-                "validate_review_gate",
-                return_value=(self.review_gate_path, self.gate, []),
-            ),
             mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
             mock.patch.object(gtt, "validate_closeout_active_projection"),
             mock.patch.object(gtt, "current_head", return_value=self.head),
@@ -13171,11 +13572,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         }
         with (
             mock.patch.object(gtt, "validate_closeout_reviewed_content"),
-            mock.patch.object(
-                gtt,
-                "validate_review_gate",
-                return_value=(self.review_gate_path, self.gate, []),
-            ),
             mock.patch.object(gtt, "load_issue_scope_ledger", return_value=self.ledger),
             mock.patch.object(gtt, "validate_finish_summary"),
             mock.patch.object(
@@ -13328,15 +13724,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 task["children"] = {"invalid": "not-list-str"}
             elif children_case in {"active", "archived"}:
                 task["children"] = ["07-10-child"]
-            gate = {
-                "schema_version": gtt.BRANCH_REVIEW_SCHEMA_VERSION,
-                "skill_id": gtt.BRANCH_REVIEW_SKILL_ID,
-                "task_dir": ".trellis/tasks/07-11-closeout",
-                "typed_exit": "passed",
-                "review_commit": "0" * 40,
-                "reviewed_content_sha256": "0" * 64,
-                "generated_at": "2026-07-11T00:00:00Z",
-            }
             issue = {
                 "number": 105,
                 "url": "https://github.com/owner/repo/issues/105",
@@ -13405,13 +13792,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             )
             subprocess.run(["git", "commit", "-qm", "reviewed"], cwd=root, check=True)
             branch_review_commit = gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
-            gate["review_commit"] = branch_review_commit
-            gate["reviewed_content_sha256"] = gtt.reviewed_content_identity(
-                root,
-                branch_review_commit,
-                include_worktree=False,
-            )["sha256"]
-            review_gate_path = gtt.configured_review_gate_path(root, task_dir)
             publication_gate = self.current_publication_owner(
                 task_ref=".trellis/tasks/07-11-closeout",
                 branch_review_commit=branch_review_commit,
@@ -13816,14 +14196,15 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 title="#105 重构 finish-work 收尾事务",
                 body_file=str(task_dir / "pr-body.md"),
                 finish_summary_index_file=str(task_dir / "finish-summary-index.json"),
+                publication_ready={
+                    "profile": "publication_ready",
+                    "mode": "workflow",
+                    "task_ref": ".trellis/tasks/07-11-closeout",
+                    "branch_review_commit": branch_review_commit,
+                },
                 dry_run=True,
             )
             with (
-                mock.patch.object(
-                    gtt,
-                    "validate_review_gate",
-                    return_value=(review_gate_path, gate, []),
-                ),
                 mock.patch.object(
                     gtt,
                     "cmd_check_task_publication_review",

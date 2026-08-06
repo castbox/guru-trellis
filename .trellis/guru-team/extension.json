@@ -286,11 +286,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-05T23:41:08Z",
+  "installed_at": "2026-08-06T04:40:48Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/177-content-identity-boundary",
-    "commit": "b04a6b191e1f1fd94d4001b363f356a456e8c3d4",
+    "commit": "f4c41866f197cbb658d301e906571b0031cede2f",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },
@@ -468,7 +468,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "c1368fc6a75a64760ab39256b47864e9b38a3df2bbda94bfde4b2bd9befa8b03",
+        "sha256": "2f704df4d6b5b6cd7b025bff8cd6d4998651f5ddf19e1c4d91ec9796906da1c2",
         "executable": false,
         "action": "unchanged"
       },

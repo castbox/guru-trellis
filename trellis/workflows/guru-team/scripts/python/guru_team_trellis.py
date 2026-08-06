@@ -7299,6 +7299,8 @@ def review_branch_task_commit_evidence_errors(
     task: dict[str, Any],
     task_context: dict[str, Any],
     public_input: dict[str, Any] | None = None,
+    *,
+    require_current_head: bool = True,
 ) -> list[str]:
     errors: list[str] = []
     if public_input is None:
@@ -7314,9 +7316,10 @@ def review_branch_task_commit_evidence_errors(
         if (
             public_input.get("task_ref") != expected_task_path
             or public_input.get("base_ref") != expected_base_ref
-            or branch_review_commit != current
         ):
             errors.append("review entry public task/base/commit identity is stale.")
+        if require_current_head and branch_review_commit != current:
+            errors.append("review entry branch_review_commit is not the current HEAD.")
         parents = run_stdout(
             ["git", "show", "-s", "--format=%P", branch_review_commit], cwd=root
         ).split()
@@ -7353,6 +7356,8 @@ def review_branch_entry_precondition_errors(
     config: dict[str, Any],
     public_input: dict[str, Any] | None = None,
     owner_result: dict[str, Any] | None = None,
+    *,
+    require_current_head: bool = True,
 ) -> list[str]:
     errors: list[str] = []
     try:
@@ -7426,6 +7431,7 @@ def review_branch_entry_precondition_errors(
                 task,
                 task_context,
                 public_input,
+                require_current_head=require_current_head,
             )
         )
     except WorkflowError as exc:
@@ -8264,6 +8270,7 @@ def cmd_check_review_gate(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         config,
         public_input=entry_input,
+        require_current_head=False,
     )
     errors = [
         *("review entry: " + item for item in entry_errors),
@@ -8519,18 +8526,24 @@ def task_publication_entry_precondition_bindings(
         review_errors.append("Branch Review DTO branch_review_commit is invalid.")
     else:
         try:
-            _gate_path, current_gate, gate_errors = validate_review_gate(
+            reviewed_content_sha256 = reviewed_content_identity(
                 root,
-                task_dir,
-                config,
-            )
-            if review_gate_commit(current_gate) != branch_review_commit:
-                gate_errors.append(
-                    "Branch Review DTO does not match the current owner gate anchor."
+                branch_review_commit,
+                include_worktree=False,
+            )["sha256"]
+            review_errors.extend(
+                review_branch_content_continuity_errors(
+                    root,
+                    task_dir,
+                    branch_review_commit,
+                    reviewed_content_sha256,
+                    current_head(root),
                 )
-            review_errors.extend(gate_errors)
+            )
         except WorkflowError as exc:
-            review_errors.append(str(exc))
+            review_errors.append(
+                f"Branch Review DTO content continuity is unavailable: {exc}"
+            )
     if review_errors:
         errors.extend(
             f"branch_review_handoff:{item}" for item in sorted(set(review_errors))
@@ -20830,6 +20843,49 @@ def build_closeout_plan(
     return validate_closeout_plan(plan)
 
 
+def resolve_closeout_branch_review_commit(
+    task_ref: str,
+    *,
+    publication_ready: dict[str, Any] | None,
+    existing_plan: dict[str, Any] | None,
+) -> str:
+    if existing_plan is not None:
+        plan_task_ref = str(existing_plan.get("task", {}).get("active_locator") or "")
+        branch_review_commit = str(
+            existing_plan.get("git", {}).get("branch_review_commit") or ""
+        )
+        if plan_task_ref != task_ref:
+            raise WorkflowError(
+                "Persisted closeout plan does not match the current task.",
+                exit_code=2,
+            )
+    else:
+        if publication_ready is None:
+            raise WorkflowError(
+                "Initial closeout requires a Publication ready DTO or immutable plan.",
+                exit_code=2,
+            )
+        branch_review_commit = str(
+            publication_ready.get("branch_review_commit") or ""
+        )
+
+    if publication_ready is not None and (
+        publication_ready.get("profile") != "publication_ready"
+        or publication_ready.get("task_ref") != task_ref
+        or publication_ready.get("branch_review_commit") != branch_review_commit
+    ):
+        raise WorkflowError(
+            "Finalizer Publication ready DTO does not match the current task or immutable plan.",
+            exit_code=2,
+        )
+    if re.fullmatch(r"[0-9a-f]{40}", branch_review_commit) is None:
+        raise WorkflowError(
+            "Finalizer branch_review_commit is invalid.",
+            exit_code=2,
+        )
+    return branch_review_commit
+
+
 def prepare_closeout(
     root: Path,
     args: argparse.Namespace,
@@ -20847,36 +20903,18 @@ def prepare_closeout(
         if existing_plan_path.is_file() and not existing_plan_path.is_symlink()
         else None
     )
-    gate_path, gate, gate_errors = validate_review_gate(
-        root,
-        task_dir,
-        config,
-    )
-    if gate_errors:
-        raise WorkflowError(
-            "finish-work requires the current Branch Review Gate.",
-            exit_code=2,
-            payload={"artifact_path": str(gate_path), "errors": gate_errors},
-        )
-    branch_review_commit = review_gate_commit(gate)
     expected_task_ref = repo_relative(root, task_dir)
-    if publication_ready is not None and (
-        publication_ready.get("profile") != "publication_ready"
-        or publication_ready.get("task_ref") != expected_task_ref
-        or publication_ready.get("branch_review_commit") != branch_review_commit
-    ):
-        raise WorkflowError(
-            "Finalizer publication-ready DTO does not match the current Branch Review.",
-            exit_code=2,
-        )
-    if (
-        existing_plan is not None
-        and existing_plan["git"]["branch_review_commit"] != branch_review_commit
-    ):
-        raise WorkflowError(
-            "Persisted closeout plan does not match the current Branch Review.",
-            exit_code=2,
-        )
+    branch_review_commit = resolve_closeout_branch_review_commit(
+        expected_task_ref,
+        publication_ready=publication_ready,
+        existing_plan=existing_plan,
+    )
+    validate_closeout_reviewed_content(
+        root,
+        {"git": {"branch_review_commit": branch_review_commit}},
+        current_head(root),
+        include_worktree=True,
+    )
     review_facts = closeout_reviewed_change_facts(
         root,
         task_context,
@@ -20978,8 +21016,6 @@ def prepare_closeout(
         "plan_digest": plan["plan_digest"],
         "task": task,
         "task_context": task_context,
-        "gate": gate,
-        "gate_path": gate_path,
         "ledger": ledger,
         "finish_summary_index": index,
         "finish_summary_index_path": index_path,

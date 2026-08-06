@@ -448,11 +448,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 "typed_exit": "verified",
             }
             checked_result = {"status": "ok", "typed_exit": "verified"}
-            review_gate = {
-                "review_commit": branch_review_commit,
-                "reviewed_content_sha256": "c" * 64,
-            }
-            review_gate_path = runtime.configured_review_gate_path(root, task_dir)
             args = argparse.Namespace(
                 finish_summary_index_file=None,
                 repo=None,
@@ -474,18 +469,20 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                         side_effect=lambda value: value,
                     )
                 )
-                stack.enter_context(
+                private_review_gate = stack.enter_context(
                     mock.patch.object(
                         runtime,
                         "validate_review_gate",
-                        return_value=(review_gate_path, review_gate, []),
+                        side_effect=AssertionError(
+                            "Finalizer reopened Branch Review private evidence"
+                        ),
                     )
                 )
                 stack.enter_context(
                     mock.patch.object(
                         runtime,
-                        "review_branch_content_continuity_errors",
-                        return_value=[],
+                        "validate_closeout_reviewed_content",
+                        return_value="c" * 64,
                     )
                 )
                 stack.enter_context(
@@ -627,6 +624,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 )
 
             self.assertEqual(prepared["plan"], plan)
+            private_review_gate.assert_not_called()
             dirty_paths.assert_called_once_with(root, task_dir)
             self.assertEqual(
                 (task_dir / "issue-scope-ledger.json").read_bytes(),
