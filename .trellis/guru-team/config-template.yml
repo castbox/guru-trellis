@@ -43,8 +43,7 @@ workspace_mode: worktree
 # Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
 worktree_root: ""
 
-# Read-only legacy context filename and gitignored local runtime namespace.
-task_start_context_artifact: "task-start-context.json"
+# Gitignored local runtime namespace and task-local verification artifact.
 runtime_root: ".trellis/.runtime/guru-team"
 marketplace_verification_artifact: "marketplace-verification.json"
 

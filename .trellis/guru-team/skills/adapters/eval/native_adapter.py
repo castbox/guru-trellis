@@ -467,7 +467,7 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
         if workspace_recipe else "Issue 145 owner staging"
     )
     issue_body = (
-        "The Stage 0 migration is one independently deliverable unit."
+        "The current Intake workflow is one independently deliverable unit."
         if workspace_recipe else "Issue 145 owner staging body"
     )
     issue_assignees = [{"login": "stage0-eval"}] if workspace_recipe else []
@@ -967,7 +967,7 @@ def build_readiness_owner(
     source = {
         "kind": "draft", "draft_id": "stage0-readiness-eval",
         "title": "Review Stage 0 readiness",
-        "body": "The Stage 0 migration is one independently deliverable unit.",
+        "body": "The current Intake workflow is one independently deliverable unit.",
         "selected_comments": [],
     }
     source_path = fixture / ".trellis/.runtime/guru-team/evals/change-request.json"
@@ -1020,7 +1020,7 @@ def workspace_prerequisites(
     issue_url = f"https://github.com/{repo}/issues/{issue_number}"
     updated_at = "2026-01-01T00:00:00Z"
     title = "Stage 0 workspace owner staging"
-    body = "The Stage 0 migration is one independently deliverable unit."
+    body = "The current Intake workflow is one independently deliverable unit."
     title_sha256 = hashlib.sha256(title.encode("utf-8")).hexdigest()
     body_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
 
@@ -1993,8 +1993,11 @@ def extension_verification_execution(
         "asset_digests": asset_digests,
         "asset_inventory": asset_inventory,
         "ownership": {
-            "frozen_transitional_legacy_count": 0,
-            "new_legacy_entries": [],
+            "current_contract": True,
+            "schema_version": "3.0",
+            "inventory_id": "guru-team-upstream-ownership",
+            "guru_owned_rule_count": 11,
+            "managed_claim_count": 9,
         },
         "sidecars": [],
     }

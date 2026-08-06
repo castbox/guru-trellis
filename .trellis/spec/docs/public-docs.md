@@ -76,7 +76,7 @@ to complete it now or leave it for a separate follow-up.
 ## SSOT Rules
 
 Public docs must identify `trellis/skills/guru-team/` as the only canonical
-workflow skill root and distinguish registry lifecycle (`reserved` versus
+workflow skill root and distinguish registry lifecycle (`planned` versus
 `active`), package/interface ownership, workflow marker ownership, generated
 platform copies, and deterministic script limits. They must state that the
 workflow marketplace installs only `.trellis/workflow.md`, while the preset is
@@ -98,19 +98,30 @@ install/upgrade remediation, and list its installed executable path.
 
 All three public README files must describe the final ownership boundary:
 
-- the 43 historical upstream paths remain only as
-  `upstream_owned/removed` tombstones with immutable path/baseline identity and
-  migration-only payload hashes;
+- ownership schema 3.0 contains exactly 11 anchored Guru-owned rules, nine
+  managed claims, and three additive overlay files;
 - the preset never installs or managed-upgrades `trellis-start`,
   `trellis-continue`, `trellis-finish-work`, official hooks, agents, runtime
   agents, bundled skills, or Trellis meta references;
 - the overlay tree contains only the three Guru-owned `guru-finish-work`
   entries;
-- known local edits are migrated by provenance, unknown edits are preserved
-  with `.new`, and no unresolved `.new`/`.bak` may be reported as success;
+- current managed upgrades use only the previous managed hash; unknown current
+  edits are preserved with `.new`, and no unresolved `.new`/`.bak` may be
+  reported as success;
+- a fresh target may omit the installed manifest, but any existing manifest
+  must satisfy the complete current schema 2.0; non-current inputs fail
+  current-contract validation;
 - official update/version-upgrade, workflow re-selection, preset reapply, and
   source/installed/ownership/platform/dogfood validation are one documented
   sequence.
+
+All three README files must state that current task identity comes only from
+`task.json`, ignored runtime mapping, current checkout, and live Git worktree
+facts. They must document `finish-summary.json` as output of the normal current
+`guru-team.finish-work` path only, with no alternate summary command. Public
+package documentation keeps live ids such as `invoke-stage0-skill` and
+`guru-stage0-*`, and lists only schemas, examples, fixtures, and eval contracts
+declared by the live registry and current packages.
 
 Public docs that describe task work commits must name
 `guru-create-task-commit` as the active closed-loop owner, distinguish AI review
@@ -346,13 +357,13 @@ selects the output schema before expected-exit comparison, Codex uses a trusted
 Git root, Claude uses safe non-interactive input, and unauthenticated Cursor is
 `unsupported`.
 
-## Stage 0 Current Contract Documentation
+## Current Intake Contract Documentation
 
-All three public README files describe the current six-package/23-exit Stage 0
+All three public README files describe the live six-package/23-exit Intake
 contract, including the dialogue-local pre-recorder stop and optional
-`guru-sync-base.repo_root` / `route` scalar arguments. They state that frozen
-source records are historical integrity assets only and are not installed or
-accepted as current registry, discovery, or invocation contracts. The READMEs
+`guru-sync-base.repo_root` / `route` scalar arguments. They state that only the
+live registry and current package contracts are installed or accepted for
+discovery and invocation. The READMEs
 also document the package-local discovery/public invocation boundary and the
 rule that normal Agents do not read/import the shared Python runtime or receive
 private recorder/checker artifacts.
@@ -363,9 +374,10 @@ clarification disposition projection.
 Examples use actual production Skill ids and explicit source/installed mode.
 Validation text includes manifest/registry/workflow/extension set equality,
 six canonical corpora through the existing #147 runner, selected-platform byte
-identity, fresh install, pre-activation upgrade, `trellis update`, preset
+identity, fresh install, current-manifest update, `trellis update`, preset
 reapply, existing-task re-entry, archive read-only behavior, and recursive zero
-`.new`/`.bak` checks. README commands must run from a clean repository without
+`.new`/`.bak` checks. A non-current installed manifest fails current-contract
+validation. README commands must run from a clean repository without
 machine-local hidden state.
 
 ## Production Current Contract Documentation
@@ -444,8 +456,7 @@ DTO and live Git only; it never opens Branch Review private checkpoint state.
 README package closure numbers are thirteen active Skills and 51 external exits;
 global workflow markers remain 13 invokes, 51 exits, and 28 targets.
 `production-current-v1` owns the current planning/check/commit contract; the
-frozen Stage 0 v1 manifest remains six Skills/24 exits while the AI-first v2
-contract is six Skills/23 exits.
+live Intake contract remains six Skills/23 exits.
 
 ## Extension Installation Verification Documentation
 
@@ -473,16 +484,16 @@ The READMEs distinguish task-bearing
 one-artifact/no-cache boundary, and keep private profile/reason/commands/digests/
 assets/ownership/findings out of public DTOs. They document full-preset runtime
 requirements, source/installed discovery, canonical/installed/shared/Codex/
-Cursor/Claude byte identity, update/reapply, ownership freeze, sidecar cleanup,
+Cursor/Claude byte identity, update/reapply, current ownership, sidecar cleanup,
 and redaction.
 
 Public validation text treats package-local real-wrapper production eval and
 real pushed-remote clean installation as independent acceptance surfaces. It
 must not claim the remote-ref gate passed when only local or public stable
 marketplace sampling ran. It identifies local/install combined acceptance
-separately from the pushed-remote gate and states that upstream overlay cleanup
-is complete only when the 43 tombstones, three-entry overlay tree, migration
-matrix, update/upgrade/reapply, and zero-sidecar checks all pass.
+separately from the pushed-remote gate and states that installation is complete
+only when ownership schema 3.0, the 11-rule/nine-claim/three-overlay inventory,
+the current installed manifest, update/reapply, and zero-sidecar checks all pass.
 
 Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
 byte identity, source and installed validation, real-wrapper eval, workflow

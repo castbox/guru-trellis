@@ -1,5 +1,4 @@
 {
-  "id": "positive-baseline",
   "mutation": {"type": "none"},
   "expected_status": "ok",
   "expected_error_codes": []

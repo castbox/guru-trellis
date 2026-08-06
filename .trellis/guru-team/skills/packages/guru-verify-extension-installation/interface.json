@@ -22,7 +22,7 @@
     {"id": "repository_identity", "evidence": "current Git root, task mapping when present and credentials-safe repository locator", "binding": "public repository and task identity", "freshness": "rebuilt before execute, record and check"},
     {"id": "remote_identity", "evidence": "requested remote/ref, ls-remote direct and peeled ref facts, and cloned HEAD^{commit}", "binding": "reviewed or frozen resolved checkout commit", "freshness": "resolved and checkout-verified for the current invocation"},
     {"id": "extension_surface", "evidence": "reviewed diff, marketplace, preset, workflow, schema, runtime, platform and public docs facts", "binding": "AI applicability and profile coverage", "freshness": "reread before AI Gate"},
-    {"id": "ownership_inventory", "evidence": "current managed and frozen transitional legacy inventory", "binding": "Guru versus Trellis upstream ownership", "freshness": "validated from the remote source"},
+    {"id": "ownership_inventory", "evidence": "current Guru-owned rules and managed path claims", "binding": "Guru versus Trellis upstream ownership", "freshness": "validated from the remote source"},
     {"id": "persistence_boundary", "evidence": "task-bearing or session-only input branch", "binding": "one task-local artifact or no repository artifact", "freshness": "checked before and after invocation"},
     {"id": "invocation_freshness", "evidence": "plan/ref/HEAD, prior verification identity, semantic Gate and actual exit", "binding": "one complete current owner round", "freshness": "checker rejects drift, ambiguity and superseded evidence"}
   ],

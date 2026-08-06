@@ -42,9 +42,9 @@ refs/HEADs, fetch and fast-forward facts, the complete synchronized
 
 Success requires full 40-hex commit ids and exact equality across decision
 checkout HEAD after, local base HEAD after, and remote-tracking base HEAD.
-Resolution and result facts are canonical JSON transported on stdout only;
-neither task-start context, public package, installed runtime, repo root nor a
-repo-external temporary file stores them. The pre-sync digest binds only
+Resolution and result facts are canonical JSON transported on stdout only.
+No task artifact, public package, installed runtime, repo root, or repo-external
+temporary file stores them. The pre-sync digest binds only
 resolve-to-execute. `check-base-sync --result-json` validates schema, facts
 digest, both resolution identities, and stale live Git facts, then returns the
 post-sync digest to the next consumer. Already-equal execution may have equal
@@ -59,9 +59,10 @@ It also exposes `reviewed_resolution_sha256` as the digest consumed by the
 current guard and `post_sync_resolution_sha256` as the digest to pass to the
 next guard, while `resolution.source` remains the
 `explicit`, `config`, `config-candidate`, or `remote-default` provenance rather than a
-prepare-generated explicit override. Task-start context persists only
-portable base branch and local/remote SHA identity; it excludes resolution
-bytes, result payloads, process output, and machine paths.
+prepare-generated explicit override. No task artifact persists the complete
+base resolution/result payload, process output, or machine path. Current task
+identity comes from official `task.json`, ignored runtime mapping, and live Git
+worktree facts.
 
 The YAML parser in `load_config()` is intentionally small. It supports simple
 scalars, lists, and one level of nested dictionaries used by the current config.
@@ -364,23 +365,13 @@ contract under `public_api.skill_contracts`:
   `private_artifact_schema_ids` are exact inventories from all active
   production packages.
 
-The frozen canonical manifest
-`trellis/skills/guru-team/migrations/stage0-minimal-handoff.json` has schema id
-`guru-team-stage0-migration-manifest-1.0`. It is the immutable historical
-activation inventory for exactly six Skills and 24 exits. It remains immutable
-historical source material and is not projected into current registry,
-discovery, invocation, or installation-provenance contracts.
-
-`trellis/skills/guru-team/migrations/stage0-ai-first-contract-v2.json` has schema
-id `guru-team-stage0-ai-first-contract-migration-1.0`. It supersedes the active
-contract, not the frozen bytes: the same six Skills now expose 23 exits, and a
-workspace/task mutation refusal stops in dialogue before recorder/executor
-instead of emitting `cancelled`. It also declares the public scalar change that
-allows `guru-sync-base.repo_root` and `route` to be omitted and derived by the
-runtime. Source validation preserves both historical records by exact identity,
-while installed validation and invocation consume only the current 6-by-23
-package closure. Historical bytes are never rewritten during validation or
-install.
+The current Intake closure is derived only from the live registry, current
+Interface 1.3 packages, workflow markers, extension inventories, eval corpora,
+and selected-platform copies. It contains six packages and 23 exits. A
+workspace/task mutation refusal stops in dialogue before recorder/executor,
+and the current `guru-sync-base` scalar contract delegates omitted optional
+arguments to the formal resolver. Source validation, discovery, invocation, and
+install consume exactly this live closure.
 
 The sole current planning/check/commit manifest is
 `trellis/skills/guru-team/contracts/production-current.json`, with schema id
@@ -393,14 +384,12 @@ validate against the current package schemas; no alternate executor,
 projection, or manifest participates in current invocation.
 
 The source and installed closure algorithm reads the live registry, current
-Stage 0 package contracts, the production current manifest, Interface public
+package contracts, the production current manifest, Interface public
 contracts, and package-local corpora. It requires every active row to select
 Interface 1.3 and requires exact profile, exit, consumer, projection,
 current-case, and authoring-edge equality. Thirteen Skills
 and 51 exits are the current cardinality regression, not a hard-coded future
-registry allowlist. The Stage 0 v1 bytes and ordered 6-by-24 identity remain a
-separate regression authority and are not rewritten to absorb production
-packages.
+registry allowlist.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -474,12 +463,11 @@ names only after the new tag is verified.
 
 ## Task Identity and Local Runtime
 
-New AI-first tasks use official Trellis `task.json` as their tracked task
+Current AI-first tasks use official Trellis `task.json` as their tracked task
 identity and `issue-scope-ledger.json` as the only Guru-owned durable Intake
-artifact. Existing active `task-start-context.json` schema 1.0 files are
-read-only migration evidence; runtime may consume them once when reconstructing
-an interrupted legacy task, but must not generate, upgrade, or require them for
-new tasks.
+artifact. Runtime resolves the worktree from current `task.json`, the checkout,
+ignored runtime mapping, and live `git worktree list` facts. Any missing or
+mismatched identity fails closed; no alternate task identity artifact is read.
 
 Local-only reusable mappings live under the gitignored producer namespace:
 
@@ -504,28 +492,25 @@ accessor. The official creator fallback therefore produces
 read, copy, initialize, restore, or require `.trellis/.developer` or
 `.trellis/workspace/**`; existing official identity bytes remain untouched.
 
-Legacy `task-start-context.source_issue` never owns PR close scope. The
-task-level `issue-scope-ledger.json` owns `close_issues`, `related_issues`, and
-`followup_issues`.
+The task-level `issue-scope-ledger.json` exclusively owns `close_issues`,
+`related_issues`, and `followup_issues`.
 
 ## Finish Summary
 
-`trellis/workflows/guru-team/schemas/finish-summary.schema.json` is the shared
-schema SSOT for normal finish and #100 backfill. Normal finish uses generator
-`guru-team.finish-work`; backfill uses `guru-team.finish-summary-backfill` and
-must carry conditional `backfill` metadata. The Python validator is strict about
-field sets, types, lengths, counts, enums, SHA/issue/PR formats, clean relative
-paths, normalized duplicates, adjacent repeated clauses, source-artifact links,
-and all derived search/retrieval facts.
+`trellis/workflows/guru-team/schemas/finish-summary.schema.json` is the current
+finish-work summary SSOT. The only accepted generator is
+`guru-team.finish-work`; unknown generators and non-current fields fail closed.
+The Python validator is strict about field sets, types, lengths, counts, enums,
+SHA/issue/PR formats, clean relative paths, normalized duplicates, adjacent
+repeated clauses, and all derived search/retrieval facts.
 
 Duplicate identity is domain-specific. Every path-bearing array, including
-`git.changed_paths`, `index.search_terms.paths`,
-`index.affected_surfaces[].paths`, and `backfill.source_artifacts`, uses the
-exact path string as identity; punctuation-removing text normalization must not
-collapse two different valid Git paths. Generators sort and deduplicate Git
-paths by exact string, and validators still reject exact duplicates. Non-path
-semantic and search-token string arrays continue to reject duplicates after
-text normalization.
+`git.changed_paths`, `index.search_terms.paths`, and
+`index.affected_surfaces[].paths`, uses the exact path string as identity;
+punctuation-removing text normalization must not collapse two different valid
+Git paths. The generator sorts and deduplicates Git paths by exact string, and
+validators still reject exact duplicates. Non-path semantic and search-token
+string arrays continue to reject duplicates after text normalization.
 
 The AI input is task-local `finish-summary-index.json` with schema version 1 and
 only semantic index fields. It accepts at most 19 `contract_changes`; the final
@@ -535,9 +520,7 @@ Ledger, ignored runtime identity, live Git, archived artifact existence, UTC
 time, and publish output. Final artifacts live at
 `.trellis/tasks/archive/<YYYY-MM>/<task>/finish-summary.json`; values may not
 contain absolute, parent, workspace, runtime, backslash, CR, or LF paths, and
-may not contain leading or trailing whitespace. Backfill `source_artifacts`
-remain structurally valid without a task directory, but when an archived
-`task_dir` is available every clean source path must name an existing file.
+may not contain leading or trailing whitespace.
 
 The final pre-archive snapshot combines a NUL-delimited base-to-working-tree
 diff with NUL-delimited untracked file enumeration; task metadata is recorded
@@ -600,82 +583,13 @@ remote, and fake GitHub PR store after invoking production `cmd_finish_work()`.
 Test-owned dictionaries may summarize those observed facts, but must not drive
 or manufacture transition state.
 
-### Archived Task Backfill Contract
-
-The #100 backfill reads only these task-local source names: `task.json`,
-`issue-scope-ledger.json`, `prd.md`, `design.md`, `implement.md`, `review.md`,
-`review-gate.json`, `phase2-check.json`, `pr-body.md`, and
-`pr-readiness.json`. A source is recorded in `backfill.source_artifacts` only
-after a successful UTF-8/JSON read. Missing files are not read errors; malformed
-or unreadable files are isolated to that task and excluded from extraction.
-Task, Git, GitHub, artifact, problem/outcome/behavior, contract-table, and
-search-term fields follow the fixed priority rules documented by the public
-backfill command. The generator never infers facts from GitHub or conversation
-history and never invents an issue, PR, commit, branch, path, or behavior.
-Git commits use the first non-empty valid source in order: `task.json.commit`,
-`review-gate.json.head`, then `pr-readiness.json.commits[]`; values from lower
-priority sources are not unioned into a selected higher-priority source.
-Problem fallback is exactly `<task.title>；旧行为：历史 artifact 未记录。` and
-outcome fallback is exactly `<task.title>；非目标：历史 artifact 未记录。`.
-When higher-priority outcome sources and a pr-body summary paragraph are absent,
-the first `pr-body.md` `## 变更摘要` list item becomes outcome while the
-complete normalized list remains `changed_behavior`.
-Search-term phrases first use, in order, task title, task slug, problem prefix,
-outcome prefix, and changed-behavior prefixes. Only when fewer than three
-unique phrases remain may task slug, task title, and `历史归档 task` be used to
-fill the array. After that fixed sequence, and only when no phrase contains a
-#97 `FINISH_SUMMARY_COMPLETION_MARKERS` value, the generator appends the single
-fixed phrase `历史归档 task 已完成`; it never replaces or rewrites an existing
-phrase. During the fixed sequence, only an exact problem or outcome fallback
-candidate may be skipped when its first clause equals the last clause of the
-previously retained phrase. This narrow edge de-duplication prevents the same
-fallback boundary from being repeated inside retrieval phrases; it does not
-rewrite candidates or apply clause-level de-duplication to any other phrase.
-
-Backfill reuses the normal `finish_summary_errors(..., task_dir=...)` validator
-and `finish_summary_retrieval_text()` derivation. It adds exactly the schema
-defined `backfill` object with `generated=true`, a UTC generation time,
-successful source artifacts, sorted canonical `missing_fields`, and one of
-`complete`, `partial`, or `minimal`. The normal #97 schema remains unchanged;
-legacy top-level `summary` and `keywords` are forbidden by its closed field set.
-The final validator permits one backfill-only retrieval boundary duplication
-only when `generator` is exactly `guru-team.finish-summary-backfill`, problem is
-exactly `<task.title>；旧行为：历史 artifact 未记录。`, retrieval starts with the
-exact task title followed by that problem, and the retrieval remainder contains
-no unapproved adjacent duplicate clause. A second backfill-only boundary is
-allowed only when task-local sources prove the higher-priority outcome sources
-and pr-body paragraph are absent, outcome equals the first pr-body summary list
-item, the complete list equals `changed_behavior`, retrieval exactly matches the
-shared helper, and removing one copy leaves no unapproved adjacent duplicate.
-The two approved boundaries may coexist. Normal finish-work, non-exact source
-text, source drift, and every other duplicate inside problem, outcome, behavior,
-surface, contract, or phrase content remain rejected by the shared #97 rules.
-
-Backfill confidence is `complete` only when the required structural artifacts,
-`git.branch`, complete changed paths, source issues, PR URL, and core index
-fields are present. It is `minimal` only when retrieval fields depend solely on
-the archive basename, task title/name, or Markdown H1. Any other generated
-semantic or provenance evidence, including artifact/base/branch/commit facts,
-issue or PR facts, review outcome, completed checklist, or contract table, makes
-the result at least `partial`.
-
-`git.changed_paths` and `index.search_terms.paths` retain the complete clean,
-sorted, exact-deduplicated path set. Affected surfaces group paths by the fixed
-path-prefix `kind` mapping. Each kind is split into stable chunks of at most 100
-paths, and every path remains present in exactly one chunk. If the complete
-representation would exceed the schema maximum of 20 surfaces, generation
-fails closed for that task instead of truncating paths or expanding the schema.
-An empty changed-path set receives the schema-valid `task-artifact` fallback
-surface with no paths.
-
 ## Workspace Boundary Snapshot
 
 `check-workspace-boundary --json` resolves the task from `--task` or current
 task, validates `task.json` plus ignored task/workspace mappings and live Git
-worktree identity, then derives the expected workspace. A legacy
-`task-start-context.json` may supply the same identity once during interrupted
-migration, but is never generated or required for a new task. The command never
-trusts a committed absolute workspace path. The snapshot records `status`,
+worktree identity, then derives the expected workspace. The command never
+trusts a committed absolute workspace path or alternate task identity artifact.
+The snapshot records `status`,
 `workspace_mode`, `expected_workspace`, `actual_repo_root`, optional
 `source_checkout`, `task_dir`, repo-relative `task_dir_relative`,
 source/task Git status, suspicious same-task artifacts, and deterministic
@@ -1291,8 +1205,8 @@ paths are ignored; recovery may only push that exact commit when needed, check
 remote PR identity and three-way HEAD alignment, and retry draft-to-ready. An
 archived directory containing only `closeout-plan.json` is resolvable for this
 path only by the canonical `guru-finish-work` recovery entry. The Guru preset
-does not install a `trellis-finish-work` compatibility asset; all other commands
-still require `task.json`. The recovery path neither parses, rebuilds,
+installs only the current `guru-finish-work` entry; all other commands still
+require `task.json`. The recovery path neither parses, rebuilds,
 validates, nor rewrites an archived body, summary, ledger, readiness, or
 marketplace artifact.
 
@@ -1305,8 +1219,7 @@ summary task/branch/base/source-issue identity, and the exact task directory.
 Working-tree plan bytes cannot replace the committed plan. Ordinary task
 discovery and workspace-boundary commands do not enable this mode and still
 require normal `task.json`, ignored runtime mapping, and live Git worktree
-identity. A legacy `task-start-context.json` is only a one-time compatibility
-source for that identity.
+identity. No alternate task identity source is accepted.
 The raw finish-work locator is preserved before ordinary resolution. Only a
 basename, exact former active locator, or exact archive locator may select the
 plan-only search. Path-like input is checked component-by-component with
@@ -1350,7 +1263,8 @@ python3 -m json.tool trellis/index.json
 
 - Adding a config key to `config-template.yml` without adding a default in
   `DEFAULTS`.
-- Changing the legacy task-start-context compatibility reader without updating its strict JSON schema.
+- Adding an alternate task identity reader instead of using current
+  `task.json`, ignored runtime mapping, and live Git worktree facts.
 - Letting PR generation close `related_issues` or `followup_issues`.
 - Recording review-gate evidence that does not mention deployment impact.
 

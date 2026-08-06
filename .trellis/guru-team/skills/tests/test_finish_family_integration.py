@@ -1341,51 +1341,5 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                         result["cases"][0]["actual_exit"], "published",
                     )
 
-    @unittest.skipUnless(EXECUTION_MODE == "source", "source ownership assertion")
-    def test_legacy_finish_tombstones_remain_frozen_without_119_blocker(
-        self,
-    ) -> None:
-        inventory = read_json(
-            REPO / "trellis/presets/guru-team/ownership/upstream-ownership.json"
-        )
-        legacy = [
-            entry
-            for entry in inventory["legacy_entries"]
-            if entry["replacement_owners"]
-            == [
-                "guru-review-task-publication",
-                "guru-verify-extension-installation",
-                "guru-finalize-task",
-            ]
-        ]
-        self.assertEqual(len(legacy), 5)
-        overlay_root = REPO / "trellis/presets/guru-team/overlays"
-        for entry in legacy:
-            path = overlay_root / entry["path"]
-            self.assertFalse(path.exists())
-            self.assertEqual(entry["category"], "upstream_owned")
-            self.assertEqual(entry["migration_state"], "removed")
-            self.assertNotIn("current_payload_sha256", entry)
-            self.assertIn(
-                entry["baseline_sha256"], entry["migration_payload_sha256s"],
-            )
-            self.assertEqual(entry["blocking_issues"], [])
-            self.assertEqual(entry["removal_issue"], 132)
-            self.assertEqual(
-                entry["dogfood_status"], "removed_with_audit_history",
-            )
-            self.assertEqual(
-                entry["target_business_repo_status"], "no_longer_installed",
-            )
-        legacy_paths = {entry["path"] for entry in inventory["legacy_entries"]}
-        claims = {
-            claim["path"]: claim for claim in inventory["managed_path_claims"]
-        }
-        for relative in GURU_ENTRIES:
-            self.assertNotIn(relative, legacy_paths)
-            self.assertEqual(claims[relative]["category"], "guru_owned")
-            self.assertEqual(claims[relative]["covered_by_legacy_paths"], [])
-
-
 if __name__ == "__main__":
     unittest.main()

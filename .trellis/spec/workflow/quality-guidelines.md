@@ -62,7 +62,7 @@ Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
 
 For versioned public Skill I/O, the test matrix validates only the current
-Interface 1.3 and registry 1.1 schemas. One mixed test-only registry contains
+Interface 1.3 and registry 1.2 schemas. One mixed test-only registry contains
 structured semantic 1.3 and scalar deterministic 1.3 packages in the same run.
 Tests cover discriminator/`oneOf`, every per-exit schema/example,
 every output field's direct consumer use, Skill/workflow/stop consumers,
@@ -85,27 +85,22 @@ ordered profile schema references, discriminator fields are required constants,
 and scalar examples prove ordered flags, declared value types, binding order,
 and public-input/invocation argv equality.
 
-For production Stage 0 activation, preserve the immutable historical source
-bytes and ordered six-package/24-exit record, then repeat the Interface 1.3
-matrix over the six-package/23-exit current contract rather than only the
-representative fixture. Every structurally distinct input
-profile/signature must have an
+For current Intake activation, run the Interface 1.3 matrix over the live
+six-package/23-exit contract rather than only a representative fixture. Every
+structurally distinct input profile/signature must have an
 executable public invocation probe, every exit/profile must have a non-empty
 current eval case binding, and all output fields must resolve to direct consumer
 use pointers. Negative tests must reject missing/extra/duplicate/renamed/unknown
-current-contract entries, any partially updated Stage 0 graph, stale consumer profiles,
+current-contract entries, any partially updated Intake graph, stale consumer
+profiles,
 unconsumed/private fields, unsupported projections, and wrapper-local logic.
 Real public-invocation probes must also reject missing owner locators,
 checker-failed owner results, and public-input/owner mode or fixed-profile
 mismatches. They prove repo-relative caller input works, route selection comes
 from the checker-passed owner result, workspace `created` cannot be serialized
 from an example or unchecked executor result, and output examples are not read
-as production serializer input.
-
-The frozen Stage 0 v2 source-integrity regression contains exactly three
-recorded public changes, including the `guru-sync-base.repo_root` / `route`
-required-to-optional scalar change. Omitting that record while current
-Interface bytes expose it is a source-integrity failure.
+as production serializer input. The live registry and current package graph are
+the complete source, schema, example, eval, and fixture inventory.
 
 Validate `production-current-v1` as the sole current planning/check/commit
 manifest: exactly three packages, ten profiles, 11 exits, current output schema
@@ -116,9 +111,9 @@ at thirteen active Skills and 51 external exits, while the integrated global
 workflow projection is 13 invokes, 51 exits, and 28 targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
-invalid discriminator unions; absolute paths; and partial Stage 0/production
-activation. A regression fixture proves the original Stage 0 manifest identity
-and ordered 6-by-24 set are unchanged.
+invalid discriminator unions; absolute paths; and partial Intake/production
+activation. Every manifest and declared asset must pass the same current-contract
+validation.
 
 Every production profile and exit executes the real package wrapper through
 the shared adapter. The runner validates the actual exit schema before
@@ -143,14 +138,14 @@ same formal owner resolver; missing required, repeated, unknown, or out-of-order
 flags fail. Clarification probes cover the active-task-only null-disposition to
 `retained` projection plus initial/standalone null negative cases.
 
-Fresh install and pre-activation upgrade verification must each cover the normal
+Fresh install and current-manifest update verification must each cover the normal
 chain plus refresh/re-entry, stop, retarget, content-changed, issue-only
 initial/recovery, and workspace/task initial/recovery families. After `trellis
 update` and preset reapply, source, installed, workflow-marker, extension,
 manifest, package corpus, and selected-platform byte identities must still
 match; `.new`/`.bak` sidecars and mixed activation are blocking. Existing active
-tasks re-enter through owner public profiles, while archive fixtures prove old
-artifact bytes are read-only.
+tasks re-enter through owner public profiles, while archive fixtures prove
+archived artifact bytes are read-only.
 
 Normal Agent transcript and eval trace assertions are separate evidence. Both
 must show public-wrapper-only invocation, no Agent read/import of private runtime,
@@ -245,7 +240,7 @@ duplicate candidate canonical fact digest plus identity/URL/repo/number binding
 from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean
 throwaway update/reapply. Any reader of index siblings, workspace/runtime,
-repo-level history cache, or removed upstream overlay payload fails.
+repo-level history cache, or any file outside the current three-overlay set fails.
 For `guru-clarify-requirements`, tests must cover workflow/standalone
 precondition parity; initial issue, proposed draft, active-task scope change,
 and standalone entry kinds; repository-answerable evidence before user
@@ -352,9 +347,10 @@ unresolved assignee cases; isolated official `common.task_store.cmd_create`
 adapter with a call-scoped null developer accessor; exact
 `task.json.creator=task.json.assignee=reviewed login`; preservation of existing
 identity bytes; exact object reuse/conflict blocking; exactly one Guru-owned
-tracked task-local artifact (`issue-scope-ledger.json`); the dedicated read-only
-task-start-context identity resolver; ignored runtime-only mappings; source and
-target with no `.trellis/.developer` or `.trellis/workspace/**`; preservation
+tracked task-local artifact (`issue-scope-ledger.json`); task identity derived
+only from current `task.json`, ignored runtime mappings, and live Git worktree
+facts; source and target with no `.trellis/.developer` or
+`.trellis/workspace/**`; preservation
 of existing official identity/journal bytes; exactly three typed exits and unique
 consumers; source/installed/platform distribution; removed prepare mutation
 flags remaining zero-write; and clean throwaway update/reapply.
@@ -436,10 +432,11 @@ post-commit freshness, the current schema 4.0 checkpoint, and the single compact
 artifact owner. Routine implementation/check identity remains live semantic
 context and must not become persisted assignment or liveness evidence.
 Distribution validation must compare canonical/shared/Codex/Claude/Cursor
-package bytes, preserve the frozen 43-entry historical path/baseline identity,
-require 43 `upstream_owned/removed` tombstones with explicit migration payload
-hashes, zero active/unclassified rows, and exactly three Guru-owned overlay
-entries. It must run dogfood apply/drift and sidecar checks and exercise clean
+package bytes and validate the current-only ownership schema 3.0 with exactly
+11 Guru-owned rules, nine managed claims, and three Guru-owned overlay entries.
+Non-current ownership or installed manifests, unknown claims, and unexpected
+overlay paths must fail current-contract validation. Validation must run dogfood
+apply/drift and sidecar checks and exercise clean
 marketplace init, preview/switch, preset apply, installed invocation,
 `trellis update --force` or the selected version upgrade, and workflow/preset
 reapply.
@@ -526,9 +523,8 @@ cannot pass the gate. Include:
   gate checkpoints must be written under ignored
   `.trellis/.runtime/guru-team/owner-checkpoints/**`, with identity derived from
   the current `task.json`, ignored runtime mapping, and live `git worktree list`
-  facts. Non-current tracked gate files are invalid and are never read;
-  `task-start-context.json` is limited to its dedicated read-only identity
-  resolver and is never active gate authority. When a manual editing tool has no
+  facts. Non-current tracked gate files and alternate task-identity inputs are
+  invalid and are never read. When a manual editing tool has no
   explicit working directory, use a worktree-local absolute path
 - Branch Review retains only its compact owner-private ignored-runtime
   checkpoint and returns the minimal typed exit consumed by Publication. Raw
@@ -566,7 +562,7 @@ Python or shell.
   execute real public wrappers.
 + Negative coverage includes unknown/null fields, duplicate or non-string ids,
   profile/exit drift, unsafe/missing/symlink fixtures, unknown assertions,
-  retired `expectations`, missing external semantic grading, feedback
+  unknown `expectations` fields, missing external semantic grading, feedback
   overriding deterministic failure, one-sided/floating comparison, internal
   run root, platform corpus drift, and malformed public output.
 + Adapter integration injects fake shared/Codex/Claude/Cursor executables to
@@ -678,7 +674,8 @@ Runtime coverage includes changed-surface facts without route ownership,
 workflow-required applicability conflict, command exit zero plus failed
 adequacy, partial/early failure, remote/local HEAD drift, same-identity retry
 with exact supersession, stale plan re-entry, taskless route limits, sanitized
-argv/output, and frozen ownership-inventory rejection. The conflict case must
+argv/output, and invalid or non-current ownership-manifest rejection. The
+conflict case must
 prove private `applicability=not_required`, no selected capability or execution
 profile, `typed_exit=blocked`, and stable remediation.
 

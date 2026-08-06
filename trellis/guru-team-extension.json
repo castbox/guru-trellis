@@ -279,8 +279,7 @@
       "record-finalization-gate",
       "check-finalization-gate",
       "execute-finalization-transition",
-      "finish-work",
-      "backfill-finish-summary"
+      "finish-work"
     ]
   },
   "release_notes": "README.md#guru-team-extension-version"

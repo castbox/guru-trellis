@@ -480,15 +480,13 @@ class SourceValidationTests(unittest.TestCase):
         normalized_overlay_spec = " ".join(overlay_spec.split())
         for phrase in (
             "contains exactly three Guru-owned explicit finish entries",
-            "`upstream_owned/removed` tombstone",
+            "current ownership inventory describes only Guru-owned rules, claims, and additive overlays",
             "Do not add or restore overlays for `trellis-start`",
             "Official Trellis init/update/upgrade owns those paths and bytes",
             "Mandatory invocation is guaranteed by the active workflow's stable markers",
             "Shared/Codex/Claude/Cursor",
         ):
             self.assertIn(phrase, normalized_overlay_spec)
-        self.assertNotIn("transitional_legacy", overlay_spec)
-        self.assertNotIn("current_payload_sha256", overlay_spec)
 
     def test_sync_base_entrypoints_bind_prepare_to_reviewed_resolution(self) -> None:
         workflow_paths = [
@@ -825,11 +823,11 @@ class SourceValidationTests(unittest.TestCase):
 
         ownership_docs = {
             REPO / ".trellis/spec/preset/upstream-ownership.md": (
-                "Final Ownership Categories",
-                "Frozen 43-Path History",
+                "Current Guru Ownership Contract",
+                "Current Manifest Boundary",
             ),
             REPO / ".trellis/spec/preset/installer.md": (
-                "Removed Upstream Overlay Migration",
+                "Current Ownership Gate",
                 "Task Finalization Package Activation",
             ),
         }
@@ -2820,7 +2818,7 @@ class SourceValidationTests(unittest.TestCase):
             "unknown-exit": (lambda value: value["evals"][0].__setitem__("expected_exit", "missing"), "eval_expected_exit_unknown"),
             "absolute-file": (lambda value: value["evals"][0].__setitem__("files", ["/tmp/nope"]), "eval_schema_invalid"),
             "missing-file": (lambda value: value["evals"][0].__setitem__("files", ["evals/files/missing.txt"]), "eval_fixture_invalid"),
-            "canonical-expectations": (lambda value: value["evals"][0].__setitem__("expectations", ["legacy"]), "eval_schema_invalid"),
+            "canonical-expectations": (lambda value: value["evals"][0].__setitem__("expectations", ["unsupported"]), "eval_schema_invalid"),
             "unknown-assertion": (lambda value: value["evals"][0]["assertions"]["deterministic"][0].__setitem__("kind", "script"), "eval_schema_invalid"),
             "null-expected": (lambda value: value["evals"][0]["assertions"]["deterministic"][0].__setitem__("expected", None), "eval_schema_invalid"),
         }
@@ -4061,203 +4059,7 @@ class ProductionDistributionTests(unittest.TestCase):
             self.assertEqual(validation["status"], "passed", validation["errors"])
 
 
-class Stage0MigrationManifestTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory()
-        self.repo = Path(self.temp.name) / "repo"
-        self.skills = self.repo / "trellis/skills/guru-team"
-        self.skills.parent.mkdir(parents=True)
-        shutil.copytree(SKILLS_ROOT, self.skills)
-        self.workflow = self.repo / "trellis/workflows/guru-team/workflow.md"
-        self.workflow.parent.mkdir(parents=True)
-        shutil.copyfile(REPO / "trellis/workflows/guru-team/workflow.md", self.workflow)
-        shutil.copyfile(
-            REPO / "trellis/guru-team-extension.json",
-            self.repo / "trellis/guru-team-extension.json",
-        )
-
-    def tearDown(self) -> None:
-        self.temp.cleanup()
-
-    def validate(self) -> dict:
-        return runtime.validate_skill_source(
-            self.skills,
-            self.workflow,
-            boundary_root=self.repo,
-        )
-
-    def read_manifest(self) -> dict:
-        return json.loads(
-            (self.skills / "migrations/stage0-minimal-handoff.json").read_text(encoding="utf-8")
-        )
-
-    def write_manifest(self, payload: dict) -> None:
-        (self.skills / "migrations/stage0-minimal-handoff.json").write_text(
-            json.dumps(payload), encoding="utf-8"
-        )
-
-    def interface_path(self, skill_id: str) -> Path:
-        return self.skills / "packages" / skill_id / "interface.json"
-
-    def read_interface(self, skill_id: str) -> dict:
-        return json.loads(self.interface_path(skill_id).read_text(encoding="utf-8"))
-
-    def write_interface(self, skill_id: str, payload: dict) -> None:
-        self.interface_path(skill_id).write_text(json.dumps(payload), encoding="utf-8")
-
-    def test_frozen_stage0_source_integrity_passes(self) -> None:
-        result = self.validate()
-        self.assertEqual(result["status"], "passed", result["errors"])
-        self.assertNotIn("stage0_activation_unit", result["facts"])
-        self.assertEqual(len(result["facts"]["active_ids"]), 13)
-        self.assertEqual(
-            result["facts"]["production_contract_id"],
-            "production-current-v1",
-        )
-
-    def test_durable_docs_match_current_architecture_and_production_contract(self) -> None:
-        expected_docs = {
-            "trellis/workflows/guru-team/README.md": (
-                "十二条 semantic package handoff"
-            ),
-            "trellis/presets/guru-team/README.md": "共十二条声明 edge",
-            "docs/requirements/README.md": "不是运行时流程 SSOT",
-            "docs/requirements/requirement-main.md": "AI-first Workflow 验收要求",
-            "docs/requirements/guru-team-trellis-flow.md": "非 SSOT 的维护者视图",
-            ".trellis/spec/workflow/skill-package-contract.md": (
-                "The five production semantic edges"
-            ),
-            ".trellis/spec/workflow/companion-scripts.md": (
-                "For the five approved production semantic edges"
-            ),
-            ".trellis/spec/workflow/quality-guidelines.md": (
-                "The twelve `skill_input_authoring_seed` edges"
-            ),
-            ".trellis/spec/preset/installer.md": (
-                "twelve target-owned authoring"
-            ),
-        }
-        for relative, expected in expected_docs.items():
-            with self.subTest(path=relative):
-                self.assertIn(
-                    expected,
-                    (REPO / relative).read_text(encoding="utf-8"),
-                )
-
-        ownership = (
-            REPO / ".trellis/spec/preset/upstream-ownership.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn(
-            "Current Interface 1.3 package semantics and contract identities are owned "
-            "by their canonical packages, not by overlay tombstones.",
-            " ".join(ownership.split()),
-        )
-
-        requirement = (REPO / "docs/requirements/requirement-main.md").read_text(
-            encoding="utf-8"
-        )
-        for phrase in (
-            "Current public input 只允许",
-            "`initial_review|fresh_final_review`",
-            "Closure 不产生 public exit 或 artifact",
-            "7 个有直接 history/recovery consumer",
-            "额外保留 `marketplace-verification.json`",
-        ):
-            self.assertIn(phrase, requirement)
-        for stale_claim in (
-            "agent-assignment.json.review_rounds",
-            "record-subagent-liveness-event.sh",
-            "task-commit-plans/<sequence>.json",
-            "13 Skills/51 exits graph",
-        ):
-            self.assertNotIn(stale_claim, requirement)
-
-        manifest_path = SKILLS_ROOT / "contracts/production-current.json"
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        self.assertEqual(manifest["contract_id"], "production-current-v1")
-        self.assertEqual(
-            manifest["schema_id"],
-            "guru-team-production-contract-manifest-1.0",
-        )
-        self.assertEqual(
-            manifest["skill_ids"],
-            [
-                "guru-approve-task-plan",
-                "guru-check-task",
-                "guru-create-task-commit",
-            ],
-        )
-        self.assertEqual(len(manifest["skills"]), 3)
-        self.assertEqual(
-            sum(
-                len(skill["exit_bindings"])
-                for skill in manifest["skills"]
-            ),
-            11,
-        )
-        self.assertEqual(len(manifest["authoring_seed_edges"]), 4)
-        output_ids = {
-            (skill["id"], binding["exit_id"]): binding["output_schema_id"]
-            for skill in manifest["skills"]
-            for binding in skill["exit_bindings"]
-        }
-        self.assertEqual(
-            output_ids[("guru-approve-task-plan", "approved")],
-            "guru-production-approve-task-plan-output-approved-2.0",
-        )
-        self.assertEqual(
-            output_ids[("guru-check-task", "passed")],
-            "guru-production-check-task-output-passed-3.0",
-        )
-        self.assertEqual(
-            output_ids[("guru-create-task-commit", "committed")],
-            "guru-production-create-task-commit-output-committed-2.0",
-        )
-
-        stage0_v2 = json.loads((
-            SKILLS_ROOT / "migrations/stage0-ai-first-contract-v2.json"
-        ).read_text(encoding="utf-8"))
-        self.assertEqual(
-            [item["skill_id"] for item in stage0_v2["changes"]],
-            [
-                "guru-sync-base",
-                "guru-review-change-request",
-                "guru-create-task-workspace",
-            ],
-        )
-
-    def test_missing_exit_binding_fails_closed(self) -> None:
-        interface = self.read_interface("guru-sync-base")
-        interface["public_contracts"]["outputs"].pop()
-        self.write_interface("guru-sync-base", interface)
-        result = self.validate()
-        self.assertEqual(result["status"], "failed")
-        self.assertTrue(
-            any("output" in item and "guru-sync-base" in item for item in result["errors"]),
-            result["errors"],
-        )
-
-    def test_duplicate_profile_binding_fails_closed(self) -> None:
-        interface = self.read_interface("guru-discover-change-context")
-        profiles = interface["public_contracts"]["input"]["profiles"]
-        profiles.append(dict(profiles[0]))
-        self.write_interface(
-            "guru-discover-change-context",
-            interface,
-        )
-        result = self.validate()
-        self.assertEqual(result["status"], "failed")
-        self.assertTrue(any("repeats profile binding" in item for item in result["errors"]), result["errors"])
-
-    def test_frozen_v1_manifest_mutation_fails_closed(self) -> None:
-        manifest = self.read_manifest()
-        manifest["skills"][0]["exit_bindings"].pop()
-        self.write_manifest(manifest)
-        result = self.validate()
-        self.assertEqual(result["status"], "failed")
-        self.assertIn("frozen Stage 0 v1 migration manifest bytes changed", result["errors"])
-
-class Stage0PublicInvocationTests(unittest.TestCase):
+class IntakePublicInvocationTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.repo = Path(self.temp.name) / "target"
@@ -4832,7 +4634,7 @@ class Stage0PublicInvocationTests(unittest.TestCase):
 
     def test_all_23_stage0_cases_do_not_feed_expected_exit_to_wrappers(self) -> None:
         covered = set()
-        for skill_id in runtime.STAGE0_MIGRATION_SKILL_IDS:
+        for skill_id in runtime.CURRENT_INTAKE_SKILL_IDS:
             package = self.repo / ".trellis/guru-team/skills/packages" / skill_id
             interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
             argv = interface["public_contracts"]["invocation"]["example_argv"]

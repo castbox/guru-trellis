@@ -10,9 +10,8 @@ entries:
 - `.cursor/commands/guru-finish-work.md`.
 
 They are additive platform launchers, not replacements for Trellis upstream
-files. Every former upstream namespace overlay is represented only by an
-`upstream_owned/removed` tombstone in the ownership inventory and must be absent
-from the overlay tree.
+files. The current ownership inventory describes only Guru-owned rules, claims,
+and additive overlays.
 
 Do not add or restore overlays for `trellis-start`, `trellis-continue`,
 `trellis-finish-work`, bundled skills, hooks, sub-agents, channel runtime agents,
@@ -132,9 +131,9 @@ trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --js
 trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 ```
 
-Success requires three overlay files, zero tombstone overlays, exact
-canonical/dogfood bytes, correct executable modes for managed scripts, and no
-unresolved `.new`/`.bak` anywhere in the installed extension surface.
+Success requires exactly three overlay files, no unexpected overlay path,
+exact canonical/dogfood bytes, correct executable modes for managed scripts,
+and no unresolved `.new`/`.bak` anywhere in the installed extension surface.
 
 ## Anti-Patterns
 

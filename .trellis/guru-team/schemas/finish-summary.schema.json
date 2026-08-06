@@ -17,7 +17,7 @@
   "properties": {
     "schema_version": {"const": 1},
     "generated_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
-    "generator": {"enum": ["guru-team.finish-work", "guru-team.finish-summary-backfill"]},
+    "generator": {"const": "guru-team.finish-work"},
     "task": {
       "type": "object",
       "additionalProperties": false,
@@ -26,7 +26,7 @@
         "slug": {"type": "string", "minLength": 1, "maxLength": 200},
         "title": {"type": "string", "minLength": 1, "maxLength": 500},
         "status": {"const": "completed"},
-        "artifact_dir": {"$ref": "#/$defs/optionalSafePath"},
+        "artifact_dir": {"$ref": "#/$defs/safePath"},
         "archive_dir": {"$ref": "#/$defs/safePath"}
       }
     },
@@ -35,8 +35,8 @@
       "additionalProperties": false,
       "required": ["base_branch", "branch", "commits", "changed_paths"],
       "properties": {
-        "base_branch": {"type": "string", "maxLength": 300},
-        "branch": {"type": "string", "maxLength": 300},
+        "base_branch": {"type": "string", "minLength": 1, "maxLength": 300},
+        "branch": {"type": "string", "minLength": 1, "maxLength": 300},
         "commits": {"type": "array", "maxItems": 500, "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9a-f]{40}$"}},
         "changed_paths": {"type": "array", "maxItems": 2000, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}}
       }
@@ -85,33 +85,8 @@
         "search_terms": {"$ref": "#/$defs/searchTerms"},
         "retrieval_text": {"type": "string", "minLength": 1, "maxLength": 3000}
       }
-    },
-    "backfill": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["generated", "generated_at", "source_artifacts", "missing_fields", "confidence"],
-      "properties": {
-        "generated": {"const": true},
-        "generated_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
-        "source_artifacts": {"type": "array", "maxItems": 20, "uniqueItems": true, "items": {"$ref": "#/$defs/taskPath"}},
-        "missing_fields": {"type": "array", "maxItems": 30, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 200}},
-        "confidence": {"enum": ["complete", "partial", "minimal"]}
-      }
     }
   },
-  "allOf": [
-    {
-      "if": {"properties": {"generator": {"const": "guru-team.finish-work"}}},
-      "then": {
-        "not": {"required": ["backfill"]},
-        "properties": {
-          "task": {"properties": {"artifact_dir": {"minLength": 1}}},
-          "git": {"properties": {"base_branch": {"minLength": 1}, "branch": {"minLength": 1}}}
-        }
-      },
-      "else": {"required": ["backfill"]}
-    }
-  ],
   "$defs": {
     "safePath": {
       "type": "string",

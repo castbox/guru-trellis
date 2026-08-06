@@ -42,7 +42,6 @@ DEFAULTS: dict[str, Any] = {
     "base_branch_candidates": ["dev", "develop", "main", "master"],
     "workspace_mode": "worktree",
     "worktree_root": "",
-    "task_start_context_artifact": "task-start-context.json",
     "runtime_root": ".trellis/.runtime/guru-team",
     "marketplace_verification_artifact": "marketplace-verification.json",
     "artifact_language": "zh-CN",
@@ -450,8 +449,6 @@ CLOSEOUT_TRANSITIONS = [
 ]
 FINISH_SUMMARY_SCHEMA_VERSION = 1
 FINISH_SUMMARY_GENERATOR = "guru-team.finish-work"
-FINISH_SUMMARY_BACKFILL_GENERATOR = "guru-team.finish-summary-backfill"
-FINISH_SUMMARY_GENERATORS = {FINISH_SUMMARY_GENERATOR, FINISH_SUMMARY_BACKFILL_GENERATOR}
 FINISH_SUMMARY_SURFACE_KINDS = {
     "workflow", "script", "schema", "preset", "overlay", "skill", "prompt",
     "docs", "test", "config", "task-artifact", "github", "other",
@@ -502,33 +499,6 @@ FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT = {
     "before": "Git 变更路径快照未成功完成。",
     "after": "完成摘要已使用空路径集合，未写入未验证路径。",
     "source_artifact": "",
-}
-FINISH_SUMMARY_BACKFILL_ARCHIVE_GLOB = ".trellis/tasks/archive/**/<task>/"
-FINISH_SUMMARY_BACKFILL_SOURCE_FILES = (
-    "task.json",
-    "issue-scope-ledger.json",
-    "prd.md",
-    "design.md",
-    "implement.md",
-    "review-gate.json",
-    # Historical archives may predate a usable compact review gate. This is a
-    # backfill-only source and is not part of the new human-artifact resolver.
-    "review.md",
-    "phase2-check.json",
-    "pr-body.md",
-    "pr-readiness.json",
-)
-FINISH_SUMMARY_BACKFILL_JSON_FILES = {
-    "task.json",
-    "issue-scope-ledger.json",
-    "review-gate.json",
-    "phase2-check.json",
-    "pr-readiness.json",
-}
-FINISH_SUMMARY_BACKFILL_ARTIFACT_KEYS = {
-    filename: key
-    for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
-    if filename in FINISH_SUMMARY_BACKFILL_SOURCE_FILES
 }
 PR_READINESS_ARTIFACT = "pr-readiness.json"
 PR_BODY_ARTIFACT = "pr-body.md"
@@ -813,110 +783,6 @@ def finish_summary_retrieval_text(task_title: str, index: dict[str, Any]) -> str
     return "\n".join(value.strip() for value in values if value.strip())
 
 
-def finish_summary_backfill_retrieval_boundary_allowed(
-    generator: Any,
-    task: dict[str, Any],
-    index: dict[str, Any],
-    *,
-    task_dir: Path | None = None,
-) -> bool:
-    if generator != FINISH_SUMMARY_BACKFILL_GENERATOR:
-        return False
-    title = task.get("title")
-    problem = index.get("problem")
-    retrieval = index.get("retrieval_text")
-    if not all(isinstance(value, str) for value in [title, problem, retrieval]):
-        return False
-    if retrieval != finish_summary_retrieval_text(title, index):
-        return False
-
-    values: list[str] = [title, problem, str(index.get("outcome") or "")]
-    changed_behavior = index.get("changed_behavior")
-    if isinstance(changed_behavior, list):
-        values.extend(str(item) for item in changed_behavior if isinstance(item, str))
-    surfaces = index.get("affected_surfaces")
-    if isinstance(surfaces, list):
-        values.extend(
-            str(item["change"])
-            for item in surfaces
-            if isinstance(item, dict) and isinstance(item.get("change"), str)
-        )
-    contracts = index.get("contract_changes")
-    if isinstance(contracts, list):
-        for item in contracts:
-            if isinstance(item, dict):
-                values.extend(
-                    str(item[key])
-                    for key in ["before", "after"]
-                    if isinstance(item.get(key), str)
-                )
-    search_terms = index.get("search_terms")
-    if isinstance(search_terms, dict) and isinstance(search_terms.get("phrases"), list):
-        values.extend(
-            str(item)
-            for item in search_terms["phrases"]
-            if isinstance(item, str)
-        )
-    values = [value.strip() for value in values if value.strip()]
-    if any("\n" in value or "\r" in value for value in values):
-        return False
-    if retrieval.splitlines() != values:
-        return False
-
-    removable_indexes: set[int] = set()
-    fallback = f"{title}；旧行为：历史 artifact 未记录。"
-    if (
-        problem == fallback
-        and len(values) >= 2
-        and values[:2] == [title, fallback]
-        and backfill_phrase_clauses(values[0])[-1:] == backfill_phrase_clauses(values[1])[:1]
-    ):
-        removable_indexes.add(0)
-
-    if (
-        len(values) >= 4
-        and values[2] == values[3]
-        and finish_summary_backfill_pr_body_list_outcome(task_dir, index)
-    ):
-        removable_indexes.add(3)
-
-    if not removable_indexes:
-        return False
-    remaining_errors = finish_summary_text_errors(
-        "\n".join(value for position, value in enumerate(values) if position not in removable_indexes),
-        "index.retrieval_text",
-        1,
-        3000,
-    )
-    return "index.retrieval_text contains adjacent duplicate clauses." not in remaining_errors
-
-
-def finish_summary_backfill_pr_body_list_outcome(
-    task_dir: Path | None,
-    index: dict[str, Any],
-) -> bool:
-    if task_dir is None:
-        return False
-    sources, _source_artifacts, source_errors = load_finish_summary_backfill_sources(task_dir)
-    if source_errors:
-        return False
-    review_gate = sources.get("review-gate.json") if isinstance(sources.get("review-gate.json"), dict) else {}
-    pr_body = sources.get("pr-body.md") if isinstance(sources.get("pr-body.md"), str) else ""
-    higher_priority = [
-        backfill_clean_text(review_gate.get("summary") or review_gate.get("conclusion"), 500),
-    ]
-    pr_body_section = backfill_markdown_section(pr_body, ("变更摘要",))
-    if any(higher_priority) or backfill_first_paragraph(pr_body_section, 500):
-        return False
-    list_items = backfill_list_items(pr_body_section)
-    changed_behavior = index.get("changed_behavior")
-    return bool(
-        list_items
-        and index.get("outcome") == list_items[0]
-        and changed_behavior == list_items
-    )
-
-
 def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None = None, final: bool) -> list[str]:
     if not isinstance(index, dict):
         return ["index must be an object."]
@@ -1103,651 +969,6 @@ def finish_summary_artifacts(task_dir: Path) -> dict[str, str]:
     }
 
 
-def backfill_clean_text(value: Any, maximum: int) -> str:
-    if not isinstance(value, str):
-        return ""
-    cleaned = re.sub(r"\s+", " ", value).strip()
-    return cleaned[:maximum].rstrip()
-
-
-def backfill_unique_text(values: list[str], maximum_items: int) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        if not value:
-            continue
-        identity = finish_summary_normalized_text(value)
-        if not identity or identity in seen:
-            continue
-        seen.add(identity)
-        result.append(value)
-        if len(result) == maximum_items:
-            break
-    return result
-
-
-def backfill_phrase_clauses(value: str) -> list[str]:
-    return [
-        finish_summary_normalized_text(part)
-        for part in re.split(r"[。！？!?；;，,\n]+", value)
-        if finish_summary_normalized_text(part)
-    ]
-
-
-def backfill_text_is_safe(value: str) -> bool:
-    return bool(value) and not any(marker in value for marker in FINISH_SUMMARY_FORBIDDEN_TEXT)
-
-
-def backfill_os_error_reason(exc: OSError) -> str:
-    detail = backfill_clean_text(exc.strerror or "filesystem operation failed", 300)
-    return f"{type(exc).__name__}: {detail}"
-
-
-def backfill_markdown_section(text: str, headings: tuple[str, ...]) -> list[str]:
-    lines = text.splitlines()
-    wanted = {heading.casefold() for heading in headings}
-    start = -1
-    level = 0
-    for index, line in enumerate(lines):
-        match = re.match(r"^(#{1,6})\s+(.+?)\s*$", line)
-        if match and match.group(2).strip().casefold() in wanted:
-            start = index + 1
-            level = len(match.group(1))
-            break
-    if start < 0:
-        return []
-    result: list[str] = []
-    for line in lines[start:]:
-        match = re.match(r"^(#{1,6})\s+", line)
-        if match and len(match.group(1)) <= level:
-            break
-        result.append(line)
-    return result
-
-
-def backfill_first_paragraph(lines: list[str], maximum: int) -> str:
-    paragraph: list[str] = []
-    for raw in lines:
-        line = raw.strip()
-        if not line:
-            if paragraph:
-                break
-            continue
-        if line.startswith(("|", "```", ">")) or re.match(r"^(?:[-*+] |\d+\. )", line):
-            if paragraph:
-                break
-            continue
-        paragraph.append(line)
-    return backfill_clean_text(" ".join(paragraph), maximum)
-
-
-def backfill_list_items(lines: list[str], maximum_items: int = 12) -> list[str]:
-    values: list[str] = []
-    for raw in lines:
-        match = re.match(r"^\s*(?:[-*+]|\d+\.)\s+(?:\[[ xX]\]\s*)?(.+?)\s*$", raw)
-        if match:
-            value = backfill_clean_text(match.group(1), 180)
-            if value:
-                values.append(value)
-    return backfill_unique_text(values, maximum_items)
-
-
-def backfill_completed_checklist(text: str) -> list[str]:
-    values = [
-        backfill_clean_text(match.group(1), 180)
-        for line in text.splitlines()
-        if (match := re.match(r"^\s*[-*+]\s+\[[xX]\]\s+(.+?)\s*$", line))
-    ]
-    return backfill_unique_text(values, 12)
-
-
-def backfill_contract_table(design_text: str) -> list[dict[str, str]]:
-    lines = backfill_markdown_section(design_text, ("合同变化", "Contract Changes"))
-    for index in range(len(lines) - 1):
-        header = lines[index].strip()
-        separator = lines[index + 1].strip()
-        if not (header.startswith("|") and separator.startswith("|")):
-            continue
-        columns = [column.strip().casefold() for column in header.strip("|").split("|")]
-        if columns != ["contract", "before", "after", "source_artifact"]:
-            continue
-        if not all(re.fullmatch(r":?-{3,}:?", cell.strip()) for cell in separator.strip("|").split("|")):
-            continue
-        rows: list[dict[str, str]] = []
-        for raw in lines[index + 2:]:
-            if not raw.strip().startswith("|"):
-                break
-            cells = [cell.strip() for cell in raw.strip().strip("|").split("|")]
-            if len(cells) != 4:
-                break
-            row = {
-                "contract": backfill_clean_text(cells[0], 200),
-                "before": backfill_clean_text(cells[1], 400),
-                "after": backfill_clean_text(cells[2], 400),
-                "source_artifact": backfill_clean_text(cells[3], 500),
-            }
-            if all(row[key] for key in ["contract", "before", "after"]):
-                rows.append(row)
-            if len(rows) == 20:
-                break
-        return rows
-    return []
-
-
-def load_finish_summary_backfill_sources(task_dir: Path) -> tuple[dict[str, Any], list[str], list[dict[str, str]]]:
-    sources: dict[str, Any] = {}
-    source_artifacts: list[str] = []
-    errors: list[dict[str, str]] = []
-    for filename in FINISH_SUMMARY_BACKFILL_SOURCE_FILES:
-        path = task_dir / filename
-        if not path.is_file():
-            continue
-        if path.resolve().parent != task_dir.resolve():
-            errors.append({"artifact": filename, "error": "source artifact symlink escapes the archived task directory"})
-            continue
-        try:
-            text = path.read_text(encoding="utf-8")
-            if filename in FINISH_SUMMARY_BACKFILL_JSON_FILES:
-                value = json.loads(text)
-                if not isinstance(value, dict):
-                    raise ValueError("JSON root must be an object")
-            else:
-                value = text
-        except OSError as exc:
-            errors.append({"artifact": filename, "error": backfill_os_error_reason(exc)})
-            continue
-        except (UnicodeError, json.JSONDecodeError, ValueError) as exc:
-            errors.append({"artifact": filename, "error": str(exc).splitlines()[0]})
-            continue
-        sources[filename] = value
-        source_artifacts.append(filename)
-    return sources, source_artifacts, errors
-
-
-def backfill_issue_number(value: Any) -> int | None:
-    candidate = value.get("number") if isinstance(value, dict) else value
-    if isinstance(candidate, int) and not isinstance(candidate, bool) and candidate > 0:
-        return candidate
-    if isinstance(candidate, str):
-        match = re.search(r"(?:/issues/|#)([1-9][0-9]*)\b", candidate)
-        if not match:
-            match = re.search(r"\bissue\s+#?([1-9][0-9]*)\b", candidate, re.IGNORECASE)
-        if not match:
-            match = re.fullmatch(r"[1-9][0-9]*", candidate.strip())
-        if match:
-            return int(match.group(1))
-    return None
-
-
-def backfill_surface_kind(path: str) -> str:
-    mappings = (
-        ("trellis/workflows/", "workflow"),
-        ("trellis/presets/", "preset"),
-        (".agents/skills/", "skill"),
-        (".codex/", "prompt"),
-        (".claude/", "prompt"),
-        (".cursor/", "prompt"),
-        (".trellis/spec/", "docs"),
-        (".trellis/guru-team/", "script"),
-        (".trellis/tasks/", "task-artifact"),
-    )
-    return next((kind for prefix, kind in mappings if path.startswith(prefix)), "other")
-
-
-def backfill_original_artifact_dir(task_dir: Path, candidates: list[Any]) -> str:
-    for candidate in candidates:
-        if not isinstance(candidate, str):
-            continue
-        value = candidate.strip()
-        if (
-            finish_summary_path_errors(value, "task.artifact_dir") == []
-            and value.startswith(".trellis/tasks/")
-            and not value.startswith(".trellis/tasks/archive/")
-            and Path(value).name == task_dir.name
-        ):
-            return value
-    return ""
-
-
-def backfill_affected_surfaces(changed_paths: list[str], title: str) -> list[dict[str, Any]]:
-    if not changed_paths:
-        return [{
-            "kind": "task-artifact",
-            "name": title[:200],
-            "paths": [],
-            "change": "历史 artifact 未记录 changed_paths；该条目只提供基础检索入口。",
-        }]
-    grouped: dict[str, list[str]] = {}
-    for path in changed_paths:
-        grouped.setdefault(backfill_surface_kind(path), []).append(path)
-    surfaces: list[dict[str, Any]] = []
-    for kind in sorted(grouped):
-        paths = sorted(set(grouped[kind]))
-        chunks = [paths[index:index + 100] for index in range(0, len(paths), 100)]
-        for chunk_index, chunk in enumerate(chunks, start=1):
-            suffix = f"-{chunk_index}" if len(chunks) > 1 else ""
-            surfaces.append({
-                "kind": kind,
-                "name": f"{kind}{suffix}",
-                "paths": chunk,
-                "change": f"历史归档 task 修改了 {kind} 类路径（第 {chunk_index} 批）。",
-            })
-    if len(surfaces) > 20:
-        raise WorkflowError(
-            "affected_surfaces would exceed the schema limit without truncating paths.",
-            payload={"surface_count": len(surfaces)},
-        )
-    return surfaces
-
-
-def backfill_search_terms(
-    task_title: str,
-    task_slug: str,
-    problem: str,
-    outcome: str,
-    changed_behavior: list[str],
-    surfaces: list[dict[str, Any]],
-    source_artifacts: list[str],
-    changed_paths: list[str],
-) -> dict[str, list[str]]:
-    source_text = "\n".join([
-        task_title,
-        *changed_behavior,
-        *(str(surface["change"]) for surface in surfaces),
-    ])
-    commands = re.findall(r"(?<![\w/])[A-Za-z0-9_./-]+\.(?:sh|py)\b", source_text)
-    commands.extend(
-        token
-        for token in re.findall(r"`([^`\s]+)`", source_text)
-        if re.fullmatch(r"[A-Za-z0-9_.:/-]+", token) and any(char in token for char in "-/")
-    )
-    config_keys: list[str] = []
-    if re.search(r"config|配置", source_text, re.IGNORECASE):
-        config_keys = re.findall(r"\b[A-Za-z][A-Za-z0-9]*(?:[._][A-Za-z0-9_]+)+\b", source_text)
-    schema_fields = [
-        token
-        for token in re.findall(r"\b[A-Za-z0-9_./:-]+\b", source_text)
-        if re.search(r"json|schema|[:.]", token, re.IGNORECASE)
-    ]
-    symbols = [task_slug, *source_artifacts, *(Path(path).name for path in changed_paths)]
-    phrases = backfill_unique_text([
-        backfill_clean_text(task_title, 60),
-        backfill_clean_text(task_slug, 60),
-    ], 40)
-    exact_fallbacks = [
-        (problem, f"{task_title}；旧行为：历史 artifact 未记录。"),
-        (outcome, f"{task_title}；非目标：历史 artifact 未记录。"),
-    ]
-    for value, exact_fallback in exact_fallbacks:
-        candidate = backfill_clean_text(value, 60)
-        candidate_clauses = backfill_phrase_clauses(candidate)
-        previous_clauses = backfill_phrase_clauses(phrases[-1]) if phrases else []
-        if (
-            value == exact_fallback
-            and candidate_clauses
-            and previous_clauses
-            and candidate_clauses[0] == previous_clauses[-1]
-        ):
-            continue
-        phrases = backfill_unique_text([*phrases, candidate], 40)
-    phrases = backfill_unique_text([
-        *phrases,
-        *(backfill_clean_text(value, 60) for value in changed_behavior),
-    ], 40)
-    if len(phrases) < 3:
-        phrases = backfill_unique_text([
-            *phrases,
-            backfill_clean_text(task_slug, 60),
-            backfill_clean_text(task_title, 60),
-            "历史归档 task",
-        ], 40)
-    if not any(marker in phrase for marker in FINISH_SUMMARY_COMPLETION_MARKERS for phrase in phrases):
-        phrases = backfill_unique_text([*phrases, "历史归档 task 已完成"], 40)
-    return {
-        "commands": sorted(backfill_unique_text([backfill_clean_text(value, 200) for value in commands], 100)),
-        "config_keys": sorted(backfill_unique_text([backfill_clean_text(value, 200) for value in config_keys], 100)),
-        "schema_fields": sorted(backfill_unique_text([backfill_clean_text(value, 300) for value in schema_fields], 100)),
-        "symbols": sorted(backfill_unique_text([backfill_clean_text(value, 300) for value in symbols], 100)),
-        "phrases": phrases,
-    }
-
-
-def build_finish_summary_backfill(
-    root: Path,
-    task_dir: Path,
-    sources: dict[str, Any],
-    source_artifacts: list[str],
-) -> dict[str, Any]:
-    task = sources.get("task.json") if isinstance(sources.get("task.json"), dict) else {}
-    ledger = sources.get("issue-scope-ledger.json") if isinstance(sources.get("issue-scope-ledger.json"), dict) else {}
-    review_gate = sources.get("review-gate.json") if isinstance(sources.get("review-gate.json"), dict) else {}
-    legacy_review = sources.get("review.md") if isinstance(sources.get("review.md"), str) else ""
-    phase2 = sources.get("phase2-check.json") if isinstance(sources.get("phase2-check.json"), dict) else {}
-    readiness = sources.get("pr-readiness.json") if isinstance(sources.get("pr-readiness.json"), dict) else {}
-    prd = sources.get("prd.md") if isinstance(sources.get("prd.md"), str) else ""
-    design = sources.get("design.md") if isinstance(sources.get("design.md"), str) else ""
-    implement = sources.get("implement.md") if isinstance(sources.get("implement.md"), str) else ""
-    pr_body = sources.get("pr-body.md") if isinstance(sources.get("pr-body.md"), str) else ""
-    missing: list[str] = []
-
-    artifact_dir = backfill_original_artifact_dir(task_dir, [
-        task.get("artifact_dir"),
-        task.get("task_artifact_dir"),
-        review_gate.get("task_dir"),
-        phase2.get("task_dir"),
-    ])
-
-    prd_heading = next((match.group(1).strip() for line in prd.splitlines() if (match := re.match(r"^#\s+(.+)$", line))), "")
-    title = backfill_clean_text(task.get("title") or task.get("name") or prd_heading or task_dir.name, 500)
-    problem = next((value for value in [
-        backfill_first_paragraph(backfill_markdown_section(prd, ("问题",)), 400),
-        backfill_first_paragraph(backfill_markdown_section(prd, ("背景",)), 400),
-        backfill_first_paragraph(backfill_markdown_section(prd, ("目标",)), 400),
-        backfill_clean_text(task.get("description"), 400),
-    ] if backfill_text_is_safe(value)), f"{title}；旧行为：历史 artifact 未记录。")
-    pr_body_summary = backfill_markdown_section(pr_body, ("变更摘要",))
-    pr_body_paragraph = backfill_first_paragraph(pr_body_summary, 500)
-    pr_body_list_items = backfill_list_items(pr_body_summary)
-    pr_body_list_outcome = pr_body_list_items[0] if not pr_body_paragraph and pr_body_list_items else ""
-    outcome_fallback = f"{title}；非目标：历史 artifact 未记录。"
-    outcome = next((value for value in [
-        backfill_clean_text(review_gate.get("summary") or review_gate.get("conclusion"), 500),
-        backfill_first_paragraph(backfill_markdown_section(legacy_review, ("结论",)), 500),
-        pr_body_paragraph,
-        pr_body_list_outcome,
-    ] if backfill_text_is_safe(value)), outcome_fallback)
-    behavior_sources = [
-        backfill_list_items(backfill_markdown_section(pr_body, ("变更摘要",))),
-        backfill_completed_checklist(implement),
-    ]
-    changed_behavior = next(
-        (values for values in behavior_sources if values and all(backfill_text_is_safe(value) for value in values)),
-        [backfill_clean_text(f"历史归档 task 已完成：{title}。", 180)],
-    )
-
-    base_branch = backfill_clean_text(task.get("base_branch") or review_gate.get("base_branch"), 300)
-    branch = backfill_clean_text(task.get("branch") or review_gate.get("branch"), 300)
-    if not base_branch:
-        missing.append("git.base_branch")
-    if not branch:
-        missing.append("git.branch")
-    commits: list[str] = []
-    task_commit = task.get("commit")
-    review_head = review_gate.get("head")
-    readiness_commits = readiness.get("commits")
-    if task_commit is not None and task_commit != "":
-        if not isinstance(task_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", task_commit):
-            raise WorkflowError("invalid task.json commit source")
-        commits = [task_commit]
-    elif review_head is not None and review_head != "":
-        if not isinstance(review_head, str) or not re.fullmatch(r"[0-9a-f]{40}", review_head):
-            raise WorkflowError("invalid review-gate.json head source")
-        commits = [review_head]
-    elif readiness_commits is not None:
-        if not isinstance(readiness_commits, list) or any(
-            not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value)
-            for value in readiness_commits
-        ):
-            raise WorkflowError("invalid pr-readiness.json commits source")
-        commits = sorted(set(readiness_commits))
-    if not commits:
-        missing.append("git.commits")
-
-    raw_paths = review_gate.get("changed_files")
-    if not isinstance(raw_paths, list):
-        raw_paths = phase2.get("changed_files")
-    if not isinstance(raw_paths, list):
-        raw_paths = readiness.get("changed_paths")
-    if raw_paths is None:
-        changed_paths = []
-    elif not isinstance(raw_paths, list):
-        raise WorkflowError("invalid changed path source", payload={"errors": ["git.changed_paths must be an array"]})
-    else:
-        changed_paths, _protected_filtered = sanitize_finish_summary_git_paths(raw_paths)
-    if not changed_paths:
-        missing.append("git.changed_paths")
-
-    github = {key: finish_summary_issue_numbers(ledger, key) for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]}
-    if not github["source_issues"]:
-        fallback_issue = backfill_issue_number(task.get("source_issue")) or backfill_issue_number(task.get("issue"))
-        if fallback_issue:
-            github["source_issues"] = [fallback_issue]
-    for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]:
-        if not github[key]:
-            missing.append(f"github.{key}")
-    pr_url = backfill_clean_text(readiness.get("pr_url") or task.get("pr_url"), 1000)
-    if pr_url and not re.fullmatch(r"https://github\.com/[^/]+/[^/]+/pull/[1-9][0-9]*", pr_url):
-        raise WorkflowError("invalid github.pr_url source")
-    if not pr_url:
-        missing.append("github.pr_url")
-    github["pr_url"] = pr_url
-
-    surfaces = backfill_affected_surfaces(changed_paths, title)
-    search_terms = backfill_search_terms(
-        title, task_dir.name, problem, outcome, changed_behavior, surfaces,
-        source_artifacts, changed_paths,
-    )
-    issue_numbers = sorted({number for key in ["source_issues", "close_issues", "related_issues", "followup_issues"] for number in github[key]})
-    pr_match = re.search(r"/pull/([1-9][0-9]*)$", pr_url)
-    search_terms = {
-        "issue_refs": [f"#{number}" for number in issue_numbers],
-        "pr_refs": [f"PR #{pr_match.group(1)}"] if pr_match else [],
-        "branches": [branch] if branch else [],
-        "paths": changed_paths,
-        **search_terms,
-    }
-    artifacts = {
-        FINISH_SUMMARY_BACKFILL_ARTIFACT_KEYS[filename]: filename
-        for filename in source_artifacts
-        if filename in FINISH_SUMMARY_BACKFILL_ARTIFACT_KEYS
-    }
-    contracts = backfill_contract_table(design)
-    index = {
-        "problem": problem,
-        "outcome": outcome,
-        "changed_behavior": changed_behavior,
-        "affected_surfaces": surfaces,
-        "contract_changes": contracts,
-        "search_terms": search_terms,
-    }
-    index["retrieval_text"] = finish_summary_retrieval_text(title, index)
-    if not artifact_dir:
-        missing.append("task.artifact_dir")
-    problem_fallback = f"{title}；旧行为：历史 artifact 未记录。"
-    behavior_fallback = [backfill_clean_text(f"历史归档 task 已完成：{title}。", 180)]
-    has_semantic_source = any([
-        artifact_dir,
-        base_branch,
-        branch,
-        commits,
-        changed_paths,
-        *(github[key] for key in ["source_issues", "close_issues", "related_issues", "followup_issues"]),
-        pr_url,
-        problem != problem_fallback,
-        outcome != outcome_fallback,
-        changed_behavior != behavior_fallback,
-        contracts,
-    ])
-    complete = all([
-        "task.json" in sources,
-        "issue-scope-ledger.json" in sources,
-        "review-gate.json" in sources or "pr-readiness.json" in sources,
-        branch,
-        changed_paths,
-        github["source_issues"],
-        pr_url,
-    ])
-    confidence = "complete" if complete else ("partial" if has_semantic_source else "minimal")
-    generated_at = now_iso()
-    payload = {
-        "schema_version": FINISH_SUMMARY_SCHEMA_VERSION,
-        "generated_at": generated_at,
-        "generator": FINISH_SUMMARY_BACKFILL_GENERATOR,
-        "task": {
-            "slug": task_dir.name,
-            "title": title,
-            "status": "completed",
-            "artifact_dir": artifact_dir,
-            "archive_dir": repo_relative(root, task_dir),
-        },
-        "git": {
-            "base_branch": base_branch,
-            "branch": branch,
-            "commits": commits,
-            "changed_paths": changed_paths,
-        },
-        "github": github,
-        "artifacts": artifacts,
-        "index": index,
-        "backfill": {
-            "generated": True,
-            "generated_at": generated_at,
-            "source_artifacts": sorted(source_artifacts),
-            "missing_fields": sorted(set(missing)),
-            "confidence": confidence,
-        },
-    }
-    errors = finish_summary_errors(payload, task_dir=task_dir)
-    if errors:
-        raise WorkflowError("Generated backfill finish-summary validation failed.", payload={"errors": errors})
-    return payload
-
-
-def resolve_finish_summary_backfill_task(root: Path, value: str) -> Path:
-    if not value or "\\" in value:
-        raise WorkflowError("--task must be a clean repo-relative archived task directory.", exit_code=2)
-    if any(segment in {"", ".", ".."} for segment in value.split("/")):
-        raise WorkflowError("--task must be a clean repo-relative archived task directory.", exit_code=2)
-    raw = Path(value)
-    if raw.is_absolute() or any(part in {"", ".", ".."} for part in raw.parts):
-        raise WorkflowError("--task must be a clean repo-relative archived task directory.", exit_code=2)
-    archive_root = (root / ".trellis/tasks/archive").resolve()
-    resolved = (root / raw).resolve()
-    try:
-        relative = resolved.relative_to(archive_root)
-    except ValueError as exc:
-        raise WorkflowError("--task must be below .trellis/tasks/archive/.", exit_code=2) from exc
-    if not relative.parts or resolved == archive_root or not resolved.is_dir():
-        raise WorkflowError("--task must name an existing archived task directory.", exit_code=2)
-    if not finish_summary_backfill_task_root_marker(resolved):
-        raise WorkflowError("--task must name an archived task root with a direct task marker.", exit_code=2)
-    ancestor = resolved.parent
-    while ancestor != archive_root:
-        if finish_summary_backfill_task_root_marker(ancestor):
-            raise WorkflowError("--task must not name a subdirectory of another archived task root.", exit_code=2)
-        ancestor = ancestor.parent
-    return resolved
-
-
-def finish_summary_backfill_task_root_marker(path: Path) -> bool:
-    for marker in (*FINISH_SUMMARY_BACKFILL_SOURCE_FILES, FINISH_SUMMARY_ARTIFACT):
-        candidate = path / marker
-        if candidate.is_file() and candidate.resolve().parent == path.resolve():
-            return True
-    return False
-
-
-def discover_finish_summary_backfill_tasks(root: Path) -> list[Path]:
-    archive_root = root / ".trellis/tasks/archive"
-    tasks: list[Path] = []
-    for current, dirs, _files in os.walk(archive_root, topdown=True, followlinks=False):
-        path = Path(current)
-        dirs[:] = sorted(name for name in dirs if not (path / name).is_symlink())
-        if path == archive_root:
-            continue
-        if finish_summary_backfill_task_root_marker(path):
-            tasks.append(path.resolve())
-            dirs.clear()
-    return sorted(tasks)
-
-
-def render_finish_summary_backfill_table(payload: dict[str, Any]) -> str:
-    lines = [
-        f"mode: {payload['mode']}",
-        f"archive_glob: {payload['archive_glob']}",
-        f"scanned_tasks: {payload['scanned_tasks']}",
-        "STATUS\tARCHIVE_DIR\tTARGET/REASON\tSOURCE_ARTIFACTS\tMISSING_FIELDS\tCONFIDENCE",
-    ]
-    for item in payload["to_write"]:
-        source_artifacts = ",".join(item["source_artifacts"]) or "-"
-        missing_fields = ",".join(item["missing_fields"]) or "-"
-        lines.append(
-            f"to_write\t{item['archive_dir']}\t{item['target']}\t"
-            f"{source_artifacts}\t{missing_fields}\t{item['confidence']}"
-        )
-    for item in payload["skipped"]:
-        lines.append(f"skipped\t{item['archive_dir']}\t{item['reason']}\t-\t-\t-")
-    if payload["errors"]:
-        lines.append("ERRORS")
-        for item in payload["errors"]:
-            artifact = f"/{item['artifact']}" if item.get("artifact") else ""
-            lines.append(f"{item['archive_dir']}{artifact}: {item['error']}")
-    return "\n".join(lines)
-
-
-def cmd_backfill_finish_summary(args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(Path(args.root or os.getcwd()))
-    git_root = run(["git", "rev-parse", "--show-toplevel"], cwd=root, check=False)
-    if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != root.resolve():
-        raise WorkflowError("--root must be a Git repository root.", exit_code=2)
-    archive_root = root / ".trellis/tasks/archive"
-    if not archive_root.is_dir() or archive_root.is_symlink():
-        raise WorkflowError("archive root not found: .trellis/tasks/archive", exit_code=2)
-    if args.force and not args.write:
-        raise WorkflowError("--force requires --write.", exit_code=2)
-    tasks = [resolve_finish_summary_backfill_task(root, args.task)] if args.task else discover_finish_summary_backfill_tasks(root)
-    result: dict[str, Any] = {
-        "mode": "write" if args.write else "dry-run",
-        "archive_glob": FINISH_SUMMARY_BACKFILL_ARCHIVE_GLOB,
-        "scanned_tasks": len(tasks),
-        "to_write": [],
-        "skipped": [],
-        "errors": [],
-    }
-    for task_dir in tasks:
-        archive_dir = repo_relative(root, task_dir)
-        target = task_dir / FINISH_SUMMARY_ARTIFACT
-        if target.exists() and not args.force:
-            result["skipped"].append({"archive_dir": archive_dir, "reason": "finish-summary exists"})
-            continue
-        sources, source_artifacts, source_errors = load_finish_summary_backfill_sources(task_dir)
-        result["errors"].extend({"archive_dir": archive_dir, **item} for item in source_errors)
-        try:
-            payload = build_finish_summary_backfill(root, task_dir, sources, source_artifacts)
-        except WorkflowError as exc:
-            detail = "; ".join(str(item) for item in exc.payload.get("errors", [])) or str(exc)
-            result["errors"].append({"archive_dir": archive_dir, "artifact": "", "error": detail})
-            continue
-        preview = {
-            "archive_dir": archive_dir,
-            "target": repo_relative(root, target),
-            "source_artifacts": payload["backfill"]["source_artifacts"],
-            "missing_fields": payload["backfill"]["missing_fields"],
-            "confidence": payload["backfill"]["confidence"],
-        }
-        if args.write:
-            try:
-                write_json(target, payload)
-                validate_finish_summary(read_json(target), task_dir=task_dir)
-            except OSError as exc:
-                result["errors"].append({
-                    "archive_dir": archive_dir,
-                    "artifact": FINISH_SUMMARY_ARTIFACT,
-                    "error": backfill_os_error_reason(exc),
-                })
-                continue
-            except WorkflowError as exc:
-                detail = "; ".join(str(item) for item in exc.payload.get("errors", []))
-                result["errors"].append({
-                    "archive_dir": archive_dir,
-                    "artifact": FINISH_SUMMARY_ARTIFACT,
-                    "error": detail or "post-write finish-summary validation failed",
-                })
-                continue
-        result["to_write"].append(preview)
-    return result
-
-
 def finish_summary_git_output_paths(output: str) -> set[str]:
     values = output.split("\0") if "\0" in output else output.splitlines()
     return {value for value in values if value}
@@ -1859,8 +1080,6 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
         return ["finish-summary must be an object."]
     generator = payload.get("generator")
     expected_keys = {"schema_version", "generated_at", "generator", "task", "git", "github", "artifacts", "index"}
-    if generator == FINISH_SUMMARY_BACKFILL_GENERATOR:
-        expected_keys.add("backfill")
     errors: list[str] = []
     if set(payload) != expected_keys:
         errors.append(f"finish-summary top-level keys must equal {sorted(expected_keys)}.")
@@ -1869,8 +1088,8 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
     generated_at = payload.get("generated_at")
     if not isinstance(generated_at, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", generated_at):
         errors.append("generated_at must be second-precision UTC RFC3339.")
-    if generator not in FINISH_SUMMARY_GENERATORS:
-        errors.append("generator is invalid.")
+    if generator != FINISH_SUMMARY_GENERATOR:
+        errors.append(f"generator must equal {FINISH_SUMMARY_GENERATOR}.")
     task = payload.get("task")
     if not isinstance(task, dict) or set(task) != {"slug", "title", "status", "artifact_dir", "archive_dir"}:
         errors.append("task object keys are invalid.")
@@ -1879,11 +1098,11 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
     errors.extend(finish_summary_text_errors(task.get("title"), "task.title", 1, 500))
     if task.get("status") != "completed":
         errors.append("task.status must be completed.")
-    errors.extend(finish_summary_path_errors(task.get("artifact_dir"), "task.artifact_dir", allow_empty=generator == FINISH_SUMMARY_BACKFILL_GENERATOR))
+    errors.extend(finish_summary_path_errors(task.get("artifact_dir"), "task.artifact_dir"))
     errors.extend(finish_summary_path_errors(task.get("archive_dir"), "task.archive_dir"))
     if task.get("archive_dir") and not str(task.get("archive_dir")).startswith(".trellis/tasks/archive/"):
         errors.append("task.archive_dir must be under .trellis/tasks/archive/.")
-    if generator == FINISH_SUMMARY_GENERATOR and task.get("artifact_dir"):
+    if task.get("artifact_dir"):
         artifact_dir_value = str(task.get("artifact_dir"))
         if not artifact_dir_value.startswith(".trellis/tasks/") or artifact_dir_value.startswith(".trellis/tasks/archive/"):
             errors.append("normal task.artifact_dir must be the original active task path.")
@@ -1899,9 +1118,8 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
     if not isinstance(git, dict) or set(git) != {"base_branch", "branch", "commits", "changed_paths"}:
         errors.append("git object keys are invalid.")
         git = {}
-    minimum_git_text = 0 if generator == FINISH_SUMMARY_BACKFILL_GENERATOR else 1
-    errors.extend(finish_summary_text_errors(git.get("base_branch"), "git.base_branch", minimum_git_text, 300))
-    errors.extend(finish_summary_text_errors(git.get("branch"), "git.branch", minimum_git_text, 300))
+    errors.extend(finish_summary_text_errors(git.get("base_branch"), "git.base_branch", 1, 300))
+    errors.extend(finish_summary_text_errors(git.get("branch"), "git.branch", 1, 300))
     commits = git.get("commits")
     if not isinstance(commits, list) or len(commits) > 500:
         errors.append("git.commits must be an array with at most 500 items.")
@@ -1949,16 +1167,7 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
         if task_dir is not None and not (task_dir / str(path)).is_file():
             errors.append(f"artifacts.{key} does not exist in the archived task.")
     index = payload.get("index") if isinstance(payload.get("index"), dict) else {}
-    index_errors = finish_summary_index_errors(index, artifacts=artifacts, final=True)
-    retrieval_duplicate_error = "index.retrieval_text contains adjacent duplicate clauses."
-    if finish_summary_backfill_retrieval_boundary_allowed(
-        generator,
-        task,
-        index,
-        task_dir=task_dir,
-    ):
-        index_errors = [error for error in index_errors if error != retrieval_duplicate_error]
-    errors.extend(index_errors)
+    errors.extend(finish_summary_index_errors(index, artifacts=artifacts, final=True))
     search_terms = index.get("search_terms") if isinstance(index.get("search_terms"), dict) else {}
     issue_values = sorted({number for key in ["source_issues", "close_issues", "related_issues", "followup_issues"] for number in github.get(key, []) if isinstance(number, int) and not isinstance(number, bool)})
     if search_terms.get("issue_refs") != [f"#{number}" for number in issue_values]:
@@ -1975,54 +1184,6 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
     expected_retrieval = finish_summary_retrieval_text(str(task.get("title") or ""), index)
     if index.get("retrieval_text") != expected_retrieval:
         errors.append("index.retrieval_text must equal the deterministic derived text.")
-    if generator == FINISH_SUMMARY_BACKFILL_GENERATOR:
-        backfill = payload.get("backfill")
-        expected_backfill_keys = {"generated", "generated_at", "source_artifacts", "missing_fields", "confidence"}
-        if not isinstance(backfill, dict) or set(backfill) != expected_backfill_keys:
-            errors.append("backfill object keys are invalid.")
-        else:
-            if backfill.get("generated") is not True:
-                errors.append("backfill.generated must be true.")
-            if not isinstance(backfill.get("generated_at"), str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", backfill["generated_at"]):
-                errors.append("backfill.generated_at must be second-precision UTC RFC3339.")
-            source_artifacts = backfill.get("source_artifacts")
-            errors.extend(
-                finish_summary_string_array_errors(
-                    source_artifacts,
-                    "backfill.source_artifacts",
-                    maximum_items=20,
-                    maximum_length=500,
-                    exact_identity=True,
-                )
-            )
-            if isinstance(source_artifacts, list):
-                for path_index, path in enumerate(source_artifacts):
-                    path_errors = finish_summary_path_errors(
-                        path, f"backfill.source_artifacts[{path_index}]"
-                    )
-                    errors.extend(path_errors)
-                    if (
-                        not path_errors
-                        and task_dir is not None
-                        and isinstance(path, str)
-                        and not (task_dir / path).is_file()
-                    ):
-                        errors.append(
-                            f"backfill.source_artifacts[{path_index}] does not exist in the archived task."
-                        )
-            errors.extend(
-                finish_summary_string_array_errors(
-                    backfill.get("missing_fields"),
-                    "backfill.missing_fields",
-                    maximum_items=30,
-                    maximum_length=200,
-                )
-            )
-            if backfill.get("confidence") not in {"complete", "partial", "minimal"}:
-                errors.append("backfill.confidence is invalid.")
-            missing = backfill.get("missing_fields") if isinstance(backfill.get("missing_fields"), list) else []
-            if not task.get("artifact_dir") and "task.artifact_dir" not in missing:
-                errors.append("backfill.missing_fields must record empty task.artifact_dir.")
     return errors
 
 
@@ -4461,10 +3622,6 @@ def prepare_workspace(
     return mode, workspace_path, True
 
 
-def task_start_context_path(task_dir: Path, config: dict[str, Any]) -> Path:
-    return task_dir / str(config.get("task_start_context_artifact") or DEFAULTS["task_start_context_artifact"])
-
-
 def runtime_root(root: Path, config: dict[str, Any]) -> Path:
     rel = Path(str(config.get("runtime_root") or DEFAULTS["runtime_root"]))
     return rel if rel.is_absolute() else root / rel
@@ -4664,7 +3821,6 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
     extension = payload.get("extension") if isinstance(payload.get("extension"), dict) else {}
     source = payload.get("source") if isinstance(payload.get("source"), dict) else {}
     install = payload.get("install") if isinstance(payload.get("install"), dict) else {}
-    requires = extension.get("requires") if isinstance(extension.get("requires"), dict) else {}
     tested = extension.get("tested") if isinstance(extension.get("tested"), dict) else {}
     return {
         "status": "ok",
@@ -4674,7 +3830,6 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
         "version": extension.get("version"),
         "workflow_template_id": extension.get("workflow_template_id"),
         "target_trellis_cli": extension.get("target_trellis_cli"),
-        "trellis_cli_compatibility": requires.get("trellis_cli"),
         "tested_trellis_cli": tested.get("trellis_cli") if isinstance(tested.get("trellis_cli"), list) else [],
         "installed_at": payload.get("installed_at"),
         "source_repo": source.get("repo"),
@@ -4687,91 +3842,7 @@ def guru_team_extension_payload(root: Path) -> dict[str, Any]:
     }
 
 
-def load_legacy_task_start_context(
-    task_dir: Path,
-    config: dict[str, Any],
-) -> dict[str, Any] | None:
-    path = task_start_context_path(task_dir, config)
-    if not path.exists():
-        return None
-    payload = read_json(path)
-    if payload.get("schema_version") != "1.0":
-        raise WorkflowError(
-            "Legacy task-start-context schema_version must be 1.0.",
-            exit_code=2,
-        )
-
-    def required_text(key: str) -> str:
-        value = str(payload.get(key) or "").strip()
-        if not value:
-            raise WorkflowError(
-                f"Legacy task-start-context identity is missing {key}.",
-                exit_code=2,
-            )
-        return value
-
-    task_artifact_dir = required_text("task_artifact_dir")
-    if (
-        Path(task_artifact_dir).is_absolute()
-        or not re.fullmatch(r"\.trellis/tasks/[^/]+", task_artifact_dir)
-        or Path(task_artifact_dir).name != task_dir.name
-    ):
-        raise WorkflowError(
-            "Legacy task-start-context task identity does not match the selected task.",
-            exit_code=2,
-        )
-    base_head_sha = str(payload.get("base_head_sha") or "").strip()
-    if base_head_sha and not re.fullmatch(r"[0-9a-f]{40}", base_head_sha):
-        raise WorkflowError(
-            "Legacy task-start-context base_head_sha is invalid.",
-            exit_code=2,
-        )
-    source_issue = payload.get("source_issue")
-    source_repo = payload.get("source_repo")
-    ledger_seed = payload.get("issue_scope_ledger_seed")
-    if not isinstance(source_issue, dict):
-        source_issue = {}
-    if not isinstance(source_repo, dict):
-        source_repo = {}
-    if not isinstance(ledger_seed, dict):
-        ledger_seed = {}
-    ledger_path = task_dir / "issue-scope-ledger.json"
-    ledger = read_json(ledger_path) if ledger_path.is_file() else ledger_seed
-    workspace_slug = required_text("workspace_slug")
-    return {
-        "_path": str(path),
-        "_identity_source": "legacy_task_start_context_projection",
-        "schema_version": "legacy-projection-1.0",
-        "source_issue": {
-            key: copy.deepcopy(source_issue[key])
-            for key in ("number", "url", "title", "created_by_workflow")
-            if key in source_issue
-        },
-        "source_repo": {
-            key: copy.deepcopy(source_repo[key])
-            for key in ("repo", "url")
-            if key in source_repo
-        },
-        "task_slug": required_text("task_slug"),
-        "task_title": str(payload.get("task_title") or payload.get("task_slug") or "").strip(),
-        "task_artifact_dir": task_artifact_dir,
-        "task_dir": task_artifact_dir,
-        "branch_name": required_text("branch_name"),
-        "base_branch": required_text("base_branch"),
-        "base_ref": str(payload.get("base_ref") or payload.get("base_branch") or "").strip(),
-        "base_head_sha": base_head_sha,
-        "workspace_slug": workspace_slug,
-        "task_workspace_id": str(payload.get("task_workspace_id") or workspace_slug).strip(),
-        "issue_scope_ledger_seed": copy.deepcopy(ledger_seed),
-        "issue_scope_ledger": copy.deepcopy(ledger),
-    }
-
-
 def load_task_runtime_identity(task_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
-    legacy = load_legacy_task_start_context(task_dir, config)
-    if legacy is not None:
-        return legacy
-
     task_path = task_dir / "task.json"
     if not task_path.is_file() or task_path.is_symlink():
         return {}
@@ -12555,48 +11626,62 @@ def extension_verification_resolved_remote_head(
 
 def extension_verification_ownership_facts(path: Path) -> dict[str, Any]:
     facts: dict[str, Any] = {
-        "frozen_transitional_legacy_count": 0,
-        "new_legacy_entries": [],
+        "current_contract": False,
+        "schema_version": None,
+        "inventory_id": None,
+        "guru_owned_rule_count": 0,
+        "managed_claim_count": 0,
     }
     if not path.is_file() or path.is_symlink():
         return facts
     payload = read_json(path)
-    entries = (
-        payload.get("legacy_entries")
-        if isinstance(payload.get("legacy_entries"), list)
+    rules = payload.get("guru_owned_rules")
+    claims = payload.get("managed_path_claims")
+    overlay_root = path.parent.parent / "overlays"
+    overlay_paths = (
+        sorted(
+            item.relative_to(overlay_root).as_posix()
+            for item in overlay_root.rglob("*")
+            if item.is_file() or item.is_symlink()
+        )
+        if overlay_root.is_dir() and not overlay_root.is_symlink()
         else []
     )
-    frozen_paths = sorted(
-        str(item["path"])
-        for item in entries
-        if isinstance(item, dict)
-        and isinstance(item.get("path"), str)
+    facts.update(
+        {
+            "schema_version": payload.get("schema_version"),
+            "inventory_id": payload.get("inventory_id"),
+            "guru_owned_rule_count": len(rules) if isinstance(rules, list) else 0,
+            "managed_claim_count": len(claims) if isinstance(claims, list) else 0,
+        }
     )
-    transitional_paths = sorted(
-        str(item["path"])
-        for item in entries
-        if isinstance(item, dict)
-        and item.get("category") in {"transitional_legacy", "unclassified"}
-        and isinstance(item.get("path"), str)
+    facts["current_contract"] = (
+        set(payload)
+        == {
+            "schema_version",
+            "inventory_id",
+            "target_trellis_cli",
+            "overlay_root",
+            "guru_owned_rules",
+            "managed_path_claims",
+        }
+        and payload.get("schema_version") == "3.0"
+        and payload.get("inventory_id") == "guru-team-upstream-ownership"
+        and payload.get("target_trellis_cli") == "0.6.5"
+        and payload.get("overlay_root") == "trellis/presets/guru-team/overlays"
+        and isinstance(rules, list)
+        and len(rules) == 11
+        and all(isinstance(item, dict) for item in rules)
+        and isinstance(claims, list)
+        and len(claims) == 9
+        and all(isinstance(item, dict) for item in claims)
+        and overlay_paths
+        == [
+            ".claude/commands/guru/finish-work.md",
+            ".codex/prompts/guru-finish-work.md",
+            ".cursor/commands/guru-finish-work.md",
+        ]
     )
-    facts["frozen_transitional_legacy_count"] = len(transitional_paths)
-    baseline = (
-        payload.get("baseline")
-        if isinstance(payload.get("baseline"), dict)
-        else {}
-    )
-    observed_digest = hashlib.sha256(
-        (("\n".join(frozen_paths) + "\n") if frozen_paths else "").encode(
-            "utf-8"
-        )
-    ).hexdigest()
-    if (
-        baseline.get("frozen_path_count") != len(frozen_paths)
-        or baseline.get("sorted_path_set_sha256") != observed_digest
-    ):
-        facts["new_legacy_entries"] = ["<frozen-inventory-mismatch>"]
-    elif transitional_paths:
-        facts["new_legacy_entries"] = transitional_paths
     return facts
 
 
@@ -12641,8 +11726,11 @@ def extension_verification_execute_facts(
     )
     remote_reviewed_content_sha256: str | None = None
     ownership: dict[str, Any] = {
-        "frozen_transitional_legacy_count": 0,
-        "new_legacy_entries": [],
+        "current_contract": False,
+        "schema_version": None,
+        "inventory_id": None,
+        "guru_owned_rule_count": 0,
+        "managed_claim_count": 0,
     }
     sidecars: list[str] = []
     remote_url = ""
@@ -12829,8 +11917,7 @@ def extension_verification_execute_facts(
                 and content_identity_matches
                 and throwaway_proc.returncode == 0
                 and asset_inventory["complete"]
-                and ownership["frozen_transitional_legacy_count"] == 0
-                and not ownership["new_legacy_entries"]
+                and ownership["current_contract"] is True
                 and not sidecars
                 else "failed"
             )
@@ -13026,6 +12113,11 @@ def extension_verification_semantic_shape_errors(
         if isinstance(execution.get("asset_inventory"), dict)
         else {}
     )
+    ownership = (
+        execution.get("ownership")
+        if isinstance(execution.get("ownership"), dict)
+        else {}
+    )
     if len(command_ids) != len(set(command_ids)):
         errors.append("execution command ids must be unique.")
     if len(capability_ids) != len(set(capability_ids)):
@@ -13082,6 +12174,8 @@ def extension_verification_semantic_shape_errors(
             errors.append(
                 "verified requires a complete matching installed asset inventory."
             )
+        if ownership.get("current_contract") is not True:
+            errors.append("verified requires the current ownership contract.")
         for item in capability_rows:
             if not item.get("command_refs") or not item.get("asset_paths"):
                 errors.append(
@@ -13431,7 +12525,7 @@ SKILL_EVAL_TRACE_INVARIANTS = {
     "evals_not_loaded_by_skill": "evals_not_loaded",
     "private_runtime_not_read_by_agent": "private_runtime_not_read",
 }
-STAGE0_MIGRATION_SKILL_IDS = (
+CURRENT_INTAKE_SKILL_IDS = (
     "guru-sync-base",
     "guru-discover-change-context",
     "guru-clarify-requirements",
@@ -13448,22 +12542,10 @@ BRANCH_REVIEW_SKILL_ID = "guru-review-branch"
 TASK_PUBLICATION_SKILL_ID = "guru-review-task-publication"
 FINALIZE_TASK_SKILL_ID = "guru-finalize-task"
 PUBLIC_CONTRACT_SKILL_IDS = (
-    STAGE0_MIGRATION_SKILL_IDS
+    CURRENT_INTAKE_SKILL_IDS
     + PRODUCTION_CONTRACT_SKILL_IDS
     + (BRANCH_REVIEW_SKILL_ID, TASK_PUBLICATION_SKILL_ID)
 )
-STAGE0_MIGRATION_MANIFEST = Path("migrations/stage0-minimal-handoff.json")
-STAGE0_MIGRATION_SCHEMA = Path("schemas/stage0-migration-manifest.schema.json")
-STAGE0_MIGRATION_SCHEMA_ID = "guru-team-stage0-migration-manifest-1.0"
-STAGE0_MIGRATION_MANIFEST_SHA256 = "0b7d930033bbf6301e7b90bbe9ddcbfa321555c542fbf2e993368f3b2a29aa62"
-STAGE0_AI_FIRST_MIGRATION_MANIFEST = Path("migrations/stage0-ai-first-contract-v2.json")
-STAGE0_AI_FIRST_MIGRATION_SCHEMA = Path(
-    "schemas/stage0-ai-first-contract-migration.schema.json"
-)
-STAGE0_AI_FIRST_MIGRATION_SCHEMA_ID = (
-    "guru-team-stage0-ai-first-contract-migration-1.0"
-)
-STAGE0_AI_FIRST_MIGRATION_ID = "stage0-ai-first-contract-v2"
 PRODUCTION_CONTRACT_MANIFEST = Path("contracts/production-current.json")
 PRODUCTION_CONTRACT_SCHEMA = Path("schemas/production-contract-manifest.schema.json")
 PRODUCTION_CONTRACT_SCHEMA_ID = "guru-team-production-contract-manifest-1.0"
@@ -16443,338 +15525,6 @@ def parse_skill_workflow_markers(
     return invokes, exits, targets
 
 
-def stage0_current_activation_projection(
-    skills_root: Path,
-    interfaces: dict[str, dict[str, Any]],
-    errors: list[str],
-) -> dict[str, Any]:
-    entries: list[dict[str, Any]] = []
-    for skill_id in STAGE0_MIGRATION_SKILL_IDS:
-        interface = interfaces.get(skill_id, {})
-        contracts = interface.get("public_contracts", {})
-        public_input = contracts.get("input", {})
-        input_kind = public_input.get("kind")
-        profile_ids = [
-            str(profile.get("id") or "")
-            for profile in public_input.get("profiles", [])
-            if isinstance(profile, dict)
-        ] if input_kind == "structured_json" else []
-        corpus_path = skills_root / "packages" / skill_id / "evals/evals.json"
-        corpus = skill_read_json(corpus_path, f"Stage 0 eval corpus for {skill_id}", errors)
-        cases = {
-            str(case.get("id") or ""): case
-            for case in corpus.get("evals", [])
-            if isinstance(corpus, dict) and isinstance(case, dict)
-        }
-        outputs = {
-            str(output.get("exit_id") or ""): output
-            for output in contracts.get("outputs", [])
-            if isinstance(output, dict)
-        }
-        projections = {
-            str(projection.get("exit_id") or ""): projection
-            for projection in contracts.get("projections", [])
-            if isinstance(projection, dict)
-        }
-        exits = [
-            str(item.get("id") or "")
-            for item in interface.get("external_exits", [])
-            if isinstance(item, dict)
-        ]
-        entries.append({
-            "id": skill_id,
-            "input_kind": input_kind,
-            "input_profile_ids": profile_ids,
-            "profile_case_bindings": [
-                {
-                    "profile_id": profile_id,
-                    "eval_case_ids": list(cases) if profile_id == "scalar_cli" else [
-                        case_id
-                        for case_id, case in cases.items()
-                        if case.get("input_profile_id") == profile_id
-                    ],
-                }
-                for profile_id in (profile_ids if input_kind == "structured_json" else ["scalar_cli"])
-            ],
-            "exit_bindings": [
-                {
-                    "exit_id": exit_id,
-                    "output_schema_id": (
-                        outputs.get(exit_id, {}).get("schema", {}).get("schema_id")
-                    ),
-                    "consumer_input_id": projections.get(exit_id, {}).get("consumer_input_id"),
-                    "projection_id": projections.get(exit_id, {}).get("id"),
-                    "eval_case_ids": [
-                        case_id
-                        for case_id, case in cases.items()
-                        if case.get("expected_exit") == exit_id
-                    ],
-                }
-                for exit_id in exits
-            ],
-            "private_artifact_ids": [
-                str(artifact.get("id") or "")
-                for artifact in contracts.get("private_artifacts", [])
-                if isinstance(artifact, dict)
-            ],
-            "eval_case_ids": list(cases),
-        })
-    return {
-        "activation_unit_id": STAGE0_AI_FIRST_MIGRATION_ID,
-        "skill_ids": list(STAGE0_MIGRATION_SKILL_IDS),
-        "skills": entries,
-    }
-
-
-def validate_stage0_migration_manifest(
-    skills_root: Path,
-    boundary: Path,
-    active: dict[str, dict[str, Any]],
-    interfaces: dict[str, dict[str, Any]],
-    errors: list[str],
-) -> str | None:
-    schema_path = skills_root / STAGE0_MIGRATION_SCHEMA
-    manifest_path = skills_root / STAGE0_MIGRATION_MANIFEST
-    if skill_lstat_path(
-        boundary, schema_path, "Stage 0 migration manifest schema", errors, kind="file"
-    ) is None:
-        return None
-    if skill_lstat_path(
-        boundary, manifest_path, "Stage 0 migration manifest", errors, kind="file"
-    ) is None:
-        return None
-    schema = skill_read_schema(schema_path, "Stage 0 migration manifest schema", errors)
-    manifest = skill_read_json(manifest_path, "Stage 0 migration manifest", errors)
-    if not isinstance(schema, dict) or not isinstance(manifest, dict):
-        return None
-    if schema.get("$schema") != SKILL_SCHEMA_DIALECT or schema.get("$id") != STAGE0_MIGRATION_SCHEMA_ID:
-        errors.append("Stage 0 migration manifest schema has an incompatible identity")
-        return None
-    schema_errors = skill_json_schema_subset_errors(schema, "Stage 0 migration manifest schema")
-    errors.extend(schema_errors)
-    if not schema_errors:
-        errors.extend(skill_json_schema_validation_errors(
-            manifest, schema, "Stage 0 migration manifest"
-        ))
-    if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != STAGE0_MIGRATION_MANIFEST_SHA256:
-        errors.append("frozen Stage 0 v1 migration manifest bytes changed")
-
-    ai_first_schema_path = skills_root / STAGE0_AI_FIRST_MIGRATION_SCHEMA
-    ai_first_manifest_path = skills_root / STAGE0_AI_FIRST_MIGRATION_MANIFEST
-    if skill_lstat_path(
-        boundary,
-        ai_first_schema_path,
-        "Stage 0 AI-first migration schema",
-        errors,
-        kind="file",
-    ) is None or skill_lstat_path(
-        boundary,
-        ai_first_manifest_path,
-        "Stage 0 AI-first migration manifest",
-        errors,
-        kind="file",
-    ) is None:
-        return None
-    ai_first_schema = skill_read_schema(
-        ai_first_schema_path,
-        "Stage 0 AI-first migration schema",
-        errors,
-    )
-    ai_first_manifest = skill_read_json(
-        ai_first_manifest_path,
-        "Stage 0 AI-first migration manifest",
-        errors,
-    )
-    if (
-        not isinstance(ai_first_schema, dict)
-        or not isinstance(ai_first_manifest, dict)
-        or ai_first_schema.get("$schema") != SKILL_SCHEMA_DIALECT
-        or ai_first_schema.get("$id") != STAGE0_AI_FIRST_MIGRATION_SCHEMA_ID
-    ):
-        errors.append("Stage 0 AI-first migration contract has an incompatible identity")
-        return None
-    ai_first_schema_errors = skill_json_schema_subset_errors(
-        ai_first_schema,
-        "Stage 0 AI-first migration schema",
-    )
-    errors.extend(ai_first_schema_errors)
-    if not ai_first_schema_errors:
-        errors.extend(skill_json_schema_validation_errors(
-            ai_first_manifest,
-            ai_first_schema,
-            "Stage 0 AI-first migration manifest",
-        ))
-    expected_changes = [
-        {
-            "skill_id": "guru-sync-base",
-            "migration": "repo_root and route scalar CLI arguments become optional; omitted values derive the current repository root and repo_change route",
-        },
-        {
-            "skill_id": "guru-review-change-request",
-            "migration": "ready v1 projects to the target-owned execute_reviewed_plan input; current ready output schema is v2",
-        },
-        {
-            "skill_id": "guru-create-task-workspace",
-            "migration": "four v1 mutation profiles collapse to execute_reviewed_plan; cancelled is consumed as a dialogue-local stop before recorder or DTO creation",
-        },
-    ]
-    if ai_first_manifest.get("changes") != expected_changes:
-        errors.append("Stage 0 AI-first migration changes do not match the closed compatibility contract")
-    current_stage0_exit_count = sum(
-        len(interfaces.get(skill_id, {}).get("external_exits", []))
-        for skill_id in STAGE0_MIGRATION_SKILL_IDS
-    )
-    if (
-        ai_first_manifest.get("current_contract")
-        != {
-            "interface_schema_id": "guru-team-skill-interface-1.3",
-            "skill_count": len(STAGE0_MIGRATION_SKILL_IDS),
-            "exit_count": current_stage0_exit_count,
-        }
-        or current_stage0_exit_count != 23
-    ):
-        errors.append("Stage 0 AI-first migration does not bind the current 6-Skill/23-exit closure")
-
-    # The frozen v1 bytes remain historical authority. Validate the live 6/23
-    # package closure from current Interfaces and eval corpora, not by rewriting v1.
-    manifest = stage0_current_activation_projection(skills_root, interfaces, errors)
-
-    expected_skill_ids = list(STAGE0_MIGRATION_SKILL_IDS)
-    if manifest.get("skill_ids") != expected_skill_ids:
-        errors.append("Stage 0 migration manifest skill_ids do not match the ordered activation unit")
-    if manifest.get("activation_unit_id") != STAGE0_AI_FIRST_MIGRATION_ID:
-        errors.append("Stage 0 migration manifest has an unknown activation unit")
-
-    raw_entries = manifest.get("skills")
-    manifest_entries: dict[str, dict[str, Any]] = {}
-    if not isinstance(raw_entries, list):
-        errors.append("Stage 0 migration manifest skills must be an array")
-        raw_entries = []
-    for index, item in enumerate(raw_entries):
-        if not isinstance(item, dict):
-            errors.append(f"Stage 0 migration manifest skill at index {index} is invalid")
-            continue
-        skill_id = str(item.get("id") or "")
-        if skill_id in manifest_entries:
-            errors.append(f"Stage 0 migration manifest repeats skill {skill_id}")
-        manifest_entries[skill_id] = item
-    if list(manifest_entries) != expected_skill_ids:
-        errors.append("Stage 0 migration manifest skill entries do not match the ordered activation unit")
-
-    for skill_id in expected_skill_ids:
-        item = manifest_entries.get(skill_id)
-        interface = interfaces.get(skill_id)
-        if not isinstance(item, dict) or not isinstance(interface, dict):
-            errors.append(f"Stage 0 migration manifest cannot resolve active Interface {skill_id}")
-            continue
-        contracts = interface.get("public_contracts")
-        if not isinstance(contracts, dict):
-            errors.append(f"Stage 0 Interface {skill_id} has no minimal public contracts")
-            continue
-        public_input = contracts.get("input")
-        input_kind = public_input.get("kind") if isinstance(public_input, dict) else None
-        profile_ids = [
-            str(profile.get("id") or "")
-            for profile in public_input.get("profiles", [])
-            if isinstance(profile, dict)
-        ] if input_kind == "structured_json" else []
-        if item.get("input_kind") != input_kind or item.get("input_profile_ids") != profile_ids:
-            errors.append(f"Stage 0 manifest input profiles do not match Interface {skill_id}")
-
-        exits = [
-            str(exit_item.get("id") or "")
-            for exit_item in interface.get("external_exits", [])
-            if isinstance(exit_item, dict)
-        ]
-        outputs = {
-            str(output.get("exit_id") or ""): output
-            for output in contracts.get("outputs", []) if isinstance(output, dict)
-        }
-        projections = {
-            str(projection.get("exit_id") or ""): projection
-            for projection in contracts.get("projections", []) if isinstance(projection, dict)
-        }
-        consumers = {
-            str(consumer.get("id") or ""): consumer
-            for consumer in contracts.get("consumer_inputs", []) if isinstance(consumer, dict)
-        }
-
-        corpus_path = skills_root / "packages" / skill_id / "evals/evals.json"
-        corpus = None
-        if skill_lstat_path(
-            boundary, corpus_path, f"Stage 0 eval corpus for {skill_id}", errors, kind="file"
-        ) is not None:
-            corpus = skill_read_json(corpus_path, f"Stage 0 eval corpus for {skill_id}", errors)
-        cases = {
-            str(case.get("id") or ""): case
-            for case in corpus.get("evals", []) if isinstance(corpus, dict) and isinstance(case, dict)
-        }
-        if item.get("eval_case_ids") != list(cases):
-            errors.append(f"Stage 0 manifest eval cases do not match corpus {skill_id}")
-
-        raw_exit_bindings = item.get("exit_bindings")
-        exit_bindings: dict[str, dict[str, Any]] = {}
-        if isinstance(raw_exit_bindings, list):
-            for binding in raw_exit_bindings:
-                if not isinstance(binding, dict):
-                    continue
-                exit_id = str(binding.get("exit_id") or "")
-                if exit_id in exit_bindings:
-                    errors.append(f"Stage 0 manifest repeats exit binding {skill_id}/{exit_id}")
-                exit_bindings[exit_id] = binding
-        if list(exit_bindings) != exits:
-            errors.append(f"Stage 0 manifest exits do not match Interface {skill_id}")
-        for exit_id in exits:
-            binding = exit_bindings.get(exit_id)
-            output = outputs.get(exit_id)
-            projection = projections.get(exit_id)
-            if not isinstance(binding, dict) or not isinstance(output, dict) or not isinstance(projection, dict):
-                errors.append(f"Stage 0 manifest cannot resolve contract binding {skill_id}/{exit_id}")
-                continue
-            schema_ref = output.get("schema")
-            case_ids = [case_id for case_id, case in cases.items() if case.get("expected_exit") == exit_id]
-            expected_binding = {
-                "exit_id": exit_id,
-                "output_schema_id": schema_ref.get("schema_id") if isinstance(schema_ref, dict) else None,
-                "consumer_input_id": projection.get("consumer_input_id"),
-                "projection_id": projection.get("id"),
-                "eval_case_ids": case_ids,
-            }
-            if binding != expected_binding or not case_ids:
-                errors.append(f"Stage 0 manifest binding does not match Interface/corpus {skill_id}/{exit_id}")
-            if projection.get("consumer_input_id") not in consumers:
-                errors.append(f"Stage 0 manifest projection has unknown consumer input {skill_id}/{exit_id}")
-
-        expected_private = [
-            str(artifact.get("id") or "")
-            for artifact in contracts.get("private_artifacts", []) if isinstance(artifact, dict)
-        ]
-        if item.get("private_artifact_ids") != expected_private:
-            errors.append(f"Stage 0 manifest private artifacts do not match Interface {skill_id}")
-
-        expected_profile_ids = profile_ids if input_kind == "structured_json" else ["scalar_cli"]
-        raw_profile_bindings = item.get("profile_case_bindings")
-        profile_bindings: dict[str, list[str]] = {}
-        if isinstance(raw_profile_bindings, list):
-            for binding in raw_profile_bindings:
-                if not isinstance(binding, dict):
-                    continue
-                profile_id = str(binding.get("profile_id") or "")
-                if profile_id in profile_bindings:
-                    errors.append(f"Stage 0 manifest repeats profile binding {skill_id}/{profile_id}")
-                values = binding.get("eval_case_ids")
-                profile_bindings[profile_id] = list(values) if isinstance(values, list) else []
-        if list(profile_bindings) != expected_profile_ids:
-            errors.append(f"Stage 0 manifest profile bindings do not match Interface {skill_id}")
-        for profile_id in expected_profile_ids:
-            expected_cases = list(cases) if profile_id == "scalar_cli" else [
-                case_id for case_id, case in cases.items() if case.get("input_profile_id") == profile_id
-            ]
-            if profile_bindings.get(profile_id) != expected_cases or not expected_cases:
-                errors.append(f"Stage 0 manifest profile coverage is incomplete for {skill_id}/{profile_id}")
-    return str(manifest.get("activation_unit_id") or "") or None
-
-
 def validate_production_contract_manifest(
     skills_root: Path,
     boundary: Path,
@@ -17099,14 +15849,7 @@ def _validate_skill_source(
                 errors.append(f"extension {field} does not match active package contracts")
 
     production_contract_id = None
-    if set(STAGE0_MIGRATION_SKILL_IDS) & set(active) and not installed_extension:
-        validate_stage0_migration_manifest(
-            skills_root,
-            boundary,
-            active,
-            interfaces,
-            errors,
-        )
+    if set(CURRENT_INTAKE_SKILL_IDS) & set(active) and not installed_extension:
         production_contract_id = validate_production_contract_manifest(
             skills_root,
             boundary,
@@ -17127,19 +15870,19 @@ def _validate_skill_source(
             errors.append(
                 "extension contract_manifests do not publish the current production contract"
             )
-        stage0_ids = set(STAGE0_MIGRATION_SKILL_IDS)
+        intake_ids = set(CURRENT_INTAKE_SKILL_IDS)
         production_ids = set(PRODUCTION_CONTRACT_SKILL_IDS)
-        if stage0_ids & production_ids:
-            errors.append("Stage 0 and production activation manifests overlap")
+        if intake_ids & production_ids:
+            errors.append("current Intake and production Skill groups overlap")
         active_ids = set(active)
-        if not (stage0_ids | production_ids).issubset(active_ids):
-            errors.append("active registry is missing a manifest-owned Skill")
+        if not (intake_ids | production_ids).issubset(active_ids):
+            errors.append("active registry is missing a current contract Skill")
         if any(
             entry.get("interface_schema_id") != "guru-team-skill-interface-1.3"
             for entry in active.values()
         ):
             errors.append("active registry contains an unknown interface schema id")
-        current_active_ids = stage0_ids | production_ids | {
+        current_active_ids = intake_ids | production_ids | {
             BRANCH_REVIEW_SKILL_ID,
             TASK_PUBLICATION_SKILL_ID,
             EXTENSION_VERIFICATION_SKILL_ID,
@@ -17474,7 +16217,7 @@ def _validate_skill_installed(
             Path("tests/test_finish_family_integration.py"),
             finish_integration_test,
         )
-    for shared_root_name in ("schemas", "adapters", "migrations", "contracts"):
+    for shared_root_name in ("schemas", "adapters", "contracts"):
         shared_root = skills_root / shared_root_name
         shared_files = skill_collect_tree_files(
             root,
@@ -18121,7 +16864,7 @@ def stage0_invocation_identity() -> tuple[str, Path]:
         raise stage0_invocation_error(
             "invalid_invocation_identity",
             "invocation",
-            "Invoke one migrated package through its package-local public wrapper.",
+            "Invoke one current active package through its package-local public wrapper.",
             "Public invocation did not receive an audited dispatcher identity.",
         )
     package = Path(package_value)
@@ -20024,7 +18767,7 @@ def skill_eval_public_runtime_target(root: Path) -> Path:
         raise skill_eval_error(
             "eval_runtime_target_invalid",
             "runtime_target",
-            "Install the complete Guru Team preset or provide an absolute explicit compatibility dispatcher.",
+            "Install the complete Guru Team preset or provide an absolute explicit test dispatcher.",
             "Skill eval runner could not resolve an absolute public runtime target.",
         )
     target = Path(os.path.abspath(candidate))
@@ -20036,7 +18779,7 @@ def skill_eval_public_runtime_target(root: Path) -> Path:
         raise skill_eval_error(
             "eval_runtime_target_invalid",
             "runtime_target",
-            "Install the complete Guru Team preset or repair the explicit compatibility dispatcher.",
+            "Install the complete Guru Team preset or repair the explicit test dispatcher.",
             "Skill eval runner public runtime target is missing, unsafe, or not executable.",
         )
     return target
@@ -32269,14 +31012,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Validate finish-work readiness and print planned archive/finish-summary/publish actions without writing files.",
     )
 
-    backfill = sub.add_parser("backfill-finish-summary")
-    backfill.add_argument("--root")
-    backfill.add_argument("--json", action="store_true")
-    mode = backfill.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--dry-run", action="store_true")
-    mode.add_argument("--write", action="store_true")
-    backfill.add_argument("--force", action="store_true")
-    backfill.add_argument("--task")
     return parser
 
 
@@ -32382,15 +31117,10 @@ def main() -> int:
             payload = cmd_format_merge_commit(args)
         elif args.command == "finish-work":
             payload = cmd_finish_work(args)
-        elif args.command == "backfill-finish-summary":
-            payload = cmd_backfill_finish_summary(args)
         else:
             raise WorkflowError(f"Unsupported command: {args.command}")
-        if args.command == "backfill-finish-summary" and not args.json:
-            print(render_finish_summary_backfill_table(payload))
-        else:
-            print(skill_public_json_text(payload, args.command))
-        return 1 if args.command == "backfill-finish-summary" and payload["errors"] else 0
+        print(skill_public_json_text(payload, args.command))
+        return 0
     except WorkflowError as exc:
         if args.command in {"discover-skill-contract", "discover-skill-evals", "run-skill-evals"} and getattr(args, "json", False):
             payload = dict(exc.payload)

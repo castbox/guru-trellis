@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate frozen upstream ownership facts before Guru Team preset mutation."""
+"""Validate the current Guru Team ownership boundary before preset mutation."""
 
 from __future__ import annotations
 
@@ -8,7 +8,9 @@ import ast
 import fnmatch
 import hashlib
 import json
+import os
 import re
+import stat
 import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -20,206 +22,144 @@ EXTENSION_RELATIVE = Path("trellis/guru-team-extension.json")
 INSTALLER_RELATIVE = Path("trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py")
 SKILL_REGISTRY_RELATIVE = Path("trellis/skills/guru-team/registry.json")
 OVERLAY_ROOT_RELATIVE = Path("trellis/presets/guru-team/overlays")
-BASE_COMMIT = "291b57b6c02872320a4dce0626a2f718399b8f56"
-FROZEN_PATH_COUNT = 43
-FROZEN_PATH_SET_SHA256 = "56874019bb93b6669aaeb36b7ca9506aed9127a28ef9f81637ea428a6b0a838b"
-BASELINE_PAYLOAD_AGGREGATE_SHA256 = "c24122c8292ee2e6f7847d69069d5f3536eaa5a66a11434620228fe11cb89658"
-FROZEN_LEGACY_IDENTITY_SHA256 = "1e1faf9ffa95e1cbb1650c4eb9da1ceac035d045be70132b5c0b92ec5ccfc473"
-REVIEWED_LATER_GURU_PAYLOAD_SHA256_BY_PATH = {
-    ".agents/skills/trellis-before-dev/SKILL.md": "ee06cc316cc0efb11a9ec27cc904ade95f1119f453312753608ffa43518997a7",
-    ".agents/skills/trellis-brainstorm/SKILL.md": "1edfffb08342fbf172d0d4875501105ff1eddf37f4bd2f96006a35fe1bcf0419",
-    ".agents/skills/trellis-check/SKILL.md": "2c3979726cbd040d0cd9cab8d376a6302bf02eac8c4ca93de9c96b62bfa64780",
-    ".agents/skills/trellis-continue/SKILL.md": "354bb3904bf4c5bd34f6b930449de94b069f74039232d5b9bf9e8454978e0a4c",
-    ".agents/skills/trellis-finish-work/SKILL.md": "5abd37ad2560adce074be42546f31a74eba7306db2f78194760b01f278295216",
-    ".agents/skills/trellis-start/SKILL.md": "04d6a0555ee90b3c4f5b5fdc123226635a4b3d94081e9e1adf0063f3b6a4d2cc",
-    ".agents/skills/trellis-meta/references/customize-local/change-workflow.md": "6148a8235607036a4e4ac8fce7d22879b2656ee74a9e42dc41195a62af54ea01",
-    ".agents/skills/trellis-meta/references/local-architecture/context-injection.md": "a16f03e9818f2447740aa35793488b80a06a09fcf4dcab1fb19b185973510d15",
-    ".agents/skills/trellis-meta/references/platform-files/agents.md": "c48bbfbaad94c749ac2b5c07bed8f7796a37f061d2777c8583dbacf29dc2b8f6",
-    ".claude/agents/trellis-check.md": "247db26dca2c114c2e3fed21d76495d5b39b5c4b46b3b13395d04f225f79d2e9",
-    ".claude/agents/trellis-implement.md": "44f500d7f196ef37ff727609e1c8bb2fcb396977350a3239bf71b48a0353f4b6",
-    ".claude/commands/trellis/continue.md": "0da2c4b9789726fd6bf8af62202c1a3266c64392351f182f26e166675b25e309",
-    ".claude/commands/trellis/finish-work.md": "a960972cdf848dfdea2c1d49f13cf14e3abd552d53849161d747e621c1085497",
-    ".codex/agents/trellis-check.toml": "792d7cae146239912b15c34cc9c2404e21255c4c6bf83c592171b980c41e995f",
-    ".codex/agents/trellis-implement.toml": "9bc7690be4d70cf3e1277a92c25aa360733a3b826f3adb8d11c1b6a51e0886e2",
-    ".codex/hooks/session-start.py": "f39a7db8812ae43be00428698e2e817a8d0276c8d6f6f078b484d5e26fc5a6c9",
-    ".codex/prompts/trellis-continue.md": "0da2c4b9789726fd6bf8af62202c1a3266c64392351f182f26e166675b25e309",
-    ".codex/prompts/trellis-finish-work.md": "a960972cdf848dfdea2c1d49f13cf14e3abd552d53849161d747e621c1085497",
-    ".codex/prompts/trellis-start.md": "04d6a0555ee90b3c4f5b5fdc123226635a4b3d94081e9e1adf0063f3b6a4d2cc",
-    ".codex/skills/trellis-continue/SKILL.md": "354bb3904bf4c5bd34f6b930449de94b069f74039232d5b9bf9e8454978e0a4c",
-    ".codex/skills/trellis-finish-work/SKILL.md": "5abd37ad2560adce074be42546f31a74eba7306db2f78194760b01f278295216",
-    ".codex/skills/trellis-start/SKILL.md": "04d6a0555ee90b3c4f5b5fdc123226635a4b3d94081e9e1adf0063f3b6a4d2cc",
-    ".cursor/agents/trellis-check.md": "247db26dca2c114c2e3fed21d76495d5b39b5c4b46b3b13395d04f225f79d2e9",
-    ".cursor/agents/trellis-implement.md": "44f500d7f196ef37ff727609e1c8bb2fcb396977350a3239bf71b48a0353f4b6",
-    ".cursor/commands/trellis-continue.md": "0da2c4b9789726fd6bf8af62202c1a3266c64392351f182f26e166675b25e309",
-    ".cursor/commands/trellis-finish-work.md": "a960972cdf848dfdea2c1d49f13cf14e3abd552d53849161d747e621c1085497",
-    ".cursor/hooks/session-start.py": "902d781ea2f241ecc9616f4beb439e7cb5992b46ea04a26e5b1c1f8abb44b714",
-    ".cursor/skills/trellis-before-dev/SKILL.md": "ee06cc316cc0efb11a9ec27cc904ade95f1119f453312753608ffa43518997a7",
-    ".cursor/skills/trellis-brainstorm/SKILL.md": "1edfffb08342fbf172d0d4875501105ff1eddf37f4bd2f96006a35fe1bcf0419",
-    ".cursor/skills/trellis-check/SKILL.md": "2c3979726cbd040d0cd9cab8d376a6302bf02eac8c4ca93de9c96b62bfa64780",
-    ".cursor/skills/trellis-meta/references/customize-local/change-workflow.md": "6148a8235607036a4e4ac8fce7d22879b2656ee74a9e42dc41195a62af54ea01",
-    ".cursor/skills/trellis-meta/references/local-architecture/context-injection.md": "a16f03e9818f2447740aa35793488b80a06a09fcf4dcab1fb19b185973510d15",
-    ".cursor/skills/trellis-meta/references/platform-files/agents.md": "c48bbfbaad94c749ac2b5c07bed8f7796a37f061d2777c8583dbacf29dc2b8f6",
-    ".trellis/agents/check.md": "f763a0a27e1a1243f4ace2bbd4daf4b0ed91589d62409b3839206a4122cbec42",
-    ".trellis/agents/implement.md": "15f242f77c047239d4d6d69564377b2061501d4a524d313d6ae48e7a7a799896",
-}
-OWNERSHIP_CATEGORIES = {
-    "upstream_owned",
-    "guru_owned",
-}
-LEGACY_NOT_GENERATED_PATHS = {
-    ".codex/prompts/trellis-continue.md",
-    ".codex/prompts/trellis-finish-work.md",
-    ".codex/prompts/trellis-start.md",
-    ".codex/skills/trellis-continue/SKILL.md",
-    ".codex/skills/trellis-finish-work/SKILL.md",
-    ".codex/skills/trellis-start/SKILL.md",
-}
+SKILL_PACKAGE_ROOT_RELATIVE = Path("trellis/skills/guru-team/packages")
+WORKFLOW_ROOT_RELATIVE = Path("trellis/workflows/guru-team")
+
+SCHEMA_VERSION = "3.0"
+INVENTORY_ID = "guru-team-upstream-ownership"
+TARGET_TRELLIS_CLI = "0.6.5"
 TOP_LEVEL_KEYS = {
     "schema_version",
     "inventory_id",
     "target_trellis_cli",
-    "baseline",
-    "ownership_categories",
+    "overlay_root",
     "guru_owned_rules",
     "managed_path_claims",
-    "legacy_entries",
-}
-BASELINE_KEYS = {
-    "base_commit",
-    "overlay_root",
-    "frozen_path_count",
-    "sorted_path_set_sha256",
-    "historical_overlay_payload_aggregate_sha256",
-    "frozen_legacy_identity_sha256",
-    "path_set_digest_contract",
-    "payload_digest_contract",
-    "legacy_identity_digest_contract",
-    "clean_init",
-}
-CLEAN_INIT_KEYS = {
-    "command",
-    "trellis_cli",
-    "generated_count",
-    "legacy_not_generated_count",
 }
 RULE_KEYS = {"id", "match_type", "pattern", "category"}
-CLAIM_KEYS = {"path", "category", "classification_rule", "covered_by_legacy_paths"}
-LEGACY_ENTRY_KEYS = {
-    "path",
-    "category",
-    "migration_state",
-    "baseline_sha256",
-    "migration_payload_sha256s",
-    "generated_in_clean_init",
-    "upstream_producer",
-    "current_guru_behavior",
-    "replacement_owners",
-    "blocking_issues",
-    "removal_issue",
-    "update_upgrade_conflict",
-    "dogfood_status",
-    "target_business_repo_status",
-}
-RETIRED_CURRENT_PAYLOAD_KEY = "current_payload_sha256"
+CLAIM_KEYS = {"path", "category", "classification_rule"}
 EXPECTED_GURU_RULES = [
-    {"id": "installed-runtime", "match_type": "path_prefix", "pattern": ".trellis/guru-team/", "category": "guru_owned"},
-    {"id": "canonical-workflow-root", "match_type": "path_prefix", "pattern": "trellis/workflows/guru-team/", "category": "guru_owned"},
-    {"id": "canonical-skill-root", "match_type": "path_prefix", "pattern": "trellis/skills/guru-team/", "category": "guru_owned"},
-    {"id": "canonical-skill-id", "match_type": "skill_id_prefix", "pattern": "guru-", "category": "guru_owned"},
-    {"id": "shared-skill-discovery", "match_type": "path_glob", "pattern": ".agents/skills/guru-*/**", "category": "guru_owned"},
-    {"id": "codex-skill-discovery", "match_type": "path_glob", "pattern": ".codex/skills/guru-*/**", "category": "guru_owned"},
-    {"id": "cursor-skill-discovery", "match_type": "path_glob", "pattern": ".cursor/skills/guru-*/**", "category": "guru_owned"},
-    {"id": "claude-skill-discovery", "match_type": "path_glob", "pattern": ".claude/skills/guru-*/**", "category": "guru_owned"},
-    {"id": "codex-finish-entry", "match_type": "path_prefix", "pattern": ".codex/prompts/guru-finish-work.md", "category": "guru_owned"},
-    {"id": "claude-finish-entry", "match_type": "path_prefix", "pattern": ".claude/commands/guru/finish-work.md", "category": "guru_owned"},
-    {"id": "cursor-finish-entry", "match_type": "path_prefix", "pattern": ".cursor/commands/guru-finish-work.md", "category": "guru_owned"},
+    {
+        "id": "installed-runtime",
+        "match_type": "path_prefix",
+        "pattern": ".trellis/guru-team/",
+        "category": "guru_owned",
+    },
+    {
+        "id": "canonical-workflow-root",
+        "match_type": "path_prefix",
+        "pattern": "trellis/workflows/guru-team/",
+        "category": "guru_owned",
+    },
+    {
+        "id": "canonical-skill-root",
+        "match_type": "path_prefix",
+        "pattern": "trellis/skills/guru-team/",
+        "category": "guru_owned",
+    },
+    {
+        "id": "canonical-skill-id",
+        "match_type": "skill_id_prefix",
+        "pattern": "guru-",
+        "category": "guru_owned",
+    },
+    {
+        "id": "shared-skill-discovery",
+        "match_type": "path_glob",
+        "pattern": ".agents/skills/guru-*/**",
+        "category": "guru_owned",
+    },
+    {
+        "id": "codex-skill-discovery",
+        "match_type": "path_glob",
+        "pattern": ".codex/skills/guru-*/**",
+        "category": "guru_owned",
+    },
+    {
+        "id": "cursor-skill-discovery",
+        "match_type": "path_glob",
+        "pattern": ".cursor/skills/guru-*/**",
+        "category": "guru_owned",
+    },
+    {
+        "id": "claude-skill-discovery",
+        "match_type": "path_glob",
+        "pattern": ".claude/skills/guru-*/**",
+        "category": "guru_owned",
+    },
+    {
+        "id": "codex-finish-entry",
+        "match_type": "path_prefix",
+        "pattern": ".codex/prompts/guru-finish-work.md",
+        "category": "guru_owned",
+    },
+    {
+        "id": "claude-finish-entry",
+        "match_type": "path_prefix",
+        "pattern": ".claude/commands/guru/finish-work.md",
+        "category": "guru_owned",
+    },
+    {
+        "id": "cursor-finish-entry",
+        "match_type": "path_prefix",
+        "pattern": ".cursor/commands/guru-finish-work.md",
+        "category": "guru_owned",
+    },
 ]
-EXPECTED_ADDITIVE_OVERLAY_CLAIMS = {
-    ".codex/prompts/guru-finish-work.md": "codex-finish-entry",
-    ".claude/commands/guru/finish-work.md": "claude-finish-entry",
-    ".cursor/commands/guru-finish-work.md": "cursor-finish-entry",
-}
 EXPECTED_MANAGED_PATH_CLAIMS = [
     {
         "path": ".trellis/guru-team/",
         "category": "guru_owned",
         "classification_rule": "installed-runtime",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".trellis/guru-team/skills/",
         "category": "guru_owned",
         "classification_rule": "installed-runtime",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".agents/skills/guru-*/",
         "category": "guru_owned",
         "classification_rule": "shared-skill-discovery",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".codex/skills/guru-*/",
         "category": "guru_owned",
         "classification_rule": "codex-skill-discovery",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".cursor/skills/guru-*/",
         "category": "guru_owned",
         "classification_rule": "cursor-skill-discovery",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".claude/skills/guru-*/",
         "category": "guru_owned",
         "classification_rule": "claude-skill-discovery",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".codex/prompts/guru-finish-work.md",
         "category": "guru_owned",
         "classification_rule": "codex-finish-entry",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".claude/commands/guru/finish-work.md",
         "category": "guru_owned",
         "classification_rule": "claude-finish-entry",
-        "covered_by_legacy_paths": [],
     },
     {
         "path": ".cursor/commands/guru-finish-work.md",
         "category": "guru_owned",
         "classification_rule": "cursor-finish-entry",
-        "covered_by_legacy_paths": [],
     },
 ]
 EXPECTED_MANAGED_PATHS = [claim["path"] for claim in EXPECTED_MANAGED_PATH_CLAIMS]
-FINISH_LEGACY_PATHS = frozenset(
-    {
-        ".agents/skills/trellis-finish-work/SKILL.md",
-        ".claude/commands/trellis/finish-work.md",
-        ".codex/prompts/trellis-finish-work.md",
-        ".codex/skills/trellis-finish-work/SKILL.md",
-        ".cursor/commands/trellis-finish-work.md",
-    }
-)
-EXPECTED_REPLACEMENT_OWNERS = {
-    "guru-create-task-workspace",
-    "guru-approve-task-plan",
-    "guru-check-task",
-    "guru-review-branch",
-    "guru-review-task-publication",
-    "guru-verify-extension-installation",
-    "guru-finalize-task",
+EXPECTED_FINISH_OVERLAY_CLAIMS = {
+    ".codex/prompts/guru-finish-work.md": "codex-finish-entry",
+    ".claude/commands/guru/finish-work.md": "claude-finish-entry",
+    ".cursor/commands/guru-finish-work.md": "cursor-finish-entry",
 }
-EXPECTED_REPLACEMENT_OWNER_ISSUES = {
-    "guru-create-task-workspace": 112,
-    "guru-approve-task-plan": 129,
-    "guru-check-task": 130,
-    "guru-review-branch": 131,
-}
+EXPECTED_SKILL_PLATFORMS = ["shared", "codex", "cursor", "claude"]
 VALID_SCHEMA_KEYWORDS = {
     "$schema",
     "$id",
@@ -239,12 +179,6 @@ VALID_SCHEMA_KEYWORDS = {
     "uniqueItems",
     "minLength",
     "pattern",
-    "minimum",
-    "allOf",
-    "oneOf",
-    "if",
-    "then",
-    "else",
 }
 
 
@@ -278,41 +212,14 @@ def path_set_sha256(paths: list[str]) -> str:
     return digest.hexdigest()
 
 
-def payload_aggregate_sha256(overlay_root: Path, paths: list[str]) -> str:
+def payload_aggregate_sha256(root: Path, paths: list[str]) -> str:
     digest = hashlib.sha256()
     for relative in sorted(paths):
         digest.update(relative.encode("utf-8"))
         digest.update(b"\0")
-        digest.update((overlay_root / relative).read_bytes())
+        digest.update((root / relative).read_bytes())
         digest.update(b"\0")
     return digest.hexdigest()
-
-
-def frozen_legacy_identity(entries_by_path: dict[str, dict[str, Any]]) -> list[dict[str, str]]:
-    identity: list[dict[str, str]] = []
-    for path in sorted(entries_by_path):
-        digest = entries_by_path[path].get("baseline_sha256")
-        if isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
-            identity.append({"path": path, "baseline_sha256": digest})
-    return identity
-
-
-def normalize_string_array(
-    value: Any,
-    path: str,
-    errors: list[dict[str, str]],
-    code: str = "schema_type_mismatch",
-) -> list[str]:
-    if not isinstance(value, list):
-        errors.append(ownership_error(code, path, "expected array"))
-        return []
-    normalized: list[str] = []
-    for index, item in enumerate(value):
-        if not isinstance(item, str):
-            errors.append(ownership_error(code, f"{path}[{index}]", "expected string"))
-            continue
-        normalized.append(item)
-    return normalized
 
 
 def read_json(path: Path, label: str, errors: list[dict[str, str]]) -> Any:
@@ -369,12 +276,6 @@ def validate_schema_node(
             errors.append(ownership_error("schema_contract_invalid", f"{path}.$ref", "only local $defs references are allowed"))
         elif reference.removeprefix("#/$defs/") not in root.get("$defs", {}):
             errors.append(ownership_error("schema_contract_invalid", f"{path}.$ref", f"unresolved reference {reference}"))
-    schema_type = node.get("type")
-    allowed_types = {"array", "boolean", "integer", "null", "number", "object", "string"}
-    if schema_type is not None:
-        values = schema_type if isinstance(schema_type, list) else [schema_type]
-        if not values or any(not isinstance(item, str) or item not in allowed_types for item in values):
-            errors.append(ownership_error("schema_contract_invalid", f"{path}.type", "invalid JSON Schema type"))
     properties = node.get("properties")
     if properties is not None:
         if not isinstance(properties, dict):
@@ -388,11 +289,6 @@ def validate_schema_node(
             errors.append(ownership_error("schema_contract_invalid", f"{path}.required", "required must contain unique strings"))
         elif isinstance(properties, dict) and not set(required).issubset(properties):
             errors.append(ownership_error("schema_contract_invalid", f"{path}.required", "required refers to an unknown property"))
-    additional = node.get("additionalProperties")
-    if additional is not None and not isinstance(additional, (bool, dict)):
-        errors.append(ownership_error("schema_contract_invalid", f"{path}.additionalProperties", "must be boolean or schema"))
-    elif isinstance(additional, dict):
-        validate_schema_node(additional, root, f"{path}.additionalProperties", errors)
     definitions = node.get("$defs")
     if definitions is not None:
         if not isinstance(definitions, dict):
@@ -402,17 +298,6 @@ def validate_schema_node(
                 validate_schema_node(child, root, f"{path}.$defs.{name}", errors)
     if "items" in node:
         validate_schema_node(node["items"], root, f"{path}.items", errors)
-    for keyword in ("allOf", "oneOf"):
-        if keyword in node:
-            children = node[keyword]
-            if not isinstance(children, list) or not children:
-                errors.append(ownership_error("schema_contract_invalid", f"{path}.{keyword}", "must be a non-empty array"))
-            else:
-                for index, child in enumerate(children):
-                    validate_schema_node(child, root, f"{path}.{keyword}[{index}]", errors)
-    for keyword in ("if", "then"):
-        if keyword in node:
-            validate_schema_node(node[keyword], root, f"{path}.{keyword}", errors)
     if "pattern" in node:
         try:
             re.compile(node["pattern"])
@@ -422,7 +307,7 @@ def validate_schema_node(
         errors.append(ownership_error("schema_contract_invalid", f"{path}.enum", "enum must be a non-empty array"))
     if "uniqueItems" in node and not isinstance(node["uniqueItems"], bool):
         errors.append(ownership_error("schema_contract_invalid", f"{path}.uniqueItems", "must be boolean"))
-    for keyword in ("minItems", "maxItems", "minLength", "minimum"):
+    for keyword in ("minItems", "maxItems", "minLength"):
         if keyword in node and (not isinstance(node[keyword], int) or isinstance(node[keyword], bool) or node[keyword] < 0):
             errors.append(ownership_error("schema_contract_invalid", f"{path}.{keyword}", "must be a non-negative integer"))
 
@@ -434,19 +319,23 @@ def validate_schema_contract(schema: Any, errors: list[dict[str, str]]) -> None:
     validate_schema_node(schema, schema, "$", errors)
     if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
         errors.append(ownership_error("schema_contract_invalid", "$.$schema", "expected Draft 2020-12"))
+    if schema.get("$id") != "https://github.com/castbox/guru-trellis/schemas/upstream-ownership-3.0.json":
+        errors.append(ownership_error("schema_contract_invalid", "$.$id", "expected current ownership schema id"))
     if schema.get("type") != "object" or schema.get("additionalProperties") is not False:
         errors.append(ownership_error("schema_contract_invalid", "$", "root must be a closed object"))
     required = schema.get("required")
     properties = schema.get("properties")
-    fixed_root_keys = (
+    if not (
         isinstance(required, list)
         and all(isinstance(item, str) for item in required)
         and isinstance(properties, dict)
         and set(required) == TOP_LEVEL_KEYS
         and set(properties) == TOP_LEVEL_KEYS
-    )
-    if not fixed_root_keys:
-        errors.append(ownership_error("schema_contract_invalid", "$", "root required/properties must match the fixed inventory keys"))
+    ):
+        errors.append(ownership_error("schema_contract_invalid", "$", "root required/properties must match current inventory fields"))
+    definitions = schema.get("$defs")
+    if not isinstance(definitions, dict) or set(definitions) != {"safePath", "guruOwnedRule", "managedPathClaim"}:
+        errors.append(ownership_error("schema_contract_invalid", "$.$defs", "expected current ownership definitions"))
 
 
 def classify_guru_path(path: str, rules: list[dict[str, Any]]) -> list[str]:
@@ -516,8 +405,29 @@ def extract_managed_assets(installer_path: Path, errors: list[dict[str, str]]) -
     return values
 
 
+def collect_overlay_paths(root: Path, errors: list[dict[str, str]]) -> list[str]:
+    try:
+        root_stat = root.lstat()
+    except FileNotFoundError:
+        errors.append(ownership_error("missing_overlay_root", OVERLAY_ROOT_RELATIVE.as_posix(), "overlay root is missing"))
+        return []
+    if stat.S_ISLNK(root_stat.st_mode) or not stat.S_ISDIR(root_stat.st_mode):
+        errors.append(ownership_error("overlay_root_not_directory", OVERLAY_ROOT_RELATIVE.as_posix(), "overlay root must be a real directory"))
+        return []
+    paths: list[str] = []
+    for candidate in sorted(root.rglob("*")):
+        relative = candidate.relative_to(root).as_posix()
+        candidate_stat = candidate.lstat()
+        if stat.S_ISDIR(candidate_stat.st_mode):
+            continue
+        paths.append(relative)
+        if stat.S_ISLNK(candidate_stat.st_mode) or not stat.S_ISREG(candidate_stat.st_mode):
+            errors.append(ownership_error("overlay_not_regular", relative, "overlay entries must be regular files"))
+    return paths
+
+
 def _validate_repository(repo: Path | str) -> dict[str, Any]:
-    repo_root = Path(repo).resolve()
+    repo_root = Path(os.path.abspath(repo))
     errors: list[dict[str, str]] = []
     schema = read_json(repo_root / SCHEMA_RELATIVE, "ownership_schema", errors)
     inventory = read_json(repo_root / INVENTORY_RELATIVE, "ownership_inventory", errors)
@@ -527,278 +437,44 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
     if schema is not None:
         validate_schema_contract(schema, errors)
 
-    entries: list[dict[str, Any]] = []
     rules: list[dict[str, Any]] = []
     claims: list[dict[str, Any]] = []
-    baseline: dict[str, Any] = {}
     if require_exact_keys(inventory, TOP_LEVEL_KEYS, "$", errors):
-        if inventory.get("schema_version") != "2.0":
-            errors.append(ownership_error("inventory_identity_mismatch", "$.schema_version", "expected 2.0"))
-        if inventory.get("inventory_id") != "guru-team-upstream-ownership":
-            errors.append(ownership_error("inventory_identity_mismatch", "$.inventory_id", "unexpected inventory id"))
-        if inventory.get("target_trellis_cli") != "0.6.5":
-            errors.append(ownership_error("target_trellis_cli_mismatch", "$.target_trellis_cli", "expected 0.6.5"))
-        categories = normalize_string_array(inventory.get("ownership_categories"), "$.ownership_categories", errors)
-        if len(categories) != 2 or set(categories) != OWNERSHIP_CATEGORIES:
-            errors.append(ownership_error("ownership_category_set_mismatch", "$.ownership_categories", "expected final upstream_owned and guru_owned categories"))
-        baseline_value = inventory.get("baseline")
-        if require_exact_keys(baseline_value, BASELINE_KEYS, "$.baseline", errors):
-            baseline = baseline_value
-            expected_baseline = {
-                "base_commit": BASE_COMMIT,
-                "overlay_root": OVERLAY_ROOT_RELATIVE.as_posix(),
-                "frozen_path_count": FROZEN_PATH_COUNT,
-                "sorted_path_set_sha256": FROZEN_PATH_SET_SHA256,
-                "historical_overlay_payload_aggregate_sha256": BASELINE_PAYLOAD_AGGREGATE_SHA256,
-                "frozen_legacy_identity_sha256": FROZEN_LEGACY_IDENTITY_SHA256,
-                "path_set_digest_contract": "sorted-relative-path-newline-v1",
-                "payload_digest_contract": "sorted-relative-path-nul-payload-nul-v1",
-                "legacy_identity_digest_contract": "sorted-path-baseline-sha256-canonical-json-v1",
-            }
-            for key, expected in expected_baseline.items():
-                if baseline.get(key) != expected:
-                    errors.append(ownership_error("frozen_baseline_mismatch", f"$.baseline.{key}", f"expected {expected}"))
-            clean_init = baseline.get("clean_init")
-            if require_exact_keys(clean_init, CLEAN_INIT_KEYS, "$.baseline.clean_init", errors):
-                expected_clean_init = {
-                    "command": "trellis init -y -u ownership-audit --claude --codex --cursor",
-                    "trellis_cli": "0.6.5",
-                    "generated_count": 37,
-                    "legacy_not_generated_count": 6,
-                }
-                if clean_init != expected_clean_init:
-                    errors.append(ownership_error("clean_init_baseline_mismatch", "$.baseline.clean_init", "expected pinned Trellis 0.6.5 facts"))
+        assert isinstance(inventory, dict)
+        expected_scalars = {
+            "schema_version": SCHEMA_VERSION,
+            "inventory_id": INVENTORY_ID,
+            "target_trellis_cli": TARGET_TRELLIS_CLI,
+            "overlay_root": OVERLAY_ROOT_RELATIVE.as_posix(),
+        }
+        for key, expected in expected_scalars.items():
+            if inventory.get(key) != expected:
+                errors.append(ownership_error("current_contract_mismatch", f"$.{key}", f"expected {expected!r}"))
         rule_values = inventory.get("guru_owned_rules")
         if not isinstance(rule_values, list):
             errors.append(ownership_error("schema_type_mismatch", "$.guru_owned_rules", "expected array"))
         else:
-            rules = [item for item in rule_values if isinstance(item, dict)]
             for index, rule in enumerate(rule_values):
-                require_exact_keys(rule, RULE_KEYS, f"$.guru_owned_rules[{index}]", errors)
-            if rule_values != EXPECTED_GURU_RULES:
-                errors.append(ownership_error("guru_owned_rule_set_mismatch", "$.guru_owned_rules", "anchored Guru namespace rules changed"))
+                if require_exact_keys(rule, RULE_KEYS, f"$.guru_owned_rules[{index}]", errors):
+                    rules.append(rule)
         claim_values = inventory.get("managed_path_claims")
         if not isinstance(claim_values, list):
             errors.append(ownership_error("schema_type_mismatch", "$.managed_path_claims", "expected array"))
         else:
-            claims = [item for item in claim_values if isinstance(item, dict)]
             for index, claim in enumerate(claim_values):
-                require_exact_keys(claim, CLAIM_KEYS, f"$.managed_path_claims[{index}]", errors)
-            if claim_values != EXPECTED_MANAGED_PATH_CLAIMS:
-                errors.append(
-                    ownership_error(
-                        "managed_claim_set_mismatch",
-                        "$.managed_path_claims",
-                        "expected the exact nine anchored Guru namespace claims",
-                    )
-                )
-        entry_values = inventory.get("legacy_entries")
-        if not isinstance(entry_values, list):
-            errors.append(ownership_error("schema_type_mismatch", "$.legacy_entries", "expected array"))
-        else:
-            entries = [item for item in entry_values if isinstance(item, dict)]
-            for index, entry in enumerate(entry_values):
-                require_exact_keys(entry, LEGACY_ENTRY_KEYS, f"$.legacy_entries[{index}]", errors)
+                if require_exact_keys(claim, CLAIM_KEYS, f"$.managed_path_claims[{index}]", errors):
+                    claims.append(claim)
 
-    if len(entries) > FROZEN_PATH_COUNT:
-        errors.append(ownership_error("frozen_baseline_expanded", "$.legacy_entries", f"expected {FROZEN_PATH_COUNT}, found {len(entries)}"))
-    elif len(entries) < FROZEN_PATH_COUNT:
-        errors.append(ownership_error("frozen_baseline_reduced", "$.legacy_entries", f"expected {FROZEN_PATH_COUNT}, found {len(entries)}"))
-
-    entry_by_path: dict[str, dict[str, Any]] = {}
-    for index, entry in enumerate(entries):
-        entry_path = entry.get("path")
-        display_path = entry_path if isinstance(entry_path, str) else f"$.legacy_entries[{index}].path"
-        if not is_safe_relative_path(entry_path):
-            errors.append(ownership_error("invalid_legacy_path", str(display_path), "path must be a safe overlay-relative path"))
-            continue
-        if entry_path in entry_by_path:
-            errors.append(ownership_error("duplicate_legacy_path", entry_path, "legacy path appears more than once"))
-        entry_by_path[entry_path] = entry
-        category = entry.get("category")
-        state = entry.get("migration_state")
-        if not isinstance(category, str):
-            errors.append(ownership_error("schema_type_mismatch", f"$.legacy_entries[{index}].category", "expected string"))
-        if not isinstance(state, str):
-            errors.append(ownership_error("schema_type_mismatch", f"$.legacy_entries[{index}].migration_state", "expected string"))
-        if category == "unclassified":
-            errors.append(ownership_error("unclassified_path", entry_path, "tombstone has no reviewed ownership category"))
-        elif category == "transitional_legacy":
-            errors.append(ownership_error("transitional_legacy_path", entry_path, "final inventory may not retain transitional ownership"))
-        elif category != "upstream_owned":
-            errors.append(ownership_error("migration_state_category_mismatch", entry_path, "removed tombstones require upstream_owned"))
-        if state != "removed":
-            errors.append(ownership_error("invalid_migration_state", entry_path, "final inventory requires removed"))
-        replacement_owners = entry.get("replacement_owners")
-        if not isinstance(replacement_owners, list) or not replacement_owners:
-            errors.append(ownership_error("missing_replacement_owner", entry_path, "at least one replacement owner is required"))
-        elif any(not isinstance(owner, str) or not re.fullmatch(r"guru-[a-z0-9]+(?:-[a-z0-9]+)*", owner) for owner in replacement_owners):
-            errors.append(ownership_error("invalid_replacement_owner", entry_path, "replacement owners must use guru-* ids"))
-        elif len(replacement_owners) != len(set(replacement_owners)):
-            errors.append(ownership_error("duplicate_replacement_owner", entry_path, "replacement owners must be unique"))
-        elif not set(replacement_owners).issubset(EXPECTED_REPLACEMENT_OWNERS):
-            unknown = sorted(set(replacement_owners) - EXPECTED_REPLACEMENT_OWNERS)
-            errors.append(ownership_error("unknown_replacement_owner", entry_path, f"owners are absent from the reviewed migration issue set: {unknown}"))
-        blocking = entry.get("blocking_issues")
-        if not isinstance(blocking, list):
-            errors.append(ownership_error("missing_blocking_issue", entry_path, "blocking_issues must be an array"))
-        elif entry_path in FINISH_LEGACY_PATHS and blocking:
-            errors.append(ownership_error("finish_blocking_issue_mismatch", entry_path, "integrated finish compatibility entries must have no blocking issue"))
-        elif entry_path not in FINISH_LEGACY_PATHS and not blocking:
-            errors.append(ownership_error("missing_blocking_issue", entry_path, "non-finish legacy entries require at least one blocking issue"))
-        elif any(not isinstance(issue, int) or isinstance(issue, bool) or issue < 1 for issue in blocking):
-            errors.append(ownership_error("invalid_blocking_issue", entry_path, "blocking issue numbers must be positive integers"))
-        elif len(blocking) != len(set(blocking)):
-            errors.append(ownership_error("duplicate_blocking_issue", entry_path, "blocking issue numbers must be unique"))
-        elif isinstance(replacement_owners, list):
-            missing_owner_issues = sorted(
-                {
-                    EXPECTED_REPLACEMENT_OWNER_ISSUES[owner]
-                    for owner in replacement_owners
-                    if owner in EXPECTED_REPLACEMENT_OWNER_ISSUES
-                    and EXPECTED_REPLACEMENT_OWNER_ISSUES[owner] not in blocking
-                }
-            )
-            if missing_owner_issues:
-                errors.append(
-                    ownership_error(
-                        "replacement_owner_issue_mismatch",
-                        entry_path,
-                        f"blocking_issues is missing owner issues {missing_owner_issues}",
-                    )
-                )
-        removal_issue = entry.get("removal_issue")
-        if not isinstance(removal_issue, int) or isinstance(removal_issue, bool) or removal_issue < 1:
-            errors.append(ownership_error("missing_removal_issue", entry_path, "a positive removal issue is required"))
-        elif removal_issue != 132:
-            errors.append(ownership_error("removal_issue_mismatch", entry_path, "frozen overlays are removed only by issue 132"))
-        for field in ("upstream_producer", "current_guru_behavior", "update_upgrade_conflict"):
-            if not isinstance(entry.get(field), str) or not entry[field].strip():
-                errors.append(ownership_error("missing_legacy_fact", entry_path, f"{field} is required"))
-        digest = entry.get("baseline_sha256")
-        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
-            errors.append(ownership_error("invalid_baseline_sha256", entry_path, "expected lowercase SHA-256"))
-        migration_payloads = entry.get("migration_payload_sha256s")
-        if not isinstance(migration_payloads, list) or not migration_payloads:
-            errors.append(ownership_error("missing_migration_payload_sha256s", entry_path, "at least one historical Guru payload hash is required"))
-            migration_payloads = []
-        elif any(not isinstance(item, str) or not re.fullmatch(r"[0-9a-f]{64}", item) for item in migration_payloads):
-            errors.append(ownership_error("invalid_migration_payload_sha256", entry_path, "migration payloads must be lowercase SHA-256 values"))
-        elif len(migration_payloads) != len(set(migration_payloads)):
-            errors.append(ownership_error("duplicate_migration_payload_sha256", entry_path, "migration payload hashes must be unique"))
-        expected_migration_payloads = [digest] if isinstance(digest, str) else []
-        later_digest = REVIEWED_LATER_GURU_PAYLOAD_SHA256_BY_PATH.get(entry_path)
-        if later_digest and later_digest not in expected_migration_payloads:
-            expected_migration_payloads.append(later_digest)
-        if migration_payloads != expected_migration_payloads:
-            errors.append(
-                ownership_error(
-                    "migration_payload_set_mismatch",
-                    entry_path,
-                    f"expected={expected_migration_payloads} actual={migration_payloads}",
-                )
-            )
-        if RETIRED_CURRENT_PAYLOAD_KEY in entry:
-            errors.append(ownership_error("retired_current_payload_digest", entry_path, "removed tombstones must not carry current_payload_sha256"))
-        if not isinstance(entry.get("generated_in_clean_init"), bool):
-            errors.append(ownership_error("invalid_clean_init_fact", entry_path, "generated_in_clean_init must be boolean"))
-        if entry.get("dogfood_status") != "removed_with_audit_history":
-            errors.append(ownership_error("removed_dogfood_status_mismatch", entry_path, "removed path must retain audit history"))
-        if entry.get("target_business_repo_status") != "no_longer_installed":
-            errors.append(ownership_error("removed_target_status_mismatch", entry_path, "removed path must no longer install"))
-
-    frozen_paths = sorted(entry_by_path)
-    if path_set_sha256(frozen_paths) != FROZEN_PATH_SET_SHA256:
-        errors.append(ownership_error("frozen_path_set_mismatch", "$.legacy_entries", "sorted path-set digest differs from the issue 128 baseline"))
-    inventory_identity = frozen_legacy_identity(entry_by_path)
-    inventory_identity_sha256 = canonical_sha256(inventory_identity)
-    if inventory_identity_sha256 != FROZEN_LEGACY_IDENTITY_SHA256:
-        errors.append(
-            ownership_error(
-                "frozen_legacy_identity_mismatch",
-                "$.legacy_entries",
-                f"expected={FROZEN_LEGACY_IDENTITY_SHA256} actual={inventory_identity_sha256}",
-            )
-        )
-    generated_count = sum(entry.get("generated_in_clean_init") is True for entry in entries)
-    if generated_count != 37 or len(entries) - generated_count != 6:
-        errors.append(ownership_error("clean_init_count_mismatch", "$.legacy_entries", f"generated={generated_count} legacy_not_generated={len(entries) - generated_count}"))
-    actual_not_generated = {
-        str(entry.get("path"))
-        for entry in entries
-        if entry.get("generated_in_clean_init") is False
-    }
-    if actual_not_generated != LEGACY_NOT_GENERATED_PATHS:
-        errors.append(
-            ownership_error(
-                "clean_init_path_set_mismatch",
-                "$.legacy_entries",
-                f"missing={sorted(LEGACY_NOT_GENERATED_PATHS - actual_not_generated)} unknown={sorted(actual_not_generated - LEGACY_NOT_GENERATED_PATHS)}",
-            )
-        )
-
-    overlay_root = repo_root / OVERLAY_ROOT_RELATIVE
-    actual_overlay_paths = sorted(
-        path.relative_to(overlay_root).as_posix()
-        for path in overlay_root.rglob("*")
-        if (path.is_file() or path.is_symlink())
-        and "__pycache__" not in path.parts
-        and path.suffix not in {".pyc", ".pyo"}
-    ) if overlay_root.is_dir() else []
-    active_paths = sorted(path for path, entry in entry_by_path.items() if entry.get("migration_state") == "active")
-    removed_paths = sorted(path for path, entry in entry_by_path.items() if entry.get("migration_state") == "removed")
-    additive_overlay_paths = sorted(EXPECTED_ADDITIVE_OVERLAY_CLAIMS)
-    expected_overlay_paths = set(additive_overlay_paths)
-    for path in sorted(set(actual_overlay_paths) - expected_overlay_paths):
-        errors.append(ownership_error("overlay_not_in_frozen_baseline", path, "overlay path is neither frozen legacy nor a declared additive Guru entry"))
-    for path in sorted(set(active_paths) - set(actual_overlay_paths)):
-        errors.append(ownership_error("active_overlay_missing", path, "active transitional overlay is missing"))
-    for path in sorted(set(removed_paths) & set(actual_overlay_paths)):
-        errors.append(ownership_error("removed_overlay_still_present", path, "upstream_owned/removed path must not exist"))
-    for path in additive_overlay_paths:
-        overlay_path = overlay_root / path
-        if path not in actual_overlay_paths:
-            errors.append(ownership_error("additive_overlay_missing", path, "declared additive Guru entry is missing"))
-        elif overlay_path.is_symlink() or not overlay_path.is_file():
-            errors.append(ownership_error("additive_overlay_not_regular", path, "additive Guru entry must be a regular file, not a symlink"))
-    additive_payload_aggregate = None
-    materialized_identity_sha256 = None
-    actual_legacy_overlay_paths = set(actual_overlay_paths) & set(entry_by_path)
-    if all(
-        path in actual_overlay_paths
-        and not (overlay_root / path).is_symlink()
-        and (overlay_root / path).is_file()
-        for path in additive_overlay_paths
-    ):
-        additive_payload_aggregate = payload_aggregate_sha256(overlay_root, additive_overlay_paths)
-    materialized_identity: list[dict[str, str]] = []
-    materialized_identity_complete = len(entry_by_path) == FROZEN_PATH_COUNT
-    for path in frozen_paths:
-        entry = entry_by_path[path]
-        state = entry.get("migration_state")
-        digest: Any = None
-        overlay_path = overlay_root / path
-        if state == "removed" and path not in actual_overlay_paths:
-            digest = entry.get("baseline_sha256")
-        else:
-            materialized_identity_complete = False
-        if isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
-            materialized_identity.append({"path": path, "baseline_sha256": digest})
-        else:
-            materialized_identity_complete = False
-    if materialized_identity_complete and len(materialized_identity) == FROZEN_PATH_COUNT:
-        materialized_identity_sha256 = canonical_sha256(materialized_identity)
-        if materialized_identity_sha256 != FROZEN_LEGACY_IDENTITY_SHA256:
-            errors.append(
-                ownership_error(
-                    "materialized_frozen_identity_mismatch",
-                    OVERLAY_ROOT_RELATIVE.as_posix(),
-                    f"expected={FROZEN_LEGACY_IDENTITY_SHA256} actual={materialized_identity_sha256}",
-                )
-            )
+    if rules != EXPECTED_GURU_RULES:
+        errors.append(ownership_error("guru_owned_rule_set_mismatch", "$.guru_owned_rules", "expected the exact current Guru ownership rules"))
+    rule_by_id = {str(rule.get("id")): rule for rule in rules}
+    if len(rule_by_id) != len(rules):
+        errors.append(ownership_error("duplicate_guru_owned_rule", "$.guru_owned_rules", "rule ids must be unique"))
+    for index, rule in enumerate(rules):
+        if rule.get("category") != "guru_owned":
+            errors.append(ownership_error("rule_category_mismatch", f"$.guru_owned_rules[{index}]", "only guru_owned rules are current"))
 
     claim_by_path: dict[str, dict[str, Any]] = {}
-    rule_by_id = {str(rule.get("id")): rule for rule in rules}
     for index, claim in enumerate(claims):
         claim_path = claim.get("path")
         display_path = claim_path if isinstance(claim_path, str) else f"$.managed_path_claims[{index}].path"
@@ -808,42 +484,37 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         if claim_path in claim_by_path:
             errors.append(ownership_error("duplicate_managed_claim", claim_path, "managed claim appears more than once"))
         claim_by_path[claim_path] = claim
-        classification_rule = claim.get("classification_rule")
-        if not isinstance(classification_rule, str) or not classification_rule:
-            errors.append(ownership_error("managed_claim_rule_missing", claim_path, "classification_rule is required"))
-        covered_paths = claim.get("covered_by_legacy_paths")
-        if not isinstance(covered_paths, list) or any(not is_safe_relative_path(item) for item in covered_paths):
-            errors.append(ownership_error("managed_claim_coverage_invalid", claim_path, "coverage must contain safe relative paths"))
-        elif len(covered_paths) != len(set(covered_paths)):
-            errors.append(ownership_error("managed_claim_coverage_invalid", claim_path, "coverage paths must be unique"))
-        category = claim.get("category")
-        if category == "guru_owned":
-            rule = rule_by_id.get(str(claim.get("classification_rule")))
-            if rule is None or not claim_matches_rule(claim_path, rule):
-                errors.append(ownership_error("guru_owned_claim_rule_mismatch", claim_path, "claim is outside its anchored Guru rule"))
-            if claim.get("covered_by_legacy_paths") != []:
-                errors.append(ownership_error("guru_owned_claim_has_legacy_coverage", claim_path, "Guru-owned claim must not cite legacy paths"))
-        elif category == "upstream_owned":
-            errors.append(ownership_error("upstream_owned_managed_claim", claim_path, "Guru Team must not claim an upstream-owned path"))
-        elif category == "transitional_legacy":
-            errors.append(ownership_error("transitional_legacy_managed_claim", claim_path, "final manifest may not retain transitional claims"))
-        elif category == "unclassified":
-            errors.append(ownership_error("unclassified_path", claim_path, "managed claim has no reviewed owner"))
-        else:
-            errors.append(ownership_error("unclassified_path", claim_path, f"unknown category {category!r}"))
+        rule = rule_by_id.get(str(claim.get("classification_rule")))
+        if claim.get("category") != "guru_owned":
+            errors.append(ownership_error("managed_claim_category_mismatch", claim_path, "only guru_owned claims are current"))
+        if rule is None or not claim_matches_rule(claim_path, rule):
+            errors.append(ownership_error("guru_owned_claim_rule_mismatch", claim_path, "claim is outside its anchored Guru rule"))
+    if claims != EXPECTED_MANAGED_PATH_CLAIMS:
+        errors.append(ownership_error("managed_claim_set_mismatch", "$.managed_path_claims", "expected the exact current Guru managed claims"))
 
-    for path, rule_id in EXPECTED_ADDITIVE_OVERLAY_CLAIMS.items():
+    overlay_root = repo_root / OVERLAY_ROOT_RELATIVE
+    actual_overlay_paths = collect_overlay_paths(overlay_root, errors)
+    expected_overlay_paths = sorted(EXPECTED_FINISH_OVERLAY_CLAIMS)
+    for path in sorted(set(actual_overlay_paths) - set(expected_overlay_paths)):
+        errors.append(ownership_error("undeclared_overlay", path, "overlay is outside the current finish-entry set"))
+    for path in sorted(set(expected_overlay_paths) - set(actual_overlay_paths)):
+        errors.append(ownership_error("missing_finish_overlay", path, "current finish entry is missing"))
+    regular_overlay_paths: list[str] = []
+    for path in expected_overlay_paths:
+        target = overlay_root / path
+        try:
+            target_stat = target.lstat()
+        except FileNotFoundError:
+            continue
+        if stat.S_ISREG(target_stat.st_mode) and not stat.S_ISLNK(target_stat.st_mode):
+            regular_overlay_paths.append(path)
         expected_claim = {
             "path": path,
             "category": "guru_owned",
-            "classification_rule": rule_id,
-            "covered_by_legacy_paths": [],
+            "classification_rule": EXPECTED_FINISH_OVERLAY_CLAIMS[path],
         }
-        claim = claim_by_path.get(path)
-        if claim is None:
-            errors.append(ownership_error("additive_overlay_claim_missing", path, "exact Guru-owned managed claim is required"))
-        elif claim != expected_claim:
-            errors.append(ownership_error("additive_overlay_claim_mismatch", path, f"expected={expected_claim}"))
+        if claim_by_path.get(path) != expected_claim:
+            errors.append(ownership_error("finish_overlay_claim_mismatch", path, f"expected={expected_claim}"))
 
     manifest_paths: list[str] = []
     manifest_active_ids: list[str] = []
@@ -853,150 +524,134 @@ def _validate_repository(repo: Path | str) -> dict[str, Any]:
         if not isinstance(public_api, dict):
             errors.append(ownership_error("extension_manifest_contract_invalid", "public_api", "expected object"))
         else:
-            values = public_api.get("managed_paths")
-            if not isinstance(values, list) or any(not isinstance(item, str) for item in values):
+            managed_paths = public_api.get("managed_paths")
+            if not isinstance(managed_paths, list) or any(not isinstance(item, str) for item in managed_paths):
                 errors.append(ownership_error("extension_manifest_contract_invalid", "public_api.managed_paths", "expected string array"))
             else:
-                manifest_paths = values
-                if len(values) != len(set(values)):
-                    errors.append(ownership_error("duplicate_extension_managed_path", "public_api.managed_paths", "paths must be unique"))
-                if values != EXPECTED_MANAGED_PATHS:
-                    errors.append(
-                        ownership_error(
-                            "extension_managed_path_set_mismatch",
-                            "public_api.managed_paths",
-                            "expected the exact nine anchored Guru namespace claims",
-                        )
-                    )
+                manifest_paths = managed_paths
+                if managed_paths != EXPECTED_MANAGED_PATHS:
+                    errors.append(ownership_error("extension_managed_path_set_mismatch", "public_api.managed_paths", "expected the exact current Guru managed paths"))
             contracts = public_api.get("skill_contracts")
             if not isinstance(contracts, dict):
                 errors.append(ownership_error("extension_manifest_contract_invalid", "public_api.skill_contracts", "expected object"))
             else:
-                manifest_active_ids = normalize_string_array(
-                    contracts.get("active_skill_ids"),
-                    "public_api.skill_contracts.active_skill_ids",
-                    errors,
-                    "extension_manifest_contract_invalid",
-                )
-                manifest_planned_ids = normalize_string_array(
-                    contracts.get("planned_skill_ids"),
-                    "public_api.skill_contracts.planned_skill_ids",
-                    errors,
-                    "extension_manifest_contract_invalid",
-                )
-    for path in sorted(set(manifest_paths) - set(claim_by_path)):
-        errors.append(ownership_error("unclassified_managed_claim", path, "extension manifest path is absent from ownership inventory"))
-    for path in sorted(set(claim_by_path) - set(manifest_paths)):
-        errors.append(ownership_error("stale_managed_claim_inventory", path, "inventory claim is absent from extension manifest"))
+                active_values = contracts.get("active_skill_ids")
+                planned_values = contracts.get("planned_skill_ids")
+                if not isinstance(active_values, list) or any(not isinstance(item, str) for item in active_values):
+                    errors.append(ownership_error("extension_manifest_contract_invalid", "public_api.skill_contracts.active_skill_ids", "expected string array"))
+                else:
+                    manifest_active_ids = active_values
+                if not isinstance(planned_values, list) or any(not isinstance(item, str) for item in planned_values):
+                    errors.append(ownership_error("extension_manifest_contract_invalid", "public_api.skill_contracts.planned_skill_ids", "expected string array"))
+                else:
+                    manifest_planned_ids = planned_values
+                if contracts.get("registry_lifecycle") != ["planned", "active"]:
+                    errors.append(ownership_error("extension_manifest_contract_invalid", "public_api.skill_contracts.registry_lifecycle", "expected current registry lifecycle"))
 
     managed_assets = extract_managed_assets(repo_root / INSTALLER_RELATIVE, errors)
     for relative in managed_assets:
         installed_path = f".trellis/guru-team/{relative}"
-        matches = classify_guru_path(installed_path, rules)
-        if matches != ["installed-runtime"]:
-            errors.append(ownership_error("unclassified_managed_asset", installed_path, f"classification_rules={matches}"))
+        if classify_guru_path(installed_path, rules) != ["installed-runtime"]:
+            errors.append(ownership_error("unclassified_managed_asset", installed_path, "asset is outside the installed Guru runtime"))
+        source = repo_root / WORKFLOW_ROOT_RELATIVE / relative
+        try:
+            source_stat = source.lstat()
+        except FileNotFoundError:
+            errors.append(ownership_error("missing_managed_asset", relative, "canonical managed asset is missing"))
+            continue
+        if stat.S_ISLNK(source_stat.st_mode) or not stat.S_ISREG(source_stat.st_mode):
+            errors.append(ownership_error("managed_asset_not_regular", relative, "canonical managed asset must be a regular file"))
 
     active_skill_ids: list[str] = []
     planned_skill_ids: list[str] = []
     if isinstance(registry, dict) and isinstance(registry.get("skills"), list):
+        seen_ids: set[str] = set()
         for index, skill in enumerate(registry["skills"]):
             if not isinstance(skill, dict):
                 errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}]", "expected object"))
                 continue
-            state = skill.get("state")
-            if not isinstance(state, str) or state not in {"active", "planned", "reserved"}:
-                errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active, planned, or reserved"))
-                continue
-            if state == "planned":
-                skill_id = skill.get("id")
-                if not isinstance(skill_id, str):
-                    errors.append(ownership_error("planned_skill_id_invalid", f"skills[{index}].id", "expected string"))
-                    continue
-                planned_skill_ids.append(skill_id)
-                if classify_guru_path(skill_id, rules) != ["canonical-skill-id"]:
-                    errors.append(ownership_error("planned_skill_not_guru_owned", skill_id, "planned Skill id must use guru-*"))
-                continue
-            if state != "active":
-                continue
             skill_id = skill.get("id")
-            if not isinstance(skill_id, str):
-                errors.append(ownership_error("active_skill_id_invalid", f"skills[{index}].id", "expected string"))
+            state = skill.get("state")
+            if not isinstance(skill_id, str) or classify_guru_path(skill_id, rules) != ["canonical-skill-id"]:
+                errors.append(ownership_error("skill_id_not_guru_owned", f"skills[{index}].id", "current Skill ids must use guru-*"))
                 continue
-            active_skill_ids.append(skill_id)
-            if classify_guru_path(skill_id, rules) != ["canonical-skill-id"]:
-                errors.append(ownership_error("active_skill_not_guru_owned", skill_id, "active Skill id must use guru-*"))
-            for field in ("package", "interface"):
-                relative = skill.get(field)
-                if not isinstance(relative, str) or not is_safe_relative_path(relative):
-                    errors.append(ownership_error("active_skill_path_invalid", skill_id, f"invalid {field}"))
-                    continue
-                canonical_path = f"trellis/skills/guru-team/{relative}"
-                if classify_guru_path(canonical_path, rules) != ["canonical-skill-root"]:
-                    errors.append(ownership_error("active_skill_path_not_guru_owned", canonical_path, f"invalid {field} classification"))
-            platform_map = {"shared": ".agents", "codex": ".codex", "cursor": ".cursor", "claude": ".claude"}
-            platforms = skill.get("supported_platforms")
-            if not isinstance(platforms, list):
-                errors.append(ownership_error("active_skill_platform_invalid", f"skills[{index}].supported_platforms", "expected array"))
+            if skill_id in seen_ids:
+                errors.append(ownership_error("duplicate_skill_id", skill_id, "registry Skill ids must be unique"))
+            seen_ids.add(skill_id)
+            if state == "active":
+                active_skill_ids.append(skill_id)
+            elif state == "planned":
+                planned_skill_ids.append(skill_id)
             else:
-                for platform_index, platform in enumerate(platforms):
-                    if not isinstance(platform, str):
-                        errors.append(ownership_error("active_skill_platform_invalid", f"skills[{index}].supported_platforms[{platform_index}]", "expected string"))
-                        continue
-                    root = platform_map.get(platform)
-                    if root is None:
-                        errors.append(ownership_error("active_skill_platform_invalid", skill_id, f"unsupported platform {platform!r}"))
-                        continue
+                errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active or planned"))
+                continue
+            expected_package = f"packages/{skill_id}"
+            expected_interface = f"{expected_package}/interface.json"
+            if skill.get("package") != expected_package or skill.get("interface") != expected_interface:
+                errors.append(ownership_error("skill_package_path_mismatch", skill_id, "registry package/interface must use the current canonical package"))
+            platforms = skill.get("supported_platforms")
+            if platforms != EXPECTED_SKILL_PLATFORMS:
+                errors.append(ownership_error("skill_platform_set_mismatch", skill_id, "expected the current shared and platform discovery set"))
+            if state == "active":
+                package_root = repo_root / SKILL_PACKAGE_ROOT_RELATIVE / skill_id
+                interface_path = package_root / "interface.json"
+                if not package_root.is_dir() or package_root.is_symlink():
+                    errors.append(ownership_error("active_skill_package_missing", skill_id, "canonical package directory is missing"))
+                if not interface_path.is_file() or interface_path.is_symlink():
+                    errors.append(ownership_error("active_skill_interface_missing", skill_id, "canonical interface is missing"))
+                for platform, root in {
+                    "shared": ".agents",
+                    "codex": ".codex",
+                    "cursor": ".cursor",
+                    "claude": ".claude",
+                }.items():
                     discovery = f"{root}/skills/{skill_id}/SKILL.md"
-                    matches = classify_guru_path(discovery, rules)
-                    expected_rule = f"{platform}-skill-discovery" if platform != "shared" else "shared-skill-discovery"
-                    if matches != [expected_rule]:
-                        errors.append(ownership_error("guru_discovery_path_unclassified", discovery, f"classification_rules={matches}"))
+                    expected_rule = "shared-skill-discovery" if platform == "shared" else f"{platform}-skill-discovery"
+                    if classify_guru_path(discovery, rules) != [expected_rule]:
+                        errors.append(ownership_error("skill_discovery_path_unclassified", discovery, "discovery path is outside its Guru rule"))
     elif registry is not None:
         errors.append(ownership_error("skill_registry_contract_invalid", "skills", "expected array"))
+
+    package_root = repo_root / SKILL_PACKAGE_ROOT_RELATIVE
+    canonical_package_ids: list[str] = []
+    if package_root.is_dir() and not package_root.is_symlink():
+        for candidate in sorted(package_root.iterdir()):
+            if candidate.is_symlink() or not candidate.is_dir():
+                errors.append(ownership_error("canonical_package_entry_invalid", candidate.name, "package root may contain only real directories"))
+                continue
+            canonical_package_ids.append(candidate.name)
+    else:
+        errors.append(ownership_error("canonical_package_root_invalid", SKILL_PACKAGE_ROOT_RELATIVE.as_posix(), "package root must be a real directory"))
+    if sorted(canonical_package_ids) != sorted(active_skill_ids):
+        errors.append(ownership_error("canonical_package_set_mismatch", SKILL_PACKAGE_ROOT_RELATIVE.as_posix(), f"packages={sorted(canonical_package_ids)} active={sorted(active_skill_ids)}"))
     if sorted(active_skill_ids) != sorted(manifest_active_ids):
         errors.append(ownership_error("active_skill_manifest_mismatch", "public_api.skill_contracts.active_skill_ids", f"registry={sorted(active_skill_ids)} manifest={sorted(manifest_active_ids)}"))
     if sorted(planned_skill_ids) != sorted(manifest_planned_ids):
         errors.append(ownership_error("planned_skill_manifest_mismatch", "public_api.skill_contracts.planned_skill_ids", f"registry={sorted(planned_skill_ids)} manifest={sorted(manifest_planned_ids)}"))
 
-    migration_payload_sets = {
-        path: entry.get("migration_payload_sha256s")
-        for path, entry in sorted(entry_by_path.items())
-    }
-    migration_payload_count = sum(
-        len(values)
-        for values in migration_payload_sets.values()
-        if isinstance(values, list)
+    overlay_payload_sha256 = (
+        payload_aggregate_sha256(overlay_root, expected_overlay_paths)
+        if regular_overlay_paths == expected_overlay_paths
+        else None
     )
     facts = {
+        "schema_version": inventory.get("schema_version") if isinstance(inventory, dict) else None,
+        "inventory_id": inventory.get("inventory_id") if isinstance(inventory, dict) else None,
         "target_trellis_cli": inventory.get("target_trellis_cli") if isinstance(inventory, dict) else None,
-        "base_commit": baseline.get("base_commit"),
+        "overlay_root": inventory.get("overlay_root") if isinstance(inventory, dict) else None,
         "schema_sha256": sha256_file(repo_root / SCHEMA_RELATIVE) if (repo_root / SCHEMA_RELATIVE).is_file() else None,
         "inventory_sha256": sha256_file(repo_root / INVENTORY_RELATIVE) if (repo_root / INVENTORY_RELATIVE).is_file() else None,
         "guru_owned_rules_sha256": canonical_sha256(rules),
         "managed_path_claims_sha256": canonical_sha256(claims),
-        "legacy_entries_sha256": canonical_sha256(entries),
-        "frozen_legacy_identity_sha256": inventory_identity_sha256,
-        "materialized_frozen_identity_sha256": materialized_identity_sha256,
-        "frozen_count": len(entries),
-        "active_count": len(active_paths),
-        "removed_count": len(removed_paths),
-        "generated_in_clean_init_count": generated_count,
-        "legacy_not_generated_count": len(entries) - generated_count,
         "overlay_count": len(actual_overlay_paths),
-        "legacy_overlay_count": len(actual_legacy_overlay_paths),
-        "additive_overlay_count": len(set(actual_overlay_paths) & set(additive_overlay_paths)),
-        "additive_overlay_paths_sha256": path_set_sha256(additive_overlay_paths),
-        "additive_overlay_payload_aggregate_sha256": additive_payload_aggregate,
-        "sorted_path_set_sha256": path_set_sha256(frozen_paths),
-        "migration_payload_count": migration_payload_count,
-        "migration_payload_sets_sha256": canonical_sha256(migration_payload_sets),
-        "transitional_legacy_count": sum(entry.get("category") == "transitional_legacy" for entry in entries),
-        "unclassified_count": sum(entry.get("category") == "unclassified" for entry in entries),
+        "overlay_paths_sha256": path_set_sha256(actual_overlay_paths),
+        "overlay_payload_aggregate_sha256": overlay_payload_sha256,
         "managed_claim_count": len(manifest_paths),
         "classified_managed_claim_count": len(set(manifest_paths) & set(claim_by_path)),
         "managed_asset_count": len(managed_assets),
         "active_skill_count": len(active_skill_ids),
         "planned_skill_count": len(planned_skill_ids),
+        "canonical_package_count": len(canonical_package_ids),
     }
     errors.sort(key=lambda item: (item["code"], item["path"], item["detail"]))
     return {
@@ -1026,17 +681,18 @@ def validate_repository(repo: Path | str) -> dict[str, Any]:
 def render_text(payload: dict[str, Any]) -> str:
     if payload["status"] == "ok":
         return (
-            "Upstream ownership valid: "
-            f"{payload['active_count']} active, {payload['removed_count']} removed, "
-            f"{payload['managed_claim_count']} Guru managed claims."
+            "Current Guru ownership valid: "
+            f"{payload['managed_claim_count']} managed claims, "
+            f"{payload['overlay_count']} finish overlays, "
+            f"{payload['active_skill_count']} active Skills."
         )
-    lines = ["Upstream ownership validation failed:"]
+    lines = ["Current Guru ownership validation failed:"]
     lines.extend(f"{item['code']} {item['path']}: {item['detail']}" for item in payload["errors"])
     return "\n".join(lines)
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate Guru Team upstream ownership inventory")
+    parser = argparse.ArgumentParser(description="Validate the current Guru Team ownership inventory")
     parser.add_argument("--repo", default=str(Path(__file__).resolve().parents[5]), help="Guru Trellis source repository root")
     parser.add_argument("--json", action="store_true", help="Print structured validation facts")
     args = parser.parse_args(argv)

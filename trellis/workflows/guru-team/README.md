@@ -130,10 +130,10 @@ mapped exits，并返回 terminal result。它们不读取 producer-private runt
 不复制 package input fields、review dimensions、interaction algorithm 或 executor
 commands。
 
-Ownership inventory 的 43 条 frozen history 全部是
-upstream_owned/removed tombstone：保留 immutable path/baseline history 和 migration-only
-payload provenance，但不存在 current overlay payload 或 Guru managed claim。迁移与
-更新必须按以下顺序进行：
+Current-only ownership schema 3.0 固定为 11 条 anchored Guru-owned rules、9 条
+managed claims 和上述 3 个 additive overlays，只记录 current Guru-owned assets；
+非 current ownership/installed manifest 在 mutation 前统一
+fail closed，不存在 projection 或迁移入口。当前更新顺序为：
 
 1. official trellis update 或目标版本升级；
 2. 重新选择 guru-team marketplace workflow；
@@ -460,7 +460,8 @@ GitHub keyword、外部 API 名称和代码符号等 literal token 可保留英�
 
 `guru-discover-change-context -> guru-clarify-requirements ->
 guru-review-contract-wording -> guru-review-change-request ->
-guru-create-task-workspace`。以下命令仅用于兼容查询，不是 active workflow hop：
+guru-create-task-workspace`。以下命令是 current query-only diagnostic，不是 active
+workflow hop：
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
@@ -470,7 +471,7 @@ guru-create-task-workspace`。以下命令仅用于兼容查询，不是 active 
 ```
 
 `prepare-task.sh --json` 只执行 current query，不创建 GitHub
-issue、worktree、branch、Trellis task，也不写 `.trellis/tasks/<task-slug>/task-start-context.json`。
+issue、worktree、branch 或 Trellis task。
 它只在 stdout JSON 中输出 source/proposed issue、duplicate candidates、selected base、
 `base_freshness`、branch/task/workspace naming suggestions 与 `naming_quality`；不输出
 workspace absolute path、task-create command、authorization/handoff state，也不写 task/runtime
@@ -538,8 +539,7 @@ plan/result 保持 ignored owner-private，本机 mapping 只在 ignored
 
 `workspace_mode: worktree` 下，task artifact 写入边界由 current `task.json`、当前 checkout、
 `.trellis/.runtime/guru-team/**`、`git worktree list` 和
-`check-workspace-boundary.sh --task` 推导/校验。既有 active task 的
-`task-start-context.json` 只作为一次性只读兼容输入；新任务不生成或依赖它。
+`check-workspace-boundary.sh --task` 推导/校验。
 在写入或校验 `planning-approval.json`、`phase2-check.json` 或
 `review-gate.json` 前，从目标 worktree 运行：
 
@@ -795,7 +795,7 @@ plan-only 恢复从当前 commit blob 读取 committed plan，并在 GitHub/fast
 boundary 校验 Git toplevel、配置/effective repo、当前head branch、base ref、current HEAD transaction、
 expected digest、task identity 和 active/archive locator；它不是缺失 context 时的无条件跳过。普通
 task discovery 与其它命令仍要求 `task.json`；worktree mode 从 current task、runtime mapping
-与 Git worktree facts 解析边界，旧 `task-start-context.json` 仅作只读兼容证据。
+与 Git worktree facts 解析边界。
 raw locator 在普通 resolver/`resolve()` 前验证，只允许 basename、原 active locator 或精确 archive
 locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`。basename 输入在普通
 resolver 前按其候选顺序预检 `<repo>/<basename>`、active task candidate、archive root 和 archive
@@ -820,24 +820,6 @@ evidence commit，也不把 body/readiness 复制进长期 archive。`finish-sum
 不能用脚本生成的空泛摘要或 `generated` body 替代 AI 发布判断。
 
 
-## One-Time Archived Task Backfill
-
-After installing or updating this preset, repositories with archived tasks from
-before `finish-summary.json` can preview and write schema-valid history records:
-
-```bash
-.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --dry-run
-.trellis/guru-team/scripts/bash/backfill-finish-summary.sh --json --write
-```
-
-Use `--task .trellis/tasks/archive/<YYYY-MM>/<task>` to limit the batch. Existing
-summaries are skipped unless `--write --force` is explicit. The command reads
-only its fixed archived-task artifact whitelist, groups all changed paths by
-surface kind without truncation, reports task-local errors while continuing the
-batch, and never reads workspace/runtime state or creates a global index. This
-one-time migration supplies historical records consumed by the later #98
-history-discovery capability; it does not replace normal finish-work.
-
 ## Push 后远端 Marketplace 门禁
 
 `guru-verify-extension-installation` 是 extension installation 唯一 semantic owner。
@@ -861,8 +843,8 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十三个 packages 已维护 canonical corpora 并覆盖全部 51 exits/profile；Stage 0 的
-23-exit closure 仍独立验证。四个 descriptor 分别绑定
+中的十三个 packages 已维护 canonical corpora 并覆盖全部 51 exits/profile；六个 Intake
+packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台
 专用非交互 argv。Runner 在 native

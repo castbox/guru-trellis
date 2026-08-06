@@ -137,14 +137,15 @@ overwrite, missing/extra/unknown field, default/literal/private lookup, or
 runtime-authored semantic value fails closed. Projection execution remains
 limited to `direct|select|rename|normalize`.
 
-## Stage 0 Public Invocation Runtime
+## Current Intake Public Invocation Runtime
 
-Each current Stage 0 package in the active registry owns one dispatcher-only
-public wrapper declared by Interface 1.3 `public_contracts.invocation`.
-Frozen Stage 0 source records remain historical integrity evidence only. The wrapper
-passes its package root, fixed `public_invocation` validator id, and public argv
-to `run-skill-command`; it contains no local business logic, semantic route
-selection, private artifact parser, fallback runtime, or typed-output fixture.
+Each current Intake package in the active registry owns one dispatcher-only
+public wrapper declared by Interface 1.3 `public_contracts.invocation`. The
+wrapper passes its package root, fixed `public_invocation` validator id, and
+public argv to `run-skill-command`; it contains no local business logic,
+semantic route selection, private artifact parser, fallback runtime, or
+typed-output fixture. Only the live registry and current package contracts are
+valid invocation authority.
 
 `guru-sync-base` binds its declared scalar CLI arguments directly. The other
 five packages bind their current closed structured profiles and receive public
@@ -185,11 +186,10 @@ invocation, projection, or error diagnosis.
 
 `guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit` use
 the same dispatcher-only wrapper template and shared public invocation command
-as Stage 0 packages. Invocation identity is resolved from the active Interface
-1.3 registry and the sole current `production-current-v1` contract manifest.
-Frozen Stage 0 records remain source-integrity assets and are never loaded by
-installed discovery or invocation. `invoke-stage0-skill` is the current shared
-dispatcher command id even though it serves every active production package.
+as the Intake packages. Invocation identity is resolved from the active
+Interface 1.3 registry and the sole current `production-current-v1` contract
+manifest. `invoke-stage0-skill` is the current shared dispatcher command id
+even though it serves every active production package.
 
 Planning/check invocation validates the selected closed public profile,
 materializes the current owner input in ignored runtime state, calls the
@@ -227,8 +227,8 @@ exact boundary-contained package-relative profile index. Boolean schemas, remote
 `patternProperties` and other unimplemented vocabulary, unsupported formats,
 and invalid regexes fail closed. The same grammar check applies to the current
 canonical registry/interface schemas and every Interface 1.3 public/private
-contract asset. Frozen historical records are checked only for source-byte
-integrity and never enter current schema validation.
+contract asset. The live registry and current package contracts are the
+complete schema-validation input.
 The exact accepted syntax and ECMA Unicode-mode search semantics are owned by
 `skill-package-contract.md` under `Portable Pattern Grammar`. The runtime uses
 one portable compiler for both the schema grammar gate and instance matching;
@@ -280,10 +280,9 @@ objective status, locator, exit, and consumer facts. Neither command decides
 scope, sufficiency, findings, revision actions, unusual-scenario meaning,
 authorization, semantic pass, or route.
 
-Any artifact that does not validate against schema 3.0 is invalid current input
-and fails closed through the normal checker result. No alternate reader,
-projection, or version-specific re-entry is provided. Archived artifacts are
-not rewritten.
+The checker accepts only artifacts that validate against current schema 3.0;
+every other shape fails closed through the normal checker result. Archived
+artifacts are not rewritten.
 
 ### Change-Context Preview, Record, And Check
 
@@ -603,8 +602,8 @@ config/config-candidate/remote-default provenance as explicit. The planner
 freshness functions remain adapters to the shared core. A stale
 planner result is blocking, not permission to continue planning. Each guard
 consumes the preceding validator's post-sync digest and returns its current
-post-sync digest. Neither prepare output nor task-start context
-persists the complete resolution/result stdout payloads.
+post-sync digest. Neither prepare output nor any task artifact or runtime
+checkpoint persists the complete resolution/result stdout payloads.
 
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.
@@ -855,8 +854,8 @@ plan digest, active/archive locator relationship, task identity, and exact
 archive transaction to match the immutable plan. It is not a context-free
 bypass and is unavailable to every other command, which continues to require
 `task.json` and a boundary derived from the current task, ignored runtime mapping,
-and live Git worktree facts. Legacy `task-start-context.json` remains a one-time
-read-only compatibility input, not a current worktree prerequisite.
+and live Git worktree facts. No alternate task identity artifact participates
+in ordinary or plan-only recovery.
 Before ordinary resolution or canonicalization, the finish entry classifies
 the raw locator as only a task basename, the exact former active locator, or
 the exact archive locator. Path-like locators require lexical containment and
@@ -995,10 +994,9 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   planning locators, required non-empty files, authority refs, Docs SSOT shape,
   and semantic/exit/consumer union. It must not decide adequacy, provenance,
   proposal necessity, authorization sufficiency, Gate status, or route.
-- `check-planning-approval.sh` validates the closed 3.0 schema, task/planning
+- `check-planning-approval.sh` validates the closed current schema 3.0, task/planning
   locators, required files, and four exit/consumer invariants before task
-  activation, implementation dispatch, or Phase 2 evidence. Active schema
-  1.2/2.0 returns AI-first re-entry guidance and is never regenerated.
+  activation, implementation dispatch, or Phase 2 evidence.
 - `record-phase2-check.sh` records the prior AI-authored full-scope
   `guru-check-task` result, including unchanged official `trellis-check`
   evidence; it must not replace semantic judgment with worker output or command
@@ -1030,10 +1028,10 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
   `git worktree list`, then confirm the actual repo root equals that derived
   worktree before touching owner-private ignored-runtime checkpoints such as
   `planning-approval.json`, `phase2-check.json`, and `review-gate.json`.
-- A legacy active `task-start-context.json` may be read during one interrupted
-  migration, but its absence is normal for new tasks and cannot be a boundary
-  failure. Runtime must not fall back to a same-named task directory in the
-  source checkout.
+- Current task identity is resolved only from `task.json`, ignored runtime
+  mapping, the current checkout, and live Git worktree facts. Missing or
+  mismatched identity fails closed, and runtime must not fall back to a
+  same-named task directory in the source checkout.
 - Task artifact arguments such as `--checked-artifact` must resolve inside the
   current task directory under the selected task worktree. Absolute paths are
   allowed only when they stay under that task directory.
@@ -1120,59 +1118,25 @@ python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trell
 When changing `review-branch` or `finish-work`, also run dry-run
 or representative script paths in a disposable worktree whenever practical.
 
-## Archived Finish-Summary Backfill
-
-`backfill-finish-summary.sh` is a public, one-time migration helper for
-archived tasks created before normal finish-work wrote `finish-summary.json`.
-The Bash file is a thin wrapper around the canonical Python
-`backfill-finish-summary` subcommand. It never reads active tasks,
-`.trellis/workspace/**`, or `.trellis/.runtime/**`, and it never calls GitHub or
-`trellis mem`.
-
-The command requires exactly one of `--dry-run` and `--write`. `--force` is
-valid only with `--write`; `--task` accepts only a clean repo-relative archived
-task root. A task root contains a direct whitelist artifact or existing
-`finish-summary.json` marker, and none of its strict ancestors below the archive
-root contains such a marker. Discovery uses the same marker rule and stops
-descending after the first task root. This rejects archive grouping directories
-and every task subdirectory without relying on directory basenames. Invalid
-arguments, non-root targets, or symlink escapes exit 2 before scanning. A
-completed batch exits 0, while any task-local read/build,
-validation, or write error is isolated, reported, and makes the final exit code
-1 after the remaining tasks are processed. `--json` returns the stable object
-fields `mode`, `archive_glob`, `scanned_tasks`, `to_write`, `skipped`, and
-`errors`; the default renderer prints the same facts as a stable table. Every
-`to_write` table row includes `source_artifacts`, `missing_fields`, and
-`confidence` so a human preview preserves the JSON decision evidence.
-
-Dry-run and write share discovery, extraction, build, and schema validation.
-Write mode creates only missing summaries unless `--force` is present, uses a
-same-directory temporary file plus `os.replace()`, then rereads and validates
-the result. No invocation creates a committed global archive index. Per-task
-errors contain only repo-relative task/artifact paths and reasons, never source
-content or secrets.
-
 ### Extension Installation Verification Runtime
 
 The stable runtime commands for `guru-verify-extension-installation` are
 `execute-extension-verification`, `record-extension-verification`,
 `check-extension-verification`, and `invoke-extension-verification`. Canonical
-package wrappers call those commands only through `run-skill-command`.
-The runtime exposes no `verify-marketplace` command or second installation
-implementation; current closeout invokes the owner package commands above.
+package wrappers and current closeout invoke those commands only through
+`run-skill-command`.
 
 `marketplace_verification_required()` returns changed-surface facts only and
 does not decide applicability for the active Skill. Closeout uses those same
 candidate-surface facts after rebuilding the reviewed path set from the pinned
-task base through `branch_review_commit`; no gate field or old artifact supplies
-a fallback path set.
+task base through `branch_review_commit`.
 
 The executor accepts an already AI-selected closed capability list, resolves a
 credentials-safe remote locator, freezes the requested ref with
 `git ls-remote`, checks out that exact HEAD, and runs the selected clean install,
 preview/switch, preset, update/reapply, ownership, sidecar, discovery, platform,
 README, and redaction probes. It records sanitized argv, exit code, output
-digest/size, capability status, asset digests, frozen ownership inventory, and
+digest/size, capability status, asset digests, current ownership inventory, and
 sidecar facts. It neither chooses the capability set nor turns command success
 into `verified`.
 
@@ -1192,11 +1156,9 @@ They require the current active-task pointer, reject archived/completed tasks,
 match public `task_ref`/`repo_ref` to current `task.json` and repository facts,
 match the live branch, and run the shared workspace-boundary validator using
 the current task, ignored runtime mapping, and live Git worktree inventory.
-Existing `task-start-context.json` may be read once by the dedicated read-only
-identity resolver but is never generated or required by a current invocation.
-Wrong-task and wrong-worktree invocations fail before command execution,
-artifact mutation, or DTO projection. Session-only standalone mode bypasses
-only the task-specific checks and remains repository-write-free.
+Wrong-task, missing-identity, and wrong-worktree invocations fail before command
+execution, artifact mutation, or DTO projection. Session-only standalone mode
+bypasses only the task-specific checks and remains repository-write-free.
 
 The public invocation reruns the checker, reads the actual exit only from the
 checked owner result, selects that exit's schema, and emits one minimal DTO.
@@ -1206,10 +1168,9 @@ evidence records the conflict and returns `blocked` without fabricating an
 execution profile. A taskless installation failure also returns a standalone
 `blocked` report rather than a false task-work route.
 
-The ownership fact reader consumes the historically named `legacy_entries`
-historical table, immutable baseline digest, and migration-payload digest. Any
-active `transitional_legacy`, `unclassified`, or new legacy owner fails
-verification.
+The ownership fact reader consumes only current schema 3.0: exactly 11 Guru
+rules, nine managed claims, and three additive overlays. Non-current schema,
+additional fields, unknown claims, or unexpected overlays fail verification.
 Raw command output, credential URLs, tokens, and temporary repository locators
 are never retained; only safe locators and digest/size facts cross the runtime
 boundary.

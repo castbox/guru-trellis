@@ -373,7 +373,7 @@ def main() -> int:
     run("git", "add", ".", cwd=source)
     run("git", "commit", "-qm", "fixture base", cwd=source)
     base_head = run("git", "rev-parse", "HEAD", cwd=source)
-    developer_identity_bytes = b"name=legacy-installed-identity\n"
+    developer_identity_bytes = b"name=existing-installed-identity\n"
     if args.existing_developer_identity:
         (source / ".trellis/.developer").write_bytes(developer_identity_bytes)
 

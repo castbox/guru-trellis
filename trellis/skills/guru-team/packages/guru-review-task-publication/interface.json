@@ -18,7 +18,7 @@
   },
   "entry_preconditions": [
     {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and publication commands", "binding": "complete current Guru Team preset", "freshness": "validated before each command"},
-    {"id": "task_workspace", "evidence": "task start context and portable worktree mapping", "binding": "actual root equals expected task worktree", "freshness": "rebuilt before record and check"},
+    {"id": "task_workspace", "evidence": "current task.json, ignored runtime mapping and live Git worktree facts", "binding": "actual root equals expected task worktree", "freshness": "rebuilt before record and check"},
     {"id": "task_identity", "evidence": "active task.json and issue scope identity", "binding": "task, branch, issue and in_progress status", "freshness": "current task reread"},
     {"id": "branch_review_handoff", "evidence": "guru-review-branch passed DTO plus checked owner result", "binding": "task, branch_review_commit and reviewed-content identity", "freshness": "the Branch Review checker and reviewed-content engine are rerun before each publication check"},
     {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},

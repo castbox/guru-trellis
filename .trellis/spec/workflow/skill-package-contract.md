@@ -493,10 +493,10 @@ self-reentry, the closed projection operations, stdout-only and task-local
 private state, distinct exits, and stable errors, but never enters production
 registry, extension inventories, workflow routes, or installed platform roots.
 
-### Stage 0 Production Activation
+### Current Intake Production Activation
 
-`stage0-minimal-handoff-v1` is an immutable historical source record. Its
-original bytes contain exactly these packages and exits:
+The live registry and current Interface 1.3 packages contain exactly these
+Intake packages and exits:
 
 - `guru-sync-base`: `synced`, `skipped`, `blocked`;
 - `guru-discover-change-context`: `context_ready`, `refresh_base`, `blocked`;
@@ -505,19 +505,16 @@ original bytes contain exactly these packages and exits:
 - `guru-review-contract-wording`: `pass`, `content_changed`, `blocked`;
 - `guru-review-change-request`: `ready`, `clarify_requirements`,
   `review_wording`, `refresh_context`, `blocked`;
-- `guru-create-task-workspace`: `created`, `refresh_review`, `cancelled`,
-  `blocked`.
+- `guru-create-task-workspace`: `created`, `refresh_review`, `blocked`.
 
-All six current packages select `guru-team-skill-interface-1.3`. The frozen v1
-and v2 Stage 0 records remain byte-identical solely as historical source
-material; neither is projected into the live registry, discovery DTO,
-invocation, installation provenance, or installed schema graph. The current
+All six packages select `guru-team-skill-interface-1.3`. The current
 six-package/23-exit contract is derived only from the live registry, current
 Interface 1.3 packages, workflow markers, extension inventories, and selected
-platform copies. User refusal stops before recorder/executor and emits no
-`cancelled` DTO, while `guru-sync-base.repo_root` and `route` are optional
-scalar arguments derived by the runtime when omitted. A partially updated
-current Stage 0 graph is invalid even when each package validates in isolation.
+platform copies. User refusal stops before recorder/executor and emits no DTO,
+while optional `guru-sync-base` scalar arguments are derived by the runtime
+when omitted. A partially updated current Intake graph is invalid even when
+each package validates in isolation. Validation and installation consume exactly
+the live registry and current package graph.
 
 The six package input contracts are consumer-owned and closed. `guru-sync-base`
 retains a scalar CLI signature; the other packages use discriminator-based
@@ -556,8 +553,8 @@ initial or standalone profiles remains an invalid owner projection.
 
 `trellis/skills/guru-team/contracts/production-current.json` with contract id
 `production-current-v1` is the sole current planning/check/commit manifest. It
-does not modify the ordered Stage 0 history or current six-Skill/23-exit Stage 0
-contract. The production contract contains exactly:
+extends the live six-Skill/23-exit Intake contract. The production contract
+contains exactly:
 
 - `guru-approve-task-plan`: `approved`, `revision_required`, `clarify_scope`,
   `blocked`;
@@ -629,8 +626,7 @@ required-set equality, no-overwrite merge, and full target-schema validity;
 all other Skill/workflow/stop consumers keep their existing contracts.
 
 Active closure is derived from the live registry, the production current
-manifest, and every complete active Interface 1.3 row. Frozen Stage 0 source
-integrity is checked separately and never contributes an installed row. Every
+manifest, and every complete active Interface 1.3 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
 The current package cardinality assertion is thirteen active Skills and 51
@@ -1155,7 +1151,7 @@ content heuristics:
 | unknown local edit | preserve target, write canonical bytes to `.new`, fail closed |
 | missing or invalid provenance with different bytes | preserve target, write `.new` or fail before mutation |
 
-The installed manifest binds registry digest/schema version, reserved and
+The installed manifest binds registry digest/schema version, planned and
 active ids, selected platforms, package/interface/tree digests, each installed
 repo-relative path, file digest, executable bit, managed removals, conflicts,
 and sidecar outcome. `files[]` is the complete current managed-file inventory;
@@ -1217,7 +1213,7 @@ Every decoded JSON value is standard, finite where numeric, and type-checked
 before set, hash, path, or string operations; malformed values return
 structured `failed` errors without a Python traceback. `installed` validates
 manifest provenance, selected roots, installed
-file/package inventory, hashes and modes, reserved absence, unexpected or
+file/package inventory, hashes and modes, planned absence, unexpected or
 unknown platform copies, drift, and declared-versus-actual `.new`/`.bak` files.
 Both modes report objective facts and fail with
 non-zero status on structural errors; neither substitutes for an AI review.
@@ -1227,7 +1223,7 @@ non-zero status on structural errors; neither substitutes for an AI review.
 After `trellis update`, reapply the selected marketplace workflow, reapply the
 Guru Team preset, resolve every `.new`/`.bak`, and rerun source, installed, and
 dogfood drift validation. Tests must cover registry/interface failures,
-missing/reserved/unknown/multiple/unmapped routes, schema and provenance
+missing/planned/unknown/multiple/unmapped routes, schema and provenance
 failure, every managed-hash transition, platform selection, fixture discovery,
 and clean throwaway update/reapply.
 
@@ -1244,9 +1240,9 @@ non-empty `evals[]` whose case ids are unique stable strings. Each case owns a
 prompt, expected typed exit, human-readable expected output, optional exact
 input-profile reference, optional non-empty regular files below `evals/files/`,
 and optional non-empty deterministic/semantic assertion groups. Unknown fields,
-`null`, unsafe paths, symlinks, unknown profile/exit/assertion references, and
-canonical `expectations` fail closed. Legacy `expectations[]` is accepted only
-by the one-way migration adapter and never written as canonical corpus.
+including `expectations`, `null`, unsafe paths, symlinks, and unknown
+profile/exit/assertion references fail closed. Adapters accept only this current
+corpus shape and never translate or rewrite another input contract.
 
 The eval runner discovers the Interface 1.3 public invocation and executes its
 declared wrapper for every selected case. It records the actual typed exit and
@@ -1295,7 +1291,7 @@ locators, case prompt, staged files, and helper read/invoke commands, never
 canonical package/corpus locators, inline Skill bytes, private runtime source,
 corpus assertions, grader policy, or the runner-private runtime target.
 Wrappers reach required runtime only through the runner-owned public invocation
-boundary. An explicit compatibility/test dispatcher override may select the
+boundary. An explicit test dispatcher override may select the
 runner-private target, but normal execution never depends on an environment
 override.
 
@@ -1318,9 +1314,9 @@ Every writable run result lives below an explicit absolute temporary run root
 outside the repository and package. Closed evidence is diagnostic comparison
 data, not public Skill I/O, a consumer handoff, gate, checkpoint, audit chain,
 or release proof. Normal workflow and standalone invocation never read eval
-corpus, fixtures, adapter descriptors, or runner evidence. The six Stage 0
-packages change atomically through #145, and the three production packages
-change atomically through the separate #146 activation unit.
+corpus, fixtures, adapter descriptors, or runner evidence. The six Intake
+packages and the three planning/check/commit packages are each validated as a
+complete current activation unit.
 
 ## Branch Review Owner And Active Publication Bridge
 

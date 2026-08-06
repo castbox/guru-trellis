@@ -22,14 +22,13 @@
     "ownership": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["frozen_transitional_legacy_count", "new_legacy_entries"],
+      "required": ["current_contract", "schema_version", "inventory_id", "guru_owned_rule_count", "managed_claim_count"],
       "properties": {
-        "frozen_transitional_legacy_count": {"type": "integer", "minimum": 0},
-        "new_legacy_entries": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {"type": "string", "minLength": 1}
-        }
+        "current_contract": {"type": "boolean"},
+        "schema_version": {"enum": ["3.0", null]},
+        "inventory_id": {"enum": ["guru-team-upstream-ownership", null]},
+        "guru_owned_rule_count": {"type": "integer", "minimum": 0},
+        "managed_claim_count": {"type": "integer", "minimum": 0}
       }
     },
     "sidecars": {"type": "array", "items": {"type": "string", "minLength": 1}}

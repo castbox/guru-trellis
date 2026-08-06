@@ -19,7 +19,7 @@ Before editing workflow behavior:
 
 1. Read [workflow-contract.md](./workflow-contract.md).
 2. Read [companion-scripts.md](./companion-scripts.md) when changing Bash or Python helpers.
-3. Read [data-contracts.md](./data-contracts.md) when changing config, task-start-context, runtime boundary, review-gate, issue ledger, or PR payload data.
+3. Read [data-contracts.md](./data-contracts.md) when changing config, current task identity, runtime boundary, review-gate, issue ledger, or PR payload data.
 4. Read [skill-package-contract.md](./skill-package-contract.md) when changing public workflow skills, registry/interface schemas, workflow markers, installation, or typed exits.
 5. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
 6. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
@@ -38,10 +38,9 @@ Before editing workflow behavior:
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Registry 1.2 accepts only planned and active rows. Every active row selects
   Interface 1.3, covering thirteen workflow packages and 51 external exits;
-  global workflow markers are 13 invokes, 51 exits, and 28 targets. The frozen
-  Stage 0 records keep their original bytes as historical assets, but current
-  registry, discovery, invocation, installation, and validation do not project
-  their retired fields. The planning/check/commit closure is defined only by
+  global workflow markers are 13 invokes, 51 exits, and 28 targets. Registry,
+  discovery, invocation, installation, and validation read only the live
+  current package graph. The planning/check/commit closure is defined only by
   `contracts/production-current.json` with contract id
   `production-current-v1`; it contains current profiles, exits, authoring seeds,
   schemas, examples, and eval bindings without an alternate execution path.
@@ -89,11 +88,10 @@ Before editing workflow behavior:
   checked-verification projection bridge remain unchanged. Upstream
   `trellis-finish-work` entries are owned only by official Trellis and are not
   installed or managed by the Guru preset.
-- The runtime keeps a minimal read-only loader for existing
-  `task-start-context.json` files. It projects only identity needed by a direct
-  consumer and ignores retired authorization/intake fields; new tasks use
-  official `task.json` plus `issue-scope-ledger.json` and no current schema is
-  distributed for the legacy file.
+- Current task and worktree identity comes only from official `task.json`, the
+  ignored runtime mapping, the current checkout, and live `git worktree list`
+  facts. Missing or mismatched current identity fails closed; no alternate task
+  identity artifact participates in resolution.
 
 ## Required Validation
 
@@ -167,5 +165,5 @@ The current package graph contains thirteen active Skills and 51 external exits
 with twelve target-owned `skill_input_authoring_seed` handoffs. Global workflow
 markers are 13 invokes, 51 exits, and 28 targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, two terminal
-published evals, checked-verification projection bridge, and installed
-integration coverage, while #132 owns physical upstream overlay cleanup.
+published evals, checked-verification projection bridge, current ownership
+validation, and installed integration coverage.

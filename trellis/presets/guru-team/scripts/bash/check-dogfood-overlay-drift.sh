@@ -9,11 +9,11 @@ usage() {
   cat <<'USAGE'
 Usage: check-dogfood-overlay-drift.sh [--repo <path>]
 
-Validate the frozen 43-path removed-tombstone identity and the exact Guru-owned
-managed claims, then compare the three canonical Guru Team additive overlays
+Validate the current Guru-owned claims and managed asset/package closure, then
+compare the three canonical Guru Team finish overlays
 with installed dogfood copies in this repository. These digests provide normal
 version/drift binding, not an authenticity boundary. The command is read-only
-and exits non-zero on ownership failure or when any additive overlay copy is
+and exits non-zero on ownership failure or when any finish overlay copy is
 missing or different.
 USAGE
 }
@@ -75,7 +75,7 @@ done < <(find "$OVERLAY_ROOT" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' 
 
 if [[ "$missing" -gt 0 || "$changed" -gt 0 ]]; then
   printf 'Dogfood overlay drift detected: %s missing, %s changed\n' "$missing" "$changed" >&2
-  printf 'Restore upstream-owned files with the official Trellis update or required upgrade, then run trellis/presets/guru-team/scripts/bash/apply.sh --repo %q and inspect any .new/.bak files.\n' "$REPO_ROOT" >&2
+  printf 'Review the current Guru-owned overlay drift, then run trellis/presets/guru-team/scripts/bash/apply.sh --repo %q and inspect any .new/.bak files.\n' "$REPO_ROOT" >&2
   exit 1
 fi
 

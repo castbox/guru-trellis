@@ -1,0 +1,10 @@
+{
+  "mutation": {
+    "type": "add_inventory_field",
+    "name": "history",
+    "value": []
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["fixed_key_set_mismatch"],
+  "assert_cli_json": true
+}

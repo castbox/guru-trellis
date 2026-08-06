@@ -1,0 +1,14 @@
+{
+  "mutation": {
+    "type": "classify_guru_paths",
+    "cases": [
+      {"path": ".trellis/guru-team/config.yml", "expected_rule": "installed-runtime"},
+      {"path": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md", "expected_rule": "canonical-skill-root"},
+      {"path": "guru-check-task", "expected_rule": "canonical-skill-id"},
+      {"path": ".agents/skills/guru-check-task/SKILL.md", "expected_rule": "shared-skill-discovery"},
+      {"path": ".codex/prompts/guru-finish-work.md", "expected_rule": "codex-finish-entry"}
+    ]
+  },
+  "expected_status": "ok",
+  "expected_error_codes": []
+}

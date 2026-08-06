@@ -34,7 +34,7 @@ command -v git >/dev/null 2>&1 || {
 
 ownership_checkpoint() {
   local checkpoint="$1"
-  printf 'Upstream ownership checkpoint: %s\n' "$checkpoint"
+  printf 'Current Guru ownership checkpoint: %s\n' "$checkpoint"
   "$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json
 }
 
@@ -82,59 +82,6 @@ if not path.is_file():
     raise SystemExit(f"expected regular file: {path}")
 print(hashlib.sha256(path.read_bytes()).hexdigest())
 PY
-}
-
-upstream_tombstone_state() {
-  python3 - \
-    "$REPO_ROOT/trellis/presets/guru-team/ownership/upstream-ownership.json" \
-    "$1" <<'PY'
-import hashlib
-import json
-import stat
-import sys
-from pathlib import Path
-
-inventory = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-root = Path(sys.argv[2])
-entries = inventory["legacy_entries"]
-if len(entries) != 43:
-    raise SystemExit(f"expected 43 removed tombstones, found {len(entries)}")
-state = {}
-for entry in entries:
-    relative = entry["path"]
-    path = root / relative
-    if path.is_symlink():
-        raise SystemExit(f"upstream tombstone path is a symlink: {relative}")
-    if path.is_file():
-        state[relative] = {
-            "state": "file",
-            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-            "mode": stat.S_IMODE(path.stat().st_mode),
-        }
-    elif path.exists():
-        raise SystemExit(f"upstream tombstone path is not a regular file: {relative}")
-    else:
-        state[relative] = {"state": "missing"}
-present = sum(value["state"] == "file" for value in state.values())
-missing = sum(value["state"] == "missing" for value in state.values())
-if (present, missing) != (37, 6):
-    raise SystemExit(
-        f"unexpected clean-init tombstone shape: present={present} missing={missing}"
-    )
-print(json.dumps(state, sort_keys=True, separators=(",", ":")))
-PY
-}
-
-assert_upstream_tombstone_state() {
-  local root="$1"
-  local expected="$2"
-  local label="$3"
-  local current
-  current="$(upstream_tombstone_state "$root")"
-  if [[ "$current" != "$expected" ]]; then
-    echo "Preset changed Trellis upstream-owned paths during $label" >&2
-    exit 2
-  fi
 }
 
 assert_official_state_absent() {
@@ -1281,7 +1228,6 @@ if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
 fi
 
 ownership_checkpoint "initial-init-before-preset-apply"
-INITIAL_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"
 
 test -f "$TARGET/.trellis/.developer"
 WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"
@@ -1384,7 +1330,6 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/execute-finalization-transition
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
-test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
 python3 - \
   "$TARGET/.trellis/guru-team/extension.json" \
@@ -1396,23 +1341,30 @@ import sys
 
 manifest_path = pathlib.Path(sys.argv[1])
 root = pathlib.Path(sys.argv[2])
-inventory = json.loads(pathlib.Path(sys.argv[3]).read_text(encoding="utf-8"))
+ownership = json.loads(pathlib.Path(sys.argv[3]).read_text(encoding="utf-8"))
 payload = json.loads(manifest_path.read_text(encoding="utf-8"))
 extension = payload["extension"]
 install = payload["install"]
 skills = payload["skill_packages"]
-upstream_migration = payload["upstream_migration"]
 api = extension["public_api"]
 assets = install["managed_assets"]
-tombstone_paths = {entry["path"] for entry in inventory["legacy_entries"]}
+assert payload["schema_version"] == "2.0"
+assert set(payload) == {
+    "schema_version", "extension", "installed_at", "source", "install",
+    "skill_packages", "overlays", "notes",
+}
+assert ownership["schema_version"] == "3.0"
+assert ownership["inventory_id"] == "guru-team-upstream-ownership"
+assert ownership["overlay_root"] == "trellis/presets/guru-team/overlays"
+assert len(ownership["guru_owned_rules"]) == 11
+assert len(ownership["managed_path_claims"]) == 9
 assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.5-guru.25"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 58
+assert len(assets) == 57
 assert all((root / path).is_file() for path in assets)
 skills_root = root / ".trellis/guru-team/skills"
-assert not (skills_root / "migrations").exists()
 assert {
     path.name for path in (skills_root / "schemas").iterdir() if path.is_file()
 } == {
@@ -1427,16 +1379,6 @@ assert {
     "skill-interface-1.3.schema.json",
     "skill-registry.schema.json",
 }
-assert len(tombstone_paths) == 43
-assert not (set(assets) & tombstone_paths)
-assert upstream_migration["status"] == "ok"
-assert upstream_migration["counts"] == {
-    "already_missing": 6,
-    "preserved_clean_upstream": 37,
-}
-assert upstream_migration["removals"] == []
-assert upstream_migration["conflicts"] == []
-assert upstream_migration["sidecars"] == []
 for artifact in (
     "pr-body.md", "review-gate.json", "pr-readiness.json",
     "closeout-plan.json", "finish-summary.json", "context-discovery.json",
@@ -1462,7 +1404,7 @@ for command in (
     "execute-extension-verification", "record-extension-verification",
     "check-extension-verification", "invoke-extension-verification",
     "format-merge-commit",
-    "backfill-finish-summary", "check-skill-packages",
+    "check-skill-packages",
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
@@ -1665,9 +1607,6 @@ test ! -e "$TARGET/.claude/skills/guru-example-action"
   trellis.skills.guru-team.tests.test_skill_packages.EvalRunnerTests.test_four_adapters_execute_same_corpus_and_expected_non_success_exits)
 verify_finish_family_integration "initial"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
-mkdir -p "$TARGET/.trellis/tasks/archive"
-BACKFILL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 0; assert payload["to_write"] == []; assert payload["skipped"] == []; assert payload["errors"] == []' <<<"$BACKFILL_JSON"
 python3 - "$TARGET" <<'PY'
 import json
 import sys
@@ -1741,7 +1680,6 @@ for relative in \
   grep -q 'guru-verify-extension-installation' "$TARGET/$relative"
   grep -q 'guru-finalize-task' "$TARGET/$relative"
 done
-assert_upstream_tombstone_state "$TARGET" "$INITIAL_UPSTREAM_STATE" "initial preset apply"
 test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"
@@ -2994,7 +2932,6 @@ grep -q 'guru-skill-invoke: {"skill":"guru-review-branch","required":true}' "$TA
 )
 verify_task_publication_validator_wrappers "after-trellis-update"
 ownership_checkpoint "post-update-before-workflow-and-preset-reapply"
-POST_UPDATE_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"
 (
   cd "$TARGET"
   trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
@@ -3005,7 +2942,6 @@ apply_local_workflow_sample
   --platform claude \
   --platform codex \
   --platform cursor
-assert_upstream_tombstone_state "$TARGET" "$POST_UPDATE_UPSTREAM_STATE" "post-update workflow and preset reapply"
 ownership_checkpoint "post-preset-reapply-before-final-checks"
 verify_task_publication_validator_wrappers "after-preset-reapply"
 
@@ -3036,7 +2972,6 @@ grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_
 grep -q 'guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}}' "$TARGET/.trellis/workflow.md"
 test -f "$TARGET/.trellis/guru-team/schemas/finish-summary.schema.json"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
-test -x "$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh"
@@ -3228,8 +3163,6 @@ PY
 record_planning_contract_wording "$POST_UPDATE_TASK_REL"
 record_and_check_planning_approval "$POST_UPDATE_TASK_REL" "after-update"
 "$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
-BACKFILL_AFTER_UPDATE_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/backfill-finish-summary.sh" --root "$TARGET" --json --dry-run)"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["mode"] == "dry-run"; assert payload["scanned_tasks"] == 2; assert len(payload["skipped"]) == 2; assert all(row["reason"] == "finish-summary exists" for row in payload["skipped"]); assert payload["errors"] == []' <<<"$BACKFILL_AFTER_UPDATE_JSON"
 grep -q '^session_auto_commit: false$' "$TARGET/.trellis/config.yaml"
 grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
 

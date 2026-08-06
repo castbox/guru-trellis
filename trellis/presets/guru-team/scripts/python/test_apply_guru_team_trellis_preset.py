@@ -418,22 +418,6 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
-    @staticmethod
-    def migration_tombstone(relative: str, payload: bytes, *, generated: bool) -> dict[str, object]:
-        return {
-            "path": relative,
-            "generated_in_clean_init": generated,
-            "migration_payload_sha256s": [hashlib.sha256(payload).hexdigest()],
-        }
-
-    def write_template_hashes(self, hashes: dict[str, str]) -> None:
-        path = self.repo / preset.TEMPLATE_HASHES_RELATIVE
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps({"__version": "0.6.5", "hashes": hashes}, indent=2) + "\n",
-            encoding="utf-8",
-        )
-
     def test_skill_manifest_file_order_is_stable_across_hash_seeds_and_reapply(self) -> None:
         module_path = Path(preset.__file__).resolve()
         guru_root = preset.guru_root_from_script()
@@ -557,7 +541,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/format-merge-commit.sh"), preset.MANAGED_ASSET_PATHS)
-        self.assertIn(Path("scripts/bash/backfill-finish-summary.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-workspace-boundary.sh").is_file())
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh").is_file())
@@ -610,17 +593,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh").is_file())
         self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/format-merge-commit.sh", os.X_OK))
-        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/backfill-finish-summary.sh").is_file())
-        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/backfill-finish-summary.sh", os.X_OK))
         self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
         self.assertIn("session_auto_commit: false", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
         self.assertIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
-        migration = payload["upstream_migration"]
-        self.assertEqual(migration["status"], "ok")
-        self.assertEqual(migration["counts"], {"already_missing": 43})
-        self.assertEqual(migration["removals"], [])
-        self.assertEqual(migration["conflicts"], [])
-        self.assertEqual(migration["sidecars"], [])
         self.assertEqual(payload["replaced_overlays"], [])
         self.assertFalse((self.repo / ".agents/skills/trellis-start/SKILL.md").exists())
         self.assertFalse((self.repo / ".trellis/agents/implement.md").exists())
@@ -652,6 +627,22 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 (self.guru_root / "trellis/presets/guru-team/overlays" / relative).read_bytes(),
             )
         self.assertFalse((self.repo / ".claude").exists())
+
+    def test_non_current_installed_manifest_fails_before_reapply(self) -> None:
+        self.install()
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["schema_version"] = "not-current"
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        before = manifest_path.read_bytes()
+
+        with self.assertRaisesRegex(SystemExit, "does not match the current contract"):
+            self.install()
+
+        self.assertEqual(manifest_path.read_bytes(), before)
 
     def test_default_reapply_does_not_restore_removed_unselected_claude_guru_entry(self) -> None:
         self.install({"claude", "codex", "cursor"})
@@ -709,7 +700,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         self.assertEqual(payload["platforms"], ["claude"])
         self.assertFalse(payload["all_platforms"])
-        self.assertEqual(payload["upstream_migration"]["counts"], {"already_missing": 43})
         self.assertTrue((self.repo / ".agents/skills/guru-create-task-workspace/SKILL.md").is_file())
         self.assertTrue((self.repo / ".claude/skills/guru-create-task-workspace/SKILL.md").is_file())
         installed_finish_integration = (
@@ -739,11 +729,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(all_platforms)
         self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
         ownership_facts = payload["upstream_ownership_validation"]
-        self.assertEqual(ownership_facts["active_count"], 0)
-        self.assertEqual(ownership_facts["removed_count"], 43)
-        self.assertEqual(ownership_facts["migration_payload_count"], 78)
+        self.assertEqual(ownership_facts["schema_version"], "3.0")
+        self.assertEqual(ownership_facts["overlay_count"], 3)
+        self.assertEqual(ownership_facts["active_skill_count"], 13)
         self.assertEqual(ownership_facts["managed_claim_count"], 9)
-        self.assertEqual(payload["upstream_migration"]["counts"], {"already_missing": 43})
         self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
         guru_entry_bytes = []
@@ -759,16 +748,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.assertEqual(installed.read_bytes(), canonical.read_bytes())
             guru_entry_bytes.append(canonical.read_bytes())
         self.assertEqual(len(set(guru_entry_bytes)), 1)
-        inventory = json.loads(
-            (
-                self.guru_root
-                / "trellis/presets/guru-team/ownership/upstream-ownership.json"
-            ).read_text(encoding="utf-8")
-        )
-        tombstone_paths = {entry["path"] for entry in inventory["legacy_entries"]}
-        self.assertEqual(len(tombstone_paths), 43)
-        self.assertEqual([path for path in tombstone_paths if (overlay_root / path).exists()], [])
-        self.assertEqual([path for path in tombstone_paths if (self.repo / path).exists()], [])
         installed_manifest = json.loads(
             (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
         )
@@ -778,16 +757,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         )
         self.assertEqual(installed_manifest["install"]["selected_platforms"], ["claude", "codex", "cursor"])
         self.assertTrue(installed_manifest["install"]["all_platforms"])
-        self.assertEqual(len(managed_assets), 58)
-        preset_readme = (
-            self.guru_root / "trellis/presets/guru-team/README.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn(
-            f"`install.managed_assets` contains exactly {len(managed_assets)}",
-            preset_readme,
+        self.assertEqual(
+            len(managed_assets),
+            len(preset.MANAGED_ASSET_PATHS) + len(GURU_FINISH_ENTRIES) + 1,
         )
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
-        self.assertEqual(sorted(set(managed_assets) & tombstone_paths), [])
         self.assertNotIn(installed_integration_path, managed_assets)
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
@@ -934,131 +908,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
         self.assertFalse((self.repo / ".claude").exists())
 
-    def test_clean_upstream_tombstone_is_preserved_from_template_hashes(self) -> None:
-        relative = ".codex/prompts/trellis-clean.md"
-        official_payload = b"official Trellis payload\n"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        target.write_bytes(official_payload)
-        self.write_template_hashes({relative: hashlib.sha256(official_payload).hexdigest()})
-        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
-
-        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-        self.assertEqual(result["status"], "ok")
-        self.assertEqual(result["counts"], {"preserved_clean_upstream": 1})
-        self.assertEqual(result["paths"][0]["action"], "preserved_clean_upstream")
-        self.assertEqual(target.read_bytes(), official_payload)
-        self.assertFalse(target.with_name(f"{target.name}.new").exists())
-
-    def test_generated_known_guru_tombstone_blocks_for_official_update(self) -> None:
-        relative = ".agents/skills/trellis-start/SKILL.md"
-        historical_payload = b"historical generated Guru payload\n"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        target.write_bytes(historical_payload)
-        tombstone = self.migration_tombstone(relative, historical_payload, generated=True)
-
-        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-        self.assertEqual(result["status"], "conflict")
-        self.assertEqual(result["counts"], {"blocked_known_guru_payload": 1})
-        self.assertEqual(result["conflicts"][0]["reason"], "known_guru_payload_requires_official_update")
-        self.assertEqual(target.read_bytes(), historical_payload)
-        self.assertEqual(result["sidecars"], [])
-
-    def test_legacy_only_known_guru_tombstone_is_removed(self) -> None:
-        relative = ".codex/prompts/trellis-start.md"
-        historical_payload = b"historical legacy-only Guru payload\n"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        target.write_bytes(historical_payload)
-        tombstone = self.migration_tombstone(relative, historical_payload, generated=False)
-
-        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-        self.assertEqual(result["status"], "ok")
-        self.assertEqual(result["counts"], {"removed_legacy_guru_payload": 1})
-        self.assertEqual(result["removals"], [relative])
-        self.assertFalse(target.exists())
-
-    def test_unknown_tombstone_edit_is_preserved_with_deterministic_sidecar(self) -> None:
-        relative = ".cursor/hooks/session-start.py"
-        local_payload = b"local Trellis customization\n"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        target.write_bytes(local_payload)
-        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
-
-        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-        sidecar = target.with_name(f"{target.name}.new")
-        self.assertEqual(result["status"], "conflict")
-        self.assertEqual(result["counts"], {"conflict_unknown_local_edit": 1})
-        self.assertEqual(result["conflicts"][0]["reason"], "unknown_local_edit")
-        self.assertEqual(result["sidecars"], [f"{relative}.new"])
-        self.assertEqual(target.read_bytes(), local_payload)
-        self.assertEqual(sidecar.read_bytes(), preset.upstream_tombstone_sidecar_content(relative))
-
-    def test_preexisting_tombstone_sidecars_block_reapply(self) -> None:
-        relative = ".codex/prompts/trellis-start.md"
-        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=False)
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-
-        for suffix in (".new", ".bak"):
-            with self.subTest(suffix=suffix):
-                sidecar = target.with_name(f"{target.name}{suffix}")
-                sidecar.write_text("unresolved sidecar\n", encoding="utf-8")
-
-                result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-                self.assertEqual(result["status"], "conflict")
-                self.assertIn(f"{relative}{suffix}", result["sidecars"])
-                self.assertIn(
-                    "unresolved_sidecar",
-                    {item["reason"] for item in result["conflicts"]},
-                )
-                self.assertEqual(sidecar.read_text(encoding="utf-8"), "unresolved sidecar\n")
-                sidecar.unlink()
-
-    def test_unsafe_tombstone_path_is_preserved_and_blocks(self) -> None:
-        relative = ".codex/hooks/session-start.py"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        outside = self.repo / "outside-session-start.py"
-        outside.write_text("outside payload\n", encoding="utf-8")
-        target.symlink_to(outside)
-        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
-
-        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-        self.assertEqual(result["status"], "conflict")
-        self.assertEqual(result["counts"], {"conflict_unsafe_path": 1})
-        self.assertEqual(result["conflicts"][0]["reason"], "unsafe_path_boundary")
-        self.assertTrue(target.is_symlink())
-        self.assertEqual(outside.read_text(encoding="utf-8"), "outside payload\n")
-
-    def test_invalid_template_hash_provenance_is_reported_for_unknown_edit(self) -> None:
-        relative = ".codex/hooks/session-start.py"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        target.write_bytes(b"local edit\n")
-        template_hashes = self.repo / preset.TEMPLATE_HASHES_RELATIVE
-        template_hashes.parent.mkdir(parents=True, exist_ok=True)
-        template_hashes.write_text(
-            json.dumps({"__version": "0.6.5", "hashes": {relative: "not-a-digest"}}) + "\n",
-            encoding="utf-8",
-        )
-        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
-
-        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-        self.assertEqual(result["status"], "conflict")
-        self.assertEqual(result["template_hashes"]["status"], "invalid")
-        self.assertEqual(result["template_hashes"]["error"], "invalid_hash_entry")
-        self.assertEqual(result["conflicts"][0]["reason"], "invalid_template_hash_provenance")
-
     def test_throwaway_verifier_cleans_preview_and_scans_sidecars_after_reapply(self) -> None:
         verifier = (
             self.guru_root
@@ -1108,16 +957,6 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertLess(post_reapply_ownership, final_scan)
         self.assertEqual(verifier.count('ownership_checkpoint "'), 3)
         self.assertIn('WORKSPACE_SENTINEL="$TARGET/.trellis/workspace/private/shared-start-secret-journal.md"', verifier)
-        self.assertIn('INITIAL_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"', verifier)
-        self.assertIn('POST_UPDATE_UPSTREAM_STATE="$(upstream_tombstone_state "$TARGET")"', verifier)
-        self.assertIn(
-            'assert_upstream_tombstone_state "$TARGET" "$INITIAL_UPSTREAM_STATE" "initial preset apply"',
-            verifier,
-        )
-        self.assertIn(
-            'assert_upstream_tombstone_state "$TARGET" "$POST_UPDATE_UPSTREAM_STATE" "post-update workflow and preset reapply"',
-            verifier,
-        )
         self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", verifier)
         self.assertIn('"id":"guru-requirements-clear-router"', verifier)
         self.assertNotIn(
@@ -1160,10 +999,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
             verifier,
         )
-        self.assertIn("assert len(assets) == 58", verifier)
-        self.assertIn("assert not (set(assets) & tombstone_paths)", verifier)
-        self.assertIn('"already_missing": 6', verifier)
-        self.assertIn('"preserved_clean_upstream": 37', verifier)
+        self.assertIn(
+            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
+            verifier,
+        )
+        self.assertIn('ownership["schema_version"] == "3.0"', verifier)
         self.assertIn('test -f "$TARGET/.codex/prompts/guru-finish-work.md"', verifier)
         self.assertIn('test -f "$TARGET/.claude/commands/guru/finish-work.md"', verifier)
         self.assertIn('test -f "$TARGET/.cursor/commands/guru-finish-work.md"', verifier)
@@ -1244,104 +1084,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         payload_loop = checker.index('while IFS= read -r source; do')
         self.assertLess(ownership_gate, payload_loop)
         self.assertIn("Missing executable ownership validator", checker)
-        self.assertIn("43-path removed-tombstone identity", checker)
-        self.assertIn("three canonical Guru Team additive overlays", checker)
-
-    def test_missing_tombstone_path_is_already_complete_without_heuristics(self) -> None:
-        relative = ".agents/skills/trellis-start/SKILL.md"
-        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
-
-        result = preset.migrate_removed_upstream_paths(self.repo, [tombstone])
-
-        self.assertEqual(result["status"], "ok")
-        self.assertEqual(result["counts"], {"already_missing": 1})
-        self.assertEqual(result["paths"], [{
-            "path": relative,
-            "generated_in_clean_init": True,
-            "action": "already_missing",
-        }])
-        self.assertEqual(result["conflicts"], [])
-        self.assertEqual(result["sidecars"], [])
-
-    def test_generated_known_guru_tombstone_blocks_staged_activation(self) -> None:
-        relative = ".agents/skills/trellis-start/SKILL.md"
-        historical_payload = b"historical generated Guru payload\n"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        target.write_bytes(historical_payload)
-        tombstone = self.migration_tombstone(relative, historical_payload, generated=True)
-
-        with mock.patch.object(preset, "load_removed_upstream_tombstones", return_value=[tombstone]):
-            result = self.install({"codex"})
-
-        self.assertEqual(result["upstream_migration"]["status"], "conflict")
-        self.assertEqual(
-            result["upstream_migration"]["counts"],
-            {"blocked_known_guru_payload": 1},
-        )
-        self.assertEqual(target.read_bytes(), historical_payload)
-        self.assertFalse(self.install_dst.exists())
-        self.assertFalse((self.repo / ".codex/prompts/guru-finish-work.md").exists())
-
-    def test_unknown_tombstone_conflict_materializes_only_remediation_sidecar(self) -> None:
-        relative = ".cursor/hooks/session-start.py"
-        local_payload = b"preserved local edit\n"
-        target = self.repo / relative
-        target.parent.mkdir(parents=True)
-        target.write_bytes(local_payload)
-        tombstone = self.migration_tombstone(relative, b"historical Guru payload\n", generated=True)
-
-        with mock.patch.object(preset, "load_removed_upstream_tombstones", return_value=[tombstone]):
-            result = self.install({"cursor"})
-
-        sidecar = target.with_name(f"{target.name}.new")
-        self.assertEqual(result["upstream_migration"]["status"], "conflict")
-        self.assertEqual(
-            result["upstream_migration"]["counts"],
-            {"conflict_unknown_local_edit": 1},
-        )
-        self.assertEqual(target.read_bytes(), local_payload)
-        self.assertEqual(sidecar.read_bytes(), preset.upstream_tombstone_sidecar_content(relative))
-        self.assertFalse(self.install_dst.exists())
-        self.assertFalse((self.repo / ".cursor/commands/guru-finish-work.md").exists())
-
-    def test_conflict_does_not_report_unactivated_legacy_removal(self) -> None:
-        removable_relative = ".codex/prompts/trellis-start.md"
-        removable_payload = b"historical legacy-only Guru payload\n"
-        removable_target = self.repo / removable_relative
-        removable_target.parent.mkdir(parents=True)
-        removable_target.write_bytes(removable_payload)
-
-        blocking_relative = ".agents/skills/trellis-start/SKILL.md"
-        blocking_payload = b"historical generated Guru payload\n"
-        blocking_target = self.repo / blocking_relative
-        blocking_target.parent.mkdir(parents=True)
-        blocking_target.write_bytes(blocking_payload)
-
-        tombstones = [
-            self.migration_tombstone(removable_relative, removable_payload, generated=False),
-            self.migration_tombstone(blocking_relative, blocking_payload, generated=True),
-        ]
-        with mock.patch.object(preset, "load_removed_upstream_tombstones", return_value=tombstones):
-            result = self.install({"codex"})
-
-        migration = result["upstream_migration"]
-        self.assertEqual(migration["status"], "conflict")
-        self.assertEqual(migration["removals"], [])
-        self.assertEqual(migration["pending_removals"], [removable_relative])
-        self.assertEqual(
-            migration["counts"],
-            {
-                "pending_legacy_guru_payload_removal": 1,
-                "blocked_known_guru_payload": 1,
-            },
-        )
-        actions = {item["path"]: item["action"] for item in migration["paths"]}
-        self.assertEqual(actions[removable_relative], "pending_legacy_guru_payload_removal")
-        self.assertEqual(actions[blocking_relative], "blocked_known_guru_payload")
-        self.assertEqual(removable_target.read_bytes(), removable_payload)
-        self.assertEqual(blocking_target.read_bytes(), blocking_payload)
-        self.assertFalse(self.install_dst.exists())
+        self.assertIn("current Guru-owned claims", checker)
+        self.assertIn("three canonical Guru Team finish overlays", checker)
 
     def test_main_reports_explicit_all_platforms_only_for_all_platforms_flag(self) -> None:
         with mock.patch(
@@ -1487,7 +1231,6 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
         self.assertTrue((self.install_dst / "skills/contracts/production-current.json").is_file())
         self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest.schema.json").is_file())
-        self.assertFalse((self.install_dst / "skills/migrations").exists())
         self.assertEqual(
             {
                 path.name
@@ -1572,6 +1315,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         manifest_path = self.repo / ".trellis/guru-team/extension.json"
         self.assertTrue(manifest_path.is_file())
         installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(installed["schema_version"], preset.INSTALLED_EXTENSION_SCHEMA_VERSION)
+        self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
         self.assertEqual(installed["extension"]["version"], "0.6.5-guru.25")
@@ -1772,11 +1517,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             )
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.3")
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
-        self.assertIn("backfill-finish-summary", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
-        self.assertEqual(payload["guru_team_extension"]["trellis_cli_compatibility"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
         self.assertIn("observed at apply time", installed["notes"])

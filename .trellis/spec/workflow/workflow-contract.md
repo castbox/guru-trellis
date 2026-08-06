@@ -213,5 +213,5 @@ trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 Combined acceptance also covers clean marketplace init, existing-project
 preview/switch, preset initial apply/reapply, official `trellis update`, version
 upgrade, Shared/Codex/Claude/Cursor discovery, managed hashes, `.new`/`.bak`,
-legacy cleanup, executable modes, README commands, and a recursive zero-sidecar
-scan.
+current ownership/installed-manifest validation, executable modes, README
+commands, and a recursive zero-sidecar scan.
