@@ -286,11 +286,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-06T04:40:48Z",
+  "installed_at": "2026-08-06T06:18:42Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "codex/177-content-identity-boundary",
-    "commit": "f4c41866f197cbb658d301e906571b0031cede2f",
+    "commit": "84735037ce3154b7782ba51b0e45915d748ed065",
     "tree_state": "dirty",
     "is_mutable_ref": true
   },

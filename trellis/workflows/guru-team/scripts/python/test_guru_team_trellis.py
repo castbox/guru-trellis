@@ -1615,7 +1615,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             any("review entry live commit validation failed" in error for error in errors)
         )
 
-    def test_review_gate_checker_accepts_metadata_descendant_and_rejects_content_descendant(self) -> None:
+    def test_review_gate_checker_and_public_wrapper_accept_metadata_descendant_and_block_content_descendant(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate, _, _ = gtt.build_task_commit_candidate(
             self.root,
@@ -1650,10 +1650,8 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             for key, value in gate.items()
             if key not in {"generated_at", "facts_sha256"}
         })
-        gtt.write_json(
-            gtt.configured_review_gate_path(self.root, self.task_dir),
-            gate,
-        )
+        gate_path = gtt.configured_review_gate_path(self.root, self.task_dir)
+        gtt.write_json(gate_path, gate)
 
         metadata_path = self.task_dir / "pr-body.md"
         metadata_path.write_text("publication metadata\n", encoding="utf-8")
@@ -1710,6 +1708,45 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             self.assertEqual(checked["review_commit"], review_commit)
             self.assertEqual(checked["head"], gtt.current_head(self.root))
 
+            public_input_path = (
+                self.root
+                / ".trellis/.runtime/guru-team/review-wrapper-input.json"
+            )
+            gtt.write_json(
+                public_input_path,
+                {
+                    "profile": "branch_review",
+                    "mode": "workflow",
+                    "task_ref": self.task_rel,
+                    "base_ref": gtt.diff_base_ref(self.root, "main"),
+                    "branch_review_commit": review_commit,
+                    "review_intent": "fresh_final_review",
+                },
+            )
+            wrapper_args = argparse.Namespace(
+                input=public_input_path.relative_to(self.root).as_posix(),
+                owner_result=gate_path.relative_to(self.root).as_posix(),
+            )
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=(gtt.BRANCH_REVIEW_SKILL_ID, package),
+                ),
+                mock.patch.object(gtt, "stage0_repo_root", return_value=self.root),
+            ):
+                self.assertEqual(
+                    gtt.cmd_invoke_stage0_skill(wrapper_args),
+                    {
+                        "exit_id": "passed",
+                        "task_ref": self.task_rel,
+                        "branch_review_commit": review_commit,
+                    },
+                )
+            self.assertFalse(gate_path.exists())
+
+            gtt.write_json(gate_path, gate)
+
             (self.root / "src/task.txt").write_text(
                 "changed after review\n",
                 encoding="utf-8",
@@ -1733,6 +1770,18 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                     for error in stale.exception.payload["errors"]
                 )
             )
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=(gtt.BRANCH_REVIEW_SKILL_ID, package),
+                ),
+                mock.patch.object(gtt, "stage0_repo_root", return_value=self.root),
+            ):
+                self.assertEqual(
+                    gtt.cmd_invoke_stage0_skill(wrapper_args),
+                    {"exit_id": "blocked"},
+                )
         finally:
             for patcher in reversed(schema_patchers):
                 patcher.stop()
@@ -12279,20 +12328,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             check=False,
         )
 
-    def test_readiness_builder_cannot_construct_ready_without_publication_gate(self) -> None:
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.build_pr_readiness_snapshot(
-                self.root,
-                self.task_dir,
-                repo="owner/repo",
-                base_branch="main",
-                head_branch="fix/105-closeout",
-                branch_review_commit=self.head,
-                title="#105 closeout",
-                draft=True,
-            )
-        self.assertIn("current Publication owner artifact", str(raised.exception))
-
     def test_draft_resolver_rejects_multiple_or_ready_before_archive(self) -> None:
         plan = self.build_plan()
         body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
@@ -12952,14 +12987,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
 
     def test_closeout_pr_body_identity_preserves_exact_utf8_whitespace(self) -> None:
-        source_root = Path(__file__).resolve().parents[5]
-        publication_package = (
-            source_root
-            / "trellis/skills/guru-team/packages/guru-review-task-publication"
-        )
-        publication_schema = gtt.read_json(
-            publication_package / "schemas/pr-readiness.schema.json"
-        )
         base_body = valid_pr_body("PR body exact bytes identity。")
         cases = {
             "leading-whitespace": ("\n" + base_body, base_body),
@@ -12971,55 +12998,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         }
         for name, (exact_body, tampered_body) in cases.items():
             with self.subTest(case=name):
-                (self.task_dir / gtt.PR_READINESS_ARTIFACT).unlink(missing_ok=True)
                 (self.task_dir / "pr-body.md").write_text(exact_body, encoding="utf-8")
                 plan = self.build_plan()
-                publish_inputs = {
-                    "repo": "owner/repo",
-                    "base_branch": "main",
-                    "head_branch": "fix/105-closeout",
-                    "branch_review_commit": self.head,
-                    "title": plan["publish"]["title"],
-                    "body_source": gtt.PR_BODY_ARTIFACT,
-                    "body_sha256": hashlib.sha256(exact_body.encode("utf-8")).hexdigest(),
-                    "draft": True,
-                    "reviewed_source": (
-                        "body-file:"
-                        + (self.task_dir / gtt.PR_BODY_ARTIFACT)
-                        .relative_to(self.root)
-                        .as_posix()
-                    ),
-                    "closeout_plan_digest": plan["plan_digest"],
-                }
-                readiness_path = self.task_dir / gtt.PR_READINESS_ARTIFACT
-                readiness = gtt.read_json(
-                    publication_package / "examples/pr-readiness.json"
-                )
-                readiness["task_ref"] = self.task_dir.relative_to(self.root).as_posix()
-                readiness["branch_review_commit"] = self.head
-                readiness["reviewed_content_sha256"] = "b" * 64
-                readiness["publish_inputs"] = publish_inputs
-                gtt.write_json(readiness_path, readiness)
-                with (
-                    mock.patch.object(
-                        gtt,
-                        "task_publication_schema",
-                        return_value=publication_schema,
-                    ),
-                    mock.patch.object(
-                        gtt,
-                        "task_publication_check_errors",
-                        return_value=[],
-                    ),
-                ):
-                    _path, _inputs, recovered_body = gtt.read_pr_readiness_publish_inputs(
-                        self.root,
-                        self.task_dir,
-                        str(readiness_path),
-                        self.gate,
-                        require_committed=False,
-                    )
-                self.assertEqual(recovered_body, exact_body)
 
                 pr = {
                     **closeout_head_repository_fields(),
@@ -13432,7 +13412,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "load_issue_scope_ledger",
             "validate_ledger_for_publish",
             "validate_closeout_marketplace_artifact",
-            "read_pr_readiness_publish_inputs",
             "validate_closeout_pull_request_identity",
         ]
         patches = [
@@ -13497,7 +13476,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "load_issue_scope_ledger",
             "validate_ledger_for_publish",
             "validate_closeout_marketplace_artifact",
-            "read_pr_readiness_publish_inputs",
             "validate_closeout_pull_request_identity",
         ]
         with contextlib.ExitStack() as stack:
