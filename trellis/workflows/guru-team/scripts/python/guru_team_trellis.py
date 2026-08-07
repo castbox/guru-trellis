@@ -20599,6 +20599,10 @@ def closeout_month_supersession_errors(
         return [str(exc)]
     if previous_month == current_month:
         errors.append("closeout archive month supersession requires a changed month.")
+    if current.get("projection", {}).get("migration_predecessor_plan_digest") is not None:
+        errors.append(
+            "closeout archive month supersession must retire migration predecessor compatibility."
+        )
 
     normalized: list[dict[str, Any]] = []
     for plan, locator in (
@@ -20607,6 +20611,7 @@ def closeout_month_supersession_errors(
     ):
         candidate = copy.deepcopy(plan)
         candidate.pop("plan_digest", None)
+        candidate["projection"]["migration_predecessor_plan_digest"] = None
         candidate["projection"]["summary_template_sha256"] = "<archive-template-digest>"
         normalized.append(normalize_closeout_archive_identity(candidate, locator))
     if normalized[0] != normalized[1]:
@@ -20927,12 +20932,24 @@ def closeout_plan_errors(
     projection_keys = {
         "active_locator", "archive_locator", "finish_summary_locator",
         "move_paths", "tracked_move_paths", "untracked_archive_outputs",
-        "reviewed_tracked_bindings", "summary_placeholder",
+        "reviewed_tracked_bindings", "migration_predecessor_plan_digest",
+        "summary_placeholder",
         "summary_template_sha256", "summary_template", "runtime_fact_fields",
     }
-    legacy_projection = (
+    legacy_projection_without_bindings = (
         allow_legacy_migration
-        and set(projection) == projection_keys - {"reviewed_tracked_bindings"}
+        and set(projection)
+        == projection_keys
+        - {"reviewed_tracked_bindings", "migration_predecessor_plan_digest"}
+    )
+    legacy_projection_without_predecessor = (
+        allow_legacy_migration
+        and set(projection)
+        == projection_keys - {"migration_predecessor_plan_digest"}
+    )
+    legacy_projection = (
+        legacy_projection_without_bindings
+        or legacy_projection_without_predecessor
     )
     nested_keys = {
         "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
@@ -21030,7 +21047,7 @@ def closeout_plan_errors(
     if FINISH_SUMMARY_ARTIFACT not in untracked_archive_outputs:
         errors.append("closeout final summary must be classified as an untracked archive output.")
     reviewed_bindings = projection.get("reviewed_tracked_bindings")
-    if legacy_projection:
+    if legacy_projection_without_bindings:
         reviewed_bindings = []
     if not isinstance(reviewed_bindings, list):
         errors.append("closeout reviewed tracked bindings must be an array.")
@@ -21059,6 +21076,14 @@ def closeout_plan_errors(
                 errors.append(f"closeout reviewed tracked binding {index} digest is invalid.")
         if binding_paths != sorted(set(binding_paths)):
             errors.append("closeout reviewed tracked binding paths must be sorted and unique.")
+    migration_predecessor = projection.get("migration_predecessor_plan_digest")
+    if (
+        migration_predecessor is not None
+        and re.fullmatch(r"[0-9a-f]{64}", str(migration_predecessor)) is None
+    ):
+        errors.append("closeout migration predecessor plan digest is invalid.")
+    if migration_predecessor == digest:
+        errors.append("closeout migration predecessor must differ from the current plan digest.")
     forbidden_finalizer_artifacts = {
         PR_READINESS_ARTIFACT,
         TASK_FINALIZATION_GATE_ARTIFACT,
@@ -21274,8 +21299,12 @@ def build_closeout_plan(
         else {}
     )
     archive_month_now = current_archive_month()
+    existing_archive_month = (
+        closeout_archive_month(existing_plan) if existing_plan else None
+    )
+    same_archive_month = existing_archive_month == archive_month_now
     archive_locator = str(existing_task.get("archive_locator") or "")
-    if archive_locator and closeout_archive_month(existing_plan) != archive_month_now:
+    if archive_locator and not same_archive_month:
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
     if not archive_locator:
         archive_locator = f".trellis/tasks/archive/{archive_month_now}/{task_dir.name}"
@@ -21322,6 +21351,14 @@ def build_closeout_plan(
         tracked_move_paths,
         branch_review_commit,
     )
+    migration_predecessor_plan_digest: str | None = None
+    if same_archive_month and existing_plan:
+        if "migration_predecessor_plan_digest" in existing_projection:
+            migration_predecessor_plan_digest = existing_projection.get(
+                "migration_predecessor_plan_digest"
+            )
+        elif "reviewed_tracked_bindings" not in existing_projection:
+            migration_predecessor_plan_digest = str(existing_plan["plan_digest"])
     retained_names = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
     if requires_marketplace:
         retained_names.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
@@ -21434,6 +21471,7 @@ def build_closeout_plan(
             "tracked_move_paths": tracked_move_paths,
             "untracked_archive_outputs": untracked_archive_outputs,
             "reviewed_tracked_bindings": reviewed_tracked_bindings,
+            "migration_predecessor_plan_digest": migration_predecessor_plan_digest,
             "summary_placeholder": placeholder,
             "summary_template_sha256": closeout_json_artifact_sha256(summary_template),
             "summary_template": summary_template,
@@ -21471,9 +21509,28 @@ def closeout_schema2_migration_errors(
 
     previous_projection = previous["projection"]
     current_projection = current["projection"]
-    if "reviewed_tracked_bindings" in previous_projection:
+    previous_has_bindings = "reviewed_tracked_bindings" in previous_projection
+    previous_has_predecessor = (
+        "migration_predecessor_plan_digest" in previous_projection
+    )
+    if previous_has_predecessor:
         errors.append(
-            "schema 2.0 migration requires a legacy projection without reviewed tracked bindings"
+            "schema 2.0 migration requires a projection without predecessor binding"
+        )
+    elif previous_has_bindings:
+        expected_projection = copy.deepcopy(previous_projection)
+        expected_projection["migration_predecessor_plan_digest"] = None
+        if current_projection != expected_projection:
+            errors.append(
+                "schema 2.0 predecessor-field migration changed other projection facts"
+            )
+        return errors
+    elif (
+        current_projection.get("migration_predecessor_plan_digest")
+        != previous.get("plan_digest")
+    ):
+        errors.append(
+            "schema 2.0 migration predecessor digest does not bind the legacy plan"
         )
     for key in (
         "active_locator",
@@ -22857,7 +22914,7 @@ def assert_archived_committed_workspace_boundary(
             "Archived closeout committed plan is invalid JSON.",
             exit_code=2,
         ) from exc
-    plan = validate_closeout_plan(raw_plan)
+    plan = validate_closeout_plan_for_migration(raw_plan)
     if expected_plan_digest != plan["plan_digest"]:
         raise WorkflowError(
             "Archived closeout workspace boundary expected digest mismatch.",
@@ -22892,7 +22949,14 @@ def assert_archived_committed_workspace_boundary(
     source_issues = summary_github.get("source_issues")
     plan_projection_valid = (
         CLOSEOUT_PLAN_ARTIFACT in projection["move_paths"]
-        and CLOSEOUT_PLAN_ARTIFACT in projection["untracked_archive_outputs"]
+        and sum(
+            CLOSEOUT_PLAN_ARTIFACT in projection[classification]
+            for classification in (
+                "tracked_move_paths",
+                "untracked_archive_outputs",
+            )
+        )
+        == 1
     )
     locator_identity_valid = (
         task_locator == archive_locator
@@ -23253,7 +23317,9 @@ def resume_archived_closeout(
     committed_plan: dict[str, Any] | None = None,
     committed_archive: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    plan = committed_plan or validate_closeout_plan(read_json(closeout_plan_path(task_dir)))
+    plan = committed_plan or validate_closeout_plan_for_migration(
+        read_json(closeout_plan_path(task_dir))
+    )
     expected = str(getattr(args, "expected_plan_digest", "") or "")
     if expected != plan["plan_digest"]:
         raise WorkflowError("Formal closeout expected digest does not match the archived plan.", exit_code=2, payload={"expected": expected, "actual": plan["plan_digest"]})
@@ -23357,7 +23423,9 @@ def resume_active_archive_move(
     task_dir: Path,
     task_context: dict[str, Any],
 ) -> dict[str, Any]:
-    plan = validate_closeout_plan(read_json(closeout_plan_path(task_dir)))
+    plan = validate_closeout_plan_for_migration(
+        read_json(closeout_plan_path(task_dir))
+    )
     expected = str(getattr(args, "expected_plan_digest", "") or "")
     if expected != plan["plan_digest"]:
         raise WorkflowError("Archive-move recovery digest does not match committed plan.", exit_code=2)
@@ -23975,7 +24043,7 @@ def finalization_closeout_plan(
                 "Archived finalization verification recovery has an unsafe working-tree plan.",
                 exit_code=2,
             )
-        working_plan = validate_closeout_plan(read_json(plan_path))
+        working_plan = validate_closeout_plan_for_migration(read_json(plan_path))
     content = closeout_optional_commit_blob_bytes(
         root,
         current_head(root),
@@ -23984,7 +24052,9 @@ def finalization_closeout_plan(
     if working_plan is not None:
         if content is not None:
             try:
-                committed_plan = validate_closeout_plan(json.loads(content.decode("utf-8")))
+                committed_plan = validate_closeout_plan_for_migration(
+                    json.loads(content.decode("utf-8"))
+                )
             except (UnicodeDecodeError, json.JSONDecodeError) as exc:
                 raise WorkflowError(
                     "Archived finalization verification recovery has an invalid committed plan.",
@@ -24002,7 +24072,9 @@ def finalization_closeout_plan(
             exit_code=2,
         )
     try:
-        return validate_closeout_plan(json.loads(content.decode("utf-8")))
+        return validate_closeout_plan_for_migration(
+            json.loads(content.decode("utf-8"))
+        )
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise WorkflowError(
             "Archived finalization verification recovery has an invalid committed plan.",
@@ -24090,10 +24162,14 @@ def closeout_verification_plan_ref_matches(
     expected = f"closeout-plan:{plan['plan_digest']}"
     if owner_plan_ref == expected:
         return True
+    predecessor = plan.get("projection", {}).get(
+        "migration_predecessor_plan_digest"
+    )
     return bool(
         MARKETPLACE_VERIFICATION_ARTIFACT
         in closeout_reviewed_tracked_binding_map(plan)
-        and re.fullmatch(r"closeout-plan:[0-9a-f]{64}", str(owner_plan_ref or ""))
+        and isinstance(predecessor, str)
+        and owner_plan_ref == f"closeout-plan:{predecessor}"
     )
 
 
@@ -24809,7 +24885,9 @@ def finalization_preview_context(
         assert_workspace_boundary(root, config, task_context, task_dir)
         task = task_json(task_dir)
         if task.get("status") == "completed" and closeout_plan_path(task_dir).is_file():
-            plan = validate_closeout_plan(read_json(closeout_plan_path(task_dir)))
+            plan = validate_closeout_plan_for_migration(
+                read_json(closeout_plan_path(task_dir))
+            )
             state = "archive_moved"
             prepared = None
         else:

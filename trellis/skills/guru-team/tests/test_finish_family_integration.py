@@ -973,7 +973,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 ),
                 mock.patch.object(
                     runtime,
-                    "validate_closeout_plan",
+                    "validate_closeout_plan_for_migration",
                     side_effect=lambda value: value,
                 ),
                 mock.patch.object(

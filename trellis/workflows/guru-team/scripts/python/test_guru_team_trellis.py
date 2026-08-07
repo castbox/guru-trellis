@@ -13046,6 +13046,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "tracked_move_paths",
                 "untracked_archive_outputs",
                 "reviewed_tracked_bindings",
+                "migration_predecessor_plan_digest",
                 "summary_placeholder",
                 "summary_template_sha256",
                 "summary_template",
@@ -13117,6 +13118,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             )
             legacy = copy.deepcopy(current)
             legacy["projection"].pop("reviewed_tracked_bindings")
+            legacy["projection"].pop("migration_predecessor_plan_digest")
             legacy["projection"]["tracked_move_paths"].remove(gtt.CLOSEOUT_PLAN_ARTIFACT)
             legacy["projection"]["untracked_archive_outputs"] = sorted(
                 legacy["projection"]["untracked_archive_outputs"]
@@ -13142,6 +13144,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 review_facts={"changed_paths": [], "marketplace_required": False},
             )
             self.assertEqual(gtt.closeout_schema2_migration_errors(legacy, normalized), [])
+            self.assertEqual(
+                normalized["projection"]["migration_predecessor_plan_digest"],
+                legacy["plan_digest"],
+            )
             self.assertIn(
                 gtt.CLOSEOUT_PLAN_ARTIFACT,
                 normalized["projection"]["tracked_move_paths"],
@@ -13217,7 +13223,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             )
             self.assertTrue(
                 any(
-                    "legacy projection" in error
+                    "without predecessor binding" in error
                     for error in gtt.closeout_schema2_migration_errors(
                         normalized, rebuilt_after_drift
                     )
@@ -13239,6 +13245,227 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.assertTrue((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).is_file())
             self.assertTrue((task_dir / gtt.FINISH_SUMMARY_ARTIFACT).is_file())
 
+    def test_migration_verification_plan_ref_is_exact_and_reprepare_retires_it(
+        self,
+    ) -> None:
+        plan = self.build_plan()
+        predecessor_digest = "c" * 64
+        projection = plan["projection"]
+        projection["tracked_move_paths"] = sorted(
+            projection["tracked_move_paths"]
+            + [gtt.MARKETPLACE_VERIFICATION_ARTIFACT]
+        )
+        projection["untracked_archive_outputs"] = [
+            path
+            for path in projection["untracked_archive_outputs"]
+            if path != gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+        ]
+        projection["reviewed_tracked_bindings"] = [
+            {
+                "path": gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+                "mode": "100644",
+                "sha256": "d" * 64,
+            }
+        ]
+        projection["migration_predecessor_plan_digest"] = predecessor_digest
+        plan["plan_digest"] = gtt.closeout_plan_digest(plan)
+        gtt.validate_closeout_plan(plan)
+
+        current_ref = f"closeout-plan:{plan['plan_digest']}"
+        predecessor_ref = f"closeout-plan:{predecessor_digest}"
+        unrelated_ref = f"closeout-plan:{'e' * 64}"
+        self.assertTrue(gtt.closeout_verification_plan_ref_matches(plan, current_ref))
+        self.assertTrue(
+            gtt.closeout_verification_plan_ref_matches(plan, predecessor_ref)
+        )
+        self.assertFalse(
+            gtt.closeout_verification_plan_ref_matches(plan, unrelated_ref)
+        )
+        self.assertFalse(
+            gtt.closeout_verification_plan_ref_matches(plan, "closeout-plan:invalid")
+        )
+
+        task_ref = plan["task"]["active_locator"]
+        verification_ref = "extension-verification:exact-predecessor"
+        owner_input = {
+            "profile": "workflow_verification",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "plan_ref": predecessor_ref,
+            "branch_review_commit": plan["git"]["branch_review_commit"],
+            "repo_ref": plan["git"]["repo"],
+        }
+        payload = {
+            "public_input": owner_input,
+            "typed_exit": "verified",
+            "mode": "workflow",
+            "identity": {"verification_ref": verification_ref},
+            "target_repository": {},
+        }
+        locator = f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        with (
+            mock.patch.dict(os.environ, {"GURU_TEAM_EVAL_STAGING": "1"}),
+            mock.patch.object(
+                gtt,
+                "extension_verification_payload_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "validate_closeout_reviewed_content"),
+            mock.patch.object(
+                gtt,
+                "finalization_uncommitted_output_paths",
+                return_value=set(),
+            ),
+            mock.patch.object(gtt, "git_status_paths", return_value=[]),
+        ):
+            checked = gtt.check_extension_verification_for_closeout(
+                self.root,
+                self.task_dir,
+                payload,
+                locator,
+                plan=plan,
+                task_ref=task_ref,
+                plan_ref=current_ref,
+                branch_review_commit=plan["git"]["branch_review_commit"],
+            )
+            self.assertEqual(checked["typed_exit"], "verified")
+            payload["public_input"]["plan_ref"] = unrelated_ref
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.check_extension_verification_for_closeout(
+                    self.root,
+                    self.task_dir,
+                    payload,
+                    locator,
+                    plan=plan,
+                    task_ref=task_ref,
+                    plan_ref=current_ref,
+                    branch_review_commit=plan["git"]["branch_review_commit"],
+                )
+
+        payload["public_input"]["plan_ref"] = predecessor_ref
+        public_input = {
+            "profile": "verification_verified",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "plan_ref": current_ref,
+            "branch_review_commit": plan["git"]["branch_review_commit"],
+            "verification_ref": verification_ref,
+        }
+        direct_failure = gtt.WorkflowError("stale direct checker", exit_code=2)
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_verification_owner_payload",
+                return_value=(payload, locator),
+            ),
+            mock.patch.object(
+                gtt,
+                "check_extension_verification_result",
+                side_effect=direct_failure,
+            ),
+            mock.patch.object(gtt, "finalization_closeout_plan", return_value=plan),
+            mock.patch.object(
+                gtt,
+                "check_extension_verification_for_closeout",
+                return_value=checked,
+            ),
+        ):
+            recovered = gtt.finalization_verification_owner_result(
+                self.root,
+                self.task_dir,
+                public_input,
+            )
+            self.assertEqual(recovered, (payload, checked))
+            payload["public_input"]["plan_ref"] = unrelated_ref
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.finalization_verification_owner_result(
+                    self.root,
+                    self.task_dir,
+                    public_input,
+                )
+
+        payload["public_input"]["plan_ref"] = predecessor_ref
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_verification_owner_payload",
+                return_value=(payload, locator),
+            ),
+            mock.patch.object(
+                gtt,
+                "check_extension_verification_result",
+                return_value=checked,
+            ),
+        ):
+            self.assertEqual(
+                gtt.finalization_current_verification_owner_result(
+                    self.root,
+                    self.task_dir,
+                    task_ref=task_ref,
+                    plan_ref=current_ref,
+                    branch_review_commit=plan["git"]["branch_review_commit"],
+                    plan=plan,
+                ),
+                (payload, checked),
+            )
+            payload["public_input"]["plan_ref"] = unrelated_ref
+            self.assertIsNone(
+                gtt.finalization_current_verification_owner_result(
+                    self.root,
+                    self.task_dir,
+                    task_ref=task_ref,
+                    plan_ref=current_ref,
+                    branch_review_commit=plan["git"]["branch_review_commit"],
+                    plan=plan,
+                )
+            )
+
+        without_binding = copy.deepcopy(plan)
+        without_binding["projection"]["reviewed_tracked_bindings"] = []
+        without_binding["plan_digest"] = gtt.closeout_plan_digest(without_binding)
+        self.assertFalse(
+            gtt.closeout_verification_plan_ref_matches(
+                without_binding,
+                predecessor_ref,
+            )
+        )
+
+        old_locator = plan["task"]["archive_locator"]
+        old_month = old_locator.split("/")[3]
+        new_month = "2099-12" if old_month != "2099-12" else "2099-11"
+        new_locator = old_locator.replace(f"/{old_month}/", f"/{new_month}/")
+
+        def replace_archive_locator(value: object) -> object:
+            if isinstance(value, dict):
+                return {
+                    key: replace_archive_locator(item)
+                    for key, item in value.items()
+                }
+            if isinstance(value, list):
+                return [replace_archive_locator(item) for item in value]
+            if isinstance(value, str):
+                return value.replace(old_locator, new_locator)
+            return value
+
+        reprepared = replace_archive_locator(copy.deepcopy(plan))
+        assert isinstance(reprepared, dict)
+        reprepared["projection"]["migration_predecessor_plan_digest"] = None
+        reprepared["projection"]["summary_template_sha256"] = (
+            gtt.closeout_json_artifact_sha256(
+                reprepared["projection"]["summary_template"]
+            )
+        )
+        reprepared["plan_digest"] = gtt.closeout_plan_digest(reprepared)
+        gtt.validate_closeout_plan(reprepared)
+        self.assertEqual(gtt.closeout_month_supersession_errors(plan, reprepared), [])
+        self.assertFalse(
+            gtt.closeout_verification_plan_ref_matches(
+                reprepared,
+                predecessor_ref,
+            )
+        )
+
     def test_migrated_schema2_active_resume_reuses_existing_draft_without_branch_review(
         self,
     ) -> None:
@@ -13253,16 +13480,20 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             for path in normalized["projection"]["untracked_archive_outputs"]
             if path != gtt.CLOSEOUT_PLAN_ARTIFACT
         ]
-        normalized["plan_digest"] = gtt.closeout_plan_digest(normalized)
-        gtt.validate_closeout_plan(normalized)
         legacy = copy.deepcopy(normalized)
         legacy["projection"].pop("reviewed_tracked_bindings")
+        legacy["projection"].pop("migration_predecessor_plan_digest")
         legacy["projection"]["tracked_move_paths"].remove(gtt.CLOSEOUT_PLAN_ARTIFACT)
         legacy["projection"]["untracked_archive_outputs"] = sorted(
             legacy["projection"]["untracked_archive_outputs"]
             + [gtt.CLOSEOUT_PLAN_ARTIFACT]
         )
         legacy["plan_digest"] = gtt.closeout_plan_digest(legacy)
+        normalized["projection"]["migration_predecessor_plan_digest"] = legacy[
+            "plan_digest"
+        ]
+        normalized["plan_digest"] = gtt.closeout_plan_digest(normalized)
+        gtt.validate_closeout_plan(normalized)
         self.assertEqual(gtt.closeout_schema2_migration_errors(legacy, normalized), [])
 
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, normalized)
@@ -15113,6 +15344,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         children_case: str | None = None,
         archived_pr_replacement: bool = False,
         predecessor_draft_metadata: bool = False,
+        migrated_tracked_plan: bool = False,
+        archived_legacy_without_predecessor: bool = False,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -15279,6 +15512,54 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 branch_review_commit=branch_review_commit,
             )
 
+            if migrated_tracked_plan:
+                legacy_plan = gtt.build_closeout_plan(
+                    root,
+                    task_dir,
+                    context,
+                    task,
+                    ledger,
+                    task_dir / "finish-summary-index.json",
+                    repo="owner/repo",
+                    remote="origin",
+                    base_branch="main",
+                    head_branch="fix/105-closeout",
+                    branch_review_commit=branch_review_commit,
+                    title="#105 重构 finish-work 收尾事务",
+                    review_facts=gtt.closeout_reviewed_change_facts(
+                        root,
+                        context,
+                        branch_review_commit,
+                    ),
+                )
+                legacy_plan["projection"].pop("reviewed_tracked_bindings")
+                legacy_plan["projection"].pop(
+                    "migration_predecessor_plan_digest"
+                )
+                legacy_plan["plan_digest"] = gtt.closeout_plan_digest(
+                    legacy_plan
+                )
+                gtt.validate_closeout_plan_for_migration(legacy_plan)
+                gtt.write_json(
+                    task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT,
+                    legacy_plan,
+                )
+                subprocess.run(
+                    ["git", "add", "--", str(task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT)],
+                    cwd=root,
+                    check=True,
+                )
+                subprocess.run(
+                    ["git", "commit", "-qm", "legacy tracked closeout plan"],
+                    cwd=root,
+                    check=True,
+                )
+                subprocess.run(
+                    ["git", "push", "-qu", "origin", "fix/105-closeout"],
+                    cwd=root,
+                    check=True,
+                )
+
             immutable_body_bytes = (task_dir / "pr-body.md").read_bytes()
             pr_store: dict[str, object] = {}
             draft_rebind_body_bytes: list[bytes] = []
@@ -15291,12 +15572,17 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "body": "predecessor Round body\n",
                     "isDraft": True,
                     "state": "OPEN",
-                    "headRefOid": branch_review_commit,
+                    "headRefOid": (
+                        gtt.current_head(root)
+                        if migrated_tracked_plan
+                        else branch_review_commit
+                    ),
                 })
             original_run = gtt.run
             injected_stage = failed_stage
             active_plan_only_boundary_fault: str | None = None
             archive_pushed = False
+            archived_legacy_plan_digest: str | None = None
             transition_attempts: list[str] = []
             actual_archive_month = datetime.now().strftime("%Y-%m")
             archive_month_clock = actual_archive_month
@@ -15839,6 +16125,50 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                         with self.assertRaises((gtt.WorkflowError, subprocess.CalledProcessError)):
                             gtt.cmd_finish_work(formal_args)
                         failed_state = exact_state()
+                        if archived_legacy_without_predecessor:
+                            self.assertEqual(failed_stage, "ready")
+                            archived_plan_path = (
+                                archived_path / gtt.CLOSEOUT_PLAN_ARTIFACT
+                            )
+                            archived_plan = gtt.read_json(archived_plan_path)
+                            archived_plan["projection"].pop(
+                                "migration_predecessor_plan_digest"
+                            )
+                            archived_plan["plan_digest"] = gtt.closeout_plan_digest(
+                                archived_plan
+                            )
+                            gtt.validate_closeout_plan_for_migration(archived_plan)
+                            gtt.write_json(archived_plan_path, archived_plan)
+                            original_run(
+                                ["git", "add", "--", str(archived_plan_path)],
+                                cwd=root,
+                                check=True,
+                            )
+                            original_run(
+                                ["git", "commit", "--amend", "--no-edit", "-q"],
+                                cwd=root,
+                                check=True,
+                            )
+                            original_run(
+                                [
+                                    "git",
+                                    "push",
+                                    "--force",
+                                    "-q",
+                                    "origin",
+                                    "fix/105-closeout",
+                                ],
+                                cwd=root,
+                                check=True,
+                            )
+                            amended_head = gtt.current_head(root)
+                            pr_store["headRefOid"] = amended_head
+                            formal_args.expected_plan_digest = archived_plan[
+                                "plan_digest"
+                            ]
+                            archived_legacy_plan_digest = archived_plan[
+                                "plan_digest"
+                            ]
                         if create_mismatched_commit:
                             original_run(["git", "reset"], cwd=root, check=True)
                             mismatch = root / ".trellis/archive-mismatch-marker.txt"
@@ -15928,7 +16258,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                                 '{"kind":"phase2-evidence","status":"passed"}\n',
                                 encoding="utf-8",
                             )
-                        formal_args.expected_plan_digest = preview["closeout_plan_digest"]
+                        formal_args.expected_plan_digest = (
+                            archived_legacy_plan_digest
+                            or preview["closeout_plan_digest"]
+                        )
                         if plan_only_boundary_fault == "plan":
                             formal_args.expected_plan_digest = "0" * 64
                         reentry_offset = len(transition_attempts)
@@ -15984,6 +16317,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "archive_paths": gtt.closeout_commit_paths(root, local_head),
                 "immutable_body_bytes": immutable_body_bytes,
                 "draft_rebind_body_bytes": draft_rebind_body_bytes,
+                "archived_legacy_plan_digest": archived_legacy_plan_digest,
                 "archived_files": sorted(
                     path.relative_to(archived).as_posix()
                     for path in archived.rglob("*")
@@ -16063,6 +16397,26 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             result["draft_rebind_body_bytes"],
             [result["immutable_body_bytes"]],
         )
+
+    def test_production_migrated_tracked_plan_recovers_ready_after_archive(self) -> None:
+        result = self.run_production_finish_case(
+            failed_stage="ready",
+            predecessor_draft_metadata=True,
+            migrated_tracked_plan=True,
+            archived_legacy_without_predecessor=True,
+        )
+        failed = result["failed_state"]
+        final = result["final_state"]
+        self.assertIsNone(failed["active_locator"])
+        self.assertIsNotNone(failed["archive_locator"])
+        self.assertTrue(failed["pr_is_draft"])
+        self.assertEqual(final["pr_number"], 105)
+        self.assertFalse(final["pr_is_draft"])
+        self.assertEqual(final["local_sha"], result["archive_sha"])
+        self.assertEqual(final["remote_sha"], result["archive_sha"])
+        self.assertIsNotNone(result["archived_legacy_plan_digest"])
+        self.assertIn("ready", result["reentry_events"])
+        self.assertNotIn("draft", result["all_transition_attempts"])
 
     def test_production_finish_recovers_after_move_before_archive_compaction(self) -> None:
         result = self.run_production_finish_case("archive-prune")
@@ -16309,7 +16663,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ("locator", "task identity or locator mismatch"),
             ("plan", "expected digest mismatch"),
             ("committed-plan-delete", "Could not resolve task directory"),
-            ("committed-plan-invalid", "closeout-plan validation failed"),
+            (
+                "committed-plan-invalid",
+                "closeout-plan migration input validation failed",
+            ),
             ("committed-plan-symlink", "must be a real directory with a regular closeout plan file"),
         ]
         for fault, expected_error in cases:

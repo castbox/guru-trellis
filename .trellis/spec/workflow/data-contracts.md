@@ -1162,6 +1162,18 @@ missing, stale, or unnecessary rows fail closed. A tracked legacy
 `plan_digest` bind its bytes instead of a recursive content row. The reviewed
 content tree plus exact pre-move index/status, bindings, and archive transaction
 tree prove the classification and continuity.
+`projection.migration_predecessor_plan_digest` is either `null` or the exact
+digest of the one legacy schema 2.0 plan normalized into the current immutable
+plan. It is set only by that controlled migration, preserved only across
+same-month rebuilds, and cleared by cross-month reprepare. A marketplace
+verification owner `plan_ref` may match this predecessor only while
+`marketplace-verification.json` is itself present in the exact reviewed tracked
+binding set; shape-valid but unrelated historical digests remain stale.
+An interrupted archive or active-move state written by the immediately
+preceding schema 2.0 runtime may have reviewed bindings but no predecessor
+field. Recovery reads that exact immutable legacy shape with `null` predecessor
+semantics and never rewrites an archive commit; new and normalized active plans
+always emit the complete current projection.
 The projection also stores `summary_template`,
 `summary_template_sha256`, the sentinel PR identity, and the exact runtime
 fields that may change. The sentinel uses the
@@ -1215,6 +1227,10 @@ dirty/staged paths, `branch_review_commit` ancestry and content identity, active
 absence, archive completeness, tracked blob continuity, and the official
 `task.json` delta before it may create the single archive commit. Missing or
 mismatched transaction state keeps this metadata recovery path fail closed.
+After the exact archive commit exists, workspace-boundary recovery requires
+`closeout-plan.json` to belong to `move_paths` and to exactly one of the same
+tracked/untracked projection classes. A tracked migrated plan is therefore a
+valid committed recovery anchor for an interrupted Draft-to-Ready transition.
 
 Before official move, the same continuity contract applies to the active task:
 the index has no staged changes, dirty paths equal the plan-owned output set,

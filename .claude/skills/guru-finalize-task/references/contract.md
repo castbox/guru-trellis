@@ -93,12 +93,31 @@ legacy Git already tracks `closeout-plan.json`, its current bytes are bound by
 the plan's canonical schema and `plan_digest` rather than a recursive raw-file
 SHA-256 row.
 
+The normalized immutable projection stores one nullable
+`migration_predecessor_plan_digest`. It is the exact digest of the legacy plan
+consumed by the first schema 2.0 normalization, never a general history set or
+opaque reference allowlist. Marketplace verification evidence may retain that
+one predecessor `plan_ref` only when `marketplace-verification.json` itself is
+in the exact reviewed tracked binding set. Current-plan references remain
+valid; unrelated historical refs fail closed. Same-month rebuilds preserve the
+single predecessor, while cross-month reprepare clears it and therefore retires
+all predecessor verification compatibility.
+An interrupted archive written by the immediately preceding schema 2.0 runtime
+may contain `reviewed_tracked_bindings` but no predecessor field. Archived and
+active-move recovery read that exact immutable legacy shape with `null`
+predecessor semantics and never rewrite its commit; every new or normalized
+active plan still emits the complete current projection.
+
 Pre-move continuity, verification fallback, archive movement, and post-move
 continuity consume that same projection. A tracked metadata tail is accepted
 only while its mode and bytes exactly match its binding; an unbound difference
 from the transaction parent remains blocked. Metadata intermediates selected
 by the existing archive pruning contract are validated and moved first, then
 explicitly pruned.
+Archived recovery likewise accepts `closeout-plan.json` only when the same
+projection classifies it exactly once, in either `tracked_move_paths` or
+`untracked_archive_outputs`; it does not restore the new-task-only untracked
+assumption after the archive commit.
 
 The deterministic order is fixed:
 
