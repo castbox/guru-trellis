@@ -87,7 +87,7 @@
     "projection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["active_locator", "archive_locator", "finish_summary_locator", "move_paths", "tracked_move_paths", "untracked_archive_outputs", "summary_placeholder", "summary_template_sha256", "summary_template", "runtime_fact_fields"],
+      "required": ["active_locator", "archive_locator", "finish_summary_locator", "move_paths", "tracked_move_paths", "untracked_archive_outputs", "reviewed_tracked_bindings", "migration_predecessor_plan_digest", "summary_placeholder", "summary_template_sha256", "summary_template", "runtime_fact_fields"],
       "properties": {
         "active_locator": {"$ref": "#/$defs/taskPath"},
         "archive_locator": {"$ref": "#/$defs/archivePath"},
@@ -106,10 +106,30 @@
         },
         "untracked_archive_outputs": {
           "type": "array",
-          "minItems": 2,
+          "minItems": 1,
           "uniqueItems": true,
-          "contains": {"enum": ["closeout-plan.json", "finish-summary.json"]},
+          "contains": {"const": "finish-summary.json"},
           "items": {"$ref": "#/$defs/safePath"}
+        },
+        "reviewed_tracked_bindings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "mode", "sha256"],
+            "properties": {
+              "path": {"$ref": "#/$defs/safePath"},
+              "mode": {"enum": ["100644", "100755"]},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        "migration_predecessor_plan_digest": {
+          "anyOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
         },
         "summary_placeholder": {
           "type": "object",

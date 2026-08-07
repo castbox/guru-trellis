@@ -1,0 +1,384 @@
+{
+  "schema_version": "2.0",
+  "task": {
+    "id": "187-schema2-finalizer-migration",
+    "title": "#187 修复 schema 2.0 Finalizer 迁移归档兼容性",
+    "source_issue": 187,
+    "active_locator": ".trellis/tasks/08-08-187-schema2-finalizer-migration",
+    "archive_locator": ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration"
+  },
+  "git": {
+    "repo": "castbox/guru-trellis",
+    "remote": "origin",
+    "base_branch": "main",
+    "head_branch": "fix/187-schema2-finalizer-migration",
+    "branch_review_commit": "47299d091d21c828031150318c22ef538a709612"
+  },
+  "inputs": {
+    "task": {
+      "path": ".trellis/tasks/08-08-187-schema2-finalizer-migration/task.json",
+      "sha256": "a1eb49c7e474244e1a5cf06d0cd1beb721cb7caacb8462ead9f7a831562a9a68"
+    },
+    "issue_scope_ledger": {
+      "path": ".trellis/tasks/08-08-187-schema2-finalizer-migration/issue-scope-ledger.json",
+      "sha256": "58dfdf5ca41da25f47442d5e8d709c3381b5851136e387567f746d70b20fbdec"
+    },
+    "pr_body": {
+      "path": ".trellis/tasks/08-08-187-schema2-finalizer-migration/pr-body.md",
+      "sha256": "80a927acf85e03f3a64b80151332fe2f5df50c1330caab6034ec9dc7ec1f7856"
+    },
+    "finish_summary_index": {
+      "path": ".trellis/tasks/08-08-187-schema2-finalizer-migration/finish-summary-index.json",
+      "sha256": "48de24067fb852176bd0194fd596df7d9017fb37132d541833156c0702a40543"
+    },
+    "official_after_archive_hooks": {
+      "path": ".trellis/config.yaml",
+      "sha256": "a9c3a7631d2a488d1a25c667c554f206b08ddd4ed9f3f6b3c9a4bec2e7f3bd84"
+    },
+    "guru_team_config": {
+      "path": ".trellis/guru-team/config.yml",
+      "sha256": "647facdebec4c04c97a65c64a5e5cde37252f1a3db6c96eeb112c60576262988"
+    }
+  },
+  "review": {
+    "branch_review_commit": "47299d091d21c828031150318c22ef538a709612",
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/closeout-plan.schema.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/08-08-187-schema2-finalizer-migration/check.jsonl",
+      ".trellis/tasks/08-08-187-schema2-finalizer-migration/design.md",
+      ".trellis/tasks/08-08-187-schema2-finalizer-migration/implement.jsonl",
+      ".trellis/tasks/08-08-187-schema2-finalizer-migration/implement.md",
+      ".trellis/tasks/08-08-187-schema2-finalizer-migration/issue-scope-ledger.json",
+      ".trellis/tasks/08-08-187-schema2-finalizer-migration/prd.md",
+      ".trellis/tasks/08-08-187-schema2-finalizer-migration/task.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ],
+    "close_issues_reviewed": [
+      187
+    ]
+  },
+  "publish": {
+    "title": "修复：schema 2.0 Finalizer 迁移归档兼容性",
+    "body_sha256": "80a927acf85e03f3a64b80151332fe2f5df50c1330caab6034ec9dc7ec1f7856",
+    "draft": true,
+    "draft_to_ready": true,
+    "match": {
+      "repo": "castbox/guru-trellis",
+      "head": "fix/187-schema2-finalizer-migration",
+      "base": "main"
+    }
+  },
+  "marketplace": {
+    "required": true,
+    "verifier_artifact_locator": "marketplace-verification.json"
+  },
+  "projection": {
+    "active_locator": ".trellis/tasks/08-08-187-schema2-finalizer-migration",
+    "archive_locator": ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration",
+    "finish_summary_locator": ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/finish-summary.json",
+    "move_paths": [
+      "check.jsonl",
+      "closeout-plan.json",
+      "design.md",
+      "finish-summary-index.json",
+      "finish-summary.json",
+      "implement.jsonl",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "marketplace-verification.json",
+      "pr-body.md",
+      "prd.md",
+      "task.json"
+    ],
+    "tracked_move_paths": [
+      "check.jsonl",
+      "design.md",
+      "implement.jsonl",
+      "implement.md",
+      "issue-scope-ledger.json",
+      "prd.md",
+      "task.json"
+    ],
+    "untracked_archive_outputs": [
+      "closeout-plan.json",
+      "finish-summary-index.json",
+      "finish-summary.json",
+      "marketplace-verification.json",
+      "pr-body.md"
+    ],
+    "reviewed_tracked_bindings": [],
+    "migration_predecessor_plan_digest": null,
+    "summary_placeholder": {
+      "number": 9223372036854775807,
+      "url": "https://github.com/castbox/guru-trellis/pull/9223372036854775807",
+      "ref": "PR #9223372036854775807"
+    },
+    "summary_template_sha256": "8b5ee82e8eb570b580ee6102a0fc5a2f63500e03b9b48c41fc02b9490b40f49f",
+    "summary_template": {
+      "schema_version": 1,
+      "generated_at": "2026-08-07T22:34:54Z",
+      "generator": "guru-team.finish-work",
+      "task": {
+        "slug": "08-08-187-schema2-finalizer-migration",
+        "title": "#187 修复 schema 2.0 Finalizer 迁移归档兼容性",
+        "status": "completed",
+        "artifact_dir": ".trellis/tasks/08-08-187-schema2-finalizer-migration",
+        "archive_dir": ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration"
+      },
+      "git": {
+        "base_branch": "main",
+        "branch": "fix/187-schema2-finalizer-migration",
+        "commits": [
+          "13340d4363a98493ee33afd74226ef434bca39a9",
+          "1ffee5707d4cb2f6c5ceb5bb39796208f16c7cfe",
+          "9a423235eaaf3599928f3bfe05428745ead71ad2",
+          "a8b17179c1bb64b7b8663c8bec8d00015fde7e78",
+          "47299d091d21c828031150318c22ef538a709612"
+        ],
+        "changed_paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/schemas/closeout-plan.schema.json",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/tasks/08-08-187-schema2-finalizer-migration/check.jsonl",
+          ".trellis/tasks/08-08-187-schema2-finalizer-migration/design.md",
+          ".trellis/tasks/08-08-187-schema2-finalizer-migration/implement.jsonl",
+          ".trellis/tasks/08-08-187-schema2-finalizer-migration/implement.md",
+          ".trellis/tasks/08-08-187-schema2-finalizer-migration/issue-scope-ledger.json",
+          ".trellis/tasks/08-08-187-schema2-finalizer-migration/prd.md",
+          ".trellis/tasks/08-08-187-schema2-finalizer-migration/task.json",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/closeout-plan.json",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/design.md",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/implement.md",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/marketplace-verification.json",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/prd.md",
+          ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/task.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+          "trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ]
+      },
+      "github": {
+        "source_issues": [
+          187
+        ],
+        "close_issues": [
+          187
+        ],
+        "related_issues": [],
+        "followup_issues": [],
+        "pr_url": "https://github.com/castbox/guru-trellis/pull/9223372036854775807"
+      },
+      "artifacts": {
+        "prd": "prd.md",
+        "design": "design.md",
+        "implement": "implement.md",
+        "issue_scope_ledger": "issue-scope-ledger.json",
+        "closeout_plan": "closeout-plan.json",
+        "marketplace_verification": "marketplace-verification.json"
+      },
+      "index": {
+        "problem": "schema 2.0 Finalizer 在迁移任务中复用失真的 tracked/untracked 分类，并拒绝已精确审核的 tracked metadata tail，导致已有 Draft PR 的正常 closeout 无法恢复归档。",
+        "outcome": "Finalizer 现在从 live Git index 重建分类，以 reviewed tracked content bindings 统一 continuity、verification fallback 与 archive recovery，并保持既有六个 typed exits 和 Interface 1.3 兼容。",
+        "changed_behavior": [
+          "tracked legacy closeout-plan.json 在 plan、validation、archive 和 recovery 中保持唯一 tracked 分类。",
+          "偏离 transaction parent 的 reviewed tracked artifacts 绑定 task-relative path、Git mode 和 SHA-256。",
+          "verification fallback 只接受 current plan 或精确 migration predecessor，跨月 reprepare 清除 predecessor。",
+          "task.json official status/completedAt archive transition 以 reviewed binding bytes 为基线，无 binding 时保留 parent baseline。",
+          "direct checker 与 public wrapper 保留同一 checked blocked 或 evidence-ready route。",
+          "canonical、installed 与平台副本保持字节一致，dogfood manifest 绑定 clean source commit。"
+        ],
+        "affected_surfaces": [
+          {
+            "kind": "script",
+            "name": "Finalizer deterministic runtime",
+            "paths": [
+              "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+            ],
+            "change": "重建迁移分类、内容绑定、continuity、verification fallback、archive recovery 与 wrapper route。"
+          },
+          {
+            "kind": "schema",
+            "name": "Closeout plan schema 2.0",
+            "paths": [
+              "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+            ],
+            "change": "增加闭合的 reviewed tracked content bindings 与 migration predecessor 字段约束。"
+          },
+          {
+            "kind": "skill",
+            "name": "Finalizer public package contract",
+            "paths": [
+              "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+            ],
+            "change": "明确 schema 2.0 migration normalization、exact binding 和 existing Draft recovery 合同。"
+          },
+          {
+            "kind": "test",
+            "name": "Migration and closeout regression coverage",
+            "paths": [
+              "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+            ],
+            "change": "覆盖 tracked plan、reviewed metadata tail、predecessor、fallback、task.json 与 Draft recovery 正负例。"
+          },
+          {
+            "kind": "preset",
+            "name": "Guru Team installed distribution",
+            "paths": [
+              ".trellis/guru-team/extension.json"
+            ],
+            "change": "同步 installed/platform bytes 并将 dogfood provenance 绑定到 clean reviewed source commit。"
+          }
+        ],
+        "contract_changes": [
+          {
+            "contract": "Migration Git index classification",
+            "before": "Existing schema 2.0 plan 可沿用历史 tracked/untracked 分类。",
+            "after": "每次 prepare 或 recovery 都从 live Git index 重建 tracked paths 及其精确 complement。",
+            "source_artifact": ""
+          },
+          {
+            "contract": "Reviewed tracked content continuity",
+            "before": "Tracked metadata 只能匹配 transaction-parent blob 或少量固定 inputs。",
+            "after": "所有 reviewed deviations 使用闭合 path、mode、SHA-256 binding，未绑定或漂移继续 fail closed。",
+            "source_artifact": ""
+          },
+          {
+            "contract": "Verification predecessor identity",
+            "before": "Fallback 可接受任意语法合法的历史 plan digest。",
+            "after": "Fallback 只接受 current plan 或精确 migration predecessor，跨月 reprepare 必须退休 predecessor。",
+            "source_artifact": ""
+          },
+          {
+            "contract": "Task metadata archive transition",
+            "before": "task.json archive continuity 始终以 transaction-parent bytes 为 official delta 基线。",
+            "after": "存在 binding 时逆投影 official status/completedAt 并校验 reviewed bytes；无 binding 保持 parent baseline。",
+            "source_artifact": ""
+          }
+        ],
+        "search_terms": {
+          "issue_refs": [
+            "#187"
+          ],
+          "pr_refs": [
+            "PR #9223372036854775807"
+          ],
+          "branches": [
+            "fix/187-schema2-finalizer-migration"
+          ],
+          "paths": [
+            ".agents/skills/guru-finalize-task/references/contract.md",
+            ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            ".claude/skills/guru-finalize-task/references/contract.md",
+            ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            ".codex/skills/guru-finalize-task/references/contract.md",
+            ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            ".cursor/skills/guru-finalize-task/references/contract.md",
+            ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/schemas/closeout-plan.schema.json",
+            ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+            ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+            ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+            ".trellis/spec/workflow/data-contracts.md",
+            ".trellis/tasks/08-08-187-schema2-finalizer-migration/check.jsonl",
+            ".trellis/tasks/08-08-187-schema2-finalizer-migration/design.md",
+            ".trellis/tasks/08-08-187-schema2-finalizer-migration/implement.jsonl",
+            ".trellis/tasks/08-08-187-schema2-finalizer-migration/implement.md",
+            ".trellis/tasks/08-08-187-schema2-finalizer-migration/issue-scope-ledger.json",
+            ".trellis/tasks/08-08-187-schema2-finalizer-migration/prd.md",
+            ".trellis/tasks/08-08-187-schema2-finalizer-migration/task.json",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/closeout-plan.json",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/design.md",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/finish-summary.json",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/implement.md",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/issue-scope-ledger.json",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/marketplace-verification.json",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/prd.md",
+            ".trellis/tasks/archive/2026-08/08-08-187-schema2-finalizer-migration/task.json",
+            "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+            "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+            "trellis/workflows/guru-team/schemas/closeout-plan.schema.json",
+            "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+            "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+          ],
+          "commands": [
+            "finish-work.sh",
+            "check-task-publication-review"
+          ],
+          "config_keys": [],
+          "schema_fields": [
+            "tracked_move_paths",
+            "untracked_archive_outputs",
+            "reviewed_tracked_content_bindings",
+            "migration_predecessor_plan_digest"
+          ],
+          "symbols": [
+            "validate_closeout_plan_for_migration",
+            "closeout_verification_plan_ref_matches",
+            "closeout_task_json_reviewed_pre_move_bytes"
+          ],
+          "phrases": [
+            "finish-work.sh schema 2.0 迁移归档已修复完成",
+            "tracked legacy closeout-plan 分类恢复已完成",
+            "task.json reviewed metadata tail 归档已修复",
+            "verification predecessor 精确绑定已完成"
+          ]
+        },
+        "retrieval_text": "#187 修复 schema 2.0 Finalizer 迁移归档兼容性\nschema 2.0 Finalizer 在迁移任务中复用失真的 tracked/untracked 分类，并拒绝已精确审核的 tracked metadata tail，导致已有 Draft PR 的正常 closeout 无法恢复归档。\nFinalizer 现在从 live Git index 重建分类，以 reviewed tracked content bindings 统一 continuity、verification fallback 与 archive recovery，并保持既有六个 typed exits 和 Interface 1.3 兼容。\ntracked legacy closeout-plan.json 在 plan、validation、archive 和 recovery 中保持唯一 tracked 分类。\n偏离 transaction parent 的 reviewed tracked artifacts 绑定 task-relative path、Git mode 和 SHA-256。\nverification fallback 只接受 current plan 或精确 migration predecessor，跨月 reprepare 清除 predecessor。\ntask.json official status/completedAt archive transition 以 reviewed binding bytes 为基线，无 binding 时保留 parent baseline。\ndirect checker 与 public wrapper 保留同一 checked blocked 或 evidence-ready route。\ncanonical、installed 与平台副本保持字节一致，dogfood manifest 绑定 clean source commit。\n重建迁移分类、内容绑定、continuity、verification fallback、archive recovery 与 wrapper route。\n增加闭合的 reviewed tracked content bindings 与 migration predecessor 字段约束。\n明确 schema 2.0 migration normalization、exact binding 和 existing Draft recovery 合同。\n覆盖 tracked plan、reviewed metadata tail、predecessor、fallback、task.json 与 Draft recovery 正负例。\n同步 installed/platform bytes 并将 dogfood provenance 绑定到 clean reviewed source commit。\nExisting schema 2.0 plan 可沿用历史 tracked/untracked 分类。\n每次 prepare 或 recovery 都从 live Git index 重建 tracked paths 及其精确 complement。\nTracked metadata 只能匹配 transaction-parent blob 或少量固定 inputs。\n所有 reviewed deviations 使用闭合 path、mode、SHA-256 binding，未绑定或漂移继续 fail closed。\nFallback 可接受任意语法合法的历史 plan digest。\nFallback 只接受 current plan 或精确 migration predecessor，跨月 reprepare 必须退休 predecessor。\ntask.json archive continuity 始终以 transaction-parent bytes 为 official delta 基线。\n存在 binding 时逆投影 official status/completedAt 并校验 reviewed bytes；无 binding 保持 parent baseline。\nfinish-work.sh schema 2.0 迁移归档已修复完成\ntracked legacy closeout-plan 分类恢复已完成\ntask.json reviewed metadata tail 归档已修复\nverification predecessor 精确绑定已完成"
+      }
+    },
+    "runtime_fact_fields": [
+      "github.pr_url",
+      "index.search_terms.pr_refs"
+    ]
+  },
+  "transitions": [
+    "prepared",
+    "content_pushed",
+    "evidence_ready",
+    "draft_bound",
+    "projection_validated",
+    "archive_moved",
+    "archive_pushed",
+    "ready"
+  ],
+  "plan_digest": "47a8c83eec4cb1faa34b4113da9c920e7b9f942eec921d8fe50dc18417eae17b"
+}

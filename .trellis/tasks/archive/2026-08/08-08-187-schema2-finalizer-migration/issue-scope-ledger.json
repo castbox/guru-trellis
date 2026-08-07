@@ -1,0 +1,19 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 187,
+    "url": "https://github.com/castbox/guru-trellis/issues/187",
+    "title": "缺陷：schema 2.0 Finalizer 无法归档 tracked legacy closeout plan 与已审核 metadata tail",
+    "reason": "The task scope fully covers the live Issue #187 acceptance criteria."
+  },
+  "close_issues": [
+    {
+      "number": 187,
+      "url": "https://github.com/castbox/guru-trellis/issues/187",
+      "title": "缺陷：schema 2.0 Finalizer 无法归档 tracked legacy closeout plan 与已审核 metadata tail",
+      "reason": "The task scope fully covers the live Issue #187 acceptance criteria."
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
