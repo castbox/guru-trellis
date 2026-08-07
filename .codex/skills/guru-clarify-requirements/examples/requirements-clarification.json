@@ -33,9 +33,7 @@
   },
   "context_evidence": {
     "status": "current",
-    "schema_id": "guru-context-discovery-1.0",
-    "snapshot_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
-    "evidence_refs": ["guru-context-discovery-1.0:3333333333333333333333333333333333333333333333333333333333333333"],
+    "evidence_refs": ["current-session:change-context"],
     "missing_reason": null
   },
   "confirmed_facts": [
@@ -51,7 +49,7 @@
       "question_id": "existing_owner",
       "question": "Which existing contract owns this behavior?",
       "status": "answered",
-      "evidence_refs": ["context_evidence.snapshot_sha256"],
+      "evidence_refs": ["context_evidence.evidence_refs"],
       "answer_summary": "The current workflow package is the sole owner.",
       "missing_reason": null
     }
@@ -86,12 +84,12 @@
   "content_identity": {
     "target_sha256": "603e08673b9ead771afe56bee61774d9a9a70b6ba0fa0b40c76cc050ac1aaaf0",
     "disposition_sha256": "1130c882f3e8193faa9cb1b0ff74c99a10128b5a7ca2eb0ab184d84cf7009538",
-    "content_sha256": "94b13eddb24ebfe946826823d9c9505253f0ced541d0cdb5bedc92bf068e95bf",
-    "context_sha256": "46be0780ee8aaa5cf134e8b534e695728c4cd093d1ac6a7505d00996d782b3b5",
+    "content_sha256": "c1359006713cfe98586eadb3ca90e86b94379ca96748f658d1b4f792e4fca15b",
+    "context_sha256": "9a46ead58c6ace936d43c0d42e75af8cca8932d134d5eb9517537b91e155f10c",
     "scope_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
     "action_sha256": "8bd79fcbfc2bf6fc34dca122c1c04c6afdc1425ffcd64a49289f1ee0cc764dc2",
     "payload_sha256": "161a1bfffa621be8ff92c3a770b613a877f77c8a2d865342c10988ae7f72aa6b",
-    "result_sha256": "2ca8016efb513cfb656f2090f7de00770fa5427d9ea5af403e7efe8cf7e2165c"
+    "result_sha256": "b6d530b512db621f359f25a4370e6b5030fe7b33e8c219f7477900f567e390fc"
   },
   "reason": "All load-bearing requirements are confirmed by current evidence.",
   "consumer": {

@@ -228,14 +228,12 @@ discovery smoke, current-only fixture invocation tests, and a final recursive ze
 For `guru-discover-change-context`, tests must cover mode-precondition parity,
 stale-before-semantic-read ordering, exact/token score permutations, invalid
 isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,
-mem insufficiency gate, pre-task zero-write, same-snapshot task-local record,
-ordinary refresh stale-code/superseded-digest re-entry, task target trackability
-through repository `.gitignore`, `.git/info/exclude`, and `core.excludesFile`,
-validated task-locator/owner-result equality, exact private worktree-state pass
-and path/status/content/mode/rename drift failures, different-byte formal
-replacement with exact prior, missing/wrong/non-regular prior failures that
-preserve prior bytes, stale-new preservation, superseded binding, and
-same-snapshot idempotency,
+mem insufficiency gate, stdin/stdout record/check/invoke, pre-task and
+standalone zero-write, exact minimal DTO projection, real Git ref freshness,
+base-stale short-circuit before semantic reads, unknown current owner-state
+rejection, clean active-task normal routing with zero checkpoint, dirty
+active-task same-owner recovery, successful consume-and-clean,
+stale checkpoint deletion, unsafe cleanup rejection, and terminal zero residue,
 duplicate candidate canonical fact digest plus identity/URL/repo/number binding
 from one search result, the bidirectional `blocked` exit/Gate matrix, all typed
 exits, source/installed distribution and clean

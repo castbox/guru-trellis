@@ -193,29 +193,26 @@ AI Review Gate。零候选是成功路径，固定 empty selection/deep reads �
 History runtime 只枚举 archived `finish-summary.json` 并只投影 `index.*`，使用
 `guru-context-history-score-1.0` 产生稳定 query、archive manifest 和 preview digest、
 invalid isolation、固定 sort/limit/projection。`trellis mem` 只有四类主证据源都不足以
-解释命名 load-bearing decision 时才进入。Pre-task 只输出 stdout snapshot；task 创建后
-只将 expected digest 匹配的相同 snapshot 写入 direct active task-local
-`context-discovery.json`，并在写后重读 exact bytes、snapshot identity 与 live freshness；
-archived/completed/non-active task 必须拒绝。Recorder/checker 执行 published closed Draft
-2020-12 schema；base evidence 嵌入完整 validator-passed sync result并绑定 post-sync
-digest、selected remote refs 与严格 GitHub repo identity。Pre-task/standalone 绑定 decision
-checkout branch；task mode 只允许相同 HEAD 上进入 `task.json.branch` feature worktree，并
-继续校验完整 provenance、base refs、active task locator/status 与 task-local-only dirty paths。Git status
-failure 不得冒充 clean，base stale 在 live issue/draft、reviewed blob 与 archive preview 前
-短路。Draft-created-issue binding live 校验原 reviewed body；caller-authored `refresh_base`
-必须与 stable live stale codes 一致，`context_ready` 对同一 stale 拒绝。Archive reader
+解释命名 load-bearing decision 时才进入。完整 semantic evidence 保留在当前 AI cognition
+与调用期 owner result 中；record/check/public invoke 通过 stdin/stdout 串联，正常
+pre-task/standalone 不写 task、workspace 或 runtime artifact。Recorder/checker 执行
+published closed Draft 2020-12 `guru-change-context-owner-result-2.0` schema；base evidence
+嵌入完整 validator-passed sync result并绑定 post-sync digest、selected remote refs 与严格
+GitHub repo identity。Git status failure 不得冒充 clean，base stale 在 live issue/draft、
+reviewed blob 与 archive preview 前短路。Draft-created-issue binding live 校验原 reviewed
+body；caller-authored `refresh_base` 必须与 stable live stale codes 一致，`context_ready`
+对同一 stale 拒绝。Archive reader
 以普通 file/read/JSON/index-shape failure 形成 portable invalid evidence。
 Deep-read locator 按 selected task artifact、canonical GitHub issue/PR 与 exact Git object/ref
 三类闭合校验。Closed schema 与结构化 locator 不保存 raw source payload，也不做
 跨字段扫描；不写 workspace/runtime/repo cache。
 
-Active-task re-entry 由 validated `task_locator` 和 fixed
-`prior_snapshot_locator=context-discovery.json` 精确绑定 owner result/checker。Private
-`task_worktree_state` 覆盖 current HEAD 与除 fixed snapshot/runtime 外的完整 dirty
-path/status/content/mode/rename facts。Different-byte fixed snapshot 仅在 prior regular、
-trackable、schema/identity 与 explicit expected digest 全部匹配，且 new/live/worktree checks
-通过后 formal replace；成功记录 `superseded_snapshot_sha256`，写前失败保留 prior bytes，
-same-byte retry 幂等。
+正常 mapped active-task 调用通过 ephemeral task identity 绑定 direct task branch 与当前
+task worktree，允许普通进行中 edits，但不创建 checkpoint。只有 active-task owner loop 确实跨调用中断时，才在 ignored
+`owner-checkpoints/<task-key>/` 下惰性创建同一 owner 的最小 current checkpoint。正常
+mapped exit 不创建 checkpoint；stale 删除 current checkpoint 后从 live authority 完整重跑；
+public projection/schema 校验成功后立即 consume-and-clean owner input/result/checkpoint 与
+空目录。下游 Clarify 只消费最小 DTO，不读取或删除 Discovery private state。
 
 Source issue 支持 GitHub live `open` / `closed`，runtime 将受支持的 state casing
 归一为小写；duplicate candidates 与 draft-created issue binding 仍是 open-only。
@@ -232,14 +229,12 @@ gate 从同一次 open duplicate search 返回字段重算排除 reason/observat
 Record/check production entry 先执行 pure schema/digest/semantic shape，再执行
 base-only live gate；repo-bound locator、issue、reviewed blob 与 archive/history 仅在 fresh
 base 后读取。`refresh_base` record/check 记录并核对当前 stable stale codes、superseded
-query/snapshot digests、reason 与 detection time，然后要求整步 re-entry；只消费当前 payload
-与 expected snapshot identity，不重建 ancestry。Task-local recorder 写前/写后与 checker 还使用 `git check-ignore
---quiet --no-index -- <target>` 验证 artifact 未命中 repo ignore、`.git/info/exclude` 或
-`core.excludesFile`；pre-task stdout-only 不执行该 gate。Base stale 随后只匹配
-caller-authored refresh codes 后返回。`change_input` 十组 clue arrays 至少一组非空，issue binding/canonical query 不得
+query/result digests、reason 与 detection time，然后要求整步从 live authority re-entry，
+不重建 snapshot ancestry。Base stale 随后只匹配 caller-authored refresh codes 后返回。
+`change_input` 十组 clue arrays 至少一组非空，issue binding/canonical query 不得
 替代。Portable locator 只按 source-specific closed structure 验证，不扫描整份 payload。
 
-Schema 是 `guru-context-discovery-1.0`；managed commands 是
+Owner-result schema 是 `guru-change-context-owner-result-2.0`；managed commands 是
 `preview-change-context-history`、`record-context-discovery` 和
 `check-context-discovery`。Exits 是 `context_ready` -> active
 `guru-clarify-requirements`、`refresh_base` -> `guru-sync-base`、`blocked` ->

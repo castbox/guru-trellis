@@ -300,55 +300,27 @@ archive-manifest and preview digests. It performs no AI selection,
 relevance/sufficiency judgment, duplicate decision, deep-read, mem lookup, or
 write.
 
-Record accepts an AI-authored reviewed payload from stdin or an explicit input
-file. A `refresh_base` payload records current stable stale codes, superseded
-query/snapshot digests, reason, and detection time. Recorder/checker compare
-those caller-authored facts with current live freshness and require complete
-skill re-entry. They consume only the current payload and expected snapshot
-identity, without rebuilding an external history chain. Pre-task mode outputs
-canonical snapshot bytes only. Task mode requires
-the expected snapshot digest and writes only direct active task-local
-`context-discovery.json` after objective live freshness checks; archived,
-completed, and other non-active task locators are rejected. It then reopens the
-written artifact once, compares exact bytes and snapshot identity, and repeats
-the required live freshness checks before success. Check reads the same
-canonical payload from stdin/file/task artifact. Before a
-task-local write and after it, and for every task-local check, the exact target
-must pass `git check-ignore --quiet --no-index -- <repo-relative-target>`.
-Repository ignore rules, `.git/info/exclude`, and `core.excludesFile` therefore
-fail closed even for an already tracked file. Stable errors are
-`context_discovery_target_ignored` and
-`context_discovery_target_trackability_unreadable`; pre-task stdout-only mode
-does not run this target gate. It
-verifies the published closed Draft
-2020-12
-schema/exit shape, digests, selected/excluded candidate cardinality, portable
-source-specific deep-read locators, mem insufficiency gate, AI Review Gate evidence, fixed
-human-confirmation status, the embedded complete validator-passed base-sync
-result and all projection/provenance fields, selected-remote GitHub repository
-identity, draft-to-created-issue live body binding,
-selected-remote/base/live/reviewed-blob/query/archive freshness, and
-same-snapshot identity. Neither command creates semantic conclusions or
-derives task scope from private artifact content.
-
-For `task_local_reentry`, the public wrapper first validates the exact
-repo-relative `task_locator` and fixed `prior_snapshot_locator`, then requires
-the owner result locator to equal their joined path and calls the checker with
-that validated task. Task-mode recording derives private
-`task_worktree_state` from current HEAD and the complete dirty entry snapshot,
-excluding only the fixed context snapshot and ignored runtime state. For a
-different-byte existing target, the recorder uses `lstat` to require a regular
-file before reading it, proves trackability/schema/identity and an exact
-`--expected-prior-snapshot-sha256`, validates the complete new snapshot and
-live worktree state, then replaces through `write_json`. The new snapshot binds
-the prior digest in `superseded_snapshot_sha256`; failed pre-write validation
-preserves prior bytes and same-byte retry remains idempotent.
+Record accepts one AI-authored reviewed result from stdin or an explicit input
+file, normalizes and validates it, and writes canonical JSON only to stdout.
+Check accepts that same stdin/file transport and returns the objective checked
+exit. On normal pre-task/standalone calls neither command accepts a task
+locator, resolves a task artifact, checks Git trackability, replaces prior
+bytes, records supersession state, or writes a repository/runtime file. A
+normal active-task workflow call supplies `--active-task` independently to
+record, check, and public invoke; this binds the direct task branch and current
+task worktree while remaining checkpoint-free and permitting ordinary task
+edits. Only a real interruption additionally supplies matching
+`--recovery-continuation-id` on all three calls, which binds one minimal current
+checkpoint below the exact task owner namespace and never copies live facts or
+the complete owner result into it. The public wrapper accepts `--owner-result
+-`, checks the same bytes, builds one schema-validated typed exit, and only then
+consumes a recovery checkpoint and empty owner directory. Stale or invalid
+recovery is deleted and rerun from live authority.
 Record/check first execute only pure schema, digest, entry
 clue, and semantic-evidence shape validation. `change_input` has ten closed clue
 arrays and at least one must be non-empty; a separate issue binding or canonical
 query cannot satisfy this entry precondition. The next stage is the base-only
-live gate. Any base stale result validates the caller-authored refresh codes and
-superseded identities/digests and returns before repository-bound query/current/
+live gate. Any base stale result returns before repository-bound query/current/
 deep-read locators, GitHub issues, reviewed blobs, or archive/history are read.
 Only a fresh base permits those remaining locator and live checks. Portable
 locator validation is structural and source-specific; it does not scan every
@@ -371,12 +343,7 @@ search result. Record/check do not issue a second duplicate search or re-read
 candidates after AI review.
 
 Pre-task and standalone checks bind the live checkout to the base-sync decision
-branch. Direct active task mode instead requires the live branch to equal
-`task.json.branch`, allowing task/worktree creation to place the unchanged
-snapshot HEAD on a feature branch. This exception never weakens complete sync
-result provenance, current HEAD, selected local/remote base refs, remote
-repository identity, direct active task status/locator, or task-local dirty-path
-validation. Zero candidates require empty selection/deep reads plus the exact
+branch. Zero candidates require empty selection/deep reads plus the exact
 `not_needed` mem shape; a `used` or internally inconsistent `not_needed` shape
 fails schema and runtime validation before any other history source is accepted.
 

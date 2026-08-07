@@ -8,7 +8,6 @@
     "source_exit",
     "mode",
     "target_locator",
-    "context_locator",
     "continuation_id"
   ],
   "properties": {
@@ -23,10 +22,6 @@
       "const": "standalone"
     },
     "target_locator": {
-      "type": "string",
-      "minLength": 1
-    },
-    "context_locator": {
       "type": "string",
       "minLength": 1
     },

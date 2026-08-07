@@ -137,25 +137,22 @@ publishes active id `guru-sync-base`, schema id
 
 The registry also installs active semantic `guru-discover-change-context` to
 the audited runtime root and selected shared/Codex/Cursor/Claude discovery
-roots. Its managed tree includes `SKILL.md`, interface, contract, example,
-`guru-context-discovery-1.0` schema, tests, and executable dispatcher-only
-wrappers. Managed companion assets include
+roots. Its managed tree includes `SKILL.md`, interface, contract, the
+`guru-change-context-owner-result-2.0` schema/example, public schemas/examples,
+tests, and executable dispatcher-only wrappers. Managed companion assets include
 `preview-change-context-history.sh`, `record-context-discovery.sh`, and
 `check-context-discovery.sh`; the extension manifest publishes the active id,
-artifact schema id, and all three runtime command ids. Installed validation
+owner-result schema id, and all three runtime command ids. Installed validation
 must prove exact bytes, executable modes, package/interface/tree digests and
 selected-platform inventory before direct discovery may run.
 Managed schema/runtime/tests must move together when duplicate candidate facts
 gain canonical repo/number/identity/URL/open-state/update-time digest and live
 freshness checks, or when the `blocked` exit/Gate state matrix changes; a mixed
 old-schema/new-runtime installation is drift and fails installed validation.
-They must also move together for validated task-local owner binding, private
-`task_worktree_state`, and formal fixed-snapshot replacement. Installed and
-throwaway checks cover exact-locator mismatch, dirty path/status/content/mode/
-rename drift, non-regular or wrong prior preservation, exact-prior replacement,
-`superseded_snapshot_sha256`, and same-byte idempotency. Upgrade/reapply may not
-leave an old context schema/runtime/wrapper combination or any `.new`/`.bak`
-sidecar.
+Installed and throwaway checks cover stdin/stdout record/check/invoke, zero
+repository writes, minimal public DTO projection, live stale restart, and lazy
+same-owner recovery checkpoint consume-and-clean. Upgrade/reapply may not leave
+an old owner schema/runtime/wrapper combination or any `.new`/`.bak` sidecar.
 
 The registry also installs active semantic `guru-clarify-requirements` to the
 same audited runtime and selected discovery roots. Its managed tree includes
@@ -206,9 +203,11 @@ appear to work. The throwaway path also verifies workflow route markers,
 stdout-only standalone resolution/result facts, the real workflow
 `synced -> guru-discover-change-context -> context_ready ->
 guru-clarify-requirements` chain and all six clarification exit consumers,
-direct zero/candidate history preview, same-snapshot task-local
-record/check, duplicate projection/digest recomputation from one search result,
-ordinary refresh stale-code/superseded-digest re-entry,
+direct zero/candidate history preview, stdin/stdout record/check/invoke,
+pre-task zero-write and exact minimal DTO projection, duplicate projection/digest
+recomputation from one search result, live stale restart and base-stale
+short-circuit, checkpoint-free active-task normal routing, dirty same-owner
+active-task recovery plus consume-and-clean,
 bidirectional blocked exit/Gate rejection, clarification workflow/standalone
 precondition parity, question/scope/action invariants, zero persisted
 authorization fields, stdout-only

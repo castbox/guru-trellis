@@ -107,7 +107,6 @@
   "$defs": {
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "nullableSha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-    "nullableGitSha": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
     "cleanText": {"type": "string", "minLength": 1},
     "nullableText": {"type": ["string", "null"]},
     "target": {
@@ -141,26 +140,6 @@
       "type": "array",
       "items": {"type": "string", "minLength": 1},
       "uniqueItems": true
-    },
-    "contextProjection": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["status", "schema_id", "typed_exit", "payload_sha256", "snapshot_sha256", "base_sync_facts_sha256", "base_head", "live_target_sha256", "query_sha256", "current_state_sha256", "history_sha256", "duplicate_sha256", "error_codes"],
-      "properties": {
-        "status": {"$ref": "#/$defs/projectionStatus"},
-        "schema_id": {"type": ["string", "null"]},
-        "typed_exit": {"type": ["string", "null"]},
-        "payload_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "snapshot_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "base_sync_facts_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "base_head": {"$ref": "#/$defs/nullableGitSha"},
-        "live_target_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "query_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "current_state_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "history_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "duplicate_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "error_codes": {"$ref": "#/$defs/errorCodes"}
-      }
     },
     "clarityProjection": {
       "type": "object",
@@ -199,9 +178,8 @@
     "prerequisites": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["context", "clarity", "wording"],
+      "required": ["clarity", "wording"],
       "properties": {
-        "context": {"$ref": "#/$defs/contextProjection"},
         "clarity": {"$ref": "#/$defs/clarityProjection"},
         "wording": {"$ref": "#/$defs/wordingProjection"}
       }
@@ -209,14 +187,10 @@
     "linkage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["target_identity_sha256", "target_content_sha256", "base_head", "current_state_sha256", "history_sha256", "duplicate_sha256", "clarity_facts_sha256", "clarity_disposition_sha256", "wording_facts_sha256", "linkage_sha256"],
+      "required": ["target_identity_sha256", "target_content_sha256", "clarity_facts_sha256", "clarity_disposition_sha256", "wording_facts_sha256", "linkage_sha256"],
       "properties": {
         "target_identity_sha256": {"$ref": "#/$defs/sha256"},
         "target_content_sha256": {"$ref": "#/$defs/sha256"},
-        "base_head": {"$ref": "#/$defs/nullableGitSha"},
-        "current_state_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "history_sha256": {"$ref": "#/$defs/nullableSha256"},
-        "duplicate_sha256": {"$ref": "#/$defs/nullableSha256"},
         "clarity_facts_sha256": {"$ref": "#/$defs/nullableSha256"},
         "clarity_disposition_sha256": {"$ref": "#/$defs/nullableSha256"},
         "wording_facts_sha256": {"$ref": "#/$defs/nullableSha256"},

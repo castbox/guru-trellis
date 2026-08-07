@@ -78,35 +78,46 @@ passed Gate requires non-empty reviewed scope and load-bearing conclusions.
 `typed_exit=blocked` if and only if `ai_review_gate.status=blocked`; schema and
 runtime enforce both directions. This step has no user-owned decision or
 mutation, so the conditional confirmation stage continues without prompting
-and writes no authorization field to the snapshot.
+and writes no authorization field to owner state.
 
-## Snapshot, Freshness, And Exits
+## Owner Result, Freshness, And Exits
 
-Pre-task recording is stdout-only. After task creation, `snapshot_recorder
---task` requires `--expected-snapshot-sha256` and may write only the canonical
-snapshot to direct active `{TASK_DIR}/context-discovery.json`. Existing
-different bytes are not overwritten. After a write, the recorder reads the file
-back once, compares exact bytes and snapshot identity, confirms Git
-trackability with `git check-ignore --quiet --no-index --`, and reruns normal
-live freshness checks.
+Workflow and standalone recording are stdout-only. The recorder and checker
+accept one current AI-authored result from stdin or an explicit file, validate
+it, and never create a task, workspace, or ignored runtime file. The public
+wrapper accepts stdin owner transport and emits one typed DTO only after the
+same bytes pass the objective checker.
+
+An active-task workflow owner passes the direct task identity independently as
+`--active-task`. Record, check, and public invoke then bind the live checkout to
+`task.json.branch`, the current task worktree, and fresh selected-base refs while
+allowing ordinary in-progress worktree edits; this normal mapped route remains
+repository-write-free. Only a real interruption adds
+`--recovery-continuation-id`, which writes one
+`change-context-recovery.json` below that task's ignored owner-checkpoint
+namespace. It retains only task identity, requested exit, Gate status,
+reviewed scope, load-bearing conclusions, and reason. The checker binds those
+bytes to a complete fresh owner rerun. Stale/invalid recovery is deleted, and
+the public wrapper deletes a current checkpoint only after its typed DTO passes
+the output schema. Pre-task and standalone calls cannot select active-task or
+recovery invocation identity.
 
 The recorder and checker execute the published closed Draft 2020-12 schema and
-validate query/manifest/preview/payload/snapshot digests. A caller-authored
-`refresh_base` entry records stable live stale codes, superseded query digest,
-superseded snapshot digest, reason, and detection time; matching live stale
-facts return `refresh_base` for complete re-entry. The commands consume only
-the current payload and expected snapshot identity; they do not reconstruct an
-external history chain.
+validate query/manifest/preview/payload/result digests. Matching live stale
+facts return the caller-authored `refresh_base` exit for complete re-entry from
+live authority. The commands do not reconstruct or persist a prior-result
+chain.
 
 Base evidence embeds the complete validator-passed
 `guru-base-sync-result-1.0`. Validation checks its schema and digests, then
 compares selected base/remote refs, GitHub repository identity, current HEAD,
-branch and clean/task-local dirty scope with live Git. Pre-task and standalone
-bind the decision branch. Direct active task mode binds `task.json.branch` at
-the unchanged snapshot HEAD.
+branch and cleanliness with live Git. Pre-task and standalone bind the clean
+decision branch. Active-task invocation instead binds the direct active task
+and its task branch, permits ordinary current-worktree edits, and still requires
+the selected local/remote base refs and repository identity to remain fresh.
 
 Before `context_ready`, validation also binds the live issue or draft, reviewed
-Git blobs/content, canonical query, archive manifest and snapshot. A base error
+Git blobs/content, canonical query, archive manifest and owner result. A base error
 short-circuits before those later reads. A source issue may be live `open` or
 `closed`. A draft-created issue binding remains open-only and its live body
 digest must equal the original reviewed draft body digest. Every 40-character
@@ -123,8 +134,13 @@ self-contained or portable.
 
 ## Interface 1.3 Public Handoff
 
-`pre_task` and `task_local_reentry` are the only public profiles. After the
-owner loop, `scripts/invoke.sh --input ... --owner-result ...` validates
+`pre_task` is the only public profile. After the owner loop,
+`scripts/invoke.sh --input ... --owner-result -` validates
 caller-owned continuation, reruns the existing result checker, and derives the
-matching per-exit DTO from the checked owner result. The context snapshot
-remains private gate evidence and task-local re-entry passes only its locator.
+matching per-exit DTO from the checked owner result. `context_ready` contains
+only route/profile/mode/target/continuation identity; Clarification rereads live
+authority and receives no owner-result locator. Active-task identity remains an
+ephemeral `--active-task` invocation argument rather than a public DTO field. A
+genuinely interrupted owner additionally supplies one recovery continuation and
+may lazily use one minimal ignored checkpoint, which the same owner deletes on
+stale restart or successful consumption.

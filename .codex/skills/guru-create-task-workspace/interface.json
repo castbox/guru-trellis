@@ -12,7 +12,6 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "base_evidence",
-        "context_evidence",
         "clarity_evidence",
         "wording_evidence",
         "readiness_evidence",
@@ -27,7 +26,6 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "base_evidence",
-        "context_evidence",
         "clarity_evidence",
         "wording_evidence",
         "readiness_evidence",
@@ -52,12 +50,6 @@
       "freshness": "shared resolver/sync rerun once before first confirmed mutation; changed identity refreshes review"
     },
     {
-      "id": "context_evidence",
-      "evidence": "current guru-context-discovery-1.0 context_ready result",
-      "binding": "same base, target, duplicate and current repository facts",
-      "freshness": "checker-passed canonical bytes and snapshot digest remain current"
-    },
-    {
       "id": "clarity_evidence",
       "evidence": "current guru-requirements-clarification-2.0 clear result",
       "binding": "final target, disposition, source action and scope decisions",
@@ -72,8 +64,8 @@
     {
       "id": "readiness_evidence",
       "evidence": "current guru-change-request-review-1.0 ready result",
-      "binding": "same target/content/linkage and close/related/followup conclusion",
-      "freshness": "facts digest and prerequisite linkage remain current"
+      "binding": "same live-normalized target/content, clarification/wording linkage and close/related/followup conclusion",
+      "freshness": "facts digest, target authority and two-prerequisite linkage remain current"
     },
     {
       "id": "target_authority",

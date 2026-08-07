@@ -71,18 +71,13 @@ parser and validating older configs.
 
 ## Change Context Discovery Result
 
-Schema `guru-context-discovery-1.0` is a closed Draft 2020-12 union whose
-`typed_exit` is exactly `context_ready`, `refresh_base`, or `blocked`. Common
-identity embeds the complete validator-passed `guru-base-sync-result-1.0`
-payload and binds its facts digest, post-sync resolution digest, selected Git
-remote, decision checkout, refs/HEADs, and normalized GitHub remote repository
-identity. Every projection field must equal the embedded result and current
-live Git. A Git status read failure is unknown freshness and fails closed; it
-is never treated as an empty clean path set. Common identity also binds
-normalized change input, live
-issue/proposed-draft facts, duplicate facts, current Docs/code/tests evidence,
-canonical query, history preview, AI history review, mem decision, AI Review
-Gate, human-confirmation status, refresh history, and snapshot identity.
+Schema `guru-change-context-owner-result-2.0` is the closed Draft 2020-12
+stdout-only owner-result union whose `typed_exit` is exactly `context_ready`,
+`refresh_base`, or `blocked`. It embeds the validator-passed base result and
+current semantic evidence needed by the same owner loop, but it is neither a
+public handoff nor a tracked task artifact. Normal workflow and standalone
+execution transport the result through stdin/stdout and create no task,
+workspace, or ignored runtime file.
 The normalized `change_input` object contains the same ten clue-array kinds as
 the canonical query source and requires at least one non-empty array in both the
 published schema and runtime precondition gate. Neither `issue_binding` nor a
@@ -155,57 +150,37 @@ canonical GitHub issue/PR URL without query/fragment, and `git` is an exact
 `git:object:<oid>` or `git:ref:<full-ref>@<oid>` identity validated against live
 Git. The schema and runtime both reject cross-kind locator substitution.
 
-Pre-task recording emits the reviewed snapshot on stdout without repository
-writes. Post-task recording requires `--task` and
-`--expected-snapshot-sha256`, validates the same query/manifest/base/live facts
-and reviewed blob identities, and writes only a direct active
-`{TASK_DIR}/context-discovery.json`; archived, completed, and other non-active
-tasks are rejected. The recorder reopens the just-written artifact, compares
-exact canonical bytes and snapshot identity, then reruns required live
-freshness before returning success. Both recorder and checker execute the
-published closed Draft 2020-12 schema. Base evidence preserves the complete
-sync result and selected remote. Pre-task/standalone live validation requires
-the decision checkout branch. Direct active task mode permits the current
-checkout to be the feature branch created after the pre-task snapshot only when
-it equals `task.json.branch`; the HEAD must remain the snapshot base HEAD, the
-selected local/remote base refs and repository identity must remain bound, and
-all dirty paths must be task-local. Any base error short-circuits before live
-issue/draft, reviewed-blob, or archive-preview reads. A caller-authored
-`refresh_base` result is valid only when its latest refresh entry lists the
-exact stable refreshable live-error set and records the current superseded
-query/snapshot digests, reason, and detection time. Recorder/checker compare
-those caller-authored facts with current live freshness, return the authored
-typed exit without generating route intent, and require complete skill
-re-entry. They consume only the current payload and expected snapshot identity,
-without reconstructing a refresh ancestry chain.
-That set includes `task_branch_stale` for real feature-worktree task branch
-drift; malformed task branch, locator, or state facts remain non-refreshable.
+Record and check accept the same owner result from stdin or an explicit file,
+validate schema, digests, base/live facts and reviewed blob identities, and
+return canonical JSON or an objective checked exit on stdout. They never
+resolve, write, replace, or supersede a task artifact. A base error
+short-circuits before live issue/draft, reviewed-blob, or archive-preview reads;
+stale evidence reruns the complete owner from live authority without a prior
+result chain.
+
 Every 40-character reviewed Git identity is resolved again from `HEAD:<path>`
 and its object type must be exactly `blob`. A tree, gitlink commit, tag,
 missing object, or mismatched blob cannot satisfy any Docs, code/contracts, or
 tests evidence group; 64-character content evidence retains its exact byte
 digest freshness check.
-The same stale evidence rejects `context_ready`. Before task-local recording,
-after the write, and during every task-local check, the exact repo-relative
-target must be non-ignored under `git check-ignore --quiet --no-index --`. This
-covers `.gitignore`, `.git/info/exclude`, and `core.excludesFile`, including a
-tracked file. Ignored or unreadable trackability fails closed with
-`context_discovery_target_ignored` or
-`context_discovery_target_trackability_unreadable`; pre-task stdout-only mode
-does not run this target gate. The `task_local_reentry` public input supplies an
-exact task locator plus fixed `prior_snapshot_locator=context-discovery.json`;
-the wrapper binds the owner checker to that task rather than deriving scope
-from the private snapshot. Task mode adds private `task_worktree_state`, whose
-digest covers current HEAD and every dirty path/status/content/mode/rename fact
-except the fixed snapshot and ignored runtime state. An existing byte-identical
-snapshot is idempotent. Different bytes require a regular, trackable,
-schema/identity-valid prior whose snapshot digest matches explicit
-`--expected-prior-snapshot-sha256`, followed by complete validation of the new
-snapshot and exact live worktree state. A successful replacement records the
-prior digest in optional `superseded_snapshot_sha256`; missing/wrong/invalid
-prior or stale new evidence fails before overwrite and produces no sidecar.
-The closed schema and source-specific portable locator fields keep raw source
-payloads out of the persisted artifact through field-specific validation.
+The same stale evidence rejects `context_ready`. Its public DTO contains only
+`exit_id`, `handoff_profile`, `handoff_mode`, `handoff_target_locator`, and
+`handoff_continuation_id`; Clarification rereads current authority and never
+receives an owner-result locator.
+
+Active-task invocation identity is transported ephemerally and independently
+from persistence. Normal mapped active-task record/check/invoke binds the
+direct task branch, current task worktree, and fresh selected-base refs while
+allowing ordinary worktree edits and creates no checkpoint. Only a genuinely
+interrupted active-task owner loop with an explicit recovery continuation may
+lazily create one current ignored checkpoint below the existing
+owner-checkpoint namespace. It
+stores only task identity and non-reconstructable same-owner semantic state,
+never authorization, complete scan/review history, repository/file metadata or
+digest bundles, reviewer/process metadata, or live Git/GitHub/Trellis facts.
+Stale recovery deletes it and restarts from live authority. Successful public
+serialization and terminal paths remove the producer result/checkpoint and any
+empty owner directory.
 
 ## Requirements Clarification Result
 
@@ -219,9 +194,11 @@ result. Top-level fields are exactly `schema_version`, `skill_id`,
 `invocation_context.kind` is `initial_issue`, `proposed_draft`,
 `active_task_scope_change`, or `standalone_review` and includes a closed
 caller-aware `resume_target`. `review_target` carries a portable current issue
-or side-effect-free draft identity. `context_evidence` binds the current
-`guru-context-discovery-1.0` snapshot/digest where available;
-`needs_context` is the only exit that can omit load-bearing current context.
+or side-effect-free draft identity. `context_evidence` records only whether
+current-session/live-authority context is current, stale, or unavailable plus
+direct evidence refs and an optional missing reason. It never locates or
+identifies Discovery private state; `needs_context` is the only exit that can
+omit load-bearing current context.
 
 Repository-answerable questions record one of `pending`, `answered`, or
 `not_answerable`. Before the first clarification round no entry may remain

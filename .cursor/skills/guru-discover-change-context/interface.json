@@ -3,7 +3,7 @@
   "schema_version": "1.3",
   "id": "guru-discover-change-context",
   "name": "guru-discover-change-context",
-  "description": "Discover fresh current and archived change context, run the semantic evidence gate, and produce a portable snapshot before Guru Team requirement clarification.",
+  "description": "Discover fresh current and archived change context, run the semantic evidence gate, and hand minimal current identity to Guru Team requirement clarification.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -38,8 +38,8 @@
     {
       "id": "fresh_base",
       "evidence": "validator-passed guru-base-sync-result-1.0 with selected base, decision checkout, base HEAD and post_sync_resolution_sha256",
-      "binding": "repository, selected base, decision checkout and clean synchronized HEAD",
-      "freshness": "validated before live change, current-state or history reads and again before snapshot acceptance"
+      "binding": "repository and selected base plus either the clean decision checkout or an exact active task branch/current worktree",
+      "freshness": "selected local/remote base refs and repository identity are revalidated before live reads and result acceptance; pre-task/standalone require the clean decision branch while active-task workflow permits ordinary task worktree edits"
     },
     {
       "id": "repository_identity",
@@ -55,7 +55,7 @@
     },
     {
       "id": "evidence_freshness",
-      "evidence": "live change digest, reviewed Git blobs, query digest, archive manifest digest and snapshot digest",
+      "evidence": "live change digest, reviewed Git blobs, query digest, archive manifest digest and owner-result digest",
       "binding": "the exact current/history evidence reviewed by the AI gate",
       "freshness": "objective validator rechecks declared live change, current evidence and archive bindings before context_ready"
     }
@@ -77,16 +77,12 @@
   ],
   "artifacts": [
     {
-      "id": "context_discovery_example",
-      "path": "examples/context-discovery.json"
+      "id": "change_context_owner_result_example",
+      "path": "examples/change-context-owner-result.json"
     },
     {
       "id": "public_input_pre_task_example",
       "path": "examples/public-pre-task-input.json"
-    },
-    {
-      "id": "public_input_task_local_reentry_example",
-      "path": "examples/public-task-local-reentry-input.json"
     },
     {
       "id": "public_invocation_error_example",
@@ -107,16 +103,16 @@
   ],
   "schemas": [
     {
-      "id": "context_discovery_schema",
-      "path": "schemas/context-discovery.schema.json"
+      "id": "change_context_owner_result_schema",
+      "path": "schemas/change-context-owner-result.schema.json"
+    },
+    {
+      "id": "change_context_recovery_schema",
+      "path": "schemas/change-context-recovery.schema.json"
     },
     {
       "id": "public_input_pre_task",
       "path": "schemas/public-pre-task-input.schema.json"
-    },
-    {
-      "id": "public_input_task_local_reentry",
-      "path": "schemas/public-task-local-reentry-input.schema.json"
     },
     {
       "id": "public_input_aggregate",
@@ -147,28 +143,28 @@
       "objective_scope": "canonical query, finish-summary index-only manifest, deterministic score/sort/limit/projection, invalid isolation and preview digests"
     },
     {
-      "id": "snapshot_recorder",
+      "id": "owner_result_recorder",
       "command": "scripts/record-context-discovery.sh",
       "runtime_command": "record-context-discovery",
-      "objective_scope": "canonical snapshot identity, stdout-only pre-task output, Git-trackable target gate and exact same-snapshot task-local persistence"
+      "objective_scope": "canonical owner-result identity, stdin/file input, stdout-only normalization, optional ephemeral active-task binding and checkpoint creation only with an explicit recovery continuation"
     },
     {
-      "id": "snapshot_validator",
+      "id": "owner_result_validator",
       "command": "scripts/check-context-discovery.sh",
       "runtime_command": "check-context-discovery",
-      "objective_scope": "closed result shape, AI-authored gate evidence, Git-trackable task target, digest bindings, live freshness, candidate/mem rules and typed-exit identity"
+      "objective_scope": "closed result shape, AI-authored gate evidence, digest bindings, active-task or pre-task live freshness, optional recovery checkpoint binding, candidate/mem rules and typed-exit identity"
     },
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-stage0-skill",
-      "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
+      "objective_scope": "Caller-owned input validation, optional ephemeral active-task binding, optional same-owner recovery consumption and deterministic typed-exit serialization after the owner closed loop"
     }
   ],
   "external_exits": [
     {
       "id": "context_ready",
-      "evidence": "fresh current/history snapshot with passed AI Review Gate and objective validation",
+      "evidence": "fresh current/history evidence with passed AI Review Gate and objective validation",
       "consumer": {
         "kind": "skill",
         "id": "guru-clarify-requirements"
@@ -176,7 +172,7 @@
     },
     {
       "id": "refresh_base",
-      "evidence": "stale base, live change, reviewed blob, query, archive manifest or snapshot binding",
+      "evidence": "stale base, live change, reviewed blob, query or archive manifest binding",
       "consumer": {
         "kind": "skill",
         "id": "guru-sync-base"
@@ -192,7 +188,7 @@
     }
   ],
   "reentry": {
-    "identity": "mode, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and snapshot digest",
+    "identity": "mode, optional active task and task branch, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and owner-result digest",
     "freshness": "all live bindings are revalidated before acceptance; stale evidence restarts the complete Skill",
     "stale_behavior": "fail_closed"
   },
@@ -227,21 +223,6 @@
             "field": "profile",
             "value": "pre_task"
           }
-        },
-        {
-          "id": "task_local_reentry",
-          "schema": {
-            "schema_id": "guru-stage0-discover-change-context-input-task-local-reentry-1.0",
-            "path": "schemas/public-task-local-reentry-input.schema.json"
-          },
-          "example": {
-            "id": "task_local_reentry_input",
-            "path": "examples/public-task-local-reentry-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "task_local_reentry"
-          }
         }
       ]
     },
@@ -265,7 +246,7 @@
         "--input",
         "examples/public-pre-task-input.json",
         "--owner-result",
-        ".trellis/guru-team/skills/packages/guru-discover-change-context/examples/context-discovery.json"
+      "-"
       ]
     },
     "outputs": [
@@ -373,10 +354,6 @@
             "target": "target_locator"
           },
           {
-            "source": "handoff_context_locator",
-            "target": "context_locator"
-          },
-          {
             "source": "handoff_continuation_id",
             "target": "continuation_id"
           }
@@ -420,13 +397,22 @@
     ],
     "private_artifacts": [
       {
-        "id": "context_snapshot",
+        "id": "change_context_owner_result",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
-          "path": "schemas/context-discovery.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json",
+          "path": "schemas/change-context-owner-result.schema.json"
         },
-        "persistence": "task_local_tracked"
+        "persistence": "stdout_only_owner_private"
+      },
+      {
+        "id": "change_context_recovery",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-context-recovery-1.0.json",
+          "path": "schemas/change-context-recovery.schema.json"
+        },
+        "persistence": "ignored_runtime"
       }
     ]
   }

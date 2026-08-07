@@ -8,7 +8,6 @@
     "handoff_profile",
     "handoff_mode",
     "handoff_target_locator",
-    "handoff_context_locator",
     "handoff_continuation_id"
   ],
   "properties": {
@@ -25,10 +24,6 @@
       ]
     },
     "handoff_target_locator": {
-      "type": "string",
-      "minLength": 1
-    },
-    "handoff_context_locator": {
       "type": "string",
       "minLength": 1
     },

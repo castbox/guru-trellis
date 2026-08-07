@@ -3,7 +3,6 @@
   "source_exit": "start",
   "mode": "workflow",
   "target_locator": "#145",
-  "context_locator": "context-discovery.json",
   "task_locator": ".trellis/tasks/current",
   "resume_target": "initial-wording",
   "continuation_id": "stage0-current"

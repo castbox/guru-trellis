@@ -9,7 +9,7 @@ Use this Skill after `guru-review-contract-wording:change_request:pass` and
 before task workspace creation. Load
 [references/contract.md](references/contract.md) before acting.
 
-Validate the current context, clarity, and wording evidence first. Review all
+Reread the current target authority, then validate clarity and wording evidence. Review all
 ten readiness dimensions, record findings and one scope conclusion, complete
 the AI Review Gate, and call the recorder and checker only after the semantic
 judgment exists. Return exactly one declared typed exit.

@@ -43,9 +43,9 @@
     },
     {
       "id": "context_evidence",
-      "evidence": "current guru-context-discovery-1.0 snapshot or explicit missing/stale evidence",
-      "binding": "repository, current/history evidence and load-bearing decisions",
-      "freshness": "current evidence is revalidated before clear; missing evidence returns needs_context"
+      "evidence": "current-session discovery conclusions or explicit missing/stale evidence plus live target authority",
+      "binding": "current target, repository evidence and load-bearing decisions without a producer locator",
+      "freshness": "live authority is reread before clear; missing evidence returns needs_context"
     },
     {
       "id": "source_authority",

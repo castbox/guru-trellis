@@ -59,15 +59,6 @@ def prerequisite_payloads(
                 "remote_ref": "main",
             },
         },
-        "context": {
-            "skill_id": "guru-discover-change-context",
-            "typed_exit": "context_ready",
-            "snapshot_identity": {
-                "snapshot_sha256": digest(token, "snapshot"),
-                "live_change_sha256": digest(token, "live-change"),
-            },
-            "fixture": token,
-        },
         "clarity": {
             "skill_id": "guru-clarify-requirements",
             "typed_exit": "clear",
@@ -140,15 +131,6 @@ def build_plan(
         }
     )
     readiness_prerequisites = {
-        "context": {
-            "payload_sha256": runtime.context_digest(payloads["context"]),
-            "status": "current",
-            "error_codes": [],
-            "base_head": base_head,
-            "current_state_sha256": digest(token, "current-state"),
-            "history_sha256": digest(token, "history"),
-            "duplicate_sha256": digest(token, "duplicate"),
-        },
         "clarity": {
             "payload_sha256": runtime.context_digest(payloads["clarity"]),
             "status": "current",

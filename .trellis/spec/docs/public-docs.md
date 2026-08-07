@@ -223,15 +223,19 @@ They state the fixed current-state-before-history order, workflow/standalone
 freshness parity, archived `finish-summary.json:index.*`-only reader,
 `guru-context-history-score-1.0`, stable query/manifest/preview digests, invalid
 isolation, 1-3 candidate deep-read, zero-candidate success with empty
-selection/deep reads and consistent `mem_review=not_needed`, candidate-present
-four-source mem insufficiency gate, stdout-only pre-task result, and exact
-same-snapshot task-local persistence. Public docs distinguish pre-task/
-standalone decision-branch binding from direct active task-mode
-`task.json.branch` feature-worktree binding at the unchanged snapshot HEAD; all
-sync provenance, selected base refs, repository identity, active task and
-task-local dirty-scope checks remain mandatory. They list exits `context_ready` / `refresh_base` /
-`blocked`, schema `guru-context-discovery-1.0`, all three runtime commands, and
-the no-workspace/no-runtime/no-repo-cache boundary. Docs must not imply that
+selection/deep reads and consistent `mem_review=not_needed`, and the
+candidate-present four-source mem insufficiency gate. The current owner result
+uses schema `guru-change-context-owner-result-2.0`; record/check/public invoke
+accept stdin and return stdout, while `context_ready` contains only the route,
+mode, target locator, and continuation identity required by Clarify. Normal
+pre-task and standalone paths write no task, workspace, or runtime artifact.
+Normal mapped active-task invocation carries direct task identity ephemerally,
+binds the task branch/current worktree, permits ordinary task edits, and creates
+no checkpoint. Stale evidence restarts the complete owner from live authority, and only a
+real interrupted active-task recovery may lazily create one ignored current
+owner checkpoint that the same owner consumes and removes. They list exits
+`context_ready` / `refresh_base` / `blocked` and all three runtime commands.
+Docs must not imply that
 the Skill chooses duplicate reuse/new target or that a script performs its AI
 Review Gate.
 They also state that duplicate candidate facts are digest-bound to canonical
@@ -275,12 +279,12 @@ locators, structured no-raw-payload persistence, and field-specific
 validation. Workflow and stop route markers must
 be described as validator-resolved target declarations, not new Skill packages.
 Refresh documentation must state that record/check compare caller-authored
-current stale codes, superseded query/snapshot digests, reason, and detection
-time with live freshness, then require complete re-entry from only the current
-payload and expected snapshot identity. It must also state that
-task-local recorder/checker prove the exact target is not ignored by repository,
-`.git/info/exclude`, or global Git exclude rules using `--no-index`, while
-pre-task stdout mode does not run that target gate.
+current stale codes with live freshness, discard stale owner material, and
+require a complete owner rerun from live authority. It must also state that
+normal record/check/invoke transport is stdin/stdout and repository-write-free;
+active-task identity remains separate from checkpoint persistence, and only a
+genuinely interrupted active-task owner with a recovery continuation may lazily create one ignored
+same-owner checkpoint, which successful output projection consumes and removes.
 
 When workflow behavior changes, update the docs that users actually read:
 
@@ -407,12 +411,14 @@ disjoint exact required-field partition and a no-overwrite full-schema merge,
 and no new projection operation, private-artifact lookup, default, or runtime
 semantic reconstruction is introduced.
 
-The public READMEs also describe the current active-task context re-entry
-contract: exact validated task/snapshot locators, private full dirty-worktree
-binding, and exact-prior formal replacement of the fixed snapshot. They state
-that the existing target must be regular and trackable, a successful
-different-byte replacement records `superseded_snapshot_sha256`, failed
-pre-write validation preserves prior bytes, and same-byte retry is idempotent.
+The public READMEs also describe current active-task recovery as lazy,
+owner-private, ignored runtime state created only for a real interrupted owner
+consumer. Normal mapped active-task invocation binds its task worktree through
+ephemeral identity and creates no checkpoint; stale recovery deletes the
+current checkpoint and restarts from live authority; successful public
+serialization and terminal paths consume the owner material and remove empty
+owner directories. No Discovery artifact locator or supersession history is a
+public or durable contract.
 
 Public READMEs describe fourteen active Skills and 54 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and

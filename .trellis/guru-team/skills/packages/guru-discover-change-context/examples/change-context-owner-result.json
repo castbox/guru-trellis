@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "skill_id": "guru-discover-change-context",
   "generated_at": "2026-01-01T00:00:00Z",
   "mode": "workflow",
@@ -15,7 +15,6 @@
   "history_review": {"selected_candidates": [], "excluded_candidates": [], "deep_reads": []},
   "mem_review": {"status": "not_needed", "reason": "Current repository and task evidence is sufficient.", "load_bearing_question": null, "exhausted_sources": {"task_artifacts": false, "current_docs_code_tests": false, "github": false, "git_history": false}, "summary": null},
   "ai_review_gate": {"status": "passed", "reviewer": "example-ai-review", "reviewed_scope": ["live change", "current Docs/code/tests", "zero-candidate history preview"], "excluded_scope": ["duplicate reuse decision"], "relevance": "The reviewed evidence directly describes the requested behavior.", "sufficiency": "Current evidence is sufficient and zero archived candidates does not weaken the conclusion.", "conflicts": [], "reusable": ["shared dispatcher"], "not_reusable": ["workspace journal"], "load_bearing_conclusions": [{"conclusion": "Current state must precede archived history.", "evidence_refs": ["docs/requirements.md", "trellis/runtime.py"]}], "findings": [], "reason": "All required semantic dimensions passed."},
-  "refresh_history": [],
-  "snapshot_identity": {"query_sha256": "8888888888888888888888888888888888888888888888888888888888888888", "archive_manifest_sha256": "9999999999999999999999999999999999999999999999999999999999999999", "live_change_sha256": "4444444444444444444444444444444444444444444444444444444444444444", "base_head": "1111111111111111111111111111111111111111", "base_sync_facts_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "post_sync_resolution_sha256": "2222222222222222222222222222222222222222222222222222222222222222", "payload_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "snapshot_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+  "result_identity": {"query_sha256": "8888888888888888888888888888888888888888888888888888888888888888", "archive_manifest_sha256": "9999999999999999999999999999999999999999999999999999999999999999", "live_change_sha256": "4444444444444444444444444444444444444444444444444444444444444444", "base_head": "1111111111111111111111111111111111111111", "base_sync_facts_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "post_sync_resolution_sha256": "2222222222222222222222222222222222222222222222222222222222222222", "payload_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "result_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
   "error": null
 }

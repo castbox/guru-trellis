@@ -281,7 +281,7 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         self.assertIn("does not trim them or append a newline", contract)
         self.assertIn("Zero matches creates", contract)
         self.assertIn("complete prior checker-passed created-issue result", contract)
-        self.assertIn("null `issue_binding`", contract)
+        self.assertIn("never reopens Discovery private evidence", contract)
         self.assertIn("`post_sync_resolution_sha256`", contract)
         self.assertIn("exactly one tracked task-local Intake artifact", contract)
         self.assertIn("single `execute_reviewed_plan` public profile", contract)

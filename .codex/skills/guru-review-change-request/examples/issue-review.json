@@ -20,21 +20,6 @@
     "content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
   },
   "prerequisites": {
-    "context": {
-      "status": "current",
-      "schema_id": "guru-context-discovery-1.0",
-      "typed_exit": "context_ready",
-      "payload_sha256": "1010101010101010101010101010101010101010101010101010101010101010",
-      "snapshot_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
-      "base_sync_facts_sha256": "1212121212121212121212121212121212121212121212121212121212121212",
-      "base_head": "1313131313131313131313131313131313131313",
-      "live_target_sha256": "1414141414141414141414141414141414141414141414141414141414141414",
-      "query_sha256": "1515151515151515151515151515151515151515151515151515151515151515",
-      "current_state_sha256": "1616161616161616161616161616161616161616161616161616161616161616",
-      "history_sha256": "1717171717171717171717171717171717171717171717171717171717171717",
-      "duplicate_sha256": "1818181818181818181818181818181818181818181818181818181818181818",
-      "error_codes": []
-    },
     "clarity": {
       "status": "current",
       "schema_id": "guru-requirements-clarification-2.0",
@@ -63,27 +48,23 @@
   "evidence_linkage": {
     "target_identity_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
     "target_content_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-    "base_head": "1313131313131313131313131313131313131313",
-    "current_state_sha256": "1616161616161616161616161616161616161616161616161616161616161616",
-    "history_sha256": "1717171717171717171717171717171717171717171717171717171717171717",
-    "duplicate_sha256": "1818181818181818181818181818181818181818181818181818181818181818",
     "clarity_facts_sha256": "2121212121212121212121212121212121212121212121212121212121212121",
     "clarity_disposition_sha256": "2424242424242424242424242424242424242424242424242424242424242424",
     "wording_facts_sha256": "3131313131313131313131313131313131313131313131313131313131313131",
-    "linkage_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    "linkage_sha256": "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4"
   },
   "semantic_review": {
     "dimensions": [
       {"id": "requirement_completeness", "status": "passed", "summary": "The current requirement is complete.", "evidence_refs": ["target"], "affected_hashes": ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"], "finding_ids": []},
-      {"id": "delivery_unit_consistency", "status": "passed", "summary": "The request is one delivery unit.", "evidence_refs": ["evidence_linkage"], "affected_hashes": ["eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"], "finding_ids": []},
-      {"id": "implementation_target_evidence", "status": "passed", "summary": "Implementation targets are evidenced.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
-      {"id": "claimed_behavior_current", "status": "passed", "summary": "Claims match current behavior evidence.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
-      {"id": "current_implementation_gap", "status": "passed", "summary": "A current implementation gap remains.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
-      {"id": "docs_code_tests_consistency", "status": "passed", "summary": "Docs, code, and tests are consistent.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1616161616161616161616161616161616161616161616161616161616161616"], "finding_ids": []},
-      {"id": "archived_history_constraints", "status": "passed", "summary": "Archived constraints are accounted for.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1717171717171717171717171717171717171717171717171717171717171717"], "finding_ids": []},
-      {"id": "duplicate_reuse_validity", "status": "passed", "summary": "Duplicate and reuse facts are resolved.", "evidence_refs": ["prerequisites.context"], "affected_hashes": ["1818181818181818181818181818181818181818181818181818181818181818"], "finding_ids": []},
+      {"id": "delivery_unit_consistency", "status": "passed", "summary": "The request is one delivery unit.", "evidence_refs": ["evidence_linkage"], "affected_hashes": ["825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4"], "finding_ids": []},
+      {"id": "implementation_target_evidence", "status": "passed", "summary": "Implementation targets are evidenced.", "evidence_refs": ["target"], "affected_hashes": ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"], "finding_ids": []},
+      {"id": "claimed_behavior_current", "status": "passed", "summary": "Claims match current behavior evidence.", "evidence_refs": ["target"], "affected_hashes": ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"], "finding_ids": []},
+      {"id": "current_implementation_gap", "status": "passed", "summary": "A current implementation gap remains.", "evidence_refs": ["target"], "affected_hashes": ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"], "finding_ids": []},
+      {"id": "docs_code_tests_consistency", "status": "passed", "summary": "Docs, code, and tests are consistent.", "evidence_refs": ["target"], "affected_hashes": ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"], "finding_ids": []},
+      {"id": "archived_history_constraints", "status": "passed", "summary": "Archived constraints are accounted for.", "evidence_refs": ["target"], "affected_hashes": ["cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"], "finding_ids": []},
+      {"id": "duplicate_reuse_validity", "status": "passed", "summary": "Duplicate and reuse facts are resolved.", "evidence_refs": ["target"], "affected_hashes": ["cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"], "finding_ids": []},
       {"id": "target_authority_current", "status": "passed", "summary": "The issue authority is current.", "evidence_refs": ["target"], "affected_hashes": ["cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"], "finding_ids": []},
-      {"id": "prerequisite_hash_linkage", "status": "passed", "summary": "All prerequisite hashes are linked.", "evidence_refs": ["evidence_linkage"], "affected_hashes": ["eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"], "finding_ids": []}
+      {"id": "prerequisite_hash_linkage", "status": "passed", "summary": "All prerequisite hashes are linked.", "evidence_refs": ["evidence_linkage"], "affected_hashes": ["825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4"], "finding_ids": []}
     ],
     "findings": [],
     "scope_conclusion": {
@@ -102,7 +83,7 @@
     "ai_review_gate": {
       "status": "passed",
       "reviewer": "example-ai-reviewer",
-      "reviewed_linkage_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "reviewed_linkage_sha256": "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4",
       "summary": "All ten dimensions were reviewed against the linked evidence.",
       "findings_count": 0,
       "scope_conclusion_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -111,8 +92,8 @@
   "typed_exit": "ready",
   "reason": "The independently deliverable change request is ready for workspace creation.",
   "affected_evidence": [
-    {"ref": "evidence_linkage", "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "summary": "The complete portable prerequisite linkage."}
+    {"ref": "evidence_linkage", "sha256": "825bf37781b6321def08de7678ecfab95767d9585a8b88c72feb7c1a87d4a1e4", "summary": "The complete portable prerequisite linkage."}
   ],
   "consumer": {"kind": "skill", "id": "guru-create-task-workspace"},
-  "facts_sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+  "facts_sha256": "69df8ea867e1f6bb4336d53ac09292e3ccc989396483e322689f6417e0dc5e20"
 }

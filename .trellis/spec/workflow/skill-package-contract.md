@@ -194,11 +194,15 @@ it is a separate artifact and must not inflate the handoff DTO.
 
 A producer-owned checkpoint has one local lifecycle consumer: that same Skill's
 public wrapper. The wrapper runs the objective checker, builds and validates the
-selected typed output, then deletes its own checkpoint. A failed checker or
-invalid output may retain it for same-owner repair. The next Skill consumes only
-the DTO and live facts; it must never read, interpret, or delete the producer's
-private checkpoint. Finalization follows the same rule but may retain its own
-checkpoint across same-plan recovery until a terminal output validates.
+selected typed output, then deletes its own checkpoint and any empty owner
+directory. A failed checker or invalid output may retain it only for genuine
+same-owner active-task repair. Pre-task and standalone calls remain repository
+side-effect-free and transport owner results through stdin/stdout. The next
+Skill consumes only the DTO and live facts; it must never read, interpret, or
+delete the producer's private checkpoint. Stale recovery deletes the current
+checkpoint and reruns from live authority instead of creating a replacement
+chain. Finalization follows the same rule but may retain its own checkpoint
+across same-plan recovery until a terminal output validates.
 
 ### 4. Validation And Error Matrix
 
@@ -777,8 +781,10 @@ branch. Direct active task recording/checking instead binds the live checkout
 to `task.json.branch`, because task/worktree creation may move the same HEAD to
 a feature branch after the stdout snapshot was reviewed; it still requires the
 original HEAD, complete sync provenance, selected local/remote base refs,
-repository identity, direct active task locator/status, and task-local-only
-dirty paths. A proposed draft
+repository identity, direct active task locator/status, and the current task
+worktree's ordinary in-progress dirty paths. Active-task invocation identity is
+supplied ephemerally and does not itself create a checkpoint; only an explicit
+recovery continuation enables lazy same-owner checkpoint persistence. A proposed draft
 that names a created issue carries a separate live issue binding whose body
 digest must equal the original reviewed draft digest. Semantic evidence shape
 requires a non-empty mem summary when used and non-empty reviewed scope plus
@@ -816,8 +822,9 @@ Workflow/stop consumers must have exactly one matching
 `guru-workflow-target` / `guru-stop-target` marker; missing, duplicate,
 kind-mismatched, or dangling targets fail closed.
 
-The package publishes artifact schema `guru-context-discovery-1.0`, scoring
-algorithm id `guru-context-history-score-1.0`, and dispatcher-only wrappers for
+The package publishes stdout-only owner-result schema
+`guru-change-context-owner-result-2.0`, scoring algorithm id
+`guru-context-history-score-1.0`, and dispatcher-only wrappers for
 `preview-change-context-history`, `record-context-discovery`, and
 `check-context-discovery`. The history command may enumerate only
 `.trellis/tasks/archive/**/finish-summary.json` and project only top-level
@@ -826,27 +833,18 @@ archive index/cache. Scripts validate AI-authored selection and Gate evidence
 but do not select candidates, judge sufficiency, decide duplicate reuse, or
 synthesize semantic pass.
 
-For `refresh_base`, the result records the current stable stale codes,
-superseded query digest, superseded snapshot digest, reason, and detection
-time. Recorder/checker compare those caller-authored facts with current live
-freshness and require complete skill re-entry. The commands consume only the
-current payload and expected snapshot identity; they do not reconstruct an
-external ancestry chain.
-Task-local record/check also require the exact target to be non-ignored under
-`git check-ignore --quiet --no-index --` before and after recording and during
-checking. Ignore matches or unreadable trackability fail closed; pre-task mode
-remains stdout-only and does not perform this target gate.
-The `task_local_reentry` wrapper validates `task_locator` and the fixed
-`prior_snapshot_locator=context-discovery.json` before binding the owner result;
-the owner checker receives that exact task locator and may not infer it from
-private artifact content. Task-local snapshots carry private
-`task_worktree_state` bound to current HEAD and every dirty path/status/content/
-mode/rename fact, excluding only the fixed snapshot itself and ignored runtime
-state. A different-byte fixed snapshot may be replaced only after the existing
-target is proved regular and trackable, its schema/identity matches an explicit
-`--expected-prior-snapshot-sha256`, and the complete new snapshot passes live
-and worktree-state checks. The replacement binds the prior identity through
-`superseded_snapshot_sha256`; same-byte retry is idempotent.
+Recorder/checker accept the current AI-authored result through stdin or one
+explicit file, compare it with current live facts, and return canonical/checked
+JSON on stdout. They do not resolve, write, replace, or supersede a task
+artifact. Normal active-task record/check/invoke accepts one ephemeral direct
+task identity, binds its live task branch, and permits ordinary current-worktree
+edits without creating a checkpoint. Only an explicit recovery continuation
+creates/checks the one lazy same-owner checkpoint. The public wrapper supports
+stdin owner transport, validates the selected minimal DTO, and retires that
+checkpoint after successful consumption. Clarification, readiness, and workspace creation
+do not receive an owner-result locator and do not read Discovery private
+evidence. `refresh_base` reruns the owner from live authority without a prior
+result chain.
 
 `guru-clarify-requirements` is an active semantic package with identical
 workflow/standalone preconditions: current runtime, current review target,

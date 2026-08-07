@@ -4,9 +4,6 @@
   "oneOf": [
     {
       "$ref": "public-pre-task-input.schema.json"
-    },
-    {
-      "$ref": "public-task-local-reentry-input.schema.json"
     }
   ]
 }
