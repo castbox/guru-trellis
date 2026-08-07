@@ -3682,6 +3682,89 @@ def ai_first_retire_owner_checkpoints(
     return retired
 
 
+def ai_first_sweep_terminal_owner_checkpoints(
+    root: Path,
+    task_dir: Path,
+) -> list[str]:
+    checkpoint_root = (
+        runtime_root(root, load_config(root))
+        / AI_FIRST_OWNER_CHECKPOINT_DIR
+    )
+    checkpoint_dir = checkpoint_root / ai_first_task_checkpoint_key(task_dir)
+
+    def require_safe_directory(path: Path, label: str) -> bool:
+        errors: list[str] = []
+        inspected = skill_lstat_path(
+            root,
+            path,
+            label,
+            errors,
+            kind="directory",
+            required=False,
+        )
+        if errors:
+            raise WorkflowError(
+                f"AI-first terminal owner checkpoint namespace is unsafe: {label}",
+                exit_code=2,
+                payload={"error_codes": ["owner_checkpoint_namespace_unsafe"]},
+            )
+        return inspected is not None
+
+    if not require_safe_directory(checkpoint_root, "owner checkpoint root"):
+        return []
+    if not require_safe_directory(checkpoint_dir, "current task owner checkpoint namespace"):
+        return []
+
+    try:
+        entries = sorted(checkpoint_dir.iterdir(), key=lambda path: os.fsencode(path.name))
+    except OSError as exc:
+        raise WorkflowError(
+            "AI-first terminal owner checkpoint namespace cannot be inspected.",
+            exit_code=2,
+            payload={"error_codes": ["owner_checkpoint_namespace_unreadable"]},
+        ) from exc
+
+    for entry in entries:
+        try:
+            mode = entry.lstat().st_mode
+        except OSError as exc:
+            raise WorkflowError(
+                "AI-first terminal owner checkpoint residue cannot be inspected.",
+                exit_code=2,
+                payload={"error_codes": ["owner_checkpoint_residue_unreadable"]},
+            ) from exc
+        if stat.S_ISLNK(mode) or not stat.S_ISREG(mode):
+            raise WorkflowError(
+                f"AI-first terminal owner checkpoint residue is unsafe: {entry.name}",
+                exit_code=2,
+                payload={"error_codes": ["owner_checkpoint_residue_unsafe"]},
+            )
+        if entry.name not in AI_FIRST_OWNER_ARTIFACTS:
+            raise WorkflowError(
+                f"AI-first terminal owner checkpoint residue is unknown: {entry.name}",
+                exit_code=2,
+                payload={"error_codes": ["owner_checkpoint_residue_unknown"]},
+            )
+
+    retired: list[str] = []
+    for entry in entries:
+        entry.unlink()
+        retired.append(entry.name)
+    try:
+        checkpoint_dir.rmdir()
+    except OSError as exc:
+        raise WorkflowError(
+            "AI-first terminal owner checkpoint namespace could not be retired.",
+            exit_code=2,
+            payload={"error_codes": ["owner_checkpoint_namespace_not_empty"]},
+        ) from exc
+    try:
+        checkpoint_root.rmdir()
+    except OSError:
+        pass
+    return retired
+
+
 def runtime_workspace_path(root: Path, config: dict[str, Any], workspace_slug: str) -> Path:
     return runtime_root(root, config) / "workspaces" / f"{workspace_slug}.json"
 
@@ -18417,11 +18500,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                         "Restore the checked terminal finalization context.",
                         "Task finalization cannot consume terminal owner checkpoints without its task identity.",
                     )
-                ai_first_retire_owner_checkpoints(
-                    root,
-                    finalization_task,
-                    (TASK_FINALIZATION_GATE_ARTIFACT,),
-                )
+                ai_first_sweep_terminal_owner_checkpoints(root, finalization_task)
             return payload
         if skill_id in {
             "guru-approve-task-plan",

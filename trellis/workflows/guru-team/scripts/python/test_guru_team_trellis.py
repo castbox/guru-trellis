@@ -6001,6 +6001,57 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
             )
         self.assertTrue(checkpoint.is_dir())
 
+    def test_terminal_owner_checkpoint_sweep_rejects_unknown_and_unsafe_residue(self) -> None:
+        checkpoint = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            self.task_dir,
+            gtt.TASK_FINALIZATION_GATE_ARTIFACT,
+        )
+        gtt.write_json(checkpoint, {"owner": "finalizer"})
+        unknown = checkpoint.parent / "unknown-owner-state.json"
+        unknown.write_text("{}\n", encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError) as unknown_error:
+            gtt.ai_first_sweep_terminal_owner_checkpoints(
+                self.root,
+                self.task_dir,
+            )
+        self.assertEqual(
+            unknown_error.exception.payload["error_codes"],
+            ["owner_checkpoint_residue_unknown"],
+        )
+        self.assertTrue(checkpoint.is_file())
+        unknown.unlink()
+
+        nested = checkpoint.parent / "nested-owner-state"
+        nested.mkdir()
+        with self.assertRaises(gtt.WorkflowError) as nested_error:
+            gtt.ai_first_sweep_terminal_owner_checkpoints(
+                self.root,
+                self.task_dir,
+            )
+        self.assertEqual(
+            nested_error.exception.payload["error_codes"],
+            ["owner_checkpoint_residue_unsafe"],
+        )
+        self.assertTrue(checkpoint.is_file())
+        nested.rmdir()
+
+        external = self.root / "external-terminal-owner-state.json"
+        external.write_text("preserve\n", encoding="utf-8")
+        unsafe = checkpoint.parent / gtt.CONTEXT_DISCOVERY_RECOVERY_ARTIFACT
+        unsafe.symlink_to(external)
+        with self.assertRaises(gtt.WorkflowError) as unsafe_error:
+            gtt.ai_first_sweep_terminal_owner_checkpoints(
+                self.root,
+                self.task_dir,
+            )
+        self.assertEqual(
+            unsafe_error.exception.payload["error_codes"],
+            ["owner_checkpoint_residue_unsafe"],
+        )
+        self.assertEqual(external.read_text(encoding="utf-8"), "preserve\n")
+        self.assertTrue(checkpoint.is_file())
+
     def test_phase2_v4_is_compact_owner_private_and_independent_of_planning_checkpoint(self) -> None:
         with (
             mock.patch.object(
@@ -12256,6 +12307,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
         archive_dir = self.root / archive_ref
         archive_dir.mkdir(parents=True)
+        gtt.write_json(archive_dir / "task.json", self.task)
         plan_ref = f"closeout-plan:{'b' * 64}"
         public_input = {
             "profile": "verification_verified",
@@ -12359,8 +12411,33 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "plan": plan,
             "verification": ({}, {"typed_exit": "verified"}),
         }
+        discovery_checkpoint = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            self.task_dir,
+            gtt.CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,
+        )
+        discovery_package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context"
+        )
+        discovery_result = json.loads(
+            (
+                discovery_package
+                / "examples/change-context-owner-result.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            gtt.context_record_recovery_checkpoint(
+                self.root,
+                self.task_dir,
+                discovery_result,
+                "interrupted-discovery-owner",
+            ),
+            discovery_checkpoint,
+        )
         with self.assertRaises(gtt.WorkflowError):
             invoke(early_context)
+        self.assertTrue(discovery_checkpoint.is_file())
 
         finalization_checkpoint = gtt.ai_first_owner_checkpoint_path(
             self.root,
@@ -12374,6 +12451,15 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
         gtt.write_json(finalization_checkpoint, {"owner": "finalizer"})
         gtt.write_json(publication_checkpoint, {"owner": "publication"})
+        other_task = self.root / ".trellis/tasks/08-07-other-task"
+        other_task.mkdir(parents=True)
+        gtt.write_json(other_task / "task.json", {"id": "other-task"})
+        other_checkpoint = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            other_task,
+            gtt.CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,
+        )
+        gtt.write_json(other_checkpoint, {"owner": "other-task"})
         terminal_context = {
             **early_context,
             "task_dir": archive_dir,
@@ -12392,7 +12478,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
         executor.assert_not_called()
         self.assertFalse(finalization_checkpoint.exists())
-        self.assertTrue(publication_checkpoint.exists())
+        self.assertFalse(publication_checkpoint.exists())
+        self.assertFalse(discovery_checkpoint.exists())
+        self.assertFalse(finalization_checkpoint.parent.exists())
+        self.assertTrue(other_checkpoint.is_file())
 
     def test_verification_required_binds_repo_to_immutable_plan(self) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
