@@ -40,7 +40,7 @@ resolve_extension_source(target_root, public_input, task_bearing) ->
   repo: owner/repo
   locator: https://github.com/owner/repo.git
   requested_ref: manifest/public value
-  resolved_ref: refs/heads/* | refs/tags/*
+  resolved_ref: 40-hex commit | refs/heads/* | refs/tags/*
   direct_oid: 40-hex
   commit: 40-hex direct-or-peeled commit
   tree_state: clean | dirty
@@ -52,11 +52,22 @@ Resolution rules:
 
 1. Task-bearing paths require a regular current installed manifest in target root.
 2. Canonicalize manifest source to a credential-free GitHub repo and HTTPS clone locator.
-3. Resolve direct and optional peeled rows with one explicit `git ls-remote` request.
-4. Annotated tag selects peeled commit; branch/lightweight tag selects direct commit.
-5. Compare selected commit with manifest `source.commit` before cloning source assets.
+3. When `requested_ref` is a full 40-hex commit OID, initialize the isolated source checkout and
+   fetch exactly that OID from the canonical locator. Resolve `FETCH_HEAD^{commit}` and require it
+   to equal both `requested_ref` and manifest `source.commit` before reading source assets.
+4. For branch and tag refs, resolve direct and optional peeled rows with one explicit
+   `git ls-remote` request. Annotated tag selects peeled commit; branch/lightweight tag selects
+   direct commit.
+5. Compare every selected commit with manifest `source.commit`; no ancestor or branch-tip
+   substitution is accepted.
 6. A malformed manifest blocks. Only taskless standalone with an absent manifest may select the
    public locator fallback and record `manifest_provenance=not_available`.
+
+Preset installation from a Git worktree records the current full source commit as both
+`source.ref` and `source.commit`, with `is_mutable_ref=false`. The manifest explicitly describes
+the source bytes observed before the manifest-bearing target commit; it does not self-reference
+that later target commit. Archive installation without Git provenance retains its existing
+non-verifiable archive shape and cannot satisfy a task-bearing manifest path.
 
 ## 4. Executor Flow
 
@@ -78,8 +89,9 @@ The temporary work root contains three disjoint roots:
 
 ### 4.2 Extension source checkout
 
-- Clone the canonical source locator, checkout the resolved source commit by object id, and
-  compare live HEAD with source provenance.
+- For a commit OID ref, initialize the isolated checkout, fetch exactly that OID, detach at the
+  fetched commit and compare live HEAD with source provenance. For branch/tag refs, retain the
+  resolve-then-clone path and detach at the selected commit.
 - Locate `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh` only here.
 - Derive workflow source, canonical asset expectations, ownership inventory and source package
   bytes only from this checkout.
@@ -125,8 +137,9 @@ sidecars. Direct manual editing of installed/platform copies is not an implement
 - Breaking change is limited to private/execution current-only schema. Public API ids and DTO
   consumers remain stable.
 - Missing/invalid manifest, unsafe locator, unresolved source ref, direct/peeled mismatch,
-  manifest commit drift, either checkout HEAD mismatch, target content drift, source installer
-  absence, incomplete inventory, ownership drift or sidecars fail closed at their owning boundary.
+  fetched OID mismatch, manifest commit drift, either checkout HEAD mismatch, target content drift,
+  source installer absence, incomplete inventory, ownership drift or sidecars fail closed at their
+  owning boundary.
 - Runtime continues to use Python standard library plus explicit `git` subprocesses.
 - Error artifacts and public errors expose stable reason codes/remediation without echoing a
   sensitive locator.

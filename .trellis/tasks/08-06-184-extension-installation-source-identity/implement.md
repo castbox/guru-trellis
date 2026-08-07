@@ -14,6 +14,10 @@
 ### I1. Source provenance resolver
 
 - [ ] Add closed manifest source parsing and canonical credential-safe GitHub locator helpers.
+- [ ] Make clean Git preset installation record the full source commit as both immutable
+      `source.ref` and `source.commit`; keep archive provenance non-verifiable.
+- [ ] Add an isolated full-OID fetch path that requires `FETCH_HEAD^{commit}` to match both the
+      requested OID and manifest commit before source assets are read.
 - [ ] Separate direct object from peeled commit and bind the selected commit to manifest source.
 - [ ] Implement task-bearing required-manifest and taskless absent-manifest fallback branches.
 - [ ] Add focused resolver tests for annotated/lightweight tags, branches, drift, malformed
@@ -54,6 +58,7 @@ python3 -m unittest \
 ```
 
 Required distinct regressions: target/source separation, annotated tag direct/peeled selection,
+full-OID source fetch, target branch advance after manifest creation with a fixed source OID,
 task-bearing manifest required, malformed manifest blocked, source drift, both checkout mismatches,
 target content drift, missing source installer, taskless fallback, credential URL redaction and
 stale evidence.
@@ -80,6 +85,9 @@ git diff --check
 - [ ] Verify target fixture without an installer and source fixture with the canonical installer.
 - [ ] Verify `trellis update`, preset reapply, source/installed/platform equality, ownership and
       recursive zero `.new`/`.bak`.
+- [ ] Prove the real remote accepts an exact 40-hex commit fetch and that advancing the target ref
+      does not alter the selected source commit; do not create an auxiliary tag or branch for this
+      proof.
 - [ ] Record any network/remote limitation separately; local tests do not prove pushed immutable
       ref or Afizzy production readiness.
 

@@ -30,7 +30,12 @@ Guru Team 扩展源仓库分别解析、检出、校验和记录，并恢复跨�
 
 - Task-bearing workflow 和带 task 的 standalone 调用必须从目标 checkout 的
   `.trellis/guru-team/extension.json` 解析 source provenance。
+- Git worktree 中执行 preset installer 时，installed manifest 必须把完整 40 位 source
+  commit OID 写入 `source.ref`，并写入相同的 `source.commit`；该 OID 是后续 target
+  commit 不得推进的 immutable source identity，不得改写成当前 branch 名。
 - Annotated tag 使用 peeled commit；branch 与 lightweight tag 使用 direct commit。
+- 完整 commit OID source ref 必须通过 source remote 的显式 fetch 解析；fetch 后的
+  `FETCH_HEAD^{commit}` 必须与 requested OID 及 manifest `source.commit` 完全一致。
 - Resolved source commit 必须与 manifest `source.commit` 完全一致；manifest 缺失、损坏、
   source drift、ref/commit 不一致或 source checkout HEAD mismatch 均 fail closed。
 
@@ -74,17 +79,21 @@ Guru Team 扩展源仓库分别解析、检出、校验和记录，并恢复跨�
       两套独立 identity 存在，Afizzy task-bearing 路径从 installed manifest 选择 source。
 - [ ] AC2：`v0.6.5-guru.3` annotated tag 的 direct object 与 peeled commit 被分别解析；
       peeled commit 与 manifest commit 完全相同时才能进入 source checkout。
-- [ ] AC3：删除 target fixture 中的 `verify-throwaway-install.sh` 不影响合法 source checkout
+- [ ] AC3：clean Git source 安装生成 `source.ref=<40-hex source commit>`、
+      `source.commit=<同一 commit>` 与 `is_mutable_ref=false`；target branch 在 manifest
+      生成后推进一个 commit 时，remote source OID 仍解析为原 commit 且验证不会因 target
+      ref 前进产生 source drift。
+- [ ] AC4：删除 target fixture 中的 `verify-throwaway-install.sh` 不影响合法 source checkout
       成功；source installer 缺失必须在 source 边界失败。
-- [ ] AC4：manifest 缺失/损坏、source drift、source/target checkout mismatch 与 target
+- [ ] AC5：manifest 缺失/损坏、source drift、source/target checkout mismatch 与 target
       reviewed-content mismatch 均 fail closed，且不产生 `verified`。
-- [ ] AC5：taskless source fallback 明确记录 `manifest_provenance=not_available`；带 task 的
+- [ ] AC6：taskless source fallback 明确记录 `manifest_provenance=not_available`；带 task 的
       调用不使用 fallback。
-- [ ] AC6：credential locator 与 stale evidence 有独立回归；输出和 artifact 不含敏感 URL。
-- [ ] AC7：source/installed package closure、canonical/dogfood/platform equality、ownership、
+- [ ] AC7：credential locator 与 stale evidence 有独立回归；输出和 artifact 不含敏感 URL。
+- [ ] AC8：source/installed package closure、canonical/dogfood/platform equality、ownership、
       overlay drift、clean install/update/reapply 与 recursive zero-sidecar 全部通过。
-- [ ] AC8：完整当前 diff 通过 Phase 2 check 与独立 Branch Review，无未关闭 P0-P3 finding。
-- [ ] AC9：本地实现与验证不会被表述成新的 immutable release 或 Afizzy 重跑证据；远端
+- [ ] AC9：完整当前 diff 通过 Phase 2 check 与独立 Branch Review，无未关闭 P0-P3 finding。
+- [ ] AC10：本地实现与验证不会被表述成新的 immutable release 或 Afizzy 重跑证据；远端
       release、安装与 Afizzy verifier 重跑留在后续独立副作用边界。
 
 ## Out Of Scope

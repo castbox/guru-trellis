@@ -336,6 +336,9 @@ The installed manifest is one closed current contract:
 - `source.commit` and `source.tree_state` describe the extension source observed
   at apply time. They are not a self-referential claim that the installed
   manifest file is contained in that same commit;
+- Git worktree apply records the full current commit in both `source.ref` and
+  `source.commit`, with `source.is_mutable_ref=false`; a later
+  manifest-bearing target commit does not change this source identity;
 - `selected_platforms` records installer input and should not be inferred from
   directory presence alone.
 
@@ -345,7 +348,10 @@ the verified target checkout and require closed `source.repo/ref/commit/`
 `tree_state/is_mutable_ref` facts. The source repo is canonicalized to
 credential-free GitHub HTTPS; annotated tags bind both direct object and peeled
 commit, while branches/lightweight tags use the direct commit. The selected
-commit must equal `source.commit` before source clone. Task-bearing source
+commit must equal `source.commit` before source checkout. A full 40-hex source
+ref is fetched directly into the isolated source checkout and
+`FETCH_HEAD^{commit}` must match both the requested OID and `source.commit`.
+Task-bearing source
 provenance must have `tree_state=clean`; dirty provenance stops before source
 ref resolution, clone, or verification and cannot produce `verified`. Only taskless standalone
 with explicit source-repository intent may use `manifest_provenance=not_available`

@@ -10520,6 +10520,14 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             ),
             "gh:example/guru-extension/trellis#refs/tags/v0.6.5-guru.23",
         )
+        immutable_commit = "a" * 40
+        self.assertEqual(
+            gtt.extension_verification_workflow_source(
+                "example/guru-extension",
+                immutable_commit,
+            ),
+            f"gh:example/guru-extension/trellis#{immutable_commit}",
+        )
         public_input = self.public_input("standalone", task=False)
         public_input["ref"] = "refs/heads/feature/117"
         remote_head = "b" * 40
@@ -10882,6 +10890,183 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             resolved,
         ))
         self.assertNotEqual(commit, "b" * 40)
+
+    def test_immutable_commit_source_survives_branch_advance(self) -> None:
+        source = self.root / "source-fixture"
+        remote = self.root / "source-remote.git"
+        source.mkdir()
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=source, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "source@example.invalid"],
+            cwd=source,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Source Fixture"],
+            cwd=source,
+            check=True,
+        )
+        (source / "source.txt").write_text("source A\n", encoding="utf-8")
+        subprocess.run(["git", "add", "source.txt"], cwd=source, check=True)
+        subprocess.run(["git", "commit", "-qm", "source A"], cwd=source, check=True)
+        source_commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=source,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        subprocess.run(["git", "clone", "-q", "--bare", str(source), str(remote)], check=True)
+
+        (source / "source.txt").write_text("target branch B\n", encoding="utf-8")
+        subprocess.run(["git", "add", "source.txt"], cwd=source, check=True)
+        subprocess.run(["git", "commit", "-qm", "target branch B"], cwd=source, check=True)
+        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=source, check=True)
+        subprocess.run(["git", "push", "-q", "origin", "main"], cwd=source, check=True)
+        advanced_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=source,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        self.assertNotEqual(advanced_head, source_commit)
+
+        checkout = self.root / "immutable-source-checkout"
+        resolution = gtt.extension_verification_resolve_source_reference(
+            str(remote),
+            source_commit,
+            checkout,
+        )
+
+        self.assertEqual(resolution["status"], "passed")
+        self.assertEqual(resolution["resolved_ref"], source_commit)
+        self.assertEqual(resolution["direct_oid"], source_commit)
+        self.assertEqual(resolution["commit"], source_commit)
+        self.assertTrue(resolution["checkout_prepared"])
+        self.assertEqual(
+            [command["id"] for command in resolution["commands"]],
+            [
+                "clone_extension_source",
+                "fetch_extension_source_commit",
+                "resolve_extension_source_ref",
+            ],
+        )
+
+    def test_executor_reuses_checkout_prepared_by_immutable_source_fetch(self) -> None:
+        public_input = self.public_input("standalone", task=True)
+        target_head = "a" * 40
+        source_commit = "b" * 40
+        clone_destinations: list[Path] = []
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            del check, env
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{target_head}\trefs/heads/main\n",
+                    stderr="",
+                )
+            if command[:3] == ["git", "remote", "get-url"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/example/guru-extension.git\n",
+                    stderr="",
+                )
+            if command[:2] == ["git", "clone"]:
+                destination = Path(command[-1])
+                clone_destinations.append(destination)
+                destination.mkdir(parents=True)
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "checkout", "--detach"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "rev-parse", "--verify"]:
+                head = target_head if Path(cwd).name == "target-checkout" else source_commit
+                return mock.Mock(returncode=0, stdout=f"{head}\n", stderr="")
+            if command and command[0].endswith("verify-throwaway-install.sh"):
+                self.materialize_installed_asset_target(
+                    Path(cwd),
+                    Path(command[1]) / "project",
+                )
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            return mock.Mock(returncode=1, stdout="", stderr="unexpected command")
+
+        def resolve_source(
+            locator: str,
+            requested_ref: str,
+            checkout: Path,
+        ) -> dict[str, Any]:
+            self.assertEqual(locator, "https://github.com/example/extension-source.git")
+            self.assertEqual(requested_ref, source_commit)
+            self.copy_extension_source_fixture(checkout)
+            proc = mock.Mock(returncode=0, stdout=f"{source_commit}\n", stderr="")
+            return {
+                "status": "passed",
+                "resolved_ref": source_commit,
+                "direct_oid": source_commit,
+                "commit": source_commit,
+                "checkout_prepared": True,
+                "commands": [
+                    gtt.extension_verification_command_evidence(
+                        "fetch_extension_source_commit",
+                        "extension_source_checkout",
+                        ["git", "fetch", "--depth=1", locator, requested_ref],
+                        proc,
+                    )
+                ],
+            }
+
+        selected_source = {
+            "selection": "manifest",
+            "manifest_provenance": "available",
+            "repo": "example/extension-source",
+            "locator": "https://github.com/example/extension-source.git",
+            "requested_ref": source_commit,
+            "manifest_commit": source_commit,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        with (
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(
+                gtt,
+                "extension_verification_task_identity",
+                return_value=self.task_dir,
+            ),
+            mock.patch.object(
+                gtt,
+                "extension_verification_manifest_source",
+                return_value=selected_source,
+            ),
+            mock.patch.object(
+                gtt,
+                "extension_verification_resolve_source_reference",
+                side_effect=resolve_source,
+            ),
+            mock.patch.object(
+                gtt,
+                "reviewed_content_identity",
+                return_value={"sha256": "d" * 64},
+            ),
+        ):
+            facts = gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                ["marketplace_index"],
+            )
+
+        self.assertEqual(facts["status"], "passed", facts)
+        self.assertEqual(facts["extension_source"]["resolved_ref"], source_commit)
+        self.assertEqual([path.name for path in clone_destinations], ["target-checkout"])
+        self.assertIn(
+            "fetch_extension_source_commit",
+            [command["id"] for command in facts["commands"]],
+        )
 
     def test_source_checkout_head_mismatch_fails_before_installer(self) -> None:
         public_input = self.public_input("standalone", task=True)

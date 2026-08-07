@@ -252,15 +252,11 @@ def source_provenance(guru_root: Path) -> dict[str, Any]:
 
     git_root = Path(top_proc.stdout.strip()).resolve()
     remote_proc = run_git(["remote", "get-url", "origin"], git_root)
-    ref_proc = run_git(["rev-parse", "--abbrev-ref", "HEAD"], git_root)
     commit_proc = run_git(["rev-parse", "HEAD"], git_root)
-    tag_proc = run_git(["describe", "--tags", "--exact-match", "HEAD"], git_root)
     dirty_proc = run_git(["status", "--short"], git_root)
 
-    ref = ref_proc.stdout.strip() if ref_proc.returncode == 0 else None
-    if ref == "HEAD" and tag_proc.returncode == 0:
-        ref = tag_proc.stdout.strip()
-    exact_tag = tag_proc.stdout.strip() if tag_proc.returncode == 0 else None
+    commit = commit_proc.stdout.strip() if commit_proc.returncode == 0 else None
+    ref = commit if isinstance(commit, str) and re_full_hex(commit) else None
     tree_state = "dirty" if dirty_proc.returncode == 0 and dirty_proc.stdout.strip() else "clean"
     if dirty_proc.returncode != 0:
         tree_state = "unknown"
@@ -268,9 +264,9 @@ def source_provenance(guru_root: Path) -> dict[str, Any]:
     return {
         "repo": remote_proc.stdout.strip() if remote_proc.returncode == 0 and remote_proc.stdout.strip() else None,
         "ref": ref,
-        "commit": commit_proc.stdout.strip() if commit_proc.returncode == 0 and commit_proc.stdout.strip() else None,
+        "commit": commit,
         "tree_state": tree_state,
-        "is_mutable_ref": is_mutable_ref(ref, exact_tag),
+        "is_mutable_ref": is_mutable_ref(ref, None),
     }
 
 

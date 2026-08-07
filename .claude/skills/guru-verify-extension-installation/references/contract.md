@@ -57,7 +57,11 @@ The executor canonicalizes the manifest source to credential-safe GitHub HTTPS,
 requires task-bearing manifest provenance to report `tree_state=clean`, then
 resolves its requested ref, selects the peeled commit for an annotated tag and
 the direct commit for a branch or lightweight tag, and compares that commit to
-`source.commit` before clone. It checks out the selected object in a separate
+`source.commit` before source checkout. A full 40-hex ref initializes the
+isolated checkout, fetches exactly that OID, and requires
+`FETCH_HEAD^{commit}`, manifest commit, and checkout HEAD to match. Preset apply
+from a Git worktree records the apply-time commit as this immutable ref, so a
+later target branch commit does not move the selected source. It checks out the selected object in a separate
 `extension-source-checkout` and verifies `HEAD^{commit}`. Either checkout or
 manifest/commit mismatch fails closed. The throwaway installer, canonical
 workflow/runtime/schema/package bytes, ownership inventory, and source sidecar
@@ -121,7 +125,7 @@ applicability, sufficiency, findings, or semantic pass.
 Private `target_repository.resolved_head` and standalone public `resolved_head`
 both denote the target checkout commit. The source direct tag object and peeled
 commit remain private and never enter a public DTO. Freshness checks re-resolve
-both target and source refs with the same direct-versus-peeled rules and reread
+both target and source refs with the same full-OID or direct-versus-peeled rules and reread
 task-bearing installed manifest provenance.
 
 The source locator must be canonical `https://github.com/<owner>/<repo>.git`

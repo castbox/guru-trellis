@@ -1495,6 +1495,11 @@ object, selected direct-or-peeled commit, checkout HEAD, mutability and
 commit-match facts. Task-bearing execution requires `tree_state=clean` before
 source resolution; recorder/checker reject dirty passed evidence. No legacy
 private reader or public DTO field is added.
+For preset installs from a Git worktree, requested and resolved source refs are
+the full apply-time commit OID and mutability is false. Runtime fetches that OID
+directly and requires the fetched commit, manifest commit, and checkout HEAD to
+match exactly. Branch/lightweight and annotated-tag inputs retain their direct
+and peeled resolution contract.
 Private command rows use the closed `target_checkout` and
 `extension_source_checkout` owner labels. Asset expectation/digest rows,
 ownership facts, and the sidecar fact object require

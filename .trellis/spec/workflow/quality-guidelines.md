@@ -689,6 +689,9 @@ lightweight direct commits, annotated direct object plus peeled commit, and
 credential-locator rejection without clone/artifact/error reflection. These
 are normal correctness cases; hostile actors, concurrency, locks, TOCTOU, fault
 injection and crash consistency remain out of scope.
+Coverage must also prove full-OID fetch resolution and the self-hosted case
+where a manifest records source commit A, the target branch advances to commit
+B, and source resolution remains fixed at A without ancestor substitution.
 Schema and recorder/checker regressions also reject target/source command-owner
 substitution and any asset, digest, ownership, or sidecar fact not explicitly
 bound to `extension_source_checkout`; dirty task-bearing passed evidence is also

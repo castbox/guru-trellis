@@ -493,7 +493,11 @@ task-bearing source repo/ref/commit comes from the target's installed manifest.
 Task-bearing source provenance must be clean before any source ref resolution or
 checkout; dirty provenance blocks verification.
 Annotated source tags select the peeled commit and compare it to manifest
-`source.commit`; branch/lightweight tags select the direct commit. Taskless
+`source.commit`; branch/lightweight tags select the direct commit. Preset apply
+from a Git worktree records the full apply-time commit as immutable
+`source.ref` and `source.commit`; verification fetches that OID and requires the
+fetched commit and checkout HEAD to match even after the target branch advances.
+Taskless
 standalone fallback is explicit-source and absent-manifest only. Installer,
 canonical assets, ownership, and source sidecars are source-checkout-owned, and
 unsafe credential-bearing source locators stop before clone or retained output.

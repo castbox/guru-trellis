@@ -1555,6 +1555,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIsNone(provenance["commit"])
 
     def test_source_provenance_reports_dirty_git_tree(self) -> None:
+        source_commit = "a" * 40
+
         def fake_git(args: list[str], cwd: Path) -> mock.Mock:
             command = " ".join(args)
             if command == "rev-parse --show-toplevel":
@@ -1564,7 +1566,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             if command == "rev-parse --abbrev-ref HEAD":
                 return mock.Mock(returncode=0, stdout="main\n", stderr="")
             if command == "rev-parse HEAD":
-                return mock.Mock(returncode=0, stdout="abc123\n", stderr="")
+                return mock.Mock(returncode=0, stdout=f"{source_commit}\n", stderr="")
             if command == "describe --tags --exact-match HEAD":
                 return mock.Mock(returncode=1, stdout="", stderr="")
             if command == "status --short":
@@ -1575,8 +1577,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             provenance = preset.source_provenance(self.guru_root)
 
         self.assertEqual(provenance["tree_state"], "dirty")
-        self.assertTrue(provenance["is_mutable_ref"])
-        self.assertEqual(provenance["source_ref"] if "source_ref" in provenance else provenance["ref"], "main")
+        self.assertFalse(provenance["is_mutable_ref"])
+        self.assertEqual(provenance["ref"], source_commit)
+        self.assertEqual(provenance["commit"], source_commit)
 
 
 if __name__ == "__main__":

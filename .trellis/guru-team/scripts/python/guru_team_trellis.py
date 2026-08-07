@@ -11377,6 +11377,8 @@ def extension_verification_workflow_source(repo_ref: str, ref: str) -> str:
     for prefix in ("refs/heads/", "refs/tags/"):
         if ref.startswith(prefix):
             return f"gh:{repo_ref}/trellis#{ref}"
+    if re.fullmatch(r"[0-9a-f]{40}", ref) is not None:
+        return f"gh:{repo_ref}/trellis#{ref}"
     raise WorkflowError(
         "Extension verification ref cannot select a workflow marketplace source.",
         exit_code=2,
@@ -11470,6 +11472,10 @@ def extension_verification_manifest_source(
         or re.fullmatch(r"[0-9a-f]{40}", str(manifest_commit or "")) is None
         or tree_state not in {"clean", "dirty"}
         or not isinstance(is_mutable_ref, bool)
+        or (
+            re.fullmatch(r"[0-9a-f]{40}", requested_ref) is not None
+            and is_mutable_ref is not False
+        )
     ):
         raise WorkflowError(
             "Installed extension manifest source provenance is malformed or unsafe.",
@@ -11551,6 +11557,98 @@ def extension_verification_resolved_source_ref(
     resolved_ref = resolved[0]
     direct_oid = rows[resolved_ref]
     return resolved_ref, direct_oid, rows.get(f"{resolved_ref}^{{}}", direct_oid)
+
+
+def extension_verification_resolve_source_reference(
+    locator: str,
+    requested_ref: str,
+    source_checkout: Path,
+) -> dict[str, Any]:
+    commands: list[dict[str, Any]] = []
+    if re.fullmatch(r"[0-9a-f]{40}", requested_ref) is None:
+        source_command = extension_verification_source_ref_command(
+            locator,
+            requested_ref,
+        )
+        source_proc = run(source_command, cwd=source_checkout.parent, check=False)
+        commands.append(
+            extension_verification_command_evidence(
+                "resolve_extension_source_ref",
+                EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+                source_command,
+                source_proc,
+            )
+        )
+        resolved_ref, direct_oid, commit = (
+            extension_verification_resolved_source_ref(
+                source_proc,
+                requested_ref,
+            )
+        )
+        return {
+            "status": (
+                "passed"
+                if resolved_ref is not None
+                and direct_oid is not None
+                and commit is not None
+                else "failed"
+            ),
+            "resolved_ref": resolved_ref,
+            "direct_oid": direct_oid,
+            "commit": commit,
+            "checkout_prepared": False,
+            "commands": commands,
+        }
+
+    init_command = ["git", "init", "--quiet", str(source_checkout)]
+    init_proc = run(init_command, cwd=source_checkout.parent, check=False)
+    commands.append(
+        extension_verification_command_evidence(
+            "clone_extension_source",
+            EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+            init_command,
+            init_proc,
+            ["git", "init", "--quiet", "<temp-extension-source-checkout>"],
+        )
+    )
+    fetch_proc = subprocess.CompletedProcess([], 1, "", "source checkout init failed")
+    fetch_command = ["git", "fetch", "--depth=1", locator, requested_ref]
+    if init_proc.returncode == 0:
+        fetch_proc = run(fetch_command, cwd=source_checkout, check=False)
+    commands.append(
+        extension_verification_command_evidence(
+            "fetch_extension_source_commit",
+            EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+            fetch_command,
+            fetch_proc,
+        )
+    )
+    resolve_proc = subprocess.CompletedProcess([], 1, "", "source commit fetch failed")
+    resolve_command = ["git", "rev-parse", "--verify", "FETCH_HEAD^{commit}"]
+    if fetch_proc.returncode == 0:
+        resolve_proc = run(resolve_command, cwd=source_checkout, check=False)
+    commands.append(
+        extension_verification_command_evidence(
+            "resolve_extension_source_ref",
+            EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+            resolve_command,
+            resolve_proc,
+        )
+    )
+    commit = resolve_proc.stdout.strip() or None
+    passed = (
+        resolve_proc.returncode == 0
+        and re.fullmatch(r"[0-9a-f]{40}", commit or "") is not None
+        and commit == requested_ref
+    )
+    return {
+        "status": "passed" if passed else "failed",
+        "resolved_ref": requested_ref if passed else None,
+        "direct_oid": commit if passed else None,
+        "commit": commit if passed else None,
+        "checkout_prepared": passed,
+        "commands": commands,
+    }
 
 
 def extension_verification_resolved_remote_head(
@@ -11823,35 +11921,28 @@ def extension_verification_execute_facts(
                     )
                 except WorkflowError:
                     remote_reviewed_content_sha256 = None
-            source_clone_proc = subprocess.CompletedProcess([], 1, "", "target failed")
             source_checkout_proc = subprocess.CompletedProcess([], 1, "", "source failed")
             source_head_proc = subprocess.CompletedProcess([], 1, "", "source failed")
-            source_ref_proc = subprocess.CompletedProcess([], 1, "", "target failed")
+            source_resolution: dict[str, Any] = {
+                "status": "failed",
+                "checkout_prepared": False,
+            }
+            source_checkout_prepared = False
             if target_checkout_matches and target_content_matches:
                 selected_source = extension_verification_manifest_source(
                     target_checkout,
                     public_input,
                     task_bearing=task_dir is not None,
                 )
-                source_command = extension_verification_source_ref_command(
+                source_resolution = extension_verification_resolve_source_reference(
                     selected_source["locator"],
                     selected_source["requested_ref"],
+                    source_checkout,
                 )
-                source_ref_proc = run(source_command, cwd=target_checkout, check=False)
-                commands.append(
-                    extension_verification_command_evidence(
-                        "resolve_extension_source_ref",
-                        EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
-                        source_command,
-                        source_ref_proc,
-                    )
-                )
-                resolved_ref, direct_oid, source_commit = (
-                    extension_verification_resolved_source_ref(
-                        source_ref_proc,
-                        selected_source["requested_ref"],
-                    )
-                )
+                commands.extend(source_resolution["commands"])
+                resolved_ref = source_resolution["resolved_ref"]
+                direct_oid = source_resolution["direct_oid"]
+                source_commit = source_resolution["commit"]
                 manifest_commit = selected_source["manifest_commit"]
                 ref_matches_commit = (
                     source_commit is not None
@@ -11867,7 +11958,11 @@ def extension_verification_execute_facts(
                     "checkout_head_matches": False,
                 }
                 extension_source.pop("manifest_commit")
-                if ref_matches_commit:
+                source_checkout_prepared = (
+                    ref_matches_commit
+                    and source_resolution["checkout_prepared"] is True
+                )
+                if ref_matches_commit and not source_checkout_prepared:
                     source_clone_command = [
                         "git",
                         "clone",
@@ -11897,7 +11992,8 @@ def extension_verification_execute_facts(
                             ],
                         )
                     )
-                if source_clone_proc.returncode == 0:
+                    source_checkout_prepared = source_clone_proc.returncode == 0
+                if source_checkout_prepared:
                     source_checkout_proc = run(
                         ["git", "checkout", "--detach", extension_source["commit"]],
                         cwd=source_checkout,
@@ -12004,9 +12100,9 @@ def extension_verification_execute_facts(
                 and target_checkout_proc.returncode == 0
                 and target_checkout_matches
                 and target_content_matches
-                and source_ref_proc.returncode == 0
+                and source_resolution["status"] == "passed"
                 and extension_source["ref_matches_commit"]
-                and source_clone_proc.returncode == 0
+                and source_checkout_prepared
                 and source_checkout_proc.returncode == 0
                 and extension_source["checkout_head_matches"]
                 and throwaway_proc.returncode == 0
@@ -19757,24 +19853,21 @@ def check_extension_verification_result(
             if source_locator != canonical_source_locator:
                 errors.append("extension source locator is invalid or unsafe.")
             else:
-                source_proc = run(
-                    extension_verification_source_ref_command(
+                with tempfile.TemporaryDirectory(
+                    prefix="guru-extension-source-freshness-"
+                ) as temporary:
+                    resolution = extension_verification_resolve_source_reference(
                         source_locator,
                         source_requested_ref,
-                    ),
-                    cwd=root,
-                    check=False,
-                )
-                resolved_ref, direct_oid, source_commit = (
-                    extension_verification_resolved_source_ref(
-                        source_proc,
-                        source_requested_ref,
+                        Path(temporary) / "extension-source-checkout",
                     )
-                )
                 if (
-                    resolved_ref != extension_source.get("resolved_ref")
-                    or direct_oid != extension_source.get("direct_oid")
-                    or source_commit != extension_source.get("commit")
+                    resolution["status"] != "passed"
+                    or resolution["resolved_ref"]
+                    != extension_source.get("resolved_ref")
+                    or resolution["direct_oid"]
+                    != extension_source.get("direct_oid")
+                    or resolution["commit"] != extension_source.get("commit")
                 ):
                     errors.append("extension source ref no longer matches private evidence.")
         if task_dir is not None:

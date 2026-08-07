@@ -489,7 +489,10 @@ Verifier public repo/ref 指向 target repository；task-bearing source provenan
 ref 或 clone。Runtime 使用隔离的 target/source
 checkouts：reviewed-content 只属于 target，installer/canonical package/ownership/source
 sidecars 只属于 source。Annotated source tag 记录 direct object 但选择 peeled commit，
-并要求 selected commit 等于 manifest commit。Taskless fallback 仅适用于显式 source
+并要求 selected commit 等于 manifest commit。Git worktree apply 把完整 apply-time
+commit OID 同时记录为 immutable `source.ref` 与 `source.commit`；runtime 直接 fetch 该
+OID，并要求 `FETCH_HEAD^{commit}` 和 source checkout HEAD 精确一致，即使 target branch
+随后前进也不改变 source identity。Taskless fallback 仅适用于显式 source
 verification 且 manifest absent；malformed manifest 不降级。Source clone locator 必须为
 credential-free canonical GitHub HTTPS，unsafe locator 在 clone/artifact 前阻断。
 Private/execution schema 3.0 current-only，public inputs 与四个 exit DTO 未改变。

@@ -838,7 +838,10 @@ Public `repo_ref` 始终表示业务 target。Workflow 与 task-bearing standalo
 与 clone 前阻断。Runtime 分别校验 target checkout 与 extension-source checkout。Target reviewed-content
 不得从 source 计算；installer、canonical assets、ownership 与 source sidecars
 不得从 target 读取。Annotated source tag 选择 peeled commit 并与 manifest
-`source.commit` 比较；branch/lightweight tag 使用 direct commit。Taskless
+`source.commit` 比较；branch/lightweight tag 使用 direct commit。Git worktree preset
+apply 把完整 apply-time commit OID 同时记录为 immutable `source.ref` 与
+`source.commit`；runtime 直接 fetch 该 OID，并要求 fetched commit 和 source checkout
+HEAD 精确一致，target branch 后续前进不改变 source identity。Taskless
 standalone 只有在明确验证 source repo 且 manifest 缺失时才允许 fallback，malformed
 manifest 与 credential-bearing/non-canonical GitHub locator 均在 clone 前 fail closed。
 Private schema 3.0 记录这两套 identity；四个 public exits/consumer DTO 保持不变。
