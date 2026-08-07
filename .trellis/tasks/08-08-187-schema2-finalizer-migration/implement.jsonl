@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 deterministic runtime、validator 与 public wrapper 的职责边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"约束 closeout plan 私有 transaction 数据和精确内容绑定。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"保持 Finalizer Interface 1.3、private state 与 typed exit 兼容。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"canonical 修改后通过 preset 同步 dogfood 与平台副本。"}

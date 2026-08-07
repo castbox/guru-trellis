@@ -81,6 +81,25 @@ identity strategy, complete side effects, plan digest, and the exact canonical
 plan bytes. Formal execution rebuilds the same bytes and digest before any side
 effect. Drift blocks.
 
+For every prepare and same-plan recovery, `tracked_move_paths` is rebuilt from
+the live Git index and `untracked_archive_outputs` is its exact complement in
+`move_paths`; an older schema 2.0 projection is migration input, not
+classification authority. The immutable projection binds every tracked move
+path whose current regular-file bytes or mode differ from its
+`branch_review_commit` blob with one sorted task-relative `path`, Git `mode`,
+and SHA-256 row. Duplicate, out-of-set, stale, missing, or unnecessary rows
+fail closed. The plan file itself is the only self-referential exception: when
+legacy Git already tracks `closeout-plan.json`, its current bytes are bound by
+the plan's canonical schema and `plan_digest` rather than a recursive raw-file
+SHA-256 row.
+
+Pre-move continuity, verification fallback, archive movement, and post-move
+continuity consume that same projection. A tracked metadata tail is accepted
+only while its mode and bytes exactly match its binding; an unbound difference
+from the transaction parent remains blocked. Metadata intermediates selected
+by the existing archive pruning contract are validated and moved first, then
+explicitly pruned.
+
 The deterministic order is fixed:
 
 1. Build and prevalidate the immutable plan.
@@ -107,9 +126,12 @@ The deterministic order is fixed:
 
 Active-task artifacts may be necessary for current-step validation or crash
 recovery without becoming permanent handoff documents. New closeout plans use
-schema 2.0. `closeout-plan.json` and `finish-summary.json` are untracked active
-transaction outputs that move with the task and become tracked only in the
-single archive commit. `pr-readiness.json` and
+schema 2.0. In a new task, `closeout-plan.json` and `finish-summary.json` begin
+as untracked active transaction outputs and become tracked in the single
+archive commit. A migrated task may already track legacy `closeout-plan.json`;
+the live Git index then classifies it as tracked throughout normalization,
+continuity, movement, and archive commit, while `finish-summary.json` remains
+the required untracked output. `pr-readiness.json` and
 `task-finalization-gate.json` never enter move paths, evidence paths, or the
 archive. The Publication wrapper deletes `pr-readiness.json` after validating
 its own typed output, before Finalizer entry. The Finalizer retains only its own

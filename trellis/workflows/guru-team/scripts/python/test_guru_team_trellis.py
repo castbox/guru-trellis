@@ -7301,6 +7301,16 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
             mock.patch.object(
                 gtt,
+                "closeout_live_move_classes",
+                side_effect=lambda _root, _active, move_paths: ([], move_paths),
+            ),
+            mock.patch.object(
+                gtt,
+                "build_closeout_reviewed_tracked_bindings",
+                return_value=[],
+            ),
+            mock.patch.object(
+                gtt,
                 "run_stdout",
                 side_effect=lambda command, **_kwargs: (
                     "2026-07-11T00:00:00+00:00"
@@ -7367,6 +7377,16 @@ class PublishBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "finalizer_unreviewed_dirty_paths", return_value=[]),
             mock.patch.object(gtt, "current_branch", return_value="codex/27-finish-work-dry-run-readiness"),
             mock.patch.object(gtt, "validate_github_remote_repository", return_value="owner/repo"),
+            mock.patch.object(
+                gtt,
+                "closeout_live_move_classes",
+                side_effect=lambda _root, _active, move_paths: ([], move_paths),
+            ),
+            mock.patch.object(
+                gtt,
+                "build_closeout_reviewed_tracked_bindings",
+                return_value=[],
+            ),
             mock.patch.object(
                 gtt,
                 "run_stdout",
@@ -11678,7 +11698,32 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 stdout = ""
             return mock.Mock(returncode=0, stdout=stdout, stderr="")
 
-        with mock.patch.object(gtt, "run", side_effect=fake_run):
+        tracked = sorted(
+            path.relative_to(self.task_dir).as_posix()
+            for path in self.task_dir.rglob("*")
+            if path.is_file()
+        )
+        generated_outputs = [
+            gtt.CLOSEOUT_PLAN_ARTIFACT,
+            gtt.FINISH_SUMMARY_ARTIFACT,
+            gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+        ]
+        with (
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(
+                gtt,
+                "closeout_live_move_classes",
+                return_value=(
+                    tracked,
+                    [name for name in generated_outputs if name not in tracked],
+                ),
+            ),
+            mock.patch.object(
+                gtt,
+                "build_closeout_reviewed_tracked_bindings",
+                return_value=[],
+            ),
+        ):
             return gtt.build_closeout_plan(
                 self.root,
                 self.task_dir,
@@ -11918,6 +11963,127 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 self.task_dir,
                 checker_args,
             )
+
+    def test_existing_plan_public_wrapper_preserves_checked_blocked_evidence_ready_route(
+        self,
+    ) -> None:
+        plan = self.build_plan()
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        public_input = {
+            "profile": "same_plan_resume",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "plan_ref": plan_ref,
+        }
+        output = {
+            "exit_id": "blocked",
+            "reason_code": "external_dependency_blocked",
+            "remediation": "Retry the same reviewed Finalizer transaction when the dependency recovers.",
+        }
+        gate = {
+            "schema_version": gtt.FINALIZATION_GATE_SCHEMA_VERSION,
+            "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+            "identity": {
+                "task_ref": task_ref,
+                "plan_ref": plan_ref,
+                "plan_digest": plan["plan_digest"],
+                "branch_review_commit": plan["git"]["branch_review_commit"],
+            },
+            "review": {
+                "status": "passed",
+                "summary": "The exact same-plan recovery is externally blocked.",
+            },
+            "route": {
+                "typed_exit": "blocked",
+                "consumer": gtt.FINALIZATION_CONSUMERS["blocked"],
+                "output": output,
+            },
+        }
+        context = {
+            "task_dir": self.task_dir,
+            "task_context": self.context,
+            "prepared": {"plan": plan},
+            "plan": plan,
+            "plan_ref": plan_ref,
+            "transaction_state": "evidence_ready",
+            "published_transition_complete": False,
+            "published_pr": None,
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "verification": ({}, {"typed_exit": "verified"}),
+        }
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+        args = argparse.Namespace(
+            root=str(self.root),
+            input="unused-public-input.json",
+            owner_result=None,
+            gate=None,
+            base_branch=None,
+        )
+        seen_checker_args: list[argparse.Namespace] = []
+
+        def preview(
+            _root: Path,
+            checker_args: argparse.Namespace,
+            _public_input: dict[str, object],
+        ) -> dict[str, object]:
+            seen_checker_args.append(checker_args)
+            return context
+
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(
+                gtt,
+                "finalization_public_input",
+                return_value=(public_input, "<test>"),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_gate_input",
+                return_value=(gate, self.task_dir / gtt.TASK_FINALIZATION_GATE_ARTIFACT),
+            ),
+            mock.patch.object(gtt, "finalization_preview_context", side_effect=preview),
+            mock.patch.object(
+                gtt,
+                "stage0_invocation_identity",
+                return_value=(gtt.FINALIZE_TASK_SKILL_ID, self.root),
+            ),
+            mock.patch.object(gtt, "stage0_public_interface", return_value={}),
+            mock.patch.object(gtt, "stage0_repo_root", return_value=self.root),
+            mock.patch.object(
+                gtt,
+                "stage0_structured_input",
+                return_value=public_input,
+            ),
+            mock.patch.object(gtt, "finalization_task_dir", return_value=self.task_dir),
+            mock.patch.object(gtt, "finalization_package_root", return_value=package_root),
+            mock.patch.object(
+                gtt,
+                "stage0_output_contract",
+                return_value=(
+                    gtt.read_json(package_root / "schemas/public-blocked-output.schema.json"),
+                    {},
+                ),
+            ),
+        ):
+            direct = gtt.cmd_check_finalization_gate(args)
+            wrapped = gtt.cmd_invoke_stage0_skill(args)
+
+        self.assertEqual(direct["typed_exit"], "blocked")
+        self.assertEqual(direct["transaction_state"], "evidence_ready")
+        self.assertEqual(wrapped, output)
+        self.assertEqual(len(seen_checker_args), 2)
+        wrapper_args = seen_checker_args[1]
+        self.assertEqual(
+            wrapper_args.finish_summary_index_file,
+            str(self.task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT),
+        )
+        self.assertEqual(wrapper_args.body_file, str(self.task_dir / gtt.PR_BODY_ARTIFACT))
 
     def test_finalization_eval_context_carries_publication_stale_owner_facts(self) -> None:
         public_input = {
@@ -12879,6 +13045,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "move_paths",
                 "tracked_move_paths",
                 "untracked_archive_outputs",
+                "reviewed_tracked_bindings",
                 "summary_placeholder",
                 "summary_template_sha256",
                 "summary_template",
@@ -12892,6 +13059,278 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 Path(__file__).resolve().parents[2] / "schemas/closeout-plan.schema.json"
             )
             self.assertEqual(list(Draft202012Validator(schema).iter_errors(first)), [])
+
+    def test_migrated_schema2_plan_reclassifies_live_index_and_binds_metadata_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=root, check=True)
+            subprocess.run(["git", "branch", "-M", "main"], cwd=root, check=True)
+            task_dir = root / ".trellis/tasks/08-03-migrated"
+            task_dir.mkdir(parents=True)
+            task = {
+                "id": "migrated",
+                "name": "migrated",
+                "title": "#105 migrated closeout",
+                "status": "in_progress",
+                "base_branch": "main",
+            }
+            context = {
+                "task_artifact_dir": ".trellis/tasks/08-03-migrated",
+                "base_branch": "main",
+                "base_ref": "HEAD",
+                "branch_name": "main",
+            }
+            gtt.write_json(task_dir / "task.json", task)
+            gtt.write_json(task_dir / "issue-scope-ledger.json", self.ledger)
+            gtt.write_json(task_dir / "finish-summary-index.json", self.index)
+            (task_dir / "pr-body.md").write_text(
+                valid_pr_body("migrated closeout。"), encoding="utf-8"
+            )
+            for name in ("prd.md", "design.md", "implement.md", "context-discovery.json"):
+                (task_dir / name).write_text(f"base {name}\n", encoding="utf-8")
+            (task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "reviewed metadata"], cwd=root, check=True)
+            review_commit = gtt.current_head(root)
+
+            (task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).unlink()
+            (task_dir / "prd.md").write_text("reviewed metadata tail\n", encoding="utf-8")
+            (task_dir / "context-discovery.json").write_text(
+                "reviewed discovery metadata tail\n", encoding="utf-8"
+            )
+            current = gtt.build_closeout_plan(
+                root,
+                task_dir,
+                context,
+                task,
+                self.ledger,
+                task_dir / "finish-summary-index.json",
+                repo="owner/repo",
+                remote="origin",
+                base_branch="main",
+                head_branch="main",
+                branch_review_commit=review_commit,
+                title="#105 migrated closeout",
+                review_facts={"changed_paths": [], "marketplace_required": False},
+            )
+            legacy = copy.deepcopy(current)
+            legacy["projection"].pop("reviewed_tracked_bindings")
+            legacy["projection"]["tracked_move_paths"].remove(gtt.CLOSEOUT_PLAN_ARTIFACT)
+            legacy["projection"]["untracked_archive_outputs"] = sorted(
+                legacy["projection"]["untracked_archive_outputs"]
+                + [gtt.CLOSEOUT_PLAN_ARTIFACT]
+            )
+            legacy["plan_digest"] = gtt.closeout_plan_digest(legacy)
+            gtt.validate_closeout_plan_for_migration(legacy)
+            gtt.write_json(task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, legacy)
+
+            normalized = gtt.build_closeout_plan(
+                root,
+                task_dir,
+                context,
+                task,
+                self.ledger,
+                task_dir / "finish-summary-index.json",
+                repo="owner/repo",
+                remote="origin",
+                base_branch="main",
+                head_branch="main",
+                branch_review_commit=review_commit,
+                title="#105 migrated closeout",
+                review_facts={"changed_paths": [], "marketplace_required": False},
+            )
+            self.assertEqual(gtt.closeout_schema2_migration_errors(legacy, normalized), [])
+            self.assertIn(
+                gtt.CLOSEOUT_PLAN_ARTIFACT,
+                normalized["projection"]["tracked_move_paths"],
+            )
+            self.assertEqual(
+                normalized["projection"]["untracked_archive_outputs"],
+                [gtt.FINISH_SUMMARY_ARTIFACT],
+            )
+            bindings = {
+                item["path"]: item
+                for item in normalized["projection"]["reviewed_tracked_bindings"]
+            }
+            self.assertIn("prd.md", bindings)
+            self.assertIn("context-discovery.json", bindings)
+            self.assertNotIn(gtt.CLOSEOUT_PLAN_ARTIFACT, bindings)
+            self.assertIn(
+                "context-discovery.json",
+                gtt.closeout_archive_pruned_paths(normalized),
+            )
+
+            gtt.write_json(task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, normalized)
+            summary = gtt.closeout_summary_for_pr(
+                normalized,
+                {"number": 105, "url": "https://github.com/owner/repo/pull/105"},
+            )
+            gtt.write_json(task_dir / gtt.FINISH_SUMMARY_ARTIFACT, summary)
+            gtt.validate_closeout_pre_move_continuity(
+                root,
+                task_dir,
+                normalized,
+                review_commit,
+                expected_summary_pr={
+                    "number": 105,
+                    "url": "https://github.com/owner/repo/pull/105",
+                },
+            )
+            self.assertEqual(
+                gtt.finalization_uncommitted_output_paths(root, normalized),
+                set(gtt.git_status_paths(root)),
+            )
+
+            original = (task_dir / "prd.md").read_bytes()
+            (task_dir / "prd.md").write_bytes(original + b"drift\n")
+            with self.assertRaisesRegex(gtt.WorkflowError, "reviewed binding"):
+                gtt.validate_closeout_pre_move_continuity(
+                    root, task_dir, normalized, review_commit
+                )
+            (task_dir / "prd.md").write_bytes(original)
+            (task_dir / "prd.md").chmod(0o755)
+            with self.assertRaisesRegex(gtt.WorkflowError, "reviewed binding"):
+                gtt.validate_closeout_pre_move_continuity(
+                    root, task_dir, normalized, review_commit
+                )
+            (task_dir / "prd.md").chmod(0o644)
+
+            (task_dir / "prd.md").write_text(
+                "a later unreviewed metadata tail\n", encoding="utf-8"
+            )
+            rebuilt_after_drift = gtt.build_closeout_plan(
+                root,
+                task_dir,
+                context,
+                task,
+                self.ledger,
+                task_dir / "finish-summary-index.json",
+                repo="owner/repo",
+                remote="origin",
+                base_branch="main",
+                head_branch="main",
+                branch_review_commit=review_commit,
+                title="#105 migrated closeout",
+                review_facts={"changed_paths": [], "marketplace_required": False},
+            )
+            self.assertTrue(
+                any(
+                    "legacy projection" in error
+                    for error in gtt.closeout_schema2_migration_errors(
+                        normalized, rebuilt_after_drift
+                    )
+                )
+            )
+            (task_dir / "prd.md").write_bytes(original)
+            gtt.validate_closeout_pre_move_continuity(
+                root,
+                task_dir,
+                normalized,
+                review_commit,
+                expected_summary_pr={
+                    "number": 105,
+                    "url": "https://github.com/owner/repo/pull/105",
+                },
+            )
+            gtt.compact_closeout_archive(task_dir, normalized)
+            self.assertFalse((task_dir / "context-discovery.json").exists())
+            self.assertTrue((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).is_file())
+            self.assertTrue((task_dir / gtt.FINISH_SUMMARY_ARTIFACT).is_file())
+
+    def test_migrated_schema2_active_resume_reuses_existing_draft_without_branch_review(
+        self,
+    ) -> None:
+        current = self.build_plan()
+        normalized = copy.deepcopy(current)
+        normalized["projection"]["tracked_move_paths"] = sorted(
+            normalized["projection"]["tracked_move_paths"]
+            + [gtt.CLOSEOUT_PLAN_ARTIFACT]
+        )
+        normalized["projection"]["untracked_archive_outputs"] = [
+            path
+            for path in normalized["projection"]["untracked_archive_outputs"]
+            if path != gtt.CLOSEOUT_PLAN_ARTIFACT
+        ]
+        normalized["plan_digest"] = gtt.closeout_plan_digest(normalized)
+        gtt.validate_closeout_plan(normalized)
+        legacy = copy.deepcopy(normalized)
+        legacy["projection"].pop("reviewed_tracked_bindings")
+        legacy["projection"]["tracked_move_paths"].remove(gtt.CLOSEOUT_PLAN_ARTIFACT)
+        legacy["projection"]["untracked_archive_outputs"] = sorted(
+            legacy["projection"]["untracked_archive_outputs"]
+            + [gtt.CLOSEOUT_PLAN_ARTIFACT]
+        )
+        legacy["plan_digest"] = gtt.closeout_plan_digest(legacy)
+        self.assertEqual(gtt.closeout_schema2_migration_errors(legacy, normalized), [])
+
+        gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, normalized)
+        gtt.write_json(
+            self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT,
+            gtt.closeout_summary_for_pr(
+                normalized,
+                {"number": 105, "url": "https://github.com/owner/repo/pull/105"},
+            ),
+        )
+        gtt.write_json(self.task_dir / "task.json", {**self.task, "status": "completed"})
+        draft = {
+            **closeout_head_repository_fields(),
+            "number": 105,
+            "url": "https://github.com/owner/repo/pull/105",
+            "title": normalized["publish"]["title"],
+            "body": (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8"),
+            "headRefName": normalized["git"]["head_branch"],
+            "baseRefName": normalized["git"]["base_branch"],
+            "headRefOid": self.head,
+            "isDraft": True,
+        }
+        archived = self.root / normalized["task"]["archive_locator"]
+        args = finish_args(
+            dry_run=False,
+            expected_plan_digest=normalized["plan_digest"],
+        )
+        with (
+            mock.patch.object(gtt, "validate_closeout_reviewed_content"),
+            mock.patch.object(gtt, "validate_closeout_active_projection"),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=draft),
+            mock.patch.object(gtt, "validate_closeout_pull_request_identity"),
+            mock.patch.object(
+                gtt,
+                "execute_archive_metadata_transaction",
+                return_value=(archived, {"commit": self.head}),
+            ) as archive,
+            mock.patch.object(
+                gtt,
+                "ensure_closeout_pr_ready",
+                return_value={"status": "ready", "pr": {**draft, "isDraft": False}},
+            ) as ready,
+            mock.patch.object(gtt, "create_pull_request") as create_pr,
+            mock.patch.object(gtt, "cmd_review_branch") as review_branch,
+            mock.patch.object(gtt, "cmd_check_review_gate") as check_review,
+        ):
+            result = gtt.resume_active_archive_move(
+                self.root,
+                args,
+                {},
+                self.task_dir,
+                self.context,
+            )
+
+        self.assertEqual(result["stage"], "ready")
+        archive.assert_called_once_with(
+            self.root,
+            self.task_dir,
+            normalized,
+            bound_pr=draft,
+            verification_owner_result=None,
+        )
+        ready.assert_called_once_with(self.root, normalized, bound_pr=draft)
+        create_pr.assert_not_called()
+        review_branch.assert_not_called()
+        check_review.assert_not_called()
 
     def test_final_summary_injects_only_plan_constrained_pr_runtime_facts(self) -> None:
         plan = self.build_plan()

@@ -549,8 +549,8 @@ archive locator. Publication's ignored-runtime readiness checkpoint owns its
 semantic conclusion and emits only task plus `branch_review_commit`; Finalizer
 does not read or commit that checkpoint. The closeout plan independently binds
 repo/base/head, exact title, raw `pr-body.md` SHA-256, `draft=true`, and its
-internal digest. Active-state recovery consumes the untracked schema 2.0 plan
-plus Git/remote, marketplace owner, task layout, and PR facts. Reuse and final projection require one exact PR
+internal digest. Active-state recovery consumes the index-derived active schema
+2.0 plan plus Git/remote, marketplace owner, task layout, and PR facts. Reuse and final projection require one exact PR
 number/URL/title/body identity; one matching draft is reused, zero creates one,
 and multiple identities fail closed. The real-PR final summary has one
 deterministic UTF-8 JSON byte representation and digest. Pre-move continuity
@@ -580,8 +580,10 @@ casing.
 Archive content identity is not inferred from the no-renames path set. Before
 the exact archive commit exists, each `tracked_move_paths` item binds the
 `branch_review_commit` blob to the archived working-tree file and prospective
-schema 2.0 archive commit blob. All files are byte-identical except `task.json`, where
-only the official `status` and `completedAt` archive fields may change.
+schema 2.0 archive commit blob. A tracked file that differs from that parent
+blob must match its exact `reviewed_tracked_bindings` mode and SHA-256; an
+unbound difference fails closed. `task.json` may then apply only the official
+`status` and `completedAt` archive fields to those reviewed pre-move bytes.
 `untracked_archive_outputs` are validated by their existing template/digest
 contracts. Once the exact archive commit exists, its tree and blobs replace the
 archived working tree as the authoritative content source.
@@ -1078,9 +1080,12 @@ children remain valid historical references.
 ## Closeout Plan
 
 `closeout-plan.json` is current-only schema version `2.0` and is the immutable
-machine input contract shared by preview and formal finish. It is an untracked
-active transaction checkpoint that becomes tracked only in the single archive
-commit. It records portable task and repo/base/`branch_review_commit` identity,
+machine input contract shared by preview and formal finish. New plans are
+untracked active transaction checkpoints that become tracked only in the single
+archive commit. A migrated active task may already track a legacy schema 2.0
+plan; Finalizer normalizes and keeps that file in the tracked class throughout
+the same transaction. The plan records portable task and
+repo/base/`branch_review_commit` identity,
 protected input SHA-256 values, reviewed paths and close scope, exact draft PR
 inputs, marketplace applicability and artifact locator, future archive
 projection, and the fixed transition list.
@@ -1136,15 +1141,27 @@ Phase 2, Branch Review, Publication, and Finalizer checkpoints remain ignored
 runtime state and never enter the archive.
 
 `projection.move_paths` is the complete task-relative filesystem set moved by
-the official archive command. `projection.tracked_move_paths` is the subset
-already tracked at `branch_review_commit`; each requires an active deletion and
-archive addition in the one archive transaction. `projection.untracked_archive_outputs`
-is the complementary subset created or still untracked while the task is active;
-schema 2.0 requires it to include both `closeout-plan.json` and
-`finish-summary.json`, which appear only as archive additions. These tracking
-classes are immutable plan facts derived before archive,
-not inferred from post-move status. The reviewed content tree plus the exact
-pre-move index/status and archive transaction tree prove the classification.
+the official archive command. On every prepare and same-plan recovery,
+`projection.tracked_move_paths` is rebuilt as the intersection of `move_paths`
+and the live Git index; each item requires an active deletion and archive
+addition in the one archive transaction. `projection.untracked_archive_outputs`
+is the exact complement. New plans classify both `closeout-plan.json` and
+`finish-summary.json` as untracked outputs. A migrated task whose live index
+already tracks legacy `closeout-plan.json` keeps it in `tracked_move_paths`,
+while `finish-summary.json` remains a required untracked output. Historical
+schema 2.0 tracking classes are migration input, not current classification
+authority. The normalized classes become immutable plan facts for the archive
+transaction and are not inferred from post-move status.
+
+`projection.reviewed_tracked_bindings` is the sorted, unique, closed set of
+tracked move paths whose current regular-file bytes or mode differ from the
+`branch_review_commit` blob. Each row contains exactly task-relative `path`, Git
+`mode` (`100644` or `100755`), and content `sha256`. Duplicate, out-of-set,
+missing, stale, or unnecessary rows fail closed. A tracked legacy
+`closeout-plan.json` is the self-referential exception: its canonical schema and
+`plan_digest` bind its bytes instead of a recursive content row. The reviewed
+content tree plus exact pre-move index/status, bindings, and archive transaction
+tree prove the classification and continuity.
 The projection also stores `summary_template`,
 `summary_template_sha256`, the sentinel PR identity, and the exact runtime
 fields that may change. The sentinel uses the
@@ -1163,17 +1180,17 @@ Dry-run returns the complete plan and digest. The Finalizer passes that digest
 internally to formal execution; the user confirms the already displayed exact
 side effects and never repeats a digest, SHA, or branch. A mismatch or protected
 input drift fails before push or file writes. Formal schema 2.0 writes the exact
-plan only as an untracked active transaction checkpoint; Publication readiness
+plan as its index-derived active transaction class; Publication readiness
 and the Finalizer gate stay ignored runtime and are not plan inputs, move paths,
 or archive files. Before draft binding, partial retries derive the next missing
-transition from the untracked plan, `branch_review_commit`, marketplace owner
+transition from the active plan, `branch_review_commit`, marketplace owner
 evidence when applicable, live Git/GitHub facts, and the active/archive layout.
 The scope-only ledger is never augmented or used as verification state.
 
 `task.archive_locator` uses the same live `YYYY-MM` that the unmodified official
 archive command will use. Formal checks it before the first side effect and
 again immediately before official move. If the month changes while a schema 2.0
-task is still active, dry-run rebuilds only the still-untracked plan with the
+task is still active, dry-run rebuilds only the active plan with the
 new archive-derived values and a new digest, then the same Finalizer loop reviews
 and confirms it. No evidence/readiness commit, history rewrite, verifier rerun,
 or alternate archive relocation occurs.
@@ -1200,10 +1217,16 @@ absence, archive completeness, tracked blob continuity, and the official
 mismatched transaction state keeps this metadata recovery path fail closed.
 
 Before official move, the same continuity contract applies to the active task:
-the index is empty, untracked paths equal the planned final outputs, every move
-path is a regular file, tracked Git modes are `100644` or `100755` and match the
-working mode, and every working byte equals its transaction-parent blob. This gate also
-rechecks the live archive month and empty official hook state.
+the index has no staged changes, dirty paths equal the plan-owned output set,
+every move path is a regular file, and tracked Git modes are `100644` or
+`100755`. Each tracked file must either equal its transaction-parent bytes and
+mode or exactly match its reviewed binding; the tracked plan must equal its
+canonical immutable bytes. Verification fallback uses the same set: existing
+untracked outputs plus existing binding-matched tracked metadata and the
+canonical tracked plan. Extra dirty paths or binding drift fail closed.
+Metadata intermediates selected by archive pruning are validated and moved
+under this contract before they are explicitly pruned. This gate also rechecks
+the live archive month and empty official hook state.
 
 When current `HEAD` is the exact planned archive commit, both normal archived
 tasks with context and plan-only damaged tasks load the plan from that commit

@@ -20897,7 +20897,11 @@ def closeout_json_artifact_sha256(payload: dict[str, Any]) -> str:
     return hashlib.sha256(closeout_json_artifact_bytes(payload)).hexdigest()
 
 
-def closeout_plan_errors(plan: Any) -> list[str]:
+def closeout_plan_errors(
+    plan: Any,
+    *,
+    allow_legacy_migration: bool = False,
+) -> list[str]:
     if not isinstance(plan, dict):
         return ["closeout plan must be an object."]
     expected = {
@@ -20920,6 +20924,16 @@ def closeout_plan_errors(plan: Any) -> list[str]:
     publish = plan.get("publish") if isinstance(plan.get("publish"), dict) else {}
     marketplace = plan.get("marketplace") if isinstance(plan.get("marketplace"), dict) else {}
     projection = plan.get("projection") if isinstance(plan.get("projection"), dict) else {}
+    projection_keys = {
+        "active_locator", "archive_locator", "finish_summary_locator",
+        "move_paths", "tracked_move_paths", "untracked_archive_outputs",
+        "reviewed_tracked_bindings", "summary_placeholder",
+        "summary_template_sha256", "summary_template", "runtime_fact_fields",
+    }
+    legacy_projection = (
+        allow_legacy_migration
+        and set(projection) == projection_keys - {"reviewed_tracked_bindings"}
+    )
     nested_keys = {
         "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
         "review": (review, {"branch_review_commit", "changed_paths", "close_issues_reviewed"}),
@@ -20927,17 +20941,11 @@ def closeout_plan_errors(plan: Any) -> list[str]:
         "marketplace": (marketplace, {"required", "verifier_artifact_locator"}),
         "projection": (
             projection,
-            {
-                "active_locator", "archive_locator", "finish_summary_locator",
-                "move_paths", "tracked_move_paths",
-                "untracked_archive_outputs",
-                "summary_placeholder", "summary_template_sha256",
-                "summary_template", "runtime_fact_fields",
-            },
+            projection_keys,
         ),
     }
     for label, (value, keys) in nested_keys.items():
-        if set(value) != keys:
+        if set(value) != keys and not (label == "projection" and legacy_projection):
             errors.append(f"closeout plan {label} keys are invalid.")
     git_keys = {"repo", "remote", "base_branch", "head_branch", "branch_review_commit"}
     if set(git) != git_keys:
@@ -21021,10 +21029,36 @@ def closeout_plan_errors(plan: Any) -> list[str]:
         errors.append("closeout tracked/untracked move classes must be disjoint and cover every move path.")
     if FINISH_SUMMARY_ARTIFACT not in untracked_archive_outputs:
         errors.append("closeout final summary must be classified as an untracked archive output.")
-    if CLOSEOUT_PLAN_ARTIFACT not in untracked_archive_outputs:
-        errors.append(
-            "closeout plan must remain an untracked final output until the single archive commit."
-        )
+    reviewed_bindings = projection.get("reviewed_tracked_bindings")
+    if legacy_projection:
+        reviewed_bindings = []
+    if not isinstance(reviewed_bindings, list):
+        errors.append("closeout reviewed tracked bindings must be an array.")
+        reviewed_bindings = []
+    else:
+        binding_paths: list[str] = []
+        for index, binding in enumerate(reviewed_bindings):
+            if not isinstance(binding, dict) or set(binding) != {"path", "mode", "sha256"}:
+                errors.append(f"closeout reviewed tracked binding {index} is invalid.")
+                continue
+            path = binding.get("path")
+            mode = binding.get("mode")
+            digest_value = binding.get("sha256")
+            if (
+                not isinstance(path, str)
+                or path not in tracked_move_paths
+                or path == CLOSEOUT_PLAN_ARTIFACT
+                or finish_summary_path_errors(path, f"projection.reviewed_tracked_bindings[{index}].path")
+            ):
+                errors.append(f"closeout reviewed tracked binding {index} path is invalid.")
+            else:
+                binding_paths.append(path)
+            if mode not in {"100644", "100755"}:
+                errors.append(f"closeout reviewed tracked binding {index} mode is invalid.")
+            if re.fullmatch(r"[0-9a-f]{64}", str(digest_value or "")) is None:
+                errors.append(f"closeout reviewed tracked binding {index} digest is invalid.")
+        if binding_paths != sorted(set(binding_paths)):
+            errors.append("closeout reviewed tracked binding paths must be sorted and unique.")
     forbidden_finalizer_artifacts = {
         PR_READINESS_ARTIFACT,
         TASK_FINALIZATION_GATE_ARTIFACT,
@@ -21102,6 +21136,108 @@ def validate_closeout_plan(plan: Any) -> dict[str, Any]:
     return plan
 
 
+def validate_closeout_plan_for_migration(plan: Any) -> dict[str, Any]:
+    errors = closeout_plan_errors(plan, allow_legacy_migration=True)
+    if errors:
+        raise WorkflowError(
+            "closeout-plan migration input validation failed.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return plan
+
+
+def closeout_live_move_classes(
+    root: Path,
+    active_locator: str,
+    move_paths: list[str],
+) -> tuple[list[str], list[str]]:
+    tracked: list[str] = []
+    for relative in move_paths:
+        repo_path = f"{active_locator}/{relative}"
+        _blob, mode = task_commit_index_identity(root, repo_path)
+        if mode is None:
+            continue
+        if mode not in {"100644", "100755"}:
+            raise WorkflowError(
+                "Closeout tracked move paths must be regular Git index entries.",
+                exit_code=2,
+                payload={"path": relative, "mode": mode},
+            )
+        tracked.append(relative)
+    tracked_move_paths = sorted(tracked)
+    untracked_archive_outputs = sorted(set(move_paths) - set(tracked_move_paths))
+    return tracked_move_paths, untracked_archive_outputs
+
+
+def closeout_reviewed_tracked_binding_map(
+    plan: dict[str, Any],
+) -> dict[str, dict[str, str]]:
+    bindings = plan.get("projection", {}).get("reviewed_tracked_bindings", [])
+    if not isinstance(bindings, list):
+        return {}
+    return {
+        str(binding["path"]): binding
+        for binding in bindings
+        if isinstance(binding, dict)
+        and set(binding) == {"path", "mode", "sha256"}
+        and isinstance(binding.get("path"), str)
+    }
+
+
+def build_closeout_reviewed_tracked_bindings(
+    root: Path,
+    active_locator: str,
+    tracked_move_paths: list[str],
+    transaction_parent: str,
+) -> list[dict[str, str]]:
+    bindings: list[dict[str, str]] = []
+    for relative in tracked_move_paths:
+        # The immutable plan binds its own canonical bytes through plan_digest.
+        if relative == CLOSEOUT_PLAN_ARTIFACT:
+            continue
+        repo_path = f"{active_locator}/{relative}"
+        parent_mode, object_type, _object_id = closeout_commit_tree_entry(
+            root,
+            transaction_parent,
+            repo_path,
+        )
+        if object_type != "blob" or parent_mode not in {"100644", "100755"}:
+            raise WorkflowError(
+                "Closeout tracked move paths must resolve to regular transaction-parent blobs.",
+                exit_code=2,
+                payload={"path": relative, "mode": parent_mode, "type": object_type},
+            )
+        content, content_sha256, working_mode = task_commit_worktree_content(
+            root,
+            repo_path,
+        )
+        if (
+            content is None
+            or content_sha256 is None
+            or working_mode not in {"100644", "100755"}
+        ):
+            raise WorkflowError(
+                "Closeout tracked move path is not a readable regular working-tree file.",
+                exit_code=2,
+                payload={"path": relative},
+            )
+        parent_content = closeout_commit_blob_bytes(
+            root,
+            transaction_parent,
+            repo_path,
+        )
+        if working_mode != parent_mode or content != parent_content:
+            bindings.append(
+                {
+                    "path": relative,
+                    "mode": working_mode,
+                    "sha256": content_sha256,
+                }
+            )
+    return bindings
+
+
 def build_closeout_plan(
     root: Path,
     task_dir: Path,
@@ -21129,7 +21265,7 @@ def build_closeout_plan(
     existing_plan_path = closeout_plan_path(task_dir)
     existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
     if existing_plan:
-        validate_closeout_plan(existing_plan)
+        validate_closeout_plan_for_migration(existing_plan)
     plan_schema_version = CLOSEOUT_PLAN_SCHEMA_VERSION
     existing_task = existing_plan.get("task") if isinstance(existing_plan.get("task"), dict) else {}
     existing_projection = (
@@ -21175,21 +21311,17 @@ def build_closeout_plan(
         if requires_marketplace:
             task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
     move_paths = sorted(task_files)
-    if existing_projection:
-        tracked_move_paths = list(existing_projection.get("tracked_move_paths", []))
-        untracked_archive_outputs = list(existing_projection.get("untracked_archive_outputs", []))
-    else:
-        tracked_prefix = f"{active_locator}/"
-        tracked_task_files = {
-            path.removeprefix(tracked_prefix)
-            for path in run_stdout(
-                ["git", "ls-files", "--", active_locator],
-                cwd=root,
-            ).splitlines()
-            if path.startswith(tracked_prefix)
-        }
-        tracked_move_paths = sorted(set(move_paths) & tracked_task_files)
-        untracked_archive_outputs = sorted(set(move_paths) - set(tracked_move_paths))
+    tracked_move_paths, untracked_archive_outputs = closeout_live_move_classes(
+        root,
+        active_locator,
+        move_paths,
+    )
+    reviewed_tracked_bindings = build_closeout_reviewed_tracked_bindings(
+        root,
+        active_locator,
+        tracked_move_paths,
+        branch_review_commit,
+    )
     retained_names = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
     if requires_marketplace:
         retained_names.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
@@ -21301,6 +21433,7 @@ def build_closeout_plan(
             "move_paths": move_paths,
             "tracked_move_paths": tracked_move_paths,
             "untracked_archive_outputs": untracked_archive_outputs,
+            "reviewed_tracked_bindings": reviewed_tracked_bindings,
             "summary_placeholder": placeholder,
             "summary_template_sha256": closeout_json_artifact_sha256(summary_template),
             "summary_template": summary_template,
@@ -21311,6 +21444,66 @@ def build_closeout_plan(
     }
     plan["plan_digest"] = closeout_plan_digest(plan)
     return validate_closeout_plan(plan)
+
+
+def closeout_schema2_migration_errors(
+    previous: dict[str, Any],
+    current: dict[str, Any],
+) -> list[str]:
+    try:
+        validate_closeout_plan_for_migration(previous)
+        validate_closeout_plan(current)
+    except WorkflowError as exc:
+        return [str(exc)]
+    errors: list[str] = []
+    for key in (
+        "schema_version",
+        "task",
+        "git",
+        "inputs",
+        "review",
+        "publish",
+        "marketplace",
+        "transitions",
+    ):
+        if previous.get(key) != current.get(key):
+            errors.append(f"schema 2.0 migration changed protected {key} facts")
+
+    previous_projection = previous["projection"]
+    current_projection = current["projection"]
+    if "reviewed_tracked_bindings" in previous_projection:
+        errors.append(
+            "schema 2.0 migration requires a legacy projection without reviewed tracked bindings"
+        )
+    for key in (
+        "active_locator",
+        "archive_locator",
+        "finish_summary_locator",
+        "move_paths",
+        "summary_placeholder",
+        "runtime_fact_fields",
+    ):
+        if previous_projection.get(key) != current_projection.get(key):
+            errors.append(f"schema 2.0 migration changed protected projection.{key}")
+
+    def normalized_summary(projection: dict[str, Any]) -> dict[str, Any]:
+        summary = copy.deepcopy(projection.get("summary_template"))
+        if not isinstance(summary, dict):
+            return {}
+        git = summary.get("git")
+        if isinstance(git, dict):
+            git["changed_paths"] = []
+        index = summary.get("index")
+        if isinstance(index, dict):
+            search_terms = index.get("search_terms")
+            if isinstance(search_terms, dict):
+                search_terms["paths"] = []
+            index["retrieval_text"] = "<classification-derived>"
+        return summary
+
+    if normalized_summary(previous_projection) != normalized_summary(current_projection):
+        errors.append("schema 2.0 migration changed summary facts beyond path classification")
+    return errors
 
 
 def resolve_closeout_branch_review_commit(
@@ -21369,7 +21562,7 @@ def prepare_closeout(
     official_after_archive_hook_state(root)
     existing_plan_path = closeout_plan_path(task_dir)
     existing_plan = (
-        validate_closeout_plan(read_json(existing_plan_path))
+        validate_closeout_plan_for_migration(read_json(existing_plan_path))
         if existing_plan_path.is_file() and not existing_plan_path.is_symlink()
         else None
     )
@@ -21438,47 +21631,53 @@ def prepare_closeout(
         review_facts=review_facts,
     )
     month_supersession: dict[str, Any] | None = None
+    migration_normalization: dict[str, Any] | None = None
     existing = closeout_plan_path(task_dir)
     if existing.is_file():
-        persisted = validate_closeout_plan(read_json(existing))
+        persisted = validate_closeout_plan_for_migration(read_json(existing))
         if persisted != plan:
-            previous_month = closeout_archive_month(persisted)
-            next_month = closeout_archive_month(plan)
-            supersession_errors = closeout_month_supersession_errors(persisted, plan)
-            if (
-                previous_month == next_month
-                or task.get("status") != "in_progress"
-                or (root / persisted["task"]["archive_locator"]).exists()
-                or supersession_errors
-            ):
-                raise WorkflowError(
-                    "Persisted closeout plan no longer matches protected inputs.",
-                    exit_code=2,
-                    payload={
-                        "persisted_digest": persisted.get("plan_digest"),
-                        "rebuilt_digest": plan.get("plan_digest"),
-                        "month_supersession_errors": supersession_errors,
-                    },
+            migration_errors = closeout_schema2_migration_errors(persisted, plan)
+            if not migration_errors:
+                migration_normalization = {"previous_plan": persisted}
+            else:
+                previous_month = closeout_archive_month(persisted)
+                next_month = closeout_archive_month(plan)
+                supersession_errors = closeout_month_supersession_errors(persisted, plan)
+                if (
+                    previous_month == next_month
+                    or task.get("status") != "in_progress"
+                    or (root / persisted["task"]["archive_locator"]).exists()
+                    or supersession_errors
+                ):
+                    raise WorkflowError(
+                        "Persisted closeout plan no longer matches protected inputs.",
+                        exit_code=2,
+                        payload={
+                            "persisted_digest": persisted.get("plan_digest"),
+                            "rebuilt_digest": plan.get("plan_digest"),
+                            "migration_errors": migration_errors,
+                            "month_supersession_errors": supersession_errors,
+                        },
+                    )
+                prior_state = resolve_closeout_pre_draft_state(
+                    root,
+                    task_dir,
+                    persisted,
+                    ledger,
+                    verification_owner_result=verification_owner_result,
                 )
-            prior_state = resolve_closeout_pre_draft_state(
-                root,
-                task_dir,
-                persisted,
-                ledger,
-                verification_owner_result=verification_owner_result,
-            )
-            if prior_state not in {"content_pushed", "evidence_ready"}:
-                raise WorkflowError(
-                    "Stale-month plan has no unique current-contract reprepare state.",
-                    exit_code=2,
-                    payload={"state": prior_state},
-                )
-            month_supersession = {
-                "previous_plan": persisted,
-                "previous_month": previous_month,
-                "current_month": next_month,
-                "prior_state": prior_state,
-            }
+                if prior_state not in {"content_pushed", "evidence_ready"}:
+                    raise WorkflowError(
+                        "Stale-month plan has no unique current-contract reprepare state.",
+                        exit_code=2,
+                        payload={"state": prior_state},
+                    )
+                month_supersession = {
+                    "previous_plan": persisted,
+                    "previous_month": previous_month,
+                    "current_month": next_month,
+                    "prior_state": prior_state,
+                }
         else:
             plan = persisted
     return {
@@ -21492,6 +21691,7 @@ def prepare_closeout(
         "body": body,
         "body_source": body_source,
         "month_supersession": month_supersession,
+        "migration_normalization": migration_normalization,
     }
 
 
@@ -21508,7 +21708,7 @@ def resolve_closeout_pre_draft_state(
         return "prepared"
     if not plan_path.is_file() or plan_path.is_symlink():
         raise WorkflowError("Interrupted closeout plan is unavailable or unsafe.", exit_code=2)
-    if validate_closeout_plan(read_json(plan_path)) != plan:
+    if validate_closeout_plan_for_migration(read_json(plan_path)) != plan:
         raise WorkflowError(
             "Interrupted closeout plan differs from the rebuilt immutable plan.",
             exit_code=2,
@@ -21941,7 +22141,10 @@ def validate_closeout_marketplace_artifact(
         errors.append("extension verification owner result is not verified")
     if (
         owner_input.get("task_ref") != plan["task"]["active_locator"]
-        or owner_input.get("plan_ref") != expected_plan_ref
+        or not closeout_verification_plan_ref_matches(
+            plan,
+            owner_input.get("plan_ref"),
+        )
         or owner_input.get("branch_review_commit")
         != plan["git"]["branch_review_commit"]
         or normalize_github_repository(owner_input.get("repo_ref"))
@@ -22147,7 +22350,18 @@ def closeout_projection_content_is_current(
     plan: dict[str, Any],
     relative: str,
     content: bytes,
+    mode: str | None = None,
 ) -> bool:
+    if relative == CLOSEOUT_PLAN_ARTIFACT:
+        return content == closeout_json_artifact_bytes(plan)
+    projection = plan.get("projection", {})
+    if "reviewed_tracked_bindings" in projection:
+        binding = closeout_reviewed_tracked_binding_map(plan).get(relative)
+        return bool(
+            binding is not None
+            and mode == binding.get("mode")
+            and hashlib.sha256(content).hexdigest() == binding.get("sha256")
+        )
     input_key = {
         "task.json": "task",
         "issue-scope-ledger.json": "issue_scope_ledger",
@@ -22210,6 +22424,7 @@ def validate_closeout_pre_move_continuity(
         expected_pr=expected_summary_pr,
     )
 
+    observed_binding_paths: set[str] = set()
     for relative in plan["projection"]["tracked_move_paths"]:
         repo_path = f"{active_locator}/{relative}"
         git_mode, object_type, _object_id = closeout_commit_tree_entry(
@@ -22229,9 +22444,24 @@ def validate_closeout_pre_move_continuity(
         target = task_dir / relative
         working_mode = os.lstat(target).st_mode
         expected_working_mode = "100755" if working_mode & 0o111 else "100644"
-        if expected_working_mode != git_mode:
+        before = closeout_commit_blob_bytes(root, transaction_parent, repo_path)
+        current_bytes = target.read_bytes()
+        differs_from_parent = (
+            current_bytes != before or expected_working_mode != git_mode
+        )
+        if differs_from_parent and relative != CLOSEOUT_PLAN_ARTIFACT:
+            observed_binding_paths.add(relative)
+        if (
+            differs_from_parent
+            and not closeout_projection_content_is_current(
+                plan,
+                relative,
+                current_bytes,
+                expected_working_mode,
+            )
+        ):
             raise WorkflowError(
-                "Closeout tracked file mode differs from the transaction-parent blob.",
+                "Closeout tracked output differs from its transaction-parent blob and reviewed binding before archive.",
                 exit_code=2,
                 payload={
                     "path": relative,
@@ -22240,21 +22470,17 @@ def validate_closeout_pre_move_continuity(
                     "stage": "pre-archive-continuity",
                 },
             )
-        before = closeout_commit_blob_bytes(root, transaction_parent, repo_path)
-        current_bytes = target.read_bytes()
-        if (
-            current_bytes != before
-            and not closeout_projection_content_is_current(
-                plan,
-                relative,
-                current_bytes,
-            )
-        ):
-            raise WorkflowError(
-                "Closeout tracked output differs from the transaction-parent blob before archive.",
-                exit_code=2,
-                payload={"path": relative, "stage": "pre-archive-continuity"},
-            )
+    expected_binding_paths = set(closeout_reviewed_tracked_binding_map(plan))
+    if observed_binding_paths != expected_binding_paths:
+        raise WorkflowError(
+            "Closeout reviewed tracked bindings do not exactly cover the metadata tail.",
+            exit_code=2,
+            payload={
+                "expected_paths": sorted(expected_binding_paths),
+                "actual_paths": sorted(observed_binding_paths),
+                "stage": "pre-archive-continuity",
+            },
+        )
 
     expected_outputs = {
         f"{active_locator}/{relative}"
@@ -22428,6 +22654,17 @@ def validate_closeout_archive_blob_continuity(
             transaction_parent,
             f"{active_locator}/{relative}",
         )
+        parent_mode, parent_type, _parent_oid = closeout_commit_tree_entry(
+            root,
+            transaction_parent,
+            f"{active_locator}/{relative}",
+        )
+        if parent_type != "blob" or parent_mode not in {"100644", "100755"}:
+            raise WorkflowError(
+                "Archived tracked output parent is not a regular Git blob.",
+                exit_code=2,
+                payload={"path": relative},
+            )
         if archive_commit is None:
             target = archived / relative
             if not target.is_file():
@@ -22437,20 +22674,43 @@ def validate_closeout_archive_blob_continuity(
                     payload={"path": relative},
                 )
             after = target.read_bytes()
+            working_mode = os.lstat(target).st_mode
+            after_mode = "100755" if working_mode & 0o111 else "100644"
         else:
-            after = closeout_commit_blob_bytes(root, archive_commit, f"{archive_locator}/{relative}")
+            archive_path = f"{archive_locator}/{relative}"
+            after = closeout_commit_blob_bytes(root, archive_commit, archive_path)
+            after_mode, after_type, _after_oid = closeout_commit_tree_entry(
+                root,
+                archive_commit,
+                archive_path,
+            )
+            if after_type != "blob" or after_mode not in {"100644", "100755"}:
+                raise WorkflowError(
+                    "Archived tracked output is not a regular Git blob.",
+                    exit_code=2,
+                    payload={"path": relative},
+                )
         if relative == "task.json":
             validate_closeout_task_json_archive_change(before, after)
+            binding = closeout_reviewed_tracked_binding_map(plan).get(relative)
+            expected_mode = binding.get("mode") if binding is not None else parent_mode
+            if after_mode != expected_mode:
+                raise WorkflowError(
+                    "Archived task.json mode differs from its reviewed pre-move mode.",
+                    exit_code=2,
+                    payload={"path": relative},
+                )
         elif (
-            before != after
+            (before != after or parent_mode != after_mode)
             and not closeout_projection_content_is_current(
                 plan,
                 relative,
                 after,
+                after_mode,
             )
         ):
             raise WorkflowError(
-                "Archived tracked output differs from the transaction-parent blob.",
+                "Archived tracked output differs from its transaction-parent blob and reviewed binding.",
                 exit_code=2,
                 payload={"path": relative},
             )
@@ -23281,13 +23541,27 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         )
         entry_state = apply_active_closeout_month_supersession(root, task_dir, prepared)
     else:
+        migration = prepared.get("migration_normalization")
+        state_plan = (
+            migration["previous_plan"]
+            if isinstance(migration, dict)
+            and isinstance(migration.get("previous_plan"), dict)
+            else plan
+        )
         entry_state = resolve_closeout_pre_draft_state(
             root,
             task_dir,
-            plan,
+            state_plan,
             ledger,
             verification_owner_result=verification_owner_result,
         )
+        if state_plan is not plan:
+            write_json(closeout_plan_path(task_dir), plan)
+            if validate_closeout_plan(read_json(closeout_plan_path(task_dir))) != plan:
+                raise WorkflowError(
+                    "Schema 2.0 closeout migration did not persist the reviewed normalized plan.",
+                    exit_code=2,
+                )
     if entry_state == "prepared":
         execute_closeout_content_push(
             root,
@@ -23692,7 +23966,7 @@ def finalization_closeout_plan(
     if not task_dir_is_archived(root, task_dir):
         if not plan_path.is_file() or plan_path.is_symlink():
             return None
-        return validate_closeout_plan(read_json(plan_path))
+        return validate_closeout_plan_for_migration(read_json(plan_path))
     locator = repo_relative(root, task_dir)
     working_plan: dict[str, Any] | None = None
     if plan_path.exists():
@@ -23778,11 +24052,49 @@ def finalization_uncommitted_output_paths(
     plan: dict[str, Any],
 ) -> set[str]:
     active_locator = plan["task"]["active_locator"]
-    return {
+    expected = {
         f"{active_locator}/{relative}"
         for relative in plan["projection"]["untracked_archive_outputs"]
         if (root / active_locator / relative).is_file()
     }
+    for relative, binding in closeout_reviewed_tracked_binding_map(plan).items():
+        repo_path = f"{active_locator}/{relative}"
+        content, content_sha256, mode = task_commit_worktree_content(root, repo_path)
+        if (
+            content is None
+            or content_sha256 != binding.get("sha256")
+            or mode != binding.get("mode")
+        ):
+            raise WorkflowError(
+                "Finalization reviewed tracked metadata no longer matches its immutable binding.",
+                exit_code=2,
+                payload={"path": relative},
+            )
+        expected.add(repo_path)
+    if CLOSEOUT_PLAN_ARTIFACT in plan["projection"]["tracked_move_paths"]:
+        plan_path = f"{active_locator}/{CLOSEOUT_PLAN_ARTIFACT}"
+        content, _content_sha256, mode = task_commit_worktree_content(root, plan_path)
+        if content != closeout_json_artifact_bytes(plan) or mode not in {"100644", "100755"}:
+            raise WorkflowError(
+                "Tracked closeout plan no longer matches its canonical immutable bytes.",
+                exit_code=2,
+            )
+        expected.add(plan_path)
+    return expected
+
+
+def closeout_verification_plan_ref_matches(
+    plan: dict[str, Any],
+    owner_plan_ref: Any,
+) -> bool:
+    expected = f"closeout-plan:{plan['plan_digest']}"
+    if owner_plan_ref == expected:
+        return True
+    return bool(
+        MARKETPLACE_VERIFICATION_ARTIFACT
+        in closeout_reviewed_tracked_binding_map(plan)
+        and re.fullmatch(r"closeout-plan:[0-9a-f]{64}", str(owner_plan_ref or ""))
+    )
 
 
 def check_extension_verification_for_closeout(
@@ -23835,7 +24147,10 @@ def check_extension_verification_for_closeout(
         if (
             payload.get("typed_exit") != "verified"
             or owner_input.get("task_ref") != task_ref
-            or owner_input.get("plan_ref") != plan_ref
+            or not closeout_verification_plan_ref_matches(
+                plan,
+                owner_input.get("plan_ref"),
+            )
             or owner_input.get("branch_review_commit") != branch_review_commit
             or normalize_github_repository(owner_input.get("repo_ref"))
             != plan["git"]["repo"]
@@ -24033,10 +24348,23 @@ def finalization_verification_owner_result(
             == checked.get("verification_ref")
         )
     else:
+        current_plan = finalization_closeout_plan(root, task_dir)
+        migrated_plan_ref_match = bool(
+            current_plan is not None
+            and public_input.get("plan_ref")
+            == f"closeout-plan:{current_plan['plan_digest']}"
+            and closeout_verification_plan_ref_matches(
+                current_plan,
+                owner_input.get("plan_ref"),
+            )
+        )
         matches = (
             checked.get("typed_exit") == "verified"
             and owner_input.get("task_ref") == public_input.get("task_ref")
-            and owner_input.get("plan_ref") == public_input.get("plan_ref")
+            and (
+                owner_input.get("plan_ref") == public_input.get("plan_ref")
+                or migrated_plan_ref_match
+            )
             and owner_input.get("branch_review_commit")
             == public_input.get("branch_review_commit")
             and checked.get("verification_ref")
@@ -24114,7 +24442,16 @@ def finalization_current_verification_owner_result(
     elif (
         checked.get("typed_exit") != "verified"
         or owner_input.get("task_ref") != task_ref
-        or owner_input.get("plan_ref") != plan_ref
+        or not (
+            owner_input.get("plan_ref") == plan_ref
+            or (
+                (plan or finalization_closeout_plan(root, task_dir)) is not None
+                and closeout_verification_plan_ref_matches(
+                    plan or finalization_closeout_plan(root, task_dir),
+                    owner_input.get("plan_ref"),
+                )
+            )
+        )
         or owner_input.get("branch_review_commit") != branch_review_commit
     ):
         return None
@@ -24509,10 +24846,17 @@ def finalization_preview_context(
                     and isinstance(verification[1], dict)
                     else {}
                 )
+                migration = prepared.get("migration_normalization")
+                state_plan = (
+                    migration["previous_plan"]
+                    if isinstance(migration, dict)
+                    and isinstance(migration.get("previous_plan"), dict)
+                    else plan
+                )
                 state = resolve_closeout_pre_draft_state(
                     root,
                     task_dir,
-                    plan,
+                    state_plan,
                     prepared["ledger"],
                     verification_owner_result=(
                         verification
@@ -24522,7 +24866,21 @@ def finalization_preview_context(
                 )
     plan_ref = f"closeout-plan:{plan['plan_digest']}"
     input_plan_ref = public_input.get("plan_ref")
-    if isinstance(input_plan_ref, str) and input_plan_ref != plan_ref:
+    migration = (
+        prepared.get("migration_normalization")
+        if isinstance(prepared, dict)
+        else None
+    )
+    migration_plan_ref = (
+        f"closeout-plan:{migration['previous_plan']['plan_digest']}"
+        if isinstance(migration, dict)
+        and isinstance(migration.get("previous_plan"), dict)
+        else None
+    )
+    if (
+        isinstance(input_plan_ref, str)
+        and input_plan_ref not in {plan_ref, migration_plan_ref}
+    ):
         raise WorkflowError(
             "Task finalization plan_ref does not match the current immutable plan.",
             exit_code=2,
@@ -24938,7 +25296,7 @@ def finalization_public_wrapper_checker_args(
             "Task finalization public wrapper requires a safe immutable plan.",
             exit_code=2,
         )
-    plan = validate_closeout_plan(read_json(plan_path))
+    plan = validate_closeout_plan_for_migration(read_json(plan_path))
     checker_args.finish_summary_index_file = str(
         task_dir / FINISH_SUMMARY_INDEX_ARTIFACT
     )
