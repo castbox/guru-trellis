@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 完整 scope、findings、验证充分性与未验证边界"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"current-only schema、freshness、runtime private state 与 terminal residue 合同"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"managed assets、canonical ownership、source/installed closure 与 update 抗漂移"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"README/公开安装说明必须与真实 current workflow 和验证证据一致"}

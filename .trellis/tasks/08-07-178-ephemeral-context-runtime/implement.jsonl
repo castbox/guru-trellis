@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Public Skill I/O、producer-private checkpoint、projection 与 consume-and-clean 的 current SSOT"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 recorder/validator/executor 与 AI semantic judgment 的边界"}
-{"file":".trellis/spec/preset/installer.md","reason":"canonical 到 dogfood/平台副本的安装、更新与开箱即用要求"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"overlay 同步、用户修改保护及 .new/.bak 处理规则"}
