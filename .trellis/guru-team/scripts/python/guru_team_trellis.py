@@ -26602,9 +26602,7 @@ def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
     actual = (payload.get("result_identity") or {}).get("result_sha256") if isinstance(payload.get("result_identity"), dict) else None
     if expected and expected != actual:
         structural.append("expected_result_mismatch")
-    errors = context_sort(structural + context_typed_exit_live_errors(payload, live))
-    if errors:
-        raise WorkflowError("Context discovery owner result validation failed.", exit_code=2, payload={"error_codes": errors})
+    route_live = context_typed_exit_live_errors(payload, live)
     if recovery_task_dir is not None:
         context_check_recovery_checkpoint(
             root,
@@ -26612,6 +26610,15 @@ def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             payload,
             recovery_continuation_id,
         )
+        if route_live:
+            ai_first_retire_owner_checkpoints(
+                root,
+                recovery_task_dir,
+                (CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,),
+            )
+    errors = context_sort(structural + route_live)
+    if errors:
+        raise WorkflowError("Context discovery owner result validation failed.", exit_code=2, payload={"error_codes": errors})
     return {
         "status": "passed",
         "typed_exit": payload["typed_exit"],

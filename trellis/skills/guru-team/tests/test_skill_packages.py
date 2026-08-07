@@ -4247,22 +4247,30 @@ class IntakePublicInvocationTests(unittest.TestCase):
         workflow = (self.repo / ".trellis/workflow.md").read_text(encoding="utf-8")
         assert_task_plan_clarify_scope_router_contract(self, workflow)
 
-    def test_refresh_base_eval_uses_ephemeral_checked_owner(self) -> None:
-        result = self.run_shared_eval(
-            "guru-discover-change-context", "refresh-base-route"
-        )
-        case = result["cases"][0]
-        self.assertEqual(case["actual_exit"], "refresh_base")
-        transcript = json.loads(
-            Path(case["transcript_locator"]).read_text(encoding="utf-8")
-        )
-        native_trace = json.loads(
-            Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
-        )
-        argv = native_trace["events"][-1]["argv"]
-        owner_flag = argv.index("--owner-result")
-        self.assertEqual(argv[owner_flag + 1], "-")
-        self.assertFalse(any(value.startswith(".trellis/tasks/") for value in argv))
+    def test_context_discovery_evals_use_ephemeral_checked_owner(self) -> None:
+        for case_id, expected_exit in (
+            ("context-ready-route", "context_ready"),
+            ("refresh-base-route", "refresh_base"),
+            ("blocked-route", "blocked"),
+        ):
+            with self.subTest(case_id=case_id):
+                result = self.run_shared_eval(
+                    "guru-discover-change-context", case_id
+                )
+                case = result["cases"][0]
+                self.assertEqual(case["actual_exit"], expected_exit)
+                transcript = json.loads(
+                    Path(case["transcript_locator"]).read_text(encoding="utf-8")
+                )
+                native_trace = json.loads(
+                    Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
+                )
+                argv = native_trace["events"][-1]["argv"]
+                owner_flag = argv.index("--owner-result")
+                self.assertEqual(argv[owner_flag + 1], "-")
+                self.assertFalse(
+                    any(value.startswith(".trellis/tasks/") for value in argv)
+                )
 
     def test_codex_repo_external_execution_root_runs_real_finalizer_wrapper(
         self,

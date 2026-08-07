@@ -291,11 +291,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-07T10:23:41Z",
+  "installed_at": "2026-08-07T11:53:33Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "596a6a9ca0819f0c7ebac6adb1e9ac20cce806b5",
-    "commit": "596a6a9ca0819f0c7ebac6adb1e9ac20cce806b5",
+    "ref": "4faf056c446ae1202758b98fd60aa475c1a926bb",
+    "commit": "4faf056c446ae1202758b98fd60aa475c1a926bb",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -465,7 +465,7 @@
       {
         "id": "guru-discover-change-context",
         "interface_sha256": "54293db55aeb8a4a2a4d1442146a03af45047cda4e1004513b7a09b32ba79e65",
-        "tree_sha256": "95f966c4169811e4b02f4586f7635db017d669a02f44e410d990cc2b7d4a5fd1"
+        "tree_sha256": "481de6ed1574ca501ae03969c94635c5a6928d499a6dddec0c27a0f25877d43e"
       }
     ],
     "files": [
@@ -4350,14 +4350,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/evals.json",
-        "sha256": "beb601b7895bf67b575dcd8df5dbb05f07791a0a05cbf67047ac1f735bbb082b",
+        "sha256": "ac6f1ed96dd9ede96b29d5240fded3bd297442bf2a526c289ab81b5b905d29e4",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/files/eval-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-blocked-facts.json",
-        "sha256": "94688825c0254b5b313b403feef725da3125a6b4dda3ffa3fd88eba48c3d02eb",
+        "sha256": "52a9c7a6efa5ea889987ae28dfcacbe11b134fcb7062cc3f3630e80762673487",
         "executable": false,
         "action": "unchanged"
       },
@@ -4371,7 +4371,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
-        "sha256": "36e644c82e42ef7c3678b5a813e612a49d297cab6309b448fe889573dbd1914f",
+        "sha256": "90e5dadc23c6f627f92616f155556e49e723d76beda92218ea90c59af1057fe0",
         "executable": false,
         "action": "unchanged"
       },
@@ -18798,14 +18798,14 @@
       {
         "path": ".agents/skills/guru-discover-change-context/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/evals.json",
-        "sha256": "beb601b7895bf67b575dcd8df5dbb05f07791a0a05cbf67047ac1f735bbb082b",
+        "sha256": "ac6f1ed96dd9ede96b29d5240fded3bd297442bf2a526c289ab81b5b905d29e4",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".agents/skills/guru-discover-change-context/evals/files/eval-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-blocked-facts.json",
-        "sha256": "94688825c0254b5b313b403feef725da3125a6b4dda3ffa3fd88eba48c3d02eb",
+        "sha256": "52a9c7a6efa5ea889987ae28dfcacbe11b134fcb7062cc3f3630e80762673487",
         "executable": false,
         "action": "unchanged"
       },
@@ -18819,7 +18819,7 @@
       {
         "path": ".agents/skills/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
-        "sha256": "36e644c82e42ef7c3678b5a813e612a49d297cab6309b448fe889573dbd1914f",
+        "sha256": "90e5dadc23c6f627f92616f155556e49e723d76beda92218ea90c59af1057fe0",
         "executable": false,
         "action": "unchanged"
       },
@@ -19022,14 +19022,14 @@
       {
         "path": ".codex/skills/guru-discover-change-context/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/evals.json",
-        "sha256": "beb601b7895bf67b575dcd8df5dbb05f07791a0a05cbf67047ac1f735bbb082b",
+        "sha256": "ac6f1ed96dd9ede96b29d5240fded3bd297442bf2a526c289ab81b5b905d29e4",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-discover-change-context/evals/files/eval-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-blocked-facts.json",
-        "sha256": "94688825c0254b5b313b403feef725da3125a6b4dda3ffa3fd88eba48c3d02eb",
+        "sha256": "52a9c7a6efa5ea889987ae28dfcacbe11b134fcb7062cc3f3630e80762673487",
         "executable": false,
         "action": "unchanged"
       },
@@ -19043,7 +19043,7 @@
       {
         "path": ".codex/skills/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
-        "sha256": "36e644c82e42ef7c3678b5a813e612a49d297cab6309b448fe889573dbd1914f",
+        "sha256": "90e5dadc23c6f627f92616f155556e49e723d76beda92218ea90c59af1057fe0",
         "executable": false,
         "action": "unchanged"
       },
@@ -19246,14 +19246,14 @@
       {
         "path": ".claude/skills/guru-discover-change-context/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/evals.json",
-        "sha256": "beb601b7895bf67b575dcd8df5dbb05f07791a0a05cbf67047ac1f735bbb082b",
+        "sha256": "ac6f1ed96dd9ede96b29d5240fded3bd297442bf2a526c289ab81b5b905d29e4",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-discover-change-context/evals/files/eval-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-blocked-facts.json",
-        "sha256": "94688825c0254b5b313b403feef725da3125a6b4dda3ffa3fd88eba48c3d02eb",
+        "sha256": "52a9c7a6efa5ea889987ae28dfcacbe11b134fcb7062cc3f3630e80762673487",
         "executable": false,
         "action": "unchanged"
       },
@@ -19267,7 +19267,7 @@
       {
         "path": ".claude/skills/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
-        "sha256": "36e644c82e42ef7c3678b5a813e612a49d297cab6309b448fe889573dbd1914f",
+        "sha256": "90e5dadc23c6f627f92616f155556e49e723d76beda92218ea90c59af1057fe0",
         "executable": false,
         "action": "unchanged"
       },
@@ -19470,14 +19470,14 @@
       {
         "path": ".cursor/skills/guru-discover-change-context/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/evals.json",
-        "sha256": "beb601b7895bf67b575dcd8df5dbb05f07791a0a05cbf67047ac1f735bbb082b",
+        "sha256": "ac6f1ed96dd9ede96b29d5240fded3bd297442bf2a526c289ab81b5b905d29e4",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-discover-change-context/evals/files/eval-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-blocked-facts.json",
-        "sha256": "94688825c0254b5b313b403feef725da3125a6b4dda3ffa3fd88eba48c3d02eb",
+        "sha256": "52a9c7a6efa5ea889987ae28dfcacbe11b134fcb7062cc3f3630e80762673487",
         "executable": false,
         "action": "unchanged"
       },
@@ -19491,7 +19491,7 @@
       {
         "path": ".cursor/skills/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-discover-change-context/evals/files/eval-context-ready-facts.json",
-        "sha256": "36e644c82e42ef7c3678b5a813e612a49d297cab6309b448fe889573dbd1914f",
+        "sha256": "90e5dadc23c6f627f92616f155556e49e723d76beda92218ea90c59af1057fe0",
         "executable": false,
         "action": "unchanged"
       },

@@ -17293,6 +17293,63 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         self.assertFalse(checkpoint.exists())
         self.assertFalse(checkpoint.parent.exists())
 
+    def test_active_task_recovery_base_drift_retires_valid_checkpoint(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        task_dir = root / ".trellis/tasks/08-07-context-recovery"
+        task_dir.mkdir(parents=True)
+        gtt.write_json(task_dir / "task.json", {
+            "id": "08-07-context-recovery",
+            "status": "in_progress",
+            "branch": "main",
+        })
+        subprocess.run(
+            ["git", "add", task_dir.relative_to(root).as_posix()],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test: add context recovery task"],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "update-ref", "refs/remotes/origin/main", "HEAD"],
+            cwd=root,
+            check=True,
+        )
+        payload = self.valid_owner_result(root)
+        task_ref = task_dir.relative_to(root).as_posix()
+        continuation_id = "stage0-current"
+        checkpoint = gtt.context_recovery_checkpoint_path(root, task_dir)
+
+        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
+            recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
+                root=str(root), mode="workflow", input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+                recovery_task=task_ref,
+                recovery_continuation_id=continuation_id,
+            ))
+        self.assertTrue(checkpoint.is_file())
+
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-q", "-m", "test: advance base"],
+            cwd=root,
+            check=True,
+        )
+        with self.assertRaises(gtt.WorkflowError) as stale:
+            gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=None, payload=recorded,
+                expected_result_sha256=recorded["result_identity"]["result_sha256"],
+                recovery_task=task_ref,
+                recovery_continuation_id=continuation_id,
+            ))
+
+        self.assertIn("local_base_stale", stale.exception.payload["error_codes"])
+        self.assertFalse(checkpoint.exists())
+        self.assertFalse(checkpoint.parent.exists())
+        self.assertFalse(checkpoint.parent.parent.exists())
+
     def test_public_invocation_rejects_repository_owner_locator(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
