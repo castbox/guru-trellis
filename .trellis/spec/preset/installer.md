@@ -621,6 +621,21 @@ Managed executable companion assets include
 `invoke-extension-verification.sh`. They are installed before the package is
 usable and published in the extension runtime command inventory.
 
+Installed `.trellis/guru-team/extension.json` is the task-bearing source
+authority for this package. The public invocation remains target-oriented; the
+runtime verifies target and extension source in separate checkouts and obtains
+installer, canonical package bytes, ownership, and source sidecars only from
+the manifest-selected source checkout. Task-bearing source provenance must be
+`tree_state=clean` before source ref resolution or checkout. Git-worktree apply
+records the full apply-time commit as both `source.ref` and `source.commit`, with
+`is_mutable_ref=false`. Runtime configures the canonical source locator as the
+isolated checkout's `origin`, fetches that OID through it, and requires
+`FETCH_HEAD^{commit}` and source checkout HEAD to match it; branch/tag manifests
+retain direct/peeled resolution. Taskless fallback is absent-manifest
+only, and every accepted source locator is canonical credential-free GitHub
+HTTPS. Schema 3.0 package assets replace the prior private shape without a
+legacy reader while all public input/exit DTO assets remain byte-compatible.
+
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
 wrapper executable modes, the fourteen-Skill/54-exit package closure, the

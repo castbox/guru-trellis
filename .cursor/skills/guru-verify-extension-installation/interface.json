@@ -19,10 +19,10 @@
   "entry_preconditions": [
     {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and verification commands", "binding": "complete compatible Guru Team preset", "freshness": "validated before every command"},
     {"id": "public_input", "evidence": "one closed workflow or standalone profile", "binding": "mode, target, repository and caller intent", "freshness": "validated at invocation"},
-    {"id": "repository_identity", "evidence": "current Git root, task mapping when present and credentials-safe repository locator", "binding": "public repository and task identity", "freshness": "rebuilt before execute, record and check"},
-    {"id": "remote_identity", "evidence": "requested remote/ref, ls-remote direct and peeled ref facts, and cloned HEAD^{commit}", "binding": "reviewed or frozen resolved checkout commit", "freshness": "resolved and checkout-verified for the current invocation"},
+    {"id": "repository_identity", "evidence": "current Git root, task mapping when present, target repository identity and credentials-safe canonical GitHub extension source locator", "binding": "separate public target and installed-manifest source identities", "freshness": "rebuilt before execute, record and check"},
+    {"id": "remote_identity", "evidence": "target remote/ref plus source direct and peeled ref facts, isolated target/source checkouts and both HEAD^{commit} values", "binding": "target reviewed content and manifest-selected extension source commit", "freshness": "both identities are resolved and checkout-verified for the current invocation"},
     {"id": "extension_surface", "evidence": "reviewed diff, marketplace, preset, workflow, schema, runtime, platform and public docs facts", "binding": "AI applicability and profile coverage", "freshness": "reread before AI Gate"},
-    {"id": "ownership_inventory", "evidence": "current Guru-owned rules and managed path claims", "binding": "Guru versus Trellis upstream ownership", "freshness": "validated from the remote source"},
+    {"id": "ownership_inventory", "evidence": "current Guru-owned rules and managed path claims", "binding": "extension source checkout only", "freshness": "validated from the manifest-selected source commit"},
     {"id": "persistence_boundary", "evidence": "task-bearing or session-only input branch", "binding": "one task-local artifact or no repository artifact", "freshness": "checked before and after invocation"},
     {"id": "invocation_freshness", "evidence": "plan/ref/HEAD, prior verification identity, semantic Gate and actual exit", "binding": "one complete current owner round", "freshness": "checker rejects drift, ambiguity and superseded evidence"}
   ],
@@ -62,7 +62,7 @@
     {"id": "private_marketplace_verification", "path": "schemas/marketplace-verification.schema.json"}
   ],
   "validators": [
-    {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Freeze the remote ref's resolved commit, verify the cloned checkout commit, execute the closed clean-install capability catalog, and bind each capability to command facts plus a complete canonical/manifest/platform-related installed asset digest inventory"},
+    {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Resolve and isolate target and extension source checkouts, bind target reviewed content to the target commit, select source provenance from the installed manifest or the taskless absent-manifest fallback, then execute the source-owned clean-install catalog and inventory"},
     {"id": "verification_recorder", "command": "scripts/record-extension-verification.sh", "runtime_command": "record-extension-verification", "objective_scope": "Record already completed AI applicability, profile, adequacy, findings and route with rebuilt machine facts"},
     {"id": "verification_checker", "command": "scripts/check-extension-verification.sh", "runtime_command": "check-extension-verification", "objective_scope": "Validate the one private evidence schema, identity, freshness, redaction, persistence and consumer without semantic judgment"},
     {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-extension-verification", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema branch and emit one minimal DTO"}
@@ -74,8 +74,8 @@
     {"id": "blocked", "evidence": "remote, auth, network, taskless installation failure or another external dependency prevents completion", "consumer": {"kind": "stop", "id": "extension-installation-verification-blocked"}}
   ],
   "reentry": {
-    "identity": "profile, mode, task or session boundary, plan, repo, remote, ref, reviewed and resolved checkout commit, semantic Gate, actual exit and prior verification identity",
-    "freshness": "same-identity transient retry reruns the complete Skill; plan, ref, HEAD or task implementation drift supersedes prior evidence",
+    "identity": "profile, mode, task or session boundary, plan, target repo/ref/HEAD/reviewed content, extension source repo/ref/direct object/selected commit/checkout HEAD, semantic Gate, actual exit and prior verification identity",
+    "freshness": "same-identity transient retry reruns the complete Skill; target plan/ref/HEAD/content or installed-manifest/source ref/commit drift supersedes prior evidence",
     "stale_behavior": "fail_closed"
   },
   "tests": ["tests/test_contract.py"],
@@ -214,7 +214,7 @@
       {
         "id": "marketplace_verification",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-2.0.json", "path": "schemas/marketplace-verification.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-3.0.json", "path": "schemas/marketplace-verification.schema.json"},
         "persistence": "task_local_tracked"
       }
     ]

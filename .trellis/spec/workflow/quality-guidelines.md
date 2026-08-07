@@ -679,6 +679,26 @@ conflict case must
 prove private `applicability=not_required`, no selected capability or execution
 profile, `typed_exit=blocked`, and stable remediation.
 
+Dual-identity regressions must independently cover target/source repository
+separation, isolated checkout paths, target reviewed-content drift, target and
+source checkout HEAD mismatch, target fixture without an installer, source
+installer absence with a correct source ref and checkout HEAD, task-bearing
+dirty provenance blocked before source resolution/clone/installer, task-bearing missing manifest, malformed-manifest no
+fallback, taskless absent-manifest fallback, source commit drift, branch and
+lightweight direct commits, annotated direct object plus peeled commit, and
+credential-locator rejection without clone/artifact/error reflection. These
+are normal correctness cases; hostile actors, concurrency, locks, TOCTOU, fault
+injection and crash consistency remain out of scope.
+Coverage must also prove full-OID fetch resolution and the self-hosted case
+where a manifest records source commit A, the target branch advances to commit
+B, and source resolution remains fixed at A without ancestor substitution.
+Schema and recorder/checker regressions also reject target/source command-owner
+substitution and any asset, digest, ownership, or sidecar fact not explicitly
+bound to `extension_source_checkout`; dirty task-bearing passed evidence is also
+rejected independently of executor behavior.
+Real-wrapper task-bearing eval staging must author an explicit clean synthetic
+source provenance instead of inheriting the developer worktree's dirty manifest.
+
 The package-local production corpus contains seven real-wrapper cases spanning
 workflow/standalone, all four exits, transient retry, remote unavailable, and
 stale plan. Shared/Codex/Claude/Cursor consume byte-identical canonical corpus

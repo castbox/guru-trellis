@@ -1417,7 +1417,7 @@ assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_sc
 assert "guru-phase2-check-4.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-planning-approval-3.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-extension-installation-verification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-extension-installation-verification-3.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-issue-scope-ledger-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-review-gate-3.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-publication-readiness-3.0" in api["skill_contracts"]["artifact_schema_ids"]

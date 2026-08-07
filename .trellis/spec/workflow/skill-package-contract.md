@@ -1462,7 +1462,7 @@ three Skills and 11 exits.
 `guru-verify-extension-installation` is an additive active Interface 1.3
 semantic package. It is outside the three-Skill `production-current-v1`
 manifest and remains an independent active registry row. Its
-workflow and standalone modes share runtime, repository/ref, extension-surface,
+workflow and standalone modes share runtime, target repository, extension source,
 ownership, persistence, and freshness preconditions, then execute the exact
 five-stage semantic profile.
 
@@ -1484,6 +1484,27 @@ finalizer edge. The verifier remains the sole semantic owner, and this
 integration adds no public input or output fields.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
+
+Public inputs continue to name the target repository. Task-bearing modes select
+the extension source from the target checkout's current installed manifest;
+taskless standalone may select its explicit source locator only when that
+manifest is absent. Private/execution schema 3.0 is current-only and has closed
+`target_repository` and `extension_source` objects. The latter binds
+manifest provenance, canonical safe locator, requested/resolved ref, direct
+object, selected direct-or-peeled commit, checkout HEAD, mutability and
+commit-match facts. Task-bearing execution requires `tree_state=clean` before
+source resolution; recorder/checker reject dirty passed evidence. No legacy
+private reader or public DTO field is added.
+For preset installs from a Git worktree, requested and resolved source refs are
+the full apply-time commit OID and mutability is false. Runtime fetches that OID
+directly and requires the fetched commit, manifest commit, and checkout HEAD to
+match exactly. Branch/lightweight and annotated-tag inputs retain their direct
+and peeled resolution contract.
+Private command rows use the closed `target_checkout` and
+`extension_source_checkout` owner labels. Asset expectation/digest rows,
+ownership facts, and the sidecar fact object require
+`checkout_owner=extension_source_checkout`, including when the sidecar path set
+is empty.
 
 The independent outputs are:
 
@@ -1515,15 +1536,16 @@ private-owner freshness token exposed to the finalizer.
 
 The Skill owns applicability, closed capability selection, adequacy, findings,
 conditional standalone confirmation, and route. Deterministic runtime only
-executes the selected remote clean-install matrix, records reviewed facts,
+executes the selected dual-checkout clean-install matrix, records reviewed facts,
 checks identity/schema/freshness/redaction/consumer bindings, and serializes the
 actual exit. Changed paths, exit code zero, empty findings, checker pass, or
 production eval do not create semantic success. A workflow-required target with
 AI `applicability=not_required` returns a conflict-shaped `blocked`, never a
 silent `not_required`.
 
-Same plan/ref/HEAD transient failure allows complete re-entry with exact
-supersession. Task work, plan, local HEAD, ref, or remote HEAD drift makes old
+Same target/source identity transient failure allows complete re-entry with
+exact supersession. Task work, plan, target HEAD/content, installed manifest,
+source ref/commit, or either checkout HEAD drift makes old
 evidence stale. The package-local seven-case corpus covers both inputs, all four
 exits, retry, unavailable, and stale re-entry through the real wrapper.
 Production eval remains independent from a real pushed-remote clean
