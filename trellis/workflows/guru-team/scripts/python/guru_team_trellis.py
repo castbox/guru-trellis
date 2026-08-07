@@ -26552,6 +26552,17 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
         )
     live = context_live_errors(root, payload, active_task_dir)
     route_live = context_typed_exit_live_errors(payload, live)
+    if (
+        active_task_dir is not None
+        and recovery_continuation_id
+        and live
+        and route_live
+    ):
+        ai_first_retire_owner_checkpoints(
+            root,
+            active_task_dir,
+            (CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,),
+        )
     if structural or route_live:
         raise WorkflowError(
             "Context discovery owner result validation failed.",

@@ -17439,6 +17439,64 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         self.assertFalse(checkpoint.parent.exists())
         self.assertFalse(checkpoint.parent.parent.exists())
 
+    def test_active_task_recovery_recorder_stale_retires_checkpoint_and_accepts_refresh_base(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        task_dir = root / ".trellis/tasks/08-07-context-recovery"
+        task_dir.mkdir(parents=True)
+        gtt.write_json(task_dir / "task.json", {
+            "id": "08-07-context-recovery",
+            "status": "in_progress",
+            "branch": "main",
+        })
+        payload = self.valid_owner_result(root)
+        task_ref = task_dir.relative_to(root).as_posix()
+        continuation_id = "stage0-current"
+        checkpoint = gtt.context_recovery_checkpoint_path(root, task_dir)
+        args = argparse.Namespace(
+            root=str(root), mode="workflow", input=None, payload=payload,
+            expected_result_sha256=payload["result_identity"]["result_sha256"],
+            active_task=task_ref,
+            recovery_continuation_id=continuation_id,
+        )
+
+        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
+            gtt.cmd_record_context_discovery(args)
+        self.assertTrue(checkpoint.is_file())
+
+        with (
+            mock.patch.object(
+                gtt,
+                "context_live_errors",
+                return_value=["base_head_stale"],
+            ),
+            self.assertRaises(gtt.WorkflowError) as stale,
+        ):
+            gtt.cmd_record_context_discovery(args)
+
+        self.assertEqual(stale.exception.payload["error_codes"], ["base_head_stale"])
+        self.assertFalse(checkpoint.exists())
+        self.assertFalse(checkpoint.parent.exists())
+
+        refresh_payload = copy.deepcopy(payload)
+        refresh_payload["typed_exit"] = "refresh_base"
+        refresh_payload["result_identity"] = gtt.context_result_identity(refresh_payload)
+        refresh_args = argparse.Namespace(
+            root=str(root), mode="workflow", input=None, payload=refresh_payload,
+            expected_result_sha256=refresh_payload["result_identity"]["result_sha256"],
+            active_task=task_ref,
+            recovery_continuation_id=continuation_id,
+        )
+        with mock.patch.object(
+            gtt,
+            "context_live_errors",
+            return_value=["base_head_stale"],
+        ):
+            recorded = gtt.cmd_record_context_discovery(refresh_args)
+
+        self.assertEqual(recorded["typed_exit"], "refresh_base")
+        self.assertTrue(checkpoint.is_file())
+
     def test_public_invocation_rejects_repository_owner_locator(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
