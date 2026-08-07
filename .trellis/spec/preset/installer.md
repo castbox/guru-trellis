@@ -206,7 +206,8 @@ guru-clarify-requirements` chain and all six clarification exit consumers,
 direct zero/candidate history preview, stdin/stdout record/check/invoke,
 pre-task zero-write and exact minimal DTO projection, duplicate projection/digest
 recomputation from one search result, live stale restart and base-stale
-short-circuit, lazy same-owner active-task recovery plus consume-and-clean,
+short-circuit, checkpoint-free active-task normal routing, dirty same-owner
+active-task recovery plus consume-and-clean,
 bidirectional blocked exit/Gate rejection, clarification workflow/standalone
 precondition parity, question/scope/action invariants, zero persisted
 authorization fields, stdout-only

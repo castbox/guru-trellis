@@ -59,6 +59,8 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "closed loop",
             "AI Review Gate before any",
             "stdout-only",
+            "--active-task <task>",
+            "--recovery-continuation-id <id>",
             "not self-contained or portable",
         ):
             self.assertIn(phrase, normalized_skill)
@@ -81,7 +83,9 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "facts_sha256` is recomputed from those returned fields",
             "do not issue a second duplicate search or re-read candidates after review",
             "never create a task, workspace, or ignored runtime file",
-            "real interrupted active-task workflow owner",
+            "normal mapped route remains repository-write-free",
+            "Active-task identity remains an ephemeral `--active-task` invocation argument",
+            "Only a real interruption adds `--recovery-continuation-id`",
             "change-context-recovery.json",
             "public wrapper deletes a current checkpoint only after its typed DTO passes",
             "Skill `guru-clarify-requirements`",

@@ -305,16 +305,17 @@ file, normalizes and validates it, and writes canonical JSON only to stdout.
 Check accepts that same stdin/file transport and returns the objective checked
 exit. On normal pre-task/standalone calls neither command accepts a task
 locator, resolves a task artifact, checks Git trackability, replaces prior
-bytes, records supersession state, or writes a repository/runtime file. The
-only exception is a real interrupted active-task workflow owner: record/check
-then require matching `--recovery-task` and `--recovery-continuation-id`, bind
-one minimal current checkpoint below the exact task owner namespace, and never
-copy live facts or the complete owner result into it. The public wrapper accepts
-`--owner-result -`; for recovery it additionally requires matching
-`--owner-task` / `--owner-continuation-id`, checks the same bytes, builds one
-schema-validated typed exit, and only then consumes the checkpoint and empty
-owner directory. Stale or invalid recovery is deleted and rerun from live
-authority.
+bytes, records supersession state, or writes a repository/runtime file. A
+normal active-task workflow call supplies `--active-task` independently to
+record, check, and public invoke; this binds the direct task branch and current
+task worktree while remaining checkpoint-free and permitting ordinary task
+edits. Only a real interruption additionally supplies matching
+`--recovery-continuation-id` on all three calls, which binds one minimal current
+checkpoint below the exact task owner namespace and never copies live facts or
+the complete owner result into it. The public wrapper accepts `--owner-result
+-`, checks the same bytes, builds one schema-validated typed exit, and only then
+consumes a recovery checkpoint and empty owner directory. Stale or invalid
+recovery is deleted and rerun from live authority.
 Record/check first execute only pure schema, digest, entry
 clue, and semantic-evidence shape validation. `change_input` has ten closed clue
 arrays and at least one must be non-empty; a separate issue binding or canonical

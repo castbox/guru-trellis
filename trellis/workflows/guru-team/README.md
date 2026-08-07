@@ -207,7 +207,8 @@ Deep-read locator 按 selected task artifact、canonical GitHub issue/PR 与 exa
 三类闭合校验。Closed schema 与结构化 locator 不保存 raw source payload，也不做
 跨字段扫描；不写 workspace/runtime/repo cache。
 
-只有 active-task owner loop 确实跨调用中断时，才在 ignored
+正常 mapped active-task 调用通过 ephemeral task identity 绑定 direct task branch 与当前
+task worktree，允许普通进行中 edits，但不创建 checkpoint。只有 active-task owner loop 确实跨调用中断时，才在 ignored
 `owner-checkpoints/<task-key>/` 下惰性创建同一 owner 的最小 current checkpoint。正常
 mapped exit 不创建 checkpoint；stale 删除 current checkpoint 后从 live authority 完整重跑；
 public projection/schema 校验成功后立即 consume-and-clean owner input/result/checkpoint 与

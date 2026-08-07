@@ -2177,28 +2177,26 @@ printf '{"id":"08-07-context-recovery","status":"in_progress","branch":"%s"}\n' 
 git -C "$TARGET" add "$DISCOVERY_RECOVERY_TASK_REL/task.json"
 git -C "$TARGET" commit -q -m "chore: add throwaway active recovery task"
 DISCOVERY_RECOVERY_CONTINUATION="throwaway-active-recovery"
-DISCOVERY_RECOVERY_JSON="$(
+DISCOVERY_ACTIVE_JSON="$(
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
     --root "$TARGET" \
     --json \
     --mode workflow \
     --input "$DISCOVERY_RECOVERY_INPUT" \
-    --recovery-task "$DISCOVERY_RECOVERY_TASK_REL" \
-    --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
+    --active-task "$DISCOVERY_RECOVERY_TASK_REL"
 )"
-DISCOVERY_RECOVERY_SHA256="$(
+DISCOVERY_ACTIVE_SHA256="$(
   python3 -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
-    <<<"$DISCOVERY_RECOVERY_JSON"
+    <<<"$DISCOVERY_ACTIVE_JSON"
 )"
-printf '%s' "$DISCOVERY_RECOVERY_JSON" | \
+printf '%s' "$DISCOVERY_ACTIVE_JSON" | \
   DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
   "$DISCOVERY_CHECK" \
     --root "$TARGET" \
     --json \
     --input - \
-    --expected-result-sha256 "$DISCOVERY_RECOVERY_SHA256" \
-    --recovery-task "$DISCOVERY_RECOVERY_TASK_REL" \
-    --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION" >/dev/null
+    --expected-result-sha256 "$DISCOVERY_ACTIVE_SHA256" \
+    --active-task "$DISCOVERY_RECOVERY_TASK_REL" >/dev/null
 DISCOVERY_RECOVERY_PUBLIC_INPUT_REL=".trellis/.runtime/guru-team/discovery-recovery-public-input.json"
 DISCOVERY_RECOVERY_PUBLIC_INPUT="$TARGET/$DISCOVERY_RECOVERY_PUBLIC_INPUT_REL"
 python3 - "$DISCOVERY_RECOVERY_PUBLIC_INPUT" "$DISCOVERY_RECOVERY_CONTINUATION" <<'PY'
@@ -2215,22 +2213,63 @@ Path(sys.argv[1]).write_text(json.dumps({
     "continuation_id": sys.argv[2],
 }, indent=2) + "\n", encoding="utf-8")
 PY
+DISCOVERY_ACTIVE_PUBLIC_JSON="$(
+  printf '%s' "$DISCOVERY_ACTIVE_JSON" | \
+    DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+    "$TARGET/.agents/skills/guru-discover-change-context/scripts/invoke.sh" \
+      --input "$DISCOVERY_RECOVERY_PUBLIC_INPUT_REL" \
+      --owner-result - \
+      --active-task "$DISCOVERY_RECOVERY_TASK_REL"
+)"
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_continuation_id"] == sys.argv[1]' \
+  "$DISCOVERY_RECOVERY_CONTINUATION" \
+  <<<"$DISCOVERY_ACTIVE_PUBLIC_JSON"
+DISCOVERY_OWNER_ROOT="$TARGET/.trellis/.runtime/guru-team/owner-checkpoints"
+if [[ -d "$DISCOVERY_OWNER_ROOT" ]] && find "$DISCOVERY_OWNER_ROOT" -mindepth 1 -print -quit | grep -q .; then
+  echo "Normal active-task context invocation created an owner checkpoint" >&2
+  exit 2
+fi
+
+DISCOVERY_ACTIVE_EDIT="$TARGET/active-task-context-edit.txt"
+printf '%s\n' 'ordinary active task worktree edit' >"$DISCOVERY_ACTIVE_EDIT"
+DISCOVERY_RECOVERY_JSON="$(
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
+    --root "$TARGET" \
+    --json \
+    --mode workflow \
+    --input "$DISCOVERY_RECOVERY_INPUT" \
+    --active-task "$DISCOVERY_RECOVERY_TASK_REL" \
+    --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
+)"
+DISCOVERY_RECOVERY_SHA256="$(
+  python3 -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
+    <<<"$DISCOVERY_RECOVERY_JSON"
+)"
+printf '%s' "$DISCOVERY_RECOVERY_JSON" | \
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+  "$DISCOVERY_CHECK" \
+    --root "$TARGET" \
+    --json \
+    --input - \
+    --expected-result-sha256 "$DISCOVERY_RECOVERY_SHA256" \
+    --active-task "$DISCOVERY_RECOVERY_TASK_REL" \
+    --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION" >/dev/null
 DISCOVERY_RECOVERY_PUBLIC_JSON="$(
   printf '%s' "$DISCOVERY_RECOVERY_JSON" | \
     DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
     "$TARGET/.agents/skills/guru-discover-change-context/scripts/invoke.sh" \
       --input "$DISCOVERY_RECOVERY_PUBLIC_INPUT_REL" \
       --owner-result - \
-      --owner-task "$DISCOVERY_RECOVERY_TASK_REL" \
-      --owner-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
+      --active-task "$DISCOVERY_RECOVERY_TASK_REL" \
+      --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
 )"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_continuation_id"] == sys.argv[1]' \
   "$DISCOVERY_RECOVERY_CONTINUATION" \
   <<<"$DISCOVERY_RECOVERY_PUBLIC_JSON"
 rm "$DISCOVERY_RECOVERY_PUBLIC_INPUT"
+rm "$DISCOVERY_ACTIVE_EDIT"
 git -C "$TARGET" checkout -q main
 git -C "$TARGET" branch -D "$DISCOVERY_RECOVERY_BRANCH" >/dev/null
-DISCOVERY_OWNER_ROOT="$TARGET/.trellis/.runtime/guru-team/owner-checkpoints"
 if [[ -d "$DISCOVERY_OWNER_ROOT" ]] && find "$DISCOVERY_OWNER_ROOT" -mindepth 1 -print -quit | grep -q .; then
   echo "Ephemeral context invocation left an owner checkpoint" >&2
   exit 2

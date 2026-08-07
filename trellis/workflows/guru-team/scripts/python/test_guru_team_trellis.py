@@ -17157,6 +17157,91 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         self.assertEqual(before, set(gtt.git_status_paths(root)))
         self.assertFalse((root / ".trellis/.runtime").exists())
 
+    def test_active_task_normal_invocation_uses_task_identity_without_checkpoint(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        task_dir = root / ".trellis/tasks/08-07-context-active"
+        task_dir.mkdir(parents=True)
+        gtt.write_json(task_dir / "task.json", {
+            "id": "08-07-context-active",
+            "status": "in_progress",
+            "branch": "codex/context-active",
+        })
+        subprocess.run(
+            ["git", "add", task_dir.relative_to(root).as_posix()],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "test: add active context task"],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "update-ref", "refs/remotes/origin/main", "HEAD"],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "switch", "-q", "-c", "codex/context-active"],
+            cwd=root,
+            check=True,
+        )
+        payload = self.valid_owner_result(root)
+        task_ref = task_dir.relative_to(root).as_posix()
+        checkpoint = gtt.context_recovery_checkpoint_path(root, task_dir)
+        package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context"
+        )
+
+        self.assertIn(
+            "base_decision_branch_stale",
+            gtt.context_live_base_errors(root, payload, None),
+        )
+        self.assertEqual(
+            gtt.context_active_task_dir(root, task_ref),
+            Path(os.path.abspath(task_dir)),
+        )
+        self.assertEqual(gtt.context_live_base_errors(root, payload, task_dir), [])
+
+        base_only = lambda live_root, live_payload, live_task: (
+            gtt.context_live_base_errors(live_root, live_payload, live_task)
+        )
+        with mock.patch.object(gtt, "context_live_errors", side_effect=base_only):
+            recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
+                root=str(root), mode="workflow", input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+                active_task=task_ref,
+            ))
+            self.assertFalse(checkpoint.exists())
+            checked = gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=None, payload=recorded,
+                expected_result_sha256=recorded["result_identity"]["result_sha256"],
+                active_task=task_ref,
+            ))
+            self.assertFalse(checkpoint.exists())
+            public_input = self.public_input(root)
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=("guru-discover-change-context", package),
+                ),
+                mock.patch.object(gtt, "stage0_repo_root", return_value=root),
+                mock.patch.object(sys, "stdin", io.StringIO(json.dumps(recorded))),
+            ):
+                output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
+                    input=public_input.relative_to(root).as_posix(),
+                    owner_result="-",
+                    active_task=task_ref,
+                ))
+
+        self.assertEqual(checked["typed_exit"], "context_ready")
+        self.assertEqual(output["exit_id"], "context_ready")
+        self.assertFalse(checkpoint.exists())
+        self.assertFalse((root / ".trellis/.runtime").exists())
+
     def test_active_task_recovery_is_lazy_checked_and_consumed_by_public_wrapper(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
@@ -17178,11 +17263,15 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         checkpoint = gtt.context_recovery_checkpoint_path(root, task_dir)
         self.assertFalse(checkpoint.exists())
 
-        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
+        base_only = lambda live_root, live_payload, live_task: (
+            gtt.context_live_base_errors(live_root, live_payload, live_task)
+        )
+        self.assertTrue(gtt.git_status_paths(root))
+        with mock.patch.object(gtt, "context_live_errors", side_effect=base_only):
             recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
                 root=str(root), mode="workflow", input=None, payload=payload,
                 expected_result_sha256=payload["result_identity"]["result_sha256"],
-                recovery_task=task_ref,
+                active_task=task_ref,
                 recovery_continuation_id=continuation_id,
             ))
             self.assertTrue(checkpoint.is_file())
@@ -17199,7 +17288,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             checked = gtt.cmd_check_context_discovery(argparse.Namespace(
                 root=str(root), input=None, payload=recorded,
                 expected_result_sha256=recorded["result_identity"]["result_sha256"],
-                recovery_task=task_ref,
+                active_task=task_ref,
                 recovery_continuation_id=continuation_id,
             ))
             self.assertEqual(checked["typed_exit"], "context_ready")
@@ -17216,8 +17305,8 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
                     input=public_input.relative_to(root).as_posix(),
                     owner_result="-",
-                    owner_task=task_ref,
-                    owner_continuation_id=continuation_id,
+                    active_task=task_ref,
+                    recovery_continuation_id=continuation_id,
                 ))
 
         self.assertEqual(output["exit_id"], "context_ready")
@@ -17249,7 +17338,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             gtt.cmd_record_context_discovery(argparse.Namespace(
                 root=str(root), mode="workflow", input=None, payload=payload,
                 expected_result_sha256=payload["result_identity"]["result_sha256"],
-                recovery_task=task_ref,
+                active_task=task_ref,
                 recovery_continuation_id="stage0-current",
             ))
         self.assertEqual(external.read_text(encoding="utf-8"), "preserve\n")
@@ -17263,7 +17352,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             gtt.cmd_check_context_discovery(argparse.Namespace(
                 root=str(root), input=None, payload=payload,
                 expected_result_sha256=payload["result_identity"]["result_sha256"],
-                recovery_task=task_ref,
+                active_task=task_ref,
                 recovery_continuation_id="stage0-current",
             ))
         self.assertEqual(
@@ -17277,7 +17366,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
                 root=str(root), mode="workflow", input=None, payload=payload,
                 expected_result_sha256=payload["result_identity"]["result_sha256"],
-                recovery_task=task_ref,
+                active_task=task_ref,
                 recovery_continuation_id="stage0-current",
             ))
             changed = copy.deepcopy(recorded)
@@ -17287,7 +17376,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 gtt.cmd_check_context_discovery(argparse.Namespace(
                     root=str(root), input=None, payload=changed,
                     expected_result_sha256=changed["result_identity"]["result_sha256"],
-                    recovery_task=task_ref,
+                    active_task=task_ref,
                     recovery_continuation_id="stage0-current",
                 ))
         self.assertFalse(checkpoint.exists())
@@ -17327,7 +17416,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
                 root=str(root), mode="workflow", input=None, payload=payload,
                 expected_result_sha256=payload["result_identity"]["result_sha256"],
-                recovery_task=task_ref,
+                active_task=task_ref,
                 recovery_continuation_id=continuation_id,
             ))
         self.assertTrue(checkpoint.is_file())
@@ -17341,7 +17430,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             gtt.cmd_check_context_discovery(argparse.Namespace(
                 root=str(root), input=None, payload=recorded,
                 expected_result_sha256=recorded["result_identity"]["result_sha256"],
-                recovery_task=task_ref,
+                active_task=task_ref,
                 recovery_continuation_id=continuation_id,
             ))
 

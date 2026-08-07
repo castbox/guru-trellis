@@ -88,14 +88,19 @@ it, and never create a task, workspace, or ignored runtime file. The public
 wrapper accepts stdin owner transport and emits one typed DTO only after the
 same bytes pass the objective checker.
 
-The only write exception is a real interrupted active-task workflow owner. The
-recorder then requires exact task and continuation identity and writes one
+An active-task workflow owner passes the direct task identity independently as
+`--active-task`. Record, check, and public invoke then bind the live checkout to
+`task.json.branch`, the current task worktree, and fresh selected-base refs while
+allowing ordinary in-progress worktree edits; this normal mapped route remains
+repository-write-free. Only a real interruption adds
+`--recovery-continuation-id`, which writes one
 `change-context-recovery.json` below that task's ignored owner-checkpoint
 namespace. It retains only task identity, requested exit, Gate status,
 reviewed scope, load-bearing conclusions, and reason. The checker binds those
 bytes to a complete fresh owner rerun. Stale/invalid recovery is deleted, and
 the public wrapper deletes a current checkpoint only after its typed DTO passes
-the output schema. Pre-task and standalone calls cannot select this option.
+the output schema. Pre-task and standalone calls cannot select active-task or
+recovery invocation identity.
 
 The recorder and checker execute the published closed Draft 2020-12 schema and
 validate query/manifest/preview/payload/result digests. Matching live stale
@@ -106,8 +111,10 @@ chain.
 Base evidence embeds the complete validator-passed
 `guru-base-sync-result-1.0`. Validation checks its schema and digests, then
 compares selected base/remote refs, GitHub repository identity, current HEAD,
-branch and cleanliness with live Git. Workflow and standalone bind the decision
-branch.
+branch and cleanliness with live Git. Pre-task and standalone bind the clean
+decision branch. Active-task invocation instead binds the direct active task
+and its task branch, permits ordinary current-worktree edits, and still requires
+the selected local/remote base refs and repository identity to remain fresh.
 
 Before `context_ready`, validation also binds the live issue or draft, reviewed
 Git blobs/content, canonical query, archive manifest and owner result. A base error
@@ -132,6 +139,8 @@ self-contained or portable.
 caller-owned continuation, reruns the existing result checker, and derives the
 matching per-exit DTO from the checked owner result. `context_ready` contains
 only route/profile/mode/target/continuation identity; Clarification rereads live
-authority and receives no owner-result locator. A genuinely interrupted
-active-task owner may lazily use one minimal ignored checkpoint, which the same
-owner deletes on stale restart or successful consumption.
+authority and receives no owner-result locator. Active-task identity remains an
+ephemeral `--active-task` invocation argument rather than a public DTO field. A
+genuinely interrupted owner additionally supplies one recovery continuation and
+may lazily use one minimal ignored checkpoint, which the same owner deletes on
+stale restart or successful consumption.

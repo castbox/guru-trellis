@@ -518,8 +518,9 @@ canonical issue URL、open state 与 update time 的 canonical digest projection
 base 后从同一次 search 返回字段重算 identity、URL 与 digest，不进行第二次 search 或
 candidate re-read。Managed schema/runtime 同时强制 `blocked` exit
 与 blocked AI Review Gate 双向一致。
-只有真实 active-task owner recovery 才惰性写入 ignored current checkpoint；正常 mapped
-exit 不写 checkpoint，stale 删除后从 live authority 完整重跑，成功 public projection 后
+正常 mapped active-task 调用以 ephemeral task identity 绑定 task branch/current worktree 并允许普通
+task edits，不写 checkpoint；只有真实 active-task owner recovery 才以额外 continuation 惰性写入
+ignored current checkpoint。stale 删除后从 live authority 完整重跑，成功 public projection 后
 consume-and-clean owner input/result/checkpoint 与空目录。Preset、selected platform copies、
 fresh install 和 current update/reapply 必须保持这些 schema/runtime/wrapper/test bytes 与
 executable modes 一致。`context_ready` 只交付 Clarify 所需的 route、mode、target locator 与

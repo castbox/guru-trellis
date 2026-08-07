@@ -17389,22 +17389,22 @@ def stage0_owner_result(
                 "Pipe one canonical JSON object owner result to stdin.",
                 "Context Discovery owner result must be an object.",
             )
-        owner_task = str(getattr(args, "owner_task", None) or "").strip()
-        owner_continuation_id = str(
-            getattr(args, "owner_continuation_id", None) or ""
+        active_task = str(getattr(args, "active_task", None) or "").strip()
+        recovery_continuation_id = str(
+            getattr(args, "recovery_continuation_id", None) or ""
         ).strip()
-        if bool(owner_task) != bool(owner_continuation_id):
+        if recovery_continuation_id and not active_task:
             raise stage0_invocation_error(
                 "invalid_owner_result",
-                "arguments.owner_task",
-                "Provide both --owner-task and --owner-continuation-id only for a real active-task same-owner recovery.",
-                "Context Discovery recovery identity is incomplete.",
+                "arguments.active_task",
+                "Provide --active-task with --recovery-continuation-id for a real same-owner recovery.",
+                "Context Discovery recovery requires active-task invocation identity.",
             )
-        recovery_task_dir = (
-            context_active_task_dir(root, owner_task) if owner_task else None
+        active_task_dir = (
+            context_active_task_dir(root, active_task) if active_task else None
         )
-        if recovery_task_dir is not None:
-            plan = {"recovery_task": recovery_task_dir}
+        if recovery_continuation_id and active_task_dir is not None:
+            plan = {"recovery_task": active_task_dir}
         result_path = None
         result_relative = None
     else:
@@ -17415,12 +17415,12 @@ def stage0_owner_result(
             checked = cmd_check_context_discovery(argparse.Namespace(
                 root=str(root), input=None, payload=result,
                 expected_result_sha256=(result.get("result_identity") or {}).get("result_sha256"),
-                recovery_task=(
-                    repo_relative(root, recovery_task_dir)
-                    if recovery_task_dir is not None
+                active_task=(
+                    repo_relative(root, active_task_dir)
+                    if active_task_dir is not None
                     else None
                 ),
-                recovery_continuation_id=owner_continuation_id or None,
+                recovery_continuation_id=recovery_continuation_id or None,
             ))
         else:
             assert result_path is not None and result_relative is not None
@@ -26343,7 +26343,7 @@ def context_live_base_errors(root: Path, payload: dict[str, Any], task_dir: Path
         except WorkflowError:
             errors.append("task_not_active")
         else:
-            if active_task_dir != task_dir.resolve():
+            if active_task_dir != Path(os.path.abspath(task_dir)):
                 errors.append("task_not_active")
             try:
                 task_payload = json.loads((active_task_dir / "task.json").read_text(encoding="utf-8"))
@@ -26392,7 +26392,7 @@ def context_live_base_errors(root: Path, payload: dict[str, Any], task_dir: Path
     except (WorkflowError, UnicodeError):
         errors.append("git_status_unreadable")
         dirty = []
-    if dirty:
+    if dirty and task_dir is None:
         errors.append("checkout_not_clean")
     return errors
 
@@ -26501,25 +26501,25 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
     payload, _ = context_payload_from_args(root, args)
     if payload.get("mode") != args.mode:
         raise WorkflowError("context discovery mode does not match recorder mode.", exit_code=2)
-    recovery_task = getattr(args, "recovery_task", None)
+    active_task = getattr(args, "active_task", None)
     recovery_continuation_id = str(
         getattr(args, "recovery_continuation_id", None) or ""
     ).strip()
-    if bool(recovery_task) != bool(recovery_continuation_id):
+    if recovery_continuation_id and not active_task:
         raise WorkflowError(
-            "Context discovery recovery requires task and continuation identity together.",
+            "Context discovery recovery requires active-task invocation identity.",
             exit_code=2,
             payload={"error_codes": ["context_recovery_identity_incomplete"]},
         )
-    recovery_task_dir: Path | None = None
-    if recovery_task:
+    active_task_dir: Path | None = None
+    if active_task:
         if args.mode != "workflow":
             raise WorkflowError(
-                "Context discovery recovery is active-task workflow-only.",
+                "Context discovery active-task invocation is workflow-only.",
                 exit_code=2,
-                payload={"error_codes": ["context_recovery_mode_invalid"]},
+                payload={"error_codes": ["context_active_task_mode_invalid"]},
             )
-        recovery_task_dir = context_active_task_dir(root, str(recovery_task))
+        active_task_dir = context_active_task_dir(root, str(active_task))
     submitted_identity = payload.get("result_identity")
     submitted_result_sha256 = (
         submitted_identity.get("result_sha256")
@@ -26550,7 +26550,7 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": context_sort(structural)},
         )
-    live = context_live_errors(root, payload, recovery_task_dir)
+    live = context_live_errors(root, payload, active_task_dir)
     route_live = context_typed_exit_live_errors(payload, live)
     if structural or route_live:
         raise WorkflowError(
@@ -26558,10 +26558,10 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": context_sort(structural + route_live)},
         )
-    if recovery_task_dir is not None:
+    if active_task_dir is not None and recovery_continuation_id:
         context_record_recovery_checkpoint(
             root,
-            recovery_task_dir,
+            active_task_dir,
             payload,
             recovery_continuation_id,
         )
@@ -26571,25 +26571,25 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
 def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     payload, _ = context_payload_from_args(root, args)
-    recovery_task = getattr(args, "recovery_task", None)
+    active_task = getattr(args, "active_task", None)
     recovery_continuation_id = str(
         getattr(args, "recovery_continuation_id", None) or ""
     ).strip()
-    if bool(recovery_task) != bool(recovery_continuation_id):
+    if recovery_continuation_id and not active_task:
         raise WorkflowError(
-            "Context discovery recovery requires task and continuation identity together.",
+            "Context discovery recovery requires active-task invocation identity.",
             exit_code=2,
             payload={"error_codes": ["context_recovery_identity_incomplete"]},
         )
-    recovery_task_dir: Path | None = None
-    if recovery_task:
+    active_task_dir: Path | None = None
+    if active_task:
         if payload.get("mode") != "workflow":
             raise WorkflowError(
-                "Context discovery recovery is active-task workflow-only.",
+                "Context discovery active-task invocation is workflow-only.",
                 exit_code=2,
-                payload={"error_codes": ["context_recovery_mode_invalid"]},
+                payload={"error_codes": ["context_active_task_mode_invalid"]},
             )
-        recovery_task_dir = context_active_task_dir(root, str(recovery_task))
+        active_task_dir = context_active_task_dir(root, str(active_task))
     structural = context_structural_errors(root, payload)
     if structural:
         raise WorkflowError(
@@ -26597,23 +26597,23 @@ def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": context_sort(structural)},
         )
-    live = context_live_errors(root, payload, recovery_task_dir)
+    live = context_live_errors(root, payload, active_task_dir)
     expected = args.expected_result_sha256
     actual = (payload.get("result_identity") or {}).get("result_sha256") if isinstance(payload.get("result_identity"), dict) else None
     if expected and expected != actual:
         structural.append("expected_result_mismatch")
     route_live = context_typed_exit_live_errors(payload, live)
-    if recovery_task_dir is not None:
+    if active_task_dir is not None and recovery_continuation_id:
         context_check_recovery_checkpoint(
             root,
-            recovery_task_dir,
+            active_task_dir,
             payload,
             recovery_continuation_id,
         )
         if route_live:
             ai_first_retire_owner_checkpoints(
                 root,
-                recovery_task_dir,
+                active_task_dir,
                 (CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,),
             )
     errors = context_sort(structural + route_live)
@@ -30825,7 +30825,7 @@ def build_parser() -> argparse.ArgumentParser:
     context_record.add_argument("--mode", required=True, choices=["workflow", "standalone"])
     context_record.add_argument("--input")
     context_record.add_argument("--expected-result-sha256")
-    context_record.add_argument("--recovery-task")
+    context_record.add_argument("--active-task")
     context_record.add_argument("--recovery-continuation-id")
 
     context_check = sub.add_parser("check-context-discovery")
@@ -30833,7 +30833,7 @@ def build_parser() -> argparse.ArgumentParser:
     context_check.add_argument("--json", action="store_true")
     context_check.add_argument("--input")
     context_check.add_argument("--expected-result-sha256")
-    context_check.add_argument("--recovery-task")
+    context_check.add_argument("--active-task")
     context_check.add_argument("--recovery-continuation-id")
 
     clarification_record = sub.add_parser("record-requirements-clarification")
@@ -30961,8 +30961,8 @@ def build_parser() -> argparse.ArgumentParser:
     stage0_invocation = sub.add_parser("invoke-stage0-skill")
     stage0_invocation.add_argument("--input")
     stage0_invocation.add_argument("--owner-result")
-    stage0_invocation.add_argument("--owner-task")
-    stage0_invocation.add_argument("--owner-continuation-id")
+    stage0_invocation.add_argument("--active-task")
+    stage0_invocation.add_argument("--recovery-continuation-id")
     stage0_invocation.add_argument("--owner-prerequisites")
     stage0_invocation.add_argument("--owner-change-request")
     stage0_invocation.add_argument("--owner-plan")

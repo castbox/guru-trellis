@@ -38,8 +38,8 @@
     {
       "id": "fresh_base",
       "evidence": "validator-passed guru-base-sync-result-1.0 with selected base, decision checkout, base HEAD and post_sync_resolution_sha256",
-      "binding": "repository, selected base, decision checkout and clean synchronized HEAD",
-      "freshness": "validated before live change, current-state or history reads and again before result acceptance"
+      "binding": "repository and selected base plus either the clean decision checkout or an exact active task branch/current worktree",
+      "freshness": "selected local/remote base refs and repository identity are revalidated before live reads and result acceptance; pre-task/standalone require the clean decision branch while active-task workflow permits ordinary task worktree edits"
     },
     {
       "id": "repository_identity",
@@ -146,19 +146,19 @@
       "id": "owner_result_recorder",
       "command": "scripts/record-context-discovery.sh",
       "runtime_command": "record-context-discovery",
-      "objective_scope": "canonical owner-result identity, stdin/file input, stdout-only normalization and zero repository writes"
+      "objective_scope": "canonical owner-result identity, stdin/file input, stdout-only normalization, optional ephemeral active-task binding and checkpoint creation only with an explicit recovery continuation"
     },
     {
       "id": "owner_result_validator",
       "command": "scripts/check-context-discovery.sh",
       "runtime_command": "check-context-discovery",
-      "objective_scope": "closed result shape, AI-authored gate evidence, digest bindings, live freshness, candidate/mem rules and typed-exit identity"
+      "objective_scope": "closed result shape, AI-authored gate evidence, digest bindings, active-task or pre-task live freshness, optional recovery checkpoint binding, candidate/mem rules and typed-exit identity"
     },
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-stage0-skill",
-      "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
+      "objective_scope": "Caller-owned input validation, optional ephemeral active-task binding, optional same-owner recovery consumption and deterministic typed-exit serialization after the owner closed loop"
     }
   ],
   "external_exits": [
@@ -188,7 +188,7 @@
     }
   ],
   "reentry": {
-    "identity": "mode, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and owner-result digest",
+    "identity": "mode, optional active task and task branch, repository, base post-sync digest, change-input digest, live-change digest, query digest, archive-manifest digest and owner-result digest",
     "freshness": "all live bindings are revalidated before acceptance; stale evidence restarts the complete Skill",
     "stale_behavior": "fail_closed"
   },

@@ -781,8 +781,10 @@ branch. Direct active task recording/checking instead binds the live checkout
 to `task.json.branch`, because task/worktree creation may move the same HEAD to
 a feature branch after the stdout snapshot was reviewed; it still requires the
 original HEAD, complete sync provenance, selected local/remote base refs,
-repository identity, direct active task locator/status, and task-local-only
-dirty paths. A proposed draft
+repository identity, direct active task locator/status, and the current task
+worktree's ordinary in-progress dirty paths. Active-task invocation identity is
+supplied ephemerally and does not itself create a checkpoint; only an explicit
+recovery continuation enables lazy same-owner checkpoint persistence. A proposed draft
 that names a created issue carries a separate live issue binding whose body
 digest must equal the original reviewed draft digest. Semantic evidence shape
 requires a non-empty mem summary when used and non-empty reviewed scope plus
@@ -834,9 +836,12 @@ synthesize semantic pass.
 Recorder/checker accept the current AI-authored result through stdin or one
 explicit file, compare it with current live facts, and return canonical/checked
 JSON on stdout. They do not resolve, write, replace, or supersede a task
-artifact. The public wrapper supports stdin owner transport, validates the
-selected minimal DTO, and retires any real same-owner active-task checkpoint
-after successful consumption. Clarification, readiness, and workspace creation
+artifact. Normal active-task record/check/invoke accepts one ephemeral direct
+task identity, binds its live task branch, and permits ordinary current-worktree
+edits without creating a checkpoint. Only an explicit recovery continuation
+creates/checks the one lazy same-owner checkpoint. The public wrapper supports
+stdin owner transport, validates the selected minimal DTO, and retires that
+checkpoint after successful consumption. Clarification, readiness, and workspace creation
 do not receive an owner-result locator and do not read Discovery private
 evidence. `refresh_base` reruns the owner from live authority without a prior
 result chain.

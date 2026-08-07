@@ -168,8 +168,13 @@ The same stale evidence rejects `context_ready`. Its public DTO contains only
 `handoff_continuation_id`; Clarification rereads current authority and never
 receives an owner-result locator.
 
-Only a genuinely interrupted active-task owner loop may lazily create one
-current ignored checkpoint below the existing owner-checkpoint namespace. It
+Active-task invocation identity is transported ephemerally and independently
+from persistence. Normal mapped active-task record/check/invoke binds the
+direct task branch, current task worktree, and fresh selected-base refs while
+allowing ordinary worktree edits and creates no checkpoint. Only a genuinely
+interrupted active-task owner loop with an explicit recovery continuation may
+lazily create one current ignored checkpoint below the existing
+owner-checkpoint namespace. It
 stores only task identity and non-reconstructable same-owner semantic state,
 never authorization, complete scan/review history, repository/file metadata or
 digest bundles, reviewer/process metadata, or live Git/GitHub/Trellis facts.

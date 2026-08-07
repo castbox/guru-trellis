@@ -231,7 +231,8 @@ isolation, deterministic sort/limit/projection, zero and 1-3 candidate paths,
 mem insufficiency gate, stdin/stdout record/check/invoke, pre-task and
 standalone zero-write, exact minimal DTO projection, real Git ref freshness,
 base-stale short-circuit before semantic reads, unknown current owner-state
-rejection, lazy active-task same-owner recovery, successful consume-and-clean,
+rejection, clean active-task normal routing with zero checkpoint, dirty
+active-task same-owner recovery, successful consume-and-clean,
 stale checkpoint deletion, unsafe cleanup rejection, and terminal zero residue,
 duplicate candidate canonical fact digest plus identity/URL/repo/number binding
 from one search result, the bidirectional `blocked` exit/Gate matrix, all typed

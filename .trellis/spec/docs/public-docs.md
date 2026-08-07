@@ -229,7 +229,9 @@ uses schema `guru-change-context-owner-result-2.0`; record/check/public invoke
 accept stdin and return stdout, while `context_ready` contains only the route,
 mode, target locator, and continuation identity required by Clarify. Normal
 pre-task and standalone paths write no task, workspace, or runtime artifact.
-Stale evidence restarts the complete owner from live authority, and only a
+Normal mapped active-task invocation carries direct task identity ephemerally,
+binds the task branch/current worktree, permits ordinary task edits, and creates
+no checkpoint. Stale evidence restarts the complete owner from live authority, and only a
 real interrupted active-task recovery may lazily create one ignored current
 owner checkpoint that the same owner consumes and removes. They list exits
 `context_ready` / `refresh_base` / `blocked` and all three runtime commands.
@@ -280,7 +282,8 @@ Refresh documentation must state that record/check compare caller-authored
 current stale codes with live freshness, discard stale owner material, and
 require a complete owner rerun from live authority. It must also state that
 normal record/check/invoke transport is stdin/stdout and repository-write-free;
-only a genuinely interrupted active-task owner may lazily create one ignored
+active-task identity remains separate from checkpoint persistence, and only a
+genuinely interrupted active-task owner with a recovery continuation may lazily create one ignored
 same-owner checkpoint, which successful output projection consumes and removes.
 
 When workflow behavior changes, update the docs that users actually read:
@@ -410,7 +413,8 @@ semantic reconstruction is introduced.
 
 The public READMEs also describe current active-task recovery as lazy,
 owner-private, ignored runtime state created only for a real interrupted owner
-consumer. Normal mapped exits create no checkpoint; stale recovery deletes the
+consumer. Normal mapped active-task invocation binds its task worktree through
+ephemeral identity and creates no checkpoint; stale recovery deletes the
 current checkpoint and restarts from live authority; successful public
 serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a

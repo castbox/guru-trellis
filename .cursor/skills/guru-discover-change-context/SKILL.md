@@ -19,12 +19,13 @@ does not create a repository artifact. A caller-authored `refresh_base` result
 records only the observed current stale codes, then reruns the complete Skill
 through `guru-sync-base` and live authority.
 
-Only when this same owner is genuinely interrupted for an active task, record
-the validated result with `--recovery-task <task> --recovery-continuation-id
-<id>`. This lazily creates one minimal ignored checkpoint. On recovery, rerun
-the complete owner from live authority, check with the same two arguments, and
-invoke the public wrapper with `--owner-task <task>
---owner-continuation-id <id>` so successful DTO validation consumes it.
+For an active-task workflow invocation, pass `--active-task <task>` to record,
+check, and public invoke so live validation binds `task.json.branch` and the
+current task worktree without creating a checkpoint. Only when this same owner
+is genuinely interrupted, also pass `--recovery-continuation-id <id>` to all
+three calls. That additional identity lazily creates one minimal ignored
+checkpoint, which a complete live-authority rerun checks and successful DTO
+validation consumes.
 
 Fail closed on stale base/live/blob/query/archive identity, invalid evidence,
 unknown exits, or missing compatible runtime. This package is not
