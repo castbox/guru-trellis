@@ -58,7 +58,8 @@ requires task-bearing manifest provenance to report `tree_state=clean`, then
 resolves its requested ref, selects the peeled commit for an annotated tag and
 the direct commit for a branch or lightweight tag, and compares that commit to
 `source.commit` before source checkout. A full 40-hex ref initializes the
-isolated checkout, fetches exactly that OID, and requires
+isolated checkout, configures its canonical locator as `origin`, fetches exactly
+that OID through `origin`, and requires
 `FETCH_HEAD^{commit}`, manifest commit, and checkout HEAD to match. Preset apply
 from a Git worktree records the apply-time commit as this immutable ref, so a
 later target branch commit does not move the selected source. It checks out the selected object in a separate

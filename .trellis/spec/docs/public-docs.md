@@ -495,8 +495,10 @@ checkout; dirty provenance blocks verification.
 Annotated source tags select the peeled commit and compare it to manifest
 `source.commit`; branch/lightweight tags select the direct commit. Preset apply
 from a Git worktree records the full apply-time commit as immutable
-`source.ref` and `source.commit`; verification fetches that OID and requires the
-fetched commit and checkout HEAD to match even after the target branch advances.
+`source.ref` and `source.commit`; verification preserves the canonical source
+repository as the isolated checkout's `origin`, fetches that OID through it, and
+requires the fetched commit and checkout HEAD to match even after the target
+branch advances.
 Taskless
 standalone fallback is explicit-source and absent-manifest only. Installer,
 canonical assets, ownership, and source sidecars are source-checkout-owned, and

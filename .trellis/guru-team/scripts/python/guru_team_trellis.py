@@ -10691,43 +10691,63 @@ EXTENSION_VERIFICATION_CAPABILITY_COMMAND_REFS = {
         "verify_target_checkout",
         "resolve_extension_source_ref",
         "clone_extension_source",
+        "configure_extension_source_origin",
         "verify_extension_source_checkout",
         "verify_throwaway_installation",
     ),
     "new_repo_init": (
         "clone_extension_source",
+        "configure_extension_source_origin",
         "verify_extension_source_checkout",
         "verify_throwaway_installation",
     ),
     "existing_repo_preview_switch": (
         "clone_extension_source",
+        "configure_extension_source_origin",
         "verify_extension_source_checkout",
         "verify_throwaway_installation",
     ),
-    "preset_initial_apply": ("verify_throwaway_installation",),
-    "preset_reapply": ("verify_throwaway_installation",),
-    "trellis_update_reapply": (
-        "resolve_extension_source_ref",
+    "preset_initial_apply": (
+        "configure_extension_source_origin",
         "verify_throwaway_installation",
     ),
-    "managed_conflict_sidecars": ("verify_throwaway_installation",),
+    "preset_reapply": (
+        "configure_extension_source_origin",
+        "verify_throwaway_installation",
+    ),
+    "trellis_update_reapply": (
+        "resolve_extension_source_ref",
+        "configure_extension_source_origin",
+        "verify_throwaway_installation",
+    ),
+    "managed_conflict_sidecars": (
+        "configure_extension_source_origin",
+        "verify_throwaway_installation",
+    ),
     "skill_contract_discovery": (
         "clone_extension_source",
+        "configure_extension_source_origin",
         "verify_throwaway_installation",
     ),
     "platform_equality": (
         "clone_extension_source",
+        "configure_extension_source_origin",
         "verify_throwaway_installation",
     ),
     "ownership_inventory": (
         "clone_extension_source",
+        "configure_extension_source_origin",
         "verify_throwaway_installation",
     ),
     "readme_commands": (
         "resolve_extension_source_ref",
+        "configure_extension_source_origin",
         "verify_throwaway_installation",
     ),
-    "redaction": ("verify_throwaway_installation",),
+    "redaction": (
+        "configure_extension_source_origin",
+        "verify_throwaway_installation",
+    ),
 }
 EXTENSION_VERIFICATION_CONSUMERS = {
     "verified": {"kind": "skill", "id": "guru-finalize-task"},
@@ -11611,9 +11631,30 @@ def extension_verification_resolve_source_reference(
             ["git", "init", "--quiet", "<temp-extension-source-checkout>"],
         )
     )
-    fetch_proc = subprocess.CompletedProcess([], 1, "", "source checkout init failed")
-    fetch_command = ["git", "fetch", "--depth=1", locator, requested_ref]
+    configure_proc = subprocess.CompletedProcess(
+        [],
+        1,
+        "",
+        "source checkout init failed",
+    )
+    configure_command = ["git", "remote", "add", "origin", locator]
     if init_proc.returncode == 0:
+        configure_proc = run(
+            configure_command,
+            cwd=source_checkout,
+            check=False,
+        )
+    commands.append(
+        extension_verification_command_evidence(
+            "configure_extension_source_origin",
+            EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
+            configure_command,
+            configure_proc,
+        )
+    )
+    fetch_proc = subprocess.CompletedProcess([], 1, "", "source checkout init failed")
+    fetch_command = ["git", "fetch", "--depth=1", "origin", requested_ref]
+    if configure_proc.returncode == 0:
         fetch_proc = run(fetch_command, cwd=source_checkout, check=False)
     commands.append(
         extension_verification_command_evidence(

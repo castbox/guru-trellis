@@ -52,9 +52,11 @@ Resolution rules:
 
 1. Task-bearing paths require a regular current installed manifest in target root.
 2. Canonicalize manifest source to a credential-free GitHub repo and HTTPS clone locator.
-3. When `requested_ref` is a full 40-hex commit OID, initialize the isolated source checkout and
-   fetch exactly that OID from the canonical locator. Resolve `FETCH_HEAD^{commit}` and require it
-   to equal both `requested_ref` and manifest `source.commit` before reading source assets.
+3. When `requested_ref` is a full 40-hex commit OID, initialize the isolated source checkout,
+   configure the canonical locator as `origin`, and fetch exactly that OID through `origin`.
+   Resolve `FETCH_HEAD^{commit}` and require it to equal both `requested_ref` and manifest
+   `source.commit` before reading source assets. Preserving `origin` is required so source-owned
+   nested preset/throwaway installs can record complete `source.repo` provenance.
 4. For branch and tag refs, resolve direct and optional peeled rows with one explicit
    `git ls-remote` request. Annotated tag selects peeled commit; branch/lightweight tag selects
    direct commit.
@@ -89,9 +91,10 @@ The temporary work root contains three disjoint roots:
 
 ### 4.2 Extension source checkout
 
-- For a commit OID ref, initialize the isolated checkout, fetch exactly that OID, detach at the
-  fetched commit and compare live HEAD with source provenance. For branch/tag refs, retain the
-  resolve-then-clone path and detach at the selected commit.
+- For a commit OID ref, initialize the isolated checkout, configure its canonical `origin`, fetch
+  exactly that OID through the remote, detach at the fetched commit and compare live HEAD with
+  source provenance. For branch/tag refs, retain the resolve-then-clone path and detach at the
+  selected commit.
 - Locate `trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh` only here.
 - Derive workflow source, canonical asset expectations, ownership inventory and source package
   bytes only from this checkout.

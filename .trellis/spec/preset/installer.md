@@ -628,7 +628,8 @@ installer, canonical package bytes, ownership, and source sidecars only from
 the manifest-selected source checkout. Task-bearing source provenance must be
 `tree_state=clean` before source ref resolution or checkout. Git-worktree apply
 records the full apply-time commit as both `source.ref` and `source.commit`, with
-`is_mutable_ref=false`. Runtime fetches that OID directly and requires
+`is_mutable_ref=false`. Runtime configures the canonical source locator as the
+isolated checkout's `origin`, fetches that OID through it, and requires
 `FETCH_HEAD^{commit}` and source checkout HEAD to match it; branch/tag manifests
 retain direct/peeled resolution. Taskless fallback is absent-manifest
 only, and every accepted source locator is canonical credential-free GitHub

@@ -204,7 +204,8 @@
           "enum": [
             "resolve_target_ref", "resolve_target_locator", "clone_target",
             "checkout_target", "verify_target_checkout",
-            "resolve_extension_source_ref", "clone_extension_source", "fetch_extension_source_commit",
+            "resolve_extension_source_ref", "clone_extension_source",
+            "configure_extension_source_origin", "fetch_extension_source_commit",
             "checkout_extension_source", "verify_extension_source_checkout",
             "verify_throwaway_installation"
           ]

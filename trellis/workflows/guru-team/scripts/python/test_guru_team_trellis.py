@@ -10944,14 +10944,29 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         self.assertEqual(resolution["direct_oid"], source_commit)
         self.assertEqual(resolution["commit"], source_commit)
         self.assertTrue(resolution["checkout_prepared"])
+        configured_origin = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            cwd=checkout,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        self.assertEqual(configured_origin, str(remote))
         self.assertEqual(
             [command["id"] for command in resolution["commands"]],
             [
                 "clone_extension_source",
+                "configure_extension_source_origin",
                 "fetch_extension_source_commit",
                 "resolve_extension_source_ref",
             ],
         )
+        fetch_command = next(
+            command["argv"]
+            for command in resolution["commands"]
+            if command["id"] == "fetch_extension_source_commit"
+        )
+        self.assertEqual(fetch_command[3], "origin")
 
     def test_executor_reuses_checkout_prepared_by_immutable_source_fetch(self) -> None:
         public_input = self.public_input("standalone", task=True)

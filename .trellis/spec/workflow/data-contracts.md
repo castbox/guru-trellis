@@ -349,7 +349,8 @@ the verified target checkout and require closed `source.repo/ref/commit/`
 credential-free GitHub HTTPS; annotated tags bind both direct object and peeled
 commit, while branches/lightweight tags use the direct commit. The selected
 commit must equal `source.commit` before source checkout. A full 40-hex source
-ref is fetched directly into the isolated source checkout and
+ref configures the canonical locator as the isolated checkout's `origin`, is
+fetched directly through that remote, and
 `FETCH_HEAD^{commit}` must match both the requested OID and `source.commit`.
 Task-bearing source
 provenance must have `tree_state=clean`; dirty provenance stops before source

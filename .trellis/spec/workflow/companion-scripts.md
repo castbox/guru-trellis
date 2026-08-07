@@ -1138,7 +1138,8 @@ first, reads installed source provenance only from the target checkout, then
 requires clean task-bearing source provenance, resolves source direct/peeled facts,
 and requires the selected source commit to
 equal the manifest commit before source checkout. A full 40-hex source ref
-initializes the isolated source checkout, fetches exactly that OID, and requires
+initializes the isolated source checkout, configures the canonical locator as
+`origin`, fetches exactly that OID through `origin`, and requires
 `FETCH_HEAD^{commit}` to match the requested and manifest commits. Branch and
 tag refs retain the `ls-remote` direct/peeled path. Taskless standalone fallback is
 allowed only for an absent manifest and explicit source-repository intent.

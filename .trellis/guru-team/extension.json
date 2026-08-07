@@ -291,12 +291,12 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-07T03:04:25Z",
+  "installed_at": "2026-08-07T04:54:06Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "b5e0c1b672979d93f31cdc08c41201ed56cbd7ee",
-    "commit": "b5e0c1b672979d93f31cdc08c41201ed56cbd7ee",
-    "tree_state": "clean",
+    "ref": "9103e10980ca55473aa5e66c3ef8bcd71c6e2e78",
+    "commit": "9103e10980ca55473aa5e66c3ef8bcd71c6e2e78",
+    "tree_state": "dirty",
     "is_mutable_ref": false
   },
   "install": {
@@ -450,7 +450,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "345e69fc1e89e4b8a2c7d8af45e22767eec7cca0aca9f77e6481d9bc9758006f",
-        "tree_sha256": "ae027b3b8c460db7774544cdd79677654ea363285da6d73aa5dba5a54c712742"
+        "tree_sha256": "68b3cafa5873407f9ecdc237668f7b097057f40ba335a847229fd19a038726aa"
       },
       {
         "id": "guru-finalize-task",
@@ -3622,7 +3622,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "85464c1892273b27d682d2fbd46d4bb83656fea11074107faaf0c6f8e3d5cfba",
+        "sha256": "09efc8105a020654c3913a337b0dc8bf75b3f40bfc9c115a53bbbc649398b0d8",
         "executable": false,
         "action": "unchanged"
       },
@@ -3636,7 +3636,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
-        "sha256": "8051689dc39d938a1c11f189292b49e938b00dbed96f7cbebfffdfe63c9f04c9",
+        "sha256": "9c3ba1a4a7240efd980b8f25f1f6ccd658cbb51e97a161cd4d87da01b72eee72",
         "executable": false,
         "action": "unchanged"
       },
@@ -15326,7 +15326,7 @@
       {
         "path": ".agents/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "85464c1892273b27d682d2fbd46d4bb83656fea11074107faaf0c6f8e3d5cfba",
+        "sha256": "09efc8105a020654c3913a337b0dc8bf75b3f40bfc9c115a53bbbc649398b0d8",
         "executable": false,
         "action": "unchanged"
       },
@@ -15340,7 +15340,7 @@
       {
         "path": ".agents/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
-        "sha256": "8051689dc39d938a1c11f189292b49e938b00dbed96f7cbebfffdfe63c9f04c9",
+        "sha256": "9c3ba1a4a7240efd980b8f25f1f6ccd658cbb51e97a161cd4d87da01b72eee72",
         "executable": false,
         "action": "unchanged"
       },
@@ -15641,7 +15641,7 @@
       {
         "path": ".codex/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "85464c1892273b27d682d2fbd46d4bb83656fea11074107faaf0c6f8e3d5cfba",
+        "sha256": "09efc8105a020654c3913a337b0dc8bf75b3f40bfc9c115a53bbbc649398b0d8",
         "executable": false,
         "action": "unchanged"
       },
@@ -15655,7 +15655,7 @@
       {
         "path": ".codex/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
-        "sha256": "8051689dc39d938a1c11f189292b49e938b00dbed96f7cbebfffdfe63c9f04c9",
+        "sha256": "9c3ba1a4a7240efd980b8f25f1f6ccd658cbb51e97a161cd4d87da01b72eee72",
         "executable": false,
         "action": "unchanged"
       },
@@ -15956,7 +15956,7 @@
       {
         "path": ".claude/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "85464c1892273b27d682d2fbd46d4bb83656fea11074107faaf0c6f8e3d5cfba",
+        "sha256": "09efc8105a020654c3913a337b0dc8bf75b3f40bfc9c115a53bbbc649398b0d8",
         "executable": false,
         "action": "unchanged"
       },
@@ -15970,7 +15970,7 @@
       {
         "path": ".claude/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
-        "sha256": "8051689dc39d938a1c11f189292b49e938b00dbed96f7cbebfffdfe63c9f04c9",
+        "sha256": "9c3ba1a4a7240efd980b8f25f1f6ccd658cbb51e97a161cd4d87da01b72eee72",
         "executable": false,
         "action": "unchanged"
       },
@@ -16271,7 +16271,7 @@
       {
         "path": ".cursor/skills/guru-verify-extension-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/references/contract.md",
-        "sha256": "85464c1892273b27d682d2fbd46d4bb83656fea11074107faaf0c6f8e3d5cfba",
+        "sha256": "09efc8105a020654c3913a337b0dc8bf75b3f40bfc9c115a53bbbc649398b0d8",
         "executable": false,
         "action": "unchanged"
       },
@@ -16285,7 +16285,7 @@
       {
         "path": ".cursor/skills/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/schemas/marketplace-verification.schema.json",
-        "sha256": "8051689dc39d938a1c11f189292b49e938b00dbed96f7cbebfffdfe63c9f04c9",
+        "sha256": "9c3ba1a4a7240efd980b8f25f1f6ccd658cbb51e97a161cd4d87da01b72eee72",
         "executable": false,
         "action": "unchanged"
       },

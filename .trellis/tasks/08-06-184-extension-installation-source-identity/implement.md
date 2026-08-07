@@ -18,6 +18,8 @@
       `source.ref` and `source.commit`; keep archive provenance non-verifiable.
 - [ ] Add an isolated full-OID fetch path that requires `FETCH_HEAD^{commit}` to match both the
       requested OID and manifest commit before source assets are read.
+- [ ] Preserve the canonical locator as the full-OID checkout's `origin` so nested source-owned
+      preset/throwaway installs record a non-null `source.repo` provenance.
 - [ ] Separate direct object from peeled commit and bind the selected commit to manifest source.
 - [ ] Implement task-bearing required-manifest and taskless absent-manifest fallback branches.
 - [ ] Add focused resolver tests for annotated/lightweight tags, branches, drift, malformed
@@ -58,7 +60,7 @@ python3 -m unittest \
 ```
 
 Required distinct regressions: target/source separation, annotated tag direct/peeled selection,
-full-OID source fetch, target branch advance after manifest creation with a fixed source OID,
+full-OID source fetch with canonical `origin`, target branch advance after manifest creation with a fixed source OID,
 task-bearing manifest required, malformed manifest blocked, source drift, both checkout mismatches,
 target content drift, missing source installer, taskless fallback, credential URL redaction and
 stale evidence.
