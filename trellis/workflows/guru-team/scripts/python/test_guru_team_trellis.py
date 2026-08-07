@@ -11548,6 +11548,66 @@ class CloseoutTransactionContractTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def validate_task_json_archive_continuity_fixture(
+        self,
+        *,
+        parent: bytes,
+        after: bytes,
+        binding: dict[str, str] | None,
+        after_mode: str = "100644",
+        archive_commit: str | None = None,
+    ) -> None:
+        archived = self.root / "archive-fixture"
+        archived.mkdir(exist_ok=True)
+        task_json = archived / "task.json"
+        task_json.write_bytes(after)
+        task_json.chmod(0o755 if after_mode == "100755" else 0o644)
+        (archived / gtt.FINISH_SUMMARY_ARTIFACT).write_text("{}", encoding="utf-8")
+        plan = {
+            "schema_version": gtt.CLOSEOUT_PLAN_SCHEMA_VERSION,
+            "task": {
+                "active_locator": ".trellis/tasks/07-11-closeout",
+                "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
+            },
+            "marketplace": {"required": False},
+            "projection": {
+                "move_paths": ["task.json"],
+                "tracked_move_paths": ["task.json"],
+                "reviewed_tracked_bindings": [] if binding is None else [binding],
+            },
+        }
+        committed = "c" * 40
+
+        def blob_bytes(_root: Path, commit: str, path: str) -> bytes:
+            if commit == self.head:
+                return parent
+            if commit == committed and path.endswith("/task.json"):
+                return after
+            if commit == committed and path.endswith(f"/{gtt.FINISH_SUMMARY_ARTIFACT}"):
+                return b"{}"
+            raise AssertionError((commit, path))
+
+        def tree_entry(_root: Path, commit: str, path: str) -> tuple[str, str, str]:
+            mode = "100644" if commit == self.head else after_mode
+            return mode, "blob", "d" * 40
+
+        with (
+            mock.patch.object(gtt, "closeout_commit_blob_bytes", side_effect=blob_bytes),
+            mock.patch.object(gtt, "closeout_commit_tree_entry", side_effect=tree_entry),
+            mock.patch.object(
+                gtt,
+                "closeout_summary_runtime_pr_facts_from_bytes",
+                return_value={"number": 105},
+            ),
+        ):
+            gtt.validate_closeout_archive_blob_continuity(
+                self.root,
+                archived,
+                plan,
+                self.head,
+                archive_commit=committed if archive_commit is not None else None,
+            )
+
     def test_closeout_children_contract_requires_list_of_strings(self) -> None:
         gtt.validate_closeout_task_children(self.task_dir, self.task)
         for malformed in ({"child": "bad"}, "child", ["child", 7]):
@@ -14895,6 +14955,86 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         with self.assertRaises(gtt.WorkflowError):
             gtt.validate_closeout_task_json_archive_change(before, tampered)
 
+    def test_task_json_reviewed_binding_survives_worktree_and_commit_archive_validation(self) -> None:
+        parent_payload = {
+            "status": "in_progress",
+            "title": "task",
+            "completedAt": None,
+            "meta": {},
+        }
+        reviewed_payload = copy.deepcopy(parent_payload)
+        reviewed_payload["meta"] = {"publication_round": "reviewed-tail"}
+        reviewed = json.dumps(reviewed_payload, ensure_ascii=False, indent=2).encode("utf-8")
+        archived_payload = copy.deepcopy(reviewed_payload)
+        archived_payload["status"] = "completed"
+        archived_payload["completedAt"] = "2026-07-11"
+        archived = json.dumps(archived_payload, ensure_ascii=False, indent=2).encode("utf-8")
+        binding = {
+            "path": "task.json",
+            "mode": "100644",
+            "sha256": hashlib.sha256(reviewed).hexdigest(),
+        }
+
+        for archive_commit in (None, "c" * 40):
+            with self.subTest(archive_commit=archive_commit):
+                self.validate_task_json_archive_continuity_fixture(
+                    parent=json.dumps(parent_payload, ensure_ascii=False, indent=2).encode("utf-8"),
+                    after=archived,
+                    binding=binding,
+                    archive_commit=archive_commit,
+                )
+
+    def test_task_json_reviewed_binding_rejects_digest_mode_and_extra_field_drift(self) -> None:
+        parent_payload = {"status": "in_progress", "title": "task", "completedAt": None}
+        reviewed_payload = {
+            **parent_payload,
+            "meta": {"publication_round": "reviewed-tail"},
+        }
+        reviewed = json.dumps(reviewed_payload, ensure_ascii=False, indent=2).encode("utf-8")
+        archived_payload = {
+            **reviewed_payload,
+            "status": "completed",
+            "completedAt": "2026-07-11",
+        }
+        archived = json.dumps(archived_payload, ensure_ascii=False, indent=2).encode("utf-8")
+        binding = {
+            "path": "task.json",
+            "mode": "100644",
+            "sha256": hashlib.sha256(reviewed).hexdigest(),
+        }
+        cases = {
+            "digest": ({**binding, "sha256": "0" * 64}, archived, "100644"),
+            "mode": ({**binding, "mode": "100755"}, archived, "100644"),
+            "extra-field": (
+                binding,
+                json.dumps(
+                    {**archived_payload, "title": "changed during archive"},
+                    ensure_ascii=False,
+                    indent=2,
+                ).encode("utf-8"),
+                "100644",
+            ),
+        }
+        for name, (candidate_binding, candidate_after, candidate_mode) in cases.items():
+            with self.subTest(name=name), self.assertRaises(gtt.WorkflowError):
+                self.validate_task_json_archive_continuity_fixture(
+                    parent=json.dumps(parent_payload, ensure_ascii=False, indent=2).encode("utf-8"),
+                    after=candidate_after,
+                    binding=candidate_binding,
+                    after_mode=candidate_mode,
+                    archive_commit="c" * 40,
+                )
+
+    def test_task_json_without_binding_still_uses_transaction_parent_baseline(self) -> None:
+        parent = b'{"status":"in_progress","title":"task"}\n'
+        archived = b'{"status":"completed","title":"task","completedAt":"2026-07-11"}\n'
+        self.validate_task_json_archive_continuity_fixture(
+            parent=parent,
+            after=archived,
+            binding=None,
+            archive_commit="c" * 40,
+        )
+
     def test_formal_digest_mismatch_blocks_before_any_side_effect(self) -> None:
         plan = self.build_plan()
         prepared = {
@@ -15346,6 +15486,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         predecessor_draft_metadata: bool = False,
         migrated_tracked_plan: bool = False,
         archived_legacy_without_predecessor: bool = False,
+        reviewed_task_metadata_tail: bool = False,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -15511,6 +15652,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 task_ref=".trellis/tasks/07-11-closeout",
                 branch_review_commit=branch_review_commit,
             )
+            if reviewed_task_metadata_tail:
+                task["meta"] = {"publication_round": "reviewed-tail"}
+                (task_dir / "task.json").write_text(
+                    json.dumps(task, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
 
             if migrated_tracked_plan:
                 legacy_plan = gtt.build_closeout_plan(
@@ -16296,6 +16443,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.assertEqual(pr_store["isDraft"], False)
             if archived_damage is None:
                 self.assertEqual(gtt.read_json(archived / "task.json")["status"], "completed")
+                if reviewed_task_metadata_tail:
+                    self.assertEqual(
+                        gtt.read_json(archived / "task.json")["meta"],
+                        {"publication_round": "reviewed-tail"},
+                    )
                 self.assertEqual(
                     gtt.read_json(archived / gtt.FINISH_SUMMARY_ARTIFACT)["github"]["pr_url"],
                     pr_store["url"],
@@ -16417,6 +16569,22 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertIsNotNone(result["archived_legacy_plan_digest"])
         self.assertIn("ready", result["reentry_events"])
         self.assertNotIn("draft", result["all_transition_attempts"])
+
+    def test_production_reviewed_task_metadata_tail_recovers_from_archive_commit(self) -> None:
+        result = self.run_production_finish_case(
+            failed_stage="ready",
+            reviewed_task_metadata_tail=True,
+        )
+        failed = result["failed_state"]
+        final = result["final_state"]
+        self.assertIsNone(failed["active_locator"])
+        self.assertIsNotNone(failed["archive_locator"])
+        self.assertEqual(failed["task_status"], "completed")
+        self.assertTrue(failed["pr_is_draft"])
+        self.assertEqual(final["local_sha"], result["archive_sha"])
+        self.assertEqual(final["remote_sha"], result["archive_sha"])
+        self.assertFalse(final["pr_is_draft"])
+        self.assertIn("ready", result["reentry_events"])
 
     def test_production_finish_recovers_after_move_before_archive_compaction(self) -> None:
         result = self.run_production_finish_case("archive-prune")

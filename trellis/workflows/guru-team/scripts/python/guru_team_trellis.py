@@ -22676,6 +22676,29 @@ def validate_closeout_task_json_archive_change(before: bytes, after: bytes) -> N
         )
 
 
+def closeout_task_json_reviewed_pre_move_bytes(
+    transaction_parent: bytes,
+    archived: bytes,
+) -> bytes:
+    """Reverse only the two fields that official task archive overwrites."""
+    try:
+        parent_payload = json.loads(transaction_parent.decode("utf-8"))
+        archived_payload = json.loads(archived.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError("Closeout task.json archive blobs are invalid JSON.", exit_code=2) from exc
+    if not isinstance(parent_payload, dict) or not isinstance(archived_payload, dict):
+        raise WorkflowError("Closeout task.json archive blobs must be objects.", exit_code=2)
+
+    reviewed_payload = copy.deepcopy(archived_payload)
+    for field in ("status", "completedAt"):
+        if field in parent_payload:
+            reviewed_payload[field] = parent_payload[field]
+        else:
+            reviewed_payload.pop(field, None)
+    # Official task_store.write_json uses this exact encoding without a trailing newline.
+    return json.dumps(reviewed_payload, indent=2, ensure_ascii=False).encode("utf-8")
+
+
 def validate_closeout_archive_blob_continuity(
     root: Path,
     archived: Path,
@@ -22748,8 +22771,17 @@ def validate_closeout_archive_blob_continuity(
                     payload={"path": relative},
                 )
         if relative == "task.json":
-            validate_closeout_task_json_archive_change(before, after)
             binding = closeout_reviewed_tracked_binding_map(plan).get(relative)
+            reviewed_before = before
+            if binding is not None:
+                reviewed_before = closeout_task_json_reviewed_pre_move_bytes(before, after)
+                if hashlib.sha256(reviewed_before).hexdigest() != binding.get("sha256"):
+                    raise WorkflowError(
+                        "Archived task.json does not derive from its reviewed pre-move binding.",
+                        exit_code=2,
+                        payload={"path": relative},
+                    )
+            validate_closeout_task_json_archive_change(reviewed_before, after)
             expected_mode = binding.get("mode") if binding is not None else parent_mode
             if after_mode != expected_mode:
                 raise WorkflowError(
