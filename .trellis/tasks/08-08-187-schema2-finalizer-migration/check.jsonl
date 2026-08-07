@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"覆盖 schema、contract、runtime、eval、安装与 upgrade/update 验证。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 plan projection、binding、consumer 与 fail-closed 语义一致。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查 public API、typed exits 和 installed package closure 未漂移。"}
-{"file":".trellis/spec/preset/installer.md","reason":"检查 preset apply、reapply、权限和 clean install 门禁。"}
