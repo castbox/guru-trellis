@@ -1,8 +1,0 @@
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"Target/source identity, current-only private evidence and freshness binding."}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Deterministic resolver, dual checkout executor and recorder/checker ownership."}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Public Interface 1.3 boundary, private schema upgrade and minimal DTO invariants."}
-{"file":".trellis/spec/preset/installer.md","reason":"Installed manifest provenance, canonical source root and distribution closure."}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Regression matrix for separation, tags, fallback, redaction and stale evidence."}
-{"file":".trellis/spec/docs/public-docs.md","reason":"Public operator behavior and evidence-limit documentation contract."}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"The change propagates across runtime, schemas, package copies, manifests and docs."}
-{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Existing ref, URL, manifest and asset helpers must be reused before adding new ones."}
