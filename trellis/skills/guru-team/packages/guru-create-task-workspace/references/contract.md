@@ -15,10 +15,10 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
 
 ## Forward behavior
 
-1. Validate the complete installed runtime and current checker-passed results
-   from `guru-sync-base`, `guru-discover-change-context`,
-   `guru-clarify-requirements`, `guru-review-contract-wording`, and
-   `guru-review-change-request`.
+1. Validate the complete installed runtime, current reviewed DTOs from
+   `guru-sync-base`, `guru-clarify-requirements`,
+   `guru-review-contract-wording`, and `guru-review-change-request`, plus the
+   live issue/task authority. Discovery private evidence is not an input.
 2. Project the final target, duplicate and disposition decisions, authority
    impact, and readiness close/related/follow-up conclusion without changing
    them.
@@ -90,9 +90,9 @@ create after an immediate reread failure.
 After complete Intake re-entry, an existing issue produced by this path embeds
 the complete prior checker-passed created-issue result. Runtime recomputes the
 result and binding facts digests and matches the current issue and reviewed
-draft id/digest. The fresh context is the canonical
-live existing issue (`kind=issue`, canonical identity, open state, update time,
-body and facts digests, null `issue_binding`) rather than the pre-create draft.
+draft id/digest. The fresh Readiness target is the canonical live existing
+issue identity and content reread after creation rather than the pre-create
+draft. Workspace never reopens Discovery private evidence.
 Ordinary existing issues use null result/binding provenance; partial or mixed
 provenance fails closed.
 

@@ -36,8 +36,8 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             {item["id"]: item["runtime_command"] for item in self.interface["validators"]},
             {
                 "history_previewer": "preview-change-context-history",
-                "snapshot_recorder": "record-context-discovery",
-                "snapshot_validator": "check-context-discovery",
+                "owner_result_recorder": "record-context-discovery",
+                "owner_result_validator": "check-context-discovery",
                 "public_invocation": "invoke-stage0-skill",
             },
         )
@@ -69,18 +69,21 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             ".trellis/tasks/archive/**/finish-summary.json",
             ".trellis/workspace/**",
             "one to three selected candidates",
-            "writes no authorization field to the snapshot",
-            "--expected-snapshot-sha256",
+            "writes no authorization field to owner state",
+            "--owner-result -",
             "complete validator-passed `guru-base-sync-result-1.0`",
             "live body digest must equal the original reviewed draft body digest",
             "source issue may be live `open` or `closed`",
             "resolves from `HEAD:<path>` to exactly a `blob`",
             "source-specific portable locator",
-            "matching live stale facts return `refresh_base` for complete re-entry",
+            "return the caller-authored `refresh_base` exit for complete re-entry from live authority",
             "at least one array must be non-empty",
             "facts_sha256` is recomputed from those returned fields",
             "do not issue a second duplicate search or re-read candidates after review",
-            "git check-ignore --quiet --no-index --",
+            "never create a task, workspace, or ignored runtime file",
+            "real interrupted active-task workflow owner",
+            "change-context-recovery.json",
+            "public wrapper deletes a current checkpoint only after its typed DTO passes",
             "Skill `guru-clarify-requirements`",
             "context_ready",
             "refresh_base",
@@ -91,8 +94,8 @@ class ChangeContextPackageContractTests(unittest.TestCase):
     def test_wrappers_are_dispatcher_only_and_executable(self) -> None:
         wrappers = {
             "preview-change-context-history.sh": "history_previewer",
-            "record-context-discovery.sh": "snapshot_recorder",
-            "check-context-discovery.sh": "snapshot_validator",
+            "record-context-discovery.sh": "owner_result_recorder",
+            "check-context-discovery.sh": "owner_result_validator",
         }
         for name, validator in wrappers.items():
             path = self.package / "scripts" / name
@@ -124,42 +127,31 @@ class ChangeContextPackageContractTests(unittest.TestCase):
                 self.assertIn("Install or upgrade the complete Guru Team preset", result.stderr)
 
     def test_schema_and_deidentified_example(self) -> None:
-        schema = json.loads((self.package / "schemas/context-discovery.schema.json").read_text(encoding="utf-8"))
-        example = json.loads((self.package / "examples/context-discovery.json").read_text(encoding="utf-8"))
-        self.assertEqual(schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json")
-        self.assertIn("task_worktree_state", schema["properties"])
-        self.assertNotIn("task_worktree_state", schema["required"])
-        self.assertIn("superseded_snapshot_sha256", schema["properties"])
-        self.assertNotIn("superseded_snapshot_sha256", schema["required"])
+        schema = json.loads((self.package / "schemas/change-context-owner-result.schema.json").read_text(encoding="utf-8"))
+        recovery_schema = json.loads((self.package / "schemas/change-context-recovery.schema.json").read_text(encoding="utf-8"))
+        example = json.loads((self.package / "examples/change-context-owner-result.json").read_text(encoding="utf-8"))
+        self.assertEqual(schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json")
+        self.assertEqual(recovery_schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-change-context-recovery-1.0.json")
+        private_artifacts = {
+            item["id"]: item for item in self.interface["public_contracts"]["private_artifacts"]
+        }
+        self.assertEqual(
+            private_artifacts["change_context_recovery"]["persistence"],
+            "ignored_runtime",
+        )
+        retired_worktree_state = "task_" + "worktree_" + "state"
+        retired_superseded_digest = "superseded_" + "snapshot_" + "sha256"
+        self.assertNotIn(retired_worktree_state, schema["properties"])
+        self.assertNotIn(retired_superseded_digest, schema["properties"])
+        self.assertNotIn("refresh_history", schema["properties"])
         self.assertEqual(example["skill_id"], "guru-discover-change-context")
         if importlib.util.find_spec("jsonschema") is not None:
             from jsonschema import Draft202012Validator
 
             Draft202012Validator.check_schema(schema)
+            Draft202012Validator.check_schema(recovery_schema)
             validator = Draft202012Validator(schema)
             self.assertEqual(list(validator.iter_errors(example)), [])
-            task_local = copy.deepcopy(example)
-            task_local["task_worktree_state"] = {
-                "head": "1" * 40,
-                "context_snapshot_path": ".trellis/tasks/example/context-discovery.json",
-                "entries": [{
-                    "path": "trellis/runtime.py",
-                    "index_status": "",
-                    "worktree_status": "M",
-                    "untracked": False,
-                    "deleted": False,
-                    "renamed_from": None,
-                    "copied_from": None,
-                    "index_blob": "2" * 40,
-                    "worktree_sha256": "3" * 64,
-                    "mode": "100644",
-                }],
-                "digest": "4" * 64,
-            }
-            self.assertEqual(list(validator.iter_errors(task_local)), [])
-            invalid_task_local = copy.deepcopy(task_local)
-            invalid_task_local["task_worktree_state"]["entries"][0]["unexpected"] = True
-            self.assertNotEqual(list(validator.iter_errors(invalid_task_local)), [])
             invalid_mem = copy.deepcopy(example)
             invalid_mem["mem_review"].update({
                 "status": "used",
@@ -239,7 +231,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
                 "paths": "docs/context.md",
                 "commands": "/trellis:continue",
                 "config_keys": "context.mode",
-                "schema_fields": "snapshot_sha256",
+                "schema_fields": "result_identity",
                 "symbols": "ContextDiscovery",
                 "terms": "change context",
                 "queries": "discover context",

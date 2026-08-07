@@ -1,0 +1,19 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 178,
+    "url": "https://github.com/castbox/guru-trellis/issues/178",
+    "title": "将 context discovery 与 owner checkpoints 收敛为短生命周期 runtime",
+    "reason": "本 task 完整承诺并由后续 semantic review gate 验收的 Issue。"
+  },
+  "close_issues": [
+    {
+      "number": 178,
+      "url": "https://github.com/castbox/guru-trellis/issues/178",
+      "title": "将 context discovery 与 owner checkpoints 收敛为短生命周期 runtime",
+      "reason": "本 task 完整承诺并由后续 semantic review gate 验收的 Issue。"
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

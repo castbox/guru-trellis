@@ -223,11 +223,9 @@
     },
     "contextEvidence": {
       "type": "object", "additionalProperties": false,
-      "required": ["status", "schema_id", "snapshot_sha256", "evidence_refs", "missing_reason"],
+      "required": ["status", "evidence_refs", "missing_reason"],
       "properties": {
         "status": {"enum": ["current", "missing", "stale"]},
-        "schema_id": {"oneOf": [{"type": "null"}, {"const": "guru-context-discovery-1.0"}]},
-        "snapshot_sha256": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
         "evidence_refs": {"$ref": "#/$defs/stringList"},
         "missing_reason": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmpty"}]}
       }

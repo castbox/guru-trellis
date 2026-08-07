@@ -16,4 +16,4 @@ if [[ -z "$REPO_ROOT" || ! -x "$DISPATCHER" ]]; then
   echo "Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete Guru Team preset, resolve every .new/.bak sidecar, run source and installed Skill package validation, then retry." >&2
   exit 2
 fi
-exec "$DISPATCHER" --package-root "$PACKAGE_ROOT" --validator snapshot_validator -- "$@"
+exec "$DISPATCHER" --package-root "$PACKAGE_ROOT" --validator owner_result_validator -- "$@"

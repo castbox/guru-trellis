@@ -538,7 +538,7 @@ needs_context = copy.deepcopy(clear)
 needs_context["typed_exit"] = "needs_context"
 needs_context["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
 needs_context["context_evidence"] = {
-    "status": "missing", "schema_id": None, "snapshot_sha256": None,
+    "status": "missing",
     "evidence_refs": ["repository evidence"],
     "missing_reason": "Current repository context is unavailable.",
 }
@@ -1381,8 +1381,7 @@ assert {
 }
 for artifact in (
     "pr-body.md", "review-gate.json", "pr-readiness.json",
-    "closeout-plan.json", "finish-summary.json", "context-discovery.json",
-    "issue-review.json",
+    "closeout-plan.json", "finish-summary.json", "issue-review.json",
 ):
     assert artifact in api["artifact_contracts"]
 for artifact in ("agent-assignment.json", "review.md", "task-commit-plans/*.json"):
@@ -1411,7 +1410,8 @@ assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
 assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"]
 assert api["skill_contracts"]["planned_skill_ids"] == []
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-context-discovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-change-context-owner-result-2.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-change-context-recovery-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-requirements-clarification-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-contract-wording-review-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-phase2-check-4.0" in api["skill_contracts"]["artifact_schema_ids"]
@@ -1433,9 +1433,9 @@ assert set(api["skill_contracts"]) == {
     "registry_lifecycle", "contract_manifests",
     "workflow_markers",
 }
-assert len(api["skill_contracts"]["public_input_schema_ids"]) == 34
+assert len(api["skill_contracts"]["public_input_schema_ids"]) == 33
 assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 54
-assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 15
+assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 16
 assert api["skill_contracts"]["contract_manifests"] == [
     {
         "id": "production-current-v1",
@@ -1780,8 +1780,17 @@ DISCOVERY_CANDIDATE_JSON="$(
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert len(payload["candidates"]) == 1; candidate = payload["candidates"][0]; assert candidate["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json"); assert candidate["score"]["total"] > 0; assert payload["preview_sha256"]' <<<"$DISCOVERY_CANDIDATE_JSON"
 
-DISCOVERY_INPUT="$WORK_DIR/context-discovery-input.json"
-python3 - "$TARGET" "$SYNC_RESULT_JSON" "$DISCOVERY_CANDIDATE_JSON" "$DISCOVERY_INPUT" <<'PY'
+DISCOVERY_INPUT="$WORK_DIR/change-context-owner-result.json"
+DISCOVERY_ZERO_INPUT="$WORK_DIR/change-context-zero-owner-result.json"
+DISCOVERY_RECOVERY_INPUT="$WORK_DIR/change-context-recovery-owner-result.json"
+python3 - \
+  "$TARGET" \
+  "$SYNC_RESULT_JSON" \
+  "$DISCOVERY_CANDIDATE_JSON" \
+  "$DISCOVERY_ZERO_JSON" \
+  "$DISCOVERY_INPUT" \
+  "$DISCOVERY_ZERO_INPUT" \
+  "$DISCOVERY_RECOVERY_INPUT" <<'PY'
 import copy
 import hashlib
 import importlib.util
@@ -1793,30 +1802,40 @@ from pathlib import Path
 root = Path(sys.argv[1]).resolve()
 sync_result = json.loads(sys.argv[2])
 preview = json.loads(sys.argv[3])
-output = Path(sys.argv[4])
+zero_preview = json.loads(sys.argv[4])
 runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_context_discovery_runtime", runtime)
+spec = importlib.util.spec_from_file_location(
+    "installed_ephemeral_context_runtime", runtime
+)
 if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
+    raise SystemExit(f"could not load installed context runtime: {runtime}")
 gtt = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = gtt
 spec.loader.exec_module(gtt)
 
 head = subprocess.run(
-    ["git", "rev-parse", "HEAD"], cwd=root, check=True, text=True, capture_output=True,
+    ["git", "rev-parse", "HEAD"],
+    cwd=root,
+    check=True,
+    text=True,
+    capture_output=True,
 ).stdout.strip()
-if head != sync_result["decision_checkout"]["head_after"]:
-    raise SystemExit("throwaway context discovery base evidence is stale")
 
 def blob(relative: str) -> str:
     return subprocess.run(
-        ["git", "rev-parse", f"HEAD:{relative}"], cwd=root, check=True, text=True, capture_output=True,
+        ["git", "rev-parse", f"HEAD:{relative}"],
+        cwd=root,
+        check=True,
+        text=True,
+        capture_output=True,
     ).stdout.strip()
 
 query = preview["canonical_query"]
 candidate = preview["candidates"][0]
 candidate_task = candidate["finish_summary_path"].rsplit("/", 1)[0]
-body_sha256 = hashlib.sha256(b"throwaway context discovery request").hexdigest()
+body_sha256 = hashlib.sha256(
+    b"throwaway context discovery request"
+).hexdigest()
 live_change = {
     "kind": "draft",
     "identity": f"draft:{body_sha256}",
@@ -1843,19 +1862,17 @@ duplicate_facts = {
     "state": "open",
     "updated_at": "2026-01-01T00:00:00Z",
 }
-duplicate_candidate = {
-    **duplicate_facts,
-    "facts_sha256": gtt.context_digest(duplicate_facts),
-    "reason": "The open issue may describe the same change.",
-    "observation": "Clarification must decide reuse or a new target.",
-}
 payload = {
-    "schema_version": "1.0",
+    "schema_version": "2.0",
     "skill_id": "guru-discover-change-context",
     "generated_at": "2026-01-01T00:00:00Z",
     "mode": "standalone",
     "typed_exit": "context_ready",
-    "repository": {"repo": "castbox/guru-trellis-throwaway", "selected_base": "main", "decision_branch": "main"},
+    "repository": {
+        "repo": "castbox/guru-trellis-throwaway",
+        "selected_base": "main",
+        "decision_branch": "main",
+    },
     "base_evidence": {
         "schema_id": "guru-base-sync-result-1.0",
         "sync_result": sync_result,
@@ -1864,281 +1881,134 @@ payload = {
         "decision_head": sync_result["decision_checkout"]["head_after"],
         "local_head": sync_result["git"]["local_head_after"],
         "remote_head": sync_result["git"]["remote_head_after"],
-        "post_sync_resolution_sha256": sync_result["post_sync_resolution_sha256"],
+        "post_sync_resolution_sha256": sync_result[
+            "post_sync_resolution_sha256"
+        ],
         "clean": sync_result["decision_checkout"]["clean_after"],
     },
     "change_input": {
         key: query[key]
-        for key in (
-            "issue_refs", "pr_refs", "branches", "paths", "commands", "config_keys",
-            "schema_fields", "symbols", "terms", "queries",
-        )
+        for key in gtt.CONTEXT_QUERY_KINDS
     },
     "live_change": live_change,
     "duplicate_search": {
         "query": "repo:castbox/guru-trellis-throwaway is:issue is:open context discovery",
-        "checked_at": "2026-01-01T00:00:00Z", "scope": "open_issues",
-        "candidates": [duplicate_candidate],
+        "checked_at": "2026-01-01T00:00:00Z",
+        "scope": "open_issues",
+        "candidates": [{
+            **duplicate_facts,
+            "facts_sha256": gtt.context_digest(duplicate_facts),
+            "reason": "The open issue may describe the same change.",
+            "observation": "Clarification must decide reuse or a new target.",
+        }],
     },
     "current_state": {
         "sequence_trace": list(gtt.CONTEXT_SEQUENCE_TRACE),
         "docs": [{
-            "path": "docs/context-discovery-smoke.md", "blob_or_content_sha256": blob("docs/context-discovery-smoke.md"),
+            "path": "docs/context-discovery-smoke.md",
+            "blob_or_content_sha256": blob("docs/context-discovery-smoke.md"),
             "purpose": "Review the durable current-state contract.",
-            "observation": "Current evidence must precede archived history.", "query_clues": ["current state"],
+            "observation": "Current evidence precedes archived history.",
+            "query_clues": ["current state"],
         }],
         "code_contracts": [{
-            "path": "src/context_discovery_smoke.py", "blob_or_content_sha256": blob("src/context_discovery_smoke.py"),
+            "path": "src/context_discovery_smoke.py",
+            "blob_or_content_sha256": blob("src/context_discovery_smoke.py"),
             "purpose": "Review deterministic runtime ownership.",
-            "observation": "The runtime validates facts without making semantic decisions.", "query_clues": ["runtime"],
+            "observation": "Runtime validates facts without semantic judgment.",
+            "query_clues": ["runtime"],
         }],
         "tests": [{
-            "path": "tests/test_context_discovery_smoke.py", "blob_or_content_sha256": blob("tests/test_context_discovery_smoke.py"),
+            "path": "tests/test_context_discovery_smoke.py",
+            "blob_or_content_sha256": blob("tests/test_context_discovery_smoke.py"),
             "purpose": "Review installed verification coverage.",
-            "observation": "The throwaway covers candidate and zero-candidate paths.", "query_clues": ["throwaway"],
+            "observation": "Throwaway covers candidate and zero-candidate paths.",
+            "query_clues": ["throwaway"],
         }],
-        "observations": ["Current repository evidence was reviewed before history preview."],
+        "observations": [
+            "Current repository evidence was reviewed before history preview."
+        ],
     },
     "canonical_query": query,
     "history_preview": preview,
     "history_review": {
-        "selected_candidates": [{"candidate_id": candidate["candidate_id"], "reason": "Exact issue, path and command clues match."}],
+        "selected_candidates": [{
+            "candidate_id": candidate["candidate_id"],
+            "reason": "Exact issue, path, and command clues match.",
+        }],
         "excluded_candidates": [],
         "deep_reads": [{
-            "candidate_id": candidate["candidate_id"], "source": "task_artifact",
-            "locator": f"{candidate_task}/design.md", "purpose": "Verify archived runtime ownership.",
-            "conclusion": "The selected artifact confirms explicit narrow deep-read behavior.",
+            "candidate_id": candidate["candidate_id"],
+            "source": "task_artifact",
+            "locator": f"{candidate_task}/design.md",
+            "purpose": "Verify archived runtime ownership.",
+            "conclusion": "The selected artifact confirms narrow deep-read behavior.",
         }],
     },
     "mem_review": {
-        "status": "not_needed", "reason": "Current and selected task evidence is sufficient.",
+        "status": "not_needed",
+        "reason": "Current and selected task evidence is sufficient.",
         "load_bearing_question": None,
-        "exhausted_sources": {"task_artifacts": False, "current_docs_code_tests": False, "github": False, "git_history": False},
+        "exhausted_sources": {
+            "task_artifacts": False,
+            "current_docs_code_tests": False,
+            "github": False,
+            "git_history": False,
+        },
         "summary": None,
     },
     "ai_review_gate": {
-        "status": "passed", "reviewer": "throwaway-context-review",
-        "reviewed_scope": ["live draft", "current Docs/code/tests", "selected archived task artifact"],
+        "status": "passed",
+        "reviewer": "throwaway-context-review",
+        "reviewed_scope": [
+            "live draft",
+            "current Docs/code/tests",
+            "selected archived task artifact",
+        ],
         "excluded_scope": ["duplicate reuse decision"],
         "relevance": "The evidence directly covers installed context discovery.",
-        "sufficiency": "Current and archived evidence support the load-bearing conclusions.",
-        "conflicts": [], "reusable": ["installed dispatcher"], "not_reusable": ["workspace journal"],
+        "sufficiency": "Current and archived evidence support the conclusions.",
+        "conflicts": [],
+        "reusable": ["installed dispatcher"],
+        "not_reusable": ["workspace journal"],
         "load_bearing_conclusions": [{
             "conclusion": "Current state is reviewed before archived history.",
-            "evidence_refs": ["docs/context-discovery-smoke.md", f"{candidate_task}/design.md"],
+            "evidence_refs": [
+                "docs/context-discovery-smoke.md",
+                f"{candidate_task}/design.md",
+            ],
         }],
-        "findings": [], "reason": "Every required semantic dimension passed.",
+        "findings": [],
+        "reason": "Every required semantic dimension passed.",
     },
-    "refresh_history": [], "snapshot_identity": {}, "error": None,
+    "result_identity": {},
+    "error": None,
 }
-payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-
-if gtt.context_reviewed_blob_errors(root, payload):
-    raise SystemExit("installed context discovery rejected reviewed file blobs")
-tree_evidence = copy.deepcopy(payload)
-tree_evidence["current_state"]["docs"][0]["path"] = "docs"
-tree_evidence["current_state"]["docs"][0]["blob_or_content_sha256"] = blob("docs")
-if "reviewed_blob_stale" not in gtt.context_reviewed_blob_errors(root, tree_evidence):
-    raise SystemExit("installed context discovery accepted a reviewed tree as a blob")
-
-closed_body = "Closed source issue remains valid discovery input."
-closed_body_sha256 = hashlib.sha256(closed_body.encode("utf-8")).hexdigest()
-closed_facts = {
-    "repo": "castbox/guru-trellis-throwaway",
-    "number": 111,
-    "url": "https://github.com/castbox/guru-trellis-throwaway/issues/111",
-    "state": "closed",
-    "updated_at": "2026-01-01T00:00:00Z",
-    "body_sha256": closed_body_sha256,
-}
-closed_facts["facts_sha256"] = gtt.context_digest(closed_facts)
-closed_source = copy.deepcopy(payload)
-closed_source["live_change"] = {
-    "kind": "issue",
-    "identity": closed_facts["url"],
-    "state": closed_facts["state"],
-    "updated_at": closed_facts["updated_at"],
-    "body_sha256": closed_facts["body_sha256"],
-    "facts_sha256": closed_facts["facts_sha256"],
-    "issue_binding": None,
-}
-closed_source["snapshot_identity"] = gtt.context_snapshot_identity(closed_source)
-if gtt.context_structural_errors(root, closed_source):
-    raise SystemExit("installed context discovery rejected a closed source issue")
-closed_duplicate = copy.deepcopy(closed_source)
-closed_duplicate["duplicate_search"]["candidates"] = [{
-    "repo": "castbox/guru-trellis-throwaway",
-    "number": 99,
-    "identity": "#99",
-    "url": "https://github.com/castbox/guru-trellis-throwaway/issues/99",
-    "state": "closed",
-    "updated_at": "2026-01-01T00:00:00Z",
-    "facts_sha256": "a" * 64,
-    "reason": "Possible duplicate.",
-    "observation": "Closed issues cannot enter the open duplicate candidate set.",
-}]
-closed_duplicate["snapshot_identity"] = gtt.context_snapshot_identity(closed_duplicate)
-if "context_schema_validation_failed" not in gtt.context_structural_errors(root, closed_duplicate):
-    raise SystemExit("installed context discovery accepted a closed duplicate candidate")
-
-wrong_duplicate_digest = copy.deepcopy(payload)
-wrong_duplicate_digest["duplicate_search"]["candidates"][0]["facts_sha256"] = "f" * 64
-wrong_duplicate_digest["snapshot_identity"] = gtt.context_snapshot_identity(wrong_duplicate_digest)
-if "duplicate_candidate_facts_digest_mismatch" not in gtt.context_structural_errors(root, wrong_duplicate_digest):
-    raise SystemExit("installed context discovery accepted a mismatched duplicate digest")
-
-for field, value, expected_code in (
-    ("identity", "#100", "duplicate_candidate_identity_mismatch"),
-    ("url", "https://github.com/castbox/guru-trellis-throwaway/issues/100", "duplicate_candidate_url_mismatch"),
-):
-    variant = copy.deepcopy(payload)
-    candidate_variant = variant["duplicate_search"]["candidates"][0]
-    candidate_variant[field] = value
-    candidate_variant["facts_sha256"] = gtt.context_digest({
-        key: candidate_variant[key]
-        for key in ("repo", "number", "identity", "url", "state", "updated_at")
-    })
-    variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-    if expected_code not in gtt.context_structural_errors(root, variant):
-        raise SystemExit(f"installed context discovery accepted duplicate {field} mismatch")
-
-blocked_with_passed_gate = copy.deepcopy(payload)
-blocked_with_passed_gate["typed_exit"] = "blocked"
-blocked_with_passed_gate["error"] = {
-    "codes": ["semantic_review_blocked"],
-    "summary": "The semantic review could not form safe evidence.",
-}
-blocked_with_passed_gate["snapshot_identity"] = gtt.context_snapshot_identity(blocked_with_passed_gate)
-if "blocked_requires_blocked_gate" not in gtt.context_structural_errors(root, blocked_with_passed_gate):
-    raise SystemExit("installed context discovery accepted blocked with a passed Gate")
-blocked_gate_with_ready_exit = copy.deepcopy(payload)
-blocked_gate_with_ready_exit["ai_review_gate"]["status"] = "blocked"
-blocked_gate_with_ready_exit["snapshot_identity"] = gtt.context_snapshot_identity(blocked_gate_with_ready_exit)
-if "blocked_gate_requires_blocked_exit" not in gtt.context_structural_errors(root, blocked_gate_with_ready_exit):
-    raise SystemExit("installed context discovery accepted a blocked Gate with context_ready")
-
-empty_change_input = copy.deepcopy(payload)
-empty_change_input["change_input"] = {
-    kind: [] for kind in gtt.CONTEXT_QUERY_KINDS
-}
-empty_change_input["snapshot_identity"] = gtt.context_snapshot_identity(empty_change_input)
-empty_change_errors = gtt.context_structural_errors(root, empty_change_input)
-if not {
-    "context_schema_validation_failed",
-    "change_input_has_no_clues",
-}.issubset(empty_change_errors):
-    raise SystemExit("installed context discovery accepted an empty change_input")
-single_clue_values = {
-    "issue_refs": "#111",
-    "pr_refs": "PR #111",
-    "branches": "feat/context",
-    "paths": "docs/context-discovery-smoke.md",
-    "commands": "/trellis:continue",
-    "config_keys": "context.mode",
-    "schema_fields": "snapshot_sha256",
-    "symbols": "ContextDiscovery",
-    "terms": "change context",
-    "queries": "discover current and archived context",
-}
-for kind, value in single_clue_values.items():
-    variant = copy.deepcopy(payload)
-    variant["change_input"] = {
-        clue_kind: [value] if clue_kind == kind else []
-        for clue_kind in gtt.CONTEXT_QUERY_KINDS
-    }
-    if kind != "issue_refs":
-        variant["live_change"]["issue_binding"] = None
-    variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-    errors = gtt.context_structural_errors(root, variant)
-    if "context_schema_validation_failed" in errors or "change_input_has_no_clues" in errors:
-        raise SystemExit(f"installed context discovery rejected single {kind} clue")
-
-source_specific_locators = (
-    ("task_artifact", f"{candidate_task}/design.md"),
-    ("github", "https://github.com/castbox/guru-trellis-throwaway/issues/111"),
-    ("github", "https://github.com/castbox/guru-trellis-throwaway/pull/111"),
-    ("git", f"git:object:{head}"),
-    ("git", f"git:ref:refs/heads/main@{head}"),
+payload["result_identity"] = gtt.context_result_identity(payload)
+if gtt.context_structural_errors(root, payload):
+    raise SystemExit("installed candidate owner result is structurally invalid")
+Path(sys.argv[5]).write_text(
+    json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
 )
-for source, locator in source_specific_locators:
-    variant = copy.deepcopy(payload)
-    variant["history_review"]["deep_reads"][0].update({
-        "source": source,
-        "locator": locator,
-    })
-    variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-    if (
-        gtt.context_structural_errors(root, variant)
-        or gtt.context_repo_bound_locator_errors(root, variant)
-    ):
-        raise SystemExit(f"installed context discovery rejected canonical {source} locator")
 
-invalid_locators = (
-    ("task_artifact", ".trellis/tasks/archive/2025-12/other-task/design.md"),
-    ("github", "https://github.com/castbox/guru-trellis-throwaway/issues/111?view=full"),
-    ("git", f"git:ref:refs/heads/missing@{head}"),
-)
-for source, locator in invalid_locators:
-    variant = copy.deepcopy(payload)
-    variant["history_review"]["deep_reads"][0].update({
-        "source": source,
-        "locator": locator,
-    })
-    variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-    if not (
-        gtt.context_structural_errors(root, variant)
-        or gtt.context_repo_bound_locator_errors(root, variant)
-    ):
-        raise SystemExit(f"installed context discovery accepted invalid {source} locator")
-
-output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-PY
-
-DISCOVERY_ZERO_INPUT="$WORK_DIR/context-discovery-zero-input.json"
-DISCOVERY_ZERO_USED_INPUT="$WORK_DIR/context-discovery-zero-used-input.json"
-DISCOVERY_ZERO_INCONSISTENT_INPUT="$WORK_DIR/context-discovery-zero-inconsistent-input.json"
-python3 - \
-  "$TARGET" \
-  "$DISCOVERY_INPUT" \
-  "$DISCOVERY_ZERO_JSON" \
-  "$DISCOVERY_ZERO_INPUT" \
-  "$DISCOVERY_ZERO_USED_INPUT" \
-  "$DISCOVERY_ZERO_INCONSISTENT_INPUT" <<'PY'
-import copy
-import importlib.util
-import json
-import sys
-from pathlib import Path
-
-root = Path(sys.argv[1]).resolve()
-payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-preview = json.loads(sys.argv[3])
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_zero_context_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-
-payload["canonical_query"] = preview["canonical_query"]
-payload["change_input"] = {
-    key: preview["canonical_query"][key]
-    for key in (
-        "issue_refs", "pr_refs", "branches", "paths", "commands", "config_keys",
-        "schema_fields", "symbols", "terms", "queries",
-    )
+zero = copy.deepcopy(payload)
+zero_query = zero_preview["canonical_query"]
+zero["change_input"] = {
+    key: zero_query[key]
+    for key in gtt.CONTEXT_QUERY_KINDS
 }
-payload["live_change"]["issue_binding"] = None
-payload["history_preview"] = preview
-payload["history_review"] = {
+zero["live_change"]["issue_binding"] = None
+zero["canonical_query"] = zero_query
+zero["history_preview"] = zero_preview
+zero["history_review"] = {
     "selected_candidates": [],
     "excluded_candidates": [],
     "deep_reads": [],
 }
-payload["mem_review"] = {
+zero["mem_review"] = {
     "status": "not_needed",
-    "reason": "The zero-candidate preview requires no other history source.",
+    "reason": "The zero-candidate preview needs no other history source.",
     "load_bearing_question": None,
     "exhausted_sources": {
         "task_artifacts": False,
@@ -2148,42 +2018,30 @@ payload["mem_review"] = {
     },
     "summary": None,
 }
-payload["ai_review_gate"]["reviewed_scope"] = [
-    "live draft", "current Docs/code/tests", "zero-candidate history preview",
+zero["ai_review_gate"]["reviewed_scope"] = [
+    "live draft",
+    "current Docs/code/tests",
+    "zero-candidate history preview",
 ]
-payload["ai_review_gate"]["sufficiency"] = (
-    "Current evidence and the zero-candidate preview are sufficient without another history source."
-)
-payload["ai_review_gate"]["load_bearing_conclusions"] = [{
+zero["ai_review_gate"]["load_bearing_conclusions"] = [{
     "conclusion": "Zero candidates require no deep-read or memory source.",
     "evidence_refs": ["docs/context-discovery-smoke.md"],
 }]
-payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-Path(sys.argv[4]).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-used = copy.deepcopy(payload)
-used["mem_review"] = {
-    "status": "used",
-    "reason": "Invalid zero-candidate memory attempt.",
-    "load_bearing_question": "Which history source should be read?",
-    "exhausted_sources": {
-        "task_artifacts": True,
-        "current_docs_code_tests": True,
-        "github": True,
-        "git_history": True,
-    },
-    "summary": "Invalid memory evidence.",
-}
-used["snapshot_identity"] = gtt.context_snapshot_identity(used)
-Path(sys.argv[5]).write_text(json.dumps(used, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-inconsistent = copy.deepcopy(payload)
-inconsistent["mem_review"]["load_bearing_question"] = "Inconsistent not-needed question."
-inconsistent["mem_review"]["exhausted_sources"]["git_history"] = True
-inconsistent["mem_review"]["summary"] = "Inconsistent not-needed summary."
-inconsistent["snapshot_identity"] = gtt.context_snapshot_identity(inconsistent)
+zero["result_identity"] = gtt.context_result_identity(zero)
+if gtt.context_structural_errors(root, zero):
+    raise SystemExit("installed zero-candidate owner result is structurally invalid")
 Path(sys.argv[6]).write_text(
-    json.dumps(inconsistent, ensure_ascii=False, indent=2) + "\n",
+    json.dumps(zero, ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
+
+recovery = copy.deepcopy(payload)
+recovery["mode"] = "workflow"
+recovery["result_identity"] = gtt.context_result_identity(recovery)
+if gtt.context_structural_errors(root, recovery):
+    raise SystemExit("installed recovery owner result is structurally invalid")
+Path(sys.argv[7]).write_text(
+    json.dumps(recovery, ensure_ascii=False, indent=2) + "\n",
     encoding="utf-8",
 )
 PY
@@ -2244,326 +2102,144 @@ if [[ "$DISCOVERY_STATUS_AFTER" != "$DISCOVERY_STATUS_BEFORE" ]]; then
   echo "Pre-task context discovery modified the throwaway repository" >&2
   exit 2
 fi
-DISCOVERY_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["typed_exit"] == "context_ready"; print(payload["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_PRETASK_JSON")"
-DISCOVERY_ZERO_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["typed_exit"] == "context_ready"; assert payload["history_preview"]["candidates"] == []; assert payload["history_review"] == {"selected_candidates": [], "excluded_candidates": [], "deep_reads": []}; assert payload["mem_review"]["status"] == "not_needed"; print(payload["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_ZERO_PRETASK_JSON")"
-
-for INVALID_DISCOVERY_INPUT in "$DISCOVERY_ZERO_USED_INPUT" "$DISCOVERY_ZERO_INCONSISTENT_INPUT"; do
-  set +e
-  DISCOVERY_INVALID_JSON="$(
-    DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
+DISCOVERY_RESULT_SHA256="$(
+  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["schema_version"] == "2.0"; assert payload["typed_exit"] == "context_ready"; print(payload["result_identity"]["result_sha256"])' \
+    <<<"$DISCOVERY_PRETASK_JSON"
+)"
+DISCOVERY_ZERO_RESULT_SHA256="$(
+  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["history_preview"]["candidates"] == []; assert payload["history_review"] == {"selected_candidates": [], "excluded_candidates": [], "deep_reads": []}; assert payload["mem_review"]["status"] == "not_needed"; print(payload["result_identity"]["result_sha256"])' \
+    <<<"$DISCOVERY_ZERO_PRETASK_JSON"
+)"
+DISCOVERY_CHECK_JSON="$(
+  printf '%s' "$DISCOVERY_PRETASK_JSON" | \
+    DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+    "$DISCOVERY_CHECK" \
       --root "$TARGET" \
       --json \
-      --mode standalone \
-      --input "$INVALID_DISCOVERY_INPUT" 2>&1
-  )"
-  DISCOVERY_INVALID_STATUS=$?
-  set -e
-  if [[ "$DISCOVERY_INVALID_STATUS" -eq 0 ]]; then
-    echo "Zero-candidate context discovery accepted an invalid mem shape" >&2
-    exit 2
-  fi
-  python3 -c 'import json, sys; payload = json.load(sys.stdin); codes = payload["error_codes"]; assert "context_schema_validation_failed" in codes; assert any(code in codes for code in ("zero_candidate_mem_must_be_not_needed", "mem_not_needed_shape_invalid"))' <<<"$DISCOVERY_INVALID_JSON"
-done
+      --input - \
+      --expected-result-sha256 "$DISCOVERY_RESULT_SHA256"
+)"
+DISCOVERY_ZERO_CHECK_JSON="$(
+  printf '%s' "$DISCOVERY_ZERO_PRETASK_JSON" | \
+    DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+    "$DISCOVERY_CHECK" \
+      --root "$TARGET" \
+      --json \
+      --input - \
+      --expected-result-sha256 "$DISCOVERY_ZERO_RESULT_SHA256"
+)"
+python3 -c 'import json, sys; checked=json.loads(sys.argv[1]); zero=json.load(sys.stdin); assert checked["status"] == zero["status"] == "passed"; assert checked["typed_exit"] == zero["typed_exit"] == "context_ready"; assert checked["result_sha256"] == sys.argv[2]; assert zero["result_sha256"] == sys.argv[3]' \
+  "$DISCOVERY_CHECK_JSON" \
+  "$DISCOVERY_RESULT_SHA256" \
+  "$DISCOVERY_ZERO_RESULT_SHA256" \
+  <<<"$DISCOVERY_ZERO_CHECK_JSON"
 
-DISCOVERY_TASK_BRANCH="feat/111-context-discovery-task"
-DISCOVERY_TASK_WORKTREE="$WORK_DIR/context-discovery-feature-worktree"
-git -C "$TARGET" worktree add -q -b "$DISCOVERY_TASK_BRANCH" "$DISCOVERY_TASK_WORKTREE" "$(git -C "$TARGET" rev-parse HEAD)"
-DISCOVERY_TASK_RECORD="$DISCOVERY_TASK_WORKTREE/.agents/skills/guru-discover-change-context/scripts/record-context-discovery.sh"
-DISCOVERY_TASK_CHECK="$DISCOVERY_TASK_WORKTREE/.agents/skills/guru-discover-change-context/scripts/check-context-discovery.sh"
-DISCOVERY_TASK_REL=".trellis/tasks/01-01-context-discovery-smoke"
-DISCOVERY_ZERO_TASK_REL=".trellis/tasks/01-01-context-discovery-zero"
-mkdir -p "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL"
-printf '%s\n' "{\"id\":\"context-discovery-smoke\",\"status\":\"planning\",\"branch\":\"$DISCOVERY_TASK_BRANCH\"}" >"$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/task.json"
-DISCOVERY_TASK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --mode standalone \
-    --input "$DISCOVERY_INPUT" \
-    --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256"
-)"
-DISCOVERY_TASK_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_TASK_JSON")"
-DISCOVERY_CHECK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256"
-)"
-python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]; assert checked["status"] == "passed"; assert checked["typed_exit"] == "context_ready"; assert recorded["task_worktree_state"]["context_snapshot_path"].endswith("context-discovery.json")' "$DISCOVERY_TASK_JSON" "$DISCOVERY_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_CHECK_JSON"
-DISCOVERY_REPLACEMENT_INPUT="$WORK_DIR/context-discovery-replacement-input.json"
-DISCOVERY_INVALID_REPLACEMENT_INPUT="$WORK_DIR/context-discovery-invalid-replacement-input.json"
-DISCOVERY_REPLACEMENT_SUBMITTED_SHA256="$(python3 - "$DISCOVERY_TASK_WORKTREE" "$DISCOVERY_INPUT" "$DISCOVERY_REPLACEMENT_INPUT" "$DISCOVERY_INVALID_REPLACEMENT_INPUT" "$DISCOVERY_TASK_SNAPSHOT_SHA256" <<'PY'
-import copy
-import importlib.util
+DISCOVERY_PUBLIC_INPUT_REL=".trellis/.runtime/guru-team/discovery-public-input.json"
+DISCOVERY_PUBLIC_INPUT="$TARGET/$DISCOVERY_PUBLIC_INPUT_REL"
+mkdir -p "$(dirname "$DISCOVERY_PUBLIC_INPUT")"
+python3 - "$DISCOVERY_PUBLIC_INPUT" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-root = Path(sys.argv[1]).resolve()
-payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_replacement_context_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-payload["generated_at"] = "2026-01-01T00:01:00Z"
-payload["superseded_snapshot_sha256"] = sys.argv[5]
-payload["current_state"]["observations"].append(
-    "The active task authority changed after the prior snapshot."
-)
-payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-Path(sys.argv[3]).write_text(
-    json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-)
-invalid = copy.deepcopy(payload)
-invalid["snapshot_identity"]["snapshot_sha256"] = "0" * 64
-Path(sys.argv[4]).write_text(
-    json.dumps(invalid, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-)
-print(payload["snapshot_identity"]["snapshot_sha256"])
-PY
-)"
-DISCOVERY_PRIOR_BYTES_SHA256="$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")"
-for replacement_case in missing wrong; do
-  replacement_error_code="expected_prior_snapshot_required"
-  set +e
-  if [[ "$replacement_case" == "wrong" ]]; then
-    replacement_error_code="expected_prior_snapshot_mismatch"
-    DISCOVERY_REPLACEMENT_ERROR_JSON="$(
-      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-        --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
-        --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
-        --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
-        --expected-prior-snapshot-sha256 "$(printf 'f%.0s' {1..64})" 2>&1
-    )"
-  else
-    DISCOVERY_REPLACEMENT_ERROR_JSON="$(
-      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-        --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
-        --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
-        --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" 2>&1
-    )"
-  fi
-  DISCOVERY_REPLACEMENT_ERROR_STATUS=$?
-  set -e
-  if [[ "$DISCOVERY_REPLACEMENT_ERROR_STATUS" -eq 0 ]]; then
-    echo "Context discovery accepted $replacement_case replacement prior" >&2
-    exit 2
-  fi
-  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["error_codes"] == [sys.argv[1]]' "$replacement_error_code" <<<"$DISCOVERY_REPLACEMENT_ERROR_JSON"
-  test "$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")" = "$DISCOVERY_PRIOR_BYTES_SHA256"
-done
-set +e
-DISCOVERY_INVALID_REPLACEMENT_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
-    --input "$DISCOVERY_INVALID_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256" 2>&1
-)"
-DISCOVERY_INVALID_REPLACEMENT_STATUS=$?
-set -e
-if [[ "$DISCOVERY_INVALID_REPLACEMENT_STATUS" -eq 0 ]]; then
-  echo "Context discovery accepted an invalid replacement snapshot" >&2
-  exit 2
-fi
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert "snapshot_identity_mismatch" in payload["error_codes"]' <<<"$DISCOVERY_INVALID_REPLACEMENT_JSON"
-test "$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")" = "$DISCOVERY_PRIOR_BYTES_SHA256"
-DISCOVERY_REPLACED_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
-    --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256"
-)"
-DISCOVERY_REPLACED_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["superseded_snapshot_sha256"] == sys.argv[1]; print(payload["snapshot_identity"]["snapshot_sha256"])' "$DISCOVERY_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_REPLACED_JSON")"
-DISCOVERY_REPLACED_BYTES_SHA256="$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")"
-test "$DISCOVERY_REPLACED_BYTES_SHA256" != "$DISCOVERY_PRIOR_BYTES_SHA256"
-DISCOVERY_RETRY_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
-    --input "$DISCOVERY_REPLACEMENT_INPUT" --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REPLACEMENT_SUBMITTED_SHA256" \
-    --expected-prior-snapshot-sha256 "$DISCOVERY_TASK_SNAPSHOT_SHA256"
-)"
-python3 -c 'import json, sys; first=json.loads(sys.argv[1]); retry=json.load(sys.stdin); assert first == retry; assert retry["snapshot_identity"]["snapshot_sha256"] == sys.argv[2]' "$DISCOVERY_REPLACED_JSON" "$DISCOVERY_REPLACED_SNAPSHOT_SHA256" <<<"$DISCOVERY_RETRY_JSON"
-test "$(file_sha256 "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json")" = "$DISCOVERY_REPLACED_BYTES_SHA256"
-DISCOVERY_TASK_PUBLIC_INPUT_REL=".trellis/.runtime/guru-team/context-discovery-task-public-input.json"
-DISCOVERY_TASK_PUBLIC_INPUT="$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_PUBLIC_INPUT_REL"
-mkdir -p "$(dirname "$DISCOVERY_TASK_PUBLIC_INPUT")"
-python3 - "$DISCOVERY_TASK_PUBLIC_INPUT" "$DISCOVERY_TASK_REL" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-payload = {
-    "profile": "task_local_reentry",
+Path(sys.argv[1]).write_text(json.dumps({
+    "profile": "pre_task",
     "source_exit": "start",
     "mode": "standalone",
     "repo_locator": "castbox/guru-trellis-throwaway",
     "base_branch": "main",
-    "task_locator": sys.argv[2],
-    "prior_snapshot_locator": "context-discovery.json",
-    "continuation_id": "throwaway-task-local-reentry",
-}
-Path(sys.argv[1]).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    "continuation_id": "throwaway-ephemeral-context",
+}, indent=2) + "\n", encoding="utf-8")
 PY
-DISCOVERY_TASK_PUBLIC_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
-    "$DISCOVERY_TASK_WORKTREE/.agents/skills/guru-discover-change-context/scripts/invoke.sh" \
-    --input "$DISCOVERY_TASK_PUBLIC_INPUT_REL" \
-    --owner-result "$DISCOVERY_TASK_REL/context-discovery.json"
+DISCOVERY_PUBLIC_JSON="$(
+  printf '%s' "$DISCOVERY_PRETASK_JSON" | \
+    DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+    "$TARGET/.agents/skills/guru-discover-change-context/scripts/invoke.sh" \
+      --input "$DISCOVERY_PUBLIC_INPUT_REL" \
+      --owner-result -
 )"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_context_locator"].endswith("context-discovery.json")' <<<"$DISCOVERY_TASK_PUBLIC_JSON"
-rm "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json"
-DISCOVERY_GIT_EXCLUDE="$(git -C "$DISCOVERY_TASK_WORKTREE" rev-parse --git-path info/exclude)"
-if [[ "$DISCOVERY_GIT_EXCLUDE" != /* ]]; then
-  DISCOVERY_GIT_EXCLUDE="$DISCOVERY_TASK_WORKTREE/$DISCOVERY_GIT_EXCLUDE"
-fi
-DISCOVERY_GIT_EXCLUDE_BACKUP="$WORK_DIR/context-discovery-git-exclude.backup"
-cp "$DISCOVERY_GIT_EXCLUDE" "$DISCOVERY_GIT_EXCLUDE_BACKUP"
-printf '/%s/context-discovery.json\n' "$DISCOVERY_TASK_REL" >>"$DISCOVERY_GIT_EXCLUDE"
-for DISCOVERY_IGNORE_KIND in record check; do
-  set +e
-  if [[ "$DISCOVERY_IGNORE_KIND" == "record" ]]; then
-    DISCOVERY_IGNORE_JSON="$(
-      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-        --root "$DISCOVERY_TASK_WORKTREE" --json --mode standalone \
-        --input "$DISCOVERY_INPUT" --task "$DISCOVERY_TASK_REL" \
-        --expected-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" 2>&1
-    )"
-  else
-    DISCOVERY_IGNORE_JSON="$(
-      DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-        --root "$DISCOVERY_TASK_WORKTREE" --json \
-        --input "$DISCOVERY_INPUT" --task "$DISCOVERY_TASK_REL" \
-        --expected-snapshot-sha256 "$DISCOVERY_SNAPSHOT_SHA256" 2>&1
-    )"
-  fi
-  DISCOVERY_IGNORE_STATUS=$?
-  set -e
-  if [[ "$DISCOVERY_IGNORE_STATUS" -eq 0 ]]; then
-    echo "Context discovery accepted an ignored task artifact target: $DISCOVERY_IGNORE_KIND" >&2
-    exit 2
-  fi
-  python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["error_codes"] == ["context_discovery_target_ignored"], payload' <<<"$DISCOVERY_IGNORE_JSON"
-  test ! -e "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/context-discovery.json"
-done
-cp "$DISCOVERY_GIT_EXCLUDE_BACKUP" "$DISCOVERY_GIT_EXCLUDE"
-python3 - "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/task.json" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-payload = json.loads(path.read_text(encoding="utf-8"))
-payload["branch"] = "invalid branch"
-path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
-PY
-DISCOVERY_REFRESH_INPUT="$WORK_DIR/context-discovery-refresh-input.json"
-DISCOVERY_REFRESH_SNAPSHOT_SHA256="$(python3 - "$DISCOVERY_TASK_WORKTREE" "$DISCOVERY_INPUT" "$DISCOVERY_REFRESH_INPUT" <<'PY'
-import copy
-import importlib.util
-import json
-import sys
-from pathlib import Path
-
-root = Path(sys.argv[1]).resolve()
-payload = copy.deepcopy(json.loads(Path(sys.argv[2]).read_text(encoding="utf-8")))
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_refresh_context_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed context discovery runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-superseded = payload["snapshot_identity"]["snapshot_sha256"]
-payload["typed_exit"] = "refresh_base"
-payload["refresh_history"] = [{
-    "reason": "The active task branch no longer matches the feature worktree.",
-    "error_codes": ["task_branch_stale"],
-    "superseded_query_sha256": payload["canonical_query"]["query_sha256"],
-    "superseded_snapshot_sha256": superseded,
-    "detected_at": "2026-01-01T00:02:00Z",
-}]
-payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-Path(sys.argv[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-print(payload["snapshot_identity"]["snapshot_sha256"])
-PY
-)"
-set +e
-DISCOVERY_NON_REFRESHABLE_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --mode standalone \
-    --input "$DISCOVERY_REFRESH_INPUT" \
-    --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256" 2>&1
-)"
-DISCOVERY_NON_REFRESHABLE_STATUS=$?
-set -e
-if [[ "$DISCOVERY_NON_REFRESHABLE_STATUS" -eq 0 ]]; then
-  echo "Context discovery accepted invalid_task_branch as refreshable" >&2
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id", "handoff_profile", "handoff_mode", "handoff_target_locator", "handoff_continuation_id"}; assert payload["exit_id"] == "context_ready"; assert payload["handoff_profile"] == "initial_change_request"; assert payload["handoff_mode"] == "standalone"; assert payload["handoff_continuation_id"] == "throwaway-ephemeral-context"' \
+  <<<"$DISCOVERY_PUBLIC_JSON"
+rm "$DISCOVERY_PUBLIC_INPUT"
+DISCOVERY_STATUS_NORMAL_FINAL="$(git -C "$TARGET" status --porcelain=v1)"
+if [[ "$DISCOVERY_STATUS_NORMAL_FINAL" != "$DISCOVERY_STATUS_BEFORE" ]]; then
+  echo "Ephemeral context record/check/invoke modified the throwaway repository" >&2
   exit 2
 fi
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert "invalid_task_branch" in payload["error_codes"]; assert "refresh_base_has_non_refreshable_error" in payload["error_codes"]' <<<"$DISCOVERY_NON_REFRESHABLE_JSON"
-python3 - "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL/task.json" "$DISCOVERY_TASK_BRANCH" <<'PY'
+
+DISCOVERY_RECOVERY_TASK_REL=".trellis/tasks/08-07-context-recovery"
+DISCOVERY_RECOVERY_TASK="$TARGET/$DISCOVERY_RECOVERY_TASK_REL"
+DISCOVERY_RECOVERY_BRANCH="codex/throwaway-context-recovery"
+git -C "$TARGET" checkout -q -b "$DISCOVERY_RECOVERY_BRANCH"
+mkdir -p "$DISCOVERY_RECOVERY_TASK"
+printf '{"id":"08-07-context-recovery","status":"in_progress","branch":"%s"}\n' \
+  "$DISCOVERY_RECOVERY_BRANCH" >"$DISCOVERY_RECOVERY_TASK/task.json"
+git -C "$TARGET" add "$DISCOVERY_RECOVERY_TASK_REL/task.json"
+git -C "$TARGET" commit -q -m "chore: add throwaway active recovery task"
+DISCOVERY_RECOVERY_CONTINUATION="throwaway-active-recovery"
+DISCOVERY_RECOVERY_JSON="$(
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_RECORD" \
+    --root "$TARGET" \
+    --json \
+    --mode workflow \
+    --input "$DISCOVERY_RECOVERY_INPUT" \
+    --recovery-task "$DISCOVERY_RECOVERY_TASK_REL" \
+    --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
+)"
+DISCOVERY_RECOVERY_SHA256="$(
+  python3 -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
+    <<<"$DISCOVERY_RECOVERY_JSON"
+)"
+printf '%s' "$DISCOVERY_RECOVERY_JSON" | \
+  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+  "$DISCOVERY_CHECK" \
+    --root "$TARGET" \
+    --json \
+    --input - \
+    --expected-result-sha256 "$DISCOVERY_RECOVERY_SHA256" \
+    --recovery-task "$DISCOVERY_RECOVERY_TASK_REL" \
+    --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION" >/dev/null
+DISCOVERY_RECOVERY_PUBLIC_INPUT_REL=".trellis/.runtime/guru-team/discovery-recovery-public-input.json"
+DISCOVERY_RECOVERY_PUBLIC_INPUT="$TARGET/$DISCOVERY_RECOVERY_PUBLIC_INPUT_REL"
+python3 - "$DISCOVERY_RECOVERY_PUBLIC_INPUT" "$DISCOVERY_RECOVERY_CONTINUATION" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-path = Path(sys.argv[1])
-payload = json.loads(path.read_text(encoding="utf-8"))
-payload["branch"] = sys.argv[2] + "-stale"
-path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+Path(sys.argv[1]).write_text(json.dumps({
+    "profile": "pre_task",
+    "source_exit": "needs_context",
+    "mode": "workflow",
+    "repo_locator": "castbox/guru-trellis-throwaway",
+    "base_branch": "main",
+    "continuation_id": sys.argv[2],
+}, indent=2) + "\n", encoding="utf-8")
 PY
-DISCOVERY_REFRESH_TASK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --mode standalone \
-    --input "$DISCOVERY_REFRESH_INPUT" \
-    --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_SNAPSHOT_SHA256"
+DISCOVERY_RECOVERY_PUBLIC_JSON="$(
+  printf '%s' "$DISCOVERY_RECOVERY_JSON" | \
+    DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" \
+    "$TARGET/.agents/skills/guru-discover-change-context/scripts/invoke.sh" \
+      --input "$DISCOVERY_RECOVERY_PUBLIC_INPUT_REL" \
+      --owner-result - \
+      --owner-task "$DISCOVERY_RECOVERY_TASK_REL" \
+      --owner-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
 )"
-DISCOVERY_REFRESH_TASK_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_REFRESH_TASK_JSON")"
-DISCOVERY_REFRESH_CHECK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --task "$DISCOVERY_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_REFRESH_TASK_SNAPSHOT_SHA256"
-)"
-python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["typed_exit"] == checked["typed_exit"] == "refresh_base"; assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]' "$DISCOVERY_REFRESH_TASK_JSON" "$DISCOVERY_REFRESH_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_REFRESH_CHECK_JSON"
-rm -rf "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_TASK_REL"
-mkdir -p "$DISCOVERY_TASK_WORKTREE/$DISCOVERY_ZERO_TASK_REL"
-printf '%s\n' "{\"id\":\"context-discovery-zero\",\"status\":\"planning\",\"branch\":\"$DISCOVERY_TASK_BRANCH\"}" >"$DISCOVERY_TASK_WORKTREE/$DISCOVERY_ZERO_TASK_REL/task.json"
-DISCOVERY_ZERO_TASK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_RECORD" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --mode standalone \
-    --input "$DISCOVERY_ZERO_INPUT" \
-    --task "$DISCOVERY_ZERO_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_ZERO_SNAPSHOT_SHA256"
-)"
-DISCOVERY_ZERO_TASK_SNAPSHOT_SHA256="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["snapshot_identity"]["snapshot_sha256"])' <<<"$DISCOVERY_ZERO_TASK_JSON")"
-DISCOVERY_ZERO_CHECK_JSON="$(
-  DISCOVERY_REAL_GIT="$DISCOVERY_REAL_GIT" PATH="$DISCOVERY_FAKE_BIN:$PATH" "$DISCOVERY_TASK_CHECK" \
-    --root "$DISCOVERY_TASK_WORKTREE" \
-    --json \
-    --task "$DISCOVERY_ZERO_TASK_REL" \
-    --expected-snapshot-sha256 "$DISCOVERY_ZERO_TASK_SNAPSHOT_SHA256"
-)"
-python3 -c 'import json, sys; recorded = json.loads(sys.argv[1]); checked = json.load(sys.stdin); assert recorded["history_preview"]["candidates"] == []; assert recorded["mem_review"]["status"] == "not_needed"; assert recorded["snapshot_identity"]["snapshot_sha256"] == checked["snapshot_sha256"] == sys.argv[2]; assert checked["status"] == "passed"' "$DISCOVERY_ZERO_TASK_JSON" "$DISCOVERY_ZERO_TASK_SNAPSHOT_SHA256" <<<"$DISCOVERY_ZERO_CHECK_JSON"
-git -C "$TARGET" worktree remove --force "$DISCOVERY_TASK_WORKTREE"
-git -C "$TARGET" branch -D "$DISCOVERY_TASK_BRANCH" >/dev/null
-test -z "$(git -C "$TARGET" status --porcelain=v1)"
+python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_continuation_id"] == sys.argv[1]' \
+  "$DISCOVERY_RECOVERY_CONTINUATION" \
+  <<<"$DISCOVERY_RECOVERY_PUBLIC_JSON"
+rm "$DISCOVERY_RECOVERY_PUBLIC_INPUT"
+git -C "$TARGET" checkout -q main
+git -C "$TARGET" branch -D "$DISCOVERY_RECOVERY_BRANCH" >/dev/null
+DISCOVERY_OWNER_ROOT="$TARGET/.trellis/.runtime/guru-team/owner-checkpoints"
+if [[ -d "$DISCOVERY_OWNER_ROOT" ]] && find "$DISCOVERY_OWNER_ROOT" -mindepth 1 -print -quit | grep -q .; then
+  echo "Ephemeral context invocation left an owner checkpoint" >&2
+  exit 2
+fi
+DISCOVERY_STATUS_FINAL="$(git -C "$TARGET" status --porcelain=v1)"
+if [[ "$DISCOVERY_STATUS_FINAL" != "$DISCOVERY_STATUS_BEFORE" ]]; then
+  echo "Active-task context recovery left throwaway repository residue" >&2
+  exit 2
+fi
 
 PHASE0_FAKE_BIN="$WORK_DIR/phase0-fake-bin"
 mkdir -p "$PHASE0_FAKE_BIN"

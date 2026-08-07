@@ -570,8 +570,7 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         payload["typed_exit"] = "needs_context"
         payload["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
         payload["context_evidence"] = {
-            "status": "missing", "schema_id": None, "snapshot_sha256": None,
-            "evidence_refs": ["repository.current_owner"],
+            "status": "missing", "evidence_refs": ["repository.current_owner"],
             "missing_reason": "The current repository owner evidence is unavailable.",
         }
         payload["reason"] = "A named repository fact is required before clarification can continue."
@@ -704,10 +703,9 @@ def build_context_owner(
     fixture: Path,
     package_root: Path,
     recipe: str,
-    task_dir: Path | None = None,
 ) -> dict[str, Any]:
     payload = json.loads(
-        (package_root / "examples/context-discovery.json").read_text(encoding="utf-8")
+        (package_root / "examples/change-context-owner-result.json").read_text(encoding="utf-8")
     )
     old_head = run_git(fixture, "rev-parse", "HEAD")
     sync = context_sync_result(runtime, old_head)
@@ -746,15 +744,10 @@ def build_context_owner(
     payload["history_review"] = {
         "selected_candidates": [], "excluded_candidates": [], "deep_reads": [],
     }
-    payload["refresh_history"] = []
     payload["error"] = None
     payload["typed_exit"] = "context_ready"
     payload["ai_review_gate"]["status"] = "passed"
-    if task_dir is not None:
-        payload["task_worktree_state"] = runtime.context_task_worktree_state(
-            fixture, task_dir,
-        )
-    payload["snapshot_identity"] = runtime.context_snapshot_identity(payload)
+    payload["result_identity"] = runtime.context_result_identity(payload)
     if recipe == "context-ready":
         return payload
     if recipe == "context-blocked":
@@ -764,28 +757,12 @@ def build_context_owner(
             "codes": ["semantic_review_blocked"],
             "summary": "A named load-bearing repository source could not be reviewed.",
         }
-        payload["snapshot_identity"] = runtime.context_snapshot_identity(payload)
+        payload["result_identity"] = runtime.context_result_identity(payload)
         return payload
     if recipe == "context-refresh-base":
-        ready_snapshot = payload["snapshot_identity"]["snapshot_sha256"]
         run_git(fixture, "commit", "--allow-empty", "-q", "-m", "advance context fixture")
-        if task_dir is not None:
-            payload["task_worktree_state"] = runtime.context_task_worktree_state(
-                fixture, task_dir,
-            )
         payload["typed_exit"] = "refresh_base"
-        payload["refresh_history"] = [{
-            "reason": "The decision checkout advanced after context review.",
-            "error_codes": (
-                runtime.context_live_base_errors(fixture, payload, task_dir)
-                if task_dir is not None
-                else ["base_head_stale", "local_base_stale"]
-            ),
-            "superseded_query_sha256": query["query_sha256"],
-            "superseded_snapshot_sha256": ready_snapshot,
-            "detected_at": "2026-01-01T00:01:00Z",
-        }]
-        payload["snapshot_identity"] = runtime.context_snapshot_identity(payload)
+        payload["result_identity"] = runtime.context_result_identity(payload)
         return payload
     raise ValueError(f"unsupported context owner staging recipe: {recipe}")
 
@@ -876,18 +853,7 @@ def build_wording_owner(
 def readiness_prerequisites(
     runtime: Any, fixture: Path, source: dict[str, Any], source_path: Path,
 ) -> dict[str, dict[str, Any]]:
-    context_package = fixture / ".trellis/guru-team/skills/packages/guru-discover-change-context"
-    context = build_context_owner(runtime, fixture, context_package, "context-ready")
     body_sha256 = hashlib.sha256(source["body"].encode("utf-8")).hexdigest()
-    live = {
-        "kind": "draft", "identity": f"draft:{body_sha256}", "state": "draft",
-        "updated_at": "2026-01-01T00:00:00Z", "body_sha256": body_sha256,
-    }
-    context["live_change"] = {
-        **live, "facts_sha256": runtime.context_digest(live), "issue_binding": None,
-    }
-    context["snapshot_identity"] = runtime.context_snapshot_identity(context)
-
     clarity_package = fixture / ".trellis/guru-team/skills/packages/guru-clarify-requirements"
     clarity = json.loads(
         (clarity_package / "examples/requirements-clarification.json").read_text(encoding="utf-8")
@@ -911,11 +877,9 @@ def readiness_prerequisites(
         "decision_summary": "No current duplicate replaces the reviewed draft.",
         "disposition_digest": "0" * 64,
     }
-    snapshot_sha256 = context["snapshot_identity"]["snapshot_sha256"]
     clarity["context_evidence"] = {
-        "status": "current", "schema_id": "guru-context-discovery-1.0",
-        "snapshot_sha256": snapshot_sha256,
-        "evidence_refs": [f"guru-context-discovery-1.0:{snapshot_sha256}"],
+        "status": "current",
+        "evidence_refs": ["live-authority:stage0-readiness-eval"],
         "missing_reason": None,
     }
     clarity = runtime.derive_requirements_clarification_result(clarity)
@@ -926,7 +890,7 @@ def readiness_prerequisites(
     )
     scan = runtime.scan_contract_wording(scope, contents)
     wording = wording_review(runtime, "change_request", "standalone", scope, scan, "pass")
-    return {"context": context, "clarity": clarity, "wording": wording}
+    return {"clarity": clarity, "wording": wording}
 
 
 def readiness_semantic_review(
@@ -1050,18 +1014,8 @@ def workspace_prerequisites(
     title_sha256 = hashlib.sha256(title.encode("utf-8")).hexdigest()
     body_sha256 = hashlib.sha256(body.encode("utf-8")).hexdigest()
 
-    context_package = fixture / ".trellis/guru-team/skills/packages/guru-discover-change-context"
-    context = build_context_owner(runtime, fixture, context_package, "context-ready")
-    issue_facts = {
-        "repo": repo, "number": issue_number, "url": issue_url, "state": "open",
-        "updated_at": updated_at, "body_sha256": body_sha256,
-    }
-    context["live_change"] = {
-        "kind": "issue", "identity": issue_url, "state": "open",
-        "updated_at": updated_at, "body_sha256": body_sha256,
-        "facts_sha256": runtime.context_digest(issue_facts), "issue_binding": None,
-    }
-    context["snapshot_identity"] = runtime.context_snapshot_identity(context)
+    head = run_git(fixture, "rev-parse", "HEAD")
+    base = context_sync_result(runtime, head)
 
     clarity_package = fixture / ".trellis/guru-team/skills/packages/guru-clarify-requirements"
     clarity = json.loads(
@@ -1069,11 +1023,8 @@ def workspace_prerequisites(
     )
     clarity["mode"] = mode
     clarity["context_evidence"] = {
-        "status": "current", "schema_id": "guru-context-discovery-1.0",
-        "snapshot_sha256": context["snapshot_identity"]["snapshot_sha256"],
-        "evidence_refs": [
-            f"guru-context-discovery-1.0:{context['snapshot_identity']['snapshot_sha256']}"
-        ],
+        "status": "current",
+        "evidence_refs": ["live-authority:stage0-workspace-eval"],
         "missing_reason": None,
     }
     clarity = clarity_target(runtime, clarity, body=body)
@@ -1097,7 +1048,7 @@ def workspace_prerequisites(
         "url": issue_url, "updated_at": updated_at,
         "title_sha256": title_sha256, "body_sha256": body_sha256,
     }
-    prerequisite_payloads = {"context": context, "clarity": clarity, "wording": wording}
+    prerequisite_payloads = {"clarity": clarity, "wording": wording}
     target, normalized_scope, normalized_contents = runtime.change_request_review_normalize_target(
         fixture, raw_target, source_path.relative_to(fixture).as_posix(), mode,
     )
@@ -1126,8 +1077,7 @@ def workspace_prerequisites(
         target, projections, linkage, authored
     )
     return {
-        "base": context["base_evidence"]["sync_result"],
-        "context": context,
+        "base": base,
         "clarity": clarity,
         "wording": wording,
         "readiness": readiness,
@@ -3243,14 +3193,7 @@ def stage_owner_execution(
         elif skill_id == "guru-clarify-requirements":
             owner = build_clarity_owner(runtime, package, recipe)
         elif skill_id == "guru-discover-change-context":
-            context_task_dir = (
-                fixture / str(public_payload["task_locator"])
-                if public_payload.get("profile") == "task_local_reentry"
-                else None
-            )
-            owner = build_context_owner(
-                runtime, fixture, package, recipe, context_task_dir,
-            )
+            owner = build_context_owner(runtime, fixture, package, recipe)
         elif skill_id == "guru-review-contract-wording":
             owner, _ = build_wording_owner(runtime, fixture, package, recipe)
         elif skill_id == "guru-review-change-request":
@@ -3270,15 +3213,6 @@ def stage_owner_execution(
         else:
             os.environ["PATH"] = previous_path
     owner_path = fixture / OWNER_RESULT
-    if (
-        skill_id == "guru-discover-change-context"
-        and public_payload.get("profile") == "task_local_reentry"
-    ):
-        owner_path = (
-            fixture
-            / str(public_payload["task_locator"])
-            / str(public_payload["prior_snapshot_locator"])
-        )
     owner_path.parent.mkdir(parents=True, exist_ok=True)
     owner_path.write_text(json.dumps(owner) + "\n", encoding="utf-8")
     return package, fixture_runtime_target, environment
@@ -3312,10 +3246,22 @@ def start_public_runtime_boundary(
                 if arguments[:2] != ["--package-root", str(projection_root)]:
                     raise ValueError("public invocation package projection binding is invalid")
                 arguments = ["--package-root", str(package_root), *arguments[2:]]
+                stdin_text = None
+                if "--owner-result" in arguments:
+                    owner_index = arguments.index("--owner-result")
+                    if (
+                        owner_index + 1 < len(arguments)
+                        and arguments[owner_index + 1] == "-"
+                    ):
+                        owner_path = target.parents[4] / OWNER_RESULT
+                        if owner_path.is_symlink() or not owner_path.is_file():
+                            raise ValueError("stdin owner result is unavailable or unsafe")
+                        stdin_text = owner_path.read_text(encoding="utf-8")
                 process = subprocess.run(
                     [str(target), *arguments],
                     cwd=target.parents[4],
                     text=True,
+                    input=stdin_text,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     check=False,

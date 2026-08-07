@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
-  "title": "Guru Team change context discovery result",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json",
+  "title": "Guru Team change context owner result",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,18 +9,16 @@
     "repository", "base_evidence", "change_input", "live_change",
     "duplicate_search", "current_state", "canonical_query", "history_preview",
     "history_review", "mem_review", "ai_review_gate",
-    "refresh_history", "snapshot_identity", "error"
+    "result_identity", "error"
   ],
   "properties": {
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "2.0"},
     "skill_id": {"const": "guru-discover-change-context"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
     "typed_exit": {"enum": ["context_ready", "refresh_base", "blocked"]},
     "repository": {"$ref": "#/$defs/repository"},
     "base_evidence": {"$ref": "#/$defs/baseEvidence"},
-    "task_worktree_state": {"$ref": "#/$defs/taskWorktreeState"},
-    "superseded_snapshot_sha256": {"$ref": "#/$defs/sha256"},
     "change_input": {"$ref": "#/$defs/changeInput"},
     "live_change": {"$ref": "#/$defs/liveChange"},
     "duplicate_search": {"$ref": "#/$defs/duplicateSearch"},
@@ -30,8 +28,7 @@
     "history_review": {"$ref": "#/$defs/historyReview"},
     "mem_review": {"$ref": "#/$defs/memReview"},
     "ai_review_gate": {"$ref": "#/$defs/aiGate"},
-    "refresh_history": {"type": "array", "items": {"$ref": "#/$defs/refreshEntry"}},
-    "snapshot_identity": {"$ref": "#/$defs/snapshotIdentity"},
+    "result_identity": {"$ref": "#/$defs/resultIdentity"},
     "error": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/error"}]}
   },
   "allOf": [
@@ -50,10 +47,6 @@
           "error": {"type": "null"}
         }
       }
-    },
-    {
-      "if": {"properties": {"typed_exit": {"const": "refresh_base"}}, "required": ["typed_exit"]},
-      "then": {"properties": {"refresh_history": {"minItems": 1}}}
     },
     {
       "if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]},
@@ -167,16 +160,6 @@
         "gitlink_head": {"oneOf": [{"type": "null"}, {"type": "string", "pattern": "^[0-9a-f]{40,64}$"}]},
         "gitlink_initialized": {"type": "boolean"},
         "gitlink_dirty": {"oneOf": [{"type": "null"}, {"type": "boolean"}]}
-      }
-    },
-    "taskWorktreeState": {
-      "type": "object", "additionalProperties": false,
-      "required": ["head", "context_snapshot_path", "entries", "digest"],
-      "properties": {
-        "head": {"$ref": "#/$defs/commit"},
-        "context_snapshot_path": {"$ref": "#/$defs/portablePath"},
-        "entries": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/taskWorktreeEntry"}},
-        "digest": {"$ref": "#/$defs/sha256"}
       }
     },
     "baseResolution": {
@@ -458,13 +441,9 @@
       "properties": {"status": {"enum": ["passed", "blocked"]}, "reviewer": {"$ref": "#/$defs/nonEmpty"}, "reviewed_scope": {"$ref": "#/$defs/stringList"}, "excluded_scope": {"$ref": "#/$defs/stringList"}, "relevance": {"$ref": "#/$defs/nonEmpty"}, "sufficiency": {"$ref": "#/$defs/nonEmpty"}, "conflicts": {"$ref": "#/$defs/stringList"}, "reusable": {"$ref": "#/$defs/stringList"}, "not_reusable": {"$ref": "#/$defs/stringList"}, "load_bearing_conclusions": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["conclusion", "evidence_refs"], "properties": {"conclusion": {"$ref": "#/$defs/nonEmpty"}, "evidence_refs": {"$ref": "#/$defs/stringList"}}}}, "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}}, "reason": {"$ref": "#/$defs/nonEmpty"}},
       "allOf": [{"if": {"properties": {"status": {"const": "passed"}}, "required": ["status"]}, "then": {"properties": {"reviewed_scope": {"minItems": 1}, "load_bearing_conclusions": {"minItems": 1}}}}]
     },
-    "refreshEntry": {
-      "type": "object", "additionalProperties": false, "required": ["reason", "error_codes", "superseded_query_sha256", "superseded_snapshot_sha256", "detected_at"],
-      "properties": {"reason": {"$ref": "#/$defs/nonEmpty"}, "error_codes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}}, "superseded_query_sha256": {"$ref": "#/$defs/sha256"}, "superseded_snapshot_sha256": {"$ref": "#/$defs/sha256"}, "detected_at": {"type": "string", "format": "date-time"}}
-    },
-    "snapshotIdentity": {
-      "type": "object", "additionalProperties": false, "required": ["query_sha256", "archive_manifest_sha256", "live_change_sha256", "base_head", "base_sync_facts_sha256", "post_sync_resolution_sha256", "payload_sha256", "snapshot_sha256"],
-      "properties": {"query_sha256": {"$ref": "#/$defs/sha256"}, "archive_manifest_sha256": {"$ref": "#/$defs/sha256"}, "live_change_sha256": {"$ref": "#/$defs/sha256"}, "base_head": {"$ref": "#/$defs/commit"}, "base_sync_facts_sha256": {"$ref": "#/$defs/sha256"}, "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"}, "payload_sha256": {"$ref": "#/$defs/sha256"}, "snapshot_sha256": {"$ref": "#/$defs/sha256"}}
+    "resultIdentity": {
+      "type": "object", "additionalProperties": false, "required": ["query_sha256", "archive_manifest_sha256", "live_change_sha256", "base_head", "base_sync_facts_sha256", "post_sync_resolution_sha256", "payload_sha256", "result_sha256"],
+      "properties": {"query_sha256": {"$ref": "#/$defs/sha256"}, "archive_manifest_sha256": {"$ref": "#/$defs/sha256"}, "live_change_sha256": {"$ref": "#/$defs/sha256"}, "base_head": {"$ref": "#/$defs/commit"}, "base_sync_facts_sha256": {"$ref": "#/$defs/sha256"}, "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"}, "payload_sha256": {"$ref": "#/$defs/sha256"}, "result_sha256": {"$ref": "#/$defs/sha256"}}
     },
     "error": {
       "type": "object", "additionalProperties": false, "required": ["codes", "summary"],

@@ -105,7 +105,6 @@ def assert_task_plan_clarify_scope_router_contract(
         "`profile`",
         "`source_exit`",
         "`target_locator`",
-        "`context_locator`",
         "`task_locator`",
         "`resume_target`",
         "`continuation_id`",
@@ -4248,7 +4247,7 @@ class IntakePublicInvocationTests(unittest.TestCase):
         workflow = (self.repo / ".trellis/workflow.md").read_text(encoding="utf-8")
         assert_task_plan_clarify_scope_router_contract(self, workflow)
 
-    def test_task_local_refresh_base_eval_uses_checked_snapshot_owner(self) -> None:
+    def test_refresh_base_eval_uses_ephemeral_checked_owner(self) -> None:
         result = self.run_shared_eval(
             "guru-discover-change-context", "refresh-base-route"
         )
@@ -4260,10 +4259,10 @@ class IntakePublicInvocationTests(unittest.TestCase):
         native_trace = json.loads(
             Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
         )
-        self.assertIn(
-            ".trellis/tasks/current/context-discovery.json",
-            native_trace["events"][-1]["argv"],
-        )
+        argv = native_trace["events"][-1]["argv"]
+        owner_flag = argv.index("--owner-result")
+        self.assertEqual(argv[owner_flag + 1], "-")
+        self.assertFalse(any(value.startswith(".trellis/tasks/") for value in argv))
 
     def test_codex_repo_external_execution_root_runs_real_finalizer_wrapper(
         self,
@@ -5192,7 +5191,7 @@ class IntakePublicInvocationTests(unittest.TestCase):
         target, scope, contents = runtime.change_request_review_normalize_target(
             self.repo, raw_target, request_relative, "standalone"
         )
-        prerequisite_payloads = {"context": None, "clarity": None, "wording": None}
+        prerequisite_payloads = {"clarity": None, "wording": None}
         prerequisites = runtime.change_request_review_prerequisite_projections(
             self.repo, prerequisite_payloads, target, scope, contents
         )

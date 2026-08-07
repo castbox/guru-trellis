@@ -8,11 +8,12 @@ consumers, and the fail-closed stop. The shared runtime owns only schema,
 hash, digest, evidence linkage, existing prerequisite objective checks,
 recording, and checking.
 
-The Skill never fetches base context, searches Docs/code/tests/history, chooses
-duplicate reuse, runs the clarification loop, scans wording independently, or
+The Skill rereads current target authority and the Docs/code/tests/history
+needed by its own readiness gate. It never chooses duplicate reuse, runs the
+clarification loop, scans wording independently, or
 creates an issue, branch, worktree, or Trellis task. It reuses the current
-outputs of `guru-discover-change-context`, `guru-clarify-requirements`, and
-`guru-review-contract-wording`. Issue #112's
+outputs of `guru-clarify-requirements` and `guru-review-contract-wording`;
+Discovery cognition is not reopened through a private artifact. Issue #112's
 `guru-create-task-workspace` consumer owns every task-creation side effect and
 consumes the checked typed exit directly. It does not persist the private
 `issue-review.json`-shaped result under the task.
@@ -51,17 +52,15 @@ variant identity rather than being folded into the #113 authority projection.
 
 ## Prerequisite Projection
 
-The recorder accepts one closed `prerequisite_payloads` object with `context`,
-`clarity`, and `wording` members. Each member is either the complete upstream
+The recorder accepts one closed `prerequisite_payloads` object with `clarity`
+and `wording` members. Each member is either the complete upstream
 result or `null` when the AI is recording an explicit missing-evidence reroute.
 The runtime calls the existing objective structural/live helpers for each
-present payload. It does not copy or reimplement current/history discovery,
-clarification reduction, or wording scan/classification.
+present payload. It does not read Discovery private state or reimplement
+clarification reduction or wording scan/classification.
 
 The durable result stores only portable projections and error codes:
 
-- context: schema/exit, snapshot/base/query/live/current/history/duplicate
-  identities;
 - clarity: schema/exit, result/target/disposition/content/scope identities;
 - wording: schema/profile/exit, facts/scope/scan and target-content identities.
 
@@ -69,8 +68,8 @@ Each projection has `status=current`, `missing`, or `invalid`. Only `current`
 is eligible for `ready`. Missing/stale/mismatched evidence remains objective
 input to the AI's reroute judgment; scripts never map an error code to an exit.
 
-`evidence_linkage` binds target identity/content, base/current/history/
-duplicate identities, clarity facts, wording facts, and one canonical
+`evidence_linkage` binds target identity/content, clarity facts, wording facts,
+and one canonical
 `linkage_sha256`. The clarification disposition digest is an independent
 linkage member, so a retained/selected target decision cannot drift while a
 previous readiness pass remains reusable. Checker invocation supplies the same current prerequisite
@@ -107,7 +106,7 @@ task's Issue Scope Ledger and finish-work gate own its `[101]` close projection.
 
 The AI Review Gate records reviewer, reviewed linkage digest, summary, findings
 count, scope-conclusion digest, and status. `passed` pairs with `ready`,
-`reroute` pairs with one of the three prerequisite exits, and `blocked` pairs
+`reroute` pairs with one of the mapped prerequisite or live-context exits, and `blocked` pairs
 with `blocked`. A missing or incomplete Gate fails closed. Zero scanner errors,
 successful prerequisite checkers, or ten structurally present dimensions never
 generate or imply a semantic pass.
@@ -127,7 +126,7 @@ records the route and objective evidence only, never authorization state.
 
 The result carries one scalar exit and its exact consumer. Unknown, multiple,
 missing, unmapped, or consumer-mismatched exits fail closed. `ready` requires
-all ten dimensions passed, no blocking finding, all three prerequisites
+all ten dimensions passed, no blocking finding, both prerequisites
 current, complete linkage, and a passed Gate.
 The runtime validates these objective invariants but returns the AI-authored
 exit unchanged.
@@ -146,11 +145,11 @@ They contain no active task state, workspace journal, credential, private
 business data, or machine-local absolute path.
 
 Production linkage regression tests create a real clean Git repository, run
-current context, clarification, and wording payloads through their production
-record/check commands, then run the resulting full prerequisite set through
+clarification and wording payloads through their production record/check
+commands, then run the resulting full prerequisite set through
 the change-request production recorder/checker to `ready`. Negative cases cover
-wrong prerequisite exits, consumer and target/content mismatch, base/current/
-history/duplicate drift, and both draft variants' source-authority digest
+wrong prerequisite exits, consumer and target/content mismatch, live target
+drift, and both draft variants' source-authority digest
 mismatch. They do not replace producers with handwritten portable projections.
 
 ## Interface 1.3 Public Handoff

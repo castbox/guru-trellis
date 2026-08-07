@@ -55,7 +55,7 @@
         ]
       },
       "files": ["evals/files/eval-refresh-base-input.json", "evals/files/eval-refresh-base-facts.json"],
-      "input_profile_id": "task_local_reentry"
+      "input_profile_id": "pre_task"
     },
     {
       "id": "blocked-route",

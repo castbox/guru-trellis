@@ -1,6 +1,6 @@
 ---
 name: guru-discover-change-context
-description: Discover fresh current and archived change context, run the semantic evidence gate, and produce a portable snapshot before Guru Team requirement clarification.
+description: Discover fresh current and archived change context, run the semantic evidence gate, and hand minimal current identity to Guru Team requirement clarification.
 ---
 
 # Guru Discover Change Context
@@ -13,21 +13,27 @@ Load [references/contract.md](references/contract.md). Execute its semantic
 closed loop in the declared order, complete the AI Review Gate before any
 recorder/validator, then return exactly one declared typed exit.
 
-Use the dispatcher-only wrappers for history preview, snapshot recording, and
-snapshot checking. Pre-task recording is stdout-only. Post-task recording may
-write only the exact expected snapshot to task-local `context-discovery.json`.
-Task-local recording/checking must also prove that the exact artifact target is
-not ignored by Git; pre-task mode remains stdout-only. A caller-authored
-`refresh_base` result records the observed stale codes and superseded digests,
-then re-enters the complete Skill through `guru-sync-base`.
+Use the dispatcher-only wrappers for history preview, owner-result recording,
+and owner-result checking. Normal recording/checking is stdin/stdout-only and
+does not create a repository artifact. A caller-authored `refresh_base` result
+records only the observed current stale codes, then reruns the complete Skill
+through `guru-sync-base` and live authority.
+
+Only when this same owner is genuinely interrupted for an active task, record
+the validated result with `--recovery-task <task> --recovery-continuation-id
+<id>`. This lazily creates one minimal ignored checkpoint. On recovery, rerun
+the complete owner from live authority, check with the same two arguments, and
+invoke the public wrapper with `--owner-task <task>
+--owner-continuation-id <id>` so successful DTO validation consumes it.
 
 Fail closed on stale base/live/blob/query/archive identity, invalid evidence,
 unknown exits, or missing compatible runtime. This package is not
 self-contained or portable.
 
 After the semantic gate and owner recorder/checker complete, invoke
-`scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-context-result>`
+`scripts/invoke.sh --input <declared-profile.json> --owner-result -` with the
+checked owner result on stdin
 to serialize the minimal handoff. The runtime reruns the existing checker and
 derives the route from its checked `typed_exit`; callers never name the expected
 exit. Consumers receive caller-owned continuation only, never the private
-context snapshot body.
+owner-result body.

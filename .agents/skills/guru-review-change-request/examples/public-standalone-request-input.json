@@ -3,6 +3,5 @@
   "source_exit": "start",
   "mode": "standalone",
   "target_locator": "#145",
-  "context_locator": "context-discovery.json",
   "continuation_id": "stage0-current"
 }

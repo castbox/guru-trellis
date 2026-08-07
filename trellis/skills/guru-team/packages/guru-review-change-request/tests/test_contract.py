@@ -101,7 +101,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             path.write_text(content, encoding="utf-8")
         for skill_id, schema_name in (
             ("guru-sync-base", "base-sync-result.schema.json"),
-            ("guru-discover-change-context", "context-discovery.schema.json"),
             ("guru-clarify-requirements", "requirements-clarification.schema.json"),
             ("guru-review-contract-wording", "contract-wording-review.schema.json"),
             ("guru-review-change-request", "change-request-review.schema.json"),
@@ -235,21 +234,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
 
     def current_prerequisites(self) -> dict[str, dict[str, object]]:
         return {
-            "context": {
-                "status": "current",
-                "schema_id": "guru-context-discovery-1.0",
-                "typed_exit": "context_ready",
-                "payload_sha256": "1" * 64,
-                "snapshot_sha256": "2" * 64,
-                "base_sync_facts_sha256": "3" * 64,
-                "base_head": "4" * 40,
-                "live_target_sha256": "5" * 64,
-                "query_sha256": "6" * 64,
-                "current_state_sha256": "7" * 64,
-                "history_sha256": "8" * 64,
-                "duplicate_sha256": "9" * 64,
-                "error_codes": [],
-            },
             "clarity": {
                 "status": "current",
                 "schema_id": "guru-requirements-clarification-2.0",
@@ -322,174 +306,8 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         result["facts_sha256"] = GTT.canonical_json_sha256(result)
         return result
 
-    def context_payload(
-        self,
-        *,
-        target_kind: str = "proposed_draft",
-        source_path: Path | None = None,
-        body: str | None = None,
-        current_marker: str = "initial",
-        history_reason: str = "Current evidence is sufficient for this review.",
-        duplicate_query: str = "repo:example/guru-extension is:issue is:open readiness review",
-    ) -> dict[str, object]:
-        package = PACKAGE_ROOT.parent / "guru-discover-change-context"
-        payload = json.loads(
-            (package / "examples/context-discovery.json").read_text(encoding="utf-8")
-        )
-        reviewed_source = self.source_for_target(target_kind, source_path)
-        source = json.loads(reviewed_source.read_text(encoding="utf-8"))
-        source_body = self.issue_live["body"] if target_kind == "existing_issue" else source["body"]
-        reviewed_body = body if body is not None else source_body
-        body_sha256 = hashlib.sha256(reviewed_body.encode("utf-8")).hexdigest()
-        sync_result = self.base_sync_result()
-        head = sync_result["decision_checkout"]["head_after"]
-        payload["generated_at"] = "2026-01-01T00:00:00Z"
-        payload["mode"] = "standalone"
-        payload["repository"] = {
-            "repo": "example/guru-extension",
-            "selected_base": "main",
-            "decision_branch": "main",
-        }
-        payload["base_evidence"] = {
-            "schema_id": "guru-base-sync-result-1.0",
-            "sync_result": sync_result,
-            "remote": "origin",
-            "base_head": head,
-            "decision_head": head,
-            "local_head": head,
-            "remote_head": head,
-            "post_sync_resolution_sha256": sync_result["post_sync_resolution_sha256"],
-            "clean": True,
-        }
-        change_input = {
-            "issue_refs": ["#27"] if target_kind == "existing_issue" else [],
-            "pr_refs": [],
-            "branches": [],
-            "paths": ["docs/requirements.md"],
-            "commands": ["record-change-request-review"],
-            "config_keys": [],
-            "schema_fields": ["source_request_sha256"],
-            "symbols": ["guru-review-change-request"],
-            "terms": ["readiness review"],
-            "queries": ["review one independently deliverable change request"],
-        }
-        payload["change_input"] = change_input
-        payload["canonical_query"] = GTT.canonicalize_context_query(
-            self.root,
-            change_input,
-        )
-        if target_kind == "existing_issue":
-            issue_facts = {
-                "repo": "example/guru-extension",
-                "number": 27,
-                "url": self.issue_live["url"],
-                "state": str(self.issue_live["state"]).casefold(),
-                "updated_at": self.issue_live["updatedAt"],
-                "body_sha256": body_sha256,
-            }
-            payload["live_change"] = {
-                "kind": "issue",
-                "identity": issue_facts["url"],
-                "state": issue_facts["state"],
-                "updated_at": issue_facts["updated_at"],
-                "body_sha256": body_sha256,
-                "facts_sha256": GTT.context_digest(issue_facts),
-                "issue_binding": None,
-            }
-        else:
-            live_projection = {
-                "kind": "draft",
-                "identity": f"draft:{body_sha256}",
-                "state": "draft",
-                "updated_at": "2026-01-01T00:00:00Z",
-                "body_sha256": body_sha256,
-            }
-            payload["live_change"] = {
-                **live_projection,
-                "facts_sha256": GTT.context_digest(live_projection),
-                "issue_binding": None,
-            }
-        payload["duplicate_search"] = {
-            "query": duplicate_query,
-            "checked_at": "2026-01-01T00:00:00Z",
-            "scope": "open_issues",
-            "candidates": [],
-        }
-        payload["current_state"] = {
-            "sequence_trace": list(GTT.CONTEXT_SEQUENCE_TRACE),
-            "docs": [{
-                "path": "docs/requirements.md",
-                "blob_or_content_sha256": self.git("rev-parse", "HEAD:docs/requirements.md"),
-                "purpose": "Review the durable readiness requirement.",
-                "observation": "The durable requirement keeps semantic and deterministic ownership separate.",
-                "query_clues": ["readiness requirement"],
-            }],
-            "code_contracts": [{
-                "path": "trellis/runtime.py",
-                "blob_or_content_sha256": self.git("rev-parse", "HEAD:trellis/runtime.py"),
-                "purpose": "Review the deterministic runtime boundary.",
-                "observation": "The runtime only validates objective facts.",
-                "query_clues": ["deterministic runtime"],
-            }],
-            "tests": [{
-                "path": "tests/test_runtime.py",
-                "blob_or_content_sha256": self.git("rev-parse", "HEAD:tests/test_runtime.py"),
-                "purpose": "Review the production linkage coverage.",
-                "observation": "The test exercises the installed runtime commands.",
-                "query_clues": ["production linkage"],
-            }],
-            "observations": [f"Current state marker: {current_marker}."],
-        }
-        payload["history_preview"] = GTT.build_context_history_preview(
-            self.root,
-            payload["canonical_query"],
-        )
-        payload["history_review"] = {
-            "selected_candidates": [],
-            "excluded_candidates": [],
-            "deep_reads": [],
-        }
-        payload["mem_review"] = {
-            "status": "not_needed",
-            "reason": history_reason,
-            "load_bearing_question": None,
-            "exhausted_sources": {
-                "task_artifacts": False,
-                "current_docs_code_tests": False,
-                "github": False,
-                "git_history": False,
-            },
-            "summary": None,
-        }
-        payload["snapshot_identity"] = GTT.context_snapshot_identity(payload)
-        return payload
-
-    def record_and_check_context(
-        self,
-        payload: dict[str, object],
-        label: str,
-    ) -> dict[str, object]:
-        authored_path = self.write_external_json(f"{label}-context-authored.json", payload)
-        recorded = GTT.cmd_record_context_discovery(Namespace(
-            root=str(self.root),
-            mode="standalone",
-            input=str(authored_path),
-            task=None,
-            expected_snapshot_sha256=None,
-        ))
-        recorded_path = self.write_external_json(f"{label}-context-recorded.json", recorded)
-        checked = GTT.cmd_check_context_discovery(Namespace(
-            root=str(self.root),
-            input=str(recorded_path),
-            task=None,
-            expected_snapshot_sha256=recorded["snapshot_identity"]["snapshot_sha256"],
-        ))
-        self.assertEqual(checked["typed_exit"], "context_ready")
-        return recorded
-
     def record_and_check_clarity(
         self,
-        context_payload: dict[str, object],
         label: str,
         *,
         body: str | None = None,
@@ -561,12 +379,9 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             "decision_summary": "No open duplicate replaces the current reviewed target.",
             "disposition_digest": "0" * 64,
         }
-        snapshot_sha256 = context_payload["snapshot_identity"]["snapshot_sha256"]
         payload["context_evidence"] = {
             "status": "current",
-            "schema_id": "guru-context-discovery-1.0",
-            "snapshot_sha256": snapshot_sha256,
-            "evidence_refs": [f"guru-context-discovery-1.0:{snapshot_sha256}"],
+            "evidence_refs": [f"live-authority:{target_kind}"],
             "missing_reason": None,
         }
         authored_path = self.write_external_json(f"{label}-clarity-authored.json", payload)
@@ -588,7 +403,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
 
     def record_and_check_active_task_clarity(
         self,
-        context_payload: dict[str, object],
         label: str,
         *,
         target_kind: str,
@@ -664,11 +478,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         planning_approval_path = GTT.planning_approval_path(self.root, task)
         GTT.write_json(planning_approval_path, planning_approval)
 
-        snapshot_sha256 = context_payload["snapshot_identity"]["snapshot_sha256"]
-        (task / "context-discovery.json").write_text(json.dumps({
-            "generated_at": "2026-01-01T00:00:00Z",
-            "snapshot_identity": {"snapshot_sha256": snapshot_sha256},
-        }) + "\n", encoding="utf-8")
         package = PACKAGE_ROOT.parent / "guru-clarify-requirements"
         payload = json.loads(
             (package / "examples/requirements-clarification.json").read_text(
@@ -717,9 +526,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         payload["target_disposition"] = None
         payload["context_evidence"] = {
             "status": "current",
-            "schema_id": "guru-context-discovery-1.0",
-            "snapshot_sha256": snapshot_sha256,
-            "evidence_refs": [f"guru-context-discovery-1.0:{snapshot_sha256}"],
+            "evidence_refs": [f"live-authority:{target_kind}"],
             "missing_reason": None,
         }
         payload["scope_proposals"] = [{
@@ -843,25 +650,9 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         target_kind: str = "proposed_draft",
         source_path: Path | None = None,
         caller_locator: str | None = None,
-        context_body: str | None = None,
         clarity_body: str | None = None,
-        current_marker: str = "initial",
-        history_reason: str = "Current evidence is sufficient for this review.",
-        duplicate_query: str = "repo:example/guru-extension is:issue is:open readiness review",
     ) -> dict[str, dict[str, object]]:
-        context = self.record_and_check_context(
-            self.context_payload(
-                target_kind=target_kind,
-                source_path=source_path,
-                body=context_body,
-                current_marker=current_marker,
-                history_reason=history_reason,
-                duplicate_query=duplicate_query,
-            ),
-            label,
-        )
         clarity = self.record_and_check_clarity(
-            context,
             label,
             body=clarity_body,
             target_kind=target_kind,
@@ -873,7 +664,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             target_kind=target_kind,
             source_path=self.source_for_target(target_kind, source_path),
         )
-        return {"context": context, "clarity": clarity, "wording": wording}
+        return {"clarity": clarity, "wording": wording}
 
     def semantic_review(
         self,
@@ -952,7 +743,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             "generated_at": "2026-01-01T00:00:00Z",
             "mode": "standalone",
             "target": self.raw_target,
-            "prerequisite_payloads": {"context": None, "clarity": None, "wording": None},
+            "prerequisite_payloads": {"clarity": None, "wording": None},
             "semantic_review": self.semantic_review(
                 linkage,
                 typed_exit,
@@ -1486,19 +1277,16 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                     current, recorded, target = current_by_target[target_kind]
                     if invocation_kind == "active_task_scope_change":
                         clarity = self.record_and_check_active_task_clarity(
-                            current["context"],
                             label,
                             target_kind=target_kind,
                         )
                     else:
                         clarity = self.record_and_check_clarity(
-                            current["context"],
                             label,
                             target_kind=target_kind,
                             invocation_kind=invocation_kind,
                         )
                     mismatched = {
-                        "context": current["context"],
                         "clarity": clarity,
                         "wording": current["wording"],
                     }
@@ -1519,12 +1307,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                         authored["target"],
                         str(reviewed_source),
                         "standalone",
-                    )
-                    self.assertEqual(
-                        GTT.change_request_review_context_projection(
-                            self.root, mismatched["context"]
-                        )["status"],
-                        "current",
                     )
                     clarity_projection = GTT.change_request_review_clarity_projection(
                         self.root, mismatched["clarity"]
@@ -1594,7 +1376,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
     def test_production_ready_rejects_wrong_exits_and_target_content_mismatch(self) -> None:
         prerequisites = self.production_prerequisites("production-mismatch")
         wrong_exits = {
-            "context": "blocked",
             "clarity": "blocked",
             "wording": "blocked",
         }
@@ -1619,21 +1400,12 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                     raised.exception.payload["error_codes"],
                 )
 
-        context_mismatch = copy.deepcopy(prerequisites)
-        context_mismatch["context"] = self.record_and_check_context(
-            self.context_payload(body="A different current request body."),
-            "context-target-mismatch",
-        )
         clarity_mismatch = copy.deepcopy(prerequisites)
         clarity_mismatch["clarity"] = self.record_and_check_clarity(
-            prerequisites["context"],
             "clarity-target-mismatch",
             body="A different current request body.",
         )
-        for label, mismatched in (
-            ("context", context_mismatch),
-            ("clarity", clarity_mismatch),
-        ):
+        for label, mismatched in (("clarity", clarity_mismatch),):
             with self.subTest(target_content_mismatch=label):
                 authored, _ = self.ready_authored("proposed_draft", mismatched)
                 authored_path = self.write_external_json(
@@ -1652,7 +1424,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
                     raised.exception.payload["error_codes"],
                 )
 
-    def test_production_checker_rejects_consumer_and_context_projection_drift(self) -> None:
+    def test_production_checker_rejects_consumer_and_prerequisite_drift(self) -> None:
         prerequisites = self.production_prerequisites("production-drift")
         recorded, _ = self.record_and_check_ready(
             "proposed_draft",
@@ -1688,56 +1460,10 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             raised.exception.payload["error_codes"],
         )
 
-        recorded_path = self.write_external_json("drift-recorded.json", recorded)
-        drift_contexts = {
-            "current": self.context_payload(current_marker="changed"),
-            "history": self.context_payload(history_reason="A different current history conclusion."),
-            "duplicate": self.context_payload(duplicate_query="repo:example/guru-extension is:issue is:open alternate query"),
-        }
-        for label, authored_context in drift_contexts.items():
-            with self.subTest(drift=label):
-                current = copy.deepcopy(prerequisites)
-                current["context"] = self.record_and_check_context(
-                    authored_context,
-                    f"{label}-drift",
-                )
-                current_path = self.write_external_json(
-                    f"{label}-drift-prerequisites.json",
-                    current,
-                )
-                with self.assertRaises(GTT.WorkflowError) as raised:
-                    GTT.cmd_check_change_request_review(Namespace(
-                        root=str(self.root),
-                        input=str(recorded_path),
-                        prerequisites_input=str(current_path),
-                        change_request_input=str(self.source),
-                        expected_facts_sha256=recorded["facts_sha256"],
-                    ))
-                self.assertIn(
-                    "change_request_review_prerequisites_stale",
-                    raised.exception.payload["error_codes"],
-                )
-                self.assertIn(
-                    "change_request_review_linkage_stale",
-                    raised.exception.payload["error_codes"],
-                )
-
-    def test_production_checker_rejects_current_base_drift(self) -> None:
-        prerequisites = self.production_prerequisites("production-base-drift")
-        recorded, _ = self.record_and_check_ready(
-            "proposed_draft",
-            prerequisites,
-            "production-base-drift",
-        )
-        self.git("commit", "--allow-empty", "-q", "-m", "test: advance current base")
-        self.git("update-ref", "refs/remotes/origin/main", self.git("rev-parse", "HEAD"))
         current = copy.deepcopy(prerequisites)
-        current["context"] = self.record_and_check_context(
-            self.context_payload(current_marker="advanced-base"),
-            "advanced-base",
-        )
-        recorded_path = self.write_external_json("base-drift-recorded.json", recorded)
-        current_path = self.write_external_json("base-drift-prerequisites.json", current)
+        current["clarity"]["content_identity"]["result_sha256"] = "0" * 64
+        recorded_path = self.write_external_json("drift-recorded.json", recorded)
+        current_path = self.write_external_json("drift-prerequisites.json", current)
         with self.assertRaises(GTT.WorkflowError) as raised:
             GTT.cmd_check_change_request_review(Namespace(
                 root=str(self.root),
@@ -1765,7 +1491,6 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
 
         stale_clarity = copy.deepcopy(prerequisites)
         stale_clarity["clarity"] = self.record_and_check_clarity(
-            prerequisites["context"],
             "stale-clarity-content",
             body="A different independently reviewed request body.",
         )
@@ -1903,7 +1628,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         self.assertIn("change_request_review_consumer_mismatch", self.structural_errors(result, prerequisites, linkage))
 
     def test_missing_or_stale_prerequisites_cannot_become_ready(self) -> None:
-        for kind in ("context", "clarity", "wording"):
+        for kind in ("clarity", "wording"):
             with self.subTest(kind=kind):
                 prerequisites = self.current_prerequisites()
                 prerequisites[kind] = GTT.change_request_review_missing_projection(kind)
@@ -1915,7 +1640,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
 
         result, prerequisites, linkage = self.result("refresh_context")
         current = copy.deepcopy(prerequisites)
-        current["context"]["history_sha256"] = "0" * 64
+        current["clarity"]["facts_sha256"] = "0" * 64
         current_linkage = GTT.change_request_review_linkage(self.target, current)
         errors = self.structural_errors(result, current, current_linkage)
         self.assertIn("change_request_review_prerequisites_stale", errors)
@@ -1953,7 +1678,7 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
         self.assertIn("change_request_review_non_ready_requires_affected_evidence", errors)
 
     def test_record_and_check_are_stdout_only_and_checker_accepts_normalized_target(self) -> None:
-        prerequisite_payloads = {"context": None, "clarity": None, "wording": None}
+        prerequisite_payloads = {"clarity": None, "wording": None}
         projections = GTT.change_request_review_prerequisite_projections(
             self.root,
             prerequisite_payloads,

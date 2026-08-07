@@ -12,7 +12,6 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "review_target",
-        "context_evidence",
         "clarity_evidence",
         "wording_evidence",
         "invocation_freshness"
@@ -23,7 +22,6 @@
       "entry_precondition_ids": [
         "runtime_dependency",
         "review_target",
-        "context_evidence",
         "clarity_evidence",
         "wording_evidence",
         "invocation_freshness"
@@ -40,14 +38,8 @@
     {
       "id": "review_target",
       "evidence": "one existing issue, side-effect-free proposed draft, or explicit standalone request with current title/body identity",
-      "binding": "the exact change request reviewed by all prerequisite Skills and the readiness AI gate",
+      "binding": "the exact change request reread from live authority and reviewed by the prerequisite Skills and readiness AI gate",
       "freshness": "target authority and reviewed content are rebuilt from the same change-request input during recording and checking"
-    },
-    {
-      "id": "context_evidence",
-      "evidence": "current guru-context-discovery-1.0 context_ready result or explicit missing/stale facts",
-      "binding": "base, live target, current Docs/code/tests, duplicate facts and archived history",
-      "freshness": "existing objective context structural and live checks are rerun before ready"
     },
     {
       "id": "clarity_evidence",
@@ -194,7 +186,7 @@
   "external_exits": [
     {
       "id": "ready",
-      "evidence": "all ten AI-reviewed dimensions passed, no blocking finding, and all three prerequisite projections are current and linked",
+      "evidence": "all ten AI-reviewed dimensions passed, no blocking finding, and both prerequisite projections are current and linked",
       "consumer": {
         "kind": "skill",
         "id": "guru-create-task-workspace"
@@ -234,7 +226,7 @@
     }
   ],
   "reentry": {
-    "identity": "mode, target identity/content digests, three prerequisite projections, linkage digest, semantic review, typed exit and facts digest",
+    "identity": "mode, target identity/content digests, two prerequisite projections, linkage digest, semantic review, typed exit and facts digest",
     "freshness": "ready is accepted only while the same current prerequisite bytes rebuild the exact recorded target and linkage projections; any drift requires complete owner re-entry",
     "stale_behavior": "fail_closed"
   },
@@ -504,10 +496,6 @@
           {
             "source": "handoff_target_locator",
             "target": "target_locator"
-          },
-          {
-            "source": "handoff_context_locator",
-            "target": "context_locator"
           },
           {
             "source": "handoff_continuation_id",

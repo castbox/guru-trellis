@@ -173,7 +173,9 @@ BASE_SYNC_SCHEMA_VERSION = "1.0"
 BASE_SYNC_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json"
 CONTEXT_DISCOVERY_SKILL_ID = "guru-discover-change-context"
 CONTEXT_DISCOVERY_SCHEMA_VERSION = "1.0"
-CONTEXT_DISCOVERY_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json"
+CONTEXT_DISCOVERY_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json"
+CONTEXT_DISCOVERY_RECOVERY_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-change-context-recovery-1.0.json"
+CONTEXT_DISCOVERY_RECOVERY_ARTIFACT = "change-context-recovery.json"
 CONTEXT_HISTORY_ALGORITHM_ID = "guru-context-history-score-1.0"
 CONTEXT_HISTORY_LIMIT = 20
 CONTEXT_QUERY_KINDS = (
@@ -202,11 +204,9 @@ CONTEXT_PROTECTED_PREFIXES = (
 )
 CONTEXT_TOP_LEVEL_KEYS = {
     "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
-    "repository", "base_evidence", "task_worktree_state", "superseded_snapshot_sha256",
-    "change_input", "live_change",
+    "repository", "base_evidence", "change_input", "live_change",
     "duplicate_search", "current_state", "canonical_query", "history_preview",
-    "history_review", "mem_review", "ai_review_gate",
-    "refresh_history", "snapshot_identity", "error",
+    "history_review", "mem_review", "ai_review_gate", "result_identity", "error",
 }
 CONTEXT_REFRESHABLE_LIVE_ERRORS = frozenset({
     "archive_manifest_or_preview_stale",
@@ -347,7 +347,6 @@ TASK_WORKSPACE_RESULT_SCHEMA_ID = (
 )
 TASK_WORKSPACE_PREREQUISITES = {
     "base": (BASE_SYNC_SKILL_ID, "guru-base-sync-result-1.0", "synced"),
-    "context": (CONTEXT_DISCOVERY_SKILL_ID, "guru-context-discovery-1.0", "context_ready"),
     "clarity": (REQUIREMENTS_CLARIFICATION_SKILL_ID, "guru-requirements-clarification-2.0", "clear"),
     "wording": (CONTRACT_WORDING_SKILL_ID, "guru-contract-wording-review-1.0", "pass"),
     "readiness": (CHANGE_REQUEST_REVIEW_SKILL_ID, "guru-change-request-review-1.0", "ready"),
@@ -383,6 +382,7 @@ TASK_COMMIT_GIT_OPERATION_MARKERS = (
 )
 AI_FIRST_OWNER_CHECKPOINT_DIR = "owner-checkpoints"
 AI_FIRST_OWNER_ARTIFACTS = frozenset({
+    CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,
     PLANNING_APPROVAL_ARTIFACT,
     PHASE2_CHECK_ARTIFACT,
     "review-gate.json",
@@ -3673,6 +3673,10 @@ def ai_first_retire_owner_checkpoints(
     if checkpoint_dir is not None:
         try:
             checkpoint_dir.rmdir()
+        except OSError:
+            pass
+        try:
+            checkpoint_dir.parent.rmdir()
         except OSError:
             pass
     return retired
@@ -9528,34 +9532,6 @@ def capture_task_commit_snapshot(root: Path, excluded: set[str] | None = None) -
         )
     )
     return {"entries": entries, "digest": task_commit_canonical_digest(entries)}
-
-
-def context_task_worktree_state(root: Path, task_dir: Path) -> dict[str, Any]:
-    context_snapshot_path = repo_relative(root, task_dir / "context-discovery.json")
-    captured = capture_task_commit_snapshot(root, {context_snapshot_path})
-
-    def private_state_path(value: Any) -> bool:
-        return isinstance(value, str) and (
-            value == context_snapshot_path
-            or value == ".trellis/.runtime"
-            or value.startswith(".trellis/.runtime/")
-        )
-
-    entries = [
-        entry
-        for entry in captured["entries"]
-        if not any(
-            private_state_path(entry.get(field))
-            for field in ("path", "renamed_from", "copied_from")
-        )
-    ]
-    state = {
-        "head": current_head(root),
-        "context_snapshot_path": context_snapshot_path,
-        "entries": entries,
-    }
-    state["digest"] = context_digest(state)
-    return state
 
 
 def task_commit_message_parts(message_bytes: str) -> tuple[str, str]:
@@ -17381,58 +17357,76 @@ def stage0_owner_result(
     args: argparse.Namespace,
     public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
-    result_path = stage0_owner_path(root, args.owner_result, "arguments.owner_result")
-    result_relative = repo_relative(root, result_path)
     plan: dict[str, Any] | None = None
-    context_task_locator: str | None = None
     if skill_id == "guru-discover-change-context":
-        profile = public_input.get("profile")
-        if profile == "task_local_reentry":
-            task_locator = public_input.get("task_locator")
-            prior_snapshot_locator = public_input.get("prior_snapshot_locator")
-            task_relative = skill_safe_relative(task_locator)
-            snapshot_relative = skill_safe_relative(prior_snapshot_locator)
-            if task_relative is None or task_relative.as_posix() != task_locator:
-                raise stage0_invocation_error(
-                    "invalid_public_input",
-                    "input.task_locator",
-                    "Use one clean repo-relative active task locator.",
-                    "Stage 0 task-local context task locator is invalid.",
-                )
-            if (
-                snapshot_relative is None
-                or snapshot_relative.as_posix() != prior_snapshot_locator
-                or snapshot_relative.as_posix() != "context-discovery.json"
-            ):
-                raise stage0_invocation_error(
-                    "invalid_public_input",
-                    "input.prior_snapshot_locator",
-                    "Use the clean task-local context-discovery.json snapshot locator.",
-                    "Stage 0 task-local context snapshot locator is invalid.",
-                )
-            expected_result = (task_relative / snapshot_relative).as_posix()
-            if result_relative != expected_result:
-                raise stage0_invocation_error(
-                    "owner_result_input_mismatch",
-                    "arguments.owner_result",
-                    "Use the exact task-local context snapshot selected by the validated public input.",
-                    "Stage 0 owner result does not match the task-local public input locators.",
-                )
-            context_task_locator = task_locator
-        elif profile != "pre_task":
+        if public_input.get("profile") != "pre_task":
             raise stage0_invocation_error(
                 "invalid_public_input",
                 "input.profile",
-                "Use one declared guru-discover-change-context public input profile.",
+                "Use the current pre_task discovery input profile.",
                 "Stage 0 context discovery received an unsupported public input profile.",
             )
+        if args.owner_result != "-":
+            raise stage0_invocation_error(
+                "invalid_owner_result",
+                "arguments.owner_result",
+                "Pipe the checked stdout-only Discovery owner result with --owner-result -.",
+                "Context Discovery public invocation requires stdin owner transport.",
+            )
+        try:
+            result = json.loads(sys.stdin.read())
+        except json.JSONDecodeError as exc:
+            raise stage0_invocation_error(
+                "invalid_owner_result",
+                "arguments.owner_result",
+                "Pipe one canonical JSON owner result to stdin.",
+                "Context Discovery owner result is invalid JSON.",
+            ) from exc
+        if not isinstance(result, dict):
+            raise stage0_invocation_error(
+                "invalid_owner_result",
+                "arguments.owner_result",
+                "Pipe one canonical JSON object owner result to stdin.",
+                "Context Discovery owner result must be an object.",
+            )
+        owner_task = str(getattr(args, "owner_task", None) or "").strip()
+        owner_continuation_id = str(
+            getattr(args, "owner_continuation_id", None) or ""
+        ).strip()
+        if bool(owner_task) != bool(owner_continuation_id):
+            raise stage0_invocation_error(
+                "invalid_owner_result",
+                "arguments.owner_task",
+                "Provide both --owner-task and --owner-continuation-id only for a real active-task same-owner recovery.",
+                "Context Discovery recovery identity is incomplete.",
+            )
+        recovery_task_dir = (
+            context_active_task_dir(root, owner_task) if owner_task else None
+        )
+        if recovery_task_dir is not None:
+            plan = {"recovery_task": recovery_task_dir}
+        result_path = None
+        result_relative = None
+    else:
+        result_path = stage0_owner_path(root, args.owner_result, "arguments.owner_result")
+        result_relative = repo_relative(root, result_path)
     try:
-        result = read_json(result_path)
         if skill_id == "guru-discover-change-context":
             checked = cmd_check_context_discovery(argparse.Namespace(
-                root=str(root), input=result_relative, task=context_task_locator,
-                expected_snapshot_sha256=(result.get("snapshot_identity") or {}).get("snapshot_sha256"),
+                root=str(root), input=None, payload=result,
+                expected_result_sha256=(result.get("result_identity") or {}).get("result_sha256"),
+                recovery_task=(
+                    repo_relative(root, recovery_task_dir)
+                    if recovery_task_dir is not None
+                    else None
+                ),
+                recovery_continuation_id=owner_continuation_id or None,
             ))
+        else:
+            assert result_path is not None and result_relative is not None
+            result = read_json(result_path)
+        if skill_id == "guru-discover-change-context":
+            pass
         elif skill_id == "guru-clarify-requirements":
             checked = cmd_check_requirements_clarification(argparse.Namespace(
                 root=str(root), input=result_relative, task=None,
@@ -18045,7 +18039,6 @@ def stage0_build_output(
                 "handoff_profile": "initial_change_request",
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_target_locator": stage0_target_locator(owner_result.get("live_change")),
-                "handoff_context_locator": owner_locator,
                 "handoff_continuation_id": public_input.get("continuation_id"),
             })
         elif exit_id == "refresh_base":
@@ -18096,7 +18089,6 @@ def stage0_build_output(
                 "handoff_profile": "initial_change_request",
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_target_locator": stage0_target_locator(target, public_input.get("target_locator")),
-                "handoff_context_locator": public_input.get("context_locator"),
                 "handoff_continuation_id": public_input.get("continuation_id"),
             })
         elif exit_id == "review_wording":
@@ -18484,7 +18476,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             if skill_id == TASK_PUBLICATION_SKILL_ID
             else owner_result.get("typed_exit") or ""
         )
-        if skill_id != "guru-create-task-commit":
+        if skill_id not in {"guru-create-task-commit", "guru-discover-change-context"}:
             owner_locator = repo_relative(
                 root,
                 stage0_owner_path(root, args.owner_result, "arguments.owner_result"),
@@ -18520,6 +18512,14 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             production_task_from_public_input(root, public_input),
             (owner_artifact,),
         )
+    if skill_id == "guru-discover-change-context" and isinstance(owner_plan, dict):
+        recovery_task = owner_plan.get("recovery_task")
+        if isinstance(recovery_task, Path):
+            ai_first_retire_owner_checkpoints(
+                root,
+                recovery_task,
+                (CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,),
+            )
     return payload
 
 
@@ -25416,16 +25416,12 @@ def context_active_task_dir(root: Path, value: str) -> Path:
 def context_payload_from_args(
     root: Path,
     args: argparse.Namespace,
-    *,
-    require_active_task: bool = False,
 ) -> tuple[dict[str, Any], Path | None]:
-    task_dir: Path | None = None
-    if getattr(args, "task", None):
-        task_dir = (
-            context_active_task_dir(root, args.task)
-            if require_active_task
-            else resolve_task_dir(root, args.task)
-        )
+    provided_payload = getattr(args, "payload", None)
+    if provided_payload is not None:
+        if not isinstance(provided_payload, dict):
+            raise WorkflowError("context discovery input root must be an object.", exit_code=2)
+        return copy.deepcopy(provided_payload), None
     input_value = getattr(args, "input", None)
     if input_value:
         if input_value == "-":
@@ -25438,26 +25434,20 @@ def context_payload_from_args(
                 raw = input_path.read_text(encoding="utf-8")
             except (OSError, UnicodeError) as exc:
                 raise WorkflowError("context discovery input is unreadable.", exit_code=2) from exc
-    elif task_dir is not None and (task_dir / "context-discovery.json").exists():
-        artifact = task_dir / "context-discovery.json"
-        try:
-            raw = artifact.read_text(encoding="utf-8")
-        except (OSError, UnicodeError) as exc:
-            raise WorkflowError("context discovery task artifact is unreadable.", exit_code=2) from exc
     else:
-        raise WorkflowError("context discovery requires --input or a task-local artifact.", exit_code=2)
+        raise WorkflowError("context discovery requires --input or in-memory payload.", exit_code=2)
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as exc:
         raise WorkflowError("context discovery input is invalid JSON.", exit_code=2) from exc
     if not isinstance(payload, dict):
         raise WorkflowError("context discovery input root must be an object.", exit_code=2)
-    return payload, task_dir
+    return payload, None
 
 
-def context_snapshot_identity(payload: dict[str, Any]) -> dict[str, str]:
+def context_result_identity(payload: dict[str, Any]) -> dict[str, str]:
     unsigned = copy.deepcopy(payload)
-    unsigned.pop("snapshot_identity", None)
+    unsigned.pop("result_identity", None)
     payload_sha256 = context_digest(unsigned)
     query = payload.get("canonical_query") if isinstance(payload.get("canonical_query"), dict) else {}
     preview = payload.get("history_preview") if isinstance(payload.get("history_preview"), dict) else {}
@@ -25473,20 +25463,20 @@ def context_snapshot_identity(payload: dict[str, Any]) -> dict[str, str]:
         "post_sync_resolution_sha256": str(base.get("post_sync_resolution_sha256") or ""),
         "payload_sha256": payload_sha256,
     }
-    identity["snapshot_sha256"] = context_digest(identity)
+    identity["result_sha256"] = context_digest(identity)
     return identity
 
 
 def context_discovery_schema(root: Path) -> dict[str, Any]:
     candidates = [
-        root / ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
-        root / "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json",
+        root / ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/change-context-owner-result.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/change-context-owner-result.schema.json",
     ]
     runtime_path = Path(__file__).resolve()
     if len(runtime_path.parents) > 4:
         candidates.append(
             runtime_path.parents[4]
-            / "skills/guru-team/packages/guru-discover-change-context/schemas/context-discovery.schema.json"
+            / "skills/guru-team/packages/guru-discover-change-context/schemas/change-context-owner-result.schema.json"
         )
     schema_path = next(
         (path for path in candidates if path.is_file() and not path.is_symlink()),
@@ -25512,6 +25502,161 @@ def context_discovery_schema(root: Path) -> dict[str, Any]:
             payload={"error_codes": ["context_schema_unavailable"]},
         )
     return schema
+
+
+def context_recovery_schema(root: Path) -> dict[str, Any]:
+    candidates = [
+        root / ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/change-context-recovery.schema.json",
+        root / "trellis/skills/guru-team/packages/guru-discover-change-context/schemas/change-context-recovery.schema.json",
+    ]
+    runtime_path = Path(__file__).resolve()
+    if len(runtime_path.parents) > 4:
+        candidates.append(
+            runtime_path.parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context/schemas/change-context-recovery.schema.json"
+        )
+    schema_path = next(
+        (path for path in candidates if path.is_file() and not path.is_symlink()),
+        None,
+    )
+    if schema_path is None:
+        raise WorkflowError(
+            "Context discovery recovery schema is missing from the compatible Guru Team runtime.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_schema_unavailable"]},
+        )
+    errors: list[str] = []
+    schema = skill_read_json(schema_path, "context discovery recovery schema", errors)
+    if (
+        errors
+        or schema is None
+        or schema.get("$schema") != SKILL_SCHEMA_DIALECT
+        or schema.get("$id") != CONTEXT_DISCOVERY_RECOVERY_SCHEMA_ID
+    ):
+        raise WorkflowError(
+            "Context discovery recovery schema identity is invalid.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_schema_unavailable"]},
+        )
+    return schema
+
+
+def context_recovery_projection(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    continuation_id: str,
+) -> dict[str, Any]:
+    task_payload = read_json(task_dir / "task.json")
+    task_id = str(task_payload.get("id") or "").strip()
+    gate = payload.get("ai_review_gate")
+    if not task_id or not isinstance(gate, dict):
+        raise WorkflowError(
+            "Context discovery recovery requires current task and semantic gate identity.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_identity_invalid"]},
+        )
+    checkpoint = {
+        "schema_version": "1.0",
+        "skill_id": CONTEXT_DISCOVERY_SKILL_ID,
+        "task_ref": repo_relative(root, task_dir),
+        "task_id": task_id,
+        "mode": payload.get("mode"),
+        "continuation_id": continuation_id,
+        "requested_exit": payload.get("typed_exit"),
+        "gate_status": gate.get("status"),
+        "reviewed_scope": copy.deepcopy(gate.get("reviewed_scope")),
+        "load_bearing_conclusions": copy.deepcopy(gate.get("load_bearing_conclusions")),
+        "reason": gate.get("reason"),
+    }
+    errors = skill_json_schema_validation_errors(
+        checkpoint,
+        context_recovery_schema(root),
+        "context discovery recovery checkpoint",
+    )
+    if errors:
+        raise WorkflowError(
+            "Context discovery recovery checkpoint is invalid.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_checkpoint_invalid"]},
+        )
+    return checkpoint
+
+
+def context_recovery_checkpoint_path(root: Path, task_dir: Path) -> Path:
+    return ai_first_owner_checkpoint_path(
+        root,
+        task_dir,
+        CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,
+    )
+
+
+def context_record_recovery_checkpoint(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    continuation_id: str,
+) -> Path:
+    checkpoint_path = context_recovery_checkpoint_path(root, task_dir)
+    if checkpoint_path.is_symlink() or (
+        checkpoint_path.exists() and not checkpoint_path.is_file()
+    ):
+        raise WorkflowError(
+            "Context discovery recovery checkpoint target is unsafe.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_checkpoint_unsafe"]},
+        )
+    write_json(
+        checkpoint_path,
+        context_recovery_projection(root, task_dir, payload, continuation_id),
+    )
+    return checkpoint_path
+
+
+def context_check_recovery_checkpoint(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+    continuation_id: str,
+) -> Path:
+    checkpoint_path = context_recovery_checkpoint_path(root, task_dir)
+    if checkpoint_path.is_symlink() or not checkpoint_path.is_file():
+        raise WorkflowError(
+            "Context discovery recovery checkpoint is missing or unsafe.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_checkpoint_unavailable"]},
+        )
+    try:
+        checkpoint = read_json(checkpoint_path)
+    except (OSError, ValueError, WorkflowError) as exc:
+        ai_first_retire_owner_checkpoints(
+            root,
+            task_dir,
+            (CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,),
+        )
+        raise WorkflowError(
+            "Context discovery recovery checkpoint is unreadable.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_checkpoint_invalid"]},
+        ) from exc
+    errors = skill_json_schema_validation_errors(
+        checkpoint,
+        context_recovery_schema(root),
+        "context discovery recovery checkpoint",
+    )
+    expected = context_recovery_projection(root, task_dir, payload, continuation_id)
+    if errors or checkpoint != expected:
+        ai_first_retire_owner_checkpoints(
+            root,
+            task_dir,
+            (CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,),
+        )
+        raise WorkflowError(
+            "Context discovery recovery checkpoint is stale or invalid.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_checkpoint_stale"]},
+        )
+    return checkpoint_path
 
 
 def context_portable_path_errors(root: Path, value: Any, label: str) -> list[str]:
@@ -25858,13 +26003,9 @@ def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
     if schema_errors:
         errors.append("context_schema_validation_failed")
     top_level_keys = set(payload)
-    if not (
-        CONTEXT_TOP_LEVEL_KEYS - {"task_worktree_state", "superseded_snapshot_sha256"}
-        <= top_level_keys
-        <= CONTEXT_TOP_LEVEL_KEYS
-    ):
+    if top_level_keys != CONTEXT_TOP_LEVEL_KEYS:
         errors.append("invalid_top_level_fields")
-    if payload.get("schema_version") != CONTEXT_DISCOVERY_SCHEMA_VERSION or payload.get("skill_id") != CONTEXT_DISCOVERY_SKILL_ID:
+    if payload.get("schema_version") != "2.0" or payload.get("skill_id") != CONTEXT_DISCOVERY_SKILL_ID:
         errors.append("invalid_schema_identity")
     if payload.get("mode") not in {"workflow", "standalone"}:
         errors.append("invalid_mode")
@@ -26050,31 +26191,13 @@ def context_structural_errors(root: Path, payload: dict[str, Any]) -> list[str]:
         or not gate["load_bearing_conclusions"]
     ):
         errors.append("passed_gate_requires_semantic_evidence")
-    if typed_exit == "refresh_base":
-        refresh_history = payload.get("refresh_history")
-        if not isinstance(refresh_history, list) or not refresh_history:
-            errors.append("refresh_base_requires_history")
-        else:
-            latest = refresh_history[-1]
-            codes = latest.get("error_codes") if isinstance(latest, dict) else None
-            if (
-                not isinstance(codes, list)
-                or not codes
-                or any(not isinstance(code, str) for code in codes)
-                or codes != context_sort(codes)
-            ):
-                errors.append("invalid_refresh_error_codes")
-            if isinstance(latest, dict) and latest.get("superseded_query_sha256") != (
-                query.get("query_sha256") if isinstance(query, dict) else None
-            ):
-                errors.append("refresh_query_digest_mismatch")
     if typed_exit == "blocked" and not isinstance(payload.get("error"), dict):
         errors.append("blocked_requires_error")
     if typed_exit == "context_ready" and payload.get("error") is not None:
         errors.append("context_ready_forbids_error")
-    expected_identity = context_snapshot_identity(payload)
-    if payload.get("snapshot_identity") != expected_identity:
-        errors.append("snapshot_identity_mismatch")
+    expected_identity = context_result_identity(payload)
+    if payload.get("result_identity") != expected_identity:
+        errors.append("result_identity_mismatch")
     return context_sort(errors)
 
 
@@ -26264,30 +26387,13 @@ def context_live_base_errors(root: Path, payload: dict[str, Any], task_dir: Path
         validate_github_remote_repository(root, remote_name, str(repository.get("repo") or ""))
     except WorkflowError:
         errors.append("base_repository_stale")
-    if task_dir is None:
-        if payload.get("task_worktree_state") is not None:
-            errors.append("task_worktree_state_forbidden")
-        if payload.get("superseded_snapshot_sha256") is not None:
-            errors.append("superseded_snapshot_forbidden")
-        try:
-            dirty = git_status_paths(root, fail_closed=True)
-        except (WorkflowError, UnicodeError):
-            errors.append("git_status_unreadable")
-            dirty = []
-        if dirty:
-            errors.append("checkout_not_clean")
-    else:
-        expected_state = payload.get("task_worktree_state")
-        if not isinstance(expected_state, dict):
-            errors.append("task_worktree_state_required")
-        else:
-            try:
-                live_state = context_task_worktree_state(root, task_dir)
-            except (WorkflowError, OSError, UnicodeError):
-                errors.append("task_worktree_state_unreadable")
-            else:
-                if expected_state != live_state:
-                    errors.append("task_worktree_state_stale")
+    try:
+        dirty = git_status_paths(root, fail_closed=True)
+    except (WorkflowError, UnicodeError):
+        errors.append("git_status_unreadable")
+        dirty = []
+    if dirty:
+        errors.append("checkout_not_clean")
     return errors
 
 
@@ -26364,103 +26470,6 @@ def context_typed_exit_live_errors(
         return ["refresh_base_requires_live_stale"]
     if any(code not in CONTEXT_REFRESHABLE_LIVE_ERRORS for code in observed):
         return context_sort([*observed, "refresh_base_has_non_refreshable_error"])
-    refresh_history = payload.get("refresh_history")
-    latest = refresh_history[-1] if isinstance(refresh_history, list) and refresh_history else None
-    expected_codes = latest.get("error_codes") if isinstance(latest, dict) else None
-    if expected_codes != observed:
-        return ["refresh_error_codes_mismatch"]
-    return []
-
-
-def context_persisted_snapshot_errors(
-    root: Path,
-    target: Path,
-    expected_payload: dict[str, Any],
-    task_dir: Path,
-) -> list[str]:
-    expected_bytes = json_document_bytes(expected_payload)
-    try:
-        actual_bytes = target.read_bytes()
-    except OSError:
-        return ["persisted_snapshot_unreadable"]
-    if actual_bytes != expected_bytes:
-        return ["persisted_snapshot_mismatch"]
-    try:
-        persisted = json.loads(actual_bytes)
-    except (UnicodeError, json.JSONDecodeError):
-        return ["persisted_snapshot_mismatch"]
-    if not isinstance(persisted, dict) or persisted != expected_payload:
-        return ["persisted_snapshot_mismatch"]
-    if persisted.get("snapshot_identity") != context_snapshot_identity(persisted):
-        return ["persisted_snapshot_identity_mismatch"]
-    structural = context_structural_errors(root, persisted)
-    if structural:
-        return context_sort(structural)
-    live = context_live_errors(root, persisted, task_dir)
-    return context_sort(context_typed_exit_live_errors(persisted, live))
-
-
-def context_discovery_target_trackability_errors(root: Path, target: Path) -> list[str]:
-    try:
-        relative_target = target.relative_to(root).as_posix()
-    except ValueError:
-        return ["context_discovery_target_trackability_unreadable"]
-    try:
-        result = run(
-            [
-                "git",
-                "check-ignore",
-                "--quiet",
-                "--no-index",
-                "--",
-                relative_target,
-            ],
-            cwd=root,
-            check=False,
-        )
-    except OSError:
-        return ["context_discovery_target_trackability_unreadable"]
-    if result.returncode == 0:
-        return ["context_discovery_target_ignored"]
-    if result.returncode == 1:
-        return []
-    return ["context_discovery_target_trackability_unreadable"]
-
-
-def context_prior_snapshot_replacement_errors(
-    root: Path,
-    target: Path,
-    payload: dict[str, Any],
-    expected_prior_snapshot_sha256: str | None,
-) -> list[str]:
-    if not expected_prior_snapshot_sha256:
-        return ["expected_prior_snapshot_required"]
-    try:
-        prior_bytes = target.read_bytes()
-        prior = json.loads(prior_bytes.decode("utf-8"))
-    except OSError:
-        return ["prior_snapshot_unreadable"]
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return ["prior_snapshot_invalid"]
-    if not isinstance(prior, dict):
-        return ["prior_snapshot_invalid"]
-    prior_identity = prior.get("snapshot_identity")
-    prior_snapshot_sha256 = (
-        prior_identity.get("snapshot_sha256")
-        if isinstance(prior_identity, dict)
-        else None
-    )
-    if (
-        context_structural_errors(root, prior)
-        or prior_identity != context_snapshot_identity(prior)
-    ):
-        return ["prior_snapshot_invalid"]
-    if prior_snapshot_sha256 != expected_prior_snapshot_sha256:
-        return ["expected_prior_snapshot_mismatch"]
-    if payload.get("superseded_snapshot_sha256") != expected_prior_snapshot_sha256:
-        return ["superseded_snapshot_mismatch"]
-    if prior.get("repository") != payload.get("repository"):
-        return ["prior_snapshot_repository_mismatch"]
     return []
 
 
@@ -26489,176 +26498,129 @@ def cmd_preview_change_context_history(args: argparse.Namespace) -> dict[str, An
 
 def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    payload, task_dir = context_payload_from_args(root, args, require_active_task=True)
-    target = task_dir / "context-discovery.json" if task_dir is not None else None
-    if target is not None and (target.exists() or target.is_symlink()):
-        try:
-            prior_mode = target.lstat().st_mode
-        except OSError as exc:
-            raise WorkflowError(
-                "Existing context-discovery.json is unreadable.",
-                exit_code=2,
-                payload={"error_codes": ["existing_snapshot_unreadable"]},
-            ) from exc
-        if not stat.S_ISREG(prior_mode):
-            raise WorkflowError(
-                "Existing context-discovery.json must be a regular file.",
-                exit_code=2,
-                payload={"error_codes": ["prior_snapshot_not_regular"]},
-            )
+    payload, _ = context_payload_from_args(root, args)
     if payload.get("mode") != args.mode:
         raise WorkflowError("context discovery mode does not match recorder mode.", exit_code=2)
-    submitted_identity = payload.get("snapshot_identity")
-    submitted_snapshot_sha256 = (
-        submitted_identity.get("snapshot_sha256")
+    recovery_task = getattr(args, "recovery_task", None)
+    recovery_continuation_id = str(
+        getattr(args, "recovery_continuation_id", None) or ""
+    ).strip()
+    if bool(recovery_task) != bool(recovery_continuation_id):
+        raise WorkflowError(
+            "Context discovery recovery requires task and continuation identity together.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_identity_incomplete"]},
+        )
+    recovery_task_dir: Path | None = None
+    if recovery_task:
+        if args.mode != "workflow":
+            raise WorkflowError(
+                "Context discovery recovery is active-task workflow-only.",
+                exit_code=2,
+                payload={"error_codes": ["context_recovery_mode_invalid"]},
+            )
+        recovery_task_dir = context_active_task_dir(root, str(recovery_task))
+    submitted_identity = payload.get("result_identity")
+    submitted_result_sha256 = (
+        submitted_identity.get("result_sha256")
         if isinstance(submitted_identity, dict)
         else None
     )
     submitted_structural = context_structural_errors(root, payload)
     if submitted_structural:
         raise WorkflowError(
-            "Context discovery snapshot validation failed.",
+            "Context discovery owner result validation failed.",
             exit_code=2,
             payload={"error_codes": context_sort(submitted_structural)},
         )
     if (
-        args.expected_snapshot_sha256
-        and args.expected_snapshot_sha256 != submitted_snapshot_sha256
+        args.expected_result_sha256
+        and args.expected_result_sha256 != submitted_result_sha256
     ):
         raise WorkflowError(
-            "Expected context discovery snapshot digest does not match.",
+            "Expected context discovery owner-result digest does not match.",
             exit_code=2,
-            payload={"error_codes": ["expected_snapshot_mismatch"]},
+            payload={"error_codes": ["expected_result_mismatch"]},
         )
-    if task_dir is not None:
-        payload["task_worktree_state"] = context_task_worktree_state(root, task_dir)
-    payload["snapshot_identity"] = context_snapshot_identity(payload)
+    payload["result_identity"] = context_result_identity(payload)
     structural = context_structural_errors(root, payload)
     if structural:
         raise WorkflowError(
-            "Context discovery snapshot validation failed.",
+            "Context discovery owner result validation failed.",
             exit_code=2,
             payload={"error_codes": context_sort(structural)},
         )
-    live = context_live_errors(root, payload, task_dir)
+    live = context_live_errors(root, payload, recovery_task_dir)
     route_live = context_typed_exit_live_errors(payload, live)
     if structural or route_live:
         raise WorkflowError(
-            "Context discovery snapshot validation failed.",
+            "Context discovery owner result validation failed.",
             exit_code=2,
             payload={"error_codes": context_sort(structural + route_live)},
         )
-    if task_dir is None:
-        if args.expected_snapshot_sha256:
-            raise WorkflowError("Pre-task context recording does not accept an expected task snapshot.", exit_code=2)
-        if getattr(args, "expected_prior_snapshot_sha256", None):
-            raise WorkflowError("Pre-task context recording does not accept an expected prior snapshot.", exit_code=2)
-        return payload
-    if not args.expected_snapshot_sha256:
-        raise WorkflowError("Task-local context recording requires --expected-snapshot-sha256.", exit_code=2)
-    assert target is not None
-    trackability_errors = context_discovery_target_trackability_errors(root, target)
-    if trackability_errors:
-        raise WorkflowError(
-            "Context discovery target must be trackable by Git.",
-            exit_code=2,
-            payload={"error_codes": trackability_errors},
-        )
-    expected_bytes = json_document_bytes(payload)
-    if target.exists():
-        try:
-            actual_bytes = target.read_bytes()
-        except OSError as exc:
-            raise WorkflowError(
-                "Existing context-discovery.json is unreadable.",
-                exit_code=2,
-                payload={"error_codes": ["existing_snapshot_unreadable"]},
-            ) from exc
-        if actual_bytes != expected_bytes:
-            replacement_errors = context_prior_snapshot_replacement_errors(
-                root,
-                target,
-                payload,
-                getattr(args, "expected_prior_snapshot_sha256", None),
-            )
-            if replacement_errors:
-                raise WorkflowError(
-                    "Existing context-discovery.json cannot be formally replaced.",
-                    exit_code=2,
-                    payload={"error_codes": replacement_errors},
-                )
-            write_json(target, payload)
-    else:
-        if (
-            getattr(args, "expected_prior_snapshot_sha256", None)
-            or payload.get("superseded_snapshot_sha256") is not None
-        ):
-            raise WorkflowError(
-                "Initial context-discovery.json write cannot supersede a prior snapshot.",
-                exit_code=2,
-                payload={"error_codes": ["prior_snapshot_not_found"]},
-            )
-        write_json(target, payload)
-    trackability_errors = context_discovery_target_trackability_errors(root, target)
-    if trackability_errors:
-        raise WorkflowError(
-            "Context discovery target must remain trackable by Git.",
-            exit_code=2,
-            payload={"error_codes": trackability_errors},
-        )
-    persisted_errors = context_persisted_snapshot_errors(
-        root,
-        target,
-        payload,
-        task_dir,
-    )
-    if persisted_errors:
-        raise WorkflowError(
-            "Persisted context discovery snapshot validation failed.",
-            exit_code=2,
-            payload={"error_codes": persisted_errors},
+    if recovery_task_dir is not None:
+        context_record_recovery_checkpoint(
+            root,
+            recovery_task_dir,
+            payload,
+            recovery_continuation_id,
         )
     return payload
 
 
 def cmd_check_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    payload, task_dir = context_payload_from_args(root, args)
+    payload, _ = context_payload_from_args(root, args)
+    recovery_task = getattr(args, "recovery_task", None)
+    recovery_continuation_id = str(
+        getattr(args, "recovery_continuation_id", None) or ""
+    ).strip()
+    if bool(recovery_task) != bool(recovery_continuation_id):
+        raise WorkflowError(
+            "Context discovery recovery requires task and continuation identity together.",
+            exit_code=2,
+            payload={"error_codes": ["context_recovery_identity_incomplete"]},
+        )
+    recovery_task_dir: Path | None = None
+    if recovery_task:
+        if payload.get("mode") != "workflow":
+            raise WorkflowError(
+                "Context discovery recovery is active-task workflow-only.",
+                exit_code=2,
+                payload={"error_codes": ["context_recovery_mode_invalid"]},
+            )
+        recovery_task_dir = context_active_task_dir(root, str(recovery_task))
     structural = context_structural_errors(root, payload)
     if structural:
         raise WorkflowError(
-            "Context discovery snapshot validation failed.",
+            "Context discovery owner result validation failed.",
             exit_code=2,
             payload={"error_codes": context_sort(structural)},
         )
-    if task_dir is not None:
-        trackability_errors = context_discovery_target_trackability_errors(
-            root,
-            task_dir / "context-discovery.json",
-        )
-        if trackability_errors:
-            raise WorkflowError(
-                "Context discovery target must be trackable by Git.",
-                exit_code=2,
-                payload={"error_codes": trackability_errors},
-            )
-    live = context_live_errors(root, payload, task_dir)
-    expected = args.expected_snapshot_sha256
-    actual = (payload.get("snapshot_identity") or {}).get("snapshot_sha256") if isinstance(payload.get("snapshot_identity"), dict) else None
+    live = context_live_errors(root, payload, recovery_task_dir)
+    expected = args.expected_result_sha256
+    actual = (payload.get("result_identity") or {}).get("result_sha256") if isinstance(payload.get("result_identity"), dict) else None
     if expected and expected != actual:
-        structural.append("expected_snapshot_mismatch")
+        structural.append("expected_result_mismatch")
     errors = context_sort(structural + context_typed_exit_live_errors(payload, live))
     if errors:
-        raise WorkflowError("Context discovery snapshot validation failed.", exit_code=2, payload={"error_codes": errors})
+        raise WorkflowError("Context discovery owner result validation failed.", exit_code=2, payload={"error_codes": errors})
+    if recovery_task_dir is not None:
+        context_check_recovery_checkpoint(
+            root,
+            recovery_task_dir,
+            payload,
+            recovery_continuation_id,
+        )
     return {
         "status": "passed",
         "typed_exit": payload["typed_exit"],
-        "snapshot_sha256": actual,
-        "query_sha256": payload["snapshot_identity"]["query_sha256"],
-        "archive_manifest_sha256": payload["snapshot_identity"]["archive_manifest_sha256"],
-        "base_head": payload["snapshot_identity"]["base_head"],
-        "base_sync_facts_sha256": payload["snapshot_identity"]["base_sync_facts_sha256"],
-        "post_sync_resolution_sha256": payload["snapshot_identity"]["post_sync_resolution_sha256"],
+        "result_sha256": actual,
+        "query_sha256": payload["result_identity"]["query_sha256"],
+        "archive_manifest_sha256": payload["result_identity"]["archive_manifest_sha256"],
+        "base_head": payload["result_identity"]["base_head"],
+        "base_sync_facts_sha256": payload["result_identity"]["base_sync_facts_sha256"],
+        "post_sync_resolution_sha256": payload["result_identity"]["post_sync_resolution_sha256"],
     }
 
 
@@ -27177,31 +27139,25 @@ def requirements_clarification_structural_errors(
     context = payload.get("context_evidence")
     if (
         not isinstance(context, dict)
-        or set(context) != {"status", "schema_id", "snapshot_sha256", "evidence_refs", "missing_reason"}
+        or set(context) != {"status", "evidence_refs", "missing_reason"}
         or context.get("status") not in {"current", "missing", "stale"}
         or not isinstance(context.get("evidence_refs"), list)
     ):
         errors.append("invalid_requirements_clarification_context")
     elif context.get("status") == "current":
         if (
-            context.get("schema_id") != "guru-context-discovery-1.0"
-            or not requirements_clarification_is_sha256(context.get("snapshot_sha256"))
-            or not context.get("evidence_refs")
+            not context.get("evidence_refs")
             or context.get("missing_reason") is not None
         ):
             errors.append("invalid_current_requirements_context")
     elif context.get("status") == "missing":
         if (
-            context.get("schema_id") is not None
-            or context.get("snapshot_sha256") is not None
-            or not context.get("evidence_refs")
+            not context.get("evidence_refs")
             or not requirements_clarification_nonempty(context.get("missing_reason"))
         ):
             errors.append("invalid_missing_requirements_context")
     elif (
-        context.get("schema_id") != "guru-context-discovery-1.0"
-        or not requirements_clarification_is_sha256(context.get("snapshot_sha256"))
-        or not context.get("evidence_refs")
+        not context.get("evidence_refs")
         or not requirements_clarification_nonempty(context.get("missing_reason"))
     ):
         errors.append("invalid_stale_requirements_context")
@@ -27653,9 +27609,7 @@ def requirements_clarification_structural_errors(
         elif trail is not None:
             errors.append("active_task_decision_trail_forbidden_before_reentry")
 
-        current_context = (
-            context.get("snapshot_sha256") if isinstance(context, dict) else None
-        )
+        current_context = context_digest(context) if isinstance(context, dict) else None
 
         github_action_kinds = {
             action.get("kind") for action in actions
@@ -28050,47 +28004,13 @@ def requirements_clarification_active_task_live_errors(
     if issue_scope_ledger_errors(ledger_payload):
         errors.append("active_task_ledger_structure_invalid")
     trail = evidence.get("decision_trail")
-    authority_updated_at: str | None = None
     if isinstance(trail, dict):
-        authority_errors, authority_updated_at = (
+        authority_errors, _ = (
             requirements_clarification_decision_authority_live_result(
                 root, payload.get("review_target"), trail.get("github_authority")
             )
         )
         errors.extend(authority_errors)
-    context = payload.get("context_evidence")
-    context_path = task_dir / "context-discovery.json"
-    if isinstance(context, dict) and context.get("status") == "current":
-        if not context_path.is_file() or context_path.is_symlink():
-            errors.append("requirements_context_snapshot_unavailable")
-        else:
-            try:
-                snapshot = json.loads(context_path.read_text(encoding="utf-8"))
-            except (OSError, UnicodeError, json.JSONDecodeError):
-                errors.append("requirements_context_snapshot_unreadable")
-            else:
-                identity = snapshot.get("snapshot_identity") if isinstance(snapshot, dict) else None
-                if not isinstance(identity, dict) or identity.get("snapshot_sha256") != context.get("snapshot_sha256"):
-                    errors.append("requirements_context_snapshot_stale")
-                if isinstance(trail, dict) and authority_updated_at is not None:
-                    try:
-                        context_generated_at = parse_iso_datetime(
-                            snapshot.get("generated_at") if isinstance(snapshot, dict) else None,
-                            "active-task context generated_at",
-                        )
-                    except WorkflowError:
-                        errors.append("active_task_context_generated_at_invalid")
-                    else:
-                        try:
-                            authority_updated_at = parse_iso_datetime(
-                                authority_updated_at,
-                                "active-task GitHub authority updated_at",
-                            )
-                        except WorkflowError:
-                            errors.append("active_task_decision_authority_updated_at_invalid")
-                        else:
-                            if context_generated_at < authority_updated_at:
-                                errors.append("active_task_context_predates_decision_authority")
     return context_sort(errors)
 
 
@@ -28257,7 +28177,6 @@ def requirements_clarification_typed_exit_live_errors(
         return context_sort(live_errors)
     allowed_refresh_drift = {
         "requirements_target_issue_stale",
-        "requirements_context_snapshot_stale",
     }
     fatal = [code for code in live_errors if code not in allowed_refresh_drift]
     if fatal:
@@ -28768,19 +28687,6 @@ def change_request_review_missing_projection(kind: str) -> dict[str, Any]:
         "typed_exit": None,
         "payload_sha256": None,
     }
-    if kind == "context":
-        return {
-            **common,
-            "snapshot_sha256": None,
-            "base_sync_facts_sha256": None,
-            "base_head": None,
-            "live_target_sha256": None,
-            "query_sha256": None,
-            "current_state_sha256": None,
-            "history_sha256": None,
-            "duplicate_sha256": None,
-            "error_codes": ["change_request_review_context_missing"],
-        }
     if kind == "clarity":
         return {
             **common,
@@ -28800,55 +28706,6 @@ def change_request_review_missing_projection(kind: str) -> dict[str, Any]:
         "target_content_sha256": None,
         "error_codes": ["change_request_review_wording_missing"],
     }
-
-
-def change_request_review_context_projection(
-    root: Path,
-    payload: Any,
-) -> dict[str, Any]:
-    if payload is None:
-        return change_request_review_missing_projection("context")
-    if not isinstance(payload, dict):
-        result = change_request_review_missing_projection("context")
-        result["status"] = "invalid"
-        result["error_codes"] = ["change_request_review_context_invalid"]
-        return result
-    structural = context_structural_errors(root, payload)
-    live: list[str] = []
-    if not structural:
-        live = context_typed_exit_live_errors(
-            payload,
-            context_live_errors(root, payload, None),
-        )
-    errors = list(structural) + list(live)
-    if payload.get("typed_exit") != "context_ready":
-        errors.append("change_request_review_context_exit_not_ready")
-    snapshot = payload.get("snapshot_identity") if isinstance(payload.get("snapshot_identity"), dict) else {}
-    base = payload.get("base_evidence") if isinstance(payload.get("base_evidence"), dict) else {}
-    sync_result = base.get("sync_result") if isinstance(base.get("sync_result"), dict) else {}
-    live_change = payload.get("live_change") if isinstance(payload.get("live_change"), dict) else {}
-    preview = payload.get("history_preview") if isinstance(payload.get("history_preview"), dict) else {}
-    history_projection = {
-        "preview_sha256": preview.get("preview_sha256"),
-        "history_review": payload.get("history_review"),
-        "mem_review": payload.get("mem_review"),
-    }
-    return {
-        "status": "current" if not errors else "invalid",
-        "schema_id": "guru-context-discovery-1.0",
-        "typed_exit": payload.get("typed_exit") if isinstance(payload.get("typed_exit"), str) else None,
-        "payload_sha256": context_digest(payload),
-        "snapshot_sha256": change_request_review_sha256(snapshot.get("snapshot_sha256")),
-        "base_sync_facts_sha256": change_request_review_sha256(sync_result.get("facts_sha256")),
-        "base_head": snapshot.get("base_head") if re.fullmatch(r"[0-9a-f]{40}", str(snapshot.get("base_head") or "")) else None,
-        "live_target_sha256": change_request_review_sha256(live_change.get("facts_sha256")),
-        "query_sha256": change_request_review_sha256(snapshot.get("query_sha256")),
-        "current_state_sha256": context_digest(payload.get("current_state")),
-        "history_sha256": context_digest(history_projection),
-        "duplicate_sha256": context_digest(payload.get("duplicate_search")),
-        "error_codes": context_sort(errors),
-    }
-
 
 def change_request_review_clarity_projection(
     root: Path,
@@ -28927,19 +28784,14 @@ def change_request_review_wording_projection(
 def change_request_review_prerequisite_target_identity_projection(
     payloads: dict[str, Any],
 ) -> dict[str, Any] | None:
-    context_payload = payloads.get("context")
     clarity_payload = payloads.get("clarity")
     wording_payload = payloads.get("wording")
     if not all(
         isinstance(payload, dict)
-        for payload in (context_payload, clarity_payload, wording_payload)
+        for payload in (clarity_payload, wording_payload)
     ):
         return None
 
-    repository = context_payload.get("repository")
-    repository = repository if isinstance(repository, dict) else {}
-    live_change = context_payload.get("live_change")
-    live_change = live_change if isinstance(live_change, dict) else {}
     clarity_target = clarity_payload.get("review_target")
     clarity_target = clarity_target if isinstance(clarity_target, dict) else {}
     invocation = clarity_payload.get("invocation_context")
@@ -28953,20 +28805,17 @@ def change_request_review_prerequisite_target_identity_projection(
 
     invocation_kind = invocation.get("kind")
     if (
-        live_change.get("kind") == "issue"
-        and clarity_target.get("kind") == "issue"
+        clarity_target.get("kind") == "issue"
         and invocation_kind == "initial_issue"
     ):
         kind = "existing_issue"
     elif (
-        live_change.get("kind") == "draft"
-        and clarity_target.get("kind") == "draft"
+        clarity_target.get("kind") == "draft"
         and invocation_kind == "proposed_draft"
     ):
         kind = "proposed_draft"
     elif (
-        live_change.get("kind") == "draft"
-        and clarity_target.get("kind") == "draft"
+        clarity_target.get("kind") == "draft"
         and invocation_kind == "standalone_review"
     ):
         kind = "standalone_request"
@@ -28975,7 +28824,7 @@ def change_request_review_prerequisite_target_identity_projection(
 
     common = {
         "kind": kind,
-        "repo": repository.get("repo"),
+        "repo": clarity_target.get("repo"),
         "title_sha256": title_hash,
         "body_sha256": body_hash,
     }
@@ -29010,26 +28859,6 @@ def change_request_review_target_linkage_errors(
     payloads: dict[str, Any],
     projections: dict[str, dict[str, Any]],
 ) -> None:
-    context_payload = payloads.get("context")
-    if isinstance(context_payload, dict):
-        repository = context_payload.get("repository") if isinstance(context_payload.get("repository"), dict) else {}
-        live_change = context_payload.get("live_change") if isinstance(context_payload.get("live_change"), dict) else {}
-        context_errors: list[str] = []
-        if repository.get("repo") != target.get("repo") or live_change.get("body_sha256") != target.get("body_sha256"):
-            context_errors.append("change_request_review_context_target_mismatch")
-        if target.get("kind") == "existing_issue" and (
-            live_change.get("kind") != "issue"
-            or live_change.get("identity") != target.get("url")
-            or live_change.get("updated_at") != target.get("updated_at")
-        ):
-            context_errors.append("change_request_review_context_issue_mismatch")
-        if target.get("kind") != "existing_issue" and live_change.get("kind") != "draft":
-            context_errors.append("change_request_review_context_draft_mismatch")
-        if context_errors:
-            projections["context"]["status"] = "invalid"
-            projections["context"]["error_codes"] = context_sort(
-                projections["context"]["error_codes"] + context_errors
-            )
     clarity_payload = payloads.get("clarity")
     if isinstance(clarity_payload, dict):
         clarity_target = clarity_payload.get("review_target") if isinstance(clarity_payload.get("review_target"), dict) else {}
@@ -29064,7 +28893,7 @@ def change_request_review_target_linkage_errors(
     )
     complete_prerequisite_payloads = all(
         isinstance(payloads.get(kind), dict)
-        for kind in ("context", "clarity", "wording")
+        for kind in ("clarity", "wording")
     )
     if (
         complete_prerequisite_payloads
@@ -29088,14 +28917,13 @@ def change_request_review_prerequisite_projections(
     scope: dict[str, Any],
     contents: dict[str, str],
 ) -> dict[str, dict[str, Any]]:
-    if not isinstance(payloads, dict) or set(payloads) != {"context", "clarity", "wording"}:
+    if not isinstance(payloads, dict) or set(payloads) != {"clarity", "wording"}:
         raise WorkflowError(
-            "Change request review prerequisite payloads must contain context, clarity, and wording.",
+            "Change request review prerequisite payloads must contain clarity and wording.",
             exit_code=2,
             payload={"error_codes": ["change_request_review_prerequisites_invalid"]},
         )
     projections = {
-        "context": change_request_review_context_projection(root, payloads.get("context")),
         "clarity": change_request_review_clarity_projection(root, payloads.get("clarity")),
         "wording": change_request_review_wording_projection(
             root,
@@ -29112,16 +28940,11 @@ def change_request_review_linkage(
     target: dict[str, Any],
     prerequisites: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
-    context_projection = prerequisites["context"]
     clarity_projection = prerequisites["clarity"]
     wording_projection = prerequisites["wording"]
     linkage = {
         "target_identity_sha256": target["identity_sha256"],
         "target_content_sha256": target["content_sha256"],
-        "base_head": context_projection["base_head"],
-        "current_state_sha256": context_projection["current_state_sha256"],
-        "history_sha256": context_projection["history_sha256"],
-        "duplicate_sha256": context_projection["duplicate_sha256"],
         "clarity_facts_sha256": clarity_projection["facts_sha256"],
         "clarity_disposition_sha256": clarity_projection["disposition_sha256"],
         "wording_facts_sha256": wording_projection["facts_sha256"],
@@ -29269,7 +29092,7 @@ def change_request_review_structural_errors(
         expected_linkage.get("linkage_sha256"),
     }
     allowed_refs = set(evidence_refs) | {
-        "target", "prerequisites.context", "prerequisites.clarity",
+        "target", "prerequisites.clarity",
         "prerequisites.wording", "evidence_linkage",
     }
     for row in [*dimensions, *findings]:
@@ -29328,8 +29151,7 @@ def change_request_review_structural_errors(
         if any(
             expected_linkage.get(field) is None
             for field in (
-                "base_head", "current_state_sha256", "history_sha256",
-                "duplicate_sha256", "clarity_facts_sha256",
+                "clarity_facts_sha256",
                 "clarity_disposition_sha256",
                 "wording_facts_sha256",
             )
@@ -29501,11 +29323,6 @@ def task_workspace_prerequisite_projection(
         facts = payload.get("facts_sha256")
         content = None
         linkage = None
-    elif key == "context":
-        identity = payload.get("snapshot_identity") if isinstance(payload.get("snapshot_identity"), dict) else {}
-        facts = identity.get("snapshot_sha256")
-        content = identity.get("live_change_sha256")
-        linkage = identity.get("snapshot_sha256")
     elif key == "clarity":
         identity = payload.get("content_identity") if isinstance(payload.get("content_identity"), dict) else {}
         facts = identity.get("result_sha256")
@@ -29556,9 +29373,6 @@ def task_workspace_prerequisite_errors(
     if key == "base":
         errors.extend(f"task_workspace_base_{item}" for item in base_sync_result_errors(payload))
         errors.extend(f"task_workspace_base_{item}" for item in validate_live_base_sync_result(root, payload))
-    elif key == "context":
-        errors.extend(f"task_workspace_context_{item}" for item in context_structural_errors(root, payload))
-        errors.extend(f"task_workspace_context_{item}" for item in context_live_errors(root, payload, None))
     elif key == "clarity":
         errors.extend(
             f"task_workspace_clarity_{item}"
@@ -29662,7 +29476,7 @@ def task_workspace_readiness_linkage_errors(
         if isinstance(readiness.get("prerequisites"), dict)
         else {}
     )
-    for key in ("context", "clarity", "wording"):
+    for key in ("clarity", "wording"):
         projection = prerequisites.get(key) if isinstance(prerequisites.get(key), dict) else {}
         current = payloads.get(key)
         if (
@@ -29683,7 +29497,7 @@ def task_workspace_readiness_linkage_errors(
     if target.get("content_sha256") != expected_content:
         errors.append("task_workspace_readiness_target_content_invalid")
 
-    if set(prerequisites) == {"context", "clarity", "wording"}:
+    if set(prerequisites) == {"clarity", "wording"}:
         try:
             expected_linkage = change_request_review_linkage(target, prerequisites)
         except (KeyError, TypeError):
@@ -29714,23 +29528,19 @@ def task_workspace_created_issue_provenance_errors(
     target = plan.get("target") if isinstance(plan.get("target"), dict) else {}
     result = target.get("created_issue_result")
     binding_sha = target.get("created_issue_binding_sha256")
-    context_payload = payloads.get("context") if isinstance(payloads.get("context"), dict) else {}
-    live_change = (
-        context_payload.get("live_change")
-        if isinstance(context_payload.get("live_change"), dict)
+    readiness_payload = (
+        payloads.get("readiness")
+        if isinstance(payloads.get("readiness"), dict)
         else {}
     )
-    context_binding = live_change.get("issue_binding")
-    context_repository = (
-        context_payload.get("repository")
-        if isinstance(context_payload.get("repository"), dict)
+    readiness_target = (
+        readiness_payload.get("target")
+        if isinstance(readiness_payload.get("target"), dict)
         else {}
     )
     errors: list[str] = []
 
     if result is None and binding_sha is None:
-        if isinstance(context_binding, dict):
-            errors.append("task_workspace_created_issue_result_required")
         return errors
     if not isinstance(result, dict) or not isinstance(binding_sha, str):
         return ["task_workspace_created_issue_provenance_incomplete"]
@@ -29767,29 +29577,19 @@ def task_workspace_created_issue_provenance_errors(
         if binding.get(field) != expected:
             errors.append(f"task_workspace_created_issue_{field}_target_mismatch")
 
-    expected_live_issue_facts = {
-        "repo": binding.get("repo"),
-        "number": binding.get("number"),
-        "url": binding.get("canonical_url"),
-        "state": binding.get("state"),
-        "updated_at": binding.get("updated_at"),
-        "body_sha256": binding.get("body_sha256"),
-    }
-    expected_live_change = {
-        "kind": "issue",
-        "identity": binding.get("canonical_url"),
-        "state": binding.get("state"),
-        "updated_at": binding.get("updated_at"),
-        "body_sha256": binding.get("body_sha256"),
-        "facts_sha256": context_digest(expected_live_issue_facts),
-        "issue_binding": None,
-    }
-    if (
-        context_repository.get("repo") != binding.get("repo")
-        or context_binding is not None
-        or live_change != expected_live_change
+    for field, expected in (
+        ("kind", "existing_issue"),
+        ("repo", binding.get("repo")),
+        ("issue_number", binding.get("number")),
+        ("url", binding.get("canonical_url")),
+        ("updated_at", binding.get("updated_at")),
+        ("title_sha256", binding.get("title_sha256")),
+        ("body_sha256", binding.get("body_sha256")),
     ):
-        errors.append("task_workspace_created_issue_context_binding_mismatch")
+        if readiness_target.get(field) != expected:
+            errors.append(
+                f"task_workspace_created_issue_readiness_{field}_mismatch"
+            )
     return context_sort(errors)
 
 
@@ -31017,16 +30817,17 @@ def build_parser() -> argparse.ArgumentParser:
     context_record.add_argument("--json", action="store_true")
     context_record.add_argument("--mode", required=True, choices=["workflow", "standalone"])
     context_record.add_argument("--input")
-    context_record.add_argument("--task")
-    context_record.add_argument("--expected-snapshot-sha256")
-    context_record.add_argument("--expected-prior-snapshot-sha256")
+    context_record.add_argument("--expected-result-sha256")
+    context_record.add_argument("--recovery-task")
+    context_record.add_argument("--recovery-continuation-id")
 
     context_check = sub.add_parser("check-context-discovery")
     context_check.add_argument("--root")
     context_check.add_argument("--json", action="store_true")
     context_check.add_argument("--input")
-    context_check.add_argument("--task")
-    context_check.add_argument("--expected-snapshot-sha256")
+    context_check.add_argument("--expected-result-sha256")
+    context_check.add_argument("--recovery-task")
+    context_check.add_argument("--recovery-continuation-id")
 
     clarification_record = sub.add_parser("record-requirements-clarification")
     clarification_record.add_argument("--root")
@@ -31153,6 +30954,8 @@ def build_parser() -> argparse.ArgumentParser:
     stage0_invocation = sub.add_parser("invoke-stage0-skill")
     stage0_invocation.add_argument("--input")
     stage0_invocation.add_argument("--owner-result")
+    stage0_invocation.add_argument("--owner-task")
+    stage0_invocation.add_argument("--owner-continuation-id")
     stage0_invocation.add_argument("--owner-prerequisites")
     stage0_invocation.add_argument("--owner-change-request")
     stage0_invocation.add_argument("--owner-plan")

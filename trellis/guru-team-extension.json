@@ -35,7 +35,6 @@
     "artifact_contracts": [
       ".trellis/guru-team/extension.json",
       "planning-approval.json",
-      "context-discovery.json",
       "contract-wording-review.json",
       "issue-review.json",
       "phase2-check.json",
@@ -80,7 +79,6 @@
         "guru-stage0-clarify-requirements-input-standalone-review-1.0",
         "guru-stage0-create-task-workspace-input-execute-reviewed-plan-2.0",
         "guru-stage0-discover-change-context-input-pre-task-1.0",
-        "guru-stage0-discover-change-context-input-task-local-reentry-1.0",
         "guru-stage0-review-change-request-input-current-issue-1.0",
         "guru-stage0-review-change-request-input-proposed-draft-1.0",
         "guru-stage0-review-change-request-input-standalone-request-1.0",
@@ -147,8 +145,9 @@
       ],
       "private_artifact_schema_ids": [
         "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-change-context-recovery-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-1.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-context-discovery-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-contract-wording-review-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json",
@@ -164,8 +163,9 @@
       ],
       "artifact_schema_ids": [
         "guru-base-sync-result-1.0",
+        "guru-change-context-owner-result-2.0",
+        "guru-change-context-recovery-1.0",
         "guru-change-request-review-1.0",
-        "guru-context-discovery-1.0",
         "guru-contract-wording-review-1.0",
         "guru-extension-installation-verification-3.0",
         "guru-issue-scope-ledger-2.0",

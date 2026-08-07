@@ -3996,23 +3996,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "facts_sha256": "",
         }
         checked_result["facts_sha256"] = gtt.task_workspace_result_digest(checked_result)
-        live_issue_facts = {
-            "repo": binding["repo"],
-            "number": binding["number"],
-            "url": binding["canonical_url"],
-            "state": binding["state"],
-            "updated_at": binding["updated_at"],
-            "body_sha256": binding["body_sha256"],
-        }
-        live_change = {
-            "kind": "issue",
-            "identity": binding["canonical_url"],
-            "state": binding["state"],
-            "updated_at": binding["updated_at"],
-            "body_sha256": binding["body_sha256"],
-            "facts_sha256": gtt.context_digest(live_issue_facts),
-            "issue_binding": None,
-        }
         plan = {
             "mode": "workflow",
             "target": {
@@ -4028,9 +4011,16 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             },
         }
         payloads = {
-            "context": {
-                "repository": {"repo": binding["repo"]},
-                "live_change": live_change,
+            "readiness": {
+                "target": {
+                    "kind": "existing_issue",
+                    "repo": binding["repo"],
+                    "issue_number": binding["number"],
+                    "url": binding["canonical_url"],
+                    "updated_at": binding["updated_at"],
+                    "title_sha256": binding["title_sha256"],
+                    "body_sha256": binding["body_sha256"],
+                }
             }
         }
         self.assertEqual(gtt.task_workspace_created_issue_provenance_errors(plan, payloads), [])
@@ -4055,23 +4045,24 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             errors = gtt.task_workspace_created_issue_provenance_errors(stale, payloads)
             self.assertIn("task_workspace_created_issue_binding_digest_mismatch", errors, field)
             self.assertIn("task_workspace_created_issue_result_facts_digest_mismatch", errors, field)
-        invalid_contexts = {
-            "repository": lambda value: value["context"]["repository"].update({"repo": "other/repo"}),
-            "kind": lambda value: value["context"]["live_change"].update({"kind": "draft"}),
-            "identity": lambda value: value["context"]["live_change"].update({"identity": "https://github.com/owner/repo/issues/501"}),
-            "state": lambda value: value["context"]["live_change"].update({"state": "closed"}),
-            "updated_at": lambda value: value["context"]["live_change"].update({"updated_at": "2026-07-18T00:03:00Z"}),
-            "body_sha256": lambda value: value["context"]["live_change"].update({"body_sha256": "f" * 64}),
-            "facts_sha256": lambda value: value["context"]["live_change"].update({"facts_sha256": "f" * 64}),
-            "issue_binding": lambda value: value["context"]["live_change"].update({"issue_binding": copy.deepcopy(live_issue_facts)}),
+        invalid_readiness = {
+            "repo": "other/repo",
+            "kind": "proposed_draft",
+            "issue_number": 501,
+            "url": "https://github.com/owner/repo/issues/501",
+            "updated_at": "2026-07-18T00:03:00Z",
+            "title_sha256": "f" * 64,
+            "body_sha256": "f" * 64,
         }
-        for field, mutate in invalid_contexts.items():
-            with self.subTest(context_field=field):
-                wrong_context = copy.deepcopy(payloads)
-                mutate(wrong_context)
+        for field, value in invalid_readiness.items():
+            with self.subTest(readiness_field=field):
+                wrong_readiness = copy.deepcopy(payloads)
+                wrong_readiness["readiness"]["target"][field] = value
                 self.assertIn(
-                    "task_workspace_created_issue_context_binding_mismatch",
-                    gtt.task_workspace_created_issue_provenance_errors(plan, wrong_context),
+                    f"task_workspace_created_issue_readiness_{field}_mismatch",
+                    gtt.task_workspace_created_issue_provenance_errors(
+                        plan, wrong_readiness
+                    ),
                 )
 
     def test_created_issue_provenance_survives_existing_issue_review_projection_chain(self) -> None:
@@ -4089,18 +4080,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "state": "open",
             "updated_at": updated_at,
             "body_sha256": body_sha256,
-        }
-        context = {
-            "repository": {"repo": repo},
-            "live_change": {
-                "kind": "issue",
-                "identity": url,
-                "state": "open",
-                "updated_at": updated_at,
-                "body_sha256": body_sha256,
-                "facts_sha256": gtt.context_digest(issue_facts),
-                "issue_binding": None,
-            },
         }
         clarity = {
             "invocation_context": {"kind": "initial_issue"},
@@ -4127,7 +4106,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 ],
             }
         }
-        payloads = {"context": context, "clarity": clarity, "wording": wording}
+        payloads = {"clarity": clarity, "wording": wording}
         target = gtt.change_request_review_prerequisite_target_identity_projection(payloads)
         self.assertEqual(
             target,
@@ -4156,12 +4135,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "side_effect_free": False,
         })
         projections = {
-            "context": {
-                "status": "current", "payload_sha256": gtt.context_digest(context),
-                "base_head": "a" * 40, "current_state_sha256": digest("current"),
-                "history_sha256": digest("history"), "duplicate_sha256": digest("duplicates"),
-                "error_codes": [],
-            },
             "clarity": {
                 "status": "current", "payload_sha256": gtt.context_digest(clarity),
                 "facts_sha256": digest("clarity"),
@@ -4239,11 +4212,15 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
         }
         self.assertEqual(gtt.task_workspace_created_issue_provenance_errors(plan, payloads), [])
 
-        stale_context = copy.deepcopy(payloads)
-        stale_context["context"]["live_change"]["facts_sha256"] = digest("stale-live-issue")
+        stale_readiness = copy.deepcopy(payloads)
+        stale_readiness["readiness"]["target"]["body_sha256"] = digest(
+            "stale-live-issue"
+        )
         self.assertIn(
-            "task_workspace_created_issue_context_binding_mismatch",
-            gtt.task_workspace_created_issue_provenance_errors(plan, stale_context),
+            "task_workspace_created_issue_readiness_body_sha256_mismatch",
+            gtt.task_workspace_created_issue_provenance_errors(
+                plan, stale_readiness
+            ),
         )
 
     def test_mutation_time_base_sync_detects_remote_advance_before_business_writes(self) -> None:
@@ -4352,7 +4329,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
 
     def test_reviewed_draft_plan_binds_current_readiness_identity(self) -> None:
         digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
-        context = {"current": "context"}
         clarity = {
             "review_target": {"state": "draft"},
             "target_disposition": {
@@ -4383,12 +4359,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             "body_sha256": target["body_sha256"],
         })
         readiness_prerequisites = {
-            "context": {
-                "status": "current", "payload_sha256": gtt.context_digest(context),
-                "base_head": "a" * 40, "current_state_sha256": digest("current"),
-                "history_sha256": digest("history"), "duplicate_sha256": digest("duplicate-state"),
-                "error_codes": [],
-            },
             "clarity": {
                 "status": "current", "payload_sha256": gtt.context_digest(clarity),
                 "facts_sha256": digest("clarity"),
@@ -4415,8 +4385,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             },
         }
         payloads = {
-            "context": context, "clarity": clarity, "wording": wording,
-            "readiness": readiness,
+            "clarity": clarity, "wording": wording, "readiness": readiness,
             "base": {
                 "resolution": {"selected_base": "main", "remote": "origin"},
                 "decision_checkout": {"head_after": "a" * 40},
@@ -4697,15 +4666,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                         "remote_ref": "main",
                     },
                 },
-                "context": {
-                    "skill_id": "guru-discover-change-context",
-                    "typed_exit": "context_ready",
-                    "snapshot_identity": {
-                        "snapshot_sha256": digest("snapshot"),
-                        "live_change_sha256": digest("live-change"),
-                    },
-                    "fixture": token,
-                },
                 "clarity": {
                     "skill_id": "guru-clarify-requirements",
                     "typed_exit": "clear",
@@ -4756,12 +4716,6 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 "body_sha256": target["body_sha256"],
             })
             projections = {
-                "context": {
-                    "status": "current", "payload_sha256": gtt.context_digest(payloads["context"]),
-                    "base_head": base_head, "current_state_sha256": digest("current-state"),
-                    "history_sha256": digest("history"), "duplicate_sha256": digest("duplicates"),
-                    "error_codes": [],
-                },
                 "clarity": {
                     "status": "current", "payload_sha256": gtt.context_digest(payloads["clarity"]),
                     "facts_sha256": digest("clarity-facts"),
@@ -5976,6 +5930,76 @@ class PlanningAndPhase2GateTest(unittest.TestCase):
                 self.task_dir,
             )
         self.assertIn("phase2_check_reviewed_content_stale", phase2_errors)
+
+    def test_owner_checkpoint_lifecycle_is_lazy_consumed_and_terminally_empty(self) -> None:
+        checkpoint_root = (
+            self.root
+            / ".trellis/.runtime/guru-team"
+            / gtt.AI_FIRST_OWNER_CHECKPOINT_DIR
+        )
+        paths = {
+            artifact_name: gtt.ai_first_owner_checkpoint_path(
+                self.root,
+                self.task_dir,
+                artifact_name,
+            )
+            for artifact_name in gtt.AI_FIRST_OWNER_ARTIFACTS
+        }
+        self.assertFalse(checkpoint_root.exists())
+
+        planning_path = paths[gtt.PLANNING_APPROVAL_ARTIFACT]
+        gtt.write_json(planning_path, {"owner": "planning", "state": "recoverable"})
+        self.assertEqual(
+            gtt.ai_first_retire_owner_checkpoints(
+                self.root,
+                self.task_dir,
+                (gtt.PLANNING_APPROVAL_ARTIFACT,),
+            ),
+            [gtt.PLANNING_APPROVAL_ARTIFACT],
+        )
+        self.assertFalse(planning_path.exists())
+        self.assertFalse(planning_path.parent.exists())
+
+        for artifact_name, path in paths.items():
+            gtt.write_json(path, {"owner": artifact_name, "state": "stale"})
+        self.assertEqual(
+            set(gtt.ai_first_retire_owner_checkpoints(
+                self.root,
+                self.task_dir,
+                sorted(gtt.AI_FIRST_OWNER_ARTIFACTS),
+            )),
+            set(gtt.AI_FIRST_OWNER_ARTIFACTS),
+        )
+        self.assertFalse(checkpoint_root.exists())
+
+    def test_owner_checkpoint_cleanup_rejects_unsafe_targets(self) -> None:
+        artifact_name = gtt.PLANNING_APPROVAL_ARTIFACT
+        checkpoint = gtt.ai_first_owner_checkpoint_path(
+            self.root,
+            self.task_dir,
+            artifact_name,
+        )
+        checkpoint.parent.mkdir(parents=True, exist_ok=True)
+        external = self.root / "external-owner-state.json"
+        external.write_text("preserve\n", encoding="utf-8")
+        checkpoint.symlink_to(external)
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.ai_first_retire_owner_checkpoints(
+                self.root,
+                self.task_dir,
+                (artifact_name,),
+            )
+        self.assertEqual(external.read_text(encoding="utf-8"), "preserve\n")
+        checkpoint.unlink()
+
+        checkpoint.mkdir()
+        with self.assertRaises(gtt.WorkflowError):
+            gtt.ai_first_retire_owner_checkpoints(
+                self.root,
+                self.task_dir,
+                (artifact_name,),
+            )
+        self.assertTrue(checkpoint.is_dir())
 
     def test_phase2_v4_is_compact_owner_private_and_independent_of_planning_checkpoint(self) -> None:
         with (
@@ -16755,11 +16779,24 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         temp = tempfile.TemporaryDirectory()
         root = Path(temp.name)
         (root / ".trellis/tasks/archive/2026-01").mkdir(parents=True)
-        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
         subprocess.run(["git", "config", "user.name", "Context Discovery Test"], cwd=root, check=True)
         subprocess.run(["git", "config", "user.email", "context@example.invalid"], cwd=root, check=True)
         subprocess.run(
             ["git", "commit", "--allow-empty", "-q", "-m", "test: seed context repository"],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git", "remote", "add", "origin",
+                "https://github.com/example/guru-extension.git",
+            ],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "update-ref", "refs/remotes/origin/main", "HEAD"],
             cwd=root,
             check=True,
         )
@@ -16976,69 +17013,296 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             "clean": True,
         }
 
-    def valid_payload(self, root: Path) -> dict[str, object]:
-        package = Path(gtt.__file__).resolve().parents[4] / "skills/guru-team/packages/guru-discover-change-context"
-        payload = json.loads((package / "examples/context-discovery.json").read_text(encoding="utf-8"))
-        self.bind_valid_base(payload)
-        query = gtt.canonicalize_context_query(root, payload["canonical_query"])
-        payload["canonical_query"] = query
-        payload["history_preview"] = gtt.build_context_history_preview(root, query)
-        payload["history_review"] = {"selected_candidates": [], "excluded_candidates": [], "deep_reads": []}
-        unsigned_live = {
-            key: payload["live_change"][key]
-            for key in ("kind", "identity", "state", "updated_at", "body_sha256")
-        }
-        payload["live_change"]["facts_sha256"] = gtt.context_digest(unsigned_live)
-        issue_binding = payload["live_change"]["issue_binding"]
-        unsigned_binding = {
-            key: issue_binding[key]
-            for key in ("repo", "number", "url", "state", "updated_at", "body_sha256")
-        }
-        issue_binding["facts_sha256"] = gtt.context_digest(unsigned_binding)
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        return payload
 
-    def test_stage0_public_invocation_binds_task_local_owner_checker_and_preserves_pre_task(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
+    def valid_owner_result(self, root: Path) -> dict[str, object]:
         package = (
             Path(gtt.__file__).resolve().parents[4]
             / "skills/guru-team/packages/guru-discover-change-context"
         )
-        task = root / ".trellis/tasks/context-task"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text(
-            '{"id":"context-task","status":"in_progress"}\n',
+        payload = json.loads(
+            (package / "examples/change-context-owner-result.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=root,
+            check=True,
+            text=True,
+            capture_output=True,
+        ).stdout.strip()
+        self.bind_valid_base(payload, head=head)
+        query = gtt.canonicalize_context_query(
+            root, payload["change_input"], validate_repo_paths=False
+        )
+        payload["canonical_query"] = query
+        payload["history_preview"] = gtt.build_context_history_preview(root, query)
+        payload["history_review"] = {
+            "selected_candidates": [],
+            "excluded_candidates": [],
+            "deep_reads": [],
+        }
+        live = payload["live_change"]
+        live["facts_sha256"] = gtt.context_digest({
+            key: live[key]
+            for key in ("kind", "identity", "state", "updated_at", "body_sha256")
+        })
+        binding = live["issue_binding"]
+        binding["facts_sha256"] = gtt.context_digest({
+            key: binding[key]
+            for key in ("repo", "number", "url", "state", "updated_at", "body_sha256")
+        })
+        payload["result_identity"] = gtt.context_result_identity(payload)
+        return payload
+
+    def public_input(self, root: Path) -> Path:
+        path = root / "public-input.json"
+        path.write_text(
+            json.dumps({
+                "profile": "pre_task",
+                "source_exit": "start",
+                "mode": "workflow",
+                "repo_locator": "example/guru-extension",
+                "base_branch": "main",
+                "continuation_id": "stage0-current",
+            }),
             encoding="utf-8",
         )
-        task_locator = task.relative_to(root).as_posix()
-        payload = self.valid_payload(root)
-        task_owner = task / "context-discovery.json"
-        task_owner.write_bytes(gtt.json_document_bytes(payload))
-        task_input = {
-            "profile": "task_local_reentry",
-            "source_exit": "start",
-            "mode": "workflow",
-            "repo_locator": "example/guru-extension",
-            "base_branch": "main",
-            "task_locator": task_locator,
-            "prior_snapshot_locator": "context-discovery.json",
-            "continuation_id": "stage0-task-local",
-        }
-        task_input_path = root / "task-local-input.json"
-        task_input_path.write_text(json.dumps(task_input), encoding="utf-8")
-        task_args = argparse.Namespace(
-            input=task_input_path.relative_to(root).as_posix(),
-            owner_result=task_owner.relative_to(root).as_posix(),
+        return path
+
+    def test_owner_result_record_check_and_public_invocation_are_ephemeral(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        payload = self.valid_owner_result(root)
+        public_input = self.public_input(root)
+        package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context"
         )
+        before = {
+            path.relative_to(root).as_posix()
+            for path in root.rglob("*")
+            if path.is_file()
+        }
+        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
+            recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
+                root=str(root), mode="workflow", input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+            ))
+            checked = gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=None, payload=recorded,
+                expected_result_sha256=recorded["result_identity"]["result_sha256"],
+            ))
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=("guru-discover-change-context", package),
+                ),
+                mock.patch.object(gtt, "stage0_repo_root", return_value=root),
+                mock.patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(json.dumps(recorded)),
+                ),
+            ):
+                output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
+                    input=public_input.relative_to(root).as_posix(),
+                    owner_result="-",
+                ))
 
-        checked_tasks: list[str | None] = []
-        real_checker = gtt.cmd_check_context_discovery
+        self.assertEqual(checked["status"], "passed")
+        self.assertEqual(
+            output,
+            {
+                "exit_id": "context_ready",
+                "handoff_profile": "initial_change_request",
+                "handoff_mode": "workflow",
+                "handoff_target_locator": payload["live_change"]["identity"],
+                "handoff_continuation_id": "stage0-current",
+            },
+        )
+        self.assertEqual(
+            before,
+            {
+                path.relative_to(root).as_posix()
+                for path in root.rglob("*")
+                if path.is_file()
+            },
+        )
+        self.assertFalse((root / ".trellis/.runtime").exists())
 
-        def checked_with_task(args: argparse.Namespace) -> dict[str, object]:
-            checked_tasks.append(args.task)
-            return real_checker(args)
+    def test_record_and_check_accept_stdin_without_repository_writes(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        payload = self.valid_owner_result(root)
+        before = set(gtt.git_status_paths(root))
+        with (
+            mock.patch.object(gtt, "context_live_errors", return_value=[]),
+            mock.patch.object(sys, "stdin", io.StringIO(json.dumps(payload))),
+        ):
+            recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
+                root=str(root), mode="workflow", input="-", payload=None,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+            ))
+        with (
+            mock.patch.object(gtt, "context_live_errors", return_value=[]),
+            mock.patch.object(sys, "stdin", io.StringIO(json.dumps(recorded))),
+        ):
+            checked = gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input="-", payload=None,
+                expected_result_sha256=recorded["result_identity"]["result_sha256"],
+            ))
+        self.assertEqual(checked["typed_exit"], "context_ready")
+        self.assertEqual(before, set(gtt.git_status_paths(root)))
+        self.assertFalse((root / ".trellis/.runtime").exists())
 
+    def test_active_task_recovery_is_lazy_checked_and_consumed_by_public_wrapper(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        payload = self.valid_owner_result(root)
+        public_input = self.public_input(root)
+        task_dir = root / ".trellis/tasks/08-07-context-recovery"
+        task_dir.mkdir(parents=True)
+        gtt.write_json(task_dir / "task.json", {
+            "id": "08-07-context-recovery",
+            "status": "in_progress",
+            "branch": "main",
+        })
+        task_ref = task_dir.relative_to(root).as_posix()
+        continuation_id = "stage0-current"
+        package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context"
+        )
+        checkpoint = gtt.context_recovery_checkpoint_path(root, task_dir)
+        self.assertFalse(checkpoint.exists())
+
+        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
+            recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
+                root=str(root), mode="workflow", input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+                recovery_task=task_ref,
+                recovery_continuation_id=continuation_id,
+            ))
+            self.assertTrue(checkpoint.is_file())
+            private = gtt.read_json(checkpoint)
+            self.assertEqual(private["task_ref"], task_ref)
+            self.assertEqual(private["task_id"], "08-07-context-recovery")
+            self.assertEqual(private["continuation_id"], continuation_id)
+            forbidden = {
+                "authorization", "reviewer", "generated_at", "result_identity",
+                "live_change", "repository", "history_preview", "canonical_query",
+            }
+            self.assertTrue(forbidden.isdisjoint(private))
+
+            checked = gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=None, payload=recorded,
+                expected_result_sha256=recorded["result_identity"]["result_sha256"],
+                recovery_task=task_ref,
+                recovery_continuation_id=continuation_id,
+            ))
+            self.assertEqual(checked["typed_exit"], "context_ready")
+
+            with (
+                mock.patch.object(
+                    gtt,
+                    "stage0_invocation_identity",
+                    return_value=("guru-discover-change-context", package),
+                ),
+                mock.patch.object(gtt, "stage0_repo_root", return_value=root),
+                mock.patch.object(sys, "stdin", io.StringIO(json.dumps(recorded))),
+            ):
+                output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
+                    input=public_input.relative_to(root).as_posix(),
+                    owner_result="-",
+                    owner_task=task_ref,
+                    owner_continuation_id=continuation_id,
+                ))
+
+        self.assertEqual(output["exit_id"], "context_ready")
+        self.assertFalse(checkpoint.exists())
+        self.assertFalse(checkpoint.parent.exists())
+
+    def test_active_task_recovery_stale_or_unsafe_checkpoint_fails_closed(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        payload = self.valid_owner_result(root)
+        task_dir = root / ".trellis/tasks/08-07-context-recovery"
+        task_dir.mkdir(parents=True)
+        gtt.write_json(task_dir / "task.json", {
+            "id": "08-07-context-recovery",
+            "status": "in_progress",
+            "branch": "main",
+        })
+        task_ref = task_dir.relative_to(root).as_posix()
+        checkpoint = gtt.context_recovery_checkpoint_path(root, task_dir)
+
+        checkpoint.parent.mkdir(parents=True)
+        external = root / "preserve-context-recovery.json"
+        external.write_text("preserve\n", encoding="utf-8")
+        checkpoint.symlink_to(external)
+        with (
+            mock.patch.object(gtt, "context_live_errors", return_value=[]),
+            self.assertRaises(gtt.WorkflowError),
+        ):
+            gtt.cmd_record_context_discovery(argparse.Namespace(
+                root=str(root), mode="workflow", input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+                recovery_task=task_ref,
+                recovery_continuation_id="stage0-current",
+            ))
+        self.assertEqual(external.read_text(encoding="utf-8"), "preserve\n")
+        checkpoint.unlink()
+
+        checkpoint.write_text("{\n", encoding="utf-8")
+        with (
+            mock.patch.object(gtt, "context_live_errors", return_value=[]),
+            self.assertRaises(gtt.WorkflowError) as invalid,
+        ):
+            gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+                recovery_task=task_ref,
+                recovery_continuation_id="stage0-current",
+            ))
+        self.assertEqual(
+            invalid.exception.payload["error_codes"],
+            ["context_recovery_checkpoint_invalid"],
+        )
+        self.assertFalse(checkpoint.exists())
+        self.assertFalse(checkpoint.parent.exists())
+
+        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
+            recorded = gtt.cmd_record_context_discovery(argparse.Namespace(
+                root=str(root), mode="workflow", input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+                recovery_task=task_ref,
+                recovery_continuation_id="stage0-current",
+            ))
+            changed = copy.deepcopy(recorded)
+            changed["ai_review_gate"]["reason"] = "Fresh authority required a new semantic conclusion."
+            changed["result_identity"] = gtt.context_result_identity(changed)
+            with self.assertRaises(gtt.WorkflowError):
+                gtt.cmd_check_context_discovery(argparse.Namespace(
+                    root=str(root), input=None, payload=changed,
+                    expected_result_sha256=changed["result_identity"]["result_sha256"],
+                    recovery_task=task_ref,
+                    recovery_continuation_id="stage0-current",
+                ))
+        self.assertFalse(checkpoint.exists())
+        self.assertFalse(checkpoint.parent.exists())
+
+    def test_public_invocation_rejects_repository_owner_locator(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        public_input = self.public_input(root)
+        owner_path = root / "owner-result.json"
+        owner_path.write_text("{}\n", encoding="utf-8")
+        package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context"
+        )
         with (
             mock.patch.object(
                 gtt,
@@ -17046,1473 +17310,80 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 return_value=("guru-discover-change-context", package),
             ),
             mock.patch.object(gtt, "stage0_repo_root", return_value=root),
-            mock.patch.object(
-                gtt,
-                "context_live_errors",
-                return_value=[],
-            ) as live_errors,
-            mock.patch.object(
-                gtt,
-                "cmd_check_context_discovery",
-                side_effect=checked_with_task,
-            ),
-        ):
-            task_output = gtt.cmd_invoke_stage0_skill(task_args)
-            self.assertEqual(task_output["exit_id"], "context_ready")
-            self.assertEqual(
-                task_output["handoff_context_locator"],
-                task_owner.relative_to(root).as_posix(),
-            )
-            self.assertEqual(checked_tasks, [task_locator])
-
-            pre_task_owner = root / "pre-task-context.json"
-            pre_task_owner.write_bytes(gtt.json_document_bytes(payload))
-            pre_task_input = {
-                "profile": "pre_task",
-                "source_exit": "start",
-                "mode": "workflow",
-                "repo_locator": "example/guru-extension",
-                "base_branch": "main",
-                "continuation_id": "stage0-pre-task",
-            }
-            pre_task_input_path = root / "pre-task-input.json"
-            pre_task_input_path.write_text(
-                json.dumps(pre_task_input),
-                encoding="utf-8",
-            )
-            pre_task_output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                input=pre_task_input_path.relative_to(root).as_posix(),
-                owner_result=pre_task_owner.relative_to(root).as_posix(),
-            ))
-            self.assertEqual(pre_task_output["exit_id"], "context_ready")
-            self.assertEqual(checked_tasks, [task_locator, None])
-
-            invalid_inputs = (
-                ({**task_input, "task_locator": ".trellis/tasks/other-task"}, "owner_result_input_mismatch"),
-                ({**task_input, "task_locator": "../context-task"}, "invalid_public_input"),
-                ({**task_input, "prior_snapshot_locator": "other.json"}, "invalid_public_input"),
-            )
-            for index, (invalid_input, expected_code) in enumerate(invalid_inputs):
-                invalid_input_path = root / f"invalid-task-local-input-{index}.json"
-                invalid_input_path.write_text(
-                    json.dumps(invalid_input),
-                    encoding="utf-8",
-                )
-                with self.subTest(expected_code=expected_code), self.assertRaises(
-                    gtt.WorkflowError
-                ) as raised:
-                    gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                        input=invalid_input_path.relative_to(root).as_posix(),
-                        owner_result=task_owner.relative_to(root).as_posix(),
-                    ))
-                self.assertEqual(raised.exception.payload["code"], expected_code)
-            self.assertEqual(checked_tasks, [task_locator, None])
-
-            live_errors.return_value = ["base_head_stale"]
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_invoke_stage0_skill(task_args)
-            self.assertEqual(
-                raised.exception.payload["code"],
-                "owner_result_not_checked",
-            )
-            self.assertEqual(checked_tasks, [task_locator, None, task_locator])
-
-    def test_structural_gate_enforces_order_selection_mem_and_snapshot(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        self.assertEqual(gtt.context_structural_errors(root, payload), [])
-        reordered = copy.deepcopy(payload)
-        reordered["current_state"]["sequence_trace"][-2:] = ["history_preview", "query_clues"]
-        reordered["snapshot_identity"] = gtt.context_snapshot_identity(reordered)
-        self.assertIn("invalid_current_state_order", gtt.context_structural_errors(root, reordered))
-        invalid_mem = copy.deepcopy(payload)
-        invalid_mem["mem_review"].update({"status": "used", "load_bearing_question": "Which contract owns this?"})
-        invalid_mem["snapshot_identity"] = gtt.context_snapshot_identity(invalid_mem)
-        self.assertIn("zero_candidate_mem_must_be_not_needed", gtt.context_structural_errors(root, invalid_mem))
-        empty_mem_summary = copy.deepcopy(payload)
-        empty_mem_summary["mem_review"].update({
-            "status": "used",
-            "load_bearing_question": "Which contract owns this?",
-            "exhausted_sources": {
-                "task_artifacts": True,
-                "current_docs_code_tests": True,
-                "github": True,
-                "git_history": True,
-            },
-            "summary": "",
-        })
-        empty_mem_summary["snapshot_identity"] = gtt.context_snapshot_identity(empty_mem_summary)
-        self.assertIn("zero_candidate_mem_must_be_not_needed", gtt.context_structural_errors(root, empty_mem_summary))
-        for field in ("reviewed_scope", "load_bearing_conclusions"):
-            incomplete_gate = copy.deepcopy(payload)
-            incomplete_gate["ai_review_gate"][field] = []
-            incomplete_gate["snapshot_identity"] = gtt.context_snapshot_identity(incomplete_gate)
-            with self.subTest(gate_field=field):
-                self.assertIn(
-                    "passed_gate_requires_semantic_evidence",
-                    gtt.context_structural_errors(root, incomplete_gate),
-                )
-        stale = copy.deepcopy(payload)
-        stale["snapshot_identity"]["snapshot_sha256"] = "0" * 64
-        self.assertIn("snapshot_identity_mismatch", gtt.context_structural_errors(root, stale))
-
-    def test_blocked_exit_and_ai_gate_status_are_bijective(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-
-        blocked_with_passed_gate = copy.deepcopy(payload)
-        blocked_with_passed_gate["typed_exit"] = "blocked"
-        blocked_with_passed_gate["error"] = {
-            "codes": ["semantic_review_blocked"],
-            "summary": "The semantic review could not form safe evidence.",
-        }
-        blocked_with_passed_gate["snapshot_identity"] = gtt.context_snapshot_identity(
-            blocked_with_passed_gate
-        )
-        blocked_with_passed_errors = gtt.context_structural_errors(
-            root, blocked_with_passed_gate
-        )
-        self.assertIn("context_schema_validation_failed", blocked_with_passed_errors)
-        self.assertIn("blocked_requires_blocked_gate", blocked_with_passed_errors)
-
-        blocked_gate_with_ready_exit = copy.deepcopy(payload)
-        blocked_gate_with_ready_exit["ai_review_gate"]["status"] = "blocked"
-        blocked_gate_with_ready_exit["snapshot_identity"] = gtt.context_snapshot_identity(
-            blocked_gate_with_ready_exit
-        )
-        blocked_gate_with_ready_errors = gtt.context_structural_errors(
-            root, blocked_gate_with_ready_exit
-        )
-        self.assertIn("context_schema_validation_failed", blocked_gate_with_ready_errors)
-        self.assertIn("blocked_gate_requires_blocked_exit", blocked_gate_with_ready_errors)
-
-        valid_blocked = copy.deepcopy(blocked_with_passed_gate)
-        valid_blocked["ai_review_gate"]["status"] = "blocked"
-        valid_blocked["snapshot_identity"] = gtt.context_snapshot_identity(valid_blocked)
-        self.assertEqual(gtt.context_structural_errors(root, valid_blocked), [])
-
-    def test_zero_candidate_schema_and_runtime_require_not_needed_mem_shape(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        self.assertEqual(payload["history_preview"]["candidates"], [])
-
-        used = copy.deepcopy(payload)
-        used["mem_review"] = {
-            "status": "used",
-            "reason": "A historical answer was requested despite no candidates.",
-            "load_bearing_question": "Which historical source explains the change?",
-            "exhausted_sources": {
-                "task_artifacts": True,
-                "current_docs_code_tests": True,
-                "github": True,
-                "git_history": True,
-            },
-            "summary": "A memory source was read.",
-        }
-        used["snapshot_identity"] = gtt.context_snapshot_identity(used)
-        used_errors = gtt.context_structural_errors(root, used)
-        self.assertIn("context_schema_validation_failed", used_errors)
-        self.assertIn("zero_candidate_mem_must_be_not_needed", used_errors)
-
-        inconsistent = copy.deepcopy(payload)
-        inconsistent["mem_review"]["load_bearing_question"] = "No candidate exists."
-        inconsistent["mem_review"]["exhausted_sources"]["git_history"] = True
-        inconsistent["mem_review"]["summary"] = "Inconsistent not-needed evidence."
-        inconsistent["snapshot_identity"] = gtt.context_snapshot_identity(inconsistent)
-        inconsistent_errors = gtt.context_structural_errors(root, inconsistent)
-        self.assertIn("context_schema_validation_failed", inconsistent_errors)
-        self.assertIn("mem_not_needed_shape_invalid", inconsistent_errors)
-
-    def test_published_schema_rejects_47_closed_shape_const_and_format_errors(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        payload["generated_at"] = "not-a-date-time"
-        payload["base_evidence"]["clean"] = False
-        payload["unexpected_top_level"] = True
-        for index in range(44):
-            payload["base_evidence"][f"unexpected_{index:02d}"] = index
-        schema_errors = gtt.skill_json_schema_validation_errors(
-            payload,
-            gtt.context_discovery_schema(root),
-            "context discovery result",
-        )
-        self.assertEqual(len(schema_errors), 47)
-        self.assertTrue(any("violates format" in error for error in schema_errors))
-        self.assertTrue(any("violates const" in error for error in schema_errors))
-        self.assertEqual(
-            sum("additional property" in error for error in schema_errors),
-            45,
-        )
-        self.assertIn(
-            "context_schema_validation_failed",
-            gtt.context_structural_errors(root, payload),
-        )
-
-    def test_change_input_requires_one_real_clue_in_schema_and_runtime(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        values = {
-            "issue_refs": "#123",
-            "pr_refs": "PR #123",
-            "branches": "feat/context",
-            "paths": "docs/requirements.md",
-            "commands": "/trellis:continue",
-            "config_keys": "context.mode",
-            "schema_fields": "snapshot_sha256",
-            "symbols": "ContextDiscovery",
-            "terms": "change context",
-            "queries": "discover current and archived context",
-        }
-        for mode in ("workflow", "standalone"):
-            empty = self.valid_payload(root)
-            empty["mode"] = mode
-            empty["change_input"] = {kind: [] for kind in gtt.CONTEXT_QUERY_KINDS}
-            empty["snapshot_identity"] = gtt.context_snapshot_identity(empty)
-            with self.subTest(mode=mode):
-                self.assertIn(
-                    "context_schema_validation_failed",
-                    gtt.context_structural_errors(root, empty),
-                )
-                self.assertIn(
-                    "change_input_has_no_clues",
-                    gtt.context_structural_errors(root, empty),
-                )
-
-        for kind, value in values.items():
-            payload = self.valid_payload(root)
-            payload["change_input"] = {
-                clue_kind: [value] if clue_kind == kind else []
-                for clue_kind in gtt.CONTEXT_QUERY_KINDS
-            }
-            if kind != "issue_refs":
-                payload["live_change"]["issue_binding"] = None
-            payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-            errors = gtt.context_structural_errors(root, payload)
-            with self.subTest(single_clue=kind):
-                self.assertNotIn("context_schema_validation_failed", errors)
-                self.assertNotIn("change_input_has_no_clues", errors)
-
-        masquerading = self.valid_payload(root)
-        masquerading["change_input"] = {kind: [] for kind in gtt.CONTEXT_QUERY_KINDS}
-        self.assertIsNotNone(masquerading["live_change"]["issue_binding"])
-        self.assertTrue(masquerading["canonical_query"]["queries"])
-        masquerading["snapshot_identity"] = gtt.context_snapshot_identity(masquerading)
-        self.assertIn(
-            "change_input_has_no_clues",
-            gtt.context_structural_errors(root, masquerading),
-        )
-
-    def test_live_base_uses_selected_upstream_remote(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        self.bind_valid_base(payload, remote="upstream")
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        head = payload["base_evidence"]["base_head"]
-        observed_commands: list[list[str]] = []
-
-        def fake_run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
-            observed_commands.append(command)
-            if command[:2] == ["git", "check-ref-format"]:
-                return subprocess.CompletedProcess(command, 0, "", "")
-            if command[:2] == ["git", "rev-parse"]:
-                return subprocess.CompletedProcess(command, 0, f"{head}\n", "")
-            raise AssertionError(f"unexpected command: {command}")
-
-        with (
-            mock.patch.object(gtt, "current_head", return_value=head),
-            mock.patch.object(gtt, "current_branch", return_value="main"),
-            mock.patch.object(gtt, "git_status_paths", return_value=[]),
-            mock.patch.object(gtt, "validate_github_remote_repository", return_value="example/guru-extension"),
-            mock.patch.object(gtt, "run", side_effect=fake_run),
-        ):
-            self.assertEqual(gtt.context_live_base_errors(root, payload, None), [])
-        self.assertIn(
-            ["git", "rev-parse", "--verify", "--quiet", "refs/remotes/upstream/main"],
-            observed_commands,
-        )
-
-    def test_feature_worktree_task_mode_binds_exact_dirty_state_and_public_wrapper(self) -> None:
-        temp = tempfile.TemporaryDirectory()
-        self.addCleanup(temp.cleanup)
-        sandbox = Path(temp.name)
-        decision = sandbox / "decision"
-        feature = sandbox / "feature"
-        decision.mkdir()
-
-        def git(root: Path, *args: str, input_text: str | None = None) -> str:
-            return subprocess.run(
-                ["git", *args],
-                cwd=root,
-                input=input_text,
-                text=True,
-                capture_output=True,
-                check=True,
-            ).stdout.strip()
-
-        git(decision, "init", "-q", "-b", "main")
-        git(decision, "config", "user.name", "Context Discovery Test")
-        git(decision, "config", "user.email", "context@example.invalid")
-        for relative, content in (
-            ("docs/requirements.md", "# Requirements\n"),
-            ("trellis/runtime.py", "VALUE = 'runtime'\n"),
-            ("trellis/test_runtime.py", "def test_runtime(): pass\n"),
-        ):
-            path = decision / relative
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content, encoding="utf-8")
-        git(decision, "add", ".")
-        git(decision, "commit", "-q", "-m", "test: seed decision checkout")
-        head = git(decision, "rev-parse", "HEAD")
-        git(decision, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
-        git(decision, "update-ref", "refs/remotes/origin/main", head)
-        git(decision, "worktree", "add", "-q", "-b", "feat/context-task", str(feature), head)
-        git(feature, "config", "user.name", "Context Discovery Test")
-        git(feature, "config", "user.email", "context@example.invalid")
-        (feature / ".trellis/tasks/archive/2026-01").mkdir(parents=True)
-        task = feature / ".trellis/tasks/01-01-context-task"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text(
-            '{"id":"context-task","status":"in_progress","branch":"feat/context-task"}\n',
-            encoding="utf-8",
-        )
-        task_relative = task.relative_to(feature).as_posix()
-        task_input = {
-            "profile": "task_local_reentry",
-            "source_exit": "start",
-            "mode": "workflow",
-            "repo_locator": "example/guru-extension",
-            "base_branch": "main",
-            "task_locator": task_relative,
-            "prior_snapshot_locator": "context-discovery.json",
-            "continuation_id": "stage0-task-local",
-        }
-        task_input_path = task / "task-local-input.json"
-        task_input_path.write_text(json.dumps(task_input), encoding="utf-8")
-        runtime_private = feature / ".trellis/.runtime/guru-team/session.json"
-        runtime_private.parent.mkdir(parents=True)
-        runtime_private.write_text('{"private":"checkpoint"}\n', encoding="utf-8")
-        dirty_runtime = feature / "trellis/runtime.py"
-        dirty_runtime.write_text("VALUE = 'reviewed task implementation'\n", encoding="utf-8")
-
-        payload = self.valid_payload(feature)
-        self.bind_valid_base(payload, head=head)
-        for group in ("docs", "code_contracts", "tests"):
-            for row in payload["current_state"][group]:
-                if row["path"] == "trellis/runtime.py":
-                    row["blob_or_content_sha256"] = hashlib.sha256(
-                        dirty_runtime.read_bytes()
-                    ).hexdigest()
-                else:
-                    row["blob_or_content_sha256"] = git(
-                        feature, "rev-parse", f"HEAD:{row['path']}"
-                    )
-        payload["history_preview"] = gtt.build_context_history_preview(
-            feature,
-            payload["canonical_query"],
-        )
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        input_path = sandbox / "context-input.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        submitted_snapshot = payload["snapshot_identity"]["snapshot_sha256"]
-        record_args = argparse.Namespace(
-            root=str(feature),
-            mode="workflow",
-            input=str(input_path),
-            task=task_relative,
-            expected_snapshot_sha256=submitted_snapshot,
-        )
-        with mock.patch.object(gtt, "context_live_change_errors", return_value=[]):
-            recorded = gtt.cmd_record_context_discovery(record_args)
-            recorded_snapshot = recorded["snapshot_identity"]["snapshot_sha256"]
-            check_args = argparse.Namespace(
-                root=str(feature),
-                input=None,
-                task=task_relative,
-                expected_snapshot_sha256=recorded_snapshot,
-            )
-            checked = gtt.cmd_check_context_discovery(check_args)
-        self.assertNotEqual(recorded_snapshot, submitted_snapshot)
-        self.assertEqual(checked["snapshot_sha256"], recorded_snapshot)
-        state = recorded["task_worktree_state"]
-        self.assertEqual(state, gtt.context_task_worktree_state(feature, task))
-        self.assertEqual(state["head"], head)
-        self.assertTrue(
-            any(entry["path"] == "trellis/runtime.py" for entry in state["entries"])
-        )
-        context_snapshot_path = (task / "context-discovery.json").relative_to(feature).as_posix()
-        self.assertTrue(all(
-            context_snapshot_path
-            not in {
-                entry.get("path"),
-                entry.get("renamed_from"),
-                entry.get("copied_from"),
-            }
-            for entry in state["entries"]
-        ))
-        self.assertTrue(all(
-            not entry["path"].startswith(".trellis/.runtime/")
-            for entry in state["entries"]
-        ))
-        package = (
-            Path(gtt.__file__).resolve().parents[4]
-            / "skills/guru-team/packages/guru-discover-change-context"
-        )
-        with (
-            mock.patch.object(
-                gtt,
-                "stage0_invocation_identity",
-                return_value=("guru-discover-change-context", package),
-            ),
-            mock.patch.object(gtt, "stage0_repo_root", return_value=feature),
-            mock.patch.object(gtt, "context_live_change_errors", return_value=[]),
-        ):
-            output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                input=task_input_path.relative_to(feature).as_posix(),
-                owner_result=context_snapshot_path,
-            ))
-        self.assertEqual(output["exit_id"], "context_ready")
-        self.assertEqual(output["handoff_context_locator"], context_snapshot_path)
-        self.assertNotIn(
-            "base_decision_branch_stale",
-            gtt.context_live_base_errors(feature, recorded, task),
-        )
-        self.assertIn(
-            "checkout_not_clean",
-            gtt.context_live_base_errors(feature, payload, None),
-        )
-        self.assertIn(
-            "base_decision_branch_stale",
-            gtt.context_live_base_errors(feature, payload, None),
-        )
-
-        context_path = task / "context-discovery.json"
-        prior_bytes = context_path.read_bytes()
-        prior_snapshot = recorded_snapshot
-        replacement = copy.deepcopy(payload)
-        replacement["generated_at"] = "2026-01-01T00:03:00Z"
-        replacement["superseded_snapshot_sha256"] = prior_snapshot
-        replacement["current_state"]["observations"].append(
-            "The active task authority changed after the prior snapshot."
-        )
-        replacement["snapshot_identity"] = gtt.context_snapshot_identity(replacement)
-        replacement_input = sandbox / "context-replacement-input.json"
-        replacement_input.write_text(json.dumps(replacement), encoding="utf-8")
-        replacement_submitted = replacement["snapshot_identity"]["snapshot_sha256"]
-
-        missing_prior_args = argparse.Namespace(
-            root=str(feature), mode="workflow", input=str(replacement_input),
-            task=task_relative, expected_snapshot_sha256=replacement_submitted,
-            expected_prior_snapshot_sha256=None,
-        )
-        with (
-            mock.patch.object(gtt, "context_live_change_errors", return_value=[]),
-            self.assertRaises(gtt.WorkflowError) as missing_prior,
-        ):
-            gtt.cmd_record_context_discovery(missing_prior_args)
-        self.assertEqual(
-            missing_prior.exception.payload["error_codes"],
-            ["expected_prior_snapshot_required"],
-        )
-        self.assertEqual(context_path.read_bytes(), prior_bytes)
-
-        wrong_prior_args = copy.copy(missing_prior_args)
-        wrong_prior_args.expected_prior_snapshot_sha256 = "f" * 64
-        with (
-            mock.patch.object(gtt, "context_live_change_errors", return_value=[]),
-            self.assertRaises(gtt.WorkflowError) as wrong_prior,
-        ):
-            gtt.cmd_record_context_discovery(wrong_prior_args)
-        self.assertEqual(
-            wrong_prior.exception.payload["error_codes"],
-            ["expected_prior_snapshot_mismatch"],
-        )
-        self.assertEqual(context_path.read_bytes(), prior_bytes)
-
-        replacement_args = copy.copy(missing_prior_args)
-        replacement_args.expected_prior_snapshot_sha256 = prior_snapshot
-        external_prior = sandbox / "external-prior-context.json"
-        external_prior.write_bytes(prior_bytes)
-        context_path.unlink()
-        context_path.symlink_to(external_prior)
-        with (
-            mock.patch.object(gtt, "context_live_change_errors", return_value=[]),
-            self.assertRaises(gtt.WorkflowError) as non_regular_prior,
-        ):
-            gtt.cmd_record_context_discovery(replacement_args)
-        self.assertEqual(
-            non_regular_prior.exception.payload["error_codes"],
-            ["prior_snapshot_not_regular"],
-        )
-        self.assertTrue(context_path.is_symlink())
-        self.assertEqual(external_prior.read_bytes(), prior_bytes)
-        context_path.unlink()
-        context_path.write_bytes(prior_bytes)
-
-        dirty_runtime.write_text("VALUE = 'stale replacement input'\n", encoding="utf-8")
-        with (
-            mock.patch.object(gtt, "context_live_change_errors", return_value=[]),
-            self.assertRaises(gtt.WorkflowError) as stale_replacement,
-        ):
-            gtt.cmd_record_context_discovery(replacement_args)
-        self.assertIn(
-            "reviewed_content_stale",
-            stale_replacement.exception.payload["error_codes"],
-        )
-        self.assertEqual(context_path.read_bytes(), prior_bytes)
-        dirty_runtime.write_text("VALUE = 'reviewed task implementation'\n", encoding="utf-8")
-
-        with mock.patch.object(gtt, "context_live_change_errors", return_value=[]):
-            recorded = gtt.cmd_record_context_discovery(replacement_args)
-        recorded_snapshot = recorded["snapshot_identity"]["snapshot_sha256"]
-        self.assertNotEqual(recorded_snapshot, prior_snapshot)
-        self.assertEqual(recorded["superseded_snapshot_sha256"], prior_snapshot)
-        self.assertNotEqual(context_path.read_bytes(), prior_bytes)
-        check_args.expected_snapshot_sha256 = recorded_snapshot
-        with mock.patch.object(gtt, "context_live_change_errors", return_value=[]):
-            checked = gtt.cmd_check_context_discovery(check_args)
-        self.assertEqual(checked["snapshot_sha256"], recorded_snapshot)
-
-        idempotent_args = argparse.Namespace(
-            root=str(feature), mode="workflow", input=None, task=task_relative,
-            expected_snapshot_sha256=recorded_snapshot,
-            expected_prior_snapshot_sha256=prior_snapshot,
-        )
-        replaced_bytes = context_path.read_bytes()
-        with mock.patch.object(gtt, "context_live_change_errors", return_value=[]):
-            idempotent = gtt.cmd_record_context_discovery(idempotent_args)
-        self.assertEqual(idempotent["snapshot_identity"]["snapshot_sha256"], recorded_snapshot)
-        self.assertEqual(context_path.read_bytes(), replaced_bytes)
-
-        dirty_runtime.write_text("VALUE = 'drift after snapshot'\n", encoding="utf-8")
-        with (
-            mock.patch.object(gtt, "context_live_change_errors", return_value=[]),
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
-            gtt.cmd_check_context_discovery(check_args)
-        self.assertEqual(
-            raised.exception.payload["error_codes"],
-            ["task_worktree_state_stale"],
-        )
-        with (
-            mock.patch.object(
-                gtt,
-                "stage0_invocation_identity",
-                return_value=("guru-discover-change-context", package),
-            ),
-            mock.patch.object(gtt, "stage0_repo_root", return_value=feature),
-            mock.patch.object(gtt, "context_live_change_errors", return_value=[]),
-            self.assertRaises(gtt.WorkflowError) as wrapper_error,
-        ):
             gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                input=task_input_path.relative_to(feature).as_posix(),
-                owner_result=context_snapshot_path,
+                input=public_input.relative_to(root).as_posix(),
+                owner_result=owner_path.relative_to(root).as_posix(),
             ))
-        self.assertEqual(wrapper_error.exception.payload["code"], "owner_result_not_checked")
-        dirty_runtime.write_text("VALUE = 'reviewed task implementation'\n", encoding="utf-8")
+        self.assertEqual(raised.exception.payload["code"], "invalid_owner_result")
 
-        git(feature, "commit", "--allow-empty", "-q", "-m", "test: advance feature head")
-        advanced_head = git(feature, "rev-parse", "HEAD")
-        self.assertNotEqual(advanced_head, head)
-        resolved_feature = feature.resolve()
-        resolved_task = task.resolve()
-        stale_task_errors = gtt.context_live_base_errors(
-            resolved_feature, recorded, resolved_task
-        )
-        self.assertNotIn("base_head_stale", stale_task_errors)
-        self.assertEqual(stale_task_errors, ["task_worktree_state_stale"])
-        current_task = copy.deepcopy(recorded)
-        current_task["task_worktree_state"] = gtt.context_task_worktree_state(
-            resolved_feature, resolved_task
-        )
-        self.assertEqual(current_task["task_worktree_state"]["head"], advanced_head)
-        self.assertEqual(
-            gtt.context_live_base_errors(
-                resolved_feature, current_task, resolved_task
-            ),
-            [],
-        )
-        self.assertIn(
-            "base_head_stale",
-            gtt.context_live_base_errors(resolved_feature, payload, None),
-        )
-        git(feature, "reset", "-q", "--hard", head)
-        dirty_runtime.write_text("VALUE = 'reviewed task implementation'\n", encoding="utf-8")
-
-        other_commit = git(
-            decision,
-            "commit-tree",
-            f"{head}^{{tree}}",
-            "-p",
-            head,
-            input_text="wrong remote ref\n",
-        )
-        git(decision, "update-ref", "refs/remotes/origin/main", other_commit)
-        self.assertIn("remote_base_stale", gtt.context_live_base_errors(feature, recorded, task))
-        git(decision, "update-ref", "refs/remotes/origin/main", head)
-
-        git(decision, "remote", "set-url", "origin", "https://github.com/example/other.git")
-        self.assertIn("base_repository_stale", gtt.context_live_base_errors(feature, recorded, task))
-        git(decision, "remote", "set-url", "origin", "https://github.com/example/guru-extension.git")
-
-        task_payload = json.loads((task / "task.json").read_text(encoding="utf-8"))
-        task_payload["branch"] = "feat/other-task"
-        (task / "task.json").write_text(json.dumps(task_payload) + "\n", encoding="utf-8")
-        self.assertIn("task_branch_stale", gtt.context_live_base_errors(feature, recorded, task))
-
-        (task / "context-discovery.json").unlink()
-        refresh = copy.deepcopy(payload)
-        refresh["typed_exit"] = "refresh_base"
-        refresh["refresh_history"] = [{
-            "reason": "The active task branch no longer matches the feature worktree.",
-            "error_codes": ["task_branch_stale"],
-            "superseded_query_sha256": payload["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": recorded_snapshot,
-            "detected_at": "2026-01-01T00:02:00Z",
-        }]
-        refresh["snapshot_identity"] = gtt.context_snapshot_identity(refresh)
-        refresh_input = sandbox / "refresh-input.json"
-        refresh_input.write_text(json.dumps(refresh), encoding="utf-8")
-        refresh_submitted = refresh["snapshot_identity"]["snapshot_sha256"]
-        refresh_record_args = argparse.Namespace(
-            root=str(feature), mode="workflow", input=str(refresh_input),
-            task=task_relative, expected_snapshot_sha256=refresh_submitted,
-        )
-        recorded_refresh = gtt.cmd_record_context_discovery(refresh_record_args)
-        refresh_expected = recorded_refresh["snapshot_identity"]["snapshot_sha256"]
-        refresh_check_args = argparse.Namespace(
-            root=str(feature), input=None, task=task_relative,
-            expected_snapshot_sha256=refresh_expected,
-        )
-        checked_refresh = gtt.cmd_check_context_discovery(refresh_check_args)
-        self.assertEqual(recorded_refresh["typed_exit"], "refresh_base")
-        self.assertEqual(checked_refresh["typed_exit"], "refresh_base")
-        self.assertEqual(
-            gtt.context_typed_exit_live_errors(refresh, ["invalid_task_branch"]),
-            ["invalid_task_branch", "refresh_base_has_non_refreshable_error"],
-        )
-
-    def test_stale_base_short_circuits_all_later_live_reads(self) -> None:
+    def test_live_base_validation_rejects_current_ref_drift(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
+        payload = self.valid_owner_result(root)
+        self.assertEqual(gtt.context_live_base_errors(root, payload, None), [])
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-q", "-m", "test: advance base"],
+            cwd=root,
+            check=True,
+        )
+        errors = gtt.context_live_base_errors(root, payload, None)
+        self.assertIn("base_head_stale", errors)
+        self.assertIn("local_base_stale", errors)
+
+    def test_stale_context_requires_refresh_route_and_short_circuits_later_reads(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        payload = self.valid_owner_result(root)
         with (
-            mock.patch.object(gtt, "context_live_base_errors", return_value=["base_head_stale"]),
+            mock.patch.object(
+                gtt, "context_live_base_errors", return_value=["base_head_stale"]
+            ),
+            mock.patch.object(gtt, "context_repo_bound_locator_errors") as locators,
             mock.patch.object(gtt, "context_live_change_errors") as live_change,
-            mock.patch.object(gtt, "context_reviewed_blob_errors") as reviewed_blobs,
-            mock.patch.object(gtt, "build_context_history_preview") as history_preview,
+            mock.patch.object(gtt, "context_reviewed_blob_errors") as blobs,
         ):
             self.assertEqual(
                 gtt.context_live_errors(root, payload, None),
                 ["base_head_stale"],
             )
+        locators.assert_not_called()
         live_change.assert_not_called()
-        reviewed_blobs.assert_not_called()
-        history_preview.assert_not_called()
-
-    def test_recorder_and_checker_short_circuit_repo_reads_at_the_production_entry(self) -> None:
-        temp = tempfile.TemporaryDirectory()
-        self.addCleanup(temp.cleanup)
-        sandbox = Path(temp.name)
-        root = sandbox / "repo"
-        root.mkdir()
-
-        def git(*args: str) -> str:
-            return subprocess.run(
-                ["git", *args],
-                cwd=root,
-                text=True,
-                capture_output=True,
-                check=True,
-            ).stdout.strip()
-
-        git("init", "-q", "-b", "main")
-        git("config", "user.name", "Context Discovery Test")
-        git("config", "user.email", "context@example.invalid")
-        for relative, content in (
-            ("docs/requirements.md", "# Requirements\n"),
-            ("trellis/runtime.py", "VALUE = 'runtime'\n"),
-            ("trellis/test_runtime.py", "def test_runtime(): pass\n"),
-        ):
-            target = root / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(content, encoding="utf-8")
-        selected_task = root / ".trellis/tasks/archive/2026-01/selected"
-        selected_task.mkdir(parents=True)
-        (selected_task / "design.md").write_text("# Archived design\n", encoding="utf-8")
-        (selected_task / "finish-summary.json").write_text(
-            json.dumps({"index": self.valid_index(123, "change context", "trellis/example.md")}),
-            encoding="utf-8",
-        )
-        git("add", ".")
-        git("commit", "-q", "-m", "test: seed production entry trace")
-        head = git("rev-parse", "HEAD")
-        git("remote", "add", "origin", "https://github.com/example/guru-extension.git")
-        git("update-ref", "refs/remotes/origin/main", head)
-
-        payload = self.valid_payload(root)
-        self.bind_valid_base(payload, head=head)
-        for group in ("docs", "code_contracts", "tests"):
-            for row in payload["current_state"][group]:
-                row["blob_or_content_sha256"] = git("rev-parse", f"HEAD:{row['path']}")
-        payload["history_preview"] = gtt.build_context_history_preview(
-            root,
-            payload["canonical_query"],
-        )
-        candidate = payload["history_preview"]["candidates"][0]
-        selected = {
-            "candidate_id": candidate["candidate_id"],
-            "reason": "The archived contract exactly matches the current issue and path clues.",
-        }
-        payload["history_review"] = {
-            "selected_candidates": [selected],
-            "excluded_candidates": [],
-            "deep_reads": [
-                {
-                    "candidate_id": candidate["candidate_id"],
-                    "source": "task_artifact",
-                    "locator": ".trellis/tasks/archive/2026-01/selected/design.md",
-                    "purpose": "Verify the archived design boundary.",
-                    "conclusion": "The archived task confirms the reusable contract.",
-                },
-                {
-                    "candidate_id": candidate["candidate_id"],
-                    "source": "github",
-                    "locator": "https://github.com/example/guru-extension/issues/123",
-                    "purpose": "Verify the related issue identity.",
-                    "conclusion": "The issue identity is portable and canonical.",
-                },
-                {
-                    "candidate_id": candidate["candidate_id"],
-                    "source": "git",
-                    "locator": f"git:object:{head}",
-                    "purpose": "Verify the exact historical Git object.",
-                    "conclusion": "The exact object remains available.",
-                },
-            ],
-        }
-        issue_body = "Reviewed source issue body."
-        issue = {
-            "number": 123,
-            "url": "https://github.com/example/guru-extension/issues/123",
-            "state": "OPEN",
-            "updatedAt": "2026-01-01T00:00:00Z",
-            "body": issue_body,
-        }
-        issue_facts = {
-            "repo": "example/guru-extension",
-            "number": 123,
-            "url": issue["url"],
-            "state": "open",
-            "updated_at": issue["updatedAt"],
-            "body_sha256": hashlib.sha256(issue_body.encode("utf-8")).hexdigest(),
-        }
-        issue_facts["facts_sha256"] = gtt.context_digest(issue_facts)
-        payload["live_change"] = {
-            "kind": "issue",
-            "identity": issue_facts["url"],
-            "state": issue_facts["state"],
-            "updated_at": issue_facts["updated_at"],
-            "body_sha256": issue_facts["body_sha256"],
-            "facts_sha256": issue_facts["facts_sha256"],
-            "issue_binding": None,
-        }
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        ready_snapshot = payload["snapshot_identity"]["snapshot_sha256"]
-        ready_path = sandbox / "ready.json"
-        ready_path.write_text(json.dumps(payload), encoding="utf-8")
-
-        git("commit", "--allow-empty", "-q", "-m", "test: stale live base")
-        stale_codes = ["base_head_stale", "local_base_stale"]
-        refresh = copy.deepcopy(payload)
-        refresh["typed_exit"] = "refresh_base"
-        refresh["refresh_history"] = [{
-            "reason": "The live decision checkout advanced after discovery.",
-            "error_codes": stale_codes,
-            "superseded_query_sha256": payload["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": ready_snapshot,
-            "detected_at": "2026-01-01T00:01:00Z",
-        }]
-        refresh["snapshot_identity"] = gtt.context_snapshot_identity(refresh)
-        refresh_path = sandbox / "refresh.json"
-        refresh_path.write_text(json.dumps(refresh), encoding="utf-8")
-        record_refresh_args = argparse.Namespace(
-            root=str(root), mode="workflow", input=str(refresh_path), task=None,
-            expected_snapshot_sha256=None,
-        )
-        check_refresh_args = argparse.Namespace(
-            root=str(root), input=str(refresh_path), task=None,
-            expected_snapshot_sha256=refresh["snapshot_identity"]["snapshot_sha256"],
-        )
-
-        real_run = gtt.run
-
-        def run_with_live_issue(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-            if command[:3] == ["gh", "issue", "view"]:
-                return subprocess.CompletedProcess(command, 0, json.dumps(issue), "")
-            return real_run(command, **kwargs)
+        blobs.assert_not_called()
 
         with (
-            mock.patch.object(gtt, "run", side_effect=run_with_live_issue),
-            mock.patch.object(gtt, "context_archive_file_error", wraps=gtt.context_archive_file_error) as archive_read,
-            mock.patch.object(gtt, "context_git_locator_errors", wraps=gtt.context_git_locator_errors) as git_read,
-            mock.patch.object(gtt, "context_read_live_issue", wraps=gtt.context_read_live_issue) as issue_read,
-            mock.patch.object(gtt, "context_reviewed_blob_errors", wraps=gtt.context_reviewed_blob_errors) as blob_read,
-            mock.patch.object(gtt, "build_context_history_preview", wraps=gtt.build_context_history_preview) as history_read,
+            mock.patch.object(
+                gtt, "context_live_errors", return_value=["base_head_stale"]
+            ),
+            self.assertRaises(gtt.WorkflowError),
         ):
-            self.assertEqual(
-                gtt.cmd_record_context_discovery(record_refresh_args)["typed_exit"],
-                "refresh_base",
-            )
-            self.assertEqual(
-                gtt.cmd_check_context_discovery(check_refresh_args)["typed_exit"],
-                "refresh_base",
-            )
-            self.assertEqual(
-                [archive_read.call_count, git_read.call_count, issue_read.call_count, blob_read.call_count, history_read.call_count],
-                [0, 0, 0, 0, 0],
-            )
-
-        git("reset", "-q", "--hard", head)
-        record_ready_args = argparse.Namespace(
-            root=str(root), mode="workflow", input=str(ready_path), task=None,
-            expected_snapshot_sha256=None,
-        )
-        check_ready_args = argparse.Namespace(
-            root=str(root), input=str(ready_path), task=None,
-            expected_snapshot_sha256=ready_snapshot,
-        )
-        with (
-            mock.patch.object(gtt, "run", side_effect=run_with_live_issue),
-            mock.patch.object(gtt, "context_archive_file_error", wraps=gtt.context_archive_file_error) as archive_read,
-            mock.patch.object(gtt, "context_git_locator_errors", wraps=gtt.context_git_locator_errors) as git_read,
-            mock.patch.object(gtt, "context_read_live_issue", wraps=gtt.context_read_live_issue) as issue_read,
-            mock.patch.object(gtt, "context_reviewed_blob_errors", wraps=gtt.context_reviewed_blob_errors) as blob_read,
-            mock.patch.object(gtt, "build_context_history_preview", wraps=gtt.build_context_history_preview) as history_read,
-        ):
-            self.assertEqual(
-                gtt.cmd_record_context_discovery(record_ready_args)["typed_exit"],
-                "context_ready",
-            )
-            self.assertEqual(
-                gtt.cmd_check_context_discovery(check_ready_args)["typed_exit"],
-                "context_ready",
-            )
-            self.assertTrue(all(
-                probe.call_count >= 2
-                for probe in (archive_read, git_read, issue_read, blob_read, history_read)
+            gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=None, payload=payload,
+                expected_result_sha256=None,
             ))
 
-    def test_reviewed_git_evidence_requires_blob_objects_across_groups(self) -> None:
-        temp = tempfile.TemporaryDirectory()
-        self.addCleanup(temp.cleanup)
-        root = Path(temp.name)
-
-        def git(*args: str, input_text: str | None = None) -> str:
-            return subprocess.run(
-                ["git", *args],
-                cwd=root,
-                input=input_text,
-                text=True,
-                capture_output=True,
-                check=True,
-            ).stdout.strip()
-
-        git("init", "-q", "-b", "main")
-        git("config", "user.name", "Context Discovery Test")
-        git("config", "user.email", "context@example.invalid")
-        for relative, content in (
-            ("docs/requirements.md", "# Requirements\n"),
-            ("trellis/runtime.py", "VALUE = 'runtime'\n"),
-            ("trellis/test_runtime.py", "def test_runtime(): pass\n"),
-        ):
-            target = root / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(content, encoding="utf-8")
-        git("add", ".")
-        git("commit", "-q", "-m", "test: seed reviewed blobs")
-        linked_commit = git("rev-parse", "HEAD")
-        git("update-index", "--add", "--cacheinfo", f"160000,{linked_commit},vendor/linked")
-        git("commit", "-q", "-m", "test: add gitlink evidence trap")
-
-        payload = self.valid_payload(root)
-        for group in ("docs", "code_contracts", "tests"):
-            for row in payload["current_state"][group]:
-                row["blob_or_content_sha256"] = git("rev-parse", f"HEAD:{row['path']}")
-        self.assertEqual(gtt.context_reviewed_blob_errors(root, payload), [])
-
-        non_blobs = {
-            "tree": ("docs", git("rev-parse", "HEAD:docs")),
-            "gitlink_commit": ("vendor/linked", git("rev-parse", "HEAD:vendor/linked")),
-            "missing": ("missing/evidence.txt", "f" * 40),
-        }
-        for group in ("docs", "code_contracts", "tests"):
-            for object_kind, (path, object_id) in non_blobs.items():
-                invalid = copy.deepcopy(payload)
-                invalid["current_state"][group][0]["path"] = path
-                invalid["current_state"][group][0]["blob_or_content_sha256"] = object_id
-                with self.subTest(group=group, object_kind=object_kind):
-                    self.assertIn(
-                        "reviewed_blob_stale",
-                        gtt.context_reviewed_blob_errors(root, invalid),
-                    )
-
-    def test_draft_issue_binding_reads_live_body_and_rejects_mismatch_or_missing(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        reviewed_body = "Reviewed proposed issue body."
-        body_sha256 = hashlib.sha256(reviewed_body.encode("utf-8")).hexdigest()
-        live = payload["live_change"]
-        live.update({
-            "identity": f"draft:{body_sha256}",
-            "body_sha256": body_sha256,
-        })
-        unsigned_live = {
-            key: live[key]
-            for key in ("kind", "identity", "state", "updated_at", "body_sha256")
-        }
-        live["facts_sha256"] = gtt.context_digest(unsigned_live)
-        binding = {
-            "repo": "example/guru-extension",
-            "number": 123,
-            "url": "https://github.com/example/guru-extension/issues/123",
-            "state": "open",
-            "updated_at": "2026-01-01T00:00:00Z",
-            "body_sha256": body_sha256,
-        }
-        binding["facts_sha256"] = gtt.context_digest(binding)
-        live["issue_binding"] = binding
-
-        def issue_result(body: str, *, returncode: int = 0) -> subprocess.CompletedProcess[str]:
-            issue = {
-                "number": 123,
-                "url": "https://github.com/example/guru-extension/issues/123",
-                "state": "OPEN",
-                "updatedAt": "2026-01-01T00:00:00Z",
-                "body": body,
-            }
-            return subprocess.CompletedProcess(
-                ["gh", "issue", "view"],
-                returncode,
-                json.dumps(issue) if returncode == 0 else "",
-                "missing" if returncode else "",
-            )
-
-        with mock.patch.object(gtt, "run", return_value=issue_result(reviewed_body)) as live_read:
-            self.assertEqual(gtt.context_live_change_errors(root, payload), [])
-        self.assertEqual(live_read.call_count, 1)
-        with mock.patch.object(gtt, "run", return_value=issue_result("different body")):
-            self.assertEqual(
-                gtt.context_live_change_errors(root, payload),
-                ["live_draft_issue_stale"],
-            )
-        with mock.patch.object(gtt, "run", return_value=issue_result("", returncode=1)):
-            self.assertEqual(
-                gtt.context_live_change_errors(root, payload),
-                ["live_draft_issue_unreadable"],
-            )
-
-    def test_closed_source_issue_is_valid_discovery_input(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        issue = {
-            "number": 123,
-            "url": "https://github.com/example/guru-extension/issues/123",
-            "state": "CLOSED",
-            "updatedAt": "2026-01-01T00:00:00Z",
-            "body": "Closed source issue remains valid discovery input.",
-        }
-        facts = {
-            "repo": "example/guru-extension",
-            "number": 123,
-            "url": issue["url"],
-            "state": "closed",
-            "updated_at": issue["updatedAt"],
-            "body_sha256": hashlib.sha256(issue["body"].encode("utf-8")).hexdigest(),
-        }
-        facts["facts_sha256"] = gtt.context_digest(facts)
-        payload["live_change"] = {
-            "kind": "issue",
-            "identity": facts["url"],
-            "state": facts["state"],
-            "updated_at": facts["updated_at"],
-            "body_sha256": facts["body_sha256"],
-            "facts_sha256": facts["facts_sha256"],
-            "issue_binding": None,
-        }
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        self.assertEqual(gtt.context_structural_errors(root, payload), [])
-        result = subprocess.CompletedProcess(
-            ["gh", "issue", "view"], 0, json.dumps(issue), ""
-        )
-        with mock.patch.object(gtt, "run", return_value=result):
-            self.assertEqual(gtt.context_live_change_errors(root, payload), [])
-
-    def test_duplicate_candidates_recompute_canonical_identity_and_digest(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        facts = {
-            "repo": "example/guru-extension",
-            "number": 99,
-            "identity": "#99",
-            "url": "https://github.com/example/guru-extension/issues/99",
-            "state": "open",
-            "updated_at": "2026-01-01T00:00:00Z",
-        }
-        candidate = {
-            **facts,
-            "facts_sha256": gtt.context_digest(facts),
-            "reason": "The open issue may describe the same change.",
-            "observation": "Clarification must decide reuse or a new target.",
-        }
-        payload["duplicate_search"]["candidates"] = [candidate]
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        self.assertEqual(gtt.context_structural_errors(root, payload), [])
-
-        wrong_digest = copy.deepcopy(payload)
-        wrong_digest["duplicate_search"]["candidates"][0]["facts_sha256"] = "f" * 64
-        wrong_digest["snapshot_identity"] = gtt.context_snapshot_identity(wrong_digest)
-        self.assertIn(
-            "duplicate_candidate_facts_digest_mismatch",
-            gtt.context_structural_errors(root, wrong_digest),
-        )
-
-        identity_mismatch = copy.deepcopy(payload)
-        identity_mismatch["duplicate_search"]["candidates"][0]["identity"] = "#100"
-        projection = identity_mismatch["duplicate_search"]["candidates"][0]
-        projection["facts_sha256"] = gtt.context_digest({
-            key: projection[key]
-            for key in ("repo", "number", "identity", "url", "state", "updated_at")
-        })
-        identity_mismatch["snapshot_identity"] = gtt.context_snapshot_identity(identity_mismatch)
-        self.assertIn(
-            "duplicate_candidate_identity_mismatch",
-            gtt.context_structural_errors(root, identity_mismatch),
-        )
-
-        url_mismatch = copy.deepcopy(payload)
-        url_mismatch["duplicate_search"]["candidates"][0]["url"] = (
-            "https://github.com/example/guru-extension/issues/100"
-        )
-        projection = url_mismatch["duplicate_search"]["candidates"][0]
-        projection["facts_sha256"] = gtt.context_digest({
-            key: projection[key]
-            for key in ("repo", "number", "identity", "url", "state", "updated_at")
-        })
-        url_mismatch["snapshot_identity"] = gtt.context_snapshot_identity(url_mismatch)
-        self.assertIn(
-            "duplicate_candidate_url_mismatch",
-            gtt.context_structural_errors(root, url_mismatch),
-        )
-
-    def test_candidate_selection_requires_one_to_three_and_deep_read(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        self.write_summary(root, "selected", self.valid_index(123, "change context", "trellis/example.md"))
-        payload = self.valid_payload(root)
-        candidate = payload["history_preview"]["candidates"][0]
-        selected_task = root / candidate["finish_summary_path"].rsplit("/", 1)[0]
-        (selected_task / "design.md").write_text("# Design\n", encoding="utf-8")
-        selected = {"candidate_id": candidate["candidate_id"], "reason": "The exact path and query match the requested change."}
-        payload["history_review"] = {
-            "selected_candidates": [selected],
-            "excluded_candidates": [],
-            "deep_reads": [{
-                "candidate_id": candidate["candidate_id"],
-                "source": "task_artifact",
-                "locator": candidate["finish_summary_path"].rsplit("/", 1)[0] + "/design.md",
-                "purpose": "Verify the archived ownership decision.",
-                "conclusion": "The archived design confirms the reusable runtime boundary.",
-            }],
-        }
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        self.assertEqual(gtt.context_structural_errors(root, payload), [])
-        used_mem = copy.deepcopy(payload)
-        used_mem["mem_review"] = {
-            "status": "used",
-            "reason": "All primary sources leave one ownership decision unresolved.",
-            "load_bearing_question": "Which archived owner controls this boundary?",
-            "exhausted_sources": {
-                "task_artifacts": True,
-                "current_docs_code_tests": True,
-                "github": True,
-                "git_history": True,
-            },
-            "summary": "Memory confirms the archived owner without adding another source.",
-        }
-        used_mem["snapshot_identity"] = gtt.context_snapshot_identity(used_mem)
-        self.assertEqual(gtt.context_structural_errors(root, used_mem), [])
-        incomplete_used_mem = copy.deepcopy(used_mem)
-        incomplete_used_mem["mem_review"]["summary"] = ""
-        incomplete_used_mem["snapshot_identity"] = gtt.context_snapshot_identity(incomplete_used_mem)
-        self.assertIn(
-            "mem_gate_not_satisfied",
-            gtt.context_structural_errors(root, incomplete_used_mem),
-        )
-        missing_selection = copy.deepcopy(payload)
-        missing_selection["history_review"] = {"selected_candidates": [], "excluded_candidates": [], "deep_reads": []}
-        missing_selection["snapshot_identity"] = gtt.context_snapshot_identity(missing_selection)
-        self.assertIn("invalid_selected_candidate_count", gtt.context_structural_errors(root, missing_selection))
-
-        outside = copy.deepcopy(payload)
-        outside["history_review"]["deep_reads"][0]["locator"] = ".trellis/tasks/archive/2026-01/other/design.md"
-        outside["snapshot_identity"] = gtt.context_snapshot_identity(outside)
-        self.assertIn("deep_read_locator_outside_selected_task", gtt.context_structural_errors(root, outside))
-
-        def git(*args: str) -> str:
-            return subprocess.run(
-                ["git", *args],
-                cwd=root,
-                text=True,
-                capture_output=True,
-                check=True,
-            ).stdout.strip()
-
-        git("init", "-q", "-b", "main")
-        git("config", "user.name", "Context Discovery Test")
-        git("config", "user.email", "context@example.invalid")
-        (root / "tracked.txt").write_text("tracked evidence\n", encoding="utf-8")
-        git("add", "tracked.txt")
-        git("commit", "-q", "-m", "test: seed exact git locator")
-        head = git("rev-parse", "HEAD")
-
-        canonical_locators = (
-            ("github", "https://github.com/example/guru-extension/issues/123"),
-            ("github", "https://github.com/example/guru-extension/pull/45"),
-            ("git", f"git:object:{head}"),
-            ("git", f"git:ref:refs/heads/main@{head}"),
-        )
-        for source, locator in canonical_locators:
-            with self.subTest(source=source, locator=locator.split(":", 1)[0]):
-                variant = copy.deepcopy(payload)
-                variant["history_review"]["deep_reads"][0].update({
-                    "source": source,
-                    "locator": locator,
-                })
-                variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-                self.assertEqual(gtt.context_structural_errors(root, variant), [])
-
-        invalid_shape_locators = (
-            ("github", "https://github.com/example/guru-extension/issues/123?view=full"),
-            ("github", "/tmp/private-issue.json"),
-            ("git", "refs/heads/main"),
-        )
-        for source, locator in invalid_shape_locators:
-            with self.subTest(invalid_source=source, invalid_locator=locator[:20]):
-                variant = copy.deepcopy(payload)
-                variant["history_review"]["deep_reads"][0].update({
-                    "source": source,
-                    "locator": locator,
-                })
-                variant["snapshot_identity"] = gtt.context_snapshot_identity(variant)
-                self.assertTrue(gtt.context_structural_errors(root, variant))
-
-        missing_ref = copy.deepcopy(payload)
-        missing_ref["history_review"]["deep_reads"][0].update({
-            "source": "git",
-            "locator": f"git:ref:refs/heads/missing@{head}",
-        })
-        missing_ref["snapshot_identity"] = gtt.context_snapshot_identity(missing_ref)
-        self.assertEqual(gtt.context_structural_errors(root, missing_ref), [])
-        self.assertIn(
-            "deep_read_git_ref_stale",
-            gtt.context_repo_bound_locator_errors(root, missing_ref),
-        )
-
-        with mock.patch.object(gtt, "run", side_effect=OSError("private command detail")):
-            self.assertEqual(
-                gtt.context_git_locator_errors(root, f"git:object:{head}"),
-                ["deep_read_git_object_unreadable"],
-            )
-            self.assertEqual(
-                gtt.context_git_locator_errors(root, f"git:ref:refs/heads/main@{head}"),
-                ["deep_read_git_ref_unreadable"],
-            )
-
-    def test_context_ready_requires_current_evidence_and_closed_unique_shapes(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        payload["current_state"]["docs"] = []
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        self.assertIn("context_ready_requires_current_evidence", gtt.context_structural_errors(root, payload))
-
-        payload = self.valid_payload(root)
-        payload["history_preview"]["unexpected"] = True
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        self.assertIn("invalid_history_preview", gtt.context_structural_errors(root, payload))
-
-        payload = self.valid_payload(root)
-        duplicate = {
-            "repo": "example/repo", "number": 99,
-            "identity": "#99", "url": "https://github.com/example/repo/issues/99",
-            "state": "open", "updated_at": "2026-01-01T00:00:00Z",
-            "reason": "Possible duplicate.", "observation": "Needs clarification.",
-        }
-        duplicate["facts_sha256"] = gtt.context_digest({
-            key: duplicate[key]
-            for key in ("repo", "number", "identity", "url", "state", "updated_at")
-        })
-        payload["duplicate_search"]["candidates"] = [duplicate, copy.deepcopy(duplicate)]
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        self.assertIn("duplicate_issue_candidate_identity", gtt.context_structural_errors(root, payload))
-
-    def test_check_context_discovery_has_no_live_check_bypass(self) -> None:
-        parser = gtt.build_parser()
-        with self.assertRaises(SystemExit):
-            parser.parse_args(["check-context-discovery", "--no-live-check"])
-
-    def test_pre_task_zero_write_and_task_same_snapshot_recording(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        input_path = root / "input.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        before = sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file())
-        pre_args = argparse.Namespace(root=str(root), mode="workflow", input=str(input_path), task=None, expected_snapshot_sha256=None)
-        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
-            recorded = gtt.cmd_record_context_discovery(pre_args)
-        after = sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file())
-        self.assertEqual(before, after)
-        task = root / ".trellis/tasks/example-task"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
-        expected = recorded["snapshot_identity"]["snapshot_sha256"]
-        task_args = argparse.Namespace(root=str(root), mode="workflow", input=str(input_path), task=".trellis/tasks/example-task", expected_snapshot_sha256=expected)
-        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
-            persisted = gtt.cmd_record_context_discovery(task_args)
-        target = task / "context-discovery.json"
-        self.assertEqual(target.read_bytes(), gtt.json_document_bytes(persisted))
-        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
-            self.assertEqual(gtt.cmd_record_context_discovery(task_args), persisted)
-        target.write_text("{}\n", encoding="utf-8")
-        task_args.expected_prior_snapshot_sha256 = "0" * 64
-        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.cmd_record_context_discovery(task_args)
-        self.assertEqual(raised.exception.payload["error_codes"], ["prior_snapshot_invalid"])
-
-    def test_refresh_base_record_and_check_require_matching_live_stale_evidence(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        superseded_snapshot = payload["snapshot_identity"]["snapshot_sha256"]
         payload["typed_exit"] = "refresh_base"
-        payload["refresh_history"] = [{
-            "reason": "The reviewed base HEAD no longer matches live Git.",
-            "error_codes": ["base_head_stale"],
-            "superseded_query_sha256": payload["canonical_query"]["query_sha256"],
-            "superseded_snapshot_sha256": superseded_snapshot,
-            "detected_at": "2026-01-01T00:01:00Z",
-        }]
-        payload["snapshot_identity"] = gtt.context_snapshot_identity(payload)
-        input_path = root / "refresh.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        record_args = argparse.Namespace(
-            root=str(root), mode="workflow", input=str(input_path), task=None,
-            expected_snapshot_sha256=None,
-        )
-        check_args = argparse.Namespace(
-            root=str(root), input=str(input_path), task=None,
-            expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-        )
-        with mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]):
-            recorded = gtt.cmd_record_context_discovery(record_args)
-            checked = gtt.cmd_check_context_discovery(check_args)
-        self.assertEqual(recorded["typed_exit"], "refresh_base")
+        payload["result_identity"] = gtt.context_result_identity(payload)
+        with mock.patch.object(
+            gtt, "context_live_errors", return_value=["base_head_stale"]
+        ):
+            checked = gtt.cmd_check_context_discovery(argparse.Namespace(
+                root=str(root), input=None, payload=payload,
+                expected_result_sha256=payload["result_identity"]["result_sha256"],
+            ))
         self.assertEqual(checked["typed_exit"], "refresh_base")
 
-        task = root / ".trellis/tasks/refresh-task"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
-        task_args = argparse.Namespace(
-            root=str(root), mode="workflow", input=str(input_path),
-            task=task.relative_to(root).as_posix(),
-            expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-        )
-        with mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]):
-            self.assertEqual(gtt.cmd_record_context_discovery(task_args)["typed_exit"], "refresh_base")
-
-        ready = self.valid_payload(root)
-        ready_path = root / "ready.json"
-        ready_path.write_text(json.dumps(ready), encoding="utf-8")
-        ready_args = argparse.Namespace(
-            root=str(root), mode="workflow", input=str(ready_path), task=None,
-            expected_snapshot_sha256=None,
-        )
-        with (
-            mock.patch.object(gtt, "context_live_errors", return_value=["base_head_stale"]),
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_record_context_discovery(ready_args)
-        self.assertEqual(raised.exception.payload["error_codes"], ["base_head_stale"])
-
-    def test_task_target_must_remain_git_trackable_for_record_and_check(self) -> None:
+    def test_current_owner_shape_rejects_undeclared_state(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        input_path = root / "input.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        task = root / ".trellis/tasks/trackability-task"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
-        target = task / "context-discovery.json"
-        relative_target = target.relative_to(root).as_posix()
-        record_args = argparse.Namespace(
-            root=str(root),
-            mode="workflow",
-            input=str(input_path),
-            task=task.relative_to(root).as_posix(),
-            expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-        )
-        check_args = argparse.Namespace(
-            root=str(root),
-            input=str(input_path),
-            task=task.relative_to(root).as_posix(),
-            expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-        )
-
-        with mock.patch.object(gtt, "context_live_errors", return_value=[]):
-            self.assertEqual(gtt.cmd_record_context_discovery(record_args)["typed_exit"], "context_ready")
-            self.assertEqual(gtt.cmd_check_context_discovery(check_args)["status"], "passed")
-
-        subprocess.run(["git", "add", "--", relative_target], cwd=root, check=True)
-        (root / ".gitignore").write_text(f"/{relative_target}\n", encoding="utf-8")
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.cmd_check_context_discovery(check_args)
-        self.assertEqual(
-            raised.exception.payload["error_codes"],
-            ["context_discovery_target_ignored"],
-        )
-        subprocess.run(["git", "rm", "--cached", "-q", "--", relative_target], cwd=root, check=True)
-        (root / ".gitignore").unlink()
-
-        exclude_path = root / ".git/info/exclude"
-        original_exclude = exclude_path.read_bytes()
-        global_exclude = root / "global-excludes"
-        ignore_cases = (
-            ("repo-gitignore", root / ".gitignore"),
-            ("git-info-exclude", exclude_path),
-            ("core-excludes-file", global_exclude),
-        )
-        for name, ignore_path in ignore_cases:
-            target.unlink(missing_ok=True)
-            ignore_path.write_text(f"/{relative_target}\n", encoding="utf-8")
-            if name == "core-excludes-file":
-                subprocess.run(
-                    ["git", "config", "core.excludesFile", str(global_exclude)],
-                    cwd=root,
-                    check=True,
-                )
-            with self.subTest(ignore_source=name), mock.patch.object(
-                gtt,
-                "context_live_errors",
-                return_value=[],
-            ):
-                for command, args in (
-                    (gtt.cmd_record_context_discovery, record_args),
-                    (gtt.cmd_check_context_discovery, check_args),
-                ):
-                    with self.assertRaises(gtt.WorkflowError) as raised:
-                        command(args)
-                    self.assertEqual(
-                        raised.exception.payload["error_codes"],
-                        ["context_discovery_target_ignored"],
-                    )
-                self.assertFalse(target.exists())
-            if name == "core-excludes-file":
-                subprocess.run(
-                    ["git", "config", "--unset", "core.excludesFile"],
-                    cwd=root,
-                    check=True,
-                )
-                global_exclude.unlink()
-            elif name == "git-info-exclude":
-                exclude_path.write_bytes(original_exclude)
-            else:
-                ignore_path.unlink()
-            with mock.patch.object(gtt, "context_live_errors", return_value=[]):
-                self.assertEqual(
-                    gtt.cmd_record_context_discovery(record_args)["typed_exit"],
-                    "context_ready",
-                )
-                self.assertEqual(gtt.cmd_check_context_discovery(check_args)["status"], "passed")
-
-        with mock.patch.object(
-            gtt,
-            "run",
-            return_value=subprocess.CompletedProcess([], 128, "", "fatal: unreadable excludes"),
-        ):
-            self.assertEqual(
-                gtt.context_discovery_target_trackability_errors(root, target),
-                ["context_discovery_target_trackability_unreadable"],
-            )
-
-    def test_task_recorder_rejects_archived_and_non_active_tasks(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        input_path = root / "input.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        targets = [
-            root / ".trellis/tasks/archive/2026-01/completed-task",
-            root / ".trellis/tasks/completed-active-path",
-        ]
-        for target in targets:
-            target.mkdir(parents=True)
-            (target / "task.json").write_text('{"status":"completed"}\n', encoding="utf-8")
-            args = argparse.Namespace(
-                root=str(root),
-                mode="workflow",
-                input=str(input_path),
-                task=target.relative_to(root).as_posix(),
-                expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-            )
-            with self.subTest(task=target.relative_to(root).as_posix()):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.cmd_record_context_discovery(args)
-                self.assertEqual(raised.exception.payload["error_codes"], ["task_not_active"])
-                self.assertFalse((target / "context-discovery.json").exists())
-
-    def test_task_recorder_detects_post_write_trackability_change(self) -> None:
-        temp, root = self.make_root()
-        self.addCleanup(temp.cleanup)
-        payload = self.valid_payload(root)
-        input_path = root / "input.json"
-        input_path.write_text(json.dumps(payload), encoding="utf-8")
-        task = root / ".trellis/tasks/post-write-ignore"
-        task.mkdir(parents=True)
-        (task / "task.json").write_text('{"status":"in_progress"}\n', encoding="utf-8")
-        target = task / "context-discovery.json"
-        args = argparse.Namespace(
-            root=str(root),
-            mode="workflow",
-            input=str(input_path),
-            task=task.relative_to(root).as_posix(),
-            expected_snapshot_sha256=payload["snapshot_identity"]["snapshot_sha256"],
-        )
-        with (
-            mock.patch.object(gtt, "context_live_errors", return_value=[]),
-            mock.patch.object(
-                gtt,
-                "context_discovery_target_trackability_errors",
-                side_effect=[[], ["context_discovery_target_ignored"]],
-            ),
-            self.assertRaises(gtt.WorkflowError) as raised,
-        ):
-            gtt.cmd_record_context_discovery(args)
-        self.assertEqual(
-            raised.exception.payload["error_codes"],
-            ["context_discovery_target_ignored"],
-        )
-        self.assertTrue(target.is_file())
+        payload = self.valid_owner_result(root)
+        self.assertEqual(gtt.context_structural_errors(root, payload), [])
+        payload["legacy_owner_state"] = {"artifact": "retired.json"}
+        payload["result_identity"] = gtt.context_result_identity(payload)
+        errors = gtt.context_structural_errors(root, payload)
+        self.assertIn("invalid_top_level_fields", errors)
+        self.assertIn("context_schema_validation_failed", errors)
 
 
 class RequirementsClarificationTests(unittest.TestCase):
@@ -18830,15 +17701,6 @@ class RequirementsClarificationTests(unittest.TestCase):
                 "content_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             })
 
-        context_sha256 = "3" * 64
-        (task / "context-discovery.json").write_text(
-            json.dumps({
-                "generated_at": "2026-01-01T00:00:03Z",
-                "snapshot_identity": {"snapshot_sha256": context_sha256},
-            }) + "\n",
-            encoding="utf-8",
-        )
-
         payload = self.set_issue_target(self.example())
         payload["invocation_context"] = {
             "kind": "active_task_scope_change",
@@ -18849,9 +17711,7 @@ class RequirementsClarificationTests(unittest.TestCase):
         payload["target_disposition"] = None
         payload["context_evidence"] = {
             "status": "current",
-            "schema_id": "guru-context-discovery-1.0",
-            "snapshot_sha256": context_sha256,
-            "evidence_refs": [f"guru-context-discovery-1.0:{context_sha256}"],
+            "evidence_refs": ["current-session:change-context"],
             "missing_reason": None,
         }
         payload["scope_proposals"] = [{
@@ -18930,7 +17790,7 @@ class RequirementsClarificationTests(unittest.TestCase):
             "payload": gtt.requirements_clarification_active_task_payload_projection(
                 evidence
             ),
-            "preimage_sha256": context_sha256,
+            "preimage_sha256": gtt.context_digest(payload["context_evidence"]),
             "payload_sha256": None,
             "action_digest": "0" * 64,
             "status": "validated",

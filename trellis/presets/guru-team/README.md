@@ -498,14 +498,13 @@ credential-free canonical GitHub HTTPS，unsafe locator 在 clone/artifact 前�
 Private/execution schema 3.0 current-only，public inputs 与四个 exit DTO 未改变。
 
 `guru-discover-change-context` package 同时安装
-`guru-context-discovery-1.0` schema、example、contract、tests 与三个 executable thin
-wrappers。Direct discovery 与 workflow route 使用相同 fresh-base/change-input/evidence
-freshness preconditions。Runtime 只读取 archived `finish-summary.json:index.*`，使用
-`guru-context-history-score-1.0`，不读取 workspace/runtime 或 repo-level archive
-index/cache。Pre-task recorder stdout-only；task-local recorder 只写 expected digest 匹配的
-同一 `context-discovery.json` snapshot；pre-task/standalone 绑定 decision branch，真实 task
-feature worktree 绑定 `task.json.branch` 且保持相同 HEAD/base refs/provenance/repo 与 task-local
-dirty scope。Zero candidate 固定 empty selection/deep reads 与 `mem_review=not_needed`，不触发
+`guru-change-context-owner-result-2.0` schema/example、public schemas/examples、contract、
+tests 与三个 executable thin wrappers。Direct discovery 与 workflow route 使用相同
+fresh-base/change-input/evidence freshness preconditions。Runtime 只读取 archived
+`finish-summary.json:index.*`，使用 `guru-context-history-score-1.0`，不读取 workspace/runtime
+或 repo-level archive index/cache。Record/check/public invoke 通过 stdin/stdout 串联；正常
+pre-task/standalone 不写 task、workspace 或 runtime artifact。Zero candidate 固定 empty
+selection/deep reads 与 `mem_review=not_needed`，不触发
 其它历史源。Installed/throwaway gates 覆盖 zero/candidate preview、真实 feature-worktree
 record/check、invalid mem shape、`trellis update`、workflow/preset reapply 和最终 zero sidecar。
 Source issue 的 live state 可为 normalized `open` / `closed`，但 duplicate candidates 与
@@ -519,16 +518,12 @@ canonical issue URL、open state 与 update time 的 canonical digest projection
 base 后从同一次 search 返回字段重算 identity、URL 与 digest，不进行第二次 search 或
 candidate re-read。Managed schema/runtime 同时强制 `blocked` exit
 与 blocked AI Review Gate 双向一致。
-Task-local package/runtime 还以 validated task/snapshot locators 精确绑定 owner checker，
-用 private `task_worktree_state` 记录除 fixed snapshot/runtime 外的完整 dirty worktree。
-Different-byte fixed snapshot 仅在 prior regular/trackable、exact expected prior digest 与
-完整 new/live/worktree validation 通过后 formal replace，并记录
-`superseded_snapshot_sha256`；失败保持 prior bytes，same-byte retry 幂等。Preset、selected
-platform copies、fresh install 和 current update/reapply 必须保持这些 schema/runtime/
-wrapper/test bytes 与 executable modes 一致。
-Refresh record/check 记录并核对当前 stable stale codes、superseded query/snapshot
-digests、reason 与 detection time，然后要求整步 re-entry；只消费当前 payload 与 expected
-snapshot identity，不重建 ancestry。
+只有真实 active-task owner recovery 才惰性写入 ignored current checkpoint；正常 mapped
+exit 不写 checkpoint，stale 删除后从 live authority 完整重跑，成功 public projection 后
+consume-and-clean owner input/result/checkpoint 与空目录。Preset、selected platform copies、
+fresh install 和 current update/reapply 必须保持这些 schema/runtime/wrapper/test bytes 与
+executable modes 一致。`context_ready` 只交付 Clarify 所需的 route、mode、target locator 与
+continuation identity，不携带 private artifact locator。
 `context_ready` 指向 active `guru-clarify-requirements`；source/installed validator 要求
 active Skill consumer 与唯一 workflow/stop target marker 均可解析。
 

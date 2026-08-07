@@ -1382,9 +1382,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 34),
+            ("public_input_schema_ids", 33),
             ("typed_output_schema_ids", 54),
-            ("private_artifact_schema_ids", 15),
+            ("private_artifact_schema_ids", 16),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],

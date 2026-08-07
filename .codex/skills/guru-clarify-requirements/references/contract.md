@@ -177,16 +177,14 @@ reread from their owning sources. Those rederivable bindings and the trail stay
 in the transient owner result and never enter the ledger.
 
 GitHub comment/body mutation returns `refresh_context` before any task-local
-update. On re-entry, live authority kind/URL/content must match; its live
-`updated_at` is reread rather than copied into the ledger. Current
-`context-discovery.json.generated_at` must be at least that live authority
-time, and the task-update action preimage must equal the current context
-snapshot digest. The AI then validates the current ledger/planning identities and
+update. On re-entry, live authority kind/URL/content and update time are reread
+directly. The task-update action preimage must equal the current transient
+`context_evidence` digest. The AI then validates the current ledger/planning identities and
 one `active_task_scope_update` action. After the dialogue decision, the
 task-local write binds that action to the same five-class proposal set and the
 current preimage. Recorder/checker retain only the objective action and result
 facts; each component writes no authorization fields. A task-only update does not require a
-second context snapshot or a changed digest before `clear` or active-task
+second Discovery result or a changed digest before `clear` or active-task
 `new_task` resumes the exact interrupted progression. `new_task` then carries only a reviewed
 side-effect-free draft; #112 still owns issue/task creation. This Skill records
 no dedicated clarification artifact and never writes another task directory.
