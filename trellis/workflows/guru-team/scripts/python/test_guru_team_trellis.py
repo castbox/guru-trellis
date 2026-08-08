@@ -8819,6 +8819,31 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
         self.assertEqual(identity["publication_head"], publication)
         self.assertEqual(identity["metadata_tail"]["parent"], reviewed)
 
+    def test_publication_identity_rejects_manifest_drift_mixed_with_task_metadata(self) -> None:
+        root, reviewed, _ = self.fixture()
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        subprocess.run(
+            ["git", "checkout", "--detach", "-q", reviewed], cwd=root, check=True
+        )
+        manifest = root / gtt.PROVENANCE_TAIL_MANIFEST_PATH
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["unexpected"] = "drift"
+        manifest.write_text(json.dumps(payload), encoding="utf-8")
+        task_metadata = root / ".trellis/tasks/current/runtime-note.json"
+        task_metadata.parent.mkdir(parents=True)
+        task_metadata.write_text("{}\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "mixed metadata"], cwd=root, check=True)
+
+        with self.assertRaisesRegex(
+            gtt.WorkflowError, "invalid provenance tail"
+        ) as blocked:
+            gtt.finalizer_publication_identity(root, reviewed)
+        self.assertIn(
+            "provenance_tail_changed_paths_invalid",
+            blocked.exception.payload["errors"],
+        )
+
     def test_provenance_reprepare_error_classification_is_narrow(self) -> None:
         self.assertTrue(gtt.finalizer_provenance_reprepare_error(gtt.WorkflowError(
             "dirty source",

@@ -11971,7 +11971,11 @@ def finalizer_publication_identity(
             check=False,
         )
         paths = {item for item in paths_proc.stdout.split("\0") if item}
-        if paths and all(reviewed_content_metadata_path(path) for path in paths):
+        if (
+            paths
+            and PROVENANCE_TAIL_MANIFEST_PATH not in paths
+            and all(reviewed_content_metadata_path(path) for path in paths)
+        ):
             return {
                 "reviewed_content_head": reviewed_content_head,
                 "publication_head": publication_head,

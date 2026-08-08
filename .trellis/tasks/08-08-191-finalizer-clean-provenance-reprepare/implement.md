@@ -47,6 +47,12 @@
 - [x] 增加 current-bytes regression，要求 checked-in manifest 的 `managed_backups` 与 `new_copies` 均为空，避免真实 clean producer 出现 allowlist 外 diff。
 - [ ] 在 fix commit 后用 clean checkout 重放真实 producer，完成 finding closure 与 distinct fresh-final review。
 
+## 5.3 Historical metadata fallback finding
+
+- [x] 修复 `BR-191-P1-009`：historical task/archive metadata fallback 明确排除任何触及 installed extension manifest 的 commit。
+- [x] 增加 manifest 非允许字段与 task metadata 混合 commit 回归，证明组合提交继续由 provenance validator fail closed。
+- [ ] 在新 fix commit 后完成 finding closure 与 distinct fresh-final review。
+
 ## 6. Required context/spec files
 
 ```text
