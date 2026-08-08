@@ -8742,6 +8742,55 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             [],
         )
 
+    def test_manifest_diff_tracks_added_and_removed_nested_empty_objects(self) -> None:
+        valid = {
+            "installed_at": "new",
+            "source": {
+                "ref": "a" * 40,
+                "commit": "a" * 40,
+                "tree_state": "clean",
+                "is_mutable_ref": False,
+            },
+            "unexpected": {},
+        }
+        with_nested_empty = copy.deepcopy(valid)
+        with_nested_empty["unexpected"]["nested"] = {}
+        for before, after in (
+            (valid, with_nested_empty),
+            (with_nested_empty, valid),
+        ):
+            with self.subTest(before_has_nested="nested" in before["unexpected"]):
+                self.assertEqual(
+                    gtt.provenance_tail_manifest_field_diff(before, after),
+                    ["unexpected.nested"],
+                )
+                self.assertIn(
+                    "provenance_tail_manifest_fields_outside_allowlist",
+                    gtt.provenance_tail_manifest_errors(before, after, "a" * 40),
+                )
+
+    def test_manifest_diff_ignores_unchanged_empty_object_during_allowlisted_change(self) -> None:
+        before = {
+            "installed_at": "old",
+            "source": {
+                "ref": "a" * 40,
+                "commit": "a" * 40,
+                "tree_state": "clean",
+                "is_mutable_ref": False,
+            },
+            "stable_empty": {},
+        }
+        after = copy.deepcopy(before)
+        after["installed_at"] = "new"
+        self.assertEqual(
+            gtt.provenance_tail_manifest_field_diff(before, after),
+            ["installed_at"],
+        )
+        self.assertEqual(
+            gtt.provenance_tail_manifest_errors(before, after, "a" * 40),
+            [],
+        )
+
     def test_publication_identity_accepts_one_tail_without_reclassifying_reviewed_head(self) -> None:
         root, reviewed, publication = self.fixture()
         self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
@@ -9658,6 +9707,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 "plan_ref": plan_ref,
                 "repo_ref": "example/guru-extension",
                 "branch_review_commit": self.head,
+                "publication_head": self.head,
                 "verification_target": "extension-installation",
             }
         payload: dict[str, Any] = {
@@ -9752,6 +9802,11 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             "remote": public_input.get("remote", "origin"),
             "ref": public_input.get("ref", "refs/heads/main"),
             "branch_review_commit": branch_review_commit,
+            "publication_head": (
+                public_input["publication_head"]
+                if public_input["mode"] == "workflow"
+                else None
+            ),
             "resolved_head": target_head,
             "checkout_head": target_head,
             "reviewed_content_sha256": reviewed_content_sha256,
@@ -9984,6 +10039,40 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         public_streams = stdout.getvalue() + stderr.getvalue()
         self.assertEqual(return_code, 2)
         self.assertNotIn("Traceback", public_streams)
+
+    def test_workflow_public_input_rejects_legacy_missing_publication_head(self) -> None:
+        public_input = self.public_input("workflow", task=True)
+        del public_input["publication_head"]
+        runtime_dir = self.root / ".trellis/.runtime/guru-team/tests"
+        runtime_dir.mkdir(parents=True, exist_ok=True)
+        input_path = runtime_dir / "legacy-public-input.json"
+        gtt.write_json(input_path, public_input)
+
+        with self.assertRaises(gtt.WorkflowError) as rejected:
+            gtt.extension_verification_public_input(
+                self.root,
+                input_path.relative_to(self.root).as_posix(),
+            )
+        self.assertIn(
+            "public input failed validation",
+            str(rejected.exception),
+        )
+
+    def test_workflow_docs_reject_legacy_publication_head_fallback(self) -> None:
+        source_root = Path(__file__).resolve().parents[5]
+        contract = (
+            source_root / ".trellis/spec/workflow/companion-scripts.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "a legacy payload without `publication_head` fails current-schema",
+            contract,
+        )
+        self.assertIn("never defaults or derives the missing identity", contract)
+        self.assertNotIn(
+            "inputs without `publication_head` normalize to `branch_review_commit`",
+            contract,
+        )
 
     def test_record_schema_validation_rejects_missing_and_invalid_enums(self) -> None:
         public_input = self.public_input("workflow", task=True)
@@ -13247,6 +13336,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "task_ref": task_ref,
             "plan_ref": plan_ref,
             "branch_review_commit": self.head,
+            "publication_head": self.head,
             "verification_ref": "extension-verification:current",
         }
         context = {
@@ -13345,6 +13435,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "task_ref": task_ref,
             "plan_ref": plan_ref,
             "branch_review_commit": self.head,
+            "publication_head": self.head,
             "verification_ref": "extension-verification:current",
         }
         plan = {
@@ -14214,6 +14305,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "task_ref": task_ref,
             "plan_ref": current_ref,
             "branch_review_commit": plan["git"]["branch_review_commit"],
+            "publication_head": plan["git"].get(
+                "publication_head",
+                plan["git"]["branch_review_commit"],
+            ),
             "verification_ref": verification_ref,
         }
         direct_failure = gtt.WorkflowError("stale direct checker", exit_code=2)

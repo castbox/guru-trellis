@@ -235,9 +235,9 @@ current; same-plan recovery reuses that private binding.
 
 ## Public Exits
 
-- `verification_required`: task, plan, repository, `branch_review_commit`, verification
-  target; `repo_ref` is exactly the immutable plan repository; consumed by
-  `guru-verify-extension-installation`.
+- `verification_required`: task, plan, repository, `branch_review_commit`,
+  `publication_head`, and verification target; `repo_ref` is exactly the
+  immutable plan repository; consumed by `guru-verify-extension-installation`.
 - `publication_review_stale`: task, the exact stale `branch_review_commit`, and
   stable stale reason; consumed by `guru-review-task-publication`.
 - `resume_finalization`: task and same plan; consumed by this Skill.
@@ -252,6 +252,38 @@ current; same-plan recovery reuses that private binding.
 
 Every DTO uses `exit_id`. Gate, plan, review, verification, PR, archive,
 recovery, digest, path, blob, and unrelated Git HEAD facts remain private.
+
+### Publication-head public I/O migration
+
+The four pre-#191 public DTO schemas remain immutable compatibility assets:
+
+- `guru-finalize-task-output-verification-required-2.0` at
+  `schemas/public-verification-required-output.schema.json`;
+- `guru-finalize-task-input-verification-verified-3.0` at
+  `schemas/public-verification-verified-input.schema.json`;
+- the corresponding Verifier input 2.0 and output 2.0 schemas in the consumer
+  package.
+
+Those legacy schemas keep their original bytes and do not contain
+`publication_head`. The current Interface selects Finalizer output 3.0,
+Verifier input 3.0, Verifier output 3.0, and Finalizer input 4.0. Finalizer's
+current aggregate input is 4.0; aggregate 3.0 remains bound to the legacy
+Finalizer input path. The executable current handoffs are the Interface
+`project_verification_required` and Verifier `project_verified` projections:
+each selects `publication_head` without renaming or defaulting it, merges only
+the target-owned profile/mode authoring fields, and validates the result against
+the current target schema.
+
+A legacy DTO is validation-only compatibility evidence, not a current route.
+Because its producer did not bind publication identity, the consumer must not
+infer `publication_head` from `branch_review_commit`, live HEAD, or private
+state. A current invocation receiving a payload that satisfies only a legacy
+shape fails current-schema validation and re-enters the owning current producer:
+Finalizer rebuilds the current plan/output before Verifier entry, and Verifier
+reruns exact-ref verification before Finalizer re-entry. Package tests preserve the legacy byte
+digests, validate legacy and current examples against their own schemas, reject
+both cross-version substitutions, and execute both current projections against
+their target schemas.
 
 The ignored owner-private gate never stores an early public `published` DTO.
 Before and through archive it retains only the exact finalizer-private executor

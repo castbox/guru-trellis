@@ -407,6 +407,7 @@ PROVENANCE_TAIL_ALLOWED_FIELDS = frozenset({
     "source.tree_state",
     "source.is_mutable_ref",
 })
+PROVENANCE_TAIL_OBJECT_PRESENCE = object()
 BRANCH_REVIEW_SCHEMA_VERSION = "3.0"
 BRANCH_REVIEW_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json"
 AI_FIRST_TEMPLATE_HASHES_PATH = Path(".trellis/.template-hashes.json")
@@ -11513,11 +11514,9 @@ def extension_verification_public_input(
     value: str | None,
 ) -> dict[str, Any]:
     payload, _ = extension_verification_json_input(root, value)
-    if payload.get("mode") == "workflow" and "publication_head" not in payload:
-        payload["publication_head"] = payload.get("branch_review_commit")
     profile = payload.get("profile")
     schema_name = (
-        "public-verification-required-input.schema.json"
+        "public-verification-required-input-3.0.schema.json"
         if profile == "verification_required"
         else "public-standalone-verification-input.schema.json"
         if profile == "standalone_verification"
@@ -11699,7 +11698,11 @@ def extension_verification_manifest_source(
 def provenance_tail_flatten_manifest(value: Any, prefix: str = "") -> dict[str, Any]:
     """Return deterministic dotted paths for the manifest field-diff contract."""
     if isinstance(value, dict):
-        flattened: dict[str, Any] = {}
+        flattened: dict[str, Any] = (
+            {prefix: PROVENANCE_TAIL_OBJECT_PRESENCE}
+            if prefix
+            else {}
+        )
         for key in sorted(value):
             child = f"{prefix}.{key}" if prefix else str(key)
             flattened.update(provenance_tail_flatten_manifest(value[key], child))
@@ -20271,9 +20274,6 @@ def extension_verification_execution_input(
     value: str | None,
 ) -> dict[str, Any]:
     execution, _ = extension_verification_json_input(root, value)
-    target = execution.get("target_repository")
-    if isinstance(target, dict) and "publication_head" not in target:
-        target["publication_head"] = target.get("branch_review_commit")
     schema = extension_verification_recorder_input_schema(
         root,
         "execution-facts.schema.json",
@@ -20751,7 +20751,7 @@ def extension_verification_output_schema(
 ) -> dict[str, Any]:
     package = extension_verification_package_root(root)
     names = {
-        "verified": "public-verified-output.schema.json",
+        "verified": "public-verified-output-3.0.schema.json",
         "not_required": "public-not-required-output.schema.json",
         "return_to_task_work": "public-return-to-task-work-output.schema.json",
         "blocked": "public-blocked-output.schema.json",
@@ -24668,11 +24668,6 @@ def finalization_public_input(
     value: str | None,
 ) -> tuple[dict[str, Any], str]:
     payload, locator = finalization_json_input(root, value, "task finalization public input")
-    if (
-        payload.get("profile") == "verification_verified"
-        and "publication_head" not in payload
-    ):
-        payload["publication_head"] = payload.get("branch_review_commit")
     package = finalization_package_root(root)
     interface = finalization_interface(root)
     profiles = interface["public_contracts"]["input"]["profiles"]

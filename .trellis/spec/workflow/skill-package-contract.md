@@ -229,6 +229,20 @@ across same-plan recovery until a terminal output validates.
 - an existing public field must change incompatibly -> publish a new schema/id
   or an explicit migration contract.
 
+For a closed public schema (`additionalProperties=false`), adding a required
+field is incompatible even when producer and consumer change in one repository
+commit. The published path, `$id`, and bytes remain as a legacy validation
+asset. The current contract uses a new versioned path and `$id`; any aggregate
+schema whose relative reference would otherwise change meaning also receives a
+new version. The Interface selects only the new current contracts while keeping
+the legacy assets in its package schema inventory. Package tests must validate
+both generations, reject cross-version substitution, and execute the current
+projection against the target-owned current input. A legacy route must either
+have an explicit deterministic migration whose missing values come from an
+owned authoritative input, or fail closed and rerun the current producer; it
+must never synthesize a required identity from a neighboring field or live
+ambient state.
+
 ### 5. Good, Base, And Bad Cases
 
 Good: `context_ready` returns a target identity plus the small set of relevant
@@ -1483,6 +1497,20 @@ only `publication_head` to the workflow input and `verified` output so target
 ref/PR identity can advance independently from the reviewed source bytes.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
+
+The #191 public transport migration is versioned rather than changing published
+contracts in place. Finalizer `verification_required` output 2.0 and Verifier
+workflow input 2.0 retain their original bytes; current producer and consumer
+select 3.0. Verifier `verified` output 2.0 and Finalizer
+`verification_verified` input 3.0 likewise remain legacy assets; current routes
+select output 3.0 and input 4.0. Verifier aggregate input 2.0 and Finalizer
+aggregate input 3.0 preserve their legacy relative references, while current
+Interfaces select aggregates 3.0 and 4.0 respectively. The existing
+`project_verification_required` and `project_verified` select projections are
+the executable current migration contract and carry `publication_head`
+unchanged. A legacy DTO cannot establish publication identity, so it fails
+closed and reruns its current owner rather than defaulting
+`publication_head=branch_review_commit` or reading an ambient HEAD.
 
 Public inputs continue to name the target repository. Task-bearing modes select
 the extension source from the target checkout's current installed manifest;
