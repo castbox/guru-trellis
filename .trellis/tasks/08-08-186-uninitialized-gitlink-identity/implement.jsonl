@@ -1,7 +1,0 @@
-{"file":".trellis/spec/workflow/index.md","reason":"加载 workflow package 边界、pre-development checklist 与 canonical/installed ownership。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"实现必须遵守 Python companion 的 deterministic executor/validator、可移植性与错误处理合同。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"reviewed-content identity、task identity 与 freshness 必须保持现有数据合同和 fail-closed 语义。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"验证 source/installed parity、preset reapply、throwaway install 与回归覆盖。"}
-{"file":".trellis/tasks/08-08-186-uninitialized-gitlink-identity/prd.md","reason":"实现 Issue #186 的完整需求、验收与非目标。"}
-{"file":".trellis/tasks/08-08-186-uninitialized-gitlink-identity/design.md","reason":"采用 recorded identity 与 initialized validation 分层设计。"}
-{"file":".trellis/tasks/08-08-186-uninitialized-gitlink-identity/implement.md","reason":"执行已审核步骤、验证命令和停止条件。"}

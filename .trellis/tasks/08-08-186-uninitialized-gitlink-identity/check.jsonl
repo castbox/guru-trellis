@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查实现没有把语义判断写入脚本，并保留 deterministic/fail-closed 边界。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查回归、source/installed parity、clean install 与 upgrade/update 验收覆盖。"}
-{"file":".trellis/tasks/08-08-186-uninitialized-gitlink-identity/prd.md","reason":"逐条核对需求与验收矩阵。"}
-{"file":".trellis/tasks/08-08-186-uninitialized-gitlink-identity/design.md","reason":"检查状态分类、合法 overlay 与 drift 边界未被放宽。"}
-{"file":".trellis/tasks/08-08-186-uninitialized-gitlink-identity/implement.md","reason":"检查实际 diff、测试和 Docs SSOT Plan 与批准计划一致。"}
