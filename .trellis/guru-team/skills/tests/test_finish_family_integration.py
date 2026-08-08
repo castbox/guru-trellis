@@ -222,7 +222,12 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             },
         )
 
-        publication_output = {"exit_id": "ready", **publication_seed}
+        publication_output = {
+            "exit_id": "ready",
+            **publication_seed,
+            "pr_title": "完成：Finalizer 直接消费 Publication payload",
+            "pr_body": "## 变更摘要\n\n- Publication 直接输出 PR payload。",
+        }
         publication_interface = read_json(publication_package / "interface.json")
         publication_projection = next(
             item
@@ -422,6 +427,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 },
                 "git": {"branch_review_commit": branch_review_commit},
                 "review": {"changed_paths": []},
+                "publish": {"title": "title", "body": "body"},
                 "marketplace": {"required": True},
                 "inputs": {
                     "issue_scope_ledger": {
@@ -449,10 +455,8 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             }
             checked_result = {"status": "ok", "typed_exit": "verified"}
             args = argparse.Namespace(
-                finish_summary_index_file=None,
                 repo=None,
                 remote=None,
-                title=None,
             )
             with ExitStack() as stack:
                 stack.enter_context(
@@ -527,13 +531,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 stack.enter_context(
                     mock.patch.object(
                         runtime,
-                        "load_finish_summary_index",
-                        return_value=(task_dir / "finish-summary-index.json", {}),
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
                         "load_issue_scope_ledger",
                         return_value=ledger,
                     )
@@ -548,21 +545,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 stack.enter_context(
                     mock.patch.object(
                         runtime,
-                        "resolve_closeout_reviewed_body",
-                        return_value=("body", "body-file"),
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
                         "validate_pr_body_quality",
-                        return_value=[],
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "validate_reviewed_body_source_for_publish",
                         return_value=[],
                     )
                 )
@@ -795,7 +778,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             },
             "publish": {
                 "title": "#119 完成 Finish family combined integration",
-                "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+                "body": body,
             },
         }
         draft = {

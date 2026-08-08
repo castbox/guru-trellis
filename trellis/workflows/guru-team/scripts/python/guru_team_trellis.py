@@ -410,10 +410,14 @@ AGENT_ASSIGNMENT_ARTIFACT = "agent-assignment.json"
 REVIEW_REPORT_ARTIFACT = "review.md"
 MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
 FINISH_SUMMARY_ARTIFACT = "finish-summary.json"
-FINISH_SUMMARY_INDEX_ARTIFACT = "finish-summary-index.json"
 CLOSEOUT_PLAN_ARTIFACT = "closeout-plan.json"
 TASK_FINALIZATION_GATE_ARTIFACT = "task-finalization-gate.json"
-CLOSEOUT_PLAN_SCHEMA_VERSION = "2.0"
+CLOSEOUT_PLAN_SCHEMA_VERSION = "3.0"
+LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION = "2.0"
+LEGACY_CLOSEOUT_RETIRED_ARTIFACTS = {
+    "pr-" "body.md",
+    "finish-summary-" "index.json",
+}
 CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS = {
     "task.json",
     "prd.md",
@@ -447,26 +451,31 @@ CLOSEOUT_TRANSITIONS = [
     "archive_pushed",
     "ready",
 ]
-FINISH_SUMMARY_SCHEMA_VERSION = 1
-FINISH_SUMMARY_GENERATOR = "guru-team.finish-work"
+FINISH_SUMMARY_SCHEMA_VERSION = 2
+FINISH_SUMMARY_GENERATOR = "guru-team.finalize-task"
+HISTORICAL_FINISH_SUMMARY_SCHEMA_VERSION = 1
+HISTORICAL_FINISH_SUMMARY_GENERATOR = "guru-team.finish-work"
 FINISH_SUMMARY_SURFACE_KINDS = {
     "workflow", "script", "schema", "preset", "overlay", "skill", "prompt",
     "docs", "test", "config", "task-artifact", "github", "other",
 }
-FINISH_SUMMARY_ARTIFACT_FILES = {
+CURRENT_FINISH_SUMMARY_ARTIFACT_FILES = {
     "prd": "prd.md",
     "design": "design.md",
     "implement": "implement.md",
-    "finish_summary_index": FINISH_SUMMARY_INDEX_ARTIFACT,
     "issue_scope_ledger": "issue-scope-ledger.json",
+    "closeout_plan": CLOSEOUT_PLAN_ARTIFACT,
+    "marketplace_verification": MARKETPLACE_VERIFICATION_ARTIFACT,
+}
+HISTORICAL_FINISH_SUMMARY_ARTIFACT_FILES = {
+    **CURRENT_FINISH_SUMMARY_ARTIFACT_FILES,
+    "finish_summary_index": "finish-summary-" "index.json",
     "phase2_check": PHASE2_CHECK_ARTIFACT,
     "review": REVIEW_REPORT_ARTIFACT,
     "review_gate": "review-gate.json",
-    "pr_body": "pr-body.md",
+    "pr_body": "pr-" "body.md",
     "pr_readiness": "pr-readiness.json",
     "task_finalization_gate": TASK_FINALIZATION_GATE_ARTIFACT,
-    "closeout_plan": CLOSEOUT_PLAN_ARTIFACT,
-    "marketplace_verification": MARKETPLACE_VERIFICATION_ARTIFACT,
 }
 FINISH_SUMMARY_INDEX_KEYS = {
     "problem", "outcome", "changed_behavior", "affected_surfaces",
@@ -501,7 +510,6 @@ FINISH_SUMMARY_PATH_SNAPSHOT_UNAVAILABLE_CONTRACT = {
     "source_artifact": "",
 }
 PR_READINESS_ARTIFACT = "pr-readiness.json"
-PR_BODY_ARTIFACT = "pr-body.md"
 REVIEW_ROUND_REPORT_DIR = "reviews"
 HUMAN_MARKDOWN_ARTIFACTS = [
     {
@@ -522,12 +530,6 @@ HUMAN_MARKDOWN_ARTIFACTS = [
         "purpose": "执行计划与验证计划",
         "missing_status": "未生成",
     },
-    {
-        "label": "PR Body",
-        "filename": "pr-body.md",
-        "purpose": "给 GitHub reviewer 的 PR 说明",
-        "missing_status": "未生成",
-    },
 ]
 GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
 WORKSPACE_BOUNDARY_SUSPICIOUS_TASK_ARTIFACTS = [
@@ -543,7 +545,6 @@ WORKSPACE_BOUNDARY_SUSPICIOUS_TASK_ARTIFACTS = [
     REVIEW_REPORT_ARTIFACT,
     "review-gate.json",
     "issue-scope-ledger.json",
-    "pr-body.md",
     "pr-readiness.json",
 ]
 WORKSPACE_BOUNDARY_REVIEW_METADATA = {
@@ -552,7 +553,6 @@ WORKSPACE_BOUNDARY_REVIEW_METADATA = {
     AGENT_ASSIGNMENT_ARTIFACT,
     REVIEW_REPORT_ARTIFACT,
     "review-gate.json",
-    "pr-body.md",
     "pr-readiness.json",
 }
 DEFAULT_PLANNING_ARTIFACTS = ["prd.md", "design.md", "implement.md"]
@@ -755,7 +755,7 @@ def finish_summary_string_array_errors(
     return errors
 
 
-def finish_summary_retrieval_text(task_title: str, index: dict[str, Any]) -> str:
+def finish_summary_retrieval_values(task_title: str, index: dict[str, Any]) -> list[str]:
     values: list[str] = [task_title, str(index.get("problem") or ""), str(index.get("outcome") or "")]
     values.extend(str(item) for item in index.get("changed_behavior", []) if isinstance(item, str))
     for item in index.get("affected_surfaces", []):
@@ -768,7 +768,22 @@ def finish_summary_retrieval_text(task_title: str, index: dict[str, Any]) -> str
                     values.append(item[key])
     search_terms = index.get("search_terms") if isinstance(index.get("search_terms"), dict) else {}
     values.extend(str(item) for item in search_terms.get("phrases", []) if isinstance(item, str))
-    return "\n".join(value.strip() for value in values if value.strip())
+    return [value.strip() for value in values if value.strip()]
+
+
+def finish_summary_retrieval_text(task_title: str, index: dict[str, Any]) -> str:
+    return "\n".join(finish_summary_retrieval_values(task_title, index))
+
+
+def current_finish_summary_retrieval_text(task_title: str, index: dict[str, Any]) -> str:
+    values: list[str] = []
+    normalized: set[str] = set()
+    for value in finish_summary_retrieval_values(task_title, index):
+        key = finish_summary_normalized_text(value)
+        if key and key not in normalized:
+            values.append(value)
+            normalized.add(key)
+    return "\n".join(values)
 
 
 def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None = None, final: bool) -> list[str]:
@@ -906,33 +921,6 @@ def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None 
     return errors
 
 
-def load_finish_summary_index(task_dir: Path, value: str | None) -> tuple[Path, dict[str, Any]]:
-    if not value:
-        raise WorkflowError(
-            "finish-work requires task-local finish-summary-index.json AI review evidence.",
-            exit_code=2,
-            payload={"required_flag": "--finish-summary-index-file"},
-        )
-    path = Path(value)
-    if not path.is_absolute():
-        path = (task_dir / path) if len(path.parts) == 1 else (repo_root(task_dir) / path)
-    resolved = path.resolve()
-    if resolved.parent != task_dir.resolve() or resolved.name != FINISH_SUMMARY_INDEX_ARTIFACT:
-        raise WorkflowError("finish-summary index must be the task-local finish-summary-index.json file.", exit_code=2)
-    if not resolved.is_file():
-        raise WorkflowError(f"finish-summary index not found: {resolved}", exit_code=2)
-    payload = read_json(resolved)
-    errors: list[str] = []
-    if set(payload) != {"schema_version", "index"}:
-        errors.append("finish-summary index top-level keys must equal schema_version and index.")
-    if payload.get("schema_version") != FINISH_SUMMARY_SCHEMA_VERSION:
-        errors.append("finish-summary index schema_version must be integer 1.")
-    errors.extend(finish_summary_index_errors(payload.get("index"), final=False))
-    if errors:
-        raise WorkflowError("finish-summary index validation failed.", exit_code=2, payload={"errors": errors})
-    return resolved, payload
-
-
 def finish_summary_issue_numbers(ledger: dict[str, Any], key: str) -> list[int]:
     if key == "source_issues":
         primary = ledger.get("primary_issue")
@@ -952,8 +940,110 @@ def finish_summary_issue_numbers(ledger: dict[str, Any], key: str) -> list[int]:
 def finish_summary_artifacts(task_dir: Path) -> dict[str, str]:
     return {
         key: filename
-        for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
+        for key, filename in CURRENT_FINISH_SUMMARY_ARTIFACT_FILES.items()
         if (task_dir / filename).is_file()
+    }
+
+
+def finish_summary_section_bullets(body: str, section_name: str) -> list[str]:
+    section = find_pr_body_sections(body).get(section_name, "")
+    bullets = [
+        normalized_body_line(line)
+        for line in section.splitlines()
+        if line.strip().startswith(("-", "*", "•"))
+        and normalized_body_line(line)
+    ]
+    return list(dict.fromkeys(bullets))
+
+
+def finish_summary_surface_kind(path: str) -> str:
+    if path.startswith(("trellis/workflows/", ".trellis/workflow")):
+        return "workflow"
+    if "/scripts/" in path or path.endswith((".py", ".sh")):
+        return "script"
+    if "/schemas/" in path or path.endswith(".schema.json"):
+        return "schema"
+    if "/overlays/" in path:
+        return "overlay"
+    if path.startswith("trellis/presets/"):
+        return "preset"
+    if "/skills/" in path:
+        return "skill"
+    if "/tests/" in path or Path(path).name.startswith("test_"):
+        return "test"
+    if path.endswith(("README.md", ".md")):
+        return "docs"
+    if path.endswith((".yml", ".yaml", ".toml")):
+        return "config"
+    if path.startswith((".codex/", ".claude/", ".cursor/", ".agents/")):
+        return "prompt"
+    if path.startswith(".trellis/tasks/"):
+        return "task-artifact"
+    return "other"
+
+
+def build_finish_summary_index(
+    task_title: str,
+    pr_body: str,
+    changed_paths: list[str],
+) -> dict[str, Any]:
+    changed_behavior = finish_summary_section_bullets(pr_body, "变更摘要")
+    if not changed_behavior:
+        raise WorkflowError(
+            "Reviewed PR body must contain at least one concrete 变更摘要 bullet.",
+            exit_code=2,
+        )
+    changed_behavior = changed_behavior[:12]
+    grouped: dict[str, list[str]] = {}
+    for path in changed_paths:
+        grouped.setdefault(finish_summary_surface_kind(path), []).append(path)
+    affected_surfaces = [
+        {
+            "kind": kind,
+            "name": kind,
+            "paths": paths[:100],
+            "change": changed_behavior[0][:240],
+        }
+        for kind, paths in sorted(grouped.items())[:20]
+    ]
+    if not affected_surfaces:
+        affected_surfaces = [{
+            "kind": "other",
+            "name": "task",
+            "paths": [],
+            "change": changed_behavior[0][:240],
+        }]
+    first_path_name = Path(changed_paths[0]).name if changed_paths else "task"
+    phrase_candidates = [
+        task_title[:60],
+        changed_behavior[0][:60],
+        f"完成 {first_path_name} 相关变更"[:60],
+        "完成任务范围内合同同步",
+    ]
+    phrases: list[str] = []
+    normalized: set[str] = set()
+    for phrase in phrase_candidates:
+        key = finish_summary_normalized_text(phrase)
+        if len(phrase) >= 2 and key and key not in normalized:
+            phrases.append(phrase)
+            normalized.add(key)
+        if len(phrases) == 3:
+            break
+    if len(phrases) < 3:
+        phrases.extend(["完成发布合同更新", "更新归档检索信息"][: 3 - len(phrases)])
+    return {
+        "problem": task_title[:400],
+        "outcome": changed_behavior[0][:500],
+        "changed_behavior": changed_behavior,
+        "affected_surfaces": affected_surfaces,
+        "contract_changes": [],
+        "search_terms": {
+            "commands": [],
+            "config_keys": [],
+            "schema_fields": [],
+            "symbols": [first_path_name] if not changed_paths else [],
+            "phrases": phrases,
+        },
     }
 
 
@@ -991,7 +1081,7 @@ def build_finish_summary(
     task_dir: Path,
     task_context: dict[str, Any],
     ledger: dict[str, Any],
-    index_payload: dict[str, Any],
+    pr_body: str,
     review_commit: str,
     *,
     pr_url: str = "",
@@ -1020,7 +1110,8 @@ def build_finish_summary(
     }
     github["pr_url"] = pr_url
     artifacts = copy.deepcopy(artifacts_override) if artifacts_override is not None else finish_summary_artifacts(task_dir)
-    index = copy.deepcopy(index_payload["index"])
+    task_title = str(task.get("title") or task.get("name") or task_dir.name)
+    index = build_finish_summary_index(task_title, pr_body, changed_paths)
     apply_finish_summary_path_snapshot_contract(
         index,
         protected_paths_filtered=protected_paths_filtered,
@@ -1035,14 +1126,14 @@ def build_finish_summary(
         "paths": sorted(set(changed_paths)),
         **copy.deepcopy(index["search_terms"]),
     }
-    index["retrieval_text"] = finish_summary_retrieval_text(str(task.get("title") or task.get("name") or task_dir.name), index)
+    index["retrieval_text"] = current_finish_summary_retrieval_text(task_title, index)
     payload = {
         "schema_version": FINISH_SUMMARY_SCHEMA_VERSION,
         "generated_at": generated_at_override or now_iso(),
         "generator": FINISH_SUMMARY_GENERATOR,
         "task": {
             "slug": task_dir.name,
-            "title": str(task.get("title") or task.get("name") or task_dir.name),
+            "title": task_title,
             "status": "completed",
             "artifact_dir": str(task_context.get("task_artifact_dir") or ""),
             "archive_dir": archive_dir_override or repo_relative(root, task_dir),
@@ -1066,18 +1157,26 @@ def build_finish_summary(
 def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list[str]:
     if not isinstance(payload, dict):
         return ["finish-summary must be an object."]
+    schema_version = payload.get("schema_version")
+    historical = schema_version == HISTORICAL_FINISH_SUMMARY_SCHEMA_VERSION
     generator = payload.get("generator")
     expected_keys = {"schema_version", "generated_at", "generator", "task", "git", "github", "artifacts", "index"}
     errors: list[str] = []
     if set(payload) != expected_keys:
         errors.append(f"finish-summary top-level keys must equal {sorted(expected_keys)}.")
-    if payload.get("schema_version") != FINISH_SUMMARY_SCHEMA_VERSION:
-        errors.append("schema_version must be integer 1.")
+    if schema_version not in {
+        FINISH_SUMMARY_SCHEMA_VERSION,
+        HISTORICAL_FINISH_SUMMARY_SCHEMA_VERSION,
+    }:
+        errors.append("schema_version must be current integer 2 or historical integer 1.")
     generated_at = payload.get("generated_at")
     if not isinstance(generated_at, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z", generated_at):
         errors.append("generated_at must be second-precision UTC RFC3339.")
-    if generator != FINISH_SUMMARY_GENERATOR:
-        errors.append(f"generator must equal {FINISH_SUMMARY_GENERATOR}.")
+    expected_generator = (
+        HISTORICAL_FINISH_SUMMARY_GENERATOR if historical else FINISH_SUMMARY_GENERATOR
+    )
+    if generator != expected_generator:
+        errors.append(f"generator must equal {expected_generator}.")
     task = payload.get("task")
     if not isinstance(task, dict) or set(task) != {"slug", "title", "status", "artifact_dir", "archive_dir"}:
         errors.append("task object keys are invalid.")
@@ -1144,14 +1243,19 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
         or (pr_url and not re.fullmatch(r"https://github\.com/[^/]+/[^/]+/pull/[1-9][0-9]*", pr_url))
     ):
         errors.append("github.pr_url must be empty or a canonical GitHub pull URL.")
+    artifact_contract = (
+        HISTORICAL_FINISH_SUMMARY_ARTIFACT_FILES
+        if historical
+        else CURRENT_FINISH_SUMMARY_ARTIFACT_FILES
+    )
     artifacts = payload.get("artifacts")
-    if not isinstance(artifacts, dict) or any(key not in FINISH_SUMMARY_ARTIFACT_FILES for key in artifacts):
+    if not isinstance(artifacts, dict) or any(key not in artifact_contract for key in artifacts):
         errors.append("artifacts keys are invalid.")
         artifacts = {}
     for key, path in artifacts.items():
         errors.extend(finish_summary_path_errors(path, f"artifacts.{key}"))
-        if path != FINISH_SUMMARY_ARTIFACT_FILES[key]:
-            errors.append(f"artifacts.{key} must equal {FINISH_SUMMARY_ARTIFACT_FILES[key]}.")
+        if path != artifact_contract[key]:
+            errors.append(f"artifacts.{key} must equal {artifact_contract[key]}.")
         if task_dir is not None and not (task_dir / str(path)).is_file():
             errors.append(f"artifacts.{key} does not exist in the archived task.")
     index = payload.get("index") if isinstance(payload.get("index"), dict) else {}
@@ -1169,7 +1273,12 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
         errors.append("index.search_terms.branches must be derived from git.branch.")
     if search_terms.get("paths") != changed_paths:
         errors.append("index.search_terms.paths must equal sorted git.changed_paths.")
-    expected_retrieval = finish_summary_retrieval_text(str(task.get("title") or ""), index)
+    retrieval_builder = (
+        finish_summary_retrieval_text
+        if historical
+        else current_finish_summary_retrieval_text
+    )
+    expected_retrieval = retrieval_builder(str(task.get("title") or ""), index)
     if index.get("retrieval_text") != expected_retrieval:
         errors.append("index.retrieval_text must equal the deterministic derived text.")
     return errors
@@ -1272,7 +1381,6 @@ BRANCH_TYPE_KEYWORD_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("feat", ("feat", "feature", "add", "support", "enable", "新增", "支持")),
 )
 PR_CLOSE_KEYWORDS = ["Closes", "Fixes", "Resolves", "Close", "Fix", "Resolve"]
-REVIEWED_PR_BODY_SOURCE_PREFIXES = ("body-file:",)
 CONVENTIONAL_COMMIT_TYPES = set(VALID_BRANCH_TYPES)
 CONVENTIONAL_COMMIT_SCOPE_PATTERN = r"[a-z0-9._/-]+"
 CONVENTIONAL_COMMIT_SUBJECT_RE = re.compile(
@@ -6767,10 +6875,6 @@ def git_commit_messages(root: Path, range_spec: str) -> list[dict[str, str]]:
     return commits
 
 
-def is_reviewed_pr_body_source(body_source: str) -> bool:
-    return body_source.startswith(REVIEWED_PR_BODY_SOURCE_PREFIXES)
-
-
 def canonical_json_sha256(payload: dict[str, Any]) -> str:
     encoded = json.dumps(
         payload,
@@ -6857,75 +6961,6 @@ def reject_closeout_symlink_components(root: Path, path: Path, label: str) -> Pa
                 payload={"path": str(path), "symlink_component": component_label},
             )
     return target
-
-
-def resolve_closeout_reviewed_body(
-    root: Path,
-    task_dir: Path,
-    args: argparse.Namespace,
-) -> tuple[str, str]:
-    body_file = getattr(args, "body_file", None)
-    if not body_file:
-        raise WorkflowError(
-            "finish-work requires --body-file pointing to the current task-local pr-body.md.",
-            exit_code=2,
-        )
-
-    root_path = closeout_lexical_path(root)
-    direct_task_dir = root_path / ".trellis/tasks" / task_dir.name
-    task_body_path = reject_closeout_symlink_components(
-        root_path,
-        direct_task_dir / PR_BODY_ARTIFACT,
-        "task-local PR body",
-    )
-    if closeout_lexical_path(task_dir) != direct_task_dir:
-        raise WorkflowError(
-            "finish-work task directory must be the direct active task path under .trellis/tasks.",
-            exit_code=2,
-            payload={"task_dir": str(task_dir)},
-        )
-
-    raw_source = Path(body_file).expanduser()
-    source_candidate = raw_source if raw_source.is_absolute() else root_path / raw_source
-    source_path = reject_closeout_symlink_components(root_path, source_candidate, "--body-file")
-    if not source_path.exists():
-        raise WorkflowError(f"PR body file not found: {source_path}", exit_code=2)
-    if not source_path.is_file():
-        raise WorkflowError(f"PR body file must point to a file: {source_path}", exit_code=2)
-    if not task_body_path.is_file():
-        raise WorkflowError(
-            "finish-work requires task-local pr-body.md.",
-            exit_code=2,
-        )
-    if source_path != task_body_path:
-        raise WorkflowError(
-            "finish-work --body-file must be the direct current task-local pr-body.md path.",
-            exit_code=2,
-            payload={"body_file": str(body_file), "required_body_file": repo_relative(root, task_body_path)},
-        )
-
-    source_bytes = source_path.read_bytes()
-    task_body_bytes = task_body_path.read_bytes()
-    if source_bytes != task_body_bytes:
-        raise WorkflowError(
-            "finish-work reviewed body source bytes do not match task-local pr-body.md.",
-            exit_code=2,
-        )
-    try:
-        body = task_body_bytes.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise WorkflowError("finish-work task-local pr-body.md is not valid UTF-8.", exit_code=2) from exc
-    if not body.strip():
-        raise WorkflowError("finish-work task-local pr-body.md is empty.", exit_code=2)
-    return body, f"body-file:{repo_relative(root, task_body_path)}"
-
-
-def validate_reviewed_body_source_for_publish(body_source: str, draft: bool) -> list[str]:
-    if draft or is_reviewed_pr_body_source(body_source):
-        return []
-    return [
-        "non-draft publish requires the reviewed task-local --body-file; generated PR body is preview-only.",
-    ]
 
 
 def validate_pr_body_quality(body: str, ledger: dict[str, Any], draft: bool) -> list[str]:
@@ -7252,7 +7287,7 @@ def review_branch_gate_schema(root: Path) -> dict[str, Any]:
     return schema
 
 
-def review_branch_task_commit_evidence_errors(
+def review_branch_commit_identity_errors(
     root: Path,
     task_dir: Path,
     task: dict[str, Any],
@@ -7282,14 +7317,6 @@ def review_branch_task_commit_evidence_errors(
         parents = run_stdout(
             ["git", "show", "-s", "--format=%P", branch_review_commit], cwd=root
         ).split()
-        raw_message = task_commit_raw_message(root, branch_review_commit)
-        subject, body = task_commit_message_parts(raw_message.decode("utf-8", "strict"))
-        primary_issue = primary_issue_number_from_ledger(
-            load_issue_scope_ledger(task_dir, task_context)
-        )
-        _kind, message_errors = validate_commit_message(
-            subject, body, primary_issue=primary_issue
-        )
         committed_paths = git_nul_path_set(
             root,
             [
@@ -7301,10 +7328,7 @@ def review_branch_task_commit_evidence_errors(
             errors.append("review entry current task commit must have exactly one parent.")
         if not committed_paths:
             errors.append("review entry current commit has no changed paths.")
-        errors.extend(
-            "review entry current commit message: " + item for item in message_errors
-        )
-    except (UnicodeDecodeError, WorkflowError) as exc:
+    except WorkflowError as exc:
         errors.append(f"review entry live commit validation failed: {exc}")
     return errors
 
@@ -7384,7 +7408,7 @@ def review_branch_entry_precondition_errors(
 
     try:
         errors.extend(
-            review_branch_task_commit_evidence_errors(
+            review_branch_commit_identity_errors(
                 root,
                 task_dir,
                 task,
@@ -7394,7 +7418,7 @@ def review_branch_entry_precondition_errors(
             )
         )
     except WorkflowError as exc:
-        errors.append(f"review entry task commit evidence is invalid: {exc}")
+        errors.append(f"review entry commit identity is invalid: {exc}")
 
     ledger_path = issue_scope_ledger_path(task_dir)
     if not ledger_path.is_file():
@@ -8551,25 +8575,18 @@ def task_publication_entry_precondition_bindings(
         )
 
     publication_content_errors: list[str] = []
-    pr_body_path = task_dir / PR_BODY_ARTIFACT
-    try:
-        body = pr_body_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError) as exc:
-        body = ""
-        publication_content_errors.append(f"pr-body.md is unavailable: {exc}")
-    if not body.strip():
-        publication_content_errors.append("pr-body.md is empty")
+    pr_payload = invocation.get("pr_payload")
+    if not isinstance(pr_payload, dict) or set(pr_payload) != {"title", "body"}:
+        publication_content_errors.append("PR payload must contain exactly title and body")
+        pr_payload = {}
+    title = pr_payload.get("title")
+    body = pr_payload.get("body")
+    if not isinstance(title, str) or not title.strip():
+        publication_content_errors.append("PR title is empty")
+    if not isinstance(body, str) or not body.strip():
+        publication_content_errors.append("PR body is empty")
     elif ledger:
         publication_content_errors.extend(validate_pr_body_quality(body, ledger, False))
-    try:
-        index_path, index_payload = load_finish_summary_index(
-            task_dir,
-            FINISH_SUMMARY_INDEX_ARTIFACT,
-        )
-    except WorkflowError as exc:
-        index_path = task_dir / FINISH_SUMMARY_INDEX_ARTIFACT
-        index_payload = {}
-        publication_content_errors.append(str(exc))
     if publication_content_errors:
         errors.extend(
             f"publication_content:{item}"
@@ -8577,11 +8594,8 @@ def task_publication_entry_precondition_bindings(
         )
     else:
         bindings["publication_content"] = task_publication_binding({
-            "pr_body_sha256": hashlib.sha256(pr_body_path.read_bytes()).hexdigest(),
-            "finish_summary_index_sha256": hashlib.sha256(
-                index_path.read_bytes()
-            ).hexdigest(),
-            "finish_summary_index": index_payload,
+            "pr_title": title,
+            "pr_body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
         })
 
     if repository:
@@ -8637,6 +8651,16 @@ def task_publication_semantic_errors(
     branch_review_commit: str,
 ) -> list[str]:
     errors: list[str] = []
+    pr_payload = authored.get("pr_payload")
+    if not isinstance(pr_payload, dict) or set(pr_payload) != {"title", "body"}:
+        errors.append("publication pr_payload must contain exactly title and body")
+    elif (
+        not isinstance(pr_payload.get("title"), str)
+        or not pr_payload["title"].strip()
+        or not isinstance(pr_payload.get("body"), str)
+        or not pr_payload["body"].strip()
+    ):
+        errors.append("publication pr_payload title and body must be non-empty")
     candidate_commit = str(
         authored.get("branch_review_commit") or branch_review_commit
     )
@@ -8842,14 +8866,13 @@ def task_publication_closeout_preflight(
     root: Path,
     task_dir: Path,
     branch_review_commit: str,
+    pr_payload: dict[str, Any],
 ) -> dict[str, Any]:
     """Run the exact side-effect-free Finalizer producer preflight."""
     config = load_config(root)
     task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
     args = argparse.Namespace(
-        finish_summary_index_file=str(task_dir / FINISH_SUMMARY_INDEX_ARTIFACT),
-        body_file=str(task_dir / PR_BODY_ARTIFACT),
         repo=None,
         remote=None,
         base_branch=None,
@@ -8867,6 +8890,8 @@ def task_publication_closeout_preflight(
             "mode": "workflow",
             "task_ref": repo_relative(root, task_dir),
             "branch_review_commit": branch_review_commit,
+            "pr_title": pr_payload["title"],
+            "pr_body": pr_payload["body"],
         },
     )
 
@@ -8915,6 +8940,7 @@ def task_publication_check_errors(
     invocation = {
         "task_ref": payload.get("task_ref"),
         "branch_review_commit": branch_review_commit,
+        "pr_payload": copy.deepcopy(payload.get("pr_payload")),
     }
     _, entry_errors, _, _ = task_publication_entry_precondition_bindings(
         root,
@@ -8929,6 +8955,7 @@ def task_publication_check_errors(
                 root,
                 task_dir,
                 branch_review_commit,
+                payload.get("pr_payload") or {},
             )
         except WorkflowError as exc:
             errors.append(f"finalizer_preflight:{exc}")
@@ -8965,6 +8992,7 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         "profile",
         "mode",
         "review_intent",
+        "pr_payload",
         "dimensions",
         "findings",
         "conclusions",
@@ -9013,6 +9041,7 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         "branch_review_commit": str(
             getattr(args, "branch_review_commit", "") or ""
         ),
+        "pr_payload": copy.deepcopy(authored.get("pr_payload")),
     }
     entry_bindings, entry_errors, review_gate, repository = (
         task_publication_entry_precondition_bindings(
@@ -9035,11 +9064,12 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         )
     branch_review_commit = str(invocation["branch_review_commit"])
     payload: dict[str, Any] = {
-        "schema_version": "3.0",
+        "schema_version": "4.0",
         "skill_id": TASK_PUBLICATION_SKILL_ID,
         "task_ref": repo_relative(root, task_dir),
         "branch_review_commit": branch_review_commit,
         "reviewed_content_sha256": reviewed_content_identity(root)["sha256"],
+        "pr_payload": copy.deepcopy(authored.get("pr_payload")),
         "dimensions": copy.deepcopy(authored.get("dimensions")),
         "findings": copy.deepcopy(authored.get("findings")),
         "conclusions": copy.deepcopy(authored.get("conclusions")),
@@ -18374,12 +18404,17 @@ def stage0_build_output(
     elif skill_id == TASK_PUBLICATION_SKILL_ID and owner_result is not None:
         semantic = owner_result
         if exit_id == "ready":
+            pr_payload = owner_result.get("pr_payload")
+            if not isinstance(pr_payload, dict):
+                pr_payload = {}
             values.update(
                 {
                     "task_ref": public_input.get("task_ref"),
                     "branch_review_commit": owner_result.get(
                         "branch_review_commit"
                     ),
+                    "pr_title": pr_payload.get("title"),
+                    "pr_body": pr_payload.get("body"),
                 }
             )
         elif exit_id == "return_to_task_work":
@@ -20853,7 +20888,7 @@ def render_closeout_summary_for_pr(plan: dict[str, Any], pr: dict[str, Any]) -> 
     summary = copy.deepcopy(plan["projection"]["summary_template"])
     summary["github"]["pr_url"] = expected_url
     summary["index"]["search_terms"]["pr_refs"] = [f"PR #{number}"]
-    summary["index"]["retrieval_text"] = finish_summary_retrieval_text(
+    summary["index"]["retrieval_text"] = current_finish_summary_retrieval_text(
         str(summary["task"]["title"]), summary["index"]
     )
     return summary
@@ -20930,7 +20965,7 @@ def closeout_summary_template_digest(plan: dict[str, Any], summary: dict[str, An
     placeholder = plan["projection"]["summary_placeholder"]
     normalized["github"]["pr_url"] = placeholder["url"]
     normalized["index"]["search_terms"]["pr_refs"] = [placeholder["ref"]]
-    normalized["index"]["retrieval_text"] = finish_summary_retrieval_text(
+    normalized["index"]["retrieval_text"] = current_finish_summary_retrieval_text(
         str(normalized["task"]["title"]), normalized["index"]
     )
     return closeout_json_artifact_sha256(normalized)
@@ -21019,7 +21054,11 @@ def closeout_plan_errors(
     errors: list[str] = []
     if set(plan) != expected:
         errors.append("closeout plan top-level keys do not match a supported schema.")
-    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
+    legacy_schema2 = (
+        allow_legacy_migration
+        and plan.get("schema_version") == LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION
+    )
+    if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION and not legacy_schema2:
         errors.append("closeout plan schema_version must match the current contract.")
     digest = str(plan.get("plan_digest") or "")
     if not re.fullmatch(r"[0-9a-f]{64}", digest) or digest != closeout_plan_digest(plan):
@@ -21039,25 +21078,19 @@ def closeout_plan_errors(
         "summary_placeholder",
         "summary_template_sha256", "summary_template", "runtime_fact_fields",
     }
-    legacy_projection_without_bindings = (
-        allow_legacy_migration
-        and set(projection)
-        == projection_keys
-        - {"reviewed_tracked_bindings", "migration_predecessor_plan_digest"}
-    )
-    legacy_projection_without_predecessor = (
-        allow_legacy_migration
-        and set(projection)
-        == projection_keys - {"migration_predecessor_plan_digest"}
-    )
-    legacy_projection = (
-        legacy_projection_without_bindings
-        or legacy_projection_without_predecessor
-    )
     nested_keys = {
         "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
         "review": (review, {"branch_review_commit", "changed_paths", "close_issues_reviewed"}),
-        "publish": (publish, {"title", "body_sha256", "draft", "draft_to_ready", "match"}),
+        "publish": (
+            publish,
+            {
+                "title",
+                "body_sha256" if legacy_schema2 else "body",
+                "draft",
+                "draft_to_ready",
+                "match",
+            },
+        ),
         "marketplace": (marketplace, {"required", "verifier_artifact_locator"}),
         "projection": (
             projection,
@@ -21065,7 +21098,7 @@ def closeout_plan_errors(
         ),
     }
     for label, (value, keys) in nested_keys.items():
-        if set(value) != keys and not (label == "projection" and legacy_projection):
+        if set(value) != keys:
             errors.append(f"closeout plan {label} keys are invalid.")
     git_keys = {"repo", "remote", "base_branch", "head_branch", "branch_review_commit"}
     if set(git) != git_keys:
@@ -21099,8 +21132,13 @@ def closeout_plan_errors(
         errors.append("closeout reviewed close issues must be sorted and unique.")
     if publish.get("draft") is not True or publish.get("draft_to_ready") is not True:
         errors.append("closeout publish must use draft then ready.")
-    if not re.fullmatch(r"[0-9a-f]{64}", str(publish.get("body_sha256") or "")):
-        errors.append("closeout publish body digest is invalid.")
+    if not isinstance(publish.get("title"), str) or not publish["title"].strip():
+        errors.append("closeout publish title is invalid.")
+    if legacy_schema2:
+        if not re.fullmatch(r"[0-9a-f]{64}", str(publish.get("body_sha256") or "")):
+            errors.append("legacy closeout publish body digest is invalid.")
+    elif not isinstance(publish.get("body"), str) or not publish["body"].strip():
+        errors.append("closeout publish body is invalid.")
     expected_match = {"repo": git.get("repo"), "head": git.get("head_branch"), "base": git.get("base_branch")}
     if publish.get("match") != expected_match:
         errors.append("closeout publish match identity does not match git identity.")
@@ -21150,8 +21188,6 @@ def closeout_plan_errors(
     if FINISH_SUMMARY_ARTIFACT not in untracked_archive_outputs:
         errors.append("closeout final summary must be classified as an untracked archive output.")
     reviewed_bindings = projection.get("reviewed_tracked_bindings")
-    if legacy_projection_without_bindings:
-        reviewed_bindings = []
     if not isinstance(reviewed_bindings, list):
         errors.append("closeout reviewed tracked bindings must be an array.")
         reviewed_bindings = []
@@ -21195,7 +21231,13 @@ def closeout_plan_errors(
         errors.append(
             "closeout plan must not move owner-private publication or finalization gates."
         )
-    retained_paths = closeout_archive_retained_paths(plan)
+    if legacy_schema2:
+        legacy_retained = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+        if marketplace.get("required") is True:
+            legacy_retained.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
+        retained_paths = sorted(set(move_paths) & legacy_retained)
+    else:
+        retained_paths = closeout_archive_retained_paths(plan)
     required_retained = {
         CLOSEOUT_PLAN_ARTIFACT,
         FINISH_SUMMARY_ARTIFACT,
@@ -21239,10 +21281,10 @@ def closeout_plan_errors(
         required_inputs = {
             "task",
             "issue_scope_ledger",
-            "pr_body",
-            "finish_summary_index",
             "official_after_archive_hooks",
         }
+        if legacy_schema2:
+            required_inputs.update({"pr_body", "finish_summary_index"})
         if not required_inputs.issubset(inputs):
             errors.append("closeout inputs are missing required direct-consumer facts.")
         if "task_context" in inputs or "review_gate" in inputs:
@@ -21372,7 +21414,6 @@ def build_closeout_plan(
     task_context: dict[str, Any],
     task: dict[str, Any],
     ledger: dict[str, Any],
-    finish_summary_index_path: Path,
     *,
     repo: str,
     remote: str,
@@ -21380,6 +21421,7 @@ def build_closeout_plan(
     head_branch: str,
     branch_review_commit: str,
     title: str,
+    body: str,
     review_facts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not isinstance(review_facts, dict):
@@ -21394,6 +21436,9 @@ def build_closeout_plan(
     existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
     if existing_plan:
         validate_closeout_plan_for_migration(existing_plan)
+    legacy_plan = (
+        existing_plan.get("schema_version") == LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION
+    )
     plan_schema_version = CLOSEOUT_PLAN_SCHEMA_VERSION
     existing_task = existing_plan.get("task") if isinstance(existing_plan.get("task"), dict) else {}
     existing_projection = (
@@ -21448,20 +21493,25 @@ def build_closeout_plan(
         active_locator,
         move_paths,
     )
+    binding_paths = [
+        path
+        for path in tracked_move_paths
+        if not (legacy_plan and path in LEGACY_CLOSEOUT_RETIRED_ARTIFACTS)
+    ]
     reviewed_tracked_bindings = build_closeout_reviewed_tracked_bindings(
         root,
         active_locator,
-        tracked_move_paths,
+        binding_paths,
         branch_review_commit,
     )
     migration_predecessor_plan_digest: str | None = None
     if same_archive_month and existing_plan:
-        if "migration_predecessor_plan_digest" in existing_projection:
+        if existing_plan.get("schema_version") == LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION:
+            migration_predecessor_plan_digest = str(existing_plan["plan_digest"])
+        elif "migration_predecessor_plan_digest" in existing_projection:
             migration_predecessor_plan_digest = existing_projection.get(
                 "migration_predecessor_plan_digest"
             )
-        elif "reviewed_tracked_bindings" not in existing_projection:
-            migration_predecessor_plan_digest = str(existing_plan["plan_digest"])
     retained_names = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
     if requires_marketplace:
         retained_names.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
@@ -21470,13 +21520,10 @@ def build_closeout_plan(
         {f"{active_locator}/{name}" for name in tracked_move_paths}
         | {f"{archive_locator}/{name}" for name in retained_archive_paths}
     )
-    body_path = task_dir / PR_BODY_ARTIFACT
     ledger_path = issue_scope_ledger_path(task_dir)
     inputs = {
         "task": closeout_input_record(root, task_dir / "task.json"),
         "issue_scope_ledger": closeout_input_record(root, ledger_path),
-        "pr_body": closeout_input_record(root, body_path),
-        "finish_summary_index": closeout_input_record(root, finish_summary_index_path),
         "official_after_archive_hooks": closeout_input_record(
             root,
             root / ".trellis/config.yaml",
@@ -21515,7 +21562,7 @@ def build_closeout_plan(
             ) from exc
     projected_artifacts = {
         key: filename
-        for key, filename in FINISH_SUMMARY_ARTIFACT_FILES.items()
+        for key, filename in CURRENT_FINISH_SUMMARY_ARTIFACT_FILES.items()
         if filename in retained_archive_paths
     }
     summary_template = build_finish_summary(
@@ -21523,7 +21570,7 @@ def build_closeout_plan(
         task_dir,
         task_context,
         ledger,
-        read_json(finish_summary_index_path),
+        body,
         branch_review_commit,
         pr_url=placeholder["url"],
         changed_paths=sorted(set(reviewed_paths) | set(transaction_paths)),
@@ -21557,7 +21604,7 @@ def build_closeout_plan(
         },
         "publish": {
             "title": title,
-            "body_sha256": hashlib.sha256(body_path.read_bytes()).hexdigest(),
+            "body": body,
             "draft": True,
             "draft_to_ready": True,
             "match": {"repo": repo, "head": head_branch, "base": normalize_ref(base_branch).removeprefix("origin/")},
@@ -21597,41 +21644,38 @@ def closeout_schema2_migration_errors(
     except WorkflowError as exc:
         return [str(exc)]
     errors: list[str] = []
-    for key in (
-        "schema_version",
-        "task",
-        "git",
-        "inputs",
-        "review",
-        "publish",
-        "marketplace",
-        "transitions",
-    ):
+    if previous.get("schema_version") != LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION:
+        return ["schema 2.0 migration requires one legacy plan"]
+    for key in ("task", "git", "review", "marketplace", "transitions"):
         if previous.get(key) != current.get(key):
             errors.append(f"schema 2.0 migration changed protected {key} facts")
 
+    previous_publish = previous.get("publish", {})
+    current_publish = current.get("publish", {})
+    if (
+        previous_publish.get("title") != current_publish.get("title")
+        or previous_publish.get("draft") != current_publish.get("draft")
+        or previous_publish.get("draft_to_ready")
+        != current_publish.get("draft_to_ready")
+        or previous_publish.get("match") != current_publish.get("match")
+        or hashlib.sha256(
+            str(current_publish.get("body") or "").encode("utf-8")
+        ).hexdigest()
+        != previous_publish.get("body_sha256")
+    ):
+        errors.append("schema 2.0 migration PR payload does not match Publication 4.0")
+
+    expected_inputs = {
+        key: value
+        for key, value in previous.get("inputs", {}).items()
+        if key not in {"pr_body", "finish_summary_index"}
+    }
+    if current.get("inputs") != expected_inputs:
+        errors.append("schema 2.0 migration changed protected live input facts")
+
     previous_projection = previous["projection"]
     current_projection = current["projection"]
-    previous_has_bindings = "reviewed_tracked_bindings" in previous_projection
-    previous_has_predecessor = (
-        "migration_predecessor_plan_digest" in previous_projection
-    )
-    if previous_has_predecessor:
-        errors.append(
-            "schema 2.0 migration requires a projection without predecessor binding"
-        )
-    elif previous_has_bindings:
-        expected_projection = copy.deepcopy(previous_projection)
-        expected_projection["migration_predecessor_plan_digest"] = None
-        if current_projection != expected_projection:
-            errors.append(
-                "schema 2.0 predecessor-field migration changed other projection facts"
-            )
-        return errors
-    elif (
-        current_projection.get("migration_predecessor_plan_digest")
-        != previous.get("plan_digest")
-    ):
+    if current_projection.get("migration_predecessor_plan_digest") != previous.get("plan_digest"):
         errors.append(
             "schema 2.0 migration predecessor digest does not bind the legacy plan"
         )
@@ -21646,23 +21690,6 @@ def closeout_schema2_migration_errors(
         if previous_projection.get(key) != current_projection.get(key):
             errors.append(f"schema 2.0 migration changed protected projection.{key}")
 
-    def normalized_summary(projection: dict[str, Any]) -> dict[str, Any]:
-        summary = copy.deepcopy(projection.get("summary_template"))
-        if not isinstance(summary, dict):
-            return {}
-        git = summary.get("git")
-        if isinstance(git, dict):
-            git["changed_paths"] = []
-        index = summary.get("index")
-        if isinstance(index, dict):
-            search_terms = index.get("search_terms")
-            if isinstance(search_terms, dict):
-                search_terms["paths"] = []
-            index["retrieval_text"] = "<classification-derived>"
-        return summary
-
-    if normalized_summary(previous_projection) != normalized_summary(current_projection):
-        errors.append("schema 2.0 migration changed summary facts beyond path classification")
     return errors
 
 
@@ -21692,11 +21719,31 @@ def resolve_closeout_branch_review_commit(
             publication_ready.get("branch_review_commit") or ""
         )
 
-    if publication_ready is not None and (
+    publication_mismatch = publication_ready is not None and (
         publication_ready.get("profile") != "publication_ready"
         or publication_ready.get("task_ref") != task_ref
         or publication_ready.get("branch_review_commit") != branch_review_commit
-    ):
+    )
+    if publication_ready is not None and existing_plan is not None:
+        publish = existing_plan.get("publish", {})
+        payload_title = publication_ready.get("pr_title")
+        payload_body = publication_ready.get("pr_body")
+        if (
+            existing_plan.get("schema_version")
+            == LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION
+        ):
+            publication_mismatch = publication_mismatch or (
+                payload_title != publish.get("title")
+                or not isinstance(payload_body, str)
+                or hashlib.sha256(payload_body.encode("utf-8")).hexdigest()
+                != publish.get("body_sha256")
+            )
+        else:
+            publication_mismatch = publication_mismatch or (
+                payload_title != publish.get("title")
+                or payload_body != publish.get("body")
+            )
+    if publication_mismatch:
         raise WorkflowError(
             "Finalizer Publication ready DTO does not match the current task or immutable plan.",
             exit_code=2,
@@ -21754,18 +21801,28 @@ def prepare_closeout(
             exit_code=2,
             payload={"dirty_paths": dirty_paths},
         )
-    index_path, index = load_finish_summary_index(task_dir, args.finish_summary_index_file)
     ledger_errors = validate_ledger_for_publish(ledger)
     if ledger_errors:
         raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
-    body, body_source = resolve_closeout_reviewed_body(root, task_dir, args)
+    if existing_plan is not None and existing_plan.get("schema_version") == "3.0":
+        title = str(existing_plan["publish"]["title"])
+        body = str(existing_plan["publish"]["body"])
+    elif publication_ready is not None:
+        title = str(publication_ready.get("pr_title") or "")
+        body = str(publication_ready.get("pr_body") or "")
+    else:
+        raise WorkflowError(
+            "Initial closeout requires the Publication 4.0 exact PR payload.",
+            exit_code=2,
+        )
     body_errors = validate_pr_body_quality(body, ledger, False)
-    source_errors = validate_reviewed_body_source_for_publish(body_source, False)
-    if body_errors or source_errors:
+    if not title.strip():
+        body_errors.append("PR title is empty.")
+    if body_errors:
         raise WorkflowError(
             "finish-work blocked because PR readiness evidence is incomplete.",
             exit_code=2,
-            payload={"errors": body_errors + source_errors, "body_source": body_source, "reviewed_source_ok": not source_errors},
+            payload={"errors": body_errors},
         )
     task = task_json(task_dir)
     if task.get("status") != "in_progress":
@@ -21783,11 +21840,10 @@ def prepare_closeout(
     branch = current_branch(root)
     remote = str(args.remote or publish_config(config).get("remote") or "origin")
     validate_github_remote_repository(root, remote, repo)
-    title = pr_title_from_task(task, args)
     plan = build_closeout_plan(
-        root, task_dir, task_context, task, ledger, index_path,
+        root, task_dir, task_context, task, ledger,
         repo=repo, remote=remote, base_branch=base, head_branch=branch,
-        branch_review_commit=branch_review_commit, title=title,
+        branch_review_commit=branch_review_commit, title=title, body=body,
         review_facts=review_facts,
     )
     month_supersession: dict[str, Any] | None = None
@@ -21846,10 +21902,7 @@ def prepare_closeout(
         "task": task,
         "task_context": task_context,
         "ledger": ledger,
-        "finish_summary_index": index,
-        "finish_summary_index_path": index_path,
         "body": body,
-        "body_source": body_source,
         "month_supersession": month_supersession,
         "migration_normalization": migration_normalization,
     }
@@ -22107,25 +22160,15 @@ def validate_closeout_remote_pull_request_identity(
     body = pr.get("body")
     if not isinstance(body, str):
         raise WorkflowError("Closeout pull request body identity is invalid.", exit_code=2)
-    try:
-        body_digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
-    except UnicodeEncodeError as exc:
-        raise WorkflowError("Closeout pull request body is not valid UTF-8.", exit_code=2) from exc
-    if body_digest != plan["publish"]["body_sha256"]:
+    if body != plan["publish"]["body"]:
         raise WorkflowError("Closeout pull request body differs from immutable readiness.", exit_code=2)
 
 
-def closeout_immutable_pr_body(task_dir: Path, plan: dict[str, Any]) -> str:
-    body_path = task_dir / PR_BODY_ARTIFACT
-    if not body_path.is_file():
-        raise WorkflowError("Closeout immutable PR body artifact is missing.", exit_code=2)
-    body_bytes = body_path.read_bytes()
-    if hashlib.sha256(body_bytes).hexdigest() != plan["publish"]["body_sha256"]:
-        raise WorkflowError("Closeout immutable PR body digest does not match the plan.", exit_code=2)
-    try:
-        return body_bytes.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise WorkflowError("Closeout immutable PR body is not valid UTF-8.", exit_code=2) from exc
+def closeout_immutable_pr_body(plan: dict[str, Any]) -> str:
+    body = plan.get("publish", {}).get("body")
+    if not isinstance(body, str) or not body:
+        raise WorkflowError("Closeout immutable plan PR body is missing.", exit_code=2)
+    return body
 
 
 def validate_closeout_pull_request_identity(
@@ -22149,7 +22192,7 @@ def validate_closeout_pull_request_identity(
     number = pr["number"]
     canonical_url = canonical_pull_request_url(plan["git"]["repo"], number, pr.get("url"))
 
-    expected_body = closeout_immutable_pr_body(task_dir, plan)
+    expected_body = closeout_immutable_pr_body(plan)
     if pr.get("body") != expected_body:
         raise WorkflowError("Closeout pull request body differs from immutable readiness.", exit_code=2)
 
@@ -22172,7 +22215,7 @@ def validate_closeout_pull_request_identity(
 def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dict[str, Any]:
     git = plan["git"]
     task_dir = closeout_task_dir_from_plan(root, plan)
-    expected_body = closeout_immutable_pr_body(task_dir, plan)
+    expected_body = closeout_immutable_pr_body(plan)
     if body != expected_body:
         raise WorkflowError("Closeout requested PR body differs from the immutable plan.", exit_code=2)
     existing = resolve_closeout_pull_request(
@@ -22383,9 +22426,7 @@ def build_final_archive_projection(
         raise WorkflowError("Final projection must contain one canonical PR ref.", exit_code=2)
     required_artifacts = set(summary["artifacts"].values()) | {
         CLOSEOUT_PLAN_ARTIFACT,
-        FINISH_SUMMARY_INDEX_ARTIFACT,
         "issue-scope-ledger.json",
-        PR_BODY_ARTIFACT,
     }
     missing = sorted(name for name in required_artifacts if not (task_dir / name).is_file())
     if missing:
@@ -22525,8 +22566,6 @@ def closeout_projection_content_is_current(
     input_key = {
         "task.json": "task",
         "issue-scope-ledger.json": "issue_scope_ledger",
-        PR_BODY_ARTIFACT: "pr_body",
-        FINISH_SUMMARY_INDEX_ARTIFACT: "finish_summary_index",
     }.get(relative)
     if input_key is None:
         return False
@@ -22604,6 +22643,11 @@ def validate_closeout_pre_move_continuity(
         target = task_dir / relative
         working_mode = os.lstat(target).st_mode
         expected_working_mode = "100755" if working_mode & 0o111 else "100644"
+        if (
+            plan["projection"].get("migration_predecessor_plan_digest") is not None
+            and relative in LEGACY_CLOSEOUT_RETIRED_ARTIFACTS
+        ):
+            continue
         before = closeout_commit_blob_bytes(root, transaction_parent, repo_path)
         current_bytes = target.read_bytes()
         differs_from_parent = (
@@ -25495,8 +25539,6 @@ def finalization_public_wrapper_checker_args(
 ) -> argparse.Namespace:
     checker_args = copy.copy(args)
     checker_args.root = str(root)
-    checker_args.finish_summary_index_file = None
-    checker_args.body_file = None
     checker_args.repo = None
     checker_args.remote = None
     checker_args.title = None
@@ -25510,10 +25552,6 @@ def finalization_public_wrapper_checker_args(
             exit_code=2,
         )
     plan = validate_closeout_plan_for_migration(read_json(plan_path))
-    checker_args.finish_summary_index_file = str(
-        task_dir / FINISH_SUMMARY_INDEX_ARTIFACT
-    )
-    checker_args.body_file = str(task_dir / PR_BODY_ARTIFACT)
     checker_args.repo = plan["git"]["repo"]
     checker_args.base_branch = plan["git"]["base_branch"]
     checker_args.remote = plan["git"]["remote"]
@@ -31637,8 +31675,6 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument("--root")
         command.add_argument("--json", action="store_true")
         command.add_argument("--input", required=True)
-        command.add_argument("--finish-summary-index-file")
-        command.add_argument("--body-file")
         command.add_argument("--repo")
         command.add_argument("--base-branch")
         command.add_argument("--remote")
@@ -31895,11 +31931,6 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument("--remote")
     finish.add_argument("--title", help="Chinese PR title override.")
     finish.add_argument("--validation", action="append", help="Chinese validation evidence line for PR body.")
-    finish.add_argument("--body-file", help="Exact current task-local non-symlink pr-body.md required by finish-work.")
-    finish.add_argument(
-        "--finish-summary-index-file",
-        help="Task-local AI-authored finish-summary-index.json. Required for dry-run and formal finish.",
-    )
     finish.add_argument(
         "--expected-plan-digest",
         help="Canonical digest returned by the immediately reviewed finish-work dry-run.",

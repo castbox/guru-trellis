@@ -508,9 +508,12 @@ cannot pass the gate. Include:
   checkpoint are removed. Tests must not
   add custom locks, atomic replacement, rollback, concurrency stress, or
   linearization assertions outside the #161 normal-path scope
-- commit message contract: work commit subject/body, Trellis metadata commit
-  subject with empty body, `Refs` in commit messages, PR body-only close keywords,
-  and publish/merge payload command that avoids GitHub's default merge subject
+- commit message contract: `guru-create-task-commit` reviews and validates the
+  work commit it creates; Branch Review, Publication, and Finalizer prove
+  ancestry/diff/reviewed-content identity without treating subject/body/`Refs`
+  as cross-Skill freshness authority or creating message-only metadata commits;
+  close keywords remain PR-body-only and publish/merge avoids GitHub's default
+  merge subject
 - Trellis task artifacts
 - generated or installed-copy expectations
 - Phase 0 scope and authority evidence, or the current semantic task-free
@@ -618,12 +621,11 @@ current evidence and every finding has a stable ref, scope basis, route,
 status, and closure evidence.
 
 Global-route tests must prove the normal authoring order independently of eval
-fixtures: Branch Review `passed` first enters caller-owned creation of current
-`pr-body.md` and `finish-summary-index.json` candidates, missing candidates
-fail closed before invocation, and only then may the active publication owner
-run. Tests must also prove Phase 3.7 never first creates or mutates either file
-after `ready`; an eval adapter that prewrites content is not sufficient
-workflow-order evidence.
+fixtures: Branch Review `passed` enters the active Publication owner directly;
+that owner authors, reviews, records, checks, and projects the exact PR payload
+without creating `pr-body.md` or `finish-summary-index.json`. Tests must prove
+Finalizer receives byte-identical title/body through the ready 4.0 projection
+and cannot regenerate or reinterpret them.
 
 Metadata-only corrections require a reread/rescan and complete fresh review
 inside the Skill. Any durable implementation drift returns to task work and
@@ -641,17 +643,24 @@ recorder writes and must remain invalid to the checker and public wrapper.
 Package/runtime/eval tests cover both profiles and modes, three exits, stale
 re-entry, metadata correction to fresh pass, metadata correction that reveals
 durable drift, non-current readiness rejection, and the shared side-effect-free
-Finalizer preflight before `ready`. Finalization tests prove the minimal ready
-DTO (`exit_id/task_ref/branch_review_commit`) plus live facts is sufficient;
+Finalizer preflight before `ready`. Finalization tests prove the ready DTO
+(`exit_id/task_ref/branch_review_commit/pr_title/pr_body`) plus live facts is sufficient;
 the Finalizer stale DTO preserves that same commit anchor through the
 unique Publication projection, and a combined regression proves content drift
 returns `finding_refs` with `resume_target=phase-2`;
-the Publication wrapper retires its checkpoint after valid output, and Finalizer
+the Publication wrapper retires its checkpoint after valid output, old 3.0
+Publication/Finalizer shapes fail closed, and Finalizer
 never augments, parses, or deletes that checkpoint. Finalizer terminal tests
 prove it deletes only its own gate after the `published` DTO validates. The
 closeout transaction must leave Issue Scope Ledger bytes unchanged; required
 marketplace verification is carried only by its dedicated owner artifact and
 plan binding.
+Finish-family integration additionally proves current finish-summary schema 2
+is derived once from the reviewed payload and live facts, historical schema 1
+remains discoverable, and the current runtime/inventories contain no retired
+body/index reader, writer, CLI flag, fixture, or managed asset. Message-only
+commit deviations do not force a downstream revision when reviewed content is
+unchanged; real descendant content drift still returns to task work.
 Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.

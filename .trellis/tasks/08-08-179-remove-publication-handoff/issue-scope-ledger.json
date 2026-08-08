@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 179,
+    "url": "https://github.com/castbox/guru-trellis/issues/179",
+    "title": "删除重复的 Publication handoff 与 finish-summary-index artifact",
+    "reason": "This task is intended to satisfy Issue #179 completely."
+  },
+  "close_issues": [
+    {
+      "number": 179,
+      "url": "https://github.com/castbox/guru-trellis/issues/179",
+      "title": "删除重复的 Publication handoff 与 finish-summary-index artifact",
+      "reason": "This task is intended to satisfy Issue #179 completely."
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 177,
+      "url": "https://github.com/castbox/guru-trellis/issues/177",
+      "title": "隔离 reviewed content identity 与 task/publication metadata",
+      "reason": "Merged prerequisite whose reviewed-content identity boundary must be preserved."
+    },
+    {
+      "number": 178,
+      "url": "https://github.com/castbox/guru-trellis/issues/178",
+      "title": "将 context discovery 与 owner checkpoints 收敛为短生命周期 runtime",
+      "reason": "Merged hard prerequisite whose ephemeral owner-state model must be preserved."
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 180,
+      "url": "https://github.com/castbox/guru-trellis/issues/180",
+      "title": "压缩 Finalizer 与 PR 合并闭环，并以 #174 回放验证最少确认",
+      "reason": "Ordered follow-up for complete Finalizer compression and final replay after #179 merges."
+    }
+  ]
+}

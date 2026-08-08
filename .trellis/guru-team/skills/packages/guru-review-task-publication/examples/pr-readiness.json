@@ -1,9 +1,13 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "skill_id": "guru-review-task-publication",
   "task_ref": ".trellis/tasks/07-24-example-publication",
   "branch_review_commit": "0123456789abcdef0123456789abcdef01234567",
   "reviewed_content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pr_payload": {
+    "title": "完成：删除重复的 Publication handoff",
+    "body": "## 变更摘要\n\n- Publication 直接输出经审查的 PR payload。\n\n## 影响范围\n\n- Guru Team Publication 与 Finalizer 合同。\n\n## 验证结果\n\n- package 与 runtime tests 通过。\n\n## Review Gate\n\n- Branch Review 无未关闭 finding。\n\n## Issue 关闭范围\n\n- Closes #179。\n\n## 安全与部署影响\n\n- 不涉及 secret、部署或数据迁移。\n\n## Docs SSOT\n\n- durable specs 与 public README 已同步。"
+  },
   "dimensions": [
     {
       "id": "diff_outcome_consistency",
@@ -21,7 +25,7 @@
       "id": "pr_body_quality",
       "status": "passed",
       "summary": "The PR body is specific and reviewable.",
-      "evidence_refs": ["pr-body.md"]
+      "evidence_refs": ["pr_payload"]
     },
     {
       "id": "validation_claims",
@@ -45,13 +49,13 @@
       "id": "safety_deployment_impact",
       "status": "passed",
       "summary": "Safety and deployment impact are stated.",
-      "evidence_refs": ["pr-body.md"]
+      "evidence_refs": ["pr_payload"]
     },
     {
       "id": "finish_summary_semantics",
       "status": "passed",
       "summary": "The finish summary projection is current.",
-      "evidence_refs": ["finish-summary-index.json"]
+      "evidence_refs": ["pr_payload#变更摘要"]
     },
     {
       "id": "metadata_tail_integrity",
@@ -81,7 +85,7 @@
     "safety_deployment": {
       "status": "passed",
       "summary": "The publication has no undisclosed safety or deployment impact.",
-      "evidence_refs": ["pr-body.md"]
+      "evidence_refs": ["pr_payload"]
     }
   },
   "route": {

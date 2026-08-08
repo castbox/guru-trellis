@@ -429,10 +429,10 @@ private.
 
 They also state that Branch Review `passed` points to active
 `guru-review-task-publication` through the target-owned authoring seed. The
-workflow caller authors initial task-local `pr-body.md` and
-`finish-summary-index.json` candidates before invocation without deciding
-readiness; publication `ready` points to active `guru-finalize-task` through the
-integrated global invocation. `production-current-v1` binds the current
+Publication AI directly authors and reviews the exact Chinese PR title/body;
+its ready 4.0 output projects that payload to active `guru-finalize-task`
+through the integrated global invocation without a task-local body or summary
+index handoff. `production-current-v1` binds the current
 three-Skill/11-exit membership, and the current package graph contains twelve
 target-owned authoring handoffs.
 
@@ -448,16 +448,19 @@ minimal exits. They state that `ready` targets active, globally integrated
 `blocked` stops.
 
 Docs identify ignored-runtime `pr-readiness.json` as the sole semantic gate
-under schema `guru-task-publication-readiness-3.0`. It stores only the reviewed
-content identity, ten semantic dimensions, findings, conclusions, and route;
-objective live bindings are rebuilt transiently and Finalizer-owned publish
-inputs do not augment the checkpoint. Inputs outside the current schemas fail
-closed. They do not expose artifact bodies or duplicate the package's
+under schema `guru-task-publication-readiness-4.0`. It stores only the reviewed
+content identity, exact PR payload, ten semantic dimensions, findings,
+conclusions, and route; objective live bindings are rebuilt transiently.
+Inputs outside the current schemas fail closed. They do not expose the private
+checkpoint or duplicate the package's
 ten-dimension review and metadata revision procedure.
 
-The `ready` DTO is exactly `exit_id`, `task_ref`, and
-`branch_review_commit`. Publication consumes the current Branch Review passed
+The `ready` DTO is exactly `exit_id`, `task_ref`, `branch_review_commit`,
+`pr_title`, and `pr_body`. Publication consumes the current Branch Review passed
 DTO and live Git only; it never opens Branch Review private checkpoint state.
+Docs also state that Finalizer binds the exact payload in closeout plan 3.0,
+derives current finish-summary schema 2 once, keeps schema 1 history readable,
+and rejects legacy Publication/Finalizer 3.0 shapes without fallback.
 
 README package closure numbers are fourteen active Skills and 54 external exits;
 global workflow markers remain 14 invokes, 54 exits, and 31 targets.

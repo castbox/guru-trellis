@@ -689,8 +689,8 @@ consume only the DTO and current live facts.
 before a planning stop, Phase 2 completion, Branch Review Gate result,
 finish-work dry-run reply, or final archive/publish reply, the AI runs it and
 renders a `Markdown 产物 review 表` with only `prd.md`, `design.md`,
-`implement.md`, and `pr-body.md`. Missing files are shown without Markdown
-links, and JSON gate/evidence is not part of the standard table.
+and `implement.md` when those files exist. Missing files are shown without
+Markdown links, and JSON gate/evidence is not part of the standard table.
 `record-phase2-check.sh` records the AI-authored closed `guru-check-task`
 result before commit, including `phase2_capture_commit`,
 `reviewed_content_sha256`, and the pre-commit `dirty_paths`; validation
@@ -728,11 +728,12 @@ Reviewer lifecycle, finding qualification, Docs SSOT Gate, recovery checkpoint,
 private artifacts and re-entry remain package-owned step-local contracts.
 
 Its `passed` exit proceeds through the same entries to active
-`guru-review-task-publication`: the caller first authors the two current
-task-local publication content candidates, then invokes the active owner with
-only its declared target-owned fields. The caller does not decide publication
-sufficiency or readiness. The later `guru-finalize-task` consumer is active,
-installed, and globally integrated; machine recovery routes are auto-consumed.
+`guru-review-task-publication`: the owner authors and reviews the exact Chinese
+PR title/body inside its semantic loop and returns the five-field Publication
+ready 4.0 DTO (`exit_id`, `task_ref`, `branch_review_commit`, `pr_title`,
+`pr_body`). The caller does not decide publication sufficiency or readiness.
+The later `guru-finalize-task` consumer accepts that exact payload directly;
+machine recovery routes are auto-consumed.
 Branch Review and Publication each delete their own checkpoint after validating
 their selected DTO. Neither downstream Skill reads or deletes upstream private
 state.
@@ -771,39 +772,35 @@ CI/CD, deployment, migration, or Makefile drift after the gate must return to
 Phase 2/3; dry-run and formal finish do not perform a first Docs SSOT merge.
 
 The finalizer's private preview is a side-effect-free readiness step. It
-validates the gate, dirty state, AI-authored
-`finish-summary-index.json`, and PR body/readiness, then prints the immutable
-plan, digest, future archive mapping, exact transaction paths, and transitions
-without moving or writing task files, creating commits, pushing,
-or creating a PR.
+validates the gate, dirty state, Publication ready 4.0 title/body payload, and
+live facts, then prints the immutable schema 3.0 plan, digest, future archive
+mapping, exact transaction paths, and transitions without moving or writing
+task files, creating commits, pushing, or creating a PR. The only supported
+legacy normalization is a complete schema 2.0 closeout plan paired with the
+current Publication DTO and matching task, commit, title/body digest, and
+protected facts; the schema 3.0 result retains the predecessor digest and never
+opens retired body/index files. Other non-current shapes fail closed.
 After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
 after formal archive, it must rerun the resolver and render the archive-path
 table because active task links are no longer the final review entry points.
 
-Before finish-work publishes, the AI must generate or review a PR body for
-GitHub reviewers who do not know the Trellis task. The body should use concrete
+Before finish-work publishes, Publication must generate and review the exact PR
+title/body for GitHub reviewers who do not know the Trellis task. The body uses concrete
 Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
 `Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`. The Docs SSOT section
 states the plan strategy, durable docs updates or no-update reason, task deltas
 merged back, task-history-only content, and any follow-up or current PR
 limitation. Low-information summaries such as
 `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` are blocked for
-non-draft publish. Non-draft publish requires reviewed Markdown with
-task-local `--body-file <path>`; formal finish builds
-current publish inputs with repo/base/head/`branch_review_commit`/title/body
-SHA-256/`draft=true`/reviewed source and `closeout_plan_digest`. Generated fallback
-bodies are preview-only. Finish-work requires the direct task-local
-`pr-body.md` with exact raw UTF-8 bytes and rejects every symlink component
-from repo root through the task parent and final file, including alias,
-dangling, and loop paths. Only those canonical task-local bytes are accepted.
-`pr-readiness.json` is an ignored-runtime
-owner checkpoint deleted by its public wrapper; `pr-body.md` remains an active
-task input. Neither creates a pre-draft metadata commit, and schema 2.0 omits
-both from the long-term archive tree. The script validates objective structure,
-reviewed source presence, Docs SSOT section/key presence, and close/ref
-semantics but does not replace AI release judgment.
-`finish-summary.json` is created only by the normal current
-`guru-team.finish-work` path; the preset installs no alternate summary command.
+non-draft publish. Publication records schema 4.0 `pr-readiness.json` only as an
+ignored-runtime owner checkpoint and deletes it after its public DTO validates.
+Finalizer neither reads nor deletes that checkpoint and no task-local body or
+index handoff is created. Closeout plan schema 3.0 binds the exact title/body.
+After the draft PR is bound, Finalizer generates schema 2
+`finish-summary.json` once from the reviewed PR body and live Git/task/ledger/PR
+facts, validates it in the active task, and commits it only with the archive
+metadata transaction. Historical schema 1 finish summaries remain readable by
+Discovery. The preset installs no alternate summary command.
 
 ## Workflow Guardrails
 

@@ -587,15 +587,20 @@ additional complete active Interface 1.3 row. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
 
 The preset transaction does not install any `trellis-continue` payload. Initial
-`pr-body.md` / `finish-summary-index.json` authoring and the integrated
-`ready -> guru-finalize-task` route are owned by the marketplace workflow and
-active public package graph.
+PR payload authoring and the integrated `ready -> guru-finalize-task` route are
+owned by the Publication package, marketplace workflow, and active public
+package graph. The installed asset inventory contains no task-local body/index
+template, reader, writer, fixture, or CLI compatibility flag. It distributes
+the current readiness/ready/Finalizer input 4.0 schemas, closeout plan 3.0
+runtime, and finish-summary 2.0 schema together.
 
 Clean throwaway install and post-`trellis update` preset reapply both run
 source/installed validation, workflow marker and consumer uniqueness checks,
 real wrapper/eval smoke, selected-platform byte identity, upstream ownership,
 dogfood drift, and recursive zero `.new`/`.bak` checks. Remote branch
 marketplace verification remains a later finish-work gate.
+Update/reapply tests also reject any retained retired publication asset and
+prove legacy 3.0 DTOs fail closed rather than being silently upgraded.
 
 ## Extension Installation Verification Package Activation
 

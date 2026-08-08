@@ -689,7 +689,7 @@ class SourceValidationTests(unittest.TestCase):
                 with self.subTest(path=path, state=state):
                     self.assertLessEqual(len(body.encode("utf-8")), 300)
 
-    def test_global_publication_content_preparation_precedes_active_owner(self) -> None:
+    def test_global_publication_owner_authors_content_before_finalizer(self) -> None:
         interface = json.loads(
             (
                 SKILLS_ROOT
@@ -708,20 +708,22 @@ class SourceValidationTests(unittest.TestCase):
             start = workflow.index("## Phase 3: Finish")
             end = workflow.index("## Global Integration Boundaries", start)
             section = workflow[start:end]
-            preparation = section.index(
-                "After branch review passes, author current task-local `pr-body.md`"
-            )
             publication = section.index(
-                "then invoke guru-review-task-publication",
-                preparation,
+                "After branch review passes, invoke guru-review-task-publication"
             )
             finalization = section.index(
                 "Invoke guru-finalize-task",
                 publication,
             )
-            self.assertLess(preparation, publication, path)
             self.assertLess(publication, finalization, path)
-            self.assertIn("finish-summary-index.json candidates", section)
+            self.assertIn(
+                "owner authors and reviews the exact Chinese PR title/body",
+                " ".join(section.split()),
+            )
+            self.assertIn(
+                "without a task-local publication handoff file",
+                " ".join(section.split()),
+            )
             self.assertEqual(
                 workflow.count(
                     'guru-skill-invoke: {"skill":"guru-review-task-publication"'
@@ -735,11 +737,8 @@ class SourceValidationTests(unittest.TestCase):
                 "pr-readiness.json",
             ):
                 self.assertNotIn(step_local_detail, workflow)
-            self.assertNotIn(
-                "Then create and AI-review `{TASK_DIR}/finish-summary-index.json`",
-                workflow,
-                path,
-            )
+            self.assertNotIn("finish-summary-index.json", section, path)
+            self.assertNotIn("pr-body.md", section, path)
 
     def test_public_docs_report_current_finalization_package_state(self) -> None:
         readmes = [
@@ -895,7 +894,7 @@ class SourceValidationTests(unittest.TestCase):
         malformed_extra["input_1"]["size"] = 1
         invalid_inputs = [
             {},
-            dict(list(valid_inputs.items())[:4]),
+            dict(list(valid_inputs.items())[:2]),
             malformed_missing,
             malformed_extra,
         ]

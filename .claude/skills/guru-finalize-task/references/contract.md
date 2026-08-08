@@ -24,8 +24,8 @@ Workflow and standalone modes enforce the same objective preconditions:
 
 - complete current Guru Team runtime and active package inventory;
 - portable task/worktree or archived-task identity;
-- current Publication `ready` DTO, scope ledger, durable task/content state,
-  body, finish-summary-index, and live reviewed-content Git identity;
+- current Publication `ready` DTO with exact title/body, scope ledger, durable
+  task/content state, and live reviewed-content Git identity;
 - credential-free repository/base/head/remote identity and GitHub access;
 - official `task.py archive --no-commit` contract and empty `after_archive`
   hook;
@@ -83,8 +83,12 @@ effect. Drift blocks.
 
 For every prepare and same-plan recovery, `tracked_move_paths` is rebuilt from
 the live Git index and `untracked_archive_outputs` is its exact complement in
-`move_paths`; an older schema 2.0 projection is migration input, not
-classification authority. The immutable projection binds every tracked move
+`move_paths`. The only legacy closeout-plan path accepts a complete schema 2.0
+plan together with a current Publication 4.0 DTO whose task, commit, title, body
+digest, and protected facts match. It rebuilds schema 3.0 from the DTO payload,
+records the exact predecessor plan digest, and never reads the retired body or
+summary-index files. Every other retired shape fails closed and requires
+Publication re-entry. The immutable projection binds every tracked move
 path whose current regular-file bytes or mode differ from its
 `branch_review_commit` blob with one sorted task-relative `path`, Git `mode`,
 and SHA-256 row. Duplicate, out-of-set, stale, missing, or unnecessary rows
@@ -93,20 +97,9 @@ legacy Git already tracks `closeout-plan.json`, its current bytes are bound by
 the plan's canonical schema and `plan_digest` rather than a recursive raw-file
 SHA-256 row.
 
-The normalized immutable projection stores one nullable
-`migration_predecessor_plan_digest`. It is the exact digest of the legacy plan
-consumed by the first schema 2.0 normalization, never a general history set or
-opaque reference allowlist. Marketplace verification evidence may retain that
-one predecessor `plan_ref` only when `marketplace-verification.json` itself is
-in the exact reviewed tracked binding set. Current-plan references remain
-valid; unrelated historical refs fail closed. Same-month rebuilds preserve the
-single predecessor, while cross-month reprepare clears it and therefore retires
-all predecessor verification compatibility.
-An interrupted archive written by the immediately preceding schema 2.0 runtime
-may contain `reviewed_tracked_bindings` but no predecessor field. Archived and
-active-move recovery read that exact immutable legacy shape with `null`
-predecessor semantics and never rewrite its commit; every new or normalized
-active plan still emits the complete current projection.
+The immutable plan stores the exact reviewed `publish.title` and `publish.body`.
+Same-plan recovery, Draft convergence, remote validation, and archive recovery
+reuse those exact values and never read a Publication file or checkpoint.
 
 Pre-move continuity, verification fallback, archive movement, and post-move
 continuity consume that same projection. A tracked metadata tail is accepted
@@ -145,7 +138,7 @@ The deterministic order is fixed:
 
 Active-task artifacts may be necessary for current-step validation or crash
 recovery without becoming permanent handoff documents. New closeout plans use
-schema 2.0. In a new task, `closeout-plan.json` and `finish-summary.json` begin
+schema 3.0. In a new task, `closeout-plan.json` and `finish-summary.json` begin
 as untracked active transaction outputs and become tracked in the single
 archive commit. A migrated task may already track legacy `closeout-plan.json`;
 the live Git index then classifies it as tracked throughout normalization,
@@ -164,10 +157,10 @@ When marketplace verification applies, `marketplace-verification.json` is the
 only optional archive file, so the archive contains at most eight files.
 
 Intake/context snapshots, assignment or liveness state, commit plans, raw
-review rounds, `review.md`, `pr-body.md`, `pr-readiness.json`, and
-`finish-summary-index.json` are current-step inputs or reconstructible facts and
-are not copied into the long-term archive tree. A crash after move and before or
-during pruning re-enters the same idempotent pruning step.
+review rounds, `review.md`, and `pr-readiness.json` are current-step inputs or
+reconstructible facts and are not copied into the long-term archive tree. A
+crash after move and before or during pruning re-enters the same idempotent
+pruning step.
 
 ## Recovery
 
@@ -204,8 +197,9 @@ Workflow mode automatically consumes every non-terminal recovery exit.
 
 The six closed profiles are:
 
-- `publication_ready`: `profile`, `mode`, `task_ref`, and
-  `branch_review_commit` from the current Publication owner output.
+- `publication_ready`: `profile`, `mode`, `task_ref`,
+  `branch_review_commit`, `pr_title`, and exact UTF-8 `pr_body` from the current
+  Publication owner output.
 - `verification_verified`: the minimal #117 verified seed; no routine re-entry
   intent is authored.
 - `standalone_verification_not_required`: the reachable task-bearing #117

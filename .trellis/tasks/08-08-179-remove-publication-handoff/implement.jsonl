@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现 Publication ready 与 Finalizer input 的 Interface 1.3 schema、projection、唯一 consumer 和 current-only migration 合同。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"实现 readiness payload、closeout plan、finish-summary 与 commit identity 数据边界。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"保持 AI semantic owner 与 deterministic recorder/checker/executor 的职责分层。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"同步 Branch Review 到 Publication/Finalizer 的全局路由与 typed exit consumer。"}
+{"file":".trellis/spec/preset/installer.md","reason":"同步 canonical package/runtime/schema 到 dogfood 与平台安装副本并验证 update/reapply。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"遵循 canonical-first overlay 同步、sidecar 与 drift 处理合同。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"同步三份 public README 的 Publication、Finalizer、commit 与安装升级说明。"}

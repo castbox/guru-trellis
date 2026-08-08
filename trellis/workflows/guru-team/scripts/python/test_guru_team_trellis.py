@@ -167,8 +167,6 @@ def finish_args(**overrides: object) -> argparse.Namespace:
         "remote": None,
         "title": None,
         "validation": [],
-        "body_file": None,
-        "finish_summary_index_file": "finish-summary-index.json",
         "from_guru_finalizer": True,
         "dry_run": True,
     }
@@ -471,7 +469,7 @@ class ReviewedContentIdentityTest(unittest.TestCase):
 
         self.commit_all("change reviewed content")
         self.assertEqual(self.identity(), dirty)
-        task_file = self.root / ".trellis/tasks/08-05-example/pr-body.md"
+        task_file = self.root / ".trellis/tasks/08-05-example/context-discovery.json"
         task_file.parent.mkdir(parents=True)
         task_file.write_text("publication metadata\n", encoding="utf-8")
         self.assertEqual(self.identity(), dirty)
@@ -956,6 +954,8 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             "exit_id": "ready",
             "task_ref": self.task_rel,
             "branch_review_commit": "c" * 40,
+            "pr_title": owner["pr_payload"]["title"],
+            "pr_body": owner["pr_payload"]["body"],
         })
         self.assertFalse(
             {"stale_reason", "reentry_context", "publication_ref"} & set(output)
@@ -1402,9 +1402,13 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         phase2_commit_anchor = gtt.current_head(self.root)
         self.phase2_commit_anchor_override = phase2_commit_anchor
         (self.root / "src/task.txt").write_text("reviewed change\n", encoding="utf-8")
-        metadata = self.task_dir / "pr-body.md"
+        metadata = self.task_dir / "context-discovery.json"
         metadata.write_text("publication metadata\n", encoding="utf-8")
-        subprocess.run(["git", "add", self.task_rel + "/pr-body.md"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "add", self.task_rel + "/context-discovery.json"],
+            cwd=self.root,
+            check=True,
+        )
         subprocess.run(
             ["git", "commit", "-qm", "chore(task): record publication metadata"],
             cwd=self.root,
@@ -1629,7 +1633,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         )
         self.assertTrue(candidate.is_file())
 
-    def test_review_entry_accepts_current_task_commit_evidence_and_rejects_stale_identity(self) -> None:
+    def test_review_entry_accepts_current_commit_identity_and_rejects_stale_identity(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
         candidate, _, _ = gtt.build_task_commit_candidate(
             self.root,
@@ -1649,7 +1653,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         }
 
         self.assertEqual(
-            gtt.review_branch_task_commit_evidence_errors(
+            gtt.review_branch_commit_identity_errors(
                 self.root,
                 self.task_dir,
                 self.task,
@@ -1688,7 +1692,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             )
 
         review_input["branch_review_commit"] = "f" * 40
-        errors = gtt.review_branch_task_commit_evidence_errors(
+        errors = gtt.review_branch_commit_identity_errors(
             self.root,
             self.task_dir,
             self.task,
@@ -1701,6 +1705,31 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         )
         self.assertTrue(
             any("review entry live commit validation failed" in error for error in errors)
+        )
+
+    def test_review_entry_commit_identity_ignores_message_format(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        subprocess.run(["git", "add", "src/task.txt"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "plain noncanonical task message"],
+            cwd=self.root,
+            check=True,
+        )
+        commit = gtt.current_head(self.root)
+
+        self.assertEqual(
+            gtt.review_branch_commit_identity_errors(
+                self.root,
+                self.task_dir,
+                self.task,
+                self.context,
+                {
+                    "task_ref": self.task_rel,
+                    "base_ref": gtt.diff_base_ref(self.root, "main"),
+                    "branch_review_commit": commit,
+                },
+            ),
+            [],
         )
 
     def test_review_gate_checker_and_public_wrapper_accept_metadata_descendant_and_block_content_descendant(self) -> None:
@@ -1741,7 +1770,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         gate_path = gtt.configured_review_gate_path(self.root, self.task_dir)
         gtt.write_json(gate_path, gate)
 
-        metadata_path = self.task_dir / "pr-body.md"
+        metadata_path = self.task_dir / "context-discovery.json"
         metadata_path.write_text("publication metadata\n", encoding="utf-8")
         subprocess.run(
             ["git", "add", "--", metadata_path.relative_to(self.root).as_posix()],
@@ -1754,7 +1783,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             check=True,
         )
 
-        initial_errors = gtt.review_branch_task_commit_evidence_errors(
+        initial_errors = gtt.review_branch_commit_identity_errors(
             self.root,
             self.task_dir,
             self.task,
@@ -5027,38 +5056,14 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 if path.is_file()
             ]
             archived_paths.append(f"{archive_relative}/finish-summary.json")
-            index_payload = {
-                "schema_version": 1,
-                "index": {
-                    "problem": "并行任务归档时必须避免共享 Guru 元数据路径冲突。",
-                    "outcome": f"新增 task-local {token.upper()} 归档元数据并验证双向合并。",
-                    "changed_behavior": ["新增独立 task workspace 并归档全部 task-local 元数据。"],
-                    "affected_surfaces": [{
-                        "kind": "task-artifact",
-                        "name": f"Task workspace {token.upper()}",
-                        "paths": [f"{archive_relative}/issue-scope-ledger.json"],
-                        "change": "归档路径只绑定当前 task，不写共享索引。",
-                    }],
-                    "contract_changes": [],
-                    "search_terms": {
-                        "commands": ["create-task-workspace", "task.py archive"],
-                        "config_keys": ["workspace_mode"],
-                        "schema_fields": ["issue-scope-ledger.json:close_issues"],
-                        "symbols": ["cmd_create_task_workspace"],
-                        "phrases": [
-                            "create-task-workspace 已完成 task-local A/B merge fixture",
-                            "issue-scope-ledger.json 归档路径保持独立",
-                            "workspace_mode 配置验证双向合并无冲突",
-                        ],
-                    },
-                },
-            }
             summary = gtt.build_finish_summary(
                 workspace,
                 task_dir,
                 task_context,
                 ledger,
-                index_payload,
+                valid_pr_body(
+                    f"新增 task-local {token.upper()} 归档元数据并验证双向合并。"
+                ),
                 base_head,
                 changed_paths=archived_paths,
                 archive_dir_override=archive_relative,
@@ -5166,8 +5171,8 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         self.assertIsInstance(artifacts, list)
         return {str(item["filename"]): item for item in artifacts}  # type: ignore[index]
 
-    def test_resolve_active_task_returns_four_markdown_artifacts_only(self) -> None:
-        self.write_artifacts(self.task_dir, ["prd.md", "design.md", "implement.md", "pr-body.md"])
+    def test_resolve_active_task_returns_three_planning_artifacts_only(self) -> None:
+        self.write_artifacts(self.task_dir, ["prd.md", "design.md", "implement.md"])
         for intermediate in [
             "check.jsonl",
             "finish-summary-index.json",
@@ -5186,7 +5191,7 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         artifacts = self.artifact_by_filename(payload)
         self.assertEqual(
             list(artifacts),
-            ["prd.md", "design.md", "implement.md", "pr-body.md"],
+            ["prd.md", "design.md", "implement.md"],
         )
         for filename, artifact in artifacts.items():
             self.assertTrue(artifact["exists"], filename)
@@ -5228,8 +5233,8 @@ class HumanMarkdownArtifactResolverTest(unittest.TestCase):
         self.assertTrue(payload["archived"])
         self.assertEqual(payload["task_dir_relative"], archived_rel)
         artifacts = self.artifact_by_filename(payload)
-        self.assertFalse(artifacts["pr-body.md"]["exists"])
-        self.assertEqual(artifacts["pr-body.md"]["link"], "")
+        self.assertEqual(list(artifacts), ["prd.md", "design.md", "implement.md"])
+        self.assertTrue(all(artifact["exists"] for artifact in artifacts.values()))
 
 
 class TaskRuntimeIdentityTest(unittest.TestCase):
@@ -6944,27 +6949,6 @@ class PublishBoundaryTest(unittest.TestCase):
             '{"id":"publish-boundary","name":"publish-boundary","title":"Publish boundary","status":"in_progress","branch":"topic","base_branch":"main"}\n',
             encoding="utf-8",
         )
-        gtt.write_json(self.task_dir / "finish-summary-index.json", {
-            "schema_version": 1,
-            "index": {
-                "problem": "固定 journal 路径会让并行任务产生冲突。",
-                "outcome": "完成摘要改为 task-local artifact；非目标：不实现搜索。",
-                "changed_behavior": ["finish-work 完成后写入 finish-summary.json。"],
-                "affected_surfaces": [{
-                    "kind": "workflow", "name": "finish-work",
-                    "paths": ["trellis/workflows/guru-team/workflow.md"],
-                    "change": "finish-work 不再调用 add_session.py。",
-                }],
-                "contract_changes": [],
-                "search_terms": {
-                    "commands": ["add_session.py"],
-                    "config_keys": ["session_auto_commit"],
-                    "schema_fields": ["finish-summary.json:index"],
-                    "symbols": ["cmd_finish_work"],
-                    "phrases": ["固定 journal 冲突", "add_session.py", "完成摘要改为 task-local artifact"],
-                },
-            },
-        })
         issue = {
             "number": 18,
             "url": "https://github.com/owner/repo/issues/18",
@@ -6978,8 +6962,6 @@ class PublishBoundaryTest(unittest.TestCase):
             "related_issues": [],
             "followup_issues": [],
         })
-        self.body_path = self.task_dir / "pr-body.md"
-        self.body_path.write_text(valid_pr_body("不可变 publish readiness fixture。"), encoding="utf-8")
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -6990,6 +6972,8 @@ class PublishBoundaryTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": self.task_dir.relative_to(self.root).as_posix(),
             "branch_review_commit": commit,
+            "pr_title": "#105 重构 finish-work 收尾事务",
+            "pr_body": valid_pr_body("Publication ready DTO。"),
         }
 
     def test_publication_entry_consumes_passed_dto_without_review_gate(self) -> None:
@@ -7065,14 +7049,6 @@ class PublishBoundaryTest(unittest.TestCase):
             ),
             mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
             mock.patch.object(gtt, "validate_pr_body_quality", return_value=[]),
-            mock.patch.object(
-                gtt,
-                "load_finish_summary_index",
-                return_value=(
-                    self.task_dir / "finish-summary-index.json",
-                    gtt.read_json(self.task_dir / "finish-summary-index.json"),
-                ),
-            ),
         ):
             bindings, errors, handoff, bound_repository = (
                 gtt.task_publication_entry_precondition_bindings(
@@ -7084,6 +7060,10 @@ class PublishBoundaryTest(unittest.TestCase):
                         "mode": "workflow",
                         "task_ref": task_ref,
                         "branch_review_commit": branch_review_commit,
+                        "pr_payload": {
+                            "title": "完成：验证 Publication entry",
+                            "body": valid_pr_body("Publication entry 直接审查 exact payload。"),
+                        },
                     },
                 )
             )
@@ -7121,6 +7101,8 @@ class PublishBoundaryTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": task_ref,
             "branch_review_commit": initial_commit,
+            "pr_title": "#105 重构 finish-work 收尾事务",
+            "pr_body": valid_pr_body("Publication ready DTO。"),
         }
         self.assertEqual(
             gtt.resolve_closeout_branch_review_commit(
@@ -7167,6 +7149,8 @@ class PublishBoundaryTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": task_ref,
             "branch_review_commit": branch_review_commit,
+            "pr_title": "#105 重构 finish-work 收尾事务",
+            "pr_body": valid_pr_body("Publication ready DTO。"),
         }
         task_context = {
             "task_artifact_dir": task_ref,
@@ -7179,8 +7163,6 @@ class PublishBoundaryTest(unittest.TestCase):
             "marketplace": {"required": False},
         }
         args = argparse.Namespace(
-            finish_summary_index_file="finish-summary-index.json",
-            body_file=str(self.body_path),
             repo="owner/repo",
             remote="origin",
             base_branch="main",
@@ -7214,26 +7196,8 @@ class PublishBoundaryTest(unittest.TestCase):
             ),
             mock.patch.object(gtt, "load_issue_scope_ledger", return_value=ledger),
             mock.patch.object(gtt, "finalizer_unreviewed_dirty_paths", return_value=[]),
-            mock.patch.object(
-                gtt,
-                "load_finish_summary_index",
-                return_value=(
-                    self.task_dir / "finish-summary-index.json",
-                    gtt.read_json(self.task_dir / "finish-summary-index.json"),
-                ),
-            ),
             mock.patch.object(gtt, "validate_ledger_for_publish", return_value=[]),
-            mock.patch.object(
-                gtt,
-                "resolve_closeout_reviewed_body",
-                return_value=(self.body_path.read_text(encoding="utf-8"), "body-file"),
-            ),
             mock.patch.object(gtt, "validate_pr_body_quality", return_value=[]),
-            mock.patch.object(
-                gtt,
-                "validate_reviewed_body_source_for_publish",
-                return_value=[],
-            ),
             mock.patch.object(gtt, "validate_closeout_task_children"),
             mock.patch.object(
                 gtt,
@@ -7258,6 +7222,7 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(prepared["plan"], plan)
         self.assertNotIn("gate", prepared)
         self.assertNotIn("gate_path", prepared)
+        self.assertEqual(prepared["body"], publication_ready["pr_body"])
         continuity.assert_called_once_with(
             self.root,
             {"git": {"branch_review_commit": branch_review_commit}},
@@ -7316,7 +7281,7 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertNotIn("intent_flag", raised.exception.payload)
         self.assertIn("guru-finalize-task", str(raised.exception))
 
-    def test_finish_work_rejects_missing_reviewed_source_before_archive(self) -> None:
+    def test_finish_work_rejects_missing_publication_payload_before_archive(self) -> None:
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
@@ -7349,19 +7314,15 @@ class PublishBoundaryTest(unittest.TestCase):
         ):
             gtt.cmd_finish_work(finish_args(
                 validation=["python3 -m unittest 通过"],
-                publication_ready=self.publication_ready_input(),
             ))
 
         run_commands = [call.args[0] for call in run.call_args_list]
         self.assertNotIn(["python3", "./.trellis/scripts/task.py", "archive", self.task_dir.name], run_commands)
         self.assertFalse(any(command[:3] == ["python3", "./.trellis/scripts/add_session.py", "--title"] for command in run_commands))
         self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("requires --body-file", str(raised.exception))
-        self.assertNotIn("body_source", raised.exception.payload)
+        self.assertIn("Publication ready DTO or immutable plan", str(raised.exception))
 
     def test_finish_work_dry_run_returns_plan_without_archive_journal_commit_or_publish(self) -> None:
-        body_path = self.task_dir / "reviewed-pr-body.md"
-        body_path.write_text(valid_pr_body("finish-work dry-run 只输出 readiness preview。"), encoding="utf-8")
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
@@ -7410,7 +7371,6 @@ class PublishBoundaryTest(unittest.TestCase):
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
             payload = gtt.cmd_finish_work(finish_args(
-                body_file=str(self.body_path),
                 publication_ready=self.publication_ready_input(),
             ))
 
@@ -7430,8 +7390,6 @@ class PublishBoundaryTest(unittest.TestCase):
         self.assertEqual(gtt.closeout_plan_errors(plan), [])
 
     def test_finish_work_uses_publication_dto_without_review_gate(self) -> None:
-        body_path = self.task_dir / "reviewed-pr-body.md"
-        body_path.write_text(valid_pr_body("finish-work 消费 Publication DTO。"), encoding="utf-8")
         archived_task_dir = self.root / ".trellis/tasks/archive/2026-07/07-04-publish-boundary"
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
@@ -7490,7 +7448,6 @@ class PublishBoundaryTest(unittest.TestCase):
         ):
             run.return_value = mock.Mock(returncode=0, stdout="", stderr="")
             gtt.cmd_finish_work(finish_args(
-                body_file=str(self.body_path),
                 dry_run=True,
                 publication_ready=self.publication_ready_input(),
             ))
@@ -8062,7 +8019,7 @@ class ReviewBranchAncestryTest(unittest.TestCase):
             include_worktree=False,
         )["sha256"]
         current = self.commit(
-            ".trellis/tasks/08-01-review-ancestry/pr-body.md",
+            ".trellis/tasks/08-01-review-ancestry/context-discovery.json",
             "publication metadata\n",
             "record publication metadata",
         )
@@ -8080,9 +8037,9 @@ class ReviewBranchAncestryTest(unittest.TestCase):
 
     def test_finalizer_dirty_gate_excludes_all_private_metadata(self) -> None:
         status_paths = [
-            ".trellis/tasks/08-01-review-ancestry/pr-body.md",
+            ".trellis/tasks/08-01-review-ancestry/context-discovery.json",
             ".trellis/tasks/08-01-review-ancestry/design.md",
-            ".trellis/tasks/other/pr-body.md",
+            ".trellis/tasks/other/review.md",
             ".trellis/.runtime/guru-team/debug.json",
             ".trellis/workspace/dev/journal.md",
             ".trellis/workflow.md",
@@ -8295,9 +8252,9 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
             "required": [
                 "`guru-finalize-task` owns the single resumable transaction loop",
                 "canonical thin `guru-finish-work` router.",
-                "accepts exactly one reviewed body source: `--body-file`",
-                "must point directly to the current task-local `pr-body.md`",
-                "No alternate body locator or generated source participates in closeout.",
+                "accepts exactly one reviewed payload source: Publication `ready` schema 4.0",
+                "`task_ref/branch_review_commit/pr_title/pr_body`",
+                "no body file, summary-index file, alternate locator, or generated source participates in closeout.",
             ],
             "forbidden": [
                 "It calls `finish-work.sh` with the required",
@@ -8309,8 +8266,8 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
             "required": [
                 "canonical user route is `guru-finish-work`.",
                 "Every interruption returns through the same finalizer semantic loop",
-                "Formal closeout accepts only `--body-file` pointing directly to the current task-local `pr-body.md`",
-                "No alternate locator or generated source participates.",
+                "Formal closeout accepts only the exact `pr_title` and `pr_body` projected by the current Publication `ready` output",
+                "No file locator, generated source, or payload override participates.",
             ],
             "forbidden": [
                 "Every interruption is resumed through that same state-aware entry.",
@@ -8549,13 +8506,12 @@ class HumanArtifactResolutionContractTest(unittest.TestCase):
     def test_finish_workflow_resolves_active_then_archive_paths(self) -> None:
         snippets = [
             "resolve-human-artifacts.sh",
-            "Markdown 产物 review 表",
             "active",
             "archive",
             "`prd.md`",
             "`design.md`",
             "`implement.md`",
-            "`pr-body.md`",
+            "Show links only for existing",
         ]
         for relpath in self.FINISH_WORKFLOW_FILES:
             with self.subTest(path=relpath):
@@ -8569,8 +8525,8 @@ class HumanArtifactResolutionContractTest(unittest.TestCase):
                 self.assertNotIn("resolve-human-artifacts.sh", content)
                 self.assertNotIn("Markdown 产物 review 表", content)
 
-    def test_user_facing_docs_use_task_local_pr_body(self) -> None:
-        forbidden = "reviewed-" + "pr-body.md"
+    def test_user_facing_docs_do_not_expose_retired_pr_body_handoff(self) -> None:
+        forbidden = "pr-body.md"
         for relpath in [
             "trellis/workflows/guru-team/workflow.md",
             ".trellis/workflow.md",
@@ -11797,6 +11753,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 },
             },
         }
+        self.body = valid_pr_body("#105 closeout transaction。")
         gtt.write_json(self.task_dir / "task.json", self.task)
         self.review_gate_path = gtt.configured_review_gate_path(
             self.root,
@@ -11804,8 +11761,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
         gtt.write_json(self.review_gate_path, self.gate)
         gtt.write_json(self.task_dir / "issue-scope-ledger.json", self.ledger)
-        gtt.write_json(self.task_dir / "finish-summary-index.json", self.index)
-        (self.task_dir / "pr-body.md").write_text(valid_pr_body("#105 closeout transaction。"), encoding="utf-8")
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
@@ -12052,18 +12007,45 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 self.context,
                 self.task,
                 self.ledger,
-                self.task_dir / "finish-summary-index.json",
                 repo=repo,
                 remote="origin",
                 base_branch="main",
                 head_branch=head_branch,
                 branch_review_commit=self.head,
                 title="#105 重构 finish-work 收尾事务",
+                body=self.body,
                 review_facts={
                     "changed_paths": ["trellis/workflows/guru-team/workflow.md"],
                     "marketplace_required": True,
                 },
             )
+
+    def legacy_plan_from_current(
+        self,
+        current: dict[str, object],
+        *,
+        body: str | None = None,
+    ) -> dict[str, object]:
+        legacy = copy.deepcopy(current)
+        exact_body = body if body is not None else self.body
+        legacy["schema_version"] = gtt.LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION
+        legacy["publish"]["body_sha256"] = hashlib.sha256(  # type: ignore[index]
+            exact_body.encode("utf-8")
+        ).hexdigest()
+        legacy["publish"].pop("body")  # type: ignore[index]
+        active = legacy["task"]["active_locator"]  # type: ignore[index]
+        legacy["inputs"]["pr_body"] = {  # type: ignore[index]
+            "path": f"{active}/pr-body.md",
+            "sha256": hashlib.sha256(exact_body.encode("utf-8")).hexdigest(),
+        }
+        legacy["inputs"]["finish_summary_index"] = {  # type: ignore[index]
+            "path": f"{active}/finish-summary-index.json",
+            "sha256": gtt.canonical_json_sha256(self.index),
+        }
+        legacy["projection"]["migration_predecessor_plan_digest"] = None  # type: ignore[index]
+        legacy["plan_digest"] = gtt.closeout_plan_digest(legacy)
+        gtt.validate_closeout_plan_for_migration(legacy)
+        return legacy
 
     def test_current_plan_omits_producer_private_runtime_identity(self) -> None:
         current = self.build_plan()
@@ -12087,6 +12069,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         owner = json.loads(source.read_text(encoding="utf-8"))
         owner["task_ref"] = task_ref
         owner["branch_review_commit"] = branch_review_commit
+        owner["pr_payload"] = {
+            "title": "#105 重构 finish-work 收尾事务",
+            "body": self.body,
+        }
         return owner
 
     def write_current_publication_owner(
@@ -12124,13 +12110,15 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": task_ref,
             "branch_review_commit": self.head,
+            "pr_title": plan["publish"]["title"],
+            "pr_body": plan["publish"]["body"],
         }
         stored_repository = {
             "head": self.head,
             "branch": "fix/105-closeout",
             "base_ref": "origin/main",
             "diff_paths": ["src/runtime.py"],
-            "status_paths": [f"{task_ref}/pr-body.md"],
+            "status_paths": [],
         }
         self.write_current_publication_owner(
             self.root,
@@ -12172,7 +12160,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             review_input="unused-review-input.json",
             gate=None,
             dry_run=False,
-            finish_summary_index_file=None,
             repo="owner/repo",
             remote="origin",
         )
@@ -12266,25 +12253,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             wrapper_args,
             self.task_dir,
         )
-        self.assertIsNone(checker_args.finish_summary_index_file)
-        self.assertIsNone(checker_args.body_file)
-        with self.assertRaisesRegex(
-            gtt.WorkflowError,
-            "finish-work requires task-local finish-summary-index.json",
-        ):
-            gtt.load_finish_summary_index(
-                self.task_dir,
-                checker_args.finish_summary_index_file,
-            )
-        with self.assertRaisesRegex(
-            gtt.WorkflowError,
-            "finish-work requires --body-file",
-        ):
-            gtt.resolve_closeout_reviewed_body(
-                self.root,
-                self.task_dir,
-                checker_args,
-            )
+        self.assertFalse(hasattr(checker_args, "finish_summary_index_file"))
+        self.assertFalse(hasattr(checker_args, "body_file"))
+        self.assertFalse(hasattr(gtt, "load_finish_summary_index"))
+        self.assertFalse(hasattr(gtt, "resolve_closeout_reviewed_body"))
 
     def test_existing_plan_public_wrapper_preserves_checked_blocked_evidence_ready_route(
         self,
@@ -12401,11 +12373,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(wrapped, output)
         self.assertEqual(len(seen_checker_args), 2)
         wrapper_args = seen_checker_args[1]
-        self.assertEqual(
-            wrapper_args.finish_summary_index_file,
-            str(self.task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT),
-        )
-        self.assertEqual(wrapper_args.body_file, str(self.task_dir / gtt.PR_BODY_ARTIFACT))
+        self.assertFalse(hasattr(wrapper_args, "finish_summary_index_file"))
+        self.assertFalse(hasattr(wrapper_args, "body_file"))
 
     def test_finalization_eval_context_carries_publication_stale_owner_facts(self) -> None:
         public_input = {
@@ -12413,6 +12382,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": self.task_dir.relative_to(self.root).as_posix(),
             "branch_review_commit": self.head,
+            "pr_title": "#105 重构 finish-work 收尾事务",
+            "pr_body": self.body,
         }
         runtime_dir = self.root / ".trellis/.runtime/guru-team/evals"
         runtime_dir.mkdir(parents=True)
@@ -12478,6 +12449,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": task_ref,
             "branch_review_commit": self.head,
+            "pr_title": "#105 重构 finish-work 收尾事务",
+            "pr_body": self.body,
         }
         marker_route = {
             "typed_exit": "published",
@@ -12581,6 +12554,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": task_ref,
             "branch_review_commit": self.head,
+            "pr_title": "#105 重构 finish-work 收尾事务",
+            "pr_body": self.body,
         }
         context = {
             "transaction_state": "prepared",
@@ -12979,6 +12954,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "mode": "workflow",
             "task_ref": task_ref,
             "branch_review_commit": self.head,
+            "pr_title": "#105 重构 finish-work 收尾事务",
+            "pr_body": self.body,
         }
         context = {
             "transaction_state": "prepared",
@@ -13167,171 +13144,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             gtt.official_after_archive_hook_state(self.root)
         self.assertFalse(sentinel.exists())
 
-    def test_closeout_reviewed_body_accepts_exact_task_local_relative_and_absolute_sources(self) -> None:
-        body_path = self.task_dir / gtt.PR_BODY_ARTIFACT
-        expected = body_path.read_text(encoding="utf-8")
-        relative = body_path.relative_to(self.root).as_posix()
-
-        for source in [relative, str(body_path)]:
-            with self.subTest(source=source):
-                body, body_source = gtt.resolve_closeout_reviewed_body(
-                    self.root,
-                    self.task_dir,
-                    finish_args(body_file=source),
-                )
-                self.assertEqual(body, expected)
-                self.assertEqual(body_source, f"body-file:{relative}")
-
-    def test_closeout_reviewed_body_rejects_external_sources_even_when_strip_equivalent(self) -> None:
-        body_path = self.task_dir / gtt.PR_BODY_ARTIFACT
-        canonical = body_path.read_text(encoding="utf-8")
-        variants = {
-            "same-bytes": canonical,
-            "leading-trailing-whitespace": f" \n{canonical}\n ",
-            "final-newline": canonical.rstrip("\n"),
-            "markdown-hard-break-spaces": canonical.replace(
-                "- Guru Team publish helper\n",
-                "- Guru Team publish helper  \n",
-            ),
-        }
-
-        for label, content in variants.items():
-            external = self.root / f"external-{label}.md"
-            external.write_text(content, encoding="utf-8")
-            with self.subTest(label=label), self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.resolve_closeout_reviewed_body(
-                    self.root,
-                    self.task_dir,
-                    finish_args(body_file=str(external)),
-                )
-            self.assertIn("current task-local pr-body.md", str(raised.exception))
-
-    def test_closeout_reviewed_body_rejects_symlink_to_task_body(self) -> None:
-        symlink = self.root / "reviewed-body-link.md"
-        symlink.symlink_to(self.task_dir / gtt.PR_BODY_ARTIFACT)
-
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.resolve_closeout_reviewed_body(
-                self.root,
-                self.task_dir,
-                finish_args(body_file=str(symlink)),
-            )
-        self.assertIn("symbolic-link components", str(raised.exception))
-        self.assertEqual(raised.exception.payload["symlink_component"], symlink.name)
-
-    def test_closeout_reviewed_body_rejects_relative_and_absolute_ancestor_symlink_aliases(self) -> None:
-        alias = self.root / "task-body-alias"
-        alias.symlink_to(self.task_dir, target_is_directory=True)
-        sources = [
-            f"{alias.name}/{gtt.PR_BODY_ARTIFACT}",
-            str(alias / gtt.PR_BODY_ARTIFACT),
-        ]
-
-        for source in sources:
-            with self.subTest(source=source), self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.resolve_closeout_reviewed_body(
-                    self.root,
-                    self.task_dir,
-                    finish_args(body_file=source),
-                )
-            self.assertIn("symbolic-link components", str(raised.exception))
-            self.assertEqual(raised.exception.payload["symlink_component"], alias.name)
-
-    def test_closeout_reviewed_body_rejects_multilevel_dangling_and_loop_symlink_components(self) -> None:
-        aliases = self.root / "aliases"
-        aliases.mkdir()
-        multilevel = aliases / "level-one"
-        multilevel.symlink_to(self.task_dir, target_is_directory=True)
-        dangling = aliases / "dangling"
-        dangling.symlink_to(self.root / "missing-task", target_is_directory=True)
-        loop = aliases / "loop"
-        loop.symlink_to(loop, target_is_directory=True)
-
-        for alias in [multilevel, dangling, loop]:
-            source = alias / gtt.PR_BODY_ARTIFACT
-            with self.subTest(alias=alias.name), self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.resolve_closeout_reviewed_body(
-                    self.root,
-                    self.task_dir,
-                    finish_args(body_file=str(source)),
-                )
-            self.assertIn("symbolic-link components", str(raised.exception))
-            self.assertEqual(
-                raised.exception.payload["symlink_component"],
-                f"aliases/{alias.name}",
-            )
-
-    def test_closeout_reviewed_body_rejects_symlinked_task_directory_parent(self) -> None:
-        root = self.root / "symlinked-task-parent"
-        external_tasks = self.root / "external-tasks"
-        task_dir = external_tasks / "07-11-closeout"
-        task_dir.mkdir(parents=True)
-        (task_dir / gtt.PR_BODY_ARTIFACT).write_text(valid_pr_body("symlinked task parent"), encoding="utf-8")
-        (root / ".trellis").mkdir(parents=True)
-        (root / ".trellis/tasks").symlink_to(external_tasks, target_is_directory=True)
-        direct_task_dir = root / ".trellis/tasks/07-11-closeout"
-
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.resolve_closeout_reviewed_body(
-                root,
-                direct_task_dir,
-                finish_args(body_file=".trellis/tasks/07-11-closeout/pr-body.md"),
-            )
-        self.assertIn("symbolic-link components", str(raised.exception))
-        self.assertEqual(raised.exception.payload["symlink_component"], ".trellis/tasks")
-
-    def test_closeout_reviewed_body_rejects_repo_external_alias_for_relative_and_absolute_sources(self) -> None:
-        alias = self.root.parent / f"{self.root.name}-repo-alias"
-        alias.symlink_to(self.root, target_is_directory=True)
-        self.addCleanup(alias.unlink, missing_ok=True)
-        aliased_body = alias / self.task_dir.relative_to(self.root) / gtt.PR_BODY_ARTIFACT
-        sources = [str(aliased_body), os.path.relpath(aliased_body, self.root)]
-
-        for source in sources:
-            with self.subTest(source=source), self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.resolve_closeout_reviewed_body(
-                    self.root,
-                    self.task_dir,
-                    finish_args(body_file=source),
-                )
-            self.assertIn("must stay inside the repository root", str(raised.exception))
-
-    def test_closeout_reviewed_body_rejects_multilevel_outer_alias_to_repo_root(self) -> None:
-        second = self.root.parent / f"{self.root.name}-outer-second"
-        first = self.root.parent / f"{self.root.name}-outer-first"
-        second.symlink_to(self.root, target_is_directory=True)
-        first.symlink_to(second, target_is_directory=True)
-        self.addCleanup(first.unlink, missing_ok=True)
-        self.addCleanup(second.unlink, missing_ok=True)
-        source = first / self.task_dir.relative_to(self.root) / gtt.PR_BODY_ARTIFACT
-
-        with self.assertRaises(gtt.WorkflowError) as raised:
-            gtt.resolve_closeout_reviewed_body(
-                self.root,
-                self.task_dir,
-                finish_args(body_file=str(source)),
-            )
-        self.assertIn("must stay inside the repository root", str(raised.exception))
-
-    @unittest.skipUnless(sys.platform == "darwin", "Darwin /var system alias compatibility")
-    def test_closeout_reviewed_body_accepts_fixed_darwin_var_system_alias(self) -> None:
-        if not str(self.root).startswith("/var/"):
-            self.skipTest("temporary directory is not exposed through the /var alias")
-        canonical_root = Path("/private") / self.root.relative_to("/")
-        canonical_task_dir = canonical_root / self.task_dir.relative_to(self.root)
-        aliased_body = self.task_dir / gtt.PR_BODY_ARTIFACT
-
-        body, body_source = gtt.resolve_closeout_reviewed_body(
-            canonical_root,
-            canonical_task_dir,
-            finish_args(body_file=str(aliased_body)),
-        )
-        self.assertEqual(body, aliased_body.read_text(encoding="utf-8"))
-        self.assertEqual(
-            body_source,
-            f"body-file:{self.task_dir.relative_to(self.root).as_posix()}/{gtt.PR_BODY_ARTIFACT}",
-        )
-
     def test_closeout_plan_is_canonical_schema_valid_and_digest_stable(self) -> None:
         first = self.build_plan()
         second = self.build_plan()
@@ -13408,9 +13220,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             gtt.write_json(task_dir / "task.json", task)
             gtt.write_json(task_dir / "issue-scope-ledger.json", self.ledger)
             gtt.write_json(task_dir / "finish-summary-index.json", self.index)
-            (task_dir / "pr-body.md").write_text(
-                valid_pr_body("migrated closeout。"), encoding="utf-8"
-            )
+            migrated_body = valid_pr_body("migrated closeout。")
+            (task_dir / "pr-body.md").write_text(migrated_body, encoding="utf-8")
             for name in ("prd.md", "design.md", "implement.md", "context-discovery.json"):
                 (task_dir / name).write_text(f"base {name}\n", encoding="utf-8")
             (task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).write_text("{}\n", encoding="utf-8")
@@ -13429,25 +13240,16 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 context,
                 task,
                 self.ledger,
-                task_dir / "finish-summary-index.json",
                 repo="owner/repo",
                 remote="origin",
                 base_branch="main",
                 head_branch="main",
                 branch_review_commit=review_commit,
                 title="#105 migrated closeout",
+                body=migrated_body,
                 review_facts={"changed_paths": [], "marketplace_required": False},
             )
-            legacy = copy.deepcopy(current)
-            legacy["projection"].pop("reviewed_tracked_bindings")
-            legacy["projection"].pop("migration_predecessor_plan_digest")
-            legacy["projection"]["tracked_move_paths"].remove(gtt.CLOSEOUT_PLAN_ARTIFACT)
-            legacy["projection"]["untracked_archive_outputs"] = sorted(
-                legacy["projection"]["untracked_archive_outputs"]
-                + [gtt.CLOSEOUT_PLAN_ARTIFACT]
-            )
-            legacy["plan_digest"] = gtt.closeout_plan_digest(legacy)
-            gtt.validate_closeout_plan_for_migration(legacy)
+            legacy = self.legacy_plan_from_current(current, body=migrated_body)
             gtt.write_json(task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, legacy)
 
             normalized = gtt.build_closeout_plan(
@@ -13456,13 +13258,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 context,
                 task,
                 self.ledger,
-                task_dir / "finish-summary-index.json",
                 repo="owner/repo",
                 remote="origin",
                 base_branch="main",
                 head_branch="main",
                 branch_review_commit=review_commit,
                 title="#105 migrated closeout",
+                body=migrated_body,
                 review_facts={"changed_paths": [], "marketplace_required": False},
             )
             self.assertEqual(gtt.closeout_schema2_migration_errors(legacy, normalized), [])
@@ -13534,22 +13336,20 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 context,
                 task,
                 self.ledger,
-                task_dir / "finish-summary-index.json",
                 repo="owner/repo",
                 remote="origin",
                 base_branch="main",
                 head_branch="main",
                 branch_review_commit=review_commit,
                 title="#105 migrated closeout",
+                body=migrated_body,
                 review_facts={"changed_paths": [], "marketplace_required": False},
             )
-            self.assertTrue(
-                any(
-                    "without predecessor binding" in error
-                    for error in gtt.closeout_schema2_migration_errors(
-                        normalized, rebuilt_after_drift
-                    )
-                )
+            self.assertEqual(
+                gtt.closeout_schema2_migration_errors(
+                    normalized, rebuilt_after_drift
+                ),
+                ["schema 2.0 migration requires one legacy plan"],
             )
             (task_dir / "prd.md").write_bytes(original)
             gtt.validate_closeout_pre_move_continuity(
@@ -13802,15 +13602,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             for path in normalized["projection"]["untracked_archive_outputs"]
             if path != gtt.CLOSEOUT_PLAN_ARTIFACT
         ]
-        legacy = copy.deepcopy(normalized)
-        legacy["projection"].pop("reviewed_tracked_bindings")
-        legacy["projection"].pop("migration_predecessor_plan_digest")
-        legacy["projection"]["tracked_move_paths"].remove(gtt.CLOSEOUT_PLAN_ARTIFACT)
-        legacy["projection"]["untracked_archive_outputs"] = sorted(
-            legacy["projection"]["untracked_archive_outputs"]
-            + [gtt.CLOSEOUT_PLAN_ARTIFACT]
-        )
-        legacy["plan_digest"] = gtt.closeout_plan_digest(legacy)
+        legacy = self.legacy_plan_from_current(normalized)
         normalized["projection"]["migration_predecessor_plan_digest"] = legacy[
             "plan_digest"
         ]
@@ -13832,7 +13624,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "number": 105,
             "url": "https://github.com/owner/repo/pull/105",
             "title": normalized["publish"]["title"],
-            "body": (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8"),
+            "body": normalized["publish"]["body"],
             "headRefName": normalized["git"]["head_branch"],
             "baseRefName": normalized["git"]["base_branch"],
             "headRefOid": self.head,
@@ -14070,7 +13862,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self,
     ) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8")
+        body = self.body
         archived = self.root / plan["task"]["archive_locator"]
         shutil.rmtree(self.task_dir)
         archived.mkdir(parents=True)
@@ -14358,7 +14150,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertTrue(any("digest" in error for error in gtt.closeout_plan_errors(plan)))
         persisted = self.build_plan()
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, persisted)
-        (self.task_dir / "pr-body.md").write_text(valid_pr_body("changed body。"), encoding="utf-8")
+        self.body = valid_pr_body("changed body。")
         rebuilt = self.build_plan()
         self.assertNotEqual(persisted["plan_digest"], rebuilt["plan_digest"])
 
@@ -14381,7 +14173,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_draft_resolver_rejects_multiple_or_ready_before_archive(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         entry = {
             **closeout_head_repository_fields(),
             "number": 105,
@@ -14433,7 +14225,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_existing_draft_metadata_rebinds_same_identity_and_is_idempotent(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         stale = {
             **closeout_head_repository_fields(),
             "number": 105,
@@ -14485,13 +14277,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(edited_body_bytes, [body.encode("utf-8")])
         self.assertEqual(
             hashlib.sha256(edited_body_bytes[0]).hexdigest(),
-            plan["publish"]["body_sha256"],
+            hashlib.sha256(plan["publish"]["body"].encode("utf-8")).hexdigest(),
         )
         create.assert_not_called()
 
     def test_metadata_rebind_rejects_replaced_identity_after_edit(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         stale = {
             **closeout_head_repository_fields(),
             "number": 105,
@@ -14913,7 +14705,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_closeout_pr_query_rejects_same_branch_fork_before_cardinality(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         target = {
             **closeout_head_repository_fields(),
             "number": 105,
@@ -14966,7 +14758,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_fork_identity_blocks_draft_reuse_final_projection_and_ready(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         fork = {
             **closeout_head_repository_fields("fork-owner/repo", cross_repository=True),
             "number": 105,
@@ -15049,7 +14841,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         }
         for name, (exact_body, tampered_body) in cases.items():
             with self.subTest(case=name):
-                (self.task_dir / "pr-body.md").write_text(exact_body, encoding="utf-8")
+                self.body = exact_body
                 plan = self.build_plan()
 
                 pr = {
@@ -15093,7 +14885,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_active_summary_and_bound_remote_identity_reject_pr_replacement(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         summary = gtt.closeout_summary_for_pr(
             plan, {"number": 105, "url": "https://github.com/owner/repo/pull/105"}
         )
@@ -15149,7 +14941,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_active_and_archived_recovery_never_rebind_same_identity_fork(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         target = {
             **closeout_head_repository_fields(),
             "number": 105,
@@ -15354,7 +15146,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_draft_to_ready_failure_has_no_repo_mutation(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         summary = gtt.closeout_summary_for_pr(
             plan, {"number": 105, "url": "https://github.com/owner/repo/pull/105"}
         )
@@ -15389,7 +15181,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_draft_to_ready_waits_for_transient_pr_head_convergence(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         stale_head = "b" * 40
         draft = {
             **closeout_head_repository_fields(),
@@ -15448,7 +15240,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_draft_to_ready_fails_after_bounded_pr_head_mismatch(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         stale_head = "b" * 40
         draft = {
             **closeout_head_repository_fields(),
@@ -15500,7 +15292,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_post_archive_layout_and_ready_do_not_run_local_artifact_validators(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8")
+        body = self.body
         for relative in plan["projection"]["move_paths"]:
             path = self.task_dir / relative
             if not path.exists():
@@ -15562,7 +15354,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
     def test_archived_draft_reentry_uses_plan_remote_identity_and_ready_only(self) -> None:
         plan = self.build_plan()
-        body = (self.task_dir / gtt.PR_BODY_ARTIFACT).read_text(encoding="utf-8")
+        body = self.body
         gtt.write_json(self.task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, plan)
         archived = self.root / plan["task"]["archive_locator"]
         archived.parent.mkdir(parents=True, exist_ok=True)
@@ -15663,7 +15455,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "branch_review_commit": self.head,
         }
         args.verification_owner_result = verification_owner_result
-        body = (self.task_dir / "pr-body.md").read_text(encoding="utf-8")
+        body = self.body
         summary = gtt.closeout_summary_for_pr(
             plan, {"number": 105, "url": "https://github.com/owner/repo/pull/105"}
         )
@@ -15849,7 +15641,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "related_issues": [],
                 "followup_issues": [],
             }
-            index = json.loads(json.dumps(self.index, ensure_ascii=False))
+            publication_title = "#105 重构 finish-work 收尾事务"
+            publication_body = valid_pr_body("生产 closeout 集成。").replace(
+                "Closes #18", "Closes #105"
+            )
             gtt.write_json(task_dir / "task.json", task)
             gtt.write_runtime_mappings(
                 root,
@@ -15881,13 +15676,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     },
                 )
             gtt.write_json(task_dir / "issue-scope-ledger.json", ledger)
-            gtt.write_json(task_dir / "finish-summary-index.json", index)
             (task_dir / "check.jsonl").write_text(
                 '{"kind":"phase2-evidence","status":"passed"}\n',
-                encoding="utf-8",
-            )
-            (task_dir / "pr-body.md").write_text(
-                valid_pr_body("生产 closeout 集成。").replace("Closes #18", "Closes #105"),
                 encoding="utf-8",
             )
             for name, content in {
@@ -15908,12 +15698,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 task_ref=".trellis/tasks/07-11-closeout",
                 branch_review_commit=branch_review_commit,
             )
-            self.write_current_publication_owner(
-                root,
-                task_dir,
-                task_ref=".trellis/tasks/07-11-closeout",
-                branch_review_commit=branch_review_commit,
-            )
+            publication_gate["pr_payload"] = {
+                "title": publication_title,
+                "body": publication_body,
+            }
+            gtt.write_json(gtt.task_publication_path(root, task_dir), publication_gate)
             if reviewed_task_metadata_tail:
                 task["meta"] = {"publication_round": "reviewed-tail"}
                 (task_dir / "task.json").write_text(
@@ -15922,33 +15711,29 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 )
 
             if migrated_tracked_plan:
-                legacy_plan = gtt.build_closeout_plan(
+                current_plan = gtt.build_closeout_plan(
                     root,
                     task_dir,
                     context,
                     task,
                     ledger,
-                    task_dir / "finish-summary-index.json",
                     repo="owner/repo",
                     remote="origin",
                     base_branch="main",
                     head_branch="fix/105-closeout",
                     branch_review_commit=branch_review_commit,
-                    title="#105 重构 finish-work 收尾事务",
+                    title=publication_title,
+                    body=publication_body,
                     review_facts=gtt.closeout_reviewed_change_facts(
                         root,
                         context,
                         branch_review_commit,
                     ),
                 )
-                legacy_plan["projection"].pop("reviewed_tracked_bindings")
-                legacy_plan["projection"].pop(
-                    "migration_predecessor_plan_digest"
+                legacy_plan = self.legacy_plan_from_current(
+                    current_plan,
+                    body=publication_body,
                 )
-                legacy_plan["plan_digest"] = gtt.closeout_plan_digest(
-                    legacy_plan
-                )
-                gtt.validate_closeout_plan_for_migration(legacy_plan)
                 gtt.write_json(
                     task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT,
                     legacy_plan,
@@ -15969,7 +15754,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     check=True,
                 )
 
-            immutable_body_bytes = (task_dir / "pr-body.md").read_bytes()
+            immutable_body_bytes = publication_body.encode("utf-8")
             pr_store: dict[str, object] = {}
             draft_rebind_body_bytes: list[bytes] = []
             if predecessor_draft_metadata:
@@ -16206,7 +15991,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                             "number": 106,
                             "url": "https://github.com/owner/repo/pull/106",
                             "title": "#105 重构 finish-work 收尾事务",
-                            "body": (task_dir / "pr-body.md").read_text(encoding="utf-8"),
+                            "body": publication_body,
                             "isDraft": True,
                             "state": "OPEN",
                             "headRefOid": remote_head,
@@ -16282,7 +16067,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                             path.unlink()
                     return
                 if mode == "tamper":
-                    (archived_path / gtt.PR_BODY_ARTIFACT).write_bytes(b"\xff")
                     (archived_path / gtt.FINISH_SUMMARY_ARTIFACT).write_text(
                         "invalid committed summary\n", encoding="utf-8"
                     )
@@ -16364,14 +16148,14 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 repo="owner/repo",
                 base_branch="main",
                 remote="origin",
-                title="#105 重构 finish-work 收尾事务",
-                body_file=str(task_dir / "pr-body.md"),
-                finish_summary_index_file=str(task_dir / "finish-summary-index.json"),
+                title=publication_title,
                 publication_ready={
                     "profile": "publication_ready",
                     "mode": "workflow",
                     "task_ref": ".trellis/tasks/07-11-closeout",
                     "branch_review_commit": branch_review_commit,
+                    "pr_title": publication_title,
+                    "pr_body": publication_body,
                 },
                 dry_run=True,
             )
@@ -16439,14 +16223,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "remote-transport",
                 }:
                     if failed_stage == "prepare":
-                        (task_dir / "finish-summary-index.json").write_text(
-                            "{}\n", encoding="utf-8"
-                        )
+                        dry_args.publication_ready["pr_body"] = "invalid body"
                     with self.assertRaises(gtt.WorkflowError):
                         gtt.cmd_finish_work(dry_args)
                     failed_state = exact_state()
                     if failed_stage == "prepare":
-                        gtt.write_json(task_dir / "finish-summary-index.json", index)
+                        dry_args.publication_ready["pr_body"] = publication_body
                     if failed_stage == "raw-remote-control":
                         original_run(
                             [
@@ -16817,7 +16599,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             failed_stage="ready",
             predecessor_draft_metadata=True,
             migrated_tracked_plan=True,
-            archived_legacy_without_predecessor=True,
         )
         failed = result["failed_state"]
         final = result["final_state"]
@@ -16828,7 +16609,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertFalse(final["pr_is_draft"])
         self.assertEqual(final["local_sha"], result["archive_sha"])
         self.assertEqual(final["remote_sha"], result["archive_sha"])
-        self.assertIsNotNone(result["archived_legacy_plan_digest"])
+        self.assertIsNone(result["archived_legacy_plan_digest"])
         self.assertIn("ready", result["reentry_events"])
         self.assertNotIn("draft", result["all_transition_attempts"])
 
@@ -17216,8 +16997,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             f"{active}/{name}"
             for name in [
                 "check.jsonl", "design.md",
-                "finish-summary-index.json", "implement.md",
-                "issue-scope-ledger.json", "pr-body.md", "prd.md",
+                "implement.md", "issue-scope-ledger.json", "prd.md",
                 "task.json",
             ]
         } | {
@@ -17230,7 +17010,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         expected = {
             "prepare": (
                 active, None, "in_progress",
-                {f"{active}/finish-summary-index.json"},
+                set(),
                 set(), "reviewed", None, None, None, None, None,
             ),
             "plan-digest": (
@@ -17384,6 +17164,15 @@ class FinishSummaryContractTests(unittest.TestCase):
             "index": index,
         }
 
+    def valid_current_summary(self) -> dict[str, object]:
+        payload = self.valid_summary()
+        payload["schema_version"] = gtt.FINISH_SUMMARY_SCHEMA_VERSION
+        payload["generator"] = gtt.FINISH_SUMMARY_GENERATOR
+        payload["index"]["retrieval_text"] = gtt.current_finish_summary_retrieval_text(  # type: ignore[index]
+            payload["task"]["title"], payload["index"]  # type: ignore[index]
+        )
+        return payload
+
     def finish_summary_schema(self) -> dict[str, object]:
         schema_path = Path(gtt.__file__).resolve().parents[2] / "schemas/finish-summary.schema.json"
         return json.loads(schema_path.read_text(encoding="utf-8"))
@@ -17450,7 +17239,7 @@ class FinishSummaryContractTests(unittest.TestCase):
         ))
         self.assertEqual(
             summary["index"]["retrieval_text"],  # type: ignore[index]
-            gtt.finish_summary_retrieval_text(
+            gtt.current_finish_summary_retrieval_text(
                 summary["task"]["title"],  # type: ignore[index]
                 summary["index"],  # type: ignore[index]
             ),
@@ -17478,6 +17267,44 @@ class FinishSummaryContractTests(unittest.TestCase):
 
     def test_valid_normal_summary_passes_strict_validator(self) -> None:
         self.assertEqual(gtt.finish_summary_errors(self.valid_summary()), [])
+
+    def test_current_retrieval_text_deduplicates_generated_source_fields(self) -> None:
+        payload = self.valid_current_summary()
+        title = payload["task"]["title"]  # type: ignore[index]
+        first_behavior = payload["index"]["changed_behavior"][0]  # type: ignore[index]
+        payload["index"]["problem"] = title  # type: ignore[index]
+        payload["index"]["outcome"] = first_behavior  # type: ignore[index]
+        payload["index"]["affected_surfaces"][0]["change"] = first_behavior  # type: ignore[index]
+        payload["index"]["retrieval_text"] = gtt.current_finish_summary_retrieval_text(  # type: ignore[index]
+            title, payload["index"]  # type: ignore[index]
+        )
+
+        retrieval_lines = payload["index"]["retrieval_text"].splitlines()  # type: ignore[index]
+        self.assertEqual(retrieval_lines.count(title), 1)
+        self.assertEqual(retrieval_lines.count(first_behavior), 1)
+        self.assertEqual(gtt.finish_summary_errors(payload), [])
+
+    def test_historical_retrieval_text_keeps_legacy_derivation(self) -> None:
+        payload = self.valid_summary()
+        title = payload["task"]["title"]  # type: ignore[index]
+        payload["index"]["problem"] = title  # type: ignore[index]
+        legacy_retrieval = gtt.finish_summary_retrieval_text(  # type: ignore[index]
+            title, payload["index"]  # type: ignore[index]
+        )
+        payload["index"]["retrieval_text"] = legacy_retrieval  # type: ignore[index]
+        self.assertEqual(
+            legacy_retrieval,
+            gtt.finish_summary_retrieval_text(title, payload["index"]),  # type: ignore[index]
+        )
+        self.assertEqual(legacy_retrieval.splitlines().count(title), 2)
+
+        payload["index"]["retrieval_text"] = gtt.current_finish_summary_retrieval_text(  # type: ignore[index]
+            title, payload["index"]  # type: ignore[index]
+        )
+        self.assertIn(
+            "index.retrieval_text must equal the deterministic derived text.",
+            gtt.finish_summary_errors(payload),
+        )
 
     def test_retrieval_text_rejects_adjacent_title_problem_clauses(self) -> None:
         payload = self.valid_summary()
@@ -17512,7 +17339,7 @@ class FinishSummaryContractTests(unittest.TestCase):
 
         self.assertEqual(properties["github"]["properties"]["pr_url"]["maxLength"], 1000)  # type: ignore[index]
         self.assertEqual(properties["index"]["properties"]["contract_changes"]["maxItems"], 20)  # type: ignore[index]
-        self.assertEqual(properties["generator"]["const"], "guru-team.finish-work")  # type: ignore[index]
+        self.assertEqual(properties["generator"]["const"], "guru-team.finalize-task")  # type: ignore[index]
         self.assertEqual(properties["task"]["properties"]["artifact_dir"]["$ref"], "#/$defs/safePath")  # type: ignore[index]
         self.assertEqual(properties["git"]["properties"]["base_branch"]["minLength"], 1)  # type: ignore[index]
         self.assertEqual(properties["git"]["properties"]["branch"]["minLength"], 1)  # type: ignore[index]
@@ -17523,12 +17350,12 @@ class FinishSummaryContractTests(unittest.TestCase):
         self.assertEqual(definitions["searchTerms"]["properties"]["paths"]["items"]["$ref"], "#/$defs/safePath")  # type: ignore[index]
 
     def test_optional_draft_2020_12_cross_validation(self) -> None:
-        normal = self.valid_summary()
-        invalid_generator = self.valid_summary()
+        normal = self.valid_current_summary()
+        invalid_generator = self.valid_current_summary()
         invalid_generator["generator"] = "unknown.generator"
-        invalid_path = self.valid_summary()
+        invalid_path = self.valid_current_summary()
         invalid_path["git"]["changed_paths"] = ["docs\\file.md"]  # type: ignore[index]
-        invalid_url = self.valid_summary()
+        invalid_url = self.valid_current_summary()
         invalid_url["github"]["pr_url"] = "https://github.com/" + ("o" * 980) + "/repo/pull/123"  # type: ignore[index]
 
         self.assertEqual(self.draft_schema_errors(normal), [])
@@ -17850,14 +17677,12 @@ class FinishSummaryContractTests(unittest.TestCase):
                     ], True, False),
                 ),
             ):
-                index_payload = self.valid_ai_index()
-                index_payload["index"]["contract_changes"] = self.contract_changes(19)  # type: ignore[index]
                 summary = gtt.build_finish_summary(
                     root,
                     task_dir,
                     task_context,
                     ledger,
-                    index_payload,
+                    valid_pr_body("finish-summary 使用经过清理的路径并记录过滤事实。"),
                     "a" * 40,
                 )
 
@@ -17871,15 +17696,13 @@ class FinishSummaryContractTests(unittest.TestCase):
                 item.get("contract") == "finish-summary protected path filtering"
                 for item in summary["index"]["contract_changes"]
             ), 1)
-            self.assertEqual(len(summary["index"]["contract_changes"]), 20)
+            self.assertEqual(len(summary["index"]["contract_changes"]), 1)
             self.assertNotIn("marketplace_verification", summary["artifacts"])
             retrieval_lines = summary["index"]["retrieval_text"].splitlines()
             fixed_before = gtt.FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT["before"]
             fixed_after = gtt.FINISH_SUMMARY_PROTECTED_PATH_FILTER_CONTRACT["after"]
-            previous_after = self.contract_changes(19)[-1]["after"]
             self.assertEqual(retrieval_lines.count(fixed_before), 1)
             self.assertEqual(retrieval_lines.count(fixed_after), 1)
-            self.assertLess(retrieval_lines.index(previous_after), retrieval_lines.index(fixed_before))
             self.assertLess(retrieval_lines.index(fixed_before), retrieval_lines.index(fixed_after))
             retrieval_text = "\n".join(retrieval_lines)
             self.assertNotIn(".trellis/workspace/private-journal.md", retrieval_text)
@@ -17924,8 +17747,6 @@ class FinishSummaryContractTests(unittest.TestCase):
                     encoding="utf-8",
                 )
                 (task_dir / "design.md").write_text("# Design\n", encoding="utf-8")
-                index_payload = self.valid_ai_index()
-                index_payload["index"]["contract_changes"] = self.contract_changes(19)  # type: ignore[index]
                 with mock.patch.object(gtt, "run", side_effect=responses):
                     summary = gtt.build_finish_summary(
                         root,
@@ -17937,11 +17758,11 @@ class FinishSummaryContractTests(unittest.TestCase):
                             "task_artifact_dir": ".trellis/tasks/task",
                         },
                         {"primary_issue": {"number": 97}, "close_issues": [], "related_issues": [], "followup_issues": []},
-                        index_payload,
+                        valid_pr_body("finish-summary 在 Git 快照失败时使用空路径集合。"),
                         "a" * 40,
                     )
 
-                self.assertEqual(len(summary["index"]["contract_changes"]), 20)  # type: ignore[index]
+                self.assertEqual(len(summary["index"]["contract_changes"]), 1)  # type: ignore[index]
                 self.assert_snapshot_unavailable_summary(
                     summary,
                     undisclosed_values=undisclosed_values,
@@ -18029,54 +17850,14 @@ class FinishSummaryContractTests(unittest.TestCase):
         errors = gtt.finish_summary_index_errors(ai_index["index"], final=False)
         self.assertTrue(any("search_terms keys" in error for error in errors))
 
-    def test_ai_index_contract_change_limit_reserves_filter_fact(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            task_dir = Path(tmp) / ".trellis/tasks/07-10-task"
-            task_dir.mkdir(parents=True)
-            index_path = task_dir / gtt.FINISH_SUMMARY_INDEX_ARTIFACT
-            payload = self.valid_ai_index()
-            payload["index"]["contract_changes"] = self.contract_changes(19)  # type: ignore[index]
-            self.assertEqual(gtt.finish_summary_index_errors(payload["index"], final=False), [])
-            gtt.write_json(index_path, payload)
-            with mock.patch.object(gtt, "repo_root", return_value=Path(tmp)):
-                gtt.load_finish_summary_index(task_dir, str(index_path))
+    def test_historical_ai_index_contract_change_limit_reserves_filter_fact(self) -> None:
+        payload = self.valid_ai_index()
+        payload["index"]["contract_changes"] = self.contract_changes(19)  # type: ignore[index]
+        self.assertEqual(gtt.finish_summary_index_errors(payload["index"], final=False), [])
 
-            payload["index"]["contract_changes"] = self.contract_changes(20)  # type: ignore[index]
-            errors = gtt.finish_summary_index_errors(payload["index"], final=False)
-            self.assertTrue(any("exceeds 19 items" in error for error in errors))
-            gtt.write_json(index_path, payload)
-            with (
-                mock.patch.object(gtt, "repo_root", return_value=Path(tmp)),
-                self.assertRaises(gtt.WorkflowError),
-            ):
-                gtt.load_finish_summary_index(task_dir, str(index_path))
-
-    def test_ai_index_loader_accepts_bare_repo_relative_and_absolute_task_paths(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            task_dir = root / ".trellis/tasks/07-10-task"
-            task_dir.mkdir(parents=True)
-            index_path = task_dir / "finish-summary-index.json"
-            gtt.write_json(index_path, self.valid_ai_index())
-            with mock.patch.object(gtt, "repo_root", return_value=root):
-                for value in [
-                    "finish-summary-index.json",
-                    ".trellis/tasks/07-10-task/finish-summary-index.json",
-                    str(index_path),
-                ]:
-                    with self.subTest(value=value):
-                        loaded_path, _payload = gtt.load_finish_summary_index(task_dir, value)
-                        self.assertEqual(loaded_path, index_path.resolve())
-
-    def test_ai_index_loader_rejects_task_external_path(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            task_dir = root / ".trellis/tasks/task"
-            task_dir.mkdir(parents=True)
-            external = root / "finish-summary-index.json"
-            gtt.write_json(external, self.valid_ai_index())
-            with mock.patch.object(gtt, "repo_root", return_value=root), self.assertRaises(gtt.WorkflowError):
-                gtt.load_finish_summary_index(task_dir, str(external))
+        payload["index"]["contract_changes"] = self.contract_changes(20)  # type: ignore[index]
+        errors = gtt.finish_summary_index_errors(payload["index"], final=False)
+        self.assertTrue(any("exceeds 19 items" in error for error in errors))
 
     def test_retrieval_fixture_hits_pre_and_post_pr_signals(self) -> None:
         payload = self.valid_summary()

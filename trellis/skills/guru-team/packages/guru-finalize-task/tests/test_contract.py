@@ -117,7 +117,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
     def test_archive_contract_matches_current_runtime_limit(self) -> None:
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
-        self.assertIn("schema 2.0", contract)
+        self.assertIn("schema 3.0", contract)
+        self.assertIn("legacy closeout-plan path", contract)
         self.assertIn("seven-file", contract)
         self.assertIn("at most eight files", contract)
 

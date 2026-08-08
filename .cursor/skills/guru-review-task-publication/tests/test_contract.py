@@ -219,11 +219,11 @@ class TaskPublicationContractTest(unittest.TestCase):
             "dimension": "pr_body_quality",
             "summary": "The metadata fix was reviewed and closed.",
             "scope_basis": "The publication contract owns this metadata.",
-            "evidence_refs": ["pr-body.md"],
-            "affected_artifacts": ["pr-body.md"],
+            "evidence_refs": ["pr_payload"],
+            "affected_artifacts": ["pr_payload"],
             "route_class": "metadata_revision",
             "status": "closed",
-            "closure_evidence": ["pr-body.md#fixed"],
+            "closure_evidence": ["pr_payload#fixed"],
         }
         invalid = copy.deepcopy(self.readiness_example)
         invalid["findings"] = [finding, copy.deepcopy(finding)]
@@ -312,7 +312,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             "summary": "The current publication review cannot complete.",
             "scope_basis": "The approved publication contract owns this route.",
             "evidence_refs": ["review-gate.json"],
-            "affected_artifacts": ["pr-body.md"],
+            "affected_artifacts": ["pr_payload"],
             "route_class": route_class,
             "status": "open",
             "closure_evidence": [],
@@ -505,6 +505,7 @@ class TaskPublicationContractTest(unittest.TestCase):
             root,
             task_dir,
             self.readiness_example["branch_review_commit"],
+            self.readiness_example["pr_payload"],
         )
 
     def test_only_content_identity_drift_allows_return_to_task_work(

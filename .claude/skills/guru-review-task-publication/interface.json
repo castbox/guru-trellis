@@ -22,7 +22,7 @@
     {"id": "task_identity", "evidence": "active task.json and issue scope identity", "binding": "task, branch, issue and in_progress status", "freshness": "current task reread"},
     {"id": "branch_review_handoff", "evidence": "guru-review-branch passed DTO plus checked owner result", "binding": "task, branch_review_commit and reviewed-content identity", "freshness": "the Branch Review checker and reviewed-content engine are rerun before each publication check"},
     {"id": "issue_scope_ledger", "evidence": "current issue-scope-ledger.json", "binding": "primary, close, related and follow-up scope", "freshness": "current semantic projection"},
-    {"id": "publication_content", "evidence": "task-local pr-body.md and finish-summary-index.json", "binding": "current reviewer-facing content and semantic history index", "freshness": "reread after every metadata revision"},
+    {"id": "publication_content", "evidence": "AI-authored exact PR title/body plus current scope, diff, validation and durable docs", "binding": "one reviewer-facing PR payload and its history-summary source section", "freshness": "regenerated and rereviewed inside the owner loop"},
     {"id": "review_range_and_working_tree", "evidence": "current base-to-HEAD diff, status and reviewed-content identity", "binding": "Branch Review commit plus current content identity", "freshness": "rebuilt before record and check"},
     {"id": "invocation_freshness", "evidence": "current task and branch_review_commit", "binding": "one current owner invocation", "freshness": "checker rereads live owner state"}
   ],
@@ -102,7 +102,7 @@
       "example_argv": ["--input", "examples/public-publication-review-input.json", "--owner-result", "examples/pr-readiness.json"]
     },
     "outputs": [
-      {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-3.0", "path": "schemas/public-ready-output.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},
+      {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-4.0", "path": "schemas/public-ready-output.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},
       {"exit_id": "return_to_task_work", "schema": {"schema_id": "guru-production-review-task-publication-output-return-to-task-work-1.0", "path": "schemas/public-return-to-task-work-output.schema.json"}, "example": {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"}, "consumer_use_ids": ["project_return_to_task_work"]},
       {"exit_id": "blocked", "schema": {"schema_id": "guru-production-review-task-publication-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
     ],
@@ -116,7 +116,7 @@
           "interface_path": "packages/guru-finalize-task/interface.json",
           "input_kind": "structured_json",
           "profile_id": "publication_ready",
-          "seed_fields": ["task_ref", "branch_review_commit"],
+          "seed_fields": ["task_ref", "branch_review_commit", "pr_title", "pr_body"],
           "authoring_fields": ["profile", "mode"],
           "authoring_example": {
             "id": "finalization_publication_ready_authoring",
@@ -145,7 +145,9 @@
         "operation": "select",
         "mappings": [
           {"source": "task_ref", "target": "task_ref"},
-          {"source": "branch_review_commit", "target": "branch_review_commit"}
+          {"source": "branch_review_commit", "target": "branch_review_commit"},
+          {"source": "pr_title", "target": "pr_title"},
+          {"source": "pr_body", "target": "pr_body"}
         ]
       },
       {"id": "project_return_to_task_work", "exit_id": "return_to_task_work", "consumer_input_id": "return_to_task_work_input", "operation": "direct"},
@@ -155,7 +157,7 @@
       {
         "id": "publication_readiness",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-3.0.json", "path": "schemas/pr-readiness.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json", "path": "schemas/pr-readiness.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]

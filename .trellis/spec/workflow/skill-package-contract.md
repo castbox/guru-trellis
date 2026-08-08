@@ -619,8 +619,8 @@ finalizer's `verification_required`,
 targets. Their projected seed fields are respectively `source_exit/task_ref`,
 `source_exit/task_ref/phase2_commit_anchor`, `source_exit/task_ref`,
 `task_ref/base_ref/branch_review_commit`, and
-`task_ref/branch_review_commit`. Publication `ready` likewise seeds Finalizer
-with only `task_ref/branch_review_commit`; every other finalization-family seed
+`task_ref/branch_review_commit`. Publication `ready` seeds Finalizer with
+`task_ref/branch_review_commit/pr_title/pr_body`; every other finalization-family seed
 is the minimal field set declared by its target profile, with standalone
 not-required fixed to `repo_ref/resolved_head/verification_ref` plus
 target-authored `profile/mode/task_ref`, and reprepare fixed to
@@ -1380,17 +1380,16 @@ cover the complete target required set, and merge without overwrite. Inputs
 outside the current profile schemas fail closed; Publication never reads or
 projects another Skill's checkpoint.
 
-In workflow mode, initial `pr-body.md` and `finish-summary-index.json` candidate
-authoring occurs immediately after Branch Review `passed` and before the
-mandatory publication invocation. This is caller-owned producer preparation,
-not another semantic Gate or public handoff. The publication Skill remains the
-sole owner of body/index sufficiency, Issue closure, all ten dimensions,
-finding routing, revision, and readiness; its mandatory `publication_content`
-entry precondition validates the current prepared bytes. Phase 3.7 may consume
-the `ready`-bound bytes but may not first create or mutate them.
+In workflow and standalone mode, the Publication AI authors the exact Chinese
+PR title and Markdown body directly from live authority and reviews that payload
+inside the same semantic loop. Neither the caller nor another Skill creates a
+task-local PR body or finish-summary index candidate. Publication remains the
+sole owner of payload sufficiency, Issue closure, all ten dimensions, finding
+routing, revision, and readiness; Finalizer may consume only the checked payload
+returned by `ready` and may not create or reinterpret it.
 
 The independent minimal outputs are
-`ready(exit_id,task_ref,branch_review_commit)` to active
+`ready(exit_id,task_ref,branch_review_commit,pr_title,pr_body)` to active
 `guru-finalize-task`,
 `return_to_task_work(exit_id,task_ref,finding_refs,resume_target=phase-2)` to
 the task-work workflow router, and `blocked(exit_id,reason_code,remediation)` to
@@ -1398,8 +1397,9 @@ an explicit stop. Review narrative, findings, artifact paths, live facts, and
 digest bundles remain private.
 
 The sole private gate is ignored-runtime `pr-readiness.json` under
-`guru-task-publication-readiness-3.0`. It contains only task,
-`branch_review_commit`, `reviewed_content_sha256`,
+`guru-task-publication-readiness-4.0`. It contains only task,
+`branch_review_commit`, `reviewed_content_sha256`, the closed exact
+`pr_payload(title,body)`,
 the ten AI-reviewed dimensions, findings with closure evidence, three
 scope/Docs/safety conclusions, and the selected route. The recorder/checker
 rebuild all eight objective entry preconditions transiently; those live facts,
@@ -1431,8 +1431,8 @@ or copied into a Publication exit. The fresh semantic result replaces the
 single owner-private checkpoint; no supersession ref or user confirmation is
 required for mapped stale/re-entry handling.
 
-Metadata-only findings may revise only the contract-listed task-local PR body,
-finish-summary index, or Issue Scope Ledger publication metadata, followed by
+Metadata-only findings may revise only the owner-private PR payload or Issue
+Scope Ledger publication metadata, followed by
 a dependency-scoped review: reread all eight objective preconditions, re-review
 dimensions whose direct evidence changed, and carry a prior passed dimension
 only while its evidence remains current and byte-identical. Source, test,
@@ -1442,14 +1442,24 @@ and never decide sufficiency, issue closure, dimension status, finding route,
 or `ready`.
 
 The publication repository binding uses the shared reviewed-content boundary,
-scope-only `issue-scope-ledger.json`, `pr-body.md`, and
-`finish-summary-index.json`. Branch Review continuity comes from the public Git
+scope-only `issue-scope-ledger.json`, and the exact owner-private PR payload.
+Branch Review continuity comes from the public Git
 anchor, shared content identity, and live Git, not from reopening its private checkpoint. The recorder-owned
 ignored `pr-readiness.json` is excluded from its own snapshot. Runtime input is
 allowed only when the current command explicitly names that regular file under
 `.trellis/.runtime/guru-team/`; neither the whole task prefix nor the runtime
 prefix is allowed. Any other status path records a failed
 `review_range_and_working_tree` binding and prevents `ready`.
+
+The current ready output schema is
+`guru-production-review-task-publication-output-ready-4.0`; the active
+Finalizer input is `guru-finalize-task-input-publication-ready-4.0`, with
+aggregate input schema `guru-finalize-task-input-aggregate-4.0`. The integrated
+`select` projection carries exactly `task_ref`, `branch_review_commit`,
+`pr_title`, and `pr_body`; Finalizer target authoring supplies only
+`profile/mode`. Any legacy 3.0 input or output shape fails closed and requires a
+fresh Publication invocation. No alias, task-local fallback, compatibility
+reader, or migration executor is part of the current contract.
 
 The current additive activation set contributes to the live closure of fourteen
 active Skills and 54 exits. The production current manifest remains exactly
@@ -1588,12 +1598,12 @@ text. The existing #105 closeout engine is the sole deterministic
 executor for content push, verification boundary, unique draft identity, final
 projection, official `task.py archive --no-commit`, exact archive metadata
 transaction, three-way HEAD equality, and draft-to-ready. Current closeout plan
-schema 2.0 creates no separate evidence-metadata commit: the single archive
+schema 3.0 creates no separate evidence-metadata commit: the single archive
 transaction remains a descendant of `branch_review_commit` while the shared
 reviewed-content identity must remain unchanged.
 
 Active-task evidence and long-term archive evidence have different lifecycles.
-New closeout plans use current-only schema 2.0. `closeout-plan.json` and
+New closeout plans use current-only schema 3.0. `closeout-plan.json` and
 `finish-summary.json` are untracked active outputs that become tracked only in
 the single archive commit; Publication and Finalizer private checkpoints never
 enter move paths or the archive. The archive retains only durable files present
@@ -1602,6 +1612,13 @@ finish summary; marketplace verification is the only optional eighth file.
 Intake/context snapshots, assignment/liveness, commit plans, raw review rounds,
 `review.md`, PR body/readiness, and the summary index are not duplicated into
 the long-term archive.
+
+The only legacy closeout-plan path is bounded schema 2.0 normalization with a
+current Publication 4.0 input whose task, commit, title, body hash, and protected
+facts match. Finalizer uses the DTO body to build schema 3.0 and records the
+predecessor digest; it never reads retired body/index files or private
+Publication state. Any missing or mismatched current payload fails closed and
+routes to a fresh Publication invocation.
 
 The generic #117 owner checker remains unchanged and strict. The finalizer
 accepts standalone not-required only when the task-local #117 artifact reports

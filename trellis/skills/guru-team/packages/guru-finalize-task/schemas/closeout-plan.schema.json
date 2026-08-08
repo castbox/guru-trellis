@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "task", "git", "inputs", "review", "publish", "marketplace", "projection", "transitions", "plan_digest"],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"const": "3.0"},
     "task": {
       "type": "object",
       "additionalProperties": false,
@@ -33,7 +33,7 @@
     },
     "inputs": {
       "type": "object",
-      "minProperties": 5,
+      "minProperties": 3,
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
@@ -57,10 +57,10 @@
     "publish": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["title", "body_sha256", "draft", "draft_to_ready", "match"],
+      "required": ["title", "body", "draft", "draft_to_ready", "match"],
       "properties": {
         "title": {"type": "string", "minLength": 1},
-        "body_sha256": {"$ref": "#/$defs/sha256"},
+        "body": {"type": "string", "minLength": 1},
         "draft": {"const": true},
         "draft_to_ready": {"const": true},
         "match": {

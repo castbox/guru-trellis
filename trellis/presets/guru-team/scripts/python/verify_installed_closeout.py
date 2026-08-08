@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib.util
 import json
 import os
@@ -158,35 +157,8 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "related_issues": [],
         "followup_issues": [],
     }
-    index = {
-        "schema_version": 1,
-        "index": {
-            "problem": "安装产物缺少完整 closeout 开箱即用证据。",
-            "outcome": "已安装 wrapper 完成 draft、archive 与 ready 事务。",
-            "changed_behavior": ["throwaway 安装验证执行真实 closeout 事务。"],
-            "affected_surfaces": [{
-                "kind": "workflow",
-                "name": "finish-work",
-                "paths": [smoke_path.name],
-                "change": "验证安装后的事务入口。",
-            }],
-            "contract_changes": [],
-            "search_terms": {
-                "commands": ["finish-work.sh"],
-                "config_keys": [],
-                "schema_fields": ["closeout_plan_digest"],
-                "symbols": ["prepare_closeout"],
-                "phrases": [
-                    "旧 finish-work archive 后失败问题",
-                    "closeout_plan_digest schema 合同",
-                    "draft-to-ready 收尾事务已完成",
-                ],
-            },
-        },
-    }
     gtt.write_json(task_dir / "task.json", task)
     gtt.write_json(task_dir / "issue-scope-ledger.json", ledger)
-    gtt.write_json(task_dir / "finish-summary-index.json", index)
     gtt.write_runtime_mappings(
         root,
         gtt.load_config(root),
@@ -198,8 +170,6 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         },
         root,
     )
-    (task_dir / "pr-body.md").write_bytes(valid_pr_body(issue).encode("utf-8"))
-
     for name, content in (
         (
             "prd.md",
@@ -272,6 +242,12 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         publication_input,
         "publication-ready",
     )
+    authoring = gtt.read_json(authoring_path)
+    authoring["pr_payload"] = {
+        "title": f"完成：#{issue} 验证安装后 closeout",
+        "body": valid_pr_body(issue),
+    }
+    gtt.write_json(authoring_path, authoring)
     original_remote_url = git(root, real_git, "remote", "get-url", "origin")
     git(
         root,
@@ -443,6 +419,8 @@ def run_closeout(
                 "mode": "workflow",
                 "task_ref": task_rel,
                 "branch_review_commit": branch_review_commit,
+                "pr_title": f"#{issue} 验证安装后 closeout",
+                "pr_body": valid_pr_body(issue),
             },
             ensure_ascii=False,
             indent=2,
@@ -484,9 +462,6 @@ def run_closeout(
         "--repo", REPO,
         "--base-branch", BASE_BRANCH,
         "--remote", "origin",
-        "--title", f"#{issue} 验证安装后 closeout",
-        "--finish-summary-index-file", f"{task_rel}/finish-summary-index.json",
-        "--body-file", f"{task_rel}/pr-body.md",
     ]
     preview_command = [str(wrappers["preview-finalization"]), *common_options]
     record_command = [
