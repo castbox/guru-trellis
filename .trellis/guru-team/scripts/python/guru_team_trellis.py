@@ -24889,6 +24889,22 @@ def finalization_publication_owner_result(
     }
 
 
+def finalization_prepare_publication_ready(
+    public_input: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Project a validated reprepare identity into initial plan authority."""
+    if public_input.get("profile") == "publication_ready":
+        return public_input
+    if public_input.get("profile") != "reprepare_preview":
+        return None
+    return {
+        "profile": "publication_ready",
+        "mode": public_input["mode"],
+        "task_ref": public_input["task_ref"],
+        "branch_review_commit": public_input["branch_review_commit"],
+    }
+
+
 def finalization_closeout_plan(
     root: Path,
     task_dir: Path,
@@ -25824,11 +25840,7 @@ def finalization_preview_context(
                 config,
                 task_dir,
                 task_context,
-                publication_ready=(
-                    public_input
-                    if public_input["profile"] == "publication_ready"
-                    else None
-                ),
+                publication_ready=finalization_prepare_publication_ready(public_input),
                 verification_owner_result=verification,
             )
             plan = prepared["plan"]

@@ -9348,6 +9348,15 @@ printf '{\"status\":\"ok\"}\\n'
                 reprepare_input,
             )
         prepare.assert_called_once()
+        self.assertEqual(
+            prepare.call_args.kwargs["publication_ready"],
+            {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": public_input["task_ref"],
+                "branch_review_commit": reviewed,
+            },
+        )
         self.assertEqual(preview["plan_ref"], new_plan_ref)
         self.assertEqual(preview["plan"]["git"]["branch_review_commit"], reviewed)
         self.assertEqual(preview["plan"]["git"]["publication_head"], publication)

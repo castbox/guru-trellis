@@ -53,6 +53,12 @@
 - [x] 增加 manifest 非允许字段与 task metadata 混合 commit 回归，证明组合提交继续由 provenance validator fail closed。
 - [ ] 在新 fix commit 后完成 finding closure 与 distinct fresh-final review。
 
+## 5.4 Live Finalizer reprepare finding
+
+- [x] 修复 `BR-191-P1-010`：`reprepare_preview` 在旧 plan/gate 已按合同 supersede 后，将已验证的 task/reviewed identity 确定性投影为新 plan builder 的 Publication authority。
+- [x] 扩展受控 pre-PR fixture，断言 tail-aware reprepare 不读取旧 plan 也能把原 reviewed HEAD 传给 `prepare_closeout`。
+- [ ] 在 finding-fix commit 后重新执行完整 Phase 2、独立 current-HEAD Branch Review、Publication 与真实 Finalizer 闭环。
+
 ## 6. Required context/spec files
 
 ```text
