@@ -520,7 +520,7 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         link.symlink_to("target-b")
         self.assertNotEqual(self.identity(), dirty)
 
-    def test_gitlink_identity_is_stable_and_unavailable_or_dirty_fails_closed(self) -> None:
+    def test_gitlink_initialized_and_deinitialized_clean_share_stable_identity(self) -> None:
         submodule, revision_a, revision_b = self.add_submodule_history()
         baseline = self.identity()
         self.assertEqual(
@@ -538,17 +538,6 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         self.commit_all("advance reviewed gitlink")
         self.assertEqual(self.identity(), dirty_candidate)
 
-        (submodule / "dependency.txt").write_text("dirty\n", encoding="utf-8")
-        with self.assertRaisesRegex(
-            gtt.WorkflowError,
-            "gitlink worktree must be clean",
-        ):
-            self.identity()
-        subprocess.run(
-            ["git", "checkout", "--", "dependency.txt"],
-            cwd=submodule,
-            check=True,
-        )
         subprocess.run(
             ["git", "submodule", "deinit", "-f", "--", "deps/dependency"],
             cwd=self.root,
@@ -564,10 +553,109 @@ class ReviewedContentIdentityTest(unittest.TestCase):
             ).stdout,
             b"",
         )
+        self.assertEqual(self.identity(), dirty_candidate)
+        self.assertEqual(self.identity(), dirty_candidate)
+
+    def test_gitlink_initialized_dirty_fails_closed(self) -> None:
+        submodule, _, _ = self.add_submodule_history()
+
+        (submodule / "dependency.txt").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaisesRegex(
+            gtt.WorkflowError,
+            "gitlink worktree must be clean",
+        ):
+            self.identity()
+
+    def test_gitlink_head_drift_after_overlay_capture_fails_closed(self) -> None:
+        submodule, _, revision_b = self.add_submodule_history()
+        subprocess.run(["git", "checkout", "-q", revision_b], cwd=submodule, check=True)
+        original = gtt.task_commit_gitlink_worktree_identity
+        calls = 0
+
+        def drift_after_capture(root: Path, path: str) -> dict[str, object]:
+            nonlocal calls
+            calls += 1
+            identity = original(root, path)
+            if calls == 2:
+                return {**identity, "gitlink_head": "f" * 40}
+            return identity
+
+        with mock.patch.object(
+            gtt,
+            "task_commit_gitlink_worktree_identity",
+            side_effect=drift_after_capture,
+        ):
+            with self.assertRaisesRegex(gtt.WorkflowError, "HEAD drifted after capture"):
+                self.identity()
+        self.assertEqual(calls, 2)
+
+    def test_gitlink_pointer_drift_after_overlay_capture_fails_closed(self) -> None:
+        submodule, revision_a, revision_b = self.add_submodule_history()
+        subprocess.run(["git", "checkout", "-q", revision_b], cwd=submodule, check=True)
+        original = gtt.reviewed_content_worktree_overlays
+
+        def drift_index_after_capture(root: Path) -> list[dict[str, object]]:
+            overlays = original(root)
+            subprocess.run(
+                [
+                    "git",
+                    "update-index",
+                    "--cacheinfo",
+                    "160000",
+                    revision_b,
+                    "deps/dependency",
+                ],
+                cwd=root,
+                check=True,
+            )
+            return overlays
+
+        self.assertEqual(
+            gtt.task_commit_index_identity(self.root, "deps/dependency"),
+            (revision_a, "160000"),
+        )
+        with mock.patch.object(
+            gtt,
+            "reviewed_content_worktree_overlays",
+            side_effect=drift_index_after_capture,
+        ):
+            with self.assertRaisesRegex(gtt.WorkflowError, "index binding drifted"):
+                self.identity()
+
+    def test_gitlink_deletion_replacement_and_nonempty_root_mismatch_fail_closed(self) -> None:
+        submodule, _, _ = self.add_submodule_history()
+        subprocess.run(
+            ["git", "submodule", "deinit", "-f", "--", "deps/dependency"],
+            cwd=self.root,
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+        (submodule / "unexpected.txt").write_text("not a submodule\n", encoding="utf-8")
         with self.assertRaisesRegex(
             gtt.WorkflowError,
             "gitlink worktree is uninitialized or root-mismatched",
         ):
+            self.identity()
+
+        original_resolve = Path.resolve
+
+        def ambiguous_resolve(path: Path, strict: bool = False) -> Path:
+            if path == submodule:
+                raise RuntimeError("ambiguous gitlink root")
+            return original_resolve(path, strict=strict)
+
+        with mock.patch.object(Path, "resolve", new=ambiguous_resolve):
+            with self.assertRaisesRegex(gtt.WorkflowError, "root is ambiguous"):
+                self.identity()
+
+        (submodule / "unexpected.txt").unlink()
+        submodule.rmdir()
+        submodule.write_text("replacement\n", encoding="utf-8")
+        with self.assertRaisesRegex(gtt.WorkflowError, "not an exact directory"):
+            self.identity()
+
+        submodule.unlink()
+        with self.assertRaisesRegex(gtt.WorkflowError, "deletion or replacement"):
             self.identity()
 
     def test_metadata_classifier_uses_complete_repo_relative_prefixes(self) -> None:
@@ -10375,6 +10463,180 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             facts["commands"][-1]["argv"][-1],
             "<temp-install-work>",
         )
+
+    def test_task_bearing_executor_with_deinitialized_gitlink_reaches_throwaway(
+        self,
+    ) -> None:
+        source_tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(source_tmp.cleanup)
+        source = Path(source_tmp.name)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=source, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "gitlink@example.invalid"],
+            cwd=source,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Gitlink Test"],
+            cwd=source,
+            check=True,
+        )
+        (source / "dependency.txt").write_text("dependency\n", encoding="utf-8")
+        subprocess.run(["git", "add", "dependency.txt"], cwd=source, check=True)
+        subprocess.run(["git", "commit", "-qm", "dependency"], cwd=source, check=True)
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(source),
+                "deps/dependency",
+            ],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "add dependency gitlink"],
+            cwd=self.root,
+            check=True,
+        )
+        self.head = gtt.current_head(self.root)
+        subprocess.run(
+            ["git", "submodule", "deinit", "-f", "--", "deps/dependency"],
+            cwd=self.root,
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+        self.assertEqual(
+            subprocess.run(
+                ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+                cwd=self.root,
+                check=True,
+                stdout=subprocess.PIPE,
+            ).stdout,
+            b"",
+        )
+        expected_identity = gtt.reviewed_content_identity(self.root)["sha256"]
+        public_input = self.public_input("workflow", task=True)
+        clone_commands: list[list[str]] = []
+        throwaway_commands: list[list[str]] = []
+        source_commit = "b" * 40
+
+        def fake_run(
+            command: list[str],
+            cwd: Path | None = None,
+            check: bool = True,
+            env: dict[str, str] | None = None,
+        ) -> mock.Mock:
+            del check, env
+            if command[:3] == ["git", "rev-parse", "--abbrev-ref"]:
+                return mock.Mock(returncode=0, stdout="main\n", stderr="")
+            if command[:2] == ["git", "ls-remote"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout=f"{self.head}\trefs/heads/main\n",
+                    stderr="",
+                )
+            if command[:3] == ["git", "remote", "get-url"]:
+                return mock.Mock(
+                    returncode=0,
+                    stdout="https://github.com/example/guru-extension.git\n",
+                    stderr="",
+                )
+            if command[:2] == ["git", "clone"]:
+                clone_commands.append(command)
+                destination = Path(command[-1])
+                proc = subprocess.run(
+                    ["git", "clone", "-q", "--no-checkout", str(self.root), str(destination)],
+                    cwd=cwd,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                return mock.Mock(
+                    returncode=proc.returncode,
+                    stdout=proc.stdout,
+                    stderr=proc.stderr,
+                )
+            if command[:3] == ["git", "checkout", "--detach"]:
+                if Path(cwd).name == "target-checkout":
+                    proc = subprocess.run(
+                        command,
+                        cwd=cwd,
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                    )
+                    return mock.Mock(
+                        returncode=proc.returncode,
+                        stdout=proc.stdout,
+                        stderr=proc.stderr,
+                    )
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            if command[:3] == ["git", "rev-parse", "--verify"]:
+                head = self.head if Path(cwd).name == "target-checkout" else source_commit
+                return mock.Mock(returncode=0, stdout=f"{head}\n", stderr="")
+            if command and command[0].endswith("verify-throwaway-install.sh"):
+                throwaway_commands.append(command)
+                self.materialize_installed_asset_target(
+                    Path(cwd),
+                    Path(command[1]) / "project",
+                )
+                return mock.Mock(returncode=0, stdout="", stderr="")
+            return mock.Mock(returncode=1, stdout="", stderr="unexpected command")
+
+        def resolve_source(
+            locator: str,
+            requested_ref: str,
+            checkout: Path,
+        ) -> dict[str, Any]:
+            self.assertEqual(locator, "https://github.com/example/guru-extension.git")
+            self.assertEqual(requested_ref, "refs/heads/main")
+            self.copy_extension_source_fixture(checkout)
+            return {
+                "status": "passed",
+                "resolved_ref": source_commit,
+                "direct_oid": source_commit,
+                "commit": source_commit,
+                "checkout_prepared": True,
+                "commands": [],
+            }
+
+        with (
+            mock.patch.object(gtt, "run", side_effect=fake_run),
+            mock.patch.object(
+                gtt,
+                "extension_verification_task_identity",
+                return_value=self.task_dir,
+            ),
+            mock.patch.object(
+                gtt,
+                "extension_verification_resolve_source_reference",
+                side_effect=resolve_source,
+            ),
+        ):
+            facts = gtt.extension_verification_execute_facts(
+                self.root,
+                public_input,
+                ["marketplace_index"],
+            )
+
+        self.assertEqual(facts["status"], "passed", facts)
+        self.assertEqual(
+            facts["target_repository"]["reviewed_content_sha256"],
+            expected_identity,
+        )
+        self.assertEqual(len(clone_commands), 1)
+        self.assertEqual(clone_commands[0][:3], ["git", "clone", "--filter=blob:none"])
+        command_ids = [item["id"] for item in facts["commands"]]
+        self.assertIn("clone_target", command_ids)
+        self.assertIn("verify_extension_source_checkout", command_ids)
+        self.assertIn("verify_throwaway_installation", command_ids)
+        self.assertEqual(len(throwaway_commands), 1)
 
     def test_executor_resolves_branch_lightweight_and_annotated_refs_to_commits(
         self,
