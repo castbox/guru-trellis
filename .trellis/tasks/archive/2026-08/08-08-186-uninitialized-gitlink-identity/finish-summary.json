@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-08T01:55:23Z",
+  "generator": "guru-team.finish-work",
+  "task": {
+    "slug": "08-08-186-uninitialized-gitlink-identity",
+    "title": "#186 修复未初始化 Gitlink 的 task-bearing 验证",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-08-186-uninitialized-gitlink-identity",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/186-uninitialized-gitlink-identity",
+    "commits": [
+      "83abf9232723326471f6192a7a44bc19b35f23c7"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/check.jsonl",
+      ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/design.md",
+      ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/implement.jsonl",
+      ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/implement.md",
+      ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/issue-scope-ledger.json",
+      ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/prd.md",
+      ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/task.json",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/closeout-plan.json",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/design.md",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/implement.md",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/marketplace-verification.json",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/prd.md",
+      ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/task.json",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      186
+    ],
+    "close_issues": [
+      186
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/190"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "closeout_plan": "closeout-plan.json",
+    "marketplace_verification": "marketplace-verification.json"
+  },
+  "index": {
+    "problem": "Task-bearing reviewed-content identity 将未初始化但未修改的 Gitlink 误判为 root mismatch，导致含合法历史 Gitlink 的任务在安装验证与最终发布前被阻断。",
+    "outcome": "Reviewed-content identity 现在对无 overlay 的 deinitialized-clean Gitlink 使用 superproject 记录的 OID，同时保留已初始化与变化 Gitlink 的严格校验，并维持 canonical、installed 与回归测试一致。",
+    "changed_behavior": [
+      "无 overlay 的 deinitialized-clean Gitlink 使用 superproject 记录的 OID，不再要求初始化 submodule。",
+      "initialized-clean Gitlink 继续验证 exact root、HEAD/index binding 与 clean worktree。",
+      "dirty、HEAD drift、pointer drift、删除、替换、非空 root mismatch 与歧义状态继续失败。",
+      "task-bearing executor 可以继续到 isolated target/source checkout 和 throwaway installer invocation。",
+      "canonical 与 installed dogfood runtime 保持字节一致且没有未处理的 overlay 漂移。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "script",
+        "name": "Reviewed-content Gitlink identity runtime",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+        ],
+        "change": "分离 recorded Gitlink identity 与 initialized worktree validation，并仅允许无 overlay 的 deinitialized-clean fallback。"
+      },
+      {
+        "kind": "test",
+        "name": "Gitlink identity and task-bearing verification regressions",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "change": "覆盖 clean identity 等价性、dirty 与 drift 失败、歧义状态以及 executor 到 throwaway installer 的路径。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "Issue 186 planning and review evidence",
+        "paths": [
+          ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/prd.md",
+          ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/design.md",
+          ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/implement.md",
+          ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/issue-scope-ledger.json"
+        ],
+        "change": "记录唯一 Issue 范围、状态分类、实现边界、验证计划与 no_docs_update_needed 结论。"
+      }
+    ],
+    "contract_changes": [
+      {
+        "contract": "Deinitialized Gitlink reviewed identity",
+        "before": "每个 Gitlink 都必须解析为独立 submodule Git root，未初始化空目录因此失败。",
+        "after": "无 overlay 且可证明为 deinitialized-clean 时使用 superproject recorded OID，无需初始化或访问 remote。",
+        "source_artifact": ""
+      },
+      {
+        "contract": "Initialized and changed Gitlink validation",
+        "before": "已初始化 Gitlink 通过 exact root、HEAD、dirty 与 binding 检查。",
+        "after": "已初始化与变化 Gitlink 继续执行相同严格检查，未绑定 drift、替换和歧义状态保持 fail closed。",
+        "source_artifact": ""
+      }
+    ],
+    "search_terms": {
+      "issue_refs": [
+        "#186"
+      ],
+      "pr_refs": [
+        "PR #190"
+      ],
+      "branches": [
+        "fix/186-uninitialized-gitlink-identity"
+      ],
+      "paths": [
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/check.jsonl",
+        ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/design.md",
+        ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/implement.jsonl",
+        ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/implement.md",
+        ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/issue-scope-ledger.json",
+        ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/prd.md",
+        ".trellis/tasks/08-08-186-uninitialized-gitlink-identity/task.json",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/closeout-plan.json",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/design.md",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/implement.md",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/marketplace-verification.json",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/prd.md",
+        ".trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/task.json",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "commands": [
+        "check-dogfood-overlay-drift.sh"
+      ],
+      "config_keys": [],
+      "schema_fields": [
+        "gitlink_initialized",
+        "gitlink_head"
+      ],
+      "symbols": [
+        "reviewed_content_gitlink_identity",
+        "task_commit_gitlink_worktree_identity"
+      ],
+      "phrases": [
+        "未初始化 Gitlink 身份误判",
+        "reviewed_content_gitlink_identity 修复完成",
+        "task-bearing verification 继续执行"
+      ]
+    },
+    "retrieval_text": "#186 修复未初始化 Gitlink 的 task-bearing 验证\nTask-bearing reviewed-content identity 将未初始化但未修改的 Gitlink 误判为 root mismatch，导致含合法历史 Gitlink 的任务在安装验证与最终发布前被阻断。\nReviewed-content identity 现在对无 overlay 的 deinitialized-clean Gitlink 使用 superproject 记录的 OID，同时保留已初始化与变化 Gitlink 的严格校验，并维持 canonical、installed 与回归测试一致。\n无 overlay 的 deinitialized-clean Gitlink 使用 superproject 记录的 OID，不再要求初始化 submodule。\ninitialized-clean Gitlink 继续验证 exact root、HEAD/index binding 与 clean worktree。\ndirty、HEAD drift、pointer drift、删除、替换、非空 root mismatch 与歧义状态继续失败。\ntask-bearing executor 可以继续到 isolated target/source checkout 和 throwaway installer invocation。\ncanonical 与 installed dogfood runtime 保持字节一致且没有未处理的 overlay 漂移。\n分离 recorded Gitlink identity 与 initialized worktree validation，并仅允许无 overlay 的 deinitialized-clean fallback。\n覆盖 clean identity 等价性、dirty 与 drift 失败、歧义状态以及 executor 到 throwaway installer 的路径。\n记录唯一 Issue 范围、状态分类、实现边界、验证计划与 no_docs_update_needed 结论。\n每个 Gitlink 都必须解析为独立 submodule Git root，未初始化空目录因此失败。\n无 overlay 且可证明为 deinitialized-clean 时使用 superproject recorded OID，无需初始化或访问 remote。\n已初始化 Gitlink 通过 exact root、HEAD、dirty 与 binding 检查。\n已初始化与变化 Gitlink 继续执行相同严格检查，未绑定 drift、替换和歧义状态保持 fail closed。\n未初始化 Gitlink 身份误判\nreviewed_content_gitlink_identity 修复完成\ntask-bearing verification 继续执行"
+  }
+}

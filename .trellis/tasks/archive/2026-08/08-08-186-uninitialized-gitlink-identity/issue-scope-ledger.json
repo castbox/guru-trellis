@@ -1,0 +1,19 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 186,
+    "url": "https://github.com/castbox/guru-trellis/issues/186",
+    "title": "Task-bearing verification rejects unchanged uninitialized Gitlinks",
+    "reason": "Issue #186 is the sole independently deliverable bug authority."
+  },
+  "close_issues": [
+    {
+      "number": 186,
+      "url": "https://github.com/castbox/guru-trellis/issues/186",
+      "title": "Task-bearing verification rejects unchanged uninitialized Gitlinks",
+      "reason": "Issue #186 is the sole independently deliverable bug authority."
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}
