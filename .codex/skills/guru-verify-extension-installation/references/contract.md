@@ -3,7 +3,7 @@
 ## Entry
 
 `verification_required` is the workflow target bootstrap owned by this package
-for active `guru-finalize-task`. Its five business seed fields are
+for active `guru-finalize-task`. Its six business seed fields are
 `task_ref`, `plan_ref`, `repo_ref`, `branch_review_commit`, `publication_head`, and
 `verification_target`; `profile` and `mode` are fixed discriminators. Global
 Finish-family routing automatically consumes this target through the active

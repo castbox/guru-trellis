@@ -59,6 +59,11 @@
 - [x] 扩展受控 pre-PR fixture，断言 tail-aware reprepare 不读取旧 plan 也能把原 reviewed HEAD 传给 `prepare_closeout`。
 - [ ] 在 finding-fix commit 后重新执行完整 Phase 2、独立 current-HEAD Branch Review、Publication 与真实 Finalizer 闭环。
 
+## 5.5 Verifier public contract wording finding
+
+- [x] 修复 `BR-191-P3-011`：将 canonical Verifier contract 的 `verification_required` business seed field 计数由 `five` 更正为与当前 Interface/schema/list 一致的 `six`。
+- [x] 通过 canonical all-platform preset apply 同步 installed/shared/Codex/Claude/Cursor 副本并确认 zero sidecar；后续重新执行 Phase 2、finding-fix commit 与独立 current-HEAD Branch Review。
+
 ## 6. Required context/spec files
 
 ```text
