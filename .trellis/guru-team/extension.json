@@ -291,11 +291,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-08T18:22:16Z",
+  "installed_at": "2026-08-08T19:05:08Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "da00476a065e72ff0efda5aa0fd78f6b077044e1",
-    "commit": "da00476a065e72ff0efda5aa0fd78f6b077044e1",
+    "ref": "6b3836a471396bbf3b71cfd14f1720766a7aba52",
+    "commit": "6b3836a471396bbf3b71cfd14f1720766a7aba52",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -366,9 +366,7 @@
       ".trellis/guru-team/scripts/python/guru_team_trellis.py"
     ],
     "new_copies": [],
-    "managed_backups": [
-      ".trellis/guru-team/scripts/python/guru_team_trellis.py.bak"
-    ],
+    "managed_backups": [],
     "workflow_marketplace": "gh:castbox/guru-trellis/trellis",
     "workflow_template": "guru-team"
   },

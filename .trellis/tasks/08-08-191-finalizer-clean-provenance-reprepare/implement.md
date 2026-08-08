@@ -41,6 +41,12 @@
 - [x] 让旧 plan/gate/request 删除后的 `reprepare_preview` 直接校验 current HEAD 与单 provenance tail 后创建新 plan。
 - [ ] 增加受控 fixture 回归并重新执行 Phase 2、Task Commit、独立 Branch Review、Publication 与 Finalizer preview。
 
+## 5.2 Branch Review finding closure
+
+- [x] 修复 `BR-191-P1-008`：通过 canonical all-platform apply 清除 installed manifest 中已不存在的 `managed_backups` sidecar 记录。
+- [x] 增加 current-bytes regression，要求 checked-in manifest 的 `managed_backups` 与 `new_copies` 均为空，避免真实 clean producer 出现 allowlist 外 diff。
+- [ ] 在 fix commit 后用 clean checkout 重放真实 producer，完成 finding closure 与 distinct fresh-final review。
+
 ## 6. Required context/spec files
 
 ```text

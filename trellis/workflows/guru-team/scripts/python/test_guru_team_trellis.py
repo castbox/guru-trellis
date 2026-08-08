@@ -8650,8 +8650,28 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
 
 
 class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
+    REPO_ROOT = Path(__file__).resolve().parents[5]
+
     def git(self, root: Path, *args: str) -> str:
         return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
+
+    def test_checked_in_manifest_has_no_pending_installer_sidecars(self) -> None:
+        manifest = json.loads(
+            (self.REPO_ROOT / gtt.PROVENANCE_TAIL_MANIFEST_PATH).read_text(
+                encoding="utf-8"
+            )
+        )
+        install = manifest["install"]
+        self.assertEqual(install["managed_backups"], [])
+        self.assertEqual(install["new_copies"], [])
+
+        pending = [
+            relpath
+            for key in ("managed_backups", "new_copies")
+            for relpath in install[key]
+            if (self.REPO_ROOT / relpath).exists()
+        ]
+        self.assertEqual(pending, [])
 
     def fixture(self) -> tuple[Path, str, str]:
         root = Path(tempfile.mkdtemp(prefix="guru-provenance-tail-test-"))
