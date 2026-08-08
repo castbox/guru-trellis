@@ -11717,7 +11717,11 @@ def provenance_tail_manifest_field_diff(
         [
             path
             for path in set(before_flat) | set(after_flat)
-            if before_flat.get(path) != after_flat.get(path)
+            if (
+                path not in before_flat
+                or path not in after_flat
+                or before_flat[path] != after_flat[path]
+            )
         ],
         key=lambda item: item.encode("utf-8"),
     )
@@ -12081,15 +12085,12 @@ def prepare_provenance_metadata_tail(
     }
 
 
-def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
-    """Retire only owner-private Finalizer state before a fresh plan is reviewed."""
-    retired: list[str] = []
+def finalizer_tracked_pre_pr_artifacts(root: Path, task_dir: Path) -> list[str]:
+    """Return tracked plan/verification artifacts that reprepare may not retire."""
     plan = closeout_plan_path(task_dir)
     verification = task_dir / MARKETPLACE_VERIFICATION_ARTIFACT
-    tracked_owner_state = []
+    tracked_owner_state: list[str] = []
     for path in (plan, verification):
-        if not path.exists():
-            continue
         relative = repo_relative(root, path)
         if run(
             ["git", "ls-files", "--error-unmatch", "--", relative],
@@ -12097,6 +12098,143 @@ def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
             check=False,
         ).returncode == 0:
             tracked_owner_state.append(relative)
+    return sorted(tracked_owner_state, key=lambda item: item.encode("utf-8"))
+
+
+def finalizer_pre_pr_provenance_reprepare_preflight(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+) -> dict[str, Any]:
+    """Prove the pre-PR recovery window before any producer or cleanup mutation."""
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    task = plan.get("task") if isinstance(plan.get("task"), dict) else {}
+    reviewed_content_head = str(
+        git.get("reviewed_content_head") or git.get("branch_review_commit") or ""
+    )
+    if re.fullmatch(r"[0-9a-f]{40}", reviewed_content_head) is None:
+        raise WorkflowError(
+            "Provenance reprepare reviewed content identity is invalid.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_reviewed_head_invalid"},
+        )
+    local_head = current_head(root)
+    existing_tail_errors = (
+        []
+        if local_head == reviewed_content_head
+        else provenance_tail_commit_errors(
+            root,
+            reviewed_content_head,
+            local_head,
+        )
+    )
+    if existing_tail_errors:
+        raise WorkflowError(
+            "Provenance reprepare requires reviewed content HEAD or its valid existing tail.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_local_head_changed",
+                "errors": existing_tail_errors,
+            },
+        )
+
+    tracked_owner_state = finalizer_tracked_pre_pr_artifacts(root, task_dir)
+    if tracked_owner_state:
+        raise WorkflowError(
+            "Finalizer will not delete tracked task artifacts during reprepare.",
+            exit_code=2,
+            payload={"tracked_paths": tracked_owner_state},
+        )
+
+    active_locator = str(task.get("active_locator") or "")
+    archive_locator = str(task.get("archive_locator") or "")
+    if (
+        not active_locator
+        or repo_relative(root, task_dir) != active_locator
+        or (archive_locator and (root / archive_locator).exists())
+    ):
+        raise WorkflowError(
+            "Provenance reprepare is unavailable after archive publication starts.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_archive_started"},
+        )
+
+    head_branch = str(git.get("head_branch") or "")
+    branch_ref = f"refs/heads/{head_branch}"
+    branch_worktrees = [
+        record
+        for record in worktree_records(root)
+        if record.get("branch") == branch_ref
+    ]
+    current_branch_worktrees = [
+        record
+        for record in branch_worktrees
+        if Path(record.get("worktree") or "").resolve() == root.resolve()
+    ]
+    parallel_consumers = sorted(
+        str(record.get("worktree") or "")
+        for record in branch_worktrees
+        if Path(record.get("worktree") or "").resolve() != root.resolve()
+    )
+    if not head_branch or len(current_branch_worktrees) != 1 or parallel_consumers:
+        raise WorkflowError(
+            "Provenance reprepare requires one exclusive publication worktree.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_parallel_publication_consumer",
+                "worktrees": parallel_consumers,
+            },
+        )
+
+    existing_pr = resolve_closeout_pull_request(
+        root,
+        str(git.get("repo") or ""),
+        head_branch,
+        str(git.get("base_branch") or ""),
+        str(git.get("remote") or "origin"),
+    )
+    if existing_pr is not None:
+        raise WorkflowError(
+            "Provenance reprepare is unavailable after pull request creation.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_pull_request_exists",
+                "pull_request": existing_pr.get("number"),
+            },
+        )
+
+    remote_head = closeout_remote_branch_head(root, plan)
+    if remote_head != reviewed_content_head:
+        raise WorkflowError(
+            "Provenance reprepare requires the remote branch at reviewed content HEAD.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_remote_not_reviewed_head",
+                "reviewed_content_head": reviewed_content_head,
+                "remote_head": remote_head,
+                "fast_forwardable": bool(
+                    remote_head
+                    and is_ancestor(root, remote_head, reviewed_content_head)
+                ),
+            },
+        )
+    return {
+        "reviewed_content_head": reviewed_content_head,
+        "local_head": local_head,
+        "remote_head": remote_head,
+        "head_branch": head_branch,
+        "pull_request": None,
+        "parallel_publication_consumers": [],
+        "tracked_task_artifacts": [],
+    }
+
+
+def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
+    """Retire only owner-private Finalizer state before a fresh plan is reviewed."""
+    retired: list[str] = []
+    plan = closeout_plan_path(task_dir)
+    verification = task_dir / MARKETPLACE_VERIFICATION_ARTIFACT
+    tracked_owner_state = finalizer_tracked_pre_pr_artifacts(root, task_dir)
     if tracked_owner_state:
         raise WorkflowError(
             "Finalizer will not delete tracked task artifacts during reprepare.",
@@ -26335,14 +26473,20 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
     if exit_id == "reprepare_required":
         reason_code = context["reprepare_reason_code"]
         reviewed_content_head = context["plan"]["git"]["reviewed_content_head"]
-        publication = finalizer_publication_identity(root, reviewed_content_head)
         if reason_code == FINALIZATION_REPREPARE_PROVENANCE_TAIL:
+            finalizer_pre_pr_provenance_reprepare_preflight(
+                root,
+                task_dir,
+                context["plan"],
+            )
+            publication = finalizer_publication_identity(root, reviewed_content_head)
             provenance = (
                 publication
                 if publication["metadata_tail"] is not None
                 else prepare_provenance_metadata_tail(root, reviewed_content_head)
             )
         elif reason_code == FINALIZATION_REPREPARE_ARCHIVE_MONTH:
+            publication = finalizer_publication_identity(root, reviewed_content_head)
             provenance = publication
         else:
             raise WorkflowError(

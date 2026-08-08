@@ -774,8 +774,11 @@ gate remain ignored runtime and never enter the archive. Any other active-task
 file fails the closed projection.
 
 The plan records sorted `move_paths`, `tracked_move_paths`,
-and `untracked_archive_outputs`. It creates no pre-draft metadata commit, and
-the archive commit is a direct child of `branch_review_commit`.
+and `untracked_archive_outputs`. Before Draft creation it may contain exactly
+one validated provenance metadata-tail whose parent is
+`branch_review_commit`; the tail becomes `publication_head` without changing
+the reviewed-content identity. The archive commit is a direct child of
+`publication_head`.
 `tracked_move_paths` require
 both active deletion and archive addition. Untracked transaction outputs,
 including `closeout-plan.json` and `finish-summary.json`, require only archive

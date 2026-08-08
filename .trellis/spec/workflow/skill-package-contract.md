@@ -1467,7 +1467,7 @@ five-stage semantic profile.
 The two structured inputs are deliberately distinct:
 
 - `verification_required` fixes workflow mode and carries
-  `task_ref/plan_ref/repo_ref/branch_review_commit/verification_target`;
+  `task_ref/plan_ref/repo_ref/branch_review_commit/publication_head/verification_target`;
 - `standalone_verification` fixes standalone mode and carries
   `repo_ref/remote/ref/caller_intent` plus a closed task-bearing or session-only
   branch.
@@ -1478,8 +1478,9 @@ example, fixture, real-wrapper eval, and concrete target-owned authoring seed.
 Issue #119 integrates the global Finish route: the workflow maps the reachable
 `verified`, `return_to_task_work`, and `blocked` exits to their unique
 consumers, while the standalone `not_required` projection retains its declared
-finalizer edge. The verifier remains the sole semantic owner, and this
-integration adds no public input or output fields.
+finalizer edge. The verifier remains the sole semantic owner. Issue #191 adds
+only `publication_head` to the workflow input and `verified` output so target
+ref/PR identity can advance independently from the reviewed source bytes.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
 
@@ -1498,7 +1499,10 @@ the full apply-time commit OID and mutability is false. Runtime fetches that OID
 directly and requires the fetched commit, manifest commit, and checkout HEAD to
 match exactly. Branch/lightweight and annotated-tag inputs retain their direct
 and peeled resolution contract.
-Private command rows use the closed `target_checkout` and
+In task-bearing workflow mode, private `target_repository.resolved_head` binds
+the checkout at `publication_head`, while its reviewed-content identity and the
+installed source provenance remain bound to `branch_review_commit` (the
+`reviewed_content_head`). Private command rows use the closed `target_checkout` and
 `extension_source_checkout` owner labels. Asset expectation/digest rows,
 ownership facts, and the sidecar fact object require
 `checkout_owner=extension_source_checkout`, including when the sidecar path set
@@ -1507,7 +1511,8 @@ is empty.
 The independent outputs are:
 
 - `verified`: workflow passes only
-  `task_ref/plan_ref/branch_review_commit/verification_ref`; standalone returns the
+  `task_ref/plan_ref/branch_review_commit/publication_head/verification_ref`;
+  standalone returns the
   safe repo/head/session verification identity;
 - `not_required`: only the reachable task-bearing standalone
   `repo_ref/resolved_head/verification_ref` DTO is valid; the finalizer target
@@ -1587,10 +1592,11 @@ unchanged unambiguous plan; the user never has to repeat its digest or prescribe
 text. The existing #105 closeout engine is the sole deterministic
 executor for content push, verification boundary, unique draft identity, final
 projection, official `task.py archive --no-commit`, exact archive metadata
-transaction, three-way HEAD equality, and draft-to-ready. Current closeout plan
-schema 2.0 creates no separate evidence-metadata commit: the single archive
-transaction remains a descendant of `branch_review_commit` while the shared
-reviewed-content identity must remain unchanged.
+transaction, three-way HEAD equality, and draft-to-ready. A plan may first add
+one validated provenance-only metadata tail whose parent is
+`branch_review_commit`; the resulting `publication_head` owns remote/ref/PR
+identity without changing the shared reviewed-content identity. The single
+archive transaction is then a direct child of `publication_head`.
 
 Active-task evidence and long-term archive evidence have different lifecycles.
 New closeout plans use current-only schema 2.0. `closeout-plan.json` and
@@ -1608,8 +1614,9 @@ accepts standalone not-required only when the task-local #117 artifact reports
 that exact exit and its repository, resolved HEAD, verification ref, task, and
 private plan match; same-plan resume reuses the same private binding without
 adding plan identity to the producer DTO. Verification re-entry binds the
-current task, plan, repository, remote ref, `branch_review_commit`, independent
-verification artifact, and local/remote reviewed-content identities. Any
+current task, plan, repository, remote ref, `branch_review_commit`,
+`publication_head`, independent verification artifact, and local/remote
+reviewed-content identities. Any
 additional drift fails closed. Same-plan resume is restricted to the declared
 post-content recovery states and excludes `prepared`, reprepare/stale state, and
 terminal `ready`.

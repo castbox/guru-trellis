@@ -480,10 +480,12 @@ Docs explain that the package owns applicability, capability profile, adequacy,
 findings, and route. Changed paths, successful commands, checker pass, and
 production eval are facts only. A workflow-required target cannot silently
 return `not_required`; an applicability conflict blocks. #117 owns the target
-input contract, and active finalizer producer/consumer edges bind it without
-expanding either public DTO. The #119 combined route carries the checker-passed
-owner evidence only as a private in-memory finalizer projection through retry,
-final projection, normal archive, and active-completed recovery.
+input contract. Issue #191 adds the minimal `publication_head` field to the
+workflow verification input and `verified` output: target checkout/ref/PR
+identity binds that publication commit, while `branch_review_commit` continues
+to bind reviewed source content. All other checker-passed owner evidence stays
+in the private in-memory finalizer projection through retry, final projection,
+normal archive, and active-completed recovery.
 
 The READMEs distinguish task-bearing
 `marketplace-verification.json` from taskless session-only owner state, name the
