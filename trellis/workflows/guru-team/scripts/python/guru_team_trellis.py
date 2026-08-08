@@ -24792,6 +24792,49 @@ def finalization_publication_owner_result(
                 exit_code=2,
                 payload={"unexpected_dirty_paths": unexpected},
             )
+    elif profile == "reprepare_preview":
+        publication_head = str(public_input.get("publication_head") or "")
+        reason_code = str(public_input.get("reason_code") or "")
+        plan = finalization_closeout_plan(root, task_dir)
+        if plan is not None:
+            plan_reviewed = str(plan["git"]["branch_review_commit"])
+            plan_publication = str(
+                plan["git"].get("publication_head") or plan_reviewed
+            )
+            if (
+                plan_reviewed != branch_review_commit
+                or plan_publication != publication_head
+            ):
+                return {
+                    "owner_status": "stale",
+                    "branch_review_commit": branch_review_commit,
+                    "stale_reason": "publication_review_stale",
+                }
+        try:
+            publication_identity = finalizer_publication_identity(
+                root,
+                branch_review_commit,
+            )
+        except WorkflowError as exc:
+            return {
+                "owner_status": "stale",
+                "branch_review_commit": branch_review_commit,
+                "stale_reason": "publication_review_stale",
+                "errors": [str(exc)],
+            }
+        if (
+            publication_head != current_head(root)
+            or publication_identity["publication_head"] != publication_head
+            or (
+                reason_code == FINALIZATION_REPREPARE_PROVENANCE_TAIL
+                and publication_identity["metadata_tail"] is None
+            )
+        ):
+            return {
+                "owner_status": "stale",
+                "branch_review_commit": branch_review_commit,
+                "stale_reason": "publication_review_stale",
+            }
     else:
         plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
@@ -25942,6 +25985,35 @@ def finalization_output_contract(
     return schema
 
 
+def finalization_reprepare_public_output(
+    root: Path,
+    *,
+    task_ref: str,
+    reason_code: str,
+    branch_review_commit: str,
+    publication_head: str,
+) -> dict[str, Any]:
+    payload = {
+        "exit_id": "reprepare_required",
+        "task_ref": task_ref,
+        "reason_code": reason_code,
+        "branch_review_commit": branch_review_commit,
+        "publication_head": publication_head,
+    }
+    errors = skill_json_schema_validation_errors(
+        payload,
+        finalization_output_contract(root, "reprepare_required"),
+        "task finalization reprepare_required output",
+    )
+    if errors:
+        raise WorkflowError(
+            "Task finalization reprepare output is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return payload
+
+
 def finalization_validate_route(
     root: Path,
     public_input: dict[str, Any],
@@ -25962,14 +26034,32 @@ def finalization_validate_route(
     plan = context["plan"]
     state = context["transaction_state"]
     executor_materialized = output == FINALIZATION_EXECUTOR_OUTPUT_MARKER
-    if executor_materialized and exit_id != "published":
+    if executor_materialized and exit_id not in {"published", "reprepare_required"}:
         raise WorkflowError(
-            "Only published may defer its public output to the deterministic executor.",
+            "Only published or reprepare_required may defer public output to the deterministic executor.",
             exit_code=2,
         )
     if exit_id == "published" and not executor_materialized:
         raise WorkflowError(
             "The persisted published route must retain the exact private executor marker.",
+            exit_code=2,
+        )
+    if (
+        exit_id == "reprepare_required"
+        and context.get("reprepare_reason_code") == FINALIZATION_REPREPARE_PROVENANCE_TAIL
+        and not executor_materialized
+    ):
+        raise WorkflowError(
+            "Provenance reprepare must retain the executor marker until publication_head exists.",
+            exit_code=2,
+        )
+    if (
+        exit_id == "reprepare_required"
+        and context.get("reprepare_reason_code") == FINALIZATION_REPREPARE_ARCHIVE_MONTH
+        and executor_materialized
+    ):
+        raise WorkflowError(
+            "Archive-month reprepare must retain its complete current public output.",
             exit_code=2,
         )
     if executor_materialized and not (
@@ -25980,7 +26070,7 @@ def finalization_validate_route(
         )
     ):
         raise WorkflowError(
-            "The published marker is not materializable before the terminal transition completes.",
+            "The executor marker is not valid before its checked transition.",
             exit_code=2,
         )
     if not executor_materialized:
@@ -26085,8 +26175,17 @@ def finalization_validate_route(
             "reprepare_required is not compatible with the current transaction state.",
             exit_code=2,
         )
+    if exit_id == "reprepare_required" and context.get("reprepare_reason_code") not in {
+        FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+        FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+    }:
+        raise WorkflowError(
+            "reprepare_required reason does not match the current recovery state.",
+            exit_code=2,
+        )
     if (
         exit_id == "reprepare_required"
+        and not executor_materialized
         and output.get("reason_code") != context.get("reprepare_reason_code")
     ):
         raise WorkflowError(
@@ -26489,6 +26588,13 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 exit_code=2,
             )
         retired = finalizer_supersede_pre_pr_state(root, task_dir)
+        output = finalization_reprepare_public_output(
+            root,
+            task_ref=public_input["task_ref"],
+            reason_code=reason_code,
+            branch_review_commit=provenance["reviewed_content_head"],
+            publication_head=provenance["publication_head"],
+        )
         return {
             "status": "ok",
             "stage": "reprepare_required",
@@ -26496,7 +26602,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             "retired_owner_state": retired,
             "reviewed_content_head": provenance["reviewed_content_head"],
             "publication_head": provenance["publication_head"],
-            "output": copy.deepcopy(gate["route"]["output"]),
+            "output": output,
         }
     if exit_id == "published":
         finish_args = copy.copy(args)

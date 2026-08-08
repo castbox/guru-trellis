@@ -1360,10 +1360,15 @@ Its current DTO also carries both reviewed and publication HEADs. The
 pre-PR `reprepare_required` executor uses the canonical preset apply entry in a
 detached clean worktree, validates the five-field manifest allowlist, commits
 one tail, fast-forwards the task branch, and removes only the superseded private
-plan/gate/request state.
+plan/gate/request state. Its private gate retains an executor marker; only after
+the tail is committed does the executor return the public task/reason plus
+`branch_review_commit/publication_head` DTO. The next preview validates those
+two heads directly and does not require the retired plan.
 `resume_finalization` accepts only declared same-plan post-content recovery
 states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. The
-ignored owner-private gate stores only the private executor marker. After the
-archive transaction and ready PR are objectively complete, public invocation
+ignored owner-private gate stores the private executor marker for publication
+and provenance reprepare, while archive-month reprepare retains its complete
+current DTO because HEAD does not change. After the archive transaction and
+ready PR are objectively complete, public invocation
 materializes the DTO in memory with the exact archive locator and canonical PR
 identity; it never rewrites the gate with that public DTO.

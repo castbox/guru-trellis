@@ -35,6 +35,12 @@
 - [ ] Finalizer 执行 clean provenance tail、pre-PR reprepare、exact remote verification、Draft PR/archive/Ready；Issue #191 在 merge 前保持 open。
 - [ ] Finalizer/Publication/Branch Review 最终证据均为当前 HEAD，记录未覆盖的外部门禁，不触碰 #179。
 
+## 5.1 Reprepare DTO revision
+
+- [x] 将 reprepare public DTO 扩展为 task/reason + reviewed/publication identity；provenance gate 保留 private executor marker，archive-month gate 保留 HEAD 不变时的完整 DTO。
+- [x] 让旧 plan/gate/request 删除后的 `reprepare_preview` 直接校验 current HEAD 与单 provenance tail 后创建新 plan。
+- [ ] 增加受控 fixture 回归并重新执行 Phase 2、Task Commit、独立 Branch Review、Publication 与 Finalizer preview。
+
 ## 6. Required context/spec files
 
 ```text

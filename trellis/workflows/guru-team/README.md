@@ -874,5 +874,7 @@ Finalizer closeout plan 同时绑定 `reviewed_content_head` 与
 `publication_head`。当 reviewed HEAD 已 push、PR/archive 尚未开始且 installed
 manifest 仅缺 clean provenance 时，workflow 自动消费 `reprepare_required`：从
 detached clean checkout 运行 canonical preset apply，提交一次 manifest-only tail，
-废弃旧 private plan/gate/request，再以新 publication HEAD 重新 preview 和 exact-ref
-verification。其它 diff、已有 PR、archive 已开始或 non-fast-forward 继续 fail closed。
+废弃旧 private plan/gate/request，并由 executor 输出 unchanged reviewed HEAD 与新
+publication HEAD；下一次 preview 直接验证这两个 identity 和单 tail 合同，不读取已删除
+plan，然后继续 exact-ref verification。其它 diff、已有 PR、archive 已开始或
+non-fast-forward 继续 fail closed。

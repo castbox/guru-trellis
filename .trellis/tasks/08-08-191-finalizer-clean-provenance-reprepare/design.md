@@ -38,7 +38,7 @@ PR 已存在、archive 开始、scope/reviewed content 变化、non-FF、并行 
 
 ## 5. Public graph 与同步面
 
-沿用 `guru-finalize-task` 的稳定 `reprepare_required` 出口及 `reprepare_preview` target-owned seed；若需要新字段，采用 additive schema/version 与 migration contract，保持 producer/consumer projection 最小。更新 canonical packages/runtime 后，同步：
+沿用 `guru-finalize-task` 的稳定 `reprepare_required` 出口；其 deterministic executor 在 tail 完成并删除旧 plan/gate/request 后，向 `reprepare_preview` 最小投影 `task_ref`、`reason_code`、`branch_review_commit`、`publication_head`，target 仅补 `profile/mode`。preview 直接校验 current HEAD、直接父提交和 allowlisted tail，不依赖已删除的旧 plan。更新 canonical packages/runtime 后，同步：
 
 - `trellis/workflows/guru-team/workflow.md` 与 `.trellis/workflow.md`；
 - `trellis/skills/guru-team/packages/{guru-finalize-task,guru-verify-extension-installation,guru-create-task-commit}`、registry/interface/schemas/examples/tests；

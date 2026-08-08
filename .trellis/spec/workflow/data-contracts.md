@@ -1231,10 +1231,15 @@ identity. It never writes verification state into the scope ledger. Missing,
 duplicate, altered, path-bound, or stale verification evidence fails closed.
 
 Before PR creation or archive, stale/dirty installed provenance may select the
-single mapped `reprepare_required` route. The deterministic executor prepares
-one metadata tail in an isolated detached checkout, then retires the old
-owner-private plan, Finalizer gate, and verification request. A new plan keeps
-the reviewed identity unchanged and binds the new publication HEAD. PR already
+single mapped `reprepare_required` route. Its gate retains a private marker
+until the deterministic executor prepares one metadata tail in an isolated
+detached checkout and retires the old owner-private plan, Finalizer gate, and
+verification request. Archive-month reprepare changes no HEAD and retains its
+complete current DTO. A new plan keeps the reviewed identity unchanged and
+binds the current publication HEAD. The public DTO carries exactly task, reason,
+`branch_review_commit`, and `publication_head`; the next preview validates
+current HEAD and the optional single-tail parent/allowlist contract before
+building a new plan, without reopening the retired plan. PR already
 created, archive started, reviewed content/scope drift, non-fast-forward remote,
 or manifest changes outside the allowlist remain fail-closed boundaries.
 

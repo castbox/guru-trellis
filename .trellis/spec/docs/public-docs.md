@@ -550,6 +550,8 @@ external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
 They identify the integrated global workflow projection as 14 invokes, 54 exits,
 and 31 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
 Cursor finish entry; document the two terminal `published` evals and the private
-checked-verification projection; and keep every public DTO unchanged. Official
+checked-verification projection; and explain that executor-owned reprepare
+projects task/reason plus `branch_review_commit/publication_head` only after the
+tail and private-state retirement complete. Official
 `trellis-finish-work` payloads remain upstream-owned and are not installed or
 managed by the Guru preset.

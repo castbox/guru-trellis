@@ -1,1 +1,1 @@
-{"exit_id":"reprepare_required","task_ref":".trellis/tasks/07-26-example","reason_code":"archive_month_changed"}
+{"exit_id":"reprepare_required","task_ref":".trellis/tasks/07-26-example","reason_code":"archive_month_changed","branch_review_commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","publication_head":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}

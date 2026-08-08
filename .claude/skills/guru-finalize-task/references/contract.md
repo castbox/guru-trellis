@@ -223,7 +223,10 @@ The six closed profiles are:
   `profile/mode/task_ref`. The finalizer loads the private current plan and
   task-local owner evidence instead of publishing `plan_ref`.
 - `same_plan_resume`: task/plan seed plus target-owned `profile` and `mode`.
-- `reprepare_preview`: task/reason seed plus target-owned `profile` and `mode`.
+- `reprepare_preview`: task/reason plus the producer-supplied
+  `branch_review_commit` and `publication_head`, followed by target-owned
+  `profile` and `mode`. This is the complete identity needed to rebuild a plan
+  after the superseded plan and gate have been removed.
 - `standalone_finalization`: `profile`, `mode`, and `task_ref` only.
 
 Producer seed fields and target authoring fields are disjoint. Their union
@@ -242,9 +245,13 @@ current; same-plan recovery reuses that private binding.
   stable stale reason; consumed by `guru-review-task-publication`.
 - `resume_finalization`: task and same plan; consumed by this Skill.
 - `reprepare_required`: task plus `archive_month_changed` or
-  `provenance_tail_required`; consumed by this Skill's reprepare profile. The
-  producer seed is exactly `task_ref` and `reason_code`. Schema 2.0 output and
-  schema 3.0 input add the provenance reason while preserving the existing
+  `provenance_tail_required`, `branch_review_commit`, and `publication_head`;
+  consumed by this Skill's reprepare profile. Archive-month recovery retains
+  that already-current DTO in its gate because HEAD does not change. Provenance
+  recovery retains a private marker until the deterministic executor has
+  created or reused the tail, retired the old owner-private plan/gate/request,
+  and can return both heads. Schema 2.0 output and schema 3.0 input add the
+  provenance reason and direct-consumer identity while preserving the existing
   archive-month value.
 - `published`: the exact plan archive locator and canonical PR number/URL;
   consumed by the Finish response.
@@ -285,16 +292,19 @@ digests, validate legacy and current examples against their own schemas, reject
 both cross-version substitutions, and execute both current projections against
 their target schemas.
 
-The ignored owner-private gate never stores an early public `published` DTO.
-Before and through archive it retains only the exact finalizer-private executor
-marker. Recorder/checker and executor may validate that pending marker, while
-the public wrapper reruns strict route validation and never executes the
-publish/archive transition. Only after the exact archive
-transaction and ready PR facts are
-proven may the wrapper materialize the public DTO in memory, using the plan
-archive locator; the materialized DTO is not written back to the gate. The
-Finalizer then removes its checkpoint. The Publication checkpoint is neither
-read nor consumed by this path; its minimal `ready` DTO was consumed at entry.
+The ignored owner-private gate never stores an early public `published` DTO or
+an early provenance-reprepare DTO. Those transitions retain the exact
+finalizer-private executor marker while their output identity does not yet
+exist. Archive-month reprepare changes no HEAD and retains its complete current
+DTO. Recorder/checker and executor validate the corresponding form. The public
+wrapper reruns strict route validation and never executes a publish/archive
+transition; only after the exact archive transaction and ready PR facts are
+proven may it materialize the `published` DTO in memory using the plan archive
+locator. It never materializes reprepare after execution because that executor
+retires the old gate and returns the DTO directly. The Publication checkpoint
+is neither read nor consumed by this path; its minimal `ready` DTO was consumed
+at entry. The next reprepare preview validates current HEAD and the optional
+single-tail parent/allowlist contract without reading the retired plan.
 
 ## Script Boundary
 

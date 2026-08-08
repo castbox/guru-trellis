@@ -294,14 +294,22 @@ class FinalizeTaskContractTests(unittest.TestCase):
             },
         )
 
-    def test_reprepare_seed_is_exact_and_target_owned(self) -> None:
+    def test_reprepare_seed_carries_the_two_consumer_required_heads(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
         consumer = next(
             item
             for item in interface["public_contracts"]["consumer_inputs"]
             if item["id"] == "reprepare_preview_input"
         )
-        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref", "reason_code"])
+        self.assertEqual(
+            consumer["contract"]["seed_fields"],
+            [
+                "task_ref",
+                "reason_code",
+                "branch_review_commit",
+                "publication_head",
+            ],
+        )
         self.assertEqual(
             consumer["contract"]["authoring_fields"],
             ["profile", "mode"],

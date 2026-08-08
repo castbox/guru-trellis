@@ -638,7 +638,8 @@ with only `task_ref/branch_review_commit`; every other finalization-family seed
 is the minimal field set declared by its target profile, with standalone
 not-required fixed to `repo_ref/resolved_head/verification_ref` plus
 target-authored `profile/mode/task_ref`, and reprepare fixed to
-`task_ref/reason_code`. Target package authoring examples supply every remaining
+`task_ref/reason_code/branch_review_commit/publication_head`. Target package
+authoring examples supply every remaining
 required fresh semantic field. The validator proves disjoint partition,
 required-set equality, no-overwrite merge, and full target-schema validity;
 all other Skill/workflow/stop consumers keep their existing contracts.
@@ -1595,9 +1596,15 @@ identity, AI intent/context, verification judgment, or owner evidence.
 The package owns six independent `exit_id` outputs:
 `verification_required`, `publication_review_stale`, `resume_finalization`,
 `reprepare_required`, `published`, and `blocked`. Reprepare projects exactly
-`task_ref/reason_code`; fresh intent/context comes only from the target-owned
-authoring seed. Internal transaction states, closeout plan, publication and
-verification bodies, PR/archive facts, recovery history, HEAD facts, and
+`task_ref/reason_code/branch_review_commit/publication_head`; fresh
+intent/context comes only from the target-owned authoring seed. The two heads
+are already current for archive-month recovery. Provenance recovery keeps a
+private marker until the deterministic executor creates or reuses its tail and
+retires the old plan/gate/request, then returns both heads so the next preview
+can validate current HEAD and the single-tail parent/allowlist contract without
+reading the retired plan. Internal transaction
+states, closeout plan, publication and verification bodies, PR/archive facts,
+recovery history, unrelated HEAD facts, and
 digests remain owner-private.
 
 `publication_review_stale` projects exactly

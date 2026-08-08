@@ -8818,7 +8818,7 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             ]},
         )))
 
-    def test_reprepare_route_requires_the_live_reason(self) -> None:
+    def test_reprepare_route_uses_a_marker_only_when_the_tail_changes_head(self) -> None:
         task_ref = ".trellis/tasks/current"
         public_input = {"task_ref": task_ref}
         context = {
@@ -8838,27 +8838,70 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
         route = {
             "typed_exit": "reprepare_required",
             "consumer": gtt.FINALIZATION_CONSUMERS["reprepare_required"],
-            "output": {
-                "exit_id": "reprepare_required",
-                "task_ref": task_ref,
-                "reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
-            },
+            "output": copy.deepcopy(gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
         }
+        gtt.finalization_validate_route(
+            Path.cwd(),
+            public_input,
+            context,
+            route,
+            allow_pending_transition=True,
+        )
+        with self.assertRaisesRegex(gtt.WorkflowError, "checked transition"):
+            gtt.finalization_validate_route(
+                Path.cwd(),
+                public_input,
+                context,
+                route,
+            )
+        non_materialized = copy.deepcopy(route)
+        non_materialized["output"] = {
+            "exit_id": "reprepare_required",
+            "task_ref": task_ref,
+            "reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+            "branch_review_commit": "b" * 40,
+            "publication_head": "c" * 40,
+        }
+        with self.assertRaisesRegex(gtt.WorkflowError, "executor marker"):
+            gtt.finalization_validate_route(
+                Path.cwd(),
+                public_input,
+                context,
+                non_materialized,
+                allow_pending_transition=True,
+            )
+        context["reprepare_reason_code"] = gtt.FINALIZATION_REPREPARE_ARCHIVE_MONTH
+        with self.assertRaisesRegex(gtt.WorkflowError, "complete current public output"):
+            gtt.finalization_validate_route(
+                Path.cwd(),
+                public_input,
+                context,
+                route,
+                allow_pending_transition=True,
+            )
+        archive_output = copy.deepcopy(non_materialized)
+        archive_output["output"]["reason_code"] = gtt.FINALIZATION_REPREPARE_ARCHIVE_MONTH
         with mock.patch.object(
             gtt,
             "finalization_output_contract",
             return_value={"type": "object"},
         ):
-            gtt.finalization_validate_route(Path.cwd(), public_input, context, route)
-            mismatched = copy.deepcopy(route)
-            mismatched["output"]["reason_code"] = gtt.FINALIZATION_REPREPARE_ARCHIVE_MONTH
-            with self.assertRaisesRegex(gtt.WorkflowError, "reason does not match"):
-                gtt.finalization_validate_route(
-                    Path.cwd(),
-                    public_input,
-                    context,
-                    mismatched,
-                )
+            gtt.finalization_validate_route(
+                Path.cwd(),
+                public_input,
+                context,
+                archive_output,
+                allow_pending_transition=True,
+            )
+        context["reprepare_reason_code"] = None
+        with self.assertRaisesRegex(gtt.WorkflowError, "reason does not match"):
+            gtt.finalization_validate_route(
+                Path.cwd(),
+                public_input,
+                context,
+                route,
+                allow_pending_transition=True,
+            )
 
     def test_reprepare_executor_keeps_archive_month_and_provenance_actions_separate(self) -> None:
         root, reviewed, _ = self.fixture()
@@ -8873,6 +8916,8 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
                     "exit_id": "reprepare_required",
                     "task_ref": public_input["task_ref"],
                     "reason_code": gtt.FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+                    "branch_review_commit": reviewed,
+                    "publication_head": "d" * 40,
                 },
             },
         }
@@ -8895,14 +8940,17 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "prepare_provenance_metadata_tail") as prepare_tail,
             mock.patch.object(gtt, "finalizer_pre_pr_provenance_reprepare_preflight"),
             mock.patch.object(gtt, "finalizer_supersede_pre_pr_state", return_value=["old-plan"]) as retire,
+            mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
         ):
             result = gtt.cmd_execute_finalization_transition(args)
         prepare_tail.assert_not_called()
         retire.assert_called_once_with(root.resolve(), task_dir)
         self.assertEqual(result["publication_head"], publication["publication_head"])
+        self.assertEqual(result["output"]["branch_review_commit"], reviewed)
+        self.assertEqual(result["output"]["publication_head"], publication["publication_head"])
 
         context["reprepare_reason_code"] = gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL
-        gate["route"]["output"]["reason_code"] = gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL
+        gate["route"]["output"] = copy.deepcopy(gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER)
         prepared = {**publication, "publication_head": "e" * 40}
         with (
             mock.patch.object(gtt, "finalization_public_input", return_value=(public_input, "unused")),
@@ -8912,10 +8960,12 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "prepare_provenance_metadata_tail", return_value=prepared) as prepare_tail,
             mock.patch.object(gtt, "finalizer_pre_pr_provenance_reprepare_preflight"),
             mock.patch.object(gtt, "finalizer_supersede_pre_pr_state", return_value=["old-plan"]),
+            mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
         ):
             result = gtt.cmd_execute_finalization_transition(args)
         prepare_tail.assert_called_once_with(root.resolve(), reviewed)
         self.assertEqual(result["publication_head"], prepared["publication_head"])
+        self.assertEqual(result["output"]["reason_code"], gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL)
 
     def test_reprepare_supersession_preserves_tracked_task_artifacts(self) -> None:
         root, _, _ = self.fixture()
@@ -8983,11 +9033,7 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
                 gate = {
                     "route": {
                         "typed_exit": "reprepare_required",
-                        "output": {
-                            "exit_id": "reprepare_required",
-                            "task_ref": public_input["task_ref"],
-                            "reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
-                        },
+                        "output": copy.deepcopy(gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
                     },
                 }
                 context = {
@@ -9182,11 +9228,7 @@ printf '{\"status\":\"ok\"}\\n'
         gate = {
             "route": {
                 "typed_exit": "reprepare_required",
-                "output": {
-                    "exit_id": "reprepare_required",
-                    "task_ref": public_input["task_ref"],
-                    "reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
-                },
+                "output": copy.deepcopy(gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
             },
         }
         context = {
@@ -9200,6 +9242,7 @@ printf '{\"status\":\"ok\"}\\n'
             mock.patch.object(gtt, "finalization_gate_input", return_value=(gate, root / "gate.json")),
             mock.patch.object(gtt, "check_finalization_gate_result", return_value=(gate, context)),
             mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=None),
+            mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
         ):
             result = gtt.cmd_execute_finalization_transition(args)
 
@@ -9215,6 +9258,13 @@ printf '{\"status\":\"ok\"}\\n'
         self.assertFalse(gtt.finalizer_pre_pr_provenance_tail_required(root, {
             "git": {"branch_review_commit": reviewed},
         }))
+        self.assertEqual(result["output"], {
+            "exit_id": "reprepare_required",
+            "task_ref": public_input["task_ref"],
+            "reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+            "branch_review_commit": reviewed,
+            "publication_head": publication,
+        })
 
         new_plan = copy.deepcopy(plan)
         new_plan["git"]["publication_head"] = publication
@@ -9223,6 +9273,40 @@ printf '{\"status\":\"ok\"}\\n'
         self.assertNotEqual(new_plan_ref, old_plan_ref)
         self.assertTrue(gtt.closeout_verification_plan_ref_matches(new_plan, new_plan_ref))
         self.assertFalse(gtt.closeout_verification_plan_ref_matches(new_plan, old_plan_ref))
+
+        reprepare_input = {
+            **result["output"],
+            "profile": "reprepare_preview",
+            "mode": "workflow",
+        }
+        reprepare_input.pop("exit_id")
+        prepared = {
+            "plan": new_plan,
+            "ledger": {},
+            "metadata_tail": {"commit": publication, "parent": reviewed},
+        }
+        verification = ({}, {"typed_exit": "not_required"})
+        with (
+            mock.patch.object(gtt, "finalization_task_dir", return_value=task_dir),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=False),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "finalization_verification_owner_result", return_value=verification),
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value={}),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(gtt, "task_json", return_value={"status": "in_progress"}),
+            mock.patch.object(gtt, "prepare_closeout", return_value=prepared) as prepare,
+            mock.patch.object(gtt, "resolve_closeout_pre_draft_state", return_value="prepared"),
+        ):
+            preview = gtt.finalization_preview_context(
+                root,
+                argparse.Namespace(),
+                reprepare_input,
+            )
+        prepare.assert_called_once()
+        self.assertEqual(preview["plan_ref"], new_plan_ref)
+        self.assertEqual(preview["plan"]["git"]["branch_review_commit"], reviewed)
+        self.assertEqual(preview["plan"]["git"]["publication_head"], publication)
+        self.assertEqual(preview["publication_status"], "current")
 
         subprocess.run(["git", "push", "-q", "origin", "topic"], cwd=root, check=True)
         exact_ref = "refs/heads/topic"

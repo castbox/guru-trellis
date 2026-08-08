@@ -661,7 +661,9 @@ remain identical and every wrapper must retain executable mode.
 The current not-required edge installs as a task-bearing standalone
 projection of `repo_ref/resolved_head/verification_ref`; the finalizer target
 authors `profile/mode/task_ref` and retains plan identity privately through the
-declared current profile.
+declared current profile. The reprepare edge installs its executor-owned
+task/reason plus reviewed/publication HEAD projection so a new preview remains
+possible after superseded private state is removed.
 
 The current source/installed package graph contains fourteen active Skills and
 54 external exits. The global workflow projection is 14 invokes, 54 exits, and
@@ -669,5 +671,4 @@ The current source/installed package graph contains fourteen active Skills and
 `guru-finish-work` entries and the combined integration suite. Upstream
 `trellis-finish-work` Skill/Command/Prompt files remain entirely under official
 Trellis ownership and are absent from Guru overlays and managed inventory. This
-activation does not expand public Skill I/O or introduce alternate package
-manifests.
+activation introduces no alternate package manifests.

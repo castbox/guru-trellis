@@ -2718,6 +2718,8 @@ def stage_finalization_owner_execution(
                 "exit_id": "reprepare_required",
                 "task_ref": public_input["task_ref"],
                 "reason_code": "archive_month_changed",
+                "branch_review_commit": head,
+                "publication_head": head,
             },
             "published": {
                 "materialization": "executor",
