@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Verify reprepare routing remains thin and consumer-mapped."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Verify reviewed/publication projection and private-state lifecycle."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Verify deterministic tail and fail-close script boundaries."}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Verify identity, provenance and closeout data invariants."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Verify required current-HEAD, install/update and review evidence."}
+{"file":".trellis/spec/preset/installer.md","reason":"Verify clean reapply, ownership and sidecar acceptance."}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Verify platform overlay synchronization."}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"Verify no upstream ownership drift."}
+{"file":".trellis/spec/docs/public-docs.md","reason":"Verify public documentation consistency."}

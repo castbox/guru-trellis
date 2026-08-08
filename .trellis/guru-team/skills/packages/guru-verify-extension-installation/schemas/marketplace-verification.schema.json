@@ -146,7 +146,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "repo_ref", "remote", "ref", "branch_review_commit", "resolved_head",
+        "repo_ref", "remote", "ref", "branch_review_commit", "publication_head", "resolved_head",
         "checkout_head", "reviewed_content_sha256", "remote_reviewed_content_sha256",
         "content_identity_matches"
       ],
@@ -155,6 +155,7 @@
         "remote": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
         "ref": {"type": "string", "minLength": 1},
         "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "publication_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
         "resolved_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
         "checkout_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
         "reviewed_content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},

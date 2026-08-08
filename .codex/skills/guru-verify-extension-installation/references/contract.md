@@ -4,7 +4,7 @@
 
 `verification_required` is the workflow target bootstrap owned by this package
 for active `guru-finalize-task`. Its five business seed fields are
-`task_ref`, `plan_ref`, `repo_ref`, `branch_review_commit`, and
+`task_ref`, `plan_ref`, `repo_ref`, `branch_review_commit`, `publication_head`, and
 `verification_target`; `profile` and `mode` are fixed discriminators. Global
 Finish-family routing automatically consumes this target through the active
 finalizer loop; the verifier result is not exposed as a user continuation gate.
@@ -123,8 +123,9 @@ supersession freshness, redaction, route
 shape, consumer mapping, and evidence digests. It does not decide
 applicability, sufficiency, findings, or semantic pass.
 
-Private `target_repository.resolved_head` and standalone public `resolved_head`
-both denote the target checkout commit. The source direct tag object and peeled
+Private `target_repository.resolved_head` denotes the target checkout at
+`publication_head`; `target_repository.branch_review_commit` remains the
+reviewed content commit. The source direct tag object and peeled
 commit remain private and never enter a public DTO. Freshness checks re-resolve
 both target and source refs with the same full-OID or direct-versus-peeled rules and reread
 task-bearing installed manifest provenance.

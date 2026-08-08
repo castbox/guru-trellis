@@ -70,12 +70,13 @@ One confirmed plan authorizes its complete declared push, required verification,
 Draft PR, archive transaction and Ready transition. Verification, same-plan
 resume and private checkpoints do not request generic continuation. A new
 confirmation is required only when the side-effect set, target authority or
-immutable plan changes; cross-month `reprepare_required` changes the plan and
-therefore re-enters confirmation.
+immutable plan changes. Both cross-month and pre-PR provenance
+`reprepare_required` replace the plan and therefore re-enter confirmation.
 
 ## Immutable Preview And Transaction
 
-Preview shows repository, base, branch, `branch_review_commit`, reviewed-content identity, task, archive locator,
+Preview shows repository, base, branch, `branch_review_commit`, separate
+`reviewed_content_head` and `publication_head`, reviewed-content identity, task, archive locator,
 upstream evidence references, verification requirement, metadata paths, PR
 identity strategy, complete side effects, plan digest, and the exact canonical
 plan bytes. Formal execution rebuilds the same bytes and digest before any side
@@ -123,12 +124,14 @@ The deterministic order is fixed:
 
 1. Build and prevalidate the immutable plan.
 2. Verify that current HEAD preserves the reviewed-content identity, then push that exact current HEAD.
-3. If required, stop before PR/archive and emit `verification_required`.
+3. If required, stop before PR/archive and emit `verification_required` carrying
+   both reviewed and publication HEADs. The verifier targets publication HEAD
+   while source provenance remains bound to reviewed content.
 4. When the plan requires extension verification, consume same-plan verified
    evidence. A plan whose current reviewed paths require no extension
    verification continues without manufacturing a `not_required` handoff.
    The current plan does not create or push a separate evidence-metadata commit; its
-   archive transaction remains a direct child of `branch_review_commit`.
+   archive transaction remains a direct child of `publication_head`.
 5. Create or reuse the unique open draft for repo/head/base. When that one
    candidate is an earlier confirmed-plan Draft, first prove its stable
    repo/head/base/current-HEAD/number/canonical-URL identity, then converge its
@@ -178,9 +181,16 @@ during pruning re-enters the same idempotent pruning step.
 - Content pushed with verification pending -> `verification_required`.
 - Same-plan transient executor failure, draft-to-ready retry, interrupted
   active/archive move, or exact-commit continuation -> `resume_finalization`.
-- Active task with a changed archive month -> `reprepare_required`; preview a
-  new plan and obtain fresh current side-effect confirmation through the same generic
-  prompt.
+- Active task with a changed archive month -> `reprepare_required` with
+  `archive_month_changed`; retire the old private plan/evidence, preview a new
+  plan, and obtain fresh current side-effect confirmation. If either candidate
+  is already tracked task content, fail closed before deletion.
+- Pre-PR verification rejected only because the reviewed checkout provenance
+  is stale -> `reprepare_required` with `provenance_tail_required`; generate or
+  reuse the one allowlisted provenance tail, retire the old private
+  plan/evidence, preview a new plan, and obtain fresh confirmation. Other
+  verification failures remain blocked. Tracked task artifacts are preserved
+  and block this automatic cleanup path.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.
@@ -231,9 +241,11 @@ current; same-plan recovery reuses that private binding.
 - `publication_review_stale`: task, the exact stale `branch_review_commit`, and
   stable stale reason; consumed by `guru-review-task-publication`.
 - `resume_finalization`: task and same plan; consumed by this Skill.
-- `reprepare_required`: task and `archive_month_changed`; consumed by this
-  Skill's reprepare profile. The producer seed is exactly `task_ref` and
-  `reason_code`.
+- `reprepare_required`: task plus `archive_month_changed` or
+  `provenance_tail_required`; consumed by this Skill's reprepare profile. The
+  producer seed is exactly `task_ref` and `reason_code`. Schema 2.0 output and
+  schema 3.0 input add the provenance reason while preserving the existing
+  archive-month value.
 - `published`: the exact plan archive locator and canonical PR number/URL;
   consumed by the Finish response.
 - `blocked`: closed reason and remediation; consumed by the finalization stop.

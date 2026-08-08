@@ -191,8 +191,9 @@
     "remote": "origin",
     "ref": "refs/heads/feature-117",
     "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "resolved_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "checkout_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "publication_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "resolved_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "checkout_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
     "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
     "content_identity_matches": true

@@ -124,7 +124,7 @@
           "interface_path": "packages/guru-finalize-task/interface.json",
           "input_kind": "structured_json",
           "profile_id": "verification_verified",
-          "seed_fields": ["task_ref", "plan_ref", "branch_review_commit", "verification_ref"],
+          "seed_fields": ["task_ref", "plan_ref", "branch_review_commit", "publication_head", "verification_ref"],
           "authoring_fields": ["profile", "mode"],
           "authoring_example": {
             "id": "finalization_verified_authoring",
@@ -172,6 +172,7 @@
           {"source": "task_ref", "target": "task_ref"},
           {"source": "plan_ref", "target": "plan_ref"},
           {"source": "branch_review_commit", "target": "branch_review_commit"},
+          {"source": "publication_head", "target": "publication_head"},
           {"source": "verification_ref", "target": "verification_ref"}
         ]
       },

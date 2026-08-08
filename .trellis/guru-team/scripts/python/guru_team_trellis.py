@@ -396,6 +396,17 @@ REVIEWED_CONTENT_METADATA_PREFIXES = (
     ".trellis/workspace",
     ".trellis/.runtime",
 )
+# The installed extension manifest is provenance metadata, rather than reviewed
+# implementation content.  A clean preset reapply may update this file once
+# after the reviewed commit without invalidating the reviewed-content token.
+PROVENANCE_TAIL_MANIFEST_PATH = ".trellis/guru-team/extension.json"
+PROVENANCE_TAIL_ALLOWED_FIELDS = frozenset({
+    "installed_at",
+    "source.ref",
+    "source.commit",
+    "source.tree_state",
+    "source.is_mutable_ref",
+})
 BRANCH_REVIEW_SCHEMA_VERSION = "3.0"
 BRANCH_REVIEW_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json"
 AI_FIRST_TEMPLATE_HASHES_PATH = Path(".trellis/.template-hashes.json")
@@ -2938,7 +2949,7 @@ def ai_first_os_noise_path(path: str) -> bool:
 
 
 def reviewed_content_metadata_path(path: str) -> bool:
-    return ai_first_os_noise_path(path) or any(
+    return path == PROVENANCE_TAIL_MANIFEST_PATH or ai_first_os_noise_path(path) or any(
         path == prefix or path.startswith(prefix + "/")
         for prefix in REVIEWED_CONTENT_METADATA_PREFIXES
     )
@@ -11502,6 +11513,8 @@ def extension_verification_public_input(
     value: str | None,
 ) -> dict[str, Any]:
     payload, _ = extension_verification_json_input(root, value)
+    if payload.get("mode") == "workflow" and "publication_head" not in payload:
+        payload["publication_head"] = payload.get("branch_review_commit")
     profile = payload.get("profile")
     schema_name = (
         "public-verification-required-input.schema.json"
@@ -11542,17 +11555,19 @@ def extension_verification_public_input(
 def extension_verification_remote_identity(
     root: Path,
     public_input: dict[str, Any],
-) -> tuple[str, str, str, str | None]:
+) -> tuple[str, str, str, str | None, str | None]:
     if public_input["mode"] == "workflow":
         remote = str(publish_config(load_config(root)).get("remote") or "origin")
         branch = current_branch(root)
         ref = f"refs/heads/{branch}"
         branch_review_commit = str(public_input["branch_review_commit"])
+        publication_head = str(public_input.get("publication_head") or branch_review_commit)
     else:
         remote = str(public_input["remote"])
         ref = str(public_input["ref"])
         branch_review_commit = None
-    return str(public_input["repo_ref"]), remote, ref, branch_review_commit
+        publication_head = None
+    return str(public_input["repo_ref"]), remote, ref, branch_review_commit, publication_head
 
 
 def extension_verification_workflow_source(repo_ref: str, ref: str) -> str:
@@ -11679,6 +11694,433 @@ def extension_verification_manifest_source(
         "tree_state": tree_state,
         "is_mutable_ref": is_mutable_ref,
     }
+
+
+def provenance_tail_flatten_manifest(value: Any, prefix: str = "") -> dict[str, Any]:
+    """Return deterministic dotted paths for the manifest field-diff contract."""
+    if isinstance(value, dict):
+        flattened: dict[str, Any] = {}
+        for key in sorted(value):
+            child = f"{prefix}.{key}" if prefix else str(key)
+            flattened.update(provenance_tail_flatten_manifest(value[key], child))
+        return flattened
+    return {prefix: value}
+
+
+def provenance_tail_manifest_field_diff(
+    before: Any,
+    after: Any,
+) -> list[str]:
+    before_flat = provenance_tail_flatten_manifest(before)
+    after_flat = provenance_tail_flatten_manifest(after)
+    return sorted(
+        [
+            path
+            for path in set(before_flat) | set(after_flat)
+            if before_flat.get(path) != after_flat.get(path)
+        ],
+        key=lambda item: item.encode("utf-8"),
+    )
+
+
+def provenance_tail_manifest_errors(
+    before: Any,
+    after: Any,
+    reviewed_content_head: str,
+) -> list[str]:
+    """Validate the only manifest mutation allowed after reviewed content."""
+    errors: list[str] = []
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return ["provenance_tail_manifest_invalid"]
+    if re.fullmatch(r"[0-9a-f]{40}", str(reviewed_content_head or "")) is None:
+        errors.append("provenance_tail_reviewed_head_invalid")
+    changed = provenance_tail_manifest_field_diff(before, after)
+    unexpected = sorted(
+        set(changed) - PROVENANCE_TAIL_ALLOWED_FIELDS,
+        key=lambda item: item.encode("utf-8"),
+    )
+    if unexpected:
+        errors.append("provenance_tail_manifest_fields_outside_allowlist")
+    source = after.get("source")
+    if not isinstance(source, dict):
+        errors.append("provenance_tail_source_missing")
+    else:
+        if source.get("ref") != reviewed_content_head:
+            errors.append("provenance_tail_source_ref_mismatch")
+        if source.get("commit") != reviewed_content_head:
+            errors.append("provenance_tail_source_commit_mismatch")
+        if source.get("tree_state") != "clean":
+            errors.append("provenance_tail_source_not_clean")
+        if source.get("is_mutable_ref") is not False:
+            errors.append("provenance_tail_source_ref_mutable")
+    if "installed_at" in after and not isinstance(after["installed_at"], str):
+        errors.append("provenance_tail_installed_at_invalid")
+    return sorted(set(errors))
+
+
+def provenance_tail_git_status_paths(root: Path) -> list[str]:
+    proc = run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not inspect provenance metadata-tail checkout status.",
+            exit_code=2,
+        )
+    paths: list[str] = []
+    for record in proc.stdout.split("\0"):
+        if not record:
+            continue
+        path = record[3:] if len(record) >= 3 else ""
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[-1]
+        if path:
+            paths.append(path)
+    return sorted(set(paths), key=lambda item: item.encode("utf-8"))
+
+
+def read_json_from_git(root: Path, revision_path: str) -> Any:
+    proc = run(["git", "show", revision_path], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Could not read the provenance manifest from the reviewed Git commit.",
+            exit_code=2,
+        )
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(
+            "The provenance manifest in the reviewed Git commit is invalid JSON.",
+            exit_code=2,
+        ) from exc
+
+
+def provenance_tail_checkout_errors(
+    root: Path,
+    reviewed_content_head: str,
+) -> list[str]:
+    """Check the source checkout preconditions without applying or committing."""
+    errors: list[str] = []
+    try:
+        head = current_head(root)
+    except WorkflowError:
+        head = ""
+    if head != reviewed_content_head:
+        errors.append("provenance_tail_checkout_head_mismatch")
+    branch = current_branch(root)
+    if branch != "HEAD":
+        errors.append("provenance_tail_checkout_not_detached")
+    if provenance_tail_git_status_paths(root):
+        errors.append("provenance_tail_checkout_not_clean")
+    return sorted(set(errors))
+
+
+def provenance_tail_commit_errors(
+    root: Path,
+    reviewed_content_head: str,
+    publication_head: str,
+) -> list[str]:
+    """Validate one committed provenance tail and its reviewed/publication identities."""
+    errors: list[str] = []
+    if re.fullmatch(r"[0-9a-f]{40}", str(publication_head or "")) is None:
+        errors.append("provenance_tail_publication_head_invalid")
+        return sorted(set(errors))
+    if publication_head != current_head(root):
+        errors.append("provenance_tail_publication_head_not_current")
+    parent_proc = run(
+        ["git", "show", "-s", "--format=%P", publication_head],
+        cwd=root,
+        check=False,
+    )
+    parents = parent_proc.stdout.split() if parent_proc.returncode == 0 else []
+    if parents != [reviewed_content_head]:
+        errors.append("provenance_tail_parent_mismatch")
+    changed_proc = run(
+        [
+            "git",
+            "diff-tree",
+            "--root",
+            "--no-commit-id",
+            "--name-only",
+            "--no-renames",
+            "-r",
+            "-z",
+            publication_head,
+        ],
+        cwd=root,
+        check=False,
+    )
+    changed = {
+        item for item in changed_proc.stdout.split("\0") if item
+    } if changed_proc.returncode == 0 else set()
+    if changed != {PROVENANCE_TAIL_MANIFEST_PATH}:
+        errors.append("provenance_tail_changed_paths_invalid")
+    if not errors:
+        before_proc = run(
+            ["git", "show", f"{publication_head}^:{PROVENANCE_TAIL_MANIFEST_PATH}"],
+            cwd=root,
+            check=False,
+        )
+        after_proc = run(
+            ["git", "show", f"{publication_head}:{PROVENANCE_TAIL_MANIFEST_PATH}"],
+            cwd=root,
+            check=False,
+        )
+        try:
+            before = json.loads(before_proc.stdout)
+            after = json.loads(after_proc.stdout)
+        except (json.JSONDecodeError, TypeError):
+            errors.append("provenance_tail_manifest_unreadable")
+        else:
+            errors.extend(
+                provenance_tail_manifest_errors(before, after, reviewed_content_head)
+            )
+    return sorted(set(errors))
+
+
+def validate_provenance_metadata_tail(
+    root: Path,
+    reviewed_content_head: str,
+    publication_head: str,
+) -> dict[str, Any]:
+    errors = provenance_tail_commit_errors(
+        root,
+        reviewed_content_head,
+        publication_head,
+    )
+    if errors:
+        raise WorkflowError(
+            "Provenance metadata-tail failed its clean-source contract.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return {
+        "status": "passed",
+        "reviewed_content_head": reviewed_content_head,
+        "publication_head": publication_head,
+        "changed_paths": [PROVENANCE_TAIL_MANIFEST_PATH],
+        "changed_fields": sorted(PROVENANCE_TAIL_ALLOWED_FIELDS),
+    }
+
+
+def commit_provenance_metadata_tail(
+    root: Path,
+    reviewed_content_head: str,
+    *,
+    message: str = "chore(trellis): 更新 Guru Team provenance 元数据",
+) -> dict[str, Any]:
+    """Commit an already-applied manifest tail; no preset/apply is performed here."""
+    if current_head(root) != reviewed_content_head:
+        raise WorkflowError("Provenance tail commit requires reviewed HEAD as parent.", exit_code=2)
+    dirty = provenance_tail_git_status_paths(root)
+    if dirty != [PROVENANCE_TAIL_MANIFEST_PATH]:
+        raise WorkflowError(
+            "Provenance tail commit requires exactly one manifest-only dirty path.",
+            exit_code=2,
+            payload={"dirty_paths": dirty},
+        )
+    parent = read_json_from_git(root, f"{reviewed_content_head}:{PROVENANCE_TAIL_MANIFEST_PATH}")
+    manifest = read_json(root / PROVENANCE_TAIL_MANIFEST_PATH)
+    errors = provenance_tail_manifest_errors(parent, manifest, reviewed_content_head)
+    if errors:
+        raise WorkflowError("Provenance tail manifest is outside the allowlist.", exit_code=2, payload={"errors": errors})
+    run_stdout(["git", "add", "--", PROVENANCE_TAIL_MANIFEST_PATH], cwd=root)
+    run_stdout(["git", "commit", "--no-verify", "-m", message], cwd=root)
+    publication_head = current_head(root)
+    return validate_provenance_metadata_tail(root, reviewed_content_head, publication_head)
+
+
+def finalizer_publication_identity(
+    root: Path,
+    reviewed_content_head: str,
+) -> dict[str, Any]:
+    """Project the reviewed head and the optional single provenance tail."""
+    if re.fullmatch(r"[0-9a-f]{40}", str(reviewed_content_head or "")) is None:
+        raise WorkflowError("Finalizer reviewed_content_head is invalid.", exit_code=2)
+    publication_head = current_head(root)
+    if publication_head == reviewed_content_head:
+        return {
+            "reviewed_content_head": reviewed_content_head,
+            "publication_head": publication_head,
+            "metadata_tail": None,
+        }
+    if not is_ancestor(root, reviewed_content_head, publication_head):
+        raise WorkflowError(
+            "Finalizer publication head is not a descendant of reviewed content.",
+            exit_code=2,
+        )
+    errors = provenance_tail_commit_errors(root, reviewed_content_head, publication_head)
+    if errors == ["provenance_tail_changed_paths_invalid"]:
+        # Existing task/archive metadata commits are excluded from reviewed
+        # content and are not provenance tails; keep their historical behavior.
+        paths_proc = run(
+            [
+                "git", "diff-tree", "--no-commit-id", "--name-only", "--no-renames",
+                "-r", "-z", publication_head,
+            ],
+            cwd=root,
+            check=False,
+        )
+        paths = {item for item in paths_proc.stdout.split("\0") if item}
+        if paths and all(reviewed_content_metadata_path(path) for path in paths):
+            return {
+                "reviewed_content_head": reviewed_content_head,
+                "publication_head": publication_head,
+                "metadata_tail": None,
+            }
+    if errors:
+        raise WorkflowError(
+            "Finalizer publication head contains an invalid provenance tail.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return {
+        "reviewed_content_head": reviewed_content_head,
+        "publication_head": publication_head,
+        "metadata_tail": {
+            "commit": publication_head,
+            "parent": reviewed_content_head,
+            "path": PROVENANCE_TAIL_MANIFEST_PATH,
+        },
+    }
+
+
+def finalizer_pre_pr_provenance_tail_required(
+    root: Path,
+    plan: dict[str, Any],
+) -> bool:
+    """Return whether the current pre-PR plan still carries stale provenance."""
+    reviewed = str(plan.get("git", {}).get("branch_review_commit") or "")
+    if re.fullmatch(r"[0-9a-f]{40}", reviewed) is None:
+        raise WorkflowError("Finalizer reviewed content identity is invalid.", exit_code=2)
+    manifest = root / PROVENANCE_TAIL_MANIFEST_PATH
+    if not manifest.is_file() or manifest.is_symlink():
+        return False
+    try:
+        payload = read_json(manifest)
+    except WorkflowError:
+        return False
+    source = payload.get("source") if isinstance(payload, dict) else None
+    return not (
+        isinstance(source, dict)
+        and source.get("ref") == reviewed
+        and source.get("commit") == reviewed
+        and source.get("tree_state") == "clean"
+        and source.get("is_mutable_ref") is False
+    )
+
+
+def prepare_provenance_metadata_tail(
+    root: Path,
+    reviewed_content_head: str,
+) -> dict[str, Any]:
+    """Apply the canonical preset once in an isolated clean source checkout."""
+    if current_head(root) != reviewed_content_head:
+        raise WorkflowError(
+            "Provenance tail preparation requires the reviewed content HEAD.",
+            exit_code=2,
+        )
+    with tempfile.TemporaryDirectory(prefix="guru-provenance-source-") as tmp:
+        source = Path(tmp) / "source"
+        run_stdout(
+            ["git", "worktree", "add", "--detach", str(source), reviewed_content_head],
+            cwd=root,
+        )
+        try:
+            pre_errors = provenance_tail_checkout_errors(source, reviewed_content_head)
+            if pre_errors:
+                raise WorkflowError(
+                    "Provenance source checkout is not a clean reviewed checkout.",
+                    exit_code=2,
+                    payload={"errors": pre_errors},
+                )
+            apply_script = source / "trellis/presets/guru-team/scripts/bash/apply.sh"
+            if not apply_script.is_file() or not os.access(apply_script, os.X_OK):
+                raise WorkflowError(
+                    "Canonical preset apply entry is unavailable for provenance preparation.",
+                    exit_code=2,
+                )
+            run_stdout(
+                [str(apply_script), "--repo", str(source), "--all-platforms", "--json"],
+                cwd=source,
+            )
+            dirty = provenance_tail_git_status_paths(source)
+            if dirty != [PROVENANCE_TAIL_MANIFEST_PATH]:
+                raise WorkflowError(
+                    "Canonical preset apply produced changes outside the provenance manifest.",
+                    exit_code=2,
+                    payload={"dirty_paths": dirty},
+                )
+            parent = read_json_from_git(
+                source,
+                f"{reviewed_content_head}:{PROVENANCE_TAIL_MANIFEST_PATH}",
+            )
+            manifest = read_json(source / PROVENANCE_TAIL_MANIFEST_PATH)
+            errors = provenance_tail_manifest_errors(parent, manifest, reviewed_content_head)
+            if errors:
+                raise WorkflowError(
+                    "Canonical preset apply produced invalid provenance metadata.",
+                    exit_code=2,
+                    payload={"errors": errors},
+                )
+            result = commit_provenance_metadata_tail(source, reviewed_content_head)
+            publication_head = str(result["publication_head"])
+        finally:
+            run(["git", "worktree", "remove", "--force", str(source)], cwd=root, check=False)
+    run_stdout(["git", "merge", "--ff-only", publication_head], cwd=root)
+    return {
+        "reviewed_content_head": reviewed_content_head,
+        "publication_head": publication_head,
+        "metadata_tail": {
+            "commit": publication_head,
+            "parent": reviewed_content_head,
+            "path": PROVENANCE_TAIL_MANIFEST_PATH,
+        },
+    }
+
+
+def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
+    """Retire only owner-private Finalizer state before a fresh plan is reviewed."""
+    retired: list[str] = []
+    plan = closeout_plan_path(task_dir)
+    verification = task_dir / MARKETPLACE_VERIFICATION_ARTIFACT
+    tracked_owner_state = []
+    for path in (plan, verification):
+        if not path.exists():
+            continue
+        relative = repo_relative(root, path)
+        if run(
+            ["git", "ls-files", "--error-unmatch", "--", relative],
+            cwd=root,
+            check=False,
+        ).returncode == 0:
+            tracked_owner_state.append(relative)
+    if tracked_owner_state:
+        raise WorkflowError(
+            "Finalizer will not delete tracked task artifacts during reprepare.",
+            exit_code=2,
+            payload={"tracked_paths": tracked_owner_state},
+        )
+    if plan.is_file() and not plan.is_symlink():
+        plan.unlink()
+        retired.append(repo_relative(root, plan))
+    gate = task_finalization_path(root, task_dir)
+    if gate.is_file() and not gate.is_symlink():
+        gate.unlink()
+        retired.append(repo_relative(root, gate))
+    if verification.is_file() and not verification.is_symlink():
+        verification.unlink()
+        retired.append(repo_relative(root, verification))
+    retired.extend(
+        ai_first_retire_owner_checkpoints(
+            root,
+            task_dir,
+            (TASK_FINALIZATION_GATE_ARTIFACT,),
+        )
+    )
+    return retired
 
 
 def extension_verification_remote_ref_command(
@@ -11958,11 +12400,11 @@ def extension_verification_execute_facts(
             exit_code=2,
         )
     task_dir = extension_verification_task_identity(root, public_input)
-    repo_ref, remote, ref, branch_review_commit = extension_verification_remote_identity(
+    repo_ref, remote, ref, branch_review_commit, publication_head = extension_verification_remote_identity(
         root,
         public_input,
     )
-    required_commit = expected_branch_review_commit or branch_review_commit
+    required_commit = publication_head or expected_branch_review_commit or branch_review_commit
     commands: list[dict[str, Any]] = []
     target_command = extension_verification_remote_ref_command(remote, ref)
     target_proc = run(target_command, cwd=root, check=False)
@@ -12341,7 +12783,8 @@ def extension_verification_execute_facts(
             "repo_ref": repo_ref,
             "remote": remote,
             "ref": ref,
-            "branch_review_commit": required_commit,
+            "branch_review_commit": branch_review_commit,
+            "publication_head": target_head if public_input["mode"] == "workflow" else None,
             "resolved_head": target_head,
             "checkout_head": target_checkout_head,
             "reviewed_content_sha256": reviewed_content_sha256,
@@ -12873,13 +13316,21 @@ def extension_verification_payload_errors(
             "branch_review_commit"
         ):
             errors.append("workflow verification reviewed commit binding is stale.")
+        expected_publication_head = payload.get("public_input", {}).get(
+            "publication_head"
+        ) or payload.get("public_input", {}).get("branch_review_commit")
+        actual_publication_head = target_repository.get("publication_head") or target_repository.get(
+            "branch_review_commit"
+        )
+        if actual_publication_head != expected_publication_head:
+            errors.append("workflow verification publication head binding is stale.")
         if not (
             isinstance(reviewed_content_sha256, str)
             and re.fullmatch(r"[0-9a-f]{64}", reviewed_content_sha256)
             and target_repository.get("remote_reviewed_content_sha256")
             == reviewed_content_sha256
             and target_repository.get("resolved_head")
-            == target_repository.get("branch_review_commit")
+            == (target_repository.get("publication_head") or target_repository.get("branch_review_commit"))
         ):
             errors.append("workflow verification reviewed-content identity is stale.")
     expected_consumer = extension_verification_expected_consumer(
@@ -19682,6 +20133,9 @@ def extension_verification_execution_input(
     value: str | None,
 ) -> dict[str, Any]:
     execution, _ = extension_verification_json_input(root, value)
+    target = execution.get("target_repository")
+    if isinstance(target, dict) and "publication_head" not in target:
+        target["publication_head"] = target.get("branch_review_commit")
     schema = extension_verification_recorder_input_schema(
         root,
         "execution-facts.schema.json",
@@ -19819,7 +20273,7 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
     execution = extension_verification_execution_input(root, args.execution_input)
     reviewed = extension_verification_review_input(root, args.review_input)
     identity = extension_verification_remote_identity(root, public_input)
-    repo_ref, remote, ref, branch_review_commit = identity
+    repo_ref, remote, ref, branch_review_commit, publication_head = identity
     execution_target = (
         execution.get("target_repository")
         if isinstance(execution.get("target_repository"), dict)
@@ -19830,6 +20284,7 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
         or execution_target.get("remote") != remote
         or execution_target.get("ref") != ref
         or execution_target.get("branch_review_commit") != branch_review_commit
+        or execution_target.get("publication_head") != publication_head
     ):
         raise WorkflowError(
             "Extension verification execution facts do not match the public invocation.",
@@ -20198,6 +20653,7 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
                     "task_ref": public_input["task_ref"],
                     "plan_ref": public_input["plan_ref"],
                     "branch_review_commit": public_input["branch_review_commit"],
+                    "publication_head": public_input["publication_head"],
                     "verification_ref": owner["identity"]["verification_ref"],
                 }
             )
@@ -20635,7 +21091,8 @@ def validate_closeout_task_children(task_dir: Path, task: dict[str, Any]) -> Non
 
 
 def closeout_transaction_parent_head(plan: dict[str, Any]) -> str:
-    return str(plan.get("git", {}).get("branch_review_commit") or "")
+    git = plan.get("git", {}) if isinstance(plan.get("git"), dict) else {}
+    return str(git.get("publication_head") or git.get("branch_review_commit") or "")
 
 
 def validate_closeout_reviewed_content(
@@ -21067,8 +21524,14 @@ def closeout_plan_errors(
     for label, (value, keys) in nested_keys.items():
         if set(value) != keys and not (label == "projection" and legacy_projection):
             errors.append(f"closeout plan {label} keys are invalid.")
-    git_keys = {"repo", "remote", "base_branch", "head_branch", "branch_review_commit"}
-    if set(git) != git_keys:
+    git_keys = {
+        "repo", "remote", "base_branch", "head_branch", "branch_review_commit",
+        "reviewed_content_head", "publication_head",
+    }
+    legacy_git = allow_legacy_migration and set(git) == {
+        "repo", "remote", "base_branch", "head_branch", "branch_review_commit",
+    }
+    if set(git) != git_keys and not legacy_git:
         errors.append("closeout plan git keys are invalid.")
     for label, value in [
         ("task.active_locator", task.get("active_locator")),
@@ -21089,6 +21552,14 @@ def closeout_plan_errors(
         errors.append("closeout git.repo must be a normalized GitHub owner/repository identity.")
     if not re.fullmatch(r"[0-9a-f]{40}", str(git.get("branch_review_commit") or "")):
         errors.append("closeout branch_review_commit is invalid.")
+    reviewed_head = str(git.get("reviewed_content_head") or git.get("branch_review_commit") or "")
+    publication_head = str(git.get("publication_head") or git.get("branch_review_commit") or "")
+    if not re.fullmatch(r"[0-9a-f]{40}", reviewed_head):
+        errors.append("closeout reviewed_content_head is invalid.")
+    if not re.fullmatch(r"[0-9a-f]{40}", publication_head):
+        errors.append("closeout publication_head is invalid.")
+    if reviewed_head != str(git.get("branch_review_commit") or ""):
+        errors.append("closeout reviewed_content_head does not match branch_review_commit.")
     if review.get("branch_review_commit") != git.get("branch_review_commit"):
         errors.append("closeout review commit does not match git identity.")
     changed = review.get("changed_paths")
@@ -21531,6 +22002,12 @@ def build_closeout_plan(
         generated_at_override=generated_at,
         artifacts_override=projected_artifacts,
     )
+    try:
+        publication_head = current_head(root)
+    except WorkflowError:
+        publication_head = branch_review_commit
+    if re.fullmatch(r"[0-9a-f]{40}", publication_head) is None:
+        publication_head = branch_review_commit
     plan: dict[str, Any] = {
         "schema_version": plan_schema_version,
         "task": {
@@ -21546,6 +22023,8 @@ def build_closeout_plan(
             "base_branch": normalize_ref(base_branch).removeprefix("origin/"),
             "head_branch": head_branch,
             "branch_review_commit": branch_review_commit,
+            "reviewed_content_head": branch_review_commit,
+            "publication_head": publication_head,
         },
         "inputs": inputs,
         "review": {
@@ -21600,7 +22079,6 @@ def closeout_schema2_migration_errors(
     for key in (
         "schema_version",
         "task",
-        "git",
         "inputs",
         "review",
         "publish",
@@ -21609,6 +22087,19 @@ def closeout_schema2_migration_errors(
     ):
         if previous.get(key) != current.get(key):
             errors.append(f"schema 2.0 migration changed protected {key} facts")
+
+    previous_git = copy.deepcopy(previous.get("git", {}))
+    current_git = copy.deepcopy(current.get("git", {}))
+    if set(previous_git) == {
+        "repo", "remote", "base_branch", "head_branch", "branch_review_commit",
+    }:
+        previous_git["reviewed_content_head"] = previous_git["branch_review_commit"]
+        previous_git["publication_head"] = previous_git["branch_review_commit"]
+    if previous_git.get("publication_head") != current_git.get("publication_head"):
+        previous_git.pop("publication_head", None)
+        current_git.pop("publication_head", None)
+    if previous_git != current_git:
+        errors.append("schema 2.0 migration changed protected git identity facts")
 
     previous_projection = previous["projection"]
     current_projection = current["projection"]
@@ -21738,6 +22229,10 @@ def prepare_closeout(
         current_head(root),
         include_worktree=True,
     )
+    publication_identity = finalizer_publication_identity(
+        root,
+        branch_review_commit,
+    )
     review_facts = closeout_reviewed_change_facts(
         root,
         task_context,
@@ -21791,6 +22286,7 @@ def prepare_closeout(
         review_facts=review_facts,
     )
     month_supersession: dict[str, Any] | None = None
+    pre_pr_reprepare: dict[str, Any] | None = None
     migration_normalization: dict[str, Any] | None = None
     existing = closeout_plan_path(task_dir)
     if existing.is_file():
@@ -21800,6 +22296,43 @@ def prepare_closeout(
             if not migration_errors:
                 migration_normalization = {"previous_plan": persisted}
             else:
+                persisted_git = persisted.get("git", {})
+                plan_git = plan.get("git", {})
+                provenance_only = (
+                    persisted_git.get("repo") == plan_git.get("repo")
+                    and persisted_git.get("remote") == plan_git.get("remote")
+                    and persisted_git.get("base_branch") == plan_git.get("base_branch")
+                    and persisted_git.get("head_branch") == plan_git.get("head_branch")
+                    and persisted_git.get("branch_review_commit")
+                    == plan_git.get("branch_review_commit")
+                    and persisted_git.get("publication_head")
+                    != plan_git.get("publication_head")
+                    and plan_git.get("publication_head") == current_head(root)
+                    and publication_identity.get("metadata_tail") is not None
+                    and not (task_dir / FINISH_SUMMARY_ARTIFACT).exists()
+                )
+                if provenance_only:
+                    pre_pr_reprepare = {
+                        "previous_plan": persisted,
+                        "prior_state": "content_pushed",
+                    }
+                    return {
+                        "plan": plan,
+                        "plan_digest": plan["plan_digest"],
+                        "task": task,
+                        "task_context": task_context,
+                        "ledger": ledger,
+                        "finish_summary_index": index,
+                        "finish_summary_index_path": index_path,
+                        "body": body,
+                        "body_source": body_source,
+                        "month_supersession": month_supersession,
+                        "pre_pr_reprepare": pre_pr_reprepare,
+                        "migration_normalization": migration_normalization,
+                        "reviewed_content_head": publication_identity["reviewed_content_head"],
+                        "publication_head": publication_identity["publication_head"],
+                        "metadata_tail": publication_identity["metadata_tail"],
+                    }
                 previous_month = closeout_archive_month(persisted)
                 next_month = closeout_archive_month(plan)
                 supersession_errors = closeout_month_supersession_errors(persisted, plan)
@@ -21851,7 +22384,11 @@ def prepare_closeout(
         "body": body,
         "body_source": body_source,
         "month_supersession": month_supersession,
+        "pre_pr_reprepare": pre_pr_reprepare,
         "migration_normalization": migration_normalization,
+        "reviewed_content_head": publication_identity["reviewed_content_head"],
+        "publication_head": publication_identity["publication_head"],
+        "metadata_tail": publication_identity["metadata_tail"],
     }
 
 
@@ -22307,6 +22844,8 @@ def validate_closeout_marketplace_artifact(
         )
         or owner_input.get("branch_review_commit")
         != plan["git"]["branch_review_commit"]
+        or owner_input.get("publication_head", owner_input.get("branch_review_commit"))
+        != plan["git"].get("publication_head", plan["git"]["branch_review_commit"])
         or normalize_github_repository(owner_input.get("repo_ref"))
         != plan["git"]["repo"]
     ):
@@ -22318,6 +22857,8 @@ def validate_closeout_marketplace_artifact(
         or repository.get("ref") != f"refs/heads/{plan['git']['head_branch']}"
         or repository.get("branch_review_commit")
         != plan["git"]["branch_review_commit"]
+        or repository.get("publication_head", repository.get("branch_review_commit"))
+        != plan["git"].get("publication_head", plan["git"]["branch_review_commit"])
     ):
         errors.append("extension verification repository identity is not plan-bound")
     if verification_owner_result is not None and verification_owner_result != (owner, checked):
@@ -23897,6 +24438,8 @@ FINALIZATION_CONSUMERS = {
 
 FINALIZATION_EXECUTOR_OUTPUT_MARKER = {"materialization": "executor"}
 FINALIZATION_GATE_SCHEMA_VERSION = "3.0"
+FINALIZATION_REPREPARE_ARCHIVE_MONTH = "archive_month_changed"
+FINALIZATION_REPREPARE_PROVENANCE_TAIL = "provenance_tail_required"
 FINALIZATION_COMMITTED_RECOVERY_STATES = {"archived", "ready"}
 FINALIZATION_RESUME_RECOVERY_STATES = {
     "content_pushed",
@@ -23987,6 +24530,11 @@ def finalization_public_input(
     value: str | None,
 ) -> tuple[dict[str, Any], str]:
     payload, locator = finalization_json_input(root, value, "task finalization public input")
+    if (
+        payload.get("profile") == "verification_verified"
+        and "publication_head" not in payload
+    ):
+        payload["publication_head"] = payload.get("branch_review_commit")
     package = finalization_package_root(root)
     interface = finalization_interface(root)
     profiles = interface["public_contracts"]["input"]["profiles"]
@@ -24363,6 +24911,8 @@ def check_extension_verification_for_closeout(
                 owner_input.get("plan_ref"),
             )
             or owner_input.get("branch_review_commit") != branch_review_commit
+            or owner_input.get("publication_head", owner_input.get("branch_review_commit"))
+            != plan["git"].get("publication_head", branch_review_commit)
             or normalize_github_repository(owner_input.get("repo_ref"))
             != plan["git"]["repo"]
         ):
@@ -24379,7 +24929,8 @@ def check_extension_verification_for_closeout(
             or repository.get("remote") != plan["git"]["remote"]
             or repository.get("ref")
             != f"refs/heads/{plan['git']['head_branch']}"
-            or repository.get("resolved_head") != branch_review_commit
+            or repository.get("resolved_head")
+            != plan["git"].get("publication_head", branch_review_commit)
             or plan.get("marketplace", {}).get("required") is not False
         ):
             errors.append(
@@ -24398,7 +24949,11 @@ def check_extension_verification_for_closeout(
         live_remote_head = extension_verification_resolved_remote_head(remote_proc, ref)
         if live_remote_head != repository.get("resolved_head"):
             errors.append("remote ref HEAD no longer matches private evidence")
-        elif not is_ancestor(root, branch_review_commit, live_remote_head):
+        elif not is_ancestor(
+            root,
+            plan["git"].get("reviewed_content_head", branch_review_commit),
+            live_remote_head,
+        ):
             errors.append("remote ref HEAD is not a descendant of branch_review_commit")
         else:
             try:
@@ -24481,7 +25036,8 @@ def finalization_standalone_not_required_owner_is_current(
         and repository.get("remote") == plan["git"]["remote"]
         and repository.get("ref")
         == f"refs/heads/{plan['git']['head_branch']}"
-        and repository.get("resolved_head") == plan["git"]["branch_review_commit"]
+        and repository.get("resolved_head")
+        == plan["git"].get("publication_head", plan["git"]["branch_review_commit"])
         and plan.get("marketplace", {}).get("required") is False
         and checked.get("verification_ref")
         == payload.get("identity", {}).get("verification_ref")
@@ -24554,7 +25110,7 @@ def finalization_verification_owner_result(
             and normalize_github_repository(public_input.get("repo_ref"))
             == plan["git"]["repo"]
             and public_input.get("resolved_head")
-            == plan["git"]["branch_review_commit"]
+            == plan["git"].get("publication_head", plan["git"]["branch_review_commit"])
             and public_input.get("verification_ref")
             == checked.get("verification_ref")
         )
@@ -24578,6 +25134,8 @@ def finalization_verification_owner_result(
             )
             and owner_input.get("branch_review_commit")
             == public_input.get("branch_review_commit")
+            and owner_input.get("publication_head", owner_input.get("branch_review_commit"))
+            == public_input.get("publication_head", public_input.get("branch_review_commit"))
             and checked.get("verification_ref")
             == public_input.get("verification_ref")
         )
@@ -24587,6 +25145,19 @@ def finalization_verification_owner_result(
             exit_code=2,
         )
     return payload, checked
+
+
+def finalizer_provenance_reprepare_error(error: WorkflowError) -> bool:
+    """Classify only the normal stale-manifest failures repaired by the tail."""
+    payload = error.payload if isinstance(error.payload, dict) else {}
+    if payload.get("reason_code") == "extension_source_not_clean":
+        return True
+    errors = payload.get("errors")
+    return isinstance(errors, list) and set(errors) in ({
+        "installed extension manifest provenance is no longer current.",
+    }, {
+        "installed extension manifest provenance is stale.",
+    })
 
 
 def finalization_current_verification_owner_result(
@@ -24642,6 +25213,8 @@ def finalization_current_verification_owner_result(
             or current_plan.get("plan_digest") != plan_ref.removeprefix("closeout-plan:")
             or current_plan.get("git", {}).get("branch_review_commit")
             != branch_review_commit
+            or current_plan.get("git", {}).get("publication_head", current_plan.get("git", {}).get("branch_review_commit"))
+            != owner_input.get("publication_head", owner_input.get("branch_review_commit"))
             or not finalization_standalone_not_required_owner_is_current(
                 payload,
                 checked,
@@ -24664,6 +25237,8 @@ def finalization_current_verification_owner_result(
             )
         )
         or owner_input.get("branch_review_commit") != branch_review_commit
+        or owner_input.get("publication_head", owner_input.get("branch_review_commit"))
+        != (plan or finalization_closeout_plan(root, task_dir) or {}).get("git", {}).get("publication_head", branch_review_commit)
     ):
         return None
     return payload, checked
@@ -24685,6 +25260,7 @@ def finalization_eval_preview_context(
         "plan_ref",
         "plan_digest",
         "branch_review_commit",
+        "publication_head",
         "archive_locator",
         "repo_ref",
         "remote",
@@ -24722,6 +25298,9 @@ def finalization_eval_preview_context(
         or not re.fullmatch(
             r"[0-9a-f]{40}", str(payload.get("branch_review_commit") or "")
         )
+        or not re.fullmatch(
+            r"[0-9a-f]{40}", str(payload.get("publication_head") or "")
+        )
         or normalize_github_repository(payload.get("repo_ref")) != payload.get("repo_ref")
         or payload.get("publication_status") not in {"current", "stale"}
         or (
@@ -24738,6 +25317,16 @@ def finalization_eval_preview_context(
         )
         or not isinstance(payload.get("marketplace_required"), bool)
         or payload.get("transaction_state") not in states
+        or (
+            payload.get("transaction_state") == "reprepare_required"
+            and (
+                public_input.get("profile") != "reprepare_preview"
+                or public_input.get("reason_code") not in {
+                    FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+                    FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+                }
+            )
+        )
         or (
             verification_exit is not None
             and (
@@ -24774,6 +25363,8 @@ def finalization_eval_preview_context(
             "remote": payload["remote"],
             "head_branch": payload["head_branch"],
             "branch_review_commit": payload["branch_review_commit"],
+            "reviewed_content_head": payload["branch_review_commit"],
+            "publication_head": payload["publication_head"],
         },
         "marketplace": {"required": payload["marketplace_required"]},
         "task": {
@@ -24817,7 +25408,7 @@ def finalization_eval_preview_context(
             )
             or public_input.get("repo_ref") != payload["repo_ref"]
             or public_input.get("resolved_head")
-            != payload["branch_review_commit"]
+            != payload["publication_head"]
             or public_input.get("verification_ref")
             != checked.get("verification_ref")
         ):
@@ -24862,6 +25453,11 @@ def finalization_eval_preview_context(
         "publication_status": payload["publication_status"],
         "publication_stale_reason": payload["publication_stale_reason"],
         "publication_branch_review_commit": payload["branch_review_commit"],
+        "reprepare_reason_code": (
+            public_input.get("reason_code")
+            if payload["transaction_state"] == "reprepare_required"
+            else None
+        ),
         "verification": verification,
     }
 
@@ -24960,6 +25556,7 @@ def finalization_preview_context(
     task_dir = finalization_task_dir(root, public_input)
     archived = task_dir_is_archived(root, task_dir)
     config = load_config(root)
+    reprepare_reason_code: str | None = None
     if archived:
         plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
@@ -24986,11 +25583,26 @@ def finalization_preview_context(
         prepared = None
         task_context = None
     else:
-        verification = finalization_verification_owner_result(
-            root,
-            task_dir,
-            public_input,
-        )
+        try:
+            verification = finalization_verification_owner_result(
+                root,
+                task_dir,
+                public_input,
+            )
+        except WorkflowError as exc:
+            existing_for_reprepare = finalization_closeout_plan(root, task_dir)
+            if (
+                existing_for_reprepare is None
+                or existing_for_reprepare.get("marketplace", {}).get("required") is not True
+                or task_json(task_dir).get("status") != "in_progress"
+                or not finalizer_provenance_reprepare_error(exc)
+                or not finalizer_pre_pr_provenance_tail_required(
+                    root,
+                    existing_for_reprepare,
+                )
+            ):
+                raise
+            verification = None
         reuse_current_verification = public_input["profile"] != "publication_ready"
         publication = finalization_publication_owner_result(
             root,
@@ -25042,16 +25654,29 @@ def finalization_preview_context(
             plan = prepared["plan"]
             if prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
+                reprepare_reason_code = FINALIZATION_REPREPARE_ARCHIVE_MONTH
+            elif prepared.get("pre_pr_reprepare") is not None:
+                state = "reprepare_required"
+                reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
             else:
                 if verification is None and reuse_current_verification:
-                    verification = finalization_current_verification_owner_result(
-                        root,
-                        task_dir,
-                        task_ref=public_input["task_ref"],
-                        plan_ref=f"closeout-plan:{plan['plan_digest']}",
-                        branch_review_commit=plan["git"]["branch_review_commit"],
-                        plan=plan,
-                    )
+                    try:
+                        verification = finalization_current_verification_owner_result(
+                            root,
+                            task_dir,
+                            task_ref=public_input["task_ref"],
+                            plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                            branch_review_commit=plan["git"]["branch_review_commit"],
+                            plan=plan,
+                        )
+                    except WorkflowError as exc:
+                        if (
+                            plan.get("marketplace", {}).get("required") is not True
+                            or not finalizer_provenance_reprepare_error(exc)
+                            or not finalizer_pre_pr_provenance_tail_required(root, plan)
+                        ):
+                            raise
+                        verification = None
                 checked_verification = (
                     verification[1]
                     if isinstance(verification, tuple)
@@ -25077,6 +25702,13 @@ def finalization_preview_context(
                         else None
                     ),
                 )
+                if (
+                    state in {"content_pushed", "evidence_ready"}
+                    and prepared.get("metadata_tail") is None
+                    and finalizer_pre_pr_provenance_tail_required(root, plan)
+                ):
+                    state = "reprepare_required"
+                    reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
     plan_ref = f"closeout-plan:{plan['plan_digest']}"
     input_plan_ref = public_input.get("plan_ref")
     migration = (
@@ -25098,15 +25730,6 @@ def finalization_preview_context(
             "Task finalization plan_ref does not match the current immutable plan.",
             exit_code=2,
         )
-    if verification is None and not archived and reuse_current_verification:
-        verification = finalization_current_verification_owner_result(
-            root,
-            task_dir,
-            task_ref=public_input["task_ref"],
-            plan_ref=plan_ref,
-            branch_review_commit=plan["git"]["branch_review_commit"],
-            plan=plan,
-        )
     return {
         "task_dir": task_dir,
         "task_context": task_context,
@@ -25120,6 +25743,7 @@ def finalization_preview_context(
         "publication_status": "current",
         "publication_stale_reason": None,
         "publication_branch_review_commit": plan["git"]["branch_review_commit"],
+        "reprepare_reason_code": reprepare_reason_code,
         "verification": verification,
     }
 
@@ -25253,6 +25877,15 @@ def finalization_validate_route(
                 "branch_review_commit",
                 plan["git"]["branch_review_commit"] if plan is not None else None,
             ),
+            (
+                "publication_head",
+                (
+                    plan["git"].get("publication_head")
+                    or plan["git"].get("branch_review_commit")
+                )
+                if plan is not None
+                else None,
+            ),
         ):
             if field in output and output.get(field) != expected:
                 raise WorkflowError(
@@ -25317,6 +25950,14 @@ def finalization_validate_route(
     if exit_id == "reprepare_required" and state != "reprepare_required":
         raise WorkflowError(
             "reprepare_required is not compatible with the current transaction state.",
+            exit_code=2,
+        )
+    if (
+        exit_id == "reprepare_required"
+        and output.get("reason_code") != context.get("reprepare_reason_code")
+    ):
+        raise WorkflowError(
+            "reprepare_required reason does not match the current recovery state.",
             exit_code=2,
         )
     if exit_id == "published" and state not in FINALIZATION_COMMITTED_RECOVERY_STATES:
@@ -25680,12 +26321,43 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             "plan_ref": context["plan_ref"],
             "repo_ref": context["plan"]["git"]["repo"],
             "branch_review_commit": context["plan"]["git"]["branch_review_commit"],
+            "publication_head": (
+                context["plan"]["git"].get("publication_head")
+                or context["plan"]["git"].get("branch_review_commit")
+            ),
             "verification_target": "extension-installation",
         }
         return {
             **result,
             "typed_exit": exit_id,
             "output": gate["route"]["output"],
+        }
+    if exit_id == "reprepare_required":
+        reason_code = context["reprepare_reason_code"]
+        reviewed_content_head = context["plan"]["git"]["reviewed_content_head"]
+        publication = finalizer_publication_identity(root, reviewed_content_head)
+        if reason_code == FINALIZATION_REPREPARE_PROVENANCE_TAIL:
+            provenance = (
+                publication
+                if publication["metadata_tail"] is not None
+                else prepare_provenance_metadata_tail(root, reviewed_content_head)
+            )
+        elif reason_code == FINALIZATION_REPREPARE_ARCHIVE_MONTH:
+            provenance = publication
+        else:
+            raise WorkflowError(
+                "Finalizer reprepare reason is unsupported.",
+                exit_code=2,
+            )
+        retired = finalizer_supersede_pre_pr_state(root, task_dir)
+        return {
+            "status": "ok",
+            "stage": "reprepare_required",
+            "typed_exit": exit_id,
+            "retired_owner_state": retired,
+            "reviewed_content_head": provenance["reviewed_content_head"],
+            "publication_head": provenance["publication_head"],
+            "output": copy.deepcopy(gate["route"]["output"]),
         }
     if exit_id == "published":
         finish_args = copy.copy(args)

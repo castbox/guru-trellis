@@ -1063,6 +1063,13 @@ concrete reason after the final diff is reviewed.
 
 修改 marketplace/preset/overlay/schema/public API 时，Finalizer 在 reviewed content push 后调用 `guru-verify-extension-installation` 生成并校验 task-local `marketplace-verification.json`；`issue-scope-ledger.json` bytes 全程保持不变。Closeout schema 2.0 不创建独立的 plan/readiness/evidence commit；passed artifact 与 remote HEAD 校验完成后才允许绑定 draft PR，并最终随单次 archive metadata transaction 提交。缺失、重复、pending、失败、内容不一致、HEAD 不匹配或 stale 均阻止创建 PR；human reason 不参与 machine identity，该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
 
+Finalizer 的 clean provenance recovery 只接受 canonical preset apply 生成的
+单个 `.trellis/guru-team/extension.json` metadata-tail commit；允许字段固定为
+`installed_at` 与四个 `source.*` identity/state 字段。Verifier 用
+`reviewed_content_head` 校验 source bytes，用 `publication_head` 绑定 target
+remote ref 与 PR identity；任意 sidecar、managed byte drift、额外 path 或第二个
+tail 都 fail closed。
+
 ## Eval 安装与升级清单
 
 Preset 管理 eval schemas、`discover-skill-evals.sh`、`run-skill-evals.sh`、

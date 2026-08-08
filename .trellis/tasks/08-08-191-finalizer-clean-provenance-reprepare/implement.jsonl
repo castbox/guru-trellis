@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Global phase routing, Finalizer reprepare exit and thin workflow boundary."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Skill public I/O, typed exits, private state and migration rules."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Deterministic producer/validator and semantic-script boundary."}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Closeout, provenance, identity and runtime data contracts."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Current validation, install/update and review gates."}
+{"file":".trellis/spec/preset/installer.md","reason":"Canonical/preset/install/reapply and sidecar behavior."}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Canonical overlay and platform synchronization boundary."}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"Guru versus upstream ownership and provenance constraints."}
+{"file":".trellis/spec/docs/public-docs.md","reason":"README and public workflow documentation SSOT rules."}

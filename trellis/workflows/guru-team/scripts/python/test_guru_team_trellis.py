@@ -8649,6 +8649,283 @@ class IntakeScopeEvolutionContractTest(unittest.TestCase):
                 )
 
 
+class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
+    def git(self, root: Path, *args: str) -> str:
+        return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
+
+    def fixture(self) -> tuple[Path, str, str]:
+        root = Path(tempfile.mkdtemp(prefix="guru-provenance-tail-test-"))
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=root, check=True)
+        manifest = root / gtt.PROVENANCE_TAIL_MANIFEST_PATH
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(
+            json.dumps(
+                {
+                    "installed_at": "old",
+                    "source": {
+                        "ref": "old",
+                        "commit": "0" * 40,
+                        "tree_state": "dirty",
+                        "is_mutable_ref": True,
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "reviewed"], cwd=root, check=True)
+        reviewed = self.git(root, "rev-parse", "HEAD")
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["installed_at"] = "new"
+        payload["source"] = {
+            "ref": reviewed,
+            "commit": reviewed,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        manifest.write_text(json.dumps(payload), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "provenance tail"], cwd=root, check=True)
+        publication = self.git(root, "rev-parse", "HEAD")
+        return root, reviewed, publication
+
+    def test_clean_tail_preserves_reviewed_identity_and_validates_publication_head(self) -> None:
+        root, reviewed, publication = self.fixture()
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        subprocess.run(["git", "checkout", "--detach", "-q", publication], cwd=root, check=True)
+        self.assertTrue(gtt.reviewed_content_metadata_path(gtt.PROVENANCE_TAIL_MANIFEST_PATH))
+        result = gtt.validate_provenance_metadata_tail(root, reviewed, publication)
+        self.assertEqual(result["reviewed_content_head"], reviewed)
+        self.assertEqual(result["publication_head"], publication)
+
+    def test_tail_rejects_non_allowlisted_manifest_field(self) -> None:
+        root, reviewed, publication = self.fixture()
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        manifest = root / gtt.PROVENANCE_TAIL_MANIFEST_PATH
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["extension"] = {"version": "drift"}
+        manifest.write_text(json.dumps(payload), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "invalid tail"], cwd=root, check=True)
+        invalid = self.git(root, "rev-parse", "HEAD")
+        with self.assertRaisesRegex(gtt.WorkflowError, "failed its clean-source contract"):
+            gtt.validate_provenance_metadata_tail(root, reviewed, invalid)
+
+    def test_publication_identity_accepts_one_tail_without_reclassifying_reviewed_head(self) -> None:
+        root, reviewed, publication = self.fixture()
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        identity = gtt.finalizer_publication_identity(root, reviewed)
+        self.assertEqual(identity["reviewed_content_head"], reviewed)
+        self.assertEqual(identity["publication_head"], publication)
+        self.assertEqual(identity["metadata_tail"]["parent"], reviewed)
+
+    def test_provenance_reprepare_error_classification_is_narrow(self) -> None:
+        self.assertTrue(gtt.finalizer_provenance_reprepare_error(gtt.WorkflowError(
+            "dirty source",
+            payload={"reason_code": "extension_source_not_clean"},
+        )))
+        self.assertTrue(gtt.finalizer_provenance_reprepare_error(gtt.WorkflowError(
+            "stale manifest",
+            payload={"errors": [
+                "installed extension manifest provenance is stale.",
+            ]},
+        )))
+        self.assertFalse(gtt.finalizer_provenance_reprepare_error(gtt.WorkflowError(
+            "mixed drift",
+            payload={"errors": [
+                "installed extension manifest provenance is stale.",
+                "target remote ref HEAD no longer matches private evidence.",
+            ]},
+        )))
+
+    def test_reprepare_route_requires_the_live_reason(self) -> None:
+        task_ref = ".trellis/tasks/current"
+        public_input = {"task_ref": task_ref}
+        context = {
+            "transaction_state": "reprepare_required",
+            "reprepare_reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "plan_ref": f"closeout-plan:{'a' * 64}",
+            "plan": {
+                "git": {
+                    "branch_review_commit": "b" * 40,
+                    "publication_head": "c" * 40,
+                },
+                "task": {"active_locator": task_ref},
+            },
+        }
+        route = {
+            "typed_exit": "reprepare_required",
+            "consumer": gtt.FINALIZATION_CONSUMERS["reprepare_required"],
+            "output": {
+                "exit_id": "reprepare_required",
+                "task_ref": task_ref,
+                "reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+            },
+        }
+        with mock.patch.object(
+            gtt,
+            "finalization_output_contract",
+            return_value={"type": "object"},
+        ):
+            gtt.finalization_validate_route(Path.cwd(), public_input, context, route)
+            mismatched = copy.deepcopy(route)
+            mismatched["output"]["reason_code"] = gtt.FINALIZATION_REPREPARE_ARCHIVE_MONTH
+            with self.assertRaisesRegex(gtt.WorkflowError, "reason does not match"):
+                gtt.finalization_validate_route(
+                    Path.cwd(),
+                    public_input,
+                    context,
+                    mismatched,
+                )
+
+    def test_reprepare_executor_keeps_archive_month_and_provenance_actions_separate(self) -> None:
+        root, reviewed, _ = self.fixture()
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        task_dir = root / ".trellis/tasks/current"
+        task_dir.mkdir(parents=True)
+        public_input = {"task_ref": ".trellis/tasks/current"}
+        gate = {
+            "route": {
+                "typed_exit": "reprepare_required",
+                "output": {
+                    "exit_id": "reprepare_required",
+                    "task_ref": public_input["task_ref"],
+                    "reason_code": gtt.FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+                },
+            },
+        }
+        context = {
+            "task_dir": task_dir,
+            "plan": {"git": {"reviewed_content_head": reviewed}},
+            "reprepare_reason_code": gtt.FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+        }
+        args = argparse.Namespace(root=str(root), input="unused", gate=None)
+        publication = {
+            "reviewed_content_head": reviewed,
+            "publication_head": "d" * 40,
+            "metadata_tail": None,
+        }
+        with (
+            mock.patch.object(gtt, "finalization_public_input", return_value=(public_input, "unused")),
+            mock.patch.object(gtt, "finalization_gate_input", return_value=(gate, root / "gate.json")),
+            mock.patch.object(gtt, "check_finalization_gate_result", return_value=(gate, context)),
+            mock.patch.object(gtt, "finalizer_publication_identity", return_value=publication),
+            mock.patch.object(gtt, "prepare_provenance_metadata_tail") as prepare_tail,
+            mock.patch.object(gtt, "finalizer_supersede_pre_pr_state", return_value=["old-plan"]) as retire,
+        ):
+            result = gtt.cmd_execute_finalization_transition(args)
+        prepare_tail.assert_not_called()
+        retire.assert_called_once_with(root.resolve(), task_dir)
+        self.assertEqual(result["publication_head"], publication["publication_head"])
+
+        context["reprepare_reason_code"] = gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL
+        gate["route"]["output"]["reason_code"] = gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL
+        prepared = {**publication, "publication_head": "e" * 40}
+        with (
+            mock.patch.object(gtt, "finalization_public_input", return_value=(public_input, "unused")),
+            mock.patch.object(gtt, "finalization_gate_input", return_value=(gate, root / "gate.json")),
+            mock.patch.object(gtt, "check_finalization_gate_result", return_value=(gate, context)),
+            mock.patch.object(gtt, "finalizer_publication_identity", return_value=publication),
+            mock.patch.object(gtt, "prepare_provenance_metadata_tail", return_value=prepared) as prepare_tail,
+            mock.patch.object(gtt, "finalizer_supersede_pre_pr_state", return_value=["old-plan"]),
+        ):
+            result = gtt.cmd_execute_finalization_transition(args)
+        prepare_tail.assert_called_once_with(root.resolve(), reviewed)
+        self.assertEqual(result["publication_head"], prepared["publication_head"])
+
+    def test_reprepare_supersession_preserves_tracked_task_artifacts(self) -> None:
+        root, _, _ = self.fixture()
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        task_dir = root / ".trellis/tasks/current"
+        task_dir.mkdir(parents=True)
+        plan = task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT
+        verification = task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+        plan.write_text("{}\n", encoding="utf-8")
+        verification.write_text("{}\n", encoding="utf-8")
+        subprocess.run(["git", "add", ".trellis/tasks/current"], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "tracked task artifacts"], cwd=root, check=True)
+
+        with self.assertRaisesRegex(gtt.WorkflowError, "will not delete tracked") as blocked:
+            gtt.finalizer_supersede_pre_pr_state(root, task_dir)
+        self.assertEqual(
+            blocked.exception.payload["tracked_paths"],
+            [
+                ".trellis/tasks/current/closeout-plan.json",
+                ".trellis/tasks/current/marketplace-verification.json",
+            ],
+        )
+        self.assertTrue(plan.is_file())
+        self.assertTrue(verification.is_file())
+
+
+class PrePrProvenanceReprepareFixtureTest(unittest.TestCase):
+    """Reproduce the #179 ordering with a disposable, local-only fixture."""
+
+    def git(self, root: Path, *args: str) -> str:
+        return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
+
+    def test_reviewed_push_dirty_rejection_tail_reprepare_and_exact_ref(self) -> None:
+        root = Path(tempfile.mkdtemp(prefix="guru-191-pre-pr-fixture-"))
+        self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.name", "Fixture"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.email", "fixture@example.com"], cwd=root, check=True)
+        manifest = root / gtt.PROVENANCE_TAIL_MANIFEST_PATH
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(json.dumps({
+            "installed_at": "old",
+            "source": {
+                "ref": "0" * 40,
+                "commit": "0" * 40,
+                "tree_state": "dirty",
+                "is_mutable_ref": False,
+            },
+        }), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "reviewed content"], cwd=root, check=True)
+        reviewed = self.git(root, "rev-parse", "HEAD")
+        self.assertTrue(gtt.finalizer_pre_pr_provenance_tail_required(root, {
+            "git": {"branch_review_commit": reviewed},
+        }))
+
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["installed_at"] = "new"
+        payload["source"] = {
+            "ref": reviewed,
+            "commit": reviewed,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        manifest.write_text(json.dumps(payload), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "provenance metadata tail"], cwd=root, check=True)
+        publication = self.git(root, "rev-parse", "HEAD")
+        subprocess.run(["git", "checkout", "--detach", "-q", publication], cwd=root, check=True)
+        identity = gtt.finalizer_publication_identity(root, reviewed)
+        self.assertEqual(identity["reviewed_content_head"], reviewed)
+        self.assertEqual(identity["publication_head"], publication)
+        self.assertFalse(gtt.finalizer_pre_pr_provenance_tail_required(root, {
+            "git": {"branch_review_commit": reviewed},
+        }))
+
+        task_dir = root / ".trellis/tasks/fixture"
+        task_dir.mkdir(parents=True)
+        for path in (
+            task_dir / "closeout-plan.json",
+            task_dir / "marketplace-verification.json",
+        ):
+            path.write_text("{}", encoding="utf-8")
+        retired = gtt.finalizer_supersede_pre_pr_state(root, task_dir)
+        self.assertIn(".trellis/tasks/fixture/closeout-plan.json", retired)
+        self.assertIn(".trellis/tasks/fixture/marketplace-verification.json", retired)
+        self.assertFalse((task_dir / "closeout-plan.json").exists())
+        self.assertFalse((task_dir / "marketplace-verification.json").exists())
+
+
 class ExtensionVersionPayloadTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -12424,6 +12701,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "plan_ref": f"closeout-plan:{'b' * 64}",
                 "plan_digest": "b" * 64,
                 "branch_review_commit": self.head,
+                "publication_head": self.head,
                 "archive_locator": ".trellis/tasks/archive/2026-07/07-11-closeout",
                 "repo_ref": "owner/repo",
                 "remote": "origin",
@@ -12440,6 +12718,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertIsNotNone(context)
         assert context is not None
         self.assertEqual(context["publication_status"], "stale")
+        self.assertEqual(context["plan"]["git"]["reviewed_content_head"], self.head)
+        self.assertEqual(context["plan"]["git"]["publication_head"], self.head)
         self.assertEqual(
             context["publication_stale_reason"],
             "publication_review_missing",

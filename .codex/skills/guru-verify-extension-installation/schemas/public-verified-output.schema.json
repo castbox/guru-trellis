@@ -5,13 +5,14 @@
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["exit_id", "mode", "task_ref", "plan_ref", "branch_review_commit", "verification_ref"],
+      "required": ["exit_id", "mode", "task_ref", "plan_ref", "branch_review_commit", "publication_head", "verification_ref"],
       "properties": {
         "exit_id": {"const": "verified"},
         "mode": {"const": "workflow"},
         "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
         "plan_ref": {"type": "string", "minLength": 1},
         "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "publication_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
         "verification_ref": {"type": "string", "minLength": 1}
       }
     },

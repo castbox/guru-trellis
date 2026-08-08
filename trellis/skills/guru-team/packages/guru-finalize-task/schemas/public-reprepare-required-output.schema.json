@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finalize-task-output-reprepare-required-1.0",
+  "$id": "guru-finalize-task-output-reprepare-required-2.0",
   "type": "object",
   "additionalProperties": false,
   "required": ["exit_id", "task_ref", "reason_code"],
   "properties": {
     "exit_id": {"const": "reprepare_required"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
-    "reason_code": {"const": "archive_month_changed"}
+    "reason_code": {"enum": ["archive_month_changed", "provenance_tail_required"]}
   }
 }

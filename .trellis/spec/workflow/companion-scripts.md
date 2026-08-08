@@ -1324,6 +1324,13 @@ task, repository, remote ref, `branch_review_commit`, reviewed-content identity,
 and exact transaction paths. Closeout schema 2.0 creates no pre-draft commit and
 rejects every additional dirty path or identity/commit drift.
 
+The verifier treats `branch_review_commit` as `reviewed_content_head` and
+`publication_head` as the exact target/ref checkout identity. Legacy owner
+inputs without `publication_head` normalize to `branch_review_commit` before
+schema validation; current producers always emit both. A validated single
+manifest-only provenance tail preserves reviewed-content identity while moving
+the remote/PR/archive parent to `publication_head`.
+
 When the current closeout plan requires extension verification, finalization
 consumes only a checker-passed current `guru-verify-extension-installation`
 owner result and its task-local artifact. The artifact is passed unchanged
@@ -1344,6 +1351,11 @@ small; the finalizer does not require it to duplicate path or issue-scope
 inventories.
 
 `verification_required.repo_ref` must equal the immutable plan repository.
+Its current DTO also carries both reviewed and publication HEADs. The
+pre-PR `reprepare_required` executor uses the canonical preset apply entry in a
+detached clean worktree, validates the five-field manifest allowlist, commits
+one tail, fast-forwards the task branch, and removes only the superseded private
+plan/gate/request state.
 `resume_finalization` accepts only declared same-plan post-content recovery
 states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. The
 ignored owner-private gate stores only the private executor marker. After the
