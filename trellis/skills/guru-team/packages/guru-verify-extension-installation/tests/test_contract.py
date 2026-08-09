@@ -44,9 +44,11 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         )
         self.assertEqual(
             contracts["private_artifacts"][0]["schema"]["schema_id"],
-            "https://github.com/castbox/guru-trellis/schemas/"
-            "guru-extension-installation-verification-3.0.json",
+            "guru-extension-installation-verification-result-4.0",
         )
+        result_schema = load("schemas/verification-result.schema.json")
+        result_example = load("examples/verification-result.json")
+        jsonschema.Draft202012Validator(result_schema).validate(result_example)
 
     def test_distinct_inputs_and_taskless_standalone_branch(self) -> None:
         workflow_schema = load("schemas/public-verification-required-input-3.0.schema.json")

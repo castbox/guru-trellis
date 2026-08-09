@@ -191,6 +191,23 @@
       "workflow_route_id": "task-finalization"
     },
     {
+      "id": "guru-merge-task-pr",
+      "state": "active",
+      "name": "guru-merge-task-pr",
+      "package": "packages/guru-merge-task-pr",
+      "interface": "packages/guru-merge-task-pr/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "workflow_integration_state": "integrated",
+      "supported_platforms": [
+        "shared",
+        "codex",
+        "cursor",
+        "claude"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "task-pr-merge"
+    },
+    {
       "id": "guru-sync-base",
       "state": "active",
       "name": "guru-sync-base",

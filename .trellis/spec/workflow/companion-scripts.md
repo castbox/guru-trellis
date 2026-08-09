@@ -16,6 +16,37 @@ evidence and is not a generic GitHub failure.
 
 ## Script Boundaries
 
+### Issue #180 Current Finish And Merge Commands
+
+Current Finalizer commands use ignored
+`finalization-transaction.json`, not task-local/archive `closeout-plan.json`.
+Preview rebuilds live publication/archive/verification facts; record/check own
+only the semantic gate; execute persists the minimal transaction only when it
+must return a same-owner recovery exit and retires it at `ready_for_merge`.
+Finalizer and `finish-work` never call an Issue-close command.
+
+Current Verifier execution records capability completion incrementally against
+the immutable repository/ref/reviewed-head/publication-head/source/profile
+tuple. Its recorder/checker recover a successful command whose wrapper output
+was lost and rerun only missing capabilities. The durable result is minimal;
+full execution facts are ignored runtime and are retired after Finalizer
+consumption.
+
+`preview-task-pr-merge`, `record-task-pr-merge`, `check-task-pr-merge`, and
+`execute-task-pr-merge` are the deterministic commands for
+`guru-merge-task-pr`. All GitHub calls are authenticated, repo-bound `gh`/`gh
+api` calls. Preview is read-only. Record/check validate the already performed
+AI gate. Execute uses the unique repository merge method and
+`--match-head-commit`, then performs only read-only PR/Issue post-merge checks.
+No command invokes `gh issue close`, an Issue PATCH mutation, `guru-sync-base`,
+PR update/rebase, local base synchronization, or cleanup.
+
+`guru-create-task-commit` checker recomputes the objective unpublished,
+dedicated-branch eligibility facts. The semantic candidate owns
+`routine_auto_commit_eligible`; a checked true value enters the existing exact
+staging/ordinary commit executor immediately, with no confirmation parameter or
+persisted authorization.
+
 Bash files under `trellis/workflows/guru-team/scripts/bash/` are thin wrappers.
 They should use `set -euo pipefail`, resolve their own `SCRIPT_DIR`, and delegate
 behavior to the Python companion:
@@ -211,10 +242,12 @@ existing owner recorder and checker for `task_ref`, and selects the actual exit
 only from checker-passed owner evidence. Commit invocation consumes the minimal
 Phase 2 DTO plus fresh AI-authored path classifications, structured commit
 message fields, and semantic result. A deterministic builder rereads the
-current task, ledger, HEAD, base, dirty snapshot, and sequence; constructs the
-ignored-runtime `guru-task-commit-candidate-3.0`; canonicalizes the complete
-message; runs the shared parser; and, only for `committed`, calls the exact
-executor. User authorization remains dialogue-local and never enters the
+current task, ledger, HEAD, base, dirty snapshot, sequence, remote branch and
+repo-bound Open PR facts; constructs the ignored-runtime
+`guru-task-commit-candidate-4.0`; canonicalizes the complete message; runs the
+shared parser; and, only for checker-passed `committed` with
+`routine_auto_commit_eligible=true`, calls the exact executor immediately.
+User authorization remains dialogue-local and never enters the
 public input, candidate, result, or archive.
 
 The builder may return `revision-required` or `blocked` from the caller-owned
@@ -636,7 +669,14 @@ Neither command classifies scope, authors message semantics, chooses a route,
 pushes, rewrites published history, stashes, amends, rebases, force-updates, or
 uses broad `git add`.
 
-`finish-work.sh` is an internal helper, not the normal user path. It must reject
+### Legacy Closeout Plan Engine Compatibility
+
+The following closeout-plan engine contract is retained only for explicit
+legacy selectors and regression fixtures. Current Finalizer preparation,
+re-entry, recovery and archive routes use the Issue #180 transaction commands
+defined at the top of this document and never select `closeout-plan.json`.
+
+Legacy `finish-work.sh` is an internal helper, not the normal user path. It must reject
 ordinary direct calls before closeout-plan, push, draft PR, archive, or publish
 side effects; only `guru-finalize-task`'s checked private transition executor
 may invoke it. Direct calls report `required_entrypoint=guru-finish-work`.
@@ -1338,7 +1378,24 @@ Stable commands are `preview-finalization`, `record-finalization-gate`,
 route; public invocation always reruns strict route validation and never calls
 the transition executor implicitly.
 
-The current extension-verification checker validates the dedicated
+Current Finalizer uses `guru-finalization-transaction-1.0` only when a
+same-owner deterministic transition must survive re-entry. Preview and execute
+rebuild live Git/GitHub/Trellis facts, locate the transaction by exact
+`task_ref`, and bind immutable publication input plus the local `plan_digest`
+consumer token. Verification-required writes the transaction before returning;
+terminal `ready_for_merge` retires Finalizer and Verifier owner state. Current
+archive preparation allows six core files and the minimal verification result
+as the only optional seventh file. Archive-move failure restores the task
+locator's tracked bytes from immutable `publication_head`; archived recovery
+reads committed task/summary facts and ignores damaged working-tree copies.
+
+### Legacy Plan Engine Selectors
+
+The remainder of this section preserves the explicit pre-#180 plan engine and
+#191 recovery selectors. It is not current Interface, registry, manifest,
+preparation, recovery, or archive authority.
+
+The legacy extension-verification checker validates the dedicated
 `marketplace-verification.json` owner artifact against the immutable plan,
 task, repository, remote ref, `branch_review_commit`, reviewed-content identity,
 and exact transaction paths. Closeout schema 3.0 creates no pre-draft commit and

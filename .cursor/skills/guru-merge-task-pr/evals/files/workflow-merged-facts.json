@@ -1,0 +1,1 @@
+{"scenario":"A Ready workflow PR passes the complete live gate, merges at the expected head, and GitHub closes the reviewed Issue.","owner_staging":{"recipe":"merge-workflow-merged"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--gate",".trellis/.runtime/guru-team/task-pr-merge/eval/task-pr-merge-gate.json"]}}

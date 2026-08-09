@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-pr-input-ready-for-merge-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile", "mode", "repo_ref", "pr_number", "pr_url", "expected_head_sha"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "profile": {"const": "ready_for_merge"},
+    "mode": {"const": "workflow"},
+    "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "pr_number": {"type": "integer", "minimum": 1},
+    "pr_url": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[1-9][0-9]*$"},
+    "expected_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+  }
+}

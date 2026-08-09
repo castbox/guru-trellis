@@ -1,0 +1,10 @@
+{
+  "exit_id": "closure_mismatch",
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 176,
+  "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
+  "merge_commit_sha": "2222222222222222222222222222222222222222",
+  "mismatches": [
+    {"issue_number": 174, "reason_code": "not_closed_by_merge"}
+  ]
+}

@@ -1,11 +1,12 @@
 # Preset Installer
 
-The managed Guru Team assets include `schemas/closeout-plan.schema.json`.
-Fresh install, workflow switch/update, and preset reapply must preserve the
-same finish-work state order, expected-digest flag, draft handshake, and
-single-entry recovery text across shared, Codex, Claude, and Cursor entries.
-Recursive `.new`/`.bak` scans and canonical/dogfood equality include the new
-schema and finish entry content.
+The managed Guru Team assets retain `schemas/closeout-plan.schema.json` only as
+an immutable legacy compatibility asset. Current interfaces, runtime and archive
+selection use `schemas/finalization-transaction.schema.json`. Fresh install,
+workflow switch/update, and preset reapply must preserve the current transaction,
+Draft-to-Ready handshake, `ready_for_merge` route and Merge entry across shared,
+Codex, Claude, and Cursor. Recursive `.new`/`.bak` scans and canonical/dogfood
+equality include both the current schema and explicit legacy asset.
 
 ## Boundary
 
@@ -580,8 +581,8 @@ Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation contributes to the current package closure of fourteen active
-Skills and 54 external exits.
+The activation contributes to the current package closure of fifteen active
+Skills and 57 external exits.
 `production-current-v1` remains exactly three Skills and 11 exits; #116 is an
 additional complete active Interface 1.3 row. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
@@ -591,8 +592,8 @@ PR payload authoring and the integrated `ready -> guru-finalize-task` route are
 owned by the Publication package, marketplace workflow, and active public
 package graph. The installed asset inventory contains no task-local body/index
 template, reader, writer, fixture, or CLI compatibility flag. It distributes
-the current readiness/ready/Finalizer input 4.0 schemas, closeout plan 3.0
-runtime, and finish-summary 2.0 schema together.
+the current readiness/ready/Finalizer input 4.0 schemas, transaction 1.0,
+finish-summary 2.0, and explicit legacy closeout-plan 3.0 asset together.
 
 Clean throwaway install and post-`trellis update` preset reapply both run
 source/installed validation, workflow marker and consumer uniqueness checks,
@@ -608,7 +609,7 @@ prove legacy 3.0 DTOs fail closed rather than being silently upgraded.
 Interface 1.3 package with its two input profiles, four per-exit contracts,
 workflow/stop consumers, private gate schema, seven-case corpus, thin wrappers,
 registry row, workflow markers, and extension inventories. It participates in
-the current fourteen-Skill/54-exit package graph without changing the live
+the current fifteen-Skill/57-exit package graph without changing the live
 Intake six-Skill/23-exit contract or the production three-Skill/11-exit
 membership.
 Its workflow `verified` and reachable task-bearing standalone `not_required`
@@ -642,8 +643,8 @@ legacy reader while all public input/exit DTO assets remain byte-compatible.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-wrapper executable modes, the fourteen-Skill/54-exit package closure, the
-integrated global closure of 14 invokes, 54 exits, and 31 targets, and current
+wrapper executable modes, the fifteen-Skill/57-exit package closure, the
+integrated global closure of 15 invokes, 57 exits, and 33 targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Non-current manifests and unknown claims fail closed. Unknown edits to current
 Guru-owned assets retain `.new`, known Guru upgrades retain `.bak`, and
@@ -659,20 +660,22 @@ remote ref/HEAD or report that verification as deferred.
 `guru-finalize-task` is installed as an additive active Interface 1.3 package
 with six distinct public input profiles, six `exit_id` output contracts,
 twelve target-owned `skill_input_authoring_seed` handoffs across the
-complete package graph, one owner-private finalization gate, the closeout-plan
-schema, real-wrapper eval corpus, and the deterministic runtime wrappers. Its
+complete package graph, one owner-private finalization gate, the minimal
+finalization-transaction schema, real-wrapper eval corpus, and deterministic
+runtime wrappers. The legacy closeout-plan schema remains installed only for
+explicit compatibility validation. Its
 canonical, installed shared, Codex, Cursor, and Claude package/corpus bytes must
 remain identical and every wrapper must retain executable mode.
 The current not-required edge installs as a task-bearing standalone
 projection of `repo_ref/resolved_head/verification_ref`; the finalizer target
-authors `profile/mode/task_ref` and retains plan identity privately through the
+authors `profile/mode/task_ref` and retains transaction identity privately through the
 declared current profile. The reprepare edge installs its executor-owned
 task/reason plus reviewed/publication HEAD projection so a new preview remains
 possible after superseded private state is removed.
 
-The current source/installed package graph contains fourteen active Skills and
-54 external exits. The global workflow projection is 14 invokes, 54 exits, and
-31 targets. The preset additionally installs the three Guru-owned
+The current source/installed package graph contains fifteen active Skills and
+57 external exits. The global workflow projection is 15 invokes, 57 exits, and
+33 targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and the combined integration suite. Upstream
 `trellis-finish-work` Skill/Command/Prompt files remain entirely under official
 Trellis ownership and are absent from Guru overlays and managed inventory. This

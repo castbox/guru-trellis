@@ -1,0 +1,11 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Required semantic, package, runtime, replay, installation, upgrade and safety validation matrix."}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Verify final graph, route, confirmation budget, Docs SSOT and GitHub channel compliance."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Verify public DTO minimality, typed exit closure, package activation and private-state lifecycle."}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Verify current/legacy schema selection, freshness, transaction cleanup and archive boundaries."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Verify scripts remain deterministic and all GitHub operations use repo-bound gh CLI."}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"Verify official Trellis ownership is preserved and only Guru-owned surfaces are managed."}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Verify canonical/dogfood/platform equality and zero unresolved sidecars."}
+{"file":".trellis/spec/docs/public-docs.md","reason":"Verify public migration, install, update and operational wording matches current behavior."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Review shared runtime helpers and prevent duplicate GitHub, projection or validation logic."}
+{"file":".trellis/tasks/08-09-180-minimal-finalizer-replay-174/prd.md","reason":"Map implementation and tests to every acceptance criterion and scope exclusion."}
+{"file":".trellis/tasks/08-09-180-minimal-finalizer-replay-174/design.md","reason":"Validate end-to-end data flow, recovery matrix and public/private ownership boundaries."}

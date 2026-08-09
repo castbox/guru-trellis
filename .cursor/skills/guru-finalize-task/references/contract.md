@@ -145,24 +145,21 @@ The deterministic order is fixed:
 ### Archive Artifact Lifecycle
 
 Active-task artifacts may be necessary for current-step validation or crash
-recovery without becoming permanent handoff documents. New closeout plans use
-schema 3.0. In a new task, `closeout-plan.json` and `finish-summary.json` begin
-as untracked active transaction outputs and become tracked in the single
-archive commit. A migrated task may already track legacy `closeout-plan.json`;
-the live Git index then classifies it as tracked throughout normalization,
-continuity, movement, and archive commit, while `finish-summary.json` remains
-the required untracked output. `pr-readiness.json` and
-`task-finalization-gate.json` never enter move paths, evidence paths, or the
-archive. The Publication wrapper deletes `pr-readiness.json` after validating
-its own typed output, before Finalizer entry. The Finalizer retains only its own
-checkpoint across same-plan recovery and deletes it after the terminal public
-`published` projection is validated.
+recovery without becoming permanent handoff documents. Current Finalizer uses
+ignored `finalization-transaction.json` only while same-owner re-entry needs it;
+that transaction, `pr-readiness.json`, and `task-finalization-gate.json` never
+enter move paths, evidence paths, or the archive. The Publication wrapper
+deletes `pr-readiness.json` after validating its own typed output, before
+Finalizer entry. The Finalizer retains only its own checkpoint across same-plan
+recovery and deletes it after the terminal public `ready_for_merge` projection
+is validated. Legacy `closeout-plan.json` remains a compatibility asset only
+and is not selected by the current archive route.
 
-The archive contains exactly the durable files that exist from this seven-file
+The archive contains exactly the durable files that exist from this six-file
 set: `task.json`, `prd.md`, `design.md`, `implement.md`,
-`issue-scope-ledger.json`, `closeout-plan.json`, and `finish-summary.json`.
-When marketplace verification applies, `marketplace-verification.json` is the
-only optional archive file, so the archive contains at most eight files.
+`issue-scope-ledger.json`, and `finish-summary.json`. When marketplace
+verification applies, the minimal `marketplace-verification.json` result is the
+only optional archive file, so the current archive contains at most seven files.
 
 Intake/context snapshots, assignment or liveness state, commit plans, raw
 review rounds, `review.md`, and `pr-readiness.json` are current-step inputs or
@@ -209,7 +206,7 @@ pruning step.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.
-- A completed ready recovery -> `published`.
+- A completed ready recovery -> `ready_for_merge`.
 
 `resume_finalization` is legal only from `content_pushed` with current verified
 or not-required evidence, `evidence_ready`, `draft_bound`,
@@ -270,7 +267,7 @@ current; same-plan recovery reuses that private binding.
   pre-#191 predecessor, and can return both heads. Schema 2.0 output and schema 3.0 input add the
   provenance reason and direct-consumer identity while preserving the existing
   archive-month value.
-- `published`: the exact plan archive locator and canonical PR number/URL;
+- `ready_for_merge`: the exact plan archive locator and canonical PR number/URL;
   consumed by the Finish response.
 - `blocked`: closed reason and remediation; consumed by the finalization stop.
 
@@ -309,14 +306,14 @@ digests, validate legacy and current examples against their own schemas, reject
 both cross-version substitutions, and execute both current projections against
 their target schemas.
 
-The ignored owner-private gate never stores an early public `published` DTO or
+The ignored owner-private gate never stores an early public `ready_for_merge` DTO or
 an early provenance-reprepare DTO. Those transitions retain the exact
 finalizer-private executor marker while their output identity does not yet
 exist. Archive-month reprepare changes no HEAD and retains its complete current
 DTO. Recorder/checker and executor validate the corresponding form. The public
 wrapper reruns strict route validation and never executes a publish/archive
 transition; only after the exact archive transaction and ready PR facts are
-proven may it materialize the `published` DTO in memory using the plan archive
+proven may it materialize the `ready_for_merge` DTO in memory using the plan archive
 locator. It never materializes reprepare after execution because that executor
 retires the old gate and returns the DTO directly. The Publication checkpoint
 is neither read nor consumed by this path; its minimal `ready` DTO was consumed

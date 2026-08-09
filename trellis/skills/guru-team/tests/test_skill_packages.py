@@ -288,11 +288,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertEqual(result["facts"]["planned_ids"], [])
         self.assertEqual(
             result["facts"]["active_ids"],
-            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"],
+            ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-merge-task-pr", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 14)
-        self.assertEqual(result["facts"]["exit_markers"], 54)
-        self.assertEqual(result["facts"]["target_markers"], 31)
+        self.assertEqual(result["facts"]["invoke_markers"], 15)
+        self.assertEqual(result["facts"]["exit_markers"], 57)
+        self.assertEqual(result["facts"]["target_markers"], 33)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         self.assertEqual(
@@ -574,7 +574,7 @@ class SourceValidationTests(unittest.TestCase):
             for entry in registry["skills"]
             if entry["state"] == "active"
         )
-        self.assertEqual(len(owner_ids), 14)
+        self.assertEqual(len(owner_ids), 15)
         forbidden_keys = {
             "agent_assignment",
             "authorization",
@@ -759,11 +759,11 @@ class SourceValidationTests(unittest.TestCase):
             self.assertIn("guru-review-branch", text, path)
             self.assertRegex(
                 text,
-                r"(?:14 Skills\s*/\s*54 exits|14/54|十四个 active packages 共声明\s*54)",
+                r"(?:15 Skills\s*/\s*57 exits|15/57|十五个 active packages 共声明\s*57)",
             )
             self.assertRegex(
                 text,
-                r"(?:14/54/31|14 invokes?\s*/\s*54 exits?\s*/\s*31 targets?)",
+                r"(?:15/57/33|15 invokes?\s*/\s*57 exits?\s*/\s*33 targets?)",
             )
             self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
             self.assertIn("deterministic", text, path)
@@ -777,8 +777,8 @@ class SourceValidationTests(unittest.TestCase):
         ]
         for path in durable_docs:
             text = path.read_text(encoding="utf-8")
-            self.assertIn("fourteen active", text, path)
-            self.assertRegex(text, r"54\s+external\s+exits")
+            self.assertIn("fifteen active", text, path)
+            self.assertRegex(text, r"57\s+external\s+exits")
             self.assertIn("guru-review-branch", text, path)
             for phrase in stale_phrases:
                 self.assertNotIn(phrase, text, path)
@@ -808,12 +808,12 @@ class SourceValidationTests(unittest.TestCase):
             with self.subTest(path=path):
                 text = path.read_text(encoding="utf-8")
                 normalized = " ".join(text.split())
-                self.assertIn("fourteen active Skills and 54 external exits", normalized)
+                self.assertIn("fifteen active Skills and 57 external exits", normalized)
                 self.assertIn(
                     "twelve target-owned `skill_input_authoring_seed` handoffs",
                     normalized,
                 )
-                self.assertIn("14 invokes, 54 exits, and 31 targets", normalized)
+                self.assertIn("15 invokes, 57 exits, and 33 targets", normalized)
                 self.assertIn("guru-finalize-task", text)
                 self.assertIn("#119", text)
                 for claim in stale_current_claims:
@@ -838,7 +838,7 @@ class SourceValidationTests(unittest.TestCase):
                     self.assertNotIn(claim, normalized, path)
 
     @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
-    def test_finalizer_closeout_schema_matches_runtime_and_installed(self) -> None:
+    def test_finalizer_transaction_and_legacy_schema_match_installed(self) -> None:
         from jsonschema import Draft202012Validator
 
         interface = json.loads(
@@ -851,82 +851,55 @@ class SourceValidationTests(unittest.TestCase):
             for item in interface["public_contracts"]["private_artifacts"]
         }
         self.assertEqual(
-            private_artifacts["closeout_plan"]["persistence"],
-            "task_local_archive_transaction",
+            private_artifacts["finalization_transaction"]["persistence"],
+            "ignored_runtime",
         )
         self.assertEqual(
             private_artifacts["finalization_gate"]["persistence"],
             "ignored_runtime",
         )
 
-        source_path = (
+        transaction_path = (
             SKILLS_ROOT
-            / "packages/guru-finalize-task/schemas/closeout-plan.schema.json"
+            / "packages/guru-finalize-task/schemas/finalization-transaction.schema.json"
         )
-        runtime_path = (
-            REPO / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
-        )
-        installed_paths = [
+        transaction_installed_paths = [
             REPO
-            / ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+            / ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+            REPO / ".agents/skills/guru-finalize-task/schemas/finalization-transaction.schema.json",
+            REPO / ".codex/skills/guru-finalize-task/schemas/finalization-transaction.schema.json",
+            REPO / ".claude/skills/guru-finalize-task/schemas/finalization-transaction.schema.json",
+            REPO / ".cursor/skills/guru-finalize-task/schemas/finalization-transaction.schema.json",
+        ]
+        transaction_bytes = transaction_path.read_bytes()
+        Draft202012Validator.check_schema(json.loads(transaction_bytes))
+        for path in transaction_installed_paths:
+            self.assertEqual(path.read_bytes(), transaction_bytes, path)
+
+        legacy_package_source = (
+            SKILLS_ROOT / "packages/guru-finalize-task/schemas/closeout-plan.schema.json"
+        )
+        legacy_package_bytes = legacy_package_source.read_bytes()
+        for path in [
+            REPO / ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
             REPO / ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
             REPO / ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
             REPO / ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
             REPO / ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
-        ]
-        source_bytes = source_path.read_bytes()
-        source_schema = json.loads(source_bytes)
-        runtime_schema = json.loads(runtime_path.read_text(encoding="utf-8"))
-        self.assertEqual(source_schema, runtime_schema)
-        for path in installed_paths:
-            self.assertEqual(path.read_bytes(), source_bytes, path)
+        ]:
+            self.assertEqual(path.read_bytes(), legacy_package_bytes, path)
 
-        valid_inputs = {
-            f"input_{index}": {
-                "path": f".trellis/tasks/07-26-finalize/artifact-{index}.json",
-                "sha256": f"{index:x}" * 64,
-            }
-            for index in range(1, 6)
-        }
-        malformed_missing = json.loads(json.dumps(valid_inputs))
-        malformed_missing["input_1"].pop("sha256")
-        malformed_extra = json.loads(json.dumps(valid_inputs))
-        malformed_extra["input_1"]["size"] = 1
-        invalid_inputs = [
-            {},
-            dict(list(valid_inputs.items())[:2]),
-            malformed_missing,
-            malformed_extra,
-        ]
-
-        for path in [source_path, runtime_path, *installed_paths]:
-            with self.subTest(path=path):
-                schema = json.loads(path.read_text(encoding="utf-8"))
-                inputs_schema = {
-                    "$schema": schema["$schema"],
-                    "$defs": schema["$defs"],
-                    **schema["properties"]["inputs"],
-                }
-                validator = Draft202012Validator(inputs_schema)
-                self.assertTrue(validator.is_valid(valid_inputs))
-                self.assertEqual(
-                    runtime.skill_json_schema_validation_errors(
-                        valid_inputs,
-                        inputs_schema,
-                        "finalizer closeout inputs",
-                    ),
-                    [],
-                )
-                for invalid in invalid_inputs:
-                    self.assertFalse(validator.is_valid(invalid), (path, invalid))
-                    self.assertTrue(
-                        runtime.skill_json_schema_validation_errors(
-                            invalid,
-                            inputs_schema,
-                            "finalizer closeout inputs",
-                        ),
-                        (path, invalid),
-                    )
+        legacy_runtime_source = (
+            REPO / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+        )
+        legacy_runtime_installed = (
+            REPO / ".trellis/guru-team/schemas/closeout-plan.schema.json"
+        )
+        self.assertEqual(
+            legacy_runtime_installed.read_bytes(),
+            legacy_runtime_source.read_bytes(),
+            legacy_runtime_installed,
+        )
 
     def test_public_readmes_share_standalone_runtime_semantics(self) -> None:
         readmes = [
@@ -3941,7 +3914,7 @@ class ProductionDistributionTests(unittest.TestCase):
 
             result = preset.install_skill_packages(repo, REPO, dst, {"codex", "cursor", "claude"}, None)
             self.assertEqual(result["status"], "ok")
-            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"])
+            self.assertEqual(result["active_ids"], ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-merge-task-pr", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"])
             for root in (".agents", ".codex", ".cursor", ".claude"):
                 task_commit = repo / root / "skills/guru-create-task-commit"
                 self.assertTrue((task_commit / "SKILL.md").is_file())
@@ -4331,6 +4304,7 @@ class IntakePublicInvocationTests(unittest.TestCase):
             "guru-check-task",
             "guru-create-task-commit",
             "guru-finalize-task",
+            "guru-merge-task-pr",
             "guru-review-branch",
             "guru-review-task-publication",
             "guru-verify-extension-installation",
@@ -4343,6 +4317,11 @@ class IntakePublicInvocationTests(unittest.TestCase):
                 "guru-finalize-task",
                 "publication-verification-required",
                 "verification_required",
+            ),
+            (
+                "guru-merge-task-pr",
+                "workflow-expected-head-merged",
+                "merged",
             ),
             ("guru-review-branch", "workflow-passed", "passed"),
             ("guru-review-task-publication", "workflow-initial-ready", "ready"),
@@ -4408,10 +4387,10 @@ class IntakePublicInvocationTests(unittest.TestCase):
     ) -> None:
         result = self.run_shared_eval(
             "guru-finalize-task",
-            "not-required-reentry-published",
+            "not-required-reentry-ready-for-merge",
         )
         case = result["cases"][0]
-        self.assertEqual(case["actual_exit"], "published")
+        self.assertEqual(case["actual_exit"], "ready_for_merge")
         transcript_path = Path(case["transcript_locator"])
         execution = transcript_path.parent / "execution"
         owner_repo = execution / "owner-repo"
@@ -4445,12 +4424,10 @@ class IntakePublicInvocationTests(unittest.TestCase):
             / ".trellis/tasks/archive/2026-07/current/"
             "marketplace-verification.json"
         ).read_text(encoding="utf-8"))
-        self.assertEqual(owner["typed_exit"], "not_required")
+        self.assertEqual(owner["schema_version"], "4.0")
+        self.assertEqual(owner["semantic_result"]["typed_exit"], "not_required")
         self.assertEqual(owner["mode"], "standalone")
-        self.assertEqual(
-            owner["public_input"]["task_ref"],
-            ".trellis/tasks/current",
-        )
+        self.assertNotIn("public_input", owner)
         transcript = json.loads(transcript_path.read_text(encoding="utf-8"))
         self.assertTrue(
             transcript["wrapper_path"].endswith(

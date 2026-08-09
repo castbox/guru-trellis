@@ -1,0 +1,7 @@
+{
+  "exit_id": "ready_for_merge",
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 176,
+  "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
+  "expected_head_sha": "1111111111111111111111111111111111111111"
+}

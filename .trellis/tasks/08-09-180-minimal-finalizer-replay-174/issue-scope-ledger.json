@@ -1,0 +1,44 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 180,
+    "url": "https://github.com/castbox/guru-trellis/issues/180",
+    "title": "压缩 Finalizer 与 PR 合并闭环，并以 #174 回放验证最少确认",
+    "reason": "Primary independently deliverable change request."
+  },
+  "close_issues": [
+    {
+      "number": 180,
+      "url": "https://github.com/castbox/guru-trellis/issues/180",
+      "title": "压缩 Finalizer 与 PR 合并闭环，并以 #174 回放验证最少确认",
+      "reason": "Primary independently deliverable change request."
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 174,
+      "url": "https://github.com/castbox/guru-trellis/issues/174",
+      "title": "修复 #132 合并候选的 thin workflow 420 行预算并补齐 current-HEAD 回归",
+      "reason": "Immutable replay authority; this task does not modify or reopen it."
+    },
+    {
+      "number": 179,
+      "url": "https://github.com/castbox/guru-trellis/issues/179",
+      "title": "删除重复的 Publication handoff 与 finish-summary-index artifact",
+      "reason": "Merged prerequisite whose minimal-handoff contract is preserved."
+    },
+    {
+      "number": 181,
+      "url": "https://github.com/castbox/guru-trellis/issues/181",
+      "title": "统一 Guru Team GitHub 操作通道为 gh CLI 并禁止 App/MCP fallback",
+      "reason": "Merged prerequisite whose gh CLI-only contract is preserved."
+    },
+    {
+      "number": 191,
+      "url": "https://github.com/castbox/guru-trellis/issues/191",
+      "title": "修复 Finalizer 前 clean provenance tail 与 pre-PR plan reprepare 缺口",
+      "reason": "Merged prerequisite whose provenance and reprepare contract is preserved."
+    }
+  ],
+  "followup_issues": []
+}

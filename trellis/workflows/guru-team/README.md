@@ -13,7 +13,7 @@ fallback. Local Git and Git transport remain `git` operations.
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、14 个 mandatory Skill invocation、54 个 typed exit、31 个
+phase/status route、15 个 mandatory Skill invocation、57 个 typed exit、33 个
 workflow/stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
@@ -64,8 +64,8 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 14 Skills / 54 exits，global workflow closure 为
-14/54/31（14 invokes / 54 exits / 31 targets）。Phase 0 到 Finalization 的
+当前 registry 激活 15 Skills / 57 exits，global workflow closure 为
+15/57/33（15 invokes / 57 exits / 33 targets）。Phase 0 到 Finalization 的
 active ids 为：
 
 - guru-select-workflow-mode
@@ -82,6 +82,7 @@ active ids 为：
 - guru-review-task-publication
 - guru-verify-extension-installation
 - guru-finalize-task
+- guru-merge-task-pr
 
 Global workflow 只写 phase/status route、mandatory invoke marker、typed exit、唯一
 consumer/stop 与全局边界。每个 package interface.json 独占 public input、per-exit
@@ -95,6 +96,13 @@ authority 生成并审查 exact Chinese PR title/body。其 ready 4.0 DTO 无损
 只有 ready 进入 guru-finalize-task。Finalizer 的
 verification、stale、resume 与 reprepare exits 按 Interface 自动路由，不形成新的用户
 continuation gate。
+
+Finalizer `ready_for_merge` 只证明唯一 PR 已 Ready、expected head 对齐且 close Issues
+仍 Open；它不是 finish。Workflow 随即 mandatory invoke `guru-merge-task-pr`。Merge owner
+用 repo-bound `gh` 重建 checks/reviews/mergeability/policy/close-keyword facts，独立展示并确认
+expected-head merge，执行后只读验证 PR=MERGED 且 Issues 由 GitHub 自动关闭。`merged` 才进入
+finish response；`merge_blocked` 与 `closure_mismatch` 分别 fail closed，任何 Guru 命令都不
+调用 Issue-close API、update PR branch、同步本地 `main` 或清理资源。
 
 Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
 `branch_review_commit`；真实 descendant content
@@ -114,14 +122,14 @@ dispatcher；缺 runtime、版本漂移或未解决 sidecar 时必须在业务�
 
 当前 canonical extension version `0.6.5-guru.25` 已由上文 pin 的 stable release tag
 `v0.6.5-guru.3` 发布。Source/installed package validation 必须同时验证
-registry、14/54/31 marker graph、consumer uniqueness、projection、selected-platform
+registry、15/57/33 marker graph、consumer uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
 ## Workflow Authoring Ownership
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、14 mandatory Skill markers、54 exits、31 workflow/stop targets、
+current-task router、15 mandatory Skill markers、57 exits、33 workflow/stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -720,7 +728,8 @@ Phase 2 的官方 `trellis-check` sub-agent 仍只提供 commit 前 raw evidence
 `review-gate.json` 等 Trellis metadata。
 PR 发布只从显式 canonical `guru-finish-work` 薄入口开始：该入口先按 live workflow 调用
 `guru-review-task-publication`，仅从 `ready` 进入 `guru-finalize-task`。Finalizer 的私有
-preview 生成 canonical `closeout_plan` 与 local digest；该 digest 只绑定 deterministic executor。
+preview 在内存中生成 exact side-effect plan；只有 same-owner re-entry 需要时才写 ignored
+`finalization-transaction.json`，其中 `plan_digest` 只绑定下一 deterministic consumer。
 语义 Gate 在当前对话完成真实副作用确认后才执行
 reviewed content push、按需 marketplace verification、draft PR、final archive
 projection、单次 archive metadata commit/push、三方 HEAD 对齐与 draft-to-ready。裸
@@ -729,11 +738,10 @@ route，不暴露内部 flag 或要求用户选择下一条命令。
 Prepare 使用已安装的官方 config parser，只支持缺失或空 `hooks.after_archive`；
 非空、歧义、不可读、含 NUL 或 symlink 配置在副作用前拒绝，且不会执行 hook。
 official move 前重新核对实时 archive 月份、空 index、精确 untracked 集合、regular-file/mode
-与 tracked source blob。Closeout schema 3.0 plan 在 active task 中跨月时，同一 entry 重新
-dry-run 得到新 digest，并只替换 still-untracked current plan；不创建 plan/readiness/evidence
-commit、不 rewrite history 或迁移目录。唯一 legacy schema 2.0 plan 只有在 current
-Publication 4.0 DTO 的 task/commit/title/body digest 与 protected facts 完全匹配时才
-normalize 为 schema 3.0，并记录 predecessor digest；其它 non-current shape fail closed。
+与 tracked source blob。跨月时同一 entry 从 transaction 与 live facts 重建 mapping，不创建
+plan/readiness/evidence commit、不 rewrite history 或迁移目录。`closeout-plan.json` 的
+schema/example 仅是 immutable legacy compatibility assets；current Interface、registry、
+manifest、prepare、recovery 与 archive 均不选择、创建、读取、移动或保留它。
 共享 prepare 从 archive root 到 month/final destination 逐层 `lstat` 既有组件，不读取或
 跟随 symlink target；任何 symlink（含 dangling、repo 内 target）都拒绝，且 final locator
 必须不存在。official move 前重复同一检查，阻止 prepare-to-move 漂移。缺失的
@@ -746,9 +754,9 @@ Makefile 等 non-metadata drift 必须回到 Phase 2/3。finish-work dry-run 和
 首次 Docs SSOT merge。
 
 Finalizer 的 private preview 是无副作用 readiness step：它校验 gate、dirty state、
-Publication ready 4.0 DTO 的 exact title/body 与 live facts，
-并输出 canonical plan、digest、future archive mapping、exact transaction paths 与 transitions，
-不移动或写入文件、不创建 commit、不 push、不创建 PR，且没有 journal/workspace 计划。
+Publication ready 4.0 DTO 的 exact title/body 与 live facts，并输出 exact side effects、
+future archive mapping、transaction stage 与 transitions，不移动或写入文件、不创建 commit、
+不 push、不创建 PR，且没有 journal/workspace 计划。
 dry-run 回复使用 active task 的 `Markdown 产物 review 表`；正式 archive 后，AI 必须
 重新运行 resolver 解析 `.trellis/tasks/archive/YYYY-MM/<task>/...` 路径，并在最终回复输出
 archive-path 表，不能复用 archive 前的 active task 链接。
@@ -772,52 +780,31 @@ finish-work 先绑定唯一 draft PR，再从 reviewed PR payload 与 live facts
 recorder 对 raw base-to-HEAD paths 排序去重后过滤 workspace/runtime
 受保护前缀，过滤发生时追加一条不含 path、basename 或数量的固定 contract fact；未发生过滤时
 不追加。initial diff、initial untracked 或 final/recovery diff 失败时两个 path 数组都为空，
-只追加固定 snapshot-unavailable fact，并重新派生 retrieval text。schema/validator 对所有 path 字段继续拒绝受保护前缀。final summary 在 active task 中严格
-校验一次，并只随 archive metadata transaction 提交。archive 后不再校验、回写 artifact 或新增
-metadata tail。同一入口在 archive 前根据 plan/readiness、active locator 与 evidence facts 恢复。
-official move 后、精确 archive commit 尚未形成时，仍校验 archived working-tree 布局、
-dirty/staged path、blob continuity 与官方 `task.json` delta。Closeout schema 3.0 在 move 后先按
-current retained set 幂等裁剪无长期 consumer 的中间文件，再校验 compact layout；进程在 move
-与裁剪之间中断时，同一 recovery path 会先完成裁剪再提交。Current core 固定为 7 个 durable
-文件，只有适用 marketplace gate 时再保留 `marketplace-verification.json`，总数最多 8。
-Publication readiness 与 Finalizer gate 为 ignored runtime，不进入 archive。intake/context
-snapshot、assignment/liveness、commit plan、raw review round 与 private checkpoints 不复制进
-长期 archive tree。无效 plan、commit 缺失或不匹配继续 fail closed。
-一旦当前 `HEAD` 已是精确 archive commit，普通 archived task 与 plan-only recovery 都从该
-commit blob 读取 plan；committed plan blob 与 Git parent/path/tree/blob lineage 只作为
-deterministic recovery inputs，本地 archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、remote PR title/body
-digest、三方 HEAD 或 draft-to-ready。plan-only archived directory 只由 `guru-finish-work` 恢复入口
-解析，普通 task 命令仍要求 `task.json`。real-PR final summary 的 deterministic bytes/digest 纳入
-pre-move、incomplete recovery 与 exact recovery continuity：前两者用已绑定 remote PR 重建 expected
-bytes，exact recovery 只从 immutable archive commit 的 `finish-summary.json` blob 恢复原 PR number/URL
-并重建校验，不读取 working-tree summary，也不调用通用 summary artifact validator。原 PR 缺失、
-closed 或被同 repo/head/base 的新 PR 替代时 fail closed；其它 archived artifacts 不重新打开。
-final projection、incomplete 与 exact recovery 共用一个 strict PR URL parser。GitHub
-owner/repository identity 大小写不敏感，canonical summary URL 保留 remote 返回的合法 casing
-（例如 `microsoft/PowerToys`）；错误 repo、transport、number、额外 path、query/fragment 仍被拒绝。
-plan-only 恢复从当前 commit blob 读取 committed plan，并在 GitHub/fast-path 前用专用 fail-closed
-boundary 校验 Git toplevel、配置/effective repo、当前head branch、base ref、current HEAD transaction、
-expected digest、task identity 和 active/archive locator；它不是缺失 context 时的无条件跳过。普通
-task discovery 与其它命令仍要求 `task.json`；worktree mode 从 current task、runtime mapping
-与 Git worktree facts 解析边界。
-raw locator 在普通 resolver/`resolve()` 前验证，只允许 basename、原 active locator 或精确 archive
-locator；path-like 输入先从 repo root 到 final task dir 逐组件 `lstat`。basename 输入在普通
-resolver 前按其候选顺序预检 `<repo>/<basename>`、active task candidate、archive root 和 archive
-candidates；每个 direct/archive candidate 都先保留 `symlink_component` 证据，再用普通 resolver
-完全相同的 follow-symlink `directory + task.json` 谓词判断，matching alias fail closed，unmatched
-alias 继续下一候选。
-预检统一拒绝 repo 内外、relative/absolute、ancestor/final、多层、dangling、loop symlink，再优先调用
-普通 resolver，保留显式 `task.json`、active task 和普通 archived `task.json` 的顺序；仅 ordinary
-not-found 才进入 plan-only fallback。精确 archive locator 只尝试该候选，basename/原 active locator
-fallback 必须
-唯一命中一个 archive 月份，多候选 fail closed。plan-only resolved target 仍须等于 plan canonical
-archive locator；仅固定 Darwin `/var -> /private/var` 系统映射可重锚，不接受任意
-`samefile`/用户 alias。
+只追加固定 snapshot-unavailable fact，并重新派生 retrieval text。schema/validator 对所有 path
+字段继续拒绝受保护前缀。final summary 在 active task 中严格校验一次，并只随 archive metadata
+transaction 提交；archive 后不再回写 artifact 或新增 metadata tail。同一入口在 archive 前根据
+transaction、readiness、active locator 与 live facts 恢复。official move 后、精确 archive commit
+尚未形成时，仍校验 archived working-tree 布局、dirty/staged path、blob continuity 与官方
+`task.json` delta；失败只从 immutable `publication_head` 恢复 task locator 的 tracked bytes。
+
+Current core 固定为 6 个 durable 文件：`task.json`、`prd.md`、`design.md`、`implement.md`、
+`issue-scope-ledger.json`、`finish-summary.json`；适用 marketplace gate 时最小 verification result
+是唯一第 7 个文件。Publication readiness、Finalizer transaction/gate/request 与 Verifier owner
+checkpoint 为 ignored runtime，不进入 archive，terminal `ready_for_merge` 后全部退休。
+
+一旦当前 `HEAD` 已是精确 archive commit，recovery 从该 commit blob 读取 `task.json` 与
+`finish-summary.json`，并以 Git parent/path/tree/blob lineage 作为 deterministic inputs；本地
+archived 文件缺失、篡改及其 dirty state 不阻塞 exact push、remote PR identity、三方 HEAD 或
+draft-to-ready。archived recovery 在 GitHub/fast-path 前校验 Git toplevel、配置/effective repo、
+当前 head branch、base ref、current HEAD transaction、task identity 和 exact archive locator。
+普通 task discovery 与其它命令仍要求 `task.json`；worktree mode 从 current task、runtime mapping
+与 Git worktree facts 解析边界。错误 repo、transport、number、额外 URL path、query/fragment、
+缺失或替换 PR 均 fail closed。
 
 Publication owner 在 ignored runtime 记录 schema 4.0 `pr-readiness.json`，其 public
 `ready` DTO 携带 task、`branch_review_commit` 与 exact `pr_title/pr_body`；Publication
 wrapper 校验 DTO 后删除自己的 checkpoint，Finalizer 不读取、删除或提交该 owner
-checkpoint。Closeout plan schema 3.0 直接绑定 title/body，且不创建独立 evidence commit。
+checkpoint。Finalizer transaction 直接绑定 title/body，且不创建独立 evidence commit。
 Finalizer 从 reviewed body 的 `变更摘要` 与 live Git/task/ledger/PR facts 一次生成 schema 2
 `finish-summary.json`；Discovery 仍可只读检索历史 schema 1 archive。
 脚本只做客观结构校验、低信息量短语阻塞、close/ref 语义校验和 reviewed source 门禁；
@@ -861,7 +848,7 @@ package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十四个 packages 已维护 canonical corpora 并覆盖全部 54 exits/profile；六个 Intake
+中的十五个 packages 已维护 canonical corpora 并覆盖全部 57 exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台
@@ -876,11 +863,11 @@ native command 为 `unsupported`，不依赖隐藏环境变量替代 adapter。
 Semantic case 必须引用 repo-local checker-passed owner result；actual exit 选择 output schema
 后才比较 expected exit。Codex 使用 trusted Git root，Claude 使用 safe non-interactive 协议，
 Cursor 未登录直接返回 `unsupported`。
-Finalizer closeout plan 同时绑定 `reviewed_content_head` 与
+Finalizer transaction 同时绑定 `reviewed_content_head` 与
 `publication_head`。当 reviewed HEAD 已 push、PR/archive 尚未开始且 installed
 manifest 仅缺 clean provenance 时，workflow 自动消费 `reprepare_required`：从
 detached clean checkout 运行 canonical preset apply，提交一次 manifest-only tail，
-废弃旧 private plan/gate/request，并由 executor 输出 unchanged reviewed HEAD 与新
+废弃旧 private transaction/gate/request，并由 executor 输出 unchanged reviewed HEAD 与新
 publication HEAD；下一次 preview 直接验证这两个 identity 和单 tail 合同，不读取已删除
-plan，然后继续 exact-ref verification。其它 diff、已有 PR、archive 已开始或
+transaction，然后继续 exact-ref verification。其它 diff、已有 PR、archive 已开始或
 non-fast-forward 继续 fail closed。

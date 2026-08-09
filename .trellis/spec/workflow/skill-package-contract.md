@@ -96,7 +96,29 @@ workflow/standalone preconditions before a package command can run.
 
 ### 0. Current Interface And Registry Contract
 
-All 14 active packages select `guru-team-skill-interface-1.3`. Registry schema
+Issue #180 activates fifteen Interface 1.3 packages and 57 external exits.
+`guru-merge-task-pr` is a current semantic package with exactly
+`merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
+`ready_for_merge` in place of `published`; the old published schema/example
+remain immutable legacy assets but are not selected by the Interface, registry,
+workflow or extension manifest. The integrated global graph has 15 invoke
+markers, 57 exit markers and 33 unique workflow/stop targets.
+
+The Finalizer-to-Merge edge is target-authored. Finalizer returns only canonical
+repository/PR identity and `expected_head_sha`; Merge supplies only its fixed
+`profile=ready_for_merge` and `mode=workflow`. No transaction, review narrative,
+authorization, task runtime or local base identity crosses the edge. Merge
+standalone/re-entry accepts a repo-bound PR URL/number plus caller intent and
+rebuilds the same live evidence without requiring an active task.
+
+The Merge AI owns readiness, close scope, policy/method sufficiency, the exact
+displayed action and the dialogue-local confirmation. Its deterministic
+commands own repo-bound fact capture, gate checking, expected-head merge and
+post-merge read-only validation. A terminal projection retires the merge gate.
+Neither Finalizer nor Merge calls Issue-close APIs, enters Phase 0, invokes base
+sync, updates the PR branch, synchronizes local `main`, or cleans resources.
+
+All 15 active packages select `guru-team-skill-interface-1.3`. Registry schema
 `guru-team-skill-registry-1.2` is the exact current selector: every active row
 declares `interface_schema_id=guru-team-skill-interface-1.3`, while planned rows
 remain lifecycle-only and carry no package or I/O fields. Any other row or
@@ -106,7 +128,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all fourteen active packages and their 54 external exits. The
+for all fifteen active packages and their 57 external exits. The
 `production-current-v1` manifest remains exactly three packages and 11 exits;
 additive activation of later packages, including `guru-finalize-task`, does not
 rewrite that membership.
@@ -648,9 +670,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.3 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is fourteen active Skills and 54
-exits. The integrated global workflow projection contains 14 invoke markers,
-54 exit markers, and 31 target markers. Missing,
+The current package cardinality assertion is fifteen active Skills and 57
+exits. The integrated global workflow projection contains 15 invoke markers,
+57 exit markers, and 33 target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1479,8 +1501,8 @@ and the #191 aggregate 4.0 remain compatibility assets. The integrated
 fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
-The current additive activation set contributes to the live closure of fourteen
-active Skills and 54 exits. The production current manifest remains exactly
+The current additive activation set contributes to the live closure of fifteen
+active Skills and 57 exits. The production current manifest remains exactly
 three Skills and 11 exits.
 
 ## Extension Installation Verification Owner
@@ -1608,7 +1630,7 @@ identity, AI intent/context, verification judgment, or owner evidence.
 
 The package owns six independent `exit_id` outputs:
 `verification_required`, `publication_review_stale`, `resume_finalization`,
-`reprepare_required`, `published`, and `blocked`. Reprepare projects exactly
+`reprepare_required`, `ready_for_merge`, and `blocked`. Reprepare projects exactly
 `task_ref/reason_code/branch_review_commit/publication_head`; fresh
 intent/context comes only from the target-owned authoring seed. The two heads
 are already current for archive-month recovery. Provenance recovery keeps a
@@ -1632,12 +1654,13 @@ stale profile. The commit is the minimal Git anchor required by that direct
 consumer; no other Finalizer facts become public. Inputs outside current schemas
 fail closed.
 
-The `verification_required.repo_ref` is bound to the immutable plan repository,
-and `published.task_ref` is the exact plan archive locator. The ignored-runtime
-gate retains only a private executor marker through the transaction; only a
-strict public-wrapper reread after the exact archive transaction and ready PR
-may materialize the public DTO in memory. The wrapper never executes the
-transition and never persists that DTO back into the gate.
+The `verification_required.repo_ref` is bound to the in-memory plan repository.
+`ready_for_merge` carries only repository/PR identity and the expected head SHA
+needed by `guru-merge-task-pr`. The ignored-runtime gate retains only a private
+executor marker through the transaction; only a strict public-wrapper reread
+after the exact archive transaction and Ready PR may materialize the public DTO
+in memory. The wrapper never executes the transition and never persists that
+DTO back into the gate.
 
 The five-stage semantic profile is preview/current-state discovery, AI review,
 confirmation of one displayed side-effect plan when required, ignored-runtime gate
@@ -1653,29 +1676,27 @@ identity without changing the shared reviewed-content identity. The single
 archive transaction is then a direct child of `publication_head`.
 
 Active-task evidence and long-term archive evidence have different lifecycles.
-New closeout plans use current-only schema 3.0. `closeout-plan.json` and
-`finish-summary.json` are untracked active outputs that become tracked only in
-the single archive commit; Publication and Finalizer private checkpoints never
-enter move paths or the archive. The archive retains only durable files present
-from `task.json`, the three planning documents, scope ledger, closeout plan, and
-finish summary; marketplace verification is the only optional eighth file.
+Current Finalizer computes its plan in memory and writes ignored
+`finalization-transaction.json` only while a deterministic re-entry consumer
+needs it. The transaction, Publication gate, and Finalizer gate never enter move
+paths or the archive. The current archive retains only `task.json`, the three
+planning documents, scope ledger, and finish summary; the minimal marketplace
+verification result is the only optional seventh file.
 Intake/context snapshots, assignment/liveness, commit plans, raw review rounds,
 `review.md`, PR body/readiness, and the summary index are not duplicated into
 the long-term archive.
 
-The only legacy closeout-plan path is bounded schema 2.0 normalization with a
-current Publication 4.0 input whose task, commit, title, body hash, and protected
-facts match. Finalizer uses the DTO body to build schema 3.0 and records the
-predecessor digest; it never reads retired body/index files or private
-Publication state. Any missing or mismatched current payload fails closed and
-routes to a fresh Publication invocation.
+Legacy closeout-plan schemas and fixtures remain immutable compatibility assets.
+They are selected only by explicit legacy migration/rejection tests and never
+enter the current Interface, registry, workflow, preparation, recovery, or
+archive route.
 
 The generic #117 owner checker remains unchanged and strict. The finalizer
-accepts standalone not-required only when the task-local #117 artifact reports
+accepts standalone not-required only when the task-local #117 result reports
 that exact exit and its repository, resolved HEAD, verification ref, task, and
-private plan match; same-plan resume reuses the same private binding without
-adding plan identity to the producer DTO. Verification re-entry binds the
-current task, plan, repository, remote ref, `branch_review_commit`,
+current transaction identity match; same-owner resume reuses the same private
+transaction binding without adding transaction identity to the producer DTO.
+Verification re-entry binds the current task, transaction, repository, remote ref, `branch_review_commit`,
 `publication_head`, independent verification artifact, and local/remote
 reviewed-content identities. Any
 additional drift fails closed. Same-plan resume is restricted to the declared
@@ -1696,7 +1717,7 @@ selects and validates the actual exit schema before the grader compares
 shared, Codex, Claude, and Cursor corpus bytes are identical. The active package
 uses `workflow_integration_state=integrated`; the global workflow invokes it and
 maps all six exits. The combined integration uses three Guru-owned daily
-entries, two terminal published evals, and the checked-verification projection
+entries, terminal `ready_for_merge` evals, the Merge package corpus, and the checked-verification projection
 bridge without changing public Skill I/O. Upstream Finish files are not Guru
 overlays or managed assets; their official Trellis ownership is independent of
 the package contract.

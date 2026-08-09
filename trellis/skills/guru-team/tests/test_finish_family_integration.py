@@ -40,8 +40,9 @@ FINISH_EXITS = {
     },
     "guru-finalize-task": {
         "verification_required", "publication_review_stale",
-        "resume_finalization", "reprepare_required", "published", "blocked",
+        "resume_finalization", "reprepare_required", "ready_for_merge", "blocked",
     },
+    "guru-merge-task-pr": {"merged", "merge_blocked", "closure_mismatch"},
 }
 EXPECTED_CONSUMERS = {
     ("guru-review-task-publication", "ready"): ("skill", "guru-finalize-task"),
@@ -75,22 +76,33 @@ EXPECTED_CONSUMERS = {
     ("guru-finalize-task", "reprepare_required"): (
         "skill", "guru-finalize-task",
     ),
-    ("guru-finalize-task", "published"): (
-        "workflow", "guru-finalization-finish-response",
+    ("guru-finalize-task", "ready_for_merge"): (
+        "skill", "guru-merge-task-pr",
     ),
     ("guru-finalize-task", "blocked"): (
         "stop", "task-finalization-blocked",
+    ),
+    ("guru-merge-task-pr", "merged"): (
+        "workflow", "guru-finalization-finish-response",
+    ),
+    ("guru-merge-task-pr", "merge_blocked"): (
+        "stop", "task-pr-merge-blocked",
+    ),
+    ("guru-merge-task-pr", "closure_mismatch"): (
+        "stop", "task-pr-closure-mismatch",
     ),
 }
 ROUTE_GROUPS = {
     "normal": [
         ("guru-review-task-publication", "ready"),
-        ("guru-finalize-task", "published"),
+        ("guru-finalize-task", "ready_for_merge"),
+        ("guru-merge-task-pr", "merged"),
     ],
     "extension": [
         ("guru-finalize-task", "verification_required"),
         ("guru-verify-extension-installation", "verified"),
-        ("guru-finalize-task", "published"),
+        ("guru-finalize-task", "ready_for_merge"),
+        ("guru-merge-task-pr", "merged"),
     ],
     "return_to_work": [
         ("guru-review-task-publication", "return_to_task_work"),
@@ -108,7 +120,8 @@ ROUTE_GROUPS = {
         ("guru-review-task-publication", "blocked"),
         ("guru-verify-extension-installation", "blocked"),
         ("guru-finalize-task", "blocked"),
-        ("guru-finalize-task", "published"),
+        ("guru-merge-task-pr", "merge_blocked"),
+        ("guru-merge-task-pr", "closure_mismatch"),
     ],
 }
 PRIVATE_FIELDS = {
@@ -122,15 +135,15 @@ GURU_ENTRIES = (
     ".cursor/commands/guru-finish-work.md",
 )
 TERMINAL_CASES = {
-    "publication-ready-published": (
+    "publication-ready-ready-for-merge": (
         "publication_ready",
-        "evals/files/publication-ready-published-facts.json",
-        "finalization-publication-ready-published",
+        "evals/files/publication-ready-ready-for-merge-facts.json",
+        "finalization-publication-ready-ready-for-merge",
     ),
-    "same-plan-published": (
+    "same-plan-ready-for-merge": (
         "same_plan_resume",
-        "evals/files/same-plan-published-facts.json",
-        "finalization-same-plan-published",
+        "evals/files/same-plan-ready-for-merge-facts.json",
+        "finalization-same-plan-ready-for-merge",
     ),
 }
 
@@ -297,10 +310,12 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 publication_ready: dict[str, Any] | None = None,
                 verification_owner_result: Any = None,
                 allowed_current_gate: dict[str, Any] | None = None,
+                current_finalizer: bool = False,
             ) -> dict[str, Any]:
                 self.assertEqual(publication_ready, finalization_input)
                 self.assertIsNone(verification_owner_result)
                 self.assertIsNone(allowed_current_gate)
+                self.assertTrue(current_finalizer)
                 return prepared
 
             args = argparse.Namespace(
@@ -925,7 +940,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             self.assertLessEqual(
                 len(retained), runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS,
             )
-            (archived / runtime.CLOSEOUT_PLAN_ARTIFACT).unlink()
             self.assertFalse((archived / runtime.CLOSEOUT_PLAN_ARTIFACT).exists())
             self.assertFalse((archived / runtime.PR_READINESS_ARTIFACT).exists())
 
@@ -1049,8 +1063,8 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         }
         gate = {
             "route": {
-                "typed_exit": "published",
-                "consumer": runtime.FINALIZATION_CONSUMERS["published"],
+                "typed_exit": "ready_for_merge",
+                "consumer": runtime.FINALIZATION_CONSUMERS["ready_for_merge"],
                 "output": runtime.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
             }
         }
@@ -1079,13 +1093,14 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             committed_bytes = gate_path.read_bytes()
             context["task_dir"] = archived
             args.root = str(root)
-            published_gate = {
+            ready_for_merge_gate = {
                 "route": {
                     "output": {
-                        "exit_id": "published",
-                        "task_ref": archive,
+                        "exit_id": "ready_for_merge",
+                        "repo_ref": "castbox/guru-trellis",
                         "pr_number": 166,
                         "pr_url": "https://github.com/castbox/guru-trellis/pull/166",
+                        "expected_head_sha": "b" * 40,
                     }
                 }
             }
@@ -1127,7 +1142,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 ),
             ):
                 recorded = runtime.cmd_record_finalization_gate(args)
-            self.assertEqual(recorded["typed_exit"], "published")
+            self.assertEqual(recorded["typed_exit"], "ready_for_merge")
             self.assertEqual(gate_path.read_bytes(), committed_bytes)
 
             with (
@@ -1153,8 +1168,8 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 ) as finish,
                 mock.patch.object(
                     runtime,
-                    "finalization_gate_with_published_output",
-                    return_value=published_gate,
+                    "finalization_gate_with_ready_for_merge_output",
+                    return_value=ready_for_merge_gate,
                 ),
             ):
                 transitioned = runtime.cmd_execute_finalization_transition(args)
@@ -1162,10 +1177,10 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             self.assertIsNone(getattr(finish.call_args.args[0], "external_verification", None))
             self.assertEqual(gate_path.read_bytes(), committed_bytes)
 
-    def test_13_public_exits_have_unique_consumers_and_private_fields_stay_private(
+    def test_16_public_exits_have_unique_consumers_and_private_fields_stay_private(
         self,
     ) -> None:
-        self.assertEqual(sum(len(exits) for exits in FINISH_EXITS.values()), 13)
+        self.assertEqual(sum(len(exits) for exits in FINISH_EXITS.values()), 16)
         self.assertEqual(set(EXPECTED_CONSUMERS), {
             (skill_id, exit_id)
             for skill_id, exits in FINISH_EXITS.items()
@@ -1222,21 +1237,21 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                             PRIVATE_FIELDS & set(branch["properties"])
                         )
 
-    def test_workflow_keeps_54_production_exits_31_targets_and_six_route_groups(
+    def test_workflow_keeps_57_production_exits_33_targets_and_six_route_groups(
         self,
     ) -> None:
         rows = workflow_exits()
         production_rows = [
             row for row in rows if row.get("skill") != "guru-example-action"
         ]
-        self.assertEqual(len(production_rows), 54)
+        self.assertEqual(len(production_rows), 57)
         targets = set(
             re.findall(
                 r'<!-- guru-(?:workflow|stop)-target: \{"id":"([^"]+)"\} -->',
                 WORKFLOW.read_text(encoding="utf-8"),
             )
         )
-        self.assertEqual(len(targets), 31)
+        self.assertEqual(len(targets), 33)
         finish_rows: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for row in rows:
             key = (row["skill"], row["exit"])
@@ -1298,7 +1313,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         }
         for case_id, (profile, facts_path, recipe) in TERMINAL_CASES.items():
             self.assertIn(case_id, cases)
-            self.assertEqual(cases[case_id]["expected_exit"], "published")
+            self.assertEqual(cases[case_id]["expected_exit"], "ready_for_merge")
             self.assertEqual(cases[case_id]["input_profile_id"], profile)
             facts = read_json(package("guru-finalize-task") / facts_path)
             self.assertEqual(facts["owner_staging"]["recipe"], recipe)
@@ -1331,7 +1346,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                     result = json.loads(process.stdout)
                     self.assertEqual(result["status"], "passed", result)
                     self.assertEqual(
-                        result["cases"][0]["actual_exit"], "published",
+                        result["cases"][0]["actual_exit"], "ready_for_merge",
                     )
 
 if __name__ == "__main__":

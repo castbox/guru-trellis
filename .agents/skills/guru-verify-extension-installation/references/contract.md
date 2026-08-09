@@ -98,14 +98,21 @@ route class, status, and closure evidence. Human confirmation occurs only when
 a standalone caller intent and the AI applicability judgment require a product
 choice; a workflow plan-bound required target cannot be skipped by override.
 
-## Private evidence
+## Durable result and private evidence
 
 Workflow and task-bearing standalone calls persist exactly one task-local
 `marketplace-verification.json`. Session-only standalone calls keep the owner
 result in the current invocation and do not create a repository cache, latest
 pointer, index, task artifact, or task-work route.
 
-The current-only private 3.0 evidence binds the public input, separate
+The task-local file uses current schema
+`guru-extension-installation-verification-result-4.0`. It contains only the
+immutable target/source/capability identity, semantic exit/conclusion, explicit
+unverified boundaries, and stable `verification_ref`. It does not contain the
+public input, command rows, asset/ownership inventories, findings history,
+retry metadata, or supersession state.
+
+The ignored owner-private 3.0 evidence binds the public input, separate
 `target_repository` and `extension_source` identities, the target local and
 remote `guru-reviewed-content-1.0` identities, source selection and manifest
 provenance, direct object, selected commit and source checkout HEAD,

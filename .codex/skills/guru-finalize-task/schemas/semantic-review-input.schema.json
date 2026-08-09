@@ -21,7 +21,7 @@
       "additionalProperties": false,
       "required": ["typed_exit", "consumer", "output"],
       "properties": {
-        "typed_exit": {"enum": ["verification_required", "publication_review_stale", "resume_finalization", "reprepare_required", "published", "blocked"]},
+        "typed_exit": {"enum": ["verification_required", "publication_review_stale", "resume_finalization", "reprepare_required", "ready_for_merge", "blocked"]},
         "consumer": {
           "type": "object",
           "additionalProperties": false,

@@ -141,6 +141,8 @@ class TaskCommitPackageContractTests(unittest.TestCase):
 
         schema = self.read_json("schemas/task-commit-candidate.schema.json")
         candidate = self.read_json("examples/task-commit-candidate.json")
+        self.assertEqual(schema["$id"], "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json")
+        self.assertEqual(candidate["schema_version"], "4.0")
         Draft202012Validator.check_schema(schema)
         validator = Draft202012Validator(schema)
         self.assertEqual(list(validator.iter_errors(candidate)), [])
@@ -187,6 +189,38 @@ class TaskCommitPackageContractTests(unittest.TestCase):
             )
         )
 
+    def test_candidate_has_closed_objective_facts_and_ai_eligibility_conclusion(self) -> None:
+        candidate = self.read_json("examples/task-commit-candidate.json")
+        expected_facts = {
+            "dedicated_task_worktree",
+            "dedicated_task_branch",
+            "default_branch_excluded",
+            "protected_branch_excluded",
+            "shared_branch_excluded",
+            "other_task_branch_excluded",
+            "remote_branch_absent",
+            "open_pull_request_absent",
+            "phase2_current",
+            "exact_task_owned_staging",
+            "ordinary_new_commit",
+        }
+        facts = candidate["routine_auto_commit_facts"]
+        conclusion = candidate["routine_auto_commit_eligible"]
+        self.assertEqual(set(facts), expected_facts)
+        self.assertTrue(all(isinstance(value, bool) for value in facts.values()))
+        self.assertIs(conclusion["eligible"], True)
+        self.assertTrue(expected_facts.issubset(conclusion["evidence_refs"]))
+        self.assertTrue(
+            {"scope_purpose_unique", "authority_unchanged", "canonical_message_unique"}.issubset(
+                conclusion["evidence_refs"]
+            )
+        )
+        self.assertTrue(
+            self.nested_keys(conclusion).isdisjoint(
+                {"authorization", "confirmation", "human_authorization"}
+            )
+        )
+
     def test_outputs_are_minimal_and_each_projection_has_one_consumer(self) -> None:
         contracts = self.interface["public_contracts"]
         expected_fields = {
@@ -209,7 +243,7 @@ class TaskCommitPackageContractTests(unittest.TestCase):
         private = contracts["private_artifacts"]
         self.assertEqual([item["id"] for item in private], ["task_commit_candidate"])
         self.assertEqual(private[0]["persistence"], "ignored_runtime")
-        self.assertIn("candidate-3.0", private[0]["schema"]["schema_id"])
+        self.assertIn("candidate-4.0", private[0]["schema"]["schema_id"])
 
     def test_wrappers_are_executable_thin_and_fail_outside_complete_preset(self) -> None:
         wrapper_names = (

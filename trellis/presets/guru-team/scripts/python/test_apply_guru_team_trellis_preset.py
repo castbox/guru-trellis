@@ -43,6 +43,7 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
         "guru-review-task-publication",
         "guru-verify-extension-installation",
         "guru-finalize-task",
+        "guru-merge-task-pr",
     ):
         testcase.assertIn(skill_id, text, path)
     for exit_id in (
@@ -54,7 +55,10 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
         "reprepare_required",
         "verified",
         "not_required",
-        "published",
+        "ready_for_merge",
+        "merged",
+        "merge_blocked",
+        "closure_mismatch",
         "blocked",
     ):
         testcase.assertIn(exit_id, text, path)
@@ -521,6 +525,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(Path("scripts/bash/record-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-finalization-gate.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/execute-finalization-transition.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/preview-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/execute-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/invoke-task-pr-merge.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
         self.assertIn(Path("scripts/bash/preview-change-context-history.sh"), preset.MANAGED_ASSET_PATHS)
@@ -568,6 +577,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             "record-finalization-gate.sh",
             "check-finalization-gate.sh",
             "execute-finalization-transition.sh",
+            "preview-task-pr-merge.sh",
+            "record-task-pr-merge.sh",
+            "check-task-pr-merge.sh",
+            "execute-task-pr-merge.sh",
+            "invoke-task-pr-merge.sh",
         ):
             self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash" / name).is_file())
             self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash" / name, os.X_OK))
@@ -731,7 +745,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ownership_facts = payload["upstream_ownership_validation"]
         self.assertEqual(ownership_facts["schema_version"], "3.0")
         self.assertEqual(ownership_facts["overlay_count"], 3)
-        self.assertEqual(ownership_facts["active_skill_count"], 14)
+        self.assertEqual(ownership_facts["active_skill_count"], 15)
         self.assertEqual(ownership_facts["managed_claim_count"], 9)
         self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
@@ -1382,9 +1396,9 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 33),
-            ("typed_output_schema_ids", 54),
-            ("private_artifact_schema_ids", 16),
+            ("public_input_schema_ids", 35),
+            ("typed_output_schema_ids", 57),
+            ("private_artifact_schema_ids", 17),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -1435,6 +1449,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-create-task-workspace",
                 "guru-discover-change-context",
                 "guru-finalize-task",
+                "guru-merge-task-pr",
                 "guru-review-branch",
                 "guru-review-change-request",
                 "guru-review-contract-wording",

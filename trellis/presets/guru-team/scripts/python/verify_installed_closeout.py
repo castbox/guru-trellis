@@ -286,10 +286,18 @@ import os
 import sys
 
 args = sys.argv[1:]
+if args == ["config", "--null", "--show-origin", "--get-all", "remote.origin.url"]:
+    sys.stdout.buffer.write(b"command line:\\0https://github.com/microsoft/PowerToys.git\\0")
+    raise SystemExit(0)
+if args == ["config", "--null", "--show-origin", "--get-all", "remote.origin.pushurl"]:
+    raise SystemExit(1)
 if args[:2] == ["remote", "get-url"]:
     print("https://github.com/microsoft/PowerToys.git")
     raise SystemExit(0)
 real_git = os.environ["INSTALLED_CLOSEOUT_REAL_GIT"]
+if args[:3] == ["ls-remote", "--heads", "origin"]:
+    remote = os.environ["INSTALLED_CLOSEOUT_REMOTE"]
+    os.execv(real_git, [real_git, "ls-remote", "--heads", remote, *args[3:]])
 os.execv(real_git, [real_git, *args])
 """,
     )
@@ -439,10 +447,10 @@ def run_closeout(
                     "summary": "The installed Finalizer plan is sufficient for the complete non-extension closeout transaction.",
                 },
                 "route": {
-                    "typed_exit": "published",
+                    "typed_exit": "ready_for_merge",
                     "consumer": {
-                        "kind": "workflow",
-                        "id": "guru-finalization-finish-response",
+                        "kind": "skill",
+                        "id": "guru-merge-task-pr",
                     },
                     "output": {"materialization": "executor"},
                 },
@@ -484,7 +492,7 @@ def run_closeout(
     digest = dry_payload["closeout_plan_digest"]
     recorded_payload = json.loads(run(record_command, root, env=env).stdout)
     if (
-        recorded_payload.get("typed_exit") != "published"
+        recorded_payload.get("typed_exit") != "ready_for_merge"
         or recorded_payload.get("plan_digest") != digest
     ):
         raise RuntimeError("installed Finalizer recorder did not bind the previewed plan")
@@ -492,7 +500,7 @@ def run_closeout(
     gate_rel = gate_path.relative_to(root).as_posix()
     checked_payload = json.loads(run(check_command, root, env=env).stdout)
     if (
-        checked_payload.get("typed_exit") != "published"
+        checked_payload.get("typed_exit") != "ready_for_merge"
         or checked_payload.get("plan_digest") != digest
         or checked_payload.get("transaction_state") != "prepared"
     ):
@@ -511,11 +519,7 @@ def run_closeout(
             "git_status": git(root, real_git, "status", "--porcelain"),
             "task": (task_dir / "task.json").read_bytes(),
             "ledger": (task_dir / "issue-scope-ledger.json").read_bytes(),
-            "plan": (
-                (task_dir / "closeout-plan.json").read_bytes()
-                if (task_dir / "closeout-plan.json").is_file()
-                else None
-            ),
+            "legacy_plan_present": (task_dir / "closeout-plan.json").exists(),
             "readiness": (
                 (task_dir / "pr-readiness.json").read_bytes()
                 if (task_dir / "pr-readiness.json").is_file()
@@ -657,10 +661,17 @@ def run_closeout(
 
     payload = json.loads(run(execute_command, root, env=env).stdout)
     if (
-        payload.get("typed_exit") != "published"
+        payload.get("typed_exit") != "ready_for_merge"
         or payload.get("closeout_plan_digest") != digest
     ):
         raise RuntimeError("installed Finalizer executor did not complete the reviewed plan")
+    checked_after_execute = json.loads(run(check_command, root, env=env).stdout)
+    if (
+        checked_after_execute.get("typed_exit") != "ready_for_merge"
+        or checked_after_execute.get("plan_digest") != digest
+        or checked_after_execute.get("transaction_state") != "ready"
+    ):
+        raise RuntimeError("installed Finalizer checker did not validate the terminal ready marker")
 
     archived = Path(payload["archived_task_dir"])
     if not archived.is_dir() or task_dir.exists():
@@ -686,22 +697,27 @@ def run_closeout(
         "--input",
         finalization_input_rel,
     ]
-    published_payload = json.loads(
+    ready_payload = json.loads(
         run([*public_invoke, "--owner-result", gate_rel], root, env=env).stdout
     )
     if (
-        published_payload.get("exit_id") != "published"
-        or published_payload.get("pr_number") != issue
-        or published_payload.get("pr_url") != expected_url
+        ready_payload.get("exit_id") != "ready_for_merge"
+        or ready_payload.get("repo_ref") != REPO
+        or ready_payload.get("pr_number") != issue
+        or ready_payload.get("pr_url") != expected_url
+        or ready_payload.get("expected_head_sha") != local_head
     ):
-        raise RuntimeError("installed Finalizer public wrapper returned an invalid published DTO")
+        raise RuntimeError("installed Finalizer public wrapper returned an invalid ready_for_merge DTO")
     if gate_path.exists():
         raise RuntimeError("installed Finalizer public wrapper retained its private gate")
-    recovery_payload = json.loads(run(public_invoke, root, env=env).stdout)
     recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
-    archived_plan = json.loads((archived / "closeout-plan.json").read_text(encoding="utf-8"))
-    if archived_plan.get("plan_digest") != digest or recovery_payload != published_payload:
-        raise RuntimeError("installed fresh archived recovery did not reuse the exact closeout transaction")
+    forbidden_terminal = [
+        archived / "closeout-plan.json",
+        archived / "finalization-transaction.json",
+        root / ".trellis/.runtime/guru-team" / task_dir.name / "finalization-transaction.json",
+    ]
+    if any(path.exists() for path in forbidden_terminal):
+        raise RuntimeError("installed Finalizer retained a terminal transaction artifact")
     if recovered_remote_pr.get("number") != issue or recovered_remote_pr.get("url") != expected_url:
         raise RuntimeError("installed fresh archived recovery changed the remote PR identity")
     return {
@@ -715,9 +731,10 @@ def run_closeout(
         "pr_head": pr["headRefOid"],
         "pr_url": pr["url"],
         "pr_ready": not pr["isDraft"],
-        "public_exit": published_payload["exit_id"],
+        "public_exit": ready_payload["exit_id"],
+        "terminal_transaction_artifacts": 0,
         "private_owner_checkpoints_consumed": True,
-        "fresh_archived_pr_binding": True,
+        "fresh_archived_pr_binding": recovered_remote_pr.get("headRefOid") == local_head,
         "after_archive_hook_preflight": True,
         "archive_path_symlink_preflight": True,
     }
@@ -737,6 +754,19 @@ def main() -> int:
     ensure_baseline(root, real_git, remote, after_update)
     gtt = load_installed_companion(root)
     issue = 106 if after_update else 105
+    branch = f"fix/{issue}-installed-closeout-{args.case}"
+    fake_bin = root.parent / f"fake-closeout-bin-{issue}"
+    store = root.parent / f"installed-closeout-pr-{issue}.json"
+    install_fake_commands(fake_bin)
+    store.unlink(missing_ok=True)
+    os.environ.update({
+        "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
+        "INSTALLED_CLOSEOUT_REAL_GIT": real_git,
+        "INSTALLED_CLOSEOUT_REMOTE": str(remote),
+        "INSTALLED_CLOSEOUT_BRANCH": branch,
+        "INSTALLED_CLOSEOUT_PR_NUMBER": str(issue),
+        "INSTALLED_CLOSEOUT_PR_STORE": str(store),
+    })
     task_dir, branch, branch_review_commit = write_fixture(
         root, gtt, real_git, args.case, issue
     )

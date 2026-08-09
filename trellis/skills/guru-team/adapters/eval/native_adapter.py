@@ -26,6 +26,7 @@ PRODUCTION_SKILLS = {
     "guru-check-task",
     "guru-create-task-commit",
     "guru-finalize-task",
+    "guru-merge-task-pr",
     "guru-review-branch",
     "guru-review-task-publication",
     "guru-verify-extension-installation",
@@ -351,6 +352,43 @@ def bind_owner_result_argument(
     return result_relative
 
 
+def bind_merge_gate_argument(
+    request: dict[str, Any],
+    fixture: Path,
+    gate_path: Path,
+) -> str:
+    try:
+        gate_relative = gate_path.resolve().relative_to(fixture.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("merge gate must stay inside the installed eval fixture") from exc
+    if gate_path.is_symlink() or not gate_path.is_file():
+        raise ValueError("merge gate is unavailable or unsafe")
+
+    workdir = Path(request["workdir"]).resolve()
+    rewritten = 0
+    for relative in request.get("files", []):
+        path = workdir / str(relative)
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        invocation = payload.get("public_invocation")
+        arguments = invocation.get("arguments") if isinstance(invocation, dict) else None
+        if not isinstance(arguments, list) or "--gate" not in arguments:
+            continue
+        index = arguments.index("--gate")
+        if index + 1 >= len(arguments) or not isinstance(arguments[index + 1], str):
+            raise ValueError("case merge-gate invocation argument is invalid")
+        arguments[index + 1] = gate_relative
+        path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
+        rewritten += 1
+    if rewritten != 1:
+        raise ValueError("semantic merge case must declare one gate invocation argument")
+    return gate_relative
+
+
 def stage_clean_installed_owner_repo(
     execution_root: Path, runtime_target: Path, request_package: Path,
 ) -> tuple[Path, Path]:
@@ -509,6 +547,134 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
     )
     git_target.chmod(0o755)
     return binary
+
+
+def write_fake_merge_gh(execution_root: Path, recipe: str) -> Path:
+    configurations = {
+        "merge-workflow-merged": {
+            "draft": False,
+            "head": "1" * 40,
+            "body": "Closes #174\n",
+            "closure_mismatch": False,
+        },
+        "merge-standalone-draft-blocked": {
+            "draft": True,
+            "head": "1" * 40,
+            "body": "Closes #174\n",
+            "closure_mismatch": False,
+        },
+        "merge-workflow-head-drift-blocked": {
+            "draft": False,
+            "head": "3" * 40,
+            "body": "Closes #174\n",
+            "closure_mismatch": False,
+        },
+        "merge-workflow-close-scope-blocked": {
+            "draft": False,
+            "head": "1" * 40,
+            "body": "Related #174\n",
+            "closure_mismatch": False,
+        },
+        "merge-workflow-closure-mismatch": {
+            "draft": False,
+            "head": "1" * 40,
+            "body": "Closes #174\n",
+            "closure_mismatch": True,
+        },
+    }
+    configuration = configurations.get(recipe)
+    if configuration is None:
+        raise ValueError(f"unsupported merge owner staging recipe: {recipe}")
+    binary = execution_root / "merge-owner-bin"
+    binary.mkdir(parents=True, exist_ok=True)
+    state_path = binary / "state.json"
+    state_path.write_text(json.dumps({"merged": False}) + "\n", encoding="utf-8")
+    target = binary / "gh"
+    target.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json,sys\n"
+        f"state_path={str(state_path)!r}\n"
+        f"config={configuration!r}\n"
+        "args=sys.argv[1:]\n"
+        "state=json.load(open(state_path,encoding='utf-8'))\n"
+        "repo='castbox/guru-trellis'; number=176; issue_number=174\n"
+        "pr_url=f'https://github.com/{repo}/pull/{number}'\n"
+        "issue_url=f'https://github.com/{repo}/issues/{issue_number}'\n"
+        "if args==['auth','status']:\n"
+        " raise SystemExit(0)\n"
+        "if len(args)>=2 and args[:2]==['pr','view']:\n"
+        " payload={'number':number,'url':pr_url,'state':'MERGED' if state['merged'] else 'OPEN',"
+        "'isDraft':config['draft'],'baseRefName':'main','headRefName':'codex/180-eval',"
+        "'headRefOid':config['head'],'mergeable':'MERGEABLE','reviewDecision':'APPROVED',"
+        "'statusCheckRollup':[{'name':'contract','conclusion':'SUCCESS'}],'body':config['body'],"
+        "'mergedAt':'2026-08-05T06:21:00Z' if state['merged'] else None,"
+        "'mergeCommit':{'oid':'2'*40} if state['merged'] else None}\n"
+        " print(json.dumps(payload)); raise SystemExit(0)\n"
+        "if args[:2]==['api',f'repos/{repo}']:\n"
+        " print(json.dumps({'full_name':repo,'allow_merge_commit':True,'allow_squash_merge':False,'allow_rebase_merge':False})); raise SystemExit(0)\n"
+        "if len(args)>=3 and args[:2]==['issue','view']:\n"
+        " closed=state['merged'] and not config['closure_mismatch']\n"
+        " print(json.dumps({'number':issue_number,'state':'CLOSED' if closed else 'OPEN',"
+        "'closedAt':'2026-08-05T06:21:05Z' if closed else None,'url':issue_url})); raise SystemExit(0)\n"
+        "if len(args)>=3 and args[:2]==['pr','merge']:\n"
+        " expected=args[args.index('--match-head-commit')+1] if '--match-head-commit' in args else ''\n"
+        " if expected!=config['head'] or config['draft'] or not config['body'].startswith('Closes #'):\n"
+        "  print('merge precondition failed',file=sys.stderr); raise SystemExit(1)\n"
+        " state['merged']=True\n"
+        " open(state_path,'w',encoding='utf-8').write(json.dumps(state)+'\\n')\n"
+        " raise SystemExit(0)\n"
+        "print('unsupported merge fake gh invocation: '+repr(args),file=sys.stderr); raise SystemExit(2)\n",
+        encoding="utf-8",
+    )
+    target.chmod(0o755)
+    return binary
+
+
+def write_fake_production_commit_facts(execution_root: Path) -> Path:
+    binary = execution_root / "production-owner-bin"
+    binary.mkdir(parents=True, exist_ok=True)
+    gh_target = binary / "gh"
+    gh_target.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json,sys\n"
+        "args=sys.argv[1:]\n"
+        "if args==['auth','status']:\n"
+        " raise SystemExit(0)\n"
+        "if args==['pr','list','--repo','example/guru-extension','--head','eval/current','--state','open','--limit','100','--json','number,isDraft,state,headRefName']:\n"
+        " print(json.dumps([])); raise SystemExit(0)\n"
+        "print('unsupported production fake gh invocation',file=sys.stderr); raise SystemExit(2)\n",
+        encoding="utf-8",
+    )
+    gh_target.chmod(0o755)
+
+    real_git = shutil.which("git")
+    if real_git is None:
+        raise ValueError("git is unavailable for production owner staging")
+    git_target = binary / "git"
+    git_target.write_text(
+        "#!/usr/bin/env python3\n"
+        "import os,sys\n"
+        f"real_git={real_git!r}\n"
+        "args=sys.argv[1:]\n"
+        "if args==['ls-remote','--heads','origin','eval/current']:\n"
+        " raise SystemExit(0)\n"
+        "os.execv(real_git,[real_git,*args])\n",
+        encoding="utf-8",
+    )
+    git_target.chmod(0o755)
+    return binary
+
+
+def with_path_prefix(binary: Path, callback: Any) -> Any:
+    previous_path = os.environ.get("PATH")
+    os.environ["PATH"] = f"{binary}{os.pathsep}{previous_path or ''}"
+    try:
+        return callback()
+    finally:
+        if previous_path is None:
+            os.environ.pop("PATH", None)
+        else:
+            os.environ["PATH"] = previous_path
 
 
 def clarity_target(
@@ -1526,6 +1692,8 @@ def production_task_commit_authoring(
     fixture: Path,
     checked: dict[str, Any],
     review_status: str,
+    *,
+    routine_eligible: bool = True,
 ) -> dict[str, Any]:
     coverage_source = (
         "guru-check-task:passed DTO at "
@@ -1558,6 +1726,24 @@ def production_task_commit_authoring(
                 "Every staged path is part of the isolated fixture and the current Phase 2 result."
             ],
         },
+        "routine_auto_commit_eligible": {
+            "eligible": review_status == "passed" and routine_eligible,
+            "reason": (
+                "The dedicated unpublished task branch and exact reviewed scope are current."
+                if review_status == "passed" and routine_eligible
+                else "The supporting fixture commit is executed directly outside the routine auto-commit route."
+                if review_status == "passed"
+                else "The semantic review does not permit routine automatic execution."
+            ),
+            "evidence_refs": (
+                [
+                    *runtime.TASK_COMMIT_ROUTINE_FACT_IDS,
+                    *runtime.TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
+                ]
+                if review_status == "passed" and routine_eligible
+                else ["authority_unchanged"]
+            ),
+        },
     }
 
 
@@ -1584,6 +1770,7 @@ def production_commit_for_review(
                 fixture,
                 checked,
                 "passed",
+                routine_eligible=False,
             ),
         )
         executed = runtime.execute_task_commit_candidate(fixture, candidate, task)
@@ -2369,7 +2556,11 @@ def stage_extension_verification_owner_execution(
         runtime.check_extension_verification_result(
             fixture,
             owner,
-            owner_locator.relative_to(fixture).as_posix(),
+            (
+                owner_locator.relative_to(fixture).as_posix()
+                if task_bearing
+                else "<stdin>"
+            ),
             public_input,
         )
     finally:
@@ -2379,6 +2570,99 @@ def stage_extension_verification_owner_execution(
             os.environ["GURU_TEAM_EVAL_STAGING"] = previous_eval
     runtime.write_json(runtime_input, public_input)
     return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
+
+
+def stage_task_pr_merge_owner_execution(
+    runtime: Any,
+    request: dict[str, Any],
+    fixture: Path,
+    fixture_runtime_target: Path,
+    request_package: Path,
+    recipe: str,
+    public_input_path: Path,
+) -> tuple[Path, Path, dict[str, str]]:
+    if not recipe.startswith("merge-"):
+        raise ValueError("merge owner staging recipe is invalid")
+    package = fixture / ".trellis/guru-team/skills/packages/guru-merge-task-pr"
+    if (
+        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+    ):
+        raise ValueError("merge owner staging package does not match the evaluated contract")
+
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    runtime_input = fixture / OWNER_INPUT
+    runtime_input.parent.mkdir(parents=True, exist_ok=True)
+    runtime.write_json(runtime_input, public_input)
+    blocked_routes = {
+        "merge-standalone-draft-blocked": (
+            "pr_ready",
+            "pull_request_draft",
+            "Mark the PR Ready and rerun the live preview.",
+        ),
+        "merge-workflow-head-drift-blocked": (
+            "repository_and_head",
+            "expected_head_changed",
+            "Rerun publication and merge review for the current PR head.",
+        ),
+        "merge-workflow-close-scope-blocked": (
+            "close_scope",
+            "close_scope_mismatch",
+            "Repair and rereview the PR close-keyword scope before merge.",
+        ),
+    }
+    blocked = blocked_routes.get(recipe)
+    dimensions = []
+    for identifier in runtime.TASK_PR_MERGE_DIMENSIONS:
+        dimensions.append({
+            "id": identifier,
+            "status": "blocked" if blocked and identifier == blocked[0] else "passed",
+            "summary": (
+                f"The controlled live facts block {identifier}."
+                if blocked and identifier == blocked[0]
+                else f"The controlled live facts pass {identifier}."
+            ),
+        })
+    route = (
+        {
+            "typed_exit": "merge_blocked",
+            "reason_code": blocked[1],
+            "remediation": blocked[2],
+        }
+        if blocked
+        else {"typed_exit": "merged", "merge_method": "merge"}
+    )
+    review_path = fixture / ".trellis/.runtime/guru-team/evals/merge-review.json"
+    runtime.write_json(
+        review_path,
+        {"semantic_review": {"dimensions": dimensions}, "route": route},
+    )
+    fake_bin = write_fake_merge_gh(Path(request["workdir"]).resolve().parent, recipe)
+    environment = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
+    previous_path = os.environ.get("PATH")
+    os.environ["PATH"] = environment["PATH"]
+    try:
+        recorded = runtime.cmd_record_task_pr_merge(argparse.Namespace(
+            root=str(fixture),
+            input=runtime_input.relative_to(fixture).as_posix(),
+            review_input=str(review_path),
+        ))
+        gate_path = fixture / str(recorded["gate"])
+        if not blocked:
+            runtime.cmd_execute_task_pr_merge(argparse.Namespace(
+                root=str(fixture),
+                input=runtime_input.relative_to(fixture).as_posix(),
+                gate=gate_path.relative_to(fixture).as_posix(),
+            ))
+        bind_merge_gate_argument(request, fixture, gate_path)
+    finally:
+        if previous_path is None:
+            os.environ.pop("PATH", None)
+        else:
+            os.environ["PATH"] = previous_path
+    return package, fixture_runtime_target, environment
 
 
 def stage_finalization_not_required_edge(
@@ -2565,18 +2849,18 @@ def stage_finalization_owner_execution(
             "reprepare_required",
             True,
         ),
-        "finalization-published-recovery": (
-            "published",
+        "finalization-ready-for-merge-recovery": (
+            "ready_for_merge",
             "ready",
             False,
         ),
-        "finalization-publication-ready-published": (
-            "published",
+        "finalization-publication-ready-ready-for-merge": (
+            "ready_for_merge",
             "ready",
             False,
         ),
-        "finalization-same-plan-published": (
-            "published",
+        "finalization-same-plan-ready-for-merge": (
+            "ready_for_merge",
             "ready",
             False,
         ),
@@ -2585,13 +2869,13 @@ def stage_finalization_owner_execution(
             "prepared",
             False,
         ),
-        "finalization-verified-published": (
-            "published",
+        "finalization-verified-ready_for_merge": (
+            "ready_for_merge",
             "ready",
             True,
         ),
-        "finalization-not-required-published": (
-            "published",
+        "finalization-not-required-ready_for_merge": (
+            "ready_for_merge",
             "ready",
             False,
         ),
@@ -2617,7 +2901,7 @@ def stage_finalization_owner_execution(
         )
 
     task = fixture / ".trellis/tasks/current"
-    if recipe == "finalization-not-required-published":
+    if recipe == "finalization-not-required-ready_for_merge":
         public_input, producer_output = stage_finalization_not_required_edge(
             runtime,
             fixture,
@@ -2662,7 +2946,7 @@ def stage_finalization_owner_execution(
     if transaction_state == "ready":
         archive_dir = fixture / archive_locator
         archive_dir.mkdir(parents=True, exist_ok=True)
-        if recipe == "finalization-not-required-published":
+        if recipe == "finalization-not-required-ready_for_merge":
             archived_verification = archive_dir / "marketplace-verification.json"
             shutil.copy2(
                 task / "marketplace-verification.json",
@@ -2752,7 +3036,7 @@ def stage_finalization_owner_execution(
                 "branch_review_commit": head,
                 "publication_head": head,
             },
-            "published": {
+            "ready_for_merge": {
                 "materialization": "executor",
             },
             "blocked": {
@@ -2843,7 +3127,21 @@ def stage_production_owner_execution(
             recipe,
             public_input_path,
         )
+    if skill_id == "guru-merge-task-pr":
+        return stage_task_pr_merge_owner_execution(
+            runtime,
+            request,
+            fixture,
+            fixture_runtime_target,
+            request_package,
+            recipe,
+            public_input_path,
+        )
     task, _ = production_task_fixture(runtime, fixture)
+    production_facts = write_fake_production_commit_facts(fixture)
+    production_environment = {
+        "PATH": f"{production_facts}{os.pathsep}{os.environ.get('PATH', '')}",
+    }
     package = fixture / ".trellis/guru-team/skills/packages" / skill_id
     if (
         hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
@@ -2919,38 +3217,49 @@ def stage_production_owner_execution(
                 "commit-blocked-recovery": "blocked",
             }.get(recipe, "passed")
             if recipe == "commit-revision-required":
-                runtime.build_task_commit_candidate(
+                with_path_prefix(
+                    production_facts,
+                    lambda: runtime.build_task_commit_candidate(
+                        fixture,
+                        task,
+                        {
+                            "profile": "initial_commit",
+                            "mode": public_input["mode"],
+                            "task_ref": task.relative_to(fixture).as_posix(),
+                            "source_exit": "passed",
+                            "phase2_commit_anchor": checked[
+                                "phase2_capture_commit"
+                            ],
+                        },
+                        production_task_commit_authoring(
+                            runtime,
+                            fixture,
+                            checked,
+                            "revision-required",
+                        ),
+                    ),
+                )
+            owner_result_path, _, _ = with_path_prefix(
+                production_facts,
+                lambda: runtime.build_task_commit_candidate(
                     fixture,
                     task,
-                    {
-                        "profile": "initial_commit",
-                        "mode": public_input["mode"],
-                        "task_ref": task.relative_to(fixture).as_posix(),
-                        "source_exit": "passed",
-                        "phase2_commit_anchor": checked[
-                            "phase2_capture_commit"
-                        ],
-                    },
+                    public_input,
                     production_task_commit_authoring(
                         runtime,
                         fixture,
                         checked,
-                        "revision-required",
+                        review_status,
                     ),
-                )
-            owner_result_path, _, _ = runtime.build_task_commit_candidate(
-                fixture,
-                task,
-                public_input,
-                production_task_commit_authoring(
-                    runtime,
-                    fixture,
-                    checked,
-                    review_status,
                 ),
             )
         elif skill_id == "guru-review-branch":
-            production_commit_for_review(runtime, fixture, task, checked)
+            with_path_prefix(
+                production_facts,
+                lambda: production_commit_for_review(
+                    runtime, fixture, task, checked
+                ),
+            )
             branch_owner = production_record_review(
                 runtime,
                 fixture,
@@ -2983,7 +3292,12 @@ def stage_production_owner_execution(
                 ):
                     runtime_artifact.unlink()
         elif skill_id == "guru-review-task-publication":
-            production_commit_for_review(runtime, fixture, task, checked)
+            with_path_prefix(
+                production_facts,
+                lambda: production_commit_for_review(
+                    runtime, fixture, task, checked
+                ),
+            )
             branch_input = {
                 "profile": "branch_review",
                 "mode": public_input["mode"],
@@ -3056,7 +3370,7 @@ def stage_production_owner_execution(
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
     bind_owner_result_argument(request, fixture, owner_result_path)
-    return package, fixture_runtime_target, {}
+    return package, fixture_runtime_target, production_environment
 
 
 def stage_owner_execution(

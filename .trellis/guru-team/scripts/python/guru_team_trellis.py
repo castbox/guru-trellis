@@ -25,6 +25,7 @@ import tempfile
 import time
 import unicodedata
 from collections.abc import Iterable
+from contextvars import ContextVar
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -359,8 +360,8 @@ TASK_WORKSPACE_CONSUMERS = {
     "refresh_review": {"kind": "skill", "id": "guru-sync-base"},
     "blocked": {"kind": "stop", "id": "task-workspace-blocked"},
 }
-TASK_COMMIT_CANDIDATE_SCHEMA_VERSION = "3.0"
-TASK_COMMIT_CANDIDATE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json"
+TASK_COMMIT_CANDIDATE_SCHEMA_VERSION = "4.0"
+TASK_COMMIT_CANDIDATE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
 TASK_COMMIT_RUNTIME_DIR = ".trellis/.runtime/guru-team/task-commit-plans"
 AGENT_RECOVERY_RUNTIME_DIR = ".trellis/.runtime/guru-team/agent-recovery"
@@ -371,6 +372,24 @@ TASK_COMMIT_PLAN_CATEGORIES = {
     "ambiguous-blocking",
 }
 TASK_COMMIT_BLOCKING_CATEGORIES = {"unreviewed-blocking", "ambiguous-blocking"}
+TASK_COMMIT_ROUTINE_FACT_IDS = (
+    "dedicated_task_worktree",
+    "dedicated_task_branch",
+    "default_branch_excluded",
+    "protected_branch_excluded",
+    "shared_branch_excluded",
+    "other_task_branch_excluded",
+    "remote_branch_absent",
+    "open_pull_request_absent",
+    "phase2_current",
+    "exact_task_owned_staging",
+    "ordinary_new_commit",
+)
+TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS = (
+    "scope_purpose_unique",
+    "authority_unchanged",
+    "canonical_message_unique",
+)
 TASK_COMMIT_GIT_OPERATION_MARKERS = (
     ("merge", "MERGE_HEAD"),
     ("cherry-pick", "CHERRY_PICK_HEAD"),
@@ -390,6 +409,7 @@ AI_FIRST_OWNER_ARTIFACTS = frozenset({
     "pr-readiness.json",
     "task-finalization-gate.json",
     "task-finalization-transition-gate.json",
+    "finalization-transaction.json",
 })
 AI_FIRST_OS_NOISE_NAMES = frozenset({".DS_Store"})
 REVIEWED_CONTENT_ALGORITHM = "guru-reviewed-content-1.0"
@@ -425,8 +445,10 @@ REVIEW_REPORT_ARTIFACT = "review.md"
 MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
 FINISH_SUMMARY_ARTIFACT = "finish-summary.json"
 CLOSEOUT_PLAN_ARTIFACT = "closeout-plan.json"
+FINALIZATION_TRANSACTION_ARTIFACT = "finalization-transaction.json"
 TASK_FINALIZATION_GATE_ARTIFACT = "task-finalization-gate.json"
 TASK_FINALIZATION_TRANSITION_GATE_ARTIFACT = "task-finalization-transition-gate.json"
+TASK_PR_MERGE_GATE_ARTIFACT = "task-pr-merge-gate.json"
 CLOSEOUT_PLAN_SCHEMA_VERSION = "3.0"
 LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION = "2.0"
 LEGACY_CLOSEOUT_RETIRED_ARTIFACTS = {
@@ -439,7 +461,6 @@ CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS = {
     "design.md",
     "implement.md",
     "issue-scope-ledger.json",
-    CLOSEOUT_PLAN_ARTIFACT,
     FINISH_SUMMARY_ARTIFACT,
 }
 CLOSEOUT_ARCHIVE_CORE_ARTIFACTS = {
@@ -448,7 +469,8 @@ CLOSEOUT_ARCHIVE_CORE_ARTIFACTS = {
 CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS = {
     MARKETPLACE_VERIFICATION_ARTIFACT,
 }
-CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 8
+CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 7
+CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS = 8
 CLOSEOUT_PR_PLACEHOLDER_NUMBER = 9223372036854775807
 CLOSEOUT_PR_HEAD_READ_ATTEMPTS = 6
 CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS = 1
@@ -479,7 +501,6 @@ CURRENT_FINISH_SUMMARY_ARTIFACT_FILES = {
     "design": "design.md",
     "implement": "implement.md",
     "issue_scope_ledger": "issue-scope-ledger.json",
-    "closeout_plan": CLOSEOUT_PLAN_ARTIFACT,
     "marketplace_verification": MARKETPLACE_VERIFICATION_ARTIFACT,
 }
 HISTORICAL_FINISH_SUMMARY_ARTIFACT_FILES = {
@@ -4717,6 +4738,35 @@ def resolve_finish_work_task_dir(root: Path, task_arg: str | None) -> Path:
     normal = resolve_existing_task_dir(root, task_arg)
     if normal is not None:
         return normal
+
+    transaction_task_ref = f".trellis/tasks/{basename}"
+    transaction_match = finalization_find_transaction_by_task_ref(
+        root_lexical,
+        transaction_task_ref,
+    )
+    if transaction_match is not None:
+        archive_root = tasks_root(root_lexical) / "archive"
+        archived_matches = [
+            month / basename
+            for month in sorted(archive_root.iterdir(), reverse=True)
+            if archive_root.is_dir()
+            and re.fullmatch(r"\d{4}-\d{2}", month.name)
+            and (month / basename).is_dir()
+            and not (month / basename).is_symlink()
+        ] if archive_root.is_dir() else []
+        if len(archived_matches) != 1:
+            raise WorkflowError(
+                "finish-work transaction recovery requires one exact archived task.",
+                exit_code=2,
+                payload={
+                    "task_ref": transaction_task_ref,
+                    "candidates": [
+                        repo_relative(root_lexical, candidate)
+                        for candidate in archived_matches
+                    ],
+                },
+            )
+        return archived_matches[0]
 
     if exact_plan_only_candidate is not None:
         archived = plan_only_archived_task_candidate(
@@ -10453,6 +10503,59 @@ def validate_task_commit_candidate(
     if semantic_exit == "committed" and not stage_paths:
         errors.append("passed task commit candidate requires at least one exact stage path.")
 
+    stored_routine_facts = (
+        plan.get("routine_auto_commit_facts")
+        if isinstance(plan.get("routine_auto_commit_facts"), dict)
+        else {}
+    )
+    try:
+        current_routine_facts = task_commit_objective_eligibility_facts(
+            root,
+            task_dir,
+            task,
+            task_context,
+            phase2_current=(
+                phase2_payload.get("typed_exit") == "passed"
+                and git_plan.get("phase2_commit_anchor")
+                == expected_phase2_commit_anchor
+            ),
+            exact_stage_paths=stage_paths,
+            classification_by_path=classification_by_path,
+            git_operation_state=git_operation_state,
+        )
+    except WorkflowError as exc:
+        current_routine_facts = {}
+        errors.append(str(exc))
+    if set(stored_routine_facts) != set(TASK_COMMIT_ROUTINE_FACT_IDS) or any(
+        not isinstance(value, bool) for value in stored_routine_facts.values()
+    ):
+        errors.append("task commit candidate has incomplete objective eligibility facts.")
+    elif stored_routine_facts != current_routine_facts:
+        errors.append("task commit candidate objective eligibility facts are stale.")
+
+    routine_eligibility = (
+        plan.get("routine_auto_commit_eligible")
+        if isinstance(plan.get("routine_auto_commit_eligible"), dict)
+        else {}
+    )
+    try:
+        normalized_eligibility = task_commit_normalize_routine_eligibility(
+            routine_eligibility
+        )
+    except WorkflowError as exc:
+        normalized_eligibility = {}
+        errors.append(str(exc))
+    if routine_eligibility != normalized_eligibility:
+        errors.append("task commit routine auto-commit eligibility is not canonical.")
+    if normalized_eligibility.get("eligible") is True and (
+        semantic_exit != "committed"
+        or not current_routine_facts
+        or not all(current_routine_facts.values())
+    ):
+        errors.append(
+            "eligible task commit conclusion conflicts with current objective facts or semantic result."
+        )
+
     facts = {
         "task_dir": task_relative,
         "candidate_artifact": candidate_relative,
@@ -10468,6 +10571,13 @@ def validate_task_commit_candidate(
         ),
         "git_operation_state": git_operation_state,
         "workspace_boundary": boundary,
+        "routine_auto_commit_facts": current_routine_facts,
+        "routine_auto_commit_eligible": (
+            normalized_eligibility.get("eligible") is True
+            and semantic_exit == "committed"
+            and bool(current_routine_facts)
+            and all(current_routine_facts.values())
+        ),
     }
     return plan, facts, errors
 
@@ -10502,6 +10612,222 @@ def task_commit_normalize_ai_review(value: Any) -> dict[str, Any]:
         for item in evidence
     ]
     return {"status": status, "summary": summary, "evidence": normalized_evidence}
+
+
+def task_commit_normalize_routine_eligibility(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise WorkflowError(
+            "Task commit routine auto-commit eligibility must be an object.",
+            exit_code=2,
+        )
+    eligible = value.get("eligible")
+    if not isinstance(eligible, bool):
+        raise WorkflowError(
+            "Task commit routine auto-commit eligibility requires a boolean conclusion.",
+            exit_code=2,
+        )
+    reason = task_commit_normalize_message_field(
+        value.get("reason"), "routine auto-commit eligibility reason"
+    )
+    evidence_refs = value.get("evidence_refs")
+    if not isinstance(evidence_refs, list) or not evidence_refs:
+        raise WorkflowError(
+            "Task commit routine auto-commit eligibility requires evidence refs.",
+            exit_code=2,
+        )
+    allowed = {
+        *TASK_COMMIT_ROUTINE_FACT_IDS,
+        *TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
+    }
+    normalized_refs = [
+        task_commit_normalize_message_field(item, "routine auto-commit evidence ref")
+        for item in evidence_refs
+    ]
+    if len(normalized_refs) != len(set(normalized_refs)) or any(
+        item not in allowed for item in normalized_refs
+    ):
+        raise WorkflowError(
+            "Task commit routine auto-commit eligibility has unknown or duplicate evidence refs.",
+            exit_code=2,
+        )
+    if eligible and not set(TASK_COMMIT_ROUTINE_FACT_IDS).issubset(normalized_refs):
+        raise WorkflowError(
+            "Eligible task commit conclusion must cite every objective eligibility fact.",
+            exit_code=2,
+        )
+    if eligible and not set(TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS).issubset(
+        normalized_refs
+    ):
+        raise WorkflowError(
+            "Eligible task commit conclusion must cite scope, authority and message evidence.",
+            exit_code=2,
+        )
+    return {
+        "eligible": eligible,
+        "reason": reason,
+        "evidence_refs": normalized_refs,
+    }
+
+
+def task_commit_is_linked_worktree(root: Path) -> bool:
+    git_dir_value = run_stdout(["git", "rev-parse", "--git-dir"], cwd=root)
+    common_dir_value = run_stdout(["git", "rev-parse", "--git-common-dir"], cwd=root)
+    git_dir = Path(git_dir_value)
+    common_dir = Path(common_dir_value)
+    git_dir = git_dir if git_dir.is_absolute() else (root / git_dir).resolve()
+    common_dir = common_dir if common_dir.is_absolute() else (root / common_dir).resolve()
+    return git_dir != common_dir
+
+
+def task_commit_other_task_branch_owners(
+    root: Path, task_dir: Path, branch: str
+) -> list[str]:
+    owners: list[str] = []
+    tasks_root = root / ".trellis/tasks"
+    if not tasks_root.is_dir():
+        return owners
+    for path in tasks_root.rglob("task.json"):
+        if "archive" in path.relative_to(tasks_root).parts or path.parent == task_dir:
+            continue
+        try:
+            payload = read_json(path)
+        except WorkflowError:
+            continue
+        if payload.get("status") == "in_progress" and payload.get("branch") == branch:
+            owners.append(repo_relative(root, path.parent))
+    return sorted(owners)
+
+
+def task_commit_remote_branch_absent(root: Path, remote: str, branch: str) -> bool:
+    proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
+    if proc.returncode != 0:
+        raise WorkflowError(
+            "Task commit eligibility could not read the remote branch identity.",
+            exit_code=2,
+            payload={"remote": remote, "branch": branch},
+        )
+    rows = [line.split() for line in proc.stdout.splitlines() if line.strip()]
+    if len(rows) > 1 or any(
+        len(row) != 2
+        or re.fullmatch(r"[0-9a-f]{40}", row[0]) is None
+        or row[1] != f"refs/heads/{branch}"
+        for row in rows
+    ):
+        raise WorkflowError(
+            "Task commit eligibility received an invalid remote branch identity.",
+            exit_code=2,
+        )
+    return not rows
+
+
+def task_commit_open_pull_request_absent(
+    root: Path, repo: str, branch: str
+) -> bool:
+    values = gh_json(
+        [
+            "pr", "list", "--repo", repo, "--head", branch,
+            "--state", "open", "--limit", "100",
+            "--json", "number,isDraft,state,headRefName",
+        ],
+        cwd=root,
+        repo=repo,
+        required_fields=("number", "isDraft", "state", "headRefName"),
+        operation="task_commit_pull_request_read",
+    )
+    if not isinstance(values, list):
+        raise github_response_incomplete(
+            operation="task_commit_pull_request_read",
+            repo=repo,
+            detail="Pull request list is not an array.",
+        )
+    for item in values:
+        if (
+            not isinstance(item, dict)
+            or not isinstance(item.get("number"), int)
+            or not isinstance(item.get("isDraft"), bool)
+            or item.get("state") != "OPEN"
+            or item.get("headRefName") != branch
+        ):
+            raise github_response_incomplete(
+                operation="task_commit_pull_request_read",
+                repo=repo,
+                detail="Open pull request identity is incomplete or mismatched.",
+            )
+    return not values
+
+
+def task_commit_objective_eligibility_facts(
+    root: Path,
+    task_dir: Path,
+    task: dict[str, Any],
+    task_context: dict[str, Any],
+    *,
+    phase2_current: bool,
+    exact_stage_paths: list[str],
+    classification_by_path: dict[str, dict[str, Any]],
+    git_operation_state: dict[str, Any],
+) -> dict[str, bool]:
+    branch = current_branch(root)
+    base_branch = base_branch_from_sources(
+        argparse.Namespace(base_branch=None), task, task_context
+    )
+    config = load_config(root)
+    remote = str((config.get("publish") or {}).get("remote") or "origin")
+    source_repo = task_context.get("source_repo")
+    repo = normalize_github_repository(
+        source_repo.get("repo") if isinstance(source_repo, dict) else ""
+    ) or normalize_github_repository(config.get("github_repo"))
+    if not repo:
+        raise WorkflowError(
+            "Task commit eligibility requires one repository-bound GitHub identity.",
+            exit_code=2,
+        )
+    validate_github_remote_repository(root, remote, repo)
+    remote_absent = task_commit_remote_branch_absent(root, remote, branch)
+    open_pr_absent = task_commit_open_pull_request_absent(root, repo, branch)
+    current_worktrees = [
+        record
+        for record in worktree_records(root)
+        if record.get("branch") == f"refs/heads/{branch}"
+    ]
+    task_branch_matches = (
+        task.get("branch") == branch
+        and task_context.get("branch_name") == branch
+        and branch != base_branch
+    )
+    other_task_owners = task_commit_other_task_branch_owners(root, task_dir, branch)
+    reviewed = {
+        path
+        for path, item in classification_by_path.items()
+        if item.get("category") == "task-reviewed"
+    }
+    blocking = any(
+        item.get("category") in TASK_COMMIT_BLOCKING_CATEGORIES
+        for item in classification_by_path.values()
+    )
+    exact_owned = bool(exact_stage_paths) and not blocking and reviewed.issubset(
+        set(exact_stage_paths)
+    )
+    return {
+        "dedicated_task_worktree": (
+            task_commit_is_linked_worktree(root)
+            and len(current_worktrees) == 1
+            and Path(current_worktrees[0].get("worktree") or "").resolve()
+            == root.resolve()
+        ),
+        "dedicated_task_branch": task_branch_matches,
+        "default_branch_excluded": branch != base_branch,
+        # An unpublished branch has no existing protected remote ref. Future
+        # push rules are re-evaluated by Finalizer before publication.
+        "protected_branch_excluded": remote_absent and branch != base_branch,
+        "shared_branch_excluded": len(current_worktrees) == 1,
+        "other_task_branch_excluded": not other_task_owners,
+        "remote_branch_absent": remote_absent,
+        "open_pull_request_absent": open_pr_absent,
+        "phase2_current": phase2_current,
+        "exact_task_owned_staging": exact_owned,
+        "ordinary_new_commit": not bool(git_operation_state.get("active")),
+    }
 
 
 def build_task_commit_candidate(
@@ -10593,6 +10919,30 @@ def build_task_commit_candidate(
     ledger = load_issue_scope_ledger(task_dir, task_context)
     primary_issue = primary_issue_number_from_ledger(ledger)
     base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
+    git_operation_state = task_commit_git_operation_state(root)
+    routine_facts = task_commit_objective_eligibility_facts(
+        root,
+        task_dir,
+        task,
+        task_context,
+        phase2_current=True,
+        exact_stage_paths=sorted(exact_stage_paths),
+        classification_by_path=classification_by_path,
+        git_operation_state=git_operation_state,
+    )
+    routine_eligibility = task_commit_normalize_routine_eligibility(
+        authoring.get("routine_auto_commit_eligible")
+    )
+    if routine_eligibility["eligible"] and not all(routine_facts.values()):
+        raise WorkflowError(
+            "AI marked the task commit routine-eligible while objective exclusions remain.",
+            exit_code=2,
+            payload={
+                "failed_facts": sorted(
+                    key for key, value in routine_facts.items() if not value
+                )
+            },
+        )
     plan: dict[str, Any] = {
         "$schema": TASK_COMMIT_CANDIDATE_SCHEMA_ID,
         "schema_version": TASK_COMMIT_CANDIDATE_SCHEMA_VERSION,
@@ -10620,6 +10970,8 @@ def build_task_commit_candidate(
             primary_issue=primary_issue,
         ),
         "ai_review": task_commit_normalize_ai_review(authoring.get("ai_review")),
+        "routine_auto_commit_facts": routine_facts,
+        "routine_auto_commit_eligible": routine_eligibility,
     }
     candidate_preimage = candidate_path.read_bytes() if candidate_path.exists() else None
     write_json(candidate_path, plan)
@@ -10670,6 +11022,7 @@ def cmd_prepare_task_commit(args: argparse.Namespace) -> dict[str, Any]:
         "candidate_artifact": repo_relative(root, candidate_path),
         "phase2_commit_anchor": candidate["git"]["phase2_commit_anchor"],
         "exact_stage_paths": facts["exact_stage_paths"],
+        "routine_auto_commit_eligible": facts["routine_auto_commit_eligible"],
         "message": {
             "subject": candidate["message"]["subject"],
             "body": candidate["message"]["body"],
@@ -11180,6 +11533,7 @@ MARKETPLACE_VERIFICATION_PREFIXES = (
 
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
 EXTENSION_VERIFICATION_SCHEMA_VERSION = "3.0"
+EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION = "4.0"
 EXTENSION_VERIFICATION_CAPABILITIES = (
     "marketplace_index",
     "new_repo_init",
@@ -19503,6 +19857,11 @@ def production_commit_result(
                 "base_ref": plan["git"]["base_ref"],
                 "candidate_artifact": facts["candidate_artifact"],
             }
+        if facts.get("routine_auto_commit_eligible") is not True:
+            raise WorkflowError(
+                "Task commit candidate is not eligible for routine automatic execution.",
+                exit_code=2,
+            )
         executed = execute_task_commit_candidate(root, candidate_path, task_dir)
         executed["base_ref"] = plan["git"]["base_ref"]
         return {"typed_exit": "committed"}, executed
@@ -19929,7 +20288,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                         "Complete the exact archive and ready transition before public invocation.",
                         "Task finalization published output is not objectively materializable.",
                     )
-                payload = finalization_gate_with_published_output(
+                payload = finalization_gate_with_ready_for_merge_output(
                     root,
                     owner_plan["task_dir"],
                     owner_result,
@@ -19948,7 +20307,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                     "Repair the checked finalization route output and rerun the owner gate.",
                     "Task finalization could not serialize a valid actual-exit output.",
                 )
-            if exit_id == "published":
+            if exit_id == "ready_for_merge":
                 finalization_task = owner_plan.get("task_dir")
                 if not isinstance(finalization_task, Path):
                     raise stage0_invocation_error(
@@ -19957,6 +20316,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                         "Restore the checked terminal finalization context.",
                         "Task finalization cannot consume terminal owner checkpoints without its task identity.",
                     )
+                finalization_retire_current_state(root, finalization_task)
                 ai_first_sweep_terminal_owner_checkpoints(root, finalization_task)
             return payload
         if skill_id in {
@@ -21000,11 +21360,102 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
     return result
 
 
+def extension_verification_execution_checkpoint_root(
+    root: Path,
+    task_dir: Path,
+) -> Path:
+    return (
+        runtime_root(root, load_config(root))
+        / "extension-verification-execution"
+        / ai_first_task_checkpoint_key(task_dir)
+    )
+
+
+def extension_verification_owner_state_path(
+    root: Path,
+    task_dir: Path,
+) -> Path:
+    return (
+        runtime_root(root, load_config(root))
+        / "extension-verification-result"
+        / ai_first_task_checkpoint_key(task_dir)
+        / "owner-state.json"
+    )
+
+
+def extension_verification_execution_identity(
+    root: Path,
+    public_input: dict[str, Any],
+    selected: list[str],
+) -> dict[str, Any]:
+    repo_ref, remote, ref, branch_review_commit, publication_head = (
+        extension_verification_remote_identity(root, public_input)
+    )
+    source = extension_verification_manifest_source(
+        root,
+        public_input,
+        task_bearing=True,
+    )
+    source_commit = source.get("manifest_commit")
+    if not isinstance(source_commit, str) or not re.fullmatch(
+        r"[0-9a-f]{40}", source_commit
+    ):
+        raise WorkflowError(
+            "Extension verification source commit is unavailable for execution recovery.",
+            exit_code=2,
+        )
+    return {
+        "schema_version": "1.0",
+        "repo_ref": repo_ref,
+        "remote": remote,
+        "ref": ref,
+        "branch_review_commit": branch_review_commit,
+        "publication_head": publication_head,
+        "extension_source_commit": source_commit,
+        "capability_profile": sorted(selected),
+    }
+
+
 def cmd_execute_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input = extension_verification_public_input(root, args.input)
     selected = list(args.capability or [])
-    return extension_verification_execute_facts(root, public_input, selected)
+    task_dir = extension_verification_task_dir(root, public_input)
+    if task_dir is None:
+        return extension_verification_execute_facts(root, public_input, selected)
+    identity = extension_verification_execution_identity(
+        root,
+        public_input,
+        selected,
+    )
+    identity_sha256 = canonical_json_sha256(identity)
+    checkpoint_root = extension_verification_execution_checkpoint_root(
+        root,
+        task_dir,
+    )
+    checkpoint = checkpoint_root / f"{identity_sha256}.json"
+    if checkpoint.is_file() and not checkpoint.is_symlink():
+        cached = read_json(checkpoint)
+        if (
+            isinstance(cached, dict)
+            and cached.get("identity") == identity
+            and isinstance(cached.get("execution"), dict)
+        ):
+            return copy.deepcopy(cached["execution"])
+    execution = extension_verification_execute_facts(root, public_input, selected)
+    write_json(
+        checkpoint,
+        {
+            "schema_version": "1.0",
+            "skill_id": EXTENSION_VERIFICATION_SKILL_ID,
+            "identity": identity,
+            "execution": execution,
+        },
+    )
+    for stale in checkpoint_root.glob("*.json"):
+        if stale != checkpoint and stale.is_file() and not stale.is_symlink():
+            stale.unlink()
+    return execution
 
 
 def extension_verification_review_input(
@@ -21166,6 +21617,97 @@ def extension_verification_reviewed_content_sha256(
     return reviewed_content_identity(root)["sha256"]
 
 
+def extension_verification_minimal_result(
+    public_input: dict[str, Any],
+    execution: dict[str, Any],
+    reviewed: dict[str, Any],
+) -> dict[str, Any]:
+    target = execution.get("target_repository") if isinstance(execution.get("target_repository"), dict) else {}
+    source = execution.get("extension_source") if isinstance(execution.get("extension_source"), dict) else {}
+    profile = reviewed.get("verification_profile") if isinstance(reviewed.get("verification_profile"), dict) else {}
+    semantic = reviewed.get("semantic_review") if isinstance(reviewed.get("semantic_review"), dict) else {}
+    findings = semantic.get("findings") if isinstance(semantic.get("findings"), list) else []
+    typed_exit = str(reviewed.get("typed_exit") or "")
+    unverified_boundaries = {
+        "verified": [],
+        "not_required": ["extension-installation-not-required"],
+        "return_to_task_work": ["task-work-findings-open"],
+        "blocked": ["verification-blocked"],
+    }.get(typed_exit, ["verification-incomplete"])
+    payload: dict[str, Any] = {
+        "schema_version": EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION,
+        "skill_id": EXTENSION_VERIFICATION_SKILL_ID,
+        "mode": public_input["mode"],
+        "profile": public_input["profile"],
+        "immutable_identity": {
+            "repo_ref": target.get("repo_ref"),
+            "remote": target.get("remote"),
+            "ref": target.get("ref"),
+            "branch_review_commit": target.get("branch_review_commit"),
+            "publication_head": target.get("publication_head") or target.get("resolved_head"),
+            "extension_source_commit": source.get("commit"),
+            "capability_profile": sorted(profile.get("selected_capabilities") or []),
+        },
+        "semantic_result": {
+            "typed_exit": typed_exit,
+            "conclusion": semantic.get("conclusion"),
+            "finding_refs": sorted(
+                str(item.get("finding_ref"))
+                for item in findings
+                if isinstance(item, dict) and item.get("status") == "open" and item.get("finding_ref")
+            ),
+            "blocker": (
+                {"reason_code": reviewed.get("reason_code"), "remediation": reviewed.get("remediation")}
+                if typed_exit == "blocked"
+                else None
+            ),
+        },
+        "unverified_boundaries": unverified_boundaries,
+        "identity": {"verification_ref": "<pending>"},
+    }
+    digest = canonical_json_sha256(payload)
+    payload["identity"]["verification_ref"] = f"extension-verification:{digest[:24]}"
+    return payload
+
+
+def extension_verification_minimal_errors(
+    root: Path,
+    payload: Any,
+    public_input: dict[str, Any] | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    schema_errors: list[str] = []
+    schema = skill_read_schema(
+        extension_verification_package_root(root) / "schemas/verification-result.schema.json",
+        "extension verification minimal result",
+        schema_errors,
+    )
+    if isinstance(schema, dict):
+        schema_errors.extend(skill_json_schema_validation_errors(payload, schema, "extension verification minimal result"))
+    errors.extend(schema_errors)
+    if not isinstance(payload, dict):
+        return errors or ["minimal verification result must be an object"]
+    identity = payload.get("immutable_identity") if isinstance(payload.get("immutable_identity"), dict) else {}
+    if public_input is not None:
+        expected = {
+            "repo_ref": public_input.get("repo_ref"),
+            "remote": public_input.get("remote", "origin"),
+            "ref": public_input.get("ref"),
+            "branch_review_commit": public_input.get("branch_review_commit"),
+            "publication_head": public_input.get("publication_head"),
+        }
+        for key, value in expected.items():
+            if value is not None and identity.get(key) != value:
+                errors.append(f"minimal verification {key} does not match public input")
+    unsigned = copy.deepcopy(payload)
+    current_ref = (unsigned.get("identity") or {}).get("verification_ref")
+    unsigned["identity"] = {"verification_ref": "<pending>"}
+    expected_ref = f"extension-verification:{canonical_json_sha256(unsigned)[:24]}"
+    if current_ref != expected_ref:
+        errors.append("minimal verification_ref does not match result identity")
+    return errors
+
+
 def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input = extension_verification_public_input(root, args.input)
@@ -21221,7 +21763,11 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
                 "Existing extension verification prior owner result is invalid.",
                 exit_code=2,
             ) from exc
-        prior_errors = extension_verification_payload_errors(root, prior)
+        prior_errors = (
+            extension_verification_minimal_errors(root, prior)
+            if prior.get("schema_version") == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION
+            else extension_verification_payload_errors(root, prior)
+        )
         if prior_errors:
             raise WorkflowError(
                 "Existing extension verification prior owner result is invalid.",
@@ -21324,9 +21870,19 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
             payload={"errors": errors},
         )
+    result = extension_verification_minimal_result(public_input, execution, reviewed)
+    result_errors = extension_verification_minimal_errors(root, result, public_input)
+    if result_errors:
+        raise WorkflowError(
+            "Extension verification recorder produced an invalid minimal result.",
+            exit_code=2,
+            payload={"errors": result_errors},
+        )
     if artifact_path is not None:
-        write_json(artifact_path, payload)
-    return payload
+        owner_state = extension_verification_owner_state_path(root, task_dir)
+        write_json(owner_state, payload)
+        write_json(artifact_path, result)
+    return result
 
 
 def extension_verification_owner_input(
@@ -21342,6 +21898,136 @@ def check_extension_verification_result(
     locator: str,
     public_input: dict[str, Any] | None,
 ) -> dict[str, Any]:
+    if payload.get("schema_version") == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION:
+        if public_input is None:
+            raise WorkflowError(
+                "Minimal extension verification checking requires the exact public input.",
+                exit_code=2,
+            )
+        errors = extension_verification_minimal_errors(root, payload, public_input)
+        task_dir = extension_verification_task_identity(root, public_input)
+        if task_dir is not None:
+            expected = repo_relative(root, marketplace_verification_path(task_dir, load_config(root)))
+            if locator != expected:
+                errors.append("task-bearing verification must use the unique minimal task result")
+            owner_state_path = extension_verification_owner_state_path(
+                root, task_dir
+            )
+            if not owner_state_path.is_file() or owner_state_path.is_symlink():
+                errors.append(
+                    "task-bearing minimal verification requires its current owner-private state"
+                )
+            else:
+                try:
+                    owner_state = read_json(owner_state_path)
+                except WorkflowError:
+                    errors.append(
+                        "task-bearing minimal verification owner-private state is invalid"
+                    )
+                else:
+                    errors.extend(
+                        extension_verification_payload_errors(
+                            root,
+                            owner_state,
+                            expected_public_input=public_input,
+                        )
+                    )
+                    owner_target = (
+                        owner_state.get("target_repository")
+                        if isinstance(
+                            owner_state.get("target_repository"), dict
+                        )
+                        else {}
+                    )
+                    owner_source = (
+                        owner_state.get("extension_source")
+                        if isinstance(owner_state.get("extension_source"), dict)
+                        else {}
+                    )
+                    owner_profile = (
+                        owner_state.get("verification_profile")
+                        if isinstance(
+                            owner_state.get("verification_profile"), dict
+                        )
+                        else {}
+                    )
+                    minimal_identity = (
+                        payload.get("immutable_identity")
+                        if isinstance(payload.get("immutable_identity"), dict)
+                        else {}
+                    )
+                    owner_projection = {
+                        "repo_ref": owner_target.get("repo_ref"),
+                        "remote": owner_target.get("remote"),
+                        "ref": owner_target.get("ref"),
+                        "branch_review_commit": owner_target.get(
+                            "branch_review_commit"
+                        ),
+                        "publication_head": owner_target.get(
+                            "publication_head"
+                        ) or owner_target.get("resolved_head"),
+                        "extension_source_commit": owner_source.get("commit"),
+                        "capability_profile": sorted(
+                            owner_profile.get("selected_capabilities") or []
+                        ),
+                    }
+                    if owner_projection != minimal_identity or owner_state.get(
+                        "typed_exit"
+                    ) != (payload.get("semantic_result") or {}).get("typed_exit"):
+                        errors.append(
+                            "minimal verification result does not match its owner-private state"
+                        )
+                    try:
+                        live_reviewed_content_sha256 = (
+                            extension_verification_reviewed_content_sha256(
+                                root, task_dir
+                            )
+                        )
+                    except WorkflowError:
+                        errors.append("current reviewed content is unreadable")
+                    else:
+                        if live_reviewed_content_sha256 != owner_target.get(
+                            "reviewed_content_sha256"
+                        ):
+                            errors.append(
+                                "task-bearing verification evidence is stale after reviewed-content drift"
+                            )
+        elif locator != "<stdin>":
+            errors.append("taskless minimal verification result must remain session-only stdin")
+        identity = payload.get("immutable_identity") if isinstance(payload.get("immutable_identity"), dict) else {}
+        if os.environ.get("GURU_TEAM_EVAL_STAGING") != "1":
+            remote_proc = run(
+                extension_verification_remote_ref_command(
+                    str(identity.get("remote") or ""),
+                    str(identity.get("ref") or ""),
+                ),
+                cwd=root,
+                check=False,
+            )
+            if extension_verification_resolved_remote_head(remote_proc, str(identity.get("ref") or "")) != identity.get("publication_head"):
+                errors.append("minimal verification immutable remote ref is stale")
+            if task_dir is not None:
+                try:
+                    source = extension_verification_manifest_source(root, public_input, task_bearing=True)
+                except WorkflowError:
+                    errors.append("installed extension source provenance is unavailable")
+                else:
+                    if source.get("manifest_commit") != identity.get("extension_source_commit"):
+                        errors.append("installed extension source commit changed")
+        if errors:
+            raise WorkflowError(
+                "Extension verification minimal result failed objective checks.",
+                exit_code=2,
+                payload={"errors": errors},
+            )
+        semantic = payload["semantic_result"]
+        return {
+            "status": "ok",
+            "typed_exit": semantic["typed_exit"],
+            "mode": payload["mode"],
+            "verification_ref": payload["identity"]["verification_ref"],
+            "artifact_sha256": context_digest(payload),
+        }
     errors = extension_verification_payload_errors(
         root,
         payload,
@@ -21545,6 +22231,9 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
     )
     exit_id = str(checked["typed_exit"])
     mode = str(public_input["mode"])
+    minimal = owner.get("schema_version") == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION
+    semantic_result = owner.get("semantic_result") if minimal else None
+    immutable_identity = owner.get("immutable_identity") if minimal else None
     payload: dict[str, Any] = {"exit_id": exit_id, "mode": mode}
     if mode == "workflow":
         if exit_id == "verified":
@@ -21566,20 +22255,24 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
             payload.update(
                 {
                     "task_ref": public_input["task_ref"],
-                    "finding_refs": [
+                    "finding_refs": (
+                        semantic_result["finding_refs"]
+                        if isinstance(semantic_result, dict)
+                        else [
                         item["finding_ref"]
                         for item in owner["semantic_review"]["findings"]
                         if item["status"] == "open"
                         and item["route_class"] == "task_work"
-                    ],
+                        ]
+                    ),
                     "resume_target": "phase-2",
                 }
             )
         else:
             payload.update(
                 {
-                    "reason_code": owner["blocker"]["reason_code"],
-                    "remediation": owner["blocker"]["remediation"],
+                    "reason_code": (semantic_result["blocker"] if minimal else owner["blocker"])["reason_code"],
+                    "remediation": (semantic_result["blocker"] if minimal else owner["blocker"])["remediation"],
                 }
             )
     else:
@@ -21587,7 +22280,11 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
             payload.update(
                 {
                     "repo_ref": public_input["repo_ref"],
-                    "resolved_head": owner["target_repository"]["resolved_head"],
+                    "resolved_head": (
+                        immutable_identity["publication_head"]
+                        if isinstance(immutable_identity, dict)
+                        else owner["target_repository"]["resolved_head"]
+                    ),
                     "verification_ref": owner["identity"]["verification_ref"],
                 }
             )
@@ -21595,12 +22292,16 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
             payload.update(
                 {
                     "task_ref": public_input["task_ref"],
-                    "finding_refs": [
+                    "finding_refs": (
+                        semantic_result["finding_refs"]
+                        if isinstance(semantic_result, dict)
+                        else [
                         item["finding_ref"]
                         for item in owner["semantic_review"]["findings"]
                         if item["status"] == "open"
                         and item["route_class"] == "task_work"
-                    ],
+                        ]
+                    ),
                     "resume_target": "phase-2",
                 }
             )
@@ -21608,8 +22309,8 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
             payload.update(
                 {
                     "repo_ref": public_input["repo_ref"],
-                    "reason_code": owner["blocker"]["reason_code"],
-                    "remediation": owner["blocker"]["remediation"],
+                    "reason_code": (semantic_result["blocker"] if minimal else owner["blocker"])["reason_code"],
+                    "remediation": (semantic_result["blocker"] if minimal else owner["blocker"])["remediation"],
                 }
             )
     schema = extension_verification_output_schema(root, exit_id)
@@ -22347,6 +23048,8 @@ def closeout_archive_retained_paths(plan: dict[str, Any]) -> list[str]:
     if plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION:
         return []
     allowed = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+    if CLOSEOUT_PLAN_ARTIFACT in move_paths:
+        allowed.add(CLOSEOUT_PLAN_ARTIFACT)
     marketplace = plan.get("marketplace")
     if isinstance(marketplace, dict) and marketplace.get("required") is True:
         allowed.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
@@ -22573,19 +23276,26 @@ def closeout_plan_errors(
             "closeout plan must not move owner-private publication or finalization gates."
         )
     if legacy_schema2:
-        legacy_retained = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
+        legacy_retained = {
+            *CLOSEOUT_ARCHIVE_CORE_ARTIFACTS,
+            CLOSEOUT_PLAN_ARTIFACT,
+        }
         if marketplace.get("required") is True:
             legacy_retained.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
         retained_paths = sorted(set(move_paths) & legacy_retained)
     else:
         retained_paths = closeout_archive_retained_paths(plan)
-    required_retained = {
-        CLOSEOUT_PLAN_ARTIFACT,
-        FINISH_SUMMARY_ARTIFACT,
-    }
+    required_retained = {FINISH_SUMMARY_ARTIFACT}
+    if CLOSEOUT_PLAN_ARTIFACT in move_paths:
+        required_retained.add(CLOSEOUT_PLAN_ARTIFACT)
     if not required_retained.issubset(retained_paths):
         errors.append("closeout archive is missing required recovery artifacts.")
-    if len(retained_paths) > CLOSEOUT_ARCHIVE_MAX_ARTIFACTS:
+    archive_limit = (
+        CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS
+        if CLOSEOUT_PLAN_ARTIFACT in move_paths
+        else CLOSEOUT_ARCHIVE_MAX_ARTIFACTS
+    )
+    if len(retained_paths) > archive_limit:
         errors.append("closeout archive exceeds the long-term artifact budget.")
     marketplace_retained = MARKETPLACE_VERIFICATION_ARTIFACT in retained_paths
     if marketplace.get("required") is not marketplace_retained:
@@ -22764,6 +23474,8 @@ def build_closeout_plan(
     title: str,
     body: str,
     review_facts: dict[str, Any] | None = None,
+    include_closeout_plan: bool = True,
+    allow_existing_summary: bool = False,
 ) -> dict[str, Any]:
     if not isinstance(review_facts, dict):
         raise WorkflowError(
@@ -22774,7 +23486,11 @@ def build_closeout_plan(
     requires_marketplace = bool(review_facts["marketplace_required"])
     active_locator = repo_relative(root, task_dir)
     existing_plan_path = closeout_plan_path(task_dir)
-    existing_plan = read_json(existing_plan_path) if existing_plan_path.is_file() else {}
+    existing_plan = (
+        read_json(existing_plan_path)
+        if include_closeout_plan and existing_plan_path.is_file()
+        else {}
+    )
     if existing_plan:
         validate_closeout_plan_for_migration(existing_plan)
     legacy_plan = (
@@ -22819,13 +23535,18 @@ def build_closeout_plan(
                 payload={"unexpected_task_files": unexpected_task_files},
             )
     else:
-        if (task_dir / FINISH_SUMMARY_ARTIFACT).exists():
+        if (
+            (task_dir / FINISH_SUMMARY_ARTIFACT).exists()
+            and not allow_existing_summary
+        ):
             raise WorkflowError(
                 "Initial closeout prepare found a stale final summary before the immutable plan existed.",
                 exit_code=2,
             )
         task_files = set(observed_task_files)
-        task_files.update({CLOSEOUT_PLAN_ARTIFACT, FINISH_SUMMARY_ARTIFACT})
+        task_files.add(FINISH_SUMMARY_ARTIFACT)
+        if include_closeout_plan:
+            task_files.add(CLOSEOUT_PLAN_ARTIFACT)
         if requires_marketplace:
             task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
     move_paths = sorted(task_files)
@@ -23133,12 +23854,15 @@ def prepare_closeout(
     publication_ready: dict[str, Any] | None = None,
     verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
     allowed_current_gate: dict[str, Any] | None = None,
+    current_finalizer: bool = False,
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
     existing_plan_path = closeout_plan_path(task_dir)
     existing_plan = (
         validate_closeout_plan_for_migration(read_json(existing_plan_path))
-        if existing_plan_path.is_file() and not existing_plan_path.is_symlink()
+        if not current_finalizer
+        and existing_plan_path.is_file()
+        and not existing_plan_path.is_symlink()
         else None
     )
     expected_task_ref = repo_relative(root, task_dir)
@@ -23276,12 +24000,14 @@ def prepare_closeout(
         repo=repo, remote=remote, base_branch=base, head_branch=branch,
         branch_review_commit=branch_review_commit, title=title, body=body,
         review_facts=review_facts,
+        include_closeout_plan=not current_finalizer,
+        allow_existing_summary=current_finalizer,
     )
     month_supersession: dict[str, Any] | None = None
     pre_pr_reprepare: dict[str, Any] | None = None
     migration_normalization: dict[str, Any] | None = None
     existing = closeout_plan_path(task_dir)
-    if existing.is_file():
+    if not current_finalizer and existing.is_file():
         persisted = validate_closeout_plan_for_migration(read_json(existing))
         if persisted != plan:
             migration_errors = closeout_schema2_migration_errors(persisted, plan)
@@ -23378,13 +24104,14 @@ def resolve_closeout_pre_draft_state(
     ledger: dict[str, Any],
     *,
     verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
+    require_plan_artifact: bool = True,
 ) -> str:
     plan_path = closeout_plan_path(task_dir)
-    if not plan_path.exists():
+    if require_plan_artifact and not plan_path.exists():
         return "prepared"
-    if not plan_path.is_file() or plan_path.is_symlink():
+    if require_plan_artifact and (not plan_path.is_file() or plan_path.is_symlink()):
         raise WorkflowError("Interrupted closeout plan is unavailable or unsafe.", exit_code=2)
-    if validate_closeout_plan_for_migration(read_json(plan_path)) != plan:
+    if require_plan_artifact and validate_closeout_plan_for_migration(read_json(plan_path)) != plan:
         raise WorkflowError(
             "Interrupted closeout plan differs from the rebuilt immutable plan.",
             exit_code=2,
@@ -23413,6 +24140,14 @@ def resolve_closeout_pre_draft_state(
             exit_code=2,
             payload={"errors": continuity_errors},
         )
+    if not require_plan_artifact:
+        publication_head = str(
+            plan["git"].get("publication_head")
+            or plan["git"]["branch_review_commit"]
+        )
+        remote_head = closeout_remote_branch_head(root, plan)
+        if remote_head != publication_head:
+            return "prepared"
     if not plan["marketplace"]["required"]:
         return "evidence_ready"
     artifact = marketplace_verification_path(task_dir, load_config(root))
@@ -23792,7 +24527,12 @@ def validate_closeout_marketplace_artifact(
         repo_relative(root, artifact),
         owner_input,
     )
-    expected_plan_ref = f"closeout-plan:{plan['plan_digest']}"
+    expected_plan_ref = (
+        f"closeout-plan:{plan['plan_digest']}"
+        if CLOSEOUT_PLAN_ARTIFACT
+        in plan.get("projection", {}).get("move_paths", [])
+        else f"finalization:{plan['plan_digest']}"
+    )
     repository = (
         owner.get("target_repository")
         if isinstance(owner.get("target_repository"), dict)
@@ -23893,9 +24633,10 @@ def build_final_archive_projection(
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
         raise WorkflowError("Final projection must contain one canonical PR ref.", exit_code=2)
     required_artifacts = set(summary["artifacts"].values()) | {
-        CLOSEOUT_PLAN_ARTIFACT,
         "issue-scope-ledger.json",
     }
+    if CLOSEOUT_PLAN_ARTIFACT in plan["projection"]["move_paths"]:
+        required_artifacts.add(CLOSEOUT_PLAN_ARTIFACT)
     missing = sorted(name for name in required_artifacts if not (task_dir / name).is_file())
     if missing:
         raise WorkflowError("Final archive projection is missing task artifacts.", exit_code=2, payload={"missing": missing})
@@ -24693,6 +25434,169 @@ def assert_archived_committed_workspace_boundary(
     }
 
 
+def assert_archived_current_transaction_boundary(
+    root: Path,
+    config: dict[str, Any],
+    task_dir: Path,
+    transaction: dict[str, Any],
+    expected_plan_digest: str,
+) -> dict[str, Any]:
+    archive_locator = repo_relative(root, task_dir)
+    active_locator = str(transaction["task_ref"])
+    if (
+        transaction.get("plan_digest") != expected_plan_digest
+        or Path(active_locator).name != task_dir.name
+        or not task_dir_is_archived(root, task_dir)
+        or (root / active_locator).exists()
+    ):
+        raise WorkflowError(
+            "Archived finalization transaction identity is stale.",
+            exit_code=2,
+        )
+    archive_head = current_head(root)
+    if closeout_commit_parent(root, archive_head) != transaction["publication_head"]:
+        raise WorkflowError(
+            "Archived finalization transaction is not the exact publication child.",
+            exit_code=2,
+        )
+    try:
+        task = json.loads(
+            closeout_commit_blob_bytes(
+                root,
+                archive_head,
+                f"{archive_locator}/task.json",
+            ).decode("utf-8")
+        )
+        summary = json.loads(
+            closeout_commit_blob_bytes(
+                root,
+                archive_head,
+                f"{archive_locator}/{FINISH_SUMMARY_ARTIFACT}",
+            ).decode("utf-8")
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise WorkflowError(
+            "Archived finalization committed evidence is invalid.",
+            exit_code=2,
+        ) from exc
+    if not isinstance(task, dict) or task.get("status") != "completed" or not isinstance(summary, dict):
+        raise WorkflowError(
+            "Archived finalization transaction is missing durable task evidence.",
+            exit_code=2,
+        )
+    summary_task = summary.get("task") if isinstance(summary.get("task"), dict) else {}
+    summary_git = summary.get("git") if isinstance(summary.get("git"), dict) else {}
+    summary_github = summary.get("github") if isinstance(summary.get("github"), dict) else {}
+    if (
+        summary_task.get("artifact_dir") != active_locator
+        or summary_task.get("archive_dir") != archive_locator
+        or summary_git.get("branch") != transaction.get("branch")
+        or summary_git.get("base_branch") != transaction.get("base_branch")
+        or current_branch(root) != transaction.get("branch")
+    ):
+        raise WorkflowError(
+            "Archived finalization summary does not match the transaction.",
+            exit_code=2,
+        )
+    configured_repo = normalize_github_repository(config.get("github_repo"))
+    if configured_repo and configured_repo != transaction.get("repo_ref"):
+        raise WorkflowError(
+            "Archived finalization repository does not match configuration.",
+            exit_code=2,
+        )
+    remote = str(publish_config(config).get("remote") or "origin")
+    validate_github_remote_repository(root, remote, str(transaction["repo_ref"]))
+    pr_url = summary_github.get("pr_url")
+    canonical_url, pr_number = parse_canonical_pull_request_url(
+        str(transaction["repo_ref"]),
+        pr_url,
+    )
+    plan = {
+        "plan_digest": transaction["plan_digest"],
+        "task": {
+            "active_locator": active_locator,
+            "archive_locator": archive_locator,
+        },
+        "git": {
+            "repo": transaction["repo_ref"],
+            "remote": remote,
+            "base_branch": transaction["base_branch"],
+            "head_branch": transaction["branch"],
+            "branch_review_commit": transaction["branch_review_commit"],
+            "reviewed_content_head": transaction["branch_review_commit"],
+            "publication_head": transaction["publication_head"],
+        },
+        "publish": {
+            "title": transaction["publication"]["title"],
+            "body": transaction["publication"]["body"],
+            "draft": True,
+            "draft_to_ready": True,
+            "match": {
+                "repo": transaction["repo_ref"],
+                "head": transaction["branch"],
+                "base": transaction["base_branch"],
+            },
+        },
+        "marketplace": {"required": "verification_ref" in transaction},
+    }
+    archive_commit = {
+        "commit": archive_head,
+        "parent": transaction["publication_head"],
+        "paths": sorted(closeout_commit_paths(root, archive_head)),
+        "summary_pr": {"number": pr_number, "url": canonical_url},
+    }
+    return {"plan": plan, "archive_commit": archive_commit}
+
+
+def restore_current_archive_move_for_reentry(
+    root: Path,
+    archived: Path,
+    transaction: dict[str, Any],
+) -> Path:
+    active = root / str(transaction["task_ref"])
+    if (
+        current_head(root) != transaction["publication_head"]
+        or active.exists()
+        or not archived.is_dir()
+        or archived.is_symlink()
+    ):
+        raise WorkflowError(
+            "Current archive-move recovery identity is invalid.",
+            exit_code=2,
+        )
+    run_stdout(["git", "reset", "--mixed", "--quiet", "HEAD"], cwd=root)
+    active.parent.mkdir(parents=True, exist_ok=True)
+    archived.rename(active)
+    run_stdout(
+        [
+            "git",
+            "restore",
+            f"--source={transaction['publication_head']}",
+            "--worktree",
+            "--",
+            str(transaction["task_ref"]),
+        ],
+        cwd=root,
+    )
+    task_path = active / "task.json"
+    if not task_path.is_file() or task_path.is_symlink():
+        raise WorkflowError(
+            "Current archive-move recovery is missing task identity.",
+            exit_code=2,
+        )
+    task = read_json(task_path)
+    if task.get("status") not in {"in_progress", "completed"}:
+        raise WorkflowError(
+            "Current archive-move recovery requires completed move metadata.",
+            exit_code=2,
+        )
+    if task.get("status") == "completed":
+        task["status"] = "in_progress"
+        task.pop("completedAt", None)
+        write_json(task_path, task)
+    return active
+
+
 def execute_archive_metadata_transaction(
     root: Path,
     task_dir: Path,
@@ -25162,6 +26066,8 @@ def execute_closeout_content_push(
     task_dir: Path,
     task_context: dict[str, Any],
     prepared: dict[str, Any],
+    *,
+    persist_closeout_plan: bool = True,
 ) -> dict[str, Any]:
     """Run the existing first closeout transition and stop at the verification boundary."""
     plan = prepared["plan"]
@@ -25184,20 +26090,25 @@ def execute_closeout_content_push(
         plan["git"]["head_branch"],
         plan["git"]["remote"],
     )
-    write_json(closeout_plan_path(task_dir), plan)
+    if persist_closeout_plan:
+        write_json(closeout_plan_path(task_dir), plan)
     return {
         "status": "ok",
         "stage": "content_pushed",
         "entry_state": "prepared",
         "task_dir": str(task_dir),
         "closeout_plan_digest": plan["plan_digest"],
-        "plan_ref": f"closeout-plan:{plan['plan_digest']}",
+        "plan_ref": (
+            f"closeout-plan:{plan['plan_digest']}"
+            if persist_closeout_plan
+            else f"finalization:{plan['plan_digest']}"
+        ),
         "branch_review_commit": plan["git"]["branch_review_commit"],
         "verification_required": bool(plan["marketplace"]["required"]),
     }
 
 
-def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
+def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
     validate_finish_work_invocation(args)
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
@@ -25205,6 +26116,40 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     if task_dir_is_archived(root, task_dir):
         if args.dry_run:
             raise WorkflowError("Archived closeout recovery does not have a new dry-run phase.", exit_code=2)
+        current_match = finalization_find_transaction_by_task_ref(
+            root,
+            f".trellis/tasks/{task_dir.name}",
+        )
+        if current_match is not None:
+            transaction, _transaction_path = current_match
+            if current_head(root) == transaction["publication_head"]:
+                active_task_dir = restore_current_archive_move_for_reentry(
+                    root,
+                    task_dir,
+                    transaction,
+                )
+                resumed_args = copy.copy(args)
+                resumed_args.task = str(active_task_dir)
+                return cmd_finish_work(resumed_args)
+            boundary = assert_archived_current_transaction_boundary(
+                root,
+                config,
+                task_dir,
+                transaction,
+                str(getattr(args, "expected_plan_digest", "") or ""),
+            )
+            result = resume_archived_closeout(
+                root,
+                args,
+                task_dir,
+                committed_plan=boundary["plan"],
+                committed_archive=boundary["archive_commit"],
+            )
+            result["retired_owner_state"] = finalization_retire_current_state(
+                root,
+                root / str(transaction["task_ref"]),
+            )
+            return result
         committed_boundary = assert_archived_committed_workspace_boundary(
             root,
             config,
@@ -25220,6 +26165,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         )
     task_context = load_task_runtime_identity(task_dir, config)
     assert_workspace_boundary(root, config, task_context, task_dir)
+    current_finalizer = bool(getattr(args, "from_guru_finalizer", False))
     if closeout_plan_path(task_dir).is_file() and task_json(task_dir).get("status") == "completed":
         if args.dry_run:
             raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)
@@ -25234,6 +26180,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         task_context,
         publication_ready=getattr(args, "publication_ready", None),
         verification_owner_result=verification_owner_result,
+        current_finalizer=current_finalizer,
     )
     plan = prepared["plan"]
     if args.dry_run:
@@ -25255,6 +26202,60 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         )
     assert_closeout_archive_month_current(plan)
     require_gh_auth(root)
+    if current_finalizer:
+        transaction = finalization_read_transaction(root, task_dir)
+        if transaction is None:
+            transaction = finalization_transaction_from_plan(
+                plan,
+                next_transition="push_content",
+            )
+            finalization_write_transaction(root, task_dir, transaction)
+        else:
+            if transaction.get("plan_digest") != plan["plan_digest"]:
+                replacement = finalization_transaction_from_plan(
+                    plan,
+                    next_transition=str(transaction["next_transition"]),
+                    pr=(
+                        transaction["pr"]
+                        if isinstance(transaction.get("pr"), dict)
+                        else None
+                    ),
+                    verification_ref=(
+                        str(transaction["verification_ref"])
+                        if isinstance(transaction.get("verification_ref"), str)
+                        else None
+                    ),
+                )
+                prior_identity = {
+                    key: value
+                    for key, value in transaction.items()
+                    if key != "plan_digest"
+                }
+                replacement_identity = {
+                    key: value
+                    for key, value in replacement.items()
+                    if key != "plan_digest"
+                }
+                if prior_identity != replacement_identity:
+                    raise WorkflowError(
+                        "Task finalization transaction cannot bind a changed plan identity.",
+                        exit_code=2,
+                    )
+                transaction = replacement
+                finalization_write_transaction(root, task_dir, transaction)
+            else:
+                finalization_validate_transaction_plan(transaction, plan)
+        summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+        if summary_path.exists():
+            if not summary_path.is_file() or summary_path.is_symlink():
+                raise WorkflowError(
+                    "Task finalization summary recovery path is unsafe.",
+                    exit_code=2,
+                )
+            try:
+                read_and_validate_closeout_final_summary(summary_path, plan)
+            except WorkflowError:
+                summary_path.unlink()
     ledger = load_issue_scope_ledger(task_dir, task_context)
     if prepared.get("month_supersession") is not None:
         supersession = prepared["month_supersession"]
@@ -25279,8 +26280,9 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             state_plan,
             ledger,
             verification_owner_result=verification_owner_result,
+            require_plan_artifact=not current_finalizer,
         )
-        if state_plan is not plan:
+        if not current_finalizer and state_plan is not plan:
             write_json(closeout_plan_path(task_dir), plan)
             if validate_closeout_plan(read_json(closeout_plan_path(task_dir))) != plan:
                 raise WorkflowError(
@@ -25293,8 +26295,15 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             task_context,
             prepared,
+            persist_closeout_plan=not current_finalizer,
         )
         entry_state = "content_pushed"
+        if current_finalizer:
+            transaction = finalization_transaction_from_plan(
+                plan,
+                next_transition=("verify" if plan["marketplace"]["required"] else "bind_draft"),
+            )
+            finalization_write_transaction(root, task_dir, transaction)
 
     if entry_state in {"content_pushed", "evidence_ready"}:
         validate_publish_identity_and_remote_head(
@@ -25308,7 +26317,11 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
                 root,
                 task_dir,
                 task_ref=plan["task"]["active_locator"],
-                plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                plan_ref=(
+                    f"finalization:{plan['plan_digest']}"
+                    if current_finalizer
+                    else f"closeout-plan:{plan['plan_digest']}"
+                ),
                 branch_review_commit=plan["git"]["branch_review_commit"],
                 plan=plan,
             )
@@ -25324,6 +26337,14 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
             verification_owner_result,
         )
         entry_state = "evidence_ready"
+        if current_finalizer:
+            checked_verification = verification_owner_result[1]
+            transaction = finalization_transaction_from_plan(
+                plan,
+                next_transition="bind_draft",
+                verification_ref=str(checked_verification["verification_ref"]),
+            )
+            finalization_write_transaction(root, task_dir, transaction)
 
     validate_closeout_reviewed_content(
         root,
@@ -25333,6 +26354,21 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     )
 
     pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
+    if current_finalizer:
+        transaction = finalization_transaction_from_plan(
+            plan,
+            next_transition="archive",
+            pr=pr,
+            verification_ref=(
+                str(verification_owner_result[1]["verification_ref"])
+                if isinstance(verification_owner_result, tuple)
+                and len(verification_owner_result) == 2
+                and isinstance(verification_owner_result[1], dict)
+                and isinstance(verification_owner_result[1].get("verification_ref"), str)
+                else None
+            ),
+        )
+        finalization_write_transaction(root, task_dir, transaction)
     finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if finish_summary_path.is_file():
         validate_closeout_active_projection(
@@ -25361,7 +26397,7 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
         if (
-            finalization_gate.get("route", {}).get("typed_exit") != "published"
+            finalization_gate.get("route", {}).get("typed_exit") != "ready_for_merge"
             or finalization_gate.get("route", {}).get("output")
             != FINALIZATION_EXECUTOR_OUTPUT_MARKER
         ):
@@ -25377,6 +26413,26 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         verification_owner_result=verification_owner_result,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
+    retired_owner_state: list[str] = []
+    if current_finalizer:
+        verification_ref = (
+            str(verification_owner_result[1]["verification_ref"])
+            if isinstance(verification_owner_result, tuple)
+            and len(verification_owner_result) == 2
+            and isinstance(verification_owner_result[1], dict)
+            and isinstance(verification_owner_result[1].get("verification_ref"), str)
+            else None
+        )
+        finalization_write_transaction(
+            root,
+            archived_task_dir,
+            finalization_transaction_from_plan(
+                plan,
+                next_transition="mark_ready",
+                pr=publish_payload["pr"],
+                verification_ref=verification_ref,
+            ),
+        )
     return {
         "status": "ok",
         "stage": "ready",
@@ -25387,7 +26443,38 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
         "finish_summary": str(archived_task_dir / finish_summary_path.name),
         "archive_commit": archive_commit,
         "publish": publish_payload,
+        "retired_owner_state": retired_owner_state,
     }
+
+
+def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
+    if bool(getattr(args, "dry_run", False)) or not bool(
+        getattr(args, "from_guru_finalizer", False)
+    ):
+        return _cmd_finish_work_impl(args)
+
+    root = repo_root(Path(args.root or os.getcwd()))
+    task_dir = resolve_finish_work_task_dir(root, args.task)
+    transaction_path = finalization_transaction_path(root, task_dir)
+    if transaction_path.is_file():
+        return _cmd_finish_work_impl(args)
+    if transaction_path.exists():
+        raise WorkflowError(
+            "Task finalization transaction recovery path is unsafe.", exit_code=2
+        )
+
+    token = FINALIZATION_TRANSACTION_WRITE_BUFFER.set((transaction_path, {}))
+    try:
+        result = _cmd_finish_work_impl(args)
+    except Exception:
+        pending = FINALIZATION_TRANSACTION_WRITE_BUFFER.get()
+        FINALIZATION_TRANSACTION_WRITE_BUFFER.reset(token)
+        if pending is not None and pending[1]:
+            write_json(pending[0], pending[1])
+        raise
+    else:
+        FINALIZATION_TRANSACTION_WRITE_BUFFER.reset(token)
+        return result
 
 
 FINALIZATION_CONSUMERS = {
@@ -25407,9 +26494,9 @@ FINALIZATION_CONSUMERS = {
         "kind": "skill",
         "id": FINALIZE_TASK_SKILL_ID,
     },
-    "published": {
-        "kind": "workflow",
-        "id": "guru-finalization-finish-response",
+    "ready_for_merge": {
+        "kind": "skill",
+        "id": "guru-merge-task-pr",
     },
     "blocked": {
         "kind": "stop",
@@ -25586,6 +26673,16 @@ def finalization_task_dir(root: Path, public_input: dict[str, Any]) -> Path:
     if resolved_ref == task_ref:
         return task_dir
     if task_dir_is_archived(root, task_dir):
+        transaction_match = finalization_find_transaction_by_task_ref(
+            root,
+            task_ref,
+        )
+        if transaction_match is not None:
+            transaction, _transaction_path = transaction_match
+            if transaction.get("task_ref") == task_ref:
+                return task_dir
+        if finalization_current_terminal_gate(root, task_dir, task_ref) is not None:
+            return task_dir
         plan = finalization_closeout_plan(root, task_dir)
         if (
             plan is not None
@@ -25599,6 +26696,264 @@ def finalization_task_dir(root: Path, public_input: dict[str, Any]) -> Path:
             exit_code=2,
         )
     return task_dir
+
+
+def finalization_transaction_path(root: Path, task_dir: Path) -> Path:
+    return (
+        runtime_root(root, load_config(root))
+        / "finalization-transaction"
+        / ai_first_task_checkpoint_key(task_dir)
+        / FINALIZATION_TRANSACTION_ARTIFACT
+    )
+
+
+FINALIZATION_TRANSACTION_WRITE_BUFFER: ContextVar[
+    tuple[Path, dict[str, Any]] | None
+] = ContextVar("finalization_transaction_write_buffer", default=None)
+
+
+def finalization_transaction_schema(root: Path) -> dict[str, Any]:
+    errors: list[str] = []
+    schema = skill_read_schema(
+        finalization_package_root(root)
+        / "schemas/finalization-transaction.schema.json",
+        "task finalization transaction",
+        errors,
+    )
+    if errors or not isinstance(schema, dict):
+        raise WorkflowError(
+            "Task finalization transaction schema is unavailable.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return schema
+
+
+def finalization_transaction_from_plan(
+    plan: dict[str, Any],
+    *,
+    next_transition: str,
+    pr: dict[str, Any] | None = None,
+    verification_ref: str | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "schema_version": "1.0",
+        "skill_id": FINALIZE_TASK_SKILL_ID,
+        "task_ref": plan["task"]["active_locator"],
+        "repo_ref": plan["git"]["repo"],
+        "base_branch": plan["git"]["base_branch"],
+        "branch": plan["git"]["head_branch"],
+        "branch_review_commit": plan["git"]["branch_review_commit"],
+        "publication_head": (
+            plan["git"].get("publication_head")
+            or plan["git"]["branch_review_commit"]
+        ),
+        "plan_digest": plan["plan_digest"],
+        "publication": {
+            "title": plan["publish"]["title"],
+            "body": plan["publish"]["body"],
+        },
+        "next_transition": next_transition,
+    }
+    if pr is not None:
+        payload["pr"] = {
+            "number": pr["number"],
+            "url": pr["url"],
+        }
+    if verification_ref is not None:
+        payload["verification_ref"] = verification_ref
+    return payload
+
+
+def finalization_validate_transaction_plan(
+    transaction: dict[str, Any],
+    plan: dict[str, Any],
+) -> None:
+    expected = finalization_transaction_from_plan(
+        plan,
+        next_transition=str(transaction.get("next_transition") or "push_content"),
+        pr=(transaction.get("pr") if isinstance(transaction.get("pr"), dict) else None),
+        verification_ref=(
+            str(transaction["verification_ref"])
+            if isinstance(transaction.get("verification_ref"), str)
+            else None
+        ),
+    )
+    if transaction != expected:
+        raise WorkflowError(
+            "Task finalization transaction no longer matches the rebuilt plan.",
+            exit_code=2,
+        )
+
+
+def finalization_write_transaction(
+    root: Path,
+    task_dir: Path,
+    payload: dict[str, Any],
+) -> Path:
+    errors = skill_json_schema_validation_errors(
+        payload,
+        finalization_transaction_schema(root),
+        "task finalization transaction",
+    )
+    if errors:
+        raise WorkflowError(
+            "Task finalization transaction is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    path = finalization_transaction_path(root, task_dir)
+    if FINALIZATION_TRANSACTION_WRITE_BUFFER.get() is not None:
+        FINALIZATION_TRANSACTION_WRITE_BUFFER.set((path, copy.deepcopy(payload)))
+        return path
+    write_json(path, payload)
+    return path
+
+
+def finalization_read_transaction(
+    root: Path,
+    task_dir: Path,
+) -> dict[str, Any] | None:
+    path = finalization_transaction_path(root, task_dir)
+    if not path.exists():
+        return None
+    if not path.is_file() or path.is_symlink():
+        raise WorkflowError(
+            "Task finalization transaction is unsafe.", exit_code=2
+        )
+    payload = read_json(path)
+    errors = skill_json_schema_validation_errors(
+        payload,
+        finalization_transaction_schema(root),
+        "task finalization transaction",
+    )
+    if errors:
+        raise WorkflowError(
+            "Task finalization transaction is invalid.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return payload
+
+
+def finalization_current_terminal_gate(
+    root: Path,
+    task_dir: Path,
+    task_ref: str,
+) -> dict[str, Any] | None:
+    """Resolve the adjacent terminal gate without reviving transaction state."""
+    if not task_dir_is_archived(root, task_dir) or closeout_plan_path(task_dir).exists():
+        return None
+    path = task_finalization_path(root, task_dir)
+    if not path.exists():
+        return None
+    if not path.is_file() or path.is_symlink():
+        raise WorkflowError(
+            "Archived current Finalizer gate is missing or unsafe.", exit_code=2
+        )
+    gate = finalization_normalize_gate(root, read_json(path))
+    identity = gate.get("identity") if isinstance(gate.get("identity"), dict) else {}
+    plan_digest = str(identity.get("plan_digest") or "")
+    plan_ref = str(identity.get("plan_ref") or "")
+    if not plan_ref.startswith("finalization:"):
+        return None
+    errors = skill_json_schema_validation_errors(
+        gate,
+        finalization_gate_schema(root),
+        "task finalization gate",
+    )
+    if (
+        errors
+        or identity.get("task_ref") != task_ref
+        or re.fullmatch(r"[0-9a-f]{64}", plan_digest) is None
+        or plan_ref != f"finalization:{plan_digest}"
+        or re.fullmatch(
+            r"[0-9a-f]{40}", str(identity.get("branch_review_commit") or "")
+        )
+        is None
+        or gate.get("route")
+        != {
+            "typed_exit": "ready_for_merge",
+            "consumer": FINALIZATION_CONSUMERS["ready_for_merge"],
+            "output": FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+        }
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer gate does not bind the terminal transaction.",
+            exit_code=2,
+            payload={"errors": errors},
+        )
+    return gate
+
+
+def finalization_find_transaction_by_task_ref(
+    root: Path,
+    task_ref: str,
+) -> tuple[dict[str, Any], Path] | None:
+    owner_root = runtime_root(root, load_config(root)) / "finalization-transaction"
+    if not owner_root.exists():
+        return None
+    if not owner_root.is_dir() or owner_root.is_symlink():
+        raise WorkflowError("Task finalization transaction owner root is unsafe.", exit_code=2)
+    matches: list[tuple[dict[str, Any], Path]] = []
+    for owner_dir in sorted(owner_root.iterdir()):
+        if not owner_dir.is_dir() or owner_dir.is_symlink():
+            raise WorkflowError("Task finalization transaction owner entry is unsafe.", exit_code=2)
+        path = owner_dir / FINALIZATION_TRANSACTION_ARTIFACT
+        if not path.exists():
+            continue
+        if not path.is_file() or path.is_symlink():
+            raise WorkflowError("Task finalization transaction is unsafe.", exit_code=2)
+        payload = read_json(path)
+        errors = skill_json_schema_validation_errors(
+            payload,
+            finalization_transaction_schema(root),
+            "task finalization transaction",
+        )
+        if errors:
+            raise WorkflowError(
+                "Task finalization transaction is invalid.",
+                exit_code=2,
+                payload={"errors": errors},
+            )
+        if payload.get("task_ref") == task_ref:
+            matches.append((payload, path))
+    if len(matches) > 1:
+        raise WorkflowError(
+            "Task finalization found multiple transactions for one task.",
+            exit_code=2,
+        )
+    return matches[0] if matches else None
+
+
+def finalization_retire_current_state(root: Path, task_dir: Path) -> list[str]:
+    retired: list[str] = []
+    task_ref = repo_relative(root, task_dir)
+    transaction_match = finalization_find_transaction_by_task_ref(root, task_ref)
+    candidates = [
+        (
+            transaction_match[1]
+            if transaction_match is not None
+            else finalization_transaction_path(root, task_dir)
+        ),
+        task_finalization_path(root, task_dir),
+        task_finalization_transition_path(root, task_dir),
+        extension_verification_owner_state_path(root, task_dir),
+        extension_verification_execution_checkpoint_root(root, task_dir),
+    ]
+    for path in candidates:
+        if path.is_symlink():
+            raise WorkflowError(
+                "Task finalization terminal cleanup found unsafe owner state.",
+                exit_code=2,
+            )
+        if path.is_dir():
+            shutil.rmtree(path)
+            retired.append(repo_relative(root, path))
+        elif path.is_file():
+            path.unlink()
+            retired.append(repo_relative(root, path))
+    return retired
 
 
 def finalization_publication_owner_result(
@@ -25679,14 +27034,14 @@ def finalization_publication_owner_result(
                 "stale_reason": "publication_review_stale",
             }
     else:
-        plan = finalization_closeout_plan(root, task_dir)
-        if plan is None:
+        transaction = finalization_read_transaction(root, task_dir)
+        if transaction is None:
             return {
                 "owner_status": "stale",
                 "branch_review_commit": branch_review_commit,
                 "stale_reason": "publication_review_missing",
             }
-        branch_review_commit = str(plan["git"]["branch_review_commit"])
+        branch_review_commit = str(transaction["branch_review_commit"])
         supplied_commit = public_input.get("branch_review_commit")
         if (
             isinstance(supplied_commit, str)
@@ -25732,10 +27087,21 @@ def finalization_prepare_publication_ready(
     public_input: dict[str, Any],
     *,
     existing_plan: dict[str, Any] | None = None,
+    transaction: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
     """Select exact Publication authority without inflating reprepare identity."""
     if public_input.get("profile") == "publication_ready":
         return public_input
+    if transaction is not None:
+        publication = transaction["publication"]
+        return {
+            "profile": "publication_ready",
+            "mode": public_input["mode"],
+            "task_ref": transaction["task_ref"],
+            "branch_review_commit": transaction["branch_review_commit"],
+            "pr_title": publication["title"],
+            "pr_body": publication["body"],
+        }
     if public_input.get("profile") != "reprepare_preview":
         return None
     if existing_plan is not None:
@@ -25881,7 +27247,12 @@ def closeout_verification_plan_ref_matches(
     plan: dict[str, Any],
     owner_plan_ref: Any,
 ) -> bool:
-    expected = f"closeout-plan:{plan['plan_digest']}"
+    move_paths = plan.get("projection", {}).get("move_paths", [])
+    expected = (
+        f"closeout-plan:{plan['plan_digest']}"
+        if CLOSEOUT_PLAN_ARTIFACT in move_paths
+        else f"finalization:{plan['plan_digest']}"
+    )
     if owner_plan_ref == expected:
         return True
     predecessor = plan.get("projection", {}).get(
@@ -26050,6 +27421,36 @@ def finalization_standalone_not_required_owner_is_current(
     *,
     task_ref: str,
 ) -> bool:
+    if payload.get("schema_version") == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION:
+        identity = (
+            payload.get("immutable_identity")
+            if isinstance(payload.get("immutable_identity"), dict)
+            else {}
+        )
+        semantic = (
+            payload.get("semantic_result")
+            if isinstance(payload.get("semantic_result"), dict)
+            else {}
+        )
+        return (
+            checked.get("typed_exit") == "not_required"
+            and checked.get("mode") == "standalone"
+            and payload.get("mode") == "standalone"
+            and payload.get("profile") == "standalone_verification"
+            and semantic.get("typed_exit") == "not_required"
+            and normalize_github_repository(identity.get("repo_ref"))
+            == plan["git"]["repo"]
+            and identity.get("remote") == plan["git"]["remote"]
+            and identity.get("ref")
+            == f"refs/heads/{plan['git']['head_branch']}"
+            and identity.get("publication_head")
+            == plan["git"].get(
+                "publication_head", plan["git"]["branch_review_commit"]
+            )
+            and plan.get("marketplace", {}).get("required") is False
+            and checked.get("verification_ref")
+            == payload.get("identity", {}).get("verification_ref")
+        )
     owner_input = (
         payload.get("public_input")
         if isinstance(payload.get("public_input"), dict)
@@ -26416,23 +27817,42 @@ def finalization_eval_preview_context(
             root,
             task_dir,
         )
-        owner_input = (
-            owner.get("public_input")
-            if isinstance(owner.get("public_input"), dict)
-            else {}
-        )
-        errors = extension_verification_payload_errors(
-            root,
-            owner,
-            expected_public_input=owner_input,
-        )
-        checked = {
-            "status": "ok",
-            "typed_exit": owner.get("typed_exit"),
-            "mode": owner.get("mode"),
-            "verification_ref": owner.get("identity", {}).get("verification_ref"),
-            "artifact_sha256": context_digest(owner),
-        }
+        if owner.get("schema_version") == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION:
+            errors = extension_verification_minimal_errors(root, owner)
+            semantic = (
+                owner.get("semantic_result")
+                if isinstance(owner.get("semantic_result"), dict)
+                else {}
+            )
+            checked = {
+                "status": "ok",
+                "typed_exit": semantic.get("typed_exit"),
+                "mode": owner.get("mode"),
+                "verification_ref": owner.get("identity", {}).get(
+                    "verification_ref"
+                ),
+                "artifact_sha256": context_digest(owner),
+            }
+        else:
+            owner_input = (
+                owner.get("public_input")
+                if isinstance(owner.get("public_input"), dict)
+                else {}
+            )
+            errors = extension_verification_payload_errors(
+                root,
+                owner,
+                expected_public_input=owner_input,
+            )
+            checked = {
+                "status": "ok",
+                "typed_exit": owner.get("typed_exit"),
+                "mode": owner.get("mode"),
+                "verification_ref": owner.get("identity", {}).get(
+                    "verification_ref"
+                ),
+                "artifact_sha256": context_digest(owner),
+            }
         expected_locator = (
             f"{repo_relative(root, task_dir)}/{MARKETPLACE_VERIFICATION_ARTIFACT}"
         )
@@ -26484,6 +27904,7 @@ def finalization_eval_preview_context(
             {
                 "number": 118,
                 "url": f"https://github.com/{payload['repo_ref']}/pull/118",
+                "headRefOid": payload["publication_head"],
             }
             if payload["transaction_state"] == "ready"
             else None
@@ -26584,6 +28005,251 @@ def finalization_archived_owner_results(
     return {"owner_status": "current"}, None
 
 
+def finalization_current_archived_context(
+    root: Path,
+    task_dir: Path,
+    public_input: dict[str, Any],
+    transaction: dict[str, Any],
+) -> dict[str, Any]:
+    task_ref = str(public_input.get("task_ref") or "")
+    archive_locator = repo_relative(root, task_dir)
+    if (
+        transaction.get("task_ref") != task_ref
+        or transaction.get("next_transition") != "mark_ready"
+        or not isinstance(transaction.get("pr"), dict)
+        or closeout_plan_path(task_dir).exists()
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer transaction is incomplete or legacy-bound.",
+            exit_code=2,
+        )
+    task = task_json(task_dir)
+    if task.get("status") != "completed":
+        raise WorkflowError(
+            "Archived current Finalizer task is not completed.",
+            exit_code=2,
+        )
+    remote = str(publish_config(load_config(root)).get("remote") or "origin")
+    repo = validate_github_remote_repository(
+        root,
+        remote,
+        str(transaction["repo_ref"]),
+    )
+    pr = resolve_closeout_pull_request(
+        root,
+        repo,
+        str(transaction["branch"]),
+        str(transaction["base_branch"]),
+        remote,
+    )
+    bound_pr = transaction["pr"]
+    if (
+        pr is None
+        or pr.get("number") != bound_pr.get("number")
+        or pr.get("url")
+        != canonical_pull_request_url(repo, int(bound_pr["number"]), bound_pr.get("url"))
+        or pr.get("isDraft") is not False
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer pull request is not the exact Ready transaction.",
+            exit_code=2,
+        )
+    ready_head = str(pr.get("headRefOid") or "")
+    local_head = current_head(root)
+    remote_head = closeout_remote_branch_head(
+        root,
+        {"git": {"remote": remote, "head_branch": transaction["branch"]}},
+    )
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", ready_head) is None
+        or local_head != remote_head
+        or local_head != ready_head
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer local, remote and Ready PR heads differ.",
+            exit_code=2,
+        )
+    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    if not summary_path.is_file() or summary_path.is_symlink():
+        raise WorkflowError(
+            "Archived current Finalizer summary is missing or unsafe.",
+            exit_code=2,
+        )
+    summary = read_json(summary_path)
+    validate_finish_summary(summary)
+    if (
+        summary.get("task", {}).get("artifact_dir") != task_ref
+        or summary.get("task", {}).get("archive_dir") != archive_locator
+        or summary.get("github", {}).get("pr_url") != pr.get("url")
+        or summary.get("index", {}).get("search_terms", {}).get("pr_refs")
+        != [f"PR #{pr['number']}"]
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer summary does not bind the Ready PR transaction.",
+            exit_code=2,
+        )
+    plan = {
+        "plan_digest": transaction["plan_digest"],
+        "git": {
+            "repo": repo,
+            "remote": remote,
+            "base_branch": transaction["base_branch"],
+            "head_branch": transaction["branch"],
+            "branch_review_commit": transaction["branch_review_commit"],
+            "reviewed_content_head": transaction["branch_review_commit"],
+            "publication_head": ready_head,
+        },
+        "marketplace": {"required": "verification_ref" in transaction},
+        "publish": copy.deepcopy(transaction["publication"]),
+        "task": {
+            "active_locator": task_ref,
+            "archive_locator": archive_locator,
+        },
+    }
+    return {
+        "task_dir": task_dir,
+        "task_context": None,
+        "prepared": None,
+        "plan": plan,
+        "plan_ref": f"finalization:{transaction['plan_digest']}",
+        "transaction_state": "ready",
+        "published_transition_complete": True,
+        "published_pr": pr,
+        "publication": {"owner_status": "current"},
+        "publication_status": "current",
+        "publication_stale_reason": None,
+        "publication_branch_review_commit": transaction["branch_review_commit"],
+        "reprepare_reason_code": None,
+        "verification": None,
+    }
+
+
+def finalization_current_terminal_context(
+    root: Path,
+    task_dir: Path,
+    public_input: dict[str, Any],
+    gate: dict[str, Any],
+) -> dict[str, Any]:
+    """Rebuild the checked Ready context after a no-reentry Finalizer run."""
+    identity = gate["identity"]
+    task_ref = str(public_input.get("task_ref") or "")
+    archive_locator = repo_relative(root, task_dir)
+    task = task_json(task_dir)
+    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    if task.get("status") != "completed":
+        raise WorkflowError(
+            "Archived current Finalizer task is not completed.", exit_code=2
+        )
+    if not summary_path.is_file() or summary_path.is_symlink():
+        raise WorkflowError(
+            "Archived current Finalizer summary is missing or unsafe.", exit_code=2
+        )
+    summary = read_json(summary_path)
+    validate_finish_summary(summary)
+    summary_task = summary.get("task") if isinstance(summary.get("task"), dict) else {}
+    summary_git = summary.get("git") if isinstance(summary.get("git"), dict) else {}
+    summary_github = (
+        summary.get("github") if isinstance(summary.get("github"), dict) else {}
+    )
+    search_terms = (
+        summary.get("index", {}).get("search_terms", {})
+        if isinstance(summary.get("index"), dict)
+        and isinstance(summary.get("index", {}).get("search_terms"), dict)
+        else {}
+    )
+    branch = str(task.get("branch") or "")
+    base_branch = str(task.get("base_branch") or "")
+    if (
+        identity.get("task_ref") != task_ref
+        or public_input.get("branch_review_commit")
+        != identity.get("branch_review_commit")
+        or summary_task.get("artifact_dir") != task_ref
+        or summary_task.get("archive_dir") != archive_locator
+        or summary_git.get("branch") != branch
+        or summary_git.get("base_branch") != base_branch
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer summary does not bind the terminal gate.",
+            exit_code=2,
+        )
+    remote = str(publish_config(load_config(root)).get("remote") or "origin")
+    repo = normalize_github_repository(infer_github_repo(root))
+    repo = validate_github_remote_repository(root, remote, repo)
+    pr = resolve_closeout_pull_request(
+        root,
+        repo,
+        branch,
+        base_branch,
+        remote,
+    )
+    if pr is None:
+        raise WorkflowError(
+            "Archived current Finalizer requires the bound Ready pull request.",
+            exit_code=2,
+        )
+    pr_url, pr_number = parse_canonical_pull_request_url(
+        repo, summary_github.get("pr_url")
+    )
+    ready_head = str(pr.get("headRefOid") or "")
+    local_head = current_head(root)
+    remote_head = closeout_remote_branch_head(
+        root,
+        {"git": {"remote": remote, "head_branch": branch}},
+    )
+    if (
+        pr.get("number") != pr_number
+        or pr.get("url") != pr_url
+        or pr.get("isDraft") is not False
+        or pr.get("title") != public_input.get("pr_title")
+        or pr.get("body") != public_input.get("pr_body")
+        or re.fullmatch(r"[0-9a-f]{40}", ready_head) is None
+        or local_head != remote_head
+        or local_head != ready_head
+        or search_terms.get("pr_refs") != [f"PR #{pr_number}"]
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer live Ready facts do not match its terminal gate.",
+            exit_code=2,
+        )
+    plan = {
+        "plan_digest": identity["plan_digest"],
+        "git": {
+            "repo": repo,
+            "remote": remote,
+            "base_branch": base_branch,
+            "head_branch": branch,
+            "branch_review_commit": identity["branch_review_commit"],
+            "reviewed_content_head": identity["branch_review_commit"],
+            "publication_head": ready_head,
+        },
+        "marketplace": {"required": False},
+        "publish": {
+            "title": public_input["pr_title"],
+            "body": public_input["pr_body"],
+        },
+        "task": {
+            "active_locator": task_ref,
+            "archive_locator": archive_locator,
+        },
+    }
+    return {
+        "task_dir": task_dir,
+        "task_context": None,
+        "prepared": None,
+        "plan": plan,
+        "plan_ref": identity["plan_ref"],
+        "transaction_state": "ready",
+        "published_transition_complete": True,
+        "published_pr": pr,
+        "publication": {"owner_status": "current"},
+        "publication_status": "current",
+        "publication_stale_reason": None,
+        "publication_branch_review_commit": identity["branch_review_commit"],
+        "reprepare_reason_code": None,
+        "verification": None,
+    }
+
+
 def finalization_preview_context(
     root: Path,
     args: argparse.Namespace,
@@ -26597,6 +28263,29 @@ def finalization_preview_context(
     config = load_config(root)
     reprepare_reason_code: str | None = None
     if archived:
+        transaction_match = finalization_find_transaction_by_task_ref(
+            root,
+            str(public_input.get("task_ref") or ""),
+        )
+        if transaction_match is not None:
+            return finalization_current_archived_context(
+                root,
+                task_dir,
+                public_input,
+                transaction_match[0],
+            )
+        terminal_gate = finalization_current_terminal_gate(
+            root,
+            task_dir,
+            str(public_input.get("task_ref") or ""),
+        )
+        if terminal_gate is not None:
+            return finalization_current_terminal_context(
+                root,
+                task_dir,
+                public_input,
+                terminal_gate,
+            )
         plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             raise WorkflowError(
@@ -26622,6 +28311,7 @@ def finalization_preview_context(
         prepared = None
         task_context = None
     else:
+        current_transaction = finalization_read_transaction(root, task_dir)
         try:
             verification = finalization_verification_owner_result(
                 root,
@@ -26677,7 +28367,7 @@ def finalization_preview_context(
             state = "archive_moved"
             prepared = None
         else:
-            existing_plan_for_payload = finalization_closeout_plan(root, task_dir)
+            existing_plan_for_payload = None
             prepared = prepare_closeout(
                 root,
                 args,
@@ -26687,6 +28377,7 @@ def finalization_preview_context(
                 publication_ready=finalization_prepare_publication_ready(
                     public_input,
                     existing_plan=existing_plan_for_payload,
+                    transaction=current_transaction,
                 ),
                 verification_owner_result=verification,
                 allowed_current_gate=getattr(
@@ -26694,8 +28385,11 @@ def finalization_preview_context(
                     "_finalization_checked_gate",
                     None,
                 ),
+                current_finalizer=True,
             )
             plan = prepared["plan"]
+            if current_transaction is not None:
+                finalization_validate_transaction_plan(current_transaction, plan)
             if prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
                 reprepare_reason_code = FINALIZATION_REPREPARE_ARCHIVE_MONTH
@@ -26709,7 +28403,7 @@ def finalization_preview_context(
                             root,
                             task_dir,
                             task_ref=public_input["task_ref"],
-                            plan_ref=f"closeout-plan:{plan['plan_digest']}",
+                            plan_ref=f"finalization:{plan['plan_digest']}",
                             branch_review_commit=plan["git"]["branch_review_commit"],
                             plan=plan,
                         )
@@ -26745,6 +28439,7 @@ def finalization_preview_context(
                         if checked_verification.get("typed_exit") == "verified"
                         else None
                     ),
+                    require_plan_artifact=False,
                 )
                 if (
                     public_input.get("profile") == "reprepare_preview"
@@ -26776,7 +28471,11 @@ def finalization_preview_context(
                 ):
                     state = "reprepare_required"
                     reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
-    plan_ref = f"closeout-plan:{plan['plan_digest']}"
+    plan_ref = (
+        f"closeout-plan:{plan['plan_digest']}"
+        if archived
+        else f"finalization:{plan['plan_digest']}"
+    )
     input_plan_ref = public_input.get("plan_ref")
     migration = (
         prepared.get("migration_normalization")
@@ -26925,14 +28624,14 @@ def finalization_validate_route(
     plan = context["plan"]
     state = context["transaction_state"]
     executor_materialized = output == FINALIZATION_EXECUTOR_OUTPUT_MARKER
-    if executor_materialized and exit_id not in {"published", "reprepare_required"}:
+    if executor_materialized and exit_id not in {"ready_for_merge", "reprepare_required"}:
         raise WorkflowError(
-            "Only published or reprepare_required may defer public output to the deterministic executor.",
+            "Only ready_for_merge or reprepare_required may defer public output to the deterministic executor.",
             exit_code=2,
         )
-    if exit_id == "published" and not executor_materialized:
+    if exit_id == "ready_for_merge" and not executor_materialized:
         raise WorkflowError(
-            "The persisted published route must retain the exact private executor marker.",
+            "The persisted ready_for_merge route must retain the exact private executor marker.",
             exit_code=2,
         )
     if (
@@ -26979,7 +28678,7 @@ def finalization_validate_route(
             )
         expected_task_ref = (
             plan["task"]["archive_locator"]
-            if exit_id == "published"
+            if exit_id == "ready_for_merge"
             and plan is not None
             and state in FINALIZATION_COMMITTED_RECOVERY_STATES
             else public_input.get("task_ref")
@@ -27083,7 +28782,7 @@ def finalization_validate_route(
             "reprepare_required reason does not match the current recovery state.",
             exit_code=2,
         )
-    if exit_id == "published" and state not in FINALIZATION_COMMITTED_RECOVERY_STATES:
+    if exit_id == "ready_for_merge" and state not in FINALIZATION_COMMITTED_RECOVERY_STATES:
         verification = context.get("verification")
         checked = (
             verification[1]
@@ -27097,22 +28796,22 @@ def finalization_validate_route(
             and checked.get("typed_exit") not in {"verified", "not_required"}
         ):
             raise WorkflowError(
-                "published requires current same-plan verification owner evidence when the plan requires verification.",
+                "ready_for_merge requires current same-plan verification owner evidence when the plan requires verification.",
                 exit_code=2,
             )
         if not allow_pending_transition or not executor_materialized:
             raise WorkflowError(
-                "published requires the exact private marker before its executor transition.",
+                "ready_for_merge requires the exact private marker before its executor transition.",
                 exit_code=2,
             )
     if (
-        exit_id == "published"
+        exit_id == "ready_for_merge"
         and state in FINALIZATION_COMMITTED_RECOVERY_STATES
         and context.get("published_transition_complete") is not True
         and not allow_pending_transition
     ):
         raise WorkflowError(
-            "published requires the exact archive transaction and ready pull request.",
+            "ready_for_merge requires the exact archive transaction and ready pull request.",
             exit_code=2,
         )
 
@@ -27224,6 +28923,10 @@ def finalization_gate_input(
     task_dir = finalization_task_dir(root, public_input)
     expected = task_finalization_path(root, task_dir)
     if task_dir_is_archived(root, task_dir):
+        transaction_match = finalization_find_transaction_by_task_ref(
+            root,
+            str(public_input.get("task_ref") or ""),
+        )
         if value:
             supplied = stage0_owner_path(root, value, "arguments.owner_result")
             if supplied.resolve() != expected.resolve():
@@ -27231,6 +28934,27 @@ def finalization_gate_input(
                     "Task finalization gate must use the exact owner-private artifact.",
                     exit_code=2,
                 )
+        if transaction_match is not None:
+            if not expected.is_file() or expected.is_symlink():
+                raise WorkflowError(
+                    "Archived current Finalizer is missing its owner-private gate.",
+                    exit_code=2,
+                )
+            return finalization_normalize_gate(root, read_json(expected)), expected
+        terminal_gate = finalization_current_terminal_gate(
+            root,
+            task_dir,
+            str(public_input.get("task_ref") or ""),
+        )
+        if terminal_gate is not None:
+            if value:
+                supplied = stage0_owner_path(root, value, "arguments.owner_result")
+                if supplied.resolve() != expected.resolve():
+                    raise WorkflowError(
+                        "Task finalization gate must use the exact owner-private artifact.",
+                        exit_code=2,
+                    )
+            return terminal_gate, expected
         plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             raise WorkflowError(
@@ -27259,8 +28983,8 @@ def finalization_gate_input(
                 "summary": "The committed archive transaction is the unchanged reviewed closeout plan.",
             },
             "route": {
-                "typed_exit": "published",
-                "consumer": copy.deepcopy(FINALIZATION_CONSUMERS["published"]),
+                "typed_exit": "ready_for_merge",
+                "consumer": copy.deepcopy(FINALIZATION_CONSUMERS["ready_for_merge"]),
                 "output": copy.deepcopy(FINALIZATION_EXECUTOR_OUTPUT_MARKER),
             },
         }, expected
@@ -27405,7 +29129,7 @@ def cmd_check_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
-def finalization_gate_with_published_output(
+def finalization_gate_with_ready_for_merge_output(
     root: Path,
     task_dir: Path,
     gate: dict[str, Any],
@@ -27413,38 +29137,39 @@ def finalization_gate_with_published_output(
     pr: dict[str, Any],
 ) -> dict[str, Any]:
     if (
-        gate.get("route", {}).get("typed_exit") != "published"
+        gate.get("route", {}).get("typed_exit") != "ready_for_merge"
         or gate.get("route", {}).get("output")
         != FINALIZATION_EXECUTOR_OUTPUT_MARKER
     ):
         raise WorkflowError(
-            "Task finalization gate did not retain the exact private published marker.",
+            "Task finalization gate did not retain the exact private ready_for_merge marker.",
             exit_code=2,
         )
     if repo_relative(root, task_dir) != plan["task"]["archive_locator"]:
         raise WorkflowError(
-            "Task finalization published output requires the exact archived task locator.",
+            "Task finalization ready_for_merge output requires the exact archived task locator.",
             exit_code=2,
         )
     updated = copy.deepcopy(gate)
     updated["route"]["output"] = {
-        "exit_id": "published",
-        "task_ref": plan["task"]["archive_locator"],
+        "exit_id": "ready_for_merge",
+        "repo_ref": plan["git"]["repo"],
         "pr_number": pr["number"],
         "pr_url": canonical_pull_request_url(
             plan["git"]["repo"],
             pr["number"],
             pr["url"],
         ),
+        "expected_head_sha": pr["headRefOid"],
     }
     errors = skill_json_schema_validation_errors(
         updated["route"]["output"],
-        finalization_output_contract(root, "published"),
-        "task finalization published output",
+        finalization_output_contract(root, "ready_for_merge"),
+        "task finalization ready_for_merge output",
     )
     if errors:
         raise WorkflowError(
-            "Task finalization published output is invalid.",
+            "Task finalization ready_for_merge output is invalid.",
             exit_code=2,
             payload={"errors": errors},
         )
@@ -27472,6 +29197,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 task_dir,
                 context["task_context"],
                 context["prepared"],
+                persist_closeout_plan=False,
             )
         else:
             result = {
@@ -27479,6 +29205,14 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 "stage": "content_pushed",
                 "entry_state": context["transaction_state"],
             }
+        finalization_write_transaction(
+            root,
+            task_dir,
+            finalization_transaction_from_plan(
+                context["plan"],
+                next_transition="verify",
+            ),
+        )
         gate["route"]["output"] = {
             "exit_id": "verification_required",
             "task_ref": public_input["task_ref"],
@@ -27599,7 +29333,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             ),
             "output": output,
         }
-    if exit_id == "published":
+    if exit_id == "ready_for_merge":
         finish_args = copy.copy(args)
         finish_args.task = public_input["task_ref"]
         finish_args.from_guru_finalizer = True
@@ -27624,7 +29358,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 )
             finish_args.verification_owner_result = verification
         result = cmd_finish_work(finish_args)
-        materialized_gate = finalization_gate_with_published_output(
+        materialized_gate = finalization_gate_with_ready_for_merge_output(
             root,
             Path(result["archived_task_dir"]),
             gate,
@@ -33370,6 +35104,447 @@ def cmd_check_task_workspace_result(args: argparse.Namespace) -> dict[str, Any]:
     return checked
 
 
+TASK_PR_MERGE_SCHEMA_VERSION = "1.0"
+TASK_PR_MERGE_DIMENSIONS = (
+    "pr_ready",
+    "repository_and_head",
+    "checks_and_reviews",
+    "mergeability",
+    "repository_policy",
+    "close_scope",
+)
+TASK_PR_MERGE_METHOD_FLAGS = {
+    "merge": "--merge",
+    "squash": "--squash",
+    "rebase": "--rebase",
+}
+
+
+def task_pr_merge_package_root(root: Path) -> Path:
+    invoked = os.environ.get("GURU_TEAM_INVOKED_PACKAGE_ROOT", "")
+    candidates = [
+        Path(invoked) if invoked else None,
+        root / "trellis/skills/guru-team/packages/guru-merge-task-pr",
+        root / ".trellis/guru-team/skills/packages/guru-merge-task-pr",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.is_dir() and not candidate.is_symlink():
+            return candidate
+    raise WorkflowError("Task PR merge package root is unavailable.", exit_code=2)
+
+
+def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
+    if not value:
+        raise WorkflowError("Task PR merge requires --input.", exit_code=2)
+    raw = Path(value)
+    candidates = [raw] if raw.is_absolute() else [root / raw, task_pr_merge_package_root(root) / raw]
+    path = next((candidate for candidate in candidates if candidate.is_file() and not candidate.is_symlink()), None)
+    if path is None:
+        raise WorkflowError("Task PR merge input is missing or unsafe.", exit_code=2)
+    payload = read_json(path)
+    if not isinstance(payload, dict):
+        raise WorkflowError("Task PR merge input must be a JSON object.", exit_code=2)
+    repo = normalize_github_repository(payload.get("repo_ref"))
+    number = payload.get("pr_number")
+    expected = str(payload.get("expected_head_sha") or "")
+    if (
+        payload.get("schema_version") != TASK_PR_MERGE_SCHEMA_VERSION
+        or payload.get("profile") not in {"ready_for_merge", "standalone_merge"}
+        or payload.get("mode") not in {"workflow", "standalone"}
+        or (payload.get("profile") == "ready_for_merge" and payload.get("mode") != "workflow")
+        or (payload.get("profile") == "standalone_merge" and payload.get("mode") != "standalone")
+        or not repo
+        or not is_strict_int(number)
+        or number < 1
+        or re.fullmatch(r"[0-9a-f]{40}", expected) is None
+    ):
+        raise WorkflowError("Task PR merge input failed its current closed contract.", exit_code=2)
+    expected_url = canonical_pull_request_url(repo, number, payload.get("pr_url"))
+    return {
+        "schema_version": TASK_PR_MERGE_SCHEMA_VERSION,
+        "profile": payload["profile"],
+        "mode": payload["mode"],
+        "repo_ref": repo,
+        "pr_number": number,
+        "pr_url": expected_url,
+        "expected_head_sha": expected,
+    }
+
+
+def task_pr_merge_close_issues(body: Any) -> list[int]:
+    if not isinstance(body, str):
+        raise WorkflowError("Task PR merge requires a complete PR body.", exit_code=2)
+    keywords = "|".join(re.escape(item) for item in PR_CLOSE_KEYWORDS)
+    values = {
+        int(match.group(1))
+        for match in re.finditer(
+            rf"(?im)^\s*(?:{keywords})\s+#([1-9][0-9]*)\s*$",
+            body,
+        )
+    }
+    return sorted(values)
+
+
+def task_pr_merge_check_rows(payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(payload, list):
+        raise github_response_incomplete(
+            operation="merge_preview", repo="<bound>", detail="statusCheckRollup must be an array."
+        )
+    rows: list[dict[str, Any]] = []
+    for item in payload:
+        if not isinstance(item, dict):
+            raise WorkflowError("Task PR merge check row is incomplete.", exit_code=2)
+        name = item.get("name") or item.get("context") or item.get("workflowName")
+        state = item.get("conclusion") or item.get("state") or item.get("status")
+        if not isinstance(name, str) or not name or not isinstance(state, str) or not state:
+            raise WorkflowError("Task PR merge check row lacks name/state.", exit_code=2)
+        rows.append({"name": name, "state": state.upper()})
+    return rows
+
+
+def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
+    repo = public_input["repo_ref"]
+    number = public_input["pr_number"]
+    pr = gh_json(
+        [
+            "pr", "view", str(number), "--repo", repo, "--json",
+            "number,url,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,reviewDecision,statusCheckRollup,body,mergedAt,mergeCommit",
+        ],
+        cwd=root,
+        repo=repo,
+        required_fields=(
+            "number", "url", "state", "isDraft", "baseRefName", "headRefName",
+            "headRefOid", "mergeable", "statusCheckRollup", "body",
+        ),
+        operation="merge_preview",
+    )
+    if not isinstance(pr, dict) or pr.get("number") != number:
+        raise github_response_incomplete(
+            operation="merge_preview", repo=repo, detail="PR identity does not match the requested number."
+        )
+    pr_url = canonical_pull_request_url(repo, number, pr.get("url"))
+    policy = gh_json(
+        ["api", f"repos/{repo}"],
+        cwd=root,
+        repo=repo,
+        required_fields=("full_name", "allow_merge_commit", "allow_squash_merge", "allow_rebase_merge"),
+        operation="merge_policy",
+    )
+    if not isinstance(policy, dict) or normalize_github_repository(policy.get("full_name")) != repo:
+        raise github_response_incomplete(
+            operation="merge_policy", repo=repo, detail="Repository policy identity does not match."
+        )
+    methods = [
+        method
+        for method, field in (
+            ("merge", "allow_merge_commit"),
+            ("squash", "allow_squash_merge"),
+            ("rebase", "allow_rebase_merge"),
+        )
+        if policy.get(field) is True
+    ]
+    if not methods:
+        raise WorkflowError("Repository policy exposes no supported merge method.", exit_code=2)
+    close_issues = task_pr_merge_close_issues(pr.get("body"))
+    issues: list[dict[str, Any]] = []
+    for issue_number in close_issues:
+        issue = gh_json(
+            ["issue", "view", str(issue_number), "--repo", repo, "--json", "number,state,closedAt,url"],
+            cwd=root,
+            repo=repo,
+            required_fields=("number", "state", "url"),
+            operation="merge_issue_preflight",
+        )
+        if not isinstance(issue, dict) or issue.get("number") != issue_number:
+            raise github_response_incomplete(
+                operation="merge_issue_preflight", repo=repo, detail="Issue identity does not match."
+            )
+        issues.append({
+            "number": issue_number,
+            "state": str(issue.get("state") or "").upper(),
+            "closed_at": issue.get("closedAt"),
+            "url": issue.get("url"),
+        })
+    facts = {
+        "schema_version": TASK_PR_MERGE_SCHEMA_VERSION,
+        "skill_id": "guru-merge-task-pr",
+        "repo_ref": repo,
+        "pr": {
+            "number": number,
+            "url": pr_url,
+            "state": str(pr.get("state") or "").upper(),
+            "is_draft": pr.get("isDraft"),
+            "base_branch": pr.get("baseRefName"),
+            "head_branch": pr.get("headRefName"),
+            "head_sha": pr.get("headRefOid"),
+            "mergeable": str(pr.get("mergeable") or "").upper(),
+            "review_decision": str(pr.get("reviewDecision") or "").upper(),
+            "checks": task_pr_merge_check_rows(pr.get("statusCheckRollup")),
+            "merged_at": pr.get("mergedAt"),
+            "merge_commit": pr.get("mergeCommit"),
+        },
+        "repository_policy": {"allowed_methods": methods},
+        "close_issues": close_issues,
+        "issues": issues,
+    }
+    facts["facts_sha256"] = canonical_json_sha256(facts)
+    return facts
+
+
+def task_pr_merge_gate_path(root: Path, public_input: dict[str, Any]) -> Path:
+    key = hashlib.sha256(
+        f"{public_input['repo_ref']}#{public_input['pr_number']}".encode("utf-8")
+    ).hexdigest()[:20]
+    return runtime_root(root, load_config(root)) / "task-pr-merge" / key / TASK_PR_MERGE_GATE_ARTIFACT
+
+
+def task_pr_merge_preflight_errors(
+    public_input: dict[str, Any], facts: dict[str, Any]
+) -> list[str]:
+    errors: list[str] = []
+    pr = facts["pr"]
+    if pr["state"] != "OPEN":
+        errors.append("pull request is not Open")
+    if pr["is_draft"] is not False:
+        errors.append("pull request is still Draft")
+    if pr["head_sha"] != public_input["expected_head_sha"]:
+        errors.append("expected head SHA changed")
+    if pr["mergeable"] != "MERGEABLE":
+        errors.append("pull request is not currently mergeable")
+    nonpassing = [
+        row["name"]
+        for row in pr["checks"]
+        if row["state"] not in {"SUCCESS", "NEUTRAL", "SKIPPED"}
+    ]
+    if nonpassing:
+        errors.append("required checks are not complete: " + ", ".join(nonpassing))
+    if not facts["close_issues"]:
+        errors.append("PR body has no reviewed close keyword")
+    nonopen = [str(row["number"]) for row in facts["issues"] if row["state"] != "OPEN"]
+    if nonopen:
+        errors.append("close issues are not Open before merge: " + ", ".join(nonopen))
+    return errors
+
+
+def cmd_preview_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or "."))
+    public_input = task_pr_merge_json_input(root, args.input)
+    facts = task_pr_merge_live_facts(root, public_input)
+    return {
+        "status": "ok",
+        "input": public_input,
+        "facts": facts,
+        "objective_blockers": task_pr_merge_preflight_errors(public_input, facts),
+        "gate_path": repo_relative(root, task_pr_merge_gate_path(root, public_input)),
+    }
+
+
+def task_pr_merge_semantic_review(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise WorkflowError("Task PR merge semantic review must be an object.", exit_code=2)
+    dimensions = value.get("dimensions")
+    if not isinstance(dimensions, list):
+        raise WorkflowError("Task PR merge semantic dimensions are required.", exit_code=2)
+    normalized: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for row in dimensions:
+        if not isinstance(row, dict) or set(row) != {"id", "status", "summary"}:
+            raise WorkflowError("Task PR merge semantic dimension is invalid.", exit_code=2)
+        identifier = row.get("id")
+        status_value = row.get("status")
+        summary = row.get("summary")
+        if (
+            identifier not in TASK_PR_MERGE_DIMENSIONS
+            or identifier in seen
+            or status_value not in {"passed", "blocked"}
+            or not isinstance(summary, str)
+            or not summary.strip()
+        ):
+            raise WorkflowError("Task PR merge semantic dimension is invalid.", exit_code=2)
+        seen.add(identifier)
+        normalized.append({"id": identifier, "status": status_value, "summary": summary})
+    if seen != set(TASK_PR_MERGE_DIMENSIONS):
+        raise WorkflowError("Task PR merge semantic review must cover every dimension exactly once.", exit_code=2)
+    return {"dimensions": normalized}
+
+
+def cmd_record_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or "."))
+    public_input = task_pr_merge_json_input(root, args.input)
+    facts = task_pr_merge_live_facts(root, public_input)
+    review_payload = read_json(Path(args.review_input))
+    review = task_pr_merge_semantic_review(review_payload.get("semantic_review"))
+    route = review_payload.get("route")
+    if not isinstance(route, dict) or route.get("typed_exit") not in {"merged", "merge_blocked"}:
+        raise WorkflowError("Task PR merge semantic route is invalid.", exit_code=2)
+    blockers = task_pr_merge_preflight_errors(public_input, facts)
+    passed = all(row["status"] == "passed" for row in review["dimensions"])
+    if route["typed_exit"] == "merged":
+        method = route.get("merge_method")
+        if blockers or not passed or method not in facts["repository_policy"]["allowed_methods"]:
+            raise WorkflowError("Task PR merge cannot record a merge route against blocked facts.", exit_code=2)
+        normalized_route = {"typed_exit": "merged", "merge_method": method}
+    else:
+        if passed and not blockers:
+            raise WorkflowError("Task PR merge blocked route requires a real failed dimension or objective blocker.", exit_code=2)
+        reason = route.get("reason_code")
+        remediation = route.get("remediation")
+        if not isinstance(reason, str) or not reason or not isinstance(remediation, str) or not remediation:
+            raise WorkflowError("Task PR merge blocked route requires reason/remediation.", exit_code=2)
+        normalized_route = {
+            "typed_exit": "merge_blocked",
+            "reason_code": reason,
+            "remediation": remediation,
+        }
+    gate = {
+        "schema_version": TASK_PR_MERGE_SCHEMA_VERSION,
+        "skill_id": "guru-merge-task-pr",
+        "input": public_input,
+        "facts_sha256": facts["facts_sha256"],
+        "semantic_review": review,
+        "route": normalized_route,
+    }
+    path = task_pr_merge_gate_path(root, public_input)
+    write_json(path, gate)
+    return {"status": "recorded", "gate": repo_relative(root, path), "typed_exit": normalized_route["typed_exit"]}
+
+
+def task_pr_merge_gate(root: Path, public_input: dict[str, Any], value: str | None) -> tuple[Path, dict[str, Any]]:
+    expected = task_pr_merge_gate_path(root, public_input)
+    path = expected if not value else Path(value)
+    if not path.is_absolute():
+        path = root / path
+    if path != expected or not path.is_file() or path.is_symlink():
+        raise WorkflowError("Task PR merge gate locator is stale or unsafe.", exit_code=2)
+    gate = read_json(path)
+    if (
+        not isinstance(gate, dict)
+        or gate.get("schema_version") != TASK_PR_MERGE_SCHEMA_VERSION
+        or gate.get("skill_id") != "guru-merge-task-pr"
+        or gate.get("input") != public_input
+    ):
+        raise WorkflowError("Task PR merge gate failed its current contract.", exit_code=2)
+    task_pr_merge_semantic_review(gate.get("semantic_review"))
+    return path, gate
+
+
+def check_task_pr_merge_result(
+    root: Path, public_input: dict[str, Any], gate: dict[str, Any]
+) -> dict[str, Any]:
+    facts = task_pr_merge_live_facts(root, public_input)
+    route = gate.get("route") if isinstance(gate.get("route"), dict) else {}
+    terminal = gate.get("terminal_output")
+    if terminal is not None:
+        if not isinstance(terminal, dict) or terminal.get("exit_id") not in {"merged", "closure_mismatch"}:
+            raise WorkflowError("Task PR merge terminal output is invalid.", exit_code=2)
+        return {"status": "passed", "typed_exit": terminal["exit_id"], "output": terminal}
+    if gate.get("facts_sha256") != facts["facts_sha256"]:
+        raise WorkflowError("Task PR merge gate is stale against live GitHub facts.", exit_code=2)
+    blockers = task_pr_merge_preflight_errors(public_input, facts)
+    if route.get("typed_exit") == "merge_blocked":
+        return {
+            "status": "passed",
+            "typed_exit": "merge_blocked",
+            "output": {
+                "exit_id": "merge_blocked",
+                "reason_code": route.get("reason_code"),
+                "remediation": route.get("remediation"),
+            },
+        }
+    method = route.get("merge_method")
+    if blockers or method not in facts["repository_policy"]["allowed_methods"]:
+        raise WorkflowError("Task PR merge gate no longer permits execution.", exit_code=2, payload={"blockers": blockers})
+    return {"status": "passed", "typed_exit": "ready_to_merge", "merge_method": method, "facts": facts}
+
+
+def cmd_check_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or "."))
+    public_input = task_pr_merge_json_input(root, args.input)
+    _, gate = task_pr_merge_gate(root, public_input, args.gate)
+    return check_task_pr_merge_result(root, public_input, gate)
+
+
+def cmd_execute_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or "."))
+    public_input = task_pr_merge_json_input(root, args.input)
+    gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
+    checked = check_task_pr_merge_result(root, public_input, gate)
+    if checked.get("typed_exit") != "ready_to_merge":
+        raise WorkflowError("Task PR merge executor requires one checked merge route.", exit_code=2)
+    repo = public_input["repo_ref"]
+    method = checked["merge_method"]
+    require_gh_auth(root)
+    command = [
+        "gh", "pr", "merge", str(public_input["pr_number"]), "--repo", repo,
+        "--match-head-commit", public_input["expected_head_sha"],
+        TASK_PR_MERGE_METHOD_FLAGS[method],
+    ]
+    if github_repo_binding(command[1:], repo) != repo:
+        raise WorkflowError("Task PR merge mutation lacks an exact repository binding.", exit_code=2)
+    proc = run(command, cwd=root, check=False)
+    if proc.returncode != 0:
+        raise github_error_from_process(proc, operation="expected_head_merge", repo=repo)
+    post = task_pr_merge_live_facts(root, public_input)
+    pr = post["pr"]
+    if pr["state"] != "MERGED" or not pr.get("merged_at"):
+        raise WorkflowError("Task PR merge mutation did not produce a merged PR.", exit_code=2)
+    merge_commit = pr.get("merge_commit")
+    merge_oid = merge_commit.get("oid") if isinstance(merge_commit, dict) else None
+    if not isinstance(merge_oid, str) or re.fullmatch(r"[0-9a-f]{40}", merge_oid) is None:
+        raise WorkflowError("Merged PR lacks a complete merge commit identity.", exit_code=2)
+    merged_at = parse_iso_datetime(pr["merged_at"], "pull request merged_at")
+    mismatches: list[dict[str, Any]] = []
+    for issue in post["issues"]:
+        closed_at = issue.get("closed_at")
+        reason = None
+        if issue["state"] not in {"CLOSED", "COMPLETED"}:
+            reason = "not_closed_by_merge"
+        elif not closed_at:
+            reason = "missing_closed_at"
+        elif parse_iso_datetime(closed_at, f"issue #{issue['number']} closed_at") < merged_at:
+            reason = "closed_before_merge"
+        if reason:
+            mismatches.append({"issue_number": issue["number"], "reason_code": reason})
+    if mismatches:
+        output = {
+            "exit_id": "closure_mismatch",
+            "repo_ref": repo,
+            "pr_number": public_input["pr_number"],
+            "pr_url": public_input["pr_url"],
+            "merge_commit_sha": merge_oid,
+            "mismatches": mismatches,
+        }
+    else:
+        output = {
+            "exit_id": "merged",
+            "repo_ref": repo,
+            "pr_number": public_input["pr_number"],
+            "pr_url": public_input["pr_url"],
+            "merge_commit_sha": merge_oid,
+        }
+    gate["terminal_output"] = output
+    write_json(gate_path, gate)
+    return {"status": "executed", "typed_exit": output["exit_id"], "output": output}
+
+
+def cmd_invoke_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
+    root = repo_root(Path(args.root or "."))
+    public_input = task_pr_merge_json_input(root, args.input)
+    gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
+    checked = check_task_pr_merge_result(root, public_input, gate)
+    if checked.get("typed_exit") == "ready_to_merge":
+        raise WorkflowError("Task PR merge has not executed its checked expected-head mutation.", exit_code=2)
+    output = checked.get("output")
+    if not isinstance(output, dict):
+        raise WorkflowError("Task PR merge typed output is unavailable.", exit_code=2)
+    gate_path.unlink()
+    try:
+        gate_path.parent.rmdir()
+    except OSError:
+        pass
+    return output
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Guru Team Trellis workflow helpers")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -33592,6 +35767,30 @@ def build_parser() -> argparse.ArgumentParser:
     finalization_execute = sub.add_parser("execute-finalization-transition")
     add_finalization_arguments(finalization_execute)
     finalization_execute.add_argument("--gate")
+
+    def add_task_pr_merge_arguments(command: argparse.ArgumentParser) -> None:
+        command.add_argument("--root")
+        command.add_argument("--json", action="store_true")
+        command.add_argument("--input", required=True)
+
+    merge_preview = sub.add_parser("preview-task-pr-merge")
+    add_task_pr_merge_arguments(merge_preview)
+
+    merge_record = sub.add_parser("record-task-pr-merge")
+    add_task_pr_merge_arguments(merge_record)
+    merge_record.add_argument("--review-input", required=True)
+
+    merge_check = sub.add_parser("check-task-pr-merge")
+    add_task_pr_merge_arguments(merge_check)
+    merge_check.add_argument("--gate")
+
+    merge_execute = sub.add_parser("execute-task-pr-merge")
+    add_task_pr_merge_arguments(merge_execute)
+    merge_execute.add_argument("--gate")
+
+    merge_invoke = sub.add_parser("invoke-task-pr-merge")
+    add_task_pr_merge_arguments(merge_invoke)
+    merge_invoke.add_argument("--gate")
 
     boundary.add_argument(
         "--allow-source-clean",
@@ -33897,6 +36096,16 @@ def main() -> int:
             payload = cmd_check_finalization_gate(args)
         elif args.command == "execute-finalization-transition":
             payload = cmd_execute_finalization_transition(args)
+        elif args.command == "preview-task-pr-merge":
+            payload = cmd_preview_task_pr_merge(args)
+        elif args.command == "record-task-pr-merge":
+            payload = cmd_record_task_pr_merge(args)
+        elif args.command == "check-task-pr-merge":
+            payload = cmd_check_task_pr_merge(args)
+        elif args.command == "execute-task-pr-merge":
+            payload = cmd_execute_task_pr_merge(args)
+        elif args.command == "invoke-task-pr-merge":
+            payload = cmd_invoke_task_pr_merge(args)
         elif args.command == "resolve-human-artifacts":
             payload = cmd_resolve_human_artifacts(args)
         elif args.command == "execute-extension-verification":

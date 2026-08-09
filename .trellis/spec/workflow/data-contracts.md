@@ -395,8 +395,8 @@ The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
 contracts, and package-local corpora. It requires every active row to select
 Interface 1.3 and requires exact profile, exit, consumer, projection,
-current-case, and authoring-edge equality. Thirteen Skills
-and 54 exits are the current cardinality regression, not a hard-coded future
+current-case, and authoring-edge equality. Fifteen Skills
+and 57 exits are the current cardinality regression, not a hard-coded future
 registry allowlist.
 
 The production manifest also binds the exact four
@@ -855,11 +855,13 @@ into Phase 2.
 Each `guru-create-task-commit` invocation owns one temporary candidate under
 ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
 where `sequence` is a fresh three-digit
-increasing id. Current schema `guru-task-commit-candidate-3.0` binds only task
+increasing id. Current schema `guru-task-commit-candidate-4.0` binds only task
 locator/branch/status, base/pre-commit/Phase 2 commit anchor, the complete
 staged/unstaged/untracked/delete/rename/copy snapshot, unique path
 classifications, exact stage paths, canonical UTF-8 message fields/bytes, and
-the completed AI review. Live `task.json`, Issue Scope Ledger, the Phase 2 DTO,
+the completed AI review. It also records the closed objective
+`routine_auto_commit_facts` snapshot and the AI-authored
+`routine_auto_commit_eligible` conclusion. Live `task.json`, Issue Scope Ledger, the Phase 2 DTO,
 Git operation state, snapshot freshness, and shared commit-message parser facts
 are reread by the builder/validator; they are not copied into a cross-Skill
 digest chain. The candidate contains no user authorization, confirmation
@@ -934,7 +936,8 @@ sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
 ### Executor Boundary
 
 `create-task-commit --candidate-artifact <ignored-runtime-candidate>` validates
-one schema `guru-task-commit-candidate-3.0` private candidate. It materializes only
+one schema `guru-task-commit-candidate-4.0` private candidate. It recomputes the
+objective dedicated/unpublished eligibility facts, then materializes only
 authorized blobs/modes in an isolated index, runs repository commit hooks, and
 verifies parent, raw message, committed path set, complete tree and unrelated
 preservation before conditionally advancing the live branch/index.
@@ -1090,10 +1093,91 @@ otherwise be `list[str]`; active children found by official exact/suffix lookup
 block only when their `task.json` would join the archive mutation, while archived
 children remain valid historical references.
 
-## Closeout Plan
+## Current Finalizer Transaction
 
-`closeout-plan.json` is current-only schema version `3.0` and is the immutable
-machine input contract shared by preview and formal finish. New plans are
+Current Finalizer transaction schema `guru-finalization-transaction-1.0` is an
+owner-private, task-scoped ignored-runtime contract named
+`finalization-transaction.json`. It exists only when a deterministic transition
+must survive same-owner re-entry; a same-session path that can reach
+`ready_for_merge` keeps the transaction entirely in memory.
+
+The closed transaction contains only:
+
+- schema/skill identity and task/repository/base/branch identity;
+- `branch_review_commit`, `publication_head`, exact PR title/body, and the next
+  deterministic transition;
+- optional canonical PR number/URL after Draft creation; and
+- the immutable verification tuple/ref only while that same-owner transition
+  still consumes it.
+
+It never stores live Git/GitHub/Trellis snapshots, reviewed path inventories,
+archive projections, finish-summary templates, semantic review history,
+authorization, command argv/output, retry history, timestamps, or digest
+bundles. Preview and executor reread live authority and compare it with these
+minimal immutable inputs immediately before mutation.
+
+`ready_for_merge` deletes the transaction, Finalizer gate/request, Verifier
+execution checkpoint/result and every superseded Finalizer-owned file. A
+`blocked` route retains a transaction only when the declared same-owner recovery
+input schema requires it; otherwise it deletes owner state. The official archive
+never moves or retains a transaction. Durable `finish-summary.json` remains only
+the minimal archived change-context index/summary and PR identity.
+
+## Current Marketplace Verification Result
+
+The exactly-once identity is the closed tuple of target repository, immutable
+remote/ref, `branch_review_commit`, `publication_head`, extension source commit,
+and capability profile. The owner-private execution checkpoint records each
+completed capability and sanitized stable result reference incrementally.
+After command success but wrapper/stdout capture failure, re-entry first proves
+the tuple from command exit, remote/ref, isolated checkout and owner state, then
+reconstructs the missing result. It reruns only capabilities whose completion
+cannot be proved; identity drift creates a new execution.
+
+The durable result schema `guru-extension-installation-verification-result-4.0`
+contains only schema/skill identity, stable `verification_ref`, the exact tuple,
+semantic result, explicit unverified boundaries, and the minimal stable result
+identity used by Finalizer/archive history. Command transcripts, argv, asset
+catalogs, ownership scans, complete findings and retry metadata remain private
+and are deleted after the checked Finalizer consumer completes.
+
+## Current Task Commit Eligibility
+
+`guru-task-commit-candidate-4.0` adds a closed AI-authored
+`routine_auto_commit_eligible` conclusion. It can be true only for a dedicated
+task worktree/branch that is neither default, protected, shared nor owned by
+another task; has no remote branch or Open/Draft/Ready PR; has current Phase 2
+or finding-closure evidence; has one fixed scope/purpose, an exact owned staging
+set and canonical message; and performs only an ordinary new commit. Objective
+Git/GitHub facts are recomputed by the checker, but the checker never makes the
+semantic eligibility decision. A checked eligible candidate executes without a
+routine confirmation. No authorization or confirmation field exists.
+
+## Current Merge Gate And Results
+
+`guru-merge-task-pr` owns one ignored-runtime semantic gate. It records only the
+canonical repository/PR/base/head, expected head SHA, selected repository merge
+method, exact close Issue numbers, passed AI dimensions, selected route and the
+minimal executor marker. Authorization remains dialogue-local.
+
+The deterministic executor uses repo-bound `gh pr merge` with
+`--match-head-commit <expected-head-sha>` and the uniquely selected policy
+method. It then rereads the PR and Issues. `merged` carries only PR URL/number
+and merged commit identity. `merge_blocked` carries a closed reason/remediation.
+`closure_mismatch` carries merged PR identity plus exact Issue mismatches. The
+executor never calls Issue-close APIs, updates/rebases the PR branch,
+synchronizes local `main`, or cleans task resources.
+
+## Legacy Closeout Plan Compatibility
+
+The remainder of this section documents immutable schema 2.0/3.0 compatibility
+assets only. Current Interfaces, registries, workflow markers, manifests,
+runtime preparation and archive logic do not select, create, read, move or
+retain `closeout-plan.json`. A legacy payload presented to a current route fails
+closed unless an explicitly named legacy recovery test consumes it.
+
+Legacy `closeout-plan.json` schema version `3.0` is the immutable machine input
+contract shared by the explicit legacy preview and formal-finish selectors. Legacy plans are
 untracked active transaction checkpoints that become tracked only in the single
 archive commit. One bounded legacy schema 2.0 transaction migration is allowed
 only when the invocation also carries a current Publication 4.0 DTO: task,

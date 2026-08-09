@@ -46,9 +46,7 @@ unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
 invalid interface projections stop fail closed.
 
 ## Integrated Public Graph
-
-The active graph is exactly 14 mandatory Skills and 54 external exits.
-
+The active graph is exactly 15 mandatory Skills and 57 external exits.
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
@@ -119,13 +117,14 @@ The active graph is exactly 14 mandatory Skills and 54 external exits.
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"publication_review_stale","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"resume_finalization","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"reprepare_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"published","consumer":{"kind":"workflow","id":"guru-finalization-finish-response"}} -->
+<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"ready_for_merge","consumer":{"kind":"skill","id":"guru-merge-task-pr"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"blocked","consumer":{"kind":"stop","id":"task-finalization-blocked"}} -->
-
+<!-- guru-skill-invoke: {"skill":"guru-merge-task-pr","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merged","consumer":{"kind":"workflow","id":"guru-finalization-finish-response"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
 ## Workflow And Stop Targets
-
-The graph contains exactly 17 workflow targets and 14 stop targets.
-
+The graph contains exactly 17 workflow targets and 16 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-current-checkout"} -->
@@ -143,7 +142,6 @@ The graph contains exactly 17 workflow targets and 14 stop targets.
 <!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
 <!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
-
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->
@@ -158,9 +156,9 @@ The graph contains exactly 17 workflow targets and 14 stop targets.
 <!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
 <!-- guru-stop-target: {"id":"extension-installation-verification-blocked"} -->
 <!-- guru-stop-target: {"id":"task-finalization-blocked"} -->
-
+<!-- guru-stop-target: {"id":"task-pr-merge-blocked"} -->
+<!-- guru-stop-target: {"id":"task-pr-closure-mismatch"} -->
 ### Workflow target behavior
-
 | Target | Global behavior |
 | --- | --- |
 | original-request-route | Return to the original non-repository request. |
@@ -177,8 +175,9 @@ The graph contains exactly 17 workflow targets and 14 stop targets.
 | guru-branch-review-scope-router | Enter the Scope Change Gate, then repeat affected phases. |
 | guru-task-publication-work-router | Resume Phase 2 for task-content findings. |
 | guru-extension-verification-work-router | Resume Phase 2 for installation findings. |
-| guru-finalization-finish-response | Return the canonical PR URL and archived task locator. |
-
+| guru-finalization-finish-response | Return the canonical merged PR URL and merge commit identity. |
+| task-pr-merge-blocked | Stop before merge and report the exact live readiness remediation. |
+| task-pr-closure-mismatch | Stop after merge and report the exact GitHub Issue closure mismatch without hand-closing it. |
 The Finalizer stale projection supplies exactly `task_ref`,
 `branch_review_commit`, and `stale_reason`; the Publication caller authors only
 its declared profile, mode, and review intent. Inputs outside the current stale
@@ -333,8 +332,9 @@ The checked ready DTO carries that payload directly to Finalizer without a task-
 
 #### 3.7 Finalization
 
-Invoke guru-finalize-task and consume its verification, stale-publication,
-resume, reprepare, published, or blocked exit through the declared graph.
+Invoke guru-finalize-task and consume its declared exit; `ready_for_merge`
+immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish
+response after a separate expected-head confirmation, without base sync or direct Issue closure.
 
 Only publication ready enters finalization. The finalizer is the only owner
 that may display and execute the bounded push, PR, archive, and Ready side-effect

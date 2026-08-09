@@ -19,10 +19,14 @@ a self-contained or portable package.
 
 Use `scripts/prepare-task-commit.sh` to record the AI-owned path classifications,
 seven structured message fields, and final semantic result into the private
-candidate. It deterministically canonicalizes the complete message and runs the
-shared parser before any confirmation. Use `scripts/check-task-commit-plan.sh`
-for objective candidate validation and `scripts/create-task-commit.sh` for the
-exact deterministic side effect. These
+candidate. The AI also records one closed `routine_auto_commit_eligible`
+conclusion; the runtime captures and the checker recomputes the objective
+dedicated/unpublished Git and repo-bound GitHub facts. It deterministically
+canonicalizes the complete message and runs the shared parser before any
+confirmation. A checked eligible candidate executes immediately without a
+routine pause. Use `scripts/check-task-commit-plan.sh` for objective candidate
+validation and `scripts/create-task-commit.sh` for the exact deterministic side
+effect. These
 thin wrappers dispatch through the shared `run-skill-command` runtime and never
 replace AI scope/message review or required human confirmation. The user may
 answer with any clear affirmative response after the Skill presents one
@@ -34,7 +38,7 @@ remediation before a task/Git side effect.
 Return exactly one declared exit: `committed`, `revision-required`, or
 `blocked`. Unknown, multiple, stale, or unmapped results fail closed.
 
-The v2 candidate lives only under ignored
+The current candidate lives only under ignored
 `.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
 removed after success. Its schema has no authorization, freshness digest, or
 terminal result fields. Git supplies committed tree/message/path facts.

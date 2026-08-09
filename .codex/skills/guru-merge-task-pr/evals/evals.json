@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-merge-task-pr",
+  "evals": [
+    {
+      "id": "workflow-expected-head-merged",
+      "prompt": "Consume Finalizer ready_for_merge, pass the live semantic gate, confirm once, merge at the expected head, and verify GitHub Issue closure.",
+      "expected_exit": "merged",
+      "expected_output": "The DTO contains only repository/PR and merge commit identity.",
+      "input_profile_id": "ready_for_merge",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "merged"},
+        {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+      ]},
+      "files": ["evals/files/workflow-merged-input.json", "evals/files/workflow-merged-facts.json"]
+    },
+    {
+      "id": "standalone-draft-blocked",
+      "prompt": "Rebuild standalone live facts for a Draft PR and select the no-mutation blocker.",
+      "expected_exit": "merge_blocked",
+      "expected_output": "The DTO contains one stable reason and remediation.",
+      "input_profile_id": "standalone_merge",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "merge_blocked"}
+      ]},
+      "files": ["evals/files/standalone-blocked-input.json", "evals/files/standalone-blocked-facts.json"]
+    },
+    {
+      "id": "workflow-head-drift-blocked",
+      "prompt": "Detect that the live PR head differs from expected_head_sha and stop before mutation.",
+      "expected_exit": "merge_blocked",
+      "expected_output": "The blocker identifies expected-head drift.",
+      "input_profile_id": "ready_for_merge",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "merge_blocked"}
+      ]},
+      "files": ["evals/files/head-drift-input.json", "evals/files/head-drift-facts.json"]
+    },
+    {
+      "id": "workflow-close-keyword-mismatch-blocked",
+      "prompt": "Detect that PR close keywords do not identify a reviewed Open Issue and stop before merge.",
+      "expected_exit": "merge_blocked",
+      "expected_output": "The blocker reports close-scope mismatch without closing an Issue.",
+      "input_profile_id": "ready_for_merge",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "merge_blocked"}
+      ]},
+      "files": ["evals/files/close-scope-input.json", "evals/files/close-scope-facts.json"]
+    },
+    {
+      "id": "workflow-post-merge-closure-mismatch",
+      "prompt": "Merge at the expected head, then report that GitHub did not close the Issue and perform no Issue mutation.",
+      "expected_exit": "closure_mismatch",
+      "expected_output": "The DTO contains merged PR identity and the exact Issue mismatch.",
+      "input_profile_id": "ready_for_merge",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "closure_mismatch"}
+      ]},
+      "files": ["evals/files/closure-mismatch-input.json", "evals/files/closure-mismatch-facts.json"]
+    }
+  ]
+}

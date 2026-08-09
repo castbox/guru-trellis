@@ -1471,6 +1471,9 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json"
         )
         self.phase2_commit_anchor_override: str | None = None
+        self.objective_commit_facts = {
+            fact_id: True for fact_id in gtt.TASK_COMMIT_ROUTINE_FACT_IDS
+        }
 
         def current_phase2_result(
             root: Path,
@@ -1497,6 +1500,13 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                 gtt,
                 "validate_phase2_check",
                 side_effect=current_phase2_result,
+            ),
+            mock.patch.object(
+                gtt,
+                "task_commit_objective_eligibility_facts",
+                side_effect=lambda *args, **kwargs: copy.deepcopy(
+                    self.objective_commit_facts
+                ),
             ),
         ]
         for patcher in self.patches:
@@ -1550,7 +1560,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         )
         plan = {
             "$schema": gtt.TASK_COMMIT_CANDIDATE_SCHEMA_ID,
-            "schema_version": "3.0", "skill_id": gtt.TASK_COMMIT_SKILL_ID,
+            "schema_version": "4.0", "skill_id": gtt.TASK_COMMIT_SKILL_ID,
             "sequence": f"{sequence:03d}",
             "task": {"id": "example-task", "path": self.task_rel, "status": "in_progress", "branch": "feat/example-task"},
             "git": {
@@ -1564,6 +1574,15 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             "exact_stage_paths": sorted(exact_paths),
             "message": message,
             "ai_review": {"status": "passed", "summary": "Reviewed exact test scope.", "evidence": ["Phase 2 covers each task-reviewed path."]},
+            "routine_auto_commit_facts": copy.deepcopy(self.objective_commit_facts),
+            "routine_auto_commit_eligible": {
+                "eligible": True,
+                "reason": "Dedicated unpublished task branch is current and exact.",
+                "evidence_refs": [
+                    *gtt.TASK_COMMIT_ROUTINE_FACT_IDS,
+                    *gtt.TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
+                ],
+            },
         }
         gtt.write_json(candidate, plan)
         return candidate
@@ -1743,6 +1762,22 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                 "summary": "AI reviewed the exact commit message and path set.",
                 "evidence": ["Current Phase 2 covers every task-reviewed path."],
             },
+            "routine_auto_commit_eligible": {
+                "eligible": status == "passed",
+                "reason": (
+                    "Dedicated unpublished task branch is current and exact."
+                    if status == "passed"
+                    else "Semantic review blocks routine automatic execution."
+                ),
+                "evidence_refs": (
+                    [
+                        *gtt.TASK_COMMIT_ROUTINE_FACT_IDS,
+                        *gtt.TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
+                    ]
+                    if status == "passed"
+                    else ["authority_unchanged"]
+                ),
+            },
         }
 
     def test_public_candidate_builder_materializes_exact_authority_and_preserves_unrelated(self) -> None:
@@ -1773,6 +1808,92 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)[2],
             [],
         )
+
+    def test_routine_auto_commit_exclusion_matrix_rejects_ai_eligible_conclusion(self) -> None:
+        for fact_id in gtt.TASK_COMMIT_ROUTINE_FACT_IDS:
+            with self.subTest(fact_id=fact_id):
+                (self.root / "src/task.txt").write_text(
+                    f"changed for {fact_id}\n", encoding="utf-8"
+                )
+                self.objective_commit_facts = {
+                    item: item != fact_id
+                    for item in gtt.TASK_COMMIT_ROUTINE_FACT_IDS
+                }
+                with self.assertRaisesRegex(
+                    gtt.WorkflowError,
+                    "AI marked the task commit routine-eligible",
+                ):
+                    gtt.build_task_commit_candidate(
+                        self.root,
+                        self.task_dir,
+                        self.public_commit_input(),
+                        self.task_commit_authoring(["src/task.txt"]),
+                    )
+                self.assertEqual(
+                    list(
+                        (self.root / gtt.TASK_COMMIT_RUNTIME_DIR).glob(
+                            "**/[0-9][0-9][0-9].json"
+                        )
+                    ),
+                    [],
+                )
+        self.objective_commit_facts = {
+            fact_id: True for fact_id in gtt.TASK_COMMIT_ROUTINE_FACT_IDS
+        }
+
+    def test_checker_recomputes_objective_eligibility_facts(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        candidate, _, _ = gtt.build_task_commit_candidate(
+            self.root,
+            self.task_dir,
+            self.public_commit_input(),
+            self.task_commit_authoring(["src/task.txt"]),
+        )
+        self.objective_commit_facts["remote_branch_absent"] = False
+
+        _, facts, errors = gtt.validate_task_commit_candidate(
+            self.root, candidate, self.task_dir
+        )
+
+        self.assertFalse(facts["routine_auto_commit_eligible"])
+        self.assertIn(
+            "task commit candidate objective eligibility facts are stale.",
+            errors,
+        )
+        self.assertIn(
+            "eligible task commit conclusion conflicts with current objective facts or semantic result.",
+            errors,
+        )
+
+    def test_production_wrapper_fails_closed_for_checked_ineligible_candidate(self) -> None:
+        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
+        authoring = self.task_commit_authoring(["src/task.txt"])
+        authoring["routine_auto_commit_eligible"] = {
+            "eligible": False,
+            "reason": "A real semantic choice still exists.",
+            "evidence_refs": ["authority_unchanged"],
+        }
+        candidate, _, _ = gtt.build_task_commit_candidate(
+            self.root,
+            self.task_dir,
+            self.public_commit_input(),
+            authoring,
+        )
+        before = gtt.current_head(self.root)
+
+        owner_result, evidence = gtt.production_commit_result(
+            self.root,
+            argparse.Namespace(owner_result=candidate.relative_to(self.root).as_posix()),
+            self.public_commit_input(),
+        )
+
+        self.assertEqual(owner_result, {"typed_exit": "blocked"})
+        self.assertEqual(gtt.current_head(self.root), before)
+        self.assertEqual(
+            evidence["errors"],  # type: ignore[index]
+            ["Task commit candidate is not eligible for routine automatic execution."],
+        )
+        self.assertTrue(candidate.is_file())
 
     def test_metadata_only_descendant_uses_live_head_as_commit_parent(self) -> None:
         phase2_commit_anchor = gtt.current_head(self.root)
@@ -8818,12 +8939,12 @@ class ThinWorkflowPublicGraphContractTest(unittest.TestCase):
         workflow_targets = self.marker_payloads(text, "workflow")
         stop_targets = self.marker_payloads(text, "stop")
 
-        self.assertEqual(len(active_ids), 14)
-        self.assertEqual(len(expected_exits), 54)
-        self.assertEqual(len(expected_workflow_targets) + len(expected_stop_targets), 31)
-        self.assertEqual(len(invokes), 14)
-        self.assertEqual(len(exits), 54)
-        self.assertEqual(len(workflow_targets) + len(stop_targets), 31)
+        self.assertEqual(len(active_ids), 15)
+        self.assertEqual(len(expected_exits), 57)
+        self.assertEqual(len(expected_workflow_targets) + len(expected_stop_targets), 33)
+        self.assertEqual(len(invokes), 15)
+        self.assertEqual(len(exits), 57)
+        self.assertEqual(len(workflow_targets) + len(stop_targets), 33)
 
         invoke_ids = [payload["skill"] for payload in invokes]
         self.assertEqual(set(invoke_ids), active_ids)
@@ -9892,7 +10013,7 @@ printf '{"status":"ok"}\\n'
             current_reviewed,
         )
 
-    def test_current_plan_evolution_reuses_payload_through_real_gate_and_executor(
+    def test_current_route_ignores_legacy_plan_and_uses_current_publication_payload(
         self,
     ) -> None:
         (
@@ -9924,20 +10045,6 @@ printf '{"status":"ok"}\\n'
             for key in ("title", "body")
         }
         self.assertNotEqual(previous_payload, current_payload)
-        active_input = {"value": publication_input}
-        reviewed = {
-            "review": {
-                "status": "passed",
-                "summary": "The current plan evolution route is semantically reviewed.",
-            },
-            "route": {
-                "typed_exit": "reprepare_required",
-                "consumer": copy.deepcopy(
-                    gtt.FINALIZATION_CONSUMERS["reprepare_required"]
-                ),
-                "output": copy.deepcopy(gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
-            },
-        }
         args = argparse.Namespace(
             root=str(root),
             input="unused-input.json",
@@ -9962,23 +10069,10 @@ printf '{"status":"ok"}\\n'
             "status_paths": [],
         }
         plan_path = task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT
-        standard_gate = gtt.task_finalization_path(root, task_dir)
-        transition_gate = gtt.task_finalization_transition_path(root, task_dir)
+        legacy_plan_bytes = plan_path.read_bytes()
+        head_before = self.git(root, "rev-parse", "HEAD")
 
         with (
-            mock.patch.object(
-                gtt,
-                "finalization_public_input",
-                side_effect=lambda _root, _value: (
-                    copy.deepcopy(active_input["value"]),
-                    "<test>",
-                ),
-            ),
-            mock.patch.object(
-                gtt,
-                "finalization_semantic_review_input",
-                return_value=reviewed,
-            ),
             mock.patch.object(gtt, "finalization_package_root", return_value=package_root),
             mock.patch.object(
                 gtt,
@@ -9996,13 +10090,9 @@ printf '{"status":"ok"}\\n'
             ),
         ):
             initial = gtt.finalization_preview_context(root, args, publication_input)
-            self.assertEqual(initial["transaction_state"], "reprepare_required")
-            self.assertEqual(
-                initial["prepared"]["pre_pr_reprepare"]["base_evolution"][
-                    "supersession_kind"
-                ],
-                "current_plan",
-            )
+            self.assertEqual(initial["transaction_state"], "prepared")
+            self.assertIsNone(initial["prepared"]["pre_pr_reprepare"])
+            self.assertTrue(initial["plan_ref"].startswith("finalization:"))
             self.assertEqual(
                 {
                     key: initial["plan"]["publish"][key]
@@ -10010,75 +10100,11 @@ printf '{"status":"ok"}\\n'
                 },
                 current_payload,
             )
-            self.assertFalse(standard_gate.exists())
-            self.assertFalse(transition_gate.exists())
-
-            recorded = gtt.cmd_record_finalization_gate(args)
-            self.assertEqual(Path(recorded["artifact_path"]).resolve(), standard_gate.resolve())
-            self.assertTrue(standard_gate.is_file())
-            self.assertFalse(transition_gate.exists())
-
-            checked = gtt.cmd_check_finalization_gate(args)
-            self.assertEqual(checked["typed_exit"], "reprepare_required")
-            transitioned = gtt.cmd_execute_finalization_transition(args)
-
-            self.assertEqual(transitioned["typed_exit"], "reprepare_required")
-            self.assertEqual(
-                transitioned["output"]["branch_review_commit"],
-                current_reviewed,
-            )
             self.assertNotEqual(
-                transitioned["output"]["publication_head"],
-                current_reviewed,
+                initial["plan"]["plan_digest"], previous_plan["plan_digest"]
             )
-            self.assertFalse(standard_gate.exists())
-            self.assertFalse(transition_gate.exists())
-            replacement = gtt.validate_closeout_plan(gtt.read_json(plan_path))
-            self.assertEqual(
-                {
-                    key: replacement["publish"][key]
-                    for key in ("title", "body")
-                },
-                current_payload,
-            )
-            self.assertEqual(
-                replacement["git"]["reviewed_content_head"],
-                current_reviewed,
-            )
-            self.assertEqual(
-                replacement["git"]["publication_head"],
-                transitioned["output"]["publication_head"],
-            )
-            self.assertEqual(
-                transitioned["replacement_plan_digest"],
-                replacement["plan_digest"],
-            )
-            self.assertNotEqual(previous_plan["plan_digest"], replacement["plan_digest"])
 
-            reprepare_input = {
-                "profile": "reprepare_preview",
-                "mode": "workflow",
-                "task_ref": task_ref,
-                "reason_code": transitioned["output"]["reason_code"],
-                "branch_review_commit": transitioned["output"][
-                    "branch_review_commit"
-                ],
-                "publication_head": transitioned["output"]["publication_head"],
-            }
-            active_input["value"] = reprepare_input
-            plan_bytes = plan_path.read_bytes()
-            head_before = self.git(root, "rev-parse", "HEAD")
-            preview = gtt.cmd_preview_finalization(args)
-
-        self.assertEqual(preview["closeout_plan_digest"], replacement["plan_digest"])
-        self.assertEqual(
-            {
-                key: preview["closeout_plan"]["publish"][key]
-                for key in ("title", "body")
-            },
-            current_payload,
-        )
-        self.assertEqual(plan_path.read_bytes(), plan_bytes)
+        self.assertEqual(plan_path.read_bytes(), legacy_plan_bytes)
         self.assertEqual(self.git(root, "rev-parse", "HEAD"), head_before)
 
     def test_current_plan_evolution_rejection_matrix(self) -> None:
@@ -10659,7 +10685,7 @@ printf '{\"status\":\"ok\"}\\n'
         new_plan = copy.deepcopy(plan)
         new_plan["git"]["publication_head"] = publication
         new_plan["plan_digest"] = gtt.closeout_plan_digest(new_plan)
-        new_plan_ref = f"closeout-plan:{new_plan['plan_digest']}"
+        new_plan_ref = f"finalization:{new_plan['plan_digest']}"
         self.assertNotEqual(new_plan_ref, old_plan_ref)
         self.assertTrue(gtt.closeout_verification_plan_ref_matches(new_plan, new_plan_ref))
         self.assertFalse(gtt.closeout_verification_plan_ref_matches(new_plan, old_plan_ref))
@@ -11449,6 +11475,13 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             review_input=review_path.relative_to(self.root).as_posix(),
         ))
 
+    def private_owner_state(self) -> dict[str, Any]:
+        return gtt.read_json(
+            gtt.extension_verification_owner_state_path(
+                self.root, self.task_dir
+            )
+        )
+
     def test_record_validates_published_nested_input_schemas_before_use(self) -> None:
         public_input = self.public_input("workflow", task=True)
         selected = ["marketplace_index"]
@@ -11649,8 +11682,9 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.execution(public_input, "passed", selected),
             self.review("verified", selected, supersedes=prior_ref),
         )
+        current_owner = self.private_owner_state()
         self.assertEqual(
-            current["freshness"]["supersedes_verification_ref"],
+            current_owner["freshness"]["supersedes_verification_ref"],
             prior_ref,
         )
 
@@ -11678,13 +11712,14 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.execution(current_input, "passed", selected),
             self.review("verified", selected, supersedes=prior_ref),
         )
+        current_owner = self.private_owner_state()
 
         self.assertEqual(
-            current["freshness"]["supersedes_verification_ref"],
+            current_owner["freshness"]["supersedes_verification_ref"],
             prior_ref,
         )
         self.assertEqual(
-            current["public_input"]["plan_ref"],
+            current_owner["public_input"]["plan_ref"],
             "closeout-plan:current",
         )
 
@@ -11696,7 +11731,8 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.review("not_required", []),
         )
 
-        self.assertEqual(owner["consumer"], {"kind": "session", "id": "direct-caller"})
+        self.assertEqual(owner["mode"], "standalone")
+        self.assertEqual(owner["semantic_result"]["typed_exit"], "not_required")
         self.assertEqual(list(self.root.rglob("marketplace-verification.json")), [])
         with mock.patch.object(
             gtt,
@@ -11737,7 +11773,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.review("not_required", []),
         )
         self.assertEqual(
-            owner["target_repository"]["resolved_head"],
+            owner["immutable_identity"]["publication_head"],
             resolved_commit,
         )
 
@@ -11784,6 +11820,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.execution(public_input, "passed", selected),
             self.review("verified", selected),
         )
+        owner_state = self.private_owner_state()
         live_source = {
             "selection": "manifest",
             "manifest_provenance": "available",
@@ -11816,7 +11853,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             mock.patch.object(
                 gtt,
                 "extension_verification_reviewed_content_sha256",
-                return_value=owner["target_repository"][
+                return_value=owner_state["target_repository"][
                     "reviewed_content_sha256"
                 ],
             ),
@@ -11834,7 +11871,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 public_input,
             )
         self.assertIn(
-            "installed extension manifest provenance is stale",
+            "installed extension source commit changed",
             json.dumps(stale.exception.payload),
         )
 
@@ -11892,11 +11929,12 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.execution(public_input, "passed", selected),
             self.review("return_to_task_work", selected),
         )
+        owner_state = self.private_owner_state()
 
-        self.assertEqual(owner["typed_exit"], "return_to_task_work")
-        self.assertEqual(owner["execution"]["commands"][0]["exit_code"], 0)
+        self.assertEqual(owner["semantic_result"]["typed_exit"], "return_to_task_work")
+        self.assertEqual(owner_state["execution"]["commands"][0]["exit_code"], 0)
         self.assertEqual(
-            owner["semantic_review"]["adequacy"][0]["status"],
+            owner_state["semantic_review"]["adequacy"][0]["status"],
             "failed",
         )
 
@@ -11916,13 +11954,14 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.execution(public_input, "not_run", []),
             review,
         )
+        owner_state = self.private_owner_state()
 
-        self.assertEqual(owner["typed_exit"], "blocked")
-        self.assertEqual(owner["applicability"]["status"], "not_required")
-        self.assertEqual(owner["execution"]["status"], "not_run")
-        self.assertEqual(owner["verification_profile"]["selected_capabilities"], [])
+        self.assertEqual(owner["semantic_result"]["typed_exit"], "blocked")
+        self.assertEqual(owner_state["applicability"]["status"], "not_required")
+        self.assertEqual(owner_state["execution"]["status"], "not_run")
+        self.assertEqual(owner_state["verification_profile"]["selected_capabilities"], [])
         self.assertEqual(
-            owner["blocker"]["reason_code"],
+            owner["semantic_result"]["blocker"]["reason_code"],
             "applicability_conflict",
         )
 
@@ -12130,8 +12169,9 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             self.execution(public_input, "passed", selected),
             self.review("verified", selected, supersedes=prior_ref),
         )
+        current_owner = self.private_owner_state()
         self.assertEqual(
-            current["freshness"]["supersedes_verification_ref"],
+            current_owner["freshness"]["supersedes_verification_ref"],
             prior_ref,
         )
         self.assertNotEqual(current["identity"]["verification_ref"], prior_ref)
@@ -12213,7 +12253,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 standalone_input,
             )
         self.assertIn(
-            "remote ref HEAD",
+            "minimal verification immutable remote ref is stale",
             json.dumps(remote_drift.exception.payload),
         )
 
@@ -12232,7 +12272,10 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                     self.execution(public_input, "passed", selected),
                     self.review("verified", selected),
                 )
-                recorded_binding = owner["target_repository"]["reviewed_content_sha256"]
+                owner_state = self.private_owner_state()
+                recorded_binding = owner_state["target_repository"][
+                    "reviewed_content_sha256"
+                ]
                 self.assertRegex(recorded_binding, r"^[0-9a-f]{64}$")
 
                 readme.write_text("later dirty content\n", encoding="utf-8")
@@ -13733,7 +13776,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
                 self.review("verified", ["marketplace_index"]),
             )
 
-    def test_task_bearing_dirty_source_cannot_be_recorded_or_checked(self) -> None:
+    def test_task_bearing_dirty_source_cannot_be_recorded(self) -> None:
         public_input = self.public_input("workflow", task=True)
         selected = ["marketplace_index"]
         dirty_execution = self.execution(public_input, "passed", selected)
@@ -13763,68 +13806,6 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
             "requires clean source provenance",
             f"{record_error.exception} {json.dumps(record_error.exception.payload)}",
         )
-
-        owner = self.record(
-            public_input,
-            self.execution(public_input, "passed", selected),
-            self.review("verified", selected),
-        )
-        owner["extension_source"]["tree_state"] = "dirty"
-        owner["execution"]["extension_source"]["tree_state"] = "dirty"
-        machine_digest, semantic_digest, facts_digest = (
-            gtt.extension_verification_payload_digests(owner)
-        )
-        owner["machine_facts_sha256"] = machine_digest
-        owner["semantic_review_sha256"] = semantic_digest
-        owner["facts_sha256"] = facts_digest
-        owner["identity"]["verification_ref"] = (
-            f"extension-verification:{facts_digest[:24]}"
-        )
-        source_ref_calls: list[list[str]] = []
-
-        def checker_run(
-            command: list[str],
-            cwd: Path | None = None,
-            check: bool = True,
-            env: dict[str, str] | None = None,
-        ) -> mock.Mock:
-            del cwd, check, env
-            if command[:2] == ["git", "ls-remote"]:
-                if command[2] != "origin":
-                    source_ref_calls.append(command)
-                oid = self.head if command[2] == "origin" else "b" * 40
-                return mock.Mock(
-                    returncode=0,
-                    stdout=f"{oid}\trefs/heads/main\n",
-                    stderr="",
-                )
-            return mock.Mock(returncode=1, stdout="", stderr="unexpected command")
-
-        with (
-            mock.patch.object(gtt, "run", side_effect=checker_run),
-            mock.patch.object(
-                gtt,
-                "extension_verification_task_identity",
-                return_value=self.task_dir,
-            ),
-            mock.patch.object(
-                gtt,
-                "extension_verification_reviewed_content_sha256",
-                return_value=owner["target_repository"]["reviewed_content_sha256"],
-            ),
-            self.assertRaises(gtt.WorkflowError) as check_error,
-        ):
-            gtt.check_extension_verification_result(
-                self.root,
-                owner,
-                ".trellis/tasks/current/marketplace-verification.json",
-                public_input,
-            )
-        self.assertIn(
-            "requires clean source provenance",
-            f"{check_error.exception} {json.dumps(check_error.exception.payload)}",
-        )
-        self.assertEqual(source_ref_calls, [])
 
     def test_recorded_source_checkout_head_mismatch_is_rejected(self) -> None:
         public_input = self.public_input("workflow", task=True)
@@ -14259,7 +14240,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         gate_relative = f"{task_ref}/{gtt.TASK_FINALIZATION_GATE_ARTIFACT}"
         unexpected_relative = f"{task_ref}/arbitrary-finalization-note.md"
         plan = self.build_plan()
-        plan_ref = f"closeout-plan:{plan['plan_digest']}"
+        plan_ref = f"finalization:{plan['plan_digest']}"
         public_input = {
             "profile": "publication_ready",
             "mode": "workflow",
@@ -14372,6 +14353,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "review_branch_content_continuity_errors",
                 return_value=[],
             ),
+            mock.patch.object(gtt, "closeout_remote_branch_head", return_value=None),
             mock.patch.object(
                 gtt,
                 "task_publication_repository_binding",
@@ -14596,7 +14578,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 },
             )
 
-    def test_published_route_requires_current_verification_before_committed_recovery(
+    def test_ready_for_merge_route_requires_current_verification_before_committed_recovery(
         self,
     ) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
@@ -14611,8 +14593,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "pr_body": self.body,
         }
         marker_route = {
-            "typed_exit": "published",
-            "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+            "typed_exit": "ready_for_merge",
+            "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
             "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
         }
 
@@ -14687,7 +14669,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         early_public_route = {
             **marker_route,
             "output": {
-                "exit_id": "published",
+                "exit_id": "ready_for_merge",
                 "task_ref": task_ref,
                 "pr_number": 118,
                 "pr_url": "https://github.com/owner/repo/pull/118",
@@ -14695,7 +14677,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         }
         with self.assertRaisesRegex(
             gtt.WorkflowError,
-            "persisted published route",
+            "persisted ready_for_merge route",
         ):
             gtt.finalization_validate_route(
                 self.root,
@@ -14705,7 +14687,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 allow_pending_transition=True,
             )
 
-    def test_published_route_skips_verification_for_non_extension_plan(self) -> None:
+    def test_ready_for_merge_route_skips_verification_for_non_extension_plan(self) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
         public_input = {
             "profile": "publication_ready",
@@ -14739,8 +14721,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             public_input,
             context,
             {
-                "typed_exit": "published",
-                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "typed_exit": "ready_for_merge",
+                "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
                 "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
             },
             allow_pending_transition=True,
@@ -14827,7 +14809,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 },
             )
 
-    def test_published_executor_marker_is_private_and_materialized_to_public_dto(
+    def test_ready_for_merge_executor_marker_is_private_and_materialized_to_public_dto(
         self,
     ) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
@@ -14863,8 +14845,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "verification": ({}, {"typed_exit": "verified"}),
         }
         route = {
-            "typed_exit": "published",
-            "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+            "typed_exit": "ready_for_merge",
+            "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
             "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
         }
         with mock.patch.object(
@@ -14880,15 +14862,16 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 allow_pending_transition=True,
             )
 
-        published_schema = {
+        ready_for_merge_schema = {
             "type": "object",
             "additionalProperties": False,
-            "required": ["exit_id", "task_ref", "pr_number", "pr_url"],
+            "required": ["exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha"],
             "properties": {
-                "exit_id": {"const": "published"},
-                "task_ref": {"type": "string", "minLength": 1},
+                "exit_id": {"const": "ready_for_merge"},
+                "repo_ref": {"type": "string", "minLength": 1},
                 "pr_number": {"type": "integer", "minimum": 1},
                 "pr_url": {"type": "string", "minLength": 1},
+                "expected_head_sha": {"type": "string", "minLength": 1},
             },
         }
         gate = {"route": route}
@@ -14896,15 +14879,19 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         archive_dir = self.root / archive_ref
         archive_dir.mkdir(parents=True)
         plan = {
-            "git": {"repo": "owner/repo"},
+            "git": {
+                "repo": "owner/repo",
+                "branch_review_commit": self.head,
+                "publication_head": self.head,
+            },
             "task": {"archive_locator": archive_ref},
         }
         with mock.patch.object(
             gtt,
             "finalization_output_contract",
-            return_value=published_schema,
+            return_value=ready_for_merge_schema,
         ):
-            materialized = gtt.finalization_gate_with_published_output(
+            materialized = gtt.finalization_gate_with_ready_for_merge_output(
                 self.root,
                 archive_dir,
                 gate,
@@ -14912,19 +14899,21 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 {
                     "number": 118,
                     "url": "https://github.com/owner/repo/pull/118",
+                    "headRefOid": self.head,
                 },
             )
         self.assertEqual(
             materialized["route"]["output"],
             {
-                "exit_id": "published",
-                "task_ref": archive_ref,
+                "exit_id": "ready_for_merge",
+                "repo_ref": "owner/repo",
                 "pr_number": 118,
                 "pr_url": "https://github.com/owner/repo/pull/118",
+                "expected_head_sha": self.head,
             },
         )
 
-    def test_public_wrapper_materializes_only_terminal_published_marker(self) -> None:
+    def test_public_wrapper_materializes_only_terminal_ready_for_merge_marker(self) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
         archive_ref = ".trellis/tasks/archive/2026-07/07-11-closeout"
         archive_dir = self.root / archive_ref
@@ -14947,6 +14936,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "remote": "origin",
                 "head_branch": "main",
                 "branch_review_commit": self.head,
+                "publication_head": self.head,
             },
             "task": {
                 "active_locator": task_ref,
@@ -14955,25 +14945,27 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         }
         gate = {
             "route": {
-                "typed_exit": "published",
-                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "typed_exit": "ready_for_merge",
+                "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
                 "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
             }
         }
-        published_schema = {
+        ready_for_merge_schema = {
             "type": "object",
             "additionalProperties": False,
-            "required": ["exit_id", "task_ref", "pr_number", "pr_url"],
+            "required": ["exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha"],
             "properties": {
-                "exit_id": {"const": "published"},
-                "task_ref": {"type": "string", "minLength": 1},
+                "exit_id": {"const": "ready_for_merge"},
+                "repo_ref": {"type": "string", "minLength": 1},
                 "pr_number": {"type": "integer", "minimum": 1},
                 "pr_url": {"type": "string", "minLength": 1},
+                "expected_head_sha": {"type": "string", "minLength": 1},
             },
         }
         pr = {
             "number": 118,
             "url": "https://github.com/owner/repo/pull/118",
+            "headRefOid": self.head,
         }
         executor = mock.Mock(
             side_effect=AssertionError("public wrapper must not execute transitions")
@@ -15006,12 +14998,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 mock.patch.object(
                     gtt,
                     "stage0_output_contract",
-                    return_value=(published_schema, {}),
+                    return_value=(ready_for_merge_schema, {}),
                 ),
                 mock.patch.object(
                     gtt,
                     "finalization_output_contract",
-                    return_value=published_schema,
+                    return_value=ready_for_merge_schema,
                 ),
                 mock.patch.object(
                     gtt,
@@ -15093,10 +15085,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(
             invoke(terminal_context),
             {
-                "exit_id": "published",
-                "task_ref": archive_ref,
+                "exit_id": "ready_for_merge",
+                "repo_ref": "owner/repo",
                 "pr_number": 118,
                 "pr_url": pr["url"],
+                "expected_head_sha": self.head,
             },
         )
         executor.assert_not_called()
@@ -16048,8 +16041,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "summary": "The committed archive authorizes the same plan.",
             },
             "route": {
-                "typed_exit": "published",
-                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "typed_exit": "ready_for_merge",
+                "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
                 "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
             },
         }
@@ -16135,8 +16128,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "summary": "The same committed transaction is ready to resume.",
             },
             "route": {
-                "typed_exit": "published",
-                "consumer": gtt.FINALIZATION_CONSUMERS["published"],
+                "typed_exit": "ready_for_merge",
+                "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
                 "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
             },
         }
@@ -16246,13 +16239,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ) as push_branch,
         ):
             recorded = gtt.cmd_record_finalization_gate(args)
-            self.assertEqual(recorded["typed_exit"], "published")
+            self.assertEqual(recorded["typed_exit"], "ready_for_merge")
             self.assertEqual(gtt.git_status_paths(self.root), [])
             checked = gtt.cmd_check_finalization_gate(args)
-            self.assertEqual(checked["typed_exit"], "published")
+            self.assertEqual(checked["typed_exit"], "ready_for_merge")
             transitioned = gtt.cmd_execute_finalization_transition(args)
 
-        self.assertEqual(transitioned["typed_exit"], "published")
+        self.assertEqual(transitioned["typed_exit"], "ready_for_merge")
         self.assertEqual(transitioned["output"]["pr_number"], 166)
         self.assertEqual(ready_commands, [["gh", "pr", "ready", "--repo", "owner/repo", "166"]])
         self.assertEqual(committed_gate_path.read_bytes(), committed_gate_bytes)
@@ -17742,6 +17735,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             )
             installed_publication_schema.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(publication_schema, installed_publication_schema)
+            shutil.copytree(
+                source_root
+                / "trellis/skills/guru-team/packages/guru-finalize-task",
+                root / "trellis/skills/guru-team/packages/guru-finalize-task",
+            )
             workflow = root / "trellis/workflows/guru-team/workflow.md"
             workflow.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source_root / "trellis/workflows/guru-team/workflow.md", workflow)
@@ -17945,6 +17943,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     ),
                 })
             original_run = gtt.run
+            original_write_json = gtt.write_json
+            transaction_disk_writes: list[str] = []
             injected_stage = failed_stage
             active_plan_only_boundary_fault: str | None = None
             archive_pushed = False
@@ -17978,6 +17978,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
             def record_transition(stage: str) -> None:
                 transition_attempts.append(stage)
+
+            def track_write_json(path: Path, payload: object) -> None:
+                if path.name == gtt.FINALIZATION_TRANSACTION_ARTIFACT:
+                    transaction_disk_writes.append(str(path))
+                original_write_json(path, payload)
 
             original_compact_closeout_archive = gtt.compact_closeout_archive
 
@@ -18343,6 +18348,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     },
                 ),
                 mock.patch.object(gtt, "run", side_effect=fake_external_run),
+                mock.patch.object(gtt, "write_json", side_effect=track_write_json),
                 mock.patch.object(
                     gtt,
                     "compact_closeout_archive",
@@ -18669,8 +18675,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     pr_store["url"],
                 )
                 self.assertEqual(gtt.git_status_paths(root), [])
-            else:
-                self.assertTrue(gtt.git_status_paths(root))
             final_state = exact_state()
             archive_parent_sha = gtt.run_stdout(["git", "rev-parse", f"{local_head}^"], cwd=root)
             return {
@@ -18686,6 +18690,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "immutable_body_bytes": immutable_body_bytes,
                 "draft_rebind_body_bytes": draft_rebind_body_bytes,
                 "archived_legacy_plan_digest": archived_legacy_plan_digest,
+                "transaction_disk_writes": transaction_disk_writes,
                 "archived_files": sorted(
                     path.relative_to(archived).as_posix()
                     for path in archived.rglob("*")
@@ -18709,10 +18714,10 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(final["pr_head_sha"], result["archive_sha"])
         self.assertEqual(final["pr_is_draft"], False)
         self.assertEqual(final["pr_state"], "OPEN")
+        self.assertEqual(result["transaction_disk_writes"], [])
         self.assertEqual(
             result["archived_files"],
             [
-                "closeout-plan.json",
                 "design.md",
                 "finish-summary.json",
                 "implement.md",
@@ -18721,7 +18726,117 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "task.json",
             ],
         )
-        self.assertEqual(len(result["archived_files"]), 7)
+        self.assertEqual(len(result["archived_files"]), 6)
+
+    def test_terminal_checker_rebuilds_ready_context_without_transaction_or_plan(self) -> None:
+        task_ref = ".trellis/tasks/07-11-closeout"
+        archived = self.root / ".trellis/tasks/archive/2026-08/07-11-closeout"
+        shutil.rmtree(self.task_dir)
+        archived.mkdir(parents=True)
+        gtt.write_json(
+            archived / "task.json",
+            {
+                **self.task,
+                "status": "completed",
+                "branch": "fix/105-closeout",
+                "base_branch": "main",
+            },
+        )
+        pr_url = "https://github.com/owner/repo/pull/105"
+        gtt.write_json(
+            archived / gtt.FINISH_SUMMARY_ARTIFACT,
+            {
+                "task": {
+                    "artifact_dir": task_ref,
+                    "archive_dir": archived.relative_to(self.root).as_posix(),
+                },
+                "git": {"branch": "fix/105-closeout", "base_branch": "main"},
+                "github": {"pr_url": pr_url},
+                "index": {"search_terms": {"pr_refs": ["PR #105"]}},
+            },
+        )
+        digest = "b" * 64
+        gate = {
+            "schema_version": gtt.FINALIZATION_GATE_SCHEMA_VERSION,
+            "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+            "identity": {
+                "task_ref": task_ref,
+                "plan_ref": f"finalization:{digest}",
+                "plan_digest": digest,
+                "branch_review_commit": self.head,
+            },
+            "review": {"status": "passed", "summary": "Current terminal gate."},
+            "route": {
+                "typed_exit": "ready_for_merge",
+                "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
+                "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            },
+        }
+        gate_path = gtt.task_finalization_path(self.root, archived)
+        gtt.write_json(gate_path, gate)
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "branch_review_commit": self.head,
+            "pr_title": "#105 closeout",
+            "pr_body": self.body,
+        }
+        pr = {
+            "number": 105,
+            "url": pr_url,
+            "title": public_input["pr_title"],
+            "body": public_input["pr_body"],
+            "headRefOid": self.head,
+            "isDraft": False,
+        }
+        args = argparse.Namespace()
+        with (
+            mock.patch.object(gtt, "finalization_task_dir", return_value=archived),
+            mock.patch.object(gtt, "task_dir_is_archived", return_value=True),
+            mock.patch.object(
+                gtt,
+                "skill_json_schema_validation_errors",
+                return_value=[],
+            ),
+            mock.patch.object(gtt, "finalization_gate_schema", return_value={}),
+            mock.patch.object(gtt, "validate_finish_summary"),
+            mock.patch.object(gtt, "load_config", return_value={}),
+            mock.patch.object(gtt, "infer_github_repo", return_value="owner/repo"),
+            mock.patch.object(
+                gtt,
+                "validate_github_remote_repository",
+                return_value="owner/repo",
+            ),
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=pr),
+            mock.patch.object(gtt, "current_head", return_value=self.head),
+            mock.patch.object(gtt, "closeout_remote_branch_head", return_value=self.head),
+            mock.patch.object(
+                gtt,
+                "finalization_find_transaction_by_task_ref",
+                return_value=None,
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_closeout_plan",
+                side_effect=AssertionError("terminal checker reopened legacy plan"),
+            ),
+        ):
+            context = gtt.finalization_preview_context(
+                self.root,
+                args,
+                public_input,
+            )
+
+        self.assertEqual(context["transaction_state"], "ready")
+        self.assertEqual(context["plan_ref"], f"finalization:{digest}")
+        self.assertEqual(context["published_pr"], pr)
+        self.assertFalse(
+            (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).exists()
+        )
+        self.assertFalse(
+            gtt.finalization_transaction_path(self.root, archived).exists()
+        )
 
     def test_production_predecessor_draft_rebinds_same_number_after_content_push(self) -> None:
         result = self.run_production_finish_case(predecessor_draft_metadata=True)
@@ -18784,6 +18899,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertIsNone(result["archived_legacy_plan_digest"])
         self.assertIn("ready", result["reentry_events"])
         self.assertNotIn("draft", result["all_transition_attempts"])
+        self.assertGreater(len(result["transaction_disk_writes"]), 0)
 
     def test_production_reviewed_task_metadata_tail_recovers_from_archive_commit(self) -> None:
         result = self.run_production_finish_case(
@@ -18810,7 +18926,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             f"{failed['archive_locator']}/check.jsonl",
             failed["dirty_paths"],
         )
-        self.assertEqual(len(result["archived_files"]), 7)
+        self.assertEqual(len(result["archived_files"]), 6)
         self.assertNotIn("check.jsonl", result["archived_files"])
         self.assertGreaterEqual(result["all_transition_attempts"].count("archive-prune"), 2)
 
@@ -18957,10 +19073,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         cases = [
             ("archive-push", "delete", None),
             ("ready", "tamper", "completed"),
-            ("ready", "plan-delete", "completed"),
-            ("ready", "plan-tamper", "completed"),
-            ("ready", "plan-invalid", "completed"),
-            ("ready", "plan-symlink", "completed"),
         ]
         for failed_stage, damage, expected_task_status in cases:
             with self.subTest(failed_stage=failed_stage, damage=damage):
@@ -18994,31 +19106,18 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(result["reentry_events"], [])
         self.assertIn("bound remote identity", result["reentry_error"])
 
-    def test_production_index_loss_summary_only_tamper_fails_incomplete_recovery(self) -> None:
+    def test_production_summary_worktree_tamper_recovers_from_committed_facts(self) -> None:
         result = self.run_production_finish_case(
             "archive-summary-tamper",
-            expect_reentry_failure=True,
         )
-        failed = result["failed_state"]
-        reentry = result["reentry_failed_state"]
-        self.assertIsNone(failed["active_locator"])
-        self.assertIsNotNone(failed["archive_locator"])
-        self.assertEqual(failed["pr_is_draft"], True)
-        self.assertEqual(reentry["local_sha"], failed["local_sha"])
-        self.assertEqual(reentry["remote_sha"], failed["remote_sha"])
-        self.assertEqual(reentry["pr_head_sha"], failed["pr_head_sha"])
-        self.assertEqual(reentry["pr_is_draft"], True)
-        self.assertIn("deterministic runtime PR projection", result["reentry_error"])
-        self.assertEqual(result["reentry_events"], [])
+        final = result["final_state"]
+        self.assertIsNone(final["active_locator"])
+        self.assertIsNotNone(final["archive_locator"])
+        self.assertEqual(final["pr_is_draft"], False)
+        self.assertEqual(final["local_sha"], final["remote_sha"])
 
     def test_production_incomplete_or_mismatched_archive_still_requires_worktree_contracts(self) -> None:
-        cases = [
-            (False, "Archived closeout files do not match"),
-            (
-                True,
-                "Closeout reviewed content changed after Branch Review",
-            ),
-        ]
+        cases = [(False, None), (True, "immutable Git blob")]
         for create_mismatch, expected_error in cases:
             with self.subTest(create_mismatch=create_mismatch):
                 result = self.run_production_finish_case(
@@ -19026,31 +19125,28 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     archived_damage=(
                         "tamper" if create_mismatch else "delete-retain-plan"
                     ),
-                    expect_reentry_failure=True,
+                    expect_reentry_failure=create_mismatch,
                     create_mismatched_commit=create_mismatch,
                 )
+                if not create_mismatch:
+                    state = result["final_state"]
+                    self.assertEqual(state["pr_is_draft"], False)
+                    continue
                 state = result["reentry_failed_state"]
                 self.assertIsNone(state["active_locator"])
                 self.assertIsNotNone(state["archive_locator"])
                 self.assertTrue(state["dirty_paths"])
                 self.assertEqual(state["pr_is_draft"], True)
+                assert expected_error is not None
                 self.assertIn(expected_error, result["reentry_error"])
 
     def test_production_plan_only_boundary_fails_closed_before_recovery(self) -> None:
         cases = [
             ("repo", "repository differs"),
-            ("config-repo", "configured repository mismatch"),
-            ("root", "repository root mismatch"),
-            ("branch", "branch mismatch"),
-            ("head", "exact committed archive transaction"),
-            ("locator", "task identity or locator mismatch"),
-            ("plan", "expected digest mismatch"),
-            ("committed-plan-delete", "Could not resolve task directory"),
-            (
-                "committed-plan-invalid",
-                "closeout-plan migration input validation failed",
-            ),
-            ("committed-plan-symlink", "must be a real directory with a regular closeout plan file"),
+            ("config-repo", "does not match configuration"),
+            ("branch", "summary does not match the transaction"),
+            ("head", "not the exact publication child"),
+            ("plan", "transaction identity is stale"),
         ]
         for fault, expected_error in cases:
             with self.subTest(fault=fault):
@@ -19175,7 +19271,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         } | {
             f"{archive}/{name}"
             for name in [
-                "closeout-plan.json", "design.md", "finish-summary.json",
+                "design.md", "finish-summary.json",
                 "implement.md", "issue-scope-ledger.json", "prd.md", "task.json",
             ]
         }
@@ -19197,13 +19293,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ),
             "draft": (
                 active, None, "in_progress",
-                {f"{active}/closeout-plan.json"},
+                set(),
                 set(), "reviewed", "reviewed", None, None, None, None,
             ),
             "projection": (
                 active, None, "in_progress",
                 {
-                    f"{active}/closeout-plan.json",
                     f"{active}/finish-summary.json",
                     f"{active}/check.jsonl",
                 },
@@ -19212,7 +19307,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "archive-move": (
                 active, None, "in_progress",
                 {
-                    f"{active}/closeout-plan.json",
                     f"{active}/finish-summary.json",
                 },
                 set(), "reviewed", "reviewed", "reviewed", True, "OPEN", 105,
@@ -19264,8 +19358,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 ]
                 mutating_events = [event for event in compressed_events if event != "remote-head"]
                 next_transition = compressed_events[0] if stage == "remote-head" else mutating_events[0]
-                self.assertEqual(next_transition, stage)
+                expected_transition = (
+                    "archive-move" if stage == "archive-commit" else stage
+                )
+                self.assertEqual(next_transition, expected_transition)
                 earlier_mutations = set(transition_order[:transition_order.index(stage)]) - {"remote-head"}
+                earlier_mutations.discard(expected_transition)
                 self.assertTrue(earlier_mutations.isdisjoint(mutating_events))
 
 

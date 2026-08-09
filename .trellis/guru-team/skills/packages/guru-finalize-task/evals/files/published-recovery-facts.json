@@ -1,1 +1,0 @@
-{"scenario":"The exact archive transaction and ready pull request already form the terminal published state.","owner_staging":{"recipe":"finalization-published-recovery"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/owner-checkpoints/current/task-finalization-gate.json"]}}

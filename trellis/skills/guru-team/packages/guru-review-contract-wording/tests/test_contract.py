@@ -293,7 +293,11 @@ class ContractWordingPackageTest(unittest.TestCase):
                     "standalone",
                     change_request_input=issue_input.name,
                 )
-        self.assertIn("updated_at", str(raised.exception))
+        self.assertEqual(
+            raised.exception.payload["error_code"],
+            "github_response_incomplete",
+        )
+        self.assertIn("updated_at", raised.exception.payload["detail"])
 
     def test_live_selected_comment_uses_paginated_rest_updated_time_and_builds_evidence(self) -> None:
         node_id = "IC_kwDOA115"
