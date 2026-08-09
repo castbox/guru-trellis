@@ -464,6 +464,8 @@ class GitHubCliAdapterTest(unittest.TestCase):
         repo = Path(__file__).resolve().parents[5]
         documents = [
             repo / ".trellis/spec/workflow/workflow-contract.md",
+            repo / ".trellis/spec/workflow/companion-scripts.md",
+            repo / ".trellis/spec/workflow/skill-package-contract.md",
             repo / "trellis/workflows/guru-team/README.md",
             repo / "trellis/presets/guru-team/README.md",
         ]

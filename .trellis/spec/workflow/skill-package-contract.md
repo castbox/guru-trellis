@@ -889,9 +889,11 @@ turning deterministic success into a semantic pass.
 Source actions are `none`, `issue_comment`, `issue_body_edit`,
 `proposed_draft_update`, `new_issue_draft`, `select_existing_issue`,
 `reopen_issue`, and `active_task_scope_update`. GitHub mutation remains
-AI-owned: after the required current-dialogue choice, the AI uses an existing
-connector or a reviewed `gh` command, rereads live facts, and supplies only
-objective mutation evidence to the recorder. Checker binds the action payload,
+AI-owned: after the required current-dialogue choice, the AI uses only
+authenticated, explicit repo-bound `gh` / `gh api`, rereads live facts, and
+supplies only objective mutation evidence to the recorder. GitHub App, MCP,
+connector, browser UI, and implicit repository context are forbidden fallback
+channels. Checker binds the action payload,
 canonical payload digest, mutation result content digest, and reread live body/comment;
 any byte mismatch fails closed. Generic continuation, task creation, planning approval, or
 review confirmation cannot replace a real scope or side-effect choice.
