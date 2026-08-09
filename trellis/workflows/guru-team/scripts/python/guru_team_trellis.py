@@ -1975,7 +1975,10 @@ def github_authenticated_login(root: Path, repo: str) -> str:
     normalized = normalize_github_repository(repo)
     require_github_repo_access(root, normalized)
     proc = run(
-        ["gh", "auth", "status", "--active", "--json", "login"],
+        [
+            "gh", "auth", "status", "--active", "--hostname", "github.com",
+            "--json", "hosts",
+        ],
         cwd=root,
         check=False,
     )
@@ -1987,10 +1990,21 @@ def github_authenticated_login(root: Path, repo: str) -> str:
         raise github_response_incomplete(
             operation="auth_identity", repo=normalized, detail="Auth identity is not valid JSON."
         ) from exc
-    login = payload.get("login") if isinstance(payload, dict) else None
+    hosts = payload.get("hosts") if isinstance(payload, dict) else None
+    accounts = hosts.get("github.com") if isinstance(hosts, dict) else None
+    active_accounts = [
+        account
+        for account in accounts or []
+        if isinstance(account, dict)
+        and account.get("active") is True
+        and account.get("state") == "success"
+    ] if isinstance(accounts, list) else []
+    login = active_accounts[0].get("login") if len(active_accounts) == 1 else None
     if not isinstance(login, str) or not login.strip():
         raise github_response_incomplete(
-            operation="auth_identity", repo=normalized, detail="Authenticated login is missing."
+            operation="auth_identity",
+            repo=normalized,
+            detail="Exactly one successful active github.com login is required.",
         )
     return login.strip()
 
@@ -2449,9 +2463,27 @@ def duplicate_search(repo: str, requirement: str, root: Path, limit: int) -> lis
             "number,title,body,url,labels,updatedAt",
         ],
         cwd=root,
+        required_fields=("number", "title", "body", "url", "labels", "updatedAt"),
+        operation="issue_list",
     ) or []
+    if not isinstance(issues, list):
+        raise github_response_incomplete(
+            operation="issue_list", repo=repo, detail="Issue list response is not an array."
+        )
     candidates: list[dict[str, Any]] = []
     for issue in issues:
+        if (
+            not isinstance(issue.get("number"), int)
+            or isinstance(issue.get("number"), bool)
+            or not isinstance(issue.get("title"), str)
+            or not isinstance(issue.get("body"), str)
+            or not isinstance(issue.get("url"), str)
+            or not isinstance(issue.get("updatedAt"), str)
+            or not isinstance(issue.get("labels"), list)
+        ):
+            raise github_response_incomplete(
+                operation="issue_list", repo=repo, detail="Issue list row has invalid field types."
+            )
         score, reason = score_duplicate(requirement, issue)
         if score >= 0.18:
             similarity = "high" if score >= 0.45 else "medium" if score >= 0.25 else "low"
@@ -32410,27 +32442,51 @@ def task_workspace_created_issue_recovery_candidates(
             "number,title,url,body,state,updatedAt,createdAt,labels",
         ],
         cwd=root,
+        required_fields=(
+            "number", "title", "url", "body", "state", "updatedAt", "createdAt", "labels",
+        ),
+        operation="issue_recovery_list",
     )
-    if issues is None:
-        return []
     if not isinstance(issues, list):
-        raise WorkflowError("Created issue recovery search returned an invalid payload.", exit_code=2)
+        raise github_response_incomplete(
+            operation="issue_recovery_list",
+            repo=str(target["repo"]),
+            detail="Created issue recovery response is not an array.",
+        )
     expected_labels = sorted({str(item) for item in draft.get("labels", []) if str(item)})
     matches: list[dict[str, Any]] = []
     for issue in issues:
-        if not isinstance(issue, dict):
-            continue
         number = issue.get("number")
-        if not isinstance(number, int) or isinstance(number, bool) or number < 1:
-            continue
+        if (
+            not isinstance(number, int)
+            or isinstance(number, bool)
+            or number < 1
+            or any(not isinstance(issue.get(field), str) for field in (
+                "title", "url", "body", "state", "updatedAt", "createdAt",
+            ))
+            or not isinstance(issue.get("labels"), list)
+            or any(
+                not isinstance(label, dict) or not isinstance(label.get("name"), str)
+                for label in issue["labels"]
+            )
+        ):
+            raise github_response_incomplete(
+                operation="issue_recovery_list",
+                repo=str(target["repo"]),
+                detail="Created issue recovery row has invalid field types.",
+            )
         expected_url = f"https://github.com/{target['repo']}/issues/{number}"
         try:
             created_at = parse_iso_datetime(
                 issue.get("createdAt"),
                 "created issue recovery candidate createdAt",
             )
-        except WorkflowError:
-            continue
+        except WorkflowError as exc:
+            raise github_response_incomplete(
+                operation="issue_recovery_list",
+                repo=str(target["repo"]),
+                detail="Created issue recovery row has an invalid createdAt timestamp.",
+            ) from exc
         if (
             str(issue.get("state") or "").lower() == "open"
             and issue.get("url") == expected_url

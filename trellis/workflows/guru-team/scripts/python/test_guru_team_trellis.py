@@ -376,6 +376,65 @@ class GitHubCliAdapterTest(unittest.TestCase):
         self.assertEqual(result["full_name"], "owner/repo")
         self.assertEqual(runner.call_args.args[0], ["gh", "api", "repos/owner/repo"])
 
+    def test_authenticated_login_reads_the_supported_hosts_shape(self) -> None:
+        payload = json.dumps({
+            "hosts": {
+                "github.com": [{
+                    "state": "success",
+                    "active": True,
+                    "host": "github.com",
+                    "login": "current-user",
+                }]
+            }
+        })
+        with (
+            mock.patch.object(gtt, "require_github_repo_access"),
+            mock.patch.object(gtt, "run", return_value=self.completed(0, stdout=payload)) as runner,
+        ):
+            self.assertEqual(
+                gtt.github_authenticated_login(self.root, "owner/repo"),
+                "current-user",
+            )
+        self.assertEqual(
+            runner.call_args.args[0],
+            [
+                "gh", "auth", "status", "--active", "--hostname", "github.com",
+                "--json", "hosts",
+            ],
+        )
+
+        incomplete = json.dumps({"hosts": {"github.com": []}})
+        with (
+            mock.patch.object(gtt, "require_github_repo_access"),
+            mock.patch.object(gtt, "run", return_value=self.completed(0, stdout=incomplete)),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.github_authenticated_login(self.root, "owner/repo")
+        self.assertEqual(
+            raised.exception.payload["error_code"],
+            "github_response_incomplete",
+        )
+
+    def test_duplicate_search_rejects_incomplete_issue_rows(self) -> None:
+        incomplete = {
+            "title": "Incomplete issue",
+            "body": "body",
+            "url": "https://github.com/owner/repo/issues/1",
+            "labels": [],
+            "updatedAt": "2026-08-09T00:00:00Z",
+        }
+        with mock.patch.object(gtt, "gh_json", return_value=[incomplete]) as gh_json:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.duplicate_search("owner/repo", "requirement", self.root, 5)
+        self.assertEqual(
+            raised.exception.payload["error_code"],
+            "github_response_incomplete",
+        )
+        self.assertEqual(
+            gh_json.call_args.kwargs["required_fields"],
+            ("number", "title", "body", "url", "labels", "updatedAt"),
+        )
+
     def test_check_env_exposes_stable_cli_and_auth_error_codes(self) -> None:
         common = {
             "repo_root": mock.patch.object(gtt, "repo_root", return_value=self.root),
@@ -4186,6 +4245,20 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 [item["number"] for item in gtt.task_workspace_created_issue_recovery_candidates(self.root, plan)],
                 [500],
             )
+        incomplete = dict(exact)
+        incomplete.pop("createdAt")
+        with (
+            mock.patch.object(gtt, "gh_json", return_value=[incomplete]) as gh_json,
+            mock.patch.object(gtt, "create_issue") as create_issue,
+            self.assertRaises(gtt.WorkflowError) as incomplete_error,
+        ):
+            gtt.task_workspace_created_issue_result(self.root, plan)
+        self.assertEqual(
+            incomplete_error.exception.payload["error_code"],
+            "github_response_incomplete",
+        )
+        self.assertIn("createdAt", gh_json.call_args.kwargs["required_fields"])
+        create_issue.assert_not_called()
         second_exact = {**exact, "number": 502, "url": "https://github.com/owner/repo/issues/502"}
         with (
             mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[exact, second_exact]),
