@@ -124,3 +124,9 @@ Guru public packages, consumer schemas, eval corpora, adapter runtime, native
 trace contracts, companion scripts, and selected-platform `guru-*` discovery
 copies are additive Guru-owned assets. Their current Interface 1.3 identities
 come from the live registry and package contracts.
+
+Schema migrations inside those existing Guru namespaces do not expand path
+ownership or managed claims. Publication/Finalizer 4.0, closeout plan 3.0, and
+finish-summary 2.0 replace current managed bytes in place; retired task-local
+publication artifacts are not installed or claimed, and no compatibility asset
+may be added outside the declared inventories.

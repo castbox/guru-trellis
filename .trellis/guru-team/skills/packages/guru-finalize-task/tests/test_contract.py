@@ -41,6 +41,11 @@ class FinalizeTaskContractTests(unittest.TestCase):
     def test_publication_head_public_io_uses_versioned_current_contracts(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
         contracts = interface["public_contracts"]
+        publication_input = next(
+            item
+            for item in contracts["input"]["profiles"]
+            if item["id"] == "publication_ready"
+        )
         verified_input = next(
             item
             for item in contracts["input"]["profiles"]
@@ -54,8 +59,15 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(
             contracts["input"]["aggregate_schema"],
             {
-                "schema_id": "guru-finalize-task-input-aggregate-4.0",
-                "path": "schemas/public-input-4.0.schema.json",
+                "schema_id": "guru-finalize-task-input-aggregate-5.0",
+                "path": "schemas/public-input-5.0.schema.json",
+            },
+        )
+        self.assertEqual(
+            publication_input["schema"],
+            {
+                "schema_id": "guru-finalize-task-input-publication-ready-4.0",
+                "path": "schemas/public-publication-ready-input-4.0.schema.json",
             },
         )
         self.assertEqual(
@@ -184,6 +196,11 @@ class FinalizeTaskContractTests(unittest.TestCase):
             hashlib.sha256(legacy_aggregate.read_bytes()).hexdigest(),
             "f7eaf2e0abb6e2f91699212d6bca270a7f59fb3fe0f6c11182349902bd86789a",
         )
+        legacy_publication = PACKAGE / "schemas/public-publication-ready-input.schema.json"
+        self.assertEqual(
+            hashlib.sha256(legacy_publication.read_bytes()).hexdigest(),
+            "da6d67a565bb742e58f30579898fd5dc9803058c866b37540aebf7f05b9b3a7a",
+        )
 
     def test_private_route_schemas_accept_only_the_closed_executor_marker(self) -> None:
         spec = importlib.util.spec_from_file_location(
@@ -267,7 +284,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
     def test_archive_contract_matches_current_runtime_limit(self) -> None:
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
-        self.assertIn("schema 2.0", contract)
+        self.assertIn("schema 3.0", contract)
+        self.assertIn("legacy closeout-plan path", contract)
         self.assertIn("seven-file", contract)
         self.assertIn("at most eight files", contract)
 

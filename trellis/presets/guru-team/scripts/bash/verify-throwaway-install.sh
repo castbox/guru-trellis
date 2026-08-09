@@ -1380,7 +1380,7 @@ assert {
     "skill-registry.schema.json",
 }
 for artifact in (
-    "pr-body.md", "review-gate.json", "pr-readiness.json",
+    "review-gate.json", "pr-readiness.json",
     "closeout-plan.json", "finish-summary.json", "issue-review.json",
 ):
     assert artifact in api["artifact_contracts"]
@@ -1420,7 +1420,7 @@ assert "guru-change-request-review-1.0" in api["skill_contracts"]["artifact_sche
 assert "guru-extension-installation-verification-3.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-issue-scope-ledger-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-review-gate-3.0" in api["skill_contracts"]["artifact_schema_ids"]
-assert "guru-task-publication-readiness-3.0" in api["skill_contracts"]["artifact_schema_ids"]
+assert "guru-task-publication-readiness-4.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-plan-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-task-workspace-result-2.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert api["skill_contracts"]["interface_schema_id"] == "guru-team-skill-interface-1.3"

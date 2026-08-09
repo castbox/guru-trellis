@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-3.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,6 +9,7 @@
     "task_ref",
     "branch_review_commit",
     "reviewed_content_sha256",
+    "pr_payload",
     "dimensions",
     "findings",
     "conclusions",
@@ -16,7 +17,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "3.0"
+      "const": "4.0"
     },
     "skill_id": {
       "const": "guru-review-task-publication"
@@ -33,6 +34,15 @@
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
       "description": "Owner-private guru-reviewed-content-1.0 freshness identity; branch_review_commit remains a public Git commit anchor."
+    },
+    "pr_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "body"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "body": {"type": "string", "minLength": 1}
+      }
     },
     "dimensions": {
       "type": "array",

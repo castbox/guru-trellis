@@ -328,8 +328,8 @@ Invoke guru-review-branch over the complete committed base-to-HEAD range.
 
 #### 3.6 Publication review
 
-After branch review passes, author current task-local `pr-body.md` and
-finish-summary-index.json candidates, then invoke guru-review-task-publication.
+After branch review passes, invoke guru-review-task-publication. Its semantic owner authors and reviews the exact Chinese PR title/body from live authority.
+The checked ready DTO carries that payload directly to Finalizer without a task-local publication handoff file.
 
 #### 3.7 Finalization
 
@@ -382,10 +382,10 @@ resolve human-authored artifacts:
 
     .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
 
-Show a Markdown 产物 review 表 containing only existing `prd.md`,
-`design.md`, `implement.md`, and `pr-body.md`. Resolve from the active task
-first and from the archive after publication. Do not expose JSON gates,
-checkpoints, raw agent reports, or digests as standard handoff artifacts.
+Show links only for existing `prd.md`, `design.md`, and `implement.md`. Resolve
+from the active task first and from the archive after publication. Do not
+require a fixed table, and do not expose JSON gates, checkpoints, raw agent
+reports, payloads, or digests as standard handoff artifacts.
 
 ### Interaction and side effects
 

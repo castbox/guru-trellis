@@ -55,6 +55,8 @@ Guru Trellis 不是 Trellis 的分叉版本，也不替代官方 Trellis。
 
 Guru Team preset 提供面向规划、实现检查、任务提交、分支审查、发布审核和最终收口的协作能力，使每个阶段都能读取前序结果，同时保持职责清晰。
 
+发布审核由 Publication 在同一个语义循环中生成并审查准确的中文 PR 标题与正文，随后以包含任务、分支审查提交和标题正文的五字段 4.0 结果直接交给 Finalizer，不再创建 task-local PR body 或索引交接文件。Finalizer 将该结果与实时仓库事实绑定为 closeout plan 3.0，并在草稿 PR 建立后一次生成 finish summary 2；历史归档中的 finish summary 1 仍可只读检索。
+
 ### 多平台一致体验
 
 团队可以在 Codex、Claude Code、Cursor 等不同 AI 工具中使用同一套 Guru Team 语义。平台入口可以不同，但工作目标、判断原则和交付标准保持一致。

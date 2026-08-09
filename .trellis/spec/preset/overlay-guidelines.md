@@ -41,6 +41,11 @@ confirmation rules, recorder/checker commands, artifact lifecycles, recovery
 mechanics, deterministic closeout flags, or private runtime facts. They must not
 call `finish-work.sh` directly.
 
+Publication payload projection is package/workflow behavior, not an overlay
+concern. The three launchers route through current typed exits and must not
+author `pr-body.md`, `finish-summary-index.json`, adapt legacy 3.0 DTOs, or
+reconstruct title/body for Finalizer.
+
 Codex uses the `guru-finish-work` prompt, Claude uses
 `/guru:finish-work`, and Cursor uses `/guru-finish-work`.
 

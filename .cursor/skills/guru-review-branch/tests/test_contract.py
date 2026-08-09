@@ -58,7 +58,7 @@ class ReviewBranchContractTest(unittest.TestCase):
 
     def test_eight_preconditions_and_semantic_profile(self) -> None:
         expected = [
-            "runtime_dependency", "workspace_boundary", "task_identity", "commit_handoff",
+            "runtime_dependency", "workspace_boundary", "task_identity", "commit_identity",
             "issue_scope_ledger", "review_range", "working_tree", "invocation_freshness",
         ]
         self.assertEqual([item["id"] for item in self.interface["entry_preconditions"]], expected)

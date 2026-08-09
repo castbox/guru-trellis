@@ -39,7 +39,6 @@
       "issue-review.json",
       "phase2-check.json",
       "issue-scope-ledger.json",
-      "pr-body.md",
       "review-gate.json",
       "pr-readiness.json",
       "task-finalization-gate.json",
@@ -55,7 +54,7 @@
       "public_input_schema_ids": [
         "guru-extension-verify-installation-input-standalone-verification-1.0",
         "guru-extension-verify-installation-input-verification-required-3.0",
-        "guru-finalize-task-input-publication-ready-3.0",
+        "guru-finalize-task-input-publication-ready-4.0",
         "guru-finalize-task-input-reprepare-preview-3.0",
         "guru-finalize-task-input-same-plan-resume-2.0",
         "guru-finalize-task-input-standalone-finalization-2.0",
@@ -114,7 +113,7 @@
         "guru-production-review-branch-output-passed-3.0",
         "guru-production-review-branch-output-scope-confirmation-required-1.0",
         "guru-production-review-task-publication-output-blocked-1.0",
-        "guru-production-review-task-publication-output-ready-3.0",
+        "guru-production-review-task-publication-output-ready-4.0",
         "guru-production-review-task-publication-output-return-to-task-work-1.0",
         "guru-stage0-clarify-requirements-output-blocked-1.0",
         "guru-stage0-clarify-requirements-output-clear-1.0",
@@ -156,7 +155,7 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-3.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-3.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json",
         "https://github.com/castbox/guru-trellis/trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
@@ -174,7 +173,7 @@
         "guru-requirements-clarification-2.0",
         "guru-review-gate-3.0",
         "guru-task-finalization-gate-3.0",
-        "guru-task-publication-readiness-3.0",
+        "guru-task-publication-readiness-4.0",
         "guru-task-workspace-plan-2.0",
         "guru-task-workspace-result-2.0"
       ],

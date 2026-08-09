@@ -1769,6 +1769,36 @@ def production_publication_authoring(
     dimension_status = {
         item: "passed" for item in runtime.TASK_PUBLICATION_DIMENSIONS
     }
+    metadata_revision = (
+        "\n\n<a id=\"metadata-fix\"></a>\n"
+        "已完成 owner-private PR payload 修订并重新审查。"
+        if route == "metadata-fix-ready"
+        else ""
+    )
+    pr_payload = {
+        "title": "完成：#146 验证 Publication public wrapper 闭环",
+        "body": (
+            "## 变更摘要\n\n"
+            "- 完成真实 public wrapper、recorder 与 checker 闭环评测。\n\n"
+            "## 影响范围\n\n"
+            "- 影响 Publication Skill、共享 runtime 与隔离评测仓库。\n\n"
+            "## 验证结果\n\n"
+            "- 已执行 recorder、checker 与 public wrapper 真实命令。\n\n"
+            "## Review Gate\n\n"
+            "- Branch Review Gate 已通过并绑定当前 HEAD。\n\n"
+            "## Issue 关闭范围\n\n"
+            "- Closes #146。\n\n"
+            "## 安全说明\n\n"
+            "- 不写生产环境，不处理 secret，不执行真实 GitHub 发布。\n\n"
+            "## Docs SSOT\n\n"
+            "- strategy: ssot_first\n"
+            "- durable docs: docs/requirements.md 已作为实现输入。\n"
+            "- merged delta: task delta 已合并到 durable docs。\n"
+            "- task history: eval staging evidence 仅保留在 task history。\n"
+            "- follow-up: 当前 PR 无额外限制。"
+            + metadata_revision
+        ),
+    }
     findings: list[dict[str, Any]] = []
     if typed_exit == "return_to_task_work":
         dimension = (
@@ -1800,7 +1830,7 @@ def production_publication_authoring(
             "summary": "An external publication dependency is unavailable.",
             "scope_basis": "The dependency cannot be repaired by current task work.",
             "evidence_refs": ["external:publication-dependency"],
-            "affected_artifacts": ["pr-body.md"],
+            "affected_artifacts": ["external:publication-dependency"],
             "route_class": "external_blocker",
             "status": "open",
             "closure_evidence": [],
@@ -1809,21 +1839,21 @@ def production_publication_authoring(
         findings.append({
             "finding_ref": "PUB-META-001",
             "dimension": "pr_body_quality",
-            "summary": "The task-local PR body metadata was revised and rereviewed.",
-            "scope_basis": "The contract permits an internal task-local metadata revision.",
-            "evidence_refs": ["pr-body.md"],
-            "affected_artifacts": ["pr-body.md"],
+            "summary": "The owner-private PR payload was revised and rereviewed.",
+            "scope_basis": "The contract permits an internal payload metadata revision.",
+            "evidence_refs": ["pr_payload.body"],
+            "affected_artifacts": ["pr_payload"],
             "route_class": "metadata_revision",
             "status": "closed",
-            "closure_evidence": ["pr-body.md#metadata-fix"],
+            "closure_evidence": ["pr_payload.body#metadata-fix"],
         })
     dimensions = [{
         "id": dimension,
         "status": dimension_status[dimension],
         "summary": f"The semantic owner reviewed {dimension} against current evidence.",
         "evidence_refs": [
-            "pr-body.md",
-            "finish-summary-index.json",
+            "pr_payload",
+            "issue-scope-ledger.json",
             "git:branch_review_commit",
         ],
     } for dimension in runtime.TASK_PUBLICATION_DIMENSIONS]
@@ -1831,6 +1861,7 @@ def production_publication_authoring(
         "profile": public_input["profile"],
         "mode": public_input["mode"],
         "review_intent": public_input["review_intent"],
+        "pr_payload": pr_payload,
         "dimensions": dimensions,
         "findings": findings,
         "conclusions": {
@@ -1860,7 +1891,7 @@ def production_publication_authoring(
             "safety_deployment": {
                 "status": "blocked" if typed_exit == "blocked" else "passed",
                 "summary": "The owner reviewed safety and deployment impact.",
-                "evidence_refs": ["pr-body.md"],
+                "evidence_refs": ["pr_payload"],
             },
         },
         "route": {"typed_exit": typed_exit},
@@ -2856,64 +2887,6 @@ def stage_production_owner_execution(
         (fixture / "src/production-eval.txt").write_text(
             f"{recipe}\n", encoding="utf-8",
         )
-        if skill_id == "guru-review-task-publication":
-            for name, content in {
-                "pr-body.md": (
-                    "# Production publication eval\n\n"
-                    "## 变更摘要\n\n"
-                    "- 完成真实 public wrapper、recorder 与 checker 闭环评测。\n\n"
-                    "## 影响范围\n\n"
-                    "影响 publication Skill、共享 runtime 与隔离评测仓库。\n\n"
-                    "## 验证结果\n\n"
-                    "已执行 recorder、checker 与 public wrapper 真实命令。\n\n"
-                    "## Review Gate\n\n"
-                    "Branch Review Gate 已通过并绑定当前 HEAD。\n\n"
-                    "## Issue 关闭范围\n\n"
-                    "Closes #146\n\n"
-                    "## 安全说明\n\n"
-                    "不写生产环境，不处理 secret，不执行真实 GitHub 发布。\n\n"
-                    "## Docs SSOT\n\n"
-                    "- strategy: ssot_first\n"
-                    "- durable docs: docs/requirements.md 已作为实现输入。\n"
-                    "- merged delta: task delta 已合并到 durable docs。\n"
-                    "- task history: eval staging evidence 仅保留在 task history。\n"
-                    "- follow-up: 当前 PR 无额外限制。\n"
-                ),
-            }.items():
-                (task / name).write_text(content, encoding="utf-8")
-            runtime.write_json(task / "finish-summary-index.json", {
-                "schema_version": 1,
-                "index": {
-                    "problem": "The production eval requires a publication review.",
-                    "outcome": "The semantic owner selected the current typed exit.",
-                    "changed_behavior": [
-                        "The wrapper projects only the checked owner result."
-                    ],
-                    "affected_surfaces": [{
-                        "kind": "skill",
-                        "name": "guru-review-task-publication",
-                        "paths": ["pr-body.md"],
-                        "change": "The production eval exercises the closed publication owner.",
-                    }],
-                    "contract_changes": [{
-                        "contract": "publication owner result projection",
-                        "before": "The eval did not bind the complete publication owner round.",
-                        "after": "The eval binds the complete checked publication owner round.",
-                        "source_artifact": "",
-                    }],
-                    "search_terms": {
-                    "commands": ["record-task-publication-review"],
-                    "config_keys": [],
-                    "schema_fields": ["publication_ref"],
-                    "symbols": ["TASK_PUBLICATION_SKILL_ID"],
-                        "phrases": [
-                            "完成 task publication review",
-                            "完成 publication_ref owner binding",
-                            "完成 record-task-publication-review 验证"
-                        ],
-                    },
-                },
-            })
         phase2_package = fixture / ".trellis/guru-team/skills/packages/guru-check-task"
         phase2_exit = {
             "check-passed": "passed",
@@ -3051,13 +3024,7 @@ def stage_production_owner_execution(
                     branch_review_commit=initial_input["branch_review_commit"],
                     dry_run=False,
                 ))
-            if recipe == "publication-metadata-fix-ready":
-                with (task / "pr-body.md").open("a", encoding="utf-8") as handle:
-                    handle.write(
-                        "\n<a id=\"metadata-fix\"></a>\n"
-                        "已完成 task-local metadata 修订并重新审查。\n"
-                    )
-            elif recipe == "publication-metadata-durable-drift-return":
+            if recipe == "publication-metadata-durable-drift-return":
                 with (fixture / "docs/requirements.md").open(
                     "a", encoding="utf-8"
                 ) as handle:

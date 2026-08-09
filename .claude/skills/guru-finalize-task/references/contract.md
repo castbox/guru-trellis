@@ -24,8 +24,8 @@ Workflow and standalone modes enforce the same objective preconditions:
 
 - complete current Guru Team runtime and active package inventory;
 - portable task/worktree or archived-task identity;
-- current Publication `ready` DTO, scope ledger, durable task/content state,
-  body, finish-summary-index, and live reviewed-content Git identity;
+- current Publication `ready` DTO with exact title/body, scope ledger, durable
+  task/content state, and live reviewed-content Git identity;
 - credential-free repository/base/head/remote identity and GitHub access;
 - official `task.py archive --no-commit` contract and empty `after_archive`
   hook;
@@ -84,8 +84,12 @@ effect. Drift blocks.
 
 For every prepare and same-plan recovery, `tracked_move_paths` is rebuilt from
 the live Git index and `untracked_archive_outputs` is its exact complement in
-`move_paths`; an older schema 2.0 projection is migration input, not
-classification authority. The immutable projection binds every tracked move
+`move_paths`. The only legacy closeout-plan path accepts a complete schema 2.0
+plan together with a current Publication 4.0 DTO whose task, commit, title, body
+digest, and protected facts match. It rebuilds schema 3.0 from the DTO payload,
+records the exact predecessor plan digest, and never reads the retired body or
+summary-index files. Every other retired shape fails closed and requires
+Publication re-entry. The immutable projection binds every tracked move
 path whose current regular-file bytes or mode differ from its
 `branch_review_commit` blob with one sorted task-relative `path`, Git `mode`,
 and SHA-256 row. Duplicate, out-of-set, stale, missing, or unnecessary rows
@@ -94,20 +98,9 @@ legacy Git already tracks `closeout-plan.json`, its current bytes are bound by
 the plan's canonical schema and `plan_digest` rather than a recursive raw-file
 SHA-256 row.
 
-The normalized immutable projection stores one nullable
-`migration_predecessor_plan_digest`. It is the exact digest of the legacy plan
-consumed by the first schema 2.0 normalization, never a general history set or
-opaque reference allowlist. Marketplace verification evidence may retain that
-one predecessor `plan_ref` only when `marketplace-verification.json` itself is
-in the exact reviewed tracked binding set. Current-plan references remain
-valid; unrelated historical refs fail closed. Same-month rebuilds preserve the
-single predecessor, while cross-month reprepare clears it and therefore retires
-all predecessor verification compatibility.
-An interrupted archive written by the immediately preceding schema 2.0 runtime
-may contain `reviewed_tracked_bindings` but no predecessor field. Archived and
-active-move recovery read that exact immutable legacy shape with `null`
-predecessor semantics and never rewrite its commit; every new or normalized
-active plan still emits the complete current projection.
+The immutable plan stores the exact reviewed `publish.title` and `publish.body`.
+Same-plan recovery, Draft convergence, remote validation, and archive recovery
+reuse those exact values and never read a Publication file or checkpoint.
 
 Pre-move continuity, verification fallback, archive movement, and post-move
 continuity consume that same projection. A tracked metadata tail is accepted
@@ -148,7 +141,7 @@ The deterministic order is fixed:
 
 Active-task artifacts may be necessary for current-step validation or crash
 recovery without becoming permanent handoff documents. New closeout plans use
-schema 2.0. In a new task, `closeout-plan.json` and `finish-summary.json` begin
+schema 3.0. In a new task, `closeout-plan.json` and `finish-summary.json` begin
 as untracked active transaction outputs and become tracked in the single
 archive commit. A migrated task may already track legacy `closeout-plan.json`;
 the live Git index then classifies it as tracked throughout normalization,
@@ -167,10 +160,10 @@ When marketplace verification applies, `marketplace-verification.json` is the
 only optional archive file, so the archive contains at most eight files.
 
 Intake/context snapshots, assignment or liveness state, commit plans, raw
-review rounds, `review.md`, `pr-body.md`, `pr-readiness.json`, and
-`finish-summary-index.json` are current-step inputs or reconstructible facts and
-are not copied into the long-term archive tree. A crash after move and before or
-during pruning re-enters the same idempotent pruning step.
+review rounds, `review.md`, and `pr-readiness.json` are current-step inputs or
+reconstructible facts and are not copied into the long-term archive tree. A
+crash after move and before or during pruning re-enters the same idempotent
+pruning step.
 
 ## Recovery
 
@@ -188,9 +181,26 @@ during pruning re-enters the same idempotent pruning step.
 - Pre-PR verification rejected only because the reviewed checkout provenance
   is stale -> `reprepare_required` with `provenance_tail_required`; generate or
   reuse the one allowlisted provenance tail, retire the old private
-  plan/evidence, preview a new plan, and obtain fresh confirmation. Other
+  plan/evidence, preview a new plan, and obtain fresh confirmation. A pre-#191
+  schema 3.0 predecessor is accepted only when its exact legacy
+  `verification_required` gate/request, task/repo/remote/base/head identity,
+  active/no-PR/no-archive/single-consumer state, untracked artifacts,
+  old-to-current reviewed ancestry, and fast-forwardable remote ancestor all
+  remain current. Publication proves this without mutation; the checked
+  Finalizer transition repeats the proof, retires the old state, creates or
+  reuses the tail, and persists the fresh replacement plan. Other
   verification failures remain blocked. Tracked task artifacts are preserved
   and block this automatic cleanup path.
+
+  During the bounded pre-#191 base-evolution window, the exact legacy
+  `verification_required` gate remains at the normal Finalizer checkpoint path
+  until the checked transition repeats that proof. The recorder stores the
+  current `reprepare_required` executor marker in the separate ignored
+  `task-finalization-transition-gate.json` checkpoint under the same Finalizer
+  owner and gate schema. Checker and executor require both checkpoints and the
+  matching request; ordinary Finalizer states reject the transition checkpoint.
+  Successful supersession retires both gates together with the predecessor plan
+  and matching verification request before persisting the replacement plan.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.
@@ -214,8 +224,9 @@ Workflow mode automatically consumes every non-terminal recovery exit.
 
 The six closed profiles are:
 
-- `publication_ready`: `profile`, `mode`, `task_ref`, and
-  `branch_review_commit` from the current Publication owner output.
+- `publication_ready`: `profile`, `mode`, `task_ref`,
+  `branch_review_commit`, `pr_title`, and exact UTF-8 `pr_body` from the current
+  Publication owner output.
 - `verification_verified`: the minimal #117 verified seed; no routine re-entry
   intent is authored.
 - `standalone_verification_not_required`: the reachable task-bearing #117
@@ -250,7 +261,8 @@ current; same-plan recovery reuses that private binding.
   that already-current DTO in its gate because HEAD does not change. Provenance
   recovery retains a private marker until the deterministic executor has
   created or reused the tail, retired the old owner-private plan/gate/request,
-  and can return both heads. Schema 2.0 output and schema 3.0 input add the
+  persisted the fresh replacement plan when base evolution superseded a
+  pre-#191 predecessor, and can return both heads. Schema 2.0 output and schema 3.0 input add the
   provenance reason and direct-consumer identity while preserving the existing
   archive-month value.
 - `published`: the exact plan archive locator and canonical PR number/URL;
@@ -273,9 +285,9 @@ The four pre-#191 public DTO schemas remain immutable compatibility assets:
 
 Those legacy schemas keep their original bytes and do not contain
 `publication_head`. The current Interface selects Finalizer output 3.0,
-Verifier input 3.0, Verifier output 3.0, and Finalizer input 4.0. Finalizer's
-current aggregate input is 4.0; aggregate 3.0 remains bound to the legacy
-Finalizer input path. The executable current handoffs are the Interface
+Verifier input 3.0, Verifier output 3.0, and Finalizer publication input 4.0.
+Finalizer's current aggregate input is 5.0; aggregate 3.0 and the #191 aggregate
+4.0 remain immutable compatibility assets. The executable current handoffs are the Interface
 `project_verification_required` and Verifier `project_verified` projections:
 each selects `publication_head` without renaming or defaulting it, merges only
 the target-owned profile/mode authoring fields, and validates the result against

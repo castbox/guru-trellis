@@ -33,19 +33,19 @@ Every finding records a stable ref, dimension, scope basis, evidence and
 affected artifacts, route, status, and closure evidence. The AI chooses
 `metadata_revision`, `task_work`, or `external_blocker`; scripts do not.
 
-Only `pr-body.md`, `finish-summary-index.json`, and contract-listed
-Issue-Scope-Ledger publication metadata are eligible for internal revision.
-After revision, reread all eight objective preconditions, recompute the changed
-artifacts, and re-review only dimensions whose declared evidence dependencies
-changed. The freshness reread is not a demand to repeat unrelated semantic
-analysis. Carry forward an unchanged dimension only after its evidence bindings
-remain byte-identical and current; the gate still contains all ten dimensions.
+The owner may revise only its in-memory PR title/body and contract-listed
+Issue-Scope-Ledger publication metadata. It never creates a task-local PR body
+or finish-summary index handoff. After revision, reread all eight objective
+preconditions and re-review only dimensions whose declared evidence
+dependencies changed. The freshness reread is not a demand to repeat unrelated
+semantic analysis. Carry forward an unchanged dimension only after its evidence
+bindings remain current; the gate still contains all ten dimensions.
 Any source, test, durable docs, spec, workflow, schema, config, preset, CI/CD,
 deployment, or Branch Review drift returns to task work.
 
 Use the immutable reviewed content identity, live base-to-HEAD Git facts,
-current task and durable docs, Issue Scope Ledger, PR body, and finish summary
-index as semantic evidence. Publication does not read Planning, Phase 2, or
+current task and durable docs, Issue Scope Ledger, and the exact PR payload as
+semantic evidence. Publication does not read Planning, Phase 2, or
 Branch Review private checkpoints and never requires an
 `implementation-handoff.md` transcription.
 
@@ -83,10 +83,17 @@ explicit finding or blocker without a script choosing that route.
 `return_to_task_work` carries exact finding refs. `blocked` carries a stable
 reason and remediation.
 
-The `ready` DTO contains only `exit_id`, `task_ref`, and
-`branch_review_commit`. Finalizer consumes that DTO directly and runs the same
-side-effect-free closeout preflight already required before `ready`; it never
-reads, augments, or understands the Publication checkpoint.
+The `ready` DTO contains exactly `exit_id`, `task_ref`,
+`branch_review_commit`, `pr_title`, and `pr_body`. Finalizer consumes those five
+fields directly and runs the same side-effect-free closeout preflight already
+required before `ready`; it never reads, augments, or understands the
+Publication checkpoint. That preflight may classify one owner-private pre-#191
+Finalizer plan as supersedable, but only after objectively proving its exact
+legacy verification gate/request, unchanged task/repository/branch identities,
+active pre-PR/pre-archive single-consumer state, untracked artifacts,
+old-to-current reviewed ancestry, and fast-forwardable remote ancestor. It does
+not retire the old state or create the provenance tail; only the checked
+Finalizer transition may do so.
 
 After any checked typed output passes its output schema, the Publication public
 wrapper deletes its own checkpoint. A failed checker or invalid projection keeps

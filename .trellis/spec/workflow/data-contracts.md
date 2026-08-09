@@ -520,12 +520,16 @@ Git paths. The generator sorts and deduplicates Git paths by exact string, and
 validators still reject exact duplicates. Non-path semantic and search-token
 string arrays continue to reject duplicates after text normalization.
 
-The AI input is task-local `finish-summary-index.json` with schema version 1 and
-only semantic index fields. It accepts at most 19 `contract_changes`; the final
-schema accepts 20 so the recorder always has capacity for the fixed
-protected-path filtering fact. Final facts come from `task.json`, Issue Scope
-Ledger, ignored runtime identity, live Git, archived artifact existence, UTC
-time, and publish output. Final artifacts live at
+Current finish-summary schema version 2 has no task-local semantic input file.
+Finalizer builds it once from the exact Publication-reviewed PR payload,
+`task.json`, Issue Scope Ledger, ignored runtime identity, live Git, archived
+artifact existence, UTC time, and the unique publish output. `index.problem`
+comes from task/Issue identity; `index.outcome` and `index.changed_behavior`
+come from the validated PR body change-summary section; affected surfaces come
+from the closed changed-path classifier; contract changes are empty except for
+fixed machine-triggered facts. Search terms and `retrieval_text` remain derived
+facts. Historical schema version 1 summaries remain readable by Discovery, but
+the current writer never emits schema 1. Final artifacts live at
 `.trellis/tasks/archive/<YYYY-MM>/<task>/finish-summary.json`; values may not
 contain absolute, parent, workspace, runtime, backslash, CR, or LF paths, and
 may not contain leading or trailing whitespace.
@@ -546,11 +550,11 @@ or count details; an empty filtered set adds no such fact. Schema and Python
 validation reject protected prefixes in every path field. The final summary is
 built once in the active task after draft PR binding and moves unchanged to the
 archive locator. Publication's ignored-runtime readiness checkpoint owns its
-semantic conclusion and emits only task plus `branch_review_commit`; Finalizer
-does not read or commit that checkpoint. The closeout plan independently binds
-repo/base/head, exact title, raw `pr-body.md` SHA-256, `draft=true`, and its
-internal digest. Active-state recovery consumes the index-derived active schema
-2.0 plan plus Git/remote, marketplace owner, task layout, and PR facts. Reuse and final projection require one exact PR
+semantic conclusion and emits exact title/body with task plus
+`branch_review_commit`; Finalizer does not read or commit that checkpoint. The
+closeout plan binds repo/base/head, exact title/body, `draft=true`, and its
+internal digest. Active-state recovery consumes the active schema 3.0 plan plus
+Git/remote, marketplace owner, task layout, and PR facts. Reuse and final projection require one exact PR
 number/URL/title/body identity; one matching draft is reused, zero creates one,
 and multiple identities fail closed. The real-PR final summary has one
 deterministic UTF-8 JSON byte representation and digest. Pre-move continuity
@@ -580,7 +584,7 @@ casing.
 Archive content identity is not inferred from the no-renames path set. Before
 the exact archive commit exists, each `tracked_move_paths` item binds the
 `branch_review_commit` blob to the archived working-tree file and prospective
-schema 2.0 archive commit blob. A tracked file that differs from that parent
+schema 3.0 archive commit blob. A tracked file that differs from that parent
 blob must match its exact `reviewed_tracked_bindings` mode and SHA-256; an
 unbound difference fails closed. `task.json` may then apply only the official
 `status` and `completedAt` archive fields to those reviewed pre-move bytes.
@@ -840,8 +844,9 @@ deletes it for `implementation_required`, `planning_stale`, and `blocked`.
 Task Commit deletes the retained checkpoint only after a commit is successfully
 published or the same published commit is successfully recovered; a failed
 candidate or executor attempt retains it for bounded retry. Branch Review then
-consumes the committed Task Commit DTO and validates parent, message, paths,
-content continuity and the complete range directly from live Git. Downstream
+consumes the committed Task Commit DTO and validates parent, paths, content
+continuity and the complete range directly from live Git. Commit message format
+is not downstream freshness authority. Downstream
 workflow metadata is validated by its owning gate and is never projected back
 into Phase 2.
 
@@ -990,9 +995,14 @@ enforcement:
 
 ## Commit Message Payloads
 
-`check-commit-messages --json` validates objective commit subject/body shape
-for the checked range. It must not decide whether implementation, Phase 2 check,
-Branch Review, or PR readiness is sufficient. The payload is additive and uses:
+`check-commit-messages --json` is an explicit standalone quality diagnostic for
+objective commit subject/body shape. `guru-create-task-commit` still validates
+the exact message it is about to create, but Branch Review, Publication, and
+Finalizer do not rerun range-level message parsing or use subject/body/`Refs` as
+freshness authority. Message-only deviation therefore cannot require a metadata
+commit while reviewed content identity is unchanged. The diagnostic must not
+decide whether implementation, Phase 2 check, Branch Review, or PR readiness is
+sufficient. Its payload is additive and uses:
 
 ```json
 {
@@ -1079,12 +1089,18 @@ children remain valid historical references.
 
 ## Closeout Plan
 
-`closeout-plan.json` is current-only schema version `2.0` and is the immutable
+`closeout-plan.json` is current-only schema version `3.0` and is the immutable
 machine input contract shared by preview and formal finish. New plans are
 untracked active transaction checkpoints that become tracked only in the single
-archive commit. A migrated active task may already track a legacy schema 2.0
-plan; Finalizer normalizes and keeps that file in the tracked class throughout
-the same transaction. The plan records portable task and
+archive commit. One bounded legacy schema 2.0 transaction migration is allowed
+only when the invocation also carries a current Publication 4.0 DTO: task,
+`branch_review_commit`, title, and every protected transaction fact must match,
+and SHA-256 of the DTO body must equal legacy `publish.body_sha256`. Finalizer
+then normalizes in memory to schema 3.0, records the legacy plan digest as the
+migration predecessor, and rebuilds the current summary template from the exact
+DTO body. It never reads `pr-body.md`, `finish-summary-index.json`, a private
+checkpoint, or another fallback. Missing/mismatched DTO evidence fails closed
+and requires a fresh Publication run. The plan records portable task and
 repo/base/`branch_review_commit` identity plus separate
 `git.reviewed_content_head` and `git.publication_head`,
 protected input SHA-256 values, reviewed paths and close scope, exact draft PR
@@ -1125,14 +1141,12 @@ with each other and with `git.repo`, while `isCrossRepository` must be false.
 Missing/unknown fields or a same-name fork candidate fail closed before PR
 cardinality, final-summary binding, archive, recovery, or ready transition.
 
-`publish.body_sha256` hashes the task-local `pr-body.md` bytes. Those bytes must
-decode as non-empty UTF-8, and the decoded text is the one canonical body value
-used by active readiness recovery, `gh pr create`, unique draft reuse, and final
-projection. Leading/trailing whitespace, trailing newlines, and
+`publish.title` and `publish.body` are the exact Publication-reviewed payload
+used by active recovery, `gh pr create`, unique draft reuse, final projection,
+and archived recovery. Leading/trailing whitespace, trailing newlines, and
 Markdown-sensitive spaces are identity data; validators never trim or add a
-newline before comparing the remote PR body. After archive, the remote body's
-UTF-8 bytes are hashed directly and compared with `publish.body_sha256`; the
-task-local body is not reopened.
+newline before comparing the remote PR body. The canonical plan digest binds
+the complete payload, so there is no separate body-file locator or body hash.
 
 The archive retains only durable files present from this seven-file set:
 `task.json`, `prd.md`, `design.md`, `implement.md`,
@@ -1147,11 +1161,10 @@ the official archive command. On every prepare and same-plan recovery,
 and the live Git index; each item requires an active deletion and archive
 addition in the one archive transaction. `projection.untracked_archive_outputs`
 is the exact complement. New plans classify both `closeout-plan.json` and
-`finish-summary.json` as untracked outputs. A migrated task whose live index
-already tracks legacy `closeout-plan.json` keeps it in `tracked_move_paths`,
-while `finish-summary.json` remains a required untracked output. Historical
-schema 2.0 tracking classes are migration input, not current classification
-authority. The normalized classes become immutable plan facts for the archive
+`finish-summary.json` as untracked outputs. A migrated active task whose live
+index already tracks legacy `closeout-plan.json` keeps it in
+`tracked_move_paths`, while `finish-summary.json` remains a required untracked
+output. The normalized classes become immutable plan facts for the archive
 transaction and are not inferred from post-move status.
 
 `projection.reviewed_tracked_bindings` is the sorted, unique, closed set of
@@ -1165,16 +1178,18 @@ content tree plus exact pre-move index/status, bindings, and archive transaction
 tree prove the classification and continuity.
 `projection.migration_predecessor_plan_digest` is either `null` or the exact
 digest of the one legacy schema 2.0 plan normalized into the current immutable
-plan. It is set only by that controlled migration, preserved only across
-same-month rebuilds, and cleared by cross-month reprepare. A marketplace
+plan under the Publication 4.0 match rules above. It is set only by that
+controlled no-retired-file migration, preserved only across same-month
+rebuilds, and cleared by cross-month reprepare. A marketplace
 verification owner `plan_ref` may match this predecessor only while
 `marketplace-verification.json` is itself present in the exact reviewed tracked
 binding set; shape-valid but unrelated historical digests remain stale.
 An interrupted archive or active-move state written by the immediately
 preceding schema 2.0 runtime may have reviewed bindings but no predecessor
-field. Recovery reads that exact immutable legacy shape with `null` predecessor
-semantics and never rewrites an archive commit; new and normalized active plans
-always emit the complete current projection.
+field. Recovery validates that immutable legacy shape only as migration input
+alongside the current Publication DTO; it never reopens retired files or rewrites
+an archive commit. New and normalized active plans always emit the complete
+current projection.
 The projection also stores `summary_template`,
 `summary_template_sha256`, the sentinel PR identity, and the exact runtime
 fields that may change. The sentinel uses the
@@ -1192,8 +1207,8 @@ path/commit/blob transaction and never reparses the summary.
 Dry-run returns the complete plan and digest. The Finalizer passes that digest
 internally to formal execution; the user confirms the already displayed exact
 side effects and never repeats a digest, SHA, or branch. A mismatch or protected
-input drift fails before push or file writes. Formal schema 2.0 writes the exact
-plan as its index-derived active transaction class; Publication readiness
+input drift fails before push or file writes. Formal schema 3.0 writes the exact
+plan as its active transaction class; Publication readiness
 and the Finalizer gate stay ignored runtime and are not plan inputs, move paths,
 or archive files. Before draft binding, partial retries derive the next missing
 transition from the active plan, `branch_review_commit`, marketplace owner
@@ -1211,7 +1226,7 @@ PR expected head, and verifier target checkout use `publication_head`.
 
 `task.archive_locator` uses the same live `YYYY-MM` that the unmodified official
 archive command will use. Formal checks it before the first side effect and
-again immediately before official move. If the month changes while a schema 2.0
+again immediately before official move. If the month changes while a schema 3.0
 task is still active, dry-run rebuilds only the active plan with the
 new archive-derived values and a new digest, then the same Finalizer loop reviews
 and confirms it. No evidence/readiness commit, history rewrite, verifier rerun,
@@ -1234,14 +1249,48 @@ Before PR creation or archive, stale/dirty installed provenance may select the
 single mapped `reprepare_required` route. Its gate retains a private marker
 until the deterministic executor prepares one metadata tail in an isolated
 detached checkout and retires the old owner-private plan, Finalizer gate, and
-verification request. Archive-month reprepare changes no HEAD and retains its
-complete current DTO. A new plan keeps the reviewed identity unchanged and
-binds the current publication HEAD. The public DTO carries exactly task, reason,
-`branch_review_commit`, and `publication_head`; the next preview validates
-current HEAD and the optional single-tail parent/allowlist contract before
-building a new plan, without reopening the retired plan. PR already
+verification request. A pre-#191 schema 3.0 plan without
+`reviewed_content_head/publication_head` is eligible only when its exact
+`verification_required` gate/request remain owner-private and current, every
+task/repository/remote/base/head identity matches the prospective current plan,
+the task is active and unarchived, no PR or parallel consumer exists, the old
+reviewed head is an ancestor of the current reviewed head, and the remote branch
+is a fast-forwardable ancestor. Publication checks those facts without mutation;
+only the checked Finalizer transition retires state, creates or reuses the tail,
+and persists the freshly rebuilt replacement plan. Archive-month reprepare
+changes no HEAD and retains its complete current DTO. The public DTO carries
+exactly task, reason, `branch_review_commit`, and `publication_head`; the next
+preview validates current HEAD and the optional single-tail parent/allowlist
+contract against the replacement plan. PR already
 created, archive started, reviewed content/scope drift, non-fast-forward remote,
 or manifest changes outside the allowlist remain fail-closed boundaries.
+
+An unused current schema 3.0 plan with the complete seven-field Git identity may
+use the same mapped base-evolution route without a legacy gate/request. Its
+recorded provenance tail must remain structurally valid, its publication head
+must be an ancestor of the new reviewed head, and the remote branch must remain
+at or before the predecessor reviewed-content head. A remote at the predecessor
+publication tail or any later descendant proves an outbound publication side
+effect and fails closed. The task and plan remain active, unarchived, and
+untracked, with no PR, verification artifact/request, or preexisting Finalizer
+gate. The initial current `publication_ready` DTO supplies
+the exact reviewed `publish.title/body` for the base-evolution candidate and may
+differ from the predecessor plan. The four-field `reprepare_required` DTO does
+not grow payload fields. Only after the executor retires the predecessor and
+persists the replacement plan does minimal `reprepare_preview` treat that
+replacement immutable payload as authority, passing no synthetic Publication
+payload into plan preparation. Recorder writes the ordinary
+`task-finalization-gate.json`; checker/executor may privately admit only that
+byte-identical checked gate while rerunning the preflight.
+
+The pre-#191 base-evolution route temporarily has two same-owner, same-schema
+ignored gate instances with disjoint direct uses: the normal
+`task-finalization-gate.json` remains the exact legacy verification evidence,
+while `task-finalization-transition-gate.json` contains the current semantic
+executor marker. Recorder never overwrites the former. Checker/executor require
+both, reject the transition gate on every ordinary route, and successful
+supersession retires both together with the exact old plan/request. Neither gate
+is public, tracked, archived, or a replacement handoff DTO.
 
 Before the exact archive commit exists, archive recovery accepts only the
 complete mixed no-renames working-tree path set: both sides for every tracked
@@ -1415,16 +1464,17 @@ precedes severity. The last two cannot become current P0-P3 findings.
 ## Publication Readiness Gate
 
 Ignored-runtime `pr-readiness.json` is the only publication readiness gate.
-Current-only schema `guru-task-publication-readiness-3.0` stores only
+Current-only schema `guru-task-publication-readiness-4.0` stores only
 `schema_version`, `skill_id`, `task_ref`, `branch_review_commit`,
-`reviewed_content_sha256`, all ten AI-reviewed dimensions, findings/closure,
+`reviewed_content_sha256`, exact `pr_payload(title,body)`, all ten AI-reviewed dimensions, findings/closure,
 scope/Docs/safety conclusions, and the selected route. Finding summary, scope
 basis, evidence refs, affected artifacts, and closure evidence are non-empty.
 The eight objective entry
 preconditions and shared Finalizer preflight are rebuilt transiently by the
 recorder/checker; their digests, Branch Review checkpoint, publication identity,
-reviewer process, confirmation evidence, and Finalizer publish inputs never
-enter this private checkpoint.
+reviewer process, and confirmation evidence never enter this private
+checkpoint. The payload is present because the wrapper is its one direct
+consumer, not as a durable audit artifact.
 
 `ready`, `return_to_task_work`, and `blocked` share this one artifact and a
 closed exit/consumer union. Stale re-entry rereads current facts and replaces
@@ -1451,20 +1501,26 @@ exit; `ready` remains continuity-strict. The public
 wrapper reruns the current owner checker; no re-entry narrative or supersession
 identity enters the public input, private checkpoint, or exit.
 Publication `ready` already runs the same side-effect-free Finalizer preflight
-that the first preview uses. Finalizer consumes only the minimal ready DTO and
+that the first preview uses. Finalizer consumes only the checked ready DTO and
 never augments or interprets the Publication checkpoint.
 After the checked output passes its schema, the Publication producer wrapper
 deletes that checkpoint before Finalizer entry; a failed check or projection
 retains it only for same-owner repair. Any non-current input or checkpoint shape
 fails schema validation.
 
-`pr-body.md` and `finish-summary-index.json` remain independent task-local
-content inputs, not public handoff state. In the global workflow the caller
-authors their initial current candidates after Branch Review `passed` and
-before publication invocation; the mandatory `publication_content` entry
-binding then validates both exact contents. `ready` binds those bytes, so
-Phase 3.7 cannot first create, regenerate, or revise them. The `ready` output is
-exactly `exit_id`, `task_ref`, and `branch_review_commit`; Publication consumes
+The Publication AI authors and reviews the exact PR payload in memory, and the
+recorder stores it only in the owner-private readiness checkpoint. The wrapper
+projects it without byte-changing normalization and deletes the checkpoint only
+after output validation. The `ready` output is exactly `exit_id`, `task_ref`,
+`branch_review_commit`, `pr_title`, and `pr_body`; Publication consumes
 Branch Review continuity from its current `passed` DTO plus live Git and never
 opens the Branch Review private checkpoint. Full review bodies, paths, findings,
 histories, and derived bindings stay owner-private or transient.
+
+The ready output schema is
+`guru-production-review-task-publication-output-ready-4.0`. Its sole active
+consumer is `guru-finalize-task-input-publication-ready-4.0` within aggregate
+input schema `guru-finalize-task-input-aggregate-5.0`; the `select` projection
+carries `task_ref/branch_review_commit/pr_title/pr_body`, and target-owned
+authoring adds `profile/mode`. Legacy 3.0 shapes fail closed and require a fresh
+Publication run; no compatibility reader or task-local fallback exists.

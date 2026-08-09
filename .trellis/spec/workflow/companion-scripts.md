@@ -593,6 +593,9 @@ shared `validate_commit_message()` parser before the commit action is shown.
 schema, task, HEAD, complete dirty snapshot, path classification, exact stage
 set, message, parser, and Git-operation-state validation. `create-task-commit`
 accepts only the current schema 3.0 candidate; every other shape fails closed.
+The range form of `check-commit-messages` is standalone diagnostics only;
+Branch Review, Publication, and Finalizer do not consume it or use commit
+subject/body/`Refs` as a freshness gate.
 
 The executor materializes exact reviewed blobs/modes in an isolated index and
 detached transaction HEAD, runs the repository's real commit hooks, and verifies
@@ -624,13 +627,13 @@ may invoke it. Direct calls report `required_entrypoint=guru-finish-work`.
 The canonical user route is `guru-finish-work`. Every interruption returns
 through the same finalizer semantic loop and mapped recovery consumer.
 
-Finish-summary separates AI judgment from deterministic facts. Publication
-preparation writes task-local `finish-summary-index.json` with reviewed
-problem/outcome/behavior/surface/contract/search-term judgment; the finalizer's
-private engine passes it via `--finish-summary-index-file`. The companion
-rejects factual issue/PR/branch/path
-fields in that input, injects task/Git/ledger/artifact/time facts, derives
-`retrieval_text`, and validates the strict shared schema. Dry-run and formal
+Finish-summary separates AI judgment from deterministic facts without a second
+AI-authored handoff file. Publication supplies one exact reviewed PR payload;
+Finalizer parses its required change-summary section, injects
+task/Git/ledger/artifact/time/PR facts, classifies affected surfaces from exact
+changed paths, derives search terms and `retrieval_text`, and validates current
+finish-summary schema 2. Historical schema 1 remains discovery-readable but is
+never written by the current path. Dry-run and formal
 finish call the same `prepare_closeout()` pipeline. Dry-run returns the
 immutable `closeout-plan.json` bytes and canonical `closeout_plan_digest`
 without writing. Formal finish requires `--expected-plan-digest`, rebuilds and
@@ -664,9 +667,9 @@ Formal finish first verifies that the current branch HEAD preserves the reviewed
 content identity, pushes that HEAD, invokes the current verification owner
 against the remote commit, and validates the resulting
 task-local `marketplace-verification.json` while keeping the scope-only Ledger
-bytes unchanged. Closeout schema 2.0 keeps that artifact uncommitted until the
-one archive commit; it does not create a separate plan/readiness/evidence
-metadata commit. It then creates or reuses
+bytes unchanged. Closeout schema 3.0 keeps that artifact uncommitted until the
+one archive commit; it binds the exact Publication-reviewed title/body and does
+not create a separate plan/readiness/evidence metadata commit. It then creates or reuses
 one draft PR for the exact base-repo/head-repo/head-branch/base-branch/title/body
 identity. Every effective fetch and push URL for `plan.git.remote` returned by
 Git is preceded by a raw-config gate. The validator reads every
@@ -689,11 +692,11 @@ immutable `plan.git.repo`; `headRepositoryOwner.login` must agree and
 by owner, the query requests all three head-repository fields, rejects missing
 or inconsistent fields, and rejects a same-name cross-repository candidate
 before applying the 0/1/>1 exact-candidate rule. Before archive, the body
-identity is the task-local `pr-body.md` raw UTF-8 text: no trim, newline
-insertion, or second normalization is permitted between plan hashing,
-readiness, create, reuse, and final projection. After the official move, remote
-PR queries are checked only against the plan's exact title and raw-body digest;
-they do not reopen task-local body or readiness artifacts. The normal flow also
+identity is `plan.publish.body`: no trim, newline insertion, or second
+normalization is permitted between Publication projection, plan digest, create,
+reuse, and final projection. After the official move, remote PR queries are
+checked against the plan's exact title/body; they do not reopen Publication
+readiness. The normal flow also
 carries the already-bound PR number/URL across archive and ready confirmation.
 A fresh exact-archive reentry recovers that number/URL from the immutable
 commit's deterministic `finish-summary.json` blob, without opening the
@@ -713,21 +716,12 @@ the canonical summary output. It still rejects a different repository,
 non-HTTPS transport, invalid owner/repository component, non-positive or
 leading-zero number, trailing/extra path, query, and fragment.
 
-The finish-work prepare path has its own reviewed-body resolver. It preserves
-the lexical path and rejects paths outside the lexical repo root. The only
-re-anchor is Darwin's verified fixed `/var` -> `/private/var` system prefix:
-the code requires `/var` itself to be that symlink and requires both the repo
-suffix and file-relative suffix to match structurally. It never searches
-arbitrary ancestors with `samefile`, so an external user symlink that points
-back to the repo remains outside and is rejected. It then uses `lstat` to
-reject any existing symlink component from repo root through
-`.trellis/tasks/<task>/pr-body.md`. This includes directory aliases,
-multi-level ancestors, task-directory parents, dangling/loop links, and the
-final file. It then requires `--body-file` to equal that direct task path,
-reads both source and task-local bytes, requires exact byte equality, and
-decodes strict UTF-8. It rejects `--body-artifact`, external files even when
-their stripped text is equal, final-newline differences, and Markdown
-hard-break space differences.
+The finish-work prepare path accepts PR title/body only through the current
+Finalizer `publication_ready` input. It validates strict UTF-8 JSON strings,
+required Markdown sections, objective body quality, Issue Scope Ledger
+semantics, and exact equality through the readiness output and immutable plan.
+No `--body-file`, `--body-artifact`, alternate locator, task-local fallback, or
+generated body source participates.
 
 Marketplace machine evidence uses the task-relative locator
 `marketplace-verification.json`, never the active task path. Final projection
@@ -783,11 +777,16 @@ the reviewed-content identity. The archive commit is a direct child of
 both active deletion and archive addition. Untracked transaction outputs,
 including `closeout-plan.json` and `finish-summary.json`, require only archive
 additions because they never entered the Git index while the task was active.
+A schema 2.0 plan already tracked by a migrated active task remains in the
+tracked class and is bound through its predecessor digest.
 The reviewed content tree plus exact pre-move index/status prove the tracking
 classification. A month change while the task remains active rebuilds only the
-still-untracked schema 2.0 plan and digest; it does not create a supersession
+still-untracked schema 3.0 plan and digest; it does not create a supersession
 commit, reset history, rerun the verifier, replace the PR, or migrate an archive
-directory. Non-current plan schemas fail closed.
+directory. The only accepted non-current plan is schema 2.0 paired with a
+Publication 4.0 DTO whose task/commit/title/protected facts and body hash match;
+normalization uses the DTO body and never reads retired body/index files. Every
+other non-current plan fails closed.
 Until the exact archive commit exists, fresh execution and recovery require
 this exact mixed no-renames set, active locator absence, the complete
 prevalidated archived working-tree file set, exact dirty/staged paths, and
@@ -873,16 +872,16 @@ validation / impact / safety content, Docs SSOT section/key presence, and Issue
 Scope Ledger close/ref semantics. They must not decide whether the release
 explanation or Docs SSOT rationale is true or sufficient; that judgment belongs
 to the AI readiness review before
-`guru-finish-work`. Formal closeout accepts only `--body-file` pointing
-directly to the current task-local `pr-body.md` and binds its exact raw UTF-8
-bytes. No alternate locator or generated source participates. Formal finish
-binds that reviewed `pr-body.md` directly into schema 2.0 closeout-plan
-repo/base/head/title/raw-body digest and draft facts. Publication's semantic
-checkpoint remains ignored runtime; Finalizer consumes only its minimal `ready`
+`guru-finish-work`. Formal closeout accepts only the exact `pr_title` and
+`pr_body` projected by the current Publication `ready` output and binds them
+directly into schema 3.0 closeout-plan repo/base/head/payload/draft facts. No
+file locator, generated source, or payload override participates. Publication's
+semantic checkpoint remains ignored runtime; Finalizer consumes only its
+checked `ready`
 DTO and never commits or parses `pr-readiness.json`. Active-state retries consume
 the untracked plan and live transaction facts; after the official archive move,
 recovery reads only the committed immutable
-plan and uses its title/body digest plus Git/remote facts. Command-line
+plan and uses its exact title/body plus Git/remote facts. Command-line
 title/body/draft/base overrides fail closed.
 Final projection validates all task-relative artifact locators while the task
 is active. The official archive move carries those files unchanged to the
@@ -1016,7 +1015,7 @@ Workspace boundary helpers are deterministic validators and fact snapshots:
 `resolve-human-artifacts.sh --json --task <task-path-or-name>` is a
 deterministic resolver for user-facing Markdown task artifacts. It may resolve
 the active task directory or archived task directory and report path/existence
-facts for only `prd.md`, `design.md`, `implement.md`, and `pr-body.md`. It must
+facts for only `prd.md`, `design.md`, and `implement.md`. It must
 not read planning/check/review gate JSON artifacts, must
 not decide phase sufficiency, and must not create links for missing files.
 
@@ -1034,8 +1033,9 @@ non-metadata drift, or semantic finding/exit invariants contradict. Open P0-P3 f
 `scope_confirmation_required`; passed requires zero open findings and one
 `fresh_final_review` over the complete current range.
 The new Branch Review path consumes the committed Task Commit DTO and validates
-parent, message, committed paths, content continuity and the complete live Git
-range directly. It never opens the Planning or Phase 2 owner checkpoint. Any
+parent, committed paths, content continuity and the complete live Git range
+directly. Commit message format is not downstream freshness authority. It never
+opens the Planning or Phase 2 owner checkpoint. Any
 undeclared current non-metadata dirty path blocks the gate; allowed downstream
 workflow metadata is validated by its owning gate rather than projected back
 into Phase 2.
@@ -1262,19 +1262,18 @@ owner-result field, or route selector.
 Stable commands are `record-task-publication-review` and
 `check-task-publication-review`. The recorder accepts only a caller-authored,
 already completed semantic review payload, rebuilds the eight objective entry
-preconditions transiently, and writes the single ignored-runtime schema 3.0
-`pr-readiness.json`. That checkpoint contains only task/content identity, all
+preconditions transiently, and writes the single ignored-runtime schema 4.0
+`pr-readiness.json`. That checkpoint contains only task/content identity, the
+closed exact `pr_payload(title,body)`, all
 ten semantic dimensions, findings, conclusions, and the selected route. The
 checker rereads the same live facts and the shared Finalizer preflight; neither
 command stores deterministic bindings, publication refs, supersession chains,
 reviewer process, or confirmation evidence.
 
-Neither command creates the initial `pr-body.md` or
-`finish-summary-index.json`. The global workflow caller authors those current
-content candidates after Branch Review `passed` and before the mandatory
-publication invocation. Existing deterministic content validators are reused
-inside the active owner's recorder/checker after semantic review; calling a
-recorder to fabricate missing entry content or a pass remains forbidden.
+The Publication AI authors and reviews the exact title/body before invoking the
+recorder. Deterministic payload validators are reused inside the active owner's
+recorder/checker after semantic review; calling a recorder to fabricate missing
+content, infer semantic sufficiency, or synthesize a pass remains forbidden.
 
 Stale re-entry carries only `task_ref`, the Finalizer-projected
 `branch_review_commit`, and the current `stale_reason`; the recorder replaces
@@ -1307,9 +1306,11 @@ the owner checker against a repo-local result, selects the output schema from
 the checker's actual `exit_id`, and emits one minimal DTO. `expected_exit` is
 available only to the eval grader after wrapper completion.
 
-`ready` emits only `exit_id`, `task_ref`, and `branch_review_commit` after the
+`ready` emits exactly `exit_id`, `task_ref`, `branch_review_commit`, `pr_title`,
+and `pr_body` after the
 same side-effect-free closeout preflight used by Finalizer. Finalizer consumes
-that DTO and live facts directly; it never reads or augments Publication's
+that DTO and live facts directly; projection preserves exact body bytes and
+Finalizer never reads or augments Publication's
 checkpoint. Inputs outside the current Publication schemas fail closed before
 owner invocation.
 
@@ -1324,7 +1325,7 @@ the transition executor implicitly.
 The current extension-verification checker validates the dedicated
 `marketplace-verification.json` owner artifact against the immutable plan,
 task, repository, remote ref, `branch_review_commit`, reviewed-content identity,
-and exact transaction paths. Closeout schema 2.0 creates no pre-draft commit and
+and exact transaction paths. Closeout schema 3.0 creates no pre-draft commit and
 rejects every additional dirty path or identity/commit drift.
 
 The verifier treats `branch_review_commit` as `reviewed_content_head` and
@@ -1362,8 +1363,36 @@ detached clean worktree, validates the five-field manifest allowlist, commits
 one tail, fast-forwards the task branch, and removes only the superseded private
 plan/gate/request state. Its private gate retains an executor marker; only after
 the tail is committed does the executor return the public task/reason plus
-`branch_review_commit/publication_head` DTO. The next preview validates those
-two heads directly and does not require the retired plan.
+`branch_review_commit/publication_head` DTO. A pre-#191 base-evolution candidate
+must first prove its exact legacy gate/request, matching task/repository/remote/
+base/head identities, active/no-PR/no-archive/single-consumer state, untracked
+artifacts, old-to-current ancestry, and a fast-forwardable remote ancestor.
+Preview and discovery only prove those facts. The checked transition repeats the
+proof, retires the predecessor, and persists the freshly rebuilt current plan;
+the next preview validates the two heads against that replacement plan.
+For an unused current schema 3.0 predecessor, the runtime instead validates the
+complete seven-field Git shape, the historical tail structure and ancestry, a
+remote branch at or before the predecessor reviewed-content head, untracked
+owner state, and the absence of PR/archive/verification/request/gate consumers.
+A remote at the predecessor publication tail or any later descendant proves an
+outbound publication side effect and fails closed. Initial preview rejects every
+preexisting gate. Recorder then writes the ordinary Finalizer gate; checker and
+executor pass only that exact checked in-memory gate back into the repeated
+preflight. The executor retires the old plan/gate, creates or reuses the current
+tail, and persists the replacement through the real `prepare_closeout()` path.
+The initial `publication_ready` invocation supplies the current reviewed exact
+title/body to the base-evolution candidate even when they differ from the
+predecessor plan. Only after the executor persists that replacement does a
+minimal `reprepare_preview` reuse the replacement plan's immutable exact payload
+without a synthesized partial Publication DTO; public `reprepare_required`
+remains task/reason/two-head identity only.
+For the pre-#191 base-evolution route, recorder does not overwrite the legacy
+gate whose bytes the checker and executor must still validate. It writes the
+current marker to the same-owner ignored
+`task-finalization-transition-gate.json`; default gate resolution selects it
+only while the exact legacy gate and base-evolution state remain current.
+Successful checked supersession removes both gate files, while an orphan or a
+transition gate outside that state fails closed.
 `resume_finalization` accepts only declared same-plan post-content recovery
 states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. The
 ignored owner-private gate stores the private executor marker for publication

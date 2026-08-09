@@ -20,8 +20,8 @@
     {"id": "runtime_dependency", "evidence": "installed extension, dispatcher, active package, schemas and finalization commands", "binding": "complete current Guru Team preset", "freshness": "validated before each command"},
     {"id": "task_workspace", "evidence": "portable task worktree or archived locator identity", "binding": "actual repository and task locator", "freshness": "rebuilt before preview, record and check"},
     {"id": "task_identity", "evidence": "active, partially finalized or archived task identity", "binding": "task, branch, base, repository and branch_review_commit", "freshness": "current task and Git facts reread"},
-    {"id": "publication_review", "evidence": "guru-review-task-publication minimal ready DTO", "binding": "task and branch_review_commit", "freshness": "live reviewed-content continuity and Finalizer preview preflight; no producer-private checkpoint read"},
-    {"id": "transaction_inputs", "evidence": "plan, body, summary index, ledger and live Git facts", "binding": "one immutable closeout plan", "freshness": "existing closeout engine prevalidation"},
+    {"id": "publication_review", "evidence": "guru-review-task-publication minimal ready DTO", "binding": "task, branch_review_commit and exact pr_title/pr_body", "freshness": "live reviewed-content continuity and Finalizer preview preflight; no producer-private checkpoint read"},
+    {"id": "transaction_inputs", "evidence": "Publication payload, immutable plan, ledger and live Git/GitHub facts", "binding": "one immutable closeout plan", "freshness": "existing closeout engine prevalidation"},
     {"id": "verification_evidence", "evidence": "guru-verify-extension-installation verified or not-required owner result when applicable", "binding": "same task, plan and branch_review_commit", "freshness": "owner checker rerun before continuation"},
     {"id": "archive_contract", "evidence": "official task.py archive contract, live archive month and hook preflight", "binding": "exact task metadata transaction", "freshness": "checked before official move"},
     {"id": "invocation_freshness", "evidence": "public profile, owner-private gate, objective plan identity, actual exit and consumer", "binding": "one current semantic finalization round", "freshness": "checker rereads objective transaction facts"}
@@ -62,7 +62,8 @@
   "schemas": [
     {"id": "gate_schema", "path": "schemas/task-finalization-gate.schema.json"},
     {"id": "semantic_review_input", "path": "schemas/semantic-review-input.schema.json"},
-    {"id": "publication_ready_input", "path": "schemas/public-publication-ready-input.schema.json"},
+    {"id": "legacy_publication_ready_input_3_0", "path": "schemas/public-publication-ready-input.schema.json"},
+    {"id": "publication_ready_input", "path": "schemas/public-publication-ready-input-4.0.schema.json"},
     {"id": "legacy_verification_verified_input_3_0", "path": "schemas/public-verification-verified-input.schema.json"},
     {"id": "verification_verified_input", "path": "schemas/public-verification-verified-input-4.0.schema.json"},
     {"id": "standalone_verification_not_required_input", "path": "schemas/public-standalone-verification-not-required-input.schema.json"},
@@ -70,7 +71,8 @@
     {"id": "reprepare_preview_input", "path": "schemas/public-reprepare-preview-input.schema.json"},
     {"id": "standalone_finalization_input", "path": "schemas/public-standalone-finalization-input.schema.json"},
     {"id": "legacy_aggregate_input_3_0", "path": "schemas/public-input.schema.json"},
-    {"id": "aggregate_input", "path": "schemas/public-input-4.0.schema.json"},
+    {"id": "legacy_aggregate_input_4_0", "path": "schemas/public-input-4.0.schema.json"},
+    {"id": "aggregate_input", "path": "schemas/public-input-5.0.schema.json"},
     {"id": "legacy_verification_required_output_2_0", "path": "schemas/public-verification-required-output.schema.json"},
     {"id": "verification_required_output", "path": "schemas/public-verification-required-output-3.0.schema.json"},
     {"id": "publication_review_stale_output", "path": "schemas/public-publication-review-stale-output.schema.json"},
@@ -105,9 +107,9 @@
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-finalize-task-input-aggregate-4.0", "path": "schemas/public-input-4.0.schema.json"},
+      "aggregate_schema": {"schema_id": "guru-finalize-task-input-aggregate-5.0", "path": "schemas/public-input-5.0.schema.json"},
       "profiles": [
-        {"id": "publication_ready", "schema": {"schema_id": "guru-finalize-task-input-publication-ready-3.0", "path": "schemas/public-publication-ready-input.schema.json"}, "example": {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"}, "discriminator": {"field": "profile", "value": "publication_ready"}},
+        {"id": "publication_ready", "schema": {"schema_id": "guru-finalize-task-input-publication-ready-4.0", "path": "schemas/public-publication-ready-input-4.0.schema.json"}, "example": {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"}, "discriminator": {"field": "profile", "value": "publication_ready"}},
         {"id": "verification_verified", "schema": {"schema_id": "guru-finalize-task-input-verification-verified-4.0", "path": "schemas/public-verification-verified-input-4.0.schema.json"}, "example": {"id": "verification_verified_input", "path": "examples/public-verification-verified-input.json"}, "discriminator": {"field": "profile", "value": "verification_verified"}},
         {"id": "standalone_verification_not_required", "schema": {"schema_id": "guru-finalize-task-input-standalone-verification-not-required-1.0", "path": "schemas/public-standalone-verification-not-required-input.schema.json"}, "example": {"id": "standalone_verification_not_required_input", "path": "examples/public-standalone-verification-not-required-input.json"}, "discriminator": {"field": "profile", "value": "standalone_verification_not_required"}},
         {"id": "same_plan_resume", "schema": {"schema_id": "guru-finalize-task-input-same-plan-resume-2.0", "path": "schemas/public-same-plan-resume-input.schema.json"}, "example": {"id": "same_plan_resume_input", "path": "examples/public-same-plan-resume-input.json"}, "discriminator": {"field": "profile", "value": "same_plan_resume"}},

@@ -116,9 +116,10 @@ recorder/checker commands, or private evidence shape.
 ### Phase 3 — Commit, independent review, publication, finalization
 
 Mandatory invoke `guru-create-task-commit`, then `guru-review-branch` over the
-complete committed base-to-HEAD range. After `passed`, the caller authors the
-current task-local `pr-body.md` and `finish-summary-index.json` candidates and
-mandatory invokes `guru-review-task-publication`.
+complete committed base-to-HEAD range. After `passed`, mandatory invoke
+`guru-review-task-publication`; its AI owner authors and reviews the exact
+Chinese PR title/body directly from live authority without a task-local
+publication handoff file.
 
 Only publication `ready` enters `guru-finalize-task`. Finalizer verification,
 stale publication, resume, and reprepare exits are automatically consumed by
@@ -135,9 +136,12 @@ continuity.
 
 `guru-finalize-task` owns the single resumable transaction loop entered by the
 canonical thin `guru-finish-work` router. Formal closeout accepts exactly one
-reviewed body source: `--body-file` must point directly to the current
-task-local `pr-body.md` and bind its exact raw UTF-8 bytes. No alternate body
-locator or generated source participates in closeout.
+reviewed payload source: Publication `ready` schema 4.0 projects
+`task_ref/branch_review_commit/pr_title/pr_body`, and Finalizer target authoring
+adds only `profile/mode`. The schema 3.0 closeout plan binds that exact payload;
+no body file, summary-index file, alternate locator, or generated source
+participates in closeout. Legacy 3.0 Publication/Finalizer DTO shapes fail
+closed and require a fresh Publication run.
 
 GitHub PR discovery must bind the exact repository identity as well as the
 branch and HEAD: `headRepository.nameWithOwner` must match the selected repo,

@@ -1465,7 +1465,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-task-publication-readiness-3.0",
+            "guru-task-publication-readiness-4.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         schema_relative = Path("schemas/contract-wording-review.schema.json")

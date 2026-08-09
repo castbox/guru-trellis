@@ -5,8 +5,8 @@
 The public `branch_review` input contains only profile, mode, task/base refs,
 `branch_review_commit` and review intent. Public input schema 2.0 allows only
 `initial_review` and `fresh_final_review`. `guru-create-task-commit:committed`
-supplies the task and commit identity; Branch Review verifies parent, message,
-paths and tree from live Git.
+supplies the task and commit identity; Branch Review verifies parent, paths and
+tree from live Git. Commit message format is not downstream freshness authority.
 
 Workflow and standalone mode use the same eight preconditions: runtime,
 workspace, task identity, the committed DTO plus live Git, the current Issue

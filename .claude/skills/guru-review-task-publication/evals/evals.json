@@ -8,7 +8,7 @@
       "id": "workflow-initial-ready",
       "prompt": "Complete the workflow-mode initial publication review and invoke the public wrapper from the checker-passed owner gate.",
       "expected_exit": "ready",
-      "expected_output": "The DTO contains only task identity, branch_review_commit, and opaque publication identity.",
+      "expected_output": "The DTO contains task identity, branch_review_commit, and the exact reviewed PR title/body.",
       "input_profile_id": "publication_review",
       "assertions": {"deterministic": [
         {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"},
@@ -22,7 +22,7 @@
       "id": "standalone-initial-ready",
       "prompt": "Complete the standalone-mode initial publication review with the same owner and checker contract.",
       "expected_exit": "ready",
-      "expected_output": "The standalone DTO is the same minimal ready handoff.",
+      "expected_output": "The standalone DTO carries the same exact reviewed PR payload.",
       "input_profile_id": "publication_review",
       "assertions": {"deterministic": [
         {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
@@ -55,7 +55,7 @@
       "id": "stale-reentry-ready",
       "prompt": "Re-enter through the stale profile, reread objective preconditions, re-review only directly affected publication dimensions, and emit a fresh ready handoff.",
       "expected_exit": "ready",
-      "expected_output": "The stale profile produces a new checked publication identity.",
+      "expected_output": "The stale profile produces a freshly checked exact PR payload.",
       "input_profile_id": "publication_review_stale",
       "assertions": {"deterministic": [
         {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
@@ -66,7 +66,7 @@
       "id": "metadata-fix-fresh-ready",
       "prompt": "Revise only task-local publication metadata, re-review directly affected dimensions while carrying forward unchanged current evidence, and emit ready.",
       "expected_exit": "ready",
-      "expected_output": "The closed metadata finding remains private and the public DTO stays minimal.",
+      "expected_output": "The closed metadata finding remains private while ready carries the exact revised PR payload.",
       "input_profile_id": "publication_review",
       "assertions": {"deterministic": [
         {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready"}
