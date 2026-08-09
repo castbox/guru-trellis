@@ -1,7 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"审核 public I/O schema升级、projection完备性、consumer唯一性与旧shape fail-closed。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核退役artifact零依赖、immutable payload恢复与finish-summary历史兼容。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"执行Publication、Finalizer、commit identity、distribution与current-scope finding质量门禁。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审核stable Skill/exit/target路由和mapped re-entry未发生漂移。"}
-{"file":".trellis/spec/preset/installer.md","reason":"审核source/installed closure、managed assets、throwaway和update/reapply证据。"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"确认preset没有扩张到official Trellis owned files。"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"审核canonical workflow与三份public README语义一致。"}
