@@ -1,5 +1,21 @@
 # Workflow Quality Guidelines
 
+## GitHub Channel Regression Gate
+
+Bounded static guards cover current canonical workflow, public Skill, shared
+runtime, preset/platform, installed dogfood and public README surfaces. They
+reject forbidden GitHub adapter/fallback wording, unbound high-level commands,
+and incomplete REST repository endpoints while excluding historical task
+archives and unrelated MCP capabilities.
+
+Deterministic fixtures cover the six failure categories, invalid/empty/missing
+fields, Issue/PR/comment/label/state/check/review/mergeability/Draft/Ready/
+merge/workflow-run/post-merge paths, number/base/head/expected-SHA binding, and
+the unchanged `git fetch|push|ls-remote` boundary. Distribution validation also
+covers source/installed checks, preset initial/reapply, overlay drift and
+sidecars, clean marketplace init/preview/switch, official update/upgrade, and
+Codex/Claude/Cursor equality.
+
 Finish-work quality evidence must distinguish the reviewed-content identity and
 its `branch_review_commit` anchor from the current metadata tail and the final
 archive metadata commit. A dry-run pass is valid only when formal execution

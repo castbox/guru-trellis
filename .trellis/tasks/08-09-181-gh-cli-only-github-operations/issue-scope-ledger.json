@@ -1,0 +1,26 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 181,
+    "url": "https://github.com/castbox/guru-trellis/issues/181",
+    "title": "统一 Guru Team GitHub 操作通道为 gh CLI 并禁止 App/MCP fallback",
+    "reason": "Primary independently deliverable change request."
+  },
+  "close_issues": [
+    {
+      "number": 181,
+      "url": "https://github.com/castbox/guru-trellis/issues/181",
+      "title": "统一 Guru Team GitHub 操作通道为 gh CLI 并禁止 App/MCP fallback",
+      "reason": "Primary independently deliverable change request."
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 180,
+      "url": "https://github.com/castbox/guru-trellis/issues/180",
+      "title": "收敛 Finalizer transaction、确认预算与 merge lifecycle 并完成 #174 回放",
+      "reason": "Downstream work consumes the merged #181 contract and is not closed here."
+    }
+  ],
+  "followup_issues": []
+}

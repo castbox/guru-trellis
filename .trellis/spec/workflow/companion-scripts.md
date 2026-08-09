@@ -1,5 +1,19 @@
 # Companion Scripts
 
+## GitHub CLI Adapter
+
+The shared runtime is the only deterministic GitHub platform adapter. It
+normalizes `owner/repository`, rejects high-level commands without `--repo`,
+rejects incomplete REST repository endpoints, performs CLI/auth/repository
+access preflight, decodes complete JSON, and checks operation-specific required
+fields. It exposes only exit code, redacted stderr classification, API fields,
+and the six stable error facts defined by `workflow-contract.md`.
+
+It never infers semantic readiness, severity, scope, issue disposition, close
+semantics, or workflow route and never falls back to an App, MCP, connector, or
+browser. `verification_required` remains reserved for extension-installation
+evidence and is not a generic GitHub failure.
+
 ## Script Boundaries
 
 Bash files under `trellis/workflows/guru-team/scripts/bash/` are thin wrappers.

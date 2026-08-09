@@ -71,6 +71,8 @@ class ChangeRequestReviewPackageContractTests(unittest.TestCase):
             "state": "OPEN",
             "updatedAt": "2026-01-01T00:00:00Z",
             "comments": [],
+            "assignees": [],
+            "labels": [],
         }
         self.issue_live_path = self.io_root / "live-issue.json"
         self.issue_live_path.write_text(

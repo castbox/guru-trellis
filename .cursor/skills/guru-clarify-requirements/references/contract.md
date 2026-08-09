@@ -1,5 +1,9 @@
 # `guru-clarify-requirements` Contract
 
+All GitHub reads and confirmed writes use the shared authenticated, repo-bound
+`gh` adapter in `.trellis/spec/workflow/workflow-contract.md`; there is no App,
+MCP, connector, or browser fallback.
+
 ## Ownership And Modes
 
 The global workflow owns mandatory invocation and unique exit consumers. This
@@ -124,7 +128,7 @@ in this package.
 
 For `issue_comment` or `issue_body_edit`, the AI must reread the live preimage,
 match repo/issue/action/payload facts, execute the exact existing
-connector action or reviewed `gh` command, reread live facts, then pass only
+shared repo-bound `gh` action, reread live facts, then pass only
 normalized mutation facts to recorder/checker. Success returns
 `refresh_context`, never `clear`. Checker requires exact equality among the
 action payload body, canonical payload digest, mutation result

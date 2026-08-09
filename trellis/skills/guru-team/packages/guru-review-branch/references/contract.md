@@ -1,5 +1,9 @@
 # `guru-review-branch` Contract
 
+GitHub review/check/mergeability facts use the shared authenticated,
+repo-bound `gh` adapter in `.trellis/spec/workflow/workflow-contract.md`; they
+remain evidence for, not substitutes for, this Skill's semantic judgment.
+
 ## Entry
 
 The public `branch_review` input contains only profile, mode, task/base refs,

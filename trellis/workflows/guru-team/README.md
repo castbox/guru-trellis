@@ -1,5 +1,15 @@
 # Guru Team Trellis Workflow
 
+## GitHub CLI-only contract
+
+Guru Team uses authenticated GitHub CLI as the only GitHub platform channel.
+Use `gh issue`, `gh pr`, and `gh run` with explicit `--repo owner/repo`; use
+`gh api repos/<owner>/<repo>/...` when no high-level command covers the needed
+fields. This covers Issue/PR create/read/edit/comment/labels/state, checks,
+reviews, mergeability, Draft/Ready, merge, workflow run/check, and post-merge
+status verification. There is no GitHub App, MCP, connector, or browser UI
+fallback. Local Git and Git transport remain `git` operations.
+
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
@@ -254,7 +264,7 @@ workflow/stop target markers。
 AI 拥有 scope/action/交互必要性/pass/block/route 判断。Recorder 派生 proposal/action/
 payload/content/result digest；checker 重算 schema/digest并只读验证 live source/context/task
 binding。Package 没有 GitHub mutation executor；comment/body 写入仅在 AI 复核 live preimage
-并在当前对话完成真实副作用确认后使用现有 connector 或审查过的 `gh`，写后必须
+并在当前对话完成真实副作用确认后使用 shared repo-bound `gh` adapter，写后必须
 重读；reviewed payload、payload digest、mutation result与live content必须一致，授权不进入
 recorder/checker。成功 mutation
 返回 `refresh_context`，不直接 `clear`。

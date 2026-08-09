@@ -1,5 +1,10 @@
 # Guru Trellis
 
+Guru Team GitHub operations require an installed and authenticated GitHub CLI.
+All platform reads and mutations are explicitly repository-bound `gh` or
+`gh api` operations; GitHub App, MCP, connector, and browser UI fallback are
+not supported. Git transport remains owned by `git`.
+
 Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩展。
 
 它建立在官方 Trellis 之上，为团队补充一套开箱即用、AI-first 的研发协作方式，让不同 AI 工具能够按照一致的流程理解需求、规划实现、检查变更、审查分支并完成交付。

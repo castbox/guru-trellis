@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Defines global workflow ownership, GitHub PR identity binding, typed routing and Docs SSOT boundaries."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Defines deterministic runtime, gh/git execution and portable error-handling boundaries."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Defines public Skill I/O, package distribution, typed exits and compatibility constraints."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Defines current-surface, installed, throwaway, update and cross-platform validation gates."}
+{"file":".trellis/spec/preset/installer.md","reason":"Defines canonical-to-installed synchronization and preset reapply behavior."}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Defines Codex, Claude and Cursor overlay ownership and parity."}
+{"file":".trellis/spec/docs/public-docs.md","reason":"Defines public README scope and executable documentation requirements."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Requires one shared GitHub adapter and failure taxonomy rather than repeated local implementations."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Requires canonical, installed, platform and upgrade consistency across generated surfaces."}

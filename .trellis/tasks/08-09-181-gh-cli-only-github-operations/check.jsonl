@@ -1,0 +1,9 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Check global ownership, explicit repository identity and semantic routing remain coherent."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Check gh execution, git transport and deterministic failure mapping boundaries."}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Check any schema or typed failure changes remain closed, portable and consumer-bound."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Check public Interface 1.3 compatibility, distribution and consumer projections."}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Check focused, full, source/installed, throwaway and update gates are complete."}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"Check preset synchronization does not claim upstream-owned paths or leave sidecars."}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Check Codex, Claude and Cursor entry parity and thin routing."}
+{"file":".trellis/spec/docs/public-docs.md","reason":"Check README claims match actual executable installation and runtime behavior."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check canonical, dogfood, installed and upgrade surfaces stay synchronized."}

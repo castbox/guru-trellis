@@ -1,5 +1,15 @@
 # Guru Team Trellis Preset
 
+## GitHub CLI-only contract
+
+Installed Guru Team surfaces use authenticated `gh`/`gh api` only for GitHub
+platform reads and writes. Every high-level Issue/PR/run operation includes
+`--repo owner/repo`; REST operations use complete
+`repos/<owner>/<repo>/...` endpoints. App, MCP, connector and browser UI
+fallbacks are unsupported. The shared runtime distinguishes CLI, auth,
+repository-access, permission, API-availability and incomplete-response
+failures. `git` continues to own fetch, push, ls-remote and local worktrees.
+
 The preset installs companion assets, Guru Skill packages, and three additive
 Guru finish entries for the `guru-team` Trellis workflow into an existing
 Trellis project.
