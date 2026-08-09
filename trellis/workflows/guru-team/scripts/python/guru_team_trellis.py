@@ -13327,6 +13327,7 @@ def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
     retired: list[str] = []
     plan = closeout_plan_path(task_dir)
     verification = task_dir / MARKETPLACE_VERIFICATION_ARTIFACT
+    transaction = finalization_transaction_path(root, task_dir)
     tracked_owner_state = finalizer_tracked_pre_pr_artifacts(root, task_dir)
     if tracked_owner_state:
         raise WorkflowError(
@@ -13359,6 +13360,9 @@ def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
     if verification.is_file() and not verification.is_symlink():
         verification.unlink()
         retired.append(repo_relative(root, verification))
+    if transaction.is_file() and not transaction.is_symlink():
+        transaction.unlink()
+        retired.append(repo_relative(root, transaction))
     for request_path in request_paths:
         request_path.unlink()
         retired.append(repo_relative(root, request_path))

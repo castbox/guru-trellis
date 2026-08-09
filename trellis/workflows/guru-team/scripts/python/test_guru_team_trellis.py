@@ -10655,6 +10655,11 @@ printf '{\"status\":\"ok\"}\\n'
                 "active_locator": ".trellis/tasks/fixture",
                 "archive_locator": ".trellis/tasks/archive/2026-08/fixture",
             },
+            "publish": {
+                "title": "验证 provenance reprepare",
+                "body": "## 变更摘要\n\n- 验证 transaction supersession。\n",
+            },
+            "review": {"close_issues_reviewed": [174]},
             "projection": {"reviewed_tracked_bindings": []},
         }
         plan["plan_digest"] = gtt.closeout_plan_digest(plan)
@@ -10663,6 +10668,14 @@ printf '{\"status\":\"ok\"}\\n'
         verification_path = task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
         gtt.write_json(plan_path, plan)
         verification_path.write_text("{}\n", encoding="utf-8")
+        transaction_path = gtt.finalization_transaction_path(root, task_dir)
+        gtt.write_json(
+            transaction_path,
+            gtt.finalization_transaction_from_plan(
+                plan,
+                next_transition="verify",
+            ),
+        )
         public_input = {"task_ref": ".trellis/tasks/fixture"}
         gate = {
             "route": {
@@ -10690,6 +10703,7 @@ printf '{\"status\":\"ok\"}\\n'
         self.assertEqual(self.git(root, "rev-parse", "HEAD"), publication)
         self.assertFalse(plan_path.exists())
         self.assertFalse(verification_path.exists())
+        self.assertFalse(transaction_path.exists())
         self.assertEqual(
             gtt.validate_provenance_metadata_tail(root, reviewed, publication)["status"],
             "passed",
