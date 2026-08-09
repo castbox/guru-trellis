@@ -13,7 +13,8 @@
 - [x] I9. 运行preset installer同步`.trellis/guru-team/**`、`.trellis/workflow.md`、`.agents/**`、`.codex/**`、`.claude/**`、`.cursor/**`及manifest声明的平台副本；逐个处理`.new`/`.bak`。
 - [x] I10. 执行targeted runtime/package/integration tests，覆盖payload bytes、schema migration、projection、preflight、same-plan recovery、summary generation/history retrieval、message-independent downstream freshness和retired-path zero-hit。
 - [x] I11. 执行完整source/installed/preset/dogfood/throwaway/update-reapply门禁，记录exact remote marketplace source在push前的未验证边界。
-- [ ] I12. 在base evolution与durable docs finding修复后执行唯一一次fresh current-only Phase 2 semantic check；修复全部P0-P3 finding并重跑受影响证据。commit、Branch Review、push、PR、Finalizer副作用不在本计划自动执行。
+- [x] I12. 在base evolution与durable docs finding修复后执行首次fresh current-only Phase 2 semantic check；修复全部P0-P3 finding并重跑受影响证据。commit、Branch Review、push、PR、Finalizer副作用不在本计划自动执行。
+- [x] I13. 真实Finalizer恢复暴露recorder覆盖legacy gate后，按用户授权的finding-fix例外保留legacy gate并引入同owner ignored transition gate，补`record -> check -> execute`真实回归，重新执行current Phase 2、Task Commit、current-HEAD Branch Review与Publication；provenance tail只刷新Finalizer metadata，不重复这些上游门禁。
 
 ## 2. Primary Files and Rollback Points
 
@@ -101,3 +102,10 @@ find . -name '*.new' -o -name '*.bak'
 - 合并恢复实现验证通过：Publication/Finalizer、Task Commit、Branch Review 与 finish-family owner 合同 60 项、共享 runtime 414 项、preset installer 45 项、Skill package closure 180 项，共 699 项；Python compile、Bash syntax、task validation、ownership、dogfood drift、JSON、diff hygiene 和零 sidecar 检查通过。
 - throwaway fresh install、official update、workflow switch、preset reapply 与 no-developer fixture 已通过。因分支尚未push，public main + local unpublished workflow sample 仅证明本地安装闭环；current exact-ref marketplace source仍由push后的Finalizer gate验证。
 - 唯一未完成证据是 push 后 exact remote marketplace ref verification；该检查仍由 Finalizer 的既有 publication transaction gate 拥有，不冒充本地通过。
+
+## 8. Finalizer Gate Supersession Finding Fix
+
+- 2026-08-09：首次checked recovery证明标准`record-finalization-gate -> check-finalization-gate`不可达，因为recorder把current `reprepare_required` marker写回唯一gate路径，覆盖了同一次checker必须复核的pre-#191 legacy `verification_required` gate。
+- 修复保持public Skill I/O、schema id、exit、transaction order不变：仅base-evolution window把current marker写入`task-finalization-transition-gate.json`，legacy gate保持byte-identical；checker限制两者只在该window共存，executor成功后同时退休两者、旧plan与匹配request。
+- 新fixture真实调用recorder、checker与executor，并在每轮preview执行base-evolution preflight；另覆盖transition gate缺少legacy predecessor时fail closed。该finding改变runtime与durable contract，因此按用户明确例外重新生成current Phase 2、Branch Review与Publication证据。
+- finding-fix current验证：共享runtime 416/416、Publication/Finalizer/Task Commit/Branch Review/finish-family与Skill package closure 240/240、preset installer 45/45均通过；clean throwaway完成public marketplace discovery、本地未发布workflow sample、fresh install、official update、workflow switch、二次preset reapply、两轮installed finish-family与no-developer fixture，最终零sidecar。current exact-ref marketplace source仍只由push后的Finalizer gate验证。

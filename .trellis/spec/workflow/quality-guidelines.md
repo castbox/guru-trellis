@@ -757,6 +757,12 @@ illegal same-plan resume state including rejection of `prepared` and `ready`.
 The pre-PR fixture must additionally delete the superseded plan/gate/request,
 consume the executor-materialized reviewed/publication heads, and prove the
 next reprepare preview creates a new plan without repeating semantic review.
+Its base-evolution regression must execute the real recorder, checker, and
+executor gate-loading sequence: recording the current transition marker leaves
+the legacy gate byte-identical, every check reruns the real legacy preflight,
+successful execution retires both gate instances, and a missing predecessor or
+ordinary-route transition gate fails closed. Mocking gate input or the gate
+checker does not satisfy this regression.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The

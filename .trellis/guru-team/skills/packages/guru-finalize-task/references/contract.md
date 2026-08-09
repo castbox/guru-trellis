@@ -191,6 +191,16 @@ pruning step.
   reuses the tail, and persists the fresh replacement plan. Other
   verification failures remain blocked. Tracked task artifacts are preserved
   and block this automatic cleanup path.
+
+  During the bounded pre-#191 base-evolution window, the exact legacy
+  `verification_required` gate remains at the normal Finalizer checkpoint path
+  until the checked transition repeats that proof. The recorder stores the
+  current `reprepare_required` executor marker in the separate ignored
+  `task-finalization-transition-gate.json` checkpoint under the same Finalizer
+  owner and gate schema. Checker and executor require both checkpoints and the
+  matching request; ordinary Finalizer states reject the transition checkpoint.
+  Successful supersession retires both gates together with the predecessor plan
+  and matching verification request before persisting the replacement plan.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.

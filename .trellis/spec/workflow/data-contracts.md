@@ -1265,6 +1265,15 @@ contract against the replacement plan. PR already
 created, archive started, reviewed content/scope drift, non-fast-forward remote,
 or manifest changes outside the allowlist remain fail-closed boundaries.
 
+The pre-#191 base-evolution route temporarily has two same-owner, same-schema
+ignored gate instances with disjoint direct uses: the normal
+`task-finalization-gate.json` remains the exact legacy verification evidence,
+while `task-finalization-transition-gate.json` contains the current semantic
+executor marker. Recorder never overwrites the former. Checker/executor require
+both, reject the transition gate on every ordinary route, and successful
+supersession retires both together with the exact old plan/request. Neither gate
+is public, tracked, archived, or a replacement handoff DTO.
+
 Before the exact archive commit exists, archive recovery accepts only the
 complete mixed no-renames working-tree path set: both sides for every tracked
 move and archive-only for every untracked output. Schema 2.0 validates exact

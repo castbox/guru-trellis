@@ -9388,6 +9388,222 @@ class PrePrProvenanceReprepareFixtureTest(unittest.TestCase):
             [".trellis/tasks/fixture/closeout-plan.json"],
         )
 
+    def test_base_evolution_gate_record_check_execute_preserves_legacy_until_supersession(
+        self,
+    ) -> None:
+        (
+            root,
+            task_dir,
+            previous_plan,
+            current_plan,
+            previous_reviewed,
+            current_reviewed,
+        ) = self.base_evolution_fixture()
+        task_ref = previous_plan["task"]["active_locator"]
+        current_plan.update({
+            "publish": {
+                "title": "修复 Finalizer gate supersession",
+                "body": "## 变更摘要\n\n- 保留 legacy gate 直到 transition 完成。\n",
+            },
+            "marketplace": {"required": True},
+        })
+        current_plan["plan_digest"] = gtt.closeout_plan_digest(current_plan)
+        current_plan_ref = f"closeout-plan:{current_plan['plan_digest']}"
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "branch_review_commit": current_reviewed,
+            "pr_title": current_plan["publish"]["title"],
+            "pr_body": current_plan["publish"]["body"],
+        }
+        reviewed = {
+            "review": {
+                "status": "passed",
+                "summary": "The current provenance reprepare route is semantically reviewed.",
+            },
+            "route": {
+                "typed_exit": "reprepare_required",
+                "consumer": copy.deepcopy(
+                    gtt.FINALIZATION_CONSUMERS["reprepare_required"]
+                ),
+                "output": copy.deepcopy(gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
+            },
+        }
+        legacy_path = gtt.task_finalization_path(root, task_dir)
+        legacy_bytes = legacy_path.read_bytes()
+        transition_path = gtt.task_finalization_transition_path(root, task_dir)
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+        args = argparse.Namespace(
+            root=str(root),
+            input="unused-input.json",
+            review_input="unused-review.json",
+            gate=None,
+            dry_run=False,
+        )
+        preview_count = 0
+
+        def preview(
+            _root: Path,
+            _args: argparse.Namespace,
+            _public_input: dict[str, Any],
+        ) -> dict[str, Any]:
+            nonlocal preview_count
+            preview_count += 1
+            base_evolution = gtt.finalizer_pre_pr_base_evolution_supersession_preflight(
+                root,
+                task_dir,
+                previous_plan,
+                current_plan,
+            )
+            return {
+                "task_dir": task_dir,
+                "task_context": {},
+                "prepared": {
+                    "pre_pr_reprepare": {
+                        "previous_plan": previous_plan,
+                        "prior_state": "content_pushed",
+                        "base_evolution": base_evolution,
+                    },
+                },
+                "plan": current_plan,
+                "plan_ref": current_plan_ref,
+                "transaction_state": "reprepare_required",
+                "published_transition_complete": False,
+                "publication_status": "current",
+                "publication_stale_reason": None,
+                "reprepare_reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+                "verification": None,
+            }
+
+        replacement_plan = copy.deepcopy(current_plan)
+        replacement_plan["plan_digest"] = gtt.closeout_plan_digest(replacement_plan)
+        provenance = {
+            "reviewed_content_head": current_reviewed,
+            "publication_head": current_reviewed,
+            "metadata_tail": {
+                "commit": current_reviewed,
+                "parent": current_reviewed,
+                "path": gtt.PROVENANCE_TAIL_MANIFEST_PATH,
+            },
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_public_input",
+                return_value=(public_input, "<test>"),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_semantic_review_input",
+                return_value=reviewed,
+            ),
+            mock.patch.object(gtt, "finalization_task_dir", return_value=task_dir),
+            mock.patch.object(gtt, "finalization_package_root", return_value=package_root),
+            mock.patch.object(gtt, "finalization_preview_context", side_effect=preview),
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=None),
+            mock.patch.object(
+                gtt,
+                "prepare_provenance_metadata_tail",
+                return_value=provenance,
+            ),
+            mock.patch.object(
+                gtt,
+                "prepare_closeout",
+                return_value={"plan": replacement_plan},
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_closeout_plan_for_migration",
+                side_effect=lambda value: value,
+            ),
+            mock.patch.object(
+                gtt,
+                "validate_closeout_plan",
+                side_effect=lambda value: value,
+            ),
+        ):
+            recorded = gtt.cmd_record_finalization_gate(args)
+            self.assertEqual(
+                Path(recorded["artifact_path"]).resolve(),
+                transition_path.resolve(),
+            )
+            self.assertEqual(legacy_path.read_bytes(), legacy_bytes)
+            self.assertEqual(
+                gtt.read_json(transition_path)["route"]["typed_exit"],
+                "reprepare_required",
+            )
+
+            _, default_gate_path = gtt.finalization_gate_input(
+                root,
+                public_input,
+                None,
+            )
+            self.assertEqual(default_gate_path.resolve(), transition_path.resolve())
+
+            args.gate = gtt.repo_relative(root, legacy_path)
+            with self.assertRaises(gtt.WorkflowError) as stale_legacy:
+                gtt.cmd_check_finalization_gate(args)
+            self.assertTrue(
+                any(
+                    "objective identity mismatch" in error
+                    for error in stale_legacy.exception.payload["errors"]
+                ),
+                stale_legacy.exception.payload["errors"],
+            )
+            args.gate = None
+
+            checked = gtt.cmd_check_finalization_gate(args)
+            self.assertEqual(checked["typed_exit"], "reprepare_required")
+            self.assertEqual(legacy_path.read_bytes(), legacy_bytes)
+
+            transitioned = gtt.cmd_execute_finalization_transition(args)
+
+        self.assertEqual(preview_count, 4)
+        self.assertEqual(transitioned["typed_exit"], "reprepare_required")
+        self.assertEqual(
+            transitioned["output"],
+            {
+                "exit_id": "reprepare_required",
+                "task_ref": task_ref,
+                "reason_code": gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+                "branch_review_commit": current_reviewed,
+                "publication_head": current_reviewed,
+            },
+        )
+        self.assertFalse(legacy_path.exists())
+        self.assertFalse(transition_path.exists())
+        self.assertFalse(
+            root.joinpath(
+                ".trellis/.runtime/guru-team/finalizer-inputs/fixture/verification-required.json"
+            ).exists()
+        )
+        self.assertTrue((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).is_file())
+        self.assertNotEqual(previous_reviewed, current_reviewed)
+
+    def test_transition_gate_without_legacy_predecessor_fails_closed(self) -> None:
+        root, task_dir, _, _, _, _ = self.base_evolution_fixture()
+        legacy_path = gtt.task_finalization_path(root, task_dir)
+        transition_path = gtt.task_finalization_transition_path(root, task_dir)
+        gtt.write_json(transition_path, gtt.read_json(legacy_path))
+        legacy_path.unlink()
+        public_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": ".trellis/tasks/fixture",
+        }
+
+        with (
+            mock.patch.object(gtt, "finalization_task_dir", return_value=task_dir),
+            self.assertRaises(gtt.WorkflowError) as blocked,
+        ):
+            gtt.finalization_gate_input(root, public_input, None)
+
+        self.assertIn("legacy predecessor checkpoint", str(blocked.exception))
+
     def test_base_evolution_retirement_ignores_unrelated_finalizer_input_profiles(self) -> None:
         root, task_dir, previous_plan, current_plan, _, _ = self.base_evolution_fixture()
         request_dir = root / ".trellis/.runtime/guru-team/finalizer-inputs/fixture"

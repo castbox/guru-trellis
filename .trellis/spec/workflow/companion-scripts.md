@@ -1370,6 +1370,13 @@ artifacts, old-to-current ancestry, and a fast-forwardable remote ancestor.
 Preview and discovery only prove those facts. The checked transition repeats the
 proof, retires the predecessor, and persists the freshly rebuilt current plan;
 the next preview validates the two heads against that replacement plan.
+For this bounded base-evolution route, recorder does not overwrite the legacy
+gate whose bytes the checker and executor must still validate. It writes the
+current marker to the same-owner ignored
+`task-finalization-transition-gate.json`; default gate resolution selects it
+only while the exact legacy gate and base-evolution state remain current.
+Successful checked supersession removes both gate files, while an orphan or a
+transition gate outside that state fails closed.
 `resume_finalization` accepts only declared same-plan post-content recovery
 states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. The
 ignored owner-private gate stores the private executor marker for publication

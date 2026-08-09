@@ -147,6 +147,7 @@ Strategy：`ssot_first`。
 | archive summary builder无法从reviewed payload构造current schema | side-effect-free preflight阻塞，不push、不建PR、不archive |
 | commit message格式不合规但reviewed content未变 | 下游不创建metadata commit；继续以content identity审查 |
 | durable docs缺口 | 当前owner返回finding/task work；不得用固定表格pass替代真实reconciliation |
+| base-evolution recorder覆盖legacy gate | current marker写入同owner ignored transition gate；checker/executor保留并复核legacy gate，成功transition后一次退休两者 |
 
 ## 11. Risks and Rollback
 

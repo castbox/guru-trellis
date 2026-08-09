@@ -389,6 +389,7 @@ AI_FIRST_OWNER_ARTIFACTS = frozenset({
     "review-gate.json",
     "pr-readiness.json",
     "task-finalization-gate.json",
+    "task-finalization-transition-gate.json",
 })
 AI_FIRST_OS_NOISE_NAMES = frozenset({".DS_Store"})
 REVIEWED_CONTENT_ALGORITHM = "guru-reviewed-content-1.0"
@@ -425,6 +426,7 @@ MARKETPLACE_VERIFICATION_ARTIFACT = "marketplace-verification.json"
 FINISH_SUMMARY_ARTIFACT = "finish-summary.json"
 CLOSEOUT_PLAN_ARTIFACT = "closeout-plan.json"
 TASK_FINALIZATION_GATE_ARTIFACT = "task-finalization-gate.json"
+TASK_FINALIZATION_TRANSITION_GATE_ARTIFACT = "task-finalization-transition-gate.json"
 CLOSEOUT_PLAN_SCHEMA_VERSION = "3.0"
 LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION = "2.0"
 LEGACY_CLOSEOUT_RETIRED_ARTIFACTS = {
@@ -12490,10 +12492,13 @@ def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
             )
         plan.unlink()
         retired.append(repo_relative(root, plan))
-    gate = task_finalization_path(root, task_dir)
-    if gate.is_file() and not gate.is_symlink():
-        gate.unlink()
-        retired.append(repo_relative(root, gate))
+    for gate in (
+        task_finalization_path(root, task_dir),
+        task_finalization_transition_path(root, task_dir),
+    ):
+        if gate.is_file() and not gate.is_symlink():
+            gate.unlink()
+            retired.append(repo_relative(root, gate))
     if verification.is_file() and not verification.is_symlink():
         verification.unlink()
         retired.append(repo_relative(root, verification))
@@ -12504,7 +12509,10 @@ def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
         ai_first_retire_owner_checkpoints(
             root,
             task_dir,
-            (TASK_FINALIZATION_GATE_ARTIFACT,),
+            (
+                TASK_FINALIZATION_GATE_ARTIFACT,
+                TASK_FINALIZATION_TRANSITION_GATE_ARTIFACT,
+            ),
         )
     )
     return retired
@@ -21312,6 +21320,17 @@ def task_finalization_path(
     )
 
 
+def task_finalization_transition_path(
+    root: Path,
+    task_dir: Path,
+) -> Path:
+    return ai_first_owner_checkpoint_path(
+        root,
+        task_dir,
+        TASK_FINALIZATION_TRANSITION_GATE_ARTIFACT,
+    )
+
+
 def closeout_ledger_matches_plan_bytes(
     root: Path,
     task_dir: Path,
@@ -26579,6 +26598,25 @@ def finalization_normalize_gate(root: Path, payload: Any) -> dict[str, Any]:
     return payload
 
 
+def finalization_base_evolution_supersession_pending(
+    context: dict[str, Any],
+) -> bool:
+    prepared = context.get("prepared")
+    reprepare = (
+        prepared.get("pre_pr_reprepare")
+        if isinstance(prepared, dict)
+        else None
+    )
+    return (
+        context.get("transaction_state") == "reprepare_required"
+        and context.get("reprepare_reason_code")
+        == FINALIZATION_REPREPARE_PROVENANCE_TAIL
+        and isinstance(reprepare, dict)
+        and isinstance(reprepare.get("base_evolution"), dict)
+        and isinstance(reprepare.get("previous_plan"), dict)
+    )
+
+
 def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input, _ = finalization_public_input(root, args.input)
@@ -26618,7 +26656,11 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
             payload={"errors": errors},
         )
     task_dir = context["task_dir"]
-    artifact_path = task_finalization_path(root, task_dir)
+    artifact_path = (
+        task_finalization_transition_path(root, task_dir)
+        if finalization_base_evolution_supersession_pending(context)
+        else task_finalization_path(root, task_dir)
+    )
     committed_recovery = (
         context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
     )
@@ -26682,14 +26724,26 @@ def finalization_gate_input(
                 "output": copy.deepcopy(FINALIZATION_EXECUTOR_OUTPUT_MARKER),
             },
         }, expected
+    transition = task_finalization_transition_path(root, task_dir)
     path = (
         stage0_owner_path(root, value, "arguments.owner_result")
         if value
-        else expected
+        else (
+            transition
+            if transition.is_file() and not transition.is_symlink()
+            else expected
+        )
     )
-    if path.resolve() != expected.resolve():
+    if path.resolve() not in {expected.resolve(), transition.resolve()}:
         raise WorkflowError(
             "Task finalization gate must use the exact owner-private artifact.",
+            exit_code=2,
+        )
+    if path.resolve() == transition.resolve() and (
+        not expected.is_file() or expected.is_symlink()
+    ):
+        raise WorkflowError(
+            "Task finalization transition gate requires its legacy predecessor checkpoint.",
             exit_code=2,
         )
     return finalization_normalize_gate(root, read_json(path)), path
@@ -26737,6 +26791,14 @@ def check_finalization_gate_result(
         "task finalization gate",
     )
     context = finalization_preview_context(root, args, public_input)
+    transition_gate = task_finalization_transition_path(root, context["task_dir"])
+    if (
+        gate_path.resolve() == transition_gate.resolve()
+        and not finalization_base_evolution_supersession_pending(context)
+    ):
+        errors.append(
+            "task finalization transition gate is outside base-evolution supersession"
+        )
     committed_recovery = (
         context["transaction_state"] in FINALIZATION_COMMITTED_RECOVERY_STATES
     )
