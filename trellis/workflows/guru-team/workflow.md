@@ -377,27 +377,26 @@ before implementation resumes.
 
 ### Human artifacts
 
-Before a planning, Phase 2, Branch Review, publication, or finalization stop,
-resolve human-authored artifacts:
+Before a planning, Phase 2, Branch Review, publication, or finalization stop, resolve human-authored artifacts:
 
     .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
 
-Show links only for existing `prd.md`, `design.md`, and `implement.md`. Resolve
-from the active task first and from the archive after publication. Do not
+Show links only for existing `prd.md`, `design.md`, and `implement.md`. Resolve from the active task first and from the archive after publication. Do not
 require a fixed table, and do not expose JSON gates, checkpoints, raw agent
 reports, payloads, or digests as standard handoff artifacts.
 
 ### Interaction and side effects
 
-- Ask only for missing intent, a material scope or plan choice, new external
-  authority, or one fully displayed side-effect set.
-- For one current, unique, unambiguous side-effect plan, prompt only
-  确认继续 and accept any clear affirmative reply.
+- Ask only for missing intent, a material scope or plan choice, new external authority, or one fully displayed side-effect set.
+- For one current, unique, unambiguous side-effect plan, prompt only 确认继续 and accept any clear affirmative reply.
 - Automatically consume mapped exits and mapped re-entry routes.
 - Authorization exists only in the current dialogue and is never persisted.
-- Issue/workspace/task creation, task commit, push/PR/archive, merge, cleanup,
-  and any new external mutation keep their own bounded authority.
+- Issue/workspace/task creation, task commit, push/PR/archive, merge, cleanup, and any new external mutation keep their own bounded authority.
 - No Skill pass creates permission for a later unrelated side effect.
+<!-- guru-confirmation-boundary: {"id":"issue_creation","profiles":["new_issue"]} -->
+<!-- guru-confirmation-boundary: {"id":"workspace_and_task","profiles":["open_issue","new_issue"]} -->
+<!-- guru-confirmation-boundary: {"id":"finalizer_side_effect_set","profiles":["open_issue","new_issue"]} -->
+<!-- guru-confirmation-boundary: {"id":"expected_head_merge","profiles":["open_issue","new_issue"]} -->
 
 ### Platform entry and ownership
 

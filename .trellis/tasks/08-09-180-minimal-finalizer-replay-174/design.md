@@ -79,8 +79,8 @@ Full command argv/output digest inventory, asset catalog, ownership scan, findin
 
 ### 5.1 Public I/O
 
-- Workflow input profile: Finalizer seed containing canonical repo/PR identity and `expected_head_sha`, plus target-authored `profile=ready_for_merge`, `mode=workflow`.
-- Standalone profile: repo-bound PR URL/number and caller intent; the Skill rereads the same live facts and does not require an active task.
+- Workflow input profile: Finalizer seed containing canonical repo/PR identity, `expected_head_sha`, reviewed base/head branches and the reviewed close-Issue set, plus target-authored `profile=ready_for_merge`, `mode=workflow`.
+- Standalone profile: repo-bound PR URL/number plus caller-authored expected SHA, base/head branches and close-Issue set; the Skill rereads the same live facts and does not require an active task.
 - Outputs:
   - `merged`: minimal PR URL/number and merged commit identity for finish response.
   - `merge_blocked`: closed reason/remediation for pre-merge live gate failure.
@@ -146,9 +146,10 @@ The checker recomputes objective Git/GitHub facts but does not decide eligibilit
 
 - Package contract/schema/eval tests for Finalizer, Verifier, Commit and new Merge Skill.
 - Runtime unit tests for transaction recovery, verification exactly-once, expected-head merge and closure timestamp ordering.
+- Merge authority regressions for post-Finalizer PR-body close-keyword additions/removals and base/head branch drift while the head SHA remains unchanged.
 - Finish-family integration from Publication DTO through Finalizer `ready_for_merge`, Merge `merged`, and finish response.
 - Negative tests for Draft/stale head/missing checks/reviews/non-mergeable PR, close-keyword mismatch, manual early closure, no GitHub auto-close and forbidden Issue close calls.
-- Controlled #174 replay fixture with call counters and terminal artifact scan.
+- One controlled #174 replay session with chained public projections, wrapper execution receipts, dialogue-boundary event receipts, call counters and terminal artifact scan; isolated canned eval totals are not replay evidence.
 - Source/installed package validation, production manifest activation, canonical/dogfood byte equality, preset initial/reapply, marketplace init/preview/switch, official update/reapply, all-platform discovery, executable bits and zero `.new`/`.bak`.
 
 ## 10. Rollback

@@ -3,5 +3,8 @@
   "repo_ref": "castbox/guru-trellis",
   "pr_number": 176,
   "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
-  "expected_head_sha": "1111111111111111111111111111111111111111"
+  "expected_head_sha": "1111111111111111111111111111111111111111",
+  "expected_base_branch": "main",
+  "expected_head_branch": "codex/180-minimal-finalizer-replay-174",
+  "expected_close_issues": [180]
 }

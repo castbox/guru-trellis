@@ -104,12 +104,15 @@ remain immutable legacy assets but are not selected by the Interface, registry,
 workflow or extension manifest. The integrated global graph has 15 invoke
 markers, 57 exit markers and 33 unique workflow/stop targets.
 
-The Finalizer-to-Merge edge is target-authored. Finalizer returns only canonical
-repository/PR identity and `expected_head_sha`; Merge supplies only its fixed
-`profile=ready_for_merge` and `mode=workflow`. No transaction, review narrative,
-authorization, task runtime or local base identity crosses the edge. Merge
-standalone/re-entry accepts a repo-bound PR URL/number plus caller intent and
-rebuilds the same live evidence without requiring an active task.
+The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
+repository/PR identity, `expected_head_sha`, expected base/head branch identity,
+and the reviewed close-Issue number set; Merge supplies only its fixed
+`profile=ready_for_merge` and `mode=workflow`. These are the minimal facts the
+consumer cannot rederive from live PR state without turning that mutable state
+into authority. No transaction, review narrative, authorization, task runtime or
+local checkout identity crosses the edge. Merge standalone/re-entry accepts the
+same expected authority from its caller and rebuilds live evidence without an
+active task.
 
 The Merge AI owns readiness, close scope, policy/method sufficiency, the exact
 displayed action and the dialogue-local confirmation. Its deterministic
@@ -1641,9 +1644,10 @@ it as supersedable only after proving the exact legacy gate/request, unchanged
 task/repo/remote/base/head identity, active unarchived state, no PR or parallel
 consumer, untracked owner state, old-to-current reviewed ancestry, and a
 fast-forwardable remote ancestor. The checked executor then creates or reuses
-the tail and persists the freshly rebuilt current plan before returning both
-heads, so the next preview reads the replacement plan rather than the retired
-one. Internal transaction
+the tail and persists only a freshly rebuilt ignored
+`finalization-transaction.json` before returning both heads, so the next preview
+rebuilds the plan from that minimal recovery input rather than a retired or new
+`closeout-plan.json`. Internal transaction
 states, closeout plan, publication and verification bodies, PR/archive facts,
 recovery history, unrelated HEAD facts, and
 digests remain owner-private.
@@ -1655,8 +1659,9 @@ consumer; no other Finalizer facts become public. Inputs outside current schemas
 fail closed.
 
 The `verification_required.repo_ref` is bound to the in-memory plan repository.
-`ready_for_merge` carries only repository/PR identity and the expected head SHA
-needed by `guru-merge-task-pr`. The ignored-runtime gate retains only a private
+`ready_for_merge` carries repository/PR identity, expected head SHA, expected
+base/head branches and reviewed close-Issue numbers needed by
+`guru-merge-task-pr`. The ignored-runtime gate retains only a private
 executor marker through the transaction; only a strict public-wrapper reread
 after the exact archive transaction and Ready PR may materialize the public DTO
 in memory. The wrapper never executes the transition and never persists that

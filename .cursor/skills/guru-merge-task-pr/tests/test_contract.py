@@ -60,7 +60,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
         self.assertEqual([item["id"] for item in profiles], ["ready_for_merge", "standalone_merge"])
         expected = {
             "schema_version", "profile", "mode", "repo_ref", "pr_number",
-            "pr_url", "expected_head_sha",
+            "pr_url", "expected_head_sha", "expected_base_branch",
+            "expected_head_branch", "expected_close_issues",
         }
         for profile in profiles:
             schema = json.loads((PACKAGE / profile["schema"]["path"]).read_text(encoding="utf-8"))
@@ -95,18 +96,27 @@ class MergeTaskPrContractTest(unittest.TestCase):
         self.assertEqual(GTT.task_pr_merge_close_issues(body), [180, 181])
 
     def test_preflight_blocks_draft_head_drift_checks_and_early_close(self) -> None:
-        public_input = {"expected_head_sha": "1" * 40}
+        public_input = {
+            "expected_head_sha": "1" * 40,
+            "expected_base_branch": "main",
+            "expected_head_branch": "codex/180-eval",
+            "expected_close_issues": [180],
+        }
         facts = {
             "pr": {
                 "state": "OPEN", "is_draft": True, "head_sha": "2" * 40,
+                "base_branch": "release", "head_branch": "codex/other",
                 "mergeable": "UNKNOWN", "checks": [{"name": "ci", "state": "PENDING"}],
             },
-            "close_issues": [180],
+            "close_issues": [180, 181],
             "issues": [{"number": 180, "state": "CLOSED"}],
         }
         errors = GTT.task_pr_merge_preflight_errors(public_input, facts)
-        self.assertEqual(len(errors), 5)
+        self.assertEqual(len(errors), 8)
         self.assertTrue(any("expected head" in item for item in errors))
+        self.assertTrue(any("base branch" in item for item in errors))
+        self.assertTrue(any("head branch" in item for item in errors))
+        self.assertTrue(any("reviewed close scope" in item for item in errors))
         self.assertTrue(any("before merge" in item for item in errors))
 
     def test_runtime_has_expected_head_merge_and_no_issue_close_or_local_sync(self) -> None:
@@ -131,7 +141,13 @@ class MergeTaskPrContractTest(unittest.TestCase):
         exits = {item["expected_exit"] for item in corpus["evals"]}
         self.assertEqual(exits, {"merged", "merge_blocked", "closure_mismatch"})
         ids = {item["id"] for item in corpus["evals"]}
-        self.assertTrue({"standalone-draft-blocked", "workflow-head-drift-blocked", "workflow-close-keyword-mismatch-blocked"} <= ids)
+        self.assertTrue({
+            "standalone-draft-blocked",
+            "workflow-head-drift-blocked",
+            "workflow-branch-drift-blocked",
+            "workflow-close-keyword-mismatch-blocked",
+            "workflow-added-close-keyword-blocked",
+        } <= ids)
 
     def test_semantic_evals_declare_owner_staging_and_public_invocation(self) -> None:
         corpus = json.loads((PACKAGE / "evals/evals.json").read_text(encoding="utf-8"))

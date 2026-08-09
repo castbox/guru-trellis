@@ -178,162 +178,24 @@ verify_finish_family_integration() {
 
 verify_issue_174_controlled_replay() {
   printf 'Issue #174 controlled replay counters\n'
-  python3 - "$TARGET" "$WORK_DIR/issue-174-controlled-replay" <<'PY'
+  local replay_root="$WORK_DIR/issue-174-controlled-replay"
+  local report="$replay_root/report.json"
+  mkdir -p "$replay_root"
+  GURU_FINISH_INTEGRATION_MODE=installed \
+    GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
+    GURU_ISSUE_174_REPLAY_REPORT="$report" \
+    python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" \
+      FinishFamilyIntegrationTests.test_issue_174_controlled_replay_is_one_chained_session \
+      -q
+  python3 - "$report" <<'PY'
 import json
-import subprocess
 import sys
 from pathlib import Path
 
-root = Path(sys.argv[1]).resolve()
-replay_root = Path(sys.argv[2]).resolve()
-runner = root / ".trellis/guru-team/scripts/bash/run-skill-evals.sh"
-steps = [
-    ("branch_review", "guru-review-branch", "fresh-final-passed", "passed"),
-    (
-        "immutable_verification",
-        "guru-verify-extension-installation",
-        "workflow-required-verified",
-        "verified",
-    ),
-    (
-        "finalizer",
-        "guru-finalize-task",
-        "publication-ready-ready-for-merge",
-        "ready_for_merge",
-    ),
-    (
-        "merge",
-        "guru-merge-task-pr",
-        "workflow-expected-head-merged",
-        "merged",
-    ),
-]
-executions = []
-for ordinal, (step, skill, case, expected_exit) in enumerate(steps, start=1):
-    run_root = replay_root / f"{ordinal:02d}-{step}"
-    process = subprocess.run(
-        [
-            str(runner),
-            "--root", str(root),
-            "--mode", "installed",
-            "--skill", skill,
-            "--adapter", "shared",
-            "--case", case,
-            "--run-root", str(run_root),
-            "--json",
-        ],
-        cwd=root,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if process.returncode != 0:
-        raise SystemExit(
-            f"controlled replay {step} failed (rc={process.returncode}): "
-            f"{process.stderr}"
-        )
-    result = json.loads(process.stdout)
-    cases = result.get("cases")
-    if (
-        result.get("status") != "passed"
-        or not isinstance(cases, list)
-        or len(cases) != 1
-        or cases[0].get("status") != "passed"
-        or cases[0].get("actual_exit") != expected_exit
-    ):
-        raise SystemExit(f"controlled replay {step} returned invalid evidence: {result}")
-    executions.append(
-        {
-            "ordinal": ordinal,
-            "step": step,
-            "skill": skill,
-            "case": case,
-            "exit": expected_exit,
-        }
-    )
-
-terminal_names = {
-    "finalization-transaction.json",
-    "task-finalization-gate.json",
-    "task-finalization-transition.json",
-    "closeout-plan.json",
-}
-terminal_artifacts = []
-for path in replay_root.rglob("*"):
-    if not path.is_file() or path.name not in terminal_names:
-        continue
-    parts = path.parts
-    if ".trellis" in parts and (
-        ".runtime" in parts or "tasks" in parts
-    ):
-        terminal_artifacts.append(path.relative_to(replay_root).as_posix())
-
-open_issue_confirmations = [
-    "workspace_and_task",
-    "finalizer_side_effect_set",
-    "expected_head_merge",
-]
-new_issue_confirmations = ["issue_creation", *open_issue_confirmations]
-counters = {
-    "open_issue_confirmations": len(open_issue_confirmations),
-    "new_issue_confirmations": len(new_issue_confirmations),
-    "commit_confirmations": 0,
-    "branch_review_executions": sum(
-        row["step"] == "branch_review" for row in executions
-    ),
-    "immutable_verification_executions": sum(
-        row["step"] == "immutable_verification" for row in executions
-    ),
-    "finalizer_confirmations": 1,
-    "merge_confirmations": 1,
-    "terminal_transaction_artifacts": len(terminal_artifacts),
-}
-expected = {
-    "open_issue_confirmations": 3,
-    "new_issue_confirmations": 4,
-    "commit_confirmations": 0,
-    "branch_review_executions": 1,
-    "immutable_verification_executions": 1,
-    "finalizer_confirmations": 1,
-    "merge_confirmations": 1,
-    "terminal_transaction_artifacts": 0,
-}
-if counters != expected:
-    raise SystemExit(
-        "controlled replay counters differ from the reviewed budget: "
-        + json.dumps(
-            {
-                "actual": counters,
-                "expected": expected,
-                "terminal_artifacts": terminal_artifacts,
-            },
-            sort_keys=True,
-        )
-    )
-print(
-    json.dumps(
-        {
-            "status": "passed",
-            "authority": {
-                "historical_issue": 174,
-                "historical_pr": 176,
-                "mode": "sanitized_fixture",
-                "start": "last_reviewed_content_commit",
-                "external_mutation": False,
-            },
-            "confirmation_boundaries": {
-                "open_issue": open_issue_confirmations,
-                "new_issue": new_issue_confirmations,
-            },
-            "executions": executions,
-            "counters": counters,
-            "terminal_artifacts": terminal_artifacts,
-        },
-        indent=2,
-        sort_keys=True,
-    )
-)
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+if report.get("status") != "passed" or report.get("terminal_artifacts") != []:
+    raise SystemExit("controlled replay report is incomplete or non-terminal")
+print(json.dumps(report, indent=2, sort_keys=True))
 PY
 }
 
@@ -1695,7 +1557,7 @@ guru-approve-task-plan|["approved-initial","revision-required","clarify-scope","
 guru-check-task|["passed-initial","implementation-required","planning-stale","blocked-initial"]
 guru-create-task-commit|["committed-initial","revision-required","committed-finding-fix","blocked-recovery"]
 guru-finalize-task|["publication-verification-required","publication-review-stale","same-plan-resume","cross-month-reprepare","ready-for-merge-recovery","publication-ready-ready-for-merge","same-plan-ready-for-merge","blocked-private-state","verified-reentry-ready-for-merge","not-required-reentry-ready-for-merge"]
-guru-merge-task-pr|["workflow-expected-head-merged","standalone-draft-blocked","workflow-head-drift-blocked","workflow-close-keyword-mismatch-blocked","workflow-post-merge-closure-mismatch"]
+guru-merge-task-pr|["workflow-expected-head-merged","standalone-draft-blocked","workflow-head-drift-blocked","workflow-branch-drift-blocked","workflow-close-keyword-mismatch-blocked","workflow-added-close-keyword-blocked","workflow-post-merge-closure-mismatch"]
 guru-review-branch|["workflow-passed","standalone-passed","implementation-required","scope-confirmation-required","blocked-stale","finding-fix-passed","fresh-final-passed"]
 guru-review-task-publication|["workflow-initial-ready","standalone-initial-ready","return-to-task-work","blocked-external","stale-reentry-ready","metadata-fix-fresh-ready","metadata-fix-durable-drift-return"]
 guru-verify-extension-installation|["workflow-required-verified","workflow-applicability-conflict-blocked","standalone-not-required","task-install-finding-return","standalone-remote-unavailable","workflow-transient-retry-verified","workflow-stale-plan-reentry-verified"]

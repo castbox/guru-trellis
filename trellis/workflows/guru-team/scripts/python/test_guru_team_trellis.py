@@ -9493,7 +9493,7 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
         self.assertEqual(result["publication_head"], prepared["publication_head"])
         self.assertEqual(result["output"]["reason_code"], gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL)
 
-    def test_base_evolution_executor_persists_replacement_plan_after_retirement(self) -> None:
+    def test_base_evolution_executor_persists_minimal_transaction_after_retirement(self) -> None:
         root, reviewed, publication = self.fixture()
         self.addCleanup(lambda: shutil.rmtree(root, ignore_errors=True))
         task_dir = root / ".trellis/tasks/current"
@@ -9518,6 +9518,11 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
         replacement_plan = {
             "schema_version": gtt.CLOSEOUT_PLAN_SCHEMA_VERSION,
             "plan_digest": "b" * 64,
+        }
+        replacement_transaction = {
+            "schema_version": "1.0",
+            "skill_id": gtt.FINALIZE_TASK_SKILL_ID,
+            "task_ref": task_ref,
         }
         public_input = {"task_ref": task_ref, "mode": "workflow"}
         gate = {
@@ -9551,7 +9556,12 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             }),
             mock.patch.object(gtt, "finalizer_supersede_pre_pr_state", return_value=["old-state"]) as retire,
             mock.patch.object(gtt, "prepare_closeout", return_value={"plan": replacement_plan}) as prepare,
-            mock.patch.object(gtt, "validate_closeout_plan", side_effect=lambda value: value),
+            mock.patch.object(
+                gtt,
+                "finalization_transaction_from_plan",
+                return_value=replacement_transaction,
+            ) as transaction_from_plan,
+            mock.patch.object(gtt, "finalization_write_transaction") as write_transaction,
             mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
         ):
             result = gtt.cmd_execute_finalization_transition(args)
@@ -9565,11 +9575,17 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
         )
         retire.assert_called_once_with(root.resolve(), task_dir)
         prepare.assert_called_once()
-        self.assertEqual(
-            gtt.read_json(task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT),
+        transaction_from_plan.assert_called_once_with(
             replacement_plan,
+            next_transition="push_content",
         )
-        self.assertEqual(result["replacement_plan_digest"], replacement_plan["plan_digest"])
+        write_transaction.assert_called_once_with(
+            root.resolve(),
+            task_dir,
+            replacement_transaction,
+        )
+        self.assertFalse((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).exists())
+        self.assertTrue(result["replacement_transaction_created"])
 
     def test_reprepare_supersession_preserves_tracked_task_artifacts(self) -> None:
         root, _, _ = self.fixture()
@@ -9785,6 +9801,7 @@ class PrePrProvenanceReprepareFixtureTest(unittest.TestCase):
                 "reviewed_content_head": current_reviewed,
                 "publication_head": current_reviewed,
             },
+            "review": {"close_issues_reviewed": [174]},
         }
         plan_ref = f"closeout-plan:{previous_plan['plan_digest']}"
         gate = {
@@ -10491,7 +10508,13 @@ printf '{"status":"ok"}\\n'
                 ".trellis/.runtime/guru-team/finalizer-inputs/fixture/verification-required.json"
             ).exists()
         )
-        self.assertTrue((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).is_file())
+        self.assertFalse((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).exists())
+        self.assertEqual(
+            gtt.read_json(gtt.finalization_transaction_path(root, task_dir))[
+                "close_issues"
+            ],
+            [174],
+        )
         self.assertNotEqual(previous_reviewed, current_reviewed)
 
     def test_transition_gate_without_legacy_predecessor_fails_closed(self) -> None:
@@ -14865,13 +14888,16 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         ready_for_merge_schema = {
             "type": "object",
             "additionalProperties": False,
-            "required": ["exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha"],
+            "required": ["exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha", "expected_base_branch", "expected_head_branch", "expected_close_issues"],
             "properties": {
                 "exit_id": {"const": "ready_for_merge"},
                 "repo_ref": {"type": "string", "minLength": 1},
                 "pr_number": {"type": "integer", "minimum": 1},
                 "pr_url": {"type": "string", "minLength": 1},
                 "expected_head_sha": {"type": "string", "minLength": 1},
+                "expected_base_branch": {"type": "string", "minLength": 1},
+                "expected_head_branch": {"type": "string", "minLength": 1},
+                "expected_close_issues": {"type": "array", "minItems": 1},
             },
         }
         gate = {"route": route}
@@ -14881,9 +14907,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         plan = {
             "git": {
                 "repo": "owner/repo",
+                "base_branch": "main",
+                "head_branch": "codex/closeout",
                 "branch_review_commit": self.head,
                 "publication_head": self.head,
             },
+            "review": {"close_issues_reviewed": [105]},
             "task": {"archive_locator": archive_ref},
         }
         with mock.patch.object(
@@ -14910,6 +14939,9 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "pr_number": 118,
                 "pr_url": "https://github.com/owner/repo/pull/118",
                 "expected_head_sha": self.head,
+                "expected_base_branch": "main",
+                "expected_head_branch": "codex/closeout",
+                "expected_close_issues": [105],
             },
         )
 
@@ -14934,10 +14966,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "git": {
                 "repo": "owner/repo",
                 "remote": "origin",
+                "base_branch": "main",
                 "head_branch": "main",
                 "branch_review_commit": self.head,
                 "publication_head": self.head,
             },
+            "review": {"close_issues_reviewed": [105]},
             "task": {
                 "active_locator": task_ref,
                 "archive_locator": archive_ref,
@@ -14953,13 +14987,16 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         ready_for_merge_schema = {
             "type": "object",
             "additionalProperties": False,
-            "required": ["exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha"],
+            "required": ["exit_id", "repo_ref", "pr_number", "pr_url", "expected_head_sha", "expected_base_branch", "expected_head_branch", "expected_close_issues"],
             "properties": {
                 "exit_id": {"const": "ready_for_merge"},
                 "repo_ref": {"type": "string", "minLength": 1},
                 "pr_number": {"type": "integer", "minimum": 1},
                 "pr_url": {"type": "string", "minLength": 1},
                 "expected_head_sha": {"type": "string", "minLength": 1},
+                "expected_base_branch": {"type": "string", "minLength": 1},
+                "expected_head_branch": {"type": "string", "minLength": 1},
+                "expected_close_issues": {"type": "array", "minItems": 1},
             },
         }
         pr = {
@@ -15090,6 +15127,9 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "pr_number": 118,
                 "pr_url": pr["url"],
                 "expected_head_sha": self.head,
+                "expected_base_branch": "main",
+                "expected_head_branch": "main",
+                "expected_close_issues": [105],
             },
         )
         executor.assert_not_called()
@@ -18742,6 +18782,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "base_branch": "main",
             },
         )
+        gtt.write_json(archived / "issue-scope-ledger.json", self.ledger)
         pr_url = "https://github.com/owner/repo/pull/105"
         gtt.write_json(
             archived / gtt.FINISH_SUMMARY_ARTIFACT,
@@ -18831,6 +18872,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(context["transaction_state"], "ready")
         self.assertEqual(context["plan_ref"], f"finalization:{digest}")
         self.assertEqual(context["published_pr"], pr)
+        self.assertEqual(context["plan"]["review"]["close_issues_reviewed"], [105])
         self.assertFalse(
             (archived / gtt.CLOSEOUT_PLAN_ARTIFACT).exists()
         )

@@ -1155,10 +1155,13 @@ routine confirmation. No authorization or confirmation field exists.
 
 ## Current Merge Gate And Results
 
-`guru-merge-task-pr` owns one ignored-runtime semantic gate. It records only the
-canonical repository/PR/base/head, expected head SHA, selected repository merge
-method, exact close Issue numbers, passed AI dimensions, selected route and the
-minimal executor marker. Authorization remains dialogue-local.
+`guru-merge-task-pr` owns one ignored-runtime semantic gate. Its public input
+binds canonical repository/PR identity, expected head SHA, reviewed base/head
+branches and the exact reviewed close-Issue numbers. The gate records those
+minimal authorities together with live facts, selected repository merge method,
+passed AI dimensions, selected route and the minimal executor marker. Live PR
+body/base/head values are evidence to compare, never the source of reviewed
+authority. Authorization remains dialogue-local.
 
 The deterministic executor uses repo-bound `gh pr merge` with
 `--match-head-commit <expected-head-sha>` and the uniquely selected policy
@@ -1344,11 +1347,12 @@ the task is active and unarchived, no PR or parallel consumer exists, the old
 reviewed head is an ancestor of the current reviewed head, and the remote branch
 is a fast-forwardable ancestor. Publication checks those facts without mutation;
 only the checked Finalizer transition retires state, creates or reuses the tail,
-and persists the freshly rebuilt replacement plan. Archive-month reprepare
+and persists a minimal ignored Finalizer transaction containing the exact
+publication payload and recovery stage. Archive-month reprepare
 changes no HEAD and retains its complete current DTO. The public DTO carries
 exactly task, reason, `branch_review_commit`, and `publication_head`; the next
 preview validates current HEAD and the optional single-tail parent/allowlist
-contract against the replacement plan. PR already
+contract against the rebuilt plan. PR already
 created, archive started, reviewed content/scope drift, non-fast-forward remote,
 or manifest changes outside the allowlist remain fail-closed boundaries.
 
@@ -1364,9 +1368,8 @@ gate. The initial current `publication_ready` DTO supplies
 the exact reviewed `publish.title/body` for the base-evolution candidate and may
 differ from the predecessor plan. The four-field `reprepare_required` DTO does
 not grow payload fields. Only after the executor retires the predecessor and
-persists the replacement plan does minimal `reprepare_preview` treat that
-replacement immutable payload as authority, passing no synthetic Publication
-payload into plan preparation. Recorder writes the ordinary
+persists the minimal transaction does `reprepare_preview` rebuild the replacement
+plan from that exact immutable publication payload. Recorder writes the ordinary
 `task-finalization-gate.json`; checker/executor may privately admit only that
 byte-identical checked gate while rerunning the preflight.
 

@@ -44,8 +44,8 @@
     },
     {
       "id": "expected_head",
-      "evidence": "Finalizer or caller supplied expected immutable head SHA",
-      "binding": "PR headRefOid equality",
+      "evidence": "Finalizer or caller supplied expected immutable head SHA and reviewed base/head branches",
+      "binding": "PR headRefOid, baseRefName and headRefName equality",
       "freshness": "reread immediately before gh pr merge"
     },
     {
@@ -56,8 +56,8 @@
     },
     {
       "id": "close_scope",
-      "evidence": "PR body close keywords and current Issue states",
-      "binding": "all close Issues Open before merge",
+      "evidence": "Finalizer or caller supplied reviewed close-Issue set, PR body close keywords and current Issue states",
+      "binding": "exact keyword-set equality and all reviewed close Issues Open before merge",
       "freshness": "reread before and after merge"
     },
     {

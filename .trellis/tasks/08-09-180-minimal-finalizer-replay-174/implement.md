@@ -33,12 +33,12 @@
 - [ ] Extend package contract tests for current/legacy version selection, DTO minimality, projection uniqueness, wrapper thinness and three merge exits.
 - [ ] Add runtime tests for Finalizer no-closeout-plan lifecycle, recovery, terminal cleanup, verification exactly-once/result-capture recovery and stale identity rerun.
 - [ ] Add commit eligibility matrix tests for dedicated unpublished branches and every exclusion.
-- [ ] Add merge tests for expected-head success, head drift, Draft, checks/reviews/mergeability blockers, close-keyword mismatch, early/manual close, GitHub closure mismatch and no local sync/Issue close calls.
+- [ ] Add merge tests for expected-head success, SHA/base/head drift, added/removed close-keyword mismatch, Draft, checks/reviews/mergeability blockers, early/manual close, GitHub closure mismatch and no local sync/Issue close calls.
 - [ ] Update finish-family and installer integration tests plus current graph count assertions.
 
 ## 6. Controlled Replay And Installation Gates
 
-- [ ] Build a sanitized #174 fixture beginning at the last reviewed content commit; never mutate #174/PR #176.
+- [ ] Build one sanitized #174 replay session beginning at the last reviewed content commit; chain actual public projections and wrapper receipts in one run root, and never mutate #174/PR #176.
 - [ ] Assert Open-Issue confirmation count 3, new-Issue count 4, commit confirmation 0, Branch Review count 1, immutable verification execution count 1 and terminal transaction artifact count 0.
 - [ ] Run clean marketplace init and existing-project workflow preview/switch.
 - [ ] Run preset initial apply/reapply, official `trellis update`/version upgrade/reapply, platform equality, ownership inventory, README command and recursive zero-sidecar checks.

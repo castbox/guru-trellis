@@ -706,6 +706,9 @@ def run_closeout(
         or ready_payload.get("pr_number") != issue
         or ready_payload.get("pr_url") != expected_url
         or ready_payload.get("expected_head_sha") != local_head
+        or ready_payload.get("expected_base_branch") != BASE_BRANCH
+        or ready_payload.get("expected_head_branch") != branch
+        or ready_payload.get("expected_close_issues") != [issue]
     ):
         raise RuntimeError("installed Finalizer public wrapper returned an invalid ready_for_merge DTO")
     if gate_path.exists():

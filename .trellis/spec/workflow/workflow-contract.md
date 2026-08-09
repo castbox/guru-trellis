@@ -158,8 +158,9 @@ invokes `guru-merge-task-pr`; only `merged` reaches the finish response.
 `merge_blocked` and `closure_mismatch` stop at their distinct consumers.
 
 `guru-merge-task-pr` is a semantic, remote-only post-publication route. It
-rebuilds live PR, check, review, mergeability, repository-policy and Issue facts
-using repo-bound `gh`; it never enters Phase 0, invokes `guru-sync-base`, updates
+compares live PR base/head branches and close keywords with Finalizer's minimal
+reviewed authority, then rebuilds check, review, mergeability, repository-policy
+and Issue facts using repo-bound `gh`; it never enters Phase 0, invokes `guru-sync-base`, updates
 the PR branch, synchronizes local `main`, or cleans resources. After one exact
 merge confirmation, its deterministic executor uses the selected repository
 method and expected-head precondition. Post-merge verification is read-only:
@@ -236,6 +237,11 @@ implementation, Phase 2 check, Branch Review, an eligible unpublished task
 commit, mapped exits and read-only recovery add no routine confirmation.
 Finalizer and merge confirmation remain separate because merge readiness exists
 only after Finalizer reaches `ready_for_merge`.
+
+The canonical workflow declares those four possible boundaries with one
+`guru-confirmation-boundary` marker each. The controlled #174 replay derives
+open/new-Issue budgets from those markers and its single chained event log; it
+must not hard-code totals or sum isolated eval cases.
 
 ## Docs SSOT And Issue Scope
 

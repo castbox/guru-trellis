@@ -1441,8 +1441,9 @@ must first prove its exact legacy gate/request, matching task/repository/remote/
 base/head identities, active/no-PR/no-archive/single-consumer state, untracked
 artifacts, old-to-current ancestry, and a fast-forwardable remote ancestor.
 Preview and discovery only prove those facts. The checked transition repeats the
-proof, retires the predecessor, and persists the freshly rebuilt current plan;
-the next preview validates the two heads against that replacement plan.
+proof, retires the predecessor, and persists only the freshly rebuilt ignored
+Finalizer transaction; the next preview rebuilds the plan from its exact
+publication payload and validates both heads.
 For an unused current schema 3.0 predecessor, the runtime instead validates the
 complete seven-field Git shape, the historical tail structure and ancestry, a
 remote branch at or before the predecessor reviewed-content head, untracked
@@ -1452,12 +1453,13 @@ outbound publication side effect and fails closed. Initial preview rejects every
 preexisting gate. Recorder then writes the ordinary Finalizer gate; checker and
 executor pass only that exact checked in-memory gate back into the repeated
 preflight. The executor retires the old plan/gate, creates or reuses the current
-tail, and persists the replacement through the real `prepare_closeout()` path.
+tail, uses the real `prepare_closeout()` path to rebuild the candidate, and
+records only its minimal `finalization-transaction.json` recovery projection.
 The initial `publication_ready` invocation supplies the current reviewed exact
 title/body to the base-evolution candidate even when they differ from the
-predecessor plan. Only after the executor persists that replacement does a
-minimal `reprepare_preview` reuse the replacement plan's immutable exact payload
-without a synthesized partial Publication DTO; public `reprepare_required`
+predecessor plan. Only after the executor records that transaction does a
+minimal `reprepare_preview` reuse its immutable exact publication payload;
+public `reprepare_required`
 remains task/reason/two-head identity only.
 For the pre-#191 base-evolution route, recorder does not overwrite the legacy
 gate whose bytes the checker and executor must still validate. It writes the

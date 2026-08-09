@@ -778,14 +778,14 @@ Explicit legacy compatibility regressions preserve the pre-#180 #105/#191 plan
 engine and two-gate fixtures byte-for-byte. Those fixtures must remain selected
 only by legacy test selectors and must not restore plan-based current routing.
 
-The legacy current-plan evolution regression uses a disposable real Git repository and
+The current base-evolution regression uses a disposable real Git repository and
 bare remote, creates a valid current plan through real `prepare_closeout()`,
 advances reviewed content after its unpushed provenance tail, and executes real
-preview, recorder, checker, executor, tail creation, replacement persistence,
+preview, recorder, checker, executor, tail creation, minimal transaction persistence,
 and side-effect-free reprepare preview. It proves the ordinary gate lifecycle,
 the explicit old/current payload difference, current Publication payload in the
-initial candidate and persisted replacement, exact replacement-payload reuse by
-minimal reprepare, replacement digest, unchanged plan bytes/HEAD on the final
+initial candidate and transaction, exact transaction-payload reuse by minimal
+reprepare, absence of current `closeout-plan.json`, unchanged HEAD on the final
 preview, and no transition gate. Its rejection matrix covers a
 non-ancestor reviewed head, divergent remote, remote at the predecessor
 publication tail, remote at the real current reviewed commit, existing
@@ -802,3 +802,13 @@ script modes must match after fresh install, update, and preset reapply. The
   `ready_for_merge` and Merge evals, checked-verification projection bridge, and installed
   integration coverage. Upstream Finish assets remain unchanged, with physical
   overlay cleanup owned by #132.
+
+Issue #180 adds one #174 controlled replay session to the installed Finish-family
+integration. It chains the current Branch Review -> Publication -> Finalizer ->
+Verifier -> Finalizer -> Merge public projections in one event log, validates
+each target input and output against the selected Interface schema, and binds
+real public-wrapper receipts for Branch Review, Verifier, Finalizer and Merge.
+Confirmation counts are derived from canonical `guru-confirmation-boundary`
+markers; execution counts are derived from wrapper receipts. Isolated eval case
+names, fixed confirmation arrays, or literal execution totals are not accepted
+as replay evidence. The same replay root is scanned for terminal Finalizer state.

@@ -25526,6 +25526,9 @@ def assert_archived_current_transaction_boundary(
             "reviewed_content_head": transaction["branch_review_commit"],
             "publication_head": transaction["publication_head"],
         },
+        "review": {
+            "close_issues_reviewed": transaction["close_issues"],
+        },
         "publish": {
             "title": transaction["publication"]["title"],
             "body": transaction["publication"]["body"],
@@ -26753,6 +26756,7 @@ def finalization_transaction_from_plan(
             "title": plan["publish"]["title"],
             "body": plan["publish"]["body"],
         },
+        "close_issues": plan["review"]["close_issues_reviewed"],
         "next_transition": next_transition,
     }
     if pr is not None:
@@ -27801,11 +27805,13 @@ def finalization_eval_preview_context(
         "git": {
             "repo": payload["repo_ref"],
             "remote": payload["remote"],
+            "base_branch": "main",
             "head_branch": payload["head_branch"],
             "branch_review_commit": payload["branch_review_commit"],
             "reviewed_content_head": payload["branch_review_commit"],
             "publication_head": payload["publication_head"],
         },
+        "review": {"close_issues_reviewed": [174]},
         "marketplace": {"required": payload["marketplace_required"]},
         "task": {
             "active_locator": payload["task_ref"],
@@ -28101,6 +28107,9 @@ def finalization_current_archived_context(
         },
         "marketplace": {"required": "verification_ref" in transaction},
         "publish": copy.deepcopy(transaction["publication"]),
+        "review": {
+            "close_issues_reviewed": transaction["close_issues"],
+        },
         "task": {
             "active_locator": task_ref,
             "archive_locator": archive_locator,
@@ -28146,6 +28155,8 @@ def finalization_current_terminal_context(
         )
     summary = read_json(summary_path)
     validate_finish_summary(summary)
+    ledger = load_issue_scope_ledger(task_dir, {})
+    close_issues_reviewed = sorted(set(issue_numbers(ledger["close_issues"])))
     summary_task = summary.get("task") if isinstance(summary.get("task"), dict) else {}
     summary_git = summary.get("git") if isinstance(summary.get("git"), dict) else {}
     summary_github = (
@@ -28227,6 +28238,7 @@ def finalization_current_terminal_context(
             "title": public_input["pr_title"],
             "body": public_input["pr_body"],
         },
+        "review": {"close_issues_reviewed": close_issues_reviewed},
         "task": {
             "active_locator": task_ref,
             "archive_locator": archive_locator,
@@ -29161,6 +29173,9 @@ def finalization_gate_with_ready_for_merge_output(
             pr["url"],
         ),
         "expected_head_sha": pr["headRefOid"],
+        "expected_base_branch": plan["git"]["base_branch"],
+        "expected_head_branch": plan["git"]["head_branch"],
+        "expected_close_issues": plan["review"]["close_issues_reviewed"],
     }
     errors = skill_json_schema_validation_errors(
         updated["route"]["output"],
@@ -29268,7 +29283,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 exit_code=2,
             )
         retired = finalizer_supersede_pre_pr_state(root, task_dir)
-        replacement_plan: dict[str, Any] | None = None
+        replacement_transaction: dict[str, Any] | None = None
         base_evolution = (
             reprepare.get("base_evolution")
             if isinstance(reprepare, dict)
@@ -29305,13 +29320,15 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                     "pr_body": context["plan"]["publish"]["body"],
                 },
             )
-            replacement_plan = replacement["plan"]
-            write_json(closeout_plan_path(task_dir), replacement_plan)
-            if validate_closeout_plan(read_json(closeout_plan_path(task_dir))) != replacement_plan:
-                raise WorkflowError(
-                    "Provenance reprepare replacement plan did not persist exactly.",
-                    exit_code=2,
-                )
+            replacement_transaction = finalization_transaction_from_plan(
+                replacement["plan"],
+                next_transition="push_content",
+            )
+            finalization_write_transaction(
+                root,
+                task_dir,
+                replacement_transaction,
+            )
         output = finalization_reprepare_public_output(
             root,
             task_ref=public_input["task_ref"],
@@ -29326,11 +29343,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             "retired_owner_state": retired,
             "reviewed_content_head": provenance["reviewed_content_head"],
             "publication_head": provenance["publication_head"],
-            "replacement_plan_digest": (
-                replacement_plan["plan_digest"]
-                if replacement_plan is not None
-                else None
-            ),
+            "replacement_transaction_created": replacement_transaction is not None,
             "output": output,
         }
     if exit_id == "ready_for_merge":
@@ -35147,6 +35160,9 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
     repo = normalize_github_repository(payload.get("repo_ref"))
     number = payload.get("pr_number")
     expected = str(payload.get("expected_head_sha") or "")
+    expected_base = payload.get("expected_base_branch")
+    expected_branch = payload.get("expected_head_branch")
+    expected_close_issues = payload.get("expected_close_issues")
     if (
         payload.get("schema_version") != TASK_PR_MERGE_SCHEMA_VERSION
         or payload.get("profile") not in {"ready_for_merge", "standalone_merge"}
@@ -35157,6 +35173,17 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         or not is_strict_int(number)
         or number < 1
         or re.fullmatch(r"[0-9a-f]{40}", expected) is None
+        or not isinstance(expected_base, str)
+        or not expected_base.strip()
+        or not isinstance(expected_branch, str)
+        or not expected_branch.strip()
+        or not isinstance(expected_close_issues, list)
+        or not expected_close_issues
+        or any(
+            not is_strict_int(issue_number) or issue_number < 1
+            for issue_number in expected_close_issues
+        )
+        or expected_close_issues != sorted(set(expected_close_issues))
     ):
         raise WorkflowError("Task PR merge input failed its current closed contract.", exit_code=2)
     expected_url = canonical_pull_request_url(repo, number, payload.get("pr_url"))
@@ -35168,6 +35195,9 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         "pr_number": number,
         "pr_url": expected_url,
         "expected_head_sha": expected,
+        "expected_base_branch": expected_base,
+        "expected_head_branch": expected_branch,
+        "expected_close_issues": expected_close_issues,
     }
 
 
@@ -35247,7 +35277,7 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
         raise WorkflowError("Repository policy exposes no supported merge method.", exit_code=2)
     close_issues = task_pr_merge_close_issues(pr.get("body"))
     issues: list[dict[str, Any]] = []
-    for issue_number in close_issues:
+    for issue_number in public_input["expected_close_issues"]:
         issue = gh_json(
             ["issue", "view", str(issue_number), "--repo", repo, "--json", "number,state,closedAt,url"],
             cwd=root,
@@ -35309,6 +35339,10 @@ def task_pr_merge_preflight_errors(
         errors.append("pull request is still Draft")
     if pr["head_sha"] != public_input["expected_head_sha"]:
         errors.append("expected head SHA changed")
+    if pr["base_branch"] != public_input["expected_base_branch"]:
+        errors.append("expected base branch changed")
+    if pr["head_branch"] != public_input["expected_head_branch"]:
+        errors.append("expected head branch changed")
     if pr["mergeable"] != "MERGEABLE":
         errors.append("pull request is not currently mergeable")
     nonpassing = [
@@ -35318,8 +35352,8 @@ def task_pr_merge_preflight_errors(
     ]
     if nonpassing:
         errors.append("required checks are not complete: " + ", ".join(nonpassing))
-    if not facts["close_issues"]:
-        errors.append("PR body has no reviewed close keyword")
+    if facts["close_issues"] != public_input["expected_close_issues"]:
+        errors.append("PR body close keywords differ from reviewed close scope")
     nonopen = [str(row["number"]) for row in facts["issues"] if row["state"] != "OPEN"]
     if nonopen:
         errors.append("close issues are not Open before merge: " + ", ".join(nonopen))

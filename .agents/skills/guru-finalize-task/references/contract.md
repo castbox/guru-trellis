@@ -190,7 +190,8 @@ pruning step.
   old-to-current reviewed ancestry, and fast-forwardable remote ancestor all
   remain current. Publication proves this without mutation; the checked
   Finalizer transition repeats the proof, retires the old state, creates or
-  reuses the tail, and persists the fresh replacement plan. Other
+  reuses the tail, and persists only the minimal ignored Finalizer transaction
+  required to rebuild the fresh plan. Other
   verification failures remain blocked. Tracked task artifacts are preserved
   and block this automatic cleanup path.
 
@@ -202,7 +203,8 @@ pruning step.
   owner and gate schema. Checker and executor require both checkpoints and the
   matching request; ordinary Finalizer states reject the transition checkpoint.
   Successful supersession retires both gates together with the predecessor plan
-  and matching verification request before persisting the replacement plan.
+  and matching verification request before recording the minimal replacement
+  transaction.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.
@@ -263,7 +265,7 @@ current; same-plan recovery reuses that private binding.
   that already-current DTO in its gate because HEAD does not change. Provenance
   recovery retains a private marker until the deterministic executor has
   created or reused the tail, retired the old owner-private plan/gate/request,
-  persisted the fresh replacement plan when base evolution superseded a
+  persisted the minimal ignored replacement transaction when base evolution superseded a
   pre-#191 predecessor, and can return both heads. Schema 2.0 output and schema 3.0 input add the
   provenance reason and direct-consumer identity while preserving the existing
   archive-month value.

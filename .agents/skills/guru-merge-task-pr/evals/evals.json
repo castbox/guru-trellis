@@ -41,6 +41,17 @@
       "files": ["evals/files/head-drift-input.json", "evals/files/head-drift-facts.json"]
     },
     {
+      "id": "workflow-branch-drift-blocked",
+      "prompt": "Detect that live PR base/head branches differ from Finalizer authority while the head SHA is unchanged, and stop before mutation.",
+      "expected_exit": "merge_blocked",
+      "expected_output": "The blocker identifies reviewed branch-authority drift.",
+      "input_profile_id": "ready_for_merge",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "merge_blocked"}
+      ]},
+      "files": ["evals/files/branch-drift-input.json", "evals/files/branch-drift-facts.json"]
+    },
+    {
       "id": "workflow-close-keyword-mismatch-blocked",
       "prompt": "Detect that PR close keywords do not identify a reviewed Open Issue and stop before merge.",
       "expected_exit": "merge_blocked",
@@ -50,6 +61,17 @@
         {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "merge_blocked"}
       ]},
       "files": ["evals/files/close-scope-input.json", "evals/files/close-scope-facts.json"]
+    },
+    {
+      "id": "workflow-added-close-keyword-blocked",
+      "prompt": "Detect an additional PR close keyword that is absent from the reviewed close scope and stop before merge.",
+      "expected_exit": "merge_blocked",
+      "expected_output": "The blocker reports added close-scope drift without closing an Issue.",
+      "input_profile_id": "ready_for_merge",
+      "assertions": {"deterministic": [
+        {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "merge_blocked"}
+      ]},
+      "files": ["evals/files/added-close-scope-input.json", "evals/files/added-close-scope-facts.json"]
     },
     {
       "id": "workflow-post-merge-closure-mismatch",

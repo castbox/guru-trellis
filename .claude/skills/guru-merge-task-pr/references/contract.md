@@ -1,8 +1,10 @@
 # Contract
 
-`judgment_mode=semantic`. The AI reads the repo-bound live PR, base/head,
-expected SHA, checks, reviews, mergeability, repository merge policy, close
-keywords and pre-merge Issue state. It selects one method only when policy and
+`judgment_mode=semantic`. The AI reads the repo-bound live PR and compares its
+base/head branches, expected SHA, and PR-body close keywords with the minimal
+reviewed authority supplied by Finalizer or the standalone caller. It also reads
+checks, reviews, mergeability, repository merge policy and pre-merge Issue state.
+It selects one method only when policy and
 reviewed intent determine it, displays the exact action, and accepts
 `确认继续` without asking the user to repeat identities.
 
