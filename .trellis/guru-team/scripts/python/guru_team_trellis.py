@@ -1419,6 +1419,16 @@ class WorkflowError(RuntimeError):
         self.payload = payload or {}
 
 
+GITHUB_ERROR_CODES = {
+    "cli_missing": "github_cli_missing",
+    "auth_failed": "github_auth_failed",
+    "repo_access_denied": "github_repo_access_denied",
+    "permission_denied": "github_permission_denied",
+    "api_unavailable": "github_api_unavailable",
+    "response_incomplete": "github_response_incomplete",
+}
+
+
 def run(
     cmd: list[str],
     cwd: Path | None = None,
@@ -1454,12 +1464,81 @@ def require_tool(name: str) -> None:
 
 
 def require_gh_auth(root: Path) -> None:
-    require_tool("gh")
+    if shutil.which("gh") is None:
+        raise WorkflowError(
+            "GitHub CLI is not installed or is unavailable on PATH.",
+            exit_code=2,
+            payload={
+                "error_code": GITHUB_ERROR_CODES["cli_missing"],
+                "recovery": "Install GitHub CLI, then retry the same repo-bound operation.",
+            },
+        )
     proc = run(["gh", "auth", "status"], cwd=root, check=False)
     if proc.returncode != 0:
         raise WorkflowError(
-            "GitHub CLI is not authenticated. Run `gh auth login` before GitHub issue intake."
+            "GitHub CLI authentication is unavailable or invalid.",
+            exit_code=2,
+            payload={
+                "error_code": GITHUB_ERROR_CODES["auth_failed"],
+                "recovery": "Repair authentication with `gh auth login`, verify `gh auth status`, and retry.",
+            },
         )
+
+
+def github_error_from_process(
+    proc: subprocess.CompletedProcess[str],
+    *,
+    operation: str,
+    repo: str,
+) -> WorkflowError:
+    stderr = proc.stderr.strip()
+    lowered = stderr.casefold()
+    if (
+        "could not resolve to a repository" in lowered
+        or operation == "repo_access"
+        and any(token in lowered for token in ("http 404", "not found"))
+    ):
+        category = "repo_access_denied"
+        recovery = "Verify the owner/repository identity and grant the authenticated actor repository access."
+    elif any(
+        token in lowered
+        for token in ("http 401", "authentication", "not logged", "bad credentials", "requires authentication")
+    ):
+        category = "auth_failed"
+        recovery = "Repair authentication with `gh auth login`, verify `gh auth status`, and retry."
+    elif any(
+        token in lowered
+        for token in ("http 403", "forbidden", "resource not accessible", "permission", "insufficient scope")
+    ):
+        category = "permission_denied"
+        recovery = "Grant the authenticated actor the required repository permission or scope, then retry."
+    elif any(
+        token in lowered
+        for token in (
+            "http 500", "http 502", "http 503", "http 504", "timeout", "timed out",
+            "connection refused", "could not resolve host", "network is unreachable", "tls handshake",
+        )
+    ):
+        category = "api_unavailable"
+        recovery = "Retry the same repo-bound GitHub CLI operation after API or network recovery."
+    elif operation == "repo_access":
+        category = "repo_access_denied"
+        recovery = "Verify the owner/repository identity and the authenticated actor's repository access."
+    else:
+        category = "api_unavailable"
+        recovery = "Inspect the GitHub CLI/API failure and retry the same repo-bound operation."
+    return WorkflowError(
+        f"GitHub CLI operation failed for {repo}: {operation}.",
+        exit_code=2,
+        payload={
+            "error_code": GITHUB_ERROR_CODES[category],
+            "operation": operation,
+            "repo": repo,
+            "exit_code": proc.returncode,
+            "stderr_classification": category,
+            "recovery": recovery,
+        },
+    )
 
 
 def parse_scalar(value: str) -> Any:
@@ -1792,13 +1871,165 @@ def infer_github_repo(root: Path) -> str:
     return parse_github_remote_repository_url(urls[0]) if urls else ""
 
 
-def gh_json(args: list[str], cwd: Path) -> Any:
+def github_repo_binding(args: list[str], explicit_repo: str | None = None) -> str:
+    repo = normalize_github_repository(explicit_repo)
+    if not args:
+        return ""
+    if args[0] in {"issue", "pr", "run"}:
+        if "--repo" not in args:
+            return ""
+        index = args.index("--repo")
+        bound = normalize_github_repository(args[index + 1] if index + 1 < len(args) else "")
+        if not bound or (repo and bound != repo):
+            return ""
+        return bound
+    if args[0] == "api" and len(args) > 1:
+        match = re.match(r"^repos/([^/]+/[^/]+)(?:/|$)", args[1])
+        if not match:
+            return ""
+        bound = normalize_github_repository(match.group(1))
+        if not bound or (repo and bound != repo):
+            return ""
+        return bound
+    return ""
+
+
+def github_response_incomplete(
+    *, operation: str, repo: str, detail: str
+) -> WorkflowError:
+    return WorkflowError(
+        f"GitHub CLI response is incomplete for {repo}: {operation}.",
+        exit_code=2,
+        payload={
+            "error_code": GITHUB_ERROR_CODES["response_incomplete"],
+            "operation": operation,
+            "repo": repo,
+            "detail": detail,
+            "recovery": "Fail closed and repair the adapter/query contract before retrying.",
+        },
+    )
+
+
+def gh_json(
+    args: list[str],
+    cwd: Path,
+    *,
+    repo: str | None = None,
+    required_fields: tuple[str, ...] = (),
+    operation: str = "read",
+) -> Any:
+    bound_repo = github_repo_binding(args, repo)
+    if not bound_repo:
+        raise github_response_incomplete(
+            operation=operation,
+            repo=normalize_github_repository(repo) or "<unbound>",
+            detail="GitHub CLI command lacks an explicit or matching repository binding.",
+        )
     require_gh_auth(cwd)
     proc = run(["gh", *args], cwd=cwd, check=False)
     if proc.returncode != 0:
-        raise WorkflowError(f"gh command failed: gh {shlex.join(args)}\n{proc.stderr.strip()}")
+        raise github_error_from_process(proc, operation=operation, repo=bound_repo)
     text = proc.stdout.strip()
-    return json.loads(text) if text else None
+    if not text:
+        raise github_response_incomplete(
+            operation=operation, repo=bound_repo, detail="Response body is empty."
+        )
+    try:
+        payload = json.loads(text)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise github_response_incomplete(
+            operation=operation, repo=bound_repo, detail="Response body is not valid JSON."
+        ) from exc
+    if required_fields:
+        rows = payload if isinstance(payload, list) else [payload]
+        if any(
+            not isinstance(row, dict) or any(field not in row or row[field] is None for field in required_fields)
+            for row in rows
+        ):
+            raise github_response_incomplete(
+                operation=operation,
+                repo=bound_repo,
+                detail="Required fields are missing: " + ", ".join(required_fields),
+            )
+    return payload
+
+
+def require_github_repo_access(root: Path, repo: str) -> dict[str, Any]:
+    normalized = normalize_github_repository(repo)
+    if not normalized:
+        raise github_response_incomplete(
+            operation="repo_access", repo="<invalid>", detail="Repository identity must be owner/repository."
+        )
+    payload = gh_json(
+        ["api", f"repos/{normalized}"],
+        cwd=root,
+        required_fields=("full_name", "url"),
+        operation="repo_access",
+    )
+    if not isinstance(payload, dict) or normalize_github_repository(payload.get("full_name")) != normalized:
+        raise github_response_incomplete(
+            operation="repo_access", repo=normalized, detail="Repository identity does not match the target."
+        )
+    return payload
+
+
+def github_authenticated_login(root: Path, repo: str) -> str:
+    normalized = normalize_github_repository(repo)
+    require_github_repo_access(root, normalized)
+    proc = run(
+        [
+            "gh", "auth", "status", "--active", "--hostname", "github.com",
+            "--json", "hosts",
+        ],
+        cwd=root,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise github_error_from_process(proc, operation="auth_identity", repo=normalized)
+    try:
+        payload = json.loads(proc.stdout)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise github_response_incomplete(
+            operation="auth_identity", repo=normalized, detail="Auth identity is not valid JSON."
+        ) from exc
+    hosts = payload.get("hosts") if isinstance(payload, dict) else None
+    accounts = hosts.get("github.com") if isinstance(hosts, dict) else None
+    active_accounts = [
+        account
+        for account in accounts or []
+        if isinstance(account, dict)
+        and account.get("active") is True
+        and account.get("state") == "success"
+    ] if isinstance(accounts, list) else []
+    login = active_accounts[0].get("login") if len(active_accounts) == 1 else None
+    if not isinstance(login, str) or not login.strip():
+        raise github_response_incomplete(
+            operation="auth_identity",
+            repo=normalized,
+            detail="Exactly one successful active github.com login is required.",
+        )
+    return login.strip()
+
+
+def run_gh_command(
+    args: list[str],
+    cwd: Path,
+    *,
+    repo: str | None = None,
+    operation: str,
+) -> subprocess.CompletedProcess[str]:
+    bound_repo = github_repo_binding(args, repo)
+    if not bound_repo:
+        raise github_response_incomplete(
+            operation=operation,
+            repo=normalize_github_repository(repo) or "<unbound>",
+            detail="GitHub CLI command lacks an explicit or matching repository binding.",
+        )
+    require_gh_auth(cwd)
+    proc = run(["gh", *args], cwd=cwd, check=False)
+    if proc.returncode != 0:
+        raise github_error_from_process(proc, operation=operation, repo=bound_repo)
+    return proc
 
 
 def parse_issue_ref(text: str, default_repo: str) -> tuple[str, int] | None:
@@ -2197,6 +2428,8 @@ def issue_view(repo: str, number: int, root: Path) -> dict[str, Any]:
             "number,title,url,body,comments,state,updatedAt,assignees,labels",
         ],
         cwd=root,
+        required_fields=("number", "title", "url", "body", "comments", "state", "updatedAt", "assignees", "labels"),
+        operation="issue_read",
     )
 
 
@@ -2232,9 +2465,27 @@ def duplicate_search(repo: str, requirement: str, root: Path, limit: int) -> lis
             "number,title,body,url,labels,updatedAt",
         ],
         cwd=root,
+        required_fields=("number", "title", "body", "url", "labels", "updatedAt"),
+        operation="issue_list",
     ) or []
+    if not isinstance(issues, list):
+        raise github_response_incomplete(
+            operation="issue_list", repo=repo, detail="Issue list response is not an array."
+        )
     candidates: list[dict[str, Any]] = []
     for issue in issues:
+        if (
+            not isinstance(issue.get("number"), int)
+            or isinstance(issue.get("number"), bool)
+            or not isinstance(issue.get("title"), str)
+            or not isinstance(issue.get("body"), str)
+            or not isinstance(issue.get("url"), str)
+            or not isinstance(issue.get("updatedAt"), str)
+            or not isinstance(issue.get("labels"), list)
+        ):
+            raise github_response_incomplete(
+                operation="issue_list", repo=repo, detail="Issue list row has invalid field types."
+            )
         score, reason = score_duplicate(requirement, issue)
         if score >= 0.18:
             similarity = "high" if score >= 0.45 else "medium" if score >= 0.25 else "low"
@@ -2265,17 +2516,36 @@ def create_issue(repo: str, title: str, body: str, root: Path, labels: list[str]
         for label in labels:
             if label:
                 cmd.extend(["--label", str(label)])
-        require_gh_auth(root)
-        proc = run(["gh", *cmd], cwd=root, check=False)
-        if proc.returncode != 0:
-            raise WorkflowError(f"gh issue create failed:\n{proc.stderr.strip()}")
+        proc = run_gh_command(cmd, root, repo=repo, operation="issue_create")
         url = proc.stdout.strip()
     finally:
         Path(tmp_path).unlink(missing_ok=True)
-    match = re.search(r"/issues/(\d+)", url)
-    if not match:
-        raise WorkflowError(f"Could not parse created issue number from URL: {url}")
-    return issue_view(repo, int(match.group(1)), root)
+    try:
+        parsed = urlsplit(url)
+    except ValueError as exc:
+        raise github_response_incomplete(
+            operation="issue_create",
+            repo=repo,
+            detail="gh issue create did not return a canonical Issue URL for the current repository.",
+        ) from exc
+    parts = parsed.path.split("/")
+    if (
+        parsed.scheme != "https"
+        or parsed.netloc != "github.com"
+        or parsed.query
+        or parsed.fragment
+        or len(parts) != 5
+        or parts[0] != ""
+        or parts[3] != "issues"
+        or not re.fullmatch(r"[1-9][0-9]*", parts[4])
+        or normalize_github_repository(f"{parts[1]}/{parts[2]}") != repo.casefold()
+    ):
+        raise github_response_incomplete(
+            operation="issue_create",
+            repo=repo,
+            detail="gh issue create did not return a canonical Issue URL for the current repository.",
+        )
+    return issue_view(repo, int(parts[4]), root)
 
 
 def git_branch_exists(root: Path, ref: str) -> bool:
@@ -5168,29 +5438,24 @@ def contract_wording_live_issue_comment_index(
     repo: str,
     number: int,
 ) -> dict[str, dict[str, Any]]:
-    try:
-        pages = gh_json(
-            [
-                "api",
-                f"repos/{repo}/issues/{number}/comments?per_page=100",
-                "--paginate",
-                "--slurp",
-                "-H",
-                "Accept: application/vnd.github+json",
-                "-H",
-                "X-GitHub-Api-Version: 2022-11-28",
-            ],
-            cwd=root,
-        )
-    except json.JSONDecodeError as exc:
-        raise WorkflowError(
-            "change_request live issue comments API returned invalid JSON.",
-            exit_code=2,
-        ) from exc
+    pages = gh_json(
+        [
+            "api",
+            f"repos/{repo}/issues/{number}/comments?per_page=100",
+            "--paginate",
+            "--slurp",
+            "-H",
+            "Accept: application/vnd.github+json",
+            "-H",
+            "X-GitHub-Api-Version: 2022-11-28",
+        ],
+        cwd=root,
+    )
     if not isinstance(pages, list) or any(not isinstance(page, list) for page in pages):
-        raise WorkflowError(
-            "change_request live issue comments API pagination response is invalid.",
-            exit_code=2,
+        raise github_response_incomplete(
+            operation="issue_comments_read",
+            repo=repo,
+            detail="Issue comments pagination response is not an array of pages.",
         )
 
     comments: dict[str, dict[str, Any]] = {}
@@ -5200,9 +5465,10 @@ def contract_wording_live_issue_comment_index(
     for page in pages:
         for comment in page:
             if not isinstance(comment, dict):
-                raise WorkflowError(
-                    "change_request live issue comments API page contains an invalid row.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Issue comments page contains a non-object row.",
                 )
             database_id = comment.get("id")
             node_id = str(comment.get("node_id") or "").strip()
@@ -5213,14 +5479,16 @@ def contract_wording_live_issue_comment_index(
                 or not node_id
                 or not url
             ):
-                raise WorkflowError(
-                    "change_request live issue comment identity is missing or invalid.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Issue comment id, node_id, or html_url is missing or invalid.",
                 )
             if int(database_id) in database_ids or node_id in node_ids or url in urls:
-                raise WorkflowError(
-                    "change_request live issue comments API returned duplicate comment identity.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Issue comments API returned duplicate comment identity.",
                 )
             database_ids.add(int(database_id))
             node_ids.add(node_id)
@@ -5254,8 +5522,19 @@ def contract_wording_change_request_scope(
         body = str(live.get("body") or "")
         source_updated_at = str(live.get("updatedAt") or "").strip()
         if not source_updated_at:
-            raise WorkflowError("change_request live issue updated_at is missing.", exit_code=2)
-        parse_iso_datetime(source_updated_at, "change_request live issue updated_at")
+            raise github_response_incomplete(
+                operation="issue_read",
+                repo=repo,
+                detail="Live Issue updatedAt is missing or empty.",
+            )
+        try:
+            parse_iso_datetime(source_updated_at, "change_request live issue updated_at")
+        except WorkflowError as exc:
+            raise github_response_incomplete(
+                operation="issue_read",
+                repo=repo,
+                detail="Live Issue updatedAt is not a valid timestamp.",
+            ) from exc
         source_identity = str(live.get("url") or f"https://github.com/{repo}/issues/{number}")
         comment_by_id = (
             contract_wording_live_issue_comment_index(root, repo, int(number))
@@ -5290,11 +5569,19 @@ def contract_wording_change_request_scope(
             updated_at = str(comment.get("updated_at") or "").strip()
             comment_body = comment.get("body")
             if not author_value or not updated_at or not isinstance(comment_body, str):
-                raise WorkflowError(
-                    "change_request selected comment author, updated_at, or body is missing.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Selected Issue comment user.login, updated_at, or body is missing or invalid.",
                 )
-            parse_iso_datetime(updated_at, "change_request selected comment updated_at")
+            try:
+                parse_iso_datetime(updated_at, "change_request selected comment updated_at")
+            except WorkflowError as exc:
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Selected Issue comment updated_at is not a valid timestamp.",
+                ) from exc
             selected_rows.append({
                 "id": comment_id,
                 "author": author_value,
@@ -6826,30 +7113,42 @@ def merge_summary_from_title(title: str, primary_issue: int, ledger: dict[str, A
 
 def build_merge_commit_payload(
     *,
+    repo: str,
     primary_issue: int,
     summary: str,
     head_branch: str,
     base_branch: str,
+    expected_head: str,
     pull_request: int | str | None,
     body_file_hint: str = MERGE_COMMIT_BODY_FILE_HINT,
 ) -> dict[str, Any]:
+    normalized_repo = normalize_github_repository(repo)
     pull_request_value: int | str = pull_request if pull_request is not None else "<pull_request>"
     ready = pull_request is not None and str(pull_request).isdigit()
     subject = format_merge_commit_subject(pull_request_value, primary_issue, summary)
     body = format_merge_commit_body(pull_request_value, primary_issue, summary, head_branch, base_branch)
     errors = validate_commit_subject(subject, primary_issue=primary_issue, pull_request=pull_request_value)
     errors.extend(validate_merge_commit_body(body, primary_issue=primary_issue, pull_request=pull_request_value))
+    if not normalized_repo:
+        errors.append("GitHub repository must be an explicit owner/repository identity.")
+    if not re.fullmatch(r"[0-9a-f]{40}", expected_head):
+        errors.append("GitHub pull request merge must bind one expected head commit SHA.")
     command_pr = str(pull_request_value)
     return {
         "ready": ready,
         "subject": subject,
         "body": body,
         "body_file_hint": body_file_hint,
+        "expected_head": expected_head,
         "command": [
             "gh",
             "pr",
             "merge",
             command_pr,
+            "--repo",
+            normalized_repo or "<owner/repository>",
+            "--match-head-commit",
+            expected_head or "<expected-head-sha>",
             "--merge",
             "--subject",
             subject,
@@ -7030,6 +7329,14 @@ def check_env_payload(root: Path) -> dict[str, Any]:
     base, candidates = resolve_base_branch(root, config)
     gh_installed = shutil.which("gh") is not None
     gh_authenticated = run(["gh", "auth", "status"], cwd=root, check=False).returncode == 0 if gh_installed else False
+    gh_repo_accessible = False
+    github_error: dict[str, Any] | None = None
+    if repo and gh_installed and gh_authenticated:
+        try:
+            require_github_repo_access(root, repo)
+            gh_repo_accessible = True
+        except WorkflowError as exc:
+            github_error = {"message": str(exc), **exc.payload}
     extension = guru_team_extension_payload(root)
     warnings: list[str] = []
     next_steps: list[str] = []
@@ -7042,9 +7349,20 @@ def check_env_payload(root: Path) -> dict[str, Any]:
     if not gh_installed:
         warnings.append("GitHub CLI is not installed.")
         next_steps.append("Install `gh` before using Guru Team GitHub issue intake or publish.")
+        github_error = {
+            "error_code": GITHUB_ERROR_CODES["cli_missing"],
+            "recovery": "Install GitHub CLI, then retry the same repo-bound operation.",
+        }
     elif not gh_authenticated:
         warnings.append("GitHub CLI is not authenticated.")
         next_steps.append("Run `gh auth login` before using Guru Team GitHub issue intake or publish.")
+        github_error = {
+            "error_code": GITHUB_ERROR_CODES["auth_failed"],
+            "recovery": "Repair authentication with `gh auth login`, verify `gh auth status`, and retry.",
+        }
+    elif repo and not gh_repo_accessible:
+        warnings.append("Authenticated GitHub CLI cannot access the target repository.")
+        next_steps.append("Verify github_repo and the authenticated actor's repository access before retrying.")
     if extension.get("status") == "missing":
         warnings.append("Guru Team extension manifest is not installed.")
         next_steps.append("Re-apply the Guru Team preset so `.trellis/guru-team/extension.json` records the installed extension version.")
@@ -7059,6 +7377,7 @@ def check_env_payload(root: Path) -> dict[str, Any]:
         "guru_team_extension": extension,
         "gh_installed": gh_installed,
         "gh_authenticated": gh_authenticated,
+        "gh_repo_accessible": gh_repo_accessible,
         "current_branch": current,
         "base_branch": base,
         "base_branch_candidates": candidates,
@@ -7070,6 +7389,8 @@ def check_env_payload(root: Path) -> dict[str, Any]:
         payload["warnings"] = warnings
     if next_steps:
         payload["next_steps"] = next_steps
+    if github_error:
+        payload["github_error"] = github_error
     return payload
 
 
@@ -10814,11 +11135,16 @@ def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
     head_branch = str(args.head_branch or current_branch(root))
     title = str(args.summary or pr_title_from_task(task, args)).strip()
     summary = merge_summary_from_title(title, primary_issue, ledger)
+    repo = normalize_github_repository(
+        str(config.get("github_repo") or "").strip()
+    ) or infer_github_repo(root)
     payload = build_merge_commit_payload(
+        repo=repo,
         primary_issue=primary_issue,
         summary=summary,
         head_branch=head_branch,
         base_branch=base_branch_name,
+        expected_head=current_head(root),
         pull_request=args.pull_request,
         body_file_hint=str(args.body_file_hint or MERGE_COMMIT_BODY_FILE_HINT),
     )
@@ -21365,22 +21691,22 @@ def create_pull_request(
         body_file = tmp.name
     try:
         command = [
-            "gh", "pr", "create", "--repo", repo, "--base", base_branch,
+            "pr", "create", "--repo", repo, "--base", base_branch,
             "--head", branch, "--title", title, "--body-file", body_file,
         ]
         if draft:
             command.append("--draft")
-        proc = run(command, cwd=root, check=False)
-        if proc.returncode != 0:
-            raise WorkflowError(
-                f"gh pr create failed:\n{proc.stderr.strip()}",
-                exit_code=2,
-            )
+        proc = run_gh_command(command, root, repo=repo, operation="pull_request_create")
         pr_url = proc.stdout.strip()
-        pull_request = parse_pull_request_number(pr_url)
-        if pull_request is None:
-            raise WorkflowError("gh pr create did not return a canonical PR URL.", exit_code=2)
-        return canonical_pull_request_url(repo, pull_request, pr_url)
+        try:
+            canonical_url, _ = parse_canonical_pull_request_url(repo, pr_url)
+        except WorkflowError as exc:
+            raise github_response_incomplete(
+                operation="pull_request_create",
+                repo=repo,
+                detail="gh pr create did not return a canonical PR URL for the current repository.",
+            ) from exc
+        return canonical_url
     finally:
         Path(body_file).unlink(missing_ok=True)
 
@@ -21404,9 +21730,8 @@ def update_pull_request_metadata(
         tmp.write(body_bytes)
         body_file = tmp.name
     try:
-        proc = run(
+        run_gh_command(
             [
-                "gh",
                 "pr",
                 "edit",
                 str(number),
@@ -21417,15 +21742,10 @@ def update_pull_request_metadata(
                 "--body-file",
                 body_file,
             ],
-            cwd=root,
-            check=False,
+            root,
+            repo=repo,
+            operation="pull_request_edit",
         )
-        if proc.returncode != 0:
-            raise WorkflowError(
-                "Could not update closeout pull request metadata.",
-                exit_code=2,
-                payload={"pr_number": number},
-            )
     finally:
         Path(body_file).unlink(missing_ok=True)
 
@@ -23174,9 +23494,9 @@ def resolve_closeout_pull_request(
     root: Path, repo: str, branch: str, base_branch: str, remote: str = "origin"
 ) -> dict[str, Any] | None:
     expected_repo = validate_github_remote_repository(root, remote, repo)
-    proc = run(
+    values = gh_json(
         [
-            "gh", "pr", "list", "--repo", repo, "--head", branch,
+            "pr", "list", "--repo", repo, "--head", branch,
             "--base", base_branch, "--state", "open", "--limit", "100",
             "--json", (
                 "number,url,title,body,headRefName,baseRefName,headRefOid,isDraft,"
@@ -23184,16 +23504,17 @@ def resolve_closeout_pull_request(
             ),
         ],
         cwd=root,
-        check=False,
+        required_fields=(
+            "number", "url", "title", "body", "headRefName", "baseRefName",
+            "headRefOid", "isDraft", "headRepository", "headRepositoryOwner",
+            "isCrossRepository",
+        ),
+        operation="pull_request_read",
     )
-    if proc.returncode != 0:
-        raise WorkflowError("Could not query closeout pull request identity.", exit_code=2, payload={"stderr": proc.stderr.strip()})
-    try:
-        values = json.loads(proc.stdout or "[]")
-    except json.JSONDecodeError as exc:
-        raise WorkflowError("Closeout pull request query returned invalid JSON.", exit_code=2) from exc
     if not isinstance(values, list):
-        raise WorkflowError("Closeout pull request query must return an array.", exit_code=2)
+        raise github_response_incomplete(
+            operation="pull_request_read", repo=repo, detail="Pull request list is not an array."
+        )
     exact: list[dict[str, Any]] = []
     cross_repository: list[dict[str, Any]] = []
     for item in values:
@@ -24526,9 +24847,19 @@ def ensure_closeout_pr_ready(
         bound_pr=bound_pr or initial_pr,
     )
     if pr["isDraft"]:
-        proc = run(["gh", "pr", "ready", "--repo", git["repo"], str(pr["number"])], cwd=root, check=False)
-        if proc.returncode != 0:
-            raise WorkflowError("Draft-to-ready transition failed.", exit_code=2, payload={"stderr": proc.stderr.strip(), "stage": "draft-to-ready"})
+        try:
+            run_gh_command(
+                ["pr", "ready", "--repo", git["repo"], str(pr["number"])],
+                root,
+                repo=git["repo"],
+                operation="pull_request_ready",
+            )
+        except WorkflowError as exc:
+            raise WorkflowError(
+                "Draft-to-ready transition failed.",
+                exit_code=2,
+                payload={**exc.payload, "stage": "draft-to-ready"},
+            ) from exc
         confirmed = resolve_closeout_pull_request(
             root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
         )
@@ -28481,16 +28812,18 @@ def context_read_live_issue(
     repository: str,
     number: int,
 ) -> tuple[dict[str, Any] | None, str | None]:
-    proc = run([
-        "gh", "issue", "view", str(number), "--repo", repository,
-        "--json", "number,url,state,updatedAt,body",
-    ], cwd=root, check=False)
-    if proc.returncode != 0:
-        return None, "unreadable"
     try:
-        issue = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        return None, "invalid"
+        issue = gh_json(
+            [
+                "issue", "view", str(number), "--repo", repository,
+                "--json", "number,url,state,updatedAt,body",
+            ],
+            cwd=root,
+            required_fields=("number", "url", "state", "updatedAt", "body"),
+            operation="issue_read",
+        )
+    except WorkflowError as exc:
+        return None, str(exc.payload.get("error_code") or "github_api_unavailable")
     state = str(issue.get("state") or "").casefold()
     if state not in {"open", "closed"}:
         return None, "invalid"
@@ -30177,17 +30510,15 @@ def requirements_clarification_decision_authority_live_result(
     if match is None:
         return ["active_task_decision_authority_comment_invalid"], None
     comment_id = int(match.group(1))
-    proc = run(
-        ["gh", "api", f"repos/{repo}/issues/comments/{comment_id}"],
-        cwd=root,
-        check=False,
-    )
-    if proc.returncode != 0:
-        return ["active_task_decision_authority_comment_unreadable"], None
     try:
-        comment = json.loads(proc.stdout)
-    except json.JSONDecodeError:
-        return ["active_task_decision_authority_comment_unreadable"], None
+        comment = gh_json(
+            ["api", f"repos/{repo}/issues/comments/{comment_id}"],
+            cwd=root,
+            required_fields=("id", "html_url", "updated_at", "body"),
+            operation="issue_comment_read",
+        )
+    except WorkflowError as exc:
+        return [str(exc.payload.get("error_code") or "github_api_unavailable")], None
     updated_at = comment.get("updated_at") if isinstance(comment, dict) else None
     if (
         not isinstance(comment, dict)
@@ -30355,18 +30686,15 @@ def requirements_clarification_live_mutation_errors(
             errors.append("mutation_comment_url_invalid")
             continue
         comment_id = int(match.group(1))
-        proc = run(
-            ["gh", "api", f"repos/{repo}/issues/comments/{comment_id}"],
-            cwd=root,
-            check=False,
-        )
-        if proc.returncode != 0:
-            errors.append("mutation_live_comment_unreadable")
-            continue
         try:
-            comment = json.loads(proc.stdout)
-        except json.JSONDecodeError:
-            errors.append("mutation_live_comment_unreadable")
+            comment = gh_json(
+                ["api", f"repos/{repo}/issues/comments/{comment_id}"],
+                cwd=root,
+                required_fields=("id", "html_url", "updated_at", "body"),
+                operation="issue_comment_read",
+            )
+        except WorkflowError as exc:
+            errors.append(str(exc.payload.get("error_code") or "github_api_unavailable"))
             continue
         if (
             not isinstance(comment, dict)
@@ -32114,8 +32442,8 @@ def task_workspace_validate_assignee(root: Path, plan: dict[str, Any], live_issu
     if source == "current_github_login":
         if issue_assignees:
             raise WorkflowError("Current GitHub login fallback requires an unassigned source issue.", exit_code=2)
-        actor = gh_json(["api", "user"], cwd=root)
-        if not isinstance(actor, dict) or actor.get("login") != login:
+        actor_login = github_authenticated_login(root, str(plan["target"]["repo"]))
+        if actor_login != login:
             raise WorkflowError("Task workspace current GitHub login evidence is stale.", exit_code=2)
     if source == "user_selected_from_candidates":
         if len(issue_assignees) < 2 or sorted(candidates) != sorted(issue_assignees) or login not in issue_assignees:
@@ -32130,7 +32458,7 @@ def task_workspace_validate_assignee(root: Path, plan: dict[str, Any], live_issu
                 raise WorkflowError("Task workspace unresolved assignee candidates are stale.", exit_code=2)
         else:
             try:
-                actor = gh_json(["api", "user"], cwd=root)
+                actor = {"login": github_authenticated_login(root, str(plan["target"]["repo"]))}
             except WorkflowError:
                 actor = None
             if isinstance(actor, dict) and str(actor.get("login") or "").strip():
@@ -32177,27 +32505,51 @@ def task_workspace_created_issue_recovery_candidates(
             "number,title,url,body,state,updatedAt,createdAt,labels",
         ],
         cwd=root,
+        required_fields=(
+            "number", "title", "url", "body", "state", "updatedAt", "createdAt", "labels",
+        ),
+        operation="issue_recovery_list",
     )
-    if issues is None:
-        return []
     if not isinstance(issues, list):
-        raise WorkflowError("Created issue recovery search returned an invalid payload.", exit_code=2)
+        raise github_response_incomplete(
+            operation="issue_recovery_list",
+            repo=str(target["repo"]),
+            detail="Created issue recovery response is not an array.",
+        )
     expected_labels = sorted({str(item) for item in draft.get("labels", []) if str(item)})
     matches: list[dict[str, Any]] = []
     for issue in issues:
-        if not isinstance(issue, dict):
-            continue
         number = issue.get("number")
-        if not isinstance(number, int) or isinstance(number, bool) or number < 1:
-            continue
+        if (
+            not isinstance(number, int)
+            or isinstance(number, bool)
+            or number < 1
+            or any(not isinstance(issue.get(field), str) for field in (
+                "title", "url", "body", "state", "updatedAt", "createdAt",
+            ))
+            or not isinstance(issue.get("labels"), list)
+            or any(
+                not isinstance(label, dict) or not isinstance(label.get("name"), str)
+                for label in issue["labels"]
+            )
+        ):
+            raise github_response_incomplete(
+                operation="issue_recovery_list",
+                repo=str(target["repo"]),
+                detail="Created issue recovery row has invalid field types.",
+            )
         expected_url = f"https://github.com/{target['repo']}/issues/{number}"
         try:
             created_at = parse_iso_datetime(
                 issue.get("createdAt"),
                 "created issue recovery candidate createdAt",
             )
-        except WorkflowError:
-            continue
+        except WorkflowError as exc:
+            raise github_response_incomplete(
+                operation="issue_recovery_list",
+                repo=str(target["repo"]),
+                detail="Created issue recovery row has an invalid createdAt timestamp.",
+            ) from exc
         if (
             str(issue.get("state") or "").lower() == "open"
             and issue.get("url") == expected_url

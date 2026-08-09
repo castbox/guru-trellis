@@ -5,6 +5,10 @@ Load current task, repository, and phase facts with the live context helpers,
 then read `.trellis/workflow.md`. Use its Phase 3.6/3.7 route and mandatory load
 these active owners by stable Skill id:
 
+All GitHub platform operations use authenticated, explicitly repo-bound
+`gh`/`gh api` only. Do not use or fall back to App, MCP, connector, or browser
+UI; keep Git transport on `git`.
+
 - `guru-review-task-publication`
 - `guru-verify-extension-installation`
 - `guru-finalize-task`

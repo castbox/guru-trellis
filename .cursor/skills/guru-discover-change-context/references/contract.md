@@ -1,5 +1,9 @@
 # `guru-discover-change-context` Contract
 
+All live GitHub reads use the shared authenticated, repo-bound `gh` adapter
+defined by `.trellis/spec/workflow/workflow-contract.md`; adapter errors are
+facts and never replace this Skill's semantic review.
+
 ## Ownership And Modes
 
 The global workflow owns mandatory invocation and exit consumers. This package

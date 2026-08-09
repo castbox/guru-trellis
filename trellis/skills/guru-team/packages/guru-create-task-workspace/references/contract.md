@@ -1,5 +1,8 @@
 # Guru Create Task Workspace Contract
 
+All GitHub facts and confirmed mutations use the shared authenticated,
+repo-bound `gh` adapter in `.trellis/spec/workflow/workflow-contract.md`.
+
 ## Ownership and modes
 
 `guru-create-task-workspace` is the only Guru Team owner allowed to create a
@@ -27,7 +30,9 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
 4. Author semantic branch/workspace/task names and classify each object as
    `create_new`, `reuse_exact`, or `conflict_blocked`.
 5. Resolve one non-empty assignee in this order: explicit input; the issue's
-   single assignee; current `gh api user` login when the issue has none; one
+   single assignee; current authenticated
+   `gh auth status --active --hostname github.com --json hosts` identity after
+   target-repository access preflight when the issue has none; one
    user question when the issue has multiple assignees or the actor is
    unresolved.
 6. Display the exact repository, target, GitHub operation, base, branch,

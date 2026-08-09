@@ -13,7 +13,7 @@ This marketplace workflow is the global Guru Team route. It owns only:
 - workspace and task boundary selection, plus task activation;
 - Docs SSOT and Issue Scope Ledger integration points;
 - human-readable artifact presentation;
-- user interaction and external side-effect boundaries.
+- user interaction, external side-effect boundaries, and the authenticated repo-bound `gh`-only GitHub I/O contract in `workflow-contract.md`.
 
 The public graph authority is the active registry plus each package
 interface.json. Producer outputs, consumer inputs, projections, and target-owned

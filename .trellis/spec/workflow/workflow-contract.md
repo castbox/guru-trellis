@@ -36,6 +36,29 @@ schemas, consumer input contracts, and `public_contracts.projections[]` are the
 only public I/O graph authority. Workflow prose must never infer a route from a
 private checkpoint, digest, recorder result, example, or runtime implementation.
 
+## GitHub Platform I/O
+
+All Guru Team GitHub platform reads, semantic evidence reads, mutations, and
+recovery verification use authenticated GitHub CLI only. Prefer a repo-bound
+high-level command (`gh issue`, `gh pr`, or `gh run`); otherwise use `gh api`
+with a complete `repos/<owner>/<repository>/...` endpoint. GitHub App, MCP,
+connector, browser UI, implicit repository context, and cross-channel fallback
+are forbidden.
+
+Every high-level operation supplies `--repo owner/repository`. Mutations bind
+the exact number and, where applicable, base, head and expected head SHA or an
+equivalent precondition. Required response fields fail closed. Preflight and
+runtime distinguish `github_cli_missing`, `github_auth_failed`,
+`github_repo_access_denied`, `github_permission_denied`,
+`github_api_unavailable`, and `github_response_incomplete`; recovery retries
+the same repo-bound owner. These facts never decide scope, readiness, findings,
+close semantics, or routes, which remain owned by the semantic Skill.
+
+`git` remains the sole owner of local Git and Git transport (`fetch`, `push`,
+`ls-remote`, revisions and worktrees). CLI credentials stay in the credential
+store and never enter argv, logs, artifacts or DTOs. Authorization remains
+dialogue-local and is never persisted.
+
 ## Integrated Public Graph
 
 The current graph contains exactly 14 active mandatory Skill ids, 54 external

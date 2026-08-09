@@ -1,5 +1,10 @@
 # Guru Finalize Task Contract
 
+GitHub PR reads, Draft/Ready transitions, merge operations and post-merge
+verification use the shared authenticated, repo-bound `gh` adapter in
+`.trellis/spec/workflow/workflow-contract.md`; `git` retains push and remote
+HEAD transport ownership.
+
 ## Ownership
 
 `guru-finalize-task` is the sole semantic owner of task finalization. It owns

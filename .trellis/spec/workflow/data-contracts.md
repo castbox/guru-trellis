@@ -1028,11 +1028,14 @@ When blocked, the command exits non-zero and returns `status=blocked` with
   "subject": "chore(merge): #91 合并 #92 中文 Conventional Commits 提交规范",
   "body": "合并：\n...",
   "body_file_hint": "<merge-body-file>",
-  "command": ["gh", "pr", "merge", "91", "--merge", "--subject", "...", "--body-file", "<merge-body-file>"],
+  "expected_head": "<expected-head-sha>",
+  "command": ["gh", "pr", "merge", "91", "--repo", "owner/repository", "--match-head-commit", "<expected-head-sha>", "--merge", "--subject", "...", "--body-file", "<merge-body-file>"],
   "errors": []
 }
 ```
 
+The formatter binds the current 40-character pull request head candidate through
+`--match-head-commit`; an absent or invalid expected head blocks the payload.
 When the pull request number is omitted, the formatter sets `ready=false` and
 uses `<pull_request>` as a placeholder; with a real number it returns
 `ready=true`.

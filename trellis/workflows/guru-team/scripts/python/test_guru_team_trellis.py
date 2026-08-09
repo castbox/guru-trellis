@@ -291,7 +291,383 @@ def resolve_human_artifacts_args(**overrides: object) -> argparse.Namespace:
     return argparse.Namespace(**values)
 
 
+class GitHubCliAdapterTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.root = Path("/tmp/repo")
+
+    def completed(self, code: int, stdout: str = "", stderr: str = "") -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(["gh"], code, stdout, stderr)
+
+    def test_high_level_and_api_operations_require_explicit_matching_repo(self) -> None:
+        self.assertEqual(
+            gtt.github_repo_binding(["issue", "view", "1", "--repo", "Owner/Repo"]),
+            "owner/repo",
+        )
+        self.assertEqual(
+            gtt.github_repo_binding(["api", "repos/Owner/Repo/issues/1"]),
+            "owner/repo",
+        )
+        self.assertEqual(gtt.github_repo_binding(["issue", "view", "1"]), "")
+        self.assertEqual(
+            gtt.github_repo_binding(["issue", "view", "1"], "owner/repo"),
+            "",
+        )
+        self.assertEqual(
+            gtt.github_repo_binding(["api", "user"], "owner/repo"),
+            "",
+        )
+        self.assertEqual(
+            gtt.github_repo_binding(["pr", "view", "1", "--repo", "owner/other"], "owner/repo"),
+            "",
+        )
+
+    def test_missing_cli_and_auth_are_distinct(self) -> None:
+        with mock.patch.object(gtt.shutil, "which", return_value=None):
+            with self.assertRaises(gtt.WorkflowError) as missing:
+                gtt.require_gh_auth(self.root)
+        self.assertEqual(missing.exception.payload["error_code"], "github_cli_missing")
+        with (
+            mock.patch.object(gtt.shutil, "which", return_value="/usr/bin/gh"),
+            mock.patch.object(gtt, "run", return_value=self.completed(1, stderr="not logged in")),
+            self.assertRaises(gtt.WorkflowError) as auth,
+        ):
+            gtt.require_gh_auth(self.root)
+        self.assertEqual(auth.exception.payload["error_code"], "github_auth_failed")
+
+    def test_process_failure_taxonomy_is_precise(self) -> None:
+        cases = [
+            ("repo_access", "HTTP 404: Not Found", "github_repo_access_denied"),
+            (
+                "issue_read",
+                "GraphQL: Could not resolve to a Repository with the name 'owner/repo'.",
+                "github_repo_access_denied",
+            ),
+            (
+                "issue_edit",
+                "GraphQL: Could not resolve to a Repository with the name 'owner/repo'.",
+                "github_repo_access_denied",
+            ),
+            ("issue_edit", "HTTP 403: Resource not accessible by integration", "github_permission_denied"),
+            ("pr_read", "HTTP 503: service unavailable", "github_api_unavailable"),
+            ("pr_read", "HTTP 401: Bad credentials", "github_auth_failed"),
+        ]
+        for operation, stderr, expected in cases:
+            with self.subTest(expected=expected):
+                error = gtt.github_error_from_process(
+                    self.completed(1, stderr=stderr), operation=operation, repo="owner/repo"
+                )
+                self.assertEqual(error.payload["error_code"], expected)
+                self.assertEqual(error.payload["stderr_classification"], expected.removeprefix("github_"))
+                self.assertNotIn("stderr", error.payload)
+
+    def test_empty_invalid_and_missing_field_responses_fail_incomplete(self) -> None:
+        for stdout in ("", "{", '{"number": 1}'):
+            with (
+                self.subTest(stdout=stdout),
+                mock.patch.object(gtt, "require_gh_auth"),
+                mock.patch.object(gtt, "run", return_value=self.completed(0, stdout=stdout)),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.gh_json(
+                    ["issue", "view", "1", "--repo", "owner/repo"],
+                    self.root,
+                    required_fields=("number", "url"),
+                    operation="issue_read",
+                )
+            self.assertEqual(raised.exception.payload["error_code"], "github_response_incomplete")
+
+    def test_repo_access_preflight_binds_full_endpoint_and_identity(self) -> None:
+        payload = '{"full_name":"owner/repo","url":"https://api.github.com/repos/owner/repo"}'
+        with (
+            mock.patch.object(gtt, "require_gh_auth"),
+            mock.patch.object(gtt, "run", return_value=self.completed(0, stdout=payload)) as runner,
+        ):
+            result = gtt.require_github_repo_access(self.root, "Owner/Repo")
+        self.assertEqual(result["full_name"], "owner/repo")
+        self.assertEqual(runner.call_args.args[0], ["gh", "api", "repos/owner/repo"])
+
+    def test_authenticated_login_reads_the_supported_hosts_shape(self) -> None:
+        payload = json.dumps({
+            "hosts": {
+                "github.com": [{
+                    "state": "success",
+                    "active": True,
+                    "host": "github.com",
+                    "login": "current-user",
+                }]
+            }
+        })
+        with (
+            mock.patch.object(gtt, "require_github_repo_access"),
+            mock.patch.object(gtt, "run", return_value=self.completed(0, stdout=payload)) as runner,
+        ):
+            self.assertEqual(
+                gtt.github_authenticated_login(self.root, "owner/repo"),
+                "current-user",
+            )
+        self.assertEqual(
+            runner.call_args.args[0],
+            [
+                "gh", "auth", "status", "--active", "--hostname", "github.com",
+                "--json", "hosts",
+            ],
+        )
+
+        incomplete = json.dumps({"hosts": {"github.com": []}})
+        with (
+            mock.patch.object(gtt, "require_github_repo_access"),
+            mock.patch.object(gtt, "run", return_value=self.completed(0, stdout=incomplete)),
+            self.assertRaises(gtt.WorkflowError) as raised,
+        ):
+            gtt.github_authenticated_login(self.root, "owner/repo")
+        self.assertEqual(
+            raised.exception.payload["error_code"],
+            "github_response_incomplete",
+        )
+
+    def test_duplicate_search_rejects_incomplete_issue_rows(self) -> None:
+        incomplete = {
+            "title": "Incomplete issue",
+            "body": "body",
+            "url": "https://github.com/owner/repo/issues/1",
+            "labels": [],
+            "updatedAt": "2026-08-09T00:00:00Z",
+        }
+        with mock.patch.object(gtt, "gh_json", return_value=[incomplete]) as gh_json:
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.duplicate_search("owner/repo", "requirement", self.root, 5)
+        self.assertEqual(
+            raised.exception.payload["error_code"],
+            "github_response_incomplete",
+        )
+        self.assertEqual(
+            gh_json.call_args.kwargs["required_fields"],
+            ("number", "title", "body", "url", "labels", "updatedAt"),
+        )
+
+    def test_check_env_exposes_stable_cli_and_auth_error_codes(self) -> None:
+        common = {
+            "repo_root": mock.patch.object(gtt, "repo_root", return_value=self.root),
+            "config": mock.patch.object(gtt, "load_config", return_value={**gtt.DEFAULTS, "github_repo": "owner/repo"}),
+            "branch": mock.patch.object(gtt, "current_branch", return_value="main"),
+            "base": mock.patch.object(gtt, "resolve_base_branch", return_value=("main", ["main"])),
+            "dirty": mock.patch.object(gtt, "git_dirty", return_value=False),
+            "worktree_root": mock.patch.object(gtt, "configured_worktree_root", return_value=self.root / "worktrees"),
+            "worktrees": mock.patch.object(gtt, "worktree_lines", return_value=[]),
+        }
+        with contextlib.ExitStack() as stack:
+            for patcher in common.values():
+                stack.enter_context(patcher)
+            stack.enter_context(mock.patch.object(gtt.shutil, "which", return_value=None))
+            missing = gtt.check_env_payload(self.root)
+        self.assertEqual(missing["github_error"]["error_code"], "github_cli_missing")
+
+        with contextlib.ExitStack() as stack:
+            for patcher in common.values():
+                stack.enter_context(patcher)
+            stack.enter_context(mock.patch.object(gtt.shutil, "which", return_value="/usr/bin/gh"))
+            stack.enter_context(mock.patch.object(gtt, "run", return_value=self.completed(1)))
+            auth = gtt.check_env_payload(self.root)
+        self.assertEqual(auth["github_error"]["error_code"], "github_auth_failed")
+
+    def test_current_surfaces_declare_cli_only_matrix_and_git_transport(self) -> None:
+        repo = Path(__file__).resolve().parents[5]
+        documents = [
+            repo / ".trellis/spec/workflow/workflow-contract.md",
+            repo / ".trellis/spec/workflow/companion-scripts.md",
+            repo / ".trellis/spec/workflow/skill-package-contract.md",
+            repo / "trellis/workflows/guru-team/README.md",
+            repo / "trellis/presets/guru-team/README.md",
+        ]
+        content = "\n".join(path.read_text(encoding="utf-8") for path in documents)
+        for operation in (
+            "Issue/PR create/read/edit/comment/labels/state",
+            "checks",
+            "reviews",
+            "mergeability",
+            "Draft/Ready",
+            "merge",
+            "workflow run/check",
+            "post-merge",
+        ):
+            self.assertIn(operation, content)
+        self.assertIn("`git` remains the sole owner", content)
+        self.assertNotIn("existing connector", content.casefold())
+
+    def test_issue_comment_index_incomplete_shapes_use_stable_error(self) -> None:
+        invalid_payloads = [
+            {},
+            [["not-an-object"]],
+            [[{"id": 1, "node_id": "", "html_url": "https://github.com/owner/repo/issues/1#issuecomment-1"}]],
+            [[
+                {"id": 1, "node_id": "IC_one", "html_url": "https://github.com/owner/repo/issues/1#issuecomment-1"},
+                {"id": 1, "node_id": "IC_two", "html_url": "https://github.com/owner/repo/issues/1#issuecomment-2"},
+            ]],
+        ]
+        for payload in invalid_payloads:
+            with (
+                self.subTest(payload=payload),
+                mock.patch.object(gtt, "gh_json", return_value=payload),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.contract_wording_live_issue_comment_index(
+                    self.root, "owner/repo", 1
+                )
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(
+                raised.exception.payload["operation"],
+                "issue_comments_read",
+            )
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+
+    def test_selected_issue_comment_incomplete_fields_use_stable_error(self) -> None:
+        source = {
+            "kind": "issue",
+            "repo": "owner/repo",
+            "number": 1,
+            "selected_comments": [
+                {"id": "IC_one", "selection_reason": "Defines required behavior."}
+            ],
+        }
+        live_issue = {
+            "title": "Issue title",
+            "body": "Issue body",
+            "updatedAt": "2026-08-09T00:00:00Z",
+            "url": "https://github.com/owner/repo/issues/1",
+        }
+        complete_comment = {
+            "id": 1,
+            "node_id": "IC_one",
+            "html_url": "https://github.com/owner/repo/issues/1#issuecomment-1",
+            "user": {"login": "reviewer"},
+            "updated_at": "2026-08-09T00:01:00Z",
+            "body": "Selected comment body",
+        }
+        cases = []
+        for field in ("user", "updated_at", "body"):
+            comment = copy.deepcopy(complete_comment)
+            comment[field] = None
+            cases.append((field, live_issue, comment, "issue_comments_read"))
+        invalid_timestamp = copy.deepcopy(complete_comment)
+        invalid_timestamp["updated_at"] = "not-a-timestamp"
+        cases.append(("invalid_comment_timestamp", live_issue, invalid_timestamp, "issue_comments_read"))
+        for value in (None, "not-a-timestamp"):
+            issue = {**live_issue, "updatedAt": value}
+            cases.append((f"issue_updated_at_{value}", issue, complete_comment, "issue_read"))
+
+        for label, issue, comment, operation in cases:
+            with (
+                self.subTest(label=label),
+                mock.patch.object(gtt, "contract_wording_read_input", return_value=source),
+                mock.patch.object(gtt, "require_gh_auth"),
+                mock.patch.object(gtt, "issue_view", return_value=issue),
+                mock.patch.object(
+                    gtt,
+                    "contract_wording_live_issue_comment_index",
+                    return_value={"IC_one": comment},
+                ),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.contract_wording_change_request_scope(self.root, None)
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(raised.exception.payload["operation"], operation)
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+
+    def test_create_mutation_incomplete_urls_use_stable_error(self) -> None:
+        invalid_urls = (
+            "",
+            "not-a-url",
+            "https://github.com/owner/other/issues/12",
+        )
+        for url in invalid_urls:
+            with (
+                self.subTest(operation="issue_create", url=url),
+                mock.patch.object(
+                    gtt,
+                    "run_gh_command",
+                    return_value=self.completed(0, stdout=url),
+                ),
+                mock.patch.object(gtt, "issue_view") as issue_view,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.create_issue("owner/repo", "Title", "Body", self.root, [])
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(raised.exception.payload["operation"], "issue_create")
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+            issue_view.assert_not_called()
+
+        for url in ("", "not-a-url", "https://github.com/owner/other/pull/12"):
+            with (
+                self.subTest(operation="pull_request_create", url=url),
+                mock.patch.object(
+                    gtt,
+                    "run_gh_command",
+                    return_value=self.completed(0, stdout=url),
+                ),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.create_pull_request(
+                    self.root,
+                    "owner/repo",
+                    "main",
+                    "codex/181-fix",
+                    "Title",
+                    "Body",
+                    True,
+                )
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(
+                raised.exception.payload["operation"],
+                "pull_request_create",
+            )
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+
+
 class ConventionalCommitContractTest(unittest.TestCase):
+    def test_merge_command_requires_explicit_repo_binding(self) -> None:
+        expected_head = "a" * 40
+        payload = gtt.build_merge_commit_payload(
+            repo="Owner/Repo",
+            primary_issue=181,
+            summary="统一 GitHub 操作通道",
+            head_branch="codex/181-gh-cli-only-github-operations",
+            base_branch="main",
+            expected_head=expected_head,
+            pull_request=200,
+        )
+        self.assertEqual(payload["errors"], [])
+        self.assertEqual(payload["expected_head"], expected_head)
+        self.assertEqual(
+            payload["command"][payload["command"].index("--repo") + 1],
+            "owner/repo",
+        )
+        self.assertEqual(
+            payload["command"][payload["command"].index("--match-head-commit") + 1],
+            expected_head,
+        )
+        unbound = gtt.build_merge_commit_payload(
+            repo="",
+            primary_issue=181,
+            summary="统一 GitHub 操作通道",
+            head_branch="codex/181-gh-cli-only-github-operations",
+            base_branch="main",
+            expected_head="",
+            pull_request=200,
+        )
+        self.assertTrue(unbound["errors"])
+
     def test_issue_92_rejects_invalid_commit_subjects(self) -> None:
         invalid_subjects = [
             "Merge pull request #91 from castbox/codex/073-trellis-doc-markdown-links",
@@ -3770,6 +4146,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
     @staticmethod
     def assignee_plan(source: str, login: str, candidates: list[str]) -> dict[str, object]:
         return {
+            "target": {"repo": "owner/repo"},
             "assignee": {
                 "source": source,
                 "login": login,
@@ -3866,7 +4243,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 single,
             )
 
-        with mock.patch.object(gtt, "gh_json", return_value={"login": "current-user"}):
+        with mock.patch.object(gtt, "github_authenticated_login", return_value="current-user"):
             gtt.task_workspace_validate_assignee(
                 self.root,
                 self.assignee_plan("current_github_login", "current-user", []),
@@ -3885,7 +4262,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             self.assignee_plan("user_selected_from_candidates", "alice", ["alice", "bob"]),
             multiple,
         )
-        with mock.patch.object(gtt, "gh_json", side_effect=gtt.WorkflowError("actor unresolved")):
+        with mock.patch.object(gtt, "github_authenticated_login", side_effect=gtt.WorkflowError("actor unresolved")):
             gtt.task_workspace_validate_assignee(
                 self.root,
                 self.assignee_plan("user_supplied_after_unresolved", "chosen-user", []),
@@ -4052,6 +4429,20 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 [item["number"] for item in gtt.task_workspace_created_issue_recovery_candidates(self.root, plan)],
                 [500],
             )
+        incomplete = dict(exact)
+        incomplete.pop("createdAt")
+        with (
+            mock.patch.object(gtt, "gh_json", return_value=[incomplete]) as gh_json,
+            mock.patch.object(gtt, "create_issue") as create_issue,
+            self.assertRaises(gtt.WorkflowError) as incomplete_error,
+        ):
+            gtt.task_workspace_created_issue_result(self.root, plan)
+        self.assertEqual(
+            incomplete_error.exception.payload["error_code"],
+            "github_response_incomplete",
+        )
+        self.assertIn("createdAt", gh_json.call_args.kwargs["required_fields"])
+        create_issue.assert_not_called()
         second_exact = {**exact, "number": 502, "url": "https://github.com/owner/repo/issues/502"}
         with (
             mock.patch.object(gtt, "task_workspace_created_issue_recovery_candidates", return_value=[exact, second_exact]),
@@ -16019,6 +16410,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         edited_body_bytes: list[bytes] = []
 
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            if command == ["gh", "auth", "status"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
             self.assertEqual(command[:4], ["gh", "pr", "edit", "105"])
             edit_commands.append(command)
             body_path = Path(command[command.index("--body-file") + 1])
@@ -16936,6 +17329,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "isDraft": True,
         }
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            if command == ["gh", "auth", "status"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
             if command[:3] == ["git", "ls-remote", "--heads"]:
                 return mock.Mock(returncode=0, stdout=f"{self.head}\trefs/heads/fix/105-closeout\n", stderr="")
             if command[:3] == ["gh", "pr", "ready"]:
@@ -16973,6 +17368,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
 
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
             commands.append(command)
+            if command == ["gh", "auth", "status"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
             if command[:3] == ["git", "ls-remote", "--heads"]:
                 return mock.Mock(
                     returncode=0,
@@ -17092,6 +17489,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         ready = dict(draft, isDraft=False)
 
         def fake_run(command: list[str], **_kwargs: object) -> mock.Mock:
+            if command == ["gh", "auth", "status"]:
+                return mock.Mock(returncode=0, stdout="", stderr="")
             if command[:3] == ["git", "ls-remote", "--heads"]:
                 return mock.Mock(
                     returncode=0,

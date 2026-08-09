@@ -1,5 +1,19 @@
 # Companion Scripts
 
+## GitHub CLI Adapter
+
+The shared runtime is the only deterministic GitHub platform adapter. It
+normalizes `owner/repository`, rejects high-level commands without `--repo`,
+rejects incomplete REST repository endpoints, performs CLI/auth/repository
+access preflight, decodes complete JSON, and checks operation-specific required
+fields. It exposes only exit code, redacted stderr classification, API fields,
+and the six stable error facts defined by `workflow-contract.md`.
+
+It never infers semantic readiness, severity, scope, issue disposition, close
+semantics, or workflow route and never falls back to an App, MCP, connector, or
+browser. `verification_required` remains reserved for extension-installation
+evidence and is not a generic GitHub failure.
+
 ## Script Boundaries
 
 Bash files under `trellis/workflows/guru-team/scripts/bash/` are thin wrappers.
@@ -409,8 +423,10 @@ workspace state, runtime caches, or sidecars.
 GitHub `issue_comment` and `issue_body_edit` mutations are AI-owned. Before a
 write the AI rereads the target preimage, verifies the exact objective target
 and payload, and obtains any required authority only from the current dialogue;
-it then uses an existing connector or reviewed `gh` command and rereads the
-result. No authorization field is passed to or checked by scripts.
+it then uses only authenticated, explicit repo-bound `gh` / `gh api` and
+rereads the result. No GitHub App, MCP, connector, browser UI, or implicit
+repository context is an allowed fallback. No authorization field is passed to
+or checked by scripts.
 Recorder/checker only normalize and validate supplied URL/state/
 updated-at/body-or-comment digest facts. The mutation result content digest
 must equal the exact `source_actions[].payload.body`, its canonical

@@ -1,5 +1,9 @@
 # Extension Installation Verification Contract
 
+GitHub source and workflow-run facts use the shared authenticated, repo-bound
+`gh` adapter in `.trellis/spec/workflow/workflow-contract.md`; GitHub transport
+failures never emit this Skill's `verification_required` profile.
+
 ## Entry
 
 `verification_required` is the workflow target bootstrap owned by this package

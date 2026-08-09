@@ -197,6 +197,10 @@ verify_requirements_clarification_exits() {
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
+  exit 0
+fi
+
 if [[ "${1:-}" != "issue" || "${2:-}" != "view" ]]; then
   echo "unsupported throwaway gh invocation" >&2
   exit 2
@@ -222,7 +226,7 @@ case "$number" in
     ;;
 esac
 
-printf '{"number":%s,"url":"https://github.com/example/guru-extension/issues/%s","state":"%s","updatedAt":"%s","body":"Reviewed source issue body."}\n' \
+printf '{"number":%s,"title":"Reviewed source issue","url":"https://github.com/example/guru-extension/issues/%s","state":"%s","updatedAt":"%s","body":"Reviewed source issue body.","comments":[],"assignees":[],"labels":[]}\n' \
   "$number" "$number" "$state" "$updated_at"
 SH
   chmod +x "$fake_bin/gh"
@@ -2052,12 +2056,15 @@ DISCOVERY_REAL_GIT="$(command -v git)"
 cat >"$DISCOVERY_FAKE_BIN/gh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
+if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
+  exit 0
+fi
 if [[ "${1:-}" == "issue" && "${2:-}" == "view" && "${3:-}" == "111" ]]; then
-  printf '%s\n' '{"number":111,"url":"https://github.com/castbox/guru-trellis-throwaway/issues/111","state":"OPEN","updatedAt":"2026-01-01T00:00:00Z","body":"throwaway context discovery request"}'
+  printf '%s\n' '{"number":111,"title":"Throwaway context discovery request","url":"https://github.com/castbox/guru-trellis-throwaway/issues/111","state":"OPEN","updatedAt":"2026-01-01T00:00:00Z","body":"throwaway context discovery request","comments":[],"assignees":[],"labels":[]}'
   exit 0
 fi
 if [[ "${1:-}" == "issue" && "${2:-}" == "view" && "${3:-}" == "99" ]]; then
-  printf '%s\n' '{"number":99,"url":"https://github.com/castbox/guru-trellis-throwaway/issues/99","state":"OPEN","updatedAt":"2026-01-01T00:00:00Z","body":"throwaway duplicate candidate"}'
+  printf '%s\n' '{"number":99,"title":"Throwaway duplicate candidate","url":"https://github.com/castbox/guru-trellis-throwaway/issues/99","state":"OPEN","updatedAt":"2026-01-01T00:00:00Z","body":"throwaway duplicate candidate","comments":[],"assignees":[],"labels":[]}'
   exit 0
 fi
 exit 2
@@ -2289,7 +2296,7 @@ if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
   exit 0
 fi
 if [[ "${1:-}" == "issue" && "${2:-}" == "view" ]]; then
-  printf '%s\n' '{"number":110,"title":"Verify Phase 0 stdout base facts","url":"https://github.com/castbox/guru-trellis-throwaway/issues/110","body":"Exercise installed workflow base synchronization across planner and mutation guards.","comments":[],"state":"OPEN"}'
+  printf '%s\n' '{"number":110,"title":"Verify Phase 0 stdout base facts","url":"https://github.com/castbox/guru-trellis-throwaway/issues/110","body":"Exercise installed workflow base synchronization across planner and mutation guards.","comments":[],"state":"OPEN","updatedAt":"2026-01-01T00:00:00Z","assignees":[],"labels":[]}'
   exit 0
 fi
 printf 'unexpected fake gh invocation: %s\n' "$*" >&2

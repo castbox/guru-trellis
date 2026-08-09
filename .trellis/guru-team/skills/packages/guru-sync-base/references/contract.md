@@ -1,5 +1,9 @@
 # `guru-sync-base` Contract
 
+GitHub platform facts follow the single CLI-only, repo-bound contract in
+`.trellis/spec/workflow/workflow-contract.md`; this Skill keeps `git` ownership
+of fetch, revision and transport facts.
+
 ## Ownership And Modes
 
 The global workflow owns caller-side tool-free route classification, mandatory

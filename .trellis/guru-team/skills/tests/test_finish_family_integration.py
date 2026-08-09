@@ -830,8 +830,11 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             sleeper.assert_called_once_with(
                 runtime.CLOSEOUT_PR_HEAD_READ_DELAY_SECONDS,
             )
-            self.assertEqual(command.call_count, 1)
-            self.assertEqual(command.call_args.args[0][:3], ["gh", "pr", "ready"])
+            ready_calls = [
+                call for call in command.call_args_list
+                if call.args[0][:3] == ["gh", "pr", "ready"]
+            ]
+            self.assertEqual(len(ready_calls), 1)
 
             with (
                 mock.patch.object(
