@@ -30,8 +30,9 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
 4. Author semantic branch/workspace/task names and classify each object as
    `create_new`, `reuse_exact`, or `conflict_blocked`.
 5. Resolve one non-empty assignee in this order: explicit input; the issue's
-   single assignee; current authenticated `gh auth status --json login`
-   identity after target-repository access preflight when the issue has none; one
+   single assignee; current authenticated
+   `gh auth status --active --hostname github.com --json hosts` identity after
+   target-repository access preflight when the issue has none; one
    user question when the issue has multiple assignees or the actor is
    unresolved.
 6. Display the exact repository, target, GitHub operation, base, branch,

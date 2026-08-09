@@ -34,6 +34,16 @@ GTT = load_runtime()
 
 
 class TaskWorkspacePackageContractTests(unittest.TestCase):
+    def test_contract_uses_supported_active_actor_lookup(self) -> None:
+        contract = (PACKAGE_ROOT / "references/contract.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "gh auth status --active --hostname github.com --json hosts",
+            contract,
+        )
+        self.assertNotIn("gh auth status --json login", contract)
+
     def test_interface_uses_semantic_profile_and_mode_parity(self) -> None:
         interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
         self.assertEqual(interface["schema_version"], "1.3")
