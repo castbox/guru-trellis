@@ -1265,6 +1265,24 @@ contract against the replacement plan. PR already
 created, archive started, reviewed content/scope drift, non-fast-forward remote,
 or manifest changes outside the allowlist remain fail-closed boundaries.
 
+An unused current schema 3.0 plan with the complete seven-field Git identity may
+use the same mapped base-evolution route without a legacy gate/request. Its
+recorded provenance tail must remain structurally valid, its publication head
+must be an ancestor of the new reviewed head, and the remote branch must remain
+at or before the predecessor reviewed-content head. A remote at the predecessor
+publication tail or any later descendant proves an outbound publication side
+effect and fails closed. The task and plan remain active, unarchived, and
+untracked, with no PR, verification artifact/request, or preexisting Finalizer
+gate. The initial current `publication_ready` DTO supplies
+the exact reviewed `publish.title/body` for the base-evolution candidate and may
+differ from the predecessor plan. The four-field `reprepare_required` DTO does
+not grow payload fields. Only after the executor retires the predecessor and
+persists the replacement plan does minimal `reprepare_preview` treat that
+replacement immutable payload as authority, passing no synthetic Publication
+payload into plan preparation. Recorder writes the ordinary
+`task-finalization-gate.json`; checker/executor may privately admit only that
+byte-identical checked gate while rerunning the preflight.
+
 The pre-#191 base-evolution route temporarily has two same-owner, same-schema
 ignored gate instances with disjoint direct uses: the normal
 `task-finalization-gate.json` remains the exact legacy verification evidence,

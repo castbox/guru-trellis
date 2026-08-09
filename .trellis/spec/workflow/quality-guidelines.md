@@ -764,6 +764,22 @@ successful execution retires both gate instances, and a missing predecessor or
 ordinary-route transition gate fails closed. Mocking gate input or the gate
 checker does not satisfy this regression.
 
+The current-plan evolution regression uses a disposable real Git repository and
+bare remote, creates a valid current plan through real `prepare_closeout()`,
+advances reviewed content after its unpushed provenance tail, and executes real
+preview, recorder, checker, executor, tail creation, replacement persistence,
+and side-effect-free reprepare preview. It proves the ordinary gate lifecycle,
+the explicit old/current payload difference, current Publication payload in the
+initial candidate and persisted replacement, exact replacement-payload reuse by
+minimal reprepare, replacement digest, unchanged plan bytes/HEAD on the final
+preview, and no transition gate. Its rejection matrix covers a
+non-ancestor reviewed head, divergent remote, remote at the predecessor
+publication tail, remote at the real current reviewed commit, existing
+PR/archive, verification artifact or matching request, either preexisting gate,
+and a tracked closeout plan. Mocking
+`prepare_closeout` does not satisfy this
+regression; the pre-#191 two-gate fixture remains independently passing.
+
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The
   package closure is fourteen active Skills and 54 external exits; global markers

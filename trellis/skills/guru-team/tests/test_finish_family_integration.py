@@ -296,9 +296,11 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 *,
                 publication_ready: dict[str, Any] | None = None,
                 verification_owner_result: Any = None,
+                allowed_current_gate: dict[str, Any] | None = None,
             ) -> dict[str, Any]:
                 self.assertEqual(publication_ready, finalization_input)
                 self.assertIsNone(verification_owner_result)
+                self.assertIsNone(allowed_current_gate)
                 return prepared
 
             args = argparse.Namespace(

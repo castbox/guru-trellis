@@ -1370,7 +1370,23 @@ artifacts, old-to-current ancestry, and a fast-forwardable remote ancestor.
 Preview and discovery only prove those facts. The checked transition repeats the
 proof, retires the predecessor, and persists the freshly rebuilt current plan;
 the next preview validates the two heads against that replacement plan.
-For this bounded base-evolution route, recorder does not overwrite the legacy
+For an unused current schema 3.0 predecessor, the runtime instead validates the
+complete seven-field Git shape, the historical tail structure and ancestry, a
+remote branch at or before the predecessor reviewed-content head, untracked
+owner state, and the absence of PR/archive/verification/request/gate consumers.
+A remote at the predecessor publication tail or any later descendant proves an
+outbound publication side effect and fails closed. Initial preview rejects every
+preexisting gate. Recorder then writes the ordinary Finalizer gate; checker and
+executor pass only that exact checked in-memory gate back into the repeated
+preflight. The executor retires the old plan/gate, creates or reuses the current
+tail, and persists the replacement through the real `prepare_closeout()` path.
+The initial `publication_ready` invocation supplies the current reviewed exact
+title/body to the base-evolution candidate even when they differ from the
+predecessor plan. Only after the executor persists that replacement does a
+minimal `reprepare_preview` reuse the replacement plan's immutable exact payload
+without a synthesized partial Publication DTO; public `reprepare_required`
+remains task/reason/two-head identity only.
+For the pre-#191 base-evolution route, recorder does not overwrite the legacy
 gate whose bytes the checker and executor must still validate. It writes the
 current marker to the same-owner ignored
 `task-finalization-transition-gate.json`; default gate resolution selects it

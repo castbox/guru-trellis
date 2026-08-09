@@ -9049,6 +9049,7 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             task_dir,
             plan,
             previous_plan=previous_plan,
+            allowed_current_gate=gate,
         )
         retire.assert_called_once_with(root.resolve(), task_dir)
         prepare.assert_called_once()
@@ -9318,6 +9319,498 @@ class PrePrProvenanceReprepareFixtureTest(unittest.TestCase):
             "plan_ref": "closeout-plan:stale-semantic-review",
         })
         return root, task_dir, previous_plan, current_plan, previous_reviewed, current_reviewed
+
+    def current_plan_evolution_fixture(
+        self,
+    ) -> tuple[Path, Path, dict[str, Any], dict[str, Any], dict[str, Any], str, str, str]:
+        fixture = Path(tempfile.mkdtemp(prefix="guru-179-current-plan-evolution-"))
+        self.addCleanup(lambda: shutil.rmtree(fixture, ignore_errors=True))
+        root = fixture / "repo"
+        remote = fixture / "remote.git"
+        root.mkdir()
+        subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+        subprocess.run(["git", "init", "-q", "-b", "topic"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.name", "Fixture"], cwd=root, check=True)
+        subprocess.run(["git", "config", "user.email", "fixture@example.com"], cwd=root, check=True)
+        subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=root, check=True)
+
+        manifest = root / gtt.PROVENANCE_TAIL_MANIFEST_PATH
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(json.dumps({
+            "installed_at": "old",
+            "source": {
+                "repo": "https://github.com/castbox/guru-trellis.git",
+                "ref": "0" * 40,
+                "commit": "0" * 40,
+                "tree_state": "dirty",
+                "is_mutable_ref": False,
+            },
+        }), encoding="utf-8")
+        apply_script = root / "trellis/presets/guru-team/scripts/bash/apply.sh"
+        apply_script.parent.mkdir(parents=True)
+        apply_script.write_text(
+            """#!/usr/bin/env bash
+set -euo pipefail
+repo=''
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --repo) repo="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+reviewed="$(git -C "$repo" rev-parse HEAD)"
+python3 - "$repo/.trellis/guru-team/extension.json" "$reviewed" <<'PY'
+import json
+import pathlib
+import sys
+path = pathlib.Path(sys.argv[1])
+reviewed = sys.argv[2]
+payload = json.loads(path.read_text(encoding="utf-8"))
+payload["installed_at"] = "2026-08-09T00:00:00Z"
+payload["source"].update({
+    "ref": reviewed,
+    "commit": reviewed,
+    "tree_state": "clean",
+    "is_mutable_ref": False,
+})
+path.write_text(json.dumps(payload, sort_keys=True) + "\\n", encoding="utf-8")
+PY
+printf '{"status":"ok"}\\n'
+""",
+            encoding="utf-8",
+        )
+        apply_script.chmod(0o755)
+        (root / "base.txt").write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "fixture base"], cwd=root, check=True)
+        base_head = self.git(root, "rev-parse", "HEAD")
+
+        task_dir = root / ".trellis/tasks/fixture"
+        task_dir.mkdir(parents=True)
+        task_ref = ".trellis/tasks/fixture"
+        issue = {
+            "number": 179,
+            "url": "https://github.com/castbox/guru-trellis/issues/179",
+            "title": "Finalizer current plan evolution",
+            "reason": "Primary delivered scope.",
+        }
+        gtt.write_json(task_dir / "task.json", {
+            "id": "fixture",
+            "title": "#179 Finalizer current plan evolution",
+            "status": "in_progress",
+            "base_branch": "main",
+        })
+        gtt.write_json(task_dir / "issue-scope-ledger.json", {
+            "schema_version": "2.0",
+            "primary_issue": issue,
+            "close_issues": [issue],
+            "related_issues": [],
+            "followup_issues": [],
+        })
+        workflow_change = root / "trellis/workflows/guru-team/change.txt"
+        workflow_change.parent.mkdir(parents=True, exist_ok=True)
+        workflow_change.write_text("reviewed-v1\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "reviewed v1"], cwd=root, check=True)
+        previous_reviewed = self.git(root, "rev-parse", "HEAD")
+        subprocess.run(["git", "push", "-qu", "origin", "topic"], cwd=root, check=True)
+
+        previous_publication = gtt.prepare_provenance_metadata_tail(
+            root,
+            previous_reviewed,
+        )["publication_head"]
+        task_context = {
+            "task_artifact_dir": task_ref,
+            "base_branch": "main",
+            "base_ref": base_head,
+            "branch_name": "topic",
+            "base_head_sha": base_head,
+        }
+        previous_title = "修复：记录 previous Finalizer plan payload"
+        previous_body = valid_pr_body("#179 previous plan payload。").replace(
+            "Closes #18",
+            "Closes #179",
+        )
+        title = "修复：支持 current Finalizer plan 内容演进"
+        body = valid_pr_body("#179 current Publication payload。").replace(
+            "Closes #18",
+            "Closes #179",
+        )
+        args = argparse.Namespace(
+            repo="castbox/guru-trellis",
+            remote="origin",
+            base_branch="main",
+            title=previous_title,
+            include_finalization_gate=True,
+        )
+        with mock.patch.object(
+            gtt,
+            "validate_github_remote_repository",
+            return_value="castbox/guru-trellis",
+        ):
+            prepared = gtt.prepare_closeout(
+                root,
+                args,
+                {},
+                task_dir,
+                task_context,
+                publication_ready={
+                    "profile": "publication_ready",
+                    "mode": "workflow",
+                    "task_ref": task_ref,
+                    "branch_review_commit": previous_reviewed,
+                    "pr_title": previous_title,
+                    "pr_body": previous_body,
+                },
+            )
+        previous_plan = prepared["plan"]
+        self.assertEqual(
+            previous_plan["git"]["publication_head"],
+            previous_publication,
+        )
+        gtt.write_json(task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT, previous_plan)
+
+        workflow_change.write_text("reviewed-v2\n", encoding="utf-8")
+        subprocess.run(["git", "add", workflow_change.relative_to(root).as_posix()], cwd=root, check=True)
+        subprocess.run(["git", "commit", "-qm", "reviewed v2"], cwd=root, check=True)
+        current_reviewed = self.git(root, "rev-parse", "HEAD")
+        prospective_plan = {
+            "schema_version": gtt.CLOSEOUT_PLAN_SCHEMA_VERSION,
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": previous_plan["task"]["archive_locator"],
+            },
+            "git": {
+                "repo": "castbox/guru-trellis",
+                "remote": "origin",
+                "base_branch": "main",
+                "head_branch": "topic",
+                "branch_review_commit": current_reviewed,
+                "reviewed_content_head": current_reviewed,
+                "publication_head": current_reviewed,
+            },
+        }
+        return (
+            root,
+            task_dir,
+            previous_plan,
+            prospective_plan,
+            task_context,
+            title,
+            body,
+            current_reviewed,
+        )
+
+    def test_current_plan_evolution_reuses_payload_through_real_gate_and_executor(
+        self,
+    ) -> None:
+        (
+            root,
+            task_dir,
+            previous_plan,
+            _,
+            task_context,
+            title,
+            body,
+            current_reviewed,
+        ) = self.current_plan_evolution_fixture()
+        task_ref = previous_plan["task"]["active_locator"]
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+        publication_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "branch_review_commit": current_reviewed,
+            "pr_title": title,
+            "pr_body": body,
+        }
+        current_payload = {"title": title, "body": body}
+        previous_payload = {
+            key: previous_plan["publish"][key]
+            for key in ("title", "body")
+        }
+        self.assertNotEqual(previous_payload, current_payload)
+        active_input = {"value": publication_input}
+        reviewed = {
+            "review": {
+                "status": "passed",
+                "summary": "The current plan evolution route is semantically reviewed.",
+            },
+            "route": {
+                "typed_exit": "reprepare_required",
+                "consumer": copy.deepcopy(
+                    gtt.FINALIZATION_CONSUMERS["reprepare_required"]
+                ),
+                "output": copy.deepcopy(gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
+            },
+        }
+        args = argparse.Namespace(
+            root=str(root),
+            input="unused-input.json",
+            review_input="unused-review.json",
+            gate=None,
+            dry_run=False,
+            repo="castbox/guru-trellis",
+            remote="origin",
+            base_branch="main",
+            title=title,
+            include_finalization_gate=True,
+        )
+        repository_binding = {
+            "head": current_reviewed,
+            "branch": "topic",
+            "base_ref": task_context["base_ref"],
+            "diff_paths": [
+                ".trellis/tasks/fixture/issue-scope-ledger.json",
+                ".trellis/tasks/fixture/task.json",
+                "trellis/workflows/guru-team/change.txt",
+            ],
+            "status_paths": [],
+        }
+        plan_path = task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT
+        standard_gate = gtt.task_finalization_path(root, task_dir)
+        transition_gate = gtt.task_finalization_transition_path(root, task_dir)
+
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_public_input",
+                side_effect=lambda _root, _value: (
+                    copy.deepcopy(active_input["value"]),
+                    "<test>",
+                ),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_semantic_review_input",
+                return_value=reviewed,
+            ),
+            mock.patch.object(gtt, "finalization_package_root", return_value=package_root),
+            mock.patch.object(
+                gtt,
+                "validate_github_remote_repository",
+                return_value="castbox/guru-trellis",
+            ),
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=None),
+            mock.patch.object(gtt, "finalization_verification_owner_result", return_value=None),
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value=task_context),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=repository_binding,
+            ),
+        ):
+            initial = gtt.finalization_preview_context(root, args, publication_input)
+            self.assertEqual(initial["transaction_state"], "reprepare_required")
+            self.assertEqual(
+                initial["prepared"]["pre_pr_reprepare"]["base_evolution"][
+                    "supersession_kind"
+                ],
+                "current_plan",
+            )
+            self.assertEqual(
+                {
+                    key: initial["plan"]["publish"][key]
+                    for key in ("title", "body")
+                },
+                current_payload,
+            )
+            self.assertFalse(standard_gate.exists())
+            self.assertFalse(transition_gate.exists())
+
+            recorded = gtt.cmd_record_finalization_gate(args)
+            self.assertEqual(Path(recorded["artifact_path"]).resolve(), standard_gate.resolve())
+            self.assertTrue(standard_gate.is_file())
+            self.assertFalse(transition_gate.exists())
+
+            checked = gtt.cmd_check_finalization_gate(args)
+            self.assertEqual(checked["typed_exit"], "reprepare_required")
+            transitioned = gtt.cmd_execute_finalization_transition(args)
+
+            self.assertEqual(transitioned["typed_exit"], "reprepare_required")
+            self.assertEqual(
+                transitioned["output"]["branch_review_commit"],
+                current_reviewed,
+            )
+            self.assertNotEqual(
+                transitioned["output"]["publication_head"],
+                current_reviewed,
+            )
+            self.assertFalse(standard_gate.exists())
+            self.assertFalse(transition_gate.exists())
+            replacement = gtt.validate_closeout_plan(gtt.read_json(plan_path))
+            self.assertEqual(
+                {
+                    key: replacement["publish"][key]
+                    for key in ("title", "body")
+                },
+                current_payload,
+            )
+            self.assertEqual(
+                replacement["git"]["reviewed_content_head"],
+                current_reviewed,
+            )
+            self.assertEqual(
+                replacement["git"]["publication_head"],
+                transitioned["output"]["publication_head"],
+            )
+            self.assertEqual(
+                transitioned["replacement_plan_digest"],
+                replacement["plan_digest"],
+            )
+            self.assertNotEqual(previous_plan["plan_digest"], replacement["plan_digest"])
+
+            reprepare_input = {
+                "profile": "reprepare_preview",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "reason_code": transitioned["output"]["reason_code"],
+                "branch_review_commit": transitioned["output"][
+                    "branch_review_commit"
+                ],
+                "publication_head": transitioned["output"]["publication_head"],
+            }
+            active_input["value"] = reprepare_input
+            plan_bytes = plan_path.read_bytes()
+            head_before = self.git(root, "rev-parse", "HEAD")
+            preview = gtt.cmd_preview_finalization(args)
+
+        self.assertEqual(preview["closeout_plan_digest"], replacement["plan_digest"])
+        self.assertEqual(
+            {
+                key: preview["closeout_plan"]["publish"][key]
+                for key in ("title", "body")
+            },
+            current_payload,
+        )
+        self.assertEqual(plan_path.read_bytes(), plan_bytes)
+        self.assertEqual(self.git(root, "rev-parse", "HEAD"), head_before)
+
+    def test_current_plan_evolution_rejection_matrix(self) -> None:
+        cases = {
+            "non_ancestor": "provenance_reprepare_base_evolution_mismatch",
+            "remote_non_fast_forward": "provenance_reprepare_remote_not_reviewed_head",
+            "remote_at_previous_publication": "provenance_reprepare_remote_not_reviewed_head",
+            "remote_at_current_reviewed": "provenance_reprepare_remote_not_reviewed_head",
+            "pull_request": "provenance_reprepare_pull_request_exists",
+            "archive": "provenance_reprepare_archive_started",
+            "verification_artifact": "provenance_reprepare_verification_started",
+            "verification_request": "provenance_reprepare_verification_started",
+            "standard_gate": "provenance_reprepare_gate_started",
+            "transition_gate": "provenance_reprepare_gate_started",
+            "tracked_plan": None,
+        }
+        for case, reason_code in cases.items():
+            with self.subTest(case=case):
+                (
+                    root,
+                    task_dir,
+                    previous_plan,
+                    prospective_plan,
+                    _,
+                    _,
+                    _,
+                    current_reviewed,
+                ) = self.current_plan_evolution_fixture()
+                candidate = copy.deepcopy(prospective_plan)
+                pull_request = None
+                remote_head: str | None = None
+                if case == "non_ancestor":
+                    candidate["git"]["branch_review_commit"] = "f" * 40
+                    candidate["git"]["reviewed_content_head"] = "f" * 40
+                elif case == "remote_non_fast_forward":
+                    remote_head = "f" * 40
+                elif case == "remote_at_previous_publication":
+                    remote_head = previous_plan["git"]["publication_head"]
+                elif case == "remote_at_current_reviewed":
+                    remote_head = current_reviewed
+                elif case == "pull_request":
+                    pull_request = {"number": 179}
+                elif case == "archive":
+                    (root / previous_plan["task"]["archive_locator"]).mkdir(
+                        parents=True,
+                    )
+                elif case == "verification_artifact":
+                    gtt.write_json(task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT, {})
+                elif case == "verification_request":
+                    request = root / (
+                        ".trellis/.runtime/guru-team/finalizer-inputs/fixture/"
+                        "verification-required.json"
+                    )
+                    gtt.write_json(request, {
+                        "profile": "verification_required",
+                        "mode": "workflow",
+                        "task_ref": previous_plan["task"]["active_locator"],
+                        "plan_ref": f"closeout-plan:{previous_plan['plan_digest']}",
+                        "branch_review_commit": previous_plan["git"][
+                            "branch_review_commit"
+                        ],
+                        "publication_head": previous_plan["git"]["publication_head"],
+                    })
+                elif case == "standard_gate":
+                    gtt.write_json(gtt.task_finalization_path(root, task_dir), {})
+                elif case == "transition_gate":
+                    gtt.write_json(gtt.task_finalization_transition_path(root, task_dir), {})
+                elif case == "tracked_plan":
+                    subprocess.run(
+                        [
+                            "git",
+                            "add",
+                            (task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT)
+                            .relative_to(root)
+                            .as_posix(),
+                        ],
+                        cwd=root,
+                        check=True,
+                    )
+
+                patches = [
+                    mock.patch.object(
+                        gtt,
+                        "resolve_closeout_pull_request",
+                        return_value=pull_request,
+                    )
+                ]
+                if remote_head is not None:
+                    patches.append(
+                        mock.patch.object(
+                            gtt,
+                            "closeout_remote_branch_head",
+                            return_value=remote_head,
+                        )
+                    )
+                with (
+                    patches[0],
+                    patches[1] if len(patches) == 2 else contextlib.nullcontext(),
+                    self.assertRaises(gtt.WorkflowError) as blocked,
+                ):
+                    gtt.finalizer_current_plan_base_evolution_supersession_preflight(
+                        root,
+                        task_dir,
+                        previous_plan,
+                        candidate,
+                    )
+                if case == "tracked_plan":
+                    self.assertEqual(
+                        blocked.exception.payload["tracked_paths"],
+                        [".trellis/tasks/fixture/closeout-plan.json"],
+                    )
+                else:
+                    self.assertEqual(
+                        blocked.exception.payload.get("reason_code"),
+                        reason_code,
+                    )
+                    if case == "remote_at_previous_publication":
+                        self.assertIs(
+                            blocked.exception.payload.get(
+                                "predecessor_has_outbound_publication_side_effect"
+                            ),
+                            True,
+                        )
 
     def test_base_evolution_supersession_is_exact_and_fail_closed(self) -> None:
         root, task_dir, previous_plan, current_plan, previous_reviewed, current_reviewed = self.base_evolution_fixture()

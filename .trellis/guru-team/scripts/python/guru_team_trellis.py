@@ -11861,13 +11861,15 @@ def provenance_tail_commit_errors(
     root: Path,
     reviewed_content_head: str,
     publication_head: str,
+    *,
+    require_current: bool = True,
 ) -> list[str]:
     """Validate one committed provenance tail and its reviewed/publication identities."""
     errors: list[str] = []
     if re.fullmatch(r"[0-9a-f]{40}", str(publication_head or "")) is None:
         errors.append("provenance_tail_publication_head_invalid")
         return sorted(set(errors))
-    if publication_head != current_head(root):
+    if require_current and publication_head != current_head(root):
         errors.append("provenance_tail_publication_head_not_current")
     parent_proc = run(
         ["git", "show", "-s", "--format=%P", publication_head],
@@ -12228,13 +12230,13 @@ def finalizer_legacy_verification_gate_matches_plan(
     )
 
 
-def finalizer_pre_pr_base_evolution_supersession_preflight(
+def finalizer_base_evolution_shared_preflight(
     root: Path,
     task_dir: Path,
     previous_plan: dict[str, Any],
     current_plan: dict[str, Any],
 ) -> dict[str, Any]:
-    """Prove that one pre-#191 owner-private plan may be superseded."""
+    """Prove shared normal-path facts for one pre-PR plan supersession."""
     previous_git = previous_plan.get("git") if isinstance(previous_plan.get("git"), dict) else {}
     current_git = current_plan.get("git") if isinstance(current_plan.get("git"), dict) else {}
     task_ref = repo_relative(root, task_dir)
@@ -12242,7 +12244,6 @@ def finalizer_pre_pr_base_evolution_supersession_preflight(
     current_reviewed = str(current_git.get("reviewed_content_head") or current_git.get("branch_review_commit") or "")
     if (
         previous_plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
-        or set(previous_git) != {"repo", "remote", "base_branch", "head_branch", "branch_review_commit"}
         or previous_plan.get("task", {}).get("active_locator") != task_ref
         or current_plan.get("task", {}).get("active_locator") != task_ref
         or any(previous_git.get(key) != current_git.get(key) for key in ("repo", "remote", "base_branch", "head_branch"))
@@ -12250,7 +12251,7 @@ def finalizer_pre_pr_base_evolution_supersession_preflight(
         or not is_ancestor(root, previous_reviewed, current_reviewed)
     ):
         raise WorkflowError(
-            "Persisted closeout plan is not an eligible pre-#191 base-evolution predecessor.",
+            "Persisted closeout plan is not an eligible base-evolution predecessor.",
             exit_code=2,
             payload={"reason_code": "provenance_reprepare_base_evolution_mismatch"},
         )
@@ -12304,6 +12305,40 @@ def finalizer_pre_pr_base_evolution_supersession_preflight(
                 "fast_forwardable": False,
             },
         )
+    return {
+        "previous_reviewed_content_head": previous_reviewed,
+        "reviewed_content_head": current_reviewed,
+        "remote_head": remote_head,
+    }
+
+
+def finalizer_pre_pr_base_evolution_supersession_preflight(
+    root: Path,
+    task_dir: Path,
+    previous_plan: dict[str, Any],
+    current_plan: dict[str, Any],
+) -> dict[str, Any]:
+    """Prove that one pre-#191 owner-private plan may be superseded."""
+    task_ref = repo_relative(root, task_dir)
+    previous_git = previous_plan.get("git") if isinstance(previous_plan.get("git"), dict) else {}
+    if set(previous_git) != {
+        "repo",
+        "remote",
+        "base_branch",
+        "head_branch",
+        "branch_review_commit",
+    }:
+        raise WorkflowError(
+            "Persisted closeout plan is not an eligible pre-#191 base-evolution predecessor.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_base_evolution_mismatch"},
+        )
+    facts = finalizer_base_evolution_shared_preflight(
+        root,
+        task_dir,
+        previous_plan,
+        current_plan,
+    )
     if not finalizer_legacy_verification_gate_matches_plan(root, task_dir, previous_plan):
         raise WorkflowError(
             "Base-evolution recovery requires the exact legacy verification_required gate.",
@@ -12318,10 +12353,135 @@ def finalizer_pre_pr_base_evolution_supersession_preflight(
             payload={"reason_code": "provenance_reprepare_legacy_request_missing"},
         )
     return {
-        "previous_reviewed_content_head": previous_reviewed,
-        "reviewed_content_head": current_reviewed,
-        "remote_head": remote_head,
+        **facts,
+        "supersession_kind": "legacy_pre_191",
         "private_request": repo_relative(root, requests[0]),
+    }
+
+
+def finalizer_current_plan_base_evolution_supersession_preflight(
+    root: Path,
+    task_dir: Path,
+    previous_plan: dict[str, Any],
+    current_plan: dict[str, Any],
+    *,
+    allowed_gate: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Prove that an unused current schema-3 plan may follow reviewed content."""
+    previous_git = previous_plan.get("git") if isinstance(previous_plan.get("git"), dict) else {}
+    current_git = current_plan.get("git") if isinstance(current_plan.get("git"), dict) else {}
+    previous_reviewed = str(previous_git.get("branch_review_commit") or "")
+    previous_publication = str(previous_git.get("publication_head") or "")
+    current_reviewed = str(
+        current_git.get("reviewed_content_head")
+        or current_git.get("branch_review_commit")
+        or ""
+    )
+    if (
+        set(previous_git)
+        != {
+            "repo",
+            "remote",
+            "base_branch",
+            "head_branch",
+            "branch_review_commit",
+            "reviewed_content_head",
+            "publication_head",
+        }
+        or previous_git.get("reviewed_content_head") != previous_reviewed
+        or re.fullmatch(r"[0-9a-f]{40}", previous_publication) is None
+        or provenance_tail_commit_errors(
+            root,
+            previous_reviewed,
+            previous_publication,
+            require_current=False,
+        )
+        or not is_ancestor(root, previous_publication, current_reviewed)
+    ):
+        raise WorkflowError(
+            "Persisted current closeout plan is not an eligible base-evolution predecessor.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_base_evolution_mismatch"},
+        )
+    facts = finalizer_base_evolution_shared_preflight(
+        root,
+        task_dir,
+        previous_plan,
+        current_plan,
+    )
+    if facts["remote_head"] == current_reviewed:
+        raise WorkflowError(
+            "Current-plan base evolution is unavailable after the reviewed descendant is pushed.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_remote_not_reviewed_head",
+                "reviewed_content_head": current_reviewed,
+                "remote_head": facts["remote_head"],
+                "fast_forwardable": True,
+            },
+        )
+    if not is_ancestor(root, facts["remote_head"], previous_reviewed):
+        raise WorkflowError(
+            "Current-plan base evolution is unavailable after predecessor publication is pushed.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_remote_not_reviewed_head",
+                "reviewed_content_head": current_reviewed,
+                "predecessor_reviewed_content_head": previous_reviewed,
+                "predecessor_publication_head": previous_publication,
+                "remote_head": facts["remote_head"],
+                "fast_forwardable": True,
+                "predecessor_has_outbound_publication_side_effect": True,
+            },
+        )
+    verification = task_dir / MARKETPLACE_VERIFICATION_ARTIFACT
+    if verification.exists() or verification.is_symlink():
+        raise WorkflowError(
+            "Current-plan base evolution is unavailable after verification starts.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_verification_started"},
+        )
+    requests = finalizer_pre_pr_request_paths(
+        root,
+        repo_relative(root, task_dir),
+        previous_plan,
+    )
+    if requests:
+        raise WorkflowError(
+            "Current-plan base evolution is unavailable after verification request routing starts.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_verification_started",
+                "requests": [repo_relative(root, path) for path in requests],
+            },
+        )
+    standard_gate = task_finalization_path(root, task_dir)
+    transition_gate = task_finalization_transition_path(root, task_dir)
+    existing_gates = [
+        path
+        for path in (standard_gate, transition_gate)
+        if path.exists() or path.is_symlink()
+    ]
+    allowed_gate_matches = (
+        allowed_gate is not None
+        and existing_gates == [standard_gate]
+        and standard_gate.is_file()
+        and not standard_gate.is_symlink()
+        and read_json(standard_gate) == allowed_gate
+    )
+    if existing_gates and not allowed_gate_matches:
+        raise WorkflowError(
+            "Current-plan base evolution is unavailable after a finalization gate starts.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_gate_started",
+                "gates": [repo_relative(root, path) for path in existing_gates],
+            },
+        )
+    return {
+        **facts,
+        "supersession_kind": "current_plan",
+        "previous_publication_head": previous_publication,
     }
 
 
@@ -12331,6 +12491,7 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
     plan: dict[str, Any],
     *,
     previous_plan: dict[str, Any] | None = None,
+    allowed_current_gate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Prove the pre-PR recovery window before any producer or cleanup mutation."""
     git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
@@ -12431,12 +12592,28 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
 
     remote_head = closeout_remote_branch_head(root, plan)
     if previous_plan is not None:
-        base_evolution = finalizer_pre_pr_base_evolution_supersession_preflight(
-            root,
-            task_dir,
-            previous_plan,
-            plan,
+        previous_git = (
+            previous_plan.get("git")
+            if isinstance(previous_plan.get("git"), dict)
+            else {}
         )
+        if "publication_head" in previous_git:
+            base_evolution = (
+                finalizer_current_plan_base_evolution_supersession_preflight(
+                    root,
+                    task_dir,
+                    previous_plan,
+                    plan,
+                    allowed_gate=allowed_current_gate,
+                )
+            )
+        else:
+            base_evolution = finalizer_pre_pr_base_evolution_supersession_preflight(
+                root,
+                task_dir,
+                previous_plan,
+                plan,
+            )
     else:
         base_evolution = None
     if previous_plan is None and remote_head != reviewed_content_head:
@@ -22635,6 +22812,7 @@ def prepare_closeout(
     *,
     publication_ready: dict[str, Any] | None = None,
     verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
+    allowed_current_gate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
     existing_plan_path = closeout_plan_path(task_dir)
@@ -22674,14 +22852,30 @@ def prepare_closeout(
             },
             "git": prospective_git,
         }
-        base_evolution_supersession = (
-            finalizer_pre_pr_base_evolution_supersession_preflight(
-                root,
-                task_dir,
-                existing_plan,
-                prospective_plan,
-            )
+        existing_git = (
+            existing_plan.get("git")
+            if isinstance(existing_plan.get("git"), dict)
+            else {}
         )
+        if "publication_head" in existing_git:
+            base_evolution_supersession = (
+                finalizer_current_plan_base_evolution_supersession_preflight(
+                    root,
+                    task_dir,
+                    existing_plan,
+                    prospective_plan,
+                    allowed_gate=allowed_current_gate,
+                )
+            )
+        else:
+            base_evolution_supersession = (
+                finalizer_pre_pr_base_evolution_supersession_preflight(
+                    root,
+                    task_dir,
+                    existing_plan,
+                    prospective_plan,
+                )
+            )
     branch_review_commit = resolve_closeout_branch_review_commit(
         expected_task_ref,
         publication_ready=publication_ready,
@@ -25205,11 +25399,15 @@ def finalization_publication_owner_result(
 
 def finalization_prepare_publication_ready(
     public_input: dict[str, Any],
+    *,
+    existing_plan: dict[str, Any] | None = None,
 ) -> dict[str, Any] | None:
-    """Project a validated reprepare identity into initial plan authority."""
+    """Select exact Publication authority without inflating reprepare identity."""
     if public_input.get("profile") == "publication_ready":
         return public_input
     if public_input.get("profile") != "reprepare_preview":
+        return None
+    if existing_plan is not None:
         return None
     return {
         "profile": "publication_ready",
@@ -26148,14 +26346,23 @@ def finalization_preview_context(
             state = "archive_moved"
             prepared = None
         else:
+            existing_plan_for_payload = finalization_closeout_plan(root, task_dir)
             prepared = prepare_closeout(
                 root,
                 args,
                 config,
                 task_dir,
                 task_context,
-                publication_ready=finalization_prepare_publication_ready(public_input),
+                publication_ready=finalization_prepare_publication_ready(
+                    public_input,
+                    existing_plan=existing_plan_for_payload,
+                ),
                 verification_owner_result=verification,
+                allowed_current_gate=getattr(
+                    args,
+                    "_finalization_checked_gate",
+                    None,
+                ),
             )
             plan = prepared["plan"]
             if prepared.get("month_supersession") is not None:
@@ -26613,6 +26820,8 @@ def finalization_base_evolution_supersession_pending(
         == FINALIZATION_REPREPARE_PROVENANCE_TAIL
         and isinstance(reprepare, dict)
         and isinstance(reprepare.get("base_evolution"), dict)
+        and reprepare["base_evolution"].get("supersession_kind")
+        == "legacy_pre_191"
         and isinstance(reprepare.get("previous_plan"), dict)
     )
 
@@ -26790,7 +26999,9 @@ def check_finalization_gate_result(
         finalization_gate_schema(root),
         "task finalization gate",
     )
-    context = finalization_preview_context(root, args, public_input)
+    preview_args = copy.copy(args)
+    preview_args._finalization_checked_gate = gate
+    context = finalization_preview_context(root, preview_args, public_input)
     transition_gate = task_finalization_transition_path(root, context["task_dir"])
     if (
         gate_path.resolve() == transition_gate.resolve()
@@ -26975,6 +27186,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 task_dir,
                 context["plan"],
                 previous_plan=previous_plan,
+                allowed_current_gate=gate,
             )
             publication = finalizer_publication_identity(root, reviewed_content_head)
             provenance = (
