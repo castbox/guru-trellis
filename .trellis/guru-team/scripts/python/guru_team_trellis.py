@@ -2520,10 +2520,32 @@ def create_issue(repo: str, title: str, body: str, root: Path, labels: list[str]
         url = proc.stdout.strip()
     finally:
         Path(tmp_path).unlink(missing_ok=True)
-    match = re.search(r"/issues/(\d+)", url)
-    if not match:
-        raise WorkflowError(f"Could not parse created issue number from URL: {url}")
-    return issue_view(repo, int(match.group(1)), root)
+    try:
+        parsed = urlsplit(url)
+    except ValueError as exc:
+        raise github_response_incomplete(
+            operation="issue_create",
+            repo=repo,
+            detail="gh issue create did not return a canonical Issue URL for the current repository.",
+        ) from exc
+    parts = parsed.path.split("/")
+    if (
+        parsed.scheme != "https"
+        or parsed.netloc != "github.com"
+        or parsed.query
+        or parsed.fragment
+        or len(parts) != 5
+        or parts[0] != ""
+        or parts[3] != "issues"
+        or not re.fullmatch(r"[1-9][0-9]*", parts[4])
+        or normalize_github_repository(f"{parts[1]}/{parts[2]}") != repo.casefold()
+    ):
+        raise github_response_incomplete(
+            operation="issue_create",
+            repo=repo,
+            detail="gh issue create did not return a canonical Issue URL for the current repository.",
+        )
+    return issue_view(repo, int(parts[4]), root)
 
 
 def git_branch_exists(root: Path, ref: str) -> bool:
@@ -7096,6 +7118,7 @@ def build_merge_commit_payload(
     summary: str,
     head_branch: str,
     base_branch: str,
+    expected_head: str,
     pull_request: int | str | None,
     body_file_hint: str = MERGE_COMMIT_BODY_FILE_HINT,
 ) -> dict[str, Any]:
@@ -7108,12 +7131,15 @@ def build_merge_commit_payload(
     errors.extend(validate_merge_commit_body(body, primary_issue=primary_issue, pull_request=pull_request_value))
     if not normalized_repo:
         errors.append("GitHub repository must be an explicit owner/repository identity.")
+    if not re.fullmatch(r"[0-9a-f]{40}", expected_head):
+        errors.append("GitHub pull request merge must bind one expected head commit SHA.")
     command_pr = str(pull_request_value)
     return {
         "ready": ready,
         "subject": subject,
         "body": body,
         "body_file_hint": body_file_hint,
+        "expected_head": expected_head,
         "command": [
             "gh",
             "pr",
@@ -7121,6 +7147,8 @@ def build_merge_commit_payload(
             command_pr,
             "--repo",
             normalized_repo or "<owner/repository>",
+            "--match-head-commit",
+            expected_head or "<expected-head-sha>",
             "--merge",
             "--subject",
             subject,
@@ -11116,6 +11144,7 @@ def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
         summary=summary,
         head_branch=head_branch,
         base_branch=base_branch_name,
+        expected_head=current_head(root),
         pull_request=args.pull_request,
         body_file_hint=str(args.body_file_hint or MERGE_COMMIT_BODY_FILE_HINT),
     )
@@ -21669,10 +21698,15 @@ def create_pull_request(
             command.append("--draft")
         proc = run_gh_command(command, root, repo=repo, operation="pull_request_create")
         pr_url = proc.stdout.strip()
-        pull_request = parse_pull_request_number(pr_url)
-        if pull_request is None:
-            raise WorkflowError("gh pr create did not return a canonical PR URL.", exit_code=2)
-        return canonical_pull_request_url(repo, pull_request, pr_url)
+        try:
+            canonical_url, _ = parse_canonical_pull_request_url(repo, pr_url)
+        except WorkflowError as exc:
+            raise github_response_incomplete(
+                operation="pull_request_create",
+                repo=repo,
+                detail="gh pr create did not return a canonical PR URL for the current repository.",
+            ) from exc
+        return canonical_url
     finally:
         Path(body_file).unlink(missing_ok=True)
 

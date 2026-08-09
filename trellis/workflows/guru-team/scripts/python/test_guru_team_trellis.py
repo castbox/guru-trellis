@@ -579,21 +579,83 @@ class GitHubCliAdapterTest(unittest.TestCase):
             self.assertEqual(raised.exception.payload["operation"], operation)
             self.assertEqual(raised.exception.payload["repo"], "owner/repo")
 
+    def test_create_mutation_incomplete_urls_use_stable_error(self) -> None:
+        invalid_urls = (
+            "",
+            "not-a-url",
+            "https://github.com/owner/other/issues/12",
+        )
+        for url in invalid_urls:
+            with (
+                self.subTest(operation="issue_create", url=url),
+                mock.patch.object(
+                    gtt,
+                    "run_gh_command",
+                    return_value=self.completed(0, stdout=url),
+                ),
+                mock.patch.object(gtt, "issue_view") as issue_view,
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.create_issue("owner/repo", "Title", "Body", self.root, [])
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(raised.exception.payload["operation"], "issue_create")
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+            issue_view.assert_not_called()
+
+        for url in ("", "not-a-url", "https://github.com/owner/other/pull/12"):
+            with (
+                self.subTest(operation="pull_request_create", url=url),
+                mock.patch.object(
+                    gtt,
+                    "run_gh_command",
+                    return_value=self.completed(0, stdout=url),
+                ),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.create_pull_request(
+                    self.root,
+                    "owner/repo",
+                    "main",
+                    "codex/181-fix",
+                    "Title",
+                    "Body",
+                    True,
+                )
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(
+                raised.exception.payload["operation"],
+                "pull_request_create",
+            )
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+
 
 class ConventionalCommitContractTest(unittest.TestCase):
     def test_merge_command_requires_explicit_repo_binding(self) -> None:
+        expected_head = "a" * 40
         payload = gtt.build_merge_commit_payload(
             repo="Owner/Repo",
             primary_issue=181,
             summary="统一 GitHub 操作通道",
             head_branch="codex/181-gh-cli-only-github-operations",
             base_branch="main",
+            expected_head=expected_head,
             pull_request=200,
         )
         self.assertEqual(payload["errors"], [])
+        self.assertEqual(payload["expected_head"], expected_head)
         self.assertEqual(
             payload["command"][payload["command"].index("--repo") + 1],
             "owner/repo",
+        )
+        self.assertEqual(
+            payload["command"][payload["command"].index("--match-head-commit") + 1],
+            expected_head,
         )
         unbound = gtt.build_merge_commit_payload(
             repo="",
@@ -601,6 +663,7 @@ class ConventionalCommitContractTest(unittest.TestCase):
             summary="统一 GitHub 操作通道",
             head_branch="codex/181-gh-cli-only-github-operations",
             base_branch="main",
+            expected_head="",
             pull_request=200,
         )
         self.assertTrue(unbound["errors"])
