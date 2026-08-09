@@ -51,7 +51,8 @@
     {"id": "public_input_publication_review", "path": "schemas/public-publication-review-input.schema.json"},
     {"id": "public_input_publication_review_stale", "path": "schemas/public-publication-review-stale-input.schema.json"},
     {"id": "public_input_aggregate", "path": "schemas/public-input.schema.json"},
-    {"id": "public_ready_output", "path": "schemas/public-ready-output.schema.json"},
+    {"id": "legacy_public_ready_output_3_0", "path": "schemas/public-ready-output.schema.json"},
+    {"id": "public_ready_output", "path": "schemas/public-ready-output-4.0.schema.json"},
     {"id": "public_return_to_task_work_output", "path": "schemas/public-return-to-task-work-output.schema.json"},
     {"id": "public_blocked_output", "path": "schemas/public-blocked-output.schema.json"},
     {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"}
@@ -102,7 +103,7 @@
       "example_argv": ["--input", "examples/public-publication-review-input.json", "--owner-result", "examples/pr-readiness.json"]
     },
     "outputs": [
-      {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-4.0", "path": "schemas/public-ready-output.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},
+      {"exit_id": "ready", "schema": {"schema_id": "guru-production-review-task-publication-output-ready-4.0", "path": "schemas/public-ready-output-4.0.schema.json"}, "example": {"id": "ready_output", "path": "examples/public-ready-output.json"}, "consumer_use_ids": ["project_ready"]},
       {"exit_id": "return_to_task_work", "schema": {"schema_id": "guru-production-review-task-publication-output-return-to-task-work-1.0", "path": "schemas/public-return-to-task-work-output.schema.json"}, "example": {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"}, "consumer_use_ids": ["project_return_to_task_work"]},
       {"exit_id": "blocked", "schema": {"schema_id": "guru-production-review-task-publication-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
     ],

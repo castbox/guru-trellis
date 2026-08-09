@@ -109,3 +109,10 @@ find . -name '*.new' -o -name '*.bak'
 - 修复保持public Skill I/O、schema id、exit、transaction order不变：仅base-evolution window把current marker写入`task-finalization-transition-gate.json`，legacy gate保持byte-identical；checker限制两者只在该window共存，executor成功后同时退休两者、旧plan与匹配request。
 - 新fixture真实调用recorder、checker与executor，并在每轮preview执行base-evolution preflight；另覆盖transition gate缺少legacy predecessor时fail closed。该finding改变runtime与durable contract，因此按用户明确例外重新生成current Phase 2、Branch Review与Publication证据。
 - finding-fix current验证：共享runtime 416/416、Publication/Finalizer/Task Commit/Branch Review/finish-family与Skill package closure 240/240、preset installer 45/45均通过；clean throwaway完成public marketplace discovery、本地未发布workflow sample、fresh install、official update、workflow switch、二次preset reapply、两轮installed finish-family与no-developer fixture，最终零sidecar。current exact-ref marketplace source仍只由push后的Finalizer gate验证。
+
+## 9. Publication Public Schema Migration Finding Fix
+
+- 2026-08-09：current-HEAD Branch Review 发现已发布的 Publication `public-ready-output.schema.json` 3.0 被原路径升级为4.0，旧 `$id`、bytes与interface inventory未保留；该正常升级路径违反public schema兼容合同，属于#179 R6/A9范围内P2 finding。
+- 修复恢复原3.0 schema path与bytes，SHA-256为`57d984c5ef50b9ab2f4fa5e15fbde58c59ad76e563e1690d7cc4c6ceafc6062c`；新增`public-ready-output-4.0.schema.json`作为current output，并由Interface显式保留legacy inventory、选择current 4.0 output及既有Finalizer projection。
+- 回归测试分别验证legacy/current payload、双向cross-version rejection、legacy byte digest和current Publication到Finalizer projection；canonical、shared installed及Claude/Codex/Cursor副本经`apply.sh --all-platforms`两轮幂等同步，最终零`.new/.bak/.rej/.orig`与零sidecar。
+- finding-fix current验证：共享runtime 416/416、Publication/Finalizer/Task Commit/Branch Review/finish-family与Skill package closure 241/241、preset installer 45/45均通过；Python/Bash syntax、task validation、ownership、dogfood drift、`git diff --check`通过。clean throwaway完成public marketplace discovery、本地未发布workflow sample、fresh install、official update、workflow switch、preset reapply与installed checks；push前current exact-ref marketplace source仍保持未验证。

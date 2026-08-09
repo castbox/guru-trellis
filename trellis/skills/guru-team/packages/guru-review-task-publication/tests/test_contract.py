@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 import os
@@ -183,6 +184,89 @@ class TaskPublicationContractTest(unittest.TestCase):
         for output in self.interface["public_contracts"]["outputs"]:
             schema = json.loads((PACKAGE / output["schema"]["path"]).read_text(encoding="utf-8"))
             self.assertFalse(forbidden & set(schema["properties"]))
+
+    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
+    def test_ready_schema_migration_preserves_legacy_and_projects_current(self) -> None:
+        import jsonschema
+
+        legacy_path = PACKAGE / "schemas/public-ready-output.schema.json"
+        current_path = PACKAGE / "schemas/public-ready-output-4.0.schema.json"
+        self.assertEqual(
+            hashlib.sha256(legacy_path.read_bytes()).hexdigest(),
+            "57d984c5ef50b9ab2f4fa5e15fbde58c59ad76e563e1690d7cc4c6ceafc6062c",
+        )
+        legacy_schema = json.loads(legacy_path.read_text(encoding="utf-8"))
+        current_schema = json.loads(current_path.read_text(encoding="utf-8"))
+        current_payload = json.loads(
+            (PACKAGE / "examples/public-ready-output.json").read_text(encoding="utf-8")
+        )
+        legacy_payload = {
+            key: current_payload[key]
+            for key in ("exit_id", "task_ref", "branch_review_commit")
+        }
+
+        self.assertEqual(
+            list(jsonschema.Draft202012Validator(legacy_schema).iter_errors(legacy_payload)),
+            [],
+        )
+        self.assertTrue(
+            list(jsonschema.Draft202012Validator(current_schema).iter_errors(legacy_payload))
+        )
+        self.assertTrue(
+            list(jsonschema.Draft202012Validator(legacy_schema).iter_errors(current_payload))
+        )
+        self.assertEqual(
+            list(jsonschema.Draft202012Validator(current_schema).iter_errors(current_payload)),
+            [],
+        )
+
+        schema_paths = {item["path"] for item in self.interface["schemas"]}
+        self.assertIn("schemas/public-ready-output.schema.json", schema_paths)
+        self.assertIn("schemas/public-ready-output-4.0.schema.json", schema_paths)
+        ready_output = next(
+            item
+            for item in self.interface["public_contracts"]["outputs"]
+            if item["exit_id"] == "ready"
+        )
+        self.assertEqual(
+            ready_output["schema"],
+            {
+                "schema_id": "guru-production-review-task-publication-output-ready-4.0",
+                "path": "schemas/public-ready-output-4.0.schema.json",
+            },
+        )
+
+        projection = next(
+            item
+            for item in self.interface["public_contracts"]["projections"]
+            if item["id"] == "project_ready"
+        )
+        projected = {
+            mapping["target"]: current_payload[mapping["source"]]
+            for mapping in projection["mappings"]
+        }
+        finalizer_package = PACKAGE.parent / "guru-finalize-task"
+        authoring = json.loads(
+            (finalizer_package / "examples/public-publication-ready-authoring.json")
+            .read_text(encoding="utf-8")
+        )
+        finalizer = json.loads(
+            (finalizer_package / "interface.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        target_profile = next(
+            item
+            for item in finalizer["public_contracts"]["input"]["profiles"]
+            if item["id"] == "publication_ready"
+        )
+        target_schema = json.loads(
+            (finalizer_package / target_profile["schema"]["path"])
+            .read_text(encoding="utf-8")
+        )
+        jsonschema.Draft202012Validator(target_schema).validate(
+            {**projected, **authoring}
+        )
 
     def test_pr_readiness_is_one_private_gate(self) -> None:
         private = self.interface["public_contracts"]["private_artifacts"]
