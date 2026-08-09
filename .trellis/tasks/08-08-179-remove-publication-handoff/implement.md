@@ -93,3 +93,10 @@ find . -name '*.new' -o -name '*.bak'
 - `guru-review-contract-wording:planning_artifacts` 必须覆盖三份current planning文件，七个planning semantic dimensions全部为true。
 - `guru-approve-task-plan` 必须审查live Issue #179、scope ledger、Docs SSOT Plan、public schema迁移、Finalizer边界、测试矩阵与out-of-scope #180。
 - approved exit可自动执行`task.py start`；该状态写入不授权commit、push、PR、Finalizer transaction或cleanup。
+
+## 7. Base Evolution Recovery
+
+- 2026-08-09：远端 `main` 的 `2e38ae0ea68de46842d5a4ca60492874e4c47525` 已通过 PR #192 合并 #191；当前已发布 #179 分支以 `--no-ff` merge 吸收该前置修复，不 rebase、不 force-push。
+- 合并解析保留 #179 的 Publication payload/退役 handoff 合同，并将 #191 的 `reviewed_content_head`、`publication_head`、`provenance_tail_required` 与版本化 verification DTO 作为 current runtime；Finalizer aggregate current schema 为 5.0，旧 3.0/4.0 保持兼容资产。
+- 合并后验证通过：Publication/Finalizer 32 项、Task Commit/Branch Review 17 项、finish-family 11 项、共享 runtime 411 项、preset installer 45 项、Skill package closure 180 项，共 696 项；dogfood drift、JSON、diff hygiene 和零 sidecar 检查通过。
+- 唯一未完成证据是 push 后 exact remote marketplace ref verification；该检查仍由 Finalizer 的既有 publication transaction gate 拥有，不冒充本地通过。
