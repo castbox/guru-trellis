@@ -523,6 +523,62 @@ class GitHubCliAdapterTest(unittest.TestCase):
             )
             self.assertEqual(raised.exception.payload["repo"], "owner/repo")
 
+    def test_selected_issue_comment_incomplete_fields_use_stable_error(self) -> None:
+        source = {
+            "kind": "issue",
+            "repo": "owner/repo",
+            "number": 1,
+            "selected_comments": [
+                {"id": "IC_one", "selection_reason": "Defines required behavior."}
+            ],
+        }
+        live_issue = {
+            "title": "Issue title",
+            "body": "Issue body",
+            "updatedAt": "2026-08-09T00:00:00Z",
+            "url": "https://github.com/owner/repo/issues/1",
+        }
+        complete_comment = {
+            "id": 1,
+            "node_id": "IC_one",
+            "html_url": "https://github.com/owner/repo/issues/1#issuecomment-1",
+            "user": {"login": "reviewer"},
+            "updated_at": "2026-08-09T00:01:00Z",
+            "body": "Selected comment body",
+        }
+        cases = []
+        for field in ("user", "updated_at", "body"):
+            comment = copy.deepcopy(complete_comment)
+            comment[field] = None
+            cases.append((field, live_issue, comment, "issue_comments_read"))
+        invalid_timestamp = copy.deepcopy(complete_comment)
+        invalid_timestamp["updated_at"] = "not-a-timestamp"
+        cases.append(("invalid_comment_timestamp", live_issue, invalid_timestamp, "issue_comments_read"))
+        for value in (None, "not-a-timestamp"):
+            issue = {**live_issue, "updatedAt": value}
+            cases.append((f"issue_updated_at_{value}", issue, complete_comment, "issue_read"))
+
+        for label, issue, comment, operation in cases:
+            with (
+                self.subTest(label=label),
+                mock.patch.object(gtt, "contract_wording_read_input", return_value=source),
+                mock.patch.object(gtt, "require_gh_auth"),
+                mock.patch.object(gtt, "issue_view", return_value=issue),
+                mock.patch.object(
+                    gtt,
+                    "contract_wording_live_issue_comment_index",
+                    return_value={"IC_one": comment},
+                ),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.contract_wording_change_request_scope(self.root, None)
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(raised.exception.payload["operation"], operation)
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+
 
 class ConventionalCommitContractTest(unittest.TestCase):
     def test_merge_command_requires_explicit_repo_binding(self) -> None:

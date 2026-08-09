@@ -5500,8 +5500,19 @@ def contract_wording_change_request_scope(
         body = str(live.get("body") or "")
         source_updated_at = str(live.get("updatedAt") or "").strip()
         if not source_updated_at:
-            raise WorkflowError("change_request live issue updated_at is missing.", exit_code=2)
-        parse_iso_datetime(source_updated_at, "change_request live issue updated_at")
+            raise github_response_incomplete(
+                operation="issue_read",
+                repo=repo,
+                detail="Live Issue updatedAt is missing or empty.",
+            )
+        try:
+            parse_iso_datetime(source_updated_at, "change_request live issue updated_at")
+        except WorkflowError as exc:
+            raise github_response_incomplete(
+                operation="issue_read",
+                repo=repo,
+                detail="Live Issue updatedAt is not a valid timestamp.",
+            ) from exc
         source_identity = str(live.get("url") or f"https://github.com/{repo}/issues/{number}")
         comment_by_id = (
             contract_wording_live_issue_comment_index(root, repo, int(number))
@@ -5536,11 +5547,19 @@ def contract_wording_change_request_scope(
             updated_at = str(comment.get("updated_at") or "").strip()
             comment_body = comment.get("body")
             if not author_value or not updated_at or not isinstance(comment_body, str):
-                raise WorkflowError(
-                    "change_request selected comment author, updated_at, or body is missing.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Selected Issue comment user.login, updated_at, or body is missing or invalid.",
                 )
-            parse_iso_datetime(updated_at, "change_request selected comment updated_at")
+            try:
+                parse_iso_datetime(updated_at, "change_request selected comment updated_at")
+            except WorkflowError as exc:
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Selected Issue comment updated_at is not a valid timestamp.",
+                ) from exc
             selected_rows.append({
                 "id": comment_id,
                 "author": author_value,
