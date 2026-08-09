@@ -4,5 +4,6 @@
   "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
   "plan_ref": "closeout-plan:0123456789abcdef",
   "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "publication_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "verification_ref": "extension-verification:0123456789abcdef"
 }

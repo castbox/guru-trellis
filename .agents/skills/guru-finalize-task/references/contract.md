@@ -70,12 +70,13 @@ One confirmed plan authorizes its complete declared push, required verification,
 Draft PR, archive transaction and Ready transition. Verification, same-plan
 resume and private checkpoints do not request generic continuation. A new
 confirmation is required only when the side-effect set, target authority or
-immutable plan changes; cross-month `reprepare_required` changes the plan and
-therefore re-enters confirmation.
+immutable plan changes. Both cross-month and pre-PR provenance
+`reprepare_required` replace the plan and therefore re-enter confirmation.
 
 ## Immutable Preview And Transaction
 
-Preview shows repository, base, branch, `branch_review_commit`, reviewed-content identity, task, archive locator,
+Preview shows repository, base, branch, `branch_review_commit`, separate
+`reviewed_content_head` and `publication_head`, reviewed-content identity, task, archive locator,
 upstream evidence references, verification requirement, metadata paths, PR
 identity strategy, complete side effects, plan digest, and the exact canonical
 plan bytes. Formal execution rebuilds the same bytes and digest before any side
@@ -123,12 +124,14 @@ The deterministic order is fixed:
 
 1. Build and prevalidate the immutable plan.
 2. Verify that current HEAD preserves the reviewed-content identity, then push that exact current HEAD.
-3. If required, stop before PR/archive and emit `verification_required`.
+3. If required, stop before PR/archive and emit `verification_required` carrying
+   both reviewed and publication HEADs. The verifier targets publication HEAD
+   while source provenance remains bound to reviewed content.
 4. When the plan requires extension verification, consume same-plan verified
    evidence. A plan whose current reviewed paths require no extension
    verification continues without manufacturing a `not_required` handoff.
    The current plan does not create or push a separate evidence-metadata commit; its
-   archive transaction remains a direct child of `branch_review_commit`.
+   archive transaction remains a direct child of `publication_head`.
 5. Create or reuse the unique open draft for repo/head/base. When that one
    candidate is an earlier confirmed-plan Draft, first prove its stable
    repo/head/base/current-HEAD/number/canonical-URL identity, then converge its
@@ -178,9 +181,16 @@ during pruning re-enters the same idempotent pruning step.
 - Content pushed with verification pending -> `verification_required`.
 - Same-plan transient executor failure, draft-to-ready retry, interrupted
   active/archive move, or exact-commit continuation -> `resume_finalization`.
-- Active task with a changed archive month -> `reprepare_required`; preview a
-  new plan and obtain fresh current side-effect confirmation through the same generic
-  prompt.
+- Active task with a changed archive month -> `reprepare_required` with
+  `archive_month_changed`; retire the old private plan/evidence, preview a new
+  plan, and obtain fresh current side-effect confirmation. If either candidate
+  is already tracked task content, fail closed before deletion.
+- Pre-PR verification rejected only because the reviewed checkout provenance
+  is stale -> `reprepare_required` with `provenance_tail_required`; generate or
+  reuse the one allowlisted provenance tail, retire the old private
+  plan/evidence, preview a new plan, and obtain fresh confirmation. Other
+  verification failures remain blocked. Tracked task artifacts are preserved
+  and block this automatic cleanup path.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.
@@ -213,7 +223,10 @@ The six closed profiles are:
   `profile/mode/task_ref`. The finalizer loads the private current plan and
   task-local owner evidence instead of publishing `plan_ref`.
 - `same_plan_resume`: task/plan seed plus target-owned `profile` and `mode`.
-- `reprepare_preview`: task/reason seed plus target-owned `profile` and `mode`.
+- `reprepare_preview`: task/reason plus the producer-supplied
+  `branch_review_commit` and `publication_head`, followed by target-owned
+  `profile` and `mode`. This is the complete identity needed to rebuild a plan
+  after the superseded plan and gate have been removed.
 - `standalone_finalization`: `profile`, `mode`, and `task_ref` only.
 
 Producer seed fields and target authoring fields are disjoint. Their union
@@ -225,15 +238,21 @@ current; same-plan recovery reuses that private binding.
 
 ## Public Exits
 
-- `verification_required`: task, plan, repository, `branch_review_commit`, verification
-  target; `repo_ref` is exactly the immutable plan repository; consumed by
-  `guru-verify-extension-installation`.
+- `verification_required`: task, plan, repository, `branch_review_commit`,
+  `publication_head`, and verification target; `repo_ref` is exactly the
+  immutable plan repository; consumed by `guru-verify-extension-installation`.
 - `publication_review_stale`: task, the exact stale `branch_review_commit`, and
   stable stale reason; consumed by `guru-review-task-publication`.
 - `resume_finalization`: task and same plan; consumed by this Skill.
-- `reprepare_required`: task and `archive_month_changed`; consumed by this
-  Skill's reprepare profile. The producer seed is exactly `task_ref` and
-  `reason_code`.
+- `reprepare_required`: task plus `archive_month_changed` or
+  `provenance_tail_required`, `branch_review_commit`, and `publication_head`;
+  consumed by this Skill's reprepare profile. Archive-month recovery retains
+  that already-current DTO in its gate because HEAD does not change. Provenance
+  recovery retains a private marker until the deterministic executor has
+  created or reused the tail, retired the old owner-private plan/gate/request,
+  and can return both heads. Schema 2.0 output and schema 3.0 input add the
+  provenance reason and direct-consumer identity while preserving the existing
+  archive-month value.
 - `published`: the exact plan archive locator and canonical PR number/URL;
   consumed by the Finish response.
 - `blocked`: closed reason and remediation; consumed by the finalization stop.
@@ -241,16 +260,51 @@ current; same-plan recovery reuses that private binding.
 Every DTO uses `exit_id`. Gate, plan, review, verification, PR, archive,
 recovery, digest, path, blob, and unrelated Git HEAD facts remain private.
 
-The ignored owner-private gate never stores an early public `published` DTO.
-Before and through archive it retains only the exact finalizer-private executor
-marker. Recorder/checker and executor may validate that pending marker, while
-the public wrapper reruns strict route validation and never executes the
-publish/archive transition. Only after the exact archive
-transaction and ready PR facts are
-proven may the wrapper materialize the public DTO in memory, using the plan
-archive locator; the materialized DTO is not written back to the gate. The
-Finalizer then removes its checkpoint. The Publication checkpoint is neither
-read nor consumed by this path; its minimal `ready` DTO was consumed at entry.
+### Publication-head public I/O migration
+
+The four pre-#191 public DTO schemas remain immutable compatibility assets:
+
+- `guru-finalize-task-output-verification-required-2.0` at
+  `schemas/public-verification-required-output.schema.json`;
+- `guru-finalize-task-input-verification-verified-3.0` at
+  `schemas/public-verification-verified-input.schema.json`;
+- the corresponding Verifier input 2.0 and output 2.0 schemas in the consumer
+  package.
+
+Those legacy schemas keep their original bytes and do not contain
+`publication_head`. The current Interface selects Finalizer output 3.0,
+Verifier input 3.0, Verifier output 3.0, and Finalizer input 4.0. Finalizer's
+current aggregate input is 4.0; aggregate 3.0 remains bound to the legacy
+Finalizer input path. The executable current handoffs are the Interface
+`project_verification_required` and Verifier `project_verified` projections:
+each selects `publication_head` without renaming or defaulting it, merges only
+the target-owned profile/mode authoring fields, and validates the result against
+the current target schema.
+
+A legacy DTO is validation-only compatibility evidence, not a current route.
+Because its producer did not bind publication identity, the consumer must not
+infer `publication_head` from `branch_review_commit`, live HEAD, or private
+state. A current invocation receiving a payload that satisfies only a legacy
+shape fails current-schema validation and re-enters the owning current producer:
+Finalizer rebuilds the current plan/output before Verifier entry, and Verifier
+reruns exact-ref verification before Finalizer re-entry. Package tests preserve the legacy byte
+digests, validate legacy and current examples against their own schemas, reject
+both cross-version substitutions, and execute both current projections against
+their target schemas.
+
+The ignored owner-private gate never stores an early public `published` DTO or
+an early provenance-reprepare DTO. Those transitions retain the exact
+finalizer-private executor marker while their output identity does not yet
+exist. Archive-month reprepare changes no HEAD and retains its complete current
+DTO. Recorder/checker and executor validate the corresponding form. The public
+wrapper reruns strict route validation and never executes a publish/archive
+transition; only after the exact archive transaction and ready PR facts are
+proven may it materialize the `published` DTO in memory using the plan archive
+locator. It never materializes reprepare after execution because that executor
+retires the old gate and returns the DTO directly. The Publication checkpoint
+is neither read nor consumed by this path; its minimal `ready` DTO was consumed
+at entry. The next reprepare preview validates current HEAD and the optional
+single-tail parent/allowlist contract without reading the retired plan.
 
 ## Script Boundary
 

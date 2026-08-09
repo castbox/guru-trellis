@@ -3,8 +3,8 @@
 ## Entry
 
 `verification_required` is the workflow target bootstrap owned by this package
-for active `guru-finalize-task`. Its five business seed fields are
-`task_ref`, `plan_ref`, `repo_ref`, `branch_review_commit`, and
+for active `guru-finalize-task`. Its six business seed fields are
+`task_ref`, `plan_ref`, `repo_ref`, `branch_review_commit`, `publication_head`, and
 `verification_target`; `profile` and `mode` are fixed discriminators. Global
 Finish-family routing automatically consumes this target through the active
 finalizer loop; the verifier result is not exposed as a user continuation gate.
@@ -123,8 +123,9 @@ supersession freshness, redaction, route
 shape, consumer mapping, and evidence digests. It does not decide
 applicability, sufficiency, findings, or semantic pass.
 
-Private `target_repository.resolved_head` and standalone public `resolved_head`
-both denote the target checkout commit. The source direct tag object and peeled
+Private `target_repository.resolved_head` denotes the target checkout at
+`publication_head`; `target_repository.branch_review_commit` remains the
+reviewed content commit. The source direct tag object and peeled
 commit remain private and never enter a public DTO. Freshness checks re-resolve
 both target and source refs with the same full-OID or direct-versus-peeled rules and reread
 task-bearing installed manifest provenance.
@@ -155,6 +156,35 @@ only generic errors or digests and never the credential URL.
 The public wrapper reruns the checker, derives the actual exit from the checked
 owner result, chooses that exit schema, and serializes only the matching branch.
 `expected_exit` is eval-only and is compared after invocation.
+
+### Publication-head public I/O migration
+
+The original workflow input
+`guru-extension-verify-installation-input-verification-required-2.0` and
+workflow/standalone output
+`guru-extension-verify-installation-output-verified-2.0` remain byte-for-byte
+at their original schema paths. They do not contain `publication_head` and are
+not selected by the current Interface. Input aggregate 2.0 likewise retains its
+original relative reference to the legacy input. Current Interface routes use
+input 3.0 through aggregate 3.0 and output 3.0; their Finalizer peers are output
+3.0 and input 4.0.
+
+The producer-owned `project_verified` projection is the executable current
+migration contract. It selects exactly
+`task_ref/plan_ref/branch_review_commit/publication_head/verification_ref`,
+merges the Finalizer-owned `profile/mode`, and validates the materialized input
+against Finalizer input 4.0. The incoming Finalizer projection follows the same
+rule against Verifier input 3.0. No projection defaults, renames, or derives
+`publication_head`.
+
+Legacy DTOs remain useful only to validate historical bytes. They cannot enter
+the current profile because the original closed schemas reject the new field
+and the current closed schemas require it. A payload that satisfies only a
+legacy shape fails current-schema validation and reruns the owning current
+producer: current Finalizer planning must produce the Verifier input, and
+current exact-ref verification must produce the Finalizer re-entry. It never
+treats `branch_review_commit` or a live target HEAD as an implicit publication
+head.
 
 An unresolved remote HEAD is recorded as `null` only for a blocked execution.
 The checker accepts it only while the exact ref remains unresolved; a later

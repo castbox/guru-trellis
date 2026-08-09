@@ -1,13 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finalize-task-input-reprepare-preview-2.0",
+  "$id": "guru-finalize-task-input-reprepare-preview-3.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["profile", "mode", "task_ref", "reason_code"],
+  "required": ["profile", "mode", "task_ref", "reason_code", "branch_review_commit", "publication_head"],
   "properties": {
     "profile": {"const": "reprepare_preview"},
     "mode": {"const": "workflow"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
-    "reason_code": {"const": "archive_month_changed"}
+    "reason_code": {"enum": ["archive_month_changed", "provenance_tail_required"]},
+    "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "publication_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
   }
 }

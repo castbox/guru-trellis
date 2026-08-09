@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-output-verification-required-3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_ref", "plan_ref", "repo_ref", "branch_review_commit", "publication_head", "verification_target"],
+  "properties": {
+    "exit_id": {"const": "verification_required"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "plan_ref": {"type": "string", "minLength": 1},
+    "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "publication_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "verification_target": {"const": "extension-installation"}
+  }
+}

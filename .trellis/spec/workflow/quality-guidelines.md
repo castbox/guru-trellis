@@ -739,10 +739,15 @@ remains strict while closeout accepts only the declared metadata tail, checked
 verification artifact, current archived working-tree plan before commit, and
 exact archive transaction. Tests reject extra paths, wrong repository identity,
 locator drift, and non-exact archive commits. They require a private published
-marker before terminal completion, forbid early or persisted public DTOs,
+or provenance-reprepare marker before output identity exists, require the
+complete current DTO for archive-month reprepare, forbid early or persisted
+public DTOs for marker-owned transitions,
 materialize the terminal DTO only through the public wrapper with the archive
 locator, prove the wrapper performs no transition, and cover every legal and
 illegal same-plan resume state including rejection of `prepared` and `ready`.
+The pre-PR fixture must additionally delete the superseded plan/gate/request,
+consume the executor-materialized reviewed/publication heads, and prove the
+next reprepare preview creates a new plan without repeating semantic review.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The

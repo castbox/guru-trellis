@@ -1,0 +1,82 @@
+# 实施计划
+
+## 1. 入口与 SSOT
+
+- [x] 重新确认当前 worktree、task.json、Issue #191 scope ledger 与 clean base；保留 #179 隔离边界。
+- [x] 更新适用 Docs SSOT 与 README 约定，并保持 canonical/dogfood/platform 生成副本一致。
+- [x] 将本文件列出的 spec/docs 作为 `check.jsonl`/`implement.jsonl` 唯一 planning context，不写 implementation-handoff.md。
+
+## 2. Runtime 与 contract 实现
+
+- [x] 在 canonical runtime 增加 provenance-tail prepare/validate executor：detached clean checkout、canonical preset apply、唯一允许 manifest-field diff、sidecar/ownership/platform/drift/task-content checks、single tail guard、FF-only precondition。
+- [x] 扩展 Finalizer closeout plan/preview/semantic input 的 reviewed/publication identity 与 pre-PR state machine；实现 supersede + cleanup 的 owner-private runtime 生命周期，保持授权只在当前对话。
+- [x] 更新 Verifier source/target identity binding，区分 reviewed bytes 与 publication ref/PR head；保留 dirty/mutable/mismatch fail-close。
+- [x] 检查 `guru-create-task-commit` 的 reviewed identity projection，确保 metadata-tail 不改 reviewed content token，也不触发重复 Phase 2/Branch Review/Publication semantic review。
+- [x] 为 `reprepare_required` 增加 additive reason schema id 与迁移说明，保留 stable exit 和既有 `archive_month_changed` 值。
+
+## 3. Canonical、安装与平台同步
+
+- [x] 确认 canonical workflow 与 dogfood `.trellis/workflow.md` 无需改图，保持 thin markers/唯一 consumer。
+- [x] 同步 registry、Skill interfaces/schemas/examples/tests、preset manifest/overlay 与 shared/Codex/Claude/Cursor copies。
+- [x] 更新 README、workflow/preset docs、spec 与 config/schema，明确 update/upgrade/reapply 顺序、zero sidecar 与 remote exact-ref 证据。
+
+## 4. 验证与受控回归
+
+- [x] 运行 package contract/registry/interface tests、runtime unit/integration、`git diff --check`、JSON/schema/compile checks。
+- [x] 用独立 throwaway repo 验证 marketplace init/workflow preview-switch、preset initial/reapply、platform equality、update/reapply、`.new/.bak`/sidecar zero。
+- [x] 用受控 fixture 重演：reviewed HEAD push -> `verification_required` -> dirty/stale manifest rejection -> automatic `reprepare_required` -> clean metadata-tail -> new plan/confirmation -> exact-ref verification；未读取 #179 真实资源。
+- [x] 重新生成 current-bytes Phase 2 evidence；执行 `guru-check-task` semantic gate，确认完整 diff、Docs SSOT、acceptance 与 non-goals。
+
+## 5. Commit、独立 Review、Publication、Finalizer
+
+- [ ] 仅 stage #191 task scope，运行 `guru-create-task-commit` 并绑定 reviewed content head。
+- [ ] 由独立 Branch Review 覆盖完整 `origin/main...HEAD`，发现修复后重新 review；不复用旧 review 证据。
+- [ ] 运行 Publication Review，确认中文 PR、只 `Closes #191`、验证/安全/部署影响真实完整；随后进入 Finalizer。
+- [ ] Finalizer 执行 clean provenance tail、pre-PR reprepare、exact remote verification、Draft PR/archive/Ready；Issue #191 在 merge 前保持 open。
+- [ ] Finalizer/Publication/Branch Review 最终证据均为当前 HEAD，记录未覆盖的外部门禁，不触碰 #179。
+
+## 5.1 Reprepare DTO revision
+
+- [x] 将 reprepare public DTO 扩展为 task/reason + reviewed/publication identity；provenance gate 保留 private executor marker，archive-month gate 保留 HEAD 不变时的完整 DTO。
+- [x] 让旧 plan/gate/request 删除后的 `reprepare_preview` 直接校验 current HEAD 与单 provenance tail 后创建新 plan。
+- [ ] 增加受控 fixture 回归并重新执行 Phase 2、Task Commit、独立 Branch Review、Publication 与 Finalizer preview。
+
+## 5.2 Branch Review finding closure
+
+- [x] 修复 `BR-191-P1-008`：通过 canonical all-platform apply 清除 installed manifest 中已不存在的 `managed_backups` sidecar 记录。
+- [x] 增加 current-bytes regression，要求 checked-in manifest 的 `managed_backups` 与 `new_copies` 均为空，避免真实 clean producer 出现 allowlist 外 diff。
+- [ ] 在 fix commit 后用 clean checkout 重放真实 producer，完成 finding closure 与 distinct fresh-final review。
+
+## 5.3 Historical metadata fallback finding
+
+- [x] 修复 `BR-191-P1-009`：historical task/archive metadata fallback 明确排除任何触及 installed extension manifest 的 commit。
+- [x] 增加 manifest 非允许字段与 task metadata 混合 commit 回归，证明组合提交继续由 provenance validator fail closed。
+- [ ] 在新 fix commit 后完成 finding closure 与 distinct fresh-final review。
+
+## 5.4 Live Finalizer reprepare finding
+
+- [x] 修复 `BR-191-P1-010`：`reprepare_preview` 在旧 plan/gate 已按合同 supersede 后，将已验证的 task/reviewed identity 确定性投影为新 plan builder 的 Publication authority。
+- [x] 扩展受控 pre-PR fixture，断言 tail-aware reprepare 不读取旧 plan 也能把原 reviewed HEAD 传给 `prepare_closeout`。
+- [ ] 在 finding-fix commit 后重新执行完整 Phase 2、独立 current-HEAD Branch Review、Publication 与真实 Finalizer 闭环。
+
+## 5.5 Verifier public contract wording finding
+
+- [x] 修复 `BR-191-P3-011`：将 canonical Verifier contract 的 `verification_required` business seed field 计数由 `five` 更正为与当前 Interface/schema/list 一致的 `six`。
+- [x] 通过 canonical all-platform preset apply 同步 installed/shared/Codex/Claude/Cursor 副本并确认 zero sidecar；后续重新执行 Phase 2、finding-fix commit 与独立 current-HEAD Branch Review。
+
+## 6. Required context/spec files
+
+```text
+.trellis/spec/workflow/index.md
+.trellis/spec/workflow/workflow-contract.md
+.trellis/spec/workflow/companion-scripts.md
+.trellis/spec/workflow/data-contracts.md
+.trellis/spec/workflow/quality-guidelines.md
+.trellis/spec/workflow/skill-package-contract.md
+.trellis/spec/preset/index.md
+.trellis/spec/preset/installer.md
+.trellis/spec/preset/overlay-guidelines.md
+.trellis/spec/preset/upstream-ownership.md
+.trellis/spec/docs/index.md
+.trellis/spec/docs/public-docs.md
+```
