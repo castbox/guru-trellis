@@ -1493,8 +1493,10 @@ def github_error_from_process(
 ) -> WorkflowError:
     stderr = proc.stderr.strip()
     lowered = stderr.casefold()
-    if operation == "repo_access" and any(
-        token in lowered for token in ("http 404", "not found", "could not resolve to a repository")
+    if (
+        "could not resolve to a repository" in lowered
+        or operation == "repo_access"
+        and any(token in lowered for token in ("http 404", "not found"))
     ):
         category = "repo_access_denied"
         recovery = "Verify the owner/repository identity and grant the authenticated actor repository access."
@@ -5414,29 +5416,24 @@ def contract_wording_live_issue_comment_index(
     repo: str,
     number: int,
 ) -> dict[str, dict[str, Any]]:
-    try:
-        pages = gh_json(
-            [
-                "api",
-                f"repos/{repo}/issues/{number}/comments?per_page=100",
-                "--paginate",
-                "--slurp",
-                "-H",
-                "Accept: application/vnd.github+json",
-                "-H",
-                "X-GitHub-Api-Version: 2022-11-28",
-            ],
-            cwd=root,
-        )
-    except json.JSONDecodeError as exc:
-        raise WorkflowError(
-            "change_request live issue comments API returned invalid JSON.",
-            exit_code=2,
-        ) from exc
+    pages = gh_json(
+        [
+            "api",
+            f"repos/{repo}/issues/{number}/comments?per_page=100",
+            "--paginate",
+            "--slurp",
+            "-H",
+            "Accept: application/vnd.github+json",
+            "-H",
+            "X-GitHub-Api-Version: 2022-11-28",
+        ],
+        cwd=root,
+    )
     if not isinstance(pages, list) or any(not isinstance(page, list) for page in pages):
-        raise WorkflowError(
-            "change_request live issue comments API pagination response is invalid.",
-            exit_code=2,
+        raise github_response_incomplete(
+            operation="issue_comments_read",
+            repo=repo,
+            detail="Issue comments pagination response is not an array of pages.",
         )
 
     comments: dict[str, dict[str, Any]] = {}
@@ -5446,9 +5443,10 @@ def contract_wording_live_issue_comment_index(
     for page in pages:
         for comment in page:
             if not isinstance(comment, dict):
-                raise WorkflowError(
-                    "change_request live issue comments API page contains an invalid row.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Issue comments page contains a non-object row.",
                 )
             database_id = comment.get("id")
             node_id = str(comment.get("node_id") or "").strip()
@@ -5459,14 +5457,16 @@ def contract_wording_live_issue_comment_index(
                 or not node_id
                 or not url
             ):
-                raise WorkflowError(
-                    "change_request live issue comment identity is missing or invalid.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Issue comment id, node_id, or html_url is missing or invalid.",
                 )
             if int(database_id) in database_ids or node_id in node_ids or url in urls:
-                raise WorkflowError(
-                    "change_request live issue comments API returned duplicate comment identity.",
-                    exit_code=2,
+                raise github_response_incomplete(
+                    operation="issue_comments_read",
+                    repo=repo,
+                    detail="Issue comments API returned duplicate comment identity.",
                 )
             database_ids.add(int(database_id))
             node_ids.add(node_id)
@@ -7072,6 +7072,7 @@ def merge_summary_from_title(title: str, primary_issue: int, ledger: dict[str, A
 
 def build_merge_commit_payload(
     *,
+    repo: str,
     primary_issue: int,
     summary: str,
     head_branch: str,
@@ -7079,12 +7080,15 @@ def build_merge_commit_payload(
     pull_request: int | str | None,
     body_file_hint: str = MERGE_COMMIT_BODY_FILE_HINT,
 ) -> dict[str, Any]:
+    normalized_repo = normalize_github_repository(repo)
     pull_request_value: int | str = pull_request if pull_request is not None else "<pull_request>"
     ready = pull_request is not None and str(pull_request).isdigit()
     subject = format_merge_commit_subject(pull_request_value, primary_issue, summary)
     body = format_merge_commit_body(pull_request_value, primary_issue, summary, head_branch, base_branch)
     errors = validate_commit_subject(subject, primary_issue=primary_issue, pull_request=pull_request_value)
     errors.extend(validate_merge_commit_body(body, primary_issue=primary_issue, pull_request=pull_request_value))
+    if not normalized_repo:
+        errors.append("GitHub repository must be an explicit owner/repository identity.")
     command_pr = str(pull_request_value)
     return {
         "ready": ready,
@@ -7096,6 +7100,8 @@ def build_merge_commit_payload(
             "pr",
             "merge",
             command_pr,
+            "--repo",
+            normalized_repo or "<owner/repository>",
             "--merge",
             "--subject",
             subject,
@@ -11082,7 +11088,11 @@ def cmd_format_merge_commit(args: argparse.Namespace) -> dict[str, Any]:
     head_branch = str(args.head_branch or current_branch(root))
     title = str(args.summary or pr_title_from_task(task, args)).strip()
     summary = merge_summary_from_title(title, primary_issue, ledger)
+    repo = normalize_github_repository(
+        str(config.get("github_repo") or "").strip()
+    ) or infer_github_repo(root)
     payload = build_merge_commit_payload(
+        repo=repo,
         primary_issue=primary_issue,
         summary=summary,
         head_branch=head_branch,

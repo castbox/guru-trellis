@@ -337,6 +337,16 @@ class GitHubCliAdapterTest(unittest.TestCase):
     def test_process_failure_taxonomy_is_precise(self) -> None:
         cases = [
             ("repo_access", "HTTP 404: Not Found", "github_repo_access_denied"),
+            (
+                "issue_read",
+                "GraphQL: Could not resolve to a Repository with the name 'owner/repo'.",
+                "github_repo_access_denied",
+            ),
+            (
+                "issue_edit",
+                "GraphQL: Could not resolve to a Repository with the name 'owner/repo'.",
+                "github_repo_access_denied",
+            ),
             ("issue_edit", "HTTP 403: Resource not accessible by integration", "github_permission_denied"),
             ("pr_read", "HTTP 503: service unavailable", "github_api_unavailable"),
             ("pr_read", "HTTP 401: Bad credentials", "github_auth_failed"),
@@ -484,8 +494,61 @@ class GitHubCliAdapterTest(unittest.TestCase):
         self.assertIn("`git` remains the sole owner", content)
         self.assertNotIn("existing connector", content.casefold())
 
+    def test_issue_comment_index_incomplete_shapes_use_stable_error(self) -> None:
+        invalid_payloads = [
+            {},
+            [["not-an-object"]],
+            [[{"id": 1, "node_id": "", "html_url": "https://github.com/owner/repo/issues/1#issuecomment-1"}]],
+            [[
+                {"id": 1, "node_id": "IC_one", "html_url": "https://github.com/owner/repo/issues/1#issuecomment-1"},
+                {"id": 1, "node_id": "IC_two", "html_url": "https://github.com/owner/repo/issues/1#issuecomment-2"},
+            ]],
+        ]
+        for payload in invalid_payloads:
+            with (
+                self.subTest(payload=payload),
+                mock.patch.object(gtt, "gh_json", return_value=payload),
+                self.assertRaises(gtt.WorkflowError) as raised,
+            ):
+                gtt.contract_wording_live_issue_comment_index(
+                    self.root, "owner/repo", 1
+                )
+            self.assertEqual(
+                raised.exception.payload["error_code"],
+                "github_response_incomplete",
+            )
+            self.assertEqual(
+                raised.exception.payload["operation"],
+                "issue_comments_read",
+            )
+            self.assertEqual(raised.exception.payload["repo"], "owner/repo")
+
 
 class ConventionalCommitContractTest(unittest.TestCase):
+    def test_merge_command_requires_explicit_repo_binding(self) -> None:
+        payload = gtt.build_merge_commit_payload(
+            repo="Owner/Repo",
+            primary_issue=181,
+            summary="统一 GitHub 操作通道",
+            head_branch="codex/181-gh-cli-only-github-operations",
+            base_branch="main",
+            pull_request=200,
+        )
+        self.assertEqual(payload["errors"], [])
+        self.assertEqual(
+            payload["command"][payload["command"].index("--repo") + 1],
+            "owner/repo",
+        )
+        unbound = gtt.build_merge_commit_payload(
+            repo="",
+            primary_issue=181,
+            summary="统一 GitHub 操作通道",
+            head_branch="codex/181-gh-cli-only-github-operations",
+            base_branch="main",
+            pull_request=200,
+        )
+        self.assertTrue(unbound["errors"])
+
     def test_issue_92_rejects_invalid_commit_subjects(self) -> None:
         invalid_subjects = [
             "Merge pull request #91 from castbox/codex/073-trellis-doc-markdown-links",
