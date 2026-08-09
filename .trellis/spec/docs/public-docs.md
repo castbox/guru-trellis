@@ -483,10 +483,12 @@ Docs explain that the package owns applicability, capability profile, adequacy,
 findings, and route. Changed paths, successful commands, checker pass, and
 production eval are facts only. A workflow-required target cannot silently
 return `not_required`; an applicability conflict blocks. #117 owns the target
-input contract, and active finalizer producer/consumer edges bind it without
-expanding either public DTO. The #119 combined route carries the checker-passed
-owner evidence only as a private in-memory finalizer projection through retry,
-final projection, normal archive, and active-completed recovery.
+input contract. The #119 combined route continues to carry checker-passed owner
+evidence only in the private in-memory finalizer projection through retry,
+final projection, normal archive, and active-completed recovery. Issue #191 adds
+the minimal `publication_head` field to the workflow verification input and
+`verified` output: target checkout/ref/PR identity binds that publication
+commit, while `branch_review_commit` continues to bind reviewed source content.
 
 The READMEs distinguish task-bearing
 `marketplace-verification.json` from taskless session-only owner state, name the
@@ -551,6 +553,8 @@ external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
 They identify the integrated global workflow projection as 14 invokes, 54 exits,
 and 31 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
 Cursor finish entry; document the two terminal `published` evals and the private
-checked-verification projection; and keep every public DTO unchanged. Official
+checked-verification projection; and explain that executor-owned reprepare
+projects task/reason plus `branch_review_commit/publication_head` only after the
+tail and private-state retirement complete. Official
 `trellis-finish-work` payloads remain upstream-owned and are not installed or
 managed by the Guru preset.

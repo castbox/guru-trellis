@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import json
+import hashlib
 import importlib.util
+import json
 import subprocess
 import unittest
 from pathlib import Path
+
+import jsonschema
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -35,6 +38,170 @@ REPO, RUNTIME_PATH, PACKAGE_MODE = resolve_runtime_layout()
 
 
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_publication_head_public_io_uses_versioned_current_contracts(self) -> None:
+        interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
+        contracts = interface["public_contracts"]
+        publication_input = next(
+            item
+            for item in contracts["input"]["profiles"]
+            if item["id"] == "publication_ready"
+        )
+        verified_input = next(
+            item
+            for item in contracts["input"]["profiles"]
+            if item["id"] == "verification_verified"
+        )
+        verification_output = next(
+            item
+            for item in contracts["outputs"]
+            if item["exit_id"] == "verification_required"
+        )
+        self.assertEqual(
+            contracts["input"]["aggregate_schema"],
+            {
+                "schema_id": "guru-finalize-task-input-aggregate-5.0",
+                "path": "schemas/public-input-5.0.schema.json",
+            },
+        )
+        self.assertEqual(
+            publication_input["schema"],
+            {
+                "schema_id": "guru-finalize-task-input-publication-ready-4.0",
+                "path": "schemas/public-publication-ready-input-4.0.schema.json",
+            },
+        )
+        self.assertEqual(
+            verified_input["schema"],
+            {
+                "schema_id": "guru-finalize-task-input-verification-verified-4.0",
+                "path": "schemas/public-verification-verified-input-4.0.schema.json",
+            },
+        )
+        self.assertEqual(
+            verification_output["schema"],
+            {
+                "schema_id": "guru-finalize-task-output-verification-required-3.0",
+                "path": "schemas/public-verification-required-output-3.0.schema.json",
+            },
+        )
+
+    def test_verification_required_projection_executes_against_current_consumer(self) -> None:
+        interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
+        contracts = interface["public_contracts"]
+        projection = next(
+            item
+            for item in contracts["projections"]
+            if item["id"] == "project_verification_required"
+        )
+        consumer = next(
+            item
+            for item in contracts["consumer_inputs"]
+            if item["id"] == projection["consumer_input_id"]
+        )
+        output = json.loads(
+            (PACKAGE / "examples/public-verification-required-output.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        target_package = PACKAGE.parent / consumer["consumer"]["id"]
+        authoring_path = (
+            target_package / consumer["contract"]["authoring_example"]["path"]
+        )
+        authoring = json.loads(authoring_path.read_text(encoding="utf-8"))
+        projected = {
+            mapping["target"]: output[mapping["source"]]
+            for mapping in projection["mappings"]
+        }
+        target_input = {**projected, **authoring}
+        target_interface = json.loads(
+            (target_package / "interface.json").read_text(encoding="utf-8")
+        )
+        target_profile = next(
+            item
+            for item in target_interface["public_contracts"]["input"]["profiles"]
+            if item["id"] == consumer["contract"]["profile_id"]
+        )
+        target_schema = json.loads(
+            (target_package / target_profile["schema"]["path"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        jsonschema.Draft202012Validator(target_schema).validate(target_input)
+        self.assertEqual(target_input["publication_head"], output["publication_head"])
+
+    def test_publication_head_legacy_schemas_are_byte_stable_and_not_current(self) -> None:
+        fixtures = (
+            (
+                "schemas/public-verification-required-output.schema.json",
+                "2e3bc09dfab29fa538c762b767d11d1311a9d310817a8e37698933ad44fd731c",
+                "schemas/public-verification-required-output-3.0.schema.json",
+                "examples/public-verification-required-output.json",
+            ),
+            (
+                "schemas/public-verification-verified-input.schema.json",
+                "8d487babe2435d35c3fda5a1acbcb29a43191de5f3ac62d7e92db42030aa3fcb",
+                "schemas/public-verification-verified-input-4.0.schema.json",
+                "examples/public-verification-verified-input.json",
+            ),
+        )
+        for legacy_path, legacy_sha256, current_path, example_path in fixtures:
+            with self.subTest(legacy=legacy_path):
+                legacy_bytes = (PACKAGE / legacy_path).read_bytes()
+                self.assertEqual(
+                    hashlib.sha256(legacy_bytes).hexdigest(),
+                    legacy_sha256,
+                )
+                legacy_schema = json.loads(legacy_bytes)
+                current_schema = json.loads(
+                    (PACKAGE / current_path).read_text(encoding="utf-8")
+                )
+                current_payload = json.loads(
+                    (PACKAGE / example_path).read_text(encoding="utf-8")
+                )
+                legacy_payload = dict(current_payload)
+                legacy_payload.pop("publication_head")
+                self.assertEqual(
+                    list(
+                        jsonschema.Draft202012Validator(legacy_schema).iter_errors(
+                            legacy_payload
+                        )
+                    ),
+                    [],
+                )
+                self.assertTrue(
+                    list(
+                        jsonschema.Draft202012Validator(current_schema).iter_errors(
+                            legacy_payload
+                        )
+                    )
+                )
+                self.assertTrue(
+                    list(
+                        jsonschema.Draft202012Validator(legacy_schema).iter_errors(
+                            current_payload
+                        )
+                    )
+                )
+                self.assertEqual(
+                    list(
+                        jsonschema.Draft202012Validator(current_schema).iter_errors(
+                            current_payload
+                        )
+                    ),
+                    [],
+                )
+
+        legacy_aggregate = PACKAGE / "schemas/public-input.schema.json"
+        self.assertEqual(
+            hashlib.sha256(legacy_aggregate.read_bytes()).hexdigest(),
+            "f7eaf2e0abb6e2f91699212d6bca270a7f59fb3fe0f6c11182349902bd86789a",
+        )
+        legacy_publication = PACKAGE / "schemas/public-publication-ready-input.schema.json"
+        self.assertEqual(
+            hashlib.sha256(legacy_publication.read_bytes()).hexdigest(),
+            "da6d67a565bb742e58f30579898fd5dc9803058c866b37540aebf7f05b9b3a7a",
+        )
+
     def test_private_route_schemas_accept_only_the_closed_executor_marker(self) -> None:
         spec = importlib.util.spec_from_file_location(
             "guru_team_trellis_finalizer_contract_test",
@@ -145,14 +312,22 @@ class FinalizeTaskContractTests(unittest.TestCase):
             },
         )
 
-    def test_reprepare_seed_is_exact_and_target_owned(self) -> None:
+    def test_reprepare_seed_carries_the_two_consumer_required_heads(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
         consumer = next(
             item
             for item in interface["public_contracts"]["consumer_inputs"]
             if item["id"] == "reprepare_preview_input"
         )
-        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref", "reason_code"])
+        self.assertEqual(
+            consumer["contract"]["seed_fields"],
+            [
+                "task_ref",
+                "reason_code",
+                "branch_review_commit",
+                "publication_head",
+            ],
+        )
         self.assertEqual(
             consumer["contract"]["authoring_fields"],
             ["profile", "mode"],

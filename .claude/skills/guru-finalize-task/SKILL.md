@@ -21,6 +21,14 @@ In workflow mode, the caller automatically consumes
 `reprepare_required`. These are machine routes, not user decisions. Ask again
 only when the external side-effect plan or its authority changed.
 
+For `provenance_tail_required`, the checked gate retains only the private
+executor marker because `publication_head` does not exist yet. After the
+executor has produced or reused the allowed tail and retired the old private
+state, it returns the exact `branch_review_commit` and `publication_head` needed
+by the next preview. `archive_month_changed` does not change HEAD, so its gate
+retains the complete current DTO. The next preview validates live continuity
+and does not recover identity from the deleted plan.
+
 `publication_review_stale` carries the exact `branch_review_commit` that the
 Finalizer found stale, together with task identity and the stable reason. The
 Publication owner uses that current Git anchor to distinguish a task-work

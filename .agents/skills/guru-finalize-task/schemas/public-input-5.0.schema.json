@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finalize-task-input-aggregate-5.0",
+  "oneOf": [
+    {"$ref": "public-publication-ready-input-4.0.schema.json"},
+    {"$ref": "public-verification-verified-input-4.0.schema.json"},
+    {"$ref": "public-standalone-verification-not-required-input.schema.json"},
+    {"$ref": "public-same-plan-resume-input.schema.json"},
+    {"$ref": "public-reprepare-preview-input.schema.json"},
+    {"$ref": "public-standalone-finalization-input.schema.json"}
+  ]
+}

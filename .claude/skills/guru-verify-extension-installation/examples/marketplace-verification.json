@@ -11,6 +11,7 @@
     "plan_ref": "closeout-plan:0123456789abcdef",
     "repo_ref": "castbox/guru-trellis",
     "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "publication_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "verification_target": "extension-installation"
   },
   "applicability": {
@@ -222,11 +223,12 @@
       "repo_ref": "castbox/guru-trellis",
       "remote": "origin",
       "ref": "refs/heads/feature-117",
-      "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "publication_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
       "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
-      "resolved_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "checkout_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "resolved_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "checkout_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "content_identity_matches": true
     },
     "extension_source": {
@@ -295,11 +297,12 @@
     "repo_ref": "castbox/guru-trellis",
     "remote": "origin",
     "ref": "refs/heads/feature-117",
-    "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "publication_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
     "remote_reviewed_content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
-    "resolved_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    "checkout_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "resolved_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "checkout_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "content_identity_matches": true
   },
   "extension_source": {

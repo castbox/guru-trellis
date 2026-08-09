@@ -229,6 +229,20 @@ across same-plan recovery until a terminal output validates.
 - an existing public field must change incompatibly -> publish a new schema/id
   or an explicit migration contract.
 
+For a closed public schema (`additionalProperties=false`), adding a required
+field is incompatible even when producer and consumer change in one repository
+commit. The published path, `$id`, and bytes remain as a legacy validation
+asset. The current contract uses a new versioned path and `$id`; any aggregate
+schema whose relative reference would otherwise change meaning also receives a
+new version. The Interface selects only the new current contracts while keeping
+the legacy assets in its package schema inventory. Package tests must validate
+both generations, reject cross-version substitution, and execute the current
+projection against the target-owned current input. A legacy route must either
+have an explicit deterministic migration whose missing values come from an
+owned authoritative input, or fail closed and rerun the current producer; it
+must never synthesize a required identity from a neighboring field or live
+ambient state.
+
 ### 5. Good, Base, And Bad Cases
 
 Good: `context_ready` returns a target identity plus the small set of relevant
@@ -624,7 +638,8 @@ targets. Their projected seed fields are respectively `source_exit/task_ref`,
 is the minimal field set declared by its target profile, with standalone
 not-required fixed to `repo_ref/resolved_head/verification_ref` plus
 target-authored `profile/mode/task_ref`, and reprepare fixed to
-`task_ref/reason_code`. Target package authoring examples supply every remaining
+`task_ref/reason_code/branch_review_commit/publication_head`. Target package
+authoring examples supply every remaining
 required fresh semantic field. The validator proves disjoint partition,
 required-set equality, no-overwrite merge, and full target-schema validity;
 all other Skill/workflow/stop consumers keep their existing contracts.
@@ -1454,7 +1469,8 @@ prefix is allowed. Any other status path records a failed
 The current ready output schema is
 `guru-production-review-task-publication-output-ready-4.0`; the active
 Finalizer input is `guru-finalize-task-input-publication-ready-4.0`, with
-aggregate input schema `guru-finalize-task-input-aggregate-4.0`. The integrated
+aggregate input schema `guru-finalize-task-input-aggregate-5.0`. Aggregate 3.0
+and the #191 aggregate 4.0 remain compatibility assets. The integrated
 `select` projection carries exactly `task_ref`, `branch_review_commit`,
 `pr_title`, and `pr_body`; Finalizer target authoring supplies only
 `profile/mode`. Any legacy 3.0 input or output shape fails closed and requires a
@@ -1477,7 +1493,7 @@ five-stage semantic profile.
 The two structured inputs are deliberately distinct:
 
 - `verification_required` fixes workflow mode and carries
-  `task_ref/plan_ref/repo_ref/branch_review_commit/verification_target`;
+  `task_ref/plan_ref/repo_ref/branch_review_commit/publication_head/verification_target`;
 - `standalone_verification` fixes standalone mode and carries
   `repo_ref/remote/ref/caller_intent` plus a closed task-bearing or session-only
   branch.
@@ -1488,10 +1504,25 @@ example, fixture, real-wrapper eval, and concrete target-owned authoring seed.
 Issue #119 integrates the global Finish route: the workflow maps the reachable
 `verified`, `return_to_task_work`, and `blocked` exits to their unique
 consumers, while the standalone `not_required` projection retains its declared
-finalizer edge. The verifier remains the sole semantic owner, and this
-integration adds no public input or output fields.
+finalizer edge. The verifier remains the sole semantic owner. Issue #191 adds
+only `publication_head` to the workflow input and `verified` output so target
+ref/PR identity can advance independently from the reviewed source bytes.
 Caller input never contains applicability, capability list, remote facts,
 adequacy, expected exit, or command matrix.
+
+The #191 public transport migration is versioned rather than changing published
+contracts in place. Finalizer `verification_required` output 2.0 and Verifier
+workflow input 2.0 retain their original bytes; current producer and consumer
+select 3.0. Verifier `verified` output 2.0 and Finalizer
+`verification_verified` input 3.0 likewise remain legacy assets; current routes
+select output 3.0 and input 4.0. Verifier aggregate input 2.0 and Finalizer
+aggregate inputs 3.0/4.0 preserve their legacy relative references, while current
+Interfaces select aggregates 3.0 and 5.0 respectively. The existing
+`project_verification_required` and `project_verified` select projections are
+the executable current migration contract and carry `publication_head`
+unchanged. A legacy DTO cannot establish publication identity, so it fails
+closed and reruns its current owner rather than defaulting
+`publication_head=branch_review_commit` or reading an ambient HEAD.
 
 Public inputs continue to name the target repository. Task-bearing modes select
 the extension source from the target checkout's current installed manifest;
@@ -1508,7 +1539,10 @@ the full apply-time commit OID and mutability is false. Runtime fetches that OID
 directly and requires the fetched commit, manifest commit, and checkout HEAD to
 match exactly. Branch/lightweight and annotated-tag inputs retain their direct
 and peeled resolution contract.
-Private command rows use the closed `target_checkout` and
+In task-bearing workflow mode, private `target_repository.resolved_head` binds
+the checkout at `publication_head`, while its reviewed-content identity and the
+installed source provenance remain bound to `branch_review_commit` (the
+`reviewed_content_head`). Private command rows use the closed `target_checkout` and
 `extension_source_checkout` owner labels. Asset expectation/digest rows,
 ownership facts, and the sidecar fact object require
 `checkout_owner=extension_source_checkout`, including when the sidecar path set
@@ -1517,7 +1551,8 @@ is empty.
 The independent outputs are:
 
 - `verified`: workflow passes only
-  `task_ref/plan_ref/branch_review_commit/verification_ref`; standalone returns the
+  `task_ref/plan_ref/branch_review_commit/publication_head/verification_ref`;
+  standalone returns the
   safe repo/head/session verification identity;
 - `not_required`: only the reachable task-bearing standalone
   `repo_ref/resolved_head/verification_ref` DTO is valid; the finalizer target
@@ -1572,9 +1607,15 @@ identity, AI intent/context, verification judgment, or owner evidence.
 The package owns six independent `exit_id` outputs:
 `verification_required`, `publication_review_stale`, `resume_finalization`,
 `reprepare_required`, `published`, and `blocked`. Reprepare projects exactly
-`task_ref/reason_code`; fresh intent/context comes only from the target-owned
-authoring seed. Internal transaction states, closeout plan, publication and
-verification bodies, PR/archive facts, recovery history, HEAD facts, and
+`task_ref/reason_code/branch_review_commit/publication_head`; fresh
+intent/context comes only from the target-owned authoring seed. The two heads
+are already current for archive-month recovery. Provenance recovery keeps a
+private marker until the deterministic executor creates or reuses its tail and
+retires the old plan/gate/request, then returns both heads so the next preview
+can validate current HEAD and the single-tail parent/allowlist contract without
+reading the retired plan. Internal transaction
+states, closeout plan, publication and verification bodies, PR/archive facts,
+recovery history, unrelated HEAD facts, and
 digests remain owner-private.
 
 `publication_review_stale` projects exactly
@@ -1597,10 +1638,11 @@ unchanged unambiguous plan; the user never has to repeat its digest or prescribe
 text. The existing #105 closeout engine is the sole deterministic
 executor for content push, verification boundary, unique draft identity, final
 projection, official `task.py archive --no-commit`, exact archive metadata
-transaction, three-way HEAD equality, and draft-to-ready. Current closeout plan
-schema 3.0 creates no separate evidence-metadata commit: the single archive
-transaction remains a descendant of `branch_review_commit` while the shared
-reviewed-content identity must remain unchanged.
+transaction, three-way HEAD equality, and draft-to-ready. A plan may first add
+one validated provenance-only metadata tail whose parent is
+`branch_review_commit`; the resulting `publication_head` owns remote/ref/PR
+identity without changing the shared reviewed-content identity. The single
+archive transaction is then a direct child of `publication_head`.
 
 Active-task evidence and long-term archive evidence have different lifecycles.
 New closeout plans use current-only schema 3.0. `closeout-plan.json` and
@@ -1625,8 +1667,9 @@ accepts standalone not-required only when the task-local #117 artifact reports
 that exact exit and its repository, resolved HEAD, verification ref, task, and
 private plan match; same-plan resume reuses the same private binding without
 adding plan identity to the producer DTO. Verification re-entry binds the
-current task, plan, repository, remote ref, `branch_review_commit`, independent
-verification artifact, and local/remote reviewed-content identities. Any
+current task, plan, repository, remote ref, `branch_review_commit`,
+`publication_head`, independent verification artifact, and local/remote
+reviewed-content identities. Any
 additional drift fails closed. Same-plan resume is restricted to the declared
 post-content recovery states and excludes `prepared`, reprepare/stale state, and
 terminal `ready`.

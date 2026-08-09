@@ -1101,7 +1101,8 @@ migration predecessor, and rebuilds the current summary template from the exact
 DTO body. It never reads `pr-body.md`, `finish-summary-index.json`, a private
 checkpoint, or another fallback. Missing/mismatched DTO evidence fails closed
 and requires a fresh Publication run. The plan records portable task and
-repo/base/`branch_review_commit` identity,
+repo/base/`branch_review_commit` identity plus separate
+`git.reviewed_content_head` and `git.publication_head`,
 protected input SHA-256 values, reviewed paths and close scope, exact draft PR
 inputs, marketplace applicability and artifact locator, future archive
 projection, and the fixed transition list.
@@ -1214,6 +1215,15 @@ transition from the active plan, `branch_review_commit`, marketplace owner
 evidence when applicable, live Git/GitHub facts, and the active/archive layout.
 The scope-only ledger is never augmented or used as verification state.
 
+`git.reviewed_content_head` equals `branch_review_commit` and remains the
+semantic review/content anchor. `git.publication_head` is either that same
+commit or its single validated provenance metadata-tail child. The tail may
+change only `.trellis/guru-team/extension.json` fields `installed_at`,
+`source.ref`, `source.commit`, `source.tree_state`, and
+`source.is_mutable_ref`; it must bind a detached clean canonical preset apply
+to the reviewed HEAD. The archive transaction parent, pushed remote branch,
+PR expected head, and verifier target checkout use `publication_head`.
+
 `task.archive_locator` uses the same live `YYYY-MM` that the unmodified official
 archive command will use. Formal checks it before the first side effect and
 again immediately before official move. If the month changes while a schema 3.0
@@ -1234,6 +1244,19 @@ checker-passed verification owner result and validates the independent artifact,
 repository, remote ref, `branch_review_commit`, and local/remote reviewed-content
 identity. It never writes verification state into the scope ledger. Missing,
 duplicate, altered, path-bound, or stale verification evidence fails closed.
+
+Before PR creation or archive, stale/dirty installed provenance may select the
+single mapped `reprepare_required` route. Its gate retains a private marker
+until the deterministic executor prepares one metadata tail in an isolated
+detached checkout and retires the old owner-private plan, Finalizer gate, and
+verification request. Archive-month reprepare changes no HEAD and retains its
+complete current DTO. A new plan keeps the reviewed identity unchanged and
+binds the current publication HEAD. The public DTO carries exactly task, reason,
+`branch_review_commit`, and `publication_head`; the next preview validates
+current HEAD and the optional single-tail parent/allowlist contract before
+building a new plan, without reopening the retired plan. PR already
+created, archive started, reviewed content/scope drift, non-fast-forward remote,
+or manifest changes outside the allowlist remain fail-closed boundaries.
 
 Before the exact archive commit exists, archive recovery accepts only the
 complete mixed no-renames working-tree path set: both sides for every tracked
@@ -1463,7 +1486,7 @@ histories, and derived bindings stay owner-private or transient.
 The ready output schema is
 `guru-production-review-task-publication-output-ready-4.0`. Its sole active
 consumer is `guru-finalize-task-input-publication-ready-4.0` within aggregate
-input schema `guru-finalize-task-input-aggregate-4.0`; the `select` projection
+input schema `guru-finalize-task-input-aggregate-5.0`; the `select` projection
 carries `task_ref/branch_review_commit/pr_title/pr_body`, and target-owned
 authoring adds `profile/mode`. Legacy 3.0 shapes fail closed and require a fresh
 Publication run; no compatibility reader or task-local fallback exists.

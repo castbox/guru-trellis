@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finalize-task-input-aggregate-4.0",
+  "$id": "guru-finalize-task-input-aggregate-3.0",
   "oneOf": [
     {"$ref": "public-publication-ready-input.schema.json"},
     {"$ref": "public-verification-verified-input.schema.json"},

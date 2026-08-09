@@ -866,3 +866,11 @@ native command 为 `unsupported`，不依赖隐藏环境变量替代 adapter。
 Semantic case 必须引用 repo-local checker-passed owner result；actual exit 选择 output schema
 后才比较 expected exit。Codex 使用 trusted Git root，Claude 使用 safe non-interactive 协议，
 Cursor 未登录直接返回 `unsupported`。
+Finalizer closeout plan 同时绑定 `reviewed_content_head` 与
+`publication_head`。当 reviewed HEAD 已 push、PR/archive 尚未开始且 installed
+manifest 仅缺 clean provenance 时，workflow 自动消费 `reprepare_required`：从
+detached clean checkout 运行 canonical preset apply，提交一次 manifest-only tail，
+废弃旧 private plan/gate/request，并由 executor 输出 unchanged reviewed HEAD 与新
+publication HEAD；下一次 preview 直接验证这两个 identity 和单 tail 合同，不读取已删除
+plan，然后继续 exact-ref verification。其它 diff、已有 PR、archive 已开始或
+non-fast-forward 继续 fail closed。

@@ -2013,6 +2013,11 @@ def extension_verification_execution(
         "remote": public_input.get("remote", "origin"),
         "ref": public_input.get("ref", "refs/heads/main"),
         "branch_review_commit": branch_review_commit,
+        "publication_head": (
+            public_input["publication_head"]
+            if public_input["mode"] == "workflow"
+            else None
+        ),
         "resolved_head": remote_head,
         "checkout_head": remote_head,
         "reviewed_content_sha256": reviewed_content_sha256,
@@ -2250,6 +2255,7 @@ def stage_extension_verification_owner_execution(
         raise ValueError("extension owner staging could not activate its task")
     if public_input["mode"] == "workflow":
         public_input["branch_review_commit"] = head
+        public_input["publication_head"] = head
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
     all_capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
@@ -2681,6 +2687,7 @@ def stage_finalization_owner_execution(
         "plan_ref": plan_ref,
         "plan_digest": plan_digest,
         "branch_review_commit": head,
+        "publication_head": head,
         "archive_locator": archive_locator,
         "repo_ref": "example/guru-extension",
         "remote": "origin",
@@ -2724,6 +2731,7 @@ def stage_finalization_owner_execution(
                 "plan_ref": plan_ref,
                 "repo_ref": "example/guru-extension",
                 "branch_review_commit": head,
+                "publication_head": head,
                 "verification_target": "extension-installation",
             },
             "publication_review_stale": {
@@ -2741,6 +2749,8 @@ def stage_finalization_owner_execution(
                 "exit_id": "reprepare_required",
                 "task_ref": public_input["task_ref"],
                 "reason_code": "archive_month_changed",
+                "branch_review_commit": head,
+                "publication_head": head,
             },
             "published": {
                 "materialization": "executor",

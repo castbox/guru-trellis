@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import stat
 import unittest
@@ -39,7 +40,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         contracts = interface["public_contracts"]
         self.assertEqual(
             contracts["input"]["aggregate_schema"]["schema_id"],
-            "guru-extension-verify-installation-input-aggregate-2.0",
+            "guru-extension-verify-installation-input-aggregate-3.0",
         )
         self.assertEqual(
             contracts["private_artifacts"][0]["schema"]["schema_id"],
@@ -48,7 +49,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         )
 
     def test_distinct_inputs_and_taskless_standalone_branch(self) -> None:
-        workflow_schema = load("schemas/public-verification-required-input.schema.json")
+        workflow_schema = load("schemas/public-verification-required-input-3.0.schema.json")
         standalone_schema = load("schemas/public-standalone-verification-input.schema.json")
         workflow = load("examples/public-verification-required-input.json")
         standalone = load("examples/public-standalone-verification-input.json")
@@ -62,7 +63,12 @@ class ExtensionVerificationContractTests(unittest.TestCase):
 
     def test_current_outputs_use_only_reachable_mode_contracts(self) -> None:
         for exit_id in ("verified", "return-to-task-work", "blocked"):
-            schema = load(f"schemas/public-{exit_id}-output.schema.json")
+            schema_path = (
+                "schemas/public-verified-output-3.0.schema.json"
+                if exit_id == "verified"
+                else f"schemas/public-{exit_id}-output.schema.json"
+            )
+            schema = load(schema_path)
             branches = schema["oneOf"]
             self.assertEqual(len(branches), 2)
             self.assertEqual(
@@ -108,7 +114,12 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             "blocked": "blocked",
         }
         for schema_name, example_name in mapping.items():
-            schema = load(f"schemas/public-{schema_name}-output.schema.json")
+            schema_path = (
+                "schemas/public-verified-output-3.0.schema.json"
+                if schema_name == "verified"
+                else f"schemas/public-{schema_name}-output.schema.json"
+            )
+            schema = load(schema_path)
             example = load(f"examples/public-{example_name}-output.json")
             jsonschema.Draft202012Validator(schema).validate(example)
         private_schema = load("schemas/marketplace-verification.schema.json")
@@ -147,6 +158,135 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         )
         output = load("examples/public-not-required-output.json")
         self.assertEqual(output["mode"], "standalone")
+
+    def test_publication_head_public_io_uses_versioned_current_contracts(self) -> None:
+        interface = load("interface.json")
+        contracts = interface["public_contracts"]
+        workflow_input = next(
+            item
+            for item in contracts["input"]["profiles"]
+            if item["id"] == "verification_required"
+        )
+        verified_output = next(
+            item
+            for item in contracts["outputs"]
+            if item["exit_id"] == "verified"
+        )
+        self.assertEqual(
+            contracts["input"]["aggregate_schema"],
+            {
+                "schema_id": "guru-extension-verify-installation-input-aggregate-3.0",
+                "path": "schemas/public-input-3.0.schema.json",
+            },
+        )
+        self.assertEqual(
+            workflow_input["schema"],
+            {
+                "schema_id": "guru-extension-verify-installation-input-verification-required-3.0",
+                "path": "schemas/public-verification-required-input-3.0.schema.json",
+            },
+        )
+        self.assertEqual(
+            verified_output["schema"],
+            {
+                "schema_id": "guru-extension-verify-installation-output-verified-3.0",
+                "path": "schemas/public-verified-output-3.0.schema.json",
+            },
+        )
+
+    def test_verified_projection_executes_against_current_finalizer_input(self) -> None:
+        interface = load("interface.json")
+        contracts = interface["public_contracts"]
+        projection = next(
+            item
+            for item in contracts["projections"]
+            if item["id"] == "project_verified"
+        )
+        consumer = next(
+            item
+            for item in contracts["consumer_inputs"]
+            if item["id"] == projection["consumer_input_id"]
+        )
+        output = load("examples/public-verified-output.json")
+        target_package = PACKAGE.parent / consumer["consumer"]["id"]
+        authoring_path = (
+            target_package / consumer["contract"]["authoring_example"]["path"]
+        )
+        authoring = json.loads(authoring_path.read_text(encoding="utf-8"))
+        projected = {
+            mapping["target"]: output[mapping["source"]]
+            for mapping in projection["mappings"]
+        }
+        target_input = {**projected, **authoring}
+        target_interface = json.loads(
+            (target_package / "interface.json").read_text(encoding="utf-8")
+        )
+        target_profile = next(
+            item
+            for item in target_interface["public_contracts"]["input"]["profiles"]
+            if item["id"] == consumer["contract"]["profile_id"]
+        )
+        target_schema = json.loads(
+            (target_package / target_profile["schema"]["path"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        jsonschema.Draft202012Validator(target_schema).validate(target_input)
+        self.assertEqual(target_input["publication_head"], output["publication_head"])
+
+    def test_publication_head_legacy_schemas_are_byte_stable_and_not_current(self) -> None:
+        fixtures = (
+            (
+                "schemas/public-verification-required-input.schema.json",
+                "4e4ea74142c0a3cfcf9ae083c60ef01c314427b4c42c388a3eb537bb55abd675",
+                "schemas/public-verification-required-input-3.0.schema.json",
+                "examples/public-verification-required-input.json",
+            ),
+            (
+                "schemas/public-verified-output.schema.json",
+                "3304d6589a665e7728624e9099d2053968adfef15ba4c4467dcef59d47f918b5",
+                "schemas/public-verified-output-3.0.schema.json",
+                "examples/public-verified-output.json",
+            ),
+        )
+        for legacy_path, legacy_sha256, current_path, example_path in fixtures:
+            with self.subTest(legacy=legacy_path):
+                legacy_bytes = (PACKAGE / legacy_path).read_bytes()
+                self.assertEqual(
+                    hashlib.sha256(legacy_bytes).hexdigest(),
+                    legacy_sha256,
+                )
+                legacy_schema = json.loads(legacy_bytes)
+                current_schema = load(current_path)
+                current_payload = load(example_path)
+                legacy_payload = dict(current_payload)
+                legacy_payload.pop("publication_head")
+                self.assertTrue(
+                    jsonschema.Draft202012Validator(legacy_schema).is_valid(
+                        legacy_payload
+                    )
+                )
+                self.assertFalse(
+                    jsonschema.Draft202012Validator(current_schema).is_valid(
+                        legacy_payload
+                    )
+                )
+                self.assertFalse(
+                    jsonschema.Draft202012Validator(legacy_schema).is_valid(
+                        current_payload
+                    )
+                )
+                self.assertTrue(
+                    jsonschema.Draft202012Validator(current_schema).is_valid(
+                        current_payload
+                    )
+                )
+
+        legacy_aggregate = PACKAGE / "schemas/public-input.schema.json"
+        self.assertEqual(
+            hashlib.sha256(legacy_aggregate.read_bytes()).hexdigest(),
+            "b3606ee5b03eb59a919c1b00871fb942ad71352acb9e46496bcb2bec810fb869",
+        )
 
     def test_recorder_input_schemas_resolve_private_contract_and_validate_examples(
         self,
