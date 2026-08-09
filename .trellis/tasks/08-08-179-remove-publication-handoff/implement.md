@@ -13,7 +13,7 @@
 - [x] I9. 运行preset installer同步`.trellis/guru-team/**`、`.trellis/workflow.md`、`.agents/**`、`.codex/**`、`.claude/**`、`.cursor/**`及manifest声明的平台副本；逐个处理`.new`/`.bak`。
 - [x] I10. 执行targeted runtime/package/integration tests，覆盖payload bytes、schema migration、projection、preflight、same-plan recovery、summary generation/history retrieval、message-independent downstream freshness和retired-path zero-hit。
 - [x] I11. 执行完整source/installed/preset/dogfood/throwaway/update-reapply门禁，记录exact remote marketplace source在push前的未验证边界。
-- [x] I12. 执行fresh current-only Phase 2 semantic check；修复全部P0-P3 finding并重跑受影响证据。commit、Branch Review、push、PR、Finalizer副作用不在本计划自动执行。
+- [ ] I12. 在base evolution与durable docs finding修复后执行唯一一次fresh current-only Phase 2 semantic check；修复全部P0-P3 finding并重跑受影响证据。commit、Branch Review、push、PR、Finalizer副作用不在本计划自动执行。
 
 ## 2. Primary Files and Rollback Points
 
@@ -98,5 +98,6 @@ find . -name '*.new' -o -name '*.bak'
 
 - 2026-08-09：远端 `main` 的 `2e38ae0ea68de46842d5a4ca60492874e4c47525` 已通过 PR #192 合并 #191；当前已发布 #179 分支以 `--no-ff` merge 吸收该前置修复，不 rebase、不 force-push。
 - 合并解析保留 #179 的 Publication payload/退役 handoff 合同，并将 #191 的 `reviewed_content_head`、`publication_head`、`provenance_tail_required` 与版本化 verification DTO 作为 current runtime；Finalizer aggregate current schema 为 5.0，旧 3.0/4.0 保持兼容资产。
-- 合并后验证通过：Publication/Finalizer 32 项、Task Commit/Branch Review 17 项、finish-family 11 项、共享 runtime 411 项、preset installer 45 项、Skill package closure 180 项，共 696 项；dogfood drift、JSON、diff hygiene 和零 sidecar 检查通过。
+- 合并恢复实现验证通过：Publication/Finalizer、Task Commit、Branch Review 与 finish-family owner 合同 60 项、共享 runtime 414 项、preset installer 45 项、Skill package closure 180 项，共 699 项；Python compile、Bash syntax、task validation、ownership、dogfood drift、JSON、diff hygiene 和零 sidecar 检查通过。
+- throwaway fresh install、official update、workflow switch、preset reapply 与 no-developer fixture 已通过。因分支尚未push，public main + local unpublished workflow sample 仅证明本地安装闭环；current exact-ref marketplace source仍由push后的Finalizer gate验证。
 - 唯一未完成证据是 push 后 exact remote marketplace ref verification；该检查仍由 Finalizer 的既有 publication transaction gate 拥有，不冒充本地通过。

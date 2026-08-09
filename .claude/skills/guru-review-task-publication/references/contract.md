@@ -87,7 +87,13 @@ The `ready` DTO contains exactly `exit_id`, `task_ref`,
 `branch_review_commit`, `pr_title`, and `pr_body`. Finalizer consumes those five
 fields directly and runs the same side-effect-free closeout preflight already
 required before `ready`; it never reads, augments, or understands the
-Publication checkpoint.
+Publication checkpoint. That preflight may classify one owner-private pre-#191
+Finalizer plan as supersedable, but only after objectively proving its exact
+legacy verification gate/request, unchanged task/repository/branch identities,
+active pre-PR/pre-archive single-consumer state, untracked artifacts,
+old-to-current reviewed ancestry, and fast-forwardable remote ancestor. It does
+not retire the old state or create the provenance tail; only the checked
+Finalizer transition may do so.
 
 After any checked typed output passes its output schema, the Publication public
 wrapper deletes its own checkpoint. A failed checker or invalid projection keeps

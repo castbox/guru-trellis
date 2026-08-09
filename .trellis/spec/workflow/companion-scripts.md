@@ -1363,8 +1363,13 @@ detached clean worktree, validates the five-field manifest allowlist, commits
 one tail, fast-forwards the task branch, and removes only the superseded private
 plan/gate/request state. Its private gate retains an executor marker; only after
 the tail is committed does the executor return the public task/reason plus
-`branch_review_commit/publication_head` DTO. The next preview validates those
-two heads directly and does not require the retired plan.
+`branch_review_commit/publication_head` DTO. A pre-#191 base-evolution candidate
+must first prove its exact legacy gate/request, matching task/repository/remote/
+base/head identities, active/no-PR/no-archive/single-consumer state, untracked
+artifacts, old-to-current ancestry, and a fast-forwardable remote ancestor.
+Preview and discovery only prove those facts. The checked transition repeats the
+proof, retires the predecessor, and persists the freshly rebuilt current plan;
+the next preview validates the two heads against that replacement plan.
 `resume_finalization` accepts only declared same-plan post-content recovery
 states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. The
 ignored owner-private gate stores the private executor marker for publication

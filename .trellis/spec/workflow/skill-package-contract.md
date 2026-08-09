@@ -1611,9 +1611,15 @@ The package owns six independent `exit_id` outputs:
 intent/context comes only from the target-owned authoring seed. The two heads
 are already current for archive-month recovery. Provenance recovery keeps a
 private marker until the deterministic executor creates or reuses its tail and
-retires the old plan/gate/request, then returns both heads so the next preview
-can validate current HEAD and the single-tail parent/allowlist contract without
-reading the retired plan. Internal transaction
+retires the old plan/gate/request. When base evolution leaves one pre-#191
+`verification_required` plan behind, Publication's producer preflight may treat
+it as supersedable only after proving the exact legacy gate/request, unchanged
+task/repo/remote/base/head identity, active unarchived state, no PR or parallel
+consumer, untracked owner state, old-to-current reviewed ancestry, and a
+fast-forwardable remote ancestor. The checked executor then creates or reuses
+the tail and persists the freshly rebuilt current plan before returning both
+heads, so the next preview reads the replacement plan rather than the retired
+one. Internal transaction
 states, closeout plan, publication and verification bodies, PR/archive facts,
 recovery history, unrelated HEAD facts, and
 digests remain owner-private.

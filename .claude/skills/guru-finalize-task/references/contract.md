@@ -181,7 +181,14 @@ pruning step.
 - Pre-PR verification rejected only because the reviewed checkout provenance
   is stale -> `reprepare_required` with `provenance_tail_required`; generate or
   reuse the one allowlisted provenance tail, retire the old private
-  plan/evidence, preview a new plan, and obtain fresh confirmation. Other
+  plan/evidence, preview a new plan, and obtain fresh confirmation. A pre-#191
+  schema 3.0 predecessor is accepted only when its exact legacy
+  `verification_required` gate/request, task/repo/remote/base/head identity,
+  active/no-PR/no-archive/single-consumer state, untracked artifacts,
+  old-to-current reviewed ancestry, and fast-forwardable remote ancestor all
+  remain current. Publication proves this without mutation; the checked
+  Finalizer transition repeats the proof, retires the old state, creates or
+  reuses the tail, and persists the fresh replacement plan. Other
   verification failures remain blocked. Tracked task artifacts are preserved
   and block this automatic cleanup path.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
@@ -244,7 +251,8 @@ current; same-plan recovery reuses that private binding.
   that already-current DTO in its gate because HEAD does not change. Provenance
   recovery retains a private marker until the deterministic executor has
   created or reused the tail, retired the old owner-private plan/gate/request,
-  and can return both heads. Schema 2.0 output and schema 3.0 input add the
+  persisted the fresh replacement plan when base evolution superseded a
+  pre-#191 predecessor, and can return both heads. Schema 2.0 output and schema 3.0 input add the
   provenance reason and direct-consumer identity while preserving the existing
   archive-month value.
 - `published`: the exact plan archive locator and canonical PR number/URL;

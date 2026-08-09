@@ -381,6 +381,7 @@ TASK_COMMIT_GIT_OPERATION_MARKERS = (
     ("rebase-or-am", "rebase-apply"),
 )
 AI_FIRST_OWNER_CHECKPOINT_DIR = "owner-checkpoints"
+FINALIZER_INPUT_RUNTIME_DIR = "finalizer-inputs"
 AI_FIRST_OWNER_ARTIFACTS = frozenset({
     CONTEXT_DISCOVERY_RECOVERY_ARTIFACT,
     PLANNING_APPROVAL_ARTIFACT,
@@ -12138,10 +12139,196 @@ def finalizer_tracked_pre_pr_artifacts(root: Path, task_dir: Path) -> list[str]:
     return sorted(tracked_owner_state, key=lambda item: item.encode("utf-8"))
 
 
+def finalizer_pre_pr_request_paths(
+    root: Path,
+    task_ref: str,
+    plan: dict[str, Any],
+) -> list[Path]:
+    """Find only the Finalizer-owned request bound to one immutable plan."""
+    request_root = runtime_root(root, load_config(root)) / FINALIZER_INPUT_RUNTIME_DIR
+    if not request_root.exists():
+        return []
+    if request_root.is_symlink() or not request_root.is_dir():
+        raise WorkflowError("Finalizer private request root is unsafe.", exit_code=2)
+    plan_ref = f"closeout-plan:{plan['plan_digest']}"
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    branch_review_commit = str(git.get("branch_review_commit") or "")
+    publication_head = str(git.get("publication_head") or branch_review_commit)
+    matches: list[Path] = []
+    conflicting: list[str] = []
+    for path in sorted(request_root.rglob("*.json")):
+        if path.is_symlink() or not path.is_file():
+            continue
+        try:
+            payload = read_json(path)
+        except WorkflowError:
+            continue
+        if not isinstance(payload, dict) or payload.get("task_ref") != task_ref:
+            continue
+        if payload.get("profile") != "verification_required":
+            continue
+        expected = (
+            payload.get("mode") == "workflow"
+            and payload.get("plan_ref") == plan_ref
+            and payload.get("branch_review_commit") == branch_review_commit
+            and payload.get("publication_head", publication_head) == publication_head
+        )
+        if expected:
+            matches.append(path)
+        else:
+            conflicting.append(repo_relative(root, path))
+    if conflicting or len(matches) > 1:
+        raise WorkflowError(
+            "Finalizer pre-PR recovery found a parallel or mismatched private request.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_parallel_publication_consumer",
+                "requests": conflicting + [repo_relative(root, path) for path in matches],
+            },
+        )
+    return matches
+
+
+def finalizer_legacy_verification_gate_matches_plan(
+    root: Path,
+    task_dir: Path,
+    plan: dict[str, Any],
+) -> bool:
+    gate_path = task_finalization_path(root, task_dir)
+    if gate_path.is_symlink() or not gate_path.is_file():
+        return False
+    gate = read_json(gate_path)
+    if not isinstance(gate, dict):
+        return False
+    task_ref = str(plan.get("task", {}).get("active_locator") or "")
+    git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
+    branch_review_commit = str(git.get("branch_review_commit") or "")
+    plan_ref = f"closeout-plan:{plan['plan_digest']}"
+    identity = gate.get("identity") if isinstance(gate.get("identity"), dict) else {}
+    route = gate.get("route") if isinstance(gate.get("route"), dict) else {}
+    output = route.get("output") if isinstance(route.get("output"), dict) else {}
+    return (
+        gate.get("schema_version") == FINALIZATION_GATE_SCHEMA_VERSION
+        and gate.get("skill_id") == FINALIZE_TASK_SKILL_ID
+        and identity.get("task_ref") == task_ref
+        and identity.get("plan_ref") == plan_ref
+        and identity.get("plan_digest") == plan.get("plan_digest")
+        and identity.get("branch_review_commit") == branch_review_commit
+        and route.get("typed_exit") == "verification_required"
+        and route.get("consumer") == FINALIZATION_CONSUMERS["verification_required"]
+        and output.get("exit_id") == "verification_required"
+        and output.get("task_ref") == task_ref
+        and output.get("plan_ref") == plan_ref
+        and output.get("repo_ref") == git.get("repo")
+        and output.get("branch_review_commit") == branch_review_commit
+        and "publication_head" not in output
+        and output.get("verification_target") == "extension-installation"
+    )
+
+
+def finalizer_pre_pr_base_evolution_supersession_preflight(
+    root: Path,
+    task_dir: Path,
+    previous_plan: dict[str, Any],
+    current_plan: dict[str, Any],
+) -> dict[str, Any]:
+    """Prove that one pre-#191 owner-private plan may be superseded."""
+    previous_git = previous_plan.get("git") if isinstance(previous_plan.get("git"), dict) else {}
+    current_git = current_plan.get("git") if isinstance(current_plan.get("git"), dict) else {}
+    task_ref = repo_relative(root, task_dir)
+    previous_reviewed = str(previous_git.get("branch_review_commit") or "")
+    current_reviewed = str(current_git.get("reviewed_content_head") or current_git.get("branch_review_commit") or "")
+    if (
+        previous_plan.get("schema_version") != CLOSEOUT_PLAN_SCHEMA_VERSION
+        or set(previous_git) != {"repo", "remote", "base_branch", "head_branch", "branch_review_commit"}
+        or previous_plan.get("task", {}).get("active_locator") != task_ref
+        or current_plan.get("task", {}).get("active_locator") != task_ref
+        or any(previous_git.get(key) != current_git.get(key) for key in ("repo", "remote", "base_branch", "head_branch"))
+        or previous_reviewed == current_reviewed
+        or not is_ancestor(root, previous_reviewed, current_reviewed)
+    ):
+        raise WorkflowError(
+            "Persisted closeout plan is not an eligible pre-#191 base-evolution predecessor.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_base_evolution_mismatch"},
+        )
+    if task_json(task_dir).get("status") != "in_progress":
+        raise WorkflowError("Base-evolution recovery requires task status=in_progress.", exit_code=2)
+    if finalizer_tracked_pre_pr_artifacts(root, task_dir):
+        raise WorkflowError(
+            "Finalizer will not delete tracked task artifacts during reprepare.",
+            exit_code=2,
+            payload={"tracked_paths": finalizer_tracked_pre_pr_artifacts(root, task_dir)},
+        )
+    archive_locator = str(previous_plan.get("task", {}).get("archive_locator") or "")
+    if not archive_locator or (root / archive_locator).exists() or (task_dir / FINISH_SUMMARY_ARTIFACT).exists():
+        raise WorkflowError(
+            "Base-evolution recovery is unavailable after archive publication starts.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_archive_started"},
+        )
+    branch_ref = f"refs/heads/{current_git.get('head_branch')}"
+    branch_worktrees = [record for record in worktree_records(root) if record.get("branch") == branch_ref]
+    current_worktrees = [record for record in branch_worktrees if Path(record.get("worktree") or "").resolve() == root.resolve()]
+    parallel = sorted(str(record.get("worktree") or "") for record in branch_worktrees if record not in current_worktrees)
+    if len(current_worktrees) != 1 or parallel:
+        raise WorkflowError(
+            "Base-evolution recovery requires one exclusive publication worktree.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_parallel_publication_consumer", "worktrees": parallel},
+        )
+    existing_pr = resolve_closeout_pull_request(
+        root,
+        str(current_git.get("repo") or ""),
+        str(current_git.get("head_branch") or ""),
+        str(current_git.get("base_branch") or ""),
+        str(current_git.get("remote") or "origin"),
+    )
+    if existing_pr is not None:
+        raise WorkflowError(
+            "Base-evolution recovery is unavailable after pull request creation.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_pull_request_exists", "pull_request": existing_pr.get("number")},
+        )
+    remote_head = closeout_remote_branch_head(root, current_plan)
+    if not remote_head or not is_ancestor(root, remote_head, current_reviewed):
+        raise WorkflowError(
+            "Base-evolution recovery requires a fast-forwardable remote ancestor.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_remote_not_reviewed_head",
+                "reviewed_content_head": current_reviewed,
+                "remote_head": remote_head,
+                "fast_forwardable": False,
+            },
+        )
+    if not finalizer_legacy_verification_gate_matches_plan(root, task_dir, previous_plan):
+        raise WorkflowError(
+            "Base-evolution recovery requires the exact legacy verification_required gate.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_legacy_gate_mismatch"},
+        )
+    requests = finalizer_pre_pr_request_paths(root, task_ref, previous_plan)
+    if len(requests) != 1:
+        raise WorkflowError(
+            "Base-evolution recovery requires the exact legacy verification request.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_legacy_request_missing"},
+        )
+    return {
+        "previous_reviewed_content_head": previous_reviewed,
+        "reviewed_content_head": current_reviewed,
+        "remote_head": remote_head,
+        "private_request": repo_relative(root, requests[0]),
+    }
+
+
 def finalizer_pre_pr_provenance_reprepare_preflight(
     root: Path,
     task_dir: Path,
     plan: dict[str, Any],
+    *,
+    previous_plan: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Prove the pre-PR recovery window before any producer or cleanup mutation."""
     git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
@@ -12241,7 +12428,16 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
         )
 
     remote_head = closeout_remote_branch_head(root, plan)
-    if remote_head != reviewed_content_head:
+    if previous_plan is not None:
+        base_evolution = finalizer_pre_pr_base_evolution_supersession_preflight(
+            root,
+            task_dir,
+            previous_plan,
+            plan,
+        )
+    else:
+        base_evolution = None
+    if previous_plan is None and remote_head != reviewed_content_head:
         raise WorkflowError(
             "Provenance reprepare requires the remote branch at reviewed content HEAD.",
             exit_code=2,
@@ -12263,6 +12459,7 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
         "pull_request": None,
         "parallel_publication_consumers": [],
         "tracked_task_artifacts": [],
+        "base_evolution": base_evolution,
     }
 
 
@@ -12278,7 +12475,19 @@ def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
             exit_code=2,
             payload={"tracked_paths": tracked_owner_state},
         )
+    request_paths: list[Path] = []
     if plan.is_file() and not plan.is_symlink():
+        persisted_plan = read_json(plan)
+        try:
+            validate_closeout_plan_for_migration(persisted_plan)
+        except WorkflowError:
+            persisted_plan = None
+        if isinstance(persisted_plan, dict):
+            request_paths = finalizer_pre_pr_request_paths(
+                root,
+                repo_relative(root, task_dir),
+                persisted_plan,
+            )
         plan.unlink()
         retired.append(repo_relative(root, plan))
     gate = task_finalization_path(root, task_dir)
@@ -12288,6 +12497,9 @@ def finalizer_supersede_pre_pr_state(root: Path, task_dir: Path) -> list[str]:
     if verification.is_file() and not verification.is_symlink():
         verification.unlink()
         retired.append(repo_relative(root, verification))
+    for request_path in request_paths:
+        request_path.unlink()
+        retired.append(repo_relative(root, request_path))
     retired.extend(
         ai_first_retire_owner_checkpoints(
             root,
@@ -22332,8 +22544,9 @@ def resolve_closeout_branch_review_commit(
     *,
     publication_ready: dict[str, Any] | None,
     existing_plan: dict[str, Any] | None,
+    allow_base_evolution_supersession: bool = False,
 ) -> str:
-    if existing_plan is not None:
+    if existing_plan is not None and not allow_base_evolution_supersession:
         plan_task_ref = str(existing_plan.get("task", {}).get("active_locator") or "")
         branch_review_commit = str(
             existing_plan.get("git", {}).get("branch_review_commit") or ""
@@ -22358,7 +22571,11 @@ def resolve_closeout_branch_review_commit(
         or publication_ready.get("task_ref") != task_ref
         or publication_ready.get("branch_review_commit") != branch_review_commit
     )
-    if publication_ready is not None and existing_plan is not None:
+    if (
+        publication_ready is not None
+        and existing_plan is not None
+        and not allow_base_evolution_supersession
+    ):
         publish = existing_plan.get("publish", {})
         payload_title = publication_ready.get("pr_title")
         payload_body = publication_ready.get("pr_body")
@@ -22408,10 +22625,49 @@ def prepare_closeout(
         else None
     )
     expected_task_ref = repo_relative(root, task_dir)
+    base_evolution_supersession: dict[str, Any] | None = None
+    publication_commit = str(
+        publication_ready.get("branch_review_commit") or ""
+    ) if publication_ready is not None else ""
+    if (
+        existing_plan is not None
+        and publication_ready is not None
+        and publication_commit
+        != str(existing_plan.get("git", {}).get("branch_review_commit") or "")
+    ):
+        prospective_git = {
+            "repo": normalize_github_repository(
+                str(args.repo or config.get("github_repo") or "").strip()
+                or infer_github_repo(root)
+            ),
+            "remote": str(args.remote or publish_config(config).get("remote") or "origin"),
+            "base_branch": base_branch_from_sources(args, task_json(task_dir), task_context),
+            "head_branch": current_branch(root),
+            "branch_review_commit": publication_commit,
+            "reviewed_content_head": publication_commit,
+            "publication_head": current_head(root),
+        }
+        prospective_plan = {
+            "schema_version": CLOSEOUT_PLAN_SCHEMA_VERSION,
+            "task": {
+                "active_locator": expected_task_ref,
+                "archive_locator": str(existing_plan.get("task", {}).get("archive_locator") or ""),
+            },
+            "git": prospective_git,
+        }
+        base_evolution_supersession = (
+            finalizer_pre_pr_base_evolution_supersession_preflight(
+                root,
+                task_dir,
+                existing_plan,
+                prospective_plan,
+            )
+        )
     branch_review_commit = resolve_closeout_branch_review_commit(
         expected_task_ref,
         publication_ready=publication_ready,
         existing_plan=existing_plan,
+        allow_base_evolution_supersession=base_evolution_supersession is not None,
     )
     validate_closeout_reviewed_content(
         root,
@@ -22442,7 +22698,11 @@ def prepare_closeout(
     ledger_errors = validate_ledger_for_publish(ledger)
     if ledger_errors:
         raise WorkflowError("Issue Scope Ledger is incomplete for closeout.", exit_code=2, payload={"errors": ledger_errors})
-    if existing_plan is not None and existing_plan.get("schema_version") == "3.0":
+    if (
+        existing_plan is not None
+        and existing_plan.get("schema_version") == "3.0"
+        and base_evolution_supersession is None
+    ):
         title = str(existing_plan["publish"]["title"])
         body = str(existing_plan["publish"]["body"])
     elif publication_ready is not None:
@@ -22492,7 +22752,13 @@ def prepare_closeout(
         persisted = validate_closeout_plan_for_migration(read_json(existing))
         if persisted != plan:
             migration_errors = closeout_schema2_migration_errors(persisted, plan)
-            if not migration_errors:
+            if base_evolution_supersession is not None:
+                pre_pr_reprepare = {
+                    "previous_plan": persisted,
+                    "prior_state": "content_pushed",
+                    "base_evolution": base_evolution_supersession,
+                }
+            elif not migration_errors:
                 migration_normalization = {"previous_plan": persisted}
             else:
                 persisted_git = persisted.get("git", {})
@@ -22515,61 +22781,45 @@ def prepare_closeout(
                         "previous_plan": persisted,
                         "prior_state": "content_pushed",
                     }
-                    return {
-                        "plan": plan,
-                        "plan_digest": plan["plan_digest"],
-                        "task": task,
-                        "task_context": task_context,
-                        "ledger": ledger,
-                        "finish_summary_index": index,
-                        "finish_summary_index_path": index_path,
-                        "body": body,
-                        "body_source": body_source,
-                        "month_supersession": month_supersession,
-                        "pre_pr_reprepare": pre_pr_reprepare,
-                        "migration_normalization": migration_normalization,
-                        "reviewed_content_head": publication_identity["reviewed_content_head"],
-                        "publication_head": publication_identity["publication_head"],
-                        "metadata_tail": publication_identity["metadata_tail"],
+                if pre_pr_reprepare is None:
+                    previous_month = closeout_archive_month(persisted)
+                    next_month = closeout_archive_month(plan)
+                    supersession_errors = closeout_month_supersession_errors(persisted, plan)
+                    if (
+                        previous_month == next_month
+                        or task.get("status") != "in_progress"
+                        or (root / persisted["task"]["archive_locator"]).exists()
+                        or supersession_errors
+                    ):
+                        raise WorkflowError(
+                            "Persisted closeout plan no longer matches protected inputs.",
+                            exit_code=2,
+                            payload={
+                                "persisted_digest": persisted.get("plan_digest"),
+                                "rebuilt_digest": plan.get("plan_digest"),
+                                "migration_errors": migration_errors,
+                                "month_supersession_errors": supersession_errors,
+                            },
+                        )
+                    prior_state = resolve_closeout_pre_draft_state(
+                        root,
+                        task_dir,
+                        persisted,
+                        ledger,
+                        verification_owner_result=verification_owner_result,
+                    )
+                    if prior_state not in {"content_pushed", "evidence_ready"}:
+                        raise WorkflowError(
+                            "Stale-month plan has no unique current-contract reprepare state.",
+                            exit_code=2,
+                            payload={"state": prior_state},
+                        )
+                    month_supersession = {
+                        "previous_plan": persisted,
+                        "previous_month": previous_month,
+                        "current_month": next_month,
+                        "prior_state": prior_state,
                     }
-                previous_month = closeout_archive_month(persisted)
-                next_month = closeout_archive_month(plan)
-                supersession_errors = closeout_month_supersession_errors(persisted, plan)
-                if (
-                    previous_month == next_month
-                    or task.get("status") != "in_progress"
-                    or (root / persisted["task"]["archive_locator"]).exists()
-                    or supersession_errors
-                ):
-                    raise WorkflowError(
-                        "Persisted closeout plan no longer matches protected inputs.",
-                        exit_code=2,
-                        payload={
-                            "persisted_digest": persisted.get("plan_digest"),
-                            "rebuilt_digest": plan.get("plan_digest"),
-                            "migration_errors": migration_errors,
-                            "month_supersession_errors": supersession_errors,
-                        },
-                    )
-                prior_state = resolve_closeout_pre_draft_state(
-                    root,
-                    task_dir,
-                    persisted,
-                    ledger,
-                    verification_owner_result=verification_owner_result,
-                )
-                if prior_state not in {"content_pushed", "evidence_ready"}:
-                    raise WorkflowError(
-                        "Stale-month plan has no unique current-contract reprepare state.",
-                        exit_code=2,
-                        payload={"state": prior_state},
-                    )
-                month_supersession = {
-                    "previous_plan": persisted,
-                    "previous_month": previous_month,
-                    "current_month": next_month,
-                    "prior_state": prior_state,
-                }
         else:
             plan = persisted
     return {
@@ -25940,6 +26190,29 @@ def finalization_preview_context(
                     ),
                 )
                 if (
+                    public_input.get("profile") == "reprepare_preview"
+                    and public_input.get("reason_code")
+                    == FINALIZATION_REPREPARE_PROVENANCE_TAIL
+                    and state == "content_pushed"
+                ):
+                    remote_head = closeout_remote_branch_head(root, plan)
+                    publication_head = str(
+                        plan["git"].get("publication_head")
+                        or plan["git"]["branch_review_commit"]
+                    )
+                    if remote_head != publication_head:
+                        if remote_head and is_ancestor(root, remote_head, publication_head):
+                            state = "prepared"
+                        else:
+                            raise WorkflowError(
+                                "Reprepared closeout remote HEAD is not the immutable publication ancestor.",
+                                exit_code=2,
+                                payload={
+                                    "remote_head": remote_head,
+                                    "publication_head": publication_head,
+                                },
+                            )
+                if (
                     state in {"content_pushed", "evidence_ready"}
                     and prepared.get("metadata_tail") is None
                     and finalizer_pre_pr_provenance_tail_required(root, plan)
@@ -26622,11 +26895,24 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
     if exit_id == "reprepare_required":
         reason_code = context["reprepare_reason_code"]
         reviewed_content_head = context["plan"]["git"]["reviewed_content_head"]
+        reprepare: dict[str, Any] | None = None
         if reason_code == FINALIZATION_REPREPARE_PROVENANCE_TAIL:
+            reprepare = (
+                context.get("prepared", {}).get("pre_pr_reprepare")
+                if isinstance(context.get("prepared"), dict)
+                else None
+            )
+            previous_plan = (
+                reprepare.get("previous_plan")
+                if isinstance(reprepare, dict)
+                and isinstance(reprepare.get("previous_plan"), dict)
+                else None
+            )
             finalizer_pre_pr_provenance_reprepare_preflight(
                 root,
                 task_dir,
                 context["plan"],
+                previous_plan=previous_plan,
             )
             publication = finalizer_publication_identity(root, reviewed_content_head)
             provenance = (
@@ -26643,6 +26929,50 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 exit_code=2,
             )
         retired = finalizer_supersede_pre_pr_state(root, task_dir)
+        replacement_plan: dict[str, Any] | None = None
+        base_evolution = (
+            reprepare.get("base_evolution")
+            if isinstance(reprepare, dict)
+            else None
+        )
+        if (
+            reason_code == FINALIZATION_REPREPARE_PROVENANCE_TAIL
+            and isinstance(base_evolution, dict)
+        ):
+            task_context = context.get("task_context")
+            if not isinstance(task_context, dict):
+                raise WorkflowError(
+                    "Provenance reprepare is missing current task runtime identity.",
+                    exit_code=2,
+                )
+            replacement_args = copy.copy(args)
+            replacement_args.repo = context["plan"]["git"]["repo"]
+            replacement_args.remote = context["plan"]["git"]["remote"]
+            replacement_args.base_branch = context["plan"]["git"]["base_branch"]
+            replacement_args.title = context["plan"]["publish"]["title"]
+            replacement_args.include_finalization_gate = True
+            replacement = prepare_closeout(
+                root,
+                replacement_args,
+                load_config(root),
+                task_dir,
+                task_context,
+                publication_ready={
+                    "profile": "publication_ready",
+                    "mode": public_input.get("mode", "workflow"),
+                    "task_ref": public_input["task_ref"],
+                    "branch_review_commit": provenance["reviewed_content_head"],
+                    "pr_title": context["plan"]["publish"]["title"],
+                    "pr_body": context["plan"]["publish"]["body"],
+                },
+            )
+            replacement_plan = replacement["plan"]
+            write_json(closeout_plan_path(task_dir), replacement_plan)
+            if validate_closeout_plan(read_json(closeout_plan_path(task_dir))) != replacement_plan:
+                raise WorkflowError(
+                    "Provenance reprepare replacement plan did not persist exactly.",
+                    exit_code=2,
+                )
         output = finalization_reprepare_public_output(
             root,
             task_ref=public_input["task_ref"],
@@ -26657,6 +26987,11 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             "retired_owner_state": retired,
             "reviewed_content_head": provenance["reviewed_content_head"],
             "publication_head": provenance["publication_head"],
+            "replacement_plan_digest": (
+                replacement_plan["plan_digest"]
+                if replacement_plan is not None
+                else None
+            ),
             "output": output,
         }
     if exit_id == "published":

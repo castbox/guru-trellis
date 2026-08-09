@@ -68,11 +68,13 @@ Before editing workflow behavior:
   four typed exits; review scripts are package-owned deterministic
   recorder/validator implementation details.
 - `guru-review-task-publication` is the sole publication semantic owner after
-  Branch Review. The workflow caller first authors the two current task-local
-  publication content candidates, then invokes this owner; the caller does not
-  judge readiness. The Skill owns two target-authored profiles, the single layered
-  ignored schema 3.0 `pr-readiness.json` checkpoint, metadata-only internal
-  revision, shared Finalizer preflight, ten-dimension review, and `ready` /
+  Branch Review. The owner reads approved scope, the complete current diff,
+  validation results, and live issue state, then authors and reviews the current
+  PR title/body in memory. Its checked `ready` DTO carries that exact payload
+  directly to Finalizer without task-local publication content artifacts. The
+  Skill owns two target-authored profiles, the single layered ignored schema 3.0
+  `pr-readiness.json` checkpoint, metadata-only internal revision, shared
+  Finalizer preflight, ten-dimension review, and `ready` /
   `return_to_task_work` / `blocked`; workflow owns only routes.
 - `guru-verify-extension-installation` is the sole semantic owner of extension
   installation applicability, closed capability selection, adequacy, findings,
