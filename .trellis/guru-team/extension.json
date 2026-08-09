@@ -303,11 +303,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-09T21:11:55Z",
+  "installed_at": "2026-08-09T22:15:27Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "c57eceec1ea422091c705339b2a3043fc0dcea28",
-    "commit": "c57eceec1ea422091c705339b2a3043fc0dcea28",
+    "ref": "37b173d8d987f1be894933c1b1f78e2a9747ab59",
+    "commit": "37b173d8d987f1be894933c1b1f78e2a9747ab59",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -502,7 +502,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "0b5741d793f1c755a1b2dca545eadf76e9d066d1de0775e4ad3b59de5ce523fe",
+        "sha256": "b7aeca94d6cc56b4ef82ac62352bf074bc513e3d6455370af918827bc34dc3e2",
         "executable": false,
         "action": "unchanged"
       },
@@ -628,7 +628,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "c920bf54274aee7781e4327ee34d79c2024e24367a651e7f86c9d57c0d2fd11f",
+        "sha256": "b44b45ab746b11214e2d8ee216bfc392c14dcee9b8d9636f71fb1886ae317a44",
         "executable": false,
         "action": "unchanged"
       },

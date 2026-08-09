@@ -804,11 +804,20 @@ script modes must match after fresh install, update, and preset reapply. The
   overlay cleanup owned by #132.
 
 Issue #180 adds one #174 controlled replay session to the installed Finish-family
-integration. It chains the current Branch Review -> Publication -> Finalizer ->
-Verifier -> Finalizer -> Merge public projections in one event log, validates
-each target input and output against the selected Interface schema, and binds
-real public-wrapper receipts for Branch Review, Verifier, Finalizer and Merge.
-Confirmation counts are derived from canonical `guru-confirmation-boundary`
-markers; execution counts are derived from wrapper receipts. Isolated eval case
-names, fixed confirmation arrays, or literal execution totals are not accepted
-as replay evidence. The same replay root is scanned for terminal Finalizer state.
+integration. The replay uses one clean installed owner repository, one shared run
+root, and one stateful GitHub fixture. It executes the real Branch Review,
+Publication, Finalizer, Verifier, Finalizer re-entry, and Merge public wrappers.
+Each producer's actual stdout is the only producer payload supplied to its
+declared Interface projection; the projected and schema-validated target input
+is then the actual next wrapper input. Receipts bind each stdout digest to the
+next input digest in one event log.
+
+Manually authored producer or terminal DTOs, separate fixed eval cases, and
+isolated fixtures that merely return the expected exits are not end-to-end
+replay evidence. The stateful GitHub fixture must prove the ordered Open Issue
+preflight, expected-head merge, merged PR reread, and merge-time Issue closure,
+while rejecting any Issue-close mutation. Confirmation counts are derived from
+event receipts plus canonical `guru-confirmation-boundary` profile membership;
+execution counts are derived only from wrapper receipts. Fixed confirmation
+arrays, case-name totals, or literal execution totals are invalid. The same
+shared owner repository is scanned for terminal Finalizer state.

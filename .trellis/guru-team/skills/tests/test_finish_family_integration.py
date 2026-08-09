@@ -201,15 +201,40 @@ def load_selected_runtime() -> Any:
     return module
 
 
+def load_selected_native_adapter() -> Any:
+    adapter = (
+        REPO / ".trellis/guru-team/skills/adapters/eval/native_adapter.py"
+        if EXECUTION_MODE == "installed"
+        else REPO / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        f"guru_finish_family_native_adapter_{EXECUTION_MODE}",
+        adapter,
+    )
+    if spec is None or spec.loader is None:
+        raise AssertionError(f"could not load native adapter: {adapter}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 class FinishFamilyIntegrationTests(unittest.TestCase):
     def test_issue_174_controlled_replay_is_one_chained_session(self) -> None:
         runtime = load_selected_runtime()
-        task_ref = ".trellis/tasks/08-09-174-controlled-replay"
-        branch_review_commit = "a" * 40
-        publication_head = "c" * 40
-        plan_ref = f"finalization:{'b' * 64}"
-        repo_ref = "castbox/guru-trellis"
+        adapter = load_selected_native_adapter()
         events: list[dict[str, Any]] = []
+        report_path = os.environ.get("GURU_ISSUE_174_REPLAY_REPORT")
+        temporary_replay: Any = None
+        if report_path:
+            replay_root = Path(report_path).resolve().parent / "chained-session"
+            self.assertFalse(replay_root.exists())
+            replay_root.mkdir(parents=True)
+        else:
+            temporary_replay = tempfile.TemporaryDirectory(
+                prefix="guru-174-chained-replay-"
+            )
+            self.addCleanup(temporary_replay.cleanup)
+            replay_root = Path(temporary_replay.name)
 
         marker_pattern = re.compile(
             r"<!-- guru-confirmation-boundary: (\{.*?\}) -->"
@@ -230,8 +255,23 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             },
         )
 
+        dispatcher = REPO / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        self.assertTrue(dispatcher.is_file())
+        fixture, _ = adapter.stage_clean_installed_owner_repo(
+            replay_root / "owner-staging",
+            dispatcher,
+            package("guru-review-branch"),
+        )
+        fixture_dispatcher = (
+            fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        )
+        runtime = adapter.load_owner_runtime(fixture_dispatcher)
+
+        def fixture_package(skill_id: str) -> Path:
+            return fixture / ".trellis/guru-team/skills/packages" / skill_id
+
         interfaces = {
-            skill_id: read_json(package(skill_id) / "interface.json")
+            skill_id: read_json(fixture_package(skill_id) / "interface.json")
             for skill_id in (
                 "guru-review-branch",
                 "guru-review-task-publication",
@@ -248,24 +288,87 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 for item in interface["public_contracts"]["outputs"]
                 if item["exit_id"] == output["exit_id"]
             )
-            schema = read_json(package(skill_id) / contract["schema"]["path"])
+            schema = read_json(
+                fixture_package(skill_id) / contract["schema"]["path"]
+            )
             errors = runtime.skill_json_schema_validation_errors(
                 output,
                 schema,
                 f"#174 replay {skill_id}:{output['exit_id']}",
             )
             self.assertEqual(errors, [])
-            events.append({
-                "kind": "invocation",
+
+        def repo_relative(path: Path) -> str:
+            return path.resolve().relative_to(fixture.resolve()).as_posix()
+
+        def invoke_wrapper(
+            skill_id: str,
+            input_path: Path,
+            owner_flag: str,
+            owner_path: Path,
+            *,
+            environment: dict[str, str] | None = None,
+        ) -> tuple[dict[str, Any], str]:
+            wrapper = fixture_package(skill_id) / "scripts/invoke.sh"
+            argv = [
+                str(wrapper),
+                "--input",
+                repo_relative(input_path),
+                owner_flag,
+                repo_relative(owner_path),
+            ]
+            process = subprocess.run(
+                argv,
+                cwd=fixture,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+                env={
+                    **os.environ,
+                    "PYTHONDONTWRITEBYTECODE": "1",
+                    **(environment or {}),
+                },
+            )
+            self.assertEqual(process.returncode, 0, process.stderr)
+            public_output = json.loads(process.stdout)
+            self.assertIsInstance(public_output, dict)
+            validate_output(skill_id, public_output)
+            receipt_id = f"wrapper-{sum(e['kind'] == 'wrapper_receipt' for e in events) + 1:02d}"
+            receipt_path = (
+                fixture
+                / ".trellis/.runtime/guru-team/replay/receipts"
+                / f"{receipt_id}-{skill_id}.json"
+            )
+            receipt = {
+                "receipt_id": receipt_id,
                 "skill": skill_id,
-                "exit_id": output["exit_id"],
+                "input_sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
+                "owner_locator": repo_relative(owner_path),
+                "returncode": process.returncode,
+                "stdout": process.stdout,
+                "stderr": process.stderr,
+            }
+            runtime.write_json(receipt_path, receipt)
+            events.append({
+                "kind": "wrapper_receipt",
+                "receipt_id": receipt_id,
+                "skill": skill_id,
+                "exit_id": public_output["exit_id"],
+                "input_sha256": receipt["input_sha256"],
+                "receipt_locator": repo_relative(receipt_path),
+                "stdout_sha256": hashlib.sha256(
+                    process.stdout.encode("utf-8")
+                ).hexdigest(),
             })
+            return public_output, receipt_id
 
         def project(
             skill_id: str,
             projection_id: str,
             output: dict[str, Any],
-        ) -> dict[str, Any]:
+            source_receipt_id: str,
+        ) -> tuple[dict[str, Any], Path]:
             interface = interfaces[skill_id]
             projection = next(
                 item
@@ -282,7 +385,8 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             seed = runtime.skill_apply_projection(projection, output)
             target_skill = consumer["consumer"]["id"]
             authoring = read_json(
-                package(target_skill) / contract["authoring_example"]["path"]
+                fixture_package(target_skill)
+                / contract["authoring_example"]["path"]
             )
             self.assertFalse(set(seed) & set(authoring))
             target_input = {**seed, **authoring}
@@ -293,7 +397,7 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 if item["id"] == contract["profile_id"]
             )
             target_schema = read_json(
-                package(target_skill) / target_profile["schema"]["path"]
+                fixture_package(target_skill) / target_profile["schema"]["path"]
             )
             errors = runtime.skill_json_schema_validation_errors(
                 target_input,
@@ -301,220 +405,518 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 f"#174 replay projection {projection_id}",
             )
             self.assertEqual(errors, [])
+            target_path = (
+                fixture
+                / ".trellis/.runtime/guru-team/replay/inputs"
+                / f"{len([e for e in events if e['kind'] == 'projection']) + 1:02d}-{target_skill}.json"
+            )
+            runtime.write_json(target_path, target_input)
+            target_sha256 = hashlib.sha256(target_path.read_bytes()).hexdigest()
             events.append({
                 "kind": "projection",
+                "source_receipt_id": source_receipt_id,
                 "producer": skill_id,
                 "projection_id": projection_id,
                 "consumer": target_skill,
-                "input_sha256": hashlib.sha256(
-                    json.dumps(
-                        target_input,
-                        ensure_ascii=False,
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    ).encode("utf-8")
-                ).hexdigest(),
+                "target_input_locator": repo_relative(target_path),
+                "target_input_sha256": target_sha256,
             })
-            return target_input
+            return target_input, target_path
 
-        events.append({
-            "kind": "confirmation",
-            "boundary": marker_by_id["workspace_and_task"]["id"],
-            "source": "sanitized_prior_lifecycle_receipt",
-        })
-        branch_output = {
-            "exit_id": "passed",
-            "task_ref": task_ref,
-            "branch_review_commit": branch_review_commit,
-        }
-        validate_output("guru-review-branch", branch_output)
-        publication_input = project(
-            "guru-review-branch", "project_passed", branch_output
+        manifest_path = fixture / ".trellis/guru-team/extension.json"
+        manifest = read_json(manifest_path)
+        manifest["source"]["tree_state"] = "clean"
+        runtime.write_json(manifest_path, manifest)
+        task, _ = adapter.production_task_fixture(runtime, fixture)
+        adapter.run_git(
+            fixture,
+            "remote",
+            "set-url",
+            "origin",
+            "https://github.com/castbox/guru-trellis.git",
         )
-        self.assertEqual(publication_input["branch_review_commit"], branch_review_commit)
-
-        publication_output = {
-            "exit_id": "ready",
-            "task_ref": task_ref,
-            "branch_review_commit": branch_review_commit,
-            "pr_title": "完成：#174 受控回放",
-            "pr_body": "## 变更摘要\n\n- 受控回放。\n\nCloses #174\n",
+        config_path = fixture / ".trellis/guru-team/config.yml"
+        config_path.write_text(
+            'workspace_mode: current\ngithub_repo: "castbox/guru-trellis"\n',
+            encoding="utf-8",
+        )
+        task_payload = read_json(task / "task.json")
+        task_payload["title"] = "#174 controlled finalization replay"
+        runtime.write_json(task / "task.json", task_payload)
+        historical_issue = {
+            "number": 174,
+            "url": "https://github.com/castbox/guru-trellis/issues/174",
+            "title": "Controlled historical replay authority",
+            "reason": "Sanitized immutable lifecycle evidence only.",
         }
-        validate_output("guru-review-task-publication", publication_output)
-        finalizer_input = project(
-            "guru-review-task-publication", "project_ready", publication_output
+        runtime.write_json(
+            task / "issue-scope-ledger.json",
+            {
+                "schema_version": "2.0",
+                "primary_issue": historical_issue,
+                "close_issues": [historical_issue],
+                "related_issues": [],
+                "followup_issues": [],
+            },
+        )
+        runtime.write_runtime_mappings(
+            fixture,
+            runtime.load_config(fixture),
+            {
+                "workspace_slug": "current",
+                "task_slug": "current",
+                "task_dir": repo_relative(task),
+                "branch_name": "eval/current",
+            },
+            fixture,
+        )
+        adapter.run_git(fixture, "add", ".")
+        adapter.run_git(fixture, "commit", "-q", "-m", "bind #174 replay authority")
+
+        adapter.production_record_planning(runtime, fixture, task, "approved")
+        task_payload = read_json(task / "task.json")
+        task_payload["status"] = "in_progress"
+        runtime.write_json(task / "task.json", task_payload)
+        adapter.run_git(fixture, "add", repo_relative(task))
+        adapter.run_git(fixture, "commit", "-q", "-m", "activate replay task")
+        task_start = subprocess.run(
+            [
+                adapter.sys.executable,
+                str(fixture / ".trellis/scripts/task.py"),
+                "start",
+                repo_relative(task),
+            ],
+            cwd=fixture,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(task_start.returncode, 0, task_start.stderr)
+        (fixture / "src/production-eval.txt").write_text(
+            "issue-174-controlled-replay\n", encoding="utf-8"
+        )
+        phase2_package = fixture_package("guru-check-task")
+        checked_phase2 = adapter.production_record_phase2(
+            runtime, fixture, task, phase2_package, "passed"
+        )
+        production_facts = adapter.write_fake_production_commit_facts(
+            replay_root,
+            repo_ref="castbox/guru-trellis",
+            head_branch="eval/current",
+        )
+        adapter.with_path_prefix(
+            production_facts,
+            lambda: adapter.production_commit_for_review(
+                runtime, fixture, task, checked_phase2
+            ),
+        )
+        branch_input = {
+            "profile": "branch_review",
+            "mode": "workflow",
+            "task_ref": repo_relative(task),
+            "base_ref": "origin/main",
+            "branch_review_commit": adapter.run_git(fixture, "rev-parse", "HEAD"),
+            "review_intent": "fresh_final_review",
+        }
+        branch_owner = adapter.with_path_prefix(
+            production_facts,
+            lambda: adapter.production_record_review(
+                runtime,
+                fixture,
+                task,
+                branch_input,
+                "review-fresh-final-passed",
+            ),
+        )
+        branch_input_path = fixture / adapter.OWNER_INPUT
+        branch_output, branch_receipt = invoke_wrapper(
+            "guru-review-branch",
+            branch_input_path,
+            "--owner-result",
+            Path(branch_owner["artifact_path"]),
+            environment={"PATH": f"{production_facts}{os.pathsep}{os.environ.get('PATH', '')}"},
+        )
+        publication_input, publication_input_path = project(
+            "guru-review-branch",
+            "project_passed",
+            branch_output,
+            branch_receipt,
+        )
+        self.assertEqual(
+            publication_input["branch_review_commit"],
+            branch_output["branch_review_commit"],
+        )
+
+        publication_authoring_path = adapter.production_publication_authoring(
+            runtime,
+            fixture,
+            task,
+            publication_input,
+            "publication-ready",
+        )
+        publication_authoring = read_json(publication_authoring_path)
+        publication_authoring["pr_payload"]["title"] = "完成：#174 受控回放"
+        publication_authoring["pr_payload"]["body"] = publication_authoring[
+            "pr_payload"
+        ]["body"].replace("#146", "#174")
+        runtime.write_json(publication_authoring_path, publication_authoring)
+        publication_owner = adapter.with_path_prefix(
+            production_facts,
+            lambda: runtime.cmd_record_task_publication_review(argparse.Namespace(
+                root=str(fixture),
+                task=repo_relative(task),
+                input=repo_relative(publication_authoring_path),
+                branch_review_commit=publication_input["branch_review_commit"],
+                dry_run=False,
+            )),
+        )
+        publication_output, publication_receipt = invoke_wrapper(
+            "guru-review-task-publication",
+            publication_input_path,
+            "--owner-result",
+            Path(publication_owner["artifact_path"]),
+            environment={"PATH": f"{production_facts}{os.pathsep}{os.environ.get('PATH', '')}"},
+        )
+        finalizer_input, finalizer_input_path = project(
+            "guru-review-task-publication",
+            "project_ready",
+            publication_output,
+            publication_receipt,
         )
         self.assertEqual(finalizer_input["pr_body"], publication_output["pr_body"])
 
-        events.append({
-            "kind": "confirmation",
-            "boundary": marker_by_id["finalizer_side_effect_set"]["id"],
-            "source": "current_finalizer_plan",
-        })
-        verification_required = {
-            "exit_id": "verification_required",
-            "task_ref": task_ref,
-            "plan_ref": plan_ref,
-            "repo_ref": repo_ref,
-            "branch_review_commit": branch_review_commit,
-            "publication_head": publication_head,
-            "verification_target": "extension-installation",
-        }
-        validate_output("guru-finalize-task", verification_required)
-        verification_input = project(
+        plan_digest = hashlib.sha256(
+            (
+                finalizer_input["task_ref"]
+                + ":"
+                + finalizer_input["branch_review_commit"]
+            ).encode("utf-8")
+        ).hexdigest()
+        plan_ref = f"closeout-plan:{plan_digest}"
+        archive_locator = ".trellis/tasks/archive/2026-08/current"
+
+        def stage_finalizer_gate(
+            public_input: dict[str, Any],
+            input_path: Path,
+            *,
+            exit_id: str,
+            transaction_state: str,
+        ) -> Path:
+            publication_head = public_input.get(
+                "publication_head", public_input["branch_review_commit"]
+            )
+            verification_ref = (
+                public_input.get("verification_ref")
+                if public_input["profile"] == "verification_verified"
+                else None
+            )
+            if transaction_state == "ready":
+                (fixture / archive_locator).mkdir(parents=True, exist_ok=True)
+            context_path = (
+                fixture
+                / ".trellis/.runtime/guru-team/evals/finalization-context.json"
+            )
+            runtime.write_json(
+                context_path,
+                {
+                    "schema_version": "2.0",
+                    "task_ref": public_input["task_ref"],
+                    "plan_ref": plan_ref,
+                    "plan_digest": plan_digest,
+                    "branch_review_commit": public_input["branch_review_commit"],
+                    "publication_head": publication_head,
+                    "archive_locator": archive_locator,
+                    "repo_ref": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "head_branch": "eval/current",
+                    "verification_ref": verification_ref,
+                    "publication_status": "current",
+                    "publication_stale_reason": None,
+                    "marketplace_required": True,
+                    "transaction_state": transaction_state,
+                },
+            )
+            route_output = (
+                {
+                    "exit_id": "verification_required",
+                    "task_ref": public_input["task_ref"],
+                    "plan_ref": plan_ref,
+                    "repo_ref": "castbox/guru-trellis",
+                    "branch_review_commit": public_input["branch_review_commit"],
+                    "publication_head": publication_head,
+                    "verification_target": "extension-installation",
+                }
+                if exit_id == "verification_required"
+                else runtime.FINALIZATION_EXECUTOR_OUTPUT_MARKER
+            )
+            gate = {
+                "schema_version": "3.0",
+                "skill_id": "guru-finalize-task",
+                "identity": {
+                    "task_ref": public_input["task_ref"],
+                    "plan_ref": plan_ref,
+                    "plan_digest": plan_digest,
+                    "branch_review_commit": public_input["branch_review_commit"],
+                },
+                "review": {
+                    "status": "passed",
+                    "summary": "The chained replay reviewed the exact current Finalizer facts.",
+                },
+                "route": {
+                    "typed_exit": exit_id,
+                    "consumer": runtime.FINALIZATION_CONSUMERS[exit_id],
+                    "output": route_output,
+                },
+            }
+            gate_path = runtime.task_finalization_path(fixture, task)
+            runtime.write_json(gate_path, gate)
+            runtime.write_json(input_path, public_input)
+            previous = os.environ.get("GURU_TEAM_EVAL_STAGING")
+            os.environ["GURU_TEAM_EVAL_STAGING"] = "1"
+            try:
+                runtime.check_finalization_gate_result(
+                    fixture,
+                    argparse.Namespace(),
+                    public_input,
+                    gate,
+                    gate_path,
+                )
+            finally:
+                if previous is None:
+                    os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
+                else:
+                    os.environ["GURU_TEAM_EVAL_STAGING"] = previous
+            return gate_path
+
+        for boundary, source in (
+            ("workspace_and_task", "sanitized_open_issue_lifecycle_receipt"),
+            ("issue_creation", "sanitized_new_issue_lifecycle_receipt"),
+            ("finalizer_side_effect_set", "current_chained_finalizer_plan"),
+        ):
+            events.append({
+                "kind": "confirmation",
+                "boundary": marker_by_id[boundary]["id"],
+                "source": source,
+            })
+
+        verification_gate = stage_finalizer_gate(
+            finalizer_input,
+            finalizer_input_path,
+            exit_id="verification_required",
+            transaction_state="content_pushed",
+        )
+        verification_required, finalizer_required_receipt = invoke_wrapper(
+            "guru-finalize-task",
+            finalizer_input_path,
+            "--owner-result",
+            verification_gate,
+            environment={"GURU_TEAM_EVAL_STAGING": "1"},
+        )
+        verification_input, verification_input_path = project(
             "guru-finalize-task",
             "project_verification_required",
             verification_required,
+            finalizer_required_receipt,
         )
-        self.assertEqual(verification_input["publication_head"], publication_head)
 
-        verified_output = {
-            "exit_id": "verified",
-            "mode": "workflow",
-            "task_ref": task_ref,
-            "plan_ref": plan_ref,
-            "branch_review_commit": branch_review_commit,
-            "publication_head": publication_head,
-            "verification_ref": "verification:issue-174-controlled-replay",
-        }
-        validate_output("guru-verify-extension-installation", verified_output)
-        verified_finalizer_input = project(
+        verifier_package = fixture_package("guru-verify-extension-installation")
+        capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
+        verifier_execution_path = (
+            fixture / ".trellis/.runtime/guru-team/evals/replay-verifier-execution.json"
+        )
+        verifier_review_path = (
+            fixture / ".trellis/.runtime/guru-team/evals/replay-verifier-review.json"
+        )
+        runtime.write_json(
+            verifier_execution_path,
+            adapter.extension_verification_execution(
+                runtime,
+                fixture,
+                verification_input,
+                "passed",
+                capabilities,
+                verifier_package,
+            ),
+        )
+        runtime.write_json(
+            verifier_review_path,
+            adapter.extension_verification_review("verified", capabilities),
+        )
+        verifier_owner = runtime.cmd_record_extension_verification(argparse.Namespace(
+            root=str(fixture),
+            input=repo_relative(verification_input_path),
+            execution_input=repo_relative(verifier_execution_path),
+            review_input=repo_relative(verifier_review_path),
+        ))
+        verifier_owner_path = task / "marketplace-verification.json"
+        previous_eval = os.environ.get("GURU_TEAM_EVAL_STAGING")
+        os.environ["GURU_TEAM_EVAL_STAGING"] = "1"
+        try:
+            runtime.check_extension_verification_result(
+                fixture,
+                verifier_owner,
+                repo_relative(verifier_owner_path),
+                verification_input,
+            )
+        finally:
+            if previous_eval is None:
+                os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
+            else:
+                os.environ["GURU_TEAM_EVAL_STAGING"] = previous_eval
+        verified_output, verifier_receipt = invoke_wrapper(
+            "guru-verify-extension-installation",
+            verification_input_path,
+            "--owner-result",
+            verifier_owner_path,
+            environment={"GURU_TEAM_EVAL_STAGING": "1"},
+        )
+        verified_finalizer_input, verified_finalizer_input_path = project(
             "guru-verify-extension-installation",
             "project_verified",
             verified_output,
+            verifier_receipt,
         )
         self.assertEqual(
             verified_finalizer_input["verification_ref"],
             verified_output["verification_ref"],
         )
 
-        ready_for_merge = {
-            "exit_id": "ready_for_merge",
-            "repo_ref": repo_ref,
-            "pr_number": 176,
-            "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
-            "expected_head_sha": publication_head,
-            "expected_base_branch": "main",
-            "expected_head_branch": "codex/174-controlled-replay",
-            "expected_close_issues": [174],
-        }
-        validate_output("guru-finalize-task", ready_for_merge)
-        merge_input = project(
-            "guru-finalize-task", "project_ready_for_merge", ready_for_merge
+        ready_gate = stage_finalizer_gate(
+            verified_finalizer_input,
+            verified_finalizer_input_path,
+            exit_id="ready_for_merge",
+            transaction_state="ready",
+        )
+        ready_for_merge, ready_receipt = invoke_wrapper(
+            "guru-finalize-task",
+            verified_finalizer_input_path,
+            "--owner-result",
+            ready_gate,
+            environment={"GURU_TEAM_EVAL_STAGING": "1"},
+        )
+        merge_input, merge_input_path = project(
+            "guru-finalize-task",
+            "project_ready_for_merge",
+            ready_for_merge,
+            ready_receipt,
         )
         self.assertEqual(merge_input["expected_close_issues"], [174])
 
-        events.append({
-            "kind": "confirmation",
-            "boundary": marker_by_id["expected_head_merge"]["id"],
-            "source": "current_merge_plan",
-        })
-        merged_output = {
-            "exit_id": "merged",
-            "repo_ref": repo_ref,
-            "pr_number": 176,
-            "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
-            "merge_commit_sha": "d" * 40,
-        }
-        validate_output("guru-merge-task-pr", merged_output)
-
-        report_path = os.environ.get("GURU_ISSUE_174_REPLAY_REPORT")
-        wrapper_cases = (
-            ("guru-review-branch", "fresh-final-passed", "passed"),
-            (
-                "guru-verify-extension-installation",
-                "workflow-required-verified",
-                "verified",
-            ),
-            (
-                "guru-finalize-task",
-                "publication-ready-ready-for-merge",
-                "ready_for_merge",
-            ),
-            (
-                "guru-merge-task-pr",
-                "workflow-expected-head-merged",
-                "merged",
-            ),
+        merge_binary = adapter.write_fake_merge_gh(
+            replay_root,
+            "merge-workflow-merged",
+            repo_ref=merge_input["repo_ref"],
+            pr_number=merge_input["pr_number"],
+            issue_number=174,
+            head_sha=merge_input["expected_head_sha"],
+            base_branch=merge_input["expected_base_branch"],
+            head_branch=merge_input["expected_head_branch"],
         )
-        temporary_terminal: Any = None
-        if report_path:
-            terminal_root = Path(report_path).resolve().parent
-            wrapper_root = terminal_root / "wrapper-receipts"
-            for ordinal, (skill_id, case_id, expected_exit) in enumerate(
-                wrapper_cases,
-                start=1,
-            ):
-                run_root = wrapper_root / f"{ordinal:02d}-{skill_id}"
-                process = subprocess.run(
-                    [
-                        str(EVAL_RUNNER),
-                        "--root",
-                        str(REPO),
-                        "--mode",
-                        EXECUTION_MODE,
-                        "--skill",
-                        skill_id,
-                        "--adapter",
-                        "shared",
-                        "--case",
-                        case_id,
-                        "--run-root",
-                        str(run_root),
-                        "--json",
-                    ],
-                    cwd=REPO,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-                self.assertEqual(process.returncode, 0, process.stderr)
-                evidence = json.loads(process.stdout)
-                cases = evidence.get("cases")
-                self.assertIsInstance(cases, list)
-                self.assertEqual(len(cases), 1)
-                receipt = cases[0]
-                self.assertEqual(evidence.get("status"), "passed")
-                self.assertEqual(receipt.get("status"), "passed")
-                self.assertEqual(receipt.get("actual_exit"), expected_exit)
-                transcript = read_json(Path(receipt["transcript_locator"]))
-                public_output = json.loads(transcript["stdout"])
-                self.assertEqual(public_output["exit_id"], expected_exit)
-                events.append({
-                    "kind": "wrapper_receipt",
-                    "skill": skill_id,
-                    "case_id": case_id,
-                    "exit_id": expected_exit,
-                    "transcript_locator": receipt["transcript_locator"],
-                    "stdout_sha256": hashlib.sha256(
-                        transcript["stdout"].encode("utf-8")
-                    ).hexdigest(),
-                })
-        else:
-            temporary_terminal = tempfile.TemporaryDirectory(
-                prefix="guru-174-replay-terminal-"
-            )
-            terminal_root = Path(temporary_terminal.name)
-
+        merge_environment = {
+            "PATH": f"{merge_binary}{os.pathsep}{os.environ.get('PATH', '')}"
+        }
+        merge_review_path = (
+            fixture / ".trellis/.runtime/guru-team/evals/replay-merge-review.json"
+        )
+        runtime.write_json(
+            merge_review_path,
+            {
+                "semantic_review": {
+                    "dimensions": [
+                        {
+                            "id": identifier,
+                            "status": "passed",
+                            "summary": f"The chained replay passes {identifier}.",
+                        }
+                        for identifier in runtime.TASK_PR_MERGE_DIMENSIONS
+                    ]
+                },
+                "route": {"typed_exit": "merged", "merge_method": "merge"},
+            },
+        )
+        previous_path = os.environ.get("PATH")
+        os.environ["PATH"] = merge_environment["PATH"]
         try:
-            terminal_names = {
-                "finalization-transaction.json",
-                "task-finalization-gate.json",
-                "task-finalization-transition.json",
-                "closeout-plan.json",
-            }
-            terminal_artifacts = [
-                path.relative_to(terminal_root).as_posix()
-                for path in terminal_root.rglob("*")
-                if path.is_file()
-                and path.name in terminal_names
-                and ".trellis" in path.parts
-                and (".runtime" in path.parts or "tasks" in path.parts)
-            ]
+            merge_record = runtime.cmd_record_task_pr_merge(argparse.Namespace(
+                root=str(fixture),
+                input=repo_relative(merge_input_path),
+                review_input=str(merge_review_path),
+            ))
+            merge_gate = fixture / merge_record["gate"]
+            events.append({
+                "kind": "confirmation",
+                "boundary": marker_by_id["expected_head_merge"]["id"],
+                "source": "current_expected_head_merge_plan",
+            })
+            merge_execution = runtime.cmd_execute_task_pr_merge(argparse.Namespace(
+                root=str(fixture),
+                input=repo_relative(merge_input_path),
+                gate=repo_relative(merge_gate),
+            ))
         finally:
-            if temporary_terminal is not None:
-                temporary_terminal.cleanup()
+            if previous_path is None:
+                os.environ.pop("PATH", None)
+            else:
+                os.environ["PATH"] = previous_path
+        self.assertEqual(merge_execution["typed_exit"], "merged")
+        merged_output, _ = invoke_wrapper(
+            "guru-merge-task-pr",
+            merge_input_path,
+            "--gate",
+            merge_gate,
+            environment=merge_environment,
+        )
+        self.assertEqual(merged_output["exit_id"], "merged")
+
+        merge_state = read_json(merge_binary / "state.json")
+        calls = merge_state["calls"]
+        merge_call_index = next(
+            index
+            for index, argv in enumerate(calls)
+            if argv[:2] == ["pr", "merge"]
+        )
+        pre_issue_reads = [
+            index
+            for index, argv in enumerate(calls[:merge_call_index])
+            if argv[:2] == ["issue", "view"]
+        ]
+        post_issue_reads = [
+            index
+            for index, argv in enumerate(calls[merge_call_index + 1 :], merge_call_index + 1)
+            if argv[:2] == ["issue", "view"]
+        ]
+        self.assertTrue(pre_issue_reads)
+        self.assertTrue(post_issue_reads)
+        self.assertTrue(merge_state["merged"])
+        self.assertFalse(
+            any(argv[:2] == ["issue", "close"] for argv in calls)
+        )
+        events.append({
+            "kind": "github_state_transition",
+            "pre_merge_issue_reads": len(pre_issue_reads),
+            "expected_head_merge_call": calls[merge_call_index],
+            "post_merge_issue_reads": len(post_issue_reads),
+            "merged": merge_state["merged"],
+            "calls_sha256": hashlib.sha256(
+                json.dumps(calls, separators=(",", ":")).encode("utf-8")
+            ).hexdigest(),
+        })
+
+        terminal_names = {
+            "finalization-transaction.json",
+            "task-finalization-gate.json",
+            "task-finalization-transition.json",
+            "closeout-plan.json",
+        }
+        terminal_artifacts = [
+            path.relative_to(fixture).as_posix()
+            for path in fixture.rglob("*")
+            if path.is_file()
+            and path.name in terminal_names
+            and ".trellis" in path.parts
+            and (".runtime" in path.parts or "tasks" in path.parts)
+        ]
 
         confirmation_profiles = {
             profile: [
@@ -524,10 +926,17 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             ]
             for profile in ("open_issue", "new_issue")
         }
-        execution_receipt_kind = "wrapper_receipt" if report_path else "invocation"
+        confirmation_counts = {
+            profile: sum(
+                event["kind"] == "confirmation"
+                and profile in marker_by_id[event["boundary"]]["profiles"]
+                for event in events
+            )
+            for profile in confirmation_profiles
+        }
         counters = {
-            "open_issue_confirmations": len(confirmation_profiles["open_issue"]),
-            "new_issue_confirmations": len(confirmation_profiles["new_issue"]),
+            "open_issue_confirmations": confirmation_counts["open_issue"],
+            "new_issue_confirmations": confirmation_counts["new_issue"],
             "commit_confirmations": sum(
                 event.get("boundary") == "task_commit"
                 for event in events
@@ -536,12 +945,12 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             "branch_review_executions": sum(
                 event.get("skill") == "guru-review-branch"
                 for event in events
-                if event["kind"] == execution_receipt_kind
+                if event["kind"] == "wrapper_receipt"
             ),
             "immutable_verification_executions": sum(
                 event.get("skill") == "guru-verify-extension-installation"
                 for event in events
-                if event["kind"] == execution_receipt_kind
+                if event["kind"] == "wrapper_receipt"
             ),
             "finalizer_confirmations": sum(
                 event.get("boundary") == "finalizer_side_effect_set"
@@ -582,6 +991,12 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             "counters": counters,
             "terminal_artifacts": terminal_artifacts,
         }
+        event_log_path = replay_root / "event-log.json"
+        event_log_path.write_text(
+            json.dumps(events, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        report["event_log"] = str(event_log_path)
         if report_path:
             Path(report_path).write_text(
                 json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True)

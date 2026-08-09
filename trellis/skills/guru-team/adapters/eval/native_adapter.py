@@ -549,7 +549,17 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
     return binary
 
 
-def write_fake_merge_gh(execution_root: Path, recipe: str) -> Path:
+def write_fake_merge_gh(
+    execution_root: Path,
+    recipe: str,
+    *,
+    repo_ref: str = "castbox/guru-trellis",
+    pr_number: int = 176,
+    issue_number: int = 174,
+    head_sha: str | None = None,
+    base_branch: str | None = None,
+    head_branch: str | None = None,
+) -> Path:
     configurations = {
         "merge-workflow-merged": {
             "draft": False,
@@ -596,22 +606,33 @@ def write_fake_merge_gh(execution_root: Path, recipe: str) -> Path:
             "closure_mismatch": True,
         },
     }
-    configuration = configurations.get(recipe)
+    configuration = copy.deepcopy(configurations.get(recipe))
     if configuration is None:
         raise ValueError(f"unsupported merge owner staging recipe: {recipe}")
+    if head_sha is not None:
+        configuration["head"] = head_sha
+    if base_branch is not None:
+        configuration["base_branch"] = base_branch
+    if head_branch is not None:
+        configuration["head_branch"] = head_branch
     binary = execution_root / "merge-owner-bin"
     binary.mkdir(parents=True, exist_ok=True)
     state_path = binary / "state.json"
-    state_path.write_text(json.dumps({"merged": False}) + "\n", encoding="utf-8")
+    state_path.write_text(
+        json.dumps({"merged": False, "calls": []}) + "\n",
+        encoding="utf-8",
+    )
     target = binary / "gh"
     target.write_text(
         "#!/usr/bin/env python3\n"
         "import json,sys\n"
         f"state_path={str(state_path)!r}\n"
         f"config={configuration!r}\n"
+        f"repo={repo_ref!r}; number={pr_number!r}; issue_number={issue_number!r}\n"
         "args=sys.argv[1:]\n"
         "state=json.load(open(state_path,encoding='utf-8'))\n"
-        "repo='castbox/guru-trellis'; number=176; issue_number=174\n"
+        "state.setdefault('calls',[]).append(args)\n"
+        "open(state_path,'w',encoding='utf-8').write(json.dumps(state)+'\\n')\n"
         "pr_url=f'https://github.com/{repo}/pull/{number}'\n"
         "issue_url=f'https://github.com/{repo}/issues/{issue_number}'\n"
         "if args==['auth','status']:\n"
@@ -645,7 +666,12 @@ def write_fake_merge_gh(execution_root: Path, recipe: str) -> Path:
     return binary
 
 
-def write_fake_production_commit_facts(execution_root: Path) -> Path:
+def write_fake_production_commit_facts(
+    execution_root: Path,
+    *,
+    repo_ref: str = "example/guru-extension",
+    head_branch: str = "eval/current",
+) -> Path:
     binary = execution_root / "production-owner-bin"
     binary.mkdir(parents=True, exist_ok=True)
     gh_target = binary / "gh"
@@ -655,7 +681,8 @@ def write_fake_production_commit_facts(execution_root: Path) -> Path:
         "args=sys.argv[1:]\n"
         "if args==['auth','status']:\n"
         " raise SystemExit(0)\n"
-        "if args==['pr','list','--repo','example/guru-extension','--head','eval/current','--state','open','--limit','100','--json','number,isDraft,state,headRefName']:\n"
+        f"expected=['pr','list','--repo',{repo_ref!r},'--head',{head_branch!r},'--state','open','--limit','100','--json','number,isDraft,state,headRefName']\n"
+        "if args==expected:\n"
         " print(json.dumps([])); raise SystemExit(0)\n"
         "print('unsupported production fake gh invocation',file=sys.stderr); raise SystemExit(2)\n",
         encoding="utf-8",
@@ -670,8 +697,9 @@ def write_fake_production_commit_facts(execution_root: Path) -> Path:
         "#!/usr/bin/env python3\n"
         "import os,sys\n"
         f"real_git={real_git!r}\n"
+        f"head_branch={head_branch!r}\n"
         "args=sys.argv[1:]\n"
-        "if args==['ls-remote','--heads','origin','eval/current']:\n"
+        "if args==['ls-remote','--heads','origin',head_branch]:\n"
         " raise SystemExit(0)\n"
         "os.execv(real_git,[real_git,*args])\n",
         encoding="utf-8",
@@ -2121,6 +2149,12 @@ def extension_verification_execution(
     standalone_resolved_head: str | None = None,
 ) -> dict[str, Any]:
     content_sha256 = runtime.reviewed_content_identity(fixture)["sha256"]
+    task_bearing = isinstance(public_input.get("task_ref"), str)
+    target_ref = (
+        runtime.extension_verification_remote_identity(fixture, public_input)[2]
+        if task_bearing
+        else public_input.get("ref", "refs/heads/main")
+    )
     branch_review_commit = (
         public_input["branch_review_commit"]
         if public_input["mode"] == "workflow"
@@ -2147,7 +2181,7 @@ def extension_verification_execution(
                 "git",
                 "ls-remote",
                 "origin",
-                public_input.get("ref", "refs/heads/main"),
+                target_ref,
             ],
             "exit_code": 0 if status == "passed" else 2,
             "stdout_sha256": runtime.digest_text(""),
@@ -2174,7 +2208,6 @@ def extension_verification_execution(
             [],
             [],
         )
-    task_bearing = isinstance(public_input.get("task_ref"), str)
     reviewed_content_sha256 = content_sha256 if task_bearing else None
     if task_bearing:
         selected_source = runtime.extension_verification_manifest_source(
@@ -2213,7 +2246,7 @@ def extension_verification_execution(
     target_repository = {
         "repo_ref": public_input["repo_ref"],
         "remote": public_input.get("remote", "origin"),
-        "ref": public_input.get("ref", "refs/heads/main"),
+        "ref": target_ref,
         "branch_review_commit": branch_review_commit,
         "publication_head": (
             public_input["publication_head"]
