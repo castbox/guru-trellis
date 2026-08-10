@@ -9700,10 +9700,12 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             task_dir,
             plan,
             previous_plan=previous_plan,
+            previous_transaction=None,
             allowed_current_gate=gate,
         )
         retire.assert_called_once_with(root.resolve(), task_dir)
         prepare.assert_called_once()
+        self.assertIs(prepare.call_args.kwargs["current_finalizer"], True)
         transaction_from_plan.assert_called_once_with(
             replacement_plan,
             next_transition="push_content",
@@ -10252,6 +10254,129 @@ printf '{"status":"ok"}\\n'
 
         self.assertEqual(plan_path.read_bytes(), legacy_plan_bytes)
         self.assertEqual(self.git(root, "rev-parse", "HEAD"), head_before)
+
+    def test_current_transaction_evolution_routes_to_provenance_reprepare(
+        self,
+    ) -> None:
+        (
+            root,
+            task_dir,
+            previous_plan,
+            _,
+            task_context,
+            title,
+            body,
+            current_reviewed,
+        ) = self.current_plan_evolution_fixture()
+        task_ref = previous_plan["task"]["active_locator"]
+        previous_publication = previous_plan["git"]["publication_head"]
+        subprocess.run(
+            [
+                "git",
+                "push",
+                "-q",
+                "origin",
+                f"{previous_publication}:refs/heads/topic",
+            ],
+            cwd=root,
+            check=True,
+        )
+        transaction = gtt.finalization_transaction_from_plan(
+            previous_plan,
+            next_transition="verify",
+        )
+        transaction_path = gtt.finalization_transaction_path(root, task_dir)
+        gtt.write_json(transaction_path, transaction)
+        (task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).unlink()
+        unrelated_request = root / (
+            ".trellis/.runtime/guru-team/finalizer-inputs/fixture/"
+            "publication-ready.json"
+        )
+        gtt.write_json(unrelated_request, {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+        })
+        transaction_bytes = transaction_path.read_bytes()
+        head_before = self.git(root, "rev-parse", "HEAD")
+        remote_before = self.git(root, "ls-remote", "origin", "refs/heads/topic").split()[0]
+        publication_input = {
+            "profile": "publication_ready",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "branch_review_commit": current_reviewed,
+            "pr_title": title,
+            "pr_body": body,
+        }
+        args = argparse.Namespace(
+            root=str(root),
+            input="unused-input.json",
+            review_input="unused-review.json",
+            gate=None,
+            dry_run=False,
+            repo="castbox/guru-trellis",
+            remote="origin",
+            base_branch="main",
+            title=title,
+            include_finalization_gate=True,
+        )
+        repository_binding = {
+            "head": current_reviewed,
+            "branch": "topic",
+            "base_ref": task_context["base_ref"],
+            "diff_paths": [
+                ".trellis/tasks/fixture/issue-scope-ledger.json",
+                ".trellis/tasks/fixture/task.json",
+                "trellis/workflows/guru-team/change.txt",
+            ],
+            "status_paths": [],
+        }
+        package_root = (
+            Path(__file__).resolve().parents[5]
+            / "trellis/skills/guru-team/packages/guru-finalize-task"
+        )
+
+        with (
+            mock.patch.object(gtt, "finalization_package_root", return_value=package_root),
+            mock.patch.object(
+                gtt,
+                "validate_github_remote_repository",
+                return_value="castbox/guru-trellis",
+            ),
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=None),
+            mock.patch.object(gtt, "finalization_verification_owner_result", return_value=None),
+            mock.patch.object(gtt, "load_task_runtime_identity", return_value=task_context),
+            mock.patch.object(gtt, "assert_workspace_boundary"),
+            mock.patch.object(
+                gtt,
+                "task_publication_repository_binding",
+                return_value=repository_binding,
+            ),
+        ):
+            context = gtt.finalization_preview_context(root, args, publication_input)
+
+        self.assertEqual(context["transaction_state"], "reprepare_required")
+        self.assertEqual(
+            context["reprepare_reason_code"],
+            gtt.FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+        )
+        reprepare = context["prepared"]["pre_pr_reprepare"]
+        self.assertEqual(reprepare["previous_transaction"], transaction)
+        self.assertEqual(
+            reprepare["base_evolution"]["supersession_kind"],
+            "current_transaction",
+        )
+        self.assertEqual(
+            reprepare["base_evolution"]["remote_head"],
+            previous_publication,
+        )
+        self.assertEqual(transaction_path.read_bytes(), transaction_bytes)
+        self.assertTrue(unrelated_request.is_file())
+        self.assertEqual(self.git(root, "rev-parse", "HEAD"), head_before)
+        self.assertEqual(
+            self.git(root, "ls-remote", "origin", "refs/heads/topic").split()[0],
+            remote_before,
+        )
 
     def test_current_plan_evolution_rejection_matrix(self) -> None:
         cases = {

@@ -13196,12 +13196,184 @@ def finalizer_current_plan_base_evolution_supersession_preflight(
     }
 
 
+def finalizer_current_transaction_base_evolution_supersession_preflight(
+    root: Path,
+    task_dir: Path,
+    transaction: dict[str, Any],
+    current_plan: dict[str, Any],
+    *,
+    allowed_gate: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Prove that one pushed pre-PR transaction may follow reviewed content."""
+    current_git = (
+        current_plan.get("git")
+        if isinstance(current_plan.get("git"), dict)
+        else {}
+    )
+    current_task = (
+        current_plan.get("task")
+        if isinstance(current_plan.get("task"), dict)
+        else {}
+    )
+    previous_reviewed = str(transaction.get("branch_review_commit") or "")
+    previous_publication = str(transaction.get("publication_head") or "")
+    current_reviewed = str(
+        current_git.get("reviewed_content_head")
+        or current_git.get("branch_review_commit")
+        or ""
+    )
+    task_ref = repo_relative(root, task_dir)
+    identity_matches = (
+        transaction.get("task_ref") == task_ref
+        and current_task.get("active_locator") == task_ref
+        and transaction.get("repo_ref") == current_git.get("repo")
+        and transaction.get("base_branch") == current_git.get("base_branch")
+        and transaction.get("branch") == current_git.get("head_branch")
+    )
+    previous_publication_errors = (
+        []
+        if previous_publication == previous_reviewed
+        else provenance_tail_commit_errors(
+            root,
+            previous_reviewed,
+            previous_publication,
+            require_current=False,
+        )
+    )
+    if (
+        transaction.get("next_transition") != "verify"
+        or "pr" in transaction
+        or "verification_ref" in transaction
+        or current_plan.get("marketplace", {}).get("required") is not True
+        or not identity_matches
+        or previous_reviewed == current_reviewed
+        or re.fullmatch(r"[0-9a-f]{40}", previous_reviewed) is None
+        or re.fullmatch(r"[0-9a-f]{40}", previous_publication) is None
+        or previous_publication_errors
+        or not is_ancestor(root, previous_publication, current_reviewed)
+        or not finalizer_pre_pr_provenance_tail_required(root, current_plan)
+    ):
+        raise WorkflowError(
+            "Current Finalizer transaction is not an eligible base-evolution predecessor.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_base_evolution_mismatch"},
+        )
+    archive_locator = str(current_task.get("archive_locator") or "")
+    previous_plan = {
+        "schema_version": CLOSEOUT_PLAN_SCHEMA_VERSION,
+        "task": {
+            "active_locator": task_ref,
+            "archive_locator": archive_locator,
+        },
+        "git": {
+            "repo": current_git.get("repo"),
+            "remote": current_git.get("remote"),
+            "base_branch": current_git.get("base_branch"),
+            "head_branch": current_git.get("head_branch"),
+            "branch_review_commit": previous_reviewed,
+        },
+    }
+    facts = finalizer_base_evolution_shared_preflight(
+        root,
+        task_dir,
+        previous_plan,
+        current_plan,
+    )
+    remote_head = str(facts["remote_head"])
+    if remote_head != previous_publication:
+        raise WorkflowError(
+            "Transaction base-evolution recovery requires the remote at the predecessor publication HEAD.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_remote_not_reviewed_head",
+                "reviewed_content_head": current_reviewed,
+                "previous_publication_head": previous_publication,
+                "remote_head": remote_head,
+                "fast_forwardable": bool(
+                    remote_head and is_ancestor(root, remote_head, current_reviewed)
+                ),
+            },
+        )
+    verification = task_dir / MARKETPLACE_VERIFICATION_ARTIFACT
+    if verification.exists() or verification.is_symlink():
+        raise WorkflowError(
+            "Transaction base-evolution recovery requires consumed verification owner state.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_verification_started"},
+        )
+    request_root = runtime_root(root, load_config(root)) / FINALIZER_INPUT_RUNTIME_DIR
+    task_requests: list[str] = []
+    if request_root.exists():
+        if request_root.is_symlink() or not request_root.is_dir():
+            raise WorkflowError("Finalizer private request root is unsafe.", exit_code=2)
+        for path in sorted(request_root.rglob("*.json")):
+            if path.is_symlink() or not path.is_file():
+                continue
+            try:
+                payload = read_json(path)
+            except WorkflowError:
+                continue
+            if (
+                isinstance(payload, dict)
+                and payload.get("task_ref") == task_ref
+                and payload.get("profile") == "verification_required"
+            ):
+                task_requests.append(repo_relative(root, path))
+    if task_requests:
+        raise WorkflowError(
+            "Transaction base-evolution recovery requires consumed verification requests.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_verification_started",
+                "requests": task_requests,
+            },
+        )
+    owner_state_paths = (
+        extension_verification_owner_state_path(root, task_dir),
+        extension_verification_execution_checkpoint_root(root, task_dir),
+    )
+    if any(path.exists() or path.is_symlink() for path in owner_state_paths):
+        raise WorkflowError(
+            "Transaction base-evolution recovery requires consumed verifier runtime state.",
+            exit_code=2,
+            payload={"reason_code": "provenance_reprepare_verification_started"},
+        )
+    standard_gate = task_finalization_path(root, task_dir)
+    transition_gate = task_finalization_transition_path(root, task_dir)
+    existing_gates = [
+        path for path in (standard_gate, transition_gate)
+        if path.exists() or path.is_symlink()
+    ]
+    allowed_gate_matches = (
+        allowed_gate is not None
+        and existing_gates == [standard_gate]
+        and standard_gate.is_file()
+        and not standard_gate.is_symlink()
+        and read_json(standard_gate) == allowed_gate
+    )
+    if existing_gates and not allowed_gate_matches:
+        raise WorkflowError(
+            "Transaction base-evolution recovery found another Finalizer gate.",
+            exit_code=2,
+            payload={
+                "reason_code": "provenance_reprepare_gate_started",
+                "gates": [repo_relative(root, path) for path in existing_gates],
+            },
+        )
+    return {
+        **facts,
+        "previous_publication_head": previous_publication,
+        "supersession_kind": "current_transaction",
+    }
+
+
 def finalizer_pre_pr_provenance_reprepare_preflight(
     root: Path,
     task_dir: Path,
     plan: dict[str, Any],
     *,
     previous_plan: dict[str, Any] | None = None,
+    previous_transaction: dict[str, Any] | None = None,
     allowed_current_gate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Prove the pre-PR recovery window before any producer or cleanup mutation."""
@@ -13302,6 +13474,11 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
         )
 
     remote_head = closeout_remote_branch_head(root, plan)
+    if previous_plan is not None and previous_transaction is not None:
+        raise WorkflowError(
+            "Provenance reprepare has multiple predecessor authorities.",
+            exit_code=2,
+        )
     if previous_plan is not None:
         previous_git = (
             previous_plan.get("git")
@@ -13325,9 +13502,23 @@ def finalizer_pre_pr_provenance_reprepare_preflight(
                 previous_plan,
                 plan,
             )
+    elif previous_transaction is not None:
+        base_evolution = (
+            finalizer_current_transaction_base_evolution_supersession_preflight(
+                root,
+                task_dir,
+                previous_transaction,
+                plan,
+                allowed_gate=allowed_current_gate,
+            )
+        )
     else:
         base_evolution = None
-    if previous_plan is None and remote_head != reviewed_content_head:
+    if (
+        previous_plan is None
+        and previous_transaction is None
+        and remote_head != reviewed_content_head
+    ):
         raise WorkflowError(
             "Provenance reprepare requires the remote branch at reviewed content HEAD.",
             exit_code=2,
@@ -28594,7 +28785,30 @@ def finalization_preview_context(
             )
             plan = prepared["plan"]
             if current_transaction is not None:
-                finalization_validate_transaction_plan(current_transaction, plan)
+                try:
+                    finalization_validate_transaction_plan(
+                        current_transaction,
+                        plan,
+                    )
+                except WorkflowError:
+                    base_evolution = (
+                        finalizer_current_transaction_base_evolution_supersession_preflight(
+                            root,
+                            task_dir,
+                            current_transaction,
+                            plan,
+                            allowed_gate=getattr(
+                                args,
+                                "_finalization_checked_gate",
+                                None,
+                            ),
+                        )
+                    )
+                    prepared["pre_pr_reprepare"] = {
+                        "previous_transaction": copy.deepcopy(current_transaction),
+                        "prior_state": "content_pushed",
+                        "base_evolution": base_evolution,
+                    }
             if prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
                 reprepare_reason_code = FINALIZATION_REPREPARE_ARCHIVE_MONTH
@@ -29514,11 +29728,18 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 and isinstance(reprepare.get("previous_plan"), dict)
                 else None
             )
+            previous_transaction = (
+                reprepare.get("previous_transaction")
+                if isinstance(reprepare, dict)
+                and isinstance(reprepare.get("previous_transaction"), dict)
+                else None
+            )
             finalizer_pre_pr_provenance_reprepare_preflight(
                 root,
                 task_dir,
                 context["plan"],
                 previous_plan=previous_plan,
+                previous_transaction=previous_transaction,
                 allowed_current_gate=gate,
             )
             publication = finalizer_publication_identity(root, reviewed_content_head)
@@ -29572,6 +29793,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                     "pr_title": context["plan"]["publish"]["title"],
                     "pr_body": context["plan"]["publish"]["body"],
                 },
+                current_finalizer=True,
             )
             replacement_transaction = finalization_transaction_from_plan(
                 replacement["plan"],
