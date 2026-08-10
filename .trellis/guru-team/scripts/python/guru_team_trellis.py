@@ -35598,13 +35598,6 @@ def task_pr_merge_preflight_errors(
         errors.append("expected head branch changed")
     if pr["mergeable"] != "MERGEABLE":
         errors.append("pull request is not currently mergeable")
-    nonpassing = [
-        row["name"]
-        for row in pr["checks"]
-        if row["state"] not in {"SUCCESS", "NEUTRAL", "SKIPPED"}
-    ]
-    if nonpassing:
-        errors.append("required checks are not complete: " + ", ".join(nonpassing))
     if facts["close_issues"] != public_input["expected_close_issues"]:
         errors.append("PR body close keywords differ from reviewed close scope")
     nonopen = [str(row["number"]) for row in facts["issues"] if row["state"] != "OPEN"]

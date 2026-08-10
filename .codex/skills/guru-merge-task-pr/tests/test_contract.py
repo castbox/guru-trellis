@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import tempfile
 import unittest
+from argparse import Namespace
 from pathlib import Path
 from unittest import mock
 
@@ -126,7 +128,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             [179],
         )
 
-    def test_preflight_blocks_draft_head_drift_checks_and_early_close(self) -> None:
+    def test_preflight_blocks_draft_head_drift_and_early_close(self) -> None:
         public_input = {
             "expected_head_sha": "1" * 40,
             "expected_base_branch": "main",
@@ -143,12 +145,98 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "issues": [{"number": 180, "state": "CLOSED"}],
         }
         errors = GTT.task_pr_merge_preflight_errors(public_input, facts)
-        self.assertEqual(len(errors), 8)
+        self.assertEqual(len(errors), 7)
         self.assertTrue(any("expected head" in item for item in errors))
         self.assertTrue(any("base branch" in item for item in errors))
         self.assertTrue(any("head branch" in item for item in errors))
         self.assertTrue(any("reviewed close scope" in item for item in errors))
         self.assertTrue(any("before merge" in item for item in errors))
+        self.assertFalse(any("checks" in item for item in errors))
+
+    def test_optional_failed_check_is_not_an_objective_blocker(self) -> None:
+        public_input = {
+            "expected_head_sha": "1" * 40,
+            "expected_base_branch": "main",
+            "expected_head_branch": "codex/180-eval",
+            "expected_close_issues": [180],
+        }
+        facts = {
+            "pr": {
+                "state": "OPEN", "is_draft": False, "head_sha": "1" * 40,
+                "base_branch": "main", "head_branch": "codex/180-eval",
+                "mergeable": "MERGEABLE",
+                "checks": [
+                    {"name": "required-ci", "state": "SUCCESS"},
+                    {"name": "optional-preview", "state": "FAILURE"},
+                ],
+            },
+            "close_issues": [180],
+            "issues": [{"number": 180, "state": "OPEN"}],
+        }
+
+        self.assertEqual(GTT.task_pr_merge_preflight_errors(public_input, facts), [])
+
+    def test_record_merge_route_requires_every_semantic_dimension_passed(self) -> None:
+        public_input = {
+            "repo_ref": "castbox/guru-trellis",
+            "pr_number": 180,
+            "expected_head_sha": "1" * 40,
+            "expected_base_branch": "main",
+            "expected_head_branch": "codex/180-eval",
+            "expected_close_issues": [180],
+        }
+        facts = {
+            "facts_sha256": "2" * 64,
+            "pr": {
+                "state": "OPEN", "is_draft": False, "head_sha": "1" * 40,
+                "base_branch": "main", "head_branch": "codex/180-eval",
+                "mergeable": "MERGEABLE", "checks": [],
+            },
+            "repository_policy": {"allowed_methods": ["merge"]},
+            "close_issues": [180],
+            "issues": [{"number": 180, "state": "OPEN"}],
+        }
+        dimensions = [
+            {"id": identifier, "status": "passed", "summary": "Current evidence passes."}
+            for identifier in GTT.TASK_PR_MERGE_DIMENSIONS
+        ]
+        dimensions[2]["status"] = "blocked"
+        review_payload = {
+            "semantic_review": {"dimensions": dimensions},
+            "route": {"typed_exit": "merged", "merge_method": "merge"},
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            review_path = Path(temp_dir) / "review.json"
+            review_path.write_text(json.dumps(review_payload), encoding="utf-8")
+            args = Namespace(root=temp_dir, input="unused.json", review_input=str(review_path))
+            with (
+                mock.patch.object(GTT, "repo_root", return_value=Path(temp_dir)),
+                mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+                mock.patch.object(GTT, "task_pr_merge_live_facts", return_value=facts),
+            ):
+                with self.assertRaisesRegex(GTT.WorkflowError, "cannot record a merge route"):
+                    GTT.cmd_record_task_pr_merge(args)
+
+    def test_check_rejects_stale_live_facts_digest(self) -> None:
+        public_input = {
+            "repo_ref": "castbox/guru-trellis",
+            "pr_number": 180,
+            "expected_head_sha": "1" * 40,
+            "expected_base_branch": "main",
+            "expected_head_branch": "codex/180-eval",
+            "expected_close_issues": [180],
+        }
+        gate = {
+            "facts_sha256": "2" * 64,
+            "route": {"typed_exit": "merged", "merge_method": "merge"},
+        }
+        with mock.patch.object(
+            GTT,
+            "task_pr_merge_live_facts",
+            return_value={"facts_sha256": "3" * 64},
+        ):
+            with self.assertRaisesRegex(GTT.WorkflowError, "stale against live GitHub facts"):
+                GTT.check_task_pr_merge_result(Path("."), public_input, gate)
 
     def test_runtime_has_expected_head_merge_and_no_issue_close_or_local_sync(self) -> None:
         source = Path(GTT.__file__).read_text(encoding="utf-8")
