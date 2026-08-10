@@ -24,11 +24,22 @@
       "items": {"type": "integer", "minimum": 1}
     },
     "next_transition": {"enum": ["push_content", "verify", "bind_draft", "archive", "push_archive", "mark_ready"]},
+    "pre_push_remote_head": {"type": "string", "pattern": "^(?:|[0-9a-f]{40})$"},
     "pr": {
       "type": "object", "additionalProperties": false,
       "required": ["number", "url"],
       "properties": {"number": {"type": "integer", "minimum": 1}, "url": {"type": "string", "minLength": 1}}
     },
     "verification_ref": {"type": "string", "minLength": 1}
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"next_transition": {"const": "push_content"}},
+        "required": ["next_transition"]
+      },
+      "then": {"required": ["pre_push_remote_head"]},
+      "else": {"not": {"required": ["pre_push_remote_head"]}}
+    }
+  ]
 }

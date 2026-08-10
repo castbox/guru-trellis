@@ -82,3 +82,4 @@
 6. 更新 workflow/data-contract/companion-script/quality/cross-layer specs，随后将 extension revision 提升到 `0.6.5-guru.27`。
 7. 运行 canonical preset apply 同步 dogfood/平台副本，处理所有 sidecar，再运行 package/runtime/preset/ownership/drift/throwaway gates。
 8. 旧 Phase 2/Branch Review/Publication evidence 作废；全部实现完成后重新执行完整语义门禁。
+9. Branch Review `F81-BR-01/F81-BR-02` 修复：transaction 绑定 exact `pre_push_remote_head`，首次 push 前真实持久化，补 remote-absent 与 historical-ancestor production regressions，并重跑 Phase 2、finding closure 与 fresh final review。

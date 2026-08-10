@@ -760,12 +760,19 @@ only through explicit compatibility selectors.
 
 Package-local production eval executes the real public wrapper, selects the
 per-exit schema from the actual returned `exit_id`, and only then compares
-`expected_exit`. Current transaction regressions cover in-memory completion,
+`expected_exit`. Current transaction regressions cover durable pre-push authority,
 verification re-entry persistence, exact task-ref recovery after archive,
 archive-move restoration from immutable `publication_head`, six-core/
 seven-maximum archive projection, terminal owner cleanup, and
-`ready_for_merge` materialization. They do not add hostile-input, concurrency,
-locking, TOCTOU, crash-consistency, or cross-OS mechanisms.
+`ready_for_merge` materialization. The bounded interrupted-transition recovery
+is part of the declared Finalizer transaction; tests do not generalize it into
+hostile-input, concurrency, locking, TOCTOU, fault-injection, or cross-OS mechanisms.
+
+Production Finalizer regressions cover both an absent remote task ref and a
+strict historical-ancestor remote task ref. At the actual first content push,
+the ignored transaction must already exist on disk and bind the exact accepted
+`pre_push_remote_head`; a different historical or descendant head fails closed.
+Terminal public consumption still retires that checkpoint.
 
 Finalizer regressions also prove the current verification owner checker remains
 strict, an identical immutable verification tuple executes once, and result

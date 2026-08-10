@@ -9615,6 +9615,11 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "finalizer_pre_pr_provenance_reprepare_preflight"),
             mock.patch.object(gtt, "finalizer_supersede_pre_pr_state", return_value=["old-plan"]) as retire,
             mock.patch.object(gtt, "prepare_closeout", return_value={"plan": plan}),
+            mock.patch.object(
+                gtt,
+                "finalization_pre_mutation_remote_preflight",
+                return_value=(None, ""),
+            ),
             mock.patch.object(gtt, "finalization_write_transaction") as write_transaction,
             mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
         ):
@@ -9635,9 +9640,18 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "check_finalization_gate_result", return_value=(gate, context)),
             mock.patch.object(gtt, "finalizer_publication_identity", return_value=publication),
             mock.patch.object(gtt, "prepare_provenance_metadata_tail", return_value=prepared) as prepare_tail,
-            mock.patch.object(gtt, "finalizer_pre_pr_provenance_reprepare_preflight"),
+            mock.patch.object(
+                gtt,
+                "finalizer_pre_pr_provenance_reprepare_preflight",
+                return_value={"remote_head": reviewed},
+            ),
             mock.patch.object(gtt, "finalizer_supersede_pre_pr_state", return_value=["old-plan"]),
             mock.patch.object(gtt, "prepare_closeout", return_value={"plan": plan}),
+            mock.patch.object(
+                gtt,
+                "finalization_pre_mutation_remote_preflight",
+                return_value=(None, reviewed),
+            ),
             mock.patch.object(gtt, "finalization_write_transaction"),
             mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
         ):
@@ -9701,7 +9715,11 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "finalization_public_input", return_value=(public_input, "unused")),
             mock.patch.object(gtt, "finalization_gate_input", return_value=(gate, root / "gate.json")),
             mock.patch.object(gtt, "check_finalization_gate_result", return_value=(gate, context)),
-            mock.patch.object(gtt, "finalizer_pre_pr_provenance_reprepare_preflight") as preflight,
+            mock.patch.object(
+                gtt,
+                "finalizer_pre_pr_provenance_reprepare_preflight",
+                return_value={"remote_head": reviewed},
+            ) as preflight,
             mock.patch.object(gtt, "finalizer_publication_identity", return_value={
                 "reviewed_content_head": reviewed,
                 "publication_head": publication,
@@ -9714,6 +9732,11 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
                 "finalization_transaction_from_plan",
                 return_value=replacement_transaction,
             ) as transaction_from_plan,
+            mock.patch.object(
+                gtt,
+                "finalization_pre_mutation_remote_preflight",
+                return_value=(None, reviewed),
+            ),
             mock.patch.object(gtt, "finalization_write_transaction") as write_transaction,
             mock.patch.object(gtt, "finalization_output_contract", return_value={"type": "object"}),
         ):
@@ -9733,6 +9756,7 @@ class ProvenanceMetadataTailRuntimeTest(unittest.TestCase):
         transaction_from_plan.assert_called_once_with(
             replacement_plan,
             next_transition="push_content",
+            pre_push_remote_head=reviewed,
         )
         write_transaction.assert_called_once_with(
             root.resolve(),
@@ -11018,6 +11042,7 @@ printf '{\"status\":\"ok\"}\\n'
         self.assertEqual(replacement_transaction["plan_digest"], new_plan["plan_digest"])
         self.assertEqual(replacement_transaction["publication_head"], publication)
         self.assertEqual(replacement_transaction["publication"], plan["publish"])
+        self.assertEqual(replacement_transaction["pre_push_remote_head"], reviewed)
 
         reprepare_input = {
             **result["output"],
@@ -11188,6 +11213,52 @@ printf '{\"status\":\"ok\"}\\n'
             "b" * 40,
         )
 
+    def test_push_content_transaction_preserves_exact_historical_remote_baseline(self) -> None:
+        plan = {
+            "git": {
+                "repo": "owner/repo",
+                "remote": "origin",
+                "base_branch": "main",
+                "head_branch": "topic",
+                "branch_review_commit": "b" * 40,
+            }
+        }
+        transaction = {
+            "repo_ref": "owner/repo",
+            "base_branch": "main",
+            "branch": "topic",
+            "branch_review_commit": "b" * 40,
+            "publication_head": "b" * 40,
+            "next_transition": "push_content",
+            "pre_push_remote_head": "a" * 40,
+        }
+        with (
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=None),
+            mock.patch.object(gtt, "closeout_remote_branch_head", return_value="a" * 40),
+        ):
+            self.assertEqual(
+                gtt.finalization_pre_mutation_remote_preflight(
+                    Path("/tmp/repo"),
+                    plan,
+                    transaction,
+                ),
+                (None, "a" * 40),
+            )
+        with (
+            mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=None),
+            mock.patch.object(gtt, "closeout_remote_branch_head", return_value="c" * 40),
+            self.assertRaises(gtt.WorkflowError) as blocked,
+        ):
+            gtt.finalization_pre_mutation_remote_preflight(
+                Path("/tmp/repo"),
+                plan,
+                transaction,
+            )
+        self.assertEqual(
+            blocked.exception.payload["reason_code"],
+            "finalizer_remote_head_drift",
+        )
+
     def test_verification_transition_persists_transaction_before_push(self) -> None:
         root = Path("/tmp/repo")
         task_dir = root / ".trellis/tasks/current"
@@ -11229,7 +11300,9 @@ printf '{\"status\":\"ok\"}\\n'
             mock.patch.object(
                 gtt,
                 "finalization_pre_mutation_remote_preflight",
-                side_effect=lambda *_args, **_kwargs: events.append("preflight"),
+                side_effect=lambda *_args, **_kwargs: (
+                    events.append("preflight") or (None, "")
+                ),
             ),
             mock.patch.object(gtt, "finalization_write_transaction", side_effect=write_transaction),
             mock.patch.object(
@@ -18572,6 +18645,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         expect_preview_failure: bool = False,
         archived_legacy_without_predecessor: bool = False,
         reviewed_task_metadata_tail: bool = False,
+        historical_remote_baseline: bool = False,
     ) -> dict[str, object]:
         source_root = Path(__file__).resolve().parents[5]
         with tempfile.TemporaryDirectory() as tmp:
@@ -18625,6 +18699,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             subprocess.run(["git", "push", "-qu", "origin", "main"], cwd=root, check=True)
             base_head = gtt.run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
             subprocess.run(["git", "switch", "-qc", "fix/105-closeout"], cwd=root, check=True)
+            if historical_remote_baseline:
+                subprocess.run(
+                    ["git", "push", "-qu", "origin", "fix/105-closeout"],
+                    cwd=root,
+                    check=True,
+                )
 
             task_dir = root / ".trellis/tasks/07-11-closeout"
             task_dir.mkdir(parents=True)
@@ -18825,6 +18905,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             original_run = gtt.run
             original_write_json = gtt.write_json
             transaction_disk_writes: list[str] = []
+            content_push_transactions: list[dict[str, object]] = []
             injected_stage = failed_stage
             active_plan_only_boundary_fault: str | None = None
             archive_pushed = False
@@ -18947,6 +19028,15 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 if command[:2] == ["git", "push"]:
                     stage = git_transition_stage(command)
                     record_transition(stage)
+                    if stage == "content-push":
+                        transaction_path = gtt.finalization_transaction_path(
+                            root,
+                            task_dir,
+                        )
+                        self.assertTrue(transaction_path.is_file())
+                        content_push_transactions.append(
+                            gtt.read_json(transaction_path)
+                        )
                     if injected_stage == stage:
                         return command_failure(command, check, f"injected {stage}")
                     result = original_run(command, cwd=cwd, check=check)
@@ -19567,6 +19657,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "reentry_events": reentry_events,
                 "all_transition_attempts": transition_attempts,
                 "branch_review_commit": branch_review_commit,
+                "initial_remote_head": base_head if historical_remote_baseline else "",
                 "archive_parent_sha": archive_parent_sha,
                 "archive_sha": local_head,
                 "archive_paths": gtt.closeout_commit_paths(root, local_head),
@@ -19574,6 +19665,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "draft_rebind_body_bytes": draft_rebind_body_bytes,
                 "archived_legacy_plan_digest": archived_legacy_plan_digest,
                 "transaction_disk_writes": transaction_disk_writes,
+                "content_push_transactions": content_push_transactions,
                 "archived_files": sorted(
                     path.relative_to(archived).as_posix()
                     for path in archived.rglob("*")
@@ -19597,7 +19689,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(final["pr_head_sha"], result["archive_sha"])
         self.assertEqual(final["pr_is_draft"], False)
         self.assertEqual(final["pr_state"], "OPEN")
-        self.assertEqual(result["transaction_disk_writes"], [])
+        self.assertGreater(len(result["transaction_disk_writes"]), 0)
+        self.assertEqual(len(result["content_push_transactions"]), 1)
+        self.assertEqual(
+            result["content_push_transactions"][0]["pre_push_remote_head"],
+            "",
+        )
         self.assertEqual(
             result["archived_files"],
             [
@@ -19610,6 +19707,14 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ],
         )
         self.assertEqual(len(result["archived_files"]), 6)
+
+    def test_production_finish_accepts_and_binds_historical_remote_baseline(self) -> None:
+        result = self.run_production_finish_case(historical_remote_baseline=True)
+        self.assertEqual(len(result["content_push_transactions"]), 1)
+        self.assertEqual(
+            result["content_push_transactions"][0]["pre_push_remote_head"],
+            result["initial_remote_head"],
+        )
 
     def test_terminal_checker_rebuilds_ready_context_without_transaction_or_plan(self) -> None:
         task_ref = ".trellis/tasks/07-11-closeout"

@@ -76,6 +76,7 @@
 在 release preparation 的 Finalizer 回放中发现以下正常路径 correctness 缺陷；用户已明确要求在本 Issue、当前 task 和当前会话中完成根因修复，不创建新 Issue：
 
 - Publication `ready` 的唯一合法 consumer 必须是 `guru-finalize-task`。调用方不得在 Finalizer transaction 前自行 push reviewed/publication HEAD 或创建 PR；Finalizer 必须在首次远端 mutation 前识别既有 PR/remote drift 并 fail closed。
+- Finalizer 首次 preflight 接受的 exact remote preimage 必须在 push 前持久化到 owner-private transaction。`push_content` recovery 只能接受该 exact preimage 或 owner 已发布的 reviewed/publication HEAD；不得因同一 historical baseline 的二次检查自阻断，也不得用 success-drop 内存 buffer 丢失恢复 authority。
 - `close_issues` 与 `expected_close_issues` 是允许零基数的精确集合。`[]` 表示合法 refs-only PR，要求 PR body 不包含任何 close keyword；非空集合继续要求与 ledger/review/PR body 完全一致。
 - `reprepare_required -> reprepare_preview` 必须保留已审核 publication authority。最小 public DTO 不承载 PR 文案，但 Finalizer owner-private input/transaction 必须能恢复并校验 exact `pr_title`/`pr_body`，不得构造缺字段的 Publication 伪输入。
 - 上述变更属于 release-owned workflow/skill/script/schema bytes，因此 canonical extension revision 从 `0.6.5-guru.26` 继续提升到 `0.6.5-guru.27`。

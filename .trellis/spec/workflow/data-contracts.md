@@ -1106,15 +1106,17 @@ children remain valid historical references.
 
 Current Finalizer transaction schema `guru-finalization-transaction-1.0` is an
 owner-private, task-scoped ignored-runtime contract named
-`finalization-transaction.json`. It exists only when a deterministic transition
-must survive same-owner re-entry; a same-session path that can reach
-`ready_for_merge` keeps the transaction entirely in memory.
+`finalization-transaction.json`. It is persisted before the first remote
+mutation so the same owner can distinguish its own pushed state from an
+out-of-order caller mutation, including after an interrupted process.
 
 The closed transaction contains only:
 
 - schema/skill identity and task/repository/base/branch identity;
 - `branch_review_commit`, `publication_head`, exact PR title/body, and the next
   deterministic transition;
+- exact `pre_push_remote_head` while `next_transition=push_content`, using an
+  empty string for an absent ref and a full commit OID for a historical baseline;
 - optional canonical PR number/URL after Draft creation; and
 - the immutable verification tuple/ref only while that same-owner transition
   still consumes it.

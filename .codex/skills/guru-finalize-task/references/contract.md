@@ -47,8 +47,11 @@ Publication `ready` has no other legal consumer. Before Finalizer's first
 remote mutation, the branch must have no Open PR and its remote ref must be
 absent or a strict historical ancestor of `branch_review_commit`. A remote
 already at reviewed/publication HEAD is an out-of-order caller push and blocks.
-After a transaction exists, recovery accepts only its bound reviewed/publication
-heads and, when present, its exact Draft PR identity.
+The first accepted remote value is persisted as the transaction's exact
+`pre_push_remote_head` before push. While `next_transition=push_content`,
+recovery accepts only that exact pre-push value or the bound reviewed/publication
+head produced by the owner. Later recovery accepts only its bound
+reviewed/publication heads and, when present, its exact Draft PR identity.
 
 The verification checker binds the current owner seed, immutable plan,
 repository, remote ref, `branch_review_commit`, local and remote
@@ -128,7 +131,8 @@ assumption after the archive commit.
 The deterministic order is fixed:
 
 1. Build and prevalidate the immutable plan, prove the no-PR/remote
-   precondition, and persist the exact title/body owner transaction.
+   precondition, and persist the exact title/body plus exact pre-push remote
+   head owner transaction before any remote mutation.
 2. Verify that current HEAD preserves the reviewed-content identity, then push that exact current HEAD.
 3. If required, stop before PR/archive and emit `verification_required` carrying
    both reviewed and publication HEADs. The verifier targets publication HEAD
@@ -153,9 +157,11 @@ The deterministic order is fixed:
 ### Archive Artifact Lifecycle
 
 Active-task artifacts may be necessary for current-step validation or crash
-recovery without becoming permanent handoff documents. Current Finalizer uses
-ignored `finalization-transaction.json` only while same-owner re-entry needs it;
-that transaction, `pr-readiness.json`, and `task-finalization-gate.json` never
+recovery without becoming permanent handoff documents. Current Finalizer creates
+ignored `finalization-transaction.json` before its first remote mutation and
+keeps it through same-owner execution/re-entry until terminal public
+consumption; that transaction, `pr-readiness.json`, and
+`task-finalization-gate.json` never
 enter move paths, evidence paths, or the archive. The Publication wrapper
 deletes `pr-readiness.json` after validating its own typed output, before
 Finalizer entry. The Finalizer retains only its own checkpoint across same-plan

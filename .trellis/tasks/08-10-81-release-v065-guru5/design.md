@@ -95,6 +95,8 @@ Publication 只输出已审核的最小 `ready` DTO，并唯一投影到 Finaliz
 
 Finalizer preview 在任何新远端 mutation 前读取 exact remote branch 和同 head/base 的 live PR。发现 caller-created Open PR、remote head 超出允许状态或 parallel publication consumer 时立即阻塞，不通过后续 provenance recovery 掩盖错误顺序。
 
+首次 preflight 接受的 remote ref 必须作为 `pre_push_remote_head` 在 push 前写入 owner-private transaction。空串表示远端 ref 不存在，完整 OID 表示 strict historical ancestor；`push_content` recovery 只接受该 exact preimage 或 Finalizer 已发布的 reviewed/publication head。禁止仅用调用栈内 buffer 承接首次 push authority，否则中断后会把 owner mutation 误判为 caller mutation。
+
 ### 10.2 零基数关闭集合
 
 `close_issues`、Finalizer `expected_close_issues` 和 Merge input 使用同一数学语义：允许为空的有序唯一 Issue number 集合。验证器比较 exact equality，而不是用非空作为 readiness 条件：
@@ -111,3 +113,5 @@ Finalizer preview 在任何新远端 mutation 前读取 exact remote branch 和�
 ### 10.4 传播与防复发
 
 Canonical workflow、三个 Skill package、runtime、schemas、examples/evals/tests 与 workflow specs 同步修改；preset apply 负责生成平台 installed copies。Cross-layer thinking guide 固化两个通用检查：跨 owner transaction 必须由唯一 consumer 持有副作用次序，集合 schema 的 cardinality 必须从领域语义推导而不是从常见 happy path 推导。
+
+Branch Review `F81-BR-01/F81-BR-02` 要求 production fixture 额外覆盖 remote absent 与 strict historical ancestor 两条无需 marketplace verification 的路径，并在实际 content push 处证明磁盘 transaction 已存在且绑定 exact preimage；修复后必须重跑 Phase 2、finding closure 与 distinct fresh final review。

@@ -1397,11 +1397,14 @@ Stable commands are `preview-finalization`, `record-finalization-gate`,
 route; public invocation always reruns strict route validation and never calls
 the transition executor implicitly.
 
-Current Finalizer uses `guru-finalization-transaction-1.0` only when a
-same-owner deterministic transition must survive re-entry. Preview and execute
+Current Finalizer uses `guru-finalization-transaction-1.0` for its complete
+remote mutation interval. Preview and execute
 rebuild live Git/GitHub/Trellis facts, locate the transaction by exact
 `task_ref`, and bind immutable publication input plus the local `plan_digest`
-consumer token. Verification-required writes the transaction before returning;
+consumer token. The first transition persists the exact accepted
+`pre_push_remote_head` and immutable publication input before push; a
+`push_content` retry accepts only that exact pre-push value or the owner-produced
+reviewed/publication head. Verification-required writes the transaction before returning;
 terminal `ready_for_merge` retires Finalizer and Verifier owner state. Current
 archive preparation allows six core files and the minimal verification result
 as the only optional seventh file. Archive-move failure restores the task
