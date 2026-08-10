@@ -29,7 +29,7 @@ from contextvars import ContextVar
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 
 DEFAULTS: dict[str, Any] = {
@@ -10720,6 +10720,36 @@ def task_commit_remote_branch_absent(root: Path, remote: str, branch: str) -> bo
     return not rows
 
 
+def task_commit_protected_branch_excluded(
+    root: Path, repo: str, branch: str
+) -> bool:
+    rules = gh_json(
+        ["api", f"repos/{repo}/rules/branches/{quote(branch, safe='')}"],
+        cwd=root,
+        repo=repo,
+        required_fields=("type",),
+        operation="task_commit_branch_rules_read",
+    )
+    if not isinstance(rules, list):
+        raise github_response_incomplete(
+            operation="task_commit_branch_rules_read",
+            repo=repo,
+            detail="Applicable branch rules are not an array.",
+        )
+    if any(
+        not isinstance(rule, dict)
+        or not isinstance(rule.get("type"), str)
+        or not rule["type"].strip()
+        for rule in rules
+    ):
+        raise github_response_incomplete(
+            operation="task_commit_branch_rules_read",
+            repo=repo,
+            detail="Applicable branch rule identity is incomplete.",
+        )
+    return not rules
+
+
 def task_commit_open_pull_request_absent(
     root: Path, repo: str, branch: str
 ) -> bool:
@@ -10783,6 +10813,9 @@ def task_commit_objective_eligibility_facts(
             exit_code=2,
         )
     validate_github_remote_repository(root, remote, repo)
+    protected_branch_excluded = task_commit_protected_branch_excluded(
+        root, repo, branch
+    )
     remote_absent = task_commit_remote_branch_absent(root, remote, branch)
     open_pr_absent = task_commit_open_pull_request_absent(root, repo, branch)
     current_worktrees = [
@@ -10817,9 +10850,7 @@ def task_commit_objective_eligibility_facts(
         ),
         "dedicated_task_branch": task_branch_matches,
         "default_branch_excluded": branch != base_branch,
-        # An unpublished branch has no existing protected remote ref. Future
-        # push rules are re-evaluated by Finalizer before publication.
-        "protected_branch_excluded": remote_absent and branch != base_branch,
+        "protected_branch_excluded": protected_branch_excluded,
         "shared_branch_excluded": len(current_worktrees) == 1,
         "other_task_branch_excluded": not other_task_owners,
         "remote_branch_absent": remote_absent,

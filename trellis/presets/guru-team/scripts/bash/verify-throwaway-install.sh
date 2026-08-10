@@ -2463,6 +2463,10 @@ set -euo pipefail
 if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
   exit 0
 fi
+if [[ "${1:-}" == "api" && "${2:-}" == "repos/castbox/guru-trellis-throwaway/rules/branches/feat%2F122-installed-task-commit" ]]; then
+  printf '%s\n' '[]'
+  exit 0
+fi
 if [[ "${1:-}" == "pr" && "${2:-}" == "list" && "$*" == *"--repo castbox/guru-trellis-throwaway"* ]]; then
   printf '%s\n' '[]'
   exit 0

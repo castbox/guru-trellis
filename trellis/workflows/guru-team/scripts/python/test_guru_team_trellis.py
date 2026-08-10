@@ -1397,6 +1397,135 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             gtt.production_commit_semantic_exit({"ai_review": {"status": "unknown"}})
 
 
+class TaskCommitBranchProtectionTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.root = Path("/tmp/task-commit-branch-protection")
+        self.repo = "owner/repo"
+        self.branch = "feat/example-task"
+
+    def test_empty_applicable_rules_excludes_protection_and_encodes_branch(self) -> None:
+        with mock.patch.object(gtt, "gh_json", return_value=[]) as gh_json:
+            self.assertTrue(
+                gtt.task_commit_protected_branch_excluded(
+                    self.root, self.repo, self.branch
+                )
+            )
+
+        gh_json.assert_called_once_with(
+            ["api", "repos/owner/repo/rules/branches/feat%2Fexample-task"],
+            cwd=self.root,
+            repo=self.repo,
+            required_fields=("type",),
+            operation="task_commit_branch_rules_read",
+        )
+
+    def test_applicable_rule_keeps_branch_protected(self) -> None:
+        with mock.patch.object(
+            gtt,
+            "gh_json",
+            return_value=[{"type": "required_status_checks"}],
+        ):
+            self.assertFalse(
+                gtt.task_commit_protected_branch_excluded(
+                    self.root, self.repo, self.branch
+                )
+            )
+
+    def test_incomplete_applicable_rules_fail_closed(self) -> None:
+        for payload in (
+            {"type": "required_status_checks"},
+            [{}],
+            [{"type": ""}],
+            [None],
+        ):
+            with self.subTest(payload=payload), mock.patch.object(
+                gtt, "gh_json", return_value=payload
+            ):
+                with self.assertRaises(gtt.WorkflowError) as raised:
+                    gtt.task_commit_protected_branch_excluded(
+                        self.root, self.repo, self.branch
+                    )
+                self.assertEqual(
+                    raised.exception.payload.get("error_code"),
+                    gtt.GITHUB_ERROR_CODES["response_incomplete"],
+                )
+
+    def test_github_failure_fails_closed(self) -> None:
+        failure = gtt.github_response_incomplete(
+            operation="task_commit_branch_rules_read",
+            repo=self.repo,
+            detail="Response body is empty.",
+        )
+        with mock.patch.object(gtt, "gh_json", side_effect=failure):
+            with self.assertRaises(gtt.WorkflowError) as raised:
+                gtt.task_commit_protected_branch_excluded(
+                    self.root, self.repo, self.branch
+                )
+        self.assertIs(raised.exception, failure)
+
+    def test_objective_facts_do_not_treat_remote_absence_as_unprotected(self) -> None:
+        task = {
+            "branch": self.branch,
+            "base_branch": "main",
+        }
+        task_context = {
+            "branch_name": self.branch,
+            "base_branch": "main",
+            "source_repo": {"repo": self.repo},
+        }
+        worktrees = [{
+            "branch": f"refs/heads/{self.branch}",
+            "worktree": str(self.root),
+        }]
+        with (
+            mock.patch.object(gtt, "current_branch", return_value=self.branch),
+            mock.patch.object(gtt, "base_branch_from_sources", return_value="main"),
+            mock.patch.object(
+                gtt,
+                "load_config",
+                return_value={
+                    "github_repo": self.repo,
+                    "publish": {"remote": "origin"},
+                },
+            ),
+            mock.patch.object(gtt, "validate_github_remote_repository"),
+            mock.patch.object(
+                gtt,
+                "task_commit_protected_branch_excluded",
+                return_value=False,
+            ) as protected_branch_excluded,
+            mock.patch.object(
+                gtt, "task_commit_remote_branch_absent", return_value=True
+            ),
+            mock.patch.object(
+                gtt, "task_commit_open_pull_request_absent", return_value=True
+            ),
+            mock.patch.object(gtt, "worktree_records", return_value=worktrees),
+            mock.patch.object(gtt, "task_commit_is_linked_worktree", return_value=True),
+            mock.patch.object(
+                gtt, "task_commit_other_task_branch_owners", return_value=[]
+            ),
+        ):
+            facts = gtt.task_commit_objective_eligibility_facts(
+                self.root,
+                self.root / ".trellis/tasks/example-task",
+                task,
+                task_context,
+                phase2_current=True,
+                exact_stage_paths=["src/task.txt"],
+                classification_by_path={
+                    "src/task.txt": {"category": "task-reviewed"}
+                },
+                git_operation_state={"active": False},
+            )
+
+        self.assertTrue(facts["remote_branch_absent"])
+        self.assertFalse(facts["protected_branch_excluded"])
+        protected_branch_excluded.assert_called_once_with(
+            self.root, self.repo, self.branch
+        )
+
+
 class TaskCommitCandidateExecutorTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()

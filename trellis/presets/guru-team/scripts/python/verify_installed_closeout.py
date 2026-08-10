@@ -309,6 +309,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 args = sys.argv[1:]
 store_path = Path(os.environ["INSTALLED_CLOSEOUT_PR_STORE"])
@@ -337,6 +338,9 @@ def save(payload):
     store_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
 
 if args[:2] == ["auth", "status"]:
+    raise SystemExit(0)
+if args == ["api", f"repos/microsoft/powertoys/rules/branches/{quote(branch, safe='')}"]:
+    print(json.dumps([]))
     raise SystemExit(0)
 if len(args) >= 3 and args[:2] == ["issue", "view"]:
     issue_number = int(args[2])

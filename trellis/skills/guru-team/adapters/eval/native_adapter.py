@@ -14,6 +14,7 @@ import threading
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 
 ADAPTERS = ("shared", "codex", "claude", "cursor")
@@ -674,6 +675,9 @@ def write_fake_production_commit_facts(
 ) -> Path:
     binary = execution_root / "production-owner-bin"
     binary.mkdir(parents=True, exist_ok=True)
+    branch_rules_endpoint = (
+        f"repos/{repo_ref}/rules/branches/{quote(head_branch, safe='')}"
+    )
     gh_target = binary / "gh"
     gh_target.write_text(
         "#!/usr/bin/env python3\n"
@@ -681,6 +685,8 @@ def write_fake_production_commit_facts(
         "args=sys.argv[1:]\n"
         "if args==['auth','status']:\n"
         " raise SystemExit(0)\n"
+        f"if args==['api',{branch_rules_endpoint!r}]:\n"
+        " print(json.dumps([])); raise SystemExit(0)\n"
         f"expected=['pr','list','--repo',{repo_ref!r},'--head',{head_branch!r},'--state','open','--limit','100','--json','number,isDraft,state,headRefName']\n"
         "if args==expected:\n"
         " print(json.dumps([])); raise SystemExit(0)\n"
