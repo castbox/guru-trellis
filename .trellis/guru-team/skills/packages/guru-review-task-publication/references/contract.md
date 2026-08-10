@@ -95,6 +95,11 @@ old-to-current reviewed ancestry, and fast-forwardable remote ancestor. It does
 not retire the old state or create the provenance tail; only the checked
 Finalizer transition may do so.
 
+Finalizer is the unique `ready` consumer and the unique owner of the subsequent
+push, remote verification, Draft PR, archive push, and Ready transition. The
+caller must not push either reviewed or publication HEAD and must not create a
+PR after Publication returns `ready`.
+
 After any checked typed output passes its output schema, the Publication public
 wrapper deletes its own checkpoint. A failed checker or invalid projection keeps
 that checkpoint for same-owner repair. Finalizer therefore starts from the DTO

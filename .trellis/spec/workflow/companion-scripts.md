@@ -25,6 +25,20 @@ only the semantic gate; execute persists the minimal transaction only when it
 must return a same-owner recovery exit and retires it at `ready_for_merge`.
 Finalizer and `finish-work` never call an Issue-close command.
 
+Publication `ready` has exactly one side-effect owner: `guru-finalize-task`.
+Callers may project its reviewed title/body into Finalizer input, but must not
+push the reviewed/publication HEAD or create/reuse a PR themselves. Finalizer
+performs its remote-branch and exact Open-PR preflight before the first new
+remote mutation; an unexpected existing PR, disallowed remote head, or parallel
+publication consumer fails closed instead of being normalized as recovery.
+
+The Finalizer-owned publication input is ignored-runtime, short-lived authority
+for exact title/body bytes. A provenance `reprepare_required` public DTO remains
+minimal; its consumer reloads that private input, verifies task, branch-review
+commit and publication-head continuity, and only then rebuilds the plan. Missing
+or stale authority, or an attempted fallback to a Closed/replacement PR, blocks.
+Successful terminal consumption retires the private input with the transaction.
+
 Current Verifier execution records capability completion incrementally against
 the immutable repository/ref/reviewed-head/publication-head/source/profile
 tuple. Its recorder/checker recover a successful command whose wrapper output
@@ -40,6 +54,11 @@ AI gate. Execute uses the unique repository merge method and
 `--match-head-commit`, then performs only read-only PR/Issue post-merge checks.
 No command invokes `gh issue close`, an Issue PATCH mutation, `guru-sync-base`,
 PR update/rebase, local base synchronization, or cleanup.
+
+`expected_close_issues` is an exact set that may be empty. An empty set requires
+the parsed PR close-keyword set to be empty and performs zero post-merge Issue
+closure reads; that zero-length obligation is complete. Non-empty sets retain
+exact body equality and per-Issue post-merge closure checks.
 
 `guru-create-task-commit` checker recomputes the objective unpublished,
 dedicated-branch eligibility facts. The semantic candidate owns

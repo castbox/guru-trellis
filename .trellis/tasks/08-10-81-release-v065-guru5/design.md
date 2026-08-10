@@ -15,7 +15,7 @@ Preparation task archive/PR merge 只表示代码准备完成，不改变 #81 �
 repo release tag       v0.6.5-guru.5
 annotated tag object   tag push 后由 remote Git 事实确定
 peeled source commit   preparation PR merge 后冻结的 exact remote main candidate
-extension revision     0.6.5-guru.26
+extension revision     0.6.5-guru.27
 official Trellis CLI   0.6.5
 marketplace source     gh:castbox/guru-trellis/trellis#v0.6.5-guru.5
 ```
@@ -86,3 +86,28 @@ preparation PR merge
 - Generated/installed copies：只通过 preset installer 同步并以 drift validators 检查。
 - Task planning：本目录 `prd.md`、`design.md`、`implement.md` 仅为任务历史，不作为发布后 runtime authority。
 - Release evidence：GitHub Release notes 与 #81 comment 是远端发布事实的 consumer，不新增 tracked handoff/review artifact。
+
+## 10. Finalizer 根因修复设计
+
+### 10.1 唯一副作用 owner
+
+Publication 只输出已审核的最小 `ready` DTO，并唯一投影到 Finalizer `publication_ready` input。Finalizer 的一次确认计划拥有 reviewed-content push、必要的 provenance tail、publication-head push、extension verification route、Draft PR 创建、archive commit/push 与 Ready 转换。Workflow、Publication Skill 与 Finalizer Skill 均明确禁止 caller 在该 transaction 前单独 push 或创建 PR。
+
+Finalizer preview 在任何新远端 mutation 前读取 exact remote branch 和同 head/base 的 live PR。发现 caller-created Open PR、remote head 超出允许状态或 parallel publication consumer 时立即阻塞，不通过后续 provenance recovery 掩盖错误顺序。
+
+### 10.2 零基数关闭集合
+
+`close_issues`、Finalizer `expected_close_issues` 和 Merge input 使用同一数学语义：允许为空的有序唯一 Issue number 集合。验证器比较 exact equality，而不是用非空作为 readiness 条件：
+
+- `[]`：PR body 的 close keyword 解析结果必须为 `[]`；merge 后无需等待任何 Issue auto-close，closure verification vacuously complete。
+- 非空：PR body、reviewed ledger、Finalizer output 与 Merge input 必须逐项一致；缺失、额外或顺序/去重异常仍 fail closed。
+
+### 10.3 Reprepare authority continuity
+
+`reprepare_required` public output 继续只携带 task/content identity 与 reason，不扩张为 PR 文案 handoff。Finalizer 在 provenance transition 时保留 owner-private、短生命周期的 Publication ready input；reprepare consumer 按 task、branch review commit 与 publication head 读取并校验该 authority，再将 exact title/body 交给 plan builder。成功消费或 transaction 完成后按既有退休规则删除私有状态。
+
+如果 authority 缺失、identity 不匹配、已有 PR 或 remote state 不符合 precondition，reprepare 必须显式阻塞，不从 Closed PR、旧 plan 或空字符串静默恢复。
+
+### 10.4 传播与防复发
+
+Canonical workflow、三个 Skill package、runtime、schemas、examples/evals/tests 与 workflow specs 同步修改；preset apply 负责生成平台 installed copies。Cross-layer thinking guide 固化两个通用检查：跨 owner transaction 必须由唯一 consumer 持有副作用次序，集合 schema 的 cardinality 必须从领域语义推导而不是从常见 happy path 推导。

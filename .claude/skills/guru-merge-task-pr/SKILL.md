@@ -20,3 +20,7 @@ Draft/Open/readiness drift, unknown policy, incomplete GitHub response, or
 unmapped output. Never enter Phase
 0, sync a base, update/rebase the PR branch, close Issues directly, synchronize
 local `main`, or clean task resources.
+
+`expected_close_issues=[]` is a valid refs-only merge contract: the PR body must
+contain no close keyword, and successful merge requires no Issue closure reads
+or effects. Non-empty sets still require exact equality and post-merge closure.

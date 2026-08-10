@@ -20,7 +20,7 @@
       "properties": {"title": {"type": "string", "minLength": 1}, "body": {"type": "string", "minLength": 1}}
     },
     "close_issues": {
-      "type": "array", "minItems": 1, "uniqueItems": true,
+      "type": "array", "uniqueItems": true,
       "items": {"type": "integer", "minimum": 1}
     },
     "next_transition": {"enum": ["push_content", "verify", "bind_draft", "archive", "push_archive", "mark_ready"]},

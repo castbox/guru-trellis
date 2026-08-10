@@ -25,9 +25,11 @@ For `provenance_tail_required`, the checked gate retains only the private
 executor marker because `publication_head` does not exist yet. After the
 executor has produced or reused the allowed tail and retired the old private
 state, it returns the exact `branch_review_commit` and `publication_head` needed
-by the next preview. `archive_month_changed` does not change HEAD, so its gate
-retains the complete current DTO. The next preview validates live continuity
-and does not recover identity from the deleted plan.
+by the next preview. Before returning either reprepare exit, Finalizer writes a
+replacement owner-private transaction containing the exact reviewed title/body
+and the new task/content/publication identity. `archive_month_changed` follows
+the same authority-continuity rule. The next preview never recovers PR payload
+from a deleted plan, a Closed PR, or an incomplete synthesized input.
 
 `publication_review_stale` carries the exact `branch_review_commit` that the
 Finalizer found stale, together with task identity and the stable reason. The

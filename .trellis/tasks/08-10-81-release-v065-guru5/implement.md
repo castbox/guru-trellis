@@ -4,7 +4,7 @@
 
 1. 重新读取 task worktree 的 live issue/main/tag/release/manifest facts，确认未漂移。
 2. 搜索所有 current stable `.3/.4`、extension revision `0.6.5-guru.25` 与 release identity 断言；区分 durable stable mapping、历史说明和 fictional fixture。
-3. 将 canonical extension revision 提升到 `0.6.5-guru.26`。
+3. 将 canonical extension revision 提升到 `0.6.5-guru.27`。
 4. 更新 workflow/preset README 的 `.5` pinned install、workflow switch、preset clone/apply、update/upgrade/reapply 和版本轴说明；删除对历史 `.3` 的 current-stable 声明。
 5. 更新直接依赖 current stable source/revision 的 examples、assertions 和 tests；不把未知 future candidate SHA 写成常量。
 6. 运行 canonical preset apply，同步 dogfood installed manifest/copies；逐项处理 `.new/.bak`，禁止静默覆盖未知 local edits。
@@ -71,3 +71,14 @@
 - verifier examples/tests：不得把 future candidate SHA 或 pre-tag evidence 固化为错误 authority。
 - `.trellis/guru-team/extension.json` 与平台 installed copies：只能由 canonical apply 同步。
 - Tag push 是不可移动边界；push 前以完整 pre-tag PASS 为最终 stop condition。
+
+## Phase A2：Finalizer 根因修复
+
+1. 更新 Publication/workflow consumer 合同，明确 `ready -> guru-finalize-task` 是唯一顺序，禁止 pre-Finalizer caller push/PR。
+2. 更新 Finalizer/Merge public 与 private schemas，允许 `close_issues=[]` / `expected_close_issues=[]`，保留非空集合 exact-match 语义。
+3. 修改 runtime：删除空关闭集合拒绝；空集合验证 PR 无 close keyword；merge 后零次 Issue closure 检查视为完成。
+4. 修复 provenance reprepare：从 Finalizer owner-private Publication input/transaction 恢复 exact PR title/body，并校验 task/content/publication identity；缺失或 stale 时 fail closed。
+5. 增加完整回归：refs-only happy path、单/多 Issue closure、额外/缺失 close keyword、pre-existing PR early block、provenance-tail reprepare authority continuity、无 Closed PR fallback。
+6. 更新 workflow/data-contract/companion-script/quality/cross-layer specs，随后将 extension revision 提升到 `0.6.5-guru.27`。
+7. 运行 canonical preset apply 同步 dogfood/平台副本，处理所有 sidecar，再运行 package/runtime/preset/ownership/drift/throwaway gates。
+8. 旧 Phase 2/Branch Review/Publication evidence 作废；全部实现完成后重新执行完整语义门禁。

@@ -139,6 +139,34 @@ local contracts, but they cannot prove lifecycle continuity.
       and postcondition ordering.
 - [ ] Scan the same fixture for terminal owner state after the last consumer.
 
+### Cross-Owner Transaction Ordering And Collection Cardinality
+
+When several workflow owners form one externally visible transaction, a valid
+DTO shape does not by itself authorize every caller to perform the next side
+effect. Name one owner for the whole mutation interval and make every preceding
+exit project only to that owner. Preflight must reject evidence that a caller
+already performed a later mutation before the transaction owner starts.
+
+- [ ] Identify the unique owner of push, PR creation, archive and Ready/merge
+      transitions; do not split these actions across callers for convenience.
+- [ ] Put remote/PR drift checks before the owner's first new mutation.
+- [ ] Keep re-entry authority in the owning component's short-lived private
+      state; public recovery DTOs carry only the minimum consumer identity.
+- [ ] Reject missing/stale authority instead of reconstructing semantic fields
+      from an older artifact, Closed object or empty default.
+
+For every array/set field, derive cardinality from domain meaning rather than
+from the most common fixture. “Exact set” and “non-empty set” are different
+contracts. An empty expected set often has a meaningful obligation: prove the
+observed set is also empty and execute zero downstream item checks.
+
+- [ ] Test zero, one and multiple elements at every producer/schema/consumer
+      boundary.
+- [ ] For zero elements, test both the valid empty observation and one
+      accidental element.
+- [ ] Preserve exact equality semantics for non-empty sets; do not weaken a
+      cardinality fix into subset matching.
+
 ---
 
 ## Cross-Platform Template Consistency

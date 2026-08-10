@@ -641,7 +641,10 @@ fixtures: Branch Review `passed` enters the active Publication owner directly;
 that owner authors, reviews, records, checks, and projects the exact PR payload
 without creating `pr-body.md` or `finish-summary-index.json`. Tests must prove
 Finalizer receives byte-identical title/body through the ready 4.0 projection
-and cannot regenerate or reinterpret them.
+and cannot regenerate or reinterpret them. The ready projection has Finalizer
+as its only side-effect consumer: workflow and package tests reject caller-owned
+push or PR creation before Finalizer, and Finalizer preflight detects an
+unexpected existing Open PR or disallowed remote head before any new mutation.
 
 Metadata-only corrections require a reread/rescan and complete fresh review
 inside the Skill. Any durable implementation drift returns to task work and
@@ -774,6 +777,13 @@ materialize the terminal DTO only through the public wrapper, prove the wrapper
 performs no transition, and cover every legal and illegal same-owner resume
 state including rejection of terminal `ready`.
 
+Finalizer and Merge cardinality regressions cover `expected_close_issues=[]`,
+one Issue, and multiple Issues. The empty case must accept a refs-only PR with
+no close keyword, reject any accidental close keyword, produce the same
+`ready_for_merge` route, merge by expected head, and complete with zero Issue
+closure reads. Non-empty cases retain exact missing/extra keyword rejection and
+post-merge closure verification.
+
 Explicit legacy compatibility regressions preserve the pre-#180 #105/#191 plan
 engine and two-gate fixtures byte-for-byte. Those fixtures must remain selected
 only by legacy test selectors and must not restore plan-based current routing.
@@ -793,6 +803,12 @@ PR/archive, verification artifact or matching request, either preexisting gate,
 and a tracked closeout plan. Mocking
 `prepare_closeout` does not satisfy this
 regression; the pre-#191 two-gate fixture remains independently passing.
+
+The same regression must prove that minimal `reprepare_required` output does
+not lose Publication authority: the reprepare consumer reloads the retained
+Finalizer-owned immutable publication input and supplies byte-identical title
+and body to the rebuilt plan. Missing/stale private authority, identity drift,
+an existing PR, and any Closed/replacement-PR fallback fail closed.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The

@@ -982,9 +982,18 @@ not a verification or process journal. Its exact top-level fields are
 Issue close semantics must be explicit:
 
 - `primary_issue` is intake context and usually the default close candidate.
-- `close_issues` are issues the current task fully resolves and may close.
+- `close_issues` are issues the current task fully resolves and may close. The
+  array may be empty for a valid refs-only PR; empty means the PR must contain
+  no close keyword and merge has no Issue auto-close obligation.
 - `related_issues` are references only.
 - `followup_issues` are future work and must never be closed by the current PR.
+
+Finalizer `expected_close_issues` and Merge input preserve this exact
+zero-or-more set. Schema cardinality must not invent a non-empty requirement:
+runtime compares the complete parsed PR close-keyword set with the expected
+set, and Merge treats the empty post-merge closure loop as vacuously complete.
+For non-empty sets, missing or additional close keywords and any Issue that did
+not close after merge remain blocking mismatches.
 
 The ledger never carries verification state, acceptance evidence, proposal
 digests, GitHub comment checksums, review metadata, or marketplace state.

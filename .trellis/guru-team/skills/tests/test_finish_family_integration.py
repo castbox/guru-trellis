@@ -659,17 +659,6 @@ fi
             ["git", "init", "-q", "--bare", str(remote_repo)],
             check=True,
         )
-        subprocess.run(
-            [
-                "git",
-                "push",
-                "-q",
-                str(remote_repo),
-                "eval/current:refs/heads/eval/current",
-            ],
-            cwd=fixture,
-            check=True,
-        )
         finalizer_bin = replay_root / "finalizer-bin"
         finalizer_bin.mkdir()
         real_git = shutil.which("git")
