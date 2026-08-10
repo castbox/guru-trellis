@@ -13405,7 +13405,7 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         target_head = "a" * 40
         direct_tag = "b" * 40
         source_commit = "c" * 40
-        source_ref = "refs/tags/v0.6.5-guru.3"
+        source_ref = "refs/tags/v0.6.5-guru.5"
         clone_destinations: list[Path] = []
         real_run = gtt.run
 

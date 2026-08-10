@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 与 Branch Review 必须覆盖 package、distribution、dogfood、upgrade/update 和 current-HEAD evidence。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"审核所有公开命令、stable mapping、限制与中文 release 文案是否真实一致。"}
+{"file":".trellis/spec/preset/installer.md","reason":"审核 fresh install、update、upgrade、reapply、source/installed identity 与 sidecars。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"审核 canonical/installed ownership、managed inventory 与 unknown local edit 行为。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审核 PR 仅 Refs #81、分阶段确认以及最终 Issue close ownership。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核 tag/candidate/extension/CLI/package inventory 的 exact provenance 绑定。"}

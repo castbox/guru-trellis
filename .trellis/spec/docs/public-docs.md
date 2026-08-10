@@ -36,12 +36,15 @@ opt-in user choice, not as the team default or automated validation path.
 
 Stable install and upgrade docs must list the complete current release mapping:
 repo release tag, peeled source commit, extension revision, and target official
-Trellis CLI. The current mapping is annotated tag `v0.6.5-guru.3`, peeled commit
-`dbcbbb2d2776a3952b643b6bcce0a2693d103273`, extension revision
-`0.6.5-guru.25`, and target CLI `0.6.5`. Repo release tags and extension
-revisions are independent version axes; docs must bind the exact pair instead of
-assuming their Guru suffixes match. Workflow marketplace and preset sources must
-use the same immutable release tag. Unpinned or branch sources remain mutable
+Trellis CLI. The current mapping is annotated tag `v0.6.5-guru.5`, extension
+revision `0.6.5-guru.26`, and target CLI `0.6.5`. The tag is created only after
+the preparation PR merges and the exact remote candidate passes the pre-tag
+gate. Its peeled commit must equal that candidate and is recorded through
+immutable Git facts, GitHub Release notes, and release evidence; pre-candidate
+public docs must not guess or hard-code a future candidate commit. Repo release
+tags and extension revisions are independent version axes; docs must bind the
+exact pair instead of assuming their Guru suffixes match. Workflow marketplace
+and preset sources must use the same immutable release tag. Unpinned or branch sources remain mutable
 latest/canary inputs and must not be presented as stable release provenance.
 
 Prompts in `README.md` are meant to be copied into an AI coding session in a
