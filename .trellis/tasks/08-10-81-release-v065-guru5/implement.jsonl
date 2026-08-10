@@ -1,6 +1,0 @@
-{"file":".trellis/spec/docs/public-docs.md","reason":"实现公开 stable source、安装、升级与 release notes 文案时必须遵守 public docs SSOT。"}
-{"file":".trellis/spec/preset/installer.md","reason":"修改 extension revision、preset apply、installed manifest 与 throwaway/upgrade 验证时遵守 installer 合同。"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"同步 dogfood 与验证 update/reapply、managed inventory、sidecar 时遵守 ownership 边界。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"Preparation PR、Finalizer、Merge 与 Issue closure route 必须符合 global workflow 和 gh-only 合同。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"release verifier 和 deterministic scripts 只能执行客观动作，不能替代 semantic gate。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"版本 provenance、installation verification 和 release evidence 的结构必须保持当前数据合同。"}
