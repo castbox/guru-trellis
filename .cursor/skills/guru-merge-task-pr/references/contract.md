@@ -15,6 +15,12 @@ close Issue `CLOSED`/`COMPLETED`, and `closed_at >= merged_at`.
 `closure_mismatch` reports exact mismatches without closing anything.
 `merge_blocked` represents a pre-merge gate failure and performs no mutation.
 
+`expected_close_issues` is an ordered unique exact set with zero allowed
+cardinality. For `[]`, parsed PR close keywords must also be `[]`; after a
+successful merge, closure is vacuously complete and the executor performs no
+Issue reads or closure effects. For a non-empty set, keywords and pre/post-merge
+Issue facts must match every expected number exactly.
+
 The gate is ignored owner-private runtime and is deleted after its typed output
 is consumed. It never stores authorization, Finalizer transaction, local base
 state, task cleanup instructions, or full GitHub payloads.

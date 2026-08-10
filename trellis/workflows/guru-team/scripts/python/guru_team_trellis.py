@@ -25,7 +25,6 @@ import tempfile
 import time
 import unicodedata
 from collections.abc import Iterable
-from contextvars import ContextVar
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -23702,6 +23701,7 @@ def build_closeout_plan(
     review_facts: dict[str, Any] | None = None,
     include_closeout_plan: bool = True,
     allow_existing_summary: bool = False,
+    existing_plan_override: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not isinstance(review_facts, dict):
         raise WorkflowError(
@@ -23712,7 +23712,7 @@ def build_closeout_plan(
     requires_marketplace = bool(review_facts["marketplace_required"])
     active_locator = repo_relative(root, task_dir)
     existing_plan_path = closeout_plan_path(task_dir)
-    existing_plan = (
+    existing_plan = copy.deepcopy(existing_plan_override) if existing_plan_override else (
         read_json(existing_plan_path)
         if include_closeout_plan and existing_plan_path.is_file()
         else {}
@@ -24002,6 +24002,43 @@ def closeout_schema2_migration_errors(
     return errors
 
 
+def finalizer_tracked_legacy_closeout_plan(
+    root: Path,
+    task_dir: Path,
+) -> dict[str, Any] | None:
+    """Load only an exact committed schema-2 plan eligible for Finalizer recovery."""
+    path = closeout_plan_path(task_dir)
+    if not path.is_file() or path.is_symlink():
+        return None
+    relative = repo_relative(root, path)
+    if run(
+        ["git", "ls-files", "--error-unmatch", "--", relative],
+        cwd=root,
+        check=False,
+    ).returncode != 0:
+        return None
+    working = validate_closeout_plan_for_migration(read_json(path))
+    if working.get("schema_version") != LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION:
+        return None
+    committed_bytes = ai_first_git_blob_contents(
+        root,
+        {relative: f"HEAD:{relative}"},
+    ).get(relative)
+    if committed_bytes is None:
+        raise WorkflowError(
+            "Tracked legacy closeout plan is missing from committed HEAD.",
+            exit_code=2,
+            payload={"reason_code": "legacy_closeout_plan_head_missing"},
+        )
+    if path.read_bytes() != committed_bytes:
+        raise WorkflowError(
+            "Tracked legacy closeout plan differs from its committed HEAD bytes.",
+            exit_code=2,
+            payload={"reason_code": "legacy_closeout_plan_worktree_drift"},
+        )
+    return working
+
+
 def resolve_closeout_branch_review_commit(
     task_ref: str,
     *,
@@ -24084,12 +24121,20 @@ def prepare_closeout(
 ) -> dict[str, Any]:
     official_after_archive_hook_state(root)
     existing_plan_path = closeout_plan_path(task_dir)
-    existing_plan = (
-        validate_closeout_plan_for_migration(read_json(existing_plan_path))
-        if not current_finalizer
-        and existing_plan_path.is_file()
-        and not existing_plan_path.is_symlink()
+    legacy_finalizer_plan = (
+        finalizer_tracked_legacy_closeout_plan(root, task_dir)
+        if current_finalizer
         else None
+    )
+    existing_plan = (
+        legacy_finalizer_plan
+        if current_finalizer
+        else (
+            validate_closeout_plan_for_migration(read_json(existing_plan_path))
+            if existing_plan_path.is_file()
+            and not existing_plan_path.is_symlink()
+            else None
+        )
     )
     expected_task_ref = repo_relative(root, task_dir)
     base_evolution_supersession: dict[str, Any] | None = None
@@ -24228,12 +24273,25 @@ def prepare_closeout(
         review_facts=review_facts,
         include_closeout_plan=not current_finalizer,
         allow_existing_summary=current_finalizer,
+        existing_plan_override=legacy_finalizer_plan,
     )
     month_supersession: dict[str, Any] | None = None
     pre_pr_reprepare: dict[str, Any] | None = None
     migration_normalization: dict[str, Any] | None = None
     existing = closeout_plan_path(task_dir)
-    if not current_finalizer and existing.is_file():
+    if current_finalizer and legacy_finalizer_plan is not None:
+        migration_errors = closeout_schema2_migration_errors(
+            legacy_finalizer_plan,
+            plan,
+        )
+        if migration_errors:
+            raise WorkflowError(
+                "Tracked legacy closeout plan is not an exact current-plan migration predecessor.",
+                exit_code=2,
+                payload={"migration_errors": migration_errors},
+            )
+        migration_normalization = {"previous_plan": legacy_finalizer_plan}
+    elif not current_finalizer and existing.is_file():
         persisted = validate_closeout_plan_for_migration(read_json(existing))
         if persisted != plan:
             migration_errors = closeout_schema2_migration_errors(persisted, plan)
@@ -24513,6 +24571,130 @@ def resolve_closeout_pull_request(
             payload={"open_pr_count": len(exact)},
         )
     return exact[0] if exact else None
+
+
+def finalization_pre_mutation_remote_preflight(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any] | None,
+    *,
+    allow_legacy_plan_recovery: bool = False,
+) -> tuple[dict[str, Any] | None, str]:
+    """Require an unowned remote or the exact Finalizer-owned recovery state."""
+    git = plan["git"]
+    existing_pr = resolve_closeout_pull_request(
+        root,
+        git["repo"],
+        git["head_branch"],
+        git["base_branch"],
+        git["remote"],
+    )
+    remote_head = closeout_remote_branch_head(root, plan)
+    if transaction is None:
+        if allow_legacy_plan_recovery and existing_pr is not None:
+            local_head = current_head(root)
+            if remote_head != local_head:
+                raise WorkflowError(
+                    "Legacy Finalizer recovery requires the existing remote at current HEAD.",
+                    exit_code=2,
+                    payload={"reason_code": "legacy_finalizer_remote_head_drift"},
+                )
+            validate_closeout_remote_pull_request_identity(
+                plan,
+                existing_pr,
+                expected_draft=True,
+                expected_head=remote_head,
+            )
+            return existing_pr, remote_head
+        reviewed_head = str(git["branch_review_commit"])
+        remote_is_historical_baseline = bool(
+            remote_head
+            and remote_head != reviewed_head
+            and is_ancestor(root, remote_head, reviewed_head)
+        )
+        if (
+            existing_pr is not None
+            or (remote_head and not remote_is_historical_baseline)
+        ):
+            raise WorkflowError(
+                "Task finalization requires an unpublished branch and no Open PR before its first remote mutation.",
+                exit_code=2,
+                payload={
+                    "reason_code": "pre_finalizer_remote_state_exists",
+                    "remote_head": remote_head,
+                    "pull_request": (
+                        existing_pr.get("number") if existing_pr is not None else None
+                    ),
+                },
+            )
+        return None, remote_head
+
+    identity_mismatches = [
+        field
+        for field, matches in (
+            ("repo_ref", transaction.get("repo_ref") == git.get("repo")),
+            ("base_branch", transaction.get("base_branch") == git.get("base_branch")),
+            ("branch", transaction.get("branch") == git.get("head_branch")),
+            (
+                "branch_review_commit",
+                transaction.get("branch_review_commit")
+                == git.get("branch_review_commit"),
+            ),
+        )
+        if not matches
+    ]
+    if identity_mismatches:
+        raise WorkflowError(
+            "Task finalization owner transaction identity differs from the current plan: "
+            + ", ".join(identity_mismatches),
+            exit_code=2,
+            payload={
+                "reason_code": "finalizer_transaction_identity_drift",
+                "mismatch_fields": identity_mismatches,
+            },
+        )
+    allowed_heads = {
+        str(transaction["branch_review_commit"]),
+        str(transaction["publication_head"]),
+    }
+    if transaction.get("next_transition") == "push_content":
+        allowed_heads.add(str(transaction.get("pre_push_remote_head") or ""))
+    if remote_head not in allowed_heads:
+        raise WorkflowError(
+            "Task finalization remote branch drifted outside its owner transaction.",
+            exit_code=2,
+            payload={
+                "reason_code": "finalizer_remote_head_drift",
+                "remote_head": remote_head,
+                "allowed_heads": sorted(allowed_heads),
+            },
+        )
+    bound_pr = transaction.get("pr")
+    if existing_pr is None:
+        if bound_pr is not None:
+            raise WorkflowError(
+                "Task finalization transaction-bound PR is no longer Open.",
+                exit_code=2,
+                payload={"reason_code": "finalizer_bound_pr_missing"},
+            )
+        return None, remote_head
+    if not isinstance(bound_pr, dict):
+        raise WorkflowError(
+            "Task finalization found an Open PR before Finalizer bound it.",
+            exit_code=2,
+            payload={
+                "reason_code": "pre_finalizer_pull_request_exists",
+                "pull_request": existing_pr.get("number"),
+            },
+        )
+    validate_closeout_remote_pull_request_identity(
+        plan,
+        existing_pr,
+        expected_draft=True,
+        expected_head=remote_head,
+        bound_pr=bound_pr,
+    )
+    return existing_pr, remote_head
 
 
 def closeout_task_dir_from_plan(root: Path, plan: dict[str, Any]) -> Path:
@@ -26467,10 +26649,44 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
     require_gh_auth(root)
     if current_finalizer:
         transaction = finalization_read_transaction(root, task_dir)
+        prior_transaction = transaction
+        migration = prepared.get("migration_normalization")
+        legacy_plan = (
+            migration.get("previous_plan")
+            if isinstance(migration, dict)
+            and isinstance(migration.get("previous_plan"), dict)
+            else None
+        )
+        legacy_plan_recovery = (
+            transaction is None
+            and isinstance(legacy_plan, dict)
+            and legacy_plan.get("schema_version")
+            == LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION
+            and plan.get("projection", {}).get(
+                "migration_predecessor_plan_digest"
+            )
+            == legacy_plan.get("plan_digest")
+        )
+        recovered_legacy_pr, pre_push_remote_head = finalization_pre_mutation_remote_preflight(
+            root,
+            plan,
+            prior_transaction,
+            allow_legacy_plan_recovery=legacy_plan_recovery,
+        )
         if transaction is None:
             transaction = finalization_transaction_from_plan(
                 plan,
-                next_transition="push_content",
+                next_transition=(
+                    "verify"
+                    if recovered_legacy_pr and plan["marketplace"]["required"]
+                    else "bind_draft"
+                    if recovered_legacy_pr
+                    else "push_content"
+                ),
+                pr=recovered_legacy_pr,
+                pre_push_remote_head=(
+                    None if recovered_legacy_pr is not None else pre_push_remote_head
+                ),
             )
             finalization_write_transaction(root, task_dir, transaction)
         else:
@@ -26486,6 +26702,12 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
                     verification_ref=(
                         str(transaction["verification_ref"])
                         if isinstance(transaction.get("verification_ref"), str)
+                        else None
+                    ),
+                    pre_push_remote_head=(
+                        str(transaction["pre_push_remote_head"])
+                        if transaction.get("next_transition") == "push_content"
+                        and isinstance(transaction.get("pre_push_remote_head"), str)
                         else None
                     ),
                 )
@@ -26545,6 +26767,8 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             verification_owner_result=verification_owner_result,
             require_plan_artifact=not current_finalizer,
         )
+        if recovered_legacy_pr is not None and entry_state == "prepared":
+            entry_state = "content_pushed"
         if not current_finalizer and state_plan is not plan:
             write_json(closeout_plan_path(task_dir), plan)
             if validate_closeout_plan(read_json(closeout_plan_path(task_dir))) != plan:
@@ -26553,6 +26777,12 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
                     exit_code=2,
                 )
     if entry_state == "prepared":
+        if current_finalizer:
+            finalization_pre_mutation_remote_preflight(
+                root,
+                plan,
+                transaction,
+            )
         execute_closeout_content_push(
             root,
             task_dir,
@@ -26605,6 +26835,7 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             transaction = finalization_transaction_from_plan(
                 plan,
                 next_transition="bind_draft",
+                pr=recovered_legacy_pr,
                 verification_ref=str(checked_verification["verification_ref"]),
             )
             finalization_write_transaction(root, task_dir, transaction)
@@ -26616,6 +26847,12 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
         include_worktree=True,
     )
 
+    if current_finalizer:
+        finalization_pre_mutation_remote_preflight(
+            root,
+            plan,
+            transaction,
+        )
     pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
     if current_finalizer:
         transaction = finalization_transaction_from_plan(
@@ -26711,33 +26948,7 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
-    if bool(getattr(args, "dry_run", False)) or not bool(
-        getattr(args, "from_guru_finalizer", False)
-    ):
-        return _cmd_finish_work_impl(args)
-
-    root = repo_root(Path(args.root or os.getcwd()))
-    task_dir = resolve_finish_work_task_dir(root, args.task)
-    transaction_path = finalization_transaction_path(root, task_dir)
-    if transaction_path.is_file():
-        return _cmd_finish_work_impl(args)
-    if transaction_path.exists():
-        raise WorkflowError(
-            "Task finalization transaction recovery path is unsafe.", exit_code=2
-        )
-
-    token = FINALIZATION_TRANSACTION_WRITE_BUFFER.set((transaction_path, {}))
-    try:
-        result = _cmd_finish_work_impl(args)
-    except Exception:
-        pending = FINALIZATION_TRANSACTION_WRITE_BUFFER.get()
-        FINALIZATION_TRANSACTION_WRITE_BUFFER.reset(token)
-        if pending is not None and pending[1]:
-            write_json(pending[0], pending[1])
-        raise
-    else:
-        FINALIZATION_TRANSACTION_WRITE_BUFFER.reset(token)
-        return result
+    return _cmd_finish_work_impl(args)
 
 
 FINALIZATION_CONSUMERS = {
@@ -26970,11 +27181,6 @@ def finalization_transaction_path(root: Path, task_dir: Path) -> Path:
     )
 
 
-FINALIZATION_TRANSACTION_WRITE_BUFFER: ContextVar[
-    tuple[Path, dict[str, Any]] | None
-] = ContextVar("finalization_transaction_write_buffer", default=None)
-
-
 def finalization_transaction_schema(root: Path) -> dict[str, Any]:
     errors: list[str] = []
     schema = skill_read_schema(
@@ -26998,6 +27204,7 @@ def finalization_transaction_from_plan(
     next_transition: str,
     pr: dict[str, Any] | None = None,
     verification_ref: str | None = None,
+    pre_push_remote_head: str | None = None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "schema_version": "1.0",
@@ -27026,6 +27233,8 @@ def finalization_transaction_from_plan(
         }
     if verification_ref is not None:
         payload["verification_ref"] = verification_ref
+    if pre_push_remote_head is not None:
+        payload["pre_push_remote_head"] = pre_push_remote_head
     return payload
 
 
@@ -27040,6 +27249,12 @@ def finalization_validate_transaction_plan(
         verification_ref=(
             str(transaction["verification_ref"])
             if isinstance(transaction.get("verification_ref"), str)
+            else None
+        ),
+        pre_push_remote_head=(
+            str(transaction["pre_push_remote_head"])
+            if transaction.get("next_transition") == "push_content"
+            and isinstance(transaction.get("pre_push_remote_head"), str)
             else None
         ),
     )
@@ -27067,9 +27282,6 @@ def finalization_write_transaction(
             payload={"errors": errors},
         )
     path = finalization_transaction_path(root, task_dir)
-    if FINALIZATION_TRANSACTION_WRITE_BUFFER.get() is not None:
-        FINALIZATION_TRANSACTION_WRITE_BUFFER.set((path, copy.deepcopy(payload)))
-        return path
     write_json(path, payload)
     return path
 
@@ -27357,6 +27569,23 @@ def finalization_prepare_publication_ready(
     if public_input.get("profile") == "publication_ready":
         return public_input
     if transaction is not None:
+        profile = public_input.get("profile")
+        if (
+            public_input.get("task_ref") != transaction.get("task_ref")
+            or (
+                profile == "reprepare_preview"
+                and (
+                    public_input.get("branch_review_commit")
+                    != transaction.get("branch_review_commit")
+                    or public_input.get("publication_head")
+                    != transaction.get("publication_head")
+                )
+            )
+        ):
+            raise WorkflowError(
+                "Task finalization reprepare input differs from its owner publication authority.",
+                exit_code=2,
+            )
         publication = transaction["publication"]
         return {
             "profile": "publication_ready",
@@ -27368,14 +27597,11 @@ def finalization_prepare_publication_ready(
         }
     if public_input.get("profile") != "reprepare_preview":
         return None
-    if existing_plan is not None:
-        return None
-    return {
-        "profile": "publication_ready",
-        "mode": public_input["mode"],
-        "task_ref": public_input["task_ref"],
-        "branch_review_commit": public_input["branch_review_commit"],
-    }
+    del existing_plan
+    raise WorkflowError(
+        "Task finalization reprepare is missing its owner publication authority.",
+        exit_code=2,
+    )
 
 
 def finalization_closeout_plan(
@@ -29674,6 +29900,21 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
     task_dir = context["task_dir"]
     if exit_id == "verification_required":
         if context["transaction_state"] == "prepared":
+            prior_transaction = finalization_read_transaction(root, task_dir)
+            _existing_pr, pre_push_remote_head = finalization_pre_mutation_remote_preflight(
+                root,
+                context["plan"],
+                prior_transaction,
+            )
+            finalization_write_transaction(
+                root,
+                task_dir,
+                finalization_transaction_from_plan(
+                    context["plan"],
+                    next_transition="push_content",
+                    pre_push_remote_head=pre_push_remote_head,
+                ),
+            )
             result = execute_closeout_content_push(
                 root,
                 task_dir,
@@ -29716,6 +29957,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         reason_code = context["reprepare_reason_code"]
         reviewed_content_head = context["plan"]["git"]["reviewed_content_head"]
         reprepare: dict[str, Any] | None = None
+        reprepare_facts: dict[str, Any] | None = None
         if reason_code == FINALIZATION_REPREPARE_PROVENANCE_TAIL:
             reprepare = (
                 context.get("prepared", {}).get("pre_pr_reprepare")
@@ -29734,7 +29976,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 and isinstance(reprepare.get("previous_transaction"), dict)
                 else None
             )
-            finalizer_pre_pr_provenance_reprepare_preflight(
+            reprepare_facts = finalizer_pre_pr_provenance_reprepare_preflight(
                 root,
                 task_dir,
                 context["plan"],
@@ -29763,10 +30005,10 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             if isinstance(reprepare, dict)
             else None
         )
-        if (
-            reason_code == FINALIZATION_REPREPARE_PROVENANCE_TAIL
-            and isinstance(base_evolution, dict)
-        ):
+        if reason_code in {
+            FINALIZATION_REPREPARE_PROVENANCE_TAIL,
+            FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+        }:
             task_context = context.get("task_context")
             if not isinstance(task_context, dict):
                 raise WorkflowError(
@@ -29795,10 +30037,30 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 },
                 current_finalizer=True,
             )
-            replacement_transaction = finalization_transaction_from_plan(
-                replacement["plan"],
-                next_transition="push_content",
-            )
+            if reprepare_facts is None:
+                _existing_pr, pre_push_remote_head = (
+                    finalization_pre_mutation_remote_preflight(
+                        root,
+                        replacement["plan"],
+                        None,
+                    )
+                )
+                replacement_transaction = finalization_transaction_from_plan(
+                    replacement["plan"],
+                    next_transition="push_content",
+                    pre_push_remote_head=pre_push_remote_head,
+                )
+            else:
+                replacement_transaction = finalization_transaction_from_plan(
+                    replacement["plan"],
+                    next_transition="push_content",
+                    pre_push_remote_head=str(reprepare_facts["remote_head"]),
+                )
+                finalization_pre_mutation_remote_preflight(
+                    root,
+                    replacement["plan"],
+                    replacement_transaction,
+                )
             finalization_write_transaction(
                 root,
                 task_dir,
@@ -35661,7 +35923,6 @@ def task_pr_merge_json_input(root: Path, value: str | None) -> dict[str, Any]:
         or not isinstance(expected_branch, str)
         or not expected_branch.strip()
         or not isinstance(expected_close_issues, list)
-        or not expected_close_issues
         or any(
             not is_strict_int(issue_number) or issue_number < 1
             for issue_number in expected_close_issues

@@ -641,7 +641,10 @@ fixtures: Branch Review `passed` enters the active Publication owner directly;
 that owner authors, reviews, records, checks, and projects the exact PR payload
 without creating `pr-body.md` or `finish-summary-index.json`. Tests must prove
 Finalizer receives byte-identical title/body through the ready 4.0 projection
-and cannot regenerate or reinterpret them.
+and cannot regenerate or reinterpret them. The ready projection has Finalizer
+as its only side-effect consumer: workflow and package tests reject caller-owned
+push or PR creation before Finalizer, and Finalizer preflight detects an
+unexpected existing Open PR or disallowed remote head before any new mutation.
 
 Metadata-only corrections require a reread/rescan and complete fresh review
 inside the Skill. Any durable implementation drift returns to task work and
@@ -757,12 +760,19 @@ only through explicit compatibility selectors.
 
 Package-local production eval executes the real public wrapper, selects the
 per-exit schema from the actual returned `exit_id`, and only then compares
-`expected_exit`. Current transaction regressions cover in-memory completion,
+`expected_exit`. Current transaction regressions cover durable pre-push authority,
 verification re-entry persistence, exact task-ref recovery after archive,
 archive-move restoration from immutable `publication_head`, six-core/
 seven-maximum archive projection, terminal owner cleanup, and
-`ready_for_merge` materialization. They do not add hostile-input, concurrency,
-locking, TOCTOU, crash-consistency, or cross-OS mechanisms.
+`ready_for_merge` materialization. The bounded interrupted-transition recovery
+is part of the declared Finalizer transaction; tests do not generalize it into
+hostile-input, concurrency, locking, TOCTOU, fault-injection, or cross-OS mechanisms.
+
+Production Finalizer regressions cover both an absent remote task ref and a
+strict historical-ancestor remote task ref. At the actual first content push,
+the ignored transaction must already exist on disk and bind the exact accepted
+`pre_push_remote_head`; a different historical or descendant head fails closed.
+Terminal public consumption still retires that checkpoint.
 
 Finalizer regressions also prove the current verification owner checker remains
 strict, an identical immutable verification tuple executes once, and result
@@ -773,6 +783,13 @@ marker before output identity exists, forbid early or persisted public DTOs,
 materialize the terminal DTO only through the public wrapper, prove the wrapper
 performs no transition, and cover every legal and illegal same-owner resume
 state including rejection of terminal `ready`.
+
+Finalizer and Merge cardinality regressions cover `expected_close_issues=[]`,
+one Issue, and multiple Issues. The empty case must accept a refs-only PR with
+no close keyword, reject any accidental close keyword, produce the same
+`ready_for_merge` route, merge by expected head, and complete with zero Issue
+closure reads. Non-empty cases retain exact missing/extra keyword rejection and
+post-merge closure verification.
 
 Explicit legacy compatibility regressions preserve the pre-#180 #105/#191 plan
 engine and two-gate fixtures byte-for-byte. Those fixtures must remain selected
@@ -793,6 +810,12 @@ PR/archive, verification artifact or matching request, either preexisting gate,
 and a tracked closeout plan. Mocking
 `prepare_closeout` does not satisfy this
 regression; the pre-#191 two-gate fixture remains independently passing.
+
+The same regression must prove that minimal `reprepare_required` output does
+not lose Publication authority: the reprepare consumer reloads the retained
+Finalizer-owned immutable publication input and supplies byte-identical title
+and body to the rebuilt plan. Missing/stale private authority, identity drift,
+an existing PR, and any Closed/replacement-PR fallback fail closed.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes must match after fresh install, update, and preset reapply. The

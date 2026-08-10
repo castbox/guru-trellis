@@ -43,6 +43,16 @@ does not locate or rerun the Publication owner checkpoint. Verification re-entry
 `branch_review_commit`. Opaque verification and same-plan references select only the
 owning Skill's private checkpoints; callers do not parse checkpoint bodies.
 
+Publication `ready` has no other legal consumer. Before Finalizer's first
+remote mutation, the branch must have no Open PR and its remote ref must be
+absent or a strict historical ancestor of `branch_review_commit`. A remote
+already at reviewed/publication HEAD is an out-of-order caller push and blocks.
+The first accepted remote value is persisted as the transaction's exact
+`pre_push_remote_head` before push. While `next_transition=push_content`,
+recovery accepts only that exact pre-push value or the bound reviewed/publication
+head produced by the owner. Later recovery accepts only its bound
+reviewed/publication heads and, when present, its exact Draft PR identity.
+
 The verification checker binds the current owner seed, immutable plan,
 repository, remote ref, `branch_review_commit`, local and remote
 reviewed-content identities, and the plan-declared transaction paths. Archived
@@ -120,7 +130,9 @@ assumption after the archive commit.
 
 The deterministic order is fixed:
 
-1. Build and prevalidate the immutable plan.
+1. Build and prevalidate the immutable plan, prove the no-PR/remote
+   precondition, and persist the exact title/body plus exact pre-push remote
+   head owner transaction before any remote mutation.
 2. Verify that current HEAD preserves the reviewed-content identity, then push that exact current HEAD.
 3. If required, stop before PR/archive and emit `verification_required` carrying
    both reviewed and publication HEADs. The verifier targets publication HEAD
@@ -130,8 +142,8 @@ The deterministic order is fixed:
    verification continues without manufacturing a `not_required` handoff.
    The current plan does not create or push a separate evidence-metadata commit; its
    archive transaction remains a direct child of `publication_head`.
-5. Create or reuse the unique open draft for repo/head/base. When that one
-   candidate is an earlier confirmed-plan Draft, first prove its stable
+5. Create the unique open draft for repo/head/base. Reuse is legal only when
+   that Draft is already bound by the current Finalizer transaction; first prove its stable
    repo/head/base/current-HEAD/number/canonical-URL identity, then converge its
    title and exact body bytes to the current confirmed plan on the same PR,
    re-query it, and run the complete immutable metadata validation. A matching
@@ -145,9 +157,11 @@ The deterministic order is fixed:
 ### Archive Artifact Lifecycle
 
 Active-task artifacts may be necessary for current-step validation or crash
-recovery without becoming permanent handoff documents. Current Finalizer uses
-ignored `finalization-transaction.json` only while same-owner re-entry needs it;
-that transaction, `pr-readiness.json`, and `task-finalization-gate.json` never
+recovery without becoming permanent handoff documents. Current Finalizer creates
+ignored `finalization-transaction.json` before its first remote mutation and
+keeps it through same-owner execution/re-entry until terminal public
+consumption; that transaction, `pr-readiness.json`, and
+`task-finalization-gate.json` never
 enter move paths, evidence paths, or the archive. The Publication wrapper
 deletes `pr-readiness.json` after validating its own typed output, before
 Finalizer entry. The Finalizer retains only its own checkpoint across same-plan
@@ -205,6 +219,11 @@ pruning step.
   Successful supersession retires both gates together with the predecessor plan
   and matching verification request before recording the minimal replacement
   transaction.
+- Every reprepare executor records a replacement owner-private transaction
+  before returning its minimal DTO. Re-entry recovers exact title/body only
+  from that transaction and checks task, reviewed commit, and publication head.
+  Missing/stale authority, mismatched identity, an Open PR, or a Closed-PR or
+  old-plan fallback blocks.
 - Missing, closed, replaced, or ambiguous draft identity; unstable
   repo/head/base/HEAD/number/URL/Draft identity; unexpected path;
   invalid private state; or HEAD mismatch -> `blocked`.
@@ -240,8 +259,9 @@ The six closed profiles are:
 - `same_plan_resume`: task/plan seed plus target-owned `profile` and `mode`.
 - `reprepare_preview`: task/reason plus the producer-supplied
   `branch_review_commit` and `publication_head`, followed by target-owned
-  `profile` and `mode`. This is the complete identity needed to rebuild a plan
-  after the superseded plan and gate have been removed.
+  `profile` and `mode`. This minimal public identity selects the exact
+  owner-private replacement transaction; it does not carry or reconstruct PR
+  title/body itself.
 - `standalone_finalization`: `profile`, `mode`, and `task_ref` only.
 
 Producer seed fields and target authoring fields are disjoint. Their union
@@ -265,8 +285,8 @@ current; same-plan recovery reuses that private binding.
   that already-current DTO in its gate because HEAD does not change. Provenance
   recovery retains a private marker until the deterministic executor has
   created or reused the tail, retired the old owner-private plan/gate/request,
-  persisted the minimal ignored replacement transaction when base evolution superseded a
-  pre-#191 predecessor, and can return both heads. Schema 2.0 output and schema 3.0 input add the
+  persisted the minimal ignored replacement transaction for every reprepare,
+  and can return both heads. Schema 2.0 output and schema 3.0 input add the
   provenance reason and direct-consumer identity while preserving the existing
   archive-month value.
 - `ready_for_merge`: the exact plan archive locator and canonical PR number/URL;
@@ -319,8 +339,13 @@ proven may it materialize the `ready_for_merge` DTO in memory using the plan arc
 locator. It never materializes reprepare after execution because that executor
 retires the old gate and returns the DTO directly. The Publication checkpoint
 is neither read nor consumed by this path; its minimal `ready` DTO was consumed
-at entry. The next reprepare preview validates current HEAD and the optional
-single-tail parent/allowlist contract without reading the retired plan.
+at entry. The next reprepare preview validates current HEAD, the optional
+single-tail parent/allowlist contract, and the replacement transaction's exact
+title/body and task/content identity without reading the retired plan.
+
+`close_issues` is an ordered unique exact set and may be empty. Empty means a
+refs-only PR: its body contains no close keyword and the `ready_for_merge`
+projection carries `expected_close_issues=[]`. Non-empty scope remains exact.
 
 ## Script Boundary
 

@@ -28,3 +28,7 @@ config, or deployment drift returns to task work.
 
 Emit exactly one declared typed exit. Missing, stale, ambiguous, multiple,
 unmapped, or checker-failed evidence fails closed.
+
+`ready` has exactly one consumer: `guru-finalize-task`. The caller must not
+push the reviewed/publication HEAD or create a PR between this Skill and that
+consumer; Finalizer owns the complete remote transaction.

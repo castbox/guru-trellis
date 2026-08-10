@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 81,
+    "url": "https://github.com/castbox/guru-trellis/issues/81",
+    "title": "v0.6.5-guru.5 发布门禁：#180 合并后的 tag-pinned 稳定基线",
+    "reason": "Preparation PR 只能 Refs #81；#81 由后续 tag-pinned 验证、GitHub Release 与 evidence comment 完成后显式关闭。"
+  },
+  "close_issues": [],
+  "related_issues": [
+    {
+      "number": 81,
+      "url": "https://github.com/castbox/guru-trellis/issues/81",
+      "title": "v0.6.5-guru.5 发布门禁：#180 合并后的 tag-pinned 稳定基线",
+      "reason": "Preparation PR 只能 Refs #81；#81 由后续 tag-pinned 验证、GitHub Release 与 evidence comment 完成后显式关闭。"
+    },
+    {
+      "number": 180,
+      "url": "https://github.com/castbox/guru-trellis/issues/180",
+      "title": "压缩 Finalizer 与 PR 合并闭环，并以 #174 回放验证最少确认",
+      "reason": "#180 是本次 release gate 的已关闭硬前置，其合并结果由 #81 发布验证消费，但不会由本 task 再关闭。"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 195,
+      "url": "https://github.com/castbox/guru-trellis/issues/195",
+      "title": "迁移全部 Guru Team Skills 到 package-local runtime 并删除单体实现",
+      "reason": "#195 明确属于后续独立工作；本 task 不实现、不启动且不关闭它。"
+    }
+  ]
+}

@@ -450,7 +450,7 @@ error rather than a traceback.
 
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
-such as `v0.6.5-guru.3`, not namespaced tags such as
+such as `v0.6.5-guru.5`, not namespaced tags such as
 `guru-team/v0.6.5`. The tag must correspond to
 the exact `trellis/guru-team-extension.json.version` present in the tagged commit,
 and the manifest must expose `target_trellis_cli` so users can see which official
@@ -458,7 +458,7 @@ and the manifest must expose `target_trellis_cli` so users can see which officia
 tag and extension revision are independent version axes: release metadata binds
 one immutable tag to one exact tagged manifest version rather than assuming their
 Guru suffixes are equal. Stable workflow marketplace examples should use
-`gh:castbox/guru-trellis/trellis#v0.6.5-guru.3`; unpinned
+`gh:castbox/guru-trellis/trellis#v0.6.5-guru.5`; unpinned
 `gh:castbox/guru-trellis/trellis` means latest/canary and must be reported as a
 mutable source in install or upgrade evidence.
 An unreleased branch may carry the next canonical extension version while
@@ -982,9 +982,18 @@ not a verification or process journal. Its exact top-level fields are
 Issue close semantics must be explicit:
 
 - `primary_issue` is intake context and usually the default close candidate.
-- `close_issues` are issues the current task fully resolves and may close.
+- `close_issues` are issues the current task fully resolves and may close. The
+  array may be empty for a valid refs-only PR; empty means the PR must contain
+  no close keyword and merge has no Issue auto-close obligation.
 - `related_issues` are references only.
 - `followup_issues` are future work and must never be closed by the current PR.
+
+Finalizer `expected_close_issues` and Merge input preserve this exact
+zero-or-more set. Schema cardinality must not invent a non-empty requirement:
+runtime compares the complete parsed PR close-keyword set with the expected
+set, and Merge treats the empty post-merge closure loop as vacuously complete.
+For non-empty sets, missing or additional close keywords and any Issue that did
+not close after merge remain blocking mismatches.
 
 The ledger never carries verification state, acceptance evidence, proposal
 digests, GitHub comment checksums, review metadata, or marketplace state.
@@ -1097,15 +1106,17 @@ children remain valid historical references.
 
 Current Finalizer transaction schema `guru-finalization-transaction-1.0` is an
 owner-private, task-scoped ignored-runtime contract named
-`finalization-transaction.json`. It exists only when a deterministic transition
-must survive same-owner re-entry; a same-session path that can reach
-`ready_for_merge` keeps the transaction entirely in memory.
+`finalization-transaction.json`. It is persisted before the first remote
+mutation so the same owner can distinguish its own pushed state from an
+out-of-order caller mutation, including after an interrupted process.
 
 The closed transaction contains only:
 
 - schema/skill identity and task/repository/base/branch identity;
 - `branch_review_commit`, `publication_head`, exact PR title/body, and the next
   deterministic transition;
+- exact `pre_push_remote_head` while `next_transition=push_content`, using an
+  empty string for an absent ref and a full commit OID for a historical baseline;
 - optional canonical PR number/URL after Draft creation; and
 - the immutable verification tuple/ref only while that same-owner transition
   still consumes it.

@@ -329,18 +329,17 @@ Invoke guru-review-branch over the complete committed base-to-HEAD range.
 
 After branch review passes, invoke guru-review-task-publication. Its semantic owner authors and reviews the exact Chinese PR title/body from live authority.
 The checked ready DTO carries that payload directly to Finalizer without a task-local publication handoff file.
+`ready` has exactly one consumer: Finalizer; the caller must not push the reviewed/publication HEAD or create a PR first.
 
 #### 3.7 Finalization
 
-Invoke guru-finalize-task and consume its declared exit; `ready_for_merge`
-immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish
-response after a separate expected-head confirmation, without base sync or direct Issue closure.
+Invoke guru-finalize-task and consume its declared exit; `ready_for_merge` immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish response after a separate expected-head confirmation, without base sync or direct Issue closure.
 
-Only publication ready enters finalization. The finalizer is the only owner
-that may display and execute the bounded push, PR, archive, and Ready side-effect
-set. Verification, stale publication, resume, and reprepare exits are
-automatically consumed by their declared Skills. The global workflow never
-calls closeout executors directly.
+Only publication ready enters finalization. Finalizer alone may display and execute the bounded push, PR, archive, and Ready side-effect set.
+Verification, stale publication, resume, and reprepare exits are automatically consumed by their declared Skills; the workflow never calls closeout executors directly.
+
+Before its first remote mutation, Finalizer requires no Open PR and only an absent remote branch or strict historical ancestor of the reviewed commit; recovery accepts only transaction-bound remote/PR identity.
+Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. `close_issues=[]` is refs-only: close keywords stay empty and merge closure is vacuously complete without Issue effects.
 
 ## Global Integration Boundaries
 

@@ -186,11 +186,11 @@ participates in closeout. Legacy 3.0 Publication/Finalizer DTO shapes fail
 closed and require a fresh Publication run.
 
 The paragraph above describes only legacy compatibility. Current Finalizer
-uses an owner-private ignored `finalization-transaction.json` only when
-same-owner re-entry actually needs it; a same-session terminal execution keeps
-transaction input in memory. The minimal state binds task/repository/base/
-branch, reviewed and publication heads, immutable publication input, current
-transition and an optional PR identity. It contains no live scan, review
+persists an owner-private ignored `finalization-transaction.json` before its
+first remote mutation, including the exact accepted pre-push remote head, and
+retires it only after terminal public consumption. The minimal state binds
+task/repository/base/branch, reviewed and publication heads, immutable
+publication input, current transition and an optional PR identity. It contains no live scan, review
 history, authorization, command transcript or archive projection.
 `ready_for_merge` retires transaction, gate, request and superseded owner state.
 Legacy `closeout-plan.json` schema/example bytes remain immutable assets and
