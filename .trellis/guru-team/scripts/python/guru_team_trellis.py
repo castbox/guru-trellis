@@ -35429,7 +35429,8 @@ def task_pr_merge_close_issues(body: Any) -> list[int]:
     values = {
         int(match.group(1))
         for match in re.finditer(
-            rf"(?im)^\s*(?:{keywords})\s+#([1-9][0-9]*)\s*$",
+            rf"(?im)^[ \t]*(?:[-+*][ \t]+)?(?:{keywords})[ \t]+"
+            rf"#([1-9][0-9]*)[ \t]*[.。]?[ \t]*$",
             body,
         )
     }

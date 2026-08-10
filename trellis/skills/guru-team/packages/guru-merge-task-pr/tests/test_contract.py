@@ -8,6 +8,7 @@ from unittest import mock
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
+PUBLICATION_PACKAGE = PACKAGE.parent / "guru-review-task-publication"
 
 
 def load_runtime():
@@ -92,8 +93,38 @@ class MergeTaskPrContractTest(unittest.TestCase):
             self.assertEqual(list(jsonschema.Draft202012Validator(schema).iter_errors(example)), [])
 
     def test_close_keyword_parser_selects_only_line_owned_closures(self) -> None:
-        body = "## Issue\nCloses #180\nRelated #174\nFixes #181\ntext Closes #999\n"
-        self.assertEqual(GTT.task_pr_merge_close_issues(body), [180, 181])
+        body = (
+            "## Issue\n"
+            "Closes #180\n"
+            "Related #174\n"
+            "Fixes #181.\n"
+            "* Resolves #182。\n"
+            "+ Close #183.\n"
+            "text Closes #999\n"
+            "- This sentence mentions Closes #998。\n"
+        )
+        self.assertEqual(
+            GTT.task_pr_merge_close_issues(body),
+            [180, 181, 182, 183],
+        )
+
+    def test_close_keyword_parser_accepts_publication_producer_bodies(self) -> None:
+        public_ready = json.loads(
+            (PUBLICATION_PACKAGE / "examples/public-ready-output.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        readiness = json.loads(
+            (PUBLICATION_PACKAGE / "examples/pr-readiness.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertEqual(GTT.task_pr_merge_close_issues(public_ready["pr_body"]), [179])
+        self.assertEqual(
+            GTT.task_pr_merge_close_issues(readiness["pr_payload"]["body"]),
+            [179],
+        )
 
     def test_preflight_blocks_draft_head_drift_checks_and_early_close(self) -> None:
         public_input = {
