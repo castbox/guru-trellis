@@ -303,11 +303,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-10T04:49:38Z",
+  "installed_at": "2026-08-10T06:07:56Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "130e1708d59881bb95d6947a0391e9caa48fe422",
-    "commit": "130e1708d59881bb95d6947a0391e9caa48fe422",
+    "ref": "3c84a5370c39eb618f39d3b13cbc678aa6f43999",
+    "commit": "3c84a5370c39eb618f39d3b13cbc678aa6f43999",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -478,7 +478,7 @@
       {
         "id": "guru-merge-task-pr",
         "interface_sha256": "a7022edae256357299f67813e53446bde41da2d5618410b54272ba033820f28a",
-        "tree_sha256": "f34218e7760f577e4430da1063aa2686480677ebf5faf26a28ae391c33d191a9"
+        "tree_sha256": "a4a4534a468793c2cf597be4dae13df774630918bfb8bd21d263280da0de2646"
       },
       {
         "id": "guru-sync-base",
@@ -628,7 +628,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "55169e9495628d295e25348eb000c96e4037cdb77684402a42601f2486b01264",
+        "sha256": "24c0e2e54dfaee13d72e70ce04162eb866cd22a876bc4eab3f3499dd39211064",
         "executable": false,
         "action": "unchanged"
       },
@@ -4625,7 +4625,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-pr/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-pr/tests/test_contract.py",
-        "sha256": "5dcdd4755d4eaa3e721051356b927b048f5bbcbd0ba57726183dcb232f3c91d9",
+        "sha256": "82ac064e31c86c90b72277670fb4e66176fc50c85dfb97f69e53c9a75fad1817",
         "executable": false,
         "action": "unchanged"
       },
@@ -19339,7 +19339,7 @@
       {
         "path": ".agents/skills/guru-merge-task-pr/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-pr/tests/test_contract.py",
-        "sha256": "5dcdd4755d4eaa3e721051356b927b048f5bbcbd0ba57726183dcb232f3c91d9",
+        "sha256": "82ac064e31c86c90b72277670fb4e66176fc50c85dfb97f69e53c9a75fad1817",
         "executable": false,
         "action": "unchanged"
       },
@@ -19626,7 +19626,7 @@
       {
         "path": ".codex/skills/guru-merge-task-pr/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-pr/tests/test_contract.py",
-        "sha256": "5dcdd4755d4eaa3e721051356b927b048f5bbcbd0ba57726183dcb232f3c91d9",
+        "sha256": "82ac064e31c86c90b72277670fb4e66176fc50c85dfb97f69e53c9a75fad1817",
         "executable": false,
         "action": "unchanged"
       },
@@ -19913,7 +19913,7 @@
       {
         "path": ".claude/skills/guru-merge-task-pr/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-pr/tests/test_contract.py",
-        "sha256": "5dcdd4755d4eaa3e721051356b927b048f5bbcbd0ba57726183dcb232f3c91d9",
+        "sha256": "82ac064e31c86c90b72277670fb4e66176fc50c85dfb97f69e53c9a75fad1817",
         "executable": false,
         "action": "unchanged"
       },
@@ -20200,7 +20200,7 @@
       {
         "path": ".cursor/skills/guru-merge-task-pr/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-pr/tests/test_contract.py",
-        "sha256": "5dcdd4755d4eaa3e721051356b927b048f5bbcbd0ba57726183dcb232f3c91d9",
+        "sha256": "82ac064e31c86c90b72277670fb4e66176fc50c85dfb97f69e53c9a75fad1817",
         "executable": false,
         "action": "unchanged"
       },

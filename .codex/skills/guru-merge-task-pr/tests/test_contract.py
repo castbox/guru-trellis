@@ -128,6 +128,87 @@ class MergeTaskPrContractTest(unittest.TestCase):
             [179],
         )
 
+    def test_live_facts_capture_required_readiness_composite(self) -> None:
+        public_input = {
+            "repo_ref": "castbox/guru-trellis",
+            "pr_number": 180,
+            "expected_close_issues": [180],
+        }
+        pr = {
+            "number": 180,
+            "url": "https://github.com/castbox/guru-trellis/pull/180",
+            "state": "OPEN",
+            "isDraft": False,
+            "baseRefName": "main",
+            "headRefName": "codex/180-eval",
+            "headRefOid": "1" * 40,
+            "mergeable": "MERGEABLE",
+            "mergeStateStatus": "UNSTABLE",
+            "reviewDecision": "APPROVED",
+            "statusCheckRollup": [
+                {"name": "required-ci", "conclusion": "SUCCESS"},
+                {"name": "optional-preview", "conclusion": "FAILURE"},
+            ],
+            "body": "Closes #180\n",
+            "mergedAt": None,
+            "mergeCommit": None,
+        }
+        policy = {
+            "full_name": "castbox/guru-trellis",
+            "allow_merge_commit": True,
+            "allow_squash_merge": False,
+            "allow_rebase_merge": False,
+        }
+        issue = {
+            "number": 180,
+            "state": "OPEN",
+            "closedAt": None,
+            "url": "https://github.com/castbox/guru-trellis/issues/180",
+        }
+        with mock.patch.object(GTT, "gh_json", side_effect=[pr, policy, issue]) as gh_json:
+            facts = GTT.task_pr_merge_live_facts(Path("."), public_input)
+
+        requested_fields = gh_json.call_args_list[0].args[0][-1].split(",")
+        self.assertIn("mergeStateStatus", requested_fields)
+        self.assertIn(
+            "mergeStateStatus",
+            gh_json.call_args_list[0].kwargs["required_fields"],
+        )
+        self.assertEqual(facts["pr"]["merge_state_status"], "UNSTABLE")
+        self.assertEqual(
+            facts["pr"]["checks"],
+            [
+                {"name": "required-ci", "state": "SUCCESS"},
+                {"name": "optional-preview", "state": "FAILURE"},
+            ],
+        )
+
+    def test_live_facts_reject_unknown_required_readiness_composite(self) -> None:
+        public_input = {
+            "repo_ref": "castbox/guru-trellis",
+            "pr_number": 180,
+            "expected_close_issues": [180],
+        }
+        pr = {
+            "number": 180,
+            "url": "https://github.com/castbox/guru-trellis/pull/180",
+            "state": "OPEN",
+            "isDraft": False,
+            "baseRefName": "main",
+            "headRefName": "codex/180-eval",
+            "headRefOid": "1" * 40,
+            "mergeable": "MERGEABLE",
+            "mergeStateStatus": "FUTURE_STATE",
+            "reviewDecision": "APPROVED",
+            "statusCheckRollup": [],
+            "body": "Closes #180\n",
+            "mergedAt": None,
+            "mergeCommit": None,
+        }
+        with mock.patch.object(GTT, "gh_json", return_value=pr):
+            with self.assertRaisesRegex(GTT.WorkflowError, "response is incomplete"):
+                GTT.task_pr_merge_live_facts(Path("."), public_input)
+
     def test_preflight_blocks_draft_head_drift_and_early_close(self) -> None:
         public_input = {
             "expected_head_sha": "1" * 40,
@@ -139,7 +220,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "pr": {
                 "state": "OPEN", "is_draft": True, "head_sha": "2" * 40,
                 "base_branch": "release", "head_branch": "codex/other",
-                "mergeable": "UNKNOWN", "checks": [{"name": "ci", "state": "PENDING"}],
+                "mergeable": "UNKNOWN", "merge_state_status": "BLOCKED",
+                "checks": [{"name": "ci", "state": "PENDING"}],
             },
             "close_issues": [180, 181],
             "issues": [{"number": 180, "state": "CLOSED"}],
@@ -164,7 +246,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "pr": {
                 "state": "OPEN", "is_draft": False, "head_sha": "1" * 40,
                 "base_branch": "main", "head_branch": "codex/180-eval",
-                "mergeable": "MERGEABLE",
+                "mergeable": "MERGEABLE", "merge_state_status": "UNSTABLE",
                 "checks": [
                     {"name": "required-ci", "state": "SUCCESS"},
                     {"name": "optional-preview", "state": "FAILURE"},
@@ -190,7 +272,8 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "pr": {
                 "state": "OPEN", "is_draft": False, "head_sha": "1" * 40,
                 "base_branch": "main", "head_branch": "codex/180-eval",
-                "mergeable": "MERGEABLE", "checks": [],
+                "mergeable": "MERGEABLE", "merge_state_status": "BLOCKED",
+                "checks": [],
             },
             "repository_policy": {"allowed_methods": ["merge"]},
             "close_issues": [180],
@@ -226,14 +309,25 @@ class MergeTaskPrContractTest(unittest.TestCase):
             "expected_head_branch": "codex/180-eval",
             "expected_close_issues": [180],
         }
+        clean_facts = {
+            "pr": {"merge_state_status": "CLEAN"},
+            "repository_policy": {"allowed_methods": ["merge"]},
+        }
+        clean_digest = GTT.canonical_json_sha256(clean_facts)
+        changed_facts = {
+            "pr": {"merge_state_status": "BLOCKED"},
+            "repository_policy": {"allowed_methods": ["merge"]},
+        }
+        changed_facts["facts_sha256"] = GTT.canonical_json_sha256(changed_facts)
+        self.assertNotEqual(clean_digest, changed_facts["facts_sha256"])
         gate = {
-            "facts_sha256": "2" * 64,
+            "facts_sha256": clean_digest,
             "route": {"typed_exit": "merged", "merge_method": "merge"},
         }
         with mock.patch.object(
             GTT,
             "task_pr_merge_live_facts",
-            return_value={"facts_sha256": "3" * 64},
+            return_value=changed_facts,
         ):
             with self.assertRaisesRegex(GTT.WorkflowError, "stale against live GitHub facts"):
                 GTT.check_task_pr_merge_result(Path("."), public_input, gate)

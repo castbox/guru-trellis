@@ -35383,6 +35383,15 @@ TASK_PR_MERGE_METHOD_FLAGS = {
     "squash": "--squash",
     "rebase": "--rebase",
 }
+TASK_PR_MERGE_STATE_STATUSES = frozenset({
+    "BEHIND",
+    "BLOCKED",
+    "CLEAN",
+    "DIRTY",
+    "HAS_HOOKS",
+    "UNKNOWN",
+    "UNSTABLE",
+})
 
 
 def task_pr_merge_package_root(root: Path) -> Path:
@@ -35491,19 +35500,29 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
     pr = gh_json(
         [
             "pr", "view", str(number), "--repo", repo, "--json",
-            "number,url,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,reviewDecision,statusCheckRollup,body,mergedAt,mergeCommit",
+            "number,url,state,isDraft,baseRefName,headRefName,headRefOid,mergeable,mergeStateStatus,reviewDecision,statusCheckRollup,body,mergedAt,mergeCommit",
         ],
         cwd=root,
         repo=repo,
         required_fields=(
             "number", "url", "state", "isDraft", "baseRefName", "headRefName",
-            "headRefOid", "mergeable", "statusCheckRollup", "body",
+            "headRefOid", "mergeable", "mergeStateStatus", "statusCheckRollup", "body",
         ),
         operation="merge_preview",
     )
     if not isinstance(pr, dict) or pr.get("number") != number:
         raise github_response_incomplete(
             operation="merge_preview", repo=repo, detail="PR identity does not match the requested number."
+        )
+    merge_state_status = pr.get("mergeStateStatus")
+    if (
+        not isinstance(merge_state_status, str)
+        or merge_state_status not in TASK_PR_MERGE_STATE_STATUSES
+    ):
+        raise github_response_incomplete(
+            operation="merge_preview",
+            repo=repo,
+            detail="mergeStateStatus is outside the supported GitHub enum.",
         )
     pr_url = canonical_pull_request_url(repo, number, pr.get("url"))
     policy = gh_json(
@@ -35561,6 +35580,7 @@ def task_pr_merge_live_facts(root: Path, public_input: dict[str, Any]) -> dict[s
             "head_branch": pr.get("headRefName"),
             "head_sha": pr.get("headRefOid"),
             "mergeable": str(pr.get("mergeable") or "").upper(),
+            "merge_state_status": merge_state_status,
             "review_decision": str(pr.get("reviewDecision") or "").upper(),
             "checks": task_pr_merge_check_rows(pr.get("statusCheckRollup")),
             "merged_at": pr.get("mergedAt"),

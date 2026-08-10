@@ -565,24 +565,28 @@ def write_fake_merge_gh(
         "merge-workflow-merged": {
             "draft": False,
             "head": "1" * 40,
+            "merge_state_status": "CLEAN",
             "body": "Closes #174\n",
             "closure_mismatch": False,
         },
         "merge-standalone-draft-blocked": {
             "draft": True,
             "head": "1" * 40,
+            "merge_state_status": "BLOCKED",
             "body": "Closes #174\n",
             "closure_mismatch": False,
         },
         "merge-workflow-head-drift-blocked": {
             "draft": False,
             "head": "3" * 40,
+            "merge_state_status": "CLEAN",
             "body": "Closes #174\n",
             "closure_mismatch": False,
         },
         "merge-workflow-branch-drift-blocked": {
             "draft": False,
             "head": "1" * 40,
+            "merge_state_status": "CLEAN",
             "base_branch": "release",
             "head_branch": "codex/other-task",
             "body": "Closes #174\n",
@@ -591,18 +595,21 @@ def write_fake_merge_gh(
         "merge-workflow-added-close-scope-blocked": {
             "draft": False,
             "head": "1" * 40,
+            "merge_state_status": "CLEAN",
             "body": "Closes #174\nCloses #180\n",
             "closure_mismatch": False,
         },
         "merge-workflow-close-scope-blocked": {
             "draft": False,
             "head": "1" * 40,
+            "merge_state_status": "CLEAN",
             "body": "Related #174\n",
             "closure_mismatch": False,
         },
         "merge-workflow-closure-mismatch": {
             "draft": False,
             "head": "1" * 40,
+            "merge_state_status": "CLEAN",
             "body": "Closes #174\n",
             "closure_mismatch": True,
         },
@@ -642,7 +649,8 @@ def write_fake_merge_gh(
         " payload={'number':number,'url':pr_url,'state':'MERGED' if state['merged'] else 'OPEN',"
         "'isDraft':config['draft'],'baseRefName':config.get('base_branch','main'),"
         "'headRefName':config.get('head_branch','codex/180-eval'),"
-        "'headRefOid':config['head'],'mergeable':'MERGEABLE','reviewDecision':'APPROVED',"
+        "'headRefOid':config['head'],'mergeable':'MERGEABLE',"
+        "'mergeStateStatus':config['merge_state_status'],'reviewDecision':'APPROVED',"
         "'statusCheckRollup':[{'name':'contract','conclusion':'SUCCESS'}],'body':config['body'],"
         "'mergedAt':'2026-08-05T06:21:00Z' if state['merged'] else None,"
         "'mergeCommit':{'oid':'2'*40} if state['merged'] else None}\n"
