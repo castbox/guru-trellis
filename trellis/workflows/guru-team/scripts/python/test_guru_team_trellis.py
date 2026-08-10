@@ -14929,10 +14929,21 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             "review": {"close_issues_reviewed": [105]},
             "task": {"archive_locator": archive_ref},
         }
-        with mock.patch.object(
-            gtt,
-            "finalization_output_contract",
-            return_value=ready_for_merge_schema,
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_output_contract",
+                return_value=ready_for_merge_schema,
+            ),
+            mock.patch.object(
+                gtt,
+                "gh_json",
+                return_value={
+                    "number": 105,
+                    "state": "OPEN",
+                    "url": "https://github.com/owner/repo/issues/105",
+                },
+            ) as issue_view,
         ):
             materialized = gtt.finalization_gate_with_ready_for_merge_output(
                 self.root,
@@ -14945,6 +14956,21 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     "headRefOid": self.head,
                 },
             )
+        issue_view.assert_called_once_with(
+            [
+                "issue",
+                "view",
+                "105",
+                "--repo",
+                "owner/repo",
+                "--json",
+                "number,state,url",
+            ],
+            cwd=self.root,
+            repo="owner/repo",
+            required_fields=("number", "state", "url"),
+            operation="finalization_issue_preflight",
+        )
         self.assertEqual(
             materialized["route"]["output"],
             {
@@ -14958,6 +14984,48 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "expected_close_issues": [105],
             },
         )
+
+    def test_ready_for_merge_materialization_blocks_closed_issue(self) -> None:
+        with mock.patch.object(
+            gtt,
+            "gh_json",
+            return_value={
+                "number": 105,
+                "state": "CLOSED",
+                "url": "https://github.com/owner/repo/issues/105",
+            },
+        ):
+            with self.assertRaisesRegex(
+                gtt.WorkflowError,
+                "close issue #105 is not Open before merge",
+            ):
+                gtt.finalization_live_open_close_issues(
+                    self.root,
+                    "owner/repo",
+                    [105],
+                )
+
+    def test_ready_for_merge_materialization_rejects_incomplete_issue_identity(
+        self,
+    ) -> None:
+        with mock.patch.object(
+            gtt,
+            "gh_json",
+            return_value={
+                "number": 106,
+                "state": "OPEN",
+                "url": "https://github.com/owner/repo/issues/106",
+            },
+        ):
+            with self.assertRaisesRegex(
+                gtt.WorkflowError,
+                "GitHub CLI response is incomplete",
+            ):
+                gtt.finalization_live_open_close_issues(
+                    self.root,
+                    "owner/repo",
+                    [105],
+                )
 
     def test_public_wrapper_materializes_only_terminal_ready_for_merge_marker(self) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
@@ -15055,6 +15123,17 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                     gtt,
                     "finalization_output_contract",
                     return_value=ready_for_merge_schema,
+                ),
+                mock.patch.object(
+                    gtt,
+                    "finalization_live_open_close_issues",
+                    return_value=[
+                        {
+                            "number": 105,
+                            "state": "OPEN",
+                            "url": "https://github.com/owner/repo/issues/105",
+                        }
+                    ],
                 ),
                 mock.patch.object(
                     gtt,
@@ -15573,6 +15652,264 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.assertFalse((task_dir / "context-discovery.json").exists())
             self.assertTrue((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).is_file())
             self.assertTrue((task_dir / gtt.FINISH_SUMMARY_ARTIFACT).is_file())
+
+    def test_minimal_verified_result_reenters_and_is_reused_by_finalizer(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_ref = f"finalization:{'b' * 64}"
+        verification_ref = "extension-verification:minimal-current"
+        verifier_input = {
+            "profile": "verification_required",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "plan_ref": plan_ref,
+            "repo_ref": "owner/repo",
+            "branch_review_commit": self.head,
+            "publication_head": self.head,
+            "verification_target": "extension-installation",
+        }
+        payload = {
+            "schema_version": gtt.EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION,
+            "skill_id": gtt.EXTENSION_VERIFICATION_SKILL_ID,
+            "mode": "workflow",
+            "profile": "verification_required",
+            "immutable_identity": {
+                "repo_ref": "owner/repo",
+                "remote": "origin",
+                "ref": "refs/heads/fix/105-closeout",
+                "branch_review_commit": self.head,
+                "publication_head": self.head,
+                "extension_source_commit": "c" * 40,
+                "capability_profile": ["workflow-marketplace"],
+            },
+            "semantic_result": {
+                "typed_exit": "verified",
+                "conclusion": "passed",
+                "finding_refs": [],
+                "blocker": None,
+            },
+            "unverified_boundaries": [],
+            "identity": {"verification_ref": verification_ref},
+        }
+        finalizer_input = {
+            "profile": "verification_verified",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "plan_ref": plan_ref,
+            "branch_review_commit": self.head,
+            "publication_head": self.head,
+            "verification_ref": verification_ref,
+        }
+        checked = {
+            "status": "ok",
+            "typed_exit": "verified",
+            "mode": "workflow",
+            "verification_ref": verification_ref,
+        }
+        locator = f"{task_ref}/{gtt.MARKETPLACE_VERIFICATION_ARTIFACT}"
+        plan = {
+            "git": {
+                "repo": "owner/repo",
+                "publication_head": self.head,
+            }
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_verification_owner_payload",
+                return_value=(payload, locator),
+            ),
+            mock.patch.object(
+                gtt,
+                "check_extension_verification_result",
+                return_value=checked,
+            ) as checker,
+        ):
+            self.assertEqual(
+                gtt.finalization_verification_owner_result(
+                    self.root,
+                    self.task_dir,
+                    finalizer_input,
+                ),
+                (payload, checked),
+            )
+            self.assertEqual(
+                gtt.finalization_current_verification_owner_result(
+                    self.root,
+                    self.task_dir,
+                    task_ref=task_ref,
+                    plan_ref=plan_ref,
+                    branch_review_commit=self.head,
+                    plan=plan,
+                ),
+                (payload, checked),
+            )
+
+        self.assertNotIn("public_input", payload)
+        self.assertEqual(checker.call_count, 2)
+        for call in checker.call_args_list:
+            self.assertEqual(call.args, (self.root, payload, locator, verifier_input))
+
+        artifact = self.task_dir / gtt.MARKETPLACE_VERIFICATION_ARTIFACT
+        gtt.write_json(artifact, payload)
+        plan = {
+            "plan_digest": "b" * 64,
+            "marketplace": {
+                "required": True,
+                "verifier_artifact_locator": gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
+            },
+            "projection": {"move_paths": []},
+            "git": {
+                "repo": "owner/repo",
+                "remote": "origin",
+                "head_branch": "fix/105-closeout",
+                "branch_review_commit": self.head,
+                "publication_head": self.head,
+            },
+            "task": {"active_locator": task_ref},
+        }
+        with mock.patch.object(
+            gtt,
+            "check_extension_verification_result",
+            return_value=checked,
+        ) as archive_checker:
+            self.assertEqual(
+                gtt.validate_closeout_marketplace_artifact(
+                    self.root,
+                    self.task_dir,
+                    plan,
+                    (payload, checked),
+                ),
+                (payload, checked),
+            )
+        archive_checker.assert_called_once_with(
+            self.root,
+            payload,
+            locator,
+            verifier_input,
+        )
+
+    def test_verified_ready_executor_restores_publication_from_transaction(
+        self,
+    ) -> None:
+        task_ref = self.task_dir.relative_to(self.root).as_posix()
+        plan_digest = "b" * 64
+        title = "完成 #105 Finalizer"
+        body = valid_pr_body("Finalizer verified re-entry。")
+        public_input = {
+            "profile": "verification_verified",
+            "mode": "workflow",
+            "task_ref": task_ref,
+            "plan_ref": f"finalization:{plan_digest}",
+            "branch_review_commit": self.head,
+            "publication_head": self.head,
+            "verification_ref": "extension-verification:minimal-current",
+        }
+        transaction = {
+            "task_ref": task_ref,
+            "branch_review_commit": self.head,
+            "publication": {"title": title, "body": body},
+        }
+        plan = {
+            "plan_digest": plan_digest,
+            "marketplace": {"required": True},
+            "git": {
+                "repo": "owner/repo",
+                "base_branch": "main",
+                "head_branch": "fix/105-closeout",
+                "branch_review_commit": self.head,
+                "publication_head": self.head,
+            },
+            "publish": {"title": title, "body": body},
+            "review": {"close_issues_reviewed": [105]},
+            "task": {
+                "active_locator": task_ref,
+                "archive_locator": ".trellis/tasks/archive/2026-08/07-11-closeout",
+            },
+        }
+        gate = {
+            "route": {
+                "typed_exit": "ready_for_merge",
+                "consumer": gtt.FINALIZATION_CONSUMERS["ready_for_merge"],
+                "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            }
+        }
+        context = {
+            "task_dir": self.task_dir,
+            "plan": plan,
+            "transaction_state": "evidence_ready",
+            "verification": ({}, {"typed_exit": "verified"}),
+        }
+        archived = self.root / plan["task"]["archive_locator"]
+        finish_result = {
+            "stage": "ready",
+            "archived_task_dir": str(archived),
+            "publish": {
+                "pr": {
+                    "number": 118,
+                    "url": "https://github.com/owner/repo/pull/118",
+                    "headRefOid": self.head,
+                }
+            },
+        }
+        materialized = copy.deepcopy(gate)
+        materialized["route"]["output"] = {
+            "exit_id": "ready_for_merge",
+            "repo_ref": "owner/repo",
+            "pr_number": 118,
+            "pr_url": "https://github.com/owner/repo/pull/118",
+            "expected_head_sha": self.head,
+            "expected_base_branch": "main",
+            "expected_head_branch": "fix/105-closeout",
+            "expected_close_issues": [105],
+        }
+        finish = mock.Mock(return_value=finish_result)
+        with (
+            mock.patch.object(
+                gtt,
+                "finalization_public_input",
+                return_value=(public_input, "<test>"),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_gate_input",
+                return_value=(gate, self.root / "gate.json"),
+            ),
+            mock.patch.object(
+                gtt,
+                "check_finalization_gate_result",
+                return_value=(gate, context),
+            ),
+            mock.patch.object(
+                gtt,
+                "finalization_read_transaction",
+                return_value=transaction,
+            ),
+            mock.patch.object(gtt, "cmd_finish_work", finish),
+            mock.patch.object(
+                gtt,
+                "finalization_gate_with_ready_for_merge_output",
+                return_value=materialized,
+            ),
+        ):
+            result = gtt.cmd_execute_finalization_transition(
+                argparse.Namespace(root=str(self.root), input="unused", gate=None)
+            )
+
+        finish_args = finish.call_args.args[0]
+        self.assertEqual(
+            finish_args.publication_ready,
+            {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "branch_review_commit": self.head,
+                "pr_title": title,
+                "pr_body": body,
+            },
+        )
+        self.assertEqual(result["typed_exit"], "ready_for_merge")
 
     def test_migration_verification_plan_ref_is_exact_and_reprepare_retires_it(
         self,
@@ -16278,6 +16615,17 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             ),
             mock.patch.object(gtt, "run", side_effect=run_with_ready),
             mock.patch.object(gtt, "cmd_finish_work", side_effect=execute_archived),
+            mock.patch.object(
+                gtt,
+                "finalization_live_open_close_issues",
+                return_value=[
+                    {
+                        "number": 105,
+                        "state": "OPEN",
+                        "url": "https://github.com/owner/repo/issues/105",
+                    }
+                ],
+            ),
             mock.patch.object(gtt, "create_pull_request") as create_pr,
             mock.patch.object(
                 gtt,

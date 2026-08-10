@@ -24515,12 +24515,30 @@ def validate_closeout_marketplace_artifact(
     if artifact.is_symlink() or not artifact.is_file():
         raise WorkflowError("Extension verification owner artifact is missing or unsafe.", exit_code=2)
     owner = read_json(artifact)
-    owner_input = (
-        owner.get("public_input")
-        if isinstance(owner.get("public_input"), dict)
-        else None
+    minimal = (
+        owner.get("schema_version")
+        == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION
     )
-    if owner_input is None:
+    expected_plan_ref = (
+        f"closeout-plan:{plan['plan_digest']}"
+        if CLOSEOUT_PLAN_ARTIFACT
+        in plan.get("projection", {}).get("move_paths", [])
+        else f"finalization:{plan['plan_digest']}"
+    )
+    owner_input = (
+        finalization_minimal_verification_public_input(
+            owner,
+            task_ref=plan["task"]["active_locator"],
+            plan_ref=expected_plan_ref,
+            branch_review_commit=plan["git"]["branch_review_commit"],
+            publication_head=plan["git"].get(
+                "publication_head", plan["git"]["branch_review_commit"]
+            ),
+        )
+        if minimal
+        else owner.get("public_input")
+    )
+    if not isinstance(owner_input, dict):
         raise WorkflowError(
             "Extension verification owner input is missing.",
             exit_code=2,
@@ -24531,39 +24549,53 @@ def validate_closeout_marketplace_artifact(
         repo_relative(root, artifact),
         owner_input,
     )
-    expected_plan_ref = (
-        f"closeout-plan:{plan['plan_digest']}"
-        if CLOSEOUT_PLAN_ARTIFACT
-        in plan.get("projection", {}).get("move_paths", [])
-        else f"finalization:{plan['plan_digest']}"
-    )
     repository = (
-        owner.get("target_repository")
+        owner.get("immutable_identity")
+        if minimal and isinstance(owner.get("immutable_identity"), dict)
+        else owner.get("target_repository")
         if isinstance(owner.get("target_repository"), dict)
         else {}
     )
     errors: list[str] = []
-    if (
-        owner.get("schema_version") != EXTENSION_VERIFICATION_SCHEMA_VERSION
-        or owner.get("typed_exit") != "verified"
-        or owner.get("mode") != "workflow"
-        or checked.get("typed_exit") != "verified"
-    ):
-        errors.append("extension verification owner result is not verified")
-    if (
-        owner_input.get("task_ref") != plan["task"]["active_locator"]
-        or not closeout_verification_plan_ref_matches(
-            plan,
-            owner_input.get("plan_ref"),
+    if minimal:
+        semantic = (
+            owner.get("semantic_result")
+            if isinstance(owner.get("semantic_result"), dict)
+            else {}
         )
-        or owner_input.get("branch_review_commit")
-        != plan["git"]["branch_review_commit"]
-        or owner_input.get("publication_head", owner_input.get("branch_review_commit"))
-        != plan["git"].get("publication_head", plan["git"]["branch_review_commit"])
-        or normalize_github_repository(owner_input.get("repo_ref"))
-        != plan["git"]["repo"]
-    ):
-        errors.append("extension verification public input is not plan-bound")
+        if (
+            owner.get("mode") != "workflow"
+            or owner.get("profile") != "verification_required"
+            or semantic.get("typed_exit") != "verified"
+            or checked.get("typed_exit") != "verified"
+        ):
+            errors.append("extension verification owner result is not verified")
+    else:
+        if (
+            owner.get("schema_version") != EXTENSION_VERIFICATION_SCHEMA_VERSION
+            or owner.get("typed_exit") != "verified"
+            or owner.get("mode") != "workflow"
+            or checked.get("typed_exit") != "verified"
+        ):
+            errors.append("extension verification owner result is not verified")
+        if (
+            owner_input.get("task_ref") != plan["task"]["active_locator"]
+            or not closeout_verification_plan_ref_matches(
+                plan,
+                owner_input.get("plan_ref"),
+            )
+            or owner_input.get("branch_review_commit")
+            != plan["git"]["branch_review_commit"]
+            or owner_input.get(
+                "publication_head", owner_input.get("branch_review_commit")
+            )
+            != plan["git"].get(
+                "publication_head", plan["git"]["branch_review_commit"]
+            )
+            or normalize_github_repository(owner_input.get("repo_ref"))
+            != plan["git"]["repo"]
+        ):
+            errors.append("extension verification public input is not plan-bound")
     if (
         normalize_github_repository(repository.get("repo_ref"))
         != plan["git"]["repo"]
@@ -24571,7 +24603,9 @@ def validate_closeout_marketplace_artifact(
         or repository.get("ref") != f"refs/heads/{plan['git']['head_branch']}"
         or repository.get("branch_review_commit")
         != plan["git"]["branch_review_commit"]
-        or repository.get("publication_head", repository.get("branch_review_commit"))
+        or repository.get(
+            "publication_head", repository.get("branch_review_commit")
+        )
         != plan["git"].get("publication_head", plan["git"]["branch_review_commit"])
     ):
         errors.append("extension verification repository identity is not plan-bound")
@@ -27492,6 +27526,41 @@ def finalization_standalone_not_required_owner_is_current(
     )
 
 
+def finalization_minimal_verification_public_input(
+    payload: dict[str, Any],
+    *,
+    task_ref: str,
+    plan_ref: str,
+    branch_review_commit: str,
+    publication_head: str,
+) -> dict[str, Any]:
+    identity = (
+        payload.get("immutable_identity")
+        if isinstance(payload.get("immutable_identity"), dict)
+        else {}
+    )
+    if payload.get("mode") == "standalone":
+        return {
+            "profile": "standalone_verification",
+            "mode": "standalone",
+            "repo_ref": identity.get("repo_ref"),
+            "remote": identity.get("remote"),
+            "ref": identity.get("ref"),
+            "caller_intent": "verify-extension-installation",
+            "task_ref": task_ref,
+        }
+    return {
+        "profile": "verification_required",
+        "mode": "workflow",
+        "task_ref": task_ref,
+        "plan_ref": plan_ref,
+        "repo_ref": identity.get("repo_ref"),
+        "branch_review_commit": branch_review_commit,
+        "publication_head": publication_head,
+        "verification_target": "extension-installation",
+    }
+
+
 def finalization_verification_owner_result(
     root: Path,
     task_dir: Path,
@@ -27507,7 +27576,23 @@ def finalization_verification_owner_result(
         root,
         task_dir,
     )
-    owner_input = payload.get("public_input")
+    minimal = (
+        payload.get("schema_version")
+        == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION
+    )
+    owner_input = (
+        finalization_minimal_verification_public_input(
+            payload,
+            task_ref=str(public_input.get("task_ref") or ""),
+            plan_ref=str(public_input.get("plan_ref") or ""),
+            branch_review_commit=str(
+                public_input.get("branch_review_commit") or ""
+            ),
+            publication_head=str(public_input.get("publication_head") or ""),
+        )
+        if minimal
+        else payload.get("public_input")
+    )
     if not isinstance(owner_input, dict):
         raise WorkflowError(
             "Task finalization verification owner input is missing.",
@@ -27521,6 +27606,8 @@ def finalization_verification_owner_result(
             owner_input,
         )
     except WorkflowError:
+        if minimal:
+            raise
         plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             raise
@@ -27563,30 +27650,52 @@ def finalization_verification_owner_result(
             == checked.get("verification_ref")
         )
     else:
-        current_plan = finalization_closeout_plan(root, task_dir)
-        migrated_plan_ref_match = bool(
-            current_plan is not None
-            and public_input.get("plan_ref")
-            == f"closeout-plan:{current_plan['plan_digest']}"
-            and closeout_verification_plan_ref_matches(
-                current_plan,
-                owner_input.get("plan_ref"),
+        if minimal:
+            identity = (
+                payload.get("immutable_identity")
+                if isinstance(payload.get("immutable_identity"), dict)
+                else {}
             )
-        )
-        matches = (
-            checked.get("typed_exit") == "verified"
-            and owner_input.get("task_ref") == public_input.get("task_ref")
-            and (
-                owner_input.get("plan_ref") == public_input.get("plan_ref")
-                or migrated_plan_ref_match
+            matches = (
+                payload.get("mode") == "workflow"
+                and payload.get("profile") == "verification_required"
+                and checked.get("typed_exit") == "verified"
+                and identity.get("branch_review_commit")
+                == public_input.get("branch_review_commit")
+                and identity.get("publication_head")
+                == public_input.get("publication_head")
+                and checked.get("verification_ref")
+                == public_input.get("verification_ref")
             )
-            and owner_input.get("branch_review_commit")
-            == public_input.get("branch_review_commit")
-            and owner_input.get("publication_head", owner_input.get("branch_review_commit"))
-            == public_input.get("publication_head", public_input.get("branch_review_commit"))
-            and checked.get("verification_ref")
-            == public_input.get("verification_ref")
-        )
+        else:
+            current_plan = finalization_closeout_plan(root, task_dir)
+            migrated_plan_ref_match = bool(
+                current_plan is not None
+                and public_input.get("plan_ref")
+                == f"closeout-plan:{current_plan['plan_digest']}"
+                and closeout_verification_plan_ref_matches(
+                    current_plan,
+                    owner_input.get("plan_ref"),
+                )
+            )
+            matches = (
+                checked.get("typed_exit") == "verified"
+                and owner_input.get("task_ref") == public_input.get("task_ref")
+                and (
+                    owner_input.get("plan_ref") == public_input.get("plan_ref")
+                    or migrated_plan_ref_match
+                )
+                and owner_input.get("branch_review_commit")
+                == public_input.get("branch_review_commit")
+                and owner_input.get(
+                    "publication_head", owner_input.get("branch_review_commit")
+                )
+                == public_input.get(
+                    "publication_head", public_input.get("branch_review_commit")
+                )
+                and checked.get("verification_ref")
+                == public_input.get("verification_ref")
+            )
     if not matches:
         raise WorkflowError(
             "Task finalization verification seed does not match current owner evidence.",
@@ -27624,7 +27733,38 @@ def finalization_current_verification_owner_result(
         )
     except WorkflowError:
         return None
-    owner_input = payload.get("public_input")
+    minimal = (
+        payload.get("schema_version")
+        == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION
+    )
+    current_plan = plan or finalization_closeout_plan(root, task_dir)
+    plan_git = (
+        current_plan.get("git")
+        if isinstance(current_plan, dict)
+        and isinstance(current_plan.get("git"), dict)
+        else {}
+    )
+    identity = (
+        payload.get("immutable_identity")
+        if isinstance(payload.get("immutable_identity"), dict)
+        else {}
+    )
+    publication_head = str(
+        plan_git.get("publication_head")
+        or identity.get("publication_head")
+        or branch_review_commit
+    )
+    owner_input = (
+        finalization_minimal_verification_public_input(
+            payload,
+            task_ref=task_ref,
+            plan_ref=plan_ref,
+            branch_review_commit=branch_review_commit,
+            publication_head=publication_head,
+        )
+        if minimal
+        else payload.get("public_input")
+    )
     if not isinstance(owner_input, dict):
         return None
     try:
@@ -27635,10 +27775,8 @@ def finalization_current_verification_owner_result(
             owner_input,
         )
     except WorkflowError:
-        current_plan = plan or finalization_closeout_plan(
-            root,
-            task_dir,
-        )
+        if minimal:
+            raise
         if current_plan is None:
             raise
         checked = check_extension_verification_for_closeout(
@@ -27652,22 +27790,40 @@ def finalization_current_verification_owner_result(
             branch_review_commit=branch_review_commit,
         )
     if checked.get("typed_exit") == "not_required" and owner_input.get("mode") == "standalone":
-        current_plan = plan or finalization_closeout_plan(
-            root,
-            task_dir,
-        )
         if (
             current_plan is None
             or current_plan.get("plan_digest") != plan_ref.removeprefix("closeout-plan:")
             or current_plan.get("git", {}).get("branch_review_commit")
             != branch_review_commit
-            or current_plan.get("git", {}).get("publication_head", current_plan.get("git", {}).get("branch_review_commit"))
-            != owner_input.get("publication_head", owner_input.get("branch_review_commit"))
+            or (
+                not minimal
+                and current_plan.get("git", {}).get(
+                    "publication_head",
+                    current_plan.get("git", {}).get("branch_review_commit"),
+                )
+                != owner_input.get(
+                    "publication_head", owner_input.get("branch_review_commit")
+                )
+            )
             or not finalization_standalone_not_required_owner_is_current(
                 payload,
                 checked,
                 current_plan,
                 task_ref=task_ref,
+            )
+        ):
+            return None
+    elif minimal:
+        if (
+            checked.get("typed_exit") != "verified"
+            or payload.get("mode") != "workflow"
+            or payload.get("profile") != "verification_required"
+            or identity.get("branch_review_commit") != branch_review_commit
+            or identity.get("publication_head") != publication_head
+            or (
+                current_plan is not None
+                and normalize_github_repository(identity.get("repo_ref"))
+                != current_plan.get("git", {}).get("repo")
             )
         ):
             return None
@@ -27677,16 +27833,18 @@ def finalization_current_verification_owner_result(
         or not (
             owner_input.get("plan_ref") == plan_ref
             or (
-                (plan or finalization_closeout_plan(root, task_dir)) is not None
+                current_plan is not None
                 and closeout_verification_plan_ref_matches(
-                    plan or finalization_closeout_plan(root, task_dir),
+                    current_plan,
                     owner_input.get("plan_ref"),
                 )
             )
         )
         or owner_input.get("branch_review_commit") != branch_review_commit
         or owner_input.get("publication_head", owner_input.get("branch_review_commit"))
-        != (plan or finalization_closeout_plan(root, task_dir) or {}).get("git", {}).get("publication_head", branch_review_commit)
+        != (current_plan or {}).get("git", {}).get(
+            "publication_head", branch_review_commit
+        )
     ):
         return None
     return payload, checked
@@ -29145,6 +29303,61 @@ def cmd_check_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def finalization_live_open_close_issues(
+    root: Path,
+    repo: str,
+    issue_numbers: list[int],
+) -> list[dict[str, Any]]:
+    normalized_repo = normalize_github_repository(repo)
+    if normalized_repo != repo:
+        raise WorkflowError(
+            "Task finalization requires a canonical repository identity.",
+            exit_code=2,
+        )
+    issues: list[dict[str, Any]] = []
+    for issue_number in issue_numbers:
+        issue = gh_json(
+            [
+                "issue",
+                "view",
+                str(issue_number),
+                "--repo",
+                repo,
+                "--json",
+                "number,state,url",
+            ],
+            cwd=root,
+            repo=repo,
+            required_fields=("number", "state", "url"),
+            operation="finalization_issue_preflight",
+        )
+        expected_url = f"https://github.com/{repo}/issues/{issue_number}"
+        if (
+            not isinstance(issue, dict)
+            or issue.get("number") != issue_number
+            or issue.get("url") != expected_url
+        ):
+            raise github_response_incomplete(
+                operation="finalization_issue_preflight",
+                repo=repo,
+                detail=f"Issue #{issue_number} identity does not match.",
+            )
+        state = str(issue.get("state") or "").upper()
+        if state != "OPEN":
+            raise WorkflowError(
+                f"Task finalization close issue #{issue_number} is not Open before merge.",
+                exit_code=2,
+            )
+        issues.append(
+            {
+                "number": issue_number,
+                "state": state,
+                "url": expected_url,
+            }
+        )
+    return issues
+
+
 def finalization_gate_with_ready_for_merge_output(
     root: Path,
     task_dir: Path,
@@ -29166,6 +29379,11 @@ def finalization_gate_with_ready_for_merge_output(
             "Task finalization ready_for_merge output requires the exact archived task locator.",
             exit_code=2,
         )
+    finalization_live_open_close_issues(
+        root,
+        plan["git"]["repo"],
+        plan["review"]["close_issues_reviewed"],
+    )
     updated = copy.deepcopy(gate)
     updated["route"]["output"] = {
         "exit_id": "ready_for_merge",
@@ -29357,10 +29575,9 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         finish_args.expected_plan_digest = context["plan"]["plan_digest"]
         finish_args.dry_run = False
         finish_args.finalization_gate = gate
-        finish_args.publication_ready = (
-            public_input
-            if public_input["profile"] == "publication_ready"
-            else None
+        finish_args.publication_ready = finalization_prepare_publication_ready(
+            public_input,
+            transaction=finalization_read_transaction(root, task_dir),
         )
         if (
             context["plan"]["marketplace"]["required"]

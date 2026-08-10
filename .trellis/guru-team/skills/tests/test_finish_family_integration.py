@@ -7,6 +7,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -21,6 +22,9 @@ if EXECUTION_MODE not in {"source", "installed"}:
     raise RuntimeError("GURU_FINISH_INTEGRATION_MODE must be source or installed")
 REPO = Path(
     os.environ.get("GURU_FINISH_INTEGRATION_ROOT", str(SOURCE_REPO))
+).resolve()
+EXTENSION_SOURCE_REPO = Path(
+    os.environ.get("GURU_FINISH_INTEGRATION_SOURCE_ROOT", str(SOURCE_REPO))
 ).resolve()
 if EXECUTION_MODE == "installed":
     SKILLS_ROOT = REPO / ".trellis/guru-team/skills"
@@ -262,6 +266,9 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             dispatcher,
             package("guru-review-branch"),
         )
+        canonical_trellis = EXTENSION_SOURCE_REPO / "trellis"
+        self.assertTrue(canonical_trellis.is_dir())
+        shutil.copytree(canonical_trellis, fixture / "trellis")
         fixture_dispatcher = (
             fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
         )
@@ -423,9 +430,68 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             })
             return target_input, target_path
 
+        nested_verifier = (
+            fixture
+            / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+        )
+        nested_verifier.write_text(
+            r"""#!/usr/bin/env bash
+set -euo pipefail
+export PYTHONDONTWRITEBYTECODE=1
+
+WORK_DIR="${1:?missing work directory}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+TARGET="$WORK_DIR/project"
+
+mkdir -p "$TARGET/.trellis"
+git -C "$TARGET" init -q -b main
+git -C "$TARGET" config user.name "Nested Replay Verifier"
+git -C "$TARGET" config user.email "nested-replay@example.invalid"
+cp -R "$REPO_ROOT/.trellis/scripts" "$TARGET/.trellis/scripts"
+cp "$REPO_ROOT/trellis/workflows/guru-team/workflow.md" "$TARGET/.trellis/workflow.md"
+"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo "$TARGET" --all-platforms --json >/dev/null
+"$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" \
+  --root "$TARGET" --mode installed --json >/dev/null
+"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh" \
+  --repo "$REPO_ROOT" --json >/dev/null
+if find "$REPO_ROOT" "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit | grep -q .; then
+  echo "nested replay produced sidecars" >&2
+  exit 2
+fi
+""",
+            encoding="utf-8",
+        )
+        nested_verifier.chmod(0o755)
+        nested_apply = subprocess.run(
+            [
+                str(fixture / "trellis/presets/guru-team/scripts/bash/apply.sh"),
+                "--repo",
+                str(fixture),
+                "--all-platforms",
+                "--json",
+            ],
+            cwd=fixture,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        )
+        self.assertEqual(nested_apply.returncode, 0, nested_apply.stderr)
+
         manifest_path = fixture / ".trellis/guru-team/extension.json"
         manifest = read_json(manifest_path)
-        manifest["source"]["tree_state"] = "clean"
+        manifest["source"].update(
+            {
+                "repo": "https://github.com/castbox/guru-trellis.git",
+                "ref": "0" * 40,
+                "commit": "0" * 40,
+                "tree_state": "clean",
+                "is_mutable_ref": False,
+            }
+        )
         runtime.write_json(manifest_path, manifest)
         task, _ = adapter.production_task_fixture(runtime, fixture)
         adapter.run_git(
@@ -493,6 +559,8 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             check=False,
         )
         self.assertEqual(task_start.returncode, 0, task_start.stderr)
+        with nested_verifier.open("a", encoding="utf-8") as handle:
+            handle.write("\n# reviewed extension change for the controlled replay\n")
         (fixture / "src/production-eval.txt").write_text(
             "issue-174-controlled-replay\n", encoding="utf-8"
         )
@@ -586,108 +654,165 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(finalizer_input["pr_body"], publication_output["pr_body"])
 
-        plan_digest = hashlib.sha256(
-            (
-                finalizer_input["task_ref"]
-                + ":"
-                + finalizer_input["branch_review_commit"]
-            ).encode("utf-8")
-        ).hexdigest()
-        plan_ref = f"closeout-plan:{plan_digest}"
-        archive_locator = ".trellis/tasks/archive/2026-08/current"
+        remote_repo = replay_root / "target.git"
+        subprocess.run(
+            ["git", "init", "-q", "--bare", str(remote_repo)],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "push",
+                "-q",
+                str(remote_repo),
+                "eval/current:refs/heads/eval/current",
+            ],
+            cwd=fixture,
+            check=True,
+        )
+        finalizer_bin = replay_root / "finalizer-bin"
+        finalizer_bin.mkdir()
+        real_git = shutil.which("git")
+        self.assertIsNotNone(real_git)
+        fake_git = finalizer_bin / "git"
+        fake_git.write_text(
+            "#!/usr/bin/env python3\n"
+            "import os,sys\n"
+            f"real_git={real_git!r}\n"
+            f"remote_repo={str(remote_repo)!r}\n"
+            "args=sys.argv[1:]\n"
+            "canonical='https://github.com/castbox/guru-trellis.git'\n"
+            "if args and args[0]=='push' and 'origin' in args:\n"
+            " args=[remote_repo if value=='origin' else value for value in args]\n"
+            " args=[value for value in args if value!='-u']\n"
+            "elif args and args[0]=='ls-remote':\n"
+            " args=[remote_repo if value in {'origin',canonical} else value for value in args]\n"
+            "elif args and args[0]=='clone':\n"
+            " args=[remote_repo if value==canonical else value for value in args]\n"
+            "elif args and args[0]=='fetch' and 'origin' in args:\n"
+            " args=[remote_repo if value=='origin' else value for value in args]\n"
+            "os.execv(real_git,[real_git,*args])\n",
+            encoding="utf-8",
+        )
+        fake_git.chmod(0o755)
+        finalizer_state = finalizer_bin / "state.json"
+        runtime.write_json(
+            finalizer_state,
+            {"created": False, "draft": True, "title": "", "body": "", "calls": []},
+        )
+        fake_gh = finalizer_bin / "gh"
+        fake_gh.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json,subprocess,sys\n"
+            f"state_path={str(finalizer_state)!r}\n"
+            f"real_git={real_git!r}\n"
+            "repo='castbox/guru-trellis'; number=176\n"
+            "args=sys.argv[1:]\n"
+            "state=json.load(open(state_path,encoding='utf-8'))\n"
+            "state['calls'].append(args)\n"
+            "def save(): open(state_path,'w',encoding='utf-8').write(json.dumps(state)+'\\n')\n"
+            "def head(): return subprocess.check_output([real_git,'rev-parse','HEAD'],text=True).strip()\n"
+            "def pr():\n"
+            " return {'number':number,'url':f'https://github.com/{repo}/pull/{number}',"
+            "'title':state['title'],'body':state['body'],'headRefName':'eval/current',"
+            "'baseRefName':'main','headRefOid':head(),'isDraft':state['draft'],"
+            "'state':'OPEN','headRepository':{'nameWithOwner':repo},"
+            "'headRepositoryOwner':{'login':'castbox'},'isCrossRepository':False}\n"
+            "if args[:2]==['auth','status']:\n"
+            " save(); raise SystemExit(0)\n"
+            "if args[:2]==['pr','list']:\n"
+            " save(); print(json.dumps([pr()] if state['created'] else [])); raise SystemExit(0)\n"
+            "if args[:2]==['pr','create']:\n"
+            " state['created']=True; state['draft']='--draft' in args\n"
+            " state['title']=args[args.index('--title')+1]\n"
+            " state['body']=open(args[args.index('--body-file')+1],encoding='utf-8').read()\n"
+            " save(); print(f'https://github.com/{repo}/pull/{number}'); raise SystemExit(0)\n"
+            "if args[:2]==['pr','edit']:\n"
+            " state['title']=args[args.index('--title')+1]\n"
+            " state['body']=open(args[args.index('--body-file')+1],encoding='utf-8').read()\n"
+            " save(); raise SystemExit(0)\n"
+            "if args[:2]==['pr','ready']:\n"
+            " state['draft']=False; save(); raise SystemExit(0)\n"
+            "if args[:2]==['pr','view']:\n"
+            " save(); print(json.dumps(pr())); raise SystemExit(0)\n"
+            "if len(args)>=3 and args[:2]==['issue','view']:\n"
+            " issue=int(args[2]); save(); print(json.dumps({'number':issue,'state':'OPEN',"
+            "'url':f'https://github.com/{repo}/issues/{issue}'})); raise SystemExit(0)\n"
+            "save(); print('unsupported finalizer gh invocation: '+repr(args),file=sys.stderr); raise SystemExit(2)\n",
+            encoding="utf-8",
+        )
+        fake_gh.chmod(0o755)
 
-        def stage_finalizer_gate(
+        def with_finalizer_transport(callback: Any) -> Any:
+            return adapter.with_path_prefix(finalizer_bin, callback)
+
+        def finalization_args(
+            input_path: Path,
+            *,
+            review_input: Path | None = None,
+            gate: Path | None = None,
+        ) -> argparse.Namespace:
+            return argparse.Namespace(
+                root=str(fixture),
+                input=repo_relative(input_path),
+                repo="castbox/guru-trellis",
+                base_branch="main",
+                remote="origin",
+                title=None,
+                task_name=None,
+                validation=None,
+                review_input=(
+                    repo_relative(review_input) if review_input is not None else None
+                ),
+                dry_run=False,
+                gate=repo_relative(gate) if gate is not None else None,
+                json=True,
+            )
+
+        def run_finalization_round(
             public_input: dict[str, Any],
             input_path: Path,
             *,
             exit_id: str,
-            transaction_state: str,
-        ) -> Path:
-            publication_head = public_input.get(
-                "publication_head", public_input["branch_review_commit"]
-            )
-            verification_ref = (
-                public_input.get("verification_ref")
-                if public_input["profile"] == "verification_verified"
-                else None
-            )
-            if transaction_state == "ready":
-                (fixture / archive_locator).mkdir(parents=True, exist_ok=True)
-            context_path = (
+            output: dict[str, Any],
+        ) -> tuple[dict[str, Any], Path]:
+            review_path = (
                 fixture
-                / ".trellis/.runtime/guru-team/evals/finalization-context.json"
+                / ".trellis/.runtime/guru-team/replay"
+                / f"finalizer-{exit_id}-review.json"
             )
             runtime.write_json(
-                context_path,
+                review_path,
                 {
                     "schema_version": "2.0",
-                    "task_ref": public_input["task_ref"],
-                    "plan_ref": plan_ref,
-                    "plan_digest": plan_digest,
-                    "branch_review_commit": public_input["branch_review_commit"],
-                    "publication_head": publication_head,
-                    "archive_locator": archive_locator,
-                    "repo_ref": "castbox/guru-trellis",
-                    "remote": "origin",
-                    "head_branch": "eval/current",
-                    "verification_ref": verification_ref,
-                    "publication_status": "current",
-                    "publication_stale_reason": None,
-                    "marketplace_required": True,
-                    "transaction_state": transaction_state,
+                    "skill_id": "guru-finalize-task",
+                    "review": {
+                        "status": "reroute" if exit_id == "reprepare_required" else "passed",
+                        "summary": f"The replay reviewed the live {exit_id} transition.",
+                    },
+                    "route": {
+                        "typed_exit": exit_id,
+                        "consumer": runtime.FINALIZATION_CONSUMERS[exit_id],
+                        "output": output,
+                    },
                 },
             )
-            route_output = (
-                {
-                    "exit_id": "verification_required",
-                    "task_ref": public_input["task_ref"],
-                    "plan_ref": plan_ref,
-                    "repo_ref": "castbox/guru-trellis",
-                    "branch_review_commit": public_input["branch_review_commit"],
-                    "publication_head": publication_head,
-                    "verification_target": "extension-installation",
-                }
-                if exit_id == "verification_required"
-                else runtime.FINALIZATION_EXECUTOR_OUTPUT_MARKER
+            args = finalization_args(input_path, review_input=review_path)
+            with_finalizer_transport(lambda: runtime.cmd_preview_finalization(args))
+            recorded = with_finalizer_transport(
+                lambda: runtime.cmd_record_finalization_gate(args)
             )
-            gate = {
-                "schema_version": "3.0",
-                "skill_id": "guru-finalize-task",
-                "identity": {
-                    "task_ref": public_input["task_ref"],
-                    "plan_ref": plan_ref,
-                    "plan_digest": plan_digest,
-                    "branch_review_commit": public_input["branch_review_commit"],
-                },
-                "review": {
-                    "status": "passed",
-                    "summary": "The chained replay reviewed the exact current Finalizer facts.",
-                },
-                "route": {
-                    "typed_exit": exit_id,
-                    "consumer": runtime.FINALIZATION_CONSUMERS[exit_id],
-                    "output": route_output,
-                },
-            }
-            gate_path = runtime.task_finalization_path(fixture, task)
-            runtime.write_json(gate_path, gate)
-            runtime.write_json(input_path, public_input)
-            previous = os.environ.get("GURU_TEAM_EVAL_STAGING")
-            os.environ["GURU_TEAM_EVAL_STAGING"] = "1"
-            try:
-                runtime.check_finalization_gate_result(
-                    fixture,
-                    argparse.Namespace(),
-                    public_input,
-                    gate,
-                    gate_path,
-                )
-            finally:
-                if previous is None:
-                    os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
-                else:
-                    os.environ["GURU_TEAM_EVAL_STAGING"] = previous
-            return gate_path
+            gate_path = Path(recorded["artifact_path"])
+            checked_args = finalization_args(input_path, gate=gate_path)
+            checked = with_finalizer_transport(
+                lambda: runtime.cmd_check_finalization_gate(checked_args)
+            )
+            self.assertEqual(checked["typed_exit"], exit_id)
+            transitioned = with_finalizer_transport(
+                lambda: runtime.cmd_execute_finalization_transition(checked_args)
+            )
+            self.assertEqual(transitioned["typed_exit"], exit_id)
+            return transitioned, gate_path
 
         for boundary, source in (
             ("workspace_and_task", "sanitized_open_issue_lifecycle_receipt"),
@@ -700,18 +825,50 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 "source": source,
             })
 
-        verification_gate = stage_finalizer_gate(
+        provenance = with_finalizer_transport(
+            lambda: runtime.prepare_provenance_metadata_tail(
+                fixture,
+                finalizer_input["branch_review_commit"],
+            )
+        )
+        self.assertEqual(
+            provenance["reviewed_content_head"],
+            finalizer_input["branch_review_commit"],
+        )
+        finalizer_preview = with_finalizer_transport(
+            lambda: runtime.cmd_preview_finalization(
+                finalization_args(finalizer_input_path)
+            )
+        )
+        self.assertIn(
+            finalizer_preview["transaction_state"],
+            {"prepared", "content_pushed"},
+            finalizer_preview,
+        )
+        self.assertTrue(finalizer_preview["verification_required"], finalizer_preview)
+        verification_route = {
+            "exit_id": "verification_required",
+            "task_ref": finalizer_input["task_ref"],
+            "plan_ref": finalizer_preview["plan_ref"],
+            "repo_ref": "castbox/guru-trellis",
+            "branch_review_commit": finalizer_preview["branch_review_commit"],
+            "publication_head": provenance["publication_head"],
+            "verification_target": "extension-installation",
+        }
+        _, verification_gate = run_finalization_round(
             finalizer_input,
             finalizer_input_path,
             exit_id="verification_required",
-            transaction_state="content_pushed",
+            output=verification_route,
         )
         verification_required, finalizer_required_receipt = invoke_wrapper(
             "guru-finalize-task",
             finalizer_input_path,
             "--owner-result",
             verification_gate,
-            environment={"GURU_TEAM_EVAL_STAGING": "1"},
+            environment={
+                "PATH": f"{finalizer_bin}{os.pathsep}{os.environ.get('PATH', '')}"
+            },
         )
         verification_input, verification_input_path = project(
             "guru-finalize-task",
@@ -720,7 +877,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             finalizer_required_receipt,
         )
 
-        verifier_package = fixture_package("guru-verify-extension-installation")
         capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
         verifier_execution_path = (
             fixture / ".trellis/.runtime/guru-team/evals/replay-verifier-execution.json"
@@ -730,13 +886,14 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         )
         runtime.write_json(
             verifier_execution_path,
-            adapter.extension_verification_execution(
-                runtime,
-                fixture,
-                verification_input,
-                "passed",
-                capabilities,
-                verifier_package,
+            with_finalizer_transport(
+                lambda: runtime.cmd_execute_extension_verification(
+                    argparse.Namespace(
+                        root=str(fixture),
+                        input=repo_relative(verification_input_path),
+                        capability=capabilities,
+                    )
+                )
             ),
         )
         runtime.write_json(
@@ -750,26 +907,24 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             review_input=repo_relative(verifier_review_path),
         ))
         verifier_owner_path = task / "marketplace-verification.json"
-        previous_eval = os.environ.get("GURU_TEAM_EVAL_STAGING")
-        os.environ["GURU_TEAM_EVAL_STAGING"] = "1"
-        try:
-            runtime.check_extension_verification_result(
-                fixture,
-                verifier_owner,
-                repo_relative(verifier_owner_path),
-                verification_input,
+        checked_verifier = with_finalizer_transport(
+            lambda: runtime.cmd_check_extension_verification(
+                argparse.Namespace(
+                    root=str(fixture),
+                    input=repo_relative(verifier_owner_path),
+                    public_input=repo_relative(verification_input_path),
+                )
             )
-        finally:
-            if previous_eval is None:
-                os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
-            else:
-                os.environ["GURU_TEAM_EVAL_STAGING"] = previous_eval
+        )
+        self.assertEqual(checked_verifier["typed_exit"], "verified")
         verified_output, verifier_receipt = invoke_wrapper(
             "guru-verify-extension-installation",
             verification_input_path,
             "--owner-result",
             verifier_owner_path,
-            environment={"GURU_TEAM_EVAL_STAGING": "1"},
+            environment={
+                "PATH": f"{finalizer_bin}{os.pathsep}{os.environ.get('PATH', '')}"
+            },
         )
         verified_finalizer_input, verified_finalizer_input_path = project(
             "guru-verify-extension-installation",
@@ -782,18 +937,21 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             verified_output["verification_ref"],
         )
 
-        ready_gate = stage_finalizer_gate(
+        ready_result, ready_gate = run_finalization_round(
             verified_finalizer_input,
             verified_finalizer_input_path,
             exit_id="ready_for_merge",
-            transaction_state="ready",
+            output=runtime.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
         )
+        self.assertEqual(ready_result["stage"], "ready")
         ready_for_merge, ready_receipt = invoke_wrapper(
             "guru-finalize-task",
             verified_finalizer_input_path,
             "--owner-result",
             ready_gate,
-            environment={"GURU_TEAM_EVAL_STAGING": "1"},
+            environment={
+                "PATH": f"{finalizer_bin}{os.pathsep}{os.environ.get('PATH', '')}"
+            },
         )
         merge_input, merge_input_path = project(
             "guru-finalize-task",

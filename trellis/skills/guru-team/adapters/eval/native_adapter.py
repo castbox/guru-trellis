@@ -3150,7 +3150,14 @@ def stage_finalization_owner_execution(
             os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
         else:
             os.environ["GURU_TEAM_EVAL_STAGING"] = previous_eval
-    return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
+    fake_bin = write_fake_gh(
+        Path(request["workdir"]).resolve().parent,
+        recipe,
+    )
+    return package, fixture_runtime_target, {
+        "GURU_TEAM_EVAL_STAGING": "1",
+        "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
+    }
 
 
 def stage_production_owner_execution(

@@ -338,6 +338,16 @@ def save(payload):
 
 if args[:2] == ["auth", "status"]:
     raise SystemExit(0)
+if len(args) >= 3 and args[:2] == ["issue", "view"]:
+    issue_number = int(args[2])
+    if issue_number != number:
+        raise SystemExit(2)
+    print(json.dumps({
+        "number": issue_number,
+        "state": "OPEN",
+        "url": f"https://github.com/microsoft/powertoys/issues/{issue_number}",
+    }))
+    raise SystemExit(0)
 if args[:2] == ["pr", "list"]:
     payload = load()
     if payload:

@@ -173,6 +173,7 @@ verify_finish_family_integration() {
   printf 'Installed Finish-family integration: %s\n' "$label"
   GURU_FINISH_INTEGRATION_MODE=installed \
     GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
+    GURU_FINISH_INTEGRATION_SOURCE_ROOT="$REPO_ROOT" \
     python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q
 }
 
@@ -183,6 +184,7 @@ verify_issue_174_controlled_replay() {
   mkdir -p "$replay_root"
   GURU_FINISH_INTEGRATION_MODE=installed \
     GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
+    GURU_FINISH_INTEGRATION_SOURCE_ROOT="$REPO_ROOT" \
     GURU_ISSUE_174_REPLAY_REPORT="$report" \
     python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" \
       FinishFamilyIntegrationTests.test_issue_174_controlled_replay_is_one_chained_session \
