@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-merge-task-pr",
+  "input": {
+    "schema_version": "1.0",
+    "profile": "ready_for_merge",
+    "mode": "workflow",
+    "repo_ref": "castbox/guru-trellis",
+    "pr_number": 176,
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/176",
+    "expected_head_sha": "1111111111111111111111111111111111111111",
+    "expected_base_branch": "main",
+    "expected_head_branch": "codex/180-eval",
+    "expected_close_issues": [174]
+  },
+  "facts_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "semantic_review": {
+    "dimensions": [
+      {"id": "pr_ready", "status": "passed", "summary": "PR is Open and Ready."},
+      {"id": "repository_and_head", "status": "passed", "summary": "Expected head matches."},
+      {"id": "checks_and_reviews", "status": "passed", "summary": "Checks and reviews pass."},
+      {"id": "mergeability", "status": "passed", "summary": "PR is mergeable."},
+      {"id": "repository_policy", "status": "passed", "summary": "Merge policy is fixed."},
+      {"id": "close_scope", "status": "passed", "summary": "Close scope matches."}
+    ]
+  },
+  "route": {"typed_exit": "merged", "merge_method": "merge"}
+}

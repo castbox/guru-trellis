@@ -420,7 +420,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe fourteen active Skills and 54 external exits, identify
+Public READMEs describe fifteen active Skills and 57 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -458,12 +458,13 @@ ten-dimension review and metadata revision procedure.
 The `ready` DTO is exactly `exit_id`, `task_ref`, `branch_review_commit`,
 `pr_title`, and `pr_body`. Publication consumes the current Branch Review passed
 DTO and live Git only; it never opens Branch Review private checkpoint state.
-Docs also state that Finalizer binds the exact payload in closeout plan 3.0,
-derives current finish-summary schema 2 once, keeps schema 1 history readable,
-and rejects legacy Publication/Finalizer 3.0 shapes without fallback.
+Docs also state that Finalizer binds the exact payload in its in-memory or
+owner-private transaction, derives current finish-summary schema 2 once, keeps
+schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
+without fallback.
 
-README package closure numbers are fourteen active Skills and 54 external exits;
-global workflow markers remain 14 invokes, 54 exits, and 31 targets.
+README package closure numbers are fifteen active Skills and 57 external exits;
+global workflow markers remain 15 invokes, 57 exits, and 33 targets.
 `production-current-v1` owns the current planning/check/commit contract; the
 live Intake contract remains six Skills/23 exits.
 
@@ -538,23 +539,37 @@ ownership.
 
 All three public README files name active Interface 1.3 semantic
 `guru-finalize-task`, its six distinct public input profiles, six `exit_id`
-outputs, owner-private closeout/gate/recovery facts, current-dialogue side-effect
-confirmation without digest recital, and reuse of the existing #105 deterministic transaction engine. They state
-that scripts execute, validate, and record only after AI review and any required
-human confirmation; scripts do not choose plan, scope, readiness, recovery
-route, or semantic pass.
+outputs, owner-private transaction/gate/recovery facts, current-dialogue
+side-effect confirmation without digest recital, and the current transaction
+executor. They state that scripts execute, validate, and record only after AI
+review and any required human confirmation; scripts do not choose plan, scope,
+readiness, recovery route, or semantic pass.
 They document the task-bearing standalone #117 not-required edge. That edge publishes only
 `repo_ref/resolved_head/verification_ref`; the finalizer target authors
-`profile/mode/task_ref`, binds current task-local evidence to the private plan,
-and does not expose plan identity in the producer handoff.
+`profile/mode/task_ref`, binds current task-local evidence to the private
+transaction, and does not expose transaction identity in the producer handoff.
 
-The READMEs describe the current package graph as fourteen active Skills and 54
+The READMEs describe the current package graph as fifteen active Skills and 57
 external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
-They identify the integrated global workflow projection as 14 invokes, 54 exits,
-and 31 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
-Cursor finish entry; document the two terminal `published` evals and the private
-checked-verification projection; and explain that executor-owned reprepare
+They identify the integrated global workflow projection as 15 invokes, 57 exits,
+and 33 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
+Cursor finish entry; document terminal `ready_for_merge` and Merge evals plus
+the private checked-verification projection; and explain that executor-owned reprepare
 projects task/reason plus `branch_review_commit/publication_head` only after the
 tail and private-state retirement complete. Official
 `trellis-finish-work` payloads remain upstream-owned and are not installed or
 managed by the Guru preset.
+
+The READMEs state that current Finalizer preparation and archive paths never
+select, create, read, move, or retain `closeout-plan.json`; that file's schema
+and examples are explicit immutable legacy compatibility assets only. Current
+Finalizer persists `finalization-transaction.json` only for same-owner re-entry,
+deletes it on `ready_for_merge`, and archives six core files with the minimal
+verification result as the only optional seventh file.
+
+They also name active semantic `guru-merge-task-pr`, its workflow and standalone
+inputs, three exits, repo-bound `gh` fact/merge operations, expected-head
+precondition, separate merge confirmation, and post-merge close-keyword
+verification. `merged` alone reaches the finish response; `merge_blocked` and
+`closure_mismatch` stop distinctly. No Finalizer or Merge path calls Issue-close
+APIs, updates the PR branch, synchronizes local `main`, or cleans resources.

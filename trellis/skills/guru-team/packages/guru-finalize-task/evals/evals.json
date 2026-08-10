@@ -72,25 +72,25 @@
       ]
     },
     {
-      "id": "published-recovery",
+      "id": "ready-for-merge-recovery",
       "prompt": "Invoke standalone finalization for an already completed ready recovery state.",
-      "expected_exit": "published",
+      "expected_exit": "ready_for_merge",
       "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
       "input_profile_id": "standalone_finalization",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "published"}
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"}
         ]
       },
       "files": [
         "evals/files/standalone-finalization-input.json",
-        "evals/files/published-recovery-facts.json"
+        "evals/files/ready-for-merge-recovery-facts.json"
       ]
     },
     {
-      "id": "publication-ready-published",
+      "id": "publication-ready-ready-for-merge",
       "prompt": "Invoke workflow finalization for a normal non-extension task whose exact transaction is already ready.",
-      "expected_exit": "published",
+      "expected_exit": "ready_for_merge",
       "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
       "input_profile_id": "publication_ready",
       "assertions": {
@@ -100,19 +100,19 @@
             "kind": "json_path",
             "pointer": "/exit_id",
             "operation": "equals",
-            "expected": "published"
+            "expected": "ready_for_merge"
           }
         ]
       },
       "files": [
         "evals/files/publication-ready-input.json",
-        "evals/files/publication-ready-published-facts.json"
+        "evals/files/publication-ready-ready-for-merge-facts.json"
       ]
     },
     {
-      "id": "same-plan-published",
+      "id": "same-plan-ready-for-merge",
       "prompt": "Invoke workflow finalization after the unchanged plan has reached its terminal ready state.",
-      "expected_exit": "published",
+      "expected_exit": "ready_for_merge",
       "expected_output": "The terminal DTO contains the exact task and canonical pull request identity.",
       "input_profile_id": "same_plan_resume",
       "assertions": {
@@ -122,13 +122,13 @@
             "kind": "json_path",
             "pointer": "/exit_id",
             "operation": "equals",
-            "expected": "published"
+            "expected": "ready_for_merge"
           }
         ]
       },
       "files": [
         "evals/files/same-plan-resume-input.json",
-        "evals/files/same-plan-published-facts.json"
+        "evals/files/same-plan-ready-for-merge-facts.json"
       ]
     },
     {
@@ -148,35 +148,35 @@
       ]
     },
     {
-      "id": "verified-reentry-published",
+      "id": "verified-reentry-ready-for-merge",
       "prompt": "Invoke the finalizer from current verified installation evidence for the same plan and branch_review_commit.",
-      "expected_exit": "published",
-      "expected_output": "The checked terminal DTO contains the exact published pull request identity.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The checked terminal DTO contains the exact ready_for_merge pull request identity.",
       "input_profile_id": "verification_verified",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "published"}
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"}
         ]
       },
       "files": [
         "evals/files/verification-verified-input.json",
-        "evals/files/verified-reentry-published-facts.json"
+        "evals/files/verified-reentry-ready-for-merge-facts.json"
       ]
     },
     {
-      "id": "not-required-reentry-published",
+      "id": "not-required-reentry-ready-for-merge",
       "prompt": "Invoke the standalone verifier, apply its declared not-required projection without overwrite, and invoke the finalizer for the same private plan and resolved HEAD.",
-      "expected_exit": "published",
-      "expected_output": "The checked terminal DTO contains the exact published pull request identity.",
+      "expected_exit": "ready_for_merge",
+      "expected_output": "The checked terminal DTO contains the exact ready_for_merge pull request identity.",
       "input_profile_id": "standalone_verification_not_required",
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "published"}
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"}
         ]
       },
       "files": [
         "evals/files/verification-not-required-input.json",
-        "evals/files/not-required-reentry-published-facts.json"
+        "evals/files/not-required-reentry-ready-for-merge-facts.json"
       ]
     }
   ]

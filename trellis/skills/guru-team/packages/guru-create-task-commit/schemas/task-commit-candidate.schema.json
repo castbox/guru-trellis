@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json",
   "title": "Guru Team owner-private task commit candidate",
   "description": "Short-lived AI-owned candidate. It contains no user authorization, cross-Skill digest authority, or terminal result journal.",
   "type": "object",
@@ -16,11 +16,13 @@
     "path_classifications",
     "exact_stage_paths",
     "message",
-    "ai_review"
+    "ai_review",
+    "routine_auto_commit_facts",
+    "routine_auto_commit_eligible"
   ],
   "properties": {
-    "$schema": {"const": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json"},
-    "schema_version": {"const": "3.0"},
+    "$schema": {"const": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json"},
+    "schema_version": {"const": "4.0"},
     "skill_id": {"const": "guru-create-task-commit"},
     "sequence": {"type": "string", "pattern": "^[0-9]{3}$"},
     "task": {"$ref": "#/$defs/task"},
@@ -36,7 +38,9 @@
       "items": {"$ref": "#/$defs/repoPath"}
     },
     "message": {"$ref": "#/$defs/message"},
-    "ai_review": {"$ref": "#/$defs/aiReview"}
+    "ai_review": {"$ref": "#/$defs/aiReview"},
+    "routine_auto_commit_facts": {"$ref": "#/$defs/routineFacts"},
+    "routine_auto_commit_eligible": {"$ref": "#/$defs/routineEligibility"}
   },
   "$defs": {
     "repoPath": {
@@ -216,6 +220,68 @@
           "type": "array",
           "minItems": 1,
           "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "routineFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dedicated_task_worktree",
+        "dedicated_task_branch",
+        "default_branch_excluded",
+        "protected_branch_excluded",
+        "shared_branch_excluded",
+        "other_task_branch_excluded",
+        "remote_branch_absent",
+        "open_pull_request_absent",
+        "phase2_current",
+        "exact_task_owned_staging",
+        "ordinary_new_commit"
+      ],
+      "properties": {
+        "dedicated_task_worktree": {"type": "boolean"},
+        "dedicated_task_branch": {"type": "boolean"},
+        "default_branch_excluded": {"type": "boolean"},
+        "protected_branch_excluded": {"type": "boolean"},
+        "shared_branch_excluded": {"type": "boolean"},
+        "other_task_branch_excluded": {"type": "boolean"},
+        "remote_branch_absent": {"type": "boolean"},
+        "open_pull_request_absent": {"type": "boolean"},
+        "phase2_current": {"type": "boolean"},
+        "exact_task_owned_staging": {"type": "boolean"},
+        "ordinary_new_commit": {"type": "boolean"}
+      }
+    },
+    "routineEligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eligible", "reason", "evidence_refs"],
+      "properties": {
+        "eligible": {"type": "boolean"},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "dedicated_task_worktree",
+              "dedicated_task_branch",
+              "default_branch_excluded",
+              "protected_branch_excluded",
+              "shared_branch_excluded",
+              "other_task_branch_excluded",
+              "remote_branch_absent",
+              "open_pull_request_absent",
+              "phase2_current",
+              "exact_task_owned_staging",
+              "ordinary_new_commit",
+              "scope_purpose_unique",
+              "authority_unchanged",
+              "canonical_message_unique"
+            ]
+          }
         }
       }
     }

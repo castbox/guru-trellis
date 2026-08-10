@@ -346,9 +346,10 @@ structurally distinct inputs、四个 per-exit contracts、private
 `marketplace-verification.json` schema、seven-case production corpus 与 thin wrappers。
 它不修改 live Intake 6/23 或 production 3/11 合同。Active
 `guru-finalize-task` 另行安装六个 distinct profiles、六个 `exit_id` outputs、
-private gate、八条 production eval cases 与四个 finalization runtime wrappers，并
-具体绑定 #116/#117 producer edges。Source/installed package closure 为 14 Skills /
-54 exits；global workflow marker closure 为 14 invokes / 54 exits / 31 targets。
+private gate、十条 production eval cases 与五个 finalization runtime wrappers，并
+具体绑定 #116/#117 producer edges。独立 `guru-merge-task-pr` 再安装两种 inputs、三个
+exits 与五个 merge runtime wrappers。Source/installed package closure 为 15 Skills /
+57 exits；global workflow marker closure 为 15 invokes / 57 exits / 33 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -452,6 +453,11 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/record-finalization-gate.sh`
 - `.trellis/guru-team/scripts/bash/check-finalization-gate.sh`
 - `.trellis/guru-team/scripts/bash/execute-finalization-transition.sh`
+- `.trellis/guru-team/scripts/bash/preview-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/record-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/check-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/execute-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/invoke-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
 - `.trellis/guru-team/scripts/python/guru_team_trellis.py`
 
@@ -459,9 +465,10 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request`、
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
-`guru-finalize-task`、`guru-review-branch`、`guru-review-task-publication`、
-`guru-select-workflow-mode`、`guru-verify-extension-installation`。这十四个 active packages 共声明
-54 个 external exits。`guru-finalize-task` 的
+`guru-finalize-task`、`guru-merge-task-pr`、`guru-review-branch`、
+`guru-review-task-publication`、`guru-select-workflow-mode`、
+`guru-verify-extension-installation`。这十五个 active packages 共声明 57 个 external exits。
+`guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
 invoke 与六个 exit marker。当前 canonical extension version
 `0.6.5-guru.25` 已由 stable source `v0.6.5-guru.3` 发布；该 annotated tag peeled 到
@@ -783,13 +790,13 @@ Phase 2/3; dry-run and formal finish do not perform a first Docs SSOT merge.
 
 The finalizer's private preview is a side-effect-free readiness step. It
 validates the gate, dirty state, Publication ready 4.0 title/body payload, and
-live facts, then prints the immutable schema 3.0 plan, digest, future archive
-mapping, exact transaction paths, and transitions without moving or writing
-task files, creating commits, pushing, or creating a PR. The only supported
-legacy normalization is a complete schema 2.0 closeout plan paired with the
-current Publication DTO and matching task, commit, title/body digest, and
-protected facts; the schema 3.0 result retains the predecessor digest and never
-opens retired body/index files. Other non-current shapes fail closed.
+live facts, then prints exact side effects, future archive mapping, transaction
+stage, and transitions without moving or writing task files, creating commits,
+pushing, or creating a PR. Current Finalizer persists
+`finalization-transaction.json` only for same-owner re-entry. Immutable legacy
+closeout-plan schemas/examples remain installed for explicit compatibility
+tests, but current interfaces, runtime preparation, recovery and archives never
+select, create, read, move, or retain `closeout-plan.json`.
 After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
 after formal archive, it must rerun the resolver and render the archive-path
 table because active task links are no longer the final review entry points.
@@ -805,7 +812,7 @@ limitation. Low-information summaries such as
 non-draft publish. Publication records schema 4.0 `pr-readiness.json` only as an
 ignored-runtime owner checkpoint and deletes it after its public DTO validates.
 Finalizer neither reads nor deletes that checkpoint and no task-local body or
-index handoff is created. Closeout plan schema 3.0 binds the exact title/body.
+index handoff is created. The current transaction binds the exact title/body.
 After the draft PR is bound, Finalizer generates schema 2
 `finish-summary.json` once from the reviewed PR body and live Git/task/ledger/PR
 facts, validates it in the active task, and commits it only with the archive
@@ -948,79 +955,67 @@ bytes remain unchanged. The executor writes only the tracked task-local
 `issue-scope-ledger.json` plus ignored runtime mappings. The real local A/B
 fixture verifies both merge orders without a remote PR or concurrent process.
 
-The installer manages `schemas/closeout-plan.schema.json` and
-`schemas/finish-summary.schema.json`, writes top-level
+The installer retains `schemas/closeout-plan.schema.json` only as an immutable
+legacy compatibility asset and manages current
+`schemas/finalization-transaction.schema.json` in the Finalizer package plus
+`schemas/finish-summary.schema.json`. It writes top-level
 `session_auto_commit: false` into `.trellis/config.yaml`, adds
 `.trellis/workspace/` to `.gitignore`, and never creates or rewrites workspace
 journal/index files. Shared start and installed Codex/Cursor SessionStart hooks
 do not open, enumerate, read, count, or output workspace journals. Before
-archive, closeout schema 2.0 recovery validates the untracked closeout plan, the active
-locator, repo/base/head, current/remote HEAD, marketplace owner evidence when
-applicable, and exact PR
-identity. Prepare parses `.trellis/config.yaml` with the installed official
+archive, current recovery validates the owner-private transaction, active
+locator, repo/base/head, current/remote HEAD, minimal marketplace owner result
+when applicable, and exact PR identity. Prepare parses `.trellis/config.yaml` with the installed official
 parser and supports only missing/empty `hooks.after_archive`; invalid or
 non-empty hook configuration is rejected without execution. Immediately before
 official move it also checks the live archive month, empty index, exact
-untracked set, regular-file/mode contract, and transaction-parent blob bytes. A stale
-schema 2.0 month remains active and is recoverable by rebuilding only the
-still-untracked plan with a new dry-run digest; no plan/readiness/evidence commit,
-history rewrite, or directory migration is used. After the official move but before the exact archive commit exists,
-schema 2.0 first completes idempotent compact-archive pruning, then requires the exact retained
-working-tree layout, dirty/staged paths, blob continuity, and official `task.json`
-delta. The current retained set contains exactly 7 durable files and conditionally
-retains marketplace verification as the eighth. Publication readiness and the Finalizer
-gate remain ignored runtime and do not enter the archive;
-intake snapshots, assignments, commit plans, raw review rounds and rollups,
-PR preparation, and other reconstructible
-checkpoints are omitted. Non-2.0 plans and absent or mismatched commits fail
-closed. Once current `HEAD` is the exact
-planned archive commit, both normal and plan-only archived reentry load the plan
-from that commit blob; the committed plan blob and Git parent/path/tree/blob
-facts are deterministic recovery inputs, not semantic or workflow authority, so missing or tampered archived working-tree files do not
-block the exact push, remote title/body check, HEAD alignment, or
-draft-to-ready. A plan-only archived directory is resolvable only by the canonical
-`guru-finish-work` route, and ordinary task commands still require `task.json`.
-The real-PR final summary's
-deterministic bytes/digest participate
-in pre-move, incomplete-recovery, and exact-commit continuity. The first two
-paths rebuild expected bytes against the already-bound remote PR. Exact
-recovery reads only the immutable archive commit's `finish-summary.json` blob
-to recover the original PR number/URL and verify those bytes without invoking
-the general summary artifact validator; it never reads the working-tree
-summary. Missing, closed, or replacement PRs fail closed. Other archived
-artifacts remain unopened for semantic validation.
+untracked set, regular-file/mode contract, and tracked source blob bytes. A
+stale archive month returns the mapped `reprepare_required` route and rebuilds
+the archive mapping from the current transaction plus live facts; it does not
+create a closeout plan, readiness/evidence commit, history rewrite, or directory
+migration. After the official move but before the exact archive commit exists,
+current recovery first completes idempotent compact-archive pruning, then
+requires the exact retained working-tree layout, dirty/staged paths, blob
+continuity, and official `task.json` delta.
+
+The current retained set contains exactly 6 durable files: `task.json`,
+`prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, and
+`finish-summary.json`. The minimal marketplace verification result is the only
+optional seventh file. Publication readiness, Finalizer
+transaction/gate/request, Verifier owner state, intake snapshots, assignments,
+commit plans, raw review rounds and rollups, PR preparation, and other
+reconstructible checkpoints remain ignored runtime and do not enter the
+archive.
+
+Once current `HEAD` is the exact archive commit, current recovery reads the
+committed `task.json` and `finish-summary.json` blobs together with Git
+parent/path/tree/blob lineage; it never selects a committed closeout plan.
+Missing or tampered archived working-tree files do not block exact push, remote
+title/body checks, HEAD alignment, or draft-to-ready when the immutable commit
+facts remain valid. Exact recovery uses the committed
+`finish-summary.json` blob to recover and verify the original PR number/URL;
+missing, closed, or replacement PRs fail closed. Ordinary task discovery and
+commands continue to require `task.json`, and worktree boundaries derive from
+the current task, ignored runtime mapping, current checkout, and live Git
+facts.
+
+`closeout-plan.json`, plan-only archived lookup, committed-plan-blob recovery,
+and schema 2.0/3.0 plan migration remain installed only as explicit legacy
+compatibility assets and regression selectors. Current Interface, registry,
+manifest, Finalizer preparation, recovery, archive, and the canonical
+`guru-finish-work` route never select, create, read, move, or retain them.
 Installed final projection, incomplete recovery, and exact recovery share one
 strict PR URL parser. GitHub owner/repository identity is case-insensitive,
 while the canonical summary URL preserves the exact valid casing returned by
 the remote PR (for example `microsoft/PowerToys`). A different repository,
 transport, invalid number, extra path, query, or fragment remains fail closed.
-The plan-only path reads the committed plan from the current commit blob and
-runs a dedicated fail-closed boundary before GitHub or fast-path actions. Git
-toplevel, configured/effective repository, current head branch, available base
-ref, current HEAD transaction, expected digest, task identity, and
-active/archive locators must all match. Missing context is never an
-unconditional boundary bypass; ordinary task discovery and commands retain
-their `task.json` requirement, while worktree boundaries derive from current
-task, ignored runtime mapping, current checkout, and live Git facts.
-The finish entry validates the raw locator before ordinary resolution or
-canonicalization. Only a basename, exact former active locator, or exact
-archive locator may select plan-only recovery. Path-like input receives
-component-wise `lstat` from the repo root through the final task directory
-before any fallback. Basename input preflights `<repo>/<basename>`, the active
-candidate, the archive root, and archive candidates in ordinary resolver order.
-Every direct or archive candidate first retains only `symlink_component`
-evidence, then uses the ordinary resolver's exact follow-symlink
-`directory + task.json` predicate. A matching alias fails closed, while an
-unmatched alias continues to the next candidate. These checks reject internal/external,
-relative/absolute, ancestor/final, multilevel, dangling, and loop symlinks
-before raw evidence is discarded. The ordinary resolver then preserves
-explicit `task.json`, active task, and normal archived `task.json` precedence.
-Plan-only fallback runs only after ordinary not-found:
-an exact archive locator selects that candidate, while basename/former-active
-fallback requires a unique archive-month match and fails closed on ambiguity.
-The plan-only target must still equal the plan's canonical archive locator.
-Only the verified Darwin `/var` -> `/private/var` system mapping may re-anchor
-an outer path; arbitrary `samefile` and user aliases are never trusted.
+Current locator resolution preserves explicit `task.json`, active task, and
+normal archived `task.json` precedence. Path-like input is checked
+component-by-component with `lstat`; internal/external, relative/absolute,
+ancestor/final, multilevel, dangling, and loop symlinks fail closed before
+resolution. Only the verified Darwin `/var` -> `/private/var` system mapping
+may re-anchor an outer path; arbitrary `samefile` and user aliases are never
+trusted.
 
 Current-checkout direct edits while `no_task` is active are allowed only as an
 explicit user override. The user approval must say this turn should skip

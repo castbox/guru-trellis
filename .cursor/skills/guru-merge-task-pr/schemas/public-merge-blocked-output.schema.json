@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-pr-output-merge-blocked-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "reason_code", "remediation"],
+  "properties": {
+    "exit_id": {"const": "merge_blocked"},
+    "reason_code": {"type": "string", "minLength": 1},
+    "remediation": {"type": "string", "minLength": 1}
+  }
+}

@@ -41,7 +41,8 @@
     {"id": "standalone_input", "path": "examples/public-standalone-verification-input.json"},
     {"id": "execution_facts", "path": "examples/execution-facts.json"},
     {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
-    {"id": "private_evidence", "path": "examples/marketplace-verification.json"},
+    {"id": "legacy_private_evidence", "path": "examples/marketplace-verification.json"},
+    {"id": "verification_result", "path": "examples/verification-result.json"},
     {"id": "verified_output", "path": "examples/public-verified-output.json"},
     {"id": "not_required_output", "path": "examples/public-not-required-output.json"},
     {"id": "return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"},
@@ -62,7 +63,8 @@
     {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
     {"id": "execution_facts", "path": "schemas/execution-facts.schema.json"},
     {"id": "semantic_review_input", "path": "schemas/semantic-review-input.schema.json"},
-    {"id": "private_marketplace_verification", "path": "schemas/marketplace-verification.schema.json"}
+    {"id": "legacy_private_marketplace_verification", "path": "schemas/marketplace-verification.schema.json"},
+    {"id": "verification_result", "path": "schemas/verification-result.schema.json"}
   ],
   "validators": [
     {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Resolve and isolate target and extension source checkouts, bind target reviewed content to the target commit, select source provenance from the installed manifest or the taskless absent-manifest fallback, then execute the source-owned clean-install catalog and inventory"},
@@ -109,7 +111,7 @@
       "stdout_contract": "single_typed_exit",
       "error_schema": {"schema_id": "guru-extension-verify-installation-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"},
       "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"},
-      "example_argv": ["--input", "examples/public-verification-required-input.json", "--owner-result", "examples/marketplace-verification.json"]
+      "example_argv": ["--input", "examples/public-verification-required-input.json", "--owner-result", "examples/verification-result.json"]
     },
     "outputs": [
       {"exit_id": "verified", "schema": {"schema_id": "guru-extension-verify-installation-output-verified-3.0", "path": "schemas/public-verified-output-3.0.schema.json"}, "example": {"id": "verified_output", "path": "examples/public-verified-output.json"}, "consumer_use_ids": ["project_verified"]},
@@ -218,7 +220,7 @@
       {
         "id": "marketplace_verification",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-extension-installation-verification-3.0.json", "path": "schemas/marketplace-verification.schema.json"},
+        "schema": {"schema_id": "guru-extension-installation-verification-result-4.0", "path": "schemas/verification-result.schema.json"},
         "persistence": "task_local_tracked"
       }
     ]

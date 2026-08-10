@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-pr-input-aggregate-1.0",
+  "oneOf": [
+    {"$ref": "public-ready-for-merge-input.schema.json"},
+    {"$ref": "public-standalone-merge-input.schema.json"}
+  ]
+}

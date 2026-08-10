@@ -61,8 +61,8 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current graph contains exactly 14 active mandatory Skill ids, 54 external
-exits, and 31 workflow/stop targets. Each exit below has one consumer; the
+The current graph contains exactly 15 active mandatory Skill ids, 57 external
+exits, and 33 workflow/stop targets. Each exit below has one consumer; the
 package Interface owns the exact projection and any target-owned authoring
 partition.
 
@@ -80,7 +80,8 @@ partition.
 | `guru-review-branch` | `passed -> guru-review-task-publication`; `implementation_required -> guru-branch-review-implementation-router`; `scope_confirmation_required -> guru-branch-review-scope-router`; `blocked -> branch-review-blocked` |
 | `guru-review-task-publication` | `ready -> guru-finalize-task`; `return_to_task_work -> guru-task-publication-work-router`; `blocked -> task-publication-review-blocked` |
 | `guru-verify-extension-installation` | `verified -> guru-finalize-task`; `not_required -> guru-finalize-task`; `return_to_task_work -> guru-extension-verification-work-router`; `blocked -> extension-installation-verification-blocked` |
-| `guru-finalize-task` | `verification_required -> guru-verify-extension-installation`; `publication_review_stale -> guru-review-task-publication`; `resume_finalization -> guru-finalize-task`; `reprepare_required -> guru-finalize-task`; `published -> guru-finalization-finish-response`; `blocked -> task-finalization-blocked` |
+| `guru-finalize-task` | `verification_required -> guru-verify-extension-installation`; `publication_review_stale -> guru-review-task-publication`; `resume_finalization -> guru-finalize-task`; `reprepare_required -> guru-finalize-task`; `ready_for_merge -> guru-merge-task-pr`; `blocked -> task-finalization-blocked` |
+| `guru-merge-task-pr` | `merged -> guru-finalization-finish-response`; `merge_blocked -> task-pr-merge-blocked`; `closure_mismatch -> task-pr-closure-mismatch` |
 
 Missing Skill packages, missing or duplicate markers, unknown/multiple/unmapped
 exits, a consumer mismatch, a dangling target, a kind mismatch, or an invalid
@@ -136,7 +137,7 @@ planning-stale exits return to their declared consumers automatically. The
 workflow does not reproduce Phase 2 adequacy dimensions, severity rules,
 recorder/checker commands, or private evidence shape.
 
-### Phase 3 — Commit, independent review, publication, finalization
+### Phase 3 — Commit, independent review, publication, finalization, merge
 
 Mandatory invoke `guru-create-task-commit`, then `guru-review-branch` over the
 complete committed base-to-HEAD range. After `passed`, mandatory invoke
@@ -149,6 +150,24 @@ stale publication, resume, and reprepare exits are automatically consumed by
 their declared Skills. Only the finalizer may display and execute the bounded
 commit/push/PR/archive/ready side-effect plan. The global workflow never calls
 deterministic closeout scripts directly.
+
+Finalizer `ready_for_merge` is not completion. It proves that the unique PR is
+Ready, still points at the reviewed expected head, and every `close_issues`
+entry remains Open before merge. The workflow immediately and mandatorily
+invokes `guru-merge-task-pr`; only `merged` reaches the finish response.
+`merge_blocked` and `closure_mismatch` stop at their distinct consumers.
+
+`guru-merge-task-pr` is a semantic, remote-only post-publication route. It
+compares live PR base/head branches and close keywords with Finalizer's minimal
+reviewed authority, then rebuilds check, review, mergeability, repository-policy
+and Issue facts using repo-bound `gh`; it never enters Phase 0, invokes `guru-sync-base`, updates
+the PR branch, synchronizes local `main`, or cleans resources. After one exact
+merge confirmation, its deterministic executor uses the selected repository
+method and expected-head precondition. Post-merge verification is read-only:
+the PR must be `MERGED`, every close Issue must be `CLOSED`/`COMPLETED`, and
+each Issue close timestamp must be no earlier than the PR merge timestamp.
+Missing GitHub close-keyword effects return `closure_mismatch`; no Guru command
+manually closes an Issue.
 
 Finalizer stale handback preserves exactly `task_ref`,
 `branch_review_commit`, and `stale_reason` for Publication's unique consumer
@@ -165,6 +184,17 @@ adds only `profile/mode`. The schema 3.0 closeout plan binds that exact payload;
 no body file, summary-index file, alternate locator, or generated source
 participates in closeout. Legacy 3.0 Publication/Finalizer DTO shapes fail
 closed and require a fresh Publication run.
+
+The paragraph above describes only legacy compatibility. Current Finalizer
+uses an owner-private ignored `finalization-transaction.json` only when
+same-owner re-entry actually needs it; a same-session terminal execution keeps
+transaction input in memory. The minimal state binds task/repository/base/
+branch, reviewed and publication heads, immutable publication input, current
+transition and an optional PR identity. It contains no live scan, review
+history, authorization, command transcript or archive projection.
+`ready_for_merge` retires transaction, gate, request and superseded owner state.
+Legacy `closeout-plan.json` schema/example bytes remain immutable assets and
+never enter a current route.
 
 GitHub PR discovery must bind the exact repository identity as well as the
 branch and HEAD: `headRepository.nameWithOwner` must match the selected repo,
@@ -198,6 +228,20 @@ the user to repeat a SHA, digest, ref, or prescribed sentence.
 Automatically consume mapped typed exits, stale/re-entry/reprepare routes, and
 recorder/validator steps. Do not simulate a human approval chain and do not
 persist authorization state, text, refs, digests, or process.
+
+For an existing Open Issue, the happy-path budget is exactly three
+`确认继续` boundaries: workspace/task creation, the complete Finalizer side-effect
+set, and expected-head merge. Creating a new Issue adds one independent Issue
+creation confirmation for a total of four. Planning, task activation,
+implementation, Phase 2 check, Branch Review, an eligible unpublished task
+commit, mapped exits and read-only recovery add no routine confirmation.
+Finalizer and merge confirmation remain separate because merge readiness exists
+only after Finalizer reaches `ready_for_merge`.
+
+The canonical workflow declares those four possible boundaries with one
+`guru-confirmation-boundary` marker each. The controlled #174 replay derives
+open/new-Issue budgets from those markers and its single chained event log; it
+must not hard-code totals or sum isolated eval cases.
 
 ## Docs SSOT And Issue Scope
 

@@ -37,8 +37,8 @@ Before editing workflow behavior:
   that core and does not define a second resolver.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Registry 1.2 accepts only planned and active rows. Every active row selects
-  Interface 1.3, covering fourteen workflow packages and 54 external exits;
-  global workflow markers are 14 invokes, 54 exits, and 31 targets. Registry,
+  Interface 1.3, covering fifteen workflow packages and 57 external exits;
+  global workflow markers are 15 invokes, 57 exits, and 33 targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit closure is defined only by
   `contracts/production-current.json` with contract id
@@ -81,13 +81,14 @@ Before editing workflow behavior:
   and the four verification exits. It owns the active
   `verification_required` target profile; standalone calls use the distinct
   `standalone_verification` profile.
-- `guru-finalize-task` is the active semantic owner of immutable closeout-plan
-  review, current-conversation plan confirmation, six distinct input profiles, six public
-  exits, and the owner-private recovery loop. It reuses the existing #105
-  deterministic transaction engine. Package discovery, global invocation after
-  publication `ready`, three Guru-owned daily entries, and automatic machine
-  recovery routing are active. Terminal published evals and the
-  checked-verification projection bridge remain unchanged. Upstream
+- `guru-finalize-task` is the active semantic owner of the exact closeout plan
+  review, current-conversation Finalizer confirmation, six distinct input profiles,
+  six public exits, and the owner-private transaction/recovery loop. Current
+  re-entry uses ignored `finalization-transaction.json`; current preparation and
+  archives never select `closeout-plan.json`. Package discovery, global invocation
+  after publication `ready`, three Guru-owned daily entries, and automatic machine
+  recovery routing are active. Terminal `ready_for_merge` evals and the
+  checked-verification projection bridge feed `guru-merge-task-pr`. Upstream
   `trellis-finish-work` entries are owned only by official Trellis and are not
   installed or managed by the Guru preset.
 - Current task and worktree identity comes only from official `task.json`, the
@@ -141,8 +142,8 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.3 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-  fourteen-Skill/54-exit package closure, and install/update checks. The global
-workflow projection is 14 invokes, 54 exits, and 31 targets.
+  fifteen-Skill/57-exit package closure, and install/update checks. The global
+workflow projection is 15 invokes, 57 exits, and 33 targets.
 
 ## Extension Installation Verification Closed-Loop Owner
 
@@ -159,13 +160,13 @@ eval, and canonical/installed/platform/update/reapply verification.
 The durable contracts for active `guru-finalize-task` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `companion-scripts.md`,
 `quality-guidelines.md`, `preset/installer.md`, `preset/upstream-ownership.md`,
-and `docs/public-docs.md`. Together they own its seven profiles, six external
-exits, immutable closeout plan, dialogue-only side-effect confirmation, owner-private
-recovery facts, real-wrapper eval, and additive distribution.
+and `docs/public-docs.md`. Together they own its six profiles, six external
+exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
+six-core/seven-maximum archive, real-wrapper eval, and additive distribution.
 
-The current package graph contains fourteen active Skills and 54 external exits
+The current package graph contains fifteen active Skills and 57 external exits
 with twelve target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 14 invokes, 54 exits, and 31 targets. Issue #119 combined acceptance
-additionally requires the three Guru-owned daily entries, two terminal
-published evals, checked-verification projection bridge, current ownership
+markers are 15 invokes, 57 exits, and 33 targets. Issue #119 combined acceptance
+additionally requires the three Guru-owned daily entries, terminal
+`ready_for_merge` and Merge evals, checked-verification projection bridge, current ownership
 validation, and installed integration coverage.

@@ -190,7 +190,7 @@
       "id": "candidate_validator",
       "command": "scripts/check-task-commit-plan.sh",
       "runtime_command": "check-commit-messages",
-      "objective_scope": "schema, live identity and freshness, explicit rename/copy relations, independently classified copy sources, exact paths, and shared parser facts"
+      "objective_scope": "schema, live identity and freshness, recomputed dedicated/unpublished Git and repo-bound GitHub facts, explicit rename/copy relations, independently classified copy sources, exact paths, and shared parser facts"
     },
     {
       "id": "exact_executor",
@@ -495,7 +495,7 @@
         "id": "task_commit_candidate",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-3.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json",
           "path": "schemas/task-commit-candidate.schema.json"
         },
         "persistence": "ignored_runtime"

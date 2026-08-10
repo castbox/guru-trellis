@@ -18,7 +18,9 @@ Build the next three-digit candidate under the ignored owner-private path
 `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`.
 The candidate is a temporary semantic plan and executor input. It contains
 only task/Git preimage, the complete dirty snapshot, AI path classifications,
-derived exact paths, canonical message, and final AI semantic result. It has no
+derived exact paths, canonical message, recomputable objective eligibility
+facts, final AI semantic result, and the AI-owned
+`routine_auto_commit_eligible` conclusion. It has no
 authorization, cross-Skill digest, freshness journal, or terminal result. It is never a
 task artifact, never enters `path_classifications` or `exact_stage_paths`, and
 is never staged or committed.
@@ -48,10 +50,16 @@ to the PR body.
 
 Before any Git side effect, the AI reviews scope, stage paths, message meaning,
 issue refs, deployment/upgrade/security impact, unrelated preservation and
-evidence freshness. Scripts cannot infer this pass.
+evidence freshness. It concludes whether the candidate is routine-auto-commit
+eligible and cites the dedicated worktree/branch, default/protected/shared/
+other-task exclusions, absent remote branch and Open/Draft/Ready PR, current
+Phase 2, exact staging, ordinary-new-commit, fixed scope/authority, and canonical
+message evidence. Scripts cannot infer this semantic pass.
 
-An ordinary plan with authority already present in the live conversation
-proceeds without a routine pause. When one current, unique commit action
+The checker recomputes the objective Git/GitHub facts. A checked eligible plan
+proceeds immediately without a routine pause. An ineligible plan fails closed
+or uses the existing semantic revision/choice boundary. When one current,
+unique commit action
 requires user authorization,
 display its repo, branch, HEAD, paths and message and prompt `确认继续`. Any clear
 affirmative response authorizes the displayed action in the conversation only;

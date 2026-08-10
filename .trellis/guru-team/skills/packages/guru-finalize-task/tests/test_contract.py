@@ -231,7 +231,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     (PACKAGE / example_relative).read_text(encoding="utf-8")
                 )
                 payload["route"] = {
-                    "typed_exit": "published",
+                    "typed_exit": "ready_for_merge",
                     "consumer": {
                         "kind": "workflow",
                         "id": "guru-finalization-finish-response",
@@ -277,17 +277,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "publication_review_stale",
                 "resume_finalization",
                 "reprepare_required",
-                "published",
+                "ready_for_merge",
                 "blocked",
             ],
         )
 
     def test_archive_contract_matches_current_runtime_limit(self) -> None:
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
-        self.assertIn("schema 3.0", contract)
         self.assertIn("legacy closeout-plan path", contract)
-        self.assertIn("seven-file", contract)
-        self.assertIn("at most eight files", contract)
+        self.assertIn("six-file", contract)
+        self.assertIn("at most seven files", contract)
 
         spec = importlib.util.spec_from_file_location(
             "guru_team_trellis_archive_contract_test",
@@ -297,8 +296,8 @@ class FinalizeTaskContractTests(unittest.TestCase):
         assert spec is not None and spec.loader is not None
         runtime = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(runtime)
-        self.assertEqual(len(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS), 7)
-        self.assertEqual(runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS, 8)
+        self.assertEqual(len(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS), 6)
+        self.assertEqual(runtime.CLOSEOUT_ARCHIVE_MAX_ARTIFACTS, 7)
         self.assertEqual(
             runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS,
             {
@@ -307,7 +306,6 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "design.md",
                 "implement.md",
                 "issue-scope-ledger.json",
-                "closeout-plan.json",
                 "finish-summary.json",
             },
         )
@@ -404,7 +402,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "publication_review_stale",
                 "resume_finalization",
                 "reprepare_required",
-                "published",
+                "ready_for_merge",
                 "blocked",
             ],
         )

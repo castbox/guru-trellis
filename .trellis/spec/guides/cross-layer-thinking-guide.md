@@ -121,6 +121,24 @@ After implementation:
 - [ ] Checked that derived state points back to the source event identifier
       (`seq`, `id`, `version`) instead of inventing a second cursor
 
+### Chained Workflow Replay
+
+When acceptance depends on several public wrappers or state transitions, unit
+coverage for each wrapper does not prove the cross-layer chain. A replay test
+must keep one shared stateful fixture and make each producer's actual stdout the
+authority for the declared projection into the next wrapper input. Handwritten
+intermediate DTOs, expected-exit fixtures, or independent eval cases can prove
+local contracts, but they cannot prove lifecycle continuity.
+
+- [ ] Bind each producer receipt and stdout digest to the projected consumer
+      input digest.
+- [ ] Execute every claimed wrapper in the same owner repository and run root.
+- [ ] Derive call and confirmation counts from the shared event log and current
+      workflow markers, not from case names or literal arrays.
+- [ ] Use one stateful external-system fixture to prove precondition, mutation,
+      and postcondition ordering.
+- [ ] Scan the same fixture for terminal owner state after the last consumer.
+
 ---
 
 ## Cross-Platform Template Consistency
