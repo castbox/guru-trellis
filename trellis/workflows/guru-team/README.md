@@ -636,14 +636,16 @@ metadata，以及 fail-closed 错误。它不判断 sub-agent 是否 stale，不
 清理 source checkout；这些仍由 AI/human workflow 决定。手工编辑工具不能接收显式
 working directory 时，必须使用 boundary helper 已确认的当前 task worktree 下的绝对路径。
 
-`create-task-workspace` 在 GitHub 或 worktree/task mutation boundary 重跑 shared core。每次 fresh result 都记录
-`preflight.base_freshness` 并要求 decision/local/remote HEAD 三方相等。Initial planner
-evidence 不能替代 mutation-time guard；不要从过期的本地 `main` / `dev` 创建任务分支。
+`create-task-workspace` 在 GitHub 或 worktree/task mutation boundary 重验 reviewed
+resolution、本地 decision/base/remote-tracking facts，并通过只读 `git ls-remote --heads`
+读取当前 remote base HEAD。Initial planner evidence 不能替代 mutation-time guard；不要从过期的
+本地 `main` / `dev` 创建任务分支。
 
-Plan 绑定 initial checker-passed `post_sync_resolution_sha256`。Executor 在首次业务 mutation
-前只运行一次 shared resolver/sync core；若 fetch发现remote前进，允许安全 fast-forward，
-但必须返回 `refresh_review` 且不创建 issue/workspace/task/artifact/runtime。Post-sync identity
-不变才继续；后续同一 invocation boundary只重验已刷新本地 facts。
+Plan 绑定 initial checker-passed `post_sync_resolution_sha256`。Executor 的 mutation guard
+不得调用 `execute_base_sync`、fetch、fast-forward 或更新本地 ref。若只读 remote HEAD
+发现 remote 前进，必须在 decision HEAD、local base 与 remote-tracking ref 均不变的情况下返回
+`refresh_review`，且不创建 issue/workspace/task/artifact/runtime；下一轮完整 Intake 重新进入唯一
+authoritative `guru-sync-base` public invocation。Identity 不变才继续。
 
 Guru preset apply/update/reapply 与 workspace executor 不读取、不创建、不复制、不恢复
 `.trellis/.developer` 或 `.trellis/workspace/**`，也不要求 `init_developer.py`。Official

@@ -560,13 +560,16 @@ draft projection.
 
 Immediately before the first permitted GitHub or workspace/task mutation, the
 executor reconstructs the original resolver inputs from the checker-passed
-base prerequisite, calls `resolve_base_selection`, then `execute_base_sync`,
-and validates the fresh result. The plan's `post_sync_resolution_sha256` plus
-selected ref and HEAD projection must remain exact. If fetch reveals a normal
-remote advance, safe fast-forward may occur but the executor returns
-`refresh_review` before any issue/workspace/task/artifact/runtime write. Later
-same-invocation guards revalidate the already refreshed plan and local facts;
-they do not add locks, concurrency protocols, or a second remote sync loop.
+base prerequisite, validates the existing checker-passed sync result against
+current local facts, and reads the current remote base HEAD through
+`git ls-remote --heads`. The plan's `post_sync_resolution_sha256` plus selected
+ref and HEAD projection must remain exact. This guard never calls
+`execute_base_sync`, fetches, fast-forwards, or updates refs. A normal remote
+advance returns `refresh_review` before any
+issue/workspace/task/artifact/runtime write and leaves all local refs unchanged;
+the next Intake round invokes `guru-sync-base`. Later same-invocation guards
+revalidate the same reviewed plan and local facts without adding locks,
+concurrency protocols, or another remote synchronization loop.
 
 The checker validates the result schema, plan linkage, live issue or
 branch/worktree/task identity, artifact bytes/schema/digests/trackability,

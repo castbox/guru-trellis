@@ -4118,12 +4118,14 @@ class IntakePublicInvocationTests(unittest.TestCase):
         envelope = {
             "schema_version": "1.0",
             "public_input": public_input,
-            "transition": native_adapter.stage0_eval_transition(
-                skill_id, self.repo, public_input, owner_result
-            ),
             "owner_context": {},
             "owner_result": owner_result,
         }
+        transition = native_adapter.stage0_eval_transition(
+            skill_id, self.repo, public_input, owner_result
+        )
+        if transition is not None:
+            envelope["transition"] = transition
         process = self.invoke_process(
             skill_id,
             ["--invocation", "-"],
@@ -5125,7 +5127,7 @@ class IntakePublicInvocationTests(unittest.TestCase):
         self.assertEqual(payload["exit_id"], "pass")
         self.assertEqual(payload["profile"], "explicit_paths")
         self.assertEqual(payload["continuation_id"], "stage0-current")
-        self.assertEqual(payload["transition"]["stage"], "wording_current")
+        self.assertNotIn("transition", payload)
 
     def test_clarification_wrapper_derives_route_from_checked_owner_result(self) -> None:
         payload = self.invoke_call_local(

@@ -5276,7 +5276,12 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 "sync_facts_sha256": initial["facts_sha256"],
             }
         }
-        unchanged = gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
+        with mock.patch.object(
+            gtt,
+            "execute_base_sync",
+            side_effect=AssertionError("workspace mutation must not execute base sync"),
+        ):
+            unchanged = gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
         self.assertEqual(unchanged["post_sync_resolution_sha256"], initial["post_sync_resolution_sha256"])
 
         subprocess.run(["git", "clone", "-q", "-b", "main", str(remote), str(updater)], check=True)
@@ -5291,15 +5296,24 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
         ).stdout.strip()
         self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), initial_head)
 
-        with self.assertRaises(gtt.WorkflowError) as advanced:
+        with (
+            mock.patch.object(
+                gtt,
+                "execute_base_sync",
+                side_effect=AssertionError("workspace mutation must not execute base sync"),
+            ),
+            self.assertRaises(gtt.WorkflowError) as advanced,
+        ):
             gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
         self.assertEqual(advanced.exception.payload["typed_exit"], "refresh_review")
         self.assertEqual(
             advanced.exception.payload["error_code"],
-            "task_workspace_base_post_sync_identity_changed",
+            "task_workspace_base_remote_identity_changed",
         )
-        self.assertEqual(gtt.current_head(repository), remote_head)
-        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), remote_head)
+        self.assertEqual(gtt.current_head(repository), initial_head)
+        self.assertEqual(gtt.ref_head(repository, "refs/heads/main"), initial_head)
+        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), initial_head)
+        self.assertNotEqual(remote_head, initial_head)
         self.assertEqual(
             subprocess.run(
                 ["git", "branch", "--format=%(refname:short)"],
@@ -21512,6 +21526,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         )
         for relative in (
             Path("transitions/base-current.schema.json"),
+            Path("transitions/clarity-current.schema.json"),
             Path("invocations/semantic-owner.schema.json"),
         ):
             target = stage0_root / relative
@@ -21623,6 +21638,107 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             )
         self.assertEqual(stale.exception.payload["code"], "transition_stale")
 
+    def test_wording_call_local_transition_is_required_only_for_change_request(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        owner = self.valid_owner_result(root)
+        base = self.base_transition(owner)["base"]
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        clarity_digest = digest("clarity")
+        transition = {
+            "schema_version": "1.0",
+            "transition_id": f"clarity_current:{clarity_digest[:24]}",
+            "stage": "clarity_current",
+            "mode": "workflow",
+            "repo_locator": "example/guru-extension",
+            "base": base,
+            "target_locator": "https://github.com/example/guru-extension/issues/1",
+            "continuation_id": "stage0-current",
+            "context_result_sha256": digest("context"),
+            "clarity_result_sha256": clarity_digest,
+            "target_content_sha256": digest("content"),
+        }
+        package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-review-contract-wording"
+        )
+        interface = gtt.read_json(package / "interface.json")
+        args = argparse.Namespace(
+            invocation="-",
+            input=None,
+            owner_result=None,
+            owner_prerequisites=None,
+            owner_change_request=None,
+            owner_plan=None,
+        )
+
+        def parse(payload: dict[str, object]) -> dict[str, object]:
+            with mock.patch.object(sys, "stdin", io.StringIO(json.dumps(payload))):
+                return gtt.stage0_call_local_invocation(
+                    root,
+                    "guru-review-contract-wording",
+                    interface,
+                    args,
+                )
+
+        change_request = {
+            "schema_version": "1.0",
+            "public_input": {
+                "profile": "change_request",
+                "source_exit": "clear",
+                "mode": "workflow",
+                "target_locator": transition["target_locator"],
+                "continuation_id": "stage0-current",
+            },
+            "transition": transition,
+            "owner_context": {},
+            "owner_result": {},
+        }
+        self.assertEqual(parse(change_request)["transition"], transition)
+
+        missing = copy.deepcopy(change_request)
+        missing.pop("transition")
+        with self.assertRaises(gtt.WorkflowError) as missing_error:
+            parse(missing)
+        self.assertEqual(missing_error.exception.payload["code"], "invocation_invalid")
+
+        for profile, mode, fields in (
+            (
+                "planning_artifacts",
+                "workflow",
+                {
+                    "task_locator": ".trellis/tasks/current",
+                    "planning_artifacts": ["prd.md", "design.md", "implement.md"],
+                },
+            ),
+            (
+                "explicit_paths",
+                "standalone",
+                {"paths": ["docs/requirements/requirement-main.md"]},
+            ),
+        ):
+            envelope = {
+                "schema_version": "1.0",
+                "public_input": {
+                    "profile": profile,
+                    "source_exit": "direct",
+                    "mode": mode,
+                    "continuation_id": "stage0-current",
+                    **fields,
+                },
+                "owner_context": {},
+                "owner_result": {},
+            }
+            self.assertNotIn("transition", parse(envelope))
+            unexpected = copy.deepcopy(envelope)
+            unexpected["transition"] = transition
+            with self.assertRaises(gtt.WorkflowError) as unexpected_error:
+                parse(unexpected)
+            self.assertEqual(
+                unexpected_error.exception.payload["code"],
+                "invocation_invalid",
+            )
+
     def test_call_local_refresh_base_routes_after_real_head_drift(self) -> None:
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
@@ -21717,25 +21833,14 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         )
         self.assertIn("transition_wording_target_mismatch", wording_errors)
 
-        planning_scope_sha = digest("planning-scope")
         planning_errors = gtt.stage0_transition_owner_errors(
             "guru-review-contract-wording",
-            {"mode": "workflow"},
-            {
-                **context_transition,
-                "target_locator": "planning_artifacts:.trellis/tasks/current",
-                "target_content_sha256": planning_scope_sha,
-            },
-            {
-                "scope": {
-                    "identity": "planning_artifacts:.trellis/tasks/current",
-                    "scope_sha256": planning_scope_sha,
-                    "items": [],
-                }
-            },
+            {"mode": "workflow", "profile": "planning_artifacts"},
+            context_transition,
+            {"profile": "planning_artifacts"},
             None,
         )
-        self.assertNotIn("transition_wording_target_mismatch", planning_errors)
+        self.assertEqual(planning_errors, ["transition_unexpected"])
 
         readiness_errors = gtt.stage0_transition_owner_errors(
             "guru-review-change-request",

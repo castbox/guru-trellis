@@ -15118,7 +15118,7 @@ SKILL_INTERFACE_SCHEMAS = {
         "schema_path": Path("schemas/skill-interface-1.4.schema.json"),
         "interface_ref": "../../schemas/skill-interface-1.4.schema.json",
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.4.json",
-        "sha256": "f560a66a24371bd74b41f9dc19c126a4ed9b5a3037bb09994b000292f78688e4",
+        "sha256": "5dd8e1913de60204de8e22b9f296a4b38f36fb7f0918eb77dd686533f7622f55",
     },
 }
 CURRENT_SKILL_INTERFACE_SCHEMA_ID = "guru-team-skill-interface-1.4"
@@ -15163,6 +15163,17 @@ STAGE0_TRANSITION_INPUTS = {
     "guru-review-change-request": "wording_current",
     "guru-create-task-workspace": "readiness_current",
 }
+
+
+def stage0_transition_input_stage(
+    skill_id: str,
+    public_input: dict[str, Any] | None = None,
+) -> str | None:
+    if skill_id == "guru-review-contract-wording" and isinstance(public_input, dict):
+        profile = public_input.get("profile")
+        if profile in {"planning_artifacts", "explicit_paths"}:
+            return None
+    return STAGE0_TRANSITION_INPUTS.get(skill_id)
 STAGE0_WORKFLOW_TRANSITION_INPUTS = {
     "guru-requirements-clear-router": "clarity_current",
     "guru-contract-wording-pass-router": "wording_current",
@@ -17304,7 +17315,32 @@ def validate_skill_public_contracts(
             and isinstance(envelope_schema.get("required"), list)
             else set()
         )
-        if envelope_required != set(envelope_properties):
+        conditional_transition = (
+            set(envelope_properties) - envelope_required == {"transition"}
+            and envelope_schema.get("allOf") == [
+                {
+                    "if": {
+                        "properties": {
+                            "public_input": {
+                                "type": "object",
+                                "required": ["profile"],
+                                "properties": {
+                                    "profile": {
+                                        "enum": [
+                                            "planning_artifacts",
+                                            "explicit_paths",
+                                        ]
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    "then": {"not": {"required": ["transition"]}},
+                    "else": {"required": ["transition"]},
+                }
+            ]
+        )
+        if envelope_required != set(envelope_properties) and not conditional_transition:
             errors.append(
                 f"[invocation_call_local] call-local envelope for {skill_id} must require every closed partition"
             )
@@ -17735,18 +17771,66 @@ def validate_skill_public_contracts(
         if transition_binding is not None:
             transition_descriptor, transition_schema = transition_binding
             source_field = str(transition_descriptor.get("source_field") or "")
+            producer_profiles = transition_descriptor.get("producer_profiles")
+            if not isinstance(producer_profiles, list):
+                producer_profiles = []
             transition_property = output_properties.get(source_field)
             output_required = (
                 set(output_schema.get("required", []))
                 if isinstance(output_schema.get("required"), list)
                 else set()
             )
-            if source_field not in output_required or not isinstance(transition_property, dict):
+            if (
+                (not producer_profiles and source_field not in output_required)
+                or (producer_profiles and source_field in output_required)
+                or not isinstance(transition_property, dict)
+            ):
                 errors.append(
-                    f"[consumer_transition_source] transition for {consumer_id} must consume one required producer output field"
+                    f"[consumer_transition_source] transition for {consumer_id} must consume one exact producer output field with the declared profile cardinality"
                 )
             else:
                 transition_source_fields.add(source_field)
+                if producer_profiles:
+                    profile_property = output_properties.get("profile")
+                    profile_values = (
+                        set(profile_property.get("enum", []))
+                        if isinstance(profile_property, dict)
+                        and isinstance(profile_property.get("enum"), list)
+                        else set()
+                    )
+                    bound_profiles = set(producer_profiles)
+                    if (
+                        not bound_profiles
+                        or not bound_profiles.issubset(profile_values)
+                        or example.get("profile") not in bound_profiles
+                    ):
+                        errors.append(
+                            f"[consumer_transition_profiles] transition for {consumer_id} has invalid producer profile binding"
+                        )
+                    for profile in sorted(profile_values):
+                        without_transition = copy.deepcopy(example)
+                        without_transition["profile"] = profile
+                        without_transition.pop(source_field, None)
+                        without_errors = skill_json_schema_validation_errors(
+                            without_transition,
+                            output_schema,
+                            f"profile-conditioned output {exit_id} for {skill_id}",
+                        )
+                        with_transition = copy.deepcopy(example)
+                        with_transition["profile"] = profile
+                        with_errors = skill_json_schema_validation_errors(
+                            with_transition,
+                            output_schema,
+                            f"profile-conditioned output {exit_id} for {skill_id}",
+                        )
+                        if profile in bound_profiles and not without_errors:
+                            errors.append(
+                                f"[consumer_transition_profiles] transition for {consumer_id} is not required by producer profile {profile}"
+                            )
+                        if profile not in bound_profiles and (without_errors or not with_errors):
+                            errors.append(
+                                f"[consumer_transition_profiles] transition for {consumer_id} is not excluded from producer profile {profile}"
+                            )
                 if any(
                     isinstance(item, dict) and item.get("source") == source_field
                     for item in mappings
@@ -19922,10 +20006,18 @@ def stage0_validate_transition(
     skill_id: str,
     transition: Any,
     *,
+    public_input: dict[str, Any] | None = None,
     validate_live: bool = True,
     allow_dirty: bool = False,
 ) -> dict[str, Any]:
-    expected_stage = STAGE0_TRANSITION_INPUTS.get(skill_id)
+    expected_stage = stage0_transition_input_stage(skill_id, public_input)
+    if expected_stage is None:
+        raise stage0_invocation_error(
+            "transition_unexpected",
+            "invocation.transition",
+            "Omit transition for this standalone or planning wording profile.",
+            "Stage 0 invocation profile does not consume a workflow transition.",
+        )
     if expected_stage is None or not isinstance(transition, dict):
         raise stage0_invocation_error(
             "transition_missing",
@@ -20067,6 +20159,8 @@ def stage0_transition_owner_errors(
     owner_result: dict[str, Any],
     owner_plan: dict[str, Any] | None,
 ) -> list[str]:
+    if stage0_transition_input_stage(skill_id, public_input) is None:
+        return ["transition_unexpected"]
     if public_input.get("mode") != "workflow":
         return []
     errors: list[str] = []
@@ -20334,6 +20428,10 @@ def stage0_call_local_invocation(
             "Use the exact deterministic, semantic, or workspace invocation envelope.",
             "Call-local invocation failed its declared envelope schema.",
         )
+    transition_stage = stage0_transition_input_stage(
+        skill_id,
+        payload.get("public_input") if isinstance(payload.get("public_input"), dict) else None,
+    )
     expected_fields = (
         {"schema_version", "public_input"}
         if skill_id == "guru-sync-base"
@@ -20347,8 +20445,8 @@ def stage0_call_local_invocation(
         }
         if skill_id == "guru-create-task-workspace"
         else {
-            "schema_version", "public_input", "transition", "owner_context",
-            "owner_result",
+            "schema_version", "public_input", "owner_context", "owner_result",
+            *({"transition"} if transition_stage is not None else set()),
         }
     )
     if (
@@ -20372,11 +20470,12 @@ def stage0_call_local_invocation(
             "Use the exact deterministic, semantic, or workspace invocation envelope.",
             "Call-local invocation envelope has unknown, missing, or invalid fields.",
         )
-    if skill_id != "guru-sync-base":
+    if skill_id != "guru-sync-base" and transition_stage is not None:
         payload["transition"] = stage0_validate_transition(
             root,
             skill_id,
             payload.get("transition"),
+            public_input=payload["public_input"],
             validate_live=skill_id != "guru-discover-change-context",
         )
     return payload
@@ -36739,31 +36838,55 @@ def task_workspace_refresh_base_before_mutation(
             payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_resolution_stale"},
         )
 
-    fresh = execute_base_sync(root, resolution)
-    live_errors = validate_live_base_sync_result(root, fresh)
+    live_errors = validate_live_base_sync_result(root, base_result)
     if live_errors:
         raise WorkflowError(
-            "Task workspace mutation-time base sync did not validate.",
+            "Task workspace reviewed base no longer validates locally.",
             exit_code=2,
             payload={"typed_exit": "refresh_review", "error_codes": context_sort(live_errors)},
         )
-    fresh_projection = {
-        "selected_base": fresh["resolution"]["selected_base"],
-        "remote": fresh["resolution"]["remote"],
-        "base_ref": fresh["git"]["remote_ref"],
-        "decision_head": fresh["decision_checkout"]["head_after"],
-        "local_head": fresh["git"]["local_head_after"],
-        "remote_head": fresh["git"]["remote_head_after"],
-        "post_sync_resolution_sha256": fresh["post_sync_resolution_sha256"],
+    reviewed_projection = {
+        "selected_base": base_result["resolution"]["selected_base"],
+        "remote": base_result["resolution"]["remote"],
+        "base_ref": base_result["git"]["remote_ref"],
+        "decision_head": base_result["decision_checkout"]["head_after"],
+        "local_head": base_result["git"]["local_head_after"],
+        "remote_head": base_result["git"]["remote_head_after"],
+        "post_sync_resolution_sha256": base_result["post_sync_resolution_sha256"],
     }
-    reviewed_projection = {key: reviewed.get(key) for key in fresh_projection}
-    if fresh_projection != reviewed_projection:
+    if reviewed_projection != {key: reviewed.get(key) for key in reviewed_projection}:
         raise WorkflowError(
-            "Task workspace base advanced after review; refresh the complete Intake chain.",
+            "Task workspace reviewed base identity changed before mutation.",
             exit_code=2,
-            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_post_sync_identity_changed"},
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_identity_changed"},
         )
-    return fresh
+
+    base = str(resolution["selected_base"])
+    remote = str(resolution["remote"])
+    remote_proc = run(
+        ["git", "ls-remote", "--heads", remote, base],
+        cwd=root,
+        check=False,
+    )
+    rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    if remote_proc.returncode != 0 or len(rows) != 1 or any(
+        len(row) != 2
+        or re.fullmatch(r"[0-9a-f]{40}", row[0]) is None
+        or row[1] != f"refs/heads/{base}"
+        for row in rows
+    ):
+        raise WorkflowError(
+            "Task workspace could not read one exact remote base identity.",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_remote_identity_unreadable"},
+        )
+    if rows[0][0] != reviewed_projection["remote_head"]:
+        raise WorkflowError(
+            "Task workspace base advanced after review; refresh the complete Intake chain through guru-sync-base.",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_remote_identity_changed"},
+        )
+    return copy.deepcopy(base_result)
 
 
 def task_workspace_require_execution_boundary(

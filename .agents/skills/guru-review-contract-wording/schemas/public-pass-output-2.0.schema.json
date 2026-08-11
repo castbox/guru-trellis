@@ -3,7 +3,7 @@
   "$id": "guru-stage0-review-contract-wording-output-pass-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["exit_id", "profile", "continuation_id", "transition"],
+  "required": ["exit_id", "profile", "continuation_id"],
   "properties": {
     "exit_id": {"const": "pass"},
     "profile": {"enum": ["change_request", "planning_artifacts", "explicit_paths"]},
@@ -17,6 +17,16 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"profile": {"const": "change_request"}},
+        "required": ["profile"]
+      },
+      "then": {"required": ["transition"]},
+      "else": {"not": {"required": ["transition"]}}
+    }
+  ],
   "$defs": {
     "sha40": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "base": {"type": "object", "additionalProperties": false, "required": ["source", "selected_base", "remote", "ordered_candidates", "decision_head", "local_base_head", "remote_base_head", "post_sync_resolution_sha256"], "properties": {"source": {"enum": ["explicit", "config", "config-candidate", "remote-default"]}, "selected_base": {"type": "string", "minLength": 1}, "remote": {"type": "string", "minLength": 1}, "ordered_candidates": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "decision_head": {"$ref": "#/$defs/sha40"}, "local_base_head": {"$ref": "#/$defs/sha40"}, "remote_base_head": {"$ref": "#/$defs/sha40"}, "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"}}}

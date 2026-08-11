@@ -377,9 +377,11 @@ reject authorization fields and absolute machine-local paths.
 
 Mutation-boundary tests use a real remote whose base advances after the initial
 checker-passed evidence while the local remote-tracking ref remains stale. They
-prove the executor fetches/safely syncs, returns `refresh_review`, and creates
-no issue, branch, worktree, task, artifact, or runtime mapping. The
-unchanged-remote case still completes the reviewed mutation path.
+prove the executor detects the advance with read-only `git ls-remote`, never
+calls the base-sync executor, leaves the decision HEAD plus local and
+remote-tracking refs unchanged, returns `refresh_review`, and creates no issue,
+branch, worktree, task, artifact, or runtime mapping. The unchanged-remote case
+still completes the reviewed mutation path.
 
 The real A/B fixture must use one clean base, production
 record/executor/checker, independent worktrees/tasks, task-local closeout and

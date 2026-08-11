@@ -185,10 +185,11 @@ existing-issue identity. That context uses `kind=issue` and null
 `issue_binding`; a bare binding digest is not accepted.
 
 Public docs state that the plan binds `post_sync_resolution_sha256` and the
-executor reruns the shared resolver/sync core once before the first confirmed
-mutation. A fetched remote advance safely refreshes the base but routes to
-`refresh_review` before issue/workspace/task mutation; unchanged identity
-continues normally.
+executor revalidates the reviewed local facts plus the current remote HEAD with
+read-only `git ls-remote` before the first confirmed mutation. It does not
+fetch, fast-forward, or update refs. A remote advance routes to
+`refresh_review` with local state unchanged so the next Intake round invokes
+the sole authoritative `guru-sync-base`; unchanged identity continues normally.
 
 Public docs state that the workspace executor calls official
 `common.task_store.cmd_create` through an isolated adapter, passes the reviewed

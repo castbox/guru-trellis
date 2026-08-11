@@ -360,7 +360,8 @@
           "source_field": "transition",
           "stage": "wording_current",
           "schema_id": "guru-stage0-transition-wording-current-1.0",
-          "path": "consumers/workflow/stage0/transitions/wording-current.schema.json"
+          "path": "consumers/workflow/stage0/transitions/wording-current.schema.json",
+          "producer_profiles": ["change_request"]
         }
       },
       {

@@ -785,9 +785,10 @@ secret, raw private record, or shell command string.
 
 The `base` projection includes the checker-passed
 `post_sync_resolution_sha256` in addition to selected base, refs, HEADs, and
-the original sync facts digest. This post-sync identity is the comparison
-anchor for the shared resolver/sync rerun immediately before the first
-confirmed mutation.
+the original sync facts digest. This post-sync identity anchors the
+mutation-time comparison against revalidated local facts and the current
+remote HEAD returned by read-only `git ls-remote`; it does not authorize a
+second fetch, fast-forward, or ref update outside `guru-sync-base`.
 
 Assignee source is exactly `explicit_input`, `single_issue_assignee`,
 `current_github_login`, `user_selected_from_candidates`, or

@@ -1153,11 +1153,14 @@ missing, partial, or mixed provenance fails closed.
 
 The plan also binds the checker-passed base result's
 `post_sync_resolution_sha256`. Before the first GitHub issue or workspace/task
-mutation, the executor runs the shared resolver and sync core once. The fresh
-selected base, refs, decision/local/remote HEADs, and post-sync identity must
-equal the reviewed plan. A normal remote advance may be fetched and safely
-fast-forwarded, but it returns `refresh_review` before issue, branch, worktree,
-task, artifact, or runtime mutation because the reviewed base identity changed.
+mutation, the executor reconstructs the reviewed resolution, revalidates its
+local decision/base/remote-tracking facts, and uses read-only
+`git ls-remote --heads` to compare the current remote base HEAD. This guard must
+not fetch, fast-forward, or update any local ref. A normal remote advance
+returns `refresh_review` with decision HEAD, local base, remote-tracking ref,
+issue, branch, worktree, task, artifact, and runtime state all unchanged; the
+next complete Intake round re-enters the sole authoritative
+`guru-sync-base` public invocation.
 
 Assignee resolution order is explicit input, exactly one issue assignee, zero
 issue assignees to current GitHub login, then an AI/user choice for multiple or

@@ -389,7 +389,12 @@ def stage0_eval_transition(
     public_input: dict[str, Any],
     owner_result: dict[str, Any],
     owner_plan: dict[str, Any] | None = None,
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
+    if (
+        skill_id == "guru-review-contract-wording"
+        and public_input.get("profile") in {"planning_artifacts", "explicit_paths"}
+    ):
+        return None
     mode = str(public_input.get("mode") or owner_result.get("mode") or "workflow")
     continuation = str(public_input.get("continuation_id") or "stage0-current")
     target = str(public_input.get("target_locator") or "")
@@ -587,13 +592,15 @@ def bind_stage0_call_local_invocation(
         envelope["owner_prerequisites"] = copy.deepcopy(workspace_state[1])
     else:
         envelope["owner_context"] = copy.deepcopy(owner_context)
-    envelope["transition"] = stage0_eval_transition(
+    transition = stage0_eval_transition(
         skill_id,
         fixture,
         public_input,
         owner_result,
         envelope.get("owner_plan"),
     )
+    if transition is not None:
+        envelope["transition"] = transition
     invocation_path = fixture / OWNER_INVOCATION
     invocation_path.write_text(json.dumps(envelope) + "\n", encoding="utf-8")
 
@@ -846,10 +853,15 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
     git_target = binary / "git"
     git_target.write_text(
         "#!/usr/bin/env python3\n"
-        "import os,sys\n"
+        "import os,subprocess,sys\n"
         f"real_git={real_git!r}\n"
+        f"workspace_recipe={workspace_recipe!r}\n"
         "args=sys.argv[1:]\n"
         "if args and args[0]=='fetch': raise SystemExit(0)\n"
+        "if workspace_recipe and args==['ls-remote','--heads','origin','main']:\n"
+        " head=subprocess.run([real_git,'rev-parse','--verify','refs/remotes/origin/main'],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)\n"
+        " if head.returncode!=0: raise SystemExit(head.returncode)\n"
+        " print(f'{head.stdout.strip()}\\trefs/heads/main'); raise SystemExit(0)\n"
         "os.execv(real_git,[real_git,*args])\n",
         encoding="utf-8",
     )

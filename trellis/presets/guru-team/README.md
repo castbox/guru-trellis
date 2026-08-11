@@ -967,18 +967,20 @@ explicit `workdir` must use absolute paths under the task worktree confirmed by 
 boundary helper. The boundary is a deterministic source/task fact layer; it
 does not decide sub-agent progress, liveness, or stale state.
 
-`create-task-workspace` reruns the shared core before GitHub or worktree/task mutation.
-Each run keeps `preflight.base_freshness` in the current result only and requires
-clean decision/local/remote equality. Planner evidence never replaces either
-mutation-time guard, preventing new task branches from starting from a stale
-local base.
+`create-task-workspace` reconstructs the reviewed resolution, revalidates the
+local decision/base/remote-tracking facts, and reads the current remote base HEAD
+with `git ls-remote --heads` before GitHub or worktree/task mutation. Planner
+evidence never replaces this mutation-time guard, preventing new task branches
+from starting from a stale local base.
 
 The plan binds the initial checker-passed `post_sync_resolution_sha256`. The
-executor runs the shared resolver/sync core once before the first confirmed
-business mutation; confirmation remains only in the current dialogue and is
-never passed to or persisted by runtime. A newly advanced remote may safely fast-forward the selected
-base, but then returns `refresh_review` before issue/workspace/task/artifact or
-runtime writes. An unchanged post-sync identity continues normally.
+executor guard never calls `execute_base_sync`, fetches, fast-forwards, or
+updates local refs before the first confirmed business mutation; confirmation
+remains only in the current dialogue and is never passed to or persisted by
+runtime. A newly advanced remote returns `refresh_review` with the decision HEAD,
+local base, and remote-tracking ref unchanged, before issue/workspace/task/artifact
+or runtime writes. The next complete Intake round invokes the sole authoritative
+`guru-sync-base`; an unchanged identity continues normally.
 
 The active package uses ignored-runtime schemas `guru-task-workspace-plan-2.0`
 and `guru-task-workspace-result-2.0` plus runtime commands
