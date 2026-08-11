@@ -179,10 +179,11 @@ history.
 and owns its own compact semantic result. It does not import scanner hits,
 classification history, file digests, or this Skill's private result.
 
-## Interface 1.3 Public Handoff
+## Interface 1.4 Public Handoff
 
 The public profiles remain the fixed `change_request`, `planning_artifacts`,
-and `explicit_paths` scopes. `scripts/invoke.sh --input ... --owner-result ...`
-runs only after the semantic owner loop, reruns the existing checker, and emits
-a router DTO containing the fixed profile selected by the checked owner result.
-The complete review result remains stdout-only owner-private evidence.
+and `explicit_paths` scopes. `scripts/invoke.sh --invocation -` receives the
+closed call-local public input, current transition, and owner result only after
+the semantic owner loop, reruns the existing checker, and emits a router DTO
+containing the fixed profile selected by the checked owner result. The complete
+review result remains stdout-only owner-private evidence.

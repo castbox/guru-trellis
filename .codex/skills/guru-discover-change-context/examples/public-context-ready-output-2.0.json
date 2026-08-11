@@ -1,0 +1,28 @@
+{
+  "exit_id": "context_ready",
+  "handoff_profile": "initial_change_request",
+  "handoff_mode": "workflow",
+  "handoff_target_locator": "stage0-handoff-target-locator",
+  "handoff_continuation_id": "stage0-handoff-continuation-id",
+  "transition": {
+    "schema_version": "1.0",
+    "transition_id": "context_current:222222222222222222222222",
+    "stage": "context_current",
+    "mode": "workflow",
+    "repo_locator": ".",
+    "base": {
+      "source": "explicit",
+      "selected_base": "main",
+      "remote": "origin",
+      "ordered_candidates": ["main"],
+      "decision_head": "1111111111111111111111111111111111111111",
+      "local_base_head": "1111111111111111111111111111111111111111",
+      "remote_base_head": "1111111111111111111111111111111111111111",
+      "post_sync_resolution_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "target_locator": "https://github.com/example/repo/issues/1",
+    "continuation_id": "stage0-handoff-continuation-id",
+    "context_result_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "authority_content_sha256": "2323232323232323232323232323232323232323232323232323232323232323"
+  }
+}

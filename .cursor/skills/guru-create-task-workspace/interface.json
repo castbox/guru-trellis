@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-create-task-workspace",
   "name": "guru-create-task-workspace",
   "description": "Create or exactly reuse a reviewed issue workspace and Trellis task through an AI-owned semantic gate, ephemeral scoped confirmation, deterministic execution, and three typed exits.",
@@ -286,13 +286,17 @@
         "id": "invalid_public_input",
         "path": "examples/public-invocation-error.json"
       },
+      "call_local": {
+        "flag": "--invocation",
+        "stdin": "-",
+        "envelope": {
+          "schema_id": "guru-stage0-invocation-workspace-mutation-1.0",
+          "path": "consumers/workflow/stage0/invocations/workspace-mutation.schema.json"
+        }
+      },
       "example_argv": [
-        "--input",
-        "examples/public-execute-reviewed-plan-input.json",
-        "--owner-result",
-        ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-result.json",
-        "--owner-plan",
-        ".trellis/guru-team/skills/packages/guru-create-task-workspace/examples/task-workspace-plan.json"
+        "--invocation",
+        "-"
       ]
     },
     "outputs": [

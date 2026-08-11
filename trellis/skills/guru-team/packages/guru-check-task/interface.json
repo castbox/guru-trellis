@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-check-task",
   "name": "guru-check-task",
   "description": "Check the complete current task through one AI-owned semantic round, compact private evidence, and four minimal typed exits.",

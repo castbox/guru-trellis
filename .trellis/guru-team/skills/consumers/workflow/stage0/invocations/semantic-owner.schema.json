@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-invocation-semantic-owner-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "public_input", "owner_context", "owner_result"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "public_input": {"type": "object"},
+    "transition": {"type": "object"},
+    "owner_context": {"type": "object"},
+    "owner_result": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "public_input": {
+            "type": "object",
+            "required": ["profile"],
+            "properties": {
+              "profile": {"enum": ["planning_artifacts", "explicit_paths"]}
+            }
+          }
+        }
+      },
+      "then": {"not": {"required": ["transition"]}},
+      "else": {"required": ["transition"]}
+    }
+  ]
+}

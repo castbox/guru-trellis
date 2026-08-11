@@ -21,6 +21,22 @@ SKILLS_ROOT = REPO / "trellis/skills/guru-team"
 FIXTURE = SKILLS_ROOT / "tests/fixtures/representative-active"
 
 
+def install_current_contract_schemas(skills_root: Path) -> None:
+    schemas = skills_root / "schemas"
+    shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-interface-1.4.schema.json",
+        schemas / "skill-interface-1.4.schema.json",
+    )
+    shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-registry-1.3.schema.json",
+        schemas / "skill-registry-1.3.schema.json",
+    )
+    shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-eval-run-2.0.schema.json",
+        schemas / "skill-eval-run-2.0.schema.json",
+    )
+
+
 def install_finish_integration_fixture(canonical_root: Path) -> None:
     tests_root = canonical_root / "tests"
     tests_root.mkdir(exist_ok=True)
@@ -158,6 +174,7 @@ class SourceValidationTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "skills"
         shutil.copytree(FIXTURE, self.root)
+        install_current_contract_schemas(self.root)
         self.workflow = self.root / "workflow.md"
 
     def tearDown(self) -> None:
@@ -179,12 +196,12 @@ class SourceValidationTests(unittest.TestCase):
 
     def interface_schema_errors(self, payload: dict) -> list[str]:
         schema = json.loads(
-            (self.root / "schemas/skill-interface-1.3.schema.json").read_text(encoding="utf-8")
+            (self.root / "schemas/skill-interface-1.4.schema.json").read_text(encoding="utf-8")
         )
         return runtime.skill_json_schema_validation_errors(
             payload,
             schema,
-            "representative 1.3 interface",
+            "representative 1.4 interface",
         )
 
     def read_sync_interface(self) -> dict:
@@ -393,7 +410,7 @@ class SourceValidationTests(unittest.TestCase):
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
 
         self.assertEqual(interface["id"], "guru-create-task-commit")
-        self.assertEqual(interface["schema_version"], "1.3")
+        self.assertEqual(interface["schema_version"], "1.4")
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(interface["modes"]["workflow"]["routing"], "global_workflow")
         self.assertEqual(interface["modes"]["standalone"]["routing"], "direct_discovery")
@@ -512,7 +529,7 @@ class SourceValidationTests(unittest.TestCase):
         flow = (REPO / "docs/requirements/guru-team-trellis-flow.md").read_text(encoding="utf-8")
         self.assertIn("Global workflow 只决定顺序和 consumer", flow)
         self.assertIn("Step-local Skill owner", flow)
-        self.assertNotIn("prepare-task", flow)
+        self.assertIn("Compatibility `prepare-task` 只做本地诊断", flow)
 
     def test_workflows_only_route_task_commit_skill(self) -> None:
         workflows = [
@@ -990,7 +1007,7 @@ class SourceValidationTests(unittest.TestCase):
                 "private_artifacts",
             },
         )
-        self.assertEqual(action["interface_schema_id"], "guru-team-skill-interface-1.3")
+        self.assertEqual(action["interface_schema_id"], "guru-team-skill-interface-1.4")
         self.assertEqual(action["input"]["kind"], "structured_json")
         self.assertEqual(scalar["input"]["kind"], "scalar_cli")
         with self.assertRaises(runtime.WorkflowError) as raised:
@@ -2740,11 +2757,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertTrue(any("workflow and standalone preconditions differ" in item for item in self.validate()["errors"]))
 
     def test_registry_schema_identity_and_constraint_matrix_fail(self) -> None:
-        schema = self.root / "schemas/skill-registry.schema.json"
+        schema = self.root / "schemas/skill-registry-1.3.schema.json"
         schema.write_text(json.dumps({"type": "string"}), encoding="utf-8")
         self.assertTrue(any("skill registry schema" in item and "canonical schema contract digest" in item for item in self.validate()["errors"]))
 
-        shutil.copyfile(FIXTURE / "schemas/skill-registry.schema.json", schema)
+        shutil.copyfile(SKILLS_ROOT / "schemas/skill-registry-1.3.schema.json", schema)
         original = self.read_registry()
         mutations = {
             "missing-required": lambda value: value.pop("schema_version"),
@@ -2814,6 +2831,7 @@ class EvalRunnerTests(unittest.TestCase):
         self.workflow = self.repo / "trellis/workflows/guru-team/workflow.md"
         self.workflow.parent.mkdir(parents=True)
         shutil.copytree(FIXTURE, self.skills)
+        install_current_contract_schemas(self.skills)
         install_finish_integration_fixture(self.skills)
         shutil.copyfile(FIXTURE / "workflow.md", self.workflow)
         self.runtime_target = self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
@@ -3434,6 +3452,7 @@ class DistributionTests(unittest.TestCase):
         self.guru_root = Path(self.temp.name) / "source"
         canonical = self.guru_root / "trellis/skills/guru-team"
         shutil.copytree(FIXTURE, canonical)
+        install_current_contract_schemas(canonical)
         install_finish_integration_fixture(canonical)
         self.dst = self.repo / ".trellis/guru-team"
 
@@ -4070,16 +4089,50 @@ class IntakePublicInvocationTests(unittest.TestCase):
         self.assertIsInstance(payload, dict)
         return payload
 
-    def invoke_process(self, skill_id: str, arguments: list[str]) -> subprocess.CompletedProcess[str]:
+    def invoke_process(
+        self,
+        skill_id: str,
+        arguments: list[str],
+        *,
+        stdin: str | None = None,
+    ) -> subprocess.CompletedProcess[str]:
         wrapper = self.repo / ".agents/skills" / skill_id / "scripts/invoke.sh"
         return subprocess.run(
             [str(wrapper), *arguments],
             cwd=self.repo,
             text=True,
+            input=stdin,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False,
         )
+
+    def invoke_call_local(
+        self,
+        skill_id: str,
+        public_input_path: Path,
+        owner_result_path: Path,
+    ) -> dict:
+        public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+        owner_result = json.loads(owner_result_path.read_text(encoding="utf-8"))
+        envelope = {
+            "schema_version": "1.0",
+            "public_input": public_input,
+            "owner_context": {},
+            "owner_result": owner_result,
+        }
+        transition = native_adapter.stage0_eval_transition(
+            skill_id, self.repo, public_input, owner_result
+        )
+        if transition is not None:
+            envelope["transition"] = transition
+        process = self.invoke_process(
+            skill_id,
+            ["--invocation", "-"],
+            stdin=json.dumps(envelope),
+        )
+        self.assertEqual(process.returncode, 0, process.stderr)
+        return json.loads(process.stdout)
 
     def eval_public_output(self, skill_id: str, case_id: str) -> dict:
         result = self.run_shared_eval(skill_id, case_id)
@@ -4238,8 +4291,8 @@ class IntakePublicInvocationTests(unittest.TestCase):
                     Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
                 )
                 argv = native_trace["events"][-1]["argv"]
-                owner_flag = argv.index("--owner-result")
-                self.assertEqual(argv[owner_flag + 1], "-")
+                self.assertEqual(argv[-2:], ["--invocation", "-"])
+                self.assertNotIn("--owner-result", argv)
                 self.assertFalse(
                     any(value.startswith(".trellis/tasks/") for value in argv)
                 )
@@ -4761,84 +4814,141 @@ class IntakePublicInvocationTests(unittest.TestCase):
         self.assertEqual(omitted["handoff_base_branch"], "main")
 
     def test_non_main_semantic_handoffs_preserve_formal_base_resolution(self) -> None:
-        producer_outputs = {
-            ("guru-clarify-requirements", "needs_context"): self.eval_public_output(
-                "guru-clarify-requirements", "needs-context-route"
-            ),
-            ("guru-clarify-requirements", "refresh_context"): self.eval_public_output(
-                "guru-clarify-requirements", "refresh-context-route"
-            ),
-            ("guru-clarify-requirements", "retarget_context"): self.eval_public_output(
-                "guru-clarify-requirements", "retarget-context-route"
-            ),
-            ("guru-review-change-request", "ready"): self.eval_public_output(
-                "guru-review-change-request", "ready-route"
-            ),
-            ("guru-review-change-request", "refresh_context"): self.eval_public_output(
-                "guru-review-change-request", "refresh-context-route"
-            ),
-        }
-        for output in producer_outputs.values():
-            self.assertNotIn("handoff_base_branch", output)
-
         repos = {
             "config-candidate": self.non_main_repo("config-candidate", ["develop"]),
             "remote-default": self.non_main_repo("remote-default", ["release"]),
         }
-        sync_directed = [
+        target_url = "https://github.com/example/guru-extension/issues/1"
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        sync_directed = (
+            ("guru-discover-change-context", "refresh_base"),
             ("guru-clarify-requirements", "refresh_context"),
             ("guru-clarify-requirements", "retarget_context"),
             ("guru-review-change-request", "refresh_context"),
-        ]
+            ("guru-create-task-workspace", "refresh_review"),
+        )
+
+        def transition_for(source: str) -> dict:
+            return {
+                "schema_version": "1.0",
+                "transition_id": "context_current:" + digest(source)[:24],
+                "stage": "context_current",
+                "mode": "workflow",
+                "repo_locator": "example/guru-extension",
+                "base": {
+                    "source": source,
+                    "selected_base": "develop",
+                    "remote": "origin",
+                    "ordered_candidates": ["develop"],
+                    "decision_head": "1" * 40,
+                    "local_base_head": "1" * 40,
+                    "remote_base_head": "1" * 40,
+                    "post_sync_resolution_sha256": digest(f"base-{source}"),
+                },
+                "target_locator": target_url,
+                "continuation_id": "source-preserving-current",
+                "context_result_sha256": digest("context"),
+                "authority_content_sha256": digest("body"),
+            }
+
+        def producer_output(
+            repo: Path, skill_id: str, exit_id: str, upstream: dict,
+        ) -> tuple[dict, dict]:
+            package = repo / ".trellis/guru-team/skills/packages" / skill_id
+            interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+            schema, projection = runtime.stage0_output_contract(
+                skill_id, package, interface, exit_id
+            )
+            owner_results = {
+                "guru-discover-change-context": {"mode": "workflow"},
+                "guru-clarify-requirements": {
+                    "mode": "workflow",
+                    "review_target": {
+                        "repo": "example/guru-extension",
+                        "url": target_url,
+                    },
+                },
+                "guru-review-change-request": {
+                    "mode": "workflow",
+                    "target": {"url": target_url},
+                },
+                "guru-create-task-workspace": {"mode": "workflow"},
+            }
+            public_input = {
+                "mode": "workflow",
+                "target_locator": target_url,
+                "continuation_id": "source-preserving-current",
+            }
+            owner_result = owner_results[skill_id]
+            output_transition = runtime.stage0_build_transition(
+                skill_id, exit_id, public_input, owner_result, upstream
+            )
+            output = runtime.stage0_build_output(
+                skill_id,
+                exit_id,
+                public_input,
+                owner_result,
+                None,
+                None,
+                schema,
+                output_transition,
+                upstream,
+            )
+            self.assertEqual(
+                runtime.skill_json_schema_validation_errors(
+                    output, schema, f"{skill_id}:{exit_id} source-preserving output"
+                ),
+                [],
+            )
+            return output, runtime.skill_apply_projection(projection, output)
+
         for expected_source, repo in repos.items():
             with self.subTest(source=expected_source):
                 resolution = runtime.resolve_base_selection(repo, runtime.load_config(repo))
                 self.assertEqual(resolution["source"], expected_source)
                 self.assertEqual(resolution["selected_base"], "develop")
+                upstream = transition_for(expected_source)
                 for skill_id, exit_id in sync_directed:
-                    projected = self.projected_consumer_input(
-                        repo, skill_id, exit_id, producer_outputs[(skill_id, exit_id)]
+                    output, projected = producer_output(
+                        repo, skill_id, exit_id, upstream
                     )
+                    self.assertNotIn("handoff_base_branch", output)
+                    self.assertNotIn("base_branch", output)
                     self.assertNotIn("base_branch", projected)
                     synced = self.invoke_projected_sync(repo, projected)
                     self.assertEqual(synced["exit_id"], "synced")
-                    self.assertEqual(synced["handoff_base_branch"], "develop")
+                    self.assertEqual(
+                        synced["transition"]["base"]["source"], expected_source
+                    )
 
-                explicit = self.projected_consumer_input(
+                needs_output, needs_input = producer_output(
                     repo,
                     "guru-clarify-requirements",
-                    "refresh_context",
-                    producer_outputs[("guru-clarify-requirements", "refresh_context")],
+                    "needs_context",
+                    upstream,
                 )
-                explicit["base_branch"] = "develop"
-                synced = self.invoke_projected_sync(repo, explicit)
-                self.assertEqual(synced["handoff_base_branch"], "develop")
+                self.assertEqual(needs_output["handoff_base_branch"], "develop")
+                self.assertEqual(
+                    needs_output["transition"]["base"]["source"], expected_source
+                )
+                self.assertEqual(needs_input["base_branch"], "develop")
 
-        config_repo = repos["config-candidate"]
-        needs_context = self.projected_consumer_input(
-            config_repo,
-            "guru-clarify-requirements",
-            "needs_context",
-            producer_outputs[("guru-clarify-requirements", "needs_context")],
-        )
-        ready = self.projected_consumer_input(
-            config_repo,
-            "guru-review-change-request",
-            "ready",
-            producer_outputs[("guru-review-change-request", "ready")],
-        )
-        self.assertNotIn("base_branch", needs_context)
-        self.assertNotIn("base_branch", ready)
-        consumer_schemas = [
-            config_repo / ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-            config_repo / ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/public-execute-reviewed-plan-input.schema.json",
-        ]
-        for payload, schema_path in zip((needs_context, ready), consumer_schemas):
-            schema = json.loads(schema_path.read_text(encoding="utf-8"))
-            self.assertEqual(
-                runtime.skill_json_schema_validation_errors(payload, schema, "non-main handoff"),
-                [],
-            )
+        explicit_repo = repos["config-candidate"]
+        explicit_upstream = transition_for("explicit")
+        for skill_id, exit_id in sync_directed:
+            with self.subTest(source="explicit", skill=skill_id, exit=exit_id):
+                output, projected = producer_output(
+                    explicit_repo, skill_id, exit_id, explicit_upstream
+                )
+                output_branch = (
+                    "base_branch"
+                    if skill_id == "guru-create-task-workspace"
+                    else "handoff_base_branch"
+                )
+                self.assertEqual(output[output_branch], "develop")
+                self.assertEqual(projected["base_branch"], "develop")
+                synced = self.invoke_projected_sync(explicit_repo, projected)
+                self.assertEqual(synced["transition"]["base"]["source"], "explicit")
 
     def test_clarity_null_disposition_is_active_task_only(self) -> None:
         self.assertEqual(
@@ -5015,6 +5125,23 @@ class IntakePublicInvocationTests(unittest.TestCase):
         wording_path = self.repo / "docs/requirements/requirement-main.md"
         wording_path.parent.mkdir(parents=True)
         wording_path.write_text("# Requirement\n\nThe current contract is explicit.\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "add", "docs/requirements/requirement-main.md"],
+            cwd=self.repo,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "add wording fixture"],
+            cwd=self.repo,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=self.repo,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
         scope, contents = runtime.contract_wording_build_scope(
             self.repo,
             "explicit_paths",
@@ -5049,35 +5176,27 @@ class IntakePublicInvocationTests(unittest.TestCase):
         owner_path.parent.mkdir(parents=True)
         owner_path.write_text(json.dumps(owner_result) + "\n", encoding="utf-8")
 
-        payload = self.invoke(
+        payload = self.invoke_call_local(
             "guru-review-contract-wording",
-            [
-                "--input", "examples/public-explicit-paths-input.json",
-                "--owner-result", ".trellis/.runtime/guru-team/evals/wording-owner-result.json",
-            ],
+            self.repo / ".agents/skills/guru-review-contract-wording/examples/public-explicit-paths-input.json",
+            owner_path,
         )
-        self.assertEqual(
-            payload,
-            {"exit_id": "pass", "profile": "explicit_paths", "continuation_id": "stage0-current"},
-        )
+        self.assertEqual(payload["exit_id"], "pass")
+        self.assertEqual(payload["profile"], "explicit_paths")
+        self.assertEqual(payload["continuation_id"], "stage0-current")
+        self.assertNotIn("transition", payload)
 
     def test_clarification_wrapper_derives_route_from_checked_owner_result(self) -> None:
-        payload = self.invoke(
+        payload = self.invoke_call_local(
             "guru-clarify-requirements",
-            [
-                "--input", "examples/public-standalone-review-input.json",
-                "--owner-result", ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
-            ],
+            self.repo / ".agents/skills/guru-clarify-requirements/examples/public-standalone-review-input.json",
+            self.repo / ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
         )
-        self.assertEqual(
-            payload,
-            {
-                "exit_id": "clear",
-                "resume_target": "guru-review-contract-wording",
-                "target_disposition": "retained",
-                "continuation_id": "stage0-current",
-            },
-        )
+        self.assertEqual(payload["exit_id"], "clear")
+        self.assertEqual(payload["resume_target"], "guru-review-contract-wording")
+        self.assertEqual(payload["target_disposition"], "retained")
+        self.assertEqual(payload["continuation_id"], "stage0-current")
+        self.assertEqual(payload["transition"]["stage"], "clarity_current")
 
     def test_semantic_wrapper_uses_repo_relative_public_input(self) -> None:
         package = self.repo / ".trellis/guru-team/skills/packages/guru-clarify-requirements"
@@ -5085,12 +5204,10 @@ class IntakePublicInvocationTests(unittest.TestCase):
         caller_input.parent.mkdir(parents=True, exist_ok=True)
         caller_input.write_bytes((package / "examples/public-standalone-review-input.json").read_bytes())
 
-        payload = self.invoke(
+        payload = self.invoke_call_local(
             "guru-clarify-requirements",
-            [
-                "--input", ".trellis/.runtime/guru-team/evals/clarification-input.json",
-                "--owner-result", ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
-            ],
+            caller_input,
+            self.repo / ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
         )
         self.assertEqual(payload["exit_id"], "clear")
 

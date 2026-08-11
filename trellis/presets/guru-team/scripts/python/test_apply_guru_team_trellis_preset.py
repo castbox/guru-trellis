@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import json
 import hashlib
+import importlib.util
+import copy
 import os
 import shutil
 import subprocess
@@ -79,6 +81,95 @@ def install_canonical_workflow(repo: Path) -> None:
     source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
     target = repo / ".trellis/workflow.md"
     target.write_bytes(source.read_bytes())
+
+
+class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        guru_root = preset.guru_root_from_script()
+        module_path = (
+            guru_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "guru_phase0_transcript_verifier_test", module_path
+        )
+        assert spec is not None and spec.loader is not None
+        cls.verifier = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.verifier)
+
+    @staticmethod
+    def clarity_owner() -> dict[str, object]:
+        return {
+            "mode": "workflow",
+            "invocation_context": {"kind": "initial_issue"},
+            "review_target": {
+                "kind": "issue",
+                "url": "https://github.com/example/guru-extension/issues/145",
+            },
+        }
+
+    def test_rejects_clear_transcript_owner_mode_mismatch(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "owner mode"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {"profile": "initial_change_request", "mode": "workflow"},
+                {**self.clarity_owner(), "mode": "standalone"},
+            )
+
+    def test_rejects_clear_transcript_owner_profile_mismatch(self) -> None:
+        owner = self.clarity_owner()
+        owner["invocation_context"] = {"kind": "standalone_review"}
+        with self.assertRaisesRegex(RuntimeError, "owner profile"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {
+                    "profile": "initial_change_request",
+                    "mode": "workflow",
+                    "target_locator": "https://github.com/example/guru-extension/issues/145",
+                },
+                owner,
+            )
+
+    def test_rejects_clear_transcript_owner_live_target_mismatch(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "owner profile"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {
+                    "profile": "initial_change_request",
+                    "mode": "workflow",
+                    "target_locator": "https://github.com/example/guru-extension/issues/146",
+                },
+                self.clarity_owner(),
+            )
+
+    def test_rejects_forbidden_private_runtime_material_recursively(self) -> None:
+        cases = (
+            ".trellis/.runtime/guru-team/evals/owner-result.json",
+            ".trellis/.runtime/guru-team/phase0-transcript/change-request.json",
+            ".trellis/.runtime/guru-team/checkpoints/owner-plan.json",
+            ".trellis/.runtime/guru-team/checkpoints/current-transition.json",
+        )
+        for relative in cases:
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as raw:
+                root = Path(raw)
+                target = root / relative
+                target.parent.mkdir(parents=True)
+                target.write_text("{}\n", encoding="utf-8")
+                with self.assertRaisesRegex(RuntimeError, "forbidden private runtime"):
+                    self.verifier.assert_forbidden_runtime_absent(root)
+
+    def test_allows_only_workspace_and_task_runtime_mappings(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            for relative in (
+                ".trellis/.runtime/guru-team/workspaces/145-phase0.json",
+                ".trellis/.runtime/guru-team/tasks/145-phase0.json",
+            ):
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("{}\n", encoding="utf-8")
+            self.verifier.assert_forbidden_runtime_absent(root)
 
 
 class CodexDispatchModeInstallerTest(unittest.TestCase):
@@ -1008,6 +1099,31 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("--existing-developer-identity", verifier)
         self.assertIn('payload["developer_identity_preserved"] is True', verifier)
         self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
+        self.assertEqual(verifier.count("verify_installed_phase0_transcript.py"), 2)
+        self.assertIn("installed-phase0-transcript-initial", verifier)
+        self.assertIn("installed-phase0-transcript-after-update", verifier)
+        self.assertIn('payload["exit_family_count"] == 23', verifier)
+        self.assertIn('len(payload["six_step_transcript"]) == 6', verifier)
+        self.assertIn('row["edge_id"] for row in payload["reentry_transcripts"]', verifier)
+        self.assertIn(
+            'row["source"] for row in payload["refresh_provenance_transcripts"]',
+            verifier,
+        )
+        self.assertIn('"legacy_typed_output_schema_ids"', verifier)
+        self.assertIn(
+            'len(api["skill_contracts"]["legacy_typed_output_schema_ids"]) == 5',
+            verifier,
+        )
+        self.assertIn("build_discovery_invocation", verifier)
+        self.assertIn("DISCOVERY_STANDALONE_BASE_JSON", verifier)
+        self.assertIn("DISCOVERY_WORKFLOW_BASE_JSON", verifier)
+        self.assertNotIn("DISCOVERY_PUBLIC_INPUT_REL", verifier)
+        self.assertNotIn("DISCOVERY_RECOVERY_PUBLIC_INPUT_REL", verifier)
+        self.assertIn("PHASE0_REVIEWED_BASE_PROVENANCE", verifier)
+        self.assertIn(
+            '--reviewed-base-provenance "$PHASE0_REVIEWED_BASE_PROVENANCE"',
+            verifier,
+        )
         self.assertIn('trellis init -y --claude --codex --cursor', verifier)
         self.assertIn(
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
@@ -1063,6 +1179,38 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("TASK_WORKSPACE_ARTIFACT_NAMES", installed_workspace)
         self.assertIn("--existing-developer-identity", installed_workspace)
         self.assertIn('task_data.get("creator") != "fixture-maintainer"', installed_workspace)
+        installed_phase0 = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("importlib", installed_phase0)
+        self.assertNotIn("guru_team_trellis.py", installed_phase0)
+        self.assertIn('"--invocation",', installed_phase0)
+        self.assertIn('"-",', installed_phase0)
+        self.assertIn("actual_exit != expected_exit", installed_phase0)
+        self.assertIn('len(actual_pairs) != 23', installed_phase0)
+        self.assertIn("create-task-workspace.sh", installed_phase0)
+        self.assertIn("check-task-workspace-result.sh", installed_phase0)
+        self.assertIn('"gh",', installed_phase0)
+        self.assertIn('issue["facts_sha256"] = context_digest(issue)', installed_phase0)
+        self.assertIn('"history_preview": preview', installed_phase0)
+        self.assertNotIn("owner_eval_payload", installed_phase0)
+        self.assertNotIn("cleanup_seed_workspace", installed_phase0)
+        self.assertNotIn("bind_workspace_plan_to_transition", installed_phase0)
+        self.assertNotIn("phase0-transcript/change-request.json", installed_phase0)
+        self.assertIn("stage_transcript_owner_repo", installed_phase0)
+        self.assertIn("project_installed_output", installed_phase0)
+        self.assertIn("def reentry_transcripts(", installed_phase0)
+        self.assertIn("def refresh_provenance_transcripts(", installed_phase0)
+        self.assertIn("workspace_plan_for_transition", installed_phase0)
+        self.assertIn("assert_forbidden_runtime_absent", installed_phase0)
+        chain_source = installed_phase0[
+            installed_phase0.index("def six_step_transcript("):
+            installed_phase0.index("def parse_args()")
+        ]
+        self.assertNotIn("records", chain_source)
+        self.assertNotIn("HAPPY_CASES", chain_source)
+        self.assertNotIn("evals", chain_source)
         installed_closeout = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
@@ -1248,7 +1396,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertEqual(completed["skill_packages"]["status"], "ok")
         self.assertEqual(completed["skill_packages"]["sidecars"], [])
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
         self.assertTrue((self.install_dst / "skills/contracts/production-current.json").is_file())
         self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest.schema.json").is_file())
         self.assertEqual(
@@ -1272,7 +1420,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertNotEqual(result["skill_installed_validation"]["returncode"], 0)
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assertEqual((self.install_dst / "extension.json").read_bytes(), extension_before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
         sidecar = target.with_name("SKILL.md.new")
         self.assertEqual(
             sidecar.read_bytes(),
@@ -1290,7 +1438,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         recovered = self.install_current()
         self.assertEqual(recovered["skill_packages"]["status"], "ok")
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
         self.assertEqual(recovered["skill_installed_validation"]["returncode"], 0)
 
     def test_forced_installed_validation_failure_preserves_current_graph(self) -> None:
@@ -1313,7 +1461,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         self.assertEqual(result["skill_installed_validation"]["errors"], ["forced installed validation failure"])
         self.assertEqual(self.managed_graph_snapshot(), before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
 
 
 class ExtensionManifestInstallerTest(unittest.TestCase):
@@ -1382,7 +1530,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-phase2-check-4.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
-        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.2")
+        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.3")
         self.assertEqual(
             set(public_api["skill_contracts"]),
             {
@@ -1392,6 +1540,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "interface_schema_id",
                 "public_input_schema_ids",
                 "typed_output_schema_ids",
+                "legacy_typed_output_schema_ids",
                 "private_artifact_schema_ids",
                 "artifact_schema_ids",
                 "active_skill_ids",
@@ -1537,7 +1686,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 (package_root / readiness_schema_relative).read_bytes(),
                 readiness_schema_bytes,
             )
-        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.3")
+        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.4")
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")

@@ -46,7 +46,7 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
 
     def test_interface_uses_semantic_profile_and_mode_parity(self) -> None:
         interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertEqual(interface["schema_version"], "1.3")
+        self.assertEqual(interface["schema_version"], "1.4")
         self.assertEqual(interface["id"], "guru-create-task-workspace")
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(
@@ -295,6 +295,10 @@ class TaskWorkspacePackageContractTests(unittest.TestCase):
         self.assertIn("`post_sync_resolution_sha256`", contract)
         self.assertIn("exactly one tracked task-local Intake artifact", contract)
         self.assertIn("single `execute_reviewed_plan` public profile", contract)
+        self.assertIn("`scripts/invoke.sh --invocation -`", contract)
+        self.assertIn("`call-local:<stage>`", contract)
+        self.assertIn("Compatibility-only locator", contract)
+        self.assertNotIn("--owner-plan ...", contract)
         self.assertNotIn("creation confirmation digest", contract)
         self.assertNotIn("`cancelled` stops", contract)
         self.assertIn("`prepare-task` is query-only", contract)

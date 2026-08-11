@@ -10,10 +10,8 @@
   },
   "public_invocation": {
     "arguments": [
-      "--input",
-      ".trellis/.runtime/guru-team/evals/public-input.json",
-      "--owner-result",
-      ".trellis/.runtime/guru-team/evals/owner-result.json"
+      "--invocation",
+      "-"
     ]
   }
 }

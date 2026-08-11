@@ -20,7 +20,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_semantic_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-clarify-requirements")
-        self.assertEqual(self.interface["schema_version"], "1.3")
+        self.assertEqual(self.interface["schema_version"], "1.4")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]

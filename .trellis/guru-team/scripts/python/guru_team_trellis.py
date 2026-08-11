@@ -3263,6 +3263,222 @@ def base_sync_freshness_projection(
     }
 
 
+def parse_reviewed_base_provenance(value: Any) -> dict[str, Any]:
+    if not isinstance(value, str) or not value.strip():
+        raise WorkflowError(
+            "prepare requires complete reviewed base provenance.",
+            exit_code=2,
+            payload={
+                "status": "blocked",
+                "reason_code": "missing_reviewed_base_provenance",
+                "remediation": "Pass --reviewed-base-provenance with the exact base object from base_current.",
+            },
+        )
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(
+            "Reviewed base provenance must be valid JSON.",
+            exit_code=2,
+            payload={
+                "status": "blocked",
+                "reason_code": "invalid_reviewed_base_provenance",
+            },
+        ) from exc
+    errors: list[str] = []
+    if not isinstance(payload, dict) or set(payload) != REVIEWED_BASE_PROVENANCE_FIELDS:
+        errors.append("reviewed base provenance has invalid fields")
+    else:
+        if payload.get("source") not in {
+            "explicit", "config", "config-candidate", "remote-default",
+        }:
+            errors.append("reviewed base provenance source is invalid")
+        for field in ("selected_base", "remote"):
+            if not isinstance(payload.get(field), str) or not payload[field]:
+                errors.append(f"reviewed base provenance {field} is invalid")
+        candidates = payload.get("ordered_candidates")
+        if (
+            not isinstance(candidates, list)
+            or not candidates
+            or any(not isinstance(item, str) or not item for item in candidates)
+            or len(candidates) != len(set(candidates))
+            or payload.get("selected_base") not in candidates
+        ):
+            errors.append("reviewed base provenance ordered_candidates are invalid")
+        for field in ("decision_head", "local_base_head", "remote_base_head"):
+            if not re.fullmatch(r"[0-9a-f]{40}", str(payload.get(field) or "")):
+                errors.append(f"reviewed base provenance {field} is invalid")
+        if not re.fullmatch(
+            r"[0-9a-f]{64}",
+            str(payload.get("post_sync_resolution_sha256") or ""),
+        ):
+            errors.append("reviewed base provenance post-sync digest is invalid")
+    if errors:
+        raise WorkflowError(
+            "Reviewed base provenance is invalid.",
+            exit_code=2,
+            payload={
+                "status": "blocked",
+                "reason_code": "invalid_reviewed_base_provenance",
+                "errors": errors,
+            },
+        )
+    return copy.deepcopy(payload)
+
+
+def ensure_reviewed_base_provenance(
+    root: Path,
+    provenance: dict[str, Any],
+    *,
+    base_assertion: str | None = None,
+) -> dict[str, Any]:
+    config = load_config(root)
+    source = str(provenance["source"])
+    base = validate_base_branch_name(
+        root,
+        provenance["selected_base"],
+        "Reviewed selected base",
+    )
+    remote = validate_base_remote_name(root, provenance["remote"])
+    candidates = [
+        validate_base_branch_name(root, item, "Reviewed base candidate")
+        for item in provenance["ordered_candidates"]
+    ]
+    if base_assertion is not None:
+        asserted = validate_base_branch_name(
+            root,
+            base_assertion,
+            "prepare --base-branch assertion",
+        )
+        if asserted != base:
+            raise WorkflowError(
+                "prepare --base-branch does not match reviewed provenance.",
+                exit_code=2,
+                payload={
+                    "status": "blocked",
+                    "reason_code": "base_provenance_changed",
+                },
+            )
+    current_resolution = resolve_base_selection(
+        root,
+        config,
+        base if source == "explicit" else None,
+        remote,
+    )
+    if (
+        current_resolution.get("source") != source
+        or current_resolution.get("selected_base") != base
+        or current_resolution.get("remote") != remote
+        or current_resolution.get("candidates") != candidates
+        or current_resolution.get("resolution_sha256")
+        != provenance["post_sync_resolution_sha256"]
+    ):
+        raise WorkflowError(
+            "Reviewed base provenance no longer matches current resolution.",
+            exit_code=2,
+            payload={
+                "status": "blocked",
+                "reason_code": "base_provenance_changed",
+            },
+        )
+
+    local_ref = f"refs/heads/{base}"
+    remote_ref = f"refs/remotes/{remote}/{base}"
+    if (
+        current_head(root) != provenance["decision_head"]
+        or ref_head(root, local_ref) != provenance["local_base_head"]
+        or ref_head(root, remote_ref) != provenance["remote_base_head"]
+        or not base_sync_clean(root)
+    ):
+        raise WorkflowError(
+            "Reviewed base HEAD or clean state changed.",
+            exit_code=2,
+            payload={
+                "status": "blocked",
+                "reason_code": "base_state_changed",
+            },
+        )
+
+    fetch_proc = run(
+        [
+            "git", "fetch", "--no-tags", remote,
+            f"refs/heads/{base}:refs/remotes/{remote}/{base}",
+        ],
+        cwd=root,
+        check=False,
+    )
+    fetched_remote_head = ref_head(root, remote_ref)
+    if fetch_proc.returncode != 0 or fetched_remote_head is None:
+        raise WorkflowError(
+            "Reviewed base remote refresh failed.",
+            exit_code=2,
+            payload={
+                "status": "blocked",
+                "reason_code": "base_state_changed",
+            },
+        )
+    if (
+        fetched_remote_head != provenance["remote_base_head"]
+        or current_head(root) != provenance["decision_head"]
+        or ref_head(root, local_ref) != provenance["local_base_head"]
+        or not base_sync_clean(root)
+    ):
+        raise WorkflowError(
+            "Reviewed base changed during remote refresh.",
+            exit_code=2,
+            payload={
+                "status": "blocked",
+                "reason_code": "base_state_changed",
+            },
+        )
+
+    decision_checkout = {
+        "branch": current_branch(root),
+        "head_before": provenance["decision_head"],
+        "head_after": provenance["decision_head"],
+        "clean_before": True,
+        "clean_after": True,
+    }
+    freshness: dict[str, Any] = {
+        "remote": remote,
+        "base_branch": base,
+        "base_ref": base,
+        "remote_ref": f"{remote}/{base}",
+        "local_head_before": provenance["local_base_head"],
+        "local_head_after": provenance["local_base_head"],
+        "remote_head": provenance["remote_base_head"],
+        "remote_head_source": "fetched",
+        "fetch_attempted": True,
+        "fetch_performed": True,
+        "fast_forwarded": False,
+        "fresh": True,
+        "status": "fresh",
+        "base_ref_for_worktree": base,
+        "resolution": {
+            "source": source,
+            "selected_base": base,
+            "remote": remote,
+            "candidates": candidates,
+            "resolution_sha256": provenance["post_sync_resolution_sha256"],
+        },
+        "reviewed_resolution_sha256": provenance["post_sync_resolution_sha256"],
+        "post_sync_resolution": {
+            key: value
+            for key, value in current_resolution.items()
+            if key != "resolution_sha256"
+        },
+        "post_sync_resolution_sha256": provenance["post_sync_resolution_sha256"],
+        "decision_checkout": decision_checkout,
+        "three_way_equal": (
+            provenance["decision_head"]
+            == provenance["local_base_head"]
+            == provenance["remote_base_head"]
+        ),
+    }
+    freshness["facts_sha256"] = canonical_json_sha256(freshness)
+    return freshness
+
+
 def ensure_base_freshness(
     root: Path,
     base_ref: str | None,
@@ -5414,6 +5630,8 @@ def contract_wording_schema(root: Path) -> dict[str, Any]:
 
 
 def contract_wording_read_input(root: Path, value: str | None, label: str) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return copy.deepcopy(value)
     if not value:
         raise WorkflowError(f"{label} requires an input JSON file.", exit_code=2)
     if value == "-":
@@ -7492,29 +7710,21 @@ def cmd_resolve_human_artifacts(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def cmd_prepare(args: argparse.Namespace) -> dict[str, Any]:
+    reviewed_base_provenance = parse_reviewed_base_provenance(
+        getattr(args, "reviewed_base_provenance", None)
+    )
     root = repo_root(Path(args.root or os.getcwd()))
     config = load_config(root)
     require_tool("git")
     requirement = " ".join(args.requirement).strip()
     if not requirement:
         raise WorkflowError("No requirement description provided.")
-    if not args.expected_resolution_sha256:
-        raise WorkflowError(
-            "prepare requires --expected-resolution-sha256 from the preceding base-sync validator or prepare guard.",
-            exit_code=2,
-        )
-
-    next_resolution_sha256 = str(args.expected_resolution_sha256)
-
     def rerun_reviewed_base_guard() -> dict[str, Any]:
-        nonlocal next_resolution_sha256
-        freshness = ensure_base_freshness(
+        return ensure_reviewed_base_provenance(
             root,
-            args.base_branch,
-            expected_resolution_sha256=next_resolution_sha256,
+            reviewed_base_provenance,
+            base_assertion=args.base_branch,
         )
-        next_resolution_sha256 = str(freshness["post_sync_resolution_sha256"])
-        return freshness
 
     base_freshness = rerun_reviewed_base_guard()
     base_ref = str(base_freshness["resolution"]["selected_base"])
@@ -14903,7 +15113,18 @@ SKILL_INTERFACE_SCHEMAS = {
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.3.json",
         "sha256": "2892c524fa4ac2553b7aa2c1dd2004c0b53fb84388af506dc8a836ea61d4eb73",
     },
+    "guru-team-skill-interface-1.4": {
+        "version": "1.4",
+        "schema_path": Path("schemas/skill-interface-1.4.schema.json"),
+        "interface_ref": "../../schemas/skill-interface-1.4.schema.json",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.4.json",
+        "sha256": "5dd8e1913de60204de8e22b9f296a4b38f36fb7f0918eb77dd686533f7622f55",
+    },
 }
+CURRENT_SKILL_INTERFACE_SCHEMA_ID = "guru-team-skill-interface-1.4"
+CURRENT_SKILL_INTERFACE_VERSION = "1.4"
+CURRENT_SKILL_REGISTRY_SCHEMA_ID = "guru-team-skill-registry-1.3"
+CURRENT_SKILL_REGISTRY_VERSION = "1.3"
 SKILL_RUNTIME_DEPENDENCY = {
     "extension_id": "guru-team",
     "api_version": "1.0",
@@ -14935,6 +15156,45 @@ CURRENT_INTAKE_SKILL_IDS = (
     "guru-review-change-request",
     "guru-create-task-workspace",
 )
+STAGE0_TRANSITION_INPUTS = {
+    "guru-discover-change-context": "base_current",
+    "guru-clarify-requirements": "context_current",
+    "guru-review-contract-wording": "clarity_current",
+    "guru-review-change-request": "wording_current",
+    "guru-create-task-workspace": "readiness_current",
+}
+
+
+def stage0_transition_input_stage(
+    skill_id: str,
+    public_input: dict[str, Any] | None = None,
+) -> str | None:
+    if skill_id == "guru-review-contract-wording" and isinstance(public_input, dict):
+        profile = public_input.get("profile")
+        if profile in {"planning_artifacts", "explicit_paths"}:
+            return None
+    return STAGE0_TRANSITION_INPUTS.get(skill_id)
+STAGE0_WORKFLOW_TRANSITION_INPUTS = {
+    "guru-requirements-clear-router": "clarity_current",
+    "guru-contract-wording-pass-router": "wording_current",
+}
+STAGE0_TRANSITION_FILES = {
+    "base_current": "base-current.schema.json",
+    "context_current": "context-current.schema.json",
+    "clarity_current": "clarity-current.schema.json",
+    "wording_current": "wording-current.schema.json",
+    "readiness_current": "readiness-current.schema.json",
+}
+REVIEWED_BASE_PROVENANCE_FIELDS = {
+    "source",
+    "selected_base",
+    "remote",
+    "ordered_candidates",
+    "decision_head",
+    "local_base_head",
+    "remote_base_head",
+    "post_sync_resolution_sha256",
+}
 PRODUCTION_CONTRACT_SKILL_IDS = (
     "guru-approve-task-plan",
     "guru-check-task",
@@ -14948,10 +15208,10 @@ PUBLIC_CONTRACT_SKILL_IDS = (
     + PRODUCTION_CONTRACT_SKILL_IDS
     + (BRANCH_REVIEW_SKILL_ID, TASK_PUBLICATION_SKILL_ID, "guru-select-workflow-mode")
 )
-PRODUCTION_CONTRACT_MANIFEST = Path("contracts/production-current.json")
-PRODUCTION_CONTRACT_SCHEMA = Path("schemas/production-contract-manifest.schema.json")
-PRODUCTION_CONTRACT_SCHEMA_ID = "guru-team-production-contract-manifest-1.0"
-PRODUCTION_CONTRACT_ID = "production-current-v1"
+PRODUCTION_CONTRACT_MANIFEST = Path("contracts/production-current-2.0.json")
+PRODUCTION_CONTRACT_SCHEMA = Path("schemas/production-contract-manifest-2.0.schema.json")
+PRODUCTION_CONTRACT_SCHEMA_ID = "guru-team-production-contract-manifest-2.0"
+PRODUCTION_CONTRACT_ID = "production-current-v2"
 SKILL_RUNTIME_REMEDIATION = (
     "Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete "
     "Guru Team preset, resolve every .new/.bak sidecar, run source and installed Skill package "
@@ -14959,10 +15219,11 @@ SKILL_RUNTIME_REMEDIATION = (
 )
 SKILL_CONTRACT_SCHEMAS = {
     "registry": {
-        "sha256": "5e9924f53177188d302798118aab31a88cb40a1eb6dfe3c0d618bf301fe41ff9",
-        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.2.json",
+        "sha256": "36ddfdb5901e655c1d41f93800cc98879b3e00f8225836681eb121f8fe69f655",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.3.json",
     },
     "interface-1.3": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.3"],
+    "interface-1.4": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.4"],
 }
 
 
@@ -16261,6 +16522,7 @@ def skill_extension_runtime_contract(
             "interface_schema_id",
             "public_input_schema_ids",
             "typed_output_schema_ids",
+            "legacy_typed_output_schema_ids",
             "private_artifact_schema_ids",
             "artifact_schema_ids",
             "active_skill_ids",
@@ -16270,15 +16532,16 @@ def skill_extension_runtime_contract(
             "workflow_markers",
         }
         or skill_contracts.get("registry_schema_id")
-        != "guru-team-skill-registry-1.2"
+        != CURRENT_SKILL_REGISTRY_SCHEMA_ID
         or
-        skill_contracts.get("interface_schema_id") != "guru-team-skill-interface-1.3"
+        skill_contracts.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID
     ):
         errors.append(f"{label} has an incompatible Skill interface schema id")
     if isinstance(skill_contracts, dict):
         for field in (
             "public_input_schema_ids",
             "typed_output_schema_ids",
+            "legacy_typed_output_schema_ids",
             "private_artifact_schema_ids",
         ):
             values = skill_contracts.get(field)
@@ -16685,6 +16948,49 @@ def skill_projection_schema_compatible(
     return True
 
 
+def skill_canonical_local_schema(
+    schema: dict[str, Any],
+) -> dict[str, Any]:
+    """Expand local refs so embedded transition schemas can prove exact equality."""
+    root = schema
+
+    def resolve(reference: str) -> dict[str, Any]:
+        target: Any = root
+        for encoded_part in reference[2:].split("/"):
+            part = encoded_part.replace("~1", "/").replace("~0", "~")
+            if not isinstance(target, dict) or part not in target:
+                return {}
+            target = target[part]
+        return target if isinstance(target, dict) else {}
+
+    def expand(node: Any, active: set[str]) -> Any:
+        if isinstance(node, list):
+            return [expand(item, active) for item in node]
+        if not isinstance(node, dict):
+            return copy.deepcopy(node)
+        reference = node.get("$ref")
+        if isinstance(reference, str) and reference.startswith("#/"):
+            if reference in active:
+                return {}
+            target = expand(resolve(reference), active | {reference})
+            siblings = {
+                key: value
+                for key, value in node.items()
+                if key != "$ref"
+            }
+            if not siblings:
+                return target
+            return {"allOf": [target, expand(siblings, active)]}
+        return {
+            key: expand(value, active)
+            for key, value in node.items()
+            if key not in {"$schema", "$id", "$defs", "title", "description"}
+        }
+
+    canonical = expand(schema, set())
+    return canonical if isinstance(canonical, dict) else {}
+
+
 def skill_projection_scalar_compatible(
     source_schema: dict[str, Any],
     scalar_type: Any,
@@ -16959,8 +17265,87 @@ def validate_skill_public_contracts(
             argument_ids = [str(item.get("id") or "") for item in scalar_arguments]
             if binding.get("kind") != "scalar_cli" or binding.get("argument_ids") != argument_ids:
                 errors.append(f"[invocation_input_binding] invocation for {skill_id} does not bind every scalar argument in order")
+    call_local = invocation.get("call_local")
+    if skill_id in CURRENT_INTAKE_SKILL_IDS:
+        envelope_filename = (
+            "deterministic-sync.schema.json"
+            if skill_id == "guru-sync-base"
+            else "workspace-mutation.schema.json"
+            if skill_id == "guru-create-task-workspace"
+            else "semantic-owner.schema.json"
+        )
+        envelope_id = (
+            "guru-stage0-invocation-deterministic-sync-1.0"
+            if skill_id == "guru-sync-base"
+            else "guru-stage0-invocation-workspace-mutation-1.0"
+            if skill_id == "guru-create-task-workspace"
+            else "guru-stage0-invocation-semantic-owner-1.0"
+        )
+        expected_envelope_path = (
+            f"consumers/workflow/stage0/invocations/{envelope_filename}"
+        )
+        envelope_ref = call_local.get("envelope") if isinstance(call_local, dict) else None
+        if (
+            not isinstance(call_local, dict)
+            or call_local.get("flag") != "--invocation"
+            or call_local.get("stdin") != "-"
+            or not isinstance(envelope_ref, dict)
+            or envelope_ref.get("schema_id") != envelope_id
+            or envelope_ref.get("path") != expected_envelope_path
+        ):
+            errors.append(
+                f"[invocation_call_local] Phase 0 invocation for {skill_id} must declare its exact call-local envelope"
+            )
+        _, envelope_schema = skill_contract_asset(
+            boundary,
+            skills_root,
+            envelope_ref,
+            f"call-local invocation envelope for {skill_id}",
+            errors,
+            schema=True,
+        )
+        envelope_properties = skill_closed_object_schema(
+            envelope_schema,
+            f"call-local invocation envelope for {skill_id}",
+            errors,
+        )
+        envelope_required = (
+            set(envelope_schema.get("required", []))
+            if isinstance(envelope_schema, dict)
+            and isinstance(envelope_schema.get("required"), list)
+            else set()
+        )
+        conditional_transition = (
+            set(envelope_properties) - envelope_required == {"transition"}
+            and envelope_schema.get("allOf") == [
+                {
+                    "if": {
+                        "properties": {
+                            "public_input": {
+                                "type": "object",
+                                "required": ["profile"],
+                                "properties": {
+                                    "profile": {
+                                        "enum": [
+                                            "planning_artifacts",
+                                            "explicit_paths",
+                                        ]
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    "then": {"not": {"required": ["transition"]}},
+                    "else": {"required": ["transition"]},
+                }
+            ]
+        )
+        if envelope_required != set(envelope_properties) and not conditional_transition:
+            errors.append(
+                f"[invocation_call_local] call-local envelope for {skill_id} must require every closed partition"
+            )
     invocation_argv = invocation.get("example_argv")
-    if input_kind == "scalar_cli":
+    if input_kind == "scalar_cli" and skill_id not in CURRENT_INTAKE_SKILL_IDS:
         skill_validate_scalar_argv(
             scalar_arguments,
             invocation_argv,
@@ -16969,6 +17354,10 @@ def validate_skill_public_contracts(
         )
         if invocation_argv != public_input.get("example_argv"):
             errors.append(f"[scalar_invocation_example] invocation for {skill_id} must use the declared scalar example argv")
+    if skill_id in CURRENT_INTAKE_SKILL_IDS and invocation_argv != ["--invocation", "-"]:
+        errors.append(
+            f"[invocation_call_local] Phase 0 invocation example for {skill_id} must use exactly --invocation -"
+        )
     for value in invocation_argv if isinstance(invocation_argv, list) else []:
         if isinstance(value, str) and os.path.isabs(value):
             errors.append(f"[invocation_absolute_path] invocation example for {skill_id} contains an absolute path")
@@ -17045,12 +17434,74 @@ def validate_skill_public_contracts(
     ] = {}
     consumer_scalar_arguments: dict[str, list[dict[str, Any]]] = {}
     consumer_authoring_seeds: dict[str, dict[str, Any]] = {}
+    consumer_transitions: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
     for consumer_id, consumer in consumer_by_id.items():
         identity = consumer.get("consumer")
         payload_kind = consumer.get("payload_kind")
         if not isinstance(identity, dict):
             errors.append(f"[consumer_identity] consumer input {consumer_id} for {skill_id} has no identity")
             continue
+        transition = consumer.get("transition")
+        if isinstance(transition, dict):
+            stage = str(transition.get("stage") or "")
+            target_skill_id = str(identity.get("id") or "")
+            expected_filename = STAGE0_TRANSITION_FILES.get(stage)
+            expected_path = (
+                f"consumers/workflow/stage0/transitions/{expected_filename}"
+                if expected_filename
+                else ""
+            )
+            expected_schema_id = (
+                f"guru-stage0-transition-{stage.replace('_', '-')}-1.0"
+                if stage
+                else ""
+            )
+            expected_consumer_stage = (
+                STAGE0_TRANSITION_INPUTS.get(target_skill_id)
+                if identity.get("kind") == "skill"
+                else STAGE0_WORKFLOW_TRANSITION_INPUTS.get(target_skill_id)
+                if identity.get("kind") == "workflow"
+                else None
+            )
+            if (
+                expected_consumer_stage != stage
+                or transition.get("path") != expected_path
+                or transition.get("schema_id") != expected_schema_id
+            ):
+                errors.append(
+                    f"[consumer_transition_identity] transition for {consumer_id} does not match its exact Phase 0 Skill consumer stage"
+                )
+            _, transition_schema = skill_contract_asset(
+                boundary,
+                skills_root,
+                transition,
+                f"consumer transition {consumer_id} for {skill_id}",
+                errors,
+                schema=True,
+            )
+            transition_properties = skill_closed_object_schema(
+                transition_schema,
+                f"consumer transition {consumer_id} for {skill_id}",
+                errors,
+            )
+            transition_required = (
+                set(transition_schema.get("required", []))
+                if isinstance(transition_schema, dict)
+                and isinstance(transition_schema.get("required"), list)
+                else set()
+            )
+            stage_property = transition_properties.get("stage")
+            if (
+                not transition_properties
+                or transition_required != set(transition_properties)
+                or not isinstance(stage_property, dict)
+                or stage_property.get("const") != stage
+            ):
+                errors.append(
+                    f"[consumer_transition_schema] transition for {consumer_id} must select one complete closed stage schema"
+                )
+            if isinstance(transition_schema, dict):
+                consumer_transitions[consumer_id] = (transition, transition_schema)
         if payload_kind == "zero_payload":
             if identity.get("kind") != "stop":
                 errors.append("[consumer_zero_payload] only stop consumers may declare zero payload")
@@ -17315,6 +17766,105 @@ def validate_skill_public_contracts(
             for item in mappings
         ):
             errors.append(f"[projection_private_field] projection {projection.get('id')} reads a private artifact field")
+        transition_source_fields: set[str] = set()
+        transition_binding = consumer_transitions.get(consumer_id)
+        if transition_binding is not None:
+            transition_descriptor, transition_schema = transition_binding
+            source_field = str(transition_descriptor.get("source_field") or "")
+            producer_profiles = transition_descriptor.get("producer_profiles")
+            if not isinstance(producer_profiles, list):
+                producer_profiles = []
+            transition_property = output_properties.get(source_field)
+            output_required = (
+                set(output_schema.get("required", []))
+                if isinstance(output_schema.get("required"), list)
+                else set()
+            )
+            if (
+                (not producer_profiles and source_field not in output_required)
+                or (producer_profiles and source_field in output_required)
+                or not isinstance(transition_property, dict)
+            ):
+                errors.append(
+                    f"[consumer_transition_source] transition for {consumer_id} must consume one exact producer output field with the declared profile cardinality"
+                )
+            else:
+                transition_source_fields.add(source_field)
+                if producer_profiles:
+                    profile_property = output_properties.get("profile")
+                    profile_values = (
+                        set(profile_property.get("enum", []))
+                        if isinstance(profile_property, dict)
+                        and isinstance(profile_property.get("enum"), list)
+                        else set()
+                    )
+                    bound_profiles = set(producer_profiles)
+                    if (
+                        not bound_profiles
+                        or not bound_profiles.issubset(profile_values)
+                        or example.get("profile") not in bound_profiles
+                    ):
+                        errors.append(
+                            f"[consumer_transition_profiles] transition for {consumer_id} has invalid producer profile binding"
+                        )
+                    for profile in sorted(profile_values):
+                        without_transition = copy.deepcopy(example)
+                        without_transition["profile"] = profile
+                        without_transition.pop(source_field, None)
+                        without_errors = skill_json_schema_validation_errors(
+                            without_transition,
+                            output_schema,
+                            f"profile-conditioned output {exit_id} for {skill_id}",
+                        )
+                        with_transition = copy.deepcopy(example)
+                        with_transition["profile"] = profile
+                        with_errors = skill_json_schema_validation_errors(
+                            with_transition,
+                            output_schema,
+                            f"profile-conditioned output {exit_id} for {skill_id}",
+                        )
+                        if profile in bound_profiles and not without_errors:
+                            errors.append(
+                                f"[consumer_transition_profiles] transition for {consumer_id} is not required by producer profile {profile}"
+                            )
+                        if profile not in bound_profiles and (without_errors or not with_errors):
+                            errors.append(
+                                f"[consumer_transition_profiles] transition for {consumer_id} is not excluded from producer profile {profile}"
+                            )
+                if any(
+                    isinstance(item, dict) and item.get("source") == source_field
+                    for item in mappings
+                ) or operation == "direct":
+                    errors.append(
+                        f"[consumer_transition_partition] transition field {source_field} for {consumer_id} must remain outside the public-input projection"
+                    )
+                transition_property_contract = copy.deepcopy(transition_property)
+                if (
+                    "$defs" not in transition_property_contract
+                    and isinstance(output_schema.get("$defs"), dict)
+                ):
+                    transition_property_contract["$defs"] = copy.deepcopy(
+                        output_schema["$defs"]
+                    )
+                if not skill_json_equal(
+                    skill_canonical_local_schema(transition_property_contract),
+                    skill_canonical_local_schema(transition_schema),
+                ):
+                    errors.append(
+                        f"[consumer_transition_contract] transition field {source_field} for {consumer_id} does not exactly match its workflow-owned stage schema"
+                    )
+                if source_field not in example:
+                    errors.append(
+                        f"[consumer_transition_example] transition field {source_field} for {consumer_id} is absent from the producer example"
+                    )
+                else:
+                    errors.extend(
+                        skill_json_schema_validation_errors(
+                            example[source_field],
+                            transition_schema,
+                            f"consumer transition example {consumer_id} for {skill_id}",
+                        )
+                    )
         target_schema, target_fields, target_kind, target_required = consumer_contracts.get(
             consumer_id,
             (None, set(), "missing", set()),
@@ -17339,7 +17889,8 @@ def validate_skill_public_contracts(
             source_fields = set(output_properties) if operation == "direct" else {
                 str(item.get("source") or "") for item in mappings if isinstance(item, dict)
             }
-            unconsumed_fields = set(output_properties) - source_fields
+            consumed_fields = source_fields | transition_source_fields
+            unconsumed_fields = set(output_properties) - consumed_fields
             routing_identity_only = (
                 operation in {"select", "rename", "normalize"}
                 and unconsumed_fields
@@ -17353,7 +17904,7 @@ def validate_skill_public_contracts(
                     )
                 )
             )
-            if source_fields != set(output_properties) and not routing_identity_only:
+            if consumed_fields != set(output_properties) and not routing_identity_only:
                 errors.append(f"[public_output_unconsumed_field] typed output {exit_id} for {skill_id} has fields without direct consumer use")
         projected = skill_apply_projection(projection, example)
         if operation != "direct" or target_kind == "scalar_cli":
@@ -17962,9 +18513,9 @@ def validate_production_contract_manifest(
         errors.append("production contract manifest skill_ids do not match the ordered contract")
     if manifest.get("contract_id") != PRODUCTION_CONTRACT_ID:
         errors.append("production contract manifest has an unknown contract id")
-    if manifest.get("interface_schema_id") != "guru-team-skill-interface-1.3":
-        errors.append("production contract manifest does not require Interface 1.3")
-    if manifest.get("registry_schema_id") != "guru-team-skill-registry-1.2":
+    if manifest.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID:
+        errors.append(f"production contract manifest does not require Interface {CURRENT_SKILL_INTERFACE_VERSION}")
+    if manifest.get("registry_schema_id") != CURRENT_SKILL_REGISTRY_SCHEMA_ID:
         errors.append("production contract manifest has an unknown registry schema")
     if manifest.get("eval_schema_id") != SKILL_EVAL_SCHEMA_ID:
         errors.append("production contract manifest has an unknown eval schema")
@@ -18139,7 +18690,7 @@ def _validate_skill_source(
         }
     registry_stat = skill_lstat_path(boundary, skills_root / "registry.json", "skill registry", errors, kind="file")
     registry = skill_read_json(skills_root / "registry.json", "skill registry", errors) if registry_stat is not None else None
-    registry_schema_path = skills_root / "schemas/skill-registry.schema.json"
+    registry_schema_path = skills_root / "schemas/skill-registry-1.3.schema.json"
     registry_schema = None
     interface_schemas: dict[str, dict[str, Any]] = {}
     if skill_lstat_path(boundary, registry_schema_path, "skill registry schema", errors, kind="file") is not None:
@@ -18184,7 +18735,7 @@ def _validate_skill_source(
             ))
         if set(registry) != {"$schema", "schema_version", "skills"}:
             errors.append("skill registry has invalid fields")
-        if registry.get("$schema") != "schemas/skill-registry.schema.json" or registry.get("schema_version") != "1.2":
+        if registry.get("$schema") != "schemas/skill-registry-1.3.schema.json" or registry.get("schema_version") != CURRENT_SKILL_REGISTRY_VERSION:
             errors.append("skill registry has unknown schema id/version")
         entries = skill_unique_ids(registry.get("skills"), "skill registry", errors)
         active_registry_entries = {
@@ -18225,8 +18776,9 @@ def _validate_skill_source(
     if isinstance(skill_contracts, dict):
         expected_public_inputs: set[str] = set()
         expected_outputs: set[str] = set()
+        expected_legacy_outputs: set[str] = set()
         expected_private: set[str] = set()
-        for interface in interfaces.values():
+        for skill_id, interface in interfaces.items():
             public_contracts = interface.get("public_contracts")
             if not isinstance(public_contracts, dict):
                 continue
@@ -18238,12 +18790,46 @@ def _validate_skill_source(
             for output in public_contracts.get("outputs", []):
                 if isinstance(output, dict) and isinstance(output.get("schema"), dict):
                     expected_outputs.add(str(output["schema"].get("schema_id") or ""))
+            package_entry = active.get(skill_id)
+            package_relative = (
+                skill_safe_relative(package_entry.get("package"))
+                if isinstance(package_entry, dict)
+                else None
+            )
+            package_root = (
+                skills_root / package_relative
+                if package_relative is not None
+                else skills_root
+            )
+            for schema_item in interface.get("schemas", []):
+                if (
+                    not isinstance(schema_item, dict)
+                    or not str(schema_item.get("id") or "").startswith(
+                        "legacy_public_output_"
+                    )
+                ):
+                    continue
+                schema_relative = skill_safe_relative(schema_item.get("path"))
+                legacy_schema = (
+                    skill_read_json(
+                        package_root / schema_relative,
+                        f"legacy public output schema for {skill_id}",
+                        errors,
+                    )
+                    if schema_relative is not None
+                    else None
+                )
+                if isinstance(legacy_schema, dict):
+                    expected_legacy_outputs.add(str(legacy_schema.get("$id") or ""))
             for artifact in public_contracts.get("private_artifacts", []):
                 if isinstance(artifact, dict) and isinstance(artifact.get("schema"), dict):
                     expected_private.add(str(artifact["schema"].get("schema_id") or ""))
         inventory_checks = {
             "public_input_schema_ids": sorted(expected_public_inputs - {""}),
             "typed_output_schema_ids": sorted(expected_outputs - {""}),
+            "legacy_typed_output_schema_ids": sorted(
+                expected_legacy_outputs - {""}
+            ),
             "private_artifact_schema_ids": sorted(expected_private - {""}),
         }
         for field, expected in inventory_checks.items():
@@ -18280,7 +18866,7 @@ def _validate_skill_source(
         if not (intake_ids | production_ids).issubset(active_ids):
             errors.append("active registry is missing a current contract Skill")
         if any(
-            entry.get("interface_schema_id") != "guru-team-skill-interface-1.3"
+            entry.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID
             for entry in active.values()
         ):
             errors.append("active registry contains an unknown interface schema id")
@@ -19287,13 +19873,13 @@ def stage0_public_interface(skill_id: str, package: Path) -> dict[str, Any]:
         errors
         or not isinstance(interface, dict)
         or interface.get("id") != skill_id
-        or interface.get("schema_version") != "1.3"
+        or interface.get("schema_version") != CURRENT_SKILL_INTERFACE_VERSION
         or not isinstance(interface.get("public_contracts"), dict)
     ):
         raise stage0_invocation_error(
             "invalid_public_contract",
             "interface",
-            "Restore the validated Interface 1.3 package and rerun installed package validation.",
+            f"Restore the validated Interface {CURRENT_SKILL_INTERFACE_VERSION} package and rerun installed package validation.",
             "Stage 0 public Interface is invalid.",
         )
     return interface
@@ -19341,10 +19927,14 @@ def stage0_structured_input(
     package: Path,
     interface: dict[str, Any],
     input_value: str | None,
+    input_payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    path = stage0_safe_input_path(root, package, interface, input_value)
     errors: list[str] = []
-    payload = skill_read_json(path, "Stage 0 public input", errors)
+    if input_payload is None:
+        path = stage0_safe_input_path(root, package, interface, input_value)
+        payload = skill_read_json(path, "Stage 0 public input", errors)
+    else:
+        payload = copy.deepcopy(input_payload)
     public_input = interface["public_contracts"].get("input")
     profiles = public_input.get("profiles", []) if isinstance(public_input, dict) else []
     profile_id = payload.get("profile") if isinstance(payload, dict) else None
@@ -19376,6 +19966,595 @@ def stage0_structured_input(
             "Stage 0 structured public input failed its declared profile schema.",
         )
     return payload
+
+
+def stage0_transition_schema(root: Path, stage: str) -> dict[str, Any]:
+    filename = STAGE0_TRANSITION_FILES.get(stage)
+    if filename is None:
+        raise stage0_invocation_error(
+            "transition_stage_unknown",
+            "invocation.transition.stage",
+            "Use the exact transition stage declared for the target Skill.",
+            "Stage 0 invocation selected an unknown transition stage.",
+        )
+    candidates = (
+        root / ".trellis/guru-team/skills/consumers/workflow/stage0/transitions" / filename,
+        root / "trellis/skills/guru-team/consumers/workflow/stage0/transitions" / filename,
+    )
+    path = next((item for item in candidates if item.is_file() and not item.is_symlink()), None)
+    if path is None:
+        raise stage0_invocation_error(
+            "transition_schema_missing",
+            f"transitions.{stage}",
+            "Install the complete current Phase 0 activation unit.",
+            "Stage 0 transition schema is unavailable.",
+        )
+    errors: list[str] = []
+    schema = skill_read_schema(path, f"Stage 0 {stage} transition schema", errors)
+    if errors or not isinstance(schema, dict):
+        raise stage0_invocation_error(
+            "transition_schema_invalid",
+            f"transitions.{stage}",
+            "Restore the current transition schema and rerun source validation.",
+            "Stage 0 transition schema is invalid.",
+        )
+    return schema
+
+
+def stage0_validate_transition(
+    root: Path,
+    skill_id: str,
+    transition: Any,
+    *,
+    public_input: dict[str, Any] | None = None,
+    validate_live: bool = True,
+    allow_dirty: bool = False,
+) -> dict[str, Any]:
+    expected_stage = stage0_transition_input_stage(skill_id, public_input)
+    if expected_stage is None:
+        raise stage0_invocation_error(
+            "transition_unexpected",
+            "invocation.transition",
+            "Omit transition for this standalone or planning wording profile.",
+            "Stage 0 invocation profile does not consume a workflow transition.",
+        )
+    if expected_stage is None or not isinstance(transition, dict):
+        raise stage0_invocation_error(
+            "transition_missing",
+            "invocation.transition",
+            "Provide the producer's actual current transition object.",
+            "Stage 0 semantic invocation requires one transition object.",
+        )
+    errors = skill_json_schema_validation_errors(
+        transition,
+        stage0_transition_schema(root, expected_stage),
+        f"Stage 0 {expected_stage} transition",
+    )
+    if transition.get("stage") != expected_stage:
+        errors.append(f"transition stage must be {expected_stage}")
+    identity_field = {
+        "base_current": "post_sync_resolution_sha256",
+        "context_current": "context_result_sha256",
+        "clarity_current": "clarity_result_sha256",
+        "wording_current": "wording_facts_sha256",
+        "readiness_current": "readiness_facts_sha256",
+    }[expected_stage]
+    identity = (
+        (transition.get("base") or {}).get(identity_field)
+        if expected_stage == "base_current"
+        else transition.get(identity_field)
+    )
+    if transition.get("transition_id") != stage0_transition_id(
+        expected_stage, identity
+    ):
+        errors.append("transition identity does not match its current stage facts")
+    if errors:
+        raise stage0_invocation_error(
+            "transition_invalid",
+            "invocation.transition",
+            "Rerun the declared producer and pass its actual current stdout transition.",
+            "Stage 0 transition is missing, stale, or belongs to another edge.",
+        )
+    if not validate_live:
+        return copy.deepcopy(transition)
+    base = transition.get("base")
+    assert isinstance(base, dict)
+    try:
+        current_resolution = resolve_base_selection(
+            root,
+            load_config(root),
+            (
+                str(base["selected_base"])
+                if base.get("source") == "explicit"
+                else None
+            ),
+            str(base["remote"]),
+        )
+    except WorkflowError as exc:
+        raise stage0_invocation_error(
+            "transition_stale",
+            "invocation.transition.base",
+            "Rerun guru-sync-base and restart the declared Phase 0 edge.",
+            "Stage 0 transition base provenance no longer resolves locally.",
+        ) from exc
+    local_ref = f"refs/heads/{base['selected_base']}"
+    remote_ref = f"refs/remotes/{base['remote']}/{base['selected_base']}"
+    current_resolution_sha256 = current_resolution.get("resolution_sha256")
+    if allow_dirty:
+        current_resolution_sha256 = canonical_json_sha256(
+            resolution_identity(
+                source=current_resolution.get("source"),
+                selected_base=current_resolution.get("selected_base"),
+                remote=current_resolution.get("remote"),
+                candidates=current_resolution.get("candidates"),
+                decision_branch=base.get("selected_base"),
+                decision_head=base.get("decision_head"),
+                decision_clean=True,
+            )
+        )
+    if (
+        current_resolution.get("source") != base.get("source")
+        or current_resolution.get("selected_base") != base.get("selected_base")
+        or current_resolution.get("remote") != base.get("remote")
+        or current_resolution.get("candidates") != base.get("ordered_candidates")
+        or current_resolution_sha256 != base.get("post_sync_resolution_sha256")
+        or (not allow_dirty and current_head(root) != base.get("decision_head"))
+        or ref_head(root, local_ref) != base.get("local_base_head")
+        or ref_head(root, remote_ref) != base.get("remote_base_head")
+        or (not allow_dirty and not base_sync_clean(root))
+    ):
+        raise stage0_invocation_error(
+            "transition_stale",
+            "invocation.transition.base",
+            "Rerun guru-sync-base and restart the declared Phase 0 edge.",
+            "Stage 0 transition base provenance no longer matches current Git facts.",
+        )
+    return copy.deepcopy(transition)
+
+
+def stage0_target_locator_identity(value: Any) -> tuple[str, str | None, int | None]:
+    locator = str(value or "").strip()
+    short = re.fullmatch(r"#([1-9][0-9]*)", locator)
+    if short is not None:
+        return "issue", None, int(short.group(1))
+    try:
+        parsed = urlsplit(locator)
+    except ValueError:
+        parsed = None
+    if parsed is not None and parsed.scheme == "https" and parsed.netloc == "github.com":
+        match = re.fullmatch(r"/([^/]+)/([^/]+)/issues/([1-9][0-9]*)", parsed.path)
+        if match is not None and not parsed.query and not parsed.fragment:
+            return "issue", f"{match.group(1)}/{match.group(2)}".casefold(), int(match.group(3))
+    return "literal", locator, None
+
+
+def stage0_target_locators_match(left: Any, right: Any) -> bool:
+    left_identity = stage0_target_locator_identity(left)
+    right_identity = stage0_target_locator_identity(right)
+    if left_identity[0] == right_identity[0] == "issue":
+        left_repo, left_number = left_identity[1:]
+        right_repo, right_number = right_identity[1:]
+        return (
+            left_number == right_number
+            and (left_repo is None or right_repo is None or left_repo == right_repo)
+        )
+    return left_identity == right_identity
+
+
+def stage0_owner_target_locator(target: Any, fallback: Any = None) -> str | None:
+    try:
+        return stage0_target_locator(target, fallback if isinstance(fallback, str) else None)
+    except WorkflowError:
+        if isinstance(target, dict):
+            draft_id = target.get("draft_id") or target.get("request_id")
+            if isinstance(draft_id, str) and draft_id:
+                return f"draft:{draft_id}"
+        return fallback if isinstance(fallback, str) and fallback else None
+
+
+def stage0_transition_owner_errors(
+    skill_id: str,
+    public_input: dict[str, Any],
+    transition: dict[str, Any],
+    owner_result: dict[str, Any],
+    owner_plan: dict[str, Any] | None,
+) -> list[str]:
+    if stage0_transition_input_stage(skill_id, public_input) is None:
+        return ["transition_unexpected"]
+    errors: list[str] = []
+    if transition.get("mode") != public_input.get("mode"):
+        errors.append("transition_mode_mismatch")
+    continuation = public_input.get("continuation_id")
+    if (
+        "continuation_id" in transition
+        and continuation is not None
+        and transition.get("continuation_id") != continuation
+    ):
+        errors.append("transition_continuation_mismatch")
+    target_locator = public_input.get("target_locator")
+    if (
+        "target_locator" in transition
+        and target_locator is not None
+        and not stage0_target_locators_match(
+            transition.get("target_locator"), target_locator
+        )
+    ):
+        errors.append("transition_target_mismatch")
+
+    base = transition.get("base") if isinstance(transition.get("base"), dict) else {}
+    if skill_id == "guru-discover-change-context":
+        evidence = (
+            owner_result.get("base_evidence")
+            if isinstance(owner_result.get("base_evidence"), dict)
+            else {}
+        )
+        sync_result = (
+            evidence.get("sync_result")
+            if isinstance(evidence.get("sync_result"), dict)
+            else {}
+        )
+        resolution = (
+            sync_result.get("post_sync_resolution")
+            if isinstance(sync_result.get("post_sync_resolution"), dict)
+            else {}
+        )
+        expected_base = {
+            "source": resolution.get("source"),
+            "selected_base": resolution.get("selected_base"),
+            "remote": resolution.get("remote"),
+            "ordered_candidates": resolution.get("candidates"),
+            "decision_head": evidence.get("decision_head"),
+            "local_base_head": evidence.get("local_head"),
+            "remote_base_head": evidence.get("remote_head"),
+            "post_sync_resolution_sha256": evidence.get(
+                "post_sync_resolution_sha256"
+            ),
+        }
+        if base != expected_base or public_input.get("base_branch") != base.get(
+            "selected_base"
+        ):
+            errors.append("transition_base_owner_mismatch")
+    elif skill_id == "guru-clarify-requirements":
+        target = owner_result.get("review_target")
+        owner_target = stage0_owner_target_locator(
+            target, public_input.get("target_locator")
+        )
+        if owner_target is None or not stage0_target_locators_match(
+            transition.get("target_locator"), owner_target
+        ):
+            errors.append("transition_clarity_target_mismatch")
+        if (
+            transition.get("authority_content_sha256")
+            != (target.get("body_sha256") if isinstance(target, dict) else None)
+            and owner_result.get("typed_exit") != "refresh_context"
+        ):
+            errors.append("transition_clarity_authority_content_mismatch")
+    elif skill_id == "guru-review-contract-wording":
+        scope = owner_result.get("scope") if isinstance(owner_result.get("scope"), dict) else {}
+        scope_identity = str(scope.get("identity") or "")
+        owner_target = scope_identity.removeprefix("change_request:")
+        _, body_sha256, _ = change_request_review_scope_hashes(scope)
+        target_content_sha256 = body_sha256 or change_request_review_sha256(
+            scope.get("scope_sha256")
+        )
+        if (
+            not stage0_target_locators_match(
+                transition.get("target_locator"), owner_target
+            )
+            or transition.get("target_content_sha256") != target_content_sha256
+        ):
+            errors.append("transition_wording_target_mismatch")
+    elif skill_id == "guru-review-change-request":
+        target = owner_result.get("target") if isinstance(owner_result.get("target"), dict) else {}
+        prerequisites = (
+            owner_result.get("prerequisites")
+            if isinstance(owner_result.get("prerequisites"), dict)
+            else {}
+        )
+        clarity = prerequisites.get("clarity") if isinstance(prerequisites.get("clarity"), dict) else {}
+        wording = prerequisites.get("wording") if isinstance(prerequisites.get("wording"), dict) else {}
+        transition_clarity = transition.get("clarity") if isinstance(transition.get("clarity"), dict) else {}
+        transition_wording = transition.get("wording") if isinstance(transition.get("wording"), dict) else {}
+        owner_target = stage0_owner_target_locator(
+            target, public_input.get("target_locator")
+        )
+        if (
+            owner_target is None
+            or not stage0_target_locators_match(
+                transition.get("target_locator"), owner_target
+            )
+            or transition.get("target_content_sha256") != target.get("content_sha256")
+            or transition.get("clarity_result_sha256") != clarity.get("facts_sha256")
+            or transition.get("wording_facts_sha256") != wording.get("facts_sha256")
+            or transition_clarity.get("facts_sha256") != clarity.get("facts_sha256")
+            or transition_clarity.get("disposition_sha256") != clarity.get("disposition_sha256")
+            or transition_wording.get("facts_sha256") != wording.get("facts_sha256")
+            or transition_wording.get("target_content_sha256") != target.get("content_sha256")
+        ):
+            errors.append("transition_readiness_prerequisite_mismatch")
+    elif skill_id == "guru-create-task-workspace":
+        plan = owner_plan if isinstance(owner_plan, dict) else {}
+        target = plan.get("target") if isinstance(plan.get("target"), dict) else {}
+        plan_base = plan.get("base") if isinstance(plan.get("base"), dict) else {}
+        plan_content_sha256 = context_digest({
+            "title_sha256": target.get("title_sha256"),
+            "body_sha256": target.get("body_sha256"),
+        })
+        if (
+            not stage0_target_locators_match(
+                transition.get("target_locator"), target.get("url")
+            )
+            or transition.get("target_content_sha256") != plan_content_sha256
+            or base.get("selected_base") != plan_base.get("selected_base")
+            or base.get("remote") != plan_base.get("remote")
+            or base.get("decision_head") != plan_base.get("decision_head")
+            or base.get("local_base_head") != plan_base.get("local_head")
+            or base.get("remote_base_head") != plan_base.get("remote_head")
+            or base.get("post_sync_resolution_sha256")
+            != plan_base.get("post_sync_resolution_sha256")
+        ):
+            errors.append("transition_workspace_plan_mismatch")
+    return errors
+
+
+def stage0_scalar_input(
+    interface: dict[str, Any],
+    payload: Any,
+) -> dict[str, Any]:
+    public_input = interface["public_contracts"].get("input")
+    arguments = (
+        public_input.get("arguments")
+        if isinstance(public_input, dict)
+        and isinstance(public_input.get("arguments"), list)
+        else []
+    )
+    argument_by_id = {
+        str(item.get("id") or ""): item
+        for item in arguments
+        if isinstance(item, dict)
+    }
+    required = {
+        argument_id
+        for argument_id, argument in argument_by_id.items()
+        if argument.get("required") is True
+    }
+    if (
+        not isinstance(payload, dict)
+        or not required.issubset(payload)
+        or not set(payload).issubset(argument_by_id)
+        or any(
+            not skill_scalar_value_matches(value, argument_by_id[key].get("type"))
+            for key, value in payload.items()
+        )
+    ):
+        raise stage0_invocation_error(
+            "invalid_public_input",
+            "invocation.public_input",
+            "Provide exactly the declared required and optional scalar input fields.",
+            "Stage 0 deterministic public input failed its Interface contract.",
+        )
+    return copy.deepcopy(payload)
+
+
+def stage0_call_local_schema(
+    root: Path,
+    interface: dict[str, Any],
+) -> dict[str, Any]:
+    invocation = interface["public_contracts"].get("invocation")
+    call_local = invocation.get("call_local") if isinstance(invocation, dict) else None
+    reference = call_local.get("envelope") if isinstance(call_local, dict) else None
+    relative = skill_safe_relative(
+        reference.get("path") if isinstance(reference, dict) else None
+    )
+    candidates = (
+        root / ".trellis/guru-team/skills" / relative
+        if relative is not None
+        else root,
+        root / "trellis/skills/guru-team" / relative
+        if relative is not None
+        else root,
+    )
+    path = next(
+        (item for item in candidates if item.is_file() and not item.is_symlink()),
+        None,
+    )
+    errors: list[str] = []
+    schema = (
+        skill_read_schema(path, "Stage 0 call-local invocation envelope", errors)
+        if path is not None
+        else None
+    )
+    if (
+        errors
+        or not isinstance(schema, dict)
+        or not isinstance(reference, dict)
+        or schema.get("$id") != reference.get("schema_id")
+    ):
+        raise stage0_invocation_error(
+            "invalid_public_contract",
+            "interface.public_contracts.invocation.call_local",
+            "Install the complete current Phase 0 invocation schema family.",
+            "Stage 0 call-local invocation schema is unavailable or incompatible.",
+        )
+    return schema
+
+
+def stage0_call_local_invocation(
+    root: Path,
+    skill_id: str,
+    interface: dict[str, Any],
+    args: argparse.Namespace,
+) -> dict[str, Any] | None:
+    invocation = str(getattr(args, "invocation", None) or "").strip()
+    if not invocation:
+        return None
+    locator_values = (
+        getattr(args, "input", None),
+        getattr(args, "owner_result", None),
+        getattr(args, "owner_prerequisites", None),
+        getattr(args, "owner_change_request", None),
+        getattr(args, "owner_plan", None),
+    )
+    if invocation != "-" or any(value is not None for value in locator_values):
+        raise stage0_invocation_error(
+            "invocation_transport_conflict",
+            "arguments.invocation",
+            "Use exactly --invocation - without locator transport flags.",
+            "Call-local invocation cannot be combined with compatibility locators.",
+        )
+    try:
+        payload = json.loads(sys.stdin.read())
+    except json.JSONDecodeError as exc:
+        raise stage0_invocation_error(
+            "invocation_invalid_json",
+            "invocation",
+            "Pipe one closed JSON invocation envelope to stdin.",
+            "Call-local invocation is invalid JSON.",
+        ) from exc
+    if not isinstance(payload, dict):
+        raise stage0_invocation_error(
+            "invocation_invalid",
+            "invocation",
+            "Pipe one closed JSON invocation envelope object.",
+            "Call-local invocation root must be an object.",
+        )
+    envelope_errors = skill_json_schema_validation_errors(
+        payload,
+        stage0_call_local_schema(root, interface),
+        "Stage 0 call-local invocation envelope",
+    )
+    if envelope_errors:
+        raise stage0_invocation_error(
+            "invocation_invalid",
+            "invocation",
+            "Use the exact deterministic, semantic, or workspace invocation envelope.",
+            "Call-local invocation failed its declared envelope schema.",
+        )
+    transition_stage = stage0_transition_input_stage(
+        skill_id,
+        payload.get("public_input") if isinstance(payload.get("public_input"), dict) else None,
+    )
+    expected_fields = (
+        {"schema_version", "public_input"}
+        if skill_id == "guru-sync-base"
+        else {
+            "schema_version",
+            "public_input",
+            "transition",
+            "owner_plan",
+            "owner_result",
+        }
+        if skill_id == "guru-create-task-workspace"
+        else {
+            "schema_version", "public_input", "owner_context", "owner_result",
+            *({"transition"} if transition_stage is not None else set()),
+        }
+    )
+    if (
+        set(payload) != expected_fields
+        or payload.get("schema_version") != "1.0"
+        or not isinstance(payload.get("public_input"), dict)
+        or (skill_id != "guru-sync-base" and not isinstance(payload.get("owner_result"), dict))
+        or (
+            skill_id not in {"guru-sync-base", "guru-create-task-workspace"}
+            and not isinstance(payload.get("owner_context"), dict)
+        )
+        or (skill_id == "guru-create-task-workspace" and not isinstance(payload.get("owner_plan"), dict))
+    ):
+        raise stage0_invocation_error(
+            "invocation_invalid",
+            "invocation",
+            "Use the exact deterministic, semantic, or workspace invocation envelope.",
+            "Call-local invocation envelope has unknown, missing, or invalid fields.",
+        )
+    if skill_id != "guru-sync-base" and transition_stage is not None:
+        payload["transition"] = stage0_validate_transition(
+            root,
+            skill_id,
+            payload.get("transition"),
+            public_input=payload["public_input"],
+            validate_live=skill_id != "guru-discover-change-context",
+        )
+    return payload
+
+
+def stage0_context_base_evidence(
+    root: Path,
+    transition: dict[str, Any],
+    *,
+    validate_live: bool = True,
+) -> dict[str, Any]:
+    base = transition.get("base") if isinstance(transition.get("base"), dict) else {}
+    identity = resolution_identity(
+        source=base.get("source"),
+        selected_base=base.get("selected_base"),
+        remote=base.get("remote"),
+        candidates=base.get("ordered_candidates"),
+        decision_branch=base.get("selected_base"),
+        decision_head=base.get("decision_head"),
+        decision_clean=True,
+    )
+    resolution_sha256 = canonical_json_sha256(identity)
+    if resolution_sha256 != base.get("post_sync_resolution_sha256"):
+        raise stage0_invocation_error(
+            "transition_invalid",
+            "invocation.transition.base",
+            "Rerun guru-sync-base and pass its actual stdout transition.",
+            "Base transition cannot be projected into checked Discovery evidence.",
+        )
+    sync_result = {
+        "schema_version": "1.0",
+        "skill_id": "guru-sync-base",
+        "status": "synced",
+        "resolution": {
+            "source": base.get("source"),
+            "selected_base": base.get("selected_base"),
+            "remote": base.get("remote"),
+            "candidates": copy.deepcopy(base.get("ordered_candidates")),
+            "resolution_sha256": resolution_sha256,
+        },
+        "post_sync_resolution": identity,
+        "post_sync_resolution_sha256": resolution_sha256,
+        "decision_checkout": {
+            "branch": base.get("selected_base"),
+            "head_before": base.get("decision_head"),
+            "head_after": base.get("decision_head"),
+            "clean_before": True,
+            "clean_after": True,
+        },
+        "git": {
+            "local_ref": f"refs/heads/{base.get('selected_base')}",
+            "remote_ref": (
+                f"refs/remotes/{base.get('remote')}/{base.get('selected_base')}"
+            ),
+            "local_head_before": base.get("local_base_head"),
+            "local_head_after": base.get("local_base_head"),
+            "remote_head_after": base.get("remote_base_head"),
+            "fetch_performed": True,
+            "fast_forwarded": False,
+        },
+        "fresh": True,
+    }
+    sync_result["facts_sha256"] = canonical_json_sha256(sync_result)
+    if validate_live:
+        cmd_check_base_sync(argparse.Namespace(
+            root=str(root),
+            mode=transition.get("mode"),
+            result_json=sync_result,
+            expected_resolution_sha256=resolution_sha256,
+            record_skipped=None,
+        ))
+    return {
+        "schema_id": "guru-base-sync-result-1.0",
+        "sync_result": sync_result,
+        "remote": base.get("remote"),
+        "base_head": base.get("remote_base_head"),
+        "decision_head": base.get("decision_head"),
+        "local_head": base.get("local_base_head"),
+        "remote_head": base.get("remote_base_head"),
+        "post_sync_resolution_sha256": resolution_sha256,
+        "clean": True,
+    }
 
 
 def stage0_output_contract(
@@ -19472,6 +20651,10 @@ def stage0_owner_result(
     public_input: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
     plan: dict[str, Any] | None = None
+    direct_result = getattr(args, "invocation_owner_result", None)
+    direct_plan = getattr(args, "invocation_owner_plan", None)
+    direct_context = getattr(args, "invocation_owner_context", None)
+    invocation_transition = getattr(args, "invocation_transition", None)
     if skill_id == "guru-discover-change-context":
         if public_input.get("profile") != "pre_task":
             raise stage0_invocation_error(
@@ -19480,22 +20663,25 @@ def stage0_owner_result(
                 "Use the current pre_task discovery input profile.",
                 "Stage 0 context discovery received an unsupported public input profile.",
             )
-        if args.owner_result != "-":
+        if direct_result is None and args.owner_result != "-":
             raise stage0_invocation_error(
                 "invalid_owner_result",
                 "arguments.owner_result",
                 "Pipe the checked stdout-only Discovery owner result with --owner-result -.",
                 "Context Discovery public invocation requires stdin owner transport.",
             )
-        try:
-            result = json.loads(sys.stdin.read())
-        except json.JSONDecodeError as exc:
-            raise stage0_invocation_error(
-                "invalid_owner_result",
-                "arguments.owner_result",
-                "Pipe one canonical JSON owner result to stdin.",
-                "Context Discovery owner result is invalid JSON.",
-            ) from exc
+        if isinstance(direct_result, dict):
+            result = copy.deepcopy(direct_result)
+        else:
+            try:
+                result = json.loads(sys.stdin.read())
+            except json.JSONDecodeError as exc:
+                raise stage0_invocation_error(
+                    "invalid_owner_result",
+                    "arguments.owner_result",
+                    "Pipe one canonical JSON owner result to stdin.",
+                    "Context Discovery owner result is invalid JSON.",
+                ) from exc
         if not isinstance(result, dict):
             raise stage0_invocation_error(
                 "invalid_owner_result",
@@ -19519,6 +20705,39 @@ def stage0_owner_result(
         )
         if recovery_continuation_id and active_task_dir is not None:
             plan = {"recovery_task": active_task_dir}
+        if isinstance(direct_result, dict):
+            if not isinstance(invocation_transition, dict):
+                raise stage0_invocation_error(
+                    "transition_missing",
+                    "invocation.transition",
+                    "Pass the actual guru-sync-base stdout transition.",
+                    "Discovery recorder requires the current base transition.",
+                )
+            result["base_evidence"] = stage0_context_base_evidence(
+                root,
+                invocation_transition,
+                validate_live=(
+                    result.get("typed_exit") != "refresh_base"
+                    and active_task_dir is None
+                ),
+            )
+            result = cmd_record_context_discovery(argparse.Namespace(
+                root=str(root),
+                mode=public_input.get("mode"),
+                input=None,
+                payload=result,
+                expected_result_sha256=None,
+                active_task=(
+                    repo_relative(root, active_task_dir)
+                    if active_task_dir is not None
+                    else None
+                ),
+                recovery_continuation_id=recovery_continuation_id or None,
+            ))
+        result_path = None
+        result_relative = None
+    elif isinstance(direct_result, dict):
+        result = copy.deepcopy(direct_result)
         result_path = None
         result_relative = None
     else:
@@ -19536,14 +20755,19 @@ def stage0_owner_result(
                 ),
                 recovery_continuation_id=recovery_continuation_id or None,
             ))
-        else:
+        elif direct_result is None:
             assert result_path is not None and result_relative is not None
             result = read_json(result_path)
         if skill_id == "guru-discover-change-context":
             pass
         elif skill_id == "guru-clarify-requirements":
+            if direct_result is not None:
+                result = cmd_record_requirements_clarification(argparse.Namespace(
+                    root=str(root), mode=public_input.get("mode"), input=None,
+                    payload=result, task=None,
+                ))
             checked = cmd_check_requirements_clarification(argparse.Namespace(
-                root=str(root), input=result_relative, task=None,
+                root=str(root), input=result_relative, payload=(result if direct_result is not None else None), task=None,
                 expected_result_sha256=(result.get("content_identity") or {}).get("result_sha256"),
             ))
         elif skill_id == "guru-review-contract-wording":
@@ -19559,37 +20783,155 @@ def stage0_owner_result(
             change_request_input = None
             if profile == "planning_artifacts" and scope_paths:
                 task_locator = str(Path(scope_paths[0]).parent)
-            elif profile == "change_request":
+            elif profile == "change_request" and direct_result is None:
                 change_request = stage0_owner_path(
                     root, args.owner_change_request, "arguments.owner_change_request"
                 )
                 change_request_input = repo_relative(root, change_request)
-            checked = cmd_check_contract_wording_review(argparse.Namespace(
-                root=str(root), input=result_relative, task=task_locator,
-                path=scope_paths if profile == "explicit_paths" else [],
-                change_request_input=change_request_input,
-                expected_facts_sha256=result.get("facts_sha256"),
-            ))
+            if direct_result is not None:
+                if not isinstance(direct_context, dict):
+                    raise WorkflowError(
+                        "Call-local contract wording owner context is invalid.",
+                        exit_code=2,
+                    )
+                authored = {
+                    "generated_at": result.get("generated_at"),
+                    "semantic_review": {
+                        key: copy.deepcopy((result.get("semantic_review") or {}).get(key))
+                        for key in (
+                            "revisions",
+                            "classifications",
+                            "ai_review_gate",
+                        )
+                    },
+                    "typed_exit": result.get("typed_exit"),
+                }
+                selector = {
+                    "root": str(root),
+                    "mode": public_input.get("mode"),
+                    "profile": public_input.get("profile"),
+                    "input": authored,
+                    "task": public_input.get("task_locator"),
+                    "path": list(public_input.get("paths") or []),
+                    "change_request_input": direct_context.get("change_request"),
+                    "scan_only": False,
+                }
+                result = cmd_record_contract_wording_review(
+                    argparse.Namespace(**selector)
+                )
+                checked = cmd_check_contract_wording_review(argparse.Namespace(
+                    **{**selector, "input": result},
+                    expected_facts_sha256=result.get("facts_sha256"),
+                ))
+            else:
+                checked = cmd_check_contract_wording_review(argparse.Namespace(
+                    root=str(root), input=(result if direct_result is not None else result_relative), task=task_locator,
+                    path=scope_paths if profile == "explicit_paths" else [],
+                    change_request_input=change_request_input,
+                    expected_facts_sha256=result.get("facts_sha256"),
+                ))
         elif skill_id == "guru-review-change-request":
-            prerequisites = stage0_owner_path(
-                root, args.owner_prerequisites, "arguments.owner_prerequisites"
-            )
-            change_request = stage0_owner_path(
-                root, args.owner_change_request, "arguments.owner_change_request"
-            )
-            checked = cmd_check_change_request_review(argparse.Namespace(
-                root=str(root), input=result_relative,
-                prerequisites_input=repo_relative(root, prerequisites),
-                change_request_input=repo_relative(root, change_request),
-                expected_facts_sha256=result.get("facts_sha256"),
-            ))
+            if direct_result is not None:
+                if (
+                    not isinstance(direct_context, dict)
+                    or not isinstance(direct_context.get("change_request"), dict)
+                    or set(direct_context) != {"change_request"}
+                    or not isinstance(invocation_transition, dict)
+                ):
+                    raise WorkflowError(
+                        "Call-local change request review owner context is invalid.",
+                        exit_code=2,
+                    )
+                authored = {
+                    "generated_at": result.get("generated_at"),
+                    "mode": public_input.get("mode"),
+                    "target": copy.deepcopy(result.get("target")),
+                    "prerequisite_payloads": {},
+                    "semantic_review": copy.deepcopy(result.get("semantic_review")),
+                    "typed_exit": result.get("typed_exit"),
+                    "reason": result.get("reason"),
+                    "affected_evidence": copy.deepcopy(result.get("affected_evidence")),
+                    "consumer": copy.deepcopy(result.get("consumer")),
+                }
+                target, scope, _ = change_request_review_normalize_target(
+                    root,
+                    authored.get("target"),
+                    direct_context["change_request"],
+                    str(public_input.get("mode") or ""),
+                )
+                prerequisites = change_request_review_transition_prerequisites(
+                    invocation_transition,
+                    target,
+                )
+                linkage = change_request_review_linkage(target, prerequisites)
+                result = change_request_review_derive_result(
+                    target, prerequisites, linkage, authored
+                )
+                review_errors = change_request_review_structural_errors(
+                    root, result, target, prerequisites, linkage
+                )
+                if review_errors:
+                    raise WorkflowError(
+                        "Call-local change request review result is invalid.",
+                        exit_code=2,
+                        payload={"error_codes": review_errors},
+                    )
+                checked = {
+                    "status": "passed",
+                    "skill_id": CHANGE_REQUEST_REVIEW_SKILL_ID,
+                    "typed_exit": result["typed_exit"],
+                    "target_identity_sha256": target["identity_sha256"],
+                    "target_content_sha256": target["content_sha256"],
+                    "linkage_sha256": linkage["linkage_sha256"],
+                    "facts_sha256": result["facts_sha256"],
+                }
+            else:
+                prerequisites = stage0_owner_path(
+                    root, args.owner_prerequisites, "arguments.owner_prerequisites"
+                )
+                change_request = stage0_owner_path(
+                    root, args.owner_change_request, "arguments.owner_change_request"
+                )
+                checked = cmd_check_change_request_review(argparse.Namespace(
+                    root=str(root), input=result_relative,
+                    prerequisites_input=repo_relative(root, prerequisites),
+                    change_request_input=repo_relative(root, change_request),
+                    expected_facts_sha256=result.get("facts_sha256"),
+                ))
         elif skill_id == "guru-create-task-workspace":
-            plan_path = stage0_owner_path(root, args.owner_plan, "arguments.owner_plan")
-            plan = read_json(plan_path)
-            checked = cmd_check_task_workspace_result(argparse.Namespace(
-                root=str(root), input=result_relative,
-                plan_input=repo_relative(root, plan_path),
-            ))
+            if (
+                isinstance(direct_plan, dict)
+                and isinstance(invocation_transition, dict)
+                and direct_result is not None
+            ):
+                plan = copy.deepcopy(direct_plan)
+                payloads, direct_errors = task_workspace_validate_transition_plan(
+                    root,
+                    plan,
+                    invocation_transition,
+                )
+                if not direct_errors:
+                    direct_errors.extend(
+                        task_workspace_result_check_errors(root, plan, result, payloads)
+                    )
+                if direct_errors:
+                    raise WorkflowError(
+                        "Call-local task workspace result is invalid.",
+                        exit_code=2,
+                        payload={"error_codes": direct_errors},
+                    )
+                checked = copy.deepcopy(result)
+                checked["checker"] = task_workspace_stage(
+                    "passed", ["Validated the call-local plan and result."]
+                )
+                checked = task_workspace_finalize_result(checked)
+            else:
+                plan_path = stage0_owner_path(root, args.owner_plan, "arguments.owner_plan")
+                plan = read_json(plan_path)
+                checked = cmd_check_task_workspace_result(argparse.Namespace(
+                    root=str(root), input=result_relative,
+                    plan_input=repo_relative(root, plan_path),
+                ))
             result = checked
         elif skill_id == "guru-select-workflow-mode":
             common = {"schema_version", "typed_exit", "mode", "continuation_id"}
@@ -20142,6 +21484,319 @@ def stage0_clarity_disposition(result: dict[str, Any]) -> str:
     )
 
 
+def stage0_base_projection(
+    resolution: dict[str, Any],
+    synced: dict[str, Any],
+) -> dict[str, Any]:
+    git = synced.get("git") if isinstance(synced.get("git"), dict) else {}
+    decision = (
+        synced.get("decision_checkout")
+        if isinstance(synced.get("decision_checkout"), dict)
+        else {}
+    )
+    return {
+        "source": resolution.get("source"),
+        "selected_base": resolution.get("selected_base"),
+        "remote": resolution.get("remote"),
+        "ordered_candidates": copy.deepcopy(resolution.get("candidates")),
+        "decision_head": decision.get("head_after"),
+        "local_base_head": git.get("local_head_after"),
+        "remote_base_head": git.get("remote_head_after"),
+        "post_sync_resolution_sha256": synced.get(
+            "post_sync_resolution_sha256"
+        ),
+    }
+
+
+def stage0_transition_id(stage: str, identity: Any) -> str:
+    digest = str(identity or "")
+    if re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+        digest = canonical_json_sha256({"stage": stage, "identity": identity})
+    return f"{stage}:{digest[:24]}"
+
+
+def stage0_clarity_projection(owner_result: dict[str, Any]) -> dict[str, Any]:
+    identity = (
+        owner_result.get("content_identity")
+        if isinstance(owner_result.get("content_identity"), dict)
+        else {}
+    )
+    return {
+        "facts_sha256": identity.get("result_sha256"),
+        "target_sha256": identity.get("target_sha256"),
+        "disposition_sha256": identity.get("disposition_sha256"),
+        "content_sha256": identity.get("content_sha256"),
+        "scope_sha256": identity.get("scope_sha256"),
+    }
+
+
+def stage0_target_disposition_projection(owner_result: dict[str, Any]) -> dict[str, Any]:
+    disposition = (
+        owner_result.get("target_disposition")
+        if isinstance(owner_result.get("target_disposition"), dict)
+        else {}
+    )
+    return {
+        "disposition_sha256": disposition.get("disposition_digest"),
+        "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
+    }
+
+
+def stage0_wording_projection(owner_result: dict[str, Any]) -> dict[str, Any]:
+    scope = owner_result.get("scope") if isinstance(owner_result.get("scope"), dict) else {}
+    scan = owner_result.get("scan") if isinstance(owner_result.get("scan"), dict) else {}
+    _, _, target_content_sha256 = change_request_review_scope_hashes(scope)
+    return {
+        "facts_sha256": owner_result.get("facts_sha256"),
+        "scope_sha256": scope.get("scope_sha256"),
+        "scan_sha256": scan.get("scan_sha256"),
+        "target_content_sha256": target_content_sha256,
+    }
+
+
+def stage0_readiness_target_projection(target: dict[str, Any]) -> dict[str, Any]:
+    common = {
+        "kind": target.get("kind"),
+        "repo": target.get("repo"),
+        "title_sha256": target.get("title_sha256"),
+        "body_sha256": target.get("body_sha256"),
+        "identity_sha256": target.get("identity_sha256"),
+        "content_sha256": target.get("content_sha256"),
+    }
+    if target.get("kind") == "existing_issue":
+        return {
+            **common,
+            "issue_number": target.get("issue_number"),
+            "url": target.get("url"),
+            "updated_at": target.get("updated_at"),
+        }
+    if target.get("kind") == "proposed_draft":
+        return {
+            **common,
+            "draft_id": target.get("draft_id"),
+            "source_request_sha256": target.get("source_request_sha256"),
+        }
+    return {
+        **common,
+        "caller_locator": target.get("caller_locator"),
+        "request_id": target.get("request_id"),
+        "source_request_sha256": target.get("source_request_sha256"),
+    }
+
+
+def stage0_readiness_target_payload(target: dict[str, Any]) -> dict[str, Any]:
+    kind = target.get("kind")
+    return {
+        "kind": kind,
+        "repo": target.get("repo"),
+        "issue_number": target.get("issue_number") if kind == "existing_issue" else None,
+        "url": target.get("url") if kind == "existing_issue" else None,
+        "updated_at": target.get("updated_at") if kind == "existing_issue" else None,
+        "draft_id": target.get("draft_id") if kind == "proposed_draft" else None,
+        "source_request_sha256": (
+            target.get("source_request_sha256")
+            if kind in {"proposed_draft", "standalone_request"}
+            else None
+        ),
+        "caller_locator": (
+            target.get("caller_locator") if kind == "standalone_request" else None
+        ),
+        "request_id": target.get("request_id") if kind == "standalone_request" else None,
+        "title_sha256": target.get("title_sha256"),
+        "body_sha256": target.get("body_sha256"),
+        "side_effect_free": kind != "existing_issue",
+        "identity_sha256": target.get("identity_sha256"),
+        "content_sha256": target.get("content_sha256"),
+    }
+
+
+def stage0_build_transition(
+    skill_id: str,
+    exit_id: str,
+    public_input: dict[str, Any],
+    owner_result: dict[str, Any] | None,
+    upstream: dict[str, Any] | None,
+    *,
+    synced: dict[str, Any] | None = None,
+    resolution: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    if skill_id == "guru-sync-base" and exit_id == "synced":
+        if not isinstance(synced, dict) or not isinstance(resolution, dict):
+            return None
+        digest = synced.get("post_sync_resolution_sha256")
+        return {
+            "schema_version": "1.0",
+            "transition_id": stage0_transition_id("base_current", digest),
+            "stage": "base_current",
+            "mode": public_input.get("mode"),
+            "repo_locator": public_input.get("repo_root") or ".",
+            "base": stage0_base_projection(resolution, synced),
+        }
+    if not isinstance(upstream, dict) or not isinstance(owner_result, dict):
+        return None
+    common = {
+        "schema_version": "1.0",
+        "mode": owner_result.get("mode") or upstream.get("mode"),
+        "repo_locator": upstream.get("repo_locator"),
+        "base": copy.deepcopy(upstream.get("base")),
+    }
+    if skill_id == "guru-discover-change-context" and exit_id == "context_ready":
+        result_identity = owner_result.get("result_identity") or {}
+        digest = result_identity.get("result_sha256")
+        return {
+            **common,
+            "transition_id": stage0_transition_id("context_current", digest),
+            "stage": "context_current",
+            "target_locator": stage0_target_locator(owner_result.get("live_change")),
+            "continuation_id": public_input.get("continuation_id"),
+            "context_result_sha256": digest,
+            "authority_content_sha256": (owner_result.get("live_change") or {}).get(
+                "body_sha256"
+            ),
+        }
+    if skill_id == "guru-clarify-requirements" and exit_id == "needs_context":
+        return {
+            **common,
+            "transition_id": stage0_transition_id(
+                "base_current",
+                (upstream.get("base") or {}).get(
+                    "post_sync_resolution_sha256"
+                ),
+            ),
+            "stage": "base_current",
+        }
+    if skill_id == "guru-clarify-requirements" and exit_id == "clear":
+        identity = owner_result.get("content_identity") or {}
+        digest = identity.get("result_sha256")
+        target = owner_result.get("review_target") or {}
+        return {
+            **common,
+            "transition_id": stage0_transition_id("clarity_current", digest),
+            "stage": "clarity_current",
+            "target_locator": stage0_target_locator(
+                target, upstream.get("target_locator")
+            ),
+            "continuation_id": upstream.get("continuation_id"),
+            "context_result_sha256": upstream.get("context_result_sha256"),
+            "clarity_result_sha256": digest,
+            "target_content_sha256": target.get("body_sha256"),
+            "clarity": stage0_clarity_projection(owner_result),
+            "target_disposition": stage0_target_disposition_projection(owner_result),
+        }
+    if skill_id == "guru-review-contract-wording" and exit_id == "pass":
+        digest = owner_result.get("facts_sha256")
+        wording_projection = stage0_wording_projection(owner_result)
+        return {
+            **common,
+            "transition_id": stage0_transition_id("wording_current", digest),
+            "stage": "wording_current",
+            "target_locator": upstream.get("target_locator"),
+            "continuation_id": upstream.get("continuation_id"),
+            "context_result_sha256": upstream.get("context_result_sha256"),
+            "clarity_result_sha256": upstream.get("clarity_result_sha256"),
+            "wording_facts_sha256": digest,
+            "target_content_sha256": wording_projection.get(
+                "target_content_sha256"
+            ),
+            "clarity": copy.deepcopy(upstream.get("clarity")),
+            "wording": wording_projection,
+            "target_disposition": copy.deepcopy(upstream.get("target_disposition")),
+        }
+    if skill_id == "guru-review-change-request" and exit_id == "ready":
+        target = owner_result.get("target") or {}
+        linkage = owner_result.get("evidence_linkage") or {}
+        digest = owner_result.get("facts_sha256")
+        scope_conclusion = (
+            (owner_result.get("semantic_review") or {}).get("scope_conclusion")
+            if isinstance(owner_result.get("semantic_review"), dict)
+            else {}
+        )
+        return {
+            **common,
+            "transition_id": stage0_transition_id("readiness_current", digest),
+            "stage": "readiness_current",
+            "target_locator": stage0_target_locator(
+                target, upstream.get("target_locator")
+            ),
+            "continuation_id": upstream.get("continuation_id"),
+            "clarity_result_sha256": upstream.get("clarity_result_sha256"),
+            "wording_facts_sha256": upstream.get("wording_facts_sha256"),
+            "readiness_facts_sha256": digest,
+            "readiness_linkage_sha256": linkage.get("linkage_sha256"),
+            "target_content_sha256": target.get("content_sha256"),
+            "clarity": copy.deepcopy(upstream.get("clarity")),
+            "wording": copy.deepcopy(upstream.get("wording")),
+            "readiness": {
+                "payload_sha256": context_digest(owner_result),
+                "facts_sha256": digest,
+                "content_sha256": target.get("content_sha256"),
+                "linkage_sha256": linkage.get("linkage_sha256"),
+            },
+            "target": stage0_readiness_target_projection(target),
+            "target_disposition": copy.deepcopy(upstream.get("target_disposition")),
+            "scope": {
+                "close_issues": copy.deepcopy(scope_conclusion.get("close_issues")),
+                "related_issues": copy.deepcopy(scope_conclusion.get("related_issues")),
+                "followup_issues": copy.deepcopy(scope_conclusion.get("followup_issues")),
+            },
+        }
+    if skill_id == "guru-review-change-request" and exit_id in {
+        "clarify_requirements",
+        "review_wording",
+    }:
+        target = owner_result.get("target") or {}
+        target_locator = stage0_target_locator(
+            target, upstream.get("target_locator")
+        )
+        target_content_sha256 = target.get("body_sha256")
+        if exit_id == "clarify_requirements":
+            return {
+                **common,
+                "transition_id": stage0_transition_id(
+                    "context_current",
+                    upstream.get("context_result_sha256"),
+                ),
+                "stage": "context_current",
+                "target_locator": target_locator,
+                "continuation_id": upstream.get("continuation_id"),
+                "context_result_sha256": upstream.get("context_result_sha256"),
+                "authority_content_sha256": target_content_sha256,
+            }
+        return {
+            **common,
+            "transition_id": stage0_transition_id(
+                "clarity_current",
+                upstream.get("clarity_result_sha256"),
+            ),
+            "stage": "clarity_current",
+            "target_locator": target_locator,
+            "continuation_id": upstream.get("continuation_id"),
+            "context_result_sha256": upstream.get("context_result_sha256"),
+            "clarity_result_sha256": upstream.get("clarity_result_sha256"),
+            "target_content_sha256": target_content_sha256,
+            "clarity": copy.deepcopy(upstream.get("clarity")),
+            "target_disposition": copy.deepcopy(
+                upstream.get("target_disposition")
+            ),
+        }
+    return None
+
+
+def stage0_explicit_base_branch(
+    transition: dict[str, Any] | None,
+) -> str | None:
+    base = (
+        transition.get("base")
+        if isinstance(transition, dict)
+        and isinstance(transition.get("base"), dict)
+        else {}
+    )
+    selected_base = base.get("selected_base")
+    if base.get("source") == "explicit" and isinstance(selected_base, str):
+        return selected_base
+    return None
+
+
 def stage0_build_output(
     skill_id: str,
     exit_id: str,
@@ -20150,8 +21805,12 @@ def stage0_build_output(
     owner_plan: dict[str, Any] | None,
     owner_locator: str | None,
     schema: dict[str, Any],
+    transition: dict[str, Any] | None = None,
+    upstream_transition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     values: dict[str, Any] = {"exit_id": exit_id, **public_input}
+    if transition is not None:
+        values["transition"] = copy.deepcopy(transition)
     if skill_id == "guru-discover-change-context" and owner_result is not None:
         if exit_id == "context_ready":
             values.update({
@@ -20164,9 +21823,11 @@ def stage0_build_output(
             values.update({
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_repo_root": ".",
-                "handoff_base_branch": (owner_result.get("repository") or {}).get("selected_base"),
                 "handoff_route": "repo_change",
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["handoff_base_branch"] = explicit_base
     elif skill_id == "guru-clarify-requirements" and owner_result is not None:
         target = owner_result.get("review_target")
         if exit_id == "clear":
@@ -20179,6 +21840,9 @@ def stage0_build_output(
                 "handoff_profile": "pre_task",
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_repo_locator": (target or {}).get("repo"),
+                "handoff_base_branch": (
+                    (upstream_transition or {}).get("base") or {}
+                ).get("selected_base"),
                 "handoff_continuation_id": public_input.get("continuation_id"),
             })
         elif exit_id in {"refresh_context", "retarget_context"}:
@@ -20187,6 +21851,9 @@ def stage0_build_output(
                 "handoff_repo_root": ".",
                 "handoff_route": "repo_change",
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["handoff_base_branch"] = explicit_base
         elif exit_id == "new_task":
             values.update({
                 "target_locator": stage0_target_locator(target, public_input.get("target_locator")),
@@ -20223,12 +21890,17 @@ def stage0_build_output(
                 "handoff_repo_root": ".",
                 "handoff_route": "repo_change",
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["handoff_base_branch"] = explicit_base
     elif skill_id == "guru-create-task-workspace" and owner_result is not None:
         if exit_id == "refresh_review":
             values.update({
                 "mode": owner_result.get("mode"),
-                "base_branch": (owner_plan or {}).get("base", {}).get("selected_base"),
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["base_branch"] = explicit_base
     elif skill_id == "guru-approve-task-plan" and owner_result is not None:
         if exit_id == "approved":
             values["task_ref"] = public_input.get("task_ref")
@@ -20385,16 +22057,28 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
     skill_id, package = stage0_invocation_identity()
     interface = stage0_public_interface(skill_id, package)
     root = stage0_repo_root(package)
+    invocation = (
+        stage0_call_local_invocation(root, skill_id, interface, args)
+        if skill_id in CURRENT_INTAKE_SKILL_IDS
+        else None
+    )
     public_input: dict[str, Any] = {}
     owner_result: dict[str, Any] | None = None
     owner_plan: dict[str, Any] | None = None
     owner_locator: str | None = None
+    input_transition: dict[str, Any] | None = None
+    output_transition: dict[str, Any] | None = None
     if skill_id == "guru-sync-base":
-        repo_root_value = args.repo_root or "."
-        route_value = args.route or "repo_change"
+        invocation_input = (
+            stage0_scalar_input(interface, invocation.get("public_input"))
+            if isinstance(invocation, dict)
+            else {}
+        )
+        repo_root_value = invocation_input.get("repo_root", ".") if invocation else (args.repo_root or ".")
+        route_value = invocation_input.get("route", "repo_change") if invocation else (args.route or "repo_change")
         required = {
-            "source_exit": args.source_exit,
-            "mode": args.mode,
+            "source_exit": invocation_input.get("source_exit") if invocation else args.source_exit,
+            "mode": invocation_input.get("mode") if invocation else args.mode,
         }
         if any(not isinstance(value, str) or not value for value in required.values()):
             raise stage0_invocation_error(
@@ -20403,14 +22087,16 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 "Provide --source-exit and --mode; repo root, base branch and repo-change route may be derived.",
                 "Stage 0 scalar public input is incomplete.",
             )
-        if args.mode not in {"workflow", "standalone"} or route_value not in {"repo_change", "original_request"}:
+        invocation_mode = required["mode"]
+        invocation_base = invocation_input.get("base_branch") if invocation else args.base_branch
+        if invocation_mode not in {"workflow", "standalone"} or route_value not in {"repo_change", "original_request"}:
             raise stage0_invocation_error(
                 "invalid_public_input",
                 "arguments.route",
                 "Use workflow|standalone mode and repo_change|original_request route.",
                 "Stage 0 scalar public input contains an unsupported enum.",
             )
-        if args.mode == "standalone" and route_value == "original_request":
+        if invocation_mode == "standalone" and route_value == "original_request":
             raise stage0_invocation_error(
                 "invalid_public_input",
                 "arguments.route",
@@ -20419,34 +22105,34 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             )
         resolved_repo = repo_root(Path(repo_root_value))
         public_input = {
-            "source_exit": args.source_exit,
-            "mode": args.mode,
+            "source_exit": required["source_exit"],
+            "mode": invocation_mode,
             "repo_root": repo_root_value,
-            "base_branch": args.base_branch,
+            "base_branch": invocation_base,
             "route": route_value,
         }
         try:
             if route_value == "original_request":
                 owner_result = cmd_check_base_sync(argparse.Namespace(
-                    root=str(resolved_repo), mode=args.mode, result_json=None,
+                    root=str(resolved_repo), mode=invocation_mode, result_json=None,
                     expected_resolution_sha256=None,
                     record_skipped="original-request-route",
                 ))
                 exit_id = "skipped"
-                public_input["continuation_id"] = f"{args.source_exit}-original-request"
+                public_input["continuation_id"] = f"{required['source_exit']}-original-request"
             else:
                 resolution = cmd_sync_base(argparse.Namespace(
-                    root=str(resolved_repo), mode=args.mode, resolve_only=True,
-                    execute=False, base=args.base_branch, remote="origin",
+                    root=str(resolved_repo), mode=invocation_mode, resolve_only=True,
+                    execute=False, base=invocation_base, remote="origin",
                     expected_resolution_sha256=None,
                 ))
                 synced = cmd_sync_base(argparse.Namespace(
-                    root=str(resolved_repo), mode=args.mode, resolve_only=False,
-                    execute=True, base=args.base_branch, remote="origin",
+                    root=str(resolved_repo), mode=invocation_mode, resolve_only=False,
+                    execute=True, base=invocation_base, remote="origin",
                     expected_resolution_sha256=resolution["resolution_sha256"],
                 ))
                 owner_result = cmd_check_base_sync(argparse.Namespace(
-                    root=str(resolved_repo), mode=args.mode,
+                    root=str(resolved_repo), mode=invocation_mode,
                     result_json=synced,
                     expected_resolution_sha256=resolution["resolution_sha256"],
                     record_skipped=None,
@@ -20454,15 +22140,39 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 exit_id = "synced"
                 public_input.update({
                     "handoff_profile": "pre_task",
-                    "handoff_mode": args.mode,
+                    "handoff_mode": invocation_mode,
                     "handoff_repo_locator": os.path.relpath(resolved_repo, resolved_repo),
                     "handoff_base_branch": resolution["selected_base"],
-                    "handoff_continuation_id": f"{args.source_exit}-base-current",
+                    "handoff_continuation_id": f"{required['source_exit']}-base-current",
                 })
+                output_transition = stage0_build_transition(
+                    skill_id,
+                    exit_id,
+                    public_input,
+                    owner_result,
+                    None,
+                    synced=synced,
+                    resolution=resolution,
+                )
         except WorkflowError:
             exit_id = "blocked"
     else:
-        public_input = stage0_structured_input(skill_id, root, package, interface, args.input)
+        if invocation is not None:
+            public_input = stage0_structured_input(
+                skill_id,
+                root,
+                package,
+                interface,
+                None,
+                invocation.get("public_input"),
+            )
+            input_transition = invocation.get("transition")
+            args.invocation_owner_result = invocation.get("owner_result")
+            args.invocation_owner_context = invocation.get("owner_context")
+            args.invocation_transition = input_transition
+            args.invocation_owner_plan = invocation.get("owner_plan")
+        else:
+            public_input = stage0_structured_input(skill_id, root, package, interface, args.input)
         if skill_id == FINALIZE_TASK_SKILL_ID:
             try:
                 owner_result, owner_path = finalization_gate_input(
@@ -20559,6 +22269,49 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             owner_result, owner_plan = stage0_owner_result(
                 skill_id, root, args, public_input
             )
+        candidate_exit = str(
+            (owner_result.get("route") or {}).get("typed_exit")
+            if skill_id == TASK_PUBLICATION_SKILL_ID
+            else owner_result.get("typed_exit") or ""
+        )
+        if skill_id == "guru-discover-change-context" and input_transition is not None:
+            try:
+                input_transition = stage0_validate_transition(
+                    root,
+                    skill_id,
+                    input_transition,
+                    allow_dirty=bool(getattr(args, "active_task", None)),
+                )
+            except WorkflowError as exc:
+                if not (
+                    candidate_exit == "refresh_base"
+                    and exc.payload.get("code") == "transition_stale"
+                ):
+                    raise
+        if skill_id in CURRENT_INTAKE_SKILL_IDS and input_transition is not None:
+            transition_errors = stage0_transition_owner_errors(
+                skill_id,
+                public_input,
+                input_transition,
+                owner_result,
+                owner_plan,
+            )
+            if (
+                skill_id == "guru-clarify-requirements"
+                and candidate_exit == "refresh_context"
+            ):
+                transition_errors = [
+                    item
+                    for item in transition_errors
+                    if item != "transition_clarity_authority_content_mismatch"
+                ]
+            if transition_errors:
+                raise stage0_invocation_error(
+                    "owner_result_input_mismatch",
+                    "invocation.transition",
+                    "Rerun the current owner against the producer's exact actual stdout transition.",
+                    "Stage 0 transition does not match the current owner result or plan.",
+                )
         if (
             skill_id not in {
                 "guru-create-task-commit",
@@ -20592,12 +22345,20 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 "Rerun the wording owner for the exact fixed public profile.",
                 "Stage 0 wording public input and owner result profiles do not match.",
             )
-        exit_id = str(
-            (owner_result.get("route") or {}).get("typed_exit")
-            if skill_id == TASK_PUBLICATION_SKILL_ID
-            else owner_result.get("typed_exit") or ""
-        )
-        if skill_id not in {"guru-create-task-commit", "guru-discover-change-context"}:
+        exit_id = candidate_exit
+        if skill_id in CURRENT_INTAKE_SKILL_IDS:
+            output_transition = stage0_build_transition(
+                skill_id,
+                exit_id,
+                public_input,
+                owner_result,
+                input_transition,
+            )
+        if (
+            invocation is None
+            and skill_id
+            not in {"guru-create-task-commit", "guru-discover-change-context"}
+        ):
             owner_locator = repo_relative(
                 root,
                 stage0_owner_path(root, args.owner_result, "arguments.owner_result"),
@@ -20606,7 +22367,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
     output_schema, _ = stage0_output_contract(skill_id, package, interface, exit_id)
     payload = stage0_build_output(
         skill_id, exit_id, public_input, owner_result, owner_plan,
-        owner_locator, output_schema,
+        owner_locator, output_schema, output_transition, input_transition,
     )
 
     validation_errors = skill_json_schema_validation_errors(
@@ -20785,11 +22546,11 @@ def build_skill_contract_discovery(
         "skill_id": skill_id,
         "interface_schema_id": interface_schema_id,
     }
-    if interface_schema_id != "guru-team-skill-interface-1.3":
+    if interface_schema_id != CURRENT_SKILL_INTERFACE_SCHEMA_ID:
         raise skill_contract_error(
             "version_state_mismatch",
             f"skills.{skill_id}.interface_schema_id",
-            "Use the current Interface 1.3 contract.",
+            f"Use the current Interface {CURRENT_SKILL_INTERFACE_VERSION} contract.",
             "Skill contract identity is inconsistent with the current registry.",
         )
     contracts = interface.get("public_contracts")
@@ -20797,7 +22558,7 @@ def build_skill_contract_discovery(
         raise skill_contract_error(
             "public_contracts_missing",
             f"skills.{skill_id}.public_contracts",
-            "Declare all six interface 1.3 public/private contract sections.",
+            f"Declare all six Interface {CURRENT_SKILL_INTERFACE_VERSION} public/private contract sections.",
             "Minimal handoff Skill has no public contracts.",
         )
     return {
@@ -20854,10 +22615,10 @@ def skill_eval_package_context(skills_root: Path, skill_id: str) -> tuple[Path, 
             "Skill eval discovery could not find one active registry entry.",
         )
     entry = matches[0]
-    if entry.get("interface_schema_id") != "guru-team-skill-interface-1.3":
+    if entry.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID:
         raise skill_eval_error(
             "evals_unsupported", f"skills.{skill_id}.interface_schema_id",
-            "Use the current Interface 1.3 Skill contract before running behavior evals.",
+            f"Use the current Interface {CURRENT_SKILL_INTERFACE_VERSION} Skill contract before running behavior evals.",
             "This Skill does not publish the current eval contract.",
         )
     package_relative = skill_safe_relative(entry.get("package"))
@@ -20873,7 +22634,7 @@ def skill_eval_package_context(skills_root: Path, skill_id: str) -> tuple[Path, 
     if errors or not isinstance(interface, dict) or interface.get("id") != skill_id:
         raise skill_eval_error(
             "eval_contract_asset_invalid", f"skills.{skill_id}.interface",
-            "Restore the exact readable Interface 1.3 package contract.",
+            f"Restore the exact readable Interface {CURRENT_SKILL_INTERFACE_VERSION} package contract.",
             "Skill eval discovery could not load the selected interface.",
         )
     return package_root, interface, entry
@@ -21265,9 +23026,9 @@ def skill_eval_side_validation_context(
 ) -> tuple[dict[str, Any], set[str], dict[str, dict[str, Any]]]:
     errors: list[str] = []
     interface_schema = skill_read_contract_schema(
-        skills_root / SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.3"]["schema_path"],
-        "Skill Interface 1.3 schema",
-        "interface-1.3",
+        skills_root / SKILL_INTERFACE_SCHEMAS[CURRENT_SKILL_INTERFACE_SCHEMA_ID]["schema_path"],
+        f"Skill Interface {CURRENT_SKILL_INTERFACE_VERSION} schema",
+        f"interface-{CURRENT_SKILL_INTERFACE_VERSION}",
         errors,
     )
     registry = skill_read_json(skills_root / "registry.json", "skill registry", errors)
@@ -21327,13 +23088,13 @@ def skill_eval_discover_side(
         interface = skill_read_json(interface_path, f"{side} Interface", errors)
     if isinstance(interface, dict):
         errors.extend(skill_json_schema_validation_errors(interface, interface_schema, f"{side} Interface"))
-        if interface.get("id") != skill_id or interface.get("schema_version") != "1.3":
-            errors.append(f"{side} Interface identity does not match the selected Interface 1.3 Skill")
+        if interface.get("id") != skill_id or interface.get("schema_version") != CURRENT_SKILL_INTERFACE_VERSION:
+            errors.append(f"{side} Interface identity does not match the selected Interface {CURRENT_SKILL_INTERFACE_VERSION} Skill")
     if errors or not isinstance(interface, dict):
         raise skill_eval_error(
             "eval_side_interface_invalid",
             f"comparison.{side}.interface",
-            "Restore the exact closed Interface 1.3 contract for this comparison side.",
+            f"Restore the exact closed Interface {CURRENT_SKILL_INTERFACE_VERSION} contract for this comparison side.",
             "Skill eval comparison side failed Interface validation.",
         )
 
@@ -21391,7 +23152,7 @@ def skill_eval_discover_side(
         "side": side,
         "package_root": package_root,
         "interface": {
-            "interface_schema_id": "guru-team-skill-interface-1.3",
+            "interface_schema_id": CURRENT_SKILL_INTERFACE_SCHEMA_ID,
             "interface_version": interface["schema_version"],
             "public_invocation": invocation,
             "output_schemas": {
@@ -21569,14 +23330,14 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
             break
     evidence_path = run_root / f"{args.skill}-{args.adapter}-run.json"
     result = {
-        "schema_version": "1.0", "skill_id": args.skill,
-        "interface_schema_id": "guru-team-skill-interface-1.3",
+        "schema_version": "2.0", "skill_id": args.skill,
+        "interface_schema_id": CURRENT_SKILL_INTERFACE_SCHEMA_ID,
         "corpus_schema_id": SKILL_EVAL_SCHEMA_ID, "corpus_version": SKILL_EVAL_SCHEMA_VERSION,
         "adapter": args.adapter, "platform": args.adapter, "status": status,
         "cases": case_results, "evidence_path": str(evidence_path),
     }
     evidence_errors: list[str] = []
-    evidence_schema = skill_read_schema(skills_root / "schemas/skill-eval-run.schema.json", "Skill eval run schema", evidence_errors)
+    evidence_schema = skill_read_schema(skills_root / "schemas/skill-eval-run-2.0.schema.json", "Skill eval run schema", evidence_errors)
     if isinstance(evidence_schema, dict):
         evidence_errors.extend(skill_json_schema_validation_errors(result, evidence_schema, "Skill eval run evidence"))
     if evidence_errors:
@@ -31573,13 +33334,7 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
         if isinstance(submitted_identity, dict)
         else None
     )
-    submitted_structural = context_structural_errors(root, payload)
-    if submitted_structural:
-        raise WorkflowError(
-            "Context discovery owner result validation failed.",
-            exit_code=2,
-            payload={"error_codes": context_sort(submitted_structural)},
-        )
+    payload["result_identity"] = context_result_identity(payload)
     if (
         args.expected_result_sha256
         and args.expected_result_sha256 != submitted_result_sha256
@@ -31589,7 +33344,6 @@ def cmd_record_context_discovery(args: argparse.Namespace) -> dict[str, Any]:
             exit_code=2,
             payload={"error_codes": ["expected_result_mismatch"]},
         )
-    payload["result_identity"] = context_result_identity(payload)
     structural = context_structural_errors(root, payload)
     if structural:
         raise WorkflowError(
@@ -31730,23 +33484,31 @@ def requirements_clarification_payload_from_args(
     root: Path,
     args: argparse.Namespace,
 ) -> tuple[dict[str, Any], Path | None]:
+    direct_payload = getattr(args, "payload", None)
     input_value = getattr(args, "input", None)
-    if not input_value:
-        raise WorkflowError("requirements clarification requires --input.", exit_code=2)
-    if input_value == "-":
-        raw = sys.stdin.read()
+    if isinstance(direct_payload, dict):
+        payload = copy.deepcopy(direct_payload)
+        input_value = None
     else:
-        input_path = Path(input_value)
-        if not input_path.is_absolute():
-            input_path = root / input_path
+        payload = None
+    if not input_value:
+        if payload is None:
+            raise WorkflowError("requirements clarification requires --input.", exit_code=2)
+    else:
+        if input_value == "-":
+            raw = sys.stdin.read()
+        else:
+            input_path = Path(input_value)
+            if not input_path.is_absolute():
+                input_path = root / input_path
+            try:
+                raw = input_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as exc:
+                raise WorkflowError("requirements clarification input is unreadable.", exit_code=2) from exc
         try:
-            raw = input_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeError) as exc:
-            raise WorkflowError("requirements clarification input is unreadable.", exit_code=2) from exc
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise WorkflowError("requirements clarification input is invalid JSON.", exit_code=2) from exc
+            payload = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise WorkflowError("requirements clarification input is invalid JSON.", exit_code=2) from exc
     if not isinstance(payload, dict):
         raise WorkflowError("requirements clarification input root must be an object.", exit_code=2)
 
@@ -33996,6 +35758,69 @@ def change_request_review_prerequisite_projections(
     return projections
 
 
+def change_request_review_transition_prerequisites(
+    transition: dict[str, Any],
+    target: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    clarity = transition.get("clarity")
+    wording = transition.get("wording")
+    if not isinstance(clarity, dict) or not isinstance(wording, dict):
+        raise WorkflowError(
+            "Change request transition is missing current prerequisite projections.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_transition_prerequisites_missing"]},
+        )
+    projections = {
+        "clarity": {
+            "status": "current",
+            "schema_id": "guru-requirements-clarification-2.0",
+            "typed_exit": "clear",
+            "payload_sha256": context_digest({"stage": "clarity_current", **clarity}),
+            "facts_sha256": clarity.get("facts_sha256"),
+            "target_sha256": clarity.get("target_sha256"),
+            "disposition_sha256": clarity.get("disposition_sha256"),
+            "content_sha256": clarity.get("content_sha256"),
+            "scope_sha256": clarity.get("scope_sha256"),
+            "error_codes": [],
+        },
+        "wording": {
+            "status": "current",
+            "schema_id": "guru-contract-wording-review-1.0",
+            "profile": "change_request",
+            "typed_exit": "pass",
+            "payload_sha256": context_digest({"stage": "wording_current", **wording}),
+            "facts_sha256": wording.get("facts_sha256"),
+            "scope_sha256": wording.get("scope_sha256"),
+            "scan_sha256": wording.get("scan_sha256"),
+            "target_content_sha256": wording.get("target_content_sha256"),
+            "error_codes": [],
+        },
+    }
+    errors: list[str] = []
+    if transition.get("target_content_sha256") != target.get("content_sha256"):
+        errors.append("change_request_review_transition_target_content_mismatch")
+    if wording.get("target_content_sha256") != target.get("content_sha256"):
+        errors.append("change_request_review_transition_wording_content_mismatch")
+    if transition.get("clarity_result_sha256") != clarity.get("facts_sha256"):
+        errors.append("change_request_review_transition_clarity_identity_mismatch")
+    if transition.get("wording_facts_sha256") != wording.get("facts_sha256"):
+        errors.append("change_request_review_transition_wording_identity_mismatch")
+    if any(
+        change_request_review_sha256(value) is None
+        for projection in projections.values()
+        for key, value in projection.items()
+        if key.endswith("_sha256")
+    ):
+        errors.append("change_request_review_transition_prerequisite_digest_invalid")
+    if errors:
+        raise WorkflowError(
+            "Change request transition prerequisite linkage is invalid.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return projections
+
+
 def change_request_review_linkage(
     target: dict[str, Any],
     prerequisites: dict[str, dict[str, Any]],
@@ -34474,21 +36299,37 @@ def task_workspace_prerequisite_errors(
 def task_workspace_validate_prerequisites(
     root: Path,
     plan: dict[str, Any],
+    direct_payloads: dict[str, Any] | None = None,
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
     authored = plan.get("prerequisites") if isinstance(plan.get("prerequisites"), dict) else {}
     payloads: dict[str, dict[str, Any]] = {}
     errors: list[str] = []
+    if direct_payloads is not None and set(direct_payloads) != set(
+        TASK_WORKSPACE_PREREQUISITES
+    ):
+        return {}, ["task_workspace_call_local_prerequisite_set_invalid"]
     for key in TASK_WORKSPACE_PREREQUISITES:
         row = authored.get(key) if isinstance(authored.get(key), dict) else {}
         try:
-            path, payload, payload_sha = task_workspace_read_payload(
-                root,
-                row.get("artifact"),
-                f"task workspace {key} prerequisite",
-            )
+            if direct_payloads is None:
+                path, payload, payload_sha = task_workspace_read_payload(
+                    root,
+                    row.get("artifact"),
+                    f"task workspace {key} prerequisite",
+                )
+                artifact = str(row.get("artifact") or path)
+            else:
+                payload = direct_payloads.get(key)
+                if not isinstance(payload, dict):
+                    raise WorkflowError(
+                        f"Task workspace {key} call-local prerequisite must be an object.",
+                        exit_code=2,
+                    )
+                artifact = f"call-local:{key}"
+                payload_sha = context_digest(payload)
             projection = task_workspace_prerequisite_projection(
                 key,
-                str(row.get("artifact") or path),
+                artifact,
                 payload,
                 payload_sha,
             )
@@ -34835,17 +36676,231 @@ def task_workspace_plan_semantic_errors(
 def task_workspace_validate_plan(
     root: Path,
     plan: dict[str, Any],
+    direct_payloads: dict[str, Any] | None = None,
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
     errors = skill_json_schema_validation_errors(
         plan,
         task_workspace_schema(root, "plan"),
         "task workspace plan",
     )
-    payloads, prerequisite_errors = task_workspace_validate_prerequisites(root, plan)
+    payloads, prerequisite_errors = task_workspace_validate_prerequisites(
+        root,
+        plan,
+        direct_payloads,
+    )
     errors.extend(prerequisite_errors)
     if not errors:
         errors.extend(task_workspace_plan_semantic_errors(root, plan, payloads))
     return payloads, context_sort(errors)
+
+
+def task_workspace_transition_payloads(
+    root: Path,
+    transition: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    compact_target = (
+        transition.get("target") if isinstance(transition.get("target"), dict) else {}
+    )
+    target = stage0_readiness_target_payload(compact_target)
+    clarity_projection = (
+        transition.get("clarity") if isinstance(transition.get("clarity"), dict) else {}
+    )
+    wording_projection = (
+        transition.get("wording") if isinstance(transition.get("wording"), dict) else {}
+    )
+    disposition = (
+        transition.get("target_disposition")
+        if isinstance(transition.get("target_disposition"), dict)
+        else {}
+    )
+    scope = transition.get("scope") if isinstance(transition.get("scope"), dict) else {}
+    target_kind = target.get("kind")
+    clarity_kind = "issue" if target_kind == "existing_issue" else "draft"
+    invocation_kind = {
+        "existing_issue": "initial_issue",
+        "proposed_draft": "proposed_draft",
+        "standalone_request": "standalone_review",
+    }.get(target_kind)
+    clarity = {
+        "schema_version": "2.0",
+        "skill_id": "guru-clarify-requirements",
+        "mode": transition.get("mode"),
+        "typed_exit": "clear",
+        "invocation_context": {
+            "kind": invocation_kind,
+            "caller": target.get("caller_locator"),
+            "task_locator": None,
+            "resume_target": "guru-review-contract-wording",
+        },
+        "review_target": {
+            "kind": clarity_kind,
+            "repo": target.get("repo"),
+            "issue_number": target.get("issue_number"),
+            "url": target.get("url"),
+            "state": "open" if target_kind == "existing_issue" else "draft",
+            "updated_at": target.get("updated_at"),
+            "body_sha256": target.get("body_sha256"),
+            "facts_sha256": clarity_projection.get("target_sha256"),
+        },
+        "target_disposition": {
+            "disposition_digest": disposition.get("disposition_sha256"),
+            "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
+        },
+        "content_identity": {
+            "result_sha256": clarity_projection.get("facts_sha256"),
+            "target_sha256": clarity_projection.get("target_sha256"),
+            "disposition_sha256": clarity_projection.get("disposition_sha256"),
+            "content_sha256": clarity_projection.get("content_sha256"),
+            "context_sha256": clarity_projection.get("content_sha256"),
+            "scope_sha256": clarity_projection.get("scope_sha256"),
+        },
+    }
+    wording = {
+        "schema_version": "1.0",
+        "skill_id": "guru-review-contract-wording",
+        "profile": "change_request",
+        "mode": transition.get("mode"),
+        "typed_exit": "pass",
+        "facts_sha256": wording_projection.get("facts_sha256"),
+        "scope": {"scope_sha256": wording_projection.get("scope_sha256")},
+        "scan": {"scan_sha256": wording_projection.get("scan_sha256")},
+    }
+    prerequisites = change_request_review_transition_prerequisites(
+        {
+            **transition,
+            "clarity": clarity_projection,
+            "wording": wording_projection,
+        },
+        target,
+    )
+    prerequisites["clarity"]["payload_sha256"] = context_digest(clarity)
+    prerequisites["wording"]["payload_sha256"] = context_digest(wording)
+    linkage = change_request_review_linkage(target, prerequisites)
+    readiness_scope = {
+        "close_issues": copy.deepcopy(scope.get("close_issues")),
+        "related_issues": copy.deepcopy(scope.get("related_issues")),
+        "followup_issues": copy.deepcopy(scope.get("followup_issues")),
+    }
+    readiness = {
+        "schema_version": CHANGE_REQUEST_REVIEW_SCHEMA_VERSION,
+        "skill_id": CHANGE_REQUEST_REVIEW_SKILL_ID,
+        "mode": transition.get("mode"),
+        "target": copy.deepcopy(target),
+        "prerequisites": prerequisites,
+        "evidence_linkage": linkage,
+        "semantic_review": {
+            "scope_conclusion": readiness_scope,
+            "ai_review_gate": {
+                "status": "passed",
+                "reviewed_linkage_sha256": linkage["linkage_sha256"],
+                "scope_conclusion_sha256": context_digest(readiness_scope),
+            },
+        },
+        "typed_exit": "ready",
+        "consumer": copy.deepcopy(CHANGE_REQUEST_REVIEW_CONSUMERS["ready"]),
+        "facts_sha256": transition.get("readiness_facts_sha256"),
+    }
+    expected_readiness = transition.get("readiness")
+    if not isinstance(expected_readiness, dict) or any(
+        expected_readiness.get(field) != value
+        for field, value in (
+            ("facts_sha256", readiness["facts_sha256"]),
+            ("content_sha256", target.get("content_sha256")),
+            ("linkage_sha256", linkage.get("linkage_sha256")),
+        )
+    ):
+        raise WorkflowError(
+            "Task workspace readiness transition is internally inconsistent.",
+            exit_code=2,
+        )
+    base = stage0_context_base_evidence(
+        root, transition, validate_live=False
+    )["sync_result"]
+    return {
+        "base": base,
+        "clarity": clarity,
+        "wording": wording,
+        "readiness": readiness,
+    }
+
+
+def task_workspace_validate_transition_plan(
+    root: Path,
+    plan: dict[str, Any],
+    transition: dict[str, Any],
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    errors = skill_json_schema_validation_errors(
+        plan,
+        task_workspace_schema(root, "plan"),
+        "task workspace plan",
+    )
+    try:
+        checked_transition = stage0_validate_transition(
+            root,
+            TASK_WORKSPACE_SKILL_ID,
+            transition,
+            public_input={"mode": plan.get("mode")},
+        )
+        payloads = task_workspace_transition_payloads(root, checked_transition)
+    except WorkflowError as exc:
+        return {}, [
+            f"task_workspace_transition_invalid:{exc.payload.get('code') or exc}"
+        ]
+    expected_rows = {
+        key: task_workspace_prerequisite_projection(
+            key,
+            f"call-local:{key}",
+            payload,
+            context_digest(payload),
+        )
+        for key, payload in payloads.items()
+    }
+    if plan.get("prerequisites") != expected_rows:
+        errors.append("task_workspace_transition_prerequisite_projection_mismatch")
+    if not errors:
+        errors.extend(task_workspace_plan_semantic_errors(root, plan, payloads))
+    return payloads, context_sort(errors)
+
+
+def task_workspace_call_local_invocation(
+    args: argparse.Namespace,
+    command: str,
+) -> dict[str, Any] | None:
+    invocation = str(getattr(args, "invocation", None) or "").strip()
+    if not invocation:
+        return None
+    locator_values = (
+        getattr(args, "input", None),
+        getattr(args, "plan_input", None),
+    )
+    if invocation != "-" or any(value is not None for value in locator_values):
+        raise WorkflowError(
+            "Task workspace call-local invocation requires exactly --invocation - without locator inputs.",
+            exit_code=2,
+        )
+    try:
+        payload = json.loads(sys.stdin.read())
+    except json.JSONDecodeError as exc:
+        raise WorkflowError(
+            "Task workspace call-local invocation is invalid JSON.",
+            exit_code=2,
+        ) from exc
+    expected = {"schema_version", "plan", "transition"}
+    if command == "check":
+        expected.add("result")
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != expected
+        or payload.get("schema_version") != "1.0"
+        or not isinstance(payload.get("plan"), dict)
+        or not isinstance(payload.get("transition"), dict)
+        or (command == "check" and not isinstance(payload.get("result"), dict))
+    ):
+        raise WorkflowError(
+            "Task workspace call-local invocation has unknown, missing, or invalid fields.",
+            exit_code=2,
+        )
+    return copy.deepcopy(payload)
 
 
 def task_workspace_snapshot(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
@@ -34864,10 +36919,23 @@ def task_workspace_snapshot(root: Path, plan: dict[str, Any]) -> dict[str, Any]:
 
 def cmd_record_task_workspace_plan(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    input_path = task_workspace_input_path(root, args.input, "task workspace authored plan")
-    plan = read_json(input_path)
+    invocation = task_workspace_call_local_invocation(args, "record")
+    if invocation is None:
+        input_path = task_workspace_input_path(root, args.input, "task workspace authored plan")
+        plan = read_json(input_path)
+        direct_payloads = None
+        direct_transition = None
+    else:
+        plan = invocation["plan"]
+        direct_transition = invocation["transition"]
+        direct_payloads = None
     before = task_workspace_snapshot(root, plan)
-    _, errors = task_workspace_validate_plan(root, plan)
+    if direct_transition is None:
+        _, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+    else:
+        _, errors = task_workspace_validate_transition_plan(
+            root, plan, direct_transition
+        )
     after = task_workspace_snapshot(root, plan)
     if before != after:
         errors.append("task_workspace_plan_recorder_wrote_repository_state")
@@ -35236,42 +37304,76 @@ def task_workspace_refresh_base_before_mutation(
             payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_resolution_stale"},
         )
 
-    fresh = execute_base_sync(root, resolution)
-    live_errors = validate_live_base_sync_result(root, fresh)
+    live_errors = validate_live_base_sync_result(root, base_result)
     if live_errors:
         raise WorkflowError(
-            "Task workspace mutation-time base sync did not validate.",
+            "Task workspace reviewed base no longer validates locally.",
             exit_code=2,
             payload={"typed_exit": "refresh_review", "error_codes": context_sort(live_errors)},
         )
-    fresh_projection = {
-        "selected_base": fresh["resolution"]["selected_base"],
-        "remote": fresh["resolution"]["remote"],
-        "base_ref": fresh["git"]["remote_ref"],
-        "decision_head": fresh["decision_checkout"]["head_after"],
-        "local_head": fresh["git"]["local_head_after"],
-        "remote_head": fresh["git"]["remote_head_after"],
-        "post_sync_resolution_sha256": fresh["post_sync_resolution_sha256"],
+    reviewed_projection = {
+        "selected_base": base_result["resolution"]["selected_base"],
+        "remote": base_result["resolution"]["remote"],
+        "base_ref": base_result["git"]["remote_ref"],
+        "decision_head": base_result["decision_checkout"]["head_after"],
+        "local_head": base_result["git"]["local_head_after"],
+        "remote_head": base_result["git"]["remote_head_after"],
+        "post_sync_resolution_sha256": base_result["post_sync_resolution_sha256"],
     }
-    reviewed_projection = {key: reviewed.get(key) for key in fresh_projection}
-    if fresh_projection != reviewed_projection:
+    if reviewed_projection != {key: reviewed.get(key) for key in reviewed_projection}:
         raise WorkflowError(
-            "Task workspace base advanced after review; refresh the complete Intake chain.",
+            "Task workspace reviewed base identity changed before mutation.",
             exit_code=2,
-            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_post_sync_identity_changed"},
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_identity_changed"},
         )
-    return fresh
+
+    base = str(resolution["selected_base"])
+    remote = str(resolution["remote"])
+    remote_proc = run(
+        ["git", "ls-remote", "--heads", remote, base],
+        cwd=root,
+        check=False,
+    )
+    rows = [line.split() for line in remote_proc.stdout.splitlines() if line.strip()]
+    if remote_proc.returncode != 0 or len(rows) != 1 or any(
+        len(row) != 2
+        or re.fullmatch(r"[0-9a-f]{40}", row[0]) is None
+        or row[1] != f"refs/heads/{base}"
+        for row in rows
+    ):
+        raise WorkflowError(
+            "Task workspace could not read one exact remote base identity.",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_remote_identity_unreadable"},
+        )
+    if rows[0][0] != reviewed_projection["remote_head"]:
+        raise WorkflowError(
+            "Task workspace base advanced after review; refresh the complete Intake chain through guru-sync-base.",
+            exit_code=2,
+            payload={"typed_exit": "refresh_review", "error_code": "task_workspace_base_remote_identity_changed"},
+        )
+    return copy.deepcopy(base_result)
 
 
 def task_workspace_require_execution_boundary(
     root: Path,
     plan: dict[str, Any],
     workspace: Path | None = None,
+    direct_transition: dict[str, Any] | None = None,
 ) -> None:
-    if workspace is not None and workspace.resolve() == root.resolve():
+    if (
+        direct_transition is None
+        and workspace is not None
+        and workspace.resolve() == root.resolve()
+    ):
         errors = task_workspace_static_plan_errors(root, plan)
     else:
-        _, errors = task_workspace_validate_plan(root, plan)
+        if direct_transition is None:
+            _, errors = task_workspace_validate_plan(root, plan)
+        else:
+            _, errors = task_workspace_validate_transition_plan(
+                root, plan, direct_transition
+            )
     if run(["git", "rev-parse", "HEAD"], cwd=root, check=False).stdout.strip() != plan["base"]["decision_head"]:
         errors.append("task_workspace_source_head_stale")
     if workspace is not None:
@@ -35441,6 +37543,7 @@ def task_workspace_created_workspace_result(
     root: Path,
     plan: dict[str, Any],
     payloads: dict[str, dict[str, Any]],
+    direct_transition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     target = plan["target"]
     live = task_workspace_live_issue(root, target)
@@ -35449,14 +37552,14 @@ def task_workspace_created_workspace_result(
         raise WorkflowError("Task workspace source HEAD drifted from the reviewed base.", exit_code=2)
 
     workspace, task_dir, config = task_workspace_prepare_objects(root, plan)
-    task_workspace_require_execution_boundary(root, plan, workspace)
+    task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
     live = task_workspace_live_issue(root, target)
     task_workspace_validate_assignee(root, plan, live)
     naming = plan["naming"]
     assignee = plan["assignee"]["login"]
 
     if naming["task_disposition"] == "create_new":
-        task_workspace_require_execution_boundary(root, plan, workspace)
+        task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
         proc = task_workspace_run_official_task_create(
             workspace,
             naming["task_title"],
@@ -35491,12 +37594,12 @@ def task_workspace_created_workspace_result(
         if task_data.get(key) != value:
             raise WorkflowError(f"Task workspace task identity mismatch at {key}.", exit_code=2)
 
-    task_workspace_require_execution_boundary(root, plan, workspace)
+    task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
     intended_json = task_workspace_intended_artifacts(root, workspace, task_dir, plan, live)
     for name in TASK_WORKSPACE_ARTIFACT_NAMES:
         task_workspace_write_exact(task_dir / name, intended_json[name], name)
 
-    task_workspace_require_execution_boundary(root, plan, workspace)
+    task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
     mapping_payload = {
         "workspace_slug": naming["workspace_slug"],
         "branch_name": naming["branch_name"],
@@ -35556,8 +37659,21 @@ def task_workspace_created_workspace_result(
 
 def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    plan = read_json(task_workspace_input_path(root, args.input, "task workspace plan"))
-    payloads, errors = task_workspace_validate_plan(root, plan)
+    invocation = task_workspace_call_local_invocation(args, "execute")
+    if invocation is None:
+        plan = read_json(task_workspace_input_path(root, args.input, "task workspace plan"))
+        direct_payloads = None
+        direct_transition = None
+    else:
+        plan = invocation["plan"]
+        direct_payloads = None
+        direct_transition = invocation["transition"]
+    if direct_transition is None:
+        payloads, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+    else:
+        payloads, errors = task_workspace_validate_transition_plan(
+            root, plan, direct_transition
+        )
     if errors:
         raise WorkflowError(
             "Task workspace plan is stale or invalid before execution.",
@@ -35594,7 +37710,12 @@ def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
     if plan["invocation"]["action_scope"] == "github_issue_mutation":
         result = task_workspace_created_issue_result(root, plan)
     else:
-        result = task_workspace_created_workspace_result(root, plan, payloads)
+        result = task_workspace_created_workspace_result(
+            root,
+            plan,
+            payloads,
+            direct_transition,
+        )
     schema_errors = skill_json_schema_validation_errors(
         result,
         task_workspace_schema(root, "result"),
@@ -35822,9 +37943,23 @@ def task_workspace_result_check_errors(
 
 def cmd_check_task_workspace_result(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
-    plan = read_json(task_workspace_input_path(root, args.plan_input, "task workspace plan"))
-    result = read_json(task_workspace_input_path(root, args.input, "task workspace result"))
-    payloads, errors = task_workspace_validate_plan(root, plan)
+    invocation = task_workspace_call_local_invocation(args, "check")
+    if invocation is None:
+        plan = read_json(task_workspace_input_path(root, args.plan_input, "task workspace plan"))
+        result = read_json(task_workspace_input_path(root, args.input, "task workspace result"))
+        direct_payloads = None
+        direct_transition = None
+    else:
+        plan = invocation["plan"]
+        result = invocation["result"]
+        direct_payloads = None
+        direct_transition = invocation["transition"]
+    if direct_transition is None:
+        payloads, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+    else:
+        payloads, errors = task_workspace_validate_transition_plan(
+            root, plan, direct_transition
+        )
     if not errors:
         errors.extend(task_workspace_result_check_errors(root, plan, result, payloads))
     if errors:
@@ -36444,12 +38579,14 @@ def build_parser() -> argparse.ArgumentParser:
     task_workspace_plan = sub.add_parser("record-task-workspace-plan")
     task_workspace_plan.add_argument("--root")
     task_workspace_plan.add_argument("--json", action="store_true")
-    task_workspace_plan.add_argument("--input", required=True)
+    task_workspace_plan.add_argument("--input")
+    task_workspace_plan.add_argument("--invocation")
 
     task_workspace_create = sub.add_parser("create-task-workspace")
     task_workspace_create.add_argument("--root")
     task_workspace_create.add_argument("--json", action="store_true")
-    task_workspace_create.add_argument("--input", required=True)
+    task_workspace_create.add_argument("--input")
+    task_workspace_create.add_argument("--invocation")
     task_workspace_create.add_argument("--refresh-review", action="store_true")
     task_workspace_create.add_argument("--reason")
     task_workspace_create.add_argument(
@@ -36460,8 +38597,9 @@ def build_parser() -> argparse.ArgumentParser:
     task_workspace_check = sub.add_parser("check-task-workspace-result")
     task_workspace_check.add_argument("--root")
     task_workspace_check.add_argument("--json", action="store_true")
-    task_workspace_check.add_argument("--input", required=True)
-    task_workspace_check.add_argument("--plan-input", required=True)
+    task_workspace_check.add_argument("--input")
+    task_workspace_check.add_argument("--plan-input")
+    task_workspace_check.add_argument("--invocation")
 
     version = sub.add_parser("version")
     version.add_argument("--root")
@@ -36511,6 +38649,7 @@ def build_parser() -> argparse.ArgumentParser:
     skill_runtime.add_argument("runtime_args", nargs=argparse.REMAINDER)
 
     stage0_invocation = sub.add_parser("invoke-stage0-skill")
+    stage0_invocation.add_argument("--invocation")
     stage0_invocation.add_argument("--input")
     stage0_invocation.add_argument("--owner-result")
     stage0_invocation.add_argument("--active-task")
@@ -36635,9 +38774,12 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--force-new", action="store_true")
     prepare.add_argument("--issue-title", help="Optional title override for the query-only proposed issue.")
     prepare.add_argument(
-        "--expected-resolution-sha256",
-        required=True,
-        help="Expected post-sync digest from the preceding base-sync validator or prepare guard.",
+        "--reviewed-base-provenance",
+        help=(
+            "Closed JSON base object from base_current: source, selected_base, remote, "
+            "ordered_candidates, decision_head, local_base_head, remote_base_head, and "
+            "post_sync_resolution_sha256. Missing provenance blocks locally before fetch or GitHub reads."
+        ),
     )
     prepare.add_argument("--base-branch")
     prepare.add_argument("--branch")

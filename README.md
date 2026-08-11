@@ -46,6 +46,11 @@ Guru Trellis 不是 Trellis 的分叉版本，也不替代官方 Trellis。
 
 覆盖从需求进入到最终交付的主要阶段，包括需求澄清、规划审核、实现检查、分支审查、发布准备和任务收口。
 
+Phase 0 的六个 mandatory Skills 通过五阶段 closed transition 直接衔接：每个 producer 的真实
+public output 只交给唯一 consumer，当前 Skill 的 semantic owner result 保持 call-local，正常
+pre-task 不需要在仓库保存 owner 或 prerequisite 文件。Base sync 只有一个 public authoritative
+入口；兼容 `prepare-task` 不是正常 workflow step。
+
 ### AI-first 判断
 
 流程中的判断由 AI 基于当前需求、实现和验证结果完成，而不是模拟人工审批表、签字链或书面交接流程。
@@ -73,6 +78,10 @@ Guru Team preset 提供面向规划、实现检查、任务提交、分支审查
 ### 安全的安装与升级
 
 安装和升级时，AI 会区分官方 Trellis、Guru Team 和业务仓库各自拥有的内容。已知版本可以平滑迁移，无法确认来源的本地修改会被保留并交给用户判断，而不是被静默删除。
+
+Phase 0 六包、transition schemas、invocation envelopes、shared runtime 和 manifest 作为一个
+版本单元安装。Clean install、existing-project update/reapply、dogfood 与平台副本验证必须同时
+通过，任何 mixed graph 或未处理的 `.new` / `.bak` 都会阻止激活。
 
 远端安装验证也会区分业务目标仓库与 Guru Trellis 扩展源。目标仓库的
 ref、HEAD 和已审查内容只在目标 checkout 中校验；安装器、canonical assets、

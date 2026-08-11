@@ -25,3 +25,8 @@ live GitHub、live `main`、当前 diff、当前测试和冻结的 #119 正常�
 公共 Skill id、exit id、schema id 和 script command 属于公共 API。发生实质变化时必须
 提供新 id 或明确迁移合同，并通过 clean install、`trellis update`、preset reapply、
 `.new/.bak`、drift 和平台副本一致性验证。
+
+Issue #156 的 Phase 0 current acceptance 以六个 public Skill 的真实 installed transcript
+为准：producer actual stdout 必须经过五阶段 closed transition 到达唯一 consumer，正常
+pre-task 不写 owner/prerequisite/transition 文件，且 authoritative base sync 只调用一次。
+Package 单测、手写中间 DTO 或 compatibility `prepare-task` 结果不能替代该链路证据。

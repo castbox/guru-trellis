@@ -28,7 +28,8 @@ prior result; it never creates a task-local replacement chain. This package is
 not self-contained or portable.
 
 After the semantic gate and owner recorder/checker complete, invoke
-`scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-wording-result>`.
+`scripts/invoke.sh --invocation -` with the closed call-local public input,
+`clarity_current` transition, and checked owner result on stdin.
 The minimal DTO preserves the fixed profile for the workflow router; the
 runtime reruns the existing checker, derives the route from its checked result,
 and never reclassifies wording or reads private evidence on behalf of a

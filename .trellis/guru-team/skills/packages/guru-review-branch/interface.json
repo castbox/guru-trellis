@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-review-branch",
   "name": "guru-review-branch",
   "description": "Review a committed task branch through independent review, an internal closure-then-fresh-final loop, and four typed exits.",

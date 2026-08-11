@@ -17,7 +17,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_semantic_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-discover-change-context")
-        self.assertEqual(self.interface["schema_version"], "1.3")
+        self.assertEqual(self.interface["schema_version"], "1.4")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]
@@ -72,7 +72,8 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             ".trellis/workspace/**",
             "one to three selected candidates",
             "writes no authorization field to owner state",
-            "--owner-result -",
+            "`scripts/invoke.sh --invocation -`",
+            "`base_current` transition",
             "complete validator-passed `guru-base-sync-result-1.0`",
             "live body digest must equal the original reviewed draft body digest",
             "source issue may be live `open` or `closed`",
@@ -93,6 +94,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "refresh_base",
         ):
             self.assertIn(phrase, normalized_contract)
+        self.assertNotIn("scripts/invoke.sh --input ... --owner-result", normalized_contract)
         self.assertNotIn("finish-summary-index.json` as an input", contract)
 
     def test_wrappers_are_dispatcher_only_and_executable(self) -> None:

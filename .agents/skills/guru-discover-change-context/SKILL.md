@@ -32,9 +32,9 @@ unknown exits, or missing compatible runtime. This package is not
 self-contained or portable.
 
 After the semantic gate and owner recorder/checker complete, invoke
-`scripts/invoke.sh --input <declared-profile.json> --owner-result -` with the
-checked owner result on stdin
-to serialize the minimal handoff. The runtime reruns the existing checker and
+`scripts/invoke.sh --invocation -` with the closed call-local public input,
+`base_current` transition, and checked owner result on stdin to serialize the
+minimal handoff. The runtime reruns the existing checker and
 derives the route from its checked `typed_exit`; callers never name the expected
 exit. Consumers receive caller-owned continuation only, never the private
 owner-result body.

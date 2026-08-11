@@ -1,1 +1,17 @@
-{"scenario":"The current owner result observes a base identity that is no longer current.","owner_evidence":{"semantic_gate":"passed","checker_required":true,"stale_fact":"base_identity"},"owner_staging":{"recipe":"context-refresh-base"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result","-"]}}
+{
+  "scenario": "The current owner result observes a base identity that is no longer current.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true,
+    "stale_fact": "base_identity"
+  },
+  "owner_staging": {
+    "recipe": "context-refresh-base"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

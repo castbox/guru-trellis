@@ -28,6 +28,29 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import guru_team_trellis as gtt
 
 
+def reviewed_base_provenance_json(
+    *,
+    source: str = "explicit",
+    selected_base: str = "main",
+    remote: str = "origin",
+    ordered_candidates: list[str] | None = None,
+    decision_head: str = "a" * 40,
+    local_base_head: str = "a" * 40,
+    remote_base_head: str = "a" * 40,
+    post_sync_resolution_sha256: str = "b" * 64,
+) -> str:
+    return json.dumps({
+        "source": source,
+        "selected_base": selected_base,
+        "remote": remote,
+        "ordered_candidates": ordered_candidates or [selected_base],
+        "decision_head": decision_head,
+        "local_base_head": local_base_head,
+        "remote_base_head": remote_base_head,
+        "post_sync_resolution_sha256": post_sync_resolution_sha256,
+    })
+
+
 def prepare_args(**overrides: object) -> argparse.Namespace:
     values: dict[str, object] = {
         "root": None,
@@ -37,6 +60,7 @@ def prepare_args(**overrides: object) -> argparse.Namespace:
         "force_new": False,
         "issue_title": None,
         "expected_resolution_sha256": "b" * 64,
+        "reviewed_base_provenance": reviewed_base_provenance_json(),
         "base_branch": None,
         "branch": None,
         "task_slug": None,
@@ -3682,6 +3706,16 @@ class BaseSyncRuntimeTest(unittest.TestCase):
                             requirement=["#110"],
                             base_branch="main",
                             expected_resolution_sha256=reviewed["resolution_sha256"],
+                            reviewed_base_provenance=reviewed_base_provenance_json(
+                                source=reviewed["source"],
+                                selected_base=reviewed["selected_base"],
+                                remote=reviewed["remote"],
+                                ordered_candidates=reviewed["candidates"],
+                                decision_head=gtt.current_head(self.local),
+                                local_base_head=gtt.ref_head(self.local, "refs/heads/main"),
+                                remote_base_head=gtt.ref_head(self.local, "refs/remotes/origin/main"),
+                                post_sync_resolution_sha256=reviewed["resolution_sha256"],
+                            ),
                         )
                     )
 
@@ -3838,6 +3872,16 @@ class BaseSyncRuntimeTest(unittest.TestCase):
                     requirement=["#110"],
                     base_branch="main",
                     expected_resolution_sha256=post_digest,
+                    reviewed_base_provenance=reviewed_base_provenance_json(
+                        source=result["post_sync_resolution"]["source"],
+                        selected_base=result["post_sync_resolution"]["selected_base"],
+                        remote=result["post_sync_resolution"]["remote"],
+                        ordered_candidates=result["post_sync_resolution"]["candidates"],
+                        decision_head=gtt.current_head(self.local),
+                        local_base_head=gtt.ref_head(self.local, "refs/heads/main"),
+                        remote_base_head=gtt.ref_head(self.local, "refs/remotes/origin/main"),
+                        post_sync_resolution_sha256=post_digest,
+                    ),
                 )
             )
 
@@ -4033,6 +4077,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
         )
 
         self.real_ensure_base_freshness = gtt.ensure_base_freshness
+        self.real_ensure_reviewed_base_provenance = gtt.ensure_reviewed_base_provenance
         self.patches = [
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(gtt, "load_config", return_value={
@@ -4046,7 +4091,7 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             mock.patch.object(gtt, "resolve_base_branch", return_value=("main", ["main", "origin/main"])),
             mock.patch.object(
                 gtt,
-                "ensure_base_freshness",
+                "ensure_reviewed_base_provenance",
                 side_effect=lambda *_args, **_kwargs: fresh_base_sync_projection(),
             ),
         ]
@@ -4235,16 +4280,16 @@ class PrepareSideEffectBoundaryTest(unittest.TestCase):
             ),
             mock.patch.object(
                 gtt,
-                "ensure_base_freshness",
+                "ensure_reviewed_base_provenance",
                 side_effect=lambda *_args, **_kwargs: order.append("sync") or freshness,
-            ) as ensure_base_freshness,
+            ) as ensure_reviewed_base_provenance,
         ):
             payload = gtt.cmd_prepare(prepare_args(requirement=["#52"]))
 
-        ensure_base_freshness.assert_called_once_with(
+        ensure_reviewed_base_provenance.assert_called_once_with(
             self.root,
-            None,
-            expected_resolution_sha256="b" * 64,
+            json.loads(reviewed_base_provenance_json()),
+            base_assertion=None,
         )
         self.assertEqual(order, ["sync", "gh-auth", "issue"])
         self.assertEqual(payload["base_freshness"]["fetch_performed"], True)
@@ -4415,6 +4460,227 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
         for value in (str(evidence), "../evidence.json", "nested\\evidence.json"):
             with self.subTest(value=value), self.assertRaises(gtt.WorkflowError):
                 gtt.task_workspace_portable_input_path(self.root, value, "evidence")
+
+    @staticmethod
+    def workspace_call_local_args(**overrides: object) -> argparse.Namespace:
+        values: dict[str, object] = {
+            "root": None,
+            "input": None,
+            "plan_input": None,
+            "invocation": "-",
+            "refresh_review": False,
+            "reason": None,
+            "reason_code": None,
+        }
+        values.update(overrides)
+        return argparse.Namespace(**values)
+
+    @staticmethod
+    def call_workspace_command(
+        command: object,
+        args: argparse.Namespace,
+        payload: dict[str, object],
+    ) -> dict[str, object]:
+        with mock.patch.object(sys, "stdin", io.StringIO(json.dumps(payload))):
+            return command(args)
+
+    def test_call_local_workspace_commands_consume_closed_in_memory_envelopes(self) -> None:
+        plan = {
+            "ai_review_gate": {"status": "reroute"},
+            "freshness": {"plan_sha256": "a" * 64},
+            "naming": {
+                "branch_disposition": "create_new",
+                "workspace_disposition": "create_new",
+                "task_disposition": "create_new",
+            },
+        }
+        prerequisites = {
+            key: {"payload": key}
+            for key in gtt.TASK_WORKSPACE_PREREQUISITES
+        }
+        transition = {"stage": "readiness_current"}
+        common = {
+            "schema_version": "1.0",
+            "plan": plan,
+            "transition": transition,
+        }
+        snapshot = {
+            "head": "b" * 40,
+            "status_sha256": "c" * 64,
+            "worktrees_sha256": "d" * 64,
+            "issues_sha256": "e" * 64,
+        }
+        executor_result = {
+            "typed_exit": "refresh_review",
+            "checker": {"status": "not_run"},
+        }
+        checked_result = {
+            "typed_exit": "refresh_review",
+            "checker": {"status": "passed"},
+        }
+
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(
+                gtt,
+                "task_workspace_validate_transition_plan",
+                return_value=(prerequisites, []),
+            ) as validate,
+            mock.patch.object(gtt, "task_workspace_snapshot", return_value=snapshot),
+            mock.patch.object(
+                gtt,
+                "task_workspace_no_side_effect_result",
+                return_value=executor_result,
+            ),
+            mock.patch.object(gtt, "task_workspace_schema", return_value={}),
+            mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]),
+        ):
+            recorded = self.call_workspace_command(
+                gtt.cmd_record_task_workspace_plan,
+                self.workspace_call_local_args(root=str(self.root)),
+                common,
+            )
+            executed = self.call_workspace_command(
+                gtt.cmd_create_task_workspace,
+                self.workspace_call_local_args(root=str(self.root), refresh_review=True),
+                common,
+            )
+
+        self.assertEqual(recorded, plan)
+        self.assertEqual(executed, executor_result)
+        self.assertEqual(validate.call_args_list[0].args, (self.root, plan, transition))
+        self.assertEqual(validate.call_args_list[1].args, (self.root, plan, transition))
+
+        with (
+            mock.patch.object(gtt, "repo_root", return_value=self.root),
+            mock.patch.object(
+                gtt,
+                "task_workspace_validate_transition_plan",
+                return_value=(prerequisites, []),
+            ) as validate,
+            mock.patch.object(gtt, "task_workspace_result_check_errors", return_value=[]),
+            mock.patch.object(gtt, "task_workspace_stage", return_value={"status": "passed"}),
+            mock.patch.object(gtt, "task_workspace_finalize_result", return_value=checked_result),
+            mock.patch.object(gtt, "task_workspace_schema", return_value={}),
+            mock.patch.object(gtt, "skill_json_schema_validation_errors", return_value=[]),
+        ):
+            checked = self.call_workspace_command(
+                gtt.cmd_check_task_workspace_result,
+                self.workspace_call_local_args(root=str(self.root)),
+                {**common, "result": executor_result},
+            )
+
+        self.assertEqual(checked, checked_result)
+        self.assertEqual(validate.call_args.args, (self.root, plan, transition))
+
+    def test_call_local_workspace_envelope_rejects_locators_and_open_shapes(self) -> None:
+        valid = {
+            "schema_version": "1.0",
+            "plan": {},
+            "prerequisite_payloads": {},
+        }
+        invalid_payloads = [
+            {"schema_version": "1.0", "plan": {}},
+            {**valid, "unknown": True},
+            {**valid, "prerequisite_payloads": []},
+        ]
+        for payload in invalid_payloads:
+            with self.subTest(payload=payload), self.assertRaises(gtt.WorkflowError):
+                self.call_workspace_command(
+                    gtt.cmd_record_task_workspace_plan,
+                    self.workspace_call_local_args(root=str(self.root)),
+                    payload,
+                )
+
+        for locator_overrides in (
+            {"input": "plan.json"},
+            {"plan_input": "plan.json"},
+            {"invocation": "invocation.json"},
+        ):
+            with self.subTest(locator_overrides=locator_overrides), self.assertRaises(gtt.WorkflowError):
+                self.call_workspace_command(
+                    gtt.cmd_record_task_workspace_plan,
+                    self.workspace_call_local_args(
+                        root=str(self.root),
+                        **locator_overrides,
+                    ),
+                    valid,
+                )
+
+    def test_call_local_prerequisites_bind_exact_stage_tokens_and_payload_digests(self) -> None:
+        payloads = {
+            key: {"skill_id": skill_id, "typed_exit": typed_exit, "payload": key}
+            for key, (skill_id, _schema_id, typed_exit) in gtt.TASK_WORKSPACE_PREREQUISITES.items()
+        }
+        payloads["base"]["status"] = payloads["base"].pop("typed_exit")
+        prerequisites = {
+            key: gtt.task_workspace_prerequisite_projection(
+                key,
+                f"call-local:{key}",
+                payload,
+                gtt.context_digest(payload),
+            )
+            for key, payload in payloads.items()
+        }
+        plan = {"prerequisites": prerequisites}
+        with mock.patch.object(gtt, "task_workspace_prerequisite_errors", return_value=[]):
+            actual, errors = gtt.task_workspace_validate_prerequisites(
+                self.root,
+                plan,
+                payloads,
+            )
+            self.assertEqual(actual, payloads)
+            self.assertEqual(errors, [])
+
+            stale = copy.deepcopy(plan)
+            stale["prerequisites"]["wording"]["payload_sha256"] = "f" * 64
+            _, stale_errors = gtt.task_workspace_validate_prerequisites(
+                self.root,
+                stale,
+                payloads,
+            )
+            self.assertIn("task_workspace_wording_projection_mismatch", stale_errors)
+
+            for malformed in (
+                {key: value for key, value in payloads.items() if key != "readiness"},
+                {**payloads, "unknown": {}},
+            ):
+                _, malformed_errors = gtt.task_workspace_validate_prerequisites(
+                    self.root,
+                    plan,
+                    malformed,
+                )
+                self.assertEqual(
+                    malformed_errors,
+                    ["task_workspace_call_local_prerequisite_set_invalid"],
+                )
+
+    def test_legacy_workspace_prerequisite_locators_remain_compatibility_only(self) -> None:
+        payloads = {
+            key: {"skill_id": skill_id, "typed_exit": typed_exit, "payload": key}
+            for key, (skill_id, _schema_id, typed_exit) in gtt.TASK_WORKSPACE_PREREQUISITES.items()
+        }
+        payloads["base"]["status"] = payloads["base"].pop("typed_exit")
+        prerequisites: dict[str, dict[str, object]] = {}
+        for key, payload in payloads.items():
+            relative = f"compatibility/{key}.json"
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            gtt.write_json(path, payload)
+            prerequisites[key] = gtt.task_workspace_prerequisite_projection(
+                key,
+                relative,
+                payload,
+                hashlib.sha256(path.read_bytes()).hexdigest(),
+            )
+
+        with mock.patch.object(gtt, "task_workspace_prerequisite_errors", return_value=[]):
+            actual, errors = gtt.task_workspace_validate_prerequisites(
+                self.root,
+                {"prerequisites": prerequisites},
+            )
+        self.assertEqual(actual, payloads)
+        self.assertEqual(errors, [])
 
     def test_ai_authored_non_mutation_routes_are_checked_zero_write_results(self) -> None:
         repository_source = Path(__file__).resolve().parents[5]
@@ -5011,7 +5277,12 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
                 "sync_facts_sha256": initial["facts_sha256"],
             }
         }
-        unchanged = gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
+        with mock.patch.object(
+            gtt,
+            "execute_base_sync",
+            side_effect=AssertionError("workspace mutation must not execute base sync"),
+        ):
+            unchanged = gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
         self.assertEqual(unchanged["post_sync_resolution_sha256"], initial["post_sync_resolution_sha256"])
 
         subprocess.run(["git", "clone", "-q", "-b", "main", str(remote), str(updater)], check=True)
@@ -5026,15 +5297,24 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
         ).stdout.strip()
         self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), initial_head)
 
-        with self.assertRaises(gtt.WorkflowError) as advanced:
+        with (
+            mock.patch.object(
+                gtt,
+                "execute_base_sync",
+                side_effect=AssertionError("workspace mutation must not execute base sync"),
+            ),
+            self.assertRaises(gtt.WorkflowError) as advanced,
+        ):
             gtt.task_workspace_refresh_base_before_mutation(repository, plan, initial)
         self.assertEqual(advanced.exception.payload["typed_exit"], "refresh_review")
         self.assertEqual(
             advanced.exception.payload["error_code"],
-            "task_workspace_base_post_sync_identity_changed",
+            "task_workspace_base_remote_identity_changed",
         )
-        self.assertEqual(gtt.current_head(repository), remote_head)
-        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), remote_head)
+        self.assertEqual(gtt.current_head(repository), initial_head)
+        self.assertEqual(gtt.ref_head(repository, "refs/heads/main"), initial_head)
+        self.assertEqual(gtt.ref_head(repository, "refs/remotes/origin/main"), initial_head)
+        self.assertNotEqual(remote_head, initial_head)
         self.assertEqual(
             subprocess.run(
                 ["git", "branch", "--format=%(refname:short)"],
@@ -21240,6 +21520,21 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
         subprocess.run(["git", "config", "user.name", "Context Discovery Test"], cwd=root, check=True)
         subprocess.run(["git", "config", "user.email", "context@example.invalid"], cwd=root, check=True)
+        stage0_root = root / "trellis/skills/guru-team/consumers/workflow/stage0"
+        canonical_stage0 = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/consumers/workflow/stage0"
+        )
+        for relative in (
+            Path("transitions/base-current.schema.json"),
+            Path("transitions/context-current.schema.json"),
+            Path("transitions/clarity-current.schema.json"),
+            Path("invocations/semantic-owner.schema.json"),
+        ):
+            target = stage0_root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(canonical_stage0 / relative, target)
+        subprocess.run(["git", "add", "trellis"], cwd=root, check=True)
         subprocess.run(
             ["git", "commit", "--allow-empty", "-q", "-m", "test: seed context repository"],
             cwd=root,
@@ -21259,6 +21554,730 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             check=True,
         )
         return temp, root
+
+    @staticmethod
+    def base_transition(payload: dict[str, object]) -> dict[str, object]:
+        evidence = payload["base_evidence"]
+        sync_result = evidence["sync_result"]
+        resolution = sync_result["post_sync_resolution"]
+        digest = evidence["post_sync_resolution_sha256"]
+        return {
+            "schema_version": "1.0",
+            "transition_id": f"base_current:{str(digest)[:24]}",
+            "stage": "base_current",
+            "mode": payload["mode"],
+            "repo_locator": payload["repository"]["repo"],
+            "base": {
+                "source": resolution["source"],
+                "selected_base": resolution["selected_base"],
+                "remote": resolution["remote"],
+                "ordered_candidates": resolution["candidates"],
+                "decision_head": evidence["decision_head"],
+                "local_base_head": evidence["local_head"],
+                "remote_base_head": evidence["remote_head"],
+                "post_sync_resolution_sha256": digest,
+            },
+        }
+
+    def context_invocation(
+        self,
+        public_input: dict[str, object],
+        owner_result: dict[str, object],
+    ) -> dict[str, object]:
+        return {
+            "schema_version": "1.0",
+            "public_input": copy.deepcopy(public_input),
+            "transition": self.base_transition(owner_result),
+            "owner_context": {},
+            "owner_result": owner_result,
+        }
+
+    def test_stage0_transition_rejects_identity_and_live_base_drift(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        owner = self.valid_owner_result(root)
+        transition = self.base_transition(owner)
+
+        self.assertEqual(
+            gtt.stage0_validate_transition(
+                root,
+                "guru-discover-change-context",
+                transition,
+            ),
+            transition,
+        )
+
+        wrong_identity = copy.deepcopy(transition)
+        wrong_identity["transition_id"] = "base_current:" + "0" * 24
+        with self.assertRaises(gtt.WorkflowError) as invalid:
+            gtt.stage0_validate_transition(
+                root,
+                "guru-discover-change-context",
+                wrong_identity,
+            )
+        self.assertEqual(invalid.exception.payload["code"], "transition_invalid")
+
+        (root / "pre-task-change.txt").write_text("dirty\n", encoding="utf-8")
+        with self.assertRaises(gtt.WorkflowError) as dirty:
+            gtt.stage0_validate_transition(
+                root,
+                "guru-discover-change-context",
+                transition,
+            )
+        self.assertEqual(dirty.exception.payload["code"], "transition_stale")
+        (root / "pre-task-change.txt").unlink()
+
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-q", "-m", "test: drift transition base"],
+            cwd=root,
+            check=True,
+        )
+        with self.assertRaises(gtt.WorkflowError) as stale:
+            gtt.stage0_validate_transition(
+                root,
+                "guru-discover-change-context",
+                transition,
+            )
+        self.assertEqual(stale.exception.payload["code"], "transition_stale")
+
+    def test_wording_call_local_transition_is_required_only_for_change_request(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        owner = self.valid_owner_result(root)
+        base = self.base_transition(owner)["base"]
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        clarity_digest = digest("clarity")
+        transition = {
+            "schema_version": "1.0",
+            "transition_id": f"clarity_current:{clarity_digest[:24]}",
+            "stage": "clarity_current",
+            "mode": "workflow",
+            "repo_locator": "example/guru-extension",
+            "base": base,
+            "target_locator": "https://github.com/example/guru-extension/issues/1",
+            "continuation_id": "stage0-current",
+            "context_result_sha256": digest("context"),
+            "clarity_result_sha256": clarity_digest,
+            "target_content_sha256": digest("content"),
+            "clarity": {
+                "facts_sha256": clarity_digest,
+                "target_sha256": digest("target"),
+                "disposition_sha256": digest("disposition"),
+                "content_sha256": digest("clarity-content"),
+                "scope_sha256": digest("scope"),
+            },
+            "target_disposition": {
+                "disposition_sha256": digest("disposition"),
+                "duplicate_facts_sha256": digest("duplicates"),
+            },
+        }
+        package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-review-contract-wording"
+        )
+        interface = gtt.read_json(package / "interface.json")
+        args = argparse.Namespace(
+            invocation="-",
+            input=None,
+            owner_result=None,
+            owner_prerequisites=None,
+            owner_change_request=None,
+            owner_plan=None,
+        )
+
+        def parse(payload: dict[str, object]) -> dict[str, object]:
+            with mock.patch.object(sys, "stdin", io.StringIO(json.dumps(payload))):
+                return gtt.stage0_call_local_invocation(
+                    root,
+                    "guru-review-contract-wording",
+                    interface,
+                    args,
+                )
+
+        change_request = {
+            "schema_version": "1.0",
+            "public_input": {
+                "profile": "change_request",
+                "source_exit": "clear",
+                "mode": "workflow",
+                "target_locator": transition["target_locator"],
+                "continuation_id": "stage0-current",
+            },
+            "transition": transition,
+            "owner_context": {},
+            "owner_result": {},
+        }
+        self.assertEqual(parse(change_request)["transition"], transition)
+
+        missing = copy.deepcopy(change_request)
+        missing.pop("transition")
+        with self.assertRaises(gtt.WorkflowError) as missing_error:
+            parse(missing)
+        self.assertEqual(missing_error.exception.payload["code"], "invocation_invalid")
+
+        for profile, mode, fields in (
+            (
+                "planning_artifacts",
+                "workflow",
+                {
+                    "task_locator": ".trellis/tasks/current",
+                    "planning_artifacts": ["prd.md", "design.md", "implement.md"],
+                },
+            ),
+            (
+                "explicit_paths",
+                "standalone",
+                {"paths": ["docs/requirements/requirement-main.md"]},
+            ),
+        ):
+            envelope = {
+                "schema_version": "1.0",
+                "public_input": {
+                    "profile": profile,
+                    "source_exit": "direct",
+                    "mode": mode,
+                    "continuation_id": "stage0-current",
+                    **fields,
+                },
+                "owner_context": {},
+                "owner_result": {},
+            }
+            self.assertNotIn("transition", parse(envelope))
+            unexpected = copy.deepcopy(envelope)
+            unexpected["transition"] = transition
+            with self.assertRaises(gtt.WorkflowError) as unexpected_error:
+                parse(unexpected)
+            self.assertEqual(
+                unexpected_error.exception.payload["code"],
+                "invocation_invalid",
+            )
+
+    def test_call_local_refresh_base_routes_after_real_head_drift(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        owner = self.valid_owner_result(root)
+        public_input = self.public_input(root)
+        transition = self.base_transition(owner)
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-q", "-m", "test: drift discovery base"],
+            cwd=root,
+            check=True,
+        )
+        owner["typed_exit"] = "refresh_base"
+        owner["result_identity"] = gtt.context_result_identity(owner)
+        package = (
+            Path(gtt.__file__).resolve().parents[4]
+            / "skills/guru-team/packages/guru-discover-change-context"
+        )
+        invocation = {
+            "schema_version": "1.0",
+            "public_input": public_input,
+            "transition": transition,
+            "owner_context": {},
+            "owner_result": owner,
+        }
+        with (
+            mock.patch.object(
+                gtt,
+                "stage0_invocation_identity",
+                return_value=("guru-discover-change-context", package),
+            ),
+            mock.patch.object(gtt, "stage0_repo_root", return_value=root),
+            mock.patch.object(sys, "stdin", io.StringIO(json.dumps(invocation))),
+        ):
+            output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
+                invocation="-",
+                input=None,
+                owner_result=None,
+            ))
+
+        self.assertEqual(output["exit_id"], "refresh_base")
+
+    def test_stage0_transition_owner_binding_rejects_each_semantic_edge_mismatch(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        base = {
+            "source": "explicit",
+            "selected_base": "main",
+            "remote": "origin",
+            "ordered_candidates": ["main"],
+            "decision_head": "1" * 40,
+            "local_base_head": "1" * 40,
+            "remote_base_head": "1" * 40,
+            "post_sync_resolution_sha256": digest("base"),
+        }
+
+        context_transition = {
+            "mode": "workflow",
+            "target_locator": "https://github.com/example/repo/issues/1",
+            "continuation_id": "current",
+            "base": base,
+        }
+        clarity_errors = gtt.stage0_transition_owner_errors(
+            "guru-clarify-requirements",
+            {
+                "mode": "workflow",
+                "target_locator": "#1",
+                "continuation_id": "current",
+            },
+            context_transition,
+            {"review_target": {"url": "https://github.com/example/repo/issues/2"}},
+            None,
+        )
+        self.assertIn("transition_clarity_target_mismatch", clarity_errors)
+
+        body_sha = digest("body")
+        wording_errors = gtt.stage0_transition_owner_errors(
+            "guru-review-contract-wording",
+            {"mode": "workflow", "target_locator": "#1"},
+            {
+                **context_transition,
+                "target_content_sha256": digest("different-content"),
+            },
+            {
+                "scope": {
+                    "identity": "change_request:#1",
+                    "items": [
+                        {"field": "title", "content_sha256": digest("title")},
+                        {"field": "body", "content_sha256": body_sha},
+                    ],
+                }
+            },
+            None,
+        )
+        self.assertIn("transition_wording_target_mismatch", wording_errors)
+
+        planning_errors = gtt.stage0_transition_owner_errors(
+            "guru-review-contract-wording",
+            {"mode": "workflow", "profile": "planning_artifacts"},
+            context_transition,
+            {"profile": "planning_artifacts"},
+            None,
+        )
+        self.assertEqual(planning_errors, ["transition_unexpected"])
+
+        readiness_errors = gtt.stage0_transition_owner_errors(
+            "guru-review-change-request",
+            {"mode": "workflow", "target_locator": "#1"},
+            {
+                **context_transition,
+                "target_content_sha256": digest("target-content"),
+                "clarity_result_sha256": digest("clarity"),
+                "wording_facts_sha256": digest("wording"),
+            },
+            {
+                "target": {
+                    "url": "https://github.com/example/repo/issues/1",
+                    "body_sha256": digest("target-content"),
+                },
+                "prerequisites": {
+                    "clarity": {"facts_sha256": digest("wrong-clarity")},
+                    "wording": {"facts_sha256": digest("wording")},
+                },
+            },
+            None,
+        )
+        self.assertIn(
+            "transition_readiness_prerequisite_mismatch",
+            readiness_errors,
+        )
+
+        workspace_errors = gtt.stage0_transition_owner_errors(
+            "guru-create-task-workspace",
+            {"mode": "workflow"},
+            {
+                **context_transition,
+                "target_content_sha256": digest("target-content"),
+                "clarity_result_sha256": digest("clarity"),
+                "wording_facts_sha256": digest("wording"),
+                "readiness_facts_sha256": digest("readiness"),
+                "readiness_linkage_sha256": digest("linkage"),
+            },
+            {"typed_exit": "created"},
+            {
+                "target": {
+                    "url": "https://github.com/example/repo/issues/1",
+                    "title_sha256": digest("title"),
+                    "body_sha256": body_sha,
+                },
+                "prerequisites": {
+                    "clarity": {"facts_sha256": digest("clarity")},
+                    "wording": {"facts_sha256": digest("wording")},
+                    "readiness": {
+                        "facts_sha256": digest("wrong-readiness"),
+                        "linkage_sha256": digest("linkage"),
+                    },
+                },
+                "base": {
+                    "selected_base": "main",
+                    "remote": "origin",
+                    "decision_head": "1" * 40,
+                    "local_head": "1" * 40,
+                    "remote_head": "1" * 40,
+                    "post_sync_resolution_sha256": digest("base"),
+                },
+            },
+        )
+        self.assertIn("transition_workspace_plan_mismatch", workspace_errors)
+
+    def test_standalone_transition_owner_binding_rejects_mismatch(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        target_url = "https://github.com/example/repo/issues/1"
+        transition = {
+            "mode": "standalone",
+            "target_locator": target_url,
+            "continuation_id": "standalone-current",
+            "base": {},
+            "authority_content_sha256": digest("current body"),
+        }
+        errors = gtt.stage0_transition_owner_errors(
+            "guru-clarify-requirements",
+            {
+                "profile": "standalone_review",
+                "mode": "standalone",
+                "target_locator": "#1",
+                "continuation_id": "standalone-current",
+            },
+            transition,
+            {
+                "mode": "standalone",
+                "typed_exit": "clear",
+                "review_target": {
+                    "kind": "issue",
+                    "url": "https://github.com/example/repo/issues/2",
+                    "body_sha256": digest("different body"),
+                },
+            },
+            None,
+        )
+
+        self.assertIn("transition_clarity_target_mismatch", errors)
+        self.assertIn("transition_clarity_authority_content_mismatch", errors)
+
+    def test_reentry_outputs_feed_target_invocation_and_linkage_contracts(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        discovery_owner = self.valid_owner_result(root)
+        base_transition = self.base_transition(discovery_owner)
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        target_url = "https://github.com/example/guru-extension/issues/1"
+        target_body = digest("target body")
+        context_transition = {
+            "schema_version": "1.0",
+            "transition_id": "context_current:" + digest("context")[:24],
+            "stage": "context_current",
+            "mode": "workflow",
+            "repo_locator": "example/guru-extension",
+            "base": copy.deepcopy(base_transition["base"]),
+            "target_locator": target_url,
+            "continuation_id": "reentry-current",
+            "context_result_sha256": digest("context"),
+            "authority_content_sha256": target_body,
+        }
+        clarity = {
+            "facts_sha256": digest("clarity"),
+            "target_sha256": digest("clarity-target"),
+            "disposition_sha256": digest("disposition"),
+            "content_sha256": target_body,
+            "scope_sha256": digest("scope"),
+        }
+        disposition = {
+            "disposition_sha256": clarity["disposition_sha256"],
+            "duplicate_facts_sha256": digest("duplicates"),
+        }
+        wording_transition = {
+            "schema_version": "1.0",
+            "transition_id": "wording_current:" + digest("wording")[:24],
+            "stage": "wording_current",
+            "mode": "workflow",
+            "repo_locator": "example/guru-extension",
+            "base": copy.deepcopy(base_transition["base"]),
+            "target_locator": target_url,
+            "continuation_id": "reentry-current",
+            "context_result_sha256": context_transition["context_result_sha256"],
+            "clarity_result_sha256": clarity["facts_sha256"],
+            "wording_facts_sha256": digest("wording"),
+            "target_content_sha256": digest("target content"),
+            "clarity": clarity,
+            "wording": {
+                "facts_sha256": digest("wording"),
+                "scope_sha256": digest("wording scope"),
+                "scan_sha256": digest("wording scan"),
+                "target_content_sha256": digest("target content"),
+            },
+            "target_disposition": disposition,
+        }
+        skills_root = Path(gtt.__file__).resolve().parents[4] / "skills/guru-team"
+
+        def actual_output(
+            skill_id: str,
+            exit_id: str,
+            public_input: dict[str, object],
+            owner_result: dict[str, object],
+            upstream: dict[str, object],
+        ) -> tuple[dict[str, object], dict[str, object]]:
+            package = skills_root / "packages" / skill_id
+            interface = gtt.read_json(package / "interface.json")
+            schema, projection = gtt.stage0_output_contract(
+                skill_id, package, interface, exit_id
+            )
+            transition = gtt.stage0_build_transition(
+                skill_id,
+                exit_id,
+                public_input,
+                owner_result,
+                upstream,
+            )
+            output = gtt.stage0_build_output(
+                skill_id,
+                exit_id,
+                public_input,
+                owner_result,
+                None,
+                None,
+                schema,
+                transition,
+                upstream,
+            )
+            self.assertEqual(
+                gtt.skill_json_schema_validation_errors(
+                    output, schema, f"actual {skill_id}:{exit_id} output"
+                ),
+                [],
+            )
+            return output, gtt.skill_apply_projection(projection, output)
+
+        def parse_target(
+            skill_id: str,
+            public_input: dict[str, object],
+            transition: dict[str, object],
+            owner_result: dict[str, object],
+        ) -> None:
+            interface = gtt.read_json(
+                skills_root / "packages" / skill_id / "interface.json"
+            )
+            envelope = {
+                "schema_version": "1.0",
+                "public_input": public_input,
+                "transition": transition,
+                "owner_context": {},
+                "owner_result": owner_result,
+            }
+            args = argparse.Namespace(
+                invocation="-",
+                input=None,
+                owner_result=None,
+                owner_prerequisites=None,
+                owner_change_request=None,
+                owner_plan=None,
+            )
+            with mock.patch.object(sys, "stdin", io.StringIO(json.dumps(envelope))):
+                parsed = gtt.stage0_call_local_invocation(
+                    root, skill_id, interface, args
+                )
+            self.assertEqual(parsed["transition"], transition)
+            self.assertEqual(
+                gtt.stage0_transition_owner_errors(
+                    skill_id,
+                    public_input,
+                    transition,
+                    owner_result,
+                    None,
+                ),
+                [],
+            )
+
+        clarification_owner = {
+            "mode": "workflow",
+            "typed_exit": "needs_context",
+            "review_target": {
+                "kind": "issue",
+                "repo": "example/guru-extension",
+                "url": target_url,
+                "body_sha256": target_body,
+            },
+        }
+        needs_output, needs_input = actual_output(
+            "guru-clarify-requirements",
+            "needs_context",
+            {
+                "profile": "initial_change_request",
+                "mode": "workflow",
+                "target_locator": target_url,
+                "continuation_id": "reentry-current",
+            },
+            clarification_owner,
+            context_transition,
+        )
+        parse_target(
+            "guru-discover-change-context",
+            needs_input,
+            needs_output["transition"],
+            discovery_owner,
+        )
+
+        readiness_owner = {
+            "mode": "workflow",
+            "target": {
+                "kind": "existing_issue",
+                "repo": "example/guru-extension",
+                "issue_number": 1,
+                "url": target_url,
+                "body_sha256": target_body,
+            },
+        }
+        readiness_input = {
+            "profile": "current_issue",
+            "mode": "workflow",
+            "target_locator": target_url,
+            "continuation_id": "reentry-current",
+        }
+        clarify_output, clarify_input = actual_output(
+            "guru-review-change-request",
+            "clarify_requirements",
+            readiness_input,
+            readiness_owner,
+            wording_transition,
+        )
+        parse_target(
+            "guru-clarify-requirements",
+            clarify_input,
+            clarify_output["transition"],
+            {
+                "mode": "workflow",
+                "typed_exit": "clear",
+                "review_target": {
+                    "kind": "issue",
+                    "repo": "example/guru-extension",
+                    "url": target_url,
+                    "body_sha256": target_body,
+                },
+            },
+        )
+
+        wording_output, wording_input = actual_output(
+            "guru-review-change-request",
+            "review_wording",
+            readiness_input,
+            readiness_owner,
+            wording_transition,
+        )
+        parse_target(
+            "guru-review-contract-wording",
+            wording_input,
+            wording_output["transition"],
+            {
+                "mode": "workflow",
+                "profile": "change_request",
+                "scope": {
+                    "identity": f"change_request:{target_url}",
+                    "items": [
+                        {"field": "title", "content_sha256": digest("title")},
+                        {"field": "body", "content_sha256": target_body},
+                    ],
+                },
+            },
+        )
+
+    def test_old_context_body_allows_only_semantic_refresh_context(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        url = "https://github.com/example/repo/issues/1"
+        public_input = {
+            "mode": "workflow",
+            "target_locator": url,
+            "continuation_id": "current",
+        }
+        transition = {
+            "mode": "workflow",
+            "target_locator": url,
+            "continuation_id": "current",
+            "base": {},
+            "authority_content_sha256": digest("old body"),
+        }
+        refreshed_owner = {
+            "typed_exit": "refresh_context",
+            "review_target": {"url": url, "body_sha256": digest("new body")},
+        }
+
+        self.assertEqual(
+            gtt.stage0_transition_owner_errors(
+                "guru-clarify-requirements",
+                public_input,
+                transition,
+                refreshed_owner,
+                None,
+            ),
+            [],
+        )
+
+        clear_owner = copy.deepcopy(refreshed_owner)
+        clear_owner["typed_exit"] = "clear"
+        self.assertIn(
+            "transition_clarity_authority_content_mismatch",
+            gtt.stage0_transition_owner_errors(
+                "guru-clarify-requirements",
+                public_input,
+                transition,
+                clear_owner,
+                None,
+            ),
+        )
+
+    def test_readiness_target_projection_round_trips_closed_variants(self) -> None:
+        common = {
+            "repo": "example/repo",
+            "title_sha256": "1" * 64,
+            "body_sha256": "2" * 64,
+            "identity_sha256": "3" * 64,
+            "content_sha256": "4" * 64,
+        }
+        variants = (
+            {
+                **common,
+                "kind": "existing_issue",
+                "issue_number": 1,
+                "url": "https://github.com/example/repo/issues/1",
+                "updated_at": "2026-01-01T00:00:00Z",
+                "draft_id": None,
+                "source_request_sha256": None,
+                "caller_locator": None,
+                "request_id": None,
+                "side_effect_free": False,
+            },
+            {
+                **common,
+                "kind": "proposed_draft",
+                "issue_number": None,
+                "url": None,
+                "updated_at": None,
+                "draft_id": "draft-1",
+                "source_request_sha256": "5" * 64,
+                "caller_locator": None,
+                "request_id": None,
+                "side_effect_free": True,
+            },
+            {
+                **common,
+                "kind": "standalone_request",
+                "issue_number": None,
+                "url": None,
+                "updated_at": None,
+                "draft_id": None,
+                "source_request_sha256": "5" * 64,
+                "caller_locator": "standalone-test",
+                "request_id": "request-1",
+                "side_effect_free": True,
+            },
+        )
+
+        for target in variants:
+            with self.subTest(kind=target["kind"]):
+                projection = gtt.stage0_readiness_target_projection(target)
+                self.assertNotIn(None, projection.values())
+                self.assertNotIn("side_effect_free", projection)
+                self.assertEqual(
+                    gtt.stage0_readiness_target_payload(projection),
+                    target,
+                )
 
     def valid_index(self, issue: int, token: str, path: str) -> dict[str, object]:
         return {
@@ -21513,20 +22532,15 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         payload["result_identity"] = gtt.context_result_identity(payload)
         return payload
 
-    def public_input(self, root: Path) -> Path:
-        path = root / "public-input.json"
-        path.write_text(
-            json.dumps({
-                "profile": "pre_task",
-                "source_exit": "start",
-                "mode": "workflow",
-                "repo_locator": "example/guru-extension",
-                "base_branch": "main",
-                "continuation_id": "stage0-current",
-            }),
-            encoding="utf-8",
-        )
-        return path
+    def public_input(self, root: Path) -> dict[str, object]:
+        return {
+            "profile": "pre_task",
+            "source_exit": "start",
+            "mode": "workflow",
+            "repo_locator": "example/guru-extension",
+            "base_branch": "main",
+            "continuation_id": "stage0-current",
+        }
 
     def test_owner_result_record_check_and_public_invocation_are_ephemeral(self) -> None:
         temp, root = self.make_root()
@@ -21561,12 +22575,13 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 mock.patch.object(
                     sys,
                     "stdin",
-                    io.StringIO(json.dumps(recorded)),
+                    io.StringIO(json.dumps(self.context_invocation(public_input, recorded))),
                 ),
             ):
                 output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                    input=public_input.relative_to(root).as_posix(),
-                    owner_result="-",
+                    invocation="-",
+                    input=None,
+                    owner_result=None,
                 ))
 
         self.assertEqual(checked["status"], "passed")
@@ -21578,8 +22593,10 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                 "handoff_mode": "workflow",
                 "handoff_target_locator": payload["live_change"]["identity"],
                 "handoff_continuation_id": "stage0-current",
+                "transition": output["transition"],
             },
         )
+        self.assertEqual(output["transition"]["stage"], "context_current")
         self.assertEqual(
             before,
             {
@@ -21663,6 +22680,8 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         )
         self.assertEqual(gtt.context_live_base_errors(root, payload, task_dir), [])
 
+        (root / "active-task-change.txt").write_text("dirty\n", encoding="utf-8")
+
         base_only = lambda live_root, live_payload, live_task: (
             gtt.context_live_base_errors(live_root, live_payload, live_task)
         )
@@ -21687,11 +22706,16 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                     return_value=("guru-discover-change-context", package),
                 ),
                 mock.patch.object(gtt, "stage0_repo_root", return_value=root),
-                mock.patch.object(sys, "stdin", io.StringIO(json.dumps(recorded))),
+                mock.patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(json.dumps(self.context_invocation(public_input, recorded))),
+                ),
             ):
                 output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                    input=public_input.relative_to(root).as_posix(),
-                    owner_result="-",
+                    invocation="-",
+                    input=None,
+                    owner_result=None,
                     active_task=task_ref,
                 ))
 
@@ -21758,11 +22782,16 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
                     return_value=("guru-discover-change-context", package),
                 ),
                 mock.patch.object(gtt, "stage0_repo_root", return_value=root),
-                mock.patch.object(sys, "stdin", io.StringIO(json.dumps(recorded))),
+                mock.patch.object(
+                    sys,
+                    "stdin",
+                    io.StringIO(json.dumps(self.context_invocation(public_input, recorded))),
+                ),
             ):
                 output = gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                    input=public_input.relative_to(root).as_posix(),
-                    owner_result="-",
+                    invocation="-",
+                    input=None,
+                    owner_result=None,
                     active_task=task_ref,
                     recovery_continuation_id=continuation_id,
                 ))
@@ -21959,6 +22988,8 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         temp, root = self.make_root()
         self.addCleanup(temp.cleanup)
         public_input = self.public_input(root)
+        public_input_path = root / "public-input.json"
+        public_input_path.write_text(json.dumps(public_input), encoding="utf-8")
         owner_path = root / "owner-result.json"
         owner_path.write_text("{}\n", encoding="utf-8")
         package = (
@@ -21975,7 +23006,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             self.assertRaises(gtt.WorkflowError) as raised,
         ):
             gtt.cmd_invoke_stage0_skill(argparse.Namespace(
-                input=public_input.relative_to(root).as_posix(),
+                input=public_input_path.relative_to(root).as_posix(),
                 owner_result=owner_path.relative_to(root).as_posix(),
             ))
         self.assertEqual(raised.exception.payload["code"], "invalid_owner_result")

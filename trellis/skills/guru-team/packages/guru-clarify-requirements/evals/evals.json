@@ -6,7 +6,7 @@
   "evals": [
     {
       "id": "clear-route",
-      "prompt": "Review the staged fully answered requirement scenario, complete the semantic owner result, and invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged fully answered requirement scenario, complete the semantic owner result, and invoke guru-clarify-requirements through its call-local --invocation - envelope. Return the checker-derived route.",
       "expected_exit": "clear",
       "expected_output": "The public DTO is the declared clear route.",
       "assertions": {
@@ -40,7 +40,7 @@
     },
     {
       "id": "needs-context-route",
-      "prompt": "Review the staged active-task scenario with named missing repository evidence, complete the semantic owner result, and invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged active-task scenario with named missing repository evidence, complete the semantic owner result, and invoke guru-clarify-requirements through its call-local --invocation - envelope. Return the checker-derived route.",
       "expected_exit": "needs_context",
       "expected_output": "The public DTO is the declared needs_context route.",
       "assertions": {
@@ -59,7 +59,7 @@
     },
     {
       "id": "refresh-context-route",
-      "prompt": "Review the staged standalone scenario whose source binding changed, complete the semantic owner result, and invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged standalone scenario whose source binding changed, complete the semantic owner result, and invoke guru-clarify-requirements through its call-local --invocation - envelope. Return the checker-derived route.",
       "expected_exit": "refresh_context",
       "expected_output": "The public DTO is the declared refresh_context route.",
       "assertions": {
@@ -78,7 +78,7 @@
     },
     {
       "id": "retarget-context-route",
-      "prompt": "Review the staged duplicate-selection scenario, complete the semantic owner result, then invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged duplicate-selection scenario, complete the semantic owner result, then invoke guru-clarify-requirements through its call-local --invocation - envelope. Return the checker-derived route.",
       "expected_exit": "retarget_context",
       "expected_output": "The public DTO is the declared retarget_context route.",
       "assertions": {
@@ -97,7 +97,7 @@
     },
     {
       "id": "new-task-route",
-      "prompt": "Review the staged independent-delivery scenario and confirmed side-effect-free draft, complete the semantic owner result, and invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged independent-delivery scenario and confirmed side-effect-free draft, complete the semantic owner result, and invoke guru-clarify-requirements through its call-local --invocation - envelope. Return the checker-derived route.",
       "expected_exit": "new_task",
       "expected_output": "The public DTO is the declared new_task route.",
       "assertions": {
@@ -116,7 +116,7 @@
     },
     {
       "id": "blocked-route",
-      "prompt": "Review the staged refusal and unresolved load-bearing question scenario, complete the semantic owner result, and invoke guru-clarify-requirements with its public input plus that private owner-result locator. Return the checker-derived route.",
+      "prompt": "Review the staged refusal and unresolved load-bearing question scenario, complete the semantic owner result, and invoke guru-clarify-requirements through its call-local --invocation - envelope. Return the checker-derived route.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO is the declared blocked route.",
       "assertions": {

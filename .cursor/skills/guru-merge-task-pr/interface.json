@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-merge-task-pr",
   "name": "guru-merge-task-pr",
   "description": "Merge one Ready task PR through a semantic live gate, expected-head mutation, and post-merge closure verification.",

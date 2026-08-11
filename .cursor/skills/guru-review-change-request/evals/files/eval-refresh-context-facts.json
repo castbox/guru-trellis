@@ -1,1 +1,19 @@
-{"scenario":"The live target authority no longer matches the reviewed readiness target.","owner_evidence":{"semantic_gate":"passed","checker_required":true,"stale_authority":["review_target"]},"owner_staging":{"recipe":"readiness-refresh"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json","--owner-prerequisites",".trellis/.runtime/guru-team/evals/prerequisites.json","--owner-change-request",".trellis/.runtime/guru-team/evals/change-request.json"]}}
+{
+  "scenario": "The live target authority no longer matches the reviewed readiness target.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true,
+    "stale_authority": [
+      "review_target"
+    ]
+  },
+  "owner_staging": {
+    "recipe": "readiness-refresh"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

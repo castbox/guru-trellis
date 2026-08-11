@@ -130,7 +130,7 @@ Before the target companion command runs, the Python dispatcher must derive the
 repository root from its audited installed location and component-wise `lstat`
 the dispatcher, package root, package interface, installed extension manifest,
 installed package inventory, and selected discovery copy. It must then validate
-current Interface 1.3, its exact `semantic` or `deterministic` stage profile,
+current Interface 1.4, its exact `semantic` or `deterministic` stage profile,
 `runtime_dependency`, extension/runtime API identity,
 dispatcher identity, distribution/portability, installed package drift, the
 fixed validator id, and its declared `runtime_command`. The command must be a
@@ -157,7 +157,7 @@ discover-skill-contract --root <repo> --mode <source|installed> \
 ```
 
 The command resolves the registry row, validates the exact current
-registry/Interface 1.3 identity, then returns package-relative locators for the
+registry/Interface 1.4 identity, then returns package-relative locators for the
 input, invocation, every per-exit output/example, consumer input, projection,
 and private artifact. It does not execute the semantic Skill, read private
 artifact contents, or ask callers to import the Python runtime.
@@ -204,23 +204,30 @@ limited to `direct|select|rename|normalize`.
 ## Current Intake Public Invocation Runtime
 
 Each current Intake package in the active registry owns one dispatcher-only
-public wrapper declared by Interface 1.3 `public_contracts.invocation`. The
+public wrapper declared by Interface 1.4 `public_contracts.invocation`. The
 wrapper passes its package root, fixed `public_invocation` validator id, and
 public argv to `run-skill-command`; it contains no local business logic,
 semantic route selection, private artifact parser, fallback runtime, or
 typed-output fixture. Only the live registry and current package contracts are
 valid invocation authority.
 
-`guru-sync-base` binds its declared scalar CLI arguments directly. The other
-five packages bind their current closed structured profiles and receive public
-input through either an exact declared package example or a repo-relative
-caller JSON path. Runtime validates only current caller-owned fields; user
-authorization and a workspace/task mutation refusal remain conversation-local.
+`guru-sync-base` binds its declared scalar CLI arguments through the closed
+deterministic invocation envelope. The other five packages accept the declared
+call-local envelope through stdin using exactly `--invocation -` (the public CLI
+does not combine it with `--input` or any `--owner-*` locator). The
+envelope keeps caller-owned public input, exactly one workflow transition, and
+the current Skill owner result structurally separate. Runtime validates each
+domain against its declared current schema; user authorization and workspace or
+task mutation refusal remain conversation-local.
+
 For semantic packages the public wrapper runs only after the owner loop has
-recorded its result, reruns the current objective checker, and derives the route
-from checker-passed owner evidence. It never accepts a caller-selected expected
-exit, reads another Skill's private checkpoint, or reads a public output example
-as production input.
+produced its call-local result, reruns the current objective checker, and
+derives the route from checker-passed owner evidence. The owner result is
+consumed by that wrapper and never projected to another Skill. It never accepts
+a caller-selected expected exit, reads another Skill's private checkpoint, or
+reads a public output example as production input. Normal pre-task invocation
+creates no repo-local input, owner-result, prerequisite, transition, task,
+workspace, or runtime file.
 
 `guru-sync-base` executes the formal resolver, executor, and checker inside the
 public invocation. Its public `base_branch` scalar is optional: an explicit
@@ -246,12 +253,17 @@ DTO. Public failures use only stable `code`, repo-relative `field_path`, and
 consumer must not read or import `guru_team_trellis.py` to perform discovery,
 invocation, projection, or error diagnosis.
 
+Path-based `--input` and `--owner-*` bindings, if retained, are explicitly
+compatibility-only adapters with a named consumer, bounded lifecycle, and
+removal condition. The workflow, production eval, and public end-to-end
+transcript must have zero references to them.
+
 ## Production Public Invocation Runtime
 
 `guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit` use
 the same dispatcher-only wrapper template and shared public invocation command
 as the Intake packages. Invocation identity is resolved from the active
-Interface 1.3 registry and the sole current `production-current-v1` contract
+Interface 1.4 registry and the sole current `production-current-v2` contract
 manifest. `invoke-stage0-skill` is the current shared dispatcher command id
 even though it serves every active production package.
 
@@ -292,7 +304,7 @@ root-only `$id`, local refs, plus the aggregate input's
 exact boundary-contained package-relative profile index. Boolean schemas, remote/unresolved/recursive refs,
 `patternProperties` and other unimplemented vocabulary, unsupported formats,
 and invalid regexes fail closed. The same grammar check applies to the current
-canonical registry/interface schemas and every Interface 1.3 public/private
+canonical registry/interface schemas and every Interface 1.4 public/private
 contract asset. The live registry and current package contracts are the
 complete schema-validation input.
 The exact accepted syntax and ECMA Unicode-mode search semantics are owned by
@@ -548,13 +560,16 @@ draft projection.
 
 Immediately before the first permitted GitHub or workspace/task mutation, the
 executor reconstructs the original resolver inputs from the checker-passed
-base prerequisite, calls `resolve_base_selection`, then `execute_base_sync`,
-and validates the fresh result. The plan's `post_sync_resolution_sha256` plus
-selected ref and HEAD projection must remain exact. If fetch reveals a normal
-remote advance, safe fast-forward may occur but the executor returns
-`refresh_review` before any issue/workspace/task/artifact/runtime write. Later
-same-invocation guards revalidate the already refreshed plan and local facts;
-they do not add locks, concurrency protocols, or a second remote sync loop.
+base prerequisite, validates the existing checker-passed sync result against
+current local facts, and reads the current remote base HEAD through
+`git ls-remote --heads`. The plan's `post_sync_resolution_sha256` plus selected
+ref and HEAD projection must remain exact. This guard never calls
+`execute_base_sync`, fetches, fast-forwards, or updates refs. A normal remote
+advance returns `refresh_review` before any
+issue/workspace/task/artifact/runtime write and leaves all local refs unchanged;
+the next Intake round invokes `guru-sync-base`. Later same-invocation guards
+revalidate the same reviewed plan and local facts without adding locks,
+concurrency protocols, or another remote synchronization loop.
 
 The checker validates the result schema, plan linkage, live issue or
 branch/worktree/task identity, artifact bytes/schema/digests/trackability,
@@ -593,6 +608,12 @@ lower-priority scalar or candidate input must not reject that selection.
 Candidate validation still fails closed before config-candidate or
 remote-default facts are produced when neither higher-priority source is selected.
 
+The `guru-sync-base` public wrapper is the only normal authoritative caller of
+this resolve/execute/check loop. Workflow Markdown, platform entries, and Skill
+instructions call the stable public Skill exactly once; they never run these
+components first. A refresh starts another complete public invocation rather
+than reusing a low-level result track.
+
 `--resolve-only` emits canonical resolution JSON and SHA-256 before fetch. The
 digest covers the complete resolution object, including decision checkout
 branch, HEAD and clean state. It
@@ -629,16 +650,28 @@ semantic pass, choose a route, or manage evidence files. Its workflow-only
 `--record-skipped` path emits stdout-only machine facts after the AI has
 reviewed a non-repo route; standalone rejects that path.
 
-`prepare-task` requires the prior validator/guard
-`post_sync_resolution_sha256` and the same resolver inputs. It calls the shared
-resolver/sync core before `gh auth status`, issue read, and duplicate search.
-It has no mutation path. `--base-branch` can assert equality but cannot rewrite
-config/config-candidate/remote-default provenance as explicit. The planner
-freshness functions remain adapters to the shared core. A stale
-planner result is blocking, not permission to continue planning. Each guard
-consumes the preceding validator's post-sync digest and returns its current
-post-sync digest. Neither prepare output nor any task artifact or runtime
-checkpoint persists the complete resolution/result stdout payloads.
+Compatibility-only `prepare-task` requires the complete reviewed base
+provenance: source, selected base, remote, ordered candidates,
+decision/local/remote HEADs, and `post_sync_resolution_sha256`. A digest or
+omitted CLI base alone cannot reconstruct it. Missing provenance returns
+`missing_reviewed_base_provenance` locally before `gh auth status`, GitHub read,
+fetch, duplicate search, or semantic Intake. The formal schema/runtime state
+matrix decides whether an absent remote ref is valid; the query never invents a
+nullable remote HEAD. Changed provenance or live base state returns its stable
+diagnostic and does not trigger semantic re-intake.
+
+The public flag is exactly `--reviewed-base-provenance '<JSON>'`. Its value is a
+single JSON scalar, never a file locator, and equals the closed eight-field
+`base_current.base` object exactly after JSON decoding. Optional
+`--base-branch` is an equality assertion only and never participates in source
+reconstruction.
+
+When provenance is valid, prepare may use the shared resolver/sync core only as
+its explicit compatibility diagnostic. It has no mutation path and never emits
+a Phase 0 transition. The planner freshness functions remain adapters to the
+shared core. A stale planner result is blocking, not permission to continue
+planning. Neither prepare output nor any task artifact or runtime checkpoint
+persists the complete resolution/result stdout payloads.
 
 Always gate GitHub operations with `gh auth status` through `require_gh_auth()`.
 Do not assume the GitHub CLI is configured just because `gh` exists.
@@ -1252,7 +1285,7 @@ digests and never the rejected credential URL.
 
 `discover-skill-evals.sh` and `run-skill-evals.sh` are thin wrappers for the
 deterministic `discover-skill-evals` and `run-skill-evals` subcommands.
-Discovery validates source/installed registry and Interface 1.3 state before it
+Discovery validates source/installed registry and Interface 1.4 state before it
 loads the fixed package-local corpus, then validates corpus identity, profile
 and exit references, fixtures, assertions, adapter inventory, and exact public
 invocation. A package without a declared current corpus returns a stable
@@ -1305,11 +1338,11 @@ Missing, incomplete, unbound, or output-mismatched receipts are
 fails closed. Trace invariants are never inferred from wrapper source text or
 the mere presence of a parseable native DTO.
 
-Production semantic case staging supplies explicit public-wrapper arguments
-whose owner-result locators resolve inside the current repository. The private
-runtime boundary maps the repo-external public projection wrapper to the
-corresponding installed, validator-audited package before dispatch, reruns the
-owner checker, and returns the actual exit. Adapter and native requests omit
+Production Phase 0 semantic case staging supplies closed call-local invocation
+envelopes through stdin; other current packages use only their declared public
+transport. The private runtime boundary maps the repo-external public projection
+wrapper to the corresponding installed, validator-audited package before
+dispatch, reruns the owner checker, and returns the actual exit. Adapter and native requests omit
 `expected_exit`; only the runner reads it after wrapper completion. Codex runs
 from the installed runtime's trusted Git root, Claude uses safe non-interactive
 input, and missing Cursor authentication returns deterministic `unsupported`.

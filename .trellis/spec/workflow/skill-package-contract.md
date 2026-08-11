@@ -96,7 +96,9 @@ workflow/standalone preconditions before a package command can run.
 
 ### 0. Current Interface And Registry Contract
 
-Issue #180 activates fifteen Interface 1.3 packages and 57 external exits.
+Issue #180 activated the fifteen-package/57-exit graph on Interface 1.3. The
+current activation upgrades all fifteen packages to Interface 1.4 and Registry
+1.3 while retaining the immutable Interface 1.3 assets as legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
 `merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
 `ready_for_merge` in place of `published`; the old published schema/example
@@ -121,9 +123,9 @@ post-merge read-only validation. A terminal projection retires the merge gate.
 Neither Finalizer nor Merge calls Issue-close APIs, enters Phase 0, invokes base
 sync, updates the PR branch, synchronizes local `main`, or cleans resources.
 
-All 15 active packages select `guru-team-skill-interface-1.3`. Registry schema
-`guru-team-skill-registry-1.2` is the exact current selector: every active row
-declares `interface_schema_id=guru-team-skill-interface-1.3`, while planned rows
+All 15 active packages select `guru-team-skill-interface-1.4`. Registry schema
+`guru-team-skill-registry-1.3` is the exact current selector: every active row
+declares `interface_schema_id=guru-team-skill-interface-1.4`, while planned rows
 remain lifecycle-only and carry no package or I/O fields. Any other row or
 schema identity fails closed.
 
@@ -132,7 +134,7 @@ guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
 for all fifteen active packages and their 57 external exits. The
-`production-current-v1` manifest remains exactly three packages and 11 exits;
+`production-current-v2` manifest remains exactly three packages and 11 exits;
 additive activation of later packages, including `guru-finalize-task`, does not
 rewrite that membership.
 
@@ -181,7 +183,7 @@ A deterministic Skill may use scalar CLI arguments instead of an input JSON
 schema when those arguments fully express the public call. Do not create an
 input schema merely for structural symmetry.
 
-Every Interface 1.3 scalar argument explicitly declares boolean `required`.
+Every current Interface 1.4 scalar argument explicitly declares boolean `required`.
 Only arguments with `required=false` may be omitted; remaining flag/value pairs
 preserve declaration order, may not repeat, and still pass their declared type
 validator. `guru-sync-base.base_branch` is optional. Omitting it passes an
@@ -336,7 +338,7 @@ The consumer's independently owned input schema may accept that object directly
 or declare a deterministic projection to its own field names. The producer's
 audit evidence and private checkpoint remain outside this public DTO.
 
-### 8. Interface 1.3 Closed Public Contracts
+### 8. Interface 1.3 Legacy Foundation And Interface 1.4 Current Contracts
 
 Interface 1.3 keeps the closed-loop identity, modes, stages, validators,
 external exits, re-entry, tests, and platform destinations of 1.2 and adds one
@@ -365,6 +367,11 @@ required closed `public_contracts` object with exactly six owned sections:
   `task_local_archive_transaction` means the checkpoint is untracked while the
   task is active and becomes tracked only through the predeclared single archive
   transaction; it must never cause a standalone evidence or metadata commit.
+
+Interface 1.4 retains those closed public sections and adds the versioned
+call-local invocation contract selected by the current activation. The legacy
+1.3 schema and examples remain byte-stable but are not selected by the current
+registry, extension inventory, production manifest, or installed package graph.
 
 All ids and locators are unique, package paths are regular non-symlink files,
 and public output schema ids and paths are each independently disjoint from
@@ -527,10 +534,10 @@ repo-relative `field_path`, and actionable `remediation`. Callers need only
 `SKILL.md`, `interface.json`, package-local public assets, and command help;
 they never import or read `guru_team_trellis.py`.
 
-Source validation executes the declared representative 1.3 example invocation,
+Source validation executes the declared representative 1.4 example invocation,
 requires exactly one declared typed-exit object on stdout, and validates it
 with that exit's independent schema. The current-only test fixture contains one
-structured semantic 1.3 package and one scalar CLI deterministic 1.3 package.
+structured semantic 1.4 package and one scalar CLI deterministic 1.4 package.
 It covers Skill/workflow/stop consumers,
 self-reentry, the closed projection operations, stdout-only and task-local
 private state, distinct exits, and stable errors, but never enters production
@@ -538,7 +545,7 @@ registry, extension inventories, workflow routes, or installed platform roots.
 
 ### Current Intake Production Activation
 
-The live registry and current Interface 1.3 packages contain exactly these
+The live registry and current Interface 1.4 packages contain exactly these
 Intake packages and exits:
 
 - `guru-sync-base`: `synced`, `skipped`, `blocked`;
@@ -550,9 +557,9 @@ Intake packages and exits:
   `review_wording`, `refresh_context`, `blocked`;
 - `guru-create-task-workspace`: `created`, `refresh_review`, `blocked`.
 
-All six packages select `guru-team-skill-interface-1.3`. The current
+All six packages select `guru-team-skill-interface-1.4`. The current
 six-package/23-exit contract is derived only from the live registry, current
-Interface 1.3 packages, workflow markers, extension inventories, and selected
+Interface 1.4 packages, workflow markers, extension inventories, and selected
 platform copies. User refusal stops before recorder/executor and emits no DTO,
 while optional `guru-sync-base` scalar arguments are derived by the runtime
 when omitted. A partially updated current Intake graph is invalid even when
@@ -578,13 +585,54 @@ schema, and emits a current 1.3 DTO without rewriting archived bytes.
 
 The five semantic public wrappers run only after their Agent-owned semantic
 loop and recorder/checker stage. Their invocation accepts the closed
-caller-owned public input plus repo-relative owner-result/supporting locators,
-reruns the existing objective checker, and derives the exit only from the
-checker-passed owner result. A caller-selected expected exit, public output
-example, or private artifact body is never a production routing input. Declared
-package examples and repo-relative caller JSON files are the only structured
-public-input path families; pre-task callers do not need to write into a
-managed package.
+caller-owned public input, the workflow-owned current transition, and the
+current Skill's owner result through a versioned call-local invocation
+envelope. Runtime reruns the existing objective checker and derives the exit
+only from the checker-passed owner result. A caller-selected expected exit,
+public output example, or private artifact body is never a production routing
+input.
+
+The Phase 0 transition family has five independent closed stages:
+`base_current`, `context_current`, `clarity_current`, `wording_current`, and
+`readiness_current`. Each stage is owned by workflow orchestration, contains
+only the identity/freshness projection required by its one next consumer, and
+is replaced rather than extended when refresh/re-entry invalidates it. A stage
+is not a producer checkpoint, audit artifact, semantic result, or optional-field
+aggregate. Unknown, missing, multiple, stale, cross-stage, or unmapped state
+fails closed.
+
+`base_current` preserves resolution source, selected base, remote, ordered
+candidates, decision HEAD, local base HEAD, remote base HEAD, and post-sync
+digest as distinct consumer-bound fields. The three HEAD roles must not collapse
+into a generic `base_head`. The formal closed schema/runtime state matrix owns
+whether a missing remote ref is legal for a diagnostic state; a caller never
+synthesizes a nullable fallback.
+
+The call-local transport uses distinct closed envelopes for deterministic sync,
+semantic invocation, and confirmed workspace mutation. Its public stdin form is
+exactly `--invocation -`; it cannot be combined with locator transport flags.
+A semantic envelope
+separates `public_input`, `transition`, and `owner_result`; the owner result
+belongs only to the currently invoked Skill and is never projected downstream.
+The initial sync has no upstream transition, and workspace plan/result transport
+does not persist confirmation. Normal pre-task execution carries envelopes and
+transitions through stdin/stdout or caller memory and creates no owner-result,
+prerequisite, transition, task, workspace, or `.trellis/.runtime/**` repository
+file. It also never imports the shared runtime source to reconstruct an input.
+
+Legacy `--input <path>` or `--owner-* <path>` forms may remain only when a
+documented compatibility consumer still exists. They are excluded from the
+workflow happy path, production evals, and clean-install transcript; their
+owner, short lifecycle, and removal condition must be explicit. They cannot be
+used to satisfy a missing current transition or to preserve authorization.
+
+Any previously published closed Phase 0 input/output schema and example keeps
+its original path, `$id`, and bytes. Adding transition or provenance fields uses
+a new versioned path/identity, and the current Interface selects only that new
+contract while inventory retains the immutable legacy assets required by the
+compatibility contract. A legacy DTO that cannot establish the current stage or
+source-preserving provenance fails closed and reruns its current producer; it
+must not default missing fields or derive them from ambient live state.
 
 For `guru-clarify-requirements:clear`, a checker-passed
 `active_task_scope_change` result may legitimately carry
@@ -594,8 +642,8 @@ initial or standalone profiles remains an invalid owner projection.
 
 ### Production Planning, Check, And Commit Activation
 
-`trellis/skills/guru-team/contracts/production-current.json` with contract id
-`production-current-v1` is the sole current planning/check/commit manifest. It
+`trellis/skills/guru-team/contracts/production-current-2.0.json` with contract id
+`production-current-v2` is the sole current planning/check/commit manifest. It
 extends the live six-Skill/23-exit Intake contract. The production contract
 contains exactly:
 
@@ -670,7 +718,7 @@ required-set equality, no-overwrite merge, and full target-schema validity;
 all other Skill/workflow/stop consumers keep their existing contracts.
 
 Active closure is derived from the live registry, the production current
-manifest, and every complete active Interface 1.3 row. Every
+manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
 The current package cardinality assertion is fifteen active Skills and 57
@@ -797,10 +845,13 @@ Resolution/result facts remain on stdout. The executor preserves
 `resolution_sha256` as the pre-sync resolve-to-execute identity and emits
 `post_sync_resolution` plus `post_sync_resolution_sha256` after synchronization.
 `check-base-sync` validates both identities, schema, facts digest, and live Git
-equality without mutation, then returns the post-sync digest. `prepare-task`
-reuses the same resolver/sync core for its query-only reads and consumes the
-current post-sync digest. It has no mutation guard; active workspace mutation
-freshness belongs to `guru-create-task-workspace`.
+equality without mutation, then returns the post-sync digest. The public wrapper
+projects the checked source, selected base, remote, ordered candidates,
+decision/local/remote HEADs, and post-sync digest into `base_current`.
+Compatibility-only `prepare-task` requires that complete reviewed provenance,
+not only its digest; missing provenance blocks locally before GitHub read or
+fetch. It has no mutation guard and never produces a workflow transition;
+active workspace mutation freshness belongs to `guru-create-task-workspace`.
 
 `guru-discover-change-context` is the active semantic consumer of
 `guru-sync-base:synced`. Both modes require identical `runtime_dependency`,
@@ -889,7 +940,7 @@ result chain.
 `guru-clarify-requirements` is an active semantic package with identical
 workflow/standalone preconditions: current runtime, current review target,
 current context evidence, source authority, and invocation-context freshness.
-Its Interface 1.3 semantic stages are `forward_behavior -> ai_review_gate ->
+Its Interface 1.4 semantic stages are `forward_behavior -> ai_review_gate ->
 conditional_human_confirmation -> recorder_validator -> typed_exit`. The Skill
 loads `trellis-brainstorm` as its one-question method, but owns question
 selection, convergence, scope classification, action selection, confirmation
@@ -1019,7 +1070,7 @@ fails closed. Planning approval consumes only the current checked
 classification, scanner, or semantic-review owner. It rereads the three current
 planning files and does not import scanner hits, classification history, file
 digests, or the wording owner's private result. Inputs outside the current
-Interface 1.3 contracts fail closed; only the checked current invocation output
+Interface 1.4 contracts fail closed; only the checked current invocation output
 may be consumed.
 
 ## Change Request Readiness Package
@@ -1102,11 +1153,14 @@ missing, partial, or mixed provenance fails closed.
 
 The plan also binds the checker-passed base result's
 `post_sync_resolution_sha256`. Before the first GitHub issue or workspace/task
-mutation, the executor runs the shared resolver and sync core once. The fresh
-selected base, refs, decision/local/remote HEADs, and post-sync identity must
-equal the reviewed plan. A normal remote advance may be fetched and safely
-fast-forwarded, but it returns `refresh_review` before issue, branch, worktree,
-task, artifact, or runtime mutation because the reviewed base identity changed.
+mutation, the executor reconstructs the reviewed resolution, revalidates its
+local decision/base/remote-tracking facts, and uses read-only
+`git ls-remote --heads` to compare the current remote base HEAD. This guard must
+not fetch, fast-forward, or update any local ref. A normal remote advance
+returns `refresh_review` with decision HEAD, local base, remote-tracking ref,
+issue, branch, worktree, task, artifact, and runtime state all unchanged; the
+next complete Intake round re-enters the sole authoritative
+`guru-sync-base` public invocation.
 
 Assignee resolution order is explicit input, exactly one issue assignee, zero
 issue assignees to current GitHub login, then an AI/user choice for multiple or
@@ -1227,7 +1281,7 @@ installer/validator walks every component with `lstat`. A regular, dangling,
 internal, external, or multilevel symlink at the target or any ancestor fails
 closed; no asset may be read from or written through it.
 
-Package command files are thin wrappers. Interface 1.3 source validation binds
+Package command files are thin wrappers. Interface 1.4 source validation binds
 the invocation command to one declared validator and requires the complete
 wrapper bytes to match the supported dispatcher-only template; a dispatcher
 name in a comment, dead branch, or adjacent local output/behavior is not route
@@ -1253,7 +1307,7 @@ The stable command is:
 `source` binds the canonical registry/interface Draft 2020-12 schemas by exact
 dialect, schema id, and contract digest, validates their closed supported
 keyword grammar, then applies every accepted constraint to production and
-fixture instances. Interface 1.3 contract assets use the same recursive
+fixture instances. Interface 1.4 contract assets use the same recursive
 Draft 2020-12-compatible closed subset described above; unsupported standard
 vocabulary is rejected rather than ignored. Source also validates ids, paths,
 required package files, parseable package-local artifact schemas, safe existing
@@ -1283,7 +1337,7 @@ signed URLs, `.env` values, or machine-specific absolute paths.
 
 ## Package-Local Skill Evaluation Contract
 
-Interface 1.3 packages may publish a behavior corpus only at
+Interface 1.4 packages may publish a behavior corpus only at
 `<skill-root>/evals/evals.json`. The closed schema id is
 `guru-team-skill-evals-1.0`: `schema_version=1.0`, exact `skill_name`, and a
 non-empty `evals[]` whose case ids are unique stable strings. Each case owns a
@@ -1294,7 +1348,7 @@ including `expectations`, `null`, unsafe paths, symlinks, and unknown
 profile/exit/assertion references fail closed. Adapters accept only this current
 corpus shape and never translate or rewrite another input contract.
 
-The eval runner discovers the Interface 1.3 public invocation and executes its
+The eval runner discovers the Interface 1.4 public invocation and executes its
 declared wrapper for every selected case. It records the actual typed exit and
 validates the DTO against that exit's independent output schema. Deterministic
 grading is limited to closed JSON-pointer, isolated-file, and public-invocation
@@ -1317,7 +1371,7 @@ consumer projection, semantic judgment, or platform-specific corpus. Missing
 native capability returns `unsupported`. Comparison accepts only a pair of
 caller-resolved exact package paths, binds grading and feedback to each side
 independently, and never interprets floating refs. Before either side executes,
-the runner independently validates each side's closed Interface 1.3 contract,
+the runner independently validates each side's closed Interface 1.4 contract,
 byte-identical corpus, fixtures, and public invocation/output assets, then
 creates a side-local invocation and per-exit output-schema DTO. The adapter
 binds that DTO back to the exact package Interface and invokes that side's
@@ -1404,7 +1458,7 @@ dropping business data or inventing another projection operation.
 
 ## Task Publication Review Owner
 
-`guru-review-task-publication` is the active Interface 1.3 semantic owner
+`guru-review-task-publication` is the active Interface 1.4 semantic owner
 between `guru-review-branch:passed` and finalization. Workflow and standalone
 use the same eight entry preconditions, ten-dimension AI Review Gate,
 conditional confirmation, ignored-runtime recorder/checker, metadata revision
@@ -1510,8 +1564,8 @@ three Skills and 11 exits.
 
 ## Extension Installation Verification Owner
 
-`guru-verify-extension-installation` is an additive active Interface 1.3
-semantic package. It is outside the three-Skill `production-current-v1`
+`guru-verify-extension-installation` is an additive active Interface 1.4
+semantic package. It is outside the three-Skill `production-current-v2`
 manifest and remains an independent active registry row. Its
 workflow and standalone modes share runtime, target repository, extension source,
 ownership, persistence, and freshness preconditions, then execute the exact
@@ -1623,7 +1677,7 @@ installation.
 
 ## Task Finalization Owner
 
-`guru-finalize-task` is the active Interface 1.3 semantic owner of the complete
+`guru-finalize-task` is the active Interface 1.4 semantic owner of the complete
 task closeout loop. Its six distinct public profiles cover publication entry,
 verified verification re-entry, task-bearing standalone not-required re-entry,
 same-plan resume, cross-month reprepare, and standalone finalization. Producer

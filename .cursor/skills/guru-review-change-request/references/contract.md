@@ -152,14 +152,17 @@ wrong prerequisite exits, consumer and target/content mismatch, live target
 drift, and both draft variants' source-authority digest
 mismatch. They do not replace producers with handwritten portable projections.
 
-## Interface 1.3 Public Handoff
+## Interface 1.4 Public Handoff
 
 The public target profiles are `current_issue`, `proposed_draft`, and
 `standalone_request`. After all owner checks,
-`scripts/invoke.sh --input ... --owner-result ... --owner-prerequisites ... --owner-change-request ...`
-reruns the existing checker against the same private bindings, derives the
-Agent-owned route from its checked result, and serializes one
-readiness/re-entry/stop DTO. Full prerequisite and finding evidence remains
-private. The `ready` DTO contains only the fixed `execute_reviewed_plan` profile
-and invocation mode needed by its direct workspace consumer; it does not copy
-target, repository, continuation, authorization, or owner artifact fields.
+`scripts/invoke.sh --invocation -` receives the closed call-local public input,
+`wording_current` transition, and current owner result. It reruns the existing
+checker against the transition's checker-bound clarity, wording, and target
+projections, derives the Agent-owned route from its checked result, and
+serializes one readiness/re-entry/stop DTO. Full prerequisite and finding
+evidence remains private. The `ready` DTO contains only the fixed
+`execute_reviewed_plan` profile and invocation mode needed by its direct
+workspace consumer; it does not copy target, repository, continuation,
+authorization, or owner artifact fields. Locator arguments remain
+compatibility-only and are excluded from the normal workflow.

@@ -42,8 +42,15 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
 8. Obtain exactly the confirmation required for this invocation without
    writing the authorization or authorization process anywhere. Refusal stops
    here before any owner recorder/executor call and produces no result or DTO.
-9. After confirmation, run `record-task-workspace-plan`, `create-task-workspace`, and
-   `check-task-workspace-result` in order.
+9. After confirmation, run `record-task-workspace-plan --invocation -`,
+   `create-task-workspace --invocation -`, and
+   `check-task-workspace-result --invocation -` in order. Their closed stdin
+   envelopes carry the current `readiness_current` transition, owner plan, and,
+   when applicable, the checked executor result. Runtime deterministically
+   reconstructs the minimal checker projections from the transition; complete
+   predecessor owner payloads stay private to their owning Skills. No
+   prerequisite payload or locator crosses the Skill boundary, and the calls
+   create no repository evidence files.
 10. Return exactly one declared typed exit.
 
 ## AI Review Gate
@@ -112,8 +119,12 @@ It writes exactly one tracked task-local Intake artifact:
 
 - `issue-scope-ledger.json`
 
-All other prerequisite evidence stays owner-private and is reread from its
-owner when needed. Local path mappings are
+All other prerequisite evidence stays call-local and owner-private. Normal
+record/execution/check transport validates `call-local:<stage>` plan tokens
+against the exact in-memory payloads; it does not create or reread prerequisite
+files. Compatibility-only locator calls remain available until the next
+breaking Interface migration and are excluded from workflow, production eval,
+and installed transcript paths. Local path mappings are
 written only under ignored `.trellis/.runtime/guru-team/workspaces/` and
 `.trellis/.runtime/guru-team/tasks/`. Guru runtime never reads, copies,
 initializes, restores, or requires `.trellis/.developer` or
@@ -140,13 +151,14 @@ Unknown, multiple, unmapped, or consumer-mismatched exits fail closed.
 `prepare-task` is query-only and exposes no mutation path; direct callers must
 enter this Skill.
 
-## Interface 1.3 Public Handoff
+## Interface 1.4 Public Handoff
 
 The single `execute_reviewed_plan` public profile carries only `profile` and
 `mode`; target, naming, and recovery remain owner-private, while authorization
 exists only in the current dialogue. Any input outside that current profile is
 rejected by the declared schema. After the owner mutation/check loop,
-`scripts/invoke.sh --input ... --owner-result ... --owner-plan ...` reruns the
-existing result checker and serializes one minimal result derived from its
-checked executor outcome. Plan, result, and runtime mappings remain ignored,
-owner-private artifacts.
+`scripts/invoke.sh --invocation -` reruns the existing result checker from the
+closed call-local envelope and serializes one minimal result derived from its
+checked executor outcome. Normal plan, result, and prerequisite transport is
+in-memory; only compatibility locators and genuine interrupted same-owner
+recovery may use ignored owner-private artifacts.

@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-select-workflow-mode",
   "name": "guru-select-workflow-mode",
   "description": "Select standard Guru Team intake or a bounded task-free current-checkout route through one AI-owned semantic decision.",

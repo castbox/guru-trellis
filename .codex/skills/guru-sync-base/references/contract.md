@@ -23,9 +23,11 @@ requires caller-recognized explicit refresh/verify intent and never returns
 
 ## Forward Behavior
 
-Run the `sync_executor` wrapper with `--resolve-only`, `--mode`, repository
-root, remote and optional explicit base. Resolution uses this strict order and
-never consults current branch as a fallback:
+The caller invokes only the public `scripts/invoke.sh --invocation -` wrapper.
+Inside that one authoritative invocation, the runtime first executes the
+`sync_executor` component in resolve-only mode with the reviewed mode,
+repository root, remote and optional explicit base. Resolution uses this strict
+order and never consults current branch as a fallback:
 
 1. explicit `--base`;
 2. non-empty scalar `base_branch`;
@@ -44,22 +46,23 @@ branch and HEAD, plus `resolution_sha256`, on stdout only.
 
 ## Digest-Bound Execution
 
-Run `sync_executor --execute` with the same resolution inputs and exact expected
-pre-sync resolution digest. The executor recomputes the complete resolution
-object before its first fetch and rejects any mismatch. After synchronization,
-it emits the full `post_sync_resolution` identity and
+Within the same public invocation, the runtime executes the `sync_executor`
+component with the same resolution inputs and exact expected pre-sync
+resolution digest. The executor recomputes the complete resolution object
+before its first fetch and rejects any mismatch. After synchronization, it
+emits the full `post_sync_resolution` identity and
 `post_sync_resolution_sha256`. Already-equal execution may keep the same digest;
 fast-forward execution must produce a new digest bound to the synchronized HEAD.
 
-The result validator receives the pre-sync digest, validates both resolution
-identities, and returns only the post-sync digest to the next consumer. Every
-later `prepare-task` invocation receives the same resolution inputs and the
-preceding post-sync digest through `--expected-resolution-sha256`. Prepare
-recomputes the source-preserving resolution before `gh auth status`,
-issue/duplicate reads, or fetch, then repeats the shared guard immediately
-before GitHub issue, worktree, and Trellis task mutations. Each guard returns
-its post-sync digest for the next guard. Identity or digest drift blocks before
-fetch and all later reads or mutations.
+The internal result validator receives the pre-sync digest, validates both
+resolution identities, and projects the complete eight-field `base_current`
+provenance to Discovery. Compatibility-only `prepare-task` requires that exact
+reviewed provenance through `--reviewed-base-provenance '<JSON>'`; optional
+`--base-branch` is only an equality assertion. Missing provenance returns
+`missing_reviewed_base_provenance` before `gh auth status`, GitHub reads or
+fetch. Changed provenance or live base facts return a stable blocking
+diagnostic and never start semantic re-intake. `prepare-task` is query-only and
+has no GitHub issue, worktree or Trellis task mutation path.
 
 Execution performs only an explicit remote-tracking refspec fetch. An already
 equal local base is unchanged. A behind local base can fast-forward only when it
@@ -81,10 +84,11 @@ confirmation, post-execution AI Review Gate or conditional human confirmation.
 
 ## Objective Validation And Exits
 
-Run `result_validator --result-json <executor-stdout-json>` with the expected
-pre-sync digest. The validator checks objective schema identity, closed field
-shape, facts digest, pre/post resolution identities, selected refs, clean state,
-and live three-way equality. It never fetches or mutates Git.
+The public wrapper internally runs `result_validator` against executor stdout
+and the expected pre-sync digest. The validator checks objective schema
+identity, closed field shape, facts digest, pre/post resolution identities,
+selected refs, clean state, and live three-way equality. It never fetches or
+mutates Git.
 
 - `synced`: the digest-bound executor and live Git validator passed; the typed
   result carries `post_sync_resolution_sha256` and workflow enters
@@ -101,21 +105,23 @@ the deterministic profile cannot absorb that behavior.
 
 ## Runtime Dependency
 
-Both wrappers locate only the installed `run-skill-command` dispatcher and pass
-a fixed validator id. The dispatcher proves interface schema 1.3, installed
+All package wrappers locate only the installed `run-skill-command` dispatcher
+and pass a fixed validator id. The dispatcher proves interface schema 1.4, installed
 manifest/runtime API, declared runtime command, managed package inventory and
 selected discovery copy before execution. The package is not self-contained or
 portable. Missing or drifted runtime and unresolved `.new`/`.bak` sidecars fail
 before fetch and require complete Guru Team preset install/upgrade plus source
 and installed Skill validation.
 
-## Interface 1.3 Public Handoff
+## Interface 1.4 Public Handoff
 
 The public wrapper is `scripts/invoke.sh` and its validator id is
-`public_invocation`. It accepts only the declared scalar arguments. Direct
-entry supplies repository root and route explicitly; a typed re-entry may omit
-them, in which case the owner derives the current repository (`.`) and the
-only valid re-entry route (`repo_change`). Runtime
+`public_invocation`. Normal workflow invocation is the closed call-local
+`scripts/invoke.sh --invocation -` envelope; the declared scalar arguments
+remain the compatibility CLI. Direct compatibility entry supplies repository
+root and route explicitly; a typed re-entry may omit them, in which case the
+owner derives the current repository (`.`) and the only valid re-entry route
+(`repo_change`). Runtime
 performs the formal resolver, executor, and checker sequence, derives live Git
 facts, and serializes one per-exit DTO. The optional `--base-branch` value is the
 caller-owned explicit selected-base scalar when present; when omitted, the

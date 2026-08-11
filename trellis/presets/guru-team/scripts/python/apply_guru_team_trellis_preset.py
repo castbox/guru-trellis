@@ -58,15 +58,19 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
 ).encode("utf-8")
 SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
 CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
+    "production-contract-manifest-2.0.schema.json",
     "production-contract-manifest.schema.json",
     "skill-eval-adapter-request.schema.json",
     "skill-eval-adapter-response.schema.json",
     "skill-eval-human-feedback.schema.json",
     "skill-eval-native-trace.schema.json",
+    "skill-eval-run-2.0.schema.json",
     "skill-eval-run.schema.json",
     "skill-eval-semantic-grading.schema.json",
     "skill-evals.schema.json",
     "skill-interface-1.3.schema.json",
+    "skill-interface-1.4.schema.json",
+    "skill-registry-1.3.schema.json",
     "skill-registry.schema.json",
 })
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))

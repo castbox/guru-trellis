@@ -5,8 +5,7 @@
   "additionalProperties": false,
   "required": [
     "exit_id",
-    "mode",
-    "base_branch"
+    "mode"
   ],
   "properties": {
     "exit_id": {

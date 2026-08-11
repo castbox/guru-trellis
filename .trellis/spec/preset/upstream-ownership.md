@@ -122,8 +122,15 @@ validator has no schema-version-specific branch.
 
 Guru public packages, consumer schemas, eval corpora, adapter runtime, native
 trace contracts, companion scripts, and selected-platform `guru-*` discovery
-copies are additive Guru-owned assets. Their current Interface 1.3 identities
+copies are additive Guru-owned assets. Their current Interface 1.4 identities
 come from the live registry and package contracts.
+
+The Phase 0 five-stage transition family, call-local invocation envelopes,
+shared runtime, and activation manifest live inside those existing anchored
+Guru namespaces. They activate atomically with the six current Intake packages
+and do not add an ownership rule, managed claim, or overlay. A mixed graph,
+unknown asset, manifest mismatch, or any `.new`/`.bak` sidecar remains a
+current-contract failure before activation.
 
 Schema migrations inside those existing Guru namespaces do not expand path
 ownership or managed claims. Publication/Finalizer 4.0, closeout plan 3.0, and

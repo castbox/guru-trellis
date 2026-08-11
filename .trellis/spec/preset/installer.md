@@ -102,7 +102,7 @@ Before any public skill read/write/remove, validate lexical repo containment
 and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
-The atomic current package inventory includes the Interface 1.3 additive
+The atomic current package inventory includes the Interface 1.4 additive
 `skill_input_authoring_seed` schema shape, twelve target-owned authoring
 examples, the production manifest bindings, the seven finalization-family
 bindings, and their validator/probe tests. Canonical, installed, shared, Codex,
@@ -521,15 +521,31 @@ prompt context or ordinary Skill invocation payloads.
 
 The preset installs only the live six-package/23-exit Intake contract,
 including optional `guru-sync-base.repo_root` / `route` scalar arguments. The
-six production packages, registry, current public and consumer
-schemas/examples, package wrappers, shared runtime, extension
-inventories, eval corpora, and selected platform copies are validated together
-before target activation. The installed validator runs immediately after apply.
-Failure preserves the prior complete graph and reports conflicts or sidecars;
-it must not leave a partially updated current Intake graph.
+six production packages, five-stage transition family, call-local invocation
+envelopes, current public and consumer schemas/examples, package wrappers,
+shared runtime, registry, extension/activation manifests, eval corpora, and
+selected platform copies are one versioned activation unit. Source staging
+validates the complete unit before target mutation, and installed validation
+runs immediately after apply. Failure preserves the prior complete graph and
+reports conflicts or sidecars; it must not leave a partially updated or mixed
+old/new Intake graph.
+
+The installed normal route invokes only the `guru-sync-base` public wrapper for
+authoritative synchronization, carries `base_current`, `context_current`,
+`clarity_current`, `wording_current`, and `readiness_current` call-locally, and
+has zero production references to repo-local owner/prerequisite locators.
+Compatibility locator assets may be staged only when declared by the current
+inventory and must not appear in workflow, production eval, or throwaway happy
+path examples.
+
+Published 1.0 Phase 0 schema/example paths remain immutable legacy inventory.
+Current Interfaces select new versioned contracts where a required transition
+or provenance field was added; staging validates both the selected current graph
+and retained legacy bytes. Reapply never rewrites a legacy path into the new
+shape, and no migration may synthesize missing current identity from live state.
 
 The transaction includes the executable shared native evaluator and preserves
-its mode. Interface 1.3 accepts explicit boolean scalar `required`; the staged
+its mode. Interface 1.4 accepts explicit boolean scalar `required`; the staged
 `guru-sync-base` package marks `repo_root`, `base_branch`, and `route` optional,
 and fresh/current-update probes execute explicit and omitted paths through the
 same resolver.
@@ -540,10 +556,12 @@ replaces the complete six-package activation unit. Fresh install, current update
 `trellis update`, and repeated preset apply all end with the same manifest,
 registry, extension, package, corpus, and selected-platform bytes and modes.
 The verifier scans recursively for `.new` and `.bak` after each transition.
+Clean throwaway installation runs the actual-stdout six-Skill transcript; an
+isolated package test or handwritten intermediate DTO does not prove activation.
 
 ## Production Skill Atomic Activation
 
-`production-current-v1` is the sole current planning/check/commit contract. The
+`production-current-v2` is the sole current planning/check/commit contract. The
 preset stages its schema, manifest, three complete package trees, consumer
 schemas, registry, extension inventory, installed provenance, and selected
 platform copies in one transaction. The transaction validates the complete
@@ -573,7 +591,7 @@ changing any package-local public contract.
 
 ## Task Publication Package Activation
 
-`guru-review-task-publication` is installed as an additive active Interface 1.3
+`guru-review-task-publication` is installed as an additive active Interface 1.4
 package together with its registry row, active `guru-finalize-task` consumer
 identity, consumer schemas, runtime commands, extension inventories, canonical
 workflow markers, installed shared package, and selected Codex/Cursor/Claude copies.
@@ -583,8 +601,8 @@ tests, and canonical eval corpus.
 
 The activation contributes to the current package closure of fifteen active
 Skills and 57 external exits.
-`production-current-v1` remains exactly three Skills and 11 exits; #116 is an
-additional complete active Interface 1.3 row. The current Branch Review
+`production-current-v2` remains exactly three Skills and 11 exits; #116 is an
+additional complete active Interface 1.4 row. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
 
 The preset transaction does not install any `trellis-continue` payload. Initial
@@ -606,7 +624,7 @@ prove legacy 3.0 DTOs fail closed rather than being silently upgraded.
 ## Extension Installation Verification Package Activation
 
 `guru-verify-extension-installation` is installed as an additive active
-Interface 1.3 package with its two input profiles, four per-exit contracts,
+Interface 1.4 package with its two input profiles, four per-exit contracts,
 workflow/stop consumers, private gate schema, seven-case corpus, thin wrappers,
 registry row, workflow markers, and extension inventories. It participates in
 the current fifteen-Skill/57-exit package graph without changing the live
@@ -657,7 +675,7 @@ remote ref/HEAD or report that verification as deferred.
 
 ## Task Finalization Package Activation
 
-`guru-finalize-task` is installed as an additive active Interface 1.3 package
+`guru-finalize-task` is installed as an additive active Interface 1.4 package
 with six distinct public input profiles, six `exit_id` output contracts,
 twelve target-owned `skill_input_authoring_seed` handoffs across the
 complete package graph, one owner-private finalization gate, the minimal
