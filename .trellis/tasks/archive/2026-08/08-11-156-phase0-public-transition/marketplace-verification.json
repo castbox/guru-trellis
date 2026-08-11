@@ -1,0 +1,38 @@
+{
+  "schema_version": "4.0",
+  "skill_id": "guru-verify-extension-installation",
+  "mode": "workflow",
+  "profile": "verification_required",
+  "immutable_identity": {
+    "repo_ref": "castbox/guru-trellis",
+    "remote": "origin",
+    "ref": "refs/heads/codex/156-phase0-public-transition",
+    "branch_review_commit": "ca25da5166d142300285774397c2da675b01448c",
+    "publication_head": "e704359bdd4593750e1fa8848eb72f4594d7dcc4",
+    "extension_source_commit": "ca25da5166d142300285774397c2da675b01448c",
+    "capability_profile": [
+      "existing_repo_preview_switch",
+      "managed_conflict_sidecars",
+      "marketplace_index",
+      "new_repo_init",
+      "ownership_inventory",
+      "platform_equality",
+      "preset_initial_apply",
+      "preset_reapply",
+      "readme_commands",
+      "redaction",
+      "skill_contract_discovery",
+      "trellis_update_reapply"
+    ]
+  },
+  "semantic_result": {
+    "typed_exit": "verified",
+    "conclusion": "verified",
+    "finding_refs": [],
+    "blocker": null
+  },
+  "unverified_boundaries": [],
+  "identity": {
+    "verification_ref": "extension-verification:68d1d2b84e61c61480b18e80"
+  }
+}
