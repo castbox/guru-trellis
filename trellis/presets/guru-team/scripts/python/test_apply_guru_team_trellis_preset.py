@@ -1104,6 +1104,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("installed-phase0-transcript-after-update", verifier)
         self.assertIn('payload["exit_family_count"] == 23', verifier)
         self.assertIn('len(payload["six_step_transcript"]) == 6', verifier)
+        self.assertIn('row["edge_id"] for row in payload["reentry_transcripts"]', verifier)
+        self.assertIn(
+            'row["source"] for row in payload["refresh_provenance_transcripts"]',
+            verifier,
+        )
         self.assertIn('"legacy_typed_output_schema_ids"', verifier)
         self.assertIn(
             'len(api["skill_contracts"]["legacy_typed_output_schema_ids"]) == 5',
@@ -1194,6 +1199,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("bind_workspace_plan_to_transition", installed_phase0)
         self.assertNotIn("phase0-transcript/change-request.json", installed_phase0)
         self.assertIn("stage_transcript_owner_repo", installed_phase0)
+        self.assertIn("project_installed_output", installed_phase0)
+        self.assertIn("def reentry_transcripts(", installed_phase0)
+        self.assertIn("def refresh_provenance_transcripts(", installed_phase0)
         self.assertIn("workspace_plan_for_transition", installed_phase0)
         self.assertIn("assert_forbidden_runtime_absent", installed_phase0)
         chain_source = installed_phase0[

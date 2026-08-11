@@ -21527,6 +21527,7 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
         )
         for relative in (
             Path("transitions/base-current.schema.json"),
+            Path("transitions/context-current.schema.json"),
             Path("transitions/clarity-current.schema.json"),
             Path("invocations/semantic-owner.schema.json"),
         ):
@@ -21917,6 +21918,265 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             },
         )
         self.assertIn("transition_workspace_plan_mismatch", workspace_errors)
+
+    def test_standalone_transition_owner_binding_rejects_mismatch(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        target_url = "https://github.com/example/repo/issues/1"
+        transition = {
+            "mode": "standalone",
+            "target_locator": target_url,
+            "continuation_id": "standalone-current",
+            "base": {},
+            "authority_content_sha256": digest("current body"),
+        }
+        errors = gtt.stage0_transition_owner_errors(
+            "guru-clarify-requirements",
+            {
+                "profile": "standalone_review",
+                "mode": "standalone",
+                "target_locator": "#1",
+                "continuation_id": "standalone-current",
+            },
+            transition,
+            {
+                "mode": "standalone",
+                "typed_exit": "clear",
+                "review_target": {
+                    "kind": "issue",
+                    "url": "https://github.com/example/repo/issues/2",
+                    "body_sha256": digest("different body"),
+                },
+            },
+            None,
+        )
+
+        self.assertIn("transition_clarity_target_mismatch", errors)
+        self.assertIn("transition_clarity_authority_content_mismatch", errors)
+
+    def test_reentry_outputs_feed_target_invocation_and_linkage_contracts(self) -> None:
+        temp, root = self.make_root()
+        self.addCleanup(temp.cleanup)
+        discovery_owner = self.valid_owner_result(root)
+        base_transition = self.base_transition(discovery_owner)
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        target_url = "https://github.com/example/guru-extension/issues/1"
+        target_body = digest("target body")
+        context_transition = {
+            "schema_version": "1.0",
+            "transition_id": "context_current:" + digest("context")[:24],
+            "stage": "context_current",
+            "mode": "workflow",
+            "repo_locator": "example/guru-extension",
+            "base": copy.deepcopy(base_transition["base"]),
+            "target_locator": target_url,
+            "continuation_id": "reentry-current",
+            "context_result_sha256": digest("context"),
+            "authority_content_sha256": target_body,
+        }
+        clarity = {
+            "facts_sha256": digest("clarity"),
+            "target_sha256": digest("clarity-target"),
+            "disposition_sha256": digest("disposition"),
+            "content_sha256": target_body,
+            "scope_sha256": digest("scope"),
+        }
+        disposition = {
+            "disposition_sha256": clarity["disposition_sha256"],
+            "duplicate_facts_sha256": digest("duplicates"),
+        }
+        wording_transition = {
+            "schema_version": "1.0",
+            "transition_id": "wording_current:" + digest("wording")[:24],
+            "stage": "wording_current",
+            "mode": "workflow",
+            "repo_locator": "example/guru-extension",
+            "base": copy.deepcopy(base_transition["base"]),
+            "target_locator": target_url,
+            "continuation_id": "reentry-current",
+            "context_result_sha256": context_transition["context_result_sha256"],
+            "clarity_result_sha256": clarity["facts_sha256"],
+            "wording_facts_sha256": digest("wording"),
+            "target_content_sha256": digest("target content"),
+            "clarity": clarity,
+            "wording": {
+                "facts_sha256": digest("wording"),
+                "scope_sha256": digest("wording scope"),
+                "scan_sha256": digest("wording scan"),
+                "target_content_sha256": digest("target content"),
+            },
+            "target_disposition": disposition,
+        }
+        skills_root = Path(gtt.__file__).resolve().parents[4] / "skills/guru-team"
+
+        def actual_output(
+            skill_id: str,
+            exit_id: str,
+            public_input: dict[str, object],
+            owner_result: dict[str, object],
+            upstream: dict[str, object],
+        ) -> tuple[dict[str, object], dict[str, object]]:
+            package = skills_root / "packages" / skill_id
+            interface = gtt.read_json(package / "interface.json")
+            schema, projection = gtt.stage0_output_contract(
+                skill_id, package, interface, exit_id
+            )
+            transition = gtt.stage0_build_transition(
+                skill_id,
+                exit_id,
+                public_input,
+                owner_result,
+                upstream,
+            )
+            output = gtt.stage0_build_output(
+                skill_id,
+                exit_id,
+                public_input,
+                owner_result,
+                None,
+                None,
+                schema,
+                transition,
+                upstream,
+            )
+            self.assertEqual(
+                gtt.skill_json_schema_validation_errors(
+                    output, schema, f"actual {skill_id}:{exit_id} output"
+                ),
+                [],
+            )
+            return output, gtt.skill_apply_projection(projection, output)
+
+        def parse_target(
+            skill_id: str,
+            public_input: dict[str, object],
+            transition: dict[str, object],
+            owner_result: dict[str, object],
+        ) -> None:
+            interface = gtt.read_json(
+                skills_root / "packages" / skill_id / "interface.json"
+            )
+            envelope = {
+                "schema_version": "1.0",
+                "public_input": public_input,
+                "transition": transition,
+                "owner_context": {},
+                "owner_result": owner_result,
+            }
+            args = argparse.Namespace(
+                invocation="-",
+                input=None,
+                owner_result=None,
+                owner_prerequisites=None,
+                owner_change_request=None,
+                owner_plan=None,
+            )
+            with mock.patch.object(sys, "stdin", io.StringIO(json.dumps(envelope))):
+                parsed = gtt.stage0_call_local_invocation(
+                    root, skill_id, interface, args
+                )
+            self.assertEqual(parsed["transition"], transition)
+            self.assertEqual(
+                gtt.stage0_transition_owner_errors(
+                    skill_id,
+                    public_input,
+                    transition,
+                    owner_result,
+                    None,
+                ),
+                [],
+            )
+
+        clarification_owner = {
+            "mode": "workflow",
+            "typed_exit": "needs_context",
+            "review_target": {
+                "kind": "issue",
+                "repo": "example/guru-extension",
+                "url": target_url,
+                "body_sha256": target_body,
+            },
+        }
+        needs_output, needs_input = actual_output(
+            "guru-clarify-requirements",
+            "needs_context",
+            {
+                "profile": "initial_change_request",
+                "mode": "workflow",
+                "target_locator": target_url,
+                "continuation_id": "reentry-current",
+            },
+            clarification_owner,
+            context_transition,
+        )
+        parse_target(
+            "guru-discover-change-context",
+            needs_input,
+            needs_output["transition"],
+            discovery_owner,
+        )
+
+        readiness_owner = {
+            "mode": "workflow",
+            "target": {
+                "kind": "existing_issue",
+                "repo": "example/guru-extension",
+                "issue_number": 1,
+                "url": target_url,
+                "body_sha256": target_body,
+            },
+        }
+        readiness_input = {
+            "profile": "current_issue",
+            "mode": "workflow",
+            "target_locator": target_url,
+            "continuation_id": "reentry-current",
+        }
+        clarify_output, clarify_input = actual_output(
+            "guru-review-change-request",
+            "clarify_requirements",
+            readiness_input,
+            readiness_owner,
+            wording_transition,
+        )
+        parse_target(
+            "guru-clarify-requirements",
+            clarify_input,
+            clarify_output["transition"],
+            {
+                "mode": "workflow",
+                "typed_exit": "clear",
+                "review_target": {
+                    "kind": "issue",
+                    "repo": "example/guru-extension",
+                    "url": target_url,
+                    "body_sha256": target_body,
+                },
+            },
+        )
+
+        wording_output, wording_input = actual_output(
+            "guru-review-change-request",
+            "review_wording",
+            readiness_input,
+            readiness_owner,
+            wording_transition,
+        )
+        parse_target(
+            "guru-review-contract-wording",
+            wording_input,
+            wording_output["transition"],
+            {
+                "mode": "workflow",
+                "profile": "change_request",
+                "scope": {
+                    "identity": f"change_request:{target_url}",
+                    "items": [
+                        {"field": "title", "content_sha256": digest("title")},
+                        {"field": "body", "content_sha256": target_body},
+                    ],
+                },
+            },
+        )
 
     def test_old_context_body_allows_only_semantic_refresh_context(self) -> None:
         digest = lambda value: hashlib.sha256(value.encode()).hexdigest()

@@ -436,6 +436,12 @@
           "interface_path": "packages/guru-clarify-requirements/interface.json",
           "input_kind": "structured_json",
           "profile_id": "initial_change_request"
+        },
+        "transition": {
+          "source_field": "transition",
+          "stage": "context_current",
+          "schema_id": "guru-stage0-transition-context-current-1.0",
+          "path": "consumers/workflow/stage0/transitions/context-current.schema.json"
         }
       },
       {
@@ -450,6 +456,12 @@
           "interface_path": "packages/guru-review-contract-wording/interface.json",
           "input_kind": "structured_json",
           "profile_id": "change_request"
+        },
+        "transition": {
+          "source_field": "transition",
+          "stage": "clarity_current",
+          "schema_id": "guru-stage0-transition-clarity-current-1.0",
+          "path": "consumers/workflow/stage0/transitions/clarity-current.schema.json"
         }
       },
       {
@@ -564,6 +576,10 @@
           {
             "source": "handoff_repo_root",
             "target": "repo_root"
+          },
+          {
+            "source": "handoff_base_branch",
+            "target": "base_branch"
           },
           {
             "source": "handoff_route",

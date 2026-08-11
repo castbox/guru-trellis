@@ -23,6 +23,10 @@
       "type": "string",
       "minLength": 1
     },
+    "handoff_base_branch": {
+      "type": "string",
+      "minLength": 1
+    },
     "handoff_route": {
       "enum": [
         "repo_change",

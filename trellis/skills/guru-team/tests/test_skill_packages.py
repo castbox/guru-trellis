@@ -4814,84 +4814,141 @@ class IntakePublicInvocationTests(unittest.TestCase):
         self.assertEqual(omitted["handoff_base_branch"], "main")
 
     def test_non_main_semantic_handoffs_preserve_formal_base_resolution(self) -> None:
-        producer_outputs = {
-            ("guru-clarify-requirements", "needs_context"): self.eval_public_output(
-                "guru-clarify-requirements", "needs-context-route"
-            ),
-            ("guru-clarify-requirements", "refresh_context"): self.eval_public_output(
-                "guru-clarify-requirements", "refresh-context-route"
-            ),
-            ("guru-clarify-requirements", "retarget_context"): self.eval_public_output(
-                "guru-clarify-requirements", "retarget-context-route"
-            ),
-            ("guru-review-change-request", "ready"): self.eval_public_output(
-                "guru-review-change-request", "ready-route"
-            ),
-            ("guru-review-change-request", "refresh_context"): self.eval_public_output(
-                "guru-review-change-request", "refresh-context-route"
-            ),
-        }
-        for output in producer_outputs.values():
-            self.assertNotIn("handoff_base_branch", output)
-
         repos = {
             "config-candidate": self.non_main_repo("config-candidate", ["develop"]),
             "remote-default": self.non_main_repo("remote-default", ["release"]),
         }
-        sync_directed = [
+        target_url = "https://github.com/example/guru-extension/issues/1"
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        sync_directed = (
+            ("guru-discover-change-context", "refresh_base"),
             ("guru-clarify-requirements", "refresh_context"),
             ("guru-clarify-requirements", "retarget_context"),
             ("guru-review-change-request", "refresh_context"),
-        ]
+            ("guru-create-task-workspace", "refresh_review"),
+        )
+
+        def transition_for(source: str) -> dict:
+            return {
+                "schema_version": "1.0",
+                "transition_id": "context_current:" + digest(source)[:24],
+                "stage": "context_current",
+                "mode": "workflow",
+                "repo_locator": "example/guru-extension",
+                "base": {
+                    "source": source,
+                    "selected_base": "develop",
+                    "remote": "origin",
+                    "ordered_candidates": ["develop"],
+                    "decision_head": "1" * 40,
+                    "local_base_head": "1" * 40,
+                    "remote_base_head": "1" * 40,
+                    "post_sync_resolution_sha256": digest(f"base-{source}"),
+                },
+                "target_locator": target_url,
+                "continuation_id": "source-preserving-current",
+                "context_result_sha256": digest("context"),
+                "authority_content_sha256": digest("body"),
+            }
+
+        def producer_output(
+            repo: Path, skill_id: str, exit_id: str, upstream: dict,
+        ) -> tuple[dict, dict]:
+            package = repo / ".trellis/guru-team/skills/packages" / skill_id
+            interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+            schema, projection = runtime.stage0_output_contract(
+                skill_id, package, interface, exit_id
+            )
+            owner_results = {
+                "guru-discover-change-context": {"mode": "workflow"},
+                "guru-clarify-requirements": {
+                    "mode": "workflow",
+                    "review_target": {
+                        "repo": "example/guru-extension",
+                        "url": target_url,
+                    },
+                },
+                "guru-review-change-request": {
+                    "mode": "workflow",
+                    "target": {"url": target_url},
+                },
+                "guru-create-task-workspace": {"mode": "workflow"},
+            }
+            public_input = {
+                "mode": "workflow",
+                "target_locator": target_url,
+                "continuation_id": "source-preserving-current",
+            }
+            owner_result = owner_results[skill_id]
+            output_transition = runtime.stage0_build_transition(
+                skill_id, exit_id, public_input, owner_result, upstream
+            )
+            output = runtime.stage0_build_output(
+                skill_id,
+                exit_id,
+                public_input,
+                owner_result,
+                None,
+                None,
+                schema,
+                output_transition,
+                upstream,
+            )
+            self.assertEqual(
+                runtime.skill_json_schema_validation_errors(
+                    output, schema, f"{skill_id}:{exit_id} source-preserving output"
+                ),
+                [],
+            )
+            return output, runtime.skill_apply_projection(projection, output)
+
         for expected_source, repo in repos.items():
             with self.subTest(source=expected_source):
                 resolution = runtime.resolve_base_selection(repo, runtime.load_config(repo))
                 self.assertEqual(resolution["source"], expected_source)
                 self.assertEqual(resolution["selected_base"], "develop")
+                upstream = transition_for(expected_source)
                 for skill_id, exit_id in sync_directed:
-                    projected = self.projected_consumer_input(
-                        repo, skill_id, exit_id, producer_outputs[(skill_id, exit_id)]
+                    output, projected = producer_output(
+                        repo, skill_id, exit_id, upstream
                     )
+                    self.assertNotIn("handoff_base_branch", output)
+                    self.assertNotIn("base_branch", output)
                     self.assertNotIn("base_branch", projected)
                     synced = self.invoke_projected_sync(repo, projected)
                     self.assertEqual(synced["exit_id"], "synced")
-                    self.assertEqual(synced["handoff_base_branch"], "develop")
+                    self.assertEqual(
+                        synced["transition"]["base"]["source"], expected_source
+                    )
 
-                explicit = self.projected_consumer_input(
+                needs_output, needs_input = producer_output(
                     repo,
                     "guru-clarify-requirements",
-                    "refresh_context",
-                    producer_outputs[("guru-clarify-requirements", "refresh_context")],
+                    "needs_context",
+                    upstream,
                 )
-                explicit["base_branch"] = "develop"
-                synced = self.invoke_projected_sync(repo, explicit)
-                self.assertEqual(synced["handoff_base_branch"], "develop")
+                self.assertEqual(needs_output["handoff_base_branch"], "develop")
+                self.assertEqual(
+                    needs_output["transition"]["base"]["source"], expected_source
+                )
+                self.assertEqual(needs_input["base_branch"], "develop")
 
-        config_repo = repos["config-candidate"]
-        needs_context = self.projected_consumer_input(
-            config_repo,
-            "guru-clarify-requirements",
-            "needs_context",
-            producer_outputs[("guru-clarify-requirements", "needs_context")],
-        )
-        ready = self.projected_consumer_input(
-            config_repo,
-            "guru-review-change-request",
-            "ready",
-            producer_outputs[("guru-review-change-request", "ready")],
-        )
-        self.assertNotIn("base_branch", needs_context)
-        self.assertNotIn("base_branch", ready)
-        consumer_schemas = [
-            config_repo / ".trellis/guru-team/skills/packages/guru-discover-change-context/schemas/public-pre-task-input.schema.json",
-            config_repo / ".trellis/guru-team/skills/packages/guru-create-task-workspace/schemas/public-execute-reviewed-plan-input.schema.json",
-        ]
-        for payload, schema_path in zip((needs_context, ready), consumer_schemas):
-            schema = json.loads(schema_path.read_text(encoding="utf-8"))
-            self.assertEqual(
-                runtime.skill_json_schema_validation_errors(payload, schema, "non-main handoff"),
-                [],
-            )
+        explicit_repo = repos["config-candidate"]
+        explicit_upstream = transition_for("explicit")
+        for skill_id, exit_id in sync_directed:
+            with self.subTest(source="explicit", skill=skill_id, exit=exit_id):
+                output, projected = producer_output(
+                    explicit_repo, skill_id, exit_id, explicit_upstream
+                )
+                output_branch = (
+                    "base_branch"
+                    if skill_id == "guru-create-task-workspace"
+                    else "handoff_base_branch"
+                )
+                self.assertEqual(output[output_branch], "develop")
+                self.assertEqual(projected["base_branch"], "develop")
+                synced = self.invoke_projected_sync(explicit_repo, projected)
+                self.assertEqual(synced["transition"]["base"]["source"], "explicit")
 
     def test_clarity_null_disposition_is_active_task_only(self) -> None:
         self.assertEqual(

@@ -215,16 +215,30 @@ def stage_transcript_owner_repo(
     head = run(["git", "rev-parse", "HEAD"], cwd=root).stdout.strip()
     run(["git", "update-ref", "refs/remotes/origin/main", head], cwd=root)
     run(
+        [
+            "git", "symbolic-ref", "refs/remotes/origin/HEAD",
+            "refs/remotes/origin/main",
+        ],
+        cwd=root,
+    )
+    run(
         ["git", "remote", "add", "origin", "https://github.com/example/guru-extension.git"],
         cwd=root,
     )
 
     fake_bin = chain_root / "fake-bin"
     fake_bin.mkdir()
+    issue_body = chain_root / "issue-body.txt"
+    issue_body.write_text(
+        "The current Intake workflow must preserve one public transition chain.",
+        encoding="utf-8",
+    )
     fake_gh = fake_bin / "gh"
     fake_gh.write_text(
         "#!/usr/bin/env python3\n"
         "import json,sys\n"
+        "from pathlib import Path\n"
+        f"issue_body_path={str(issue_body)!r}\n"
         "args=sys.argv[1:]\n"
         "if args[:2]==['auth','status']: raise SystemExit(0)\n"
         "if args[:2]==['api','user']:\n"
@@ -232,10 +246,11 @@ def stage_transcript_owner_repo(
         "if len(args)>=3 and args[:2]==['issue','view']:\n"
         " number=int(args[2])\n"
         " if number != 145: raise SystemExit(2)\n"
+        " body=Path(issue_body_path).read_text(encoding='utf-8')\n"
         " print(json.dumps({'number':145,'url':'https://github.com/example/guru-extension/issues/145',"
         "'state':'OPEN','updatedAt':'2026-01-01T00:00:00Z',"
         "'title':'Phase 0 public transition transcript',"
-        "'body':'The current Intake workflow must preserve one public transition chain.',"
+        "'body':body,"
         "'comments':[],'assignees':[{'login':'stage0-transcript'}],'labels':[]}))\n"
         " raise SystemExit(0)\n"
         "print('unsupported transcript gh invocation',file=sys.stderr); raise SystemExit(2)\n",
@@ -252,6 +267,12 @@ def stage_transcript_owner_repo(
         f"real_git={real_git!r}\n"
         "args=sys.argv[1:]\n"
         "if args and args[0]=='fetch': raise SystemExit(0)\n"
+        "if args==['ls-remote','--symref','origin','HEAD']:\n"
+        " result=subprocess.run([real_git,'rev-parse','--verify','refs/remotes/origin/main'],"
+        "text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)\n"
+        " if result.returncode: raise SystemExit(result.returncode)\n"
+        " print('ref: refs/heads/main\\tHEAD')\n"
+        " print(result.stdout.strip()+'\\tHEAD'); raise SystemExit(0)\n"
         "if args==['ls-remote','--heads','origin','main']:\n"
         " result=subprocess.run([real_git,'rev-parse','--verify','refs/remotes/origin/main'],"
         "text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)\n"
@@ -389,6 +410,44 @@ def invoke_public(
         "actual_exit": actual_exit,
         "stdout_sha256": digest(process.stdout.encode()),
     }
+
+
+def project_installed_output(
+    root: Path,
+    skill_id: str,
+    exit_id: str,
+    actual: dict[str, Any],
+) -> tuple[dict[str, Any], str]:
+    interface = load_json(
+        root
+        / ".trellis/guru-team/skills/packages"
+        / skill_id
+        / "interface.json"
+    )
+    projections = (interface.get("public_contracts") or {}).get("projections")
+    matches = [
+        row
+        for row in projections or []
+        if isinstance(row, dict) and row.get("exit_id") == exit_id
+    ]
+    if len(matches) != 1:
+        raise RuntimeError(
+            f"installed {skill_id}:{exit_id} does not declare one projection"
+        )
+    projection = matches[0]
+    if projection.get("operation") != "rename":
+        raise RuntimeError("installed transcript only supports declared rename projection")
+    projected: dict[str, Any] = {}
+    for mapping in projection.get("mappings", []):
+        if not isinstance(mapping, dict):
+            raise RuntimeError("installed projection contains a non-object mapping")
+        source = mapping.get("source")
+        target = mapping.get("target")
+        if not isinstance(source, str) or not isinstance(target, str):
+            raise RuntimeError("installed projection mapping is incomplete")
+        if source in actual:
+            projected[target] = copy.deepcopy(actual[source])
+    return projected, str(projection.get("id") or "")
 
 
 def record_semantic(
@@ -649,10 +708,53 @@ def context_owner_for_issue(
     }
 
 
+def checked_context_owner_for_issue(
+    root: Path,
+    env: dict[str, str],
+    transition: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    authored = context_owner_for_issue(root, env)
+    base = transition["base"]
+    authored["base_evidence"] = {
+        "schema_id": "guru-base-sync-result-1.0",
+        "sync_result": base_sync_payload(transition),
+        "remote": base["remote"],
+        "base_head": base["remote_base_head"],
+        "decision_head": base["decision_head"],
+        "local_head": base["local_base_head"],
+        "remote_head": base["remote_base_head"],
+        "post_sync_resolution_sha256": base["post_sync_resolution_sha256"],
+        "clean": True,
+    }
+    recorded = record_semantic(
+        root,
+        env,
+        "guru-discover-change-context",
+        "record-context-discovery.sh",
+        ["--mode", "workflow", "--input", "-"],
+        authored,
+    )
+    checked = record_semantic(
+        root,
+        env,
+        "guru-discover-change-context",
+        "check-context-discovery.sh",
+        [
+            "--input", "-", "--expected-result-sha256",
+            recorded["result_identity"]["result_sha256"],
+        ],
+        recorded,
+    )
+    if checked.get("status") != "passed" or checked.get("typed_exit") != "context_ready":
+        raise RuntimeError("current context owner did not pass its production checker")
+    return recorded, checked
+
+
 def clarification_owner_for_issue(
     root: Path,
     env: dict[str, str],
     transition: dict[str, Any],
+    typed_exit: str = "clear",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     issue = live_issue(root, env)
     if transition.get("target_locator") != issue.get("url"):
@@ -745,6 +847,37 @@ def clarification_owner_for_issue(
         "consumer": {"kind": "workflow", "id": "guru-requirements-clear-router"},
         "error": None,
     }
+    if typed_exit == "needs_context":
+        owner.update({
+            "typed_exit": "needs_context",
+            "context_evidence": {
+                "status": "missing",
+                "evidence_refs": [transition["context_result_sha256"]],
+                "missing_reason": (
+                    "The current authoring pass requires a fresh repository context read."
+                ),
+            },
+            "reason": "A current context read is required before wording review.",
+            "consumer": {
+                "kind": "skill",
+                "id": "guru-discover-change-context",
+            },
+        })
+    elif typed_exit == "refresh_context":
+        owner.update({
+            "typed_exit": "refresh_context",
+            "context_evidence": {
+                "status": "stale",
+                "evidence_refs": [transition["context_result_sha256"]],
+                "missing_reason": (
+                    "Live issue authority changed after the context transition."
+                ),
+            },
+            "reason": "Changed live authority requires a new base-bound context read.",
+            "consumer": {"kind": "skill", "id": "guru-sync-base"},
+        })
+    elif typed_exit != "clear":
+        raise RuntimeError(f"unsupported transcript clarification exit: {typed_exit}")
     recorded = record_semantic(
         root,
         env,
@@ -764,7 +897,7 @@ def clarification_owner_for_issue(
         ],
         recorded,
     )
-    if checked.get("status") != "passed" or checked.get("typed_exit") != "clear":
+    if checked.get("status") != "passed" or checked.get("typed_exit") != typed_exit:
         raise RuntimeError("current clarification owner did not pass its production checker")
     return recorded, checked
 
@@ -847,6 +980,7 @@ def readiness_owner_for_issue(
     root: Path,
     env: dict[str, str],
     transition: dict[str, Any],
+    typed_exit: str = "ready",
 ) -> dict[str, Any]:
     issue = live_issue(root, env)
     title_sha256 = hashlib.sha256(str(issue.get("title") or "").encode()).hexdigest()
@@ -902,7 +1036,7 @@ def readiness_owner_for_issue(
         "risk_boundary": ["Normal honest workflow operation only."],
         "excluded_scope": ["Workspace mutation remains downstream."],
     }
-    return {
+    owner = {
         "generated_at": "2026-01-01T00:00:00Z",
         "mode": "workflow",
         "target": raw_target,
@@ -942,6 +1076,54 @@ def readiness_owner_for_issue(
         }],
         "consumer": {"kind": "skill", "id": "guru-create-task-workspace"},
     }
+    if typed_exit in {"clarify_requirements", "review_wording", "refresh_context"}:
+        category = {
+            "clarify_requirements": "requirement_gap",
+            "review_wording": "wording_gap",
+            "refresh_context": "context_stale",
+        }[typed_exit]
+        failed_dimension = {
+            "clarify_requirements": "requirement_completeness",
+            "review_wording": "claimed_behavior_current",
+            "refresh_context": "target_authority_current",
+        }[typed_exit]
+        finding = {
+            "finding_id": f"transcript-{typed_exit.replace('_', '-')}",
+            "category": category,
+            "summary": f"Current evidence requires the declared {typed_exit} route.",
+            "blocking": True,
+            "evidence_refs": ["target"],
+            "affected_hashes": [target_content_sha256],
+            "route_basis": "The current semantic review selected this declared consumer.",
+        }
+        for dimension in owner["semantic_review"]["dimensions"]:
+            if dimension["id"] == failed_dimension:
+                dimension.update({
+                    "status": "failed",
+                    "summary": finding["summary"],
+                    "finding_ids": [finding["finding_id"]],
+                })
+        owner.update({
+            "typed_exit": typed_exit,
+            "reason": finding["summary"],
+            "consumer": {
+                "kind": "skill",
+                "id": {
+                    "clarify_requirements": "guru-clarify-requirements",
+                    "review_wording": "guru-review-contract-wording",
+                    "refresh_context": "guru-sync-base",
+                }[typed_exit],
+            },
+        })
+        owner["semantic_review"]["findings"] = [finding]
+        owner["semantic_review"]["ai_review_gate"].update({
+            "status": "reroute",
+            "summary": finding["summary"],
+            "findings_count": 1,
+        })
+    elif typed_exit != "ready":
+        raise RuntimeError(f"unsupported transcript readiness exit: {typed_exit}")
+    return owner
 
 
 def base_sync_payload(transition: dict[str, Any]) -> dict[str, Any]:
@@ -1346,10 +1528,151 @@ def workspace_plan_for_transition(
     return plan
 
 
+def reentry_transcripts(
+    root: Path,
+    env: dict[str, str],
+    source: dict[str, Any],
+    source_path: Path,
+    context_transition: dict[str, Any],
+    wording_transition: dict[str, Any],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+
+    needs_owner, needs_checked = clarification_owner_for_issue(
+        root, env, context_transition, "needs_context"
+    )
+    needs_envelope = {
+        "schema_version": "1.0",
+        "public_input": {
+            "profile": "initial_change_request",
+            "source_exit": "context_ready",
+            "mode": "workflow",
+            "target_locator": context_transition["target_locator"],
+            "continuation_id": context_transition["continuation_id"],
+        },
+        "transition": context_transition,
+        "owner_context": {},
+        "owner_result": needs_owner,
+    }
+    needs, needs_row = invoke_public(
+        root, env, "guru-clarify-requirements", needs_envelope, "needs_context"
+    )
+    needs_input, needs_projection = project_installed_output(
+        root, "guru-clarify-requirements", "needs_context", needs
+    )
+    discovery_owner, discovery_checked = checked_context_owner_for_issue(
+        root, env, needs["transition"]
+    )
+    discovery_envelope = {
+        "schema_version": "1.0",
+        "public_input": needs_input,
+        "transition": needs["transition"],
+        "owner_context": {},
+        "owner_result": discovery_owner,
+    }
+    discovery, discovery_row = invoke_public(
+        root,
+        env,
+        "guru-discover-change-context",
+        discovery_envelope,
+        "context_ready",
+    )
+    if discovery.get("transition", {}).get("stage") != "context_current":
+        raise RuntimeError("needs_context target did not parse and advance its transition")
+    rows.append({
+        "edge_id": "needs_context",
+        "producer_skill": needs_row["skill_id"],
+        "producer_actual_exit": needs_row["actual_exit"],
+        "producer_stdout_sha256": needs_row["stdout_sha256"],
+        "projection_id": needs_projection,
+        "projected_input_sha256": digest(needs_input),
+        "target_skill": discovery_row["skill_id"],
+        "target_actual_exit": discovery_row["actual_exit"],
+        "target_stdout_sha256": discovery_row["stdout_sha256"],
+        "target_checker_status": discovery_checked.get("status"),
+        "producer_checker_status": needs_checked.get("status"),
+    })
+    assert_forbidden_runtime_absent(root)
+
+    for producer_exit, target_skill, target_exit in (
+        ("clarify_requirements", "guru-clarify-requirements", "clear"),
+        ("review_wording", "guru-review-contract-wording", "pass"),
+    ):
+        readiness_owner = readiness_owner_for_issue(
+            root, env, wording_transition, producer_exit
+        )
+        readiness_envelope = {
+            "schema_version": "1.0",
+            "public_input": {
+                "profile": "current_issue",
+                "source_exit": "pass",
+                "mode": "workflow",
+                "target_locator": wording_transition["target_locator"],
+                "continuation_id": wording_transition["continuation_id"],
+            },
+            "transition": wording_transition,
+            "owner_context": {"change_request": source},
+            "owner_result": readiness_owner,
+        }
+        producer, producer_row = invoke_public(
+            root,
+            env,
+            "guru-review-change-request",
+            readiness_envelope,
+            producer_exit,
+        )
+        target_input, projection_id = project_installed_output(
+            root, "guru-review-change-request", producer_exit, producer
+        )
+        if target_skill == "guru-clarify-requirements":
+            target_owner, target_checked = clarification_owner_for_issue(
+                root, env, producer["transition"], "clear"
+            )
+            owner_context: dict[str, Any] = {}
+        else:
+            target_owner, target_checked = wording_owner_for_issue(
+                root, env, source_path
+            )
+            owner_context = {"change_request": source}
+        target_envelope = {
+            "schema_version": "1.0",
+            "public_input": target_input,
+            "transition": producer["transition"],
+            "owner_context": owner_context,
+            "owner_result": target_owner,
+        }
+        assert_owner_binding(target_skill, target_input, target_owner)
+        target, target_row = invoke_public(
+            root, env, target_skill, target_envelope, target_exit
+        )
+        expected_stage = {
+            "clarify_requirements": "clarity_current",
+            "review_wording": "wording_current",
+        }[producer_exit]
+        if target.get("transition", {}).get("stage") != expected_stage:
+            raise RuntimeError(
+                f"{producer_exit} target did not parse and advance its transition"
+            )
+        rows.append({
+            "edge_id": producer_exit,
+            "producer_skill": producer_row["skill_id"],
+            "producer_actual_exit": producer_row["actual_exit"],
+            "producer_stdout_sha256": producer_row["stdout_sha256"],
+            "projection_id": projection_id,
+            "projected_input_sha256": digest(target_input),
+            "target_skill": target_row["skill_id"],
+            "target_actual_exit": target_row["actual_exit"],
+            "target_stdout_sha256": target_row["stdout_sha256"],
+            "target_checker_status": target_checked.get("status"),
+        })
+        assert_forbidden_runtime_absent(root)
+    return rows
+
+
 def six_step_transcript(
     installed_repo: Path,
     chain_root: Path,
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     root, env = stage_transcript_owner_repo(installed_repo, chain_root)
     before_status = run(
         ["git", "status", "--porcelain=v1", "--untracked-files=all"], cwd=root, env=env
@@ -1375,6 +1698,9 @@ def six_step_transcript(
     )
     rows.append(row)
 
+    context_owner, context_checked = checked_context_owner_for_issue(
+        root, env, sync["transition"]
+    )
     context_envelope = {
         "schema_version": "1.0",
         "public_input": {
@@ -1387,7 +1713,7 @@ def six_step_transcript(
         },
         "transition": sync["transition"],
         "owner_context": {},
-        "owner_result": context_owner_for_issue(root, env),
+        "owner_result": context_owner,
     }
     rows[-1]["next_input_sha256"] = digest(context_envelope)
     context, row = invoke_public(
@@ -1457,6 +1783,15 @@ def six_step_transcript(
         root, env, "guru-review-contract-wording", wording_envelope, "pass"
     )
     rows.append(row)
+
+    reentry = reentry_transcripts(
+        root,
+        env,
+        source,
+        source_path,
+        context["transition"],
+        wording["transition"],
+    )
 
     readiness_owner = readiness_owner_for_issue(root, env, wording["transition"])
     readiness_envelope = {
@@ -1570,7 +1905,7 @@ def six_step_transcript(
         if not any((path / str(created.get("task_artifact_dir") or "") / "task.json").is_file() for path in paths):
             raise RuntimeError("six-step transcript did not create its reviewed task")
     assert_forbidden_runtime_absent(root)
-    return rows, {
+    return rows, reentry, {
         "actual_exit": workspace["exit_id"],
         "branch_name": branch,
         "workspace_slug": created.get("workspace_slug"),
@@ -1579,9 +1914,161 @@ def six_step_transcript(
         "checker_status": checked_result.get("checker", {}).get("status"),
         "clarification_checker_status": clarity_checked.get("status"),
         "wording_checker_status": wording_checked.get("status"),
+        "context_checker_status": context_checked.get("status"),
         "forbidden_runtime_checks": 3,
         "owner_repo": str(root),
     }
+
+
+def refresh_provenance_transcripts(
+    installed_repo: Path,
+    matrix_root: Path,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for expected_source in ("explicit", "config-candidate", "remote-default"):
+        chain_root = matrix_root / expected_source
+        root, env = stage_transcript_owner_repo(installed_repo, chain_root)
+        config = root / ".trellis/guru-team/config.yml"
+        if expected_source != "explicit":
+            candidate = "main" if expected_source == "config-candidate" else "missing"
+            config.write_text(
+                config.read_text(encoding="utf-8")
+                + f"base_branch_candidates:\n  - {candidate}\n",
+                encoding="utf-8",
+            )
+            run(["git", "add", config], cwd=root, env=env)
+            run(
+                ["git", "commit", "-q", "-m", f"configure {expected_source}"],
+                cwd=root,
+                env=env,
+            )
+            head = run(["git", "rev-parse", "HEAD"], cwd=root, env=env).stdout.strip()
+            run(
+                ["git", "update-ref", "refs/remotes/origin/main", head],
+                cwd=root,
+                env=env,
+            )
+        before_status = run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=root,
+            env=env,
+        ).stdout
+        initial_input = {
+            "source_exit": "start",
+            "mode": "workflow",
+            "repo_root": ".",
+            "route": "repo_change",
+        }
+        if expected_source == "explicit":
+            initial_input["base_branch"] = "main"
+        sync, sync_row = invoke_public(
+            root,
+            env,
+            "guru-sync-base",
+            {"schema_version": "1.0", "public_input": initial_input},
+            "synced",
+        )
+        initial_base = sync.get("transition", {}).get("base", {})
+        if (
+            initial_base.get("source") != expected_source
+            or initial_base.get("selected_base") != "main"
+        ):
+            raise RuntimeError(
+                f"initial sync did not resolve {expected_source} provenance"
+            )
+        context_input, sync_projection = project_installed_output(
+            root, "guru-sync-base", "synced", sync
+        )
+        context_owner, context_checked = checked_context_owner_for_issue(
+            root, env, sync["transition"]
+        )
+        context, context_row = invoke_public(
+            root,
+            env,
+            "guru-discover-change-context",
+            {
+                "schema_version": "1.0",
+                "public_input": context_input,
+                "transition": sync["transition"],
+                "owner_context": {},
+                "owner_result": context_owner,
+            },
+            "context_ready",
+        )
+        (chain_root / "issue-body.txt").write_text(
+            "The live issue authority changed and requires a fresh context read.",
+            encoding="utf-8",
+        )
+        clarification_input, context_projection = project_installed_output(
+            root, "guru-discover-change-context", "context_ready", context
+        )
+        refresh_owner, refresh_checked = clarification_owner_for_issue(
+            root, env, context["transition"], "refresh_context"
+        )
+        refresh, refresh_row = invoke_public(
+            root,
+            env,
+            "guru-clarify-requirements",
+            {
+                "schema_version": "1.0",
+                "public_input": clarification_input,
+                "transition": context["transition"],
+                "owner_context": {},
+                "owner_result": refresh_owner,
+            },
+            "refresh_context",
+        )
+        projected_sync_input, refresh_projection = project_installed_output(
+            root, "guru-clarify-requirements", "refresh_context", refresh
+        )
+        if expected_source == "explicit":
+            if projected_sync_input.get("base_branch") != "main":
+                raise RuntimeError("explicit refresh omitted its selected base")
+        elif "base_branch" in projected_sync_input:
+            raise RuntimeError(
+                f"{expected_source} refresh forced an explicit base branch"
+            )
+        refreshed, refreshed_row = invoke_public(
+            root,
+            env,
+            "guru-sync-base",
+            {
+                "schema_version": "1.0",
+                "public_input": projected_sync_input,
+            },
+            "synced",
+        )
+        refreshed_base = refreshed.get("transition", {}).get("base", {})
+        if (
+            refreshed_base.get("source") != expected_source
+            or refreshed_base.get("selected_base") != "main"
+        ):
+            raise RuntimeError(
+                f"refresh sync did not preserve {expected_source} provenance"
+            )
+        if run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=root,
+            env=env,
+        ).stdout != before_status:
+            raise RuntimeError("refresh provenance transcript wrote repository state")
+        assert_forbidden_runtime_absent(root)
+        rows.append({
+            "source": expected_source,
+            "selected_base": refreshed_base.get("selected_base"),
+            "initial_sync_stdout_sha256": sync_row["stdout_sha256"],
+            "sync_projection_id": sync_projection,
+            "context_actual_exit": context_row["actual_exit"],
+            "context_checker_status": context_checked.get("status"),
+            "context_projection_id": context_projection,
+            "refresh_actual_exit": refresh_row["actual_exit"],
+            "refresh_checker_status": refresh_checked.get("status"),
+            "refresh_projection_id": refresh_projection,
+            "projected_base_branch": projected_sync_input.get("base_branch"),
+            "refreshed_sync_actual_exit": refreshed_row["actual_exit"],
+            "refreshed_sync_stdout_sha256": refreshed_row["stdout_sha256"],
+        })
+    return rows
 
 
 def parse_args() -> argparse.Namespace:
@@ -1624,9 +2111,13 @@ def main() -> int:
             f"installed exit transcript coverage mismatch: expected={sorted(expected_pairs)} "
             f"actual={sorted(actual_pairs)}"
         )
-    chain, workspace = six_step_transcript(
+    chain, reentry, workspace = six_step_transcript(
         installed_repo,
         work_root / "six-step",
+    )
+    refresh_provenance = refresh_provenance_transcripts(
+        installed_repo,
+        work_root / "refresh-provenance",
     )
     output = {
         "status": "ok",
@@ -1635,6 +2126,8 @@ def main() -> int:
         "exit_family_count": len(actual_pairs),
         "exit_transcripts": exit_rows,
         "six_step_transcript": chain,
+        "reentry_transcripts": reentry,
+        "refresh_provenance_transcripts": refresh_provenance,
         "workspace": workspace,
     }
     print(json.dumps(output, ensure_ascii=False, sort_keys=True))

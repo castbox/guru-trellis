@@ -465,6 +465,12 @@
           "interface_path": "packages/guru-discover-change-context/interface.json",
           "input_kind": "structured_json",
           "profile_id": "pre_task"
+        },
+        "transition": {
+          "source_field": "transition",
+          "stage": "base_current",
+          "schema_id": "guru-stage0-transition-base-current-1.0",
+          "path": "consumers/workflow/stage0/transitions/base-current.schema.json"
         }
       },
       {
@@ -551,6 +557,10 @@
             "target": "repo_locator"
           },
           {
+            "source": "handoff_base_branch",
+            "target": "base_branch"
+          },
+          {
             "source": "handoff_continuation_id",
             "target": "continuation_id"
           }
@@ -575,6 +585,10 @@
             "target": "repo_root"
           },
           {
+            "source": "handoff_base_branch",
+            "target": "base_branch"
+          },
+          {
             "source": "handoff_route",
             "target": "route"
           }
@@ -597,6 +611,10 @@
           {
             "source": "handoff_repo_root",
             "target": "repo_root"
+          },
+          {
+            "source": "handoff_base_branch",
+            "target": "base_branch"
           },
           {
             "source": "handoff_route",

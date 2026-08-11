@@ -20161,8 +20161,6 @@ def stage0_transition_owner_errors(
 ) -> list[str]:
     if stage0_transition_input_stage(skill_id, public_input) is None:
         return ["transition_unexpected"]
-    if public_input.get("mode") != "workflow":
-        return []
     errors: list[str] = []
     if transition.get("mode") != public_input.get("mode"):
         errors.append("transition_mode_mismatch")
@@ -21656,6 +21654,17 @@ def stage0_build_transition(
                 "body_sha256"
             ),
         }
+    if skill_id == "guru-clarify-requirements" and exit_id == "needs_context":
+        return {
+            **common,
+            "transition_id": stage0_transition_id(
+                "base_current",
+                (upstream.get("base") or {}).get(
+                    "post_sync_resolution_sha256"
+                ),
+            ),
+            "stage": "base_current",
+        }
     if skill_id == "guru-clarify-requirements" and exit_id == "clear":
         identity = owner_result.get("content_identity") or {}
         digest = identity.get("result_sha256")
@@ -21731,6 +21740,60 @@ def stage0_build_transition(
                 "followup_issues": copy.deepcopy(scope_conclusion.get("followup_issues")),
             },
         }
+    if skill_id == "guru-review-change-request" and exit_id in {
+        "clarify_requirements",
+        "review_wording",
+    }:
+        target = owner_result.get("target") or {}
+        target_locator = stage0_target_locator(
+            target, upstream.get("target_locator")
+        )
+        target_content_sha256 = target.get("body_sha256")
+        if exit_id == "clarify_requirements":
+            return {
+                **common,
+                "transition_id": stage0_transition_id(
+                    "context_current",
+                    upstream.get("context_result_sha256"),
+                ),
+                "stage": "context_current",
+                "target_locator": target_locator,
+                "continuation_id": upstream.get("continuation_id"),
+                "context_result_sha256": upstream.get("context_result_sha256"),
+                "authority_content_sha256": target_content_sha256,
+            }
+        return {
+            **common,
+            "transition_id": stage0_transition_id(
+                "clarity_current",
+                upstream.get("clarity_result_sha256"),
+            ),
+            "stage": "clarity_current",
+            "target_locator": target_locator,
+            "continuation_id": upstream.get("continuation_id"),
+            "context_result_sha256": upstream.get("context_result_sha256"),
+            "clarity_result_sha256": upstream.get("clarity_result_sha256"),
+            "target_content_sha256": target_content_sha256,
+            "clarity": copy.deepcopy(upstream.get("clarity")),
+            "target_disposition": copy.deepcopy(
+                upstream.get("target_disposition")
+            ),
+        }
+    return None
+
+
+def stage0_explicit_base_branch(
+    transition: dict[str, Any] | None,
+) -> str | None:
+    base = (
+        transition.get("base")
+        if isinstance(transition, dict)
+        and isinstance(transition.get("base"), dict)
+        else {}
+    )
+    selected_base = base.get("selected_base")
+    if base.get("source") == "explicit" and isinstance(selected_base, str):
+        return selected_base
     return None
 
 
@@ -21743,6 +21806,7 @@ def stage0_build_output(
     owner_locator: str | None,
     schema: dict[str, Any],
     transition: dict[str, Any] | None = None,
+    upstream_transition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     values: dict[str, Any] = {"exit_id": exit_id, **public_input}
     if transition is not None:
@@ -21759,9 +21823,11 @@ def stage0_build_output(
             values.update({
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_repo_root": ".",
-                "handoff_base_branch": (owner_result.get("repository") or {}).get("selected_base"),
                 "handoff_route": "repo_change",
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["handoff_base_branch"] = explicit_base
     elif skill_id == "guru-clarify-requirements" and owner_result is not None:
         target = owner_result.get("review_target")
         if exit_id == "clear":
@@ -21774,6 +21840,9 @@ def stage0_build_output(
                 "handoff_profile": "pre_task",
                 "handoff_mode": owner_result.get("mode"),
                 "handoff_repo_locator": (target or {}).get("repo"),
+                "handoff_base_branch": (
+                    (upstream_transition or {}).get("base") or {}
+                ).get("selected_base"),
                 "handoff_continuation_id": public_input.get("continuation_id"),
             })
         elif exit_id in {"refresh_context", "retarget_context"}:
@@ -21782,6 +21851,9 @@ def stage0_build_output(
                 "handoff_repo_root": ".",
                 "handoff_route": "repo_change",
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["handoff_base_branch"] = explicit_base
         elif exit_id == "new_task":
             values.update({
                 "target_locator": stage0_target_locator(target, public_input.get("target_locator")),
@@ -21818,12 +21890,17 @@ def stage0_build_output(
                 "handoff_repo_root": ".",
                 "handoff_route": "repo_change",
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["handoff_base_branch"] = explicit_base
     elif skill_id == "guru-create-task-workspace" and owner_result is not None:
         if exit_id == "refresh_review":
             values.update({
                 "mode": owner_result.get("mode"),
-                "base_branch": (owner_plan or {}).get("base", {}).get("selected_base"),
             })
+            explicit_base = stage0_explicit_base_branch(upstream_transition)
+            if explicit_base is not None:
+                values["base_branch"] = explicit_base
     elif skill_id == "guru-approve-task-plan" and owner_result is not None:
         if exit_id == "approved":
             values["task_ref"] = public_input.get("task_ref")
@@ -22290,7 +22367,7 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
     output_schema, _ = stage0_output_contract(skill_id, package, interface, exit_id)
     payload = stage0_build_output(
         skill_id, exit_id, public_input, owner_result, owner_plan,
-        owner_locator, output_schema, output_transition,
+        owner_locator, output_schema, output_transition, input_transition,
     )
 
     validation_errors = skill_json_schema_validation_errors(
