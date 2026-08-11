@@ -1178,12 +1178,14 @@ standalone mode. Its immutable identity binds `castbox/guru-trellis`, remote,
 requested ref, resolved current HEAD and selected capability profile. Current
 public exits are only `verified|blocked`; neither projects to Finalizer.
 
-The private result schema `guru-extension-installation-verification-result-4.0`
+The private result schema `guru-extension-installation-verification-result-5.0`
 contains source identity, semantic result, explicit unverified boundaries and a
 session reference. It is ignored source-session runtime, deleted after direct
 standalone consumption, and never written below `.trellis/tasks/**`. Legacy
-task-bearing verification schemas remain immutable compatibility bytes only and
-are absent from current inventories.
+task-bearing verification schemas, including the immutable result 4.0 bytes,
+remain compatibility assets only and are absent from current inventories. The
+current semantic input requires `applicability.status=required`; explicit source
+intent cannot route through `not_required`.
 
 ## Current Task Commit Authority
 

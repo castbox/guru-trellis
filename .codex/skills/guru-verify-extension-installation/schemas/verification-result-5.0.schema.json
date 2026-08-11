@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-extension-installation-verification-result-4.0",
+  "$id": "guru-extension-installation-verification-result-5.0",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "skill_id", "mode", "profile", "immutable_identity", "semantic_result", "unverified_boundaries", "identity"],
   "properties": {
-    "schema_version": {"const": "4.0"},
+    "schema_version": {"const": "5.0"},
     "skill_id": {"const": "guru-verify-extension-installation"},
     "mode": {"const": "standalone"},
     "profile": {"const": "source_repository_verification"},
@@ -27,7 +27,7 @@
       "required": ["typed_exit", "conclusion", "finding_refs", "blocker"],
       "properties": {
         "typed_exit": {"enum": ["verified", "blocked"]},
-        "conclusion": {"type": "string", "minLength": 1},
+        "conclusion": {"enum": ["verified", "blocked"]},
         "finding_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "blocker": {
           "type": ["object", "null"],

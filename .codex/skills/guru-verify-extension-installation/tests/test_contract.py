@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import os
@@ -55,9 +56,30 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             schema = load(f"schemas/{schema_name}.schema.json")
             example = load(f"examples/public-{exit_id}-output.json")
             jsonschema.Draft202012Validator(schema).validate(example)
-        jsonschema.Draft202012Validator(
-            load("schemas/verification-result.schema.json")
-        ).validate(load("examples/verification-result.json"))
+        current_result = load("schemas/verification-result-5.0.schema.json")
+        legacy_result = load("schemas/verification-result-4.0.schema.json")
+        self.assertEqual(current_result["$id"], "guru-extension-installation-verification-result-5.0")
+        self.assertEqual(legacy_result["$id"], "guru-extension-installation-verification-result-4.0")
+        jsonschema.Draft202012Validator(current_result).validate(
+            load("examples/verification-result.json")
+        )
+        self.assertEqual(
+            hashlib.sha256(
+                (PACKAGE / "schemas/verification-result-4.0.schema.json").read_bytes()
+            ).hexdigest(),
+            "8f47671d8b5abb60eb10e334ceb21a9c46d6fb1bd5854e0190fc99c1df7c874d",
+        )
+
+    def test_current_semantic_input_requires_explicit_applicability(self) -> None:
+        schema = load("schemas/semantic-review-input-2.0.schema.json")
+        self.assertEqual(
+            schema["properties"]["applicability"]["allOf"][1]["properties"]["status"],
+            {"const": "required"},
+        )
+        self.assertEqual(
+            schema["properties"]["semantic_review"]["allOf"][1]["properties"]["conclusion"],
+            {"enum": ["verified", "blocked"]},
+        )
 
     def test_non_source_rejected_before_executor(self) -> None:
         runtime = load_runtime()

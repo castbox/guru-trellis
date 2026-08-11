@@ -898,6 +898,9 @@ mismatch 使用稳定 invocation error fail closed，且 executor command count 
 new init、preview/switch、preset apply/reapply、`trellis update`、ownership/sidecar、contract
 discovery、platform equality、README command 与 redaction。Owner state 只存在 source
 session 的 ignored runtime，完成后删除，不写入 `.trellis/tasks/**`。
+Current semantic input 固定 `applicability.status=required`，private result 使用独立
+5.0 schema identity。Public invocation 只有在 `verified|blocked` terminal DTO 完整校验
+后才删除 source-session owner checkpoint；任何失败都保留 checkpoint 供同一 owner 重试。
 
 ## Skill 行为评测
 

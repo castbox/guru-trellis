@@ -153,7 +153,7 @@
         "guru-stage0-sync-base-output-synced-1.0"
       ],
       "private_artifact_schema_ids": [
-        "guru-extension-installation-verification-result-4.0",
+        "guru-extension-installation-verification-result-5.0",
         "guru-finalization-transaction-2.0",
         "guru-task-pr-merge-gate-1.0",
         "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",

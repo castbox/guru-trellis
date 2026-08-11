@@ -53,9 +53,10 @@
     {"id": "public_blocked_output", "path": "schemas/public-blocked-output-2.0.schema.json"},
     {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
     {"id": "execution_facts", "path": "schemas/execution-facts.schema.json"},
-    {"id": "semantic_review_input", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "legacy_semantic_review_input_1_0", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "semantic_review_input", "path": "schemas/semantic-review-input-2.0.schema.json"},
     {"id": "legacy_private_verification_result_4_0", "path": "schemas/verification-result-4.0.schema.json"},
-    {"id": "verification_result", "path": "schemas/verification-result.schema.json"}
+    {"id": "verification_result", "path": "schemas/verification-result-5.0.schema.json"}
   ],
   "validators": [
     {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Validate source identity before side effects, create isolated source and clean throwaway target checkouts, then execute the source-owned installation catalog"},
@@ -104,7 +105,7 @@
       {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "direct"}
     ],
     "private_artifacts": [
-      {"id": "source_verification_result", "kind": "gate_evidence", "schema": {"schema_id": "guru-extension-installation-verification-result-4.0", "path": "schemas/verification-result.schema.json"}, "persistence": "ignored_runtime"}
+      {"id": "source_verification_result", "kind": "gate_evidence", "schema": {"schema_id": "guru-extension-installation-verification-result-5.0", "path": "schemas/verification-result-5.0.schema.json"}, "persistence": "ignored_runtime"}
     ]
   }
 }

@@ -534,6 +534,9 @@ requested ref、resolved commit、HEAD 与 clean tree；失败不执行外部动
 隔离的 source checkout 和 clean throwaway target。Source clone locator 必须为
 credential-free canonical GitHub HTTPS。Current public contract 只有一个 input profile、
 两个 exits 与 ignored source-session private state。
+Current semantic input 固定 `applicability.status=required`，private result 使用独立
+5.0 schema identity；public invocation 成功消费 `verified|blocked` 后删除 source-session
+owner checkpoint，校验失败则保留。
 
 `guru-discover-change-context` package 同时安装
 `guru-change-context-owner-result-2.0` schema/example、public schemas/examples、contract、

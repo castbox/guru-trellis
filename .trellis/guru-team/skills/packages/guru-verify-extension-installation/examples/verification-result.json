@@ -1,5 +1,5 @@
 {
-  "schema_version": "4.0",
+  "schema_version": "5.0",
   "skill_id": "guru-verify-extension-installation",
   "mode": "standalone",
   "profile": "source_repository_verification",

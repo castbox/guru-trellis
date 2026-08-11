@@ -11407,7 +11407,7 @@ def marketplace_verification_path(task_dir: Path, config: dict[str, Any] | None 
 
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
 EXTENSION_VERIFICATION_SCHEMA_VERSION = "4.0"
-EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION = "4.0"
+EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION = "5.0"
 EXTENSION_VERIFICATION_CAPABILITIES = (
     "marketplace_index",
     "new_repo_init",
@@ -14410,23 +14410,6 @@ def extension_verification_semantic_shape_errors(
             errors.append("verified cannot contain open findings.")
         if reviewed.get("redaction", {}).get("status") != "passed":
             errors.append("verified requires redaction pass.")
-    elif exit_id == "not_required":
-        if public_input.get("mode") == "workflow":
-            errors.append("workflow verification_required cannot silently exit not_required.")
-        if applicability.get("status") != "not_required":
-            errors.append("not_required requires AI applicability=not_required.")
-        if selected or execution.get("status") != "not_run":
-            errors.append("not_required cannot contain an execution profile or pass facts.")
-    elif exit_id == "return_to_task_work":
-        if not public_input.get("task_ref"):
-            errors.append("taskless standalone cannot return to task work.")
-        if not any(
-            isinstance(item, dict)
-            and item.get("status") == "open"
-            and item.get("route_class") == "task_work"
-            for item in findings
-        ):
-            errors.append("return_to_task_work requires an open task_work finding.")
     elif exit_id == "blocked":
         if not reviewed.get("reason_code") or not reviewed.get("remediation"):
             errors.append("blocked requires a stable reason_code and remediation.")
@@ -14465,7 +14448,7 @@ def extension_verification_recorder_input_schema(
     label: str,
 ) -> dict[str, Any]:
     if schema_name not in {
-        "semantic-review-input.schema.json",
+        "semantic-review-input-2.0.schema.json",
         "execution-facts.schema.json",
     }:
         raise WorkflowError(
@@ -23120,7 +23103,7 @@ def extension_verification_review_input(
     reviewed, _ = extension_verification_json_input(root, value)
     schema = extension_verification_recorder_input_schema(
         root,
-        "semantic-review-input.schema.json",
+        "semantic-review-input-2.0.schema.json",
         "extension verification semantic review input",
     )
     errors = skill_json_schema_validation_errors(
@@ -23331,7 +23314,7 @@ def extension_verification_minimal_errors(
     errors: list[str] = []
     schema_errors: list[str] = []
     schema = skill_read_schema(
-        extension_verification_package_root(root) / "schemas/verification-result.schema.json",
+        extension_verification_package_root(root) / "schemas/verification-result-5.0.schema.json",
         "extension verification minimal result",
         schema_errors,
     )
@@ -23964,6 +23947,17 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
             payload={"errors": errors},
         )
+    resolved_head = extension_verification_source_preflight(root, public_input)
+    owner_state_path = extension_verification_source_owner_state_path(
+        root,
+        resolved_head,
+    )
+    if owner_state_path.is_symlink():
+        raise WorkflowError(
+            "Extension verification source owner state is unsafe.",
+            exit_code=2,
+        )
+    owner_state_path.unlink(missing_ok=True)
     return payload
 
 

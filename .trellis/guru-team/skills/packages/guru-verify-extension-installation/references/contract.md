@@ -28,6 +28,8 @@ only, is deleted after terminal consumption, and never appears under
 ## Semantic Gate And Exits
 
 The AI owns capability selection, adequacy, findings, and the final route.
+Explicit source verification always records `applicability.status=required`;
+the current semantic input rejects `not_required` before recorder execution.
 Deterministic commands only execute, record, and validate facts. Current exits
 are `verified` and `blocked`, both returned directly to the standalone caller;
 there is no Finalizer projection, `not_required`, or task-work route.
@@ -37,6 +39,7 @@ there is no Finalizer projection, `not_required`, or task-work route.
 Task-bearing 3.0 inputs, workflow profiles, `not_required`,
 `return_to_task_work`, Finalizer projections, tracked
 `marketplace-verification.json`, and their recovery contracts are retired.
-Legacy schemas/examples remain immutable compatibility assets but are not in
+Legacy schemas/examples, including private result 4.0, remain immutable
+compatibility assets but are not in
 the current graph. Old input fails closed with remediation to rerun current
 Publication/Finalizer preparation rather than being auto-projected.

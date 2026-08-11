@@ -14593,7 +14593,7 @@ class SourceOwnedExtensionVerificationRuntimeTest(unittest.TestCase):
             "caller_intent": "verify-extension-installation",
         }
 
-    def commit_json_inputs(self) -> tuple[str, str, str]:
+    def commit_json_inputs(self, typed_exit: str = "verified") -> tuple[str, str, str]:
         public_input = self.public_input()
         execution = json.loads(
             (self.PACKAGE / "examples/execution-facts.json").read_text(encoding="utf-8")
@@ -14601,6 +14601,20 @@ class SourceOwnedExtensionVerificationRuntimeTest(unittest.TestCase):
         review = json.loads(
             (self.PACKAGE / "examples/semantic-review-input.json").read_text(encoding="utf-8")
         )
+        if typed_exit == "blocked":
+            execution["status"] = "blocked"
+            review["semantic_review"]["adequacy"][0]["status"] = "blocked"
+            review["semantic_review"]["findings"] = [{
+                "finding_ref": "source-verification-blocked-001",
+                "evidence": "The controlled source capability is unavailable.",
+                "route_class": "external_blocker",
+                "status": "open",
+                "closure_evidence": "",
+            }]
+            review["semantic_review"]["conclusion"] = "blocked"
+            review["typed_exit"] = "blocked"
+            review["reason_code"] = "remote_unavailable"
+            review["remediation"] = "Restore source remote access and rerun verification."
         head = gtt.current_head(self.root)
         execution["target_repository"].update({
             "repo_ref": "castbox/guru-trellis",
@@ -14707,6 +14721,43 @@ class SourceOwnedExtensionVerificationRuntimeTest(unittest.TestCase):
         execute.assert_not_called()
         self.assertFalse((self.root / ".trellis/tasks").exists())
 
+    def test_current_semantic_input_rejects_not_required(self) -> None:
+        review = json.loads(
+            (self.PACKAGE / "examples/semantic-review-input.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        invalid_inputs = (
+            {
+                **review,
+                "applicability": {
+                    **review["applicability"],
+                    "status": "not_required",
+                },
+            },
+            {
+                **review,
+                "semantic_review": {
+                    **review["semantic_review"],
+                    "conclusion": "not_required",
+                },
+            },
+        )
+        for invalid in invalid_inputs:
+            with (
+                self.subTest(invalid=invalid),
+                mock.patch.object(
+                    gtt,
+                    "extension_verification_json_input",
+                    return_value=(invalid, "<test>"),
+                ),
+                self.assertRaisesRegex(
+                    gtt.WorkflowError,
+                    "semantic review input failed schema validation",
+                ),
+            ):
+                gtt.extension_verification_review_input(self.root, "ignored")
+
     def test_source_recorder_uses_only_ignored_session_state(self) -> None:
         public_locator, execution_locator, review_locator = self.commit_json_inputs()
         with mock.patch.object(
@@ -14724,10 +14775,95 @@ class SourceOwnedExtensionVerificationRuntimeTest(unittest.TestCase):
             self.root,
             gtt.current_head(self.root),
         )
-        self.assertEqual(result["schema_version"], "4.0")
+        self.assertEqual(result["schema_version"], "5.0")
         self.assertTrue(owner_path.is_file())
         self.assertFalse((self.root / ".trellis/tasks").exists())
         self.assertFalse((self.root / "marketplace-verification.json").exists())
+
+    def assert_terminal_invocation_deletes_source_owner_state(
+        self,
+        typed_exit: str,
+    ) -> None:
+        public_locator, execution_locator, review_locator = self.commit_json_inputs(
+            typed_exit
+        )
+        head = gtt.current_head(self.root)
+        with mock.patch.object(
+            gtt,
+            "extension_verification_source_preflight",
+            return_value=head,
+        ):
+            gtt.cmd_record_extension_verification(argparse.Namespace(
+                root=str(self.root),
+                input=public_locator,
+                execution_input=execution_locator,
+                review_input=review_locator,
+            ))
+        owner_path = gtt.extension_verification_source_owner_state_path(
+            self.root,
+            head,
+        )
+        self.assertTrue(owner_path.is_file())
+        with (
+            mock.patch.dict(os.environ, {"GURU_TEAM_EVAL_STAGING": "1"}),
+            mock.patch.object(
+                gtt,
+                "extension_verification_source_preflight",
+                return_value=head,
+            ),
+        ):
+            output = gtt.cmd_invoke_extension_verification(argparse.Namespace(
+                root=str(self.root),
+                input=public_locator,
+                owner_result=gtt.repo_relative(self.root, owner_path),
+            ))
+        self.assertEqual(output["exit_id"], typed_exit)
+        self.assertFalse(owner_path.exists())
+
+    def test_verified_terminal_invocation_deletes_source_owner_state(self) -> None:
+        self.assert_terminal_invocation_deletes_source_owner_state("verified")
+
+    def test_blocked_terminal_invocation_deletes_source_owner_state(self) -> None:
+        self.assert_terminal_invocation_deletes_source_owner_state("blocked")
+
+    def test_failed_terminal_invocation_retains_source_owner_state(self) -> None:
+        public_locator, execution_locator, review_locator = self.commit_json_inputs()
+        head = gtt.current_head(self.root)
+        with mock.patch.object(
+            gtt,
+            "extension_verification_source_preflight",
+            return_value=head,
+        ):
+            gtt.cmd_record_extension_verification(argparse.Namespace(
+                root=str(self.root),
+                input=public_locator,
+                execution_input=execution_locator,
+                review_input=review_locator,
+            ))
+        owner_path = gtt.extension_verification_source_owner_state_path(self.root, head)
+        with (
+            mock.patch.dict(os.environ, {"GURU_TEAM_EVAL_STAGING": "1"}),
+            mock.patch.object(
+                gtt,
+                "extension_verification_source_preflight",
+                return_value=head,
+            ),
+            mock.patch.object(
+                gtt,
+                "extension_verification_output_schema",
+                return_value={"type": "object", "required": ["missing"]},
+            ),
+            self.assertRaisesRegex(
+                gtt.WorkflowError,
+                "public output failed validation",
+            ),
+        ):
+            gtt.cmd_invoke_extension_verification(argparse.Namespace(
+                root=str(self.root),
+                input=public_locator,
+                owner_result=gtt.repo_relative(self.root, owner_path),
+            ))
+        self.assertTrue(owner_path.is_file())
 
 
 class CloseoutTransactionContractTest(unittest.TestCase):
