@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-review-contract-wording",
   "name": "guru-review-contract-wording",
   "description": "Review controlled contract wording through fixed change-request, planning-artifact, or explicit-path scope, semantic revision and classification, deterministic evidence, and typed exits.",
@@ -97,8 +97,12 @@
       "path": "examples/public-invocation-error.json"
     },
     {
-      "id": "public_output_pass_example",
+      "id": "legacy_public_output_pass_example_1_0",
       "path": "examples/public-pass-output.json"
+    },
+    {
+      "id": "public_output_pass_example_2_0",
+      "path": "examples/public-pass-output-2.0.json"
     },
     {
       "id": "public_output_content_changed_example",
@@ -135,8 +139,12 @@
       "path": "schemas/public-invocation-error.schema.json"
     },
     {
-      "id": "public_output_pass",
+      "id": "legacy_public_output_pass_1_0",
       "path": "schemas/public-pass-output.schema.json"
+    },
+    {
+      "id": "public_output_pass_2_0",
+      "path": "schemas/public-pass-output-2.0.schema.json"
     },
     {
       "id": "public_output_content_changed",
@@ -278,23 +286,29 @@
         "id": "invalid_public_input",
         "path": "examples/public-invocation-error.json"
       },
+      "call_local": {
+        "flag": "--invocation",
+        "stdin": "-",
+        "envelope": {
+          "schema_id": "guru-stage0-invocation-semantic-owner-1.0",
+          "path": "consumers/workflow/stage0/invocations/semantic-owner.schema.json"
+        }
+      },
       "example_argv": [
-        "--input",
-        "examples/public-planning-artifacts-input.json",
-        "--owner-result",
-        ".trellis/guru-team/skills/packages/guru-review-contract-wording/examples/contract-wording-review.json"
+        "--invocation",
+        "-"
       ]
     },
     "outputs": [
       {
         "exit_id": "pass",
         "schema": {
-          "schema_id": "guru-stage0-review-contract-wording-output-pass-1.0",
-          "path": "schemas/public-pass-output.schema.json"
+          "schema_id": "guru-stage0-review-contract-wording-output-pass-2.0",
+          "path": "schemas/public-pass-output-2.0.schema.json"
         },
         "example": {
           "id": "pass_output",
-          "path": "examples/public-pass-output.json"
+          "path": "examples/public-pass-output-2.0.json"
         },
         "consumer_use_ids": [
           "project_pass"
@@ -341,6 +355,12 @@
           "kind": "json_schema",
           "schema_id": "guru-stage0-review-contract-wording-workflow-pass-input-1.0",
           "path": "consumers/workflow/stage0/review-contract-wording-pass.schema.json"
+        },
+        "transition": {
+          "source_field": "transition",
+          "stage": "wording_current",
+          "schema_id": "guru-stage0-transition-wording-current-1.0",
+          "path": "consumers/workflow/stage0/transitions/wording-current.schema.json"
         }
       },
       {
@@ -370,7 +390,12 @@
         "id": "project_pass",
         "exit_id": "pass",
         "consumer_input_id": "pass_workflow_input",
-        "operation": "direct"
+        "operation": "select",
+        "mappings": [
+          {"source": "exit_id", "target": "exit_id"},
+          {"source": "profile", "target": "profile"},
+          {"source": "continuation_id", "target": "continuation_id"}
+        ]
       },
       {
         "id": "project_content_changed",

@@ -22,6 +22,28 @@ Global workflow 只决定顺序和 consumer；Skill 负责 judgment 与 re-entry
 Routine agent terminal output、Git live facts 和 mapped exits 直接消费，不转写为 handoff、liveness
 或逐轮 report。
 
+### Phase 0 public transition
+
+```mermaid
+flowchart LR
+  B["guru-sync-base"] -->|actual stdout| BC["base_current"]
+  BC --> D["guru-discover-change-context"]
+  D -->|actual stdout| CC["context_current"]
+  CC --> C["guru-clarify-requirements"]
+  C -->|actual stdout| CL["clarity_current"]
+  CL --> W["guru-review-contract-wording"]
+  W -->|actual stdout| WC["wording_current"]
+  WC --> R["guru-review-change-request"]
+  R -->|actual stdout| RC["readiness_current"]
+  RC --> T["guru-create-task-workspace"]
+```
+
+这五个 stage 是独立 closed schema，不是含大量 optional 字段的总 artifact。每次 semantic
+调用只在 call-local envelope 中组合当前 public input、当前 transition 与本 Skill owner result；
+owner result 经本 wrapper 复验后即消费，不跨 Skill 传播。正常 pre-task 不写 owner、prerequisite
+或 transition repo 文件。Refresh 丢弃 stale stage 并重新执行一次完整 public sync；低层
+resolver/executor/checker 不是第二条 workflow。Compatibility `prepare-task` 只做本地诊断。
+
 ## Phase 视图
 
 | Phase | 保留的语义 | 正常持久化 |
@@ -65,3 +87,6 @@ Canonical 修改通过 preset 同步到 dogfood、Guru namespace、Codex、Claud
 验收同时覆盖 clean install、workflow preview/switch、`trellis update` / upgrade、preset reapply、
 `.new/.bak`、managed hash、drift 与 all-platform equality。官方 Trellis 管理的文件遵守
 `.trellis/.template-hashes.json` 冲突语义；preset 不修改上游 CLI、全局 npm 或 `node_modules`。
+Phase 0 六包、transition/envelope schemas、shared runtime 与 activation manifest 是同一原子
+安装单元；clean install 必须用 producer actual stdout 运行完整 public graph，且最终递归
+sidecar 扫描为零。

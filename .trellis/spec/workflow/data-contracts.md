@@ -52,6 +52,48 @@ pre/post digests; fast-forward execution must not.
 Workflow and standalone create no evidence file, lease, release command or
 cleanup state.
 
+### Phase 0 Current Transition Family
+
+The workflow-owned `guru-stage0-transition-1.0` family consists of five
+independent closed schemas. They are lifecycle stages, not one nullable mega
+object:
+
+| Stage | Required current projection | Unique consumer |
+| --- | --- | --- |
+| `base_current` | transition/mode/repository identity plus source-preserving base provenance | `guru-discover-change-context` |
+| `context_current` | current base identity, target locator, context continuation and authoritative-content freshness | `guru-clarify-requirements` |
+| `clarity_current` | current context identity, target disposition, scope/authority content identity and clarity checker token | `guru-review-contract-wording` |
+| `wording_current` | current clarity identity, fixed wording profile, target content identity and wording checker token | `guru-review-change-request` |
+| `readiness_current` | current wording identity, ready scope projection, target/content/linkage identity | `guru-create-task-workspace` |
+
+The base provenance is a closed source-preserving value containing resolution
+source, selected base, remote, ordered candidates, decision HEAD, local base
+HEAD, remote base HEAD, and `post_sync_resolution_sha256`. These HEAD roles are
+distinct contract fields and must not be folded into one generic `base_head`.
+It preserves an explicit selection as explicit when a later compatibility
+caller omits a CLI base; it does not rerun fallback precedence and relabel the
+source as `config-candidate`. Discovery and later refresh/workspace boundaries
+compare that reviewed provenance with live Git. A changed selected base,
+candidate order, remote, clean state, decision/local/remote HEAD, digest, or
+authoritative content is real drift and follows the declared refresh route.
+
+Each later stage contains only the prior identity plus fields directly consumed
+by its next checker. Complete issue bodies, scan or review history, findings,
+owner results, artifact locators, file metadata, process/reviewer data, and
+authorization are forbidden. Successful consumption retires the prior in-memory
+stage; refresh/re-entry discards stale state and starts from a fresh
+`base_current`. Normal pre-task transport is stdin/stdout or caller memory only
+and writes nothing below `.trellis/tasks/**`, `.trellis/workspace/**`, or
+`.trellis/.runtime/**`.
+
+The invocation contract uses separate closed call-local envelopes for
+deterministic sync, semantic owner invocation, and confirmed workspace
+mutation. Semantic transport has three distinct domains: caller-owned public
+input, exactly one current transition stage, and the current Skill's checked
+owner result. That result is never a public DTO or a cross-Skill transition.
+Unknown fields, missing or wrong stages, owner/input/target mismatch, stale
+identity, or multiple operations fail closed.
+
 `prepare-task.base_freshness` is the current query projection and
 adds pre-sync resolution source/digest, post-sync resolution/digest, decision
 checkout, local/remote refs, and three-way equality facts from the same core.
@@ -63,6 +105,20 @@ prepare-generated explicit override. No task artifact persists the complete
 base resolution/result payload, process output, or machine path. Current task
 identity comes from official `task.json`, ignored runtime mapping, and live Git
 worktree facts.
+
+`prepare-task` is compatibility-only and never produces a current transition.
+An explicit call must receive the complete reviewed base provenance above.
+It supplies that exact `base_current.base` object as one JSON scalar through
+`--reviewed-base-provenance`; the value is not a file locator. Optional
+`--base-branch` only asserts selected-base equality and cannot rebuild source.
+Missing provenance returns the stable local diagnostic
+`missing_reviewed_base_provenance`; changed provenance/state returns a stable
+base-provenance or base-state diagnostic. Both stop before GitHub reads, fetch,
+duplicate search, or semantic Intake. A digest alone cannot reconstruct the
+resolution source or ordered candidates. Whether a missing remote ref is legal
+for a particular query state is defined by the formal closed schema/runtime
+status matrix; callers must not infer a nullable fallback or synthesize a remote
+HEAD.
 
 The YAML parser in `load_config()` is intentionally small. It supports simple
 scalars, lists, and one level of nested dictionaries used by the current config.
@@ -367,14 +423,14 @@ team extension version. The canonical source is `trellis/guru-team-extension.jso
 The canonical and installed extension manifests publish one closed current
 contract under `public_api.skill_contracts`:
 
-- `interface_schema_id` is `guru-team-skill-interface-1.3`;
-- `registry_schema_id` is `guru-team-skill-registry-1.2`;
+- `interface_schema_id` is `guru-team-skill-interface-1.4`;
+- `registry_schema_id` is `guru-team-skill-registry-1.3`;
 - `public_input_schema_ids`, `typed_output_schema_ids`, and
   `private_artifact_schema_ids` are exact inventories from all active
   production packages.
 
 The current Intake closure is derived only from the live registry, current
-Interface 1.3 packages, workflow markers, extension inventories, eval corpora,
+Interface 1.4 packages, workflow markers, extension inventories, eval corpora,
 and selected-platform copies. It contains six packages and 23 exits. A
 workspace/task mutation refusal stops in dialogue before recorder/executor,
 and the current `guru-sync-base` scalar contract delegates omitted optional
@@ -382,9 +438,9 @@ arguments to the formal resolver. Source validation, discovery, invocation, and
 install consume exactly this live closure.
 
 The sole current planning/check/commit manifest is
-`trellis/skills/guru-team/contracts/production-current.json`, with schema id
-`guru-team-production-contract-manifest-1.0` and contract id
-`production-current-v1`. It binds exactly the three planning/check/commit
+`trellis/skills/guru-team/contracts/production-current-2.0.json`, with schema id
+`guru-team-production-contract-manifest-2.0` and contract id
+`production-current-v2`. It binds exactly the three planning/check/commit
 packages, ten structured profiles, 11 stable exits, current per-exit schema and
 example identities, consumer inputs, projections, private artifact ids,
 authoring-seed edges, and canonical eval cases. Inputs and owner artifacts must
@@ -394,7 +450,7 @@ projection, or manifest participates in current invocation.
 The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
 contracts, and package-local corpora. It requires every active row to select
-Interface 1.3 and requires exact profile, exit, consumer, projection,
+Interface 1.4 and requires exact profile, exit, consumer, projection,
 current-case, and authoring-edge equality. Fifteen Skills
 and 57 exits are the current cardinality regression, not a hard-coded future
 registry allowlist.
@@ -410,10 +466,12 @@ against the complete target profile schema. This is a consumer contract kind,
 not a projection operation; the operation inventory remains exactly
 `direct|select|rename|normalize`.
 
-Test fixture schema ids belong only to the fixture extension manifest and must
+The immutable `production-current.json` v1 asset remains legacy-only and is not
+selected by current registry, extension, installation, or invocation. Test
+fixture schema ids belong only to the fixture extension manifest and must
 not appear in production extension, installed production inventory, platform
-copies, or workflow mandatory routes. Registry schema 1.2 requires every
-active row to select Interface 1.3; planned rows remain lifecycle-only.
+copies, or workflow mandatory routes. Registry schema 1.3 requires every
+active row to select Interface 1.4; planned rows remain lifecycle-only.
 
 `public_api.companion_scripts` includes stable id
 `discover-skill-contract`. Its success DTO exposes the current package-relative

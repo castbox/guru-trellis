@@ -31,6 +31,12 @@ Each of the three files must:
   bounded side-effect set;
 - return the declared terminal result or fail closed.
 
+For Phase 0, launchers invoke the stable `guru-sync-base` public Skill once and
+route only its checked output and the workflow-owned five-stage transition.
+They must not expose low-level resolve/execute/check as normal steps, persist an
+owner/prerequisite locator, invoke compatibility `prepare-task` as a workflow
+hop, or reconstruct transition fields from runtime source.
+
 The marker is an entry-format and drift check only. The installer must never
 use the marker, the words `Guru Team`, or any other content-shape heuristic as
 evidence that an existing target is preset-managed. Ownership comes only from
@@ -63,6 +69,11 @@ These package projections are managed-hash installation, not overlay files.
 Shared/Codex/Claude/Cursor may differ only in discovery root or native adapter
 protocol; public Interface, exits, projections, eval corpus, and behavior remain
 identical.
+
+The six Phase 0 packages, transition/envelope schemas, shared runtime, and
+activation manifest are distributed as one versioned package unit. A selected
+platform may never discover a new package copy against an old transition or
+runtime inventory.
 
 Mandatory invocation is guaranteed by the active workflow's stable markers,
 not by frontmatter auto-match or patched upstream entries.
@@ -139,6 +150,8 @@ trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
 Success requires exactly three overlay files, no unexpected overlay path,
 exact canonical/dogfood bytes, correct executable modes for managed scripts,
 and no unresolved `.new`/`.bak` anywhere in the installed extension surface.
+Phase 0 validation also proves public-sync-only launcher wording and byte parity
+for the complete atomic package unit across dogfood and every selected platform.
 
 ## Anti-Patterns
 

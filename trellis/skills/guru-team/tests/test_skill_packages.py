@@ -21,6 +21,22 @@ SKILLS_ROOT = REPO / "trellis/skills/guru-team"
 FIXTURE = SKILLS_ROOT / "tests/fixtures/representative-active"
 
 
+def install_current_contract_schemas(skills_root: Path) -> None:
+    schemas = skills_root / "schemas"
+    shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-interface-1.4.schema.json",
+        schemas / "skill-interface-1.4.schema.json",
+    )
+    shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-registry-1.3.schema.json",
+        schemas / "skill-registry-1.3.schema.json",
+    )
+    shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-eval-run-2.0.schema.json",
+        schemas / "skill-eval-run-2.0.schema.json",
+    )
+
+
 def install_finish_integration_fixture(canonical_root: Path) -> None:
     tests_root = canonical_root / "tests"
     tests_root.mkdir(exist_ok=True)
@@ -158,6 +174,7 @@ class SourceValidationTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "skills"
         shutil.copytree(FIXTURE, self.root)
+        install_current_contract_schemas(self.root)
         self.workflow = self.root / "workflow.md"
 
     def tearDown(self) -> None:
@@ -179,12 +196,12 @@ class SourceValidationTests(unittest.TestCase):
 
     def interface_schema_errors(self, payload: dict) -> list[str]:
         schema = json.loads(
-            (self.root / "schemas/skill-interface-1.3.schema.json").read_text(encoding="utf-8")
+            (self.root / "schemas/skill-interface-1.4.schema.json").read_text(encoding="utf-8")
         )
         return runtime.skill_json_schema_validation_errors(
             payload,
             schema,
-            "representative 1.3 interface",
+            "representative 1.4 interface",
         )
 
     def read_sync_interface(self) -> dict:
@@ -393,7 +410,7 @@ class SourceValidationTests(unittest.TestCase):
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
 
         self.assertEqual(interface["id"], "guru-create-task-commit")
-        self.assertEqual(interface["schema_version"], "1.3")
+        self.assertEqual(interface["schema_version"], "1.4")
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(interface["modes"]["workflow"]["routing"], "global_workflow")
         self.assertEqual(interface["modes"]["standalone"]["routing"], "direct_discovery")
@@ -512,7 +529,7 @@ class SourceValidationTests(unittest.TestCase):
         flow = (REPO / "docs/requirements/guru-team-trellis-flow.md").read_text(encoding="utf-8")
         self.assertIn("Global workflow 只决定顺序和 consumer", flow)
         self.assertIn("Step-local Skill owner", flow)
-        self.assertNotIn("prepare-task", flow)
+        self.assertIn("Compatibility `prepare-task` 只做本地诊断", flow)
 
     def test_workflows_only_route_task_commit_skill(self) -> None:
         workflows = [
@@ -990,7 +1007,7 @@ class SourceValidationTests(unittest.TestCase):
                 "private_artifacts",
             },
         )
-        self.assertEqual(action["interface_schema_id"], "guru-team-skill-interface-1.3")
+        self.assertEqual(action["interface_schema_id"], "guru-team-skill-interface-1.4")
         self.assertEqual(action["input"]["kind"], "structured_json")
         self.assertEqual(scalar["input"]["kind"], "scalar_cli")
         with self.assertRaises(runtime.WorkflowError) as raised:
@@ -2740,11 +2757,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertTrue(any("workflow and standalone preconditions differ" in item for item in self.validate()["errors"]))
 
     def test_registry_schema_identity_and_constraint_matrix_fail(self) -> None:
-        schema = self.root / "schemas/skill-registry.schema.json"
+        schema = self.root / "schemas/skill-registry-1.3.schema.json"
         schema.write_text(json.dumps({"type": "string"}), encoding="utf-8")
         self.assertTrue(any("skill registry schema" in item and "canonical schema contract digest" in item for item in self.validate()["errors"]))
 
-        shutil.copyfile(FIXTURE / "schemas/skill-registry.schema.json", schema)
+        shutil.copyfile(SKILLS_ROOT / "schemas/skill-registry-1.3.schema.json", schema)
         original = self.read_registry()
         mutations = {
             "missing-required": lambda value: value.pop("schema_version"),
@@ -2814,6 +2831,7 @@ class EvalRunnerTests(unittest.TestCase):
         self.workflow = self.repo / "trellis/workflows/guru-team/workflow.md"
         self.workflow.parent.mkdir(parents=True)
         shutil.copytree(FIXTURE, self.skills)
+        install_current_contract_schemas(self.skills)
         install_finish_integration_fixture(self.skills)
         shutil.copyfile(FIXTURE / "workflow.md", self.workflow)
         self.runtime_target = self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
@@ -3434,6 +3452,7 @@ class DistributionTests(unittest.TestCase):
         self.guru_root = Path(self.temp.name) / "source"
         canonical = self.guru_root / "trellis/skills/guru-team"
         shutil.copytree(FIXTURE, canonical)
+        install_current_contract_schemas(canonical)
         install_finish_integration_fixture(canonical)
         self.dst = self.repo / ".trellis/guru-team"
 
@@ -4070,16 +4089,48 @@ class IntakePublicInvocationTests(unittest.TestCase):
         self.assertIsInstance(payload, dict)
         return payload
 
-    def invoke_process(self, skill_id: str, arguments: list[str]) -> subprocess.CompletedProcess[str]:
+    def invoke_process(
+        self,
+        skill_id: str,
+        arguments: list[str],
+        *,
+        stdin: str | None = None,
+    ) -> subprocess.CompletedProcess[str]:
         wrapper = self.repo / ".agents/skills" / skill_id / "scripts/invoke.sh"
         return subprocess.run(
             [str(wrapper), *arguments],
             cwd=self.repo,
             text=True,
+            input=stdin,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False,
         )
+
+    def invoke_call_local(
+        self,
+        skill_id: str,
+        public_input_path: Path,
+        owner_result_path: Path,
+    ) -> dict:
+        public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+        owner_result = json.loads(owner_result_path.read_text(encoding="utf-8"))
+        envelope = {
+            "schema_version": "1.0",
+            "public_input": public_input,
+            "transition": native_adapter.stage0_eval_transition(
+                skill_id, self.repo, public_input, owner_result
+            ),
+            "owner_context": {},
+            "owner_result": owner_result,
+        }
+        process = self.invoke_process(
+            skill_id,
+            ["--invocation", "-"],
+            stdin=json.dumps(envelope),
+        )
+        self.assertEqual(process.returncode, 0, process.stderr)
+        return json.loads(process.stdout)
 
     def eval_public_output(self, skill_id: str, case_id: str) -> dict:
         result = self.run_shared_eval(skill_id, case_id)
@@ -4238,8 +4289,8 @@ class IntakePublicInvocationTests(unittest.TestCase):
                     Path(transcript["native_trace_path"]).read_text(encoding="utf-8")
                 )
                 argv = native_trace["events"][-1]["argv"]
-                owner_flag = argv.index("--owner-result")
-                self.assertEqual(argv[owner_flag + 1], "-")
+                self.assertEqual(argv[-2:], ["--invocation", "-"])
+                self.assertNotIn("--owner-result", argv)
                 self.assertFalse(
                     any(value.startswith(".trellis/tasks/") for value in argv)
                 )
@@ -5015,6 +5066,23 @@ class IntakePublicInvocationTests(unittest.TestCase):
         wording_path = self.repo / "docs/requirements/requirement-main.md"
         wording_path.parent.mkdir(parents=True)
         wording_path.write_text("# Requirement\n\nThe current contract is explicit.\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "add", "docs/requirements/requirement-main.md"],
+            cwd=self.repo,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "add wording fixture"],
+            cwd=self.repo,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        subprocess.run(
+            ["git", "push", "origin", "main"],
+            cwd=self.repo,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
         scope, contents = runtime.contract_wording_build_scope(
             self.repo,
             "explicit_paths",
@@ -5049,35 +5117,27 @@ class IntakePublicInvocationTests(unittest.TestCase):
         owner_path.parent.mkdir(parents=True)
         owner_path.write_text(json.dumps(owner_result) + "\n", encoding="utf-8")
 
-        payload = self.invoke(
+        payload = self.invoke_call_local(
             "guru-review-contract-wording",
-            [
-                "--input", "examples/public-explicit-paths-input.json",
-                "--owner-result", ".trellis/.runtime/guru-team/evals/wording-owner-result.json",
-            ],
+            self.repo / ".agents/skills/guru-review-contract-wording/examples/public-explicit-paths-input.json",
+            owner_path,
         )
-        self.assertEqual(
-            payload,
-            {"exit_id": "pass", "profile": "explicit_paths", "continuation_id": "stage0-current"},
-        )
+        self.assertEqual(payload["exit_id"], "pass")
+        self.assertEqual(payload["profile"], "explicit_paths")
+        self.assertEqual(payload["continuation_id"], "stage0-current")
+        self.assertEqual(payload["transition"]["stage"], "wording_current")
 
     def test_clarification_wrapper_derives_route_from_checked_owner_result(self) -> None:
-        payload = self.invoke(
+        payload = self.invoke_call_local(
             "guru-clarify-requirements",
-            [
-                "--input", "examples/public-standalone-review-input.json",
-                "--owner-result", ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
-            ],
+            self.repo / ".agents/skills/guru-clarify-requirements/examples/public-standalone-review-input.json",
+            self.repo / ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
         )
-        self.assertEqual(
-            payload,
-            {
-                "exit_id": "clear",
-                "resume_target": "guru-review-contract-wording",
-                "target_disposition": "retained",
-                "continuation_id": "stage0-current",
-            },
-        )
+        self.assertEqual(payload["exit_id"], "clear")
+        self.assertEqual(payload["resume_target"], "guru-review-contract-wording")
+        self.assertEqual(payload["target_disposition"], "retained")
+        self.assertEqual(payload["continuation_id"], "stage0-current")
+        self.assertEqual(payload["transition"]["stage"], "clarity_current")
 
     def test_semantic_wrapper_uses_repo_relative_public_input(self) -> None:
         package = self.repo / ".trellis/guru-team/skills/packages/guru-clarify-requirements"
@@ -5085,12 +5145,10 @@ class IntakePublicInvocationTests(unittest.TestCase):
         caller_input.parent.mkdir(parents=True, exist_ok=True)
         caller_input.write_bytes((package / "examples/public-standalone-review-input.json").read_bytes())
 
-        payload = self.invoke(
+        payload = self.invoke_call_local(
             "guru-clarify-requirements",
-            [
-                "--input", ".trellis/.runtime/guru-team/evals/clarification-input.json",
-                "--owner-result", ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
-            ],
+            caller_input,
+            self.repo / ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json",
         )
         self.assertEqual(payload["exit_id"], "clear")
 

@@ -6,8 +6,8 @@
     "skill_contracts": {
       "canonical_root": "trellis/skills/guru-team/",
       "installed_root": ".trellis/guru-team/skills/",
-      "registry_schema_id": "guru-team-skill-registry-1.2",
-      "interface_schema_id": "guru-team-skill-interface-1.3",
+      "registry_schema_id": "guru-team-skill-registry-1.3",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
       "public_input_schema_ids": [
         "guru-fixture-action-initial-input-1.0",
         "guru-fixture-action-reentry-input-1.0"
@@ -20,6 +20,7 @@
         "guru-fixture-sync-blocked-output-1.0",
         "guru-fixture-sync-output-1.0"
       ],
+      "legacy_typed_output_schema_ids": [],
       "private_artifact_schema_ids": [
         "guru-fixture-action-checkpoint-1.0",
         "guru-fixture-action-gate-evidence-1.0",

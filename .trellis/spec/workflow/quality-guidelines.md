@@ -45,8 +45,10 @@ When standard Intake is selected, the deterministic base and workspace helpers
 remain:
 
 - `.trellis/guru-team/scripts/bash/check-env.sh --json`
-- `.trellis/guru-team/scripts/bash/prepare-task.sh --json`
+- compatibility-only `.trellis/guru-team/scripts/bash/prepare-task.sh --json`
 
+Normal Phase 0 does not call `prepare-task`; an explicit diagnostic supplies
+complete reviewed base provenance and blocks locally when it is missing.
 Phase 1.0 must not leave bare `task.py create` or `prepare-task` mutation
 flags as an active source-checkout path. It mandatory invokes
 `guru-create-task-workspace`; only its checker-validated `created` exit enters
@@ -78,8 +80,8 @@ Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
 
 For versioned public Skill I/O, the test matrix validates only the current
-Interface 1.3 and registry 1.2 schemas. One mixed test-only registry contains
-structured semantic 1.3 and scalar deterministic 1.3 packages in the same run.
+Interface 1.4 and registry 1.3 schemas. One mixed test-only registry contains
+structured semantic 1.4 and scalar deterministic 1.4 packages in the same run.
 Tests cover discriminator/`oneOf`, every per-exit schema/example,
 every output field's direct consumer use, Skill/workflow/stop consumers,
 self-reentry, `direct|select|rename|normalize` projection, and public/private
@@ -101,7 +103,7 @@ ordered profile schema references, discriminator fields are required constants,
 and scalar examples prove ordered flags, declared value types, binding order,
 and public-input/invocation argv equality.
 
-For current Intake activation, run the Interface 1.3 matrix over the live
+For current Intake activation, run the Interface 1.4 matrix over the live
 six-package/23-exit contract rather than only a representative fixture. Every
 structurally distinct input profile/signature must have an
 executable public invocation probe, every exit/profile must have a non-empty
@@ -118,7 +120,7 @@ from an example or unchecked executor result, and output examples are not read
 as production serializer input. The live registry and current package graph are
 the complete source, schema, example, eval, and fixture inventory.
 
-Validate `production-current-v1` as the sole current planning/check/commit
+Validate `production-current-v2` as the sole current planning/check/commit
 manifest: exactly three packages, ten profiles, 11 exits, current output schema
 ids, four authoring-seed edges, private artifact ids, examples, and eval case
 bindings. No alternate production manifest, input projector, or fixture may be
@@ -230,7 +232,7 @@ invalid dates, clocks, offsets, and leap-second positions; RFC 3986 URI cases
 must cover ordinary hierarchical and opaque schemes, case-insensitive IPvFuture
 `v`, malformed/missing schemes, whitespace/control characters, percent
 encoding, authority, and ports.
-Discovery tests cover stable help, the current Interface 1.3 contract, unknown
+Discovery tests cover stable help, the current Interface 1.4 contract, unknown
 skill, version mismatch, missing asset, installed drift, and stable
 `code`/`field_path`/`remediation` errors.
 
@@ -434,6 +436,36 @@ unfinished event and prove the checkpoint is never tracked or required after
 the recovery closes. Assignment/liveness ledgers have no current reader,
 recorder, checker, fixture, or re-entry route.
 
+### Phase 0 Public Transition Gate
+
+The six-package/23-exit Phase 0 graph requires one stateful clean-install
+transcript in addition to package-local contract tests. The harness runs the
+installed production wrappers and feeds each producer's actual stdout through
+the declared projection into the next call-local envelope. It must not handwrite
+an intermediate transition, import/read `guru_team_trellis.py`, create a hidden
+owner/prerequisite locator, or compare `expected_exit` until the runtime has
+validated and emitted the actual typed output.
+
+The transcript covers the existing Open Issue happy path through real
+workspace/task creation; reviewed draft creation and full refresh/re-entry;
+duplicate retain and retarget; wording `content_changed`; readiness reroute and
+ready; every structurally distinct stop/refresh/re-entry family; and explicit
+base provenance followed by a compatibility prepare call with omitted base.
+Negative cases change selected HEAD or authoritative content and prove stale
+evidence is rejected. Before workspace creation, repository scans assert zero
+owner-result, prerequisite, transition, task, workspace, and ignored-runtime
+files.
+
+Source validation, preset staging, and installed validation treat the six
+packages, five transition schemas, call-local envelope schemas, consumer
+projections, shared runtime, registry/extension inventory, and activation
+manifest as one versioned unit. Mixed old/new bytes, missing assets, or a
+partially activated graph fail closed and preserve the prior complete
+installation. Clean init, existing-workflow preview/switch, official `trellis
+update`, preset reapply, dogfood synchronization, selected platform parity,
+managed hash/mode validation, and recursive zero `.new`/`.bak` sidecars are all
+required evidence; isolated wrapper success cannot substitute for these gates.
+
 ## Review Focus
 
 Phase 2 package regressions must cover source and installed package validation,
@@ -575,7 +607,7 @@ Python or shell.
 
 ## Skill Eval Quality Matrix
 
-+ Skill eval tests use the current-only representative Interface 1.3 fixture and
++ Skill eval tests use the current-only representative Interface 1.4 fixture and
   execute real public wrappers.
 + Negative coverage includes unknown/null fields, duplicate or non-string ids,
   profile/exit drift, unsafe/missing/symlink fixtures, unknown assertions,
@@ -686,7 +718,7 @@ canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
 Source/installed/platform/throwaway checks assert fifteen active Skills and 57
-external exits, exactly one `production-current-v1` three-Skill/11-exit current
+external exits, exactly one `production-current-v2` three-Skill/11-exit current
 manifest, and global workflow markers of 15
 invokes, 57 exits, and 33 targets.
 

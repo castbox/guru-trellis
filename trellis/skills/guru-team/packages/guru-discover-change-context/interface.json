@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-discover-change-context",
   "name": "guru-discover-change-context",
   "description": "Discover fresh current and archived change context, run the semantic evidence gate, and hand minimal current identity to Guru Team requirement clarification.",
@@ -89,8 +89,12 @@
       "path": "examples/public-invocation-error.json"
     },
     {
-      "id": "public_output_context_ready_example",
+      "id": "legacy_public_output_context_ready_example_1_0",
       "path": "examples/public-context-ready-output.json"
+    },
+    {
+      "id": "public_output_context_ready_example_2_0",
+      "path": "examples/public-context-ready-output-2.0.json"
     },
     {
       "id": "public_output_refresh_base_example",
@@ -123,8 +127,12 @@
       "path": "schemas/public-invocation-error.schema.json"
     },
     {
-      "id": "public_output_context_ready",
+      "id": "legacy_public_output_context_ready_1_0",
       "path": "schemas/public-context-ready-output.schema.json"
+    },
+    {
+      "id": "public_output_context_ready_2_0",
+      "path": "schemas/public-context-ready-output-2.0.schema.json"
     },
     {
       "id": "public_output_refresh_base",
@@ -242,23 +250,29 @@
         "id": "invalid_public_input",
         "path": "examples/public-invocation-error.json"
       },
+      "call_local": {
+        "flag": "--invocation",
+        "stdin": "-",
+        "envelope": {
+          "schema_id": "guru-stage0-invocation-semantic-owner-1.0",
+          "path": "consumers/workflow/stage0/invocations/semantic-owner.schema.json"
+        }
+      },
       "example_argv": [
-        "--input",
-        "examples/public-pre-task-input.json",
-        "--owner-result",
-      "-"
+        "--invocation",
+        "-"
       ]
     },
     "outputs": [
       {
         "exit_id": "context_ready",
         "schema": {
-          "schema_id": "guru-stage0-discover-change-context-output-context-ready-1.0",
-          "path": "schemas/public-context-ready-output.schema.json"
+          "schema_id": "guru-stage0-discover-change-context-output-context-ready-2.0",
+          "path": "schemas/public-context-ready-output-2.0.schema.json"
         },
         "example": {
           "id": "context_ready_output",
-          "path": "examples/public-context-ready-output.json"
+          "path": "examples/public-context-ready-output-2.0.json"
         },
         "consumer_use_ids": [
           "project_context_ready"
@@ -306,6 +320,12 @@
           "interface_path": "packages/guru-clarify-requirements/interface.json",
           "input_kind": "structured_json",
           "profile_id": "initial_change_request"
+        },
+        "transition": {
+          "source_field": "transition",
+          "stage": "context_current",
+          "schema_id": "guru-stage0-transition-context-current-1.0",
+          "path": "consumers/workflow/stage0/transitions/context-current.schema.json"
         }
       },
       {

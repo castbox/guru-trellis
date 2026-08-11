@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-review-change-request",
   "name": "guru-review-change-request",
   "description": "Review whether a current change request is one independently deliverable unit through linked prerequisite evidence, an AI readiness gate, and five typed exits.",
@@ -97,8 +97,12 @@
       "path": "examples/public-invocation-error.json"
     },
     {
-      "id": "public_output_ready_example",
+      "id": "legacy_public_output_ready_example_2_0",
       "path": "examples/public-ready-output.json"
+    },
+    {
+      "id": "public_output_ready_example_3_0",
+      "path": "examples/public-ready-output-3.0.json"
     },
     {
       "id": "public_output_clarify_requirements_example",
@@ -143,8 +147,12 @@
       "path": "schemas/public-invocation-error.schema.json"
     },
     {
-      "id": "public_output_ready",
+      "id": "legacy_public_output_ready_2_0",
       "path": "schemas/public-ready-output.schema.json"
+    },
+    {
+      "id": "public_output_ready_3_0",
+      "path": "schemas/public-ready-output-3.0.schema.json"
     },
     {
       "id": "public_output_clarify_requirements",
@@ -310,27 +318,29 @@
         "id": "invalid_public_input",
         "path": "examples/public-invocation-error.json"
       },
+      "call_local": {
+        "flag": "--invocation",
+        "stdin": "-",
+        "envelope": {
+          "schema_id": "guru-stage0-invocation-semantic-owner-1.0",
+          "path": "consumers/workflow/stage0/invocations/semantic-owner.schema.json"
+        }
+      },
       "example_argv": [
-        "--input",
-        "examples/public-current-issue-input.json",
-        "--owner-result",
-        ".trellis/guru-team/skills/packages/guru-review-change-request/examples/issue-review.json",
-        "--owner-prerequisites",
-        ".trellis/guru-team/skills/packages/guru-review-change-request/examples/prerequisite-payloads.json",
-        "--owner-change-request",
-        ".trellis/guru-team/skills/packages/guru-review-change-request/examples/change-request.json"
+        "--invocation",
+        "-"
       ]
     },
     "outputs": [
       {
         "exit_id": "ready",
         "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-ready-2.0",
-          "path": "schemas/public-ready-output.schema.json"
+          "schema_id": "guru-stage0-review-change-request-output-ready-3.0",
+          "path": "schemas/public-ready-output-3.0.schema.json"
         },
         "example": {
           "id": "ready_output",
-          "path": "examples/public-ready-output.json"
+          "path": "examples/public-ready-output-3.0.json"
         },
         "consumer_use_ids": [
           "project_ready"
@@ -406,6 +416,12 @@
           "interface_path": "packages/guru-create-task-workspace/interface.json",
           "input_kind": "structured_json",
           "profile_id": "execute_reviewed_plan"
+        },
+        "transition": {
+          "source_field": "transition",
+          "stage": "readiness_current",
+          "schema_id": "guru-stage0-transition-readiness-current-1.0",
+          "path": "consumers/workflow/stage0/transitions/readiness-current.schema.json"
         }
       },
       {

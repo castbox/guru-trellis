@@ -100,6 +100,33 @@ requirements clarification, wording review, change-request review, and
 `guru-create-task-workspace`. Its `task_free` exit enters only the bounded
 current-checkout edit target.
 
+`guru-sync-base` public invocation is the only authoritative synchronization
+entry. The workflow, platform launchers, prompts, and Skill Markdown do not
+pre-run low-level resolve/execute/check commands. Those commands remain
+deterministic components inside the public Skill and focused diagnostics/tests.
+Each refresh edge starts one new complete public sync invocation and discards
+the stale transition; it does not maintain a parallel evidence track.
+
+The standard Intake route carries a workflow-owned closed transition through
+the five current stages:
+
+```text
+base_current -> guru-discover-change-context
+context_current -> guru-clarify-requirements
+clarity_current -> guru-review-contract-wording
+wording_current -> guru-review-change-request
+readiness_current -> guru-create-task-workspace
+```
+
+The producer's actual checked stdout is projected into the next stage and then
+combined only with that consumer's current semantic authoring input. Normal
+pre-task routing writes no owner-result, prerequisite, or transition file under
+`.trellis/tasks/**`, `.trellis/workspace/**`, or `.trellis/.runtime/**`.
+Missing/stale stage identity, unknown or multiple exits, or an unmapped consumer
+stops fail closed. `prepare-task` is never a Phase 0 hop; its explicit legacy
+use is a compatibility-only local diagnostic governed by the source-preserving
+provenance contract.
+
 Only `guru-create-task-workspace:created` enters planning. The workflow does not
 create an issue, branch, worktree, or task directly and does not copy the
 workspace owner's target selection, recovery, confirmation, executor, or

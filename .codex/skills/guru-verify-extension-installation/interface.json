@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-verify-extension-installation",
   "name": "guru-verify-extension-installation",
   "description": "Verify extension installation through AI-owned applicability, profile selection, adequacy review, one private gate, and four typed exits.",

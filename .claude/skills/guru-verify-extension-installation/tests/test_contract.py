@@ -20,7 +20,7 @@ def load(relative: str):
 class ExtensionVerificationContractTests(unittest.TestCase):
     def test_interface_identity_and_semantic_profile(self) -> None:
         interface = load("interface.json")
-        self.assertEqual(interface["schema_version"], "1.3")
+        self.assertEqual(interface["schema_version"], "1.4")
         self.assertEqual(interface["id"], "guru-verify-extension-installation")
         self.assertEqual(interface["judgment_mode"], "semantic")
         self.assertEqual(

@@ -23,10 +23,14 @@ through `run-skill-command`. They are not standalone implementations. Missing,
 stale, mismatched, ambiguous, or unconsumed evidence fails closed.
 
 If the user refuses the displayed action, stop before the recorder/executor and
-do not generate a plan, result, DTO, or typed exit. After the semantic gate and
-owner recorder/executor/checker complete, invoke
-`scripts/invoke.sh --input <execute-reviewed-plan.json> --owner-result <repo-relative-workspace-result> --owner-plan <repo-relative-workspace-plan>`
-to serialize one minimal completion/refresh/stop DTO. The runtime reruns the
-existing result checker, requires its embedded executor/checker evidence, and
-derives the route from the checked executor result. It does not perform an
-additional issue, worktree, branch, or task mutation.
+do not generate a plan, result, DTO, or typed exit. After the semantic gate,
+confirmation, and owner recorder/executor/checker complete, pipe one closed
+call-local workspace envelope to `scripts/invoke.sh --invocation -`. The
+envelope contains the current public input, `readiness_current` transition,
+checked in-memory prerequisite payloads, owner plan, and owner result. The
+runtime reruns the existing result checker, requires its embedded
+executor/checker evidence, and derives the route from the checked executor
+result. It does not perform an additional issue, worktree, branch, or task
+mutation. Repo-relative plan/result/prerequisite locators remain
+compatibility-only until the next breaking Interface migration and must not be
+used by normal workflow, production eval, or installed transcript paths.

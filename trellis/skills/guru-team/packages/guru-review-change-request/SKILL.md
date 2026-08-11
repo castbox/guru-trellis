@@ -24,8 +24,9 @@ compatible Guru Team preset runtime is unavailable. This package is not
 self-contained or portable.
 
 After the semantic gate and owner recorder/checker complete, invoke
-`scripts/invoke.sh --input <declared-profile.json> --owner-result <repo-relative-review-result> --owner-prerequisites <repo-relative-prerequisites> --owner-change-request <repo-relative-request>`
-to serialize the readiness handoff. The runtime reruns the existing readiness
-checker against the same private bindings and derives the Agent-owned route from
-its checked result; it does not decide readiness or expose the private review
-artifact.
+`scripts/invoke.sh --invocation -` with the closed call-local public input,
+`wording_current` transition, and checked owner result on stdin to serialize the
+readiness handoff. The transition carries the checker-bound clarity, wording,
+and target projections; the runtime reruns the existing readiness checker and
+derives the Agent-owned route from its checked result. It does not decide
+readiness or expose the private review artifact.

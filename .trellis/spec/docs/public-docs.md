@@ -339,7 +339,7 @@ All three public README files document `discover-skill-evals` and
 `run-skill-evals`, schema id `guru-team-skill-evals-1.0`, the four adapter ids,
 the four run statuses, repo-external evidence, and the distinction between
 deterministic grading, external semantic grading, and human feedback. Examples
-use a caller-selected Interface 1.3 package and explicit external run root; they
+use a caller-selected Interface 1.4 package and explicit external run root; they
 use one of the six current production Stage 0 packages. Upgrade text requires
 source/installed/platform discovery plus zero-sidecar validation after
 update/reapply and does not advertise an alternate contract path.
@@ -391,7 +391,7 @@ machine-local hidden state.
 
 All three public README files describe
 `trellis/skills/guru-team/contracts/production-current.json` with contract id
-`production-current-v1` as the sole current planning/check/commit manifest. It
+`production-current-v2` as the sole current planning/check/commit manifest. It
 contains exactly the current three Skills, profiles, exits, output schemas,
 authoring-seed edges, private-artifact ids, examples, and eval bindings. The
 READMEs publish only this current manifest and its declared assets. Inputs
@@ -435,13 +435,13 @@ They also state that Branch Review `passed` points to active
 Publication AI directly authors and reviews the exact Chinese PR title/body;
 its ready 4.0 output projects that payload to active `guru-finalize-task`
 through the integrated global invocation without a task-local body or summary
-index handoff. `production-current-v1` binds the current
+index handoff. `production-current-v2` binds the current
 three-Skill/11-exit membership, and the current package graph contains twelve
 target-owned authoring handoffs.
 
 ## Task Publication Review Documentation
 
-All three public README files describe active Interface 1.3 semantic
+All three public README files describe active Interface 1.4 semantic
 `guru-review-task-publication`, its two target-owned input profiles, runtime
 commands `record-task-publication-review` /
 `check-task-publication-review`, public dispatcher invocation, and three
@@ -468,12 +468,12 @@ without fallback.
 
 README package closure numbers are fifteen active Skills and 57 external exits;
 global workflow markers remain 15 invokes, 57 exits, and 33 targets.
-`production-current-v1` owns the current planning/check/commit contract; the
+`production-current-v2` owns the current planning/check/commit contract; the
 live Intake contract remains six Skills/23 exits.
 
 ## Extension Installation Verification Documentation
 
-All three public README files name active Interface 1.3 semantic
+All three public README files name active Interface 1.4 semantic
 `guru-verify-extension-installation`, its `verification_required` and
 `standalone_verification` inputs, runtime commands
 `execute-extension-verification`, `record-extension-verification`,
@@ -540,7 +540,7 @@ ownership.
 
 ## Task Finalization Documentation
 
-All three public README files name active Interface 1.3 semantic
+All three public README files name active Interface 1.4 semantic
 `guru-finalize-task`, its six distinct public input profiles, six `exit_id`
 outputs, owner-private transaction/gate/recovery facts, current-dialogue
 side-effect confirmation without digest recital, and the current transaction

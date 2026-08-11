@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 156,
+    "url": "https://github.com/castbox/guru-trellis/issues/156",
+    "title": "修复 Phase 0 跨 Skill 编排闭环与 source-preserving freshness 传递",
+    "reason": "本 task 完整承诺并由后续 semantic review gate 验收的 Issue。"
+  },
+  "close_issues": [
+    {
+      "number": 156,
+      "url": "https://github.com/castbox/guru-trellis/issues/156",
+      "title": "修复 Phase 0 跨 Skill 编排闭环与 source-preserving freshness 传递",
+      "reason": "本 task 完整承诺并由后续 semantic review gate 验收的 Issue。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 98,
+      "url": "https://github.com/castbox/guru-trellis/issues/98",
+      "title": "拆分 #53：变更 Intake Skills 跨 Skill 编排与并行安全集成 umbrella",
+      "reason": "Issue #156 声明的 parent，仅作为关联范围，不由本 task 关闭。"
+    },
+    {
+      "number": 132,
+      "url": "https://github.com/castbox/guru-trellis/issues/132",
+      "title": "集成 Guru planning/check/review Skills 并收敛 preset upstream overlays",
+      "reason": "Issue #156 的验证证据由该最终整体验收消费，不由本 task 关闭。"
+    },
+    {
+      "number": 145,
+      "url": "https://github.com/castbox/guru-trellis/issues/145",
+      "title": "迁移 Guru Team Stage 0 Skills 到最小 typed handoff I/O",
+      "reason": "已完成的合同前置，仅作为历史 authority，不重新关闭。"
+    }
+  ],
+  "followup_issues": []
+}

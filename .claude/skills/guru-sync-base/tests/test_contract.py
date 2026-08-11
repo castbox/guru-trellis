@@ -17,7 +17,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-sync-base")
-        self.assertEqual(self.interface["schema_version"], "1.3")
+        self.assertEqual(self.interface["schema_version"], "1.4")
         self.assertEqual(self.interface["judgment_mode"], "deterministic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]
@@ -58,8 +58,21 @@ class BaseSyncPackageContractTests(unittest.TestCase):
     def test_skill_and_contract_keep_deterministic_boundary(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
-        for phrase in ("caller must finish tool-free route classification", "deterministic closed loop", "not self-contained or portable"):
+        for phrase in (
+            "caller must finish tool-free route classification",
+            "scripts/invoke.sh --invocation -",
+            "invoke the low-level components first",
+            "scalar CLI remains compatibility-only",
+            "runtime alone executes the deterministic resolve, execute and",
+            "not self-contained or portable",
+        ):
             self.assertIn(phrase, skill)
+        for forbidden in (
+            "execute its\ndeterministic closed loop",
+            "Public handoff uses `scripts/invoke.sh` with the declared scalar CLI signature",
+            "The public `base_branch` scalar is the caller-owned",
+        ):
+            self.assertNotIn(forbidden, skill)
         for phrase in (
             "judgment_mode=deterministic",
             "forward_behavior -> recorder_validator -> typed_exit",
@@ -68,19 +81,29 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             "`dev`, `develop`, `main`,",
             "git merge --ff-only",
             "decision checkout HEAD == local selected-base HEAD == remote-tracking HEAD",
-            "--expected-resolution-sha256",
-            "--result-json",
+            "scripts/invoke.sh --invocation -",
+            "--reviewed-base-provenance '<JSON>'",
+            "missing_reviewed_base_provenance",
+            "query-only",
             "no selected-base AI",
             "run-skill-command",
         ):
             self.assertIn(phrase, contract)
+        for forbidden in (
+            "Run the `sync_executor` wrapper",
+            "Run `sync_executor --execute`",
+            "Run `result_validator --result-json",
+            "through `--expected-resolution-sha256`",
+        ):
+            self.assertNotIn(forbidden, contract)
         self.assertIn("It never\nuses `git branch -f`", contract)
         selected = next(
             item for item in self.interface["entry_preconditions"]
             if item["id"] == "selected_base_resolution"
         )
         self.assertIn("prepare-task", selected["binding"])
-        self.assertIn("each GitHub/worktree/task mutation", selected["freshness"])
+        self.assertIn("compatibility-only prepare-task", selected["binding"])
+        self.assertIn("complete base_current provenance", selected["freshness"])
         for forbidden in ("--resolution-file", "--evidence-file", "--release-resolution-evidence", "quarantine"):
             self.assertNotIn(forbidden, skill + contract + json.dumps(self.interface))
 

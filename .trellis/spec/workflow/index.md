@@ -35,17 +35,24 @@ Before editing workflow behavior:
 - Phase 0 base selection/sync is owned by the active `guru-sync-base` package plus
   shared `sync-base` / `check-base-sync` runtime commands; `prepare-task` reuses
   that core and does not define a second resolver.
+- The six-package/23-exit Phase 0 graph uses the workflow-owned five-stage
+  `base_current` -> `context_current` -> `clarity_current` ->
+  `wording_current` -> `readiness_current` transition family and versioned
+  call-local invocation envelopes. `guru-sync-base` public invocation is the
+  only authoritative sync; normal pre-task transport is stdin/stdout only and
+  writes no owner/prerequisite/transition repository files. Compatibility
+  `prepare-task` is a local diagnostic, not a workflow hop.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
-- Registry 1.2 accepts only planned and active rows. Every active row selects
-  Interface 1.3, covering fifteen workflow packages and 57 external exits;
+- Registry 1.3 accepts only planned and active rows. Every active row selects
+  Interface 1.4, covering fifteen workflow packages and 57 external exits;
   global workflow markers are 15 invokes, 57 exits, and 33 targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit closure is defined only by
   `contracts/production-current.json` with contract id
-  `production-current-v1`; it contains current profiles, exits, authoring seeds,
+  `production-current-v2`; it contains current profiles, exits, authoring seeds,
   schemas, examples, and eval bindings without an alternate execution path.
 - `discover-skill-contract` is the stable deterministic public discovery
-  command. It returns the closed current Interface 1.3 contract and portable errors; the
+  command. It returns the closed current Interface 1.4 contract and portable errors; the
   exact package invocation remains package-owned and callers do not import the
   companion Python source.
 - `guru-discover-change-context` owns the semantic Phase 0 current-state/history discovery loop; its deterministic runtime reads only archived `finish-summary.json:index.*` and persists no repo-level cache.
@@ -128,7 +135,7 @@ repository actually grows those assets.
 
 The durable contracts for `guru-review-branch` are split across:
 
-- `skill-package-contract.md`: public Interface 1.3 I/O, active publication
+- `skill-package-contract.md`: public Interface 1.4 I/O, active publication
   bridge, private state and routing discriminator;
 - `workflow-contract.md`: thin Phase 3.5 invocation and typed consumers;
 - `data-contracts.md`: scenario/disposition/finding artifact shapes;
@@ -140,7 +147,7 @@ The durable contracts for `guru-review-branch` are split across:
 The durable contracts for `guru-review-task-publication` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `data-contracts.md`,
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
-Interface 1.3 profiles, minimal exits, layered private gate, semantic/runtime
+Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
   fifteen-Skill/57-exit package closure, and install/update checks. The global
 workflow projection is 15 invokes, 57 exits, and 33 targets.

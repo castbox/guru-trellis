@@ -109,10 +109,10 @@ Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
 `branch_review_commit`；真实 descendant content
 drift 只能由 Publication 语义门禁返回现有 Phase 2 router，不能产生 `ready`。
 
-Interface 1.3 的十二条 semantic package handoff 使用 target-owned
+Interface 1.4 的十二条 semantic package handoff 使用 target-owned
 skill_input_authoring_seed；producer 只给 minimal seed，target authoring 补齐其自己拥有
 的 fresh semantic input，projection 只允许 direct/select/rename/normalize。
-`production-current-v1` 是 planning/check/commit 唯一 current manifest，固定为三包、
+`production-current-v2` 是 planning/check/commit 唯一 current manifest，固定为三包、
 11 exits 和四条 authoring-seed edges。
 
 workflow mode 表示 mandatory global route；standalone 表示平台直接发现。两种模式都
@@ -170,6 +170,36 @@ fail closed，不存在 projection 或迁移入口。当前更新顺序为：
 该 validator 只检查客观 ownership facts，不进入 workflow route，也不替代 AI
 semantic judgment。
 
+## Phase 0 Public Transition And Invocation
+
+Phase 0 由六个 mandatory Skills 和 23 个既有 typed exits 构成。正常 forward path 使用
+workflow-owned 的五个独立 closed stages：
+
+```text
+guru-sync-base -> base_current -> guru-discover-change-context
+-> context_current -> guru-clarify-requirements
+-> clarity_current -> guru-review-contract-wording
+-> wording_current -> guru-review-change-request
+-> readiness_current -> guru-create-task-workspace
+```
+
+每个 stage 只携带下一 consumer 无法从 live authority 重建的最小 identity/freshness。
+Semantic wrapper 通过 `--invocation -` 的 versioned call-local envelope 分开接收 public
+input、当前 transition 和本 Skill owner result；owner result 经当前 recorder/checker 复验后消费，不进入下一
+stage。正常 pre-task 只使用 stdin/stdout 或 caller memory，在 workspace/task creation 前不写
+owner-result、prerequisite、transition、task、workspace 或 ignored-runtime repo 文件，也不读取或
+import `guru_team_trellis.py` 来组装输入。
+
+`guru-sync-base` public wrapper 是唯一 authoritative sync。Workflow、platform entry 和 Skill
+Markdown 不先执行低层 resolve/execute/check；refresh 丢弃 stale transition 后重新调用一次完整
+public Skill。`prepare-task` 仅是 compatibility local diagnostic，不产生 transition，也不进入
+正常 Phase 0 路由。任一 missing/stale/cross-stage transition、unknown/multiple/unmapped exit 或
+consumer mismatch 都 fail closed。
+
+既有 closed 1.0 public schema/example 保留原路径、`$id` 与 bytes。任何新增 required
+transition/provenance field 都使用新的 versioned contract path，由 current Interface 选择；旧
+DTO 无法建立 current identity 时重跑 producer，不执行 ambient-field synthesis。
+
 ## Phase 0 Base Sync
 
 Tool-free request classification 后，repo-changing route 的第一个 mandatory invocation
@@ -180,10 +210,15 @@ existing candidates 不歧义，配置顺序就是优先级。Deterministic exec
 resolution digest 绑定重新解析、fetch 与可选 `git merge --ff-only`，同步后生成
 `post_sync_resolution` / `post_sync_resolution_sha256`。
 
+上述 resolver、executor 和 checker 只作为 public wrapper 内部 deterministic components 或
+focused diagnostic/test entry 使用，正常 workflow 不直接编排它们。`synced` 输出的
+`base_current` 保留 source、selected base、remote、ordered candidates、decision HEAD、
+local/remote base HEAD 和 post-sync digest；这些角色不得折叠为一个通用 `base_head`。
+
 成功结果使用 `guru-base-sync-result-1.0`，并且必须证明 checkout clean、decision checkout
 HEAD、local base HEAD 与 remote-tracking HEAD 三方相等。`sync-base` 在 stdout 输出
 resolution/result facts，`check-base-sync --result-json` 校验 schema、pre/post digest 与 live
-Git facts，并把 post-sync digest 交给下一 consumer；二者不创建 evidence file。该 package
+Git facts，并由 public wrapper 把 source-preserving provenance 投影给下一 consumer；二者不创建 evidence file。该 package
 声明 `judgment_mode=deterministic`，没有
 selected-base AI confirmation、post-execution AI Review Gate 或 human confirmation；AI 只在
 Skill 外负责 tool-free route classification。Stable exits 与唯一 consumers 是：
@@ -193,8 +228,10 @@ Skill 外负责 tool-free route classification。Stable exits 与唯一 consumer
 - `blocked` -> `base-sync-blocked`
 
 Workflow mode 中 `synced` 的唯一 consumer 是 `guru-discover-change-context`；
-`check-env`、issue/duplicate reads 与 `prepare-task` 仅可在 `synced` 后作为独立的
-current query-only diagnostic，不是 workflow hop。Standalone mode 可由所选平台直接发现
+`check-env` 是独立环境诊断；`prepare-task` 只允许显式 compatibility query，不是 workflow
+hop。它必须接收同一 reviewed provenance；缺失时在 GitHub read、fetch 或 semantic Intake 前
+本地阻断。Remote ref 缺失是否可接受由正式 closed schema/runtime 状态矩阵决定，caller 不得
+合成 remote HEAD。Standalone mode 可由所选平台直接发现
 同一 Skill，但仍要求完整 compatible preset/runtime；workflow-only
 `--record-skipped original-request-route` 不可在 standalone 调用。Managed executable commands 位于
 `.trellis/guru-team/scripts/bash/sync-base.sh` 和
@@ -216,9 +253,10 @@ invalid isolation、固定 sort/limit/projection。`trellis mem` 只有四类主
 解释命名 load-bearing decision 时才进入。完整 semantic evidence 保留在当前 AI cognition
 与调用期 owner result 中；record/check/public invoke 通过 stdin/stdout 串联，正常
 pre-task/standalone 不写 task、workspace 或 runtime artifact。Recorder/checker 执行
-published closed Draft 2020-12 `guru-change-context-owner-result-2.0` schema；base evidence
-嵌入完整 validator-passed sync result并绑定 post-sync digest、selected remote refs 与严格
-GitHub repo identity。Git status failure 不得冒充 clean，base stale 在 live issue/draft、
+published closed Draft 2020-12 `guru-change-context-owner-result-2.0` schema；调用只消费
+`base_current` 的最小 source-preserving provenance，并由 Discovery checker 结合 live Git
+复验 selected base、source、candidates、decision/local/remote HEAD 与 post-sync digest，不读取
+完整 upstream private sync result。Git status failure 不得冒充 clean，base stale 在 live issue/draft、
 reviewed blob 与 archive preview 前短路。Draft-created-issue binding live 校验原 reviewed
 body；caller-authored `refresh_base` 必须与 stable live stale codes 一致，`context_ready`
 对同一 stale 拒绝。Archive reader
@@ -259,7 +297,8 @@ Owner-result schema 是 `guru-change-context-owner-result-2.0`；managed command
 `check-context-discovery`。Exits 是 `context_ready` -> active
 `guru-clarify-requirements`、`refresh_base` -> `guru-sync-base`、`blocked` ->
 `change-context-blocked`；source/installed validator 同时解析 active Skill consumer 及唯一
-workflow/stop target markers。
+workflow/stop target markers。`context_ready` 的 actual stdout 投影为 closed
+`context_current`，再与 Clarification 当前 semantic authoring fields 组成 call-local invocation。
 
 ## Phase 0 Requirements Clarification
 
@@ -288,6 +327,10 @@ Gate mandatory invoke同一Skill。Exits 为 `clear` -> caller-aware
 planning review或exact interrupted progression）、`needs_context` -> context discovery、`refresh_context` -> base sync、
 `retarget_context` -> base sync 并对 selected open issue 完整重跑 Intake、
 `new_task` -> staged #112 full intake route、`blocked` -> fail-closed stop。
+
+Initial/draft `clear` 的 actual stdout 投影为 closed `clarity_current`，只携带 Wording consumer
+所需的 current target/context/scope identity；它不携带 clarification owner result 或 artifact
+locator。Refresh/retarget exits 废弃当前 transition，并只进入声明的 fresh sync consumer。
 
 只接受 closed 2.0 artifact；其他 schema version 在 normalization 前 fail closed，
 recorder/checker 不执行迁移或投影。
@@ -329,6 +372,10 @@ content/source update time。所有 profile 的完整结果都只作为 stdout-o
 planning-only binding，必须重新执行完整 AI wording
 review，再由 planning owner 重读三文档；禁止手补布尔值或重建 replacement digest chain。
 Archived artifact 不改写。
+
+Initial change-request `pass` 的 actual stdout 投影为 closed `wording_current`，使 Readiness
+仅依赖当前 transition、live target 和本次 semantic authoring input，不再读取 repo-local
+clarity/wording prerequisite bundle。
 
 ## Phase 1 Task Plan Approval
 
@@ -391,6 +438,10 @@ sidecar 或 tracked artifact。
 Active `guru-create-task-workspace` 是唯一 mutation owner，直接消费当前 checked `ready`
 exit，并且只持久化有真实后续 consumer 的 task-local `issue-scope-ledger.json`；不写
 tracked `issue-review.json`。
+
+`ready` 的 actual stdout 投影为 closed `readiness_current`。Workspace 通过 call-local plan/result
+transport 完成已确认 mutation；用户确认仍只存在于当前对话，且不会写入 transition、plan、
+result、ledger 或 runtime checkpoint。
 
 ## 中文 Conventional Commits
 
@@ -480,28 +531,40 @@ typed exit `synced` 才进入：
 
 `guru-discover-change-context -> guru-clarify-requirements ->
 guru-review-contract-wording -> guru-review-change-request ->
-guru-create-task-workspace`。以下命令是 current query-only diagnostic，不是 active
-workflow hop：
+guru-create-task-workspace`。环境检查可独立运行：
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
+```
+
+Compatibility `prepare-task.sh --json` 只执行显式 local query，不是 workflow hop，也不创建 GitHub
+issue、worktree、branch 或 Trellis task。
+其实际 CLI 形态为：
+
+```bash
+BASE_PROVENANCE_JSON='<exact base_current.base JSON>'
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <post-sync-resolution-sha256> \
+  --reviewed-base-provenance "$BASE_PROVENANCE_JSON" \
   "<user request or issue URL>"
 ```
 
-`prepare-task.sh --json` 只执行 current query，不创建 GitHub
-issue、worktree、branch 或 Trellis task。
+该 flag 接收一个 JSON scalar，不是 file locator；对象必须 exact 包含 `source`、
+`selected_base`、`remote`、`ordered_candidates`、`decision_head`、`local_base_head`、
+`remote_base_head` 和 `post_sync_resolution_sha256`。可选 `--base-branch` 只做 equality assertion，
+不参与 source reconstruction。
 它只在 stdout JSON 中输出 source/proposed issue、duplicate candidates、selected base、
 `base_freshness`、branch/task/workspace naming suggestions 与 `naming_quality`；不输出
 workspace absolute path、task-create command、authorization/handoff state，也不写 task/runtime
-context。在 `gh auth status`、issue read
-与 duplicate search 前，planner 必须通过 shared strict core 重解析和同步 selected base；
+context。在 `gh auth status`、issue read、fetch 与 duplicate search 前，query 必须先验证完整
+reviewed base provenance（source、selected base、remote、ordered candidates、
+decision/local/remote HEAD 与 post-sync digest）；缺失时本地返回
+`missing_reviewed_base_provenance`，不得触发 semantic Intake。Remote ref 缺失是否合法只由正式
+schema/runtime 状态矩阵决定。验证通过后才可用 shared strict core 重解析 selected base；
 `fetch_performed: false` 或三方 HEAD 不相等都不能成为 `fresh: true`。Selected local base
 落后时，只能在 selected-base checkout 上执行 `git merge --ff-only`；wrong checkout、dirty、
 missing ref、fetch failure、divergence、resolution drift 或 post-sync mismatch 均 fail closed。
-Every prepare invocation receives the preceding validator/guard post-sync
-resolution digest and the same resolver inputs. It preserves
+Every compatibility prepare invocation receives the complete reviewed
+provenance, not only the post-sync digest. It preserves
 explicit/config/config-candidate/remote-default provenance. Issue, branch,
 worktree, task, artifact, and runtime mutations belong exclusively to
 `guru-create-task-workspace`.
@@ -843,7 +906,7 @@ clean install 分别记录，任一不能替代另一份验收。
 
 ## Skill 行为评测
 
-安装完整 Guru Team preset 后，可用 `discover-skill-evals` 发现 Interface 1.3
+安装完整 Guru Team preset 后，可用 `discover-skill-evals` 发现 Interface 1.4
 package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `shared|codex|claude|cursor` adapter 实际执行 public wrapper。Schema id 是
 `guru-team-skill-evals-1.0`，status 闭集为

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-invocation-deterministic-sync-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "public_input"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "public_input": {"type": "object"}
+  }
+}

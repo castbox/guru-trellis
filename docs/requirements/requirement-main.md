@@ -36,6 +36,27 @@ Repo-changing intake 先 mandatory invoke `guru-sync-base`，再按 global workf
 Skill chain。Intake clarity 可使用 `trellis-brainstorm` 的单问题方法，但最终 scope、GitHub
 action 和 route 仍由 owning Skill 判断。
 
+`guru-sync-base` public invocation 是唯一 authoritative sync；workflow、平台入口和 Skill
+Markdown 不先执行低层 resolve/execute/check。六包的 23 个既有 typed exits 保持唯一 consumer，
+正常 forward edge 通过 workflow-owned 的五个 closed stages 承接：`base_current`、
+`context_current`、`clarity_current`、`wording_current`、`readiness_current`。每段只保留下一个
+consumer 无法从 live authority 重建的最小 identity/freshness，不保存完整 owner evidence、审查
+历史或授权。
+
+Semantic public invocation 使用 versioned call-local envelope，明确分开 consumer public input、
+当前 transition 和本 Skill owner result。Owner result 只供当前 wrapper 的 recorder/checker
+复验，绝不成为跨 Skill DTO。正常 pre-task 链路只通过 stdin/stdout 或 caller memory 传递，
+在 workspace/task creation 前不得写 `.trellis/tasks/**`、`.trellis/workspace/**` 或
+`.trellis/.runtime/**` owner/prerequisite/transition 文件，也不得读取/import shared runtime
+source 组装输入。
+
+`base_current` 必须 source-preserving：保留 source、selected base、remote、ordered candidates、
+decision HEAD、local/remote base HEAD 和 post-sync digest。后续省略 CLI base 不能把 explicit
+来源重新解释为 config candidate；真实 branch/candidate/remote/HEAD/clean/content 变化仍 fail
+closed 并进入唯一 refresh route。`prepare-task` 只允许作为 compatibility local diagnostic，
+缺少完整 reviewed provenance 时在 GitHub read、fetch 或 semantic Intake 前返回稳定 blocked
+诊断；remote ref 缺失的合法状态由正式 closed schema/runtime matrix 定义。
+
 创建 Issue、worktree、branch 或 task 前必须展示真实目标和副作用。Planning 保留
 `prd.md`、`design.md`、`implement.md`、Docs SSOT decision 与独立 AI semantic plan gate，
 因为这些内容有直接实现消费者。Plan gate 的 mapped `approved` exit 不产生 routine 用户确认；
@@ -116,6 +137,13 @@ namespace 和声明支持的平台副本，并验证：
 - user-modified 文件产生受控 `.new/.bak`，不静默覆盖；
 - dogfood drift、all-platform equality 和 owner manifest；
 - README 命令可执行且不依赖本机隐藏状态。
+
+Phase 0 的六包、五阶段 transition、invocation envelopes、consumer projections、shared runtime、
+registry/extension inventory 和 activation manifest 必须作为一个 versioned unit 安装；任何
+mixed old/new graph 均阻断。Clean throwaway 必须让 producer actual stdout 逐 edge 进入下一
+installed wrapper，并覆盖 happy path、draft refresh、duplicate retain/retarget、content changed、
+readiness/workspace 与所有 stop/re-entry family。该门禁与 `trellis update`、preset reapply、
+dogfood、声明平台 parity、managed hash/mode 和 recursive zero `.new/.bak` 同时成立。
 
 ## 9. 非目标
 

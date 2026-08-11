@@ -223,11 +223,13 @@ active scope uses `guru-active-task-planning-review`, and a non-current active
 classification uses the exact declared interrupted Phase 1/2/3/Branch Review
 target. Any kind/target mismatch fails closed.
 
-## Interface 1.3 Public Handoff
+## Interface 1.4 Public Handoff
 
 The public profiles are `initial_change_request`, `active_task_scope_change`,
 and `standalone_review`. After the owner loop,
-`scripts/invoke.sh --input ... --owner-result ...` reruns the existing checker,
-derives the Agent-owned typed route from its checked result, and serializes only
-the declared continuation; clarification evidence remains private and is never
-imported by the next Skill.
+`scripts/invoke.sh --invocation -` validates the closed call-local public input,
+`context_current` transition, and current owner result, reruns the existing
+checker, derives the Agent-owned typed route from its checked result, and
+serializes only the declared continuation; clarification evidence remains
+private and is never imported by the next Skill. Locator arguments remain only
+for explicitly documented compatibility consumers and are not the normal route.

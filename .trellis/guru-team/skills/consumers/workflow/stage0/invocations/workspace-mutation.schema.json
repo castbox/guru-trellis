@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-invocation-workspace-mutation-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "public_input", "transition", "owner_prerequisites", "owner_plan", "owner_result"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "public_input": {"type": "object"},
+    "transition": {"type": "object"},
+    "owner_prerequisites": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base", "clarity", "wording", "readiness"],
+      "properties": {
+        "base": {"type": "object"},
+        "clarity": {"type": "object"},
+        "wording": {"type": "object"},
+        "readiness": {"type": "object"}
+      }
+    },
+    "owner_plan": {"type": "object"},
+    "owner_result": {"type": "object"}
+  }
+}

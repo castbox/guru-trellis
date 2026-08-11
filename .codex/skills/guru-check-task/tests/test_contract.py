@@ -22,7 +22,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
 
     def test_interface_declares_compact_private_owner_contract(self) -> None:
         self.assertEqual(self.interface["id"], "guru-check-task")
-        self.assertEqual(self.interface["schema_version"], "1.3")
+        self.assertEqual(self.interface["schema_version"], "1.4")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         expected = [
             "runtime_dependency", "task_workspace", "approved_planning",

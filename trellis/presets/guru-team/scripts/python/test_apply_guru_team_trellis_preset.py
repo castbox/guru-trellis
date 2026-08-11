@@ -1008,6 +1008,26 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("--existing-developer-identity", verifier)
         self.assertIn('payload["developer_identity_preserved"] is True', verifier)
         self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
+        self.assertEqual(verifier.count("verify_installed_phase0_transcript.py"), 2)
+        self.assertIn("installed-phase0-transcript-initial", verifier)
+        self.assertIn("installed-phase0-transcript-after-update", verifier)
+        self.assertIn('payload["exit_family_count"] == 23', verifier)
+        self.assertIn('len(payload["six_step_transcript"]) == 6', verifier)
+        self.assertIn('"legacy_typed_output_schema_ids"', verifier)
+        self.assertIn(
+            'len(api["skill_contracts"]["legacy_typed_output_schema_ids"]) == 5',
+            verifier,
+        )
+        self.assertIn("build_discovery_invocation", verifier)
+        self.assertIn("DISCOVERY_STANDALONE_BASE_JSON", verifier)
+        self.assertIn("DISCOVERY_WORKFLOW_BASE_JSON", verifier)
+        self.assertNotIn("DISCOVERY_PUBLIC_INPUT_REL", verifier)
+        self.assertNotIn("DISCOVERY_RECOVERY_PUBLIC_INPUT_REL", verifier)
+        self.assertIn("PHASE0_REVIEWED_BASE_PROVENANCE", verifier)
+        self.assertIn(
+            '--reviewed-base-provenance "$PHASE0_REVIEWED_BASE_PROVENANCE"',
+            verifier,
+        )
         self.assertIn('trellis init -y --claude --codex --cursor', verifier)
         self.assertIn(
             'skills["selected_platforms"] == ["claude", "codex", "cursor"]',
@@ -1063,6 +1083,21 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("TASK_WORKSPACE_ARTIFACT_NAMES", installed_workspace)
         self.assertIn("--existing-developer-identity", installed_workspace)
         self.assertIn('task_data.get("creator") != "fixture-maintainer"', installed_workspace)
+        installed_phase0 = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("importlib", installed_phase0)
+        self.assertNotIn("guru_team_trellis.py", installed_phase0)
+        self.assertIn('"--invocation",', installed_phase0)
+        self.assertIn('"-",', installed_phase0)
+        self.assertIn("actual_exit != expected_exit", installed_phase0)
+        self.assertIn('len(actual_pairs) != 23', installed_phase0)
+        self.assertIn("create-task-workspace.sh", installed_phase0)
+        self.assertIn("check-task-workspace-result.sh", installed_phase0)
+        self.assertIn('"gh",', installed_phase0)
+        self.assertIn('issue["facts_sha256"] = context_digest(issue)', installed_phase0)
+        self.assertIn('owner["history_preview"] = preview', installed_phase0)
         installed_closeout = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
@@ -1248,7 +1283,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertEqual(completed["skill_packages"]["status"], "ok")
         self.assertEqual(completed["skill_packages"]["sidecars"], [])
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
         self.assertTrue((self.install_dst / "skills/contracts/production-current.json").is_file())
         self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest.schema.json").is_file())
         self.assertEqual(
@@ -1272,7 +1307,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertNotEqual(result["skill_installed_validation"]["returncode"], 0)
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assertEqual((self.install_dst / "extension.json").read_bytes(), extension_before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
         sidecar = target.with_name("SKILL.md.new")
         self.assertEqual(
             sidecar.read_bytes(),
@@ -1290,7 +1325,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         recovered = self.install_current()
         self.assertEqual(recovered["skill_packages"]["status"], "ok")
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
         self.assertEqual(recovered["skill_installed_validation"]["returncode"], 0)
 
     def test_forced_installed_validation_failure_preserves_current_graph(self) -> None:
@@ -1313,7 +1348,7 @@ class PresetTransactionInstallerTest(unittest.TestCase):
 
         self.assertEqual(result["skill_installed_validation"]["errors"], ["forced installed validation failure"])
         self.assertEqual(self.managed_graph_snapshot(), before)
-        self.assert_stage0_contract_state("guru-team-skill-interface-1.3", "1.3")
+        self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
 
 
 class ExtensionManifestInstallerTest(unittest.TestCase):
@@ -1382,7 +1417,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-phase2-check-4.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
-        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.2")
+        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.3")
         self.assertEqual(
             set(public_api["skill_contracts"]),
             {
@@ -1392,6 +1427,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "interface_schema_id",
                 "public_input_schema_ids",
                 "typed_output_schema_ids",
+                "legacy_typed_output_schema_ids",
                 "private_artifact_schema_ids",
                 "artifact_schema_ids",
                 "active_skill_ids",
@@ -1537,7 +1573,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 (package_root / readiness_schema_relative).read_bytes(),
                 readiness_schema_bytes,
             )
-        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.3")
+        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.4")
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")

@@ -136,12 +136,13 @@ Unknown, multiple, or unmapped exits fail closed. The package requires the
 complete compatible Guru Team preset and `run-skill-command`; it is not
 self-contained or portable.
 
-## Interface 1.3 Public Handoff
+## Interface 1.4 Public Handoff
 
 `pre_task` is the only public profile. After the owner loop,
-`scripts/invoke.sh --input ... --owner-result -` validates
-caller-owned continuation, reruns the existing result checker, and derives the
-matching per-exit DTO from the checked owner result. `context_ready` contains
+`scripts/invoke.sh --invocation -` validates the closed call-local public input,
+`base_current` transition, and current owner result, reruns the existing result
+checker, and derives the matching per-exit DTO from the checked owner result.
+`context_ready` contains
 only route/profile/mode/target/continuation identity; Clarification rereads live
 authority and receives no owner-result locator. Active-task identity remains an
 ephemeral `--active-task` invocation argument rather than a public DTO field. A

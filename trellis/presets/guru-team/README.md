@@ -306,29 +306,29 @@ active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude root
 Test fixtures 永不安装，未选择的平台 root 不因 skill 分发
 而创建。
 
-Preset 安装 current Interface 1.3 schema 与 registry 1.2。每个 active registry row
-只允许 `interface_schema_id=guru-team-skill-interface-1.3`。Live Intake 合同为
+Preset 安装 current Interface 1.4 schema 与 registry 1.3。每个 active registry row
+只允许 `interface_schema_id=guru-team-skill-interface-1.4`。Live Intake 合同为
 六包/23 exits；current registry、discovery DTO、invocation 与安装 provenance 不接受
-历史 manifest、schema、example 或 eval。`production-current-v1` 是
+历史 manifest、schema、example 或 eval。`production-current-v2` 是
 planning/check/commit 唯一 current manifest，精确绑定
 三包、十 profiles、11 exits、current output schemas、四条 authoring-seed edges、private
 artifact ids、examples 与 eval cases；不存在 alternate production projector 或 fixture。
-当前 active closure 为 14/54，live Intake 合同为 6/23。Preset 在一次 staging
+当前 active closure 为 15/57，live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
-Interface 1.3、production-current manifest/schema、十三包 public
+Interface 1.4、production-current manifest/schema、十五包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Representative fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
-其中 `production-current-v1` 严格保持 planning/check/commit 三包与 11 exits；
+其中 `production-current-v2` 严格保持 planning/check/commit 三包与 11 exits；
 `guru-review-branch` 作为 additive active package 不扩大该 manifest 的 membership。
-同一 transaction 还安装 Interface 1.3 additive
+同一 transaction 还安装 Interface 1.4 additive
 `skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
 commit self-reentry、commit-to-Branch-Review、Branch-Review-to-publication 与
 finalization family 共十二条声明 edge 的 target-owned
 authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
 projection operation；部分 edge、缺失 authoring example 或 canonical/installed/platform
 字节不一致均视为 mixed production graph。
-Interface 1.3 scalar `required` 为显式 boolean；preset 安装的 `guru-sync-base` 将
+Interface 1.4 scalar `required` 为显式 boolean；preset 安装的 `guru-sync-base` 将
 `base_branch` 标为 optional，省略调用继续复用 formal resolver。
 Fixture source validation 强制 Skill consumer 使用 active registry exact canonical path 与
 相同 target id 的 target-owned input，对非 direct projection 与 direct 到 scalar CLI 做
@@ -484,13 +484,32 @@ example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并
 root 和所选 Codex/Cursor/Claude skill roots；planned id 不安装。升级后必须处理
 `.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
 
-Interface 1.3 中 `workflow` 表示 global mandatory routing，`standalone` 表示
+Interface 1.4 中 `workflow` 表示 global mandatory routing，`standalone` 表示
 所选平台 direct discovery。两种 mode 都依赖完整 current Guru Team runtime；单独
 复制 Skill 目录不是 self-contained/portable 安装。Preset 因此同时安装
 `.trellis/guru-team/scripts/bash/run-skill-command.sh`、extension runtime capability、
 audited package inventory 与 discovery copies。Wrapper 只能经过该 dispatcher；non-current runtime、
 缺失 manifest/dispatcher、API/command mismatch 或 managed drift 会在 companion command
 之前 fail closed，并提示安装/升级完整 preset、处理 `.new` / `.bak`、重跑验证。
+
+Phase 0 的六包、23 个既有 exits、`base_current` / `context_current` /
+`clarity_current` / `wording_current` / `readiness_current` 五阶段 closed transition、
+call-local invocation envelopes、consumer projections、shared runtime、registry/extension
+inventory 与 activation manifest 是一个 versioned activation unit。Apply 必须先在 staging
+校验完整 unit，再一次发布；任一 mixed old/new graph、缺失 asset、manifest mismatch 或 sidecar
+都保留上一完整安装并阻断。
+
+既有 closed 1.0 public schema/example path、`$id` 和 bytes 保持 immutable legacy；新增
+transition/provenance required fields 使用新 versioned path，并由 current Interface 显式选择。
+Installer 同时校验 current graph 与兼容合同要求保留的 legacy inventory，不会把旧路径原地替换
+成新 shape。旧 DTO 无法建立 current transition 时 fail closed 并重跑 producer，不能从 ambient
+live state 补字段。
+
+Installed normal path 只调用一次 `guru-sync-base` public wrapper，并让 producer actual stdout
+逐 edge 进入下一 `--invocation -` call-local envelope。五个 semantic owner results 仅供当前
+wrapper 复验，不写
+repo-local owner/prerequisite/transition 文件，也不进入 downstream DTO。Compatibility locator 与
+`prepare-task` 不得出现在 workflow、production eval 或 clean-install happy path。
 
 `guru-verify-extension-installation` 的 standalone discovery 仍依赖完整 preset：
 
@@ -545,7 +564,8 @@ ignored current checkpoint。stale 删除后从 live authority 完整重跑，�
 consume-and-clean owner input/result/checkpoint 与空目录。Preset、selected platform copies、
 fresh install 和 current update/reapply 必须保持这些 schema/runtime/wrapper/test bytes 与
 executable modes 一致。`context_ready` 只交付 Clarify 所需的 route、mode、target locator 与
-continuation identity，不携带 private artifact locator。
+continuation identity，不携带 private artifact locator；其 actual stdout 形成 workflow-owned
+`context_current`，而不是 repo-local prerequisite bundle。
 `context_ready` 指向 active `guru-clarify-requirements`；source/installed validator 要求
 active Skill consumer 与唯一 workflow/stop target marker 均可解析。
 
@@ -612,6 +632,13 @@ route。Pre-task/standalone stdout-only；#112 直接消费 checked exit，只�
 `change-request-review-blocked`。Fresh install、selected platform discovery、installed validation
 与 update/reapply 必须证明 active workspace package 存在、`ready` 只路由到该 package，
 并覆盖三类 target、五出口和 zero cache/sidecar residue。
+
+Clean throwaway 的 Phase 0 harness 必须使用安装后的 production wrappers，把每个 producer 的
+actual stdout 直接投影给下一 consumer，覆盖 existing Issue、draft create/refresh、duplicate
+retain/retarget、wording change、readiness/workspace 与 stop/re-entry families；不得手写 transition、
+隐藏 prerequisite locator 或 import shared runtime。Official `trellis update`、workflow
+preview/switch、preset reapply、dogfood drift、声明平台 byte/mode parity、managed provenance 和
+recursive zero `.new`/`.bak` 必须作为同一分发门禁通过。
 
 `guru-create-task-workspace` package 安装
 ignored-runtime `guru-task-workspace-plan-2.0`、`guru-task-workspace-result-2.0`、contract、examples、tests
@@ -854,25 +881,40 @@ the step-local review loop into a platform overlay.
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
+```
+
+`prepare-task.sh --json` is a compatibility-only local diagnostic whose exact
+CLI is defined by current runtime help. It is never a workflow hop:
+
+```bash
+BASE_PROVENANCE_JSON='<exact base_current.base JSON>'
 .trellis/guru-team/scripts/bash/prepare-task.sh --json \
-  --expected-resolution-sha256 <post-sync-resolution-sha256> \
+  --reviewed-base-provenance "$BASE_PROVENANCE_JSON" \
   "<user request or issue URL>"
 ```
 
-`prepare-task.sh --json` is a current query-only diagnostic. It may read
+The flag accepts one JSON scalar, not a file locator. The closed object contains
+exactly `source`, `selected_base`, `remote`, `ordered_candidates`,
+`decision_head`, `local_base_head`, `remote_base_head`, and
+`post_sync_resolution_sha256`; optional `--base-branch` is equality-only and
+does not reconstruct source. The query may read
 an explicit issue and search duplicates, but it does not create a GitHub issue,
 worktree, branch, Trellis task, or task-local artifact. Freeform
 requests without a source issue return `proposed_issue`, duplicate candidates,
 selected-base facts, naming suggestions, and `naming_quality` in stdout JSON.
 They return no authorization/handoff state, absolute workspace path, task-create
-command, or task/runtime write. Before `gh auth status`, issue reads, or duplicate search,
-`prepare-task` reuses the same strict resolution/sync core used by
+command, or task/runtime write. Before `gh auth status`, issue reads, fetch, or duplicate search,
+`prepare-task` requires complete reviewed provenance: source, selected base,
+remote, ordered candidates, decision/local/remote HEADs and post-sync digest.
+Missing provenance returns `missing_reviewed_base_provenance` locally; whether
+an absent remote ref is valid comes only from the formal schema/runtime state
+matrix. After that validation, it reuses the same strict resolution/sync core used by
 `guru-sync-base`; `fetch_performed: false` or unequal decision/local/remote HEADs
 cannot be `fresh: true`. A behind local base advances only on the selected-base
 checkout via `git merge --ff-only`; wrong checkout, dirty state, missing refs,
 fetch failure, divergence, resolution drift, or post-sync mismatch fail closed.
-Prepare requires the preceding validator/guard post-sync resolution digest and
-the same resolver inputs. It preserves explicit/config/config-candidate/remote-default provenance.
+Prepare requires the complete preceding reviewed provenance, not only its
+post-sync resolution digest. It preserves explicit/config/config-candidate/remote-default provenance.
 Resolution and result facts are stdout-only. Neither standalone nor workflow
 mode creates resolution/result evidence files, leases, release commands, or
 cleanup state. The current query consumes the current post-sync digest

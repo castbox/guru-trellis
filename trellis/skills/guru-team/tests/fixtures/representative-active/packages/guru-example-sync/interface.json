@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
   "id": "guru-example-sync",
   "name": "guru-example-sync",
   "description": "Exercises deterministic scalar CLI input and typed output contracts.",

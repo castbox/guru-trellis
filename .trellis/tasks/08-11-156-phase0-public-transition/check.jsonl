@@ -1,0 +1,8 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public Skill I/O、consumer projection 与 private state SSOT"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Mandatory Skill graph、typed exits 与 workflow consumer SSOT"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "Base freshness、transition 与 artifact lifecycle contracts"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Deterministic runtime、wrapper 与 prepare-task boundaries"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Contract、public transcript、installation 与 drift gates"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "Preset staging、installed validation 与 update/reapply rules"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Canonical overlay 与 dogfood synchronization rules"}

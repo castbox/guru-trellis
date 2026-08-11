@@ -1,0 +1,19 @@
+{
+  "exit_id": "clear",
+  "resume_target": "initial-wording",
+  "target_disposition": "retained",
+  "continuation_id": "stage0-current",
+  "transition": {
+    "schema_version": "1.0",
+    "transition_id": "clarity_current:333333333333333333333333",
+    "stage": "clarity_current",
+    "mode": "workflow",
+    "repo_locator": ".",
+    "base": {"source": "explicit", "selected_base": "main", "remote": "origin", "ordered_candidates": ["main"], "decision_head": "1111111111111111111111111111111111111111", "local_base_head": "1111111111111111111111111111111111111111", "remote_base_head": "1111111111111111111111111111111111111111", "post_sync_resolution_sha256": "1111111111111111111111111111111111111111111111111111111111111111"},
+    "target_locator": "https://github.com/example/repo/issues/1",
+    "continuation_id": "stage0-current",
+    "context_result_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "clarity_result_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "target_content_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+  }
+}
