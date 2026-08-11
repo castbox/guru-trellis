@@ -359,8 +359,8 @@ TASK_WORKSPACE_CONSUMERS = {
     "refresh_review": {"kind": "skill", "id": "guru-sync-base"},
     "blocked": {"kind": "stop", "id": "task-workspace-blocked"},
 }
-TASK_COMMIT_CANDIDATE_SCHEMA_VERSION = "4.0"
-TASK_COMMIT_CANDIDATE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json"
+TASK_COMMIT_CANDIDATE_SCHEMA_VERSION = "5.0"
+TASK_COMMIT_CANDIDATE_SCHEMA_ID = "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json"
 TASK_COMMIT_PLAN_DIR = "task-commit-plans"
 TASK_COMMIT_RUNTIME_DIR = ".trellis/.runtime/guru-team/task-commit-plans"
 AGENT_RECOVERY_RUNTIME_DIR = ".trellis/.runtime/guru-team/agent-recovery"
@@ -371,24 +371,6 @@ TASK_COMMIT_PLAN_CATEGORIES = {
     "ambiguous-blocking",
 }
 TASK_COMMIT_BLOCKING_CATEGORIES = {"unreviewed-blocking", "ambiguous-blocking"}
-TASK_COMMIT_ROUTINE_FACT_IDS = (
-    "dedicated_task_worktree",
-    "dedicated_task_branch",
-    "default_branch_excluded",
-    "protected_branch_excluded",
-    "shared_branch_excluded",
-    "other_task_branch_excluded",
-    "remote_branch_absent",
-    "open_pull_request_absent",
-    "phase2_current",
-    "exact_task_owned_staging",
-    "ordinary_new_commit",
-)
-TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS = (
-    "scope_purpose_unique",
-    "authority_unchanged",
-    "canonical_message_unique",
-)
 TASK_COMMIT_GIT_OPERATION_MARKERS = (
     ("merge", "MERGE_HEAD"),
     ("cherry-pick", "CHERRY_PICK_HEAD"),
@@ -10712,59 +10694,6 @@ def validate_task_commit_candidate(
     if semantic_exit == "committed" and not stage_paths:
         errors.append("passed task commit candidate requires at least one exact stage path.")
 
-    stored_routine_facts = (
-        plan.get("routine_auto_commit_facts")
-        if isinstance(plan.get("routine_auto_commit_facts"), dict)
-        else {}
-    )
-    try:
-        current_routine_facts = task_commit_objective_eligibility_facts(
-            root,
-            task_dir,
-            task,
-            task_context,
-            phase2_current=(
-                phase2_payload.get("typed_exit") == "passed"
-                and git_plan.get("phase2_commit_anchor")
-                == expected_phase2_commit_anchor
-            ),
-            exact_stage_paths=stage_paths,
-            classification_by_path=classification_by_path,
-            git_operation_state=git_operation_state,
-        )
-    except WorkflowError as exc:
-        current_routine_facts = {}
-        errors.append(str(exc))
-    if set(stored_routine_facts) != set(TASK_COMMIT_ROUTINE_FACT_IDS) or any(
-        not isinstance(value, bool) for value in stored_routine_facts.values()
-    ):
-        errors.append("task commit candidate has incomplete objective eligibility facts.")
-    elif stored_routine_facts != current_routine_facts:
-        errors.append("task commit candidate objective eligibility facts are stale.")
-
-    routine_eligibility = (
-        plan.get("routine_auto_commit_eligible")
-        if isinstance(plan.get("routine_auto_commit_eligible"), dict)
-        else {}
-    )
-    try:
-        normalized_eligibility = task_commit_normalize_routine_eligibility(
-            routine_eligibility
-        )
-    except WorkflowError as exc:
-        normalized_eligibility = {}
-        errors.append(str(exc))
-    if routine_eligibility != normalized_eligibility:
-        errors.append("task commit routine auto-commit eligibility is not canonical.")
-    if normalized_eligibility.get("eligible") is True and (
-        semantic_exit != "committed"
-        or not current_routine_facts
-        or not all(current_routine_facts.values())
-    ):
-        errors.append(
-            "eligible task commit conclusion conflicts with current objective facts or semantic result."
-        )
-
     facts = {
         "task_dir": task_relative,
         "candidate_artifact": candidate_relative,
@@ -10780,13 +10709,6 @@ def validate_task_commit_candidate(
         ),
         "git_operation_state": git_operation_state,
         "workspace_boundary": boundary,
-        "routine_auto_commit_facts": current_routine_facts,
-        "routine_auto_commit_eligible": (
-            normalized_eligibility.get("eligible") is True
-            and semantic_exit == "committed"
-            and bool(current_routine_facts)
-            and all(current_routine_facts.values())
-        ),
     }
     return plan, facts, errors
 
@@ -10821,253 +10743,6 @@ def task_commit_normalize_ai_review(value: Any) -> dict[str, Any]:
         for item in evidence
     ]
     return {"status": status, "summary": summary, "evidence": normalized_evidence}
-
-
-def task_commit_normalize_routine_eligibility(value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        raise WorkflowError(
-            "Task commit routine auto-commit eligibility must be an object.",
-            exit_code=2,
-        )
-    eligible = value.get("eligible")
-    if not isinstance(eligible, bool):
-        raise WorkflowError(
-            "Task commit routine auto-commit eligibility requires a boolean conclusion.",
-            exit_code=2,
-        )
-    reason = task_commit_normalize_message_field(
-        value.get("reason"), "routine auto-commit eligibility reason"
-    )
-    evidence_refs = value.get("evidence_refs")
-    if not isinstance(evidence_refs, list) or not evidence_refs:
-        raise WorkflowError(
-            "Task commit routine auto-commit eligibility requires evidence refs.",
-            exit_code=2,
-        )
-    allowed = {
-        *TASK_COMMIT_ROUTINE_FACT_IDS,
-        *TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
-    }
-    normalized_refs = [
-        task_commit_normalize_message_field(item, "routine auto-commit evidence ref")
-        for item in evidence_refs
-    ]
-    if len(normalized_refs) != len(set(normalized_refs)) or any(
-        item not in allowed for item in normalized_refs
-    ):
-        raise WorkflowError(
-            "Task commit routine auto-commit eligibility has unknown or duplicate evidence refs.",
-            exit_code=2,
-        )
-    if eligible and not set(TASK_COMMIT_ROUTINE_FACT_IDS).issubset(normalized_refs):
-        raise WorkflowError(
-            "Eligible task commit conclusion must cite every objective eligibility fact.",
-            exit_code=2,
-        )
-    if eligible and not set(TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS).issubset(
-        normalized_refs
-    ):
-        raise WorkflowError(
-            "Eligible task commit conclusion must cite scope, authority and message evidence.",
-            exit_code=2,
-        )
-    return {
-        "eligible": eligible,
-        "reason": reason,
-        "evidence_refs": normalized_refs,
-    }
-
-
-def task_commit_is_linked_worktree(root: Path) -> bool:
-    git_dir_value = run_stdout(["git", "rev-parse", "--git-dir"], cwd=root)
-    common_dir_value = run_stdout(["git", "rev-parse", "--git-common-dir"], cwd=root)
-    git_dir = Path(git_dir_value)
-    common_dir = Path(common_dir_value)
-    git_dir = git_dir if git_dir.is_absolute() else (root / git_dir).resolve()
-    common_dir = common_dir if common_dir.is_absolute() else (root / common_dir).resolve()
-    return git_dir != common_dir
-
-
-def task_commit_other_task_branch_owners(
-    root: Path, task_dir: Path, branch: str
-) -> list[str]:
-    owners: list[str] = []
-    tasks_root = root / ".trellis/tasks"
-    if not tasks_root.is_dir():
-        return owners
-    for path in tasks_root.rglob("task.json"):
-        if "archive" in path.relative_to(tasks_root).parts or path.parent == task_dir:
-            continue
-        try:
-            payload = read_json(path)
-        except WorkflowError:
-            continue
-        if payload.get("status") == "in_progress" and payload.get("branch") == branch:
-            owners.append(repo_relative(root, path.parent))
-    return sorted(owners)
-
-
-def task_commit_remote_branch_absent(root: Path, remote: str, branch: str) -> bool:
-    proc = run(["git", "ls-remote", "--heads", remote, branch], cwd=root, check=False)
-    if proc.returncode != 0:
-        raise WorkflowError(
-            "Task commit eligibility could not read the remote branch identity.",
-            exit_code=2,
-            payload={"remote": remote, "branch": branch},
-        )
-    rows = [line.split() for line in proc.stdout.splitlines() if line.strip()]
-    if len(rows) > 1 or any(
-        len(row) != 2
-        or re.fullmatch(r"[0-9a-f]{40}", row[0]) is None
-        or row[1] != f"refs/heads/{branch}"
-        for row in rows
-    ):
-        raise WorkflowError(
-            "Task commit eligibility received an invalid remote branch identity.",
-            exit_code=2,
-        )
-    return not rows
-
-
-def task_commit_protected_branch_excluded(
-    root: Path, repo: str, branch: str
-) -> bool:
-    rules = gh_json(
-        ["api", f"repos/{repo}/rules/branches/{quote(branch, safe='')}"],
-        cwd=root,
-        repo=repo,
-        required_fields=("type",),
-        operation="task_commit_branch_rules_read",
-    )
-    if not isinstance(rules, list):
-        raise github_response_incomplete(
-            operation="task_commit_branch_rules_read",
-            repo=repo,
-            detail="Applicable branch rules are not an array.",
-        )
-    if any(
-        not isinstance(rule, dict)
-        or not isinstance(rule.get("type"), str)
-        or not rule["type"].strip()
-        for rule in rules
-    ):
-        raise github_response_incomplete(
-            operation="task_commit_branch_rules_read",
-            repo=repo,
-            detail="Applicable branch rule identity is incomplete.",
-        )
-    return not rules
-
-
-def task_commit_open_pull_request_absent(
-    root: Path, repo: str, branch: str
-) -> bool:
-    values = gh_json(
-        [
-            "pr", "list", "--repo", repo, "--head", branch,
-            "--state", "open", "--limit", "100",
-            "--json", "number,isDraft,state,headRefName",
-        ],
-        cwd=root,
-        repo=repo,
-        required_fields=("number", "isDraft", "state", "headRefName"),
-        operation="task_commit_pull_request_read",
-    )
-    if not isinstance(values, list):
-        raise github_response_incomplete(
-            operation="task_commit_pull_request_read",
-            repo=repo,
-            detail="Pull request list is not an array.",
-        )
-    for item in values:
-        if (
-            not isinstance(item, dict)
-            or not isinstance(item.get("number"), int)
-            or not isinstance(item.get("isDraft"), bool)
-            or item.get("state") != "OPEN"
-            or item.get("headRefName") != branch
-        ):
-            raise github_response_incomplete(
-                operation="task_commit_pull_request_read",
-                repo=repo,
-                detail="Open pull request identity is incomplete or mismatched.",
-            )
-    return not values
-
-
-def task_commit_objective_eligibility_facts(
-    root: Path,
-    task_dir: Path,
-    task: dict[str, Any],
-    task_context: dict[str, Any],
-    *,
-    phase2_current: bool,
-    exact_stage_paths: list[str],
-    classification_by_path: dict[str, dict[str, Any]],
-    git_operation_state: dict[str, Any],
-) -> dict[str, bool]:
-    branch = current_branch(root)
-    base_branch = base_branch_from_sources(
-        argparse.Namespace(base_branch=None), task, task_context
-    )
-    config = load_config(root)
-    remote = str((config.get("publish") or {}).get("remote") or "origin")
-    source_repo = task_context.get("source_repo")
-    repo = normalize_github_repository(
-        source_repo.get("repo") if isinstance(source_repo, dict) else ""
-    ) or normalize_github_repository(config.get("github_repo"))
-    if not repo:
-        raise WorkflowError(
-            "Task commit eligibility requires one repository-bound GitHub identity.",
-            exit_code=2,
-        )
-    validate_github_remote_repository(root, remote, repo)
-    protected_branch_excluded = task_commit_protected_branch_excluded(
-        root, repo, branch
-    )
-    remote_absent = task_commit_remote_branch_absent(root, remote, branch)
-    open_pr_absent = task_commit_open_pull_request_absent(root, repo, branch)
-    current_worktrees = [
-        record
-        for record in worktree_records(root)
-        if record.get("branch") == f"refs/heads/{branch}"
-    ]
-    task_branch_matches = (
-        task.get("branch") == branch
-        and task_context.get("branch_name") == branch
-        and branch != base_branch
-    )
-    other_task_owners = task_commit_other_task_branch_owners(root, task_dir, branch)
-    reviewed = {
-        path
-        for path, item in classification_by_path.items()
-        if item.get("category") == "task-reviewed"
-    }
-    blocking = any(
-        item.get("category") in TASK_COMMIT_BLOCKING_CATEGORIES
-        for item in classification_by_path.values()
-    )
-    exact_owned = bool(exact_stage_paths) and not blocking and reviewed.issubset(
-        set(exact_stage_paths)
-    )
-    return {
-        "dedicated_task_worktree": (
-            task_commit_is_linked_worktree(root)
-            and len(current_worktrees) == 1
-            and Path(current_worktrees[0].get("worktree") or "").resolve()
-            == root.resolve()
-        ),
-        "dedicated_task_branch": task_branch_matches,
-        "default_branch_excluded": branch != base_branch,
-        "protected_branch_excluded": protected_branch_excluded,
-        "shared_branch_excluded": len(current_worktrees) == 1,
-        "other_task_branch_excluded": not other_task_owners,
-        "remote_branch_absent": remote_absent,
-        "open_pull_request_absent": open_pr_absent,
-        "phase2_current": phase2_current,
-        "exact_task_owned_staging": exact_owned,
-        "ordinary_new_commit": not bool(git_operation_state.get("active")),
-    }
 
 
 def build_task_commit_candidate(
@@ -11159,30 +10834,6 @@ def build_task_commit_candidate(
     ledger = load_issue_scope_ledger(task_dir, task_context)
     primary_issue = primary_issue_number_from_ledger(ledger)
     base_branch = base_branch_from_sources(argparse.Namespace(base_branch=None), task, task_context)
-    git_operation_state = task_commit_git_operation_state(root)
-    routine_facts = task_commit_objective_eligibility_facts(
-        root,
-        task_dir,
-        task,
-        task_context,
-        phase2_current=True,
-        exact_stage_paths=sorted(exact_stage_paths),
-        classification_by_path=classification_by_path,
-        git_operation_state=git_operation_state,
-    )
-    routine_eligibility = task_commit_normalize_routine_eligibility(
-        authoring.get("routine_auto_commit_eligible")
-    )
-    if routine_eligibility["eligible"] and not all(routine_facts.values()):
-        raise WorkflowError(
-            "AI marked the task commit routine-eligible while objective exclusions remain.",
-            exit_code=2,
-            payload={
-                "failed_facts": sorted(
-                    key for key, value in routine_facts.items() if not value
-                )
-            },
-        )
     plan: dict[str, Any] = {
         "$schema": TASK_COMMIT_CANDIDATE_SCHEMA_ID,
         "schema_version": TASK_COMMIT_CANDIDATE_SCHEMA_VERSION,
@@ -11210,8 +10861,6 @@ def build_task_commit_candidate(
             primary_issue=primary_issue,
         ),
         "ai_review": task_commit_normalize_ai_review(authoring.get("ai_review")),
-        "routine_auto_commit_facts": routine_facts,
-        "routine_auto_commit_eligible": routine_eligibility,
     }
     candidate_preimage = candidate_path.read_bytes() if candidate_path.exists() else None
     write_json(candidate_path, plan)
@@ -11262,7 +10911,6 @@ def cmd_prepare_task_commit(args: argparse.Namespace) -> dict[str, Any]:
         "candidate_artifact": repo_relative(root, candidate_path),
         "phase2_commit_anchor": candidate["git"]["phase2_commit_anchor"],
         "exact_stage_paths": facts["exact_stage_paths"],
-        "routine_auto_commit_eligible": facts["routine_auto_commit_eligible"],
         "message": {
             "subject": candidate["message"]["subject"],
             "body": candidate["message"]["body"],
@@ -21424,11 +21072,6 @@ def production_commit_result(
                 "base_ref": plan["git"]["base_ref"],
                 "candidate_artifact": facts["candidate_artifact"],
             }
-        if facts.get("routine_auto_commit_eligible") is not True:
-            raise WorkflowError(
-                "Task commit candidate is not eligible for routine automatic execution.",
-                exit_code=2,
-            )
         executed = execute_task_commit_candidate(root, candidate_path, task_dir)
         executed["base_ref"] = plan["git"]["base_ref"]
         return {"typed_exit": "committed"}, executed

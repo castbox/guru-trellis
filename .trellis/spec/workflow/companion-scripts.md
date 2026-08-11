@@ -60,11 +60,12 @@ the parsed PR close-keyword set to be empty and performs zero post-merge Issue
 closure reads; that zero-length obligation is complete. Non-empty sets retain
 exact body equality and per-Issue post-merge closure checks.
 
-`guru-create-task-commit` checker recomputes the objective unpublished,
-dedicated-branch eligibility facts. The semantic candidate owns
-`routine_auto_commit_eligible`; a checked true value enters the existing exact
-staging/ordinary commit executor immediately, with no confirmation parameter or
-persisted authorization.
+`guru-create-task-commit` checker recomputes task/HEAD, Phase 2, snapshot,
+classification, exact staging, message/parser, Git operation state and unrelated
+preservation facts. It does not read branch protection, remote branch, Open PR,
+worktree sharing, or other-task ownership as operation eligibility. A current
+exact request remains dialogue-local and no confirmation parameter or persisted
+authorization exists.
 
 Bash files under `trellis/workflows/guru-team/scripts/bash/` are thin wrappers.
 They should use `set -euo pipefail`, resolve their own `SCRIPT_DIR`, and delegate
@@ -273,11 +274,11 @@ existing owner recorder and checker for `task_ref`, and selects the actual exit
 only from checker-passed owner evidence. Commit invocation consumes the minimal
 Phase 2 DTO plus fresh AI-authored path classifications, structured commit
 message fields, and semantic result. A deterministic builder rereads the
-current task, ledger, HEAD, base, dirty snapshot, sequence, remote branch and
-repo-bound Open PR facts; constructs the ignored-runtime
-`guru-task-commit-candidate-4.0`; canonicalizes the complete message; runs the
-shared parser; and, only for checker-passed `committed` with
-`routine_auto_commit_eligible=true`, calls the exact executor immediately.
+current task, ledger, HEAD, base, dirty snapshot, sequence and Phase 2 evidence;
+constructs the ignored-runtime `guru-task-commit-candidate-5.0`; canonicalizes
+the complete message; runs the shared parser; and calls the exact executor only
+for checker-passed `committed` semantic results under current dialogue-local
+authority.
 User authorization remains dialogue-local and never enters the
 public input, candidate, result, or archive.
 

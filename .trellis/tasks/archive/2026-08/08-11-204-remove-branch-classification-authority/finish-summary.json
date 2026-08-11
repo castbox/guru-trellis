@@ -1,0 +1,322 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-11T15:51:27Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-11-204-remove-branch-classification-authority",
+    "title": "#204 移除分支分类与 GitHub Rules 操作限制",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-11-204-remove-branch-classification-authority",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/204-remove-branch-classification-authority",
+    "commits": [
+      "478bd51777d56a940a9091ebf4939d936824f65c"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-create-task-commit/SKILL.md",
+      ".agents/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+      ".agents/skills/guru-create-task-commit/interface.json",
+      ".agents/skills/guru-create-task-commit/references/contract.md",
+      ".agents/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+      ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+      ".claude/skills/guru-create-task-commit/SKILL.md",
+      ".claude/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+      ".claude/skills/guru-create-task-commit/interface.json",
+      ".claude/skills/guru-create-task-commit/references/contract.md",
+      ".claude/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+      ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+      ".codex/skills/guru-create-task-commit/SKILL.md",
+      ".codex/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+      ".codex/skills/guru-create-task-commit/interface.json",
+      ".codex/skills/guru-create-task-commit/references/contract.md",
+      ".codex/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+      ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+      ".cursor/skills/guru-create-task-commit/SKILL.md",
+      ".cursor/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+      ".cursor/skills/guru-create-task-commit/interface.json",
+      ".cursor/skills/guru-create-task-commit/references/contract.md",
+      ".cursor/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+      ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-candidate.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+      ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/08-11-204-remove-branch-classification-authority/check.jsonl",
+      ".trellis/tasks/08-11-204-remove-branch-classification-authority/design.md",
+      ".trellis/tasks/08-11-204-remove-branch-classification-authority/implement.jsonl",
+      ".trellis/tasks/08-11-204-remove-branch-classification-authority/implement.md",
+      ".trellis/tasks/08-11-204-remove-branch-classification-authority/issue-scope-ledger.json",
+      ".trellis/tasks/08-11-204-remove-branch-classification-authority/prd.md",
+      ".trellis/tasks/08-11-204-remove-branch-classification-authority/task.json",
+      ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/design.md",
+      ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/implement.md",
+      ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/marketplace-verification.json",
+      ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/prd.md",
+      ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/task.json",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-candidate.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+      "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+      "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      204
+    ],
+    "close_issues": [
+      204
+    ],
+    "related_issues": [
+      180
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/207"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json",
+    "marketplace_verification": "marketplace-verification.json"
+  },
+  "index": {
+    "problem": "#204 移除分支分类与 GitHub Rules 操作限制",
+    "outcome": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。",
+    "changed_behavior": [
+      "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。",
+      "删除 Task Commit 对 GitHub Branch Rules、remote branch、Open PR、worktree sharing 和 task-owner 状态的资格读取。",
+      "保留 task、repo/ref/HEAD、Phase 2 freshness、snapshot、scope、精确 staging、message、Git operation、unrelated preservation 与真实远端 mutation 校验。",
+      "同步 canonical runtime、Skill 合同、schema、eval、tests、preset、dogfood 及 Agents/Codex/Claude/Cursor 副本。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          ".trellis/tasks/08-11-204-remove-branch-classification-authority/design.md",
+          ".trellis/tasks/08-11-204-remove-branch-classification-authority/implement.md",
+          ".trellis/tasks/08-11-204-remove-branch-classification-authority/prd.md",
+          ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/design.md",
+          ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/implement.md",
+          ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/prd.md"
+        ],
+        "change": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          ".agents/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+          ".claude/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+          ".codex/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+          ".cursor/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json"
+        ],
+        "change": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+          ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+          ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+          ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+          ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+          ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+          "trellis/skills/guru-team/tests/test_finish_family_integration.py"
+        ],
+        "change": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-create-task-commit/SKILL.md",
+          ".agents/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+          ".agents/skills/guru-create-task-commit/interface.json",
+          ".agents/skills/guru-create-task-commit/references/contract.md",
+          ".claude/skills/guru-create-task-commit/SKILL.md",
+          ".claude/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+          ".claude/skills/guru-create-task-commit/interface.json",
+          ".claude/skills/guru-create-task-commit/references/contract.md",
+          ".codex/skills/guru-create-task-commit/SKILL.md",
+          ".codex/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+          ".codex/skills/guru-create-task-commit/interface.json",
+          ".codex/skills/guru-create-task-commit/references/contract.md",
+          ".cursor/skills/guru-create-task-commit/SKILL.md",
+          ".cursor/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+          ".cursor/skills/guru-create-task-commit/interface.json",
+          ".cursor/skills/guru-create-task-commit/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-candidate.json",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-candidate.json",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md"
+        ],
+        "change": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-11-204-remove-branch-classification-authority/check.jsonl",
+          ".trellis/tasks/08-11-204-remove-branch-classification-authority/implement.jsonl",
+          ".trellis/tasks/08-11-204-remove-branch-classification-authority/issue-scope-ledger.json",
+          ".trellis/tasks/08-11-204-remove-branch-classification-authority/task.json",
+          ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/marketplace-verification.json",
+          ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/task.json"
+        ],
+        "change": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+          "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+        ],
+        "change": "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#180",
+        "#204"
+      ],
+      "pr_refs": [
+        "PR #207"
+      ],
+      "branches": [
+        "fix/204-remove-branch-classification-authority"
+      ],
+      "paths": [
+        ".agents/skills/guru-create-task-commit/SKILL.md",
+        ".agents/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+        ".agents/skills/guru-create-task-commit/interface.json",
+        ".agents/skills/guru-create-task-commit/references/contract.md",
+        ".agents/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+        ".agents/skills/guru-create-task-commit/tests/test_contract.py",
+        ".claude/skills/guru-create-task-commit/SKILL.md",
+        ".claude/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+        ".claude/skills/guru-create-task-commit/interface.json",
+        ".claude/skills/guru-create-task-commit/references/contract.md",
+        ".claude/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+        ".claude/skills/guru-create-task-commit/tests/test_contract.py",
+        ".codex/skills/guru-create-task-commit/SKILL.md",
+        ".codex/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+        ".codex/skills/guru-create-task-commit/interface.json",
+        ".codex/skills/guru-create-task-commit/references/contract.md",
+        ".codex/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+        ".codex/skills/guru-create-task-commit/tests/test_contract.py",
+        ".cursor/skills/guru-create-task-commit/SKILL.md",
+        ".cursor/skills/guru-create-task-commit/examples/task-commit-candidate.json",
+        ".cursor/skills/guru-create-task-commit/interface.json",
+        ".cursor/skills/guru-create-task-commit/references/contract.md",
+        ".cursor/skills/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+        ".cursor/skills/guru-create-task-commit/tests/test_contract.py",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/examples/task-commit-candidate.json",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/interface.json",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_contract.py",
+        ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/08-11-204-remove-branch-classification-authority/check.jsonl",
+        ".trellis/tasks/08-11-204-remove-branch-classification-authority/design.md",
+        ".trellis/tasks/08-11-204-remove-branch-classification-authority/implement.jsonl",
+        ".trellis/tasks/08-11-204-remove-branch-classification-authority/implement.md",
+        ".trellis/tasks/08-11-204-remove-branch-classification-authority/issue-scope-ledger.json",
+        ".trellis/tasks/08-11-204-remove-branch-classification-authority/prd.md",
+        ".trellis/tasks/08-11-204-remove-branch-classification-authority/task.json",
+        ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/design.md",
+        ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/implement.md",
+        ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/marketplace-verification.json",
+        ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/prd.md",
+        ".trellis/tasks/archive/2026-08/08-11-204-remove-branch-classification-authority/task.json",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/examples/task-commit-candidate.json",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/interface.json",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_contract.py",
+        "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+        "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+        "trellis/workflows/guru-team/scripts/python/test_guru_team_trellis.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#204 移除分支分类与 GitHub Rules 操作限制",
+        "将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_aut",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#204 移除分支分类与 GitHub Rules 操作限制\n将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_auto_commit_*` 与全部分支分类资格字段。\n删除 Task Commit 对 GitHub Branch Rules、remote branch、Open PR、worktree sharing 和 task-owner 状态的资格读取。\n保留 task、repo/ref/HEAD、Phase 2 freshness、snapshot、scope、精确 staging、message、Git operation、unrelated preservation 与真实远端 mutation 校验。\n同步 canonical runtime、Skill 合同、schema、eval、tests、preset、dogfood 及 Agents/Codex/Claude/Cursor 副本。\n将 `guru-task-commit-candidate` 从 4.0 升级到 5.0，删除 `routine_aut\n完成 SKILL.md 相关变更"
+  }
+}

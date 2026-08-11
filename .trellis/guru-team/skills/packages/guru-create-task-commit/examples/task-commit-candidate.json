@@ -1,6 +1,6 @@
 {
-  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json",
-  "schema_version": "4.0",
+  "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json",
+  "schema_version": "5.0",
   "skill_id": "guru-create-task-commit",
   "sequence": "001",
   "task": {
@@ -56,38 +56,5 @@
     "status": "passed",
     "summary": "当前任务范围、路径和提交语义已完成审查。",
     "evidence": ["当前 diff 与 Phase 2 覆盖一致，未纳入无关路径。"]
-  },
-  "routine_auto_commit_facts": {
-    "dedicated_task_worktree": true,
-    "dedicated_task_branch": true,
-    "default_branch_excluded": true,
-    "protected_branch_excluded": true,
-    "shared_branch_excluded": true,
-    "other_task_branch_excluded": true,
-    "remote_branch_absent": true,
-    "open_pull_request_absent": true,
-    "phase2_current": true,
-    "exact_task_owned_staging": true,
-    "ordinary_new_commit": true
-  },
-  "routine_auto_commit_eligible": {
-    "eligible": true,
-    "reason": "专用未发布任务分支、当前 Phase 2、精确 staging 与普通新提交条件均成立。",
-    "evidence_refs": [
-      "dedicated_task_worktree",
-      "dedicated_task_branch",
-      "default_branch_excluded",
-      "protected_branch_excluded",
-      "shared_branch_excluded",
-      "other_task_branch_excluded",
-      "remote_branch_absent",
-      "open_pull_request_absent",
-      "phase2_current",
-      "exact_task_owned_staging",
-      "ordinary_new_commit",
-      "scope_purpose_unique",
-      "authority_unchanged",
-      "canonical_message_unique"
-    ]
   }
 }

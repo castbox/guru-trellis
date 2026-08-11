@@ -1151,11 +1151,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("TASK_COMMIT_RUNTIME_DIR", verifier)
         self.assertIn("prepare_task_commit_candidate initial_commit", verifier)
         self.assertIn("scripts/prepare-task-commit.sh", verifier)
-        self.assertIn(
-            "repos/castbox/guru-trellis-throwaway/rules/branches/"
-            "feat%2F122-installed-task-commit",
-            verifier,
-        )
+        self.assertNotIn("/rules/" + "branches/", verifier)
         self.assertNotIn("create_task_commit_plan", verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/native_adapter.py"', verifier)
         for adapter_id in ("shared", "codex", "claude", "cursor"):
@@ -1216,7 +1212,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
         ).read_text(encoding="utf-8")
         self.assertIn('root / ".agents/skills/guru-finalize-task"', installed_closeout)
-        self.assertIn("rules/branches/{quote(branch, safe='')}", installed_closeout)
+        self.assertNotIn("rules/" + "branches/", installed_closeout)
         for wrapper_name in (
             "preview-finalization",
             "record-finalization-gate",

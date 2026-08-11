@@ -168,7 +168,7 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
