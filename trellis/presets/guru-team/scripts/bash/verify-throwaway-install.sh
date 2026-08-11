@@ -1188,26 +1188,6 @@ authoring = {
         "summary": "Reviewed the exact fixture paths, message, upgrade boundary and unrelated preservation.",
         "evidence": ["Fresh Phase 2 evidence covers every task-reviewed fixture path."],
     },
-    "routine_auto_commit_eligible": {
-        "eligible": True,
-        "reason": "The isolated unpublished task worktree has one current scope, canonical message and no remote consumer.",
-        "evidence_refs": [
-            "dedicated_task_worktree",
-            "dedicated_task_branch",
-            "default_branch_excluded",
-            "protected_branch_excluded",
-            "shared_branch_excluded",
-            "other_task_branch_excluded",
-            "remote_branch_absent",
-            "open_pull_request_absent",
-            "phase2_current",
-            "exact_task_owned_staging",
-            "ordinary_new_commit",
-            "scope_purpose_unique",
-            "authority_unchanged",
-            "canonical_message_unique",
-        ],
-    },
 }
 print(json.dumps(authoring, ensure_ascii=False, separators=(",", ":")))
 PY
@@ -2461,49 +2441,6 @@ TASK_COMMIT_TARGET="$WORK_DIR/installed-task-commit-worktree"
 git -C "$INSTALL_TARGET" worktree add -q -b "$TASK_BRANCH" "$TASK_COMMIT_TARGET" main
 TARGET="$TASK_COMMIT_TARGET"
 
-TASK_COMMIT_FAKE_BIN="$WORK_DIR/task-commit-fake-bin"
-TASK_COMMIT_REAL_GIT="$(command -v git)"
-TASK_COMMIT_ORIGINAL_PATH="$PATH"
-mkdir -p "$TASK_COMMIT_FAKE_BIN"
-cat >"$TASK_COMMIT_FAKE_BIN/git" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-
-if [[ "$*" == "config --null --show-origin --get-all remote.origin.url" ]]; then
-  printf 'command line:\0https://github.com/castbox/guru-trellis-throwaway.git\0'
-  exit 0
-fi
-if [[ "$*" == "config --null --show-origin --get-all remote.origin.pushurl" ]]; then
-  exit 1
-fi
-if [[ "$*" == 'remote get-url --all origin' || "$*" == 'remote get-url --push --all origin' || "$*" == 'remote get-url origin' ]]; then
-  printf '%s\n' 'https://github.com/castbox/guru-trellis-throwaway.git'
-  exit 0
-fi
-exec "$TASK_COMMIT_REAL_GIT" "$@"
-SH
-cat >"$TASK_COMMIT_FAKE_BIN/gh" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-
-if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
-  exit 0
-fi
-if [[ "${1:-}" == "api" && "${2:-}" == "repos/castbox/guru-trellis-throwaway/rules/branches/feat%2F122-installed-task-commit" ]]; then
-  printf '%s\n' '[]'
-  exit 0
-fi
-if [[ "${1:-}" == "pr" && "${2:-}" == "list" && "$*" == *"--repo castbox/guru-trellis-throwaway"* ]]; then
-  printf '%s\n' '[]'
-  exit 0
-fi
-printf 'unexpected task-commit fake gh invocation: %s\n' "$*" >&2
-exit 2
-SH
-chmod +x "$TASK_COMMIT_FAKE_BIN/git" "$TASK_COMMIT_FAKE_BIN/gh"
-export TASK_COMMIT_REAL_GIT
-export PATH="$TASK_COMMIT_FAKE_BIN:$PATH"
-
 python3 - "$TARGET" "$TASK_REL" "$TASK_BRANCH" <<'PY'
 import json
 import sys
@@ -2753,8 +2690,6 @@ if git -C "$TARGET" ls-tree -r --name-only HEAD | grep -Eq '(^|/)task-commit-pla
 fi
 
 TARGET="$INSTALL_TARGET"
-PATH="$TASK_COMMIT_ORIGINAL_PATH"
-unset TASK_COMMIT_REAL_GIT
 
 INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"

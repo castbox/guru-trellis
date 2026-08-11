@@ -1,0 +1,26 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 204,
+    "url": "https://github.com/castbox/guru-trellis/issues/204",
+    "title": "移除 Guru Team 对分支类型与 GitHub Rules 的硬编码操作限制",
+    "reason": "任务承接 Issue #204 的完整需求、迁移合同与验收矩阵。"
+  },
+  "close_issues": [
+    {
+      "number": 204,
+      "url": "https://github.com/castbox/guru-trellis/issues/204",
+      "title": "移除 Guru Team 对分支类型与 GitHub Rules 的硬编码操作限制",
+      "reason": "任务承接 Issue #204 的完整需求、迁移合同与验收矩阵。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 180,
+      "url": "https://github.com/castbox/guru-trellis/issues/180",
+      "title": "压缩 Finalizer 与 PR 合并闭环，并以 #174 回放验证最少确认",
+      "reason": "Issue #204 明确取代 #180 中基于分支分类判定 routine auto-commit 资格的条款。"
+    }
+  ],
+  "followup_issues": []
+}

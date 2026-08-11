@@ -914,13 +914,11 @@ into Phase 2.
 Each `guru-create-task-commit` invocation owns one temporary candidate under
 ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
 where `sequence` is a fresh three-digit
-increasing id. Current schema `guru-task-commit-candidate-4.0` binds only task
+increasing id. Current schema `guru-task-commit-candidate-5.0` binds only task
 locator/branch/status, base/pre-commit/Phase 2 commit anchor, the complete
 staged/unstaged/untracked/delete/rename/copy snapshot, unique path
 classifications, exact stage paths, canonical UTF-8 message fields/bytes, and
-the completed AI review. It also records the closed objective
-`routine_auto_commit_facts` snapshot and the AI-authored
-`routine_auto_commit_eligible` conclusion. Live `task.json`, Issue Scope Ledger, the Phase 2 DTO,
+the completed AI review. Live `task.json`, Issue Scope Ledger, the Phase 2 DTO,
 Git operation state, snapshot freshness, and shared commit-message parser facts
 are reread by the builder/validator; they are not copied into a cross-Skill
 digest chain. The candidate contains no user authorization, confirmation
@@ -995,9 +993,8 @@ sequence and fresh Phase 2 evidence; a prior plan cannot be replayed.
 ### Executor Boundary
 
 `create-task-commit --candidate-artifact <ignored-runtime-candidate>` validates
-one schema `guru-task-commit-candidate-4.0` private candidate. It recomputes the
-objective dedicated/unpublished eligibility facts, then materializes only
-authorized blobs/modes in an isolated index, runs repository commit hooks, and
+one schema `guru-task-commit-candidate-5.0` private candidate. It materializes
+only AI-reviewed blobs/modes in an isolated index, runs repository commit hooks, and
 verifies parent, raw message, committed path set, complete tree and unrelated
 preservation before conditionally advancing the live branch/index.
 
@@ -1211,17 +1208,20 @@ identity used by Finalizer/archive history. Command transcripts, argv, asset
 catalogs, ownership scans, complete findings and retry metadata remain private
 and are deleted after the checked Finalizer consumer completes.
 
-## Current Task Commit Eligibility
+## Current Task Commit Authority
 
-`guru-task-commit-candidate-4.0` adds a closed AI-authored
-`routine_auto_commit_eligible` conclusion. It can be true only for a dedicated
-task worktree/branch that is neither default, protected, shared nor owned by
-another task; has no remote branch or Open/Draft/Ready PR; has current Phase 2
-or finding-closure evidence; has one fixed scope/purpose, an exact owned staging
-set and canonical message; and performs only an ordinary new commit. Objective
-Git/GitHub facts are recomputed by the checker, but the checker never makes the
-semantic eligibility decision. A checked eligible candidate executes without a
-routine confirmation. No authorization or confirmation field exists.
+Candidate 5.0 removes branch classification and publication-state eligibility.
+A current exact commit request authorizes only the matching action in the
+conversation. Without that request, the Skill asks once after displaying the
+exact repo, ref, HEAD, paths, and message. Branch name, role, protection,
+sharing, other-task ownership, remote branch presence, and PR state neither
+grant nor deny authority and are not read as commit preconditions. Task/HEAD,
+Phase 2, snapshot, exact staging, message, Git operation state, and unrelated
+preservation still fail closed. Authorization is never persisted.
+
+An unfinished 4.0 owner-private candidate is not converted or supplemented. It
+is rejected or removed and the owner fully reprepares candidate 5.0 from current
+Phase 2 and live Git evidence.
 
 ## Current Merge Gate And Results
 

@@ -568,16 +568,8 @@ fi
         checked_phase2 = adapter.production_record_phase2(
             runtime, fixture, task, phase2_package, "passed"
         )
-        production_facts = adapter.write_fake_production_commit_facts(
-            replay_root,
-            repo_ref="castbox/guru-trellis",
-            head_branch="eval/current",
-        )
-        adapter.with_path_prefix(
-            production_facts,
-            lambda: adapter.production_commit_for_review(
-                runtime, fixture, task, checked_phase2
-            ),
+        adapter.production_commit_for_review(
+            runtime, fixture, task, checked_phase2
         )
         branch_input = {
             "profile": "branch_review",
@@ -587,15 +579,12 @@ fi
             "branch_review_commit": adapter.run_git(fixture, "rev-parse", "HEAD"),
             "review_intent": "fresh_final_review",
         }
-        branch_owner = adapter.with_path_prefix(
-            production_facts,
-            lambda: adapter.production_record_review(
-                runtime,
-                fixture,
-                task,
-                branch_input,
-                "review-fresh-final-passed",
-            ),
+        branch_owner = adapter.production_record_review(
+            runtime,
+            fixture,
+            task,
+            branch_input,
+            "review-fresh-final-passed",
         )
         branch_input_path = fixture / adapter.OWNER_INPUT
         branch_output, branch_receipt = invoke_wrapper(
@@ -603,7 +592,6 @@ fi
             branch_input_path,
             "--owner-result",
             Path(branch_owner["artifact_path"]),
-            environment={"PATH": f"{production_facts}{os.pathsep}{os.environ.get('PATH', '')}"},
         )
         publication_input, publication_input_path = project(
             "guru-review-branch",
@@ -629,22 +617,20 @@ fi
             "pr_payload"
         ]["body"].replace("#146", "#174")
         runtime.write_json(publication_authoring_path, publication_authoring)
-        publication_owner = adapter.with_path_prefix(
-            production_facts,
-            lambda: runtime.cmd_record_task_publication_review(argparse.Namespace(
+        publication_owner = runtime.cmd_record_task_publication_review(
+            argparse.Namespace(
                 root=str(fixture),
                 task=repo_relative(task),
                 input=repo_relative(publication_authoring_path),
                 branch_review_commit=publication_input["branch_review_commit"],
                 dry_run=False,
-            )),
+            )
         )
         publication_output, publication_receipt = invoke_wrapper(
             "guru-review-task-publication",
             publication_input_path,
             "--owner-result",
             Path(publication_owner["artifact_path"]),
-            environment={"PATH": f"{production_facts}{os.pathsep}{os.environ.get('PATH', '')}"},
         )
         finalizer_input, finalizer_input_path = project(
             "guru-review-task-publication",

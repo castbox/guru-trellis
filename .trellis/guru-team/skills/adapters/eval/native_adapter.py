@@ -15,7 +15,6 @@ import threading
 import time
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
 
 
 ADAPTERS = ("shared", "codex", "claude", "cursor")
@@ -1069,53 +1068,6 @@ def write_fake_merge_gh(
         encoding="utf-8",
     )
     target.chmod(0o755)
-    return binary
-
-
-def write_fake_production_commit_facts(
-    execution_root: Path,
-    *,
-    repo_ref: str = "example/guru-extension",
-    head_branch: str = "eval/current",
-) -> Path:
-    binary = execution_root / "production-owner-bin"
-    binary.mkdir(parents=True, exist_ok=True)
-    branch_rules_endpoint = (
-        f"repos/{repo_ref}/rules/branches/{quote(head_branch, safe='')}"
-    )
-    gh_target = binary / "gh"
-    gh_target.write_text(
-        "#!/usr/bin/env python3\n"
-        "import json,sys\n"
-        "args=sys.argv[1:]\n"
-        "if args==['auth','status']:\n"
-        " raise SystemExit(0)\n"
-        f"if args==['api',{branch_rules_endpoint!r}]:\n"
-        " print(json.dumps([])); raise SystemExit(0)\n"
-        f"expected=['pr','list','--repo',{repo_ref!r},'--head',{head_branch!r},'--state','open','--limit','100','--json','number,isDraft,state,headRefName']\n"
-        "if args==expected:\n"
-        " print(json.dumps([])); raise SystemExit(0)\n"
-        "print('unsupported production fake gh invocation',file=sys.stderr); raise SystemExit(2)\n",
-        encoding="utf-8",
-    )
-    gh_target.chmod(0o755)
-
-    real_git = shutil.which("git")
-    if real_git is None:
-        raise ValueError("git is unavailable for production owner staging")
-    git_target = binary / "git"
-    git_target.write_text(
-        "#!/usr/bin/env python3\n"
-        "import os,sys\n"
-        f"real_git={real_git!r}\n"
-        f"head_branch={head_branch!r}\n"
-        "args=sys.argv[1:]\n"
-        "if args==['ls-remote','--heads','origin',head_branch]:\n"
-        " raise SystemExit(0)\n"
-        "os.execv(real_git,[real_git,*args])\n",
-        encoding="utf-8",
-    )
-    git_target.chmod(0o755)
     return binary
 
 
@@ -2246,8 +2198,6 @@ def production_task_commit_authoring(
     fixture: Path,
     checked: dict[str, Any],
     review_status: str,
-    *,
-    routine_eligible: bool = True,
 ) -> dict[str, Any]:
     coverage_source = (
         "guru-check-task:passed DTO at "
@@ -2280,24 +2230,6 @@ def production_task_commit_authoring(
                 "Every staged path is part of the isolated fixture and the current Phase 2 result."
             ],
         },
-        "routine_auto_commit_eligible": {
-            "eligible": review_status == "passed" and routine_eligible,
-            "reason": (
-                "The dedicated unpublished task branch and exact reviewed scope are current."
-                if review_status == "passed" and routine_eligible
-                else "The supporting fixture commit is executed directly outside the routine auto-commit route."
-                if review_status == "passed"
-                else "The semantic review does not permit routine automatic execution."
-            ),
-            "evidence_refs": (
-                [
-                    *runtime.TASK_COMMIT_ROUTINE_FACT_IDS,
-                    *runtime.TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
-                ]
-                if review_status == "passed" and routine_eligible
-                else ["authority_unchanged"]
-            ),
-        },
     }
 
 
@@ -2324,7 +2256,6 @@ def production_commit_for_review(
                 fixture,
                 checked,
                 "passed",
-                routine_eligible=False,
             ),
         )
         executed = runtime.execute_task_commit_candidate(fixture, candidate, task)
@@ -3715,10 +3646,7 @@ def stage_production_owner_execution(
             public_input_path,
         )
     task, _ = production_task_fixture(runtime, fixture)
-    production_facts = write_fake_production_commit_facts(fixture)
-    production_environment = {
-        "PATH": f"{production_facts}{os.pathsep}{os.environ.get('PATH', '')}",
-    }
+    production_environment: dict[str, str] = {}
     package = fixture / ".trellis/guru-team/skills/packages" / skill_id
     if (
         hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()

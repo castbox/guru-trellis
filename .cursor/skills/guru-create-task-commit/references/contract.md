@@ -18,12 +18,15 @@ Build the next three-digit candidate under the ignored owner-private path
 `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`.
 The candidate is a temporary semantic plan and executor input. It contains
 only task/Git preimage, the complete dirty snapshot, AI path classifications,
-derived exact paths, canonical message, recomputable objective eligibility
-facts, final AI semantic result, and the AI-owned
-`routine_auto_commit_eligible` conclusion. It has no
+derived exact paths, canonical message, and final AI semantic result. It has no
 authorization, cross-Skill digest, freshness journal, or terminal result. It is never a
 task artifact, never enters `path_classifications` or `exact_stage_paths`, and
 is never staged or committed.
+
+Candidate 5.0 supersedes 4.0. An unfinished 4.0 candidate is not converted and
+no removed facts are synthesized. The owner deletes or rejects it and performs
+a complete reprepare from current Phase 2 evidence, live task/HEAD/snapshot,
+scope classifications, and message review.
 
 Classify every dirty path exactly once:
 
@@ -50,17 +53,14 @@ to the PR body.
 
 Before any Git side effect, the AI reviews scope, stage paths, message meaning,
 issue refs, deployment/upgrade/security impact, unrelated preservation and
-evidence freshness. It concludes whether the candidate is routine-auto-commit
-eligible and cites the dedicated worktree/branch, default/protected/shared/
-other-task exclusions, absent remote branch and Open/Draft/Ready PR, current
-Phase 2, exact staging, ordinary-new-commit, fixed scope/authority, and canonical
-message evidence. Scripts cannot infer this semantic pass.
+evidence freshness. Scripts cannot infer this semantic pass. Branch name,
+branch role, protection, sharing, other task ownership, remote branch presence,
+open PR presence, and publication state are not commit eligibility facts and
+must not be queried to grant or deny this action.
 
-The checker recomputes the objective Git/GitHub facts. A checked eligible plan
-proceeds immediately without a routine pause. An ineligible plan fails closed
-or uses the existing semantic revision/choice boundary. When one current,
-unique commit action
-requires user authorization,
+When the current conversation already contains one exact commit request, that
+request is the authority for the matching displayed action. Otherwise, when one
+current, unique commit action requires user authorization,
 display its repo, branch, HEAD, paths and message and prompt `确认继续`. Any clear
 affirmative response authorizes the displayed action in the conversation only;
 the user never repeats its SHA, digest or prescribed sentence. Reconfirm only
@@ -72,7 +72,7 @@ ambiguous.
 
 ## Validation And Execution
 
-`scripts/prepare-task-commit.sh` canonicalizes and validates the candidate
+`scripts/prepare-task-commit.sh` canonicalizes and validates candidate 5.0
 before any required confirmation. `scripts/check-task-commit-plan.sh` repeats
 objective validation immediately before execution. `scripts/create-task-commit.sh` repeats
 that validation, rejects active merge/cherry-pick/revert/rebase/sequencer/`git

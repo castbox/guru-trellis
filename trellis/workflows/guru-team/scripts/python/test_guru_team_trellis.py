@@ -1421,135 +1421,6 @@ class ProductionPublicInvocationTest(unittest.TestCase):
             gtt.production_commit_semantic_exit({"ai_review": {"status": "unknown"}})
 
 
-class TaskCommitBranchProtectionTest(unittest.TestCase):
-    def setUp(self) -> None:
-        self.root = Path("/tmp/task-commit-branch-protection")
-        self.repo = "owner/repo"
-        self.branch = "feat/example-task"
-
-    def test_empty_applicable_rules_excludes_protection_and_encodes_branch(self) -> None:
-        with mock.patch.object(gtt, "gh_json", return_value=[]) as gh_json:
-            self.assertTrue(
-                gtt.task_commit_protected_branch_excluded(
-                    self.root, self.repo, self.branch
-                )
-            )
-
-        gh_json.assert_called_once_with(
-            ["api", "repos/owner/repo/rules/branches/feat%2Fexample-task"],
-            cwd=self.root,
-            repo=self.repo,
-            required_fields=("type",),
-            operation="task_commit_branch_rules_read",
-        )
-
-    def test_applicable_rule_keeps_branch_protected(self) -> None:
-        with mock.patch.object(
-            gtt,
-            "gh_json",
-            return_value=[{"type": "required_status_checks"}],
-        ):
-            self.assertFalse(
-                gtt.task_commit_protected_branch_excluded(
-                    self.root, self.repo, self.branch
-                )
-            )
-
-    def test_incomplete_applicable_rules_fail_closed(self) -> None:
-        for payload in (
-            {"type": "required_status_checks"},
-            [{}],
-            [{"type": ""}],
-            [None],
-        ):
-            with self.subTest(payload=payload), mock.patch.object(
-                gtt, "gh_json", return_value=payload
-            ):
-                with self.assertRaises(gtt.WorkflowError) as raised:
-                    gtt.task_commit_protected_branch_excluded(
-                        self.root, self.repo, self.branch
-                    )
-                self.assertEqual(
-                    raised.exception.payload.get("error_code"),
-                    gtt.GITHUB_ERROR_CODES["response_incomplete"],
-                )
-
-    def test_github_failure_fails_closed(self) -> None:
-        failure = gtt.github_response_incomplete(
-            operation="task_commit_branch_rules_read",
-            repo=self.repo,
-            detail="Response body is empty.",
-        )
-        with mock.patch.object(gtt, "gh_json", side_effect=failure):
-            with self.assertRaises(gtt.WorkflowError) as raised:
-                gtt.task_commit_protected_branch_excluded(
-                    self.root, self.repo, self.branch
-                )
-        self.assertIs(raised.exception, failure)
-
-    def test_objective_facts_do_not_treat_remote_absence_as_unprotected(self) -> None:
-        task = {
-            "branch": self.branch,
-            "base_branch": "main",
-        }
-        task_context = {
-            "branch_name": self.branch,
-            "base_branch": "main",
-            "source_repo": {"repo": self.repo},
-        }
-        worktrees = [{
-            "branch": f"refs/heads/{self.branch}",
-            "worktree": str(self.root),
-        }]
-        with (
-            mock.patch.object(gtt, "current_branch", return_value=self.branch),
-            mock.patch.object(gtt, "base_branch_from_sources", return_value="main"),
-            mock.patch.object(
-                gtt,
-                "load_config",
-                return_value={
-                    "github_repo": self.repo,
-                    "publish": {"remote": "origin"},
-                },
-            ),
-            mock.patch.object(gtt, "validate_github_remote_repository"),
-            mock.patch.object(
-                gtt,
-                "task_commit_protected_branch_excluded",
-                return_value=False,
-            ) as protected_branch_excluded,
-            mock.patch.object(
-                gtt, "task_commit_remote_branch_absent", return_value=True
-            ),
-            mock.patch.object(
-                gtt, "task_commit_open_pull_request_absent", return_value=True
-            ),
-            mock.patch.object(gtt, "worktree_records", return_value=worktrees),
-            mock.patch.object(gtt, "task_commit_is_linked_worktree", return_value=True),
-            mock.patch.object(
-                gtt, "task_commit_other_task_branch_owners", return_value=[]
-            ),
-        ):
-            facts = gtt.task_commit_objective_eligibility_facts(
-                self.root,
-                self.root / ".trellis/tasks/example-task",
-                task,
-                task_context,
-                phase2_current=True,
-                exact_stage_paths=["src/task.txt"],
-                classification_by_path={
-                    "src/task.txt": {"category": "task-reviewed"}
-                },
-                git_operation_state={"active": False},
-            )
-
-        self.assertTrue(facts["remote_branch_absent"])
-        self.assertFalse(facts["protected_branch_excluded"])
-        protected_branch_excluded.assert_called_once_with(
-            self.root, self.repo, self.branch
-        )
-
-
 class TaskCommitCandidateExecutorTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -1624,9 +1495,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             / "trellis/skills/guru-team/packages/guru-create-task-commit/schemas/task-commit-candidate.schema.json"
         )
         self.phase2_commit_anchor_override: str | None = None
-        self.objective_commit_facts = {
-            fact_id: True for fact_id in gtt.TASK_COMMIT_ROUTINE_FACT_IDS
-        }
 
         def current_phase2_result(
             root: Path,
@@ -1653,13 +1521,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                 gtt,
                 "validate_phase2_check",
                 side_effect=current_phase2_result,
-            ),
-            mock.patch.object(
-                gtt,
-                "task_commit_objective_eligibility_facts",
-                side_effect=lambda *args, **kwargs: copy.deepcopy(
-                    self.objective_commit_facts
-                ),
             ),
         ]
         for patcher in self.patches:
@@ -1713,7 +1574,7 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
         )
         plan = {
             "$schema": gtt.TASK_COMMIT_CANDIDATE_SCHEMA_ID,
-            "schema_version": "4.0", "skill_id": gtt.TASK_COMMIT_SKILL_ID,
+            "schema_version": "5.0", "skill_id": gtt.TASK_COMMIT_SKILL_ID,
             "sequence": f"{sequence:03d}",
             "task": {"id": "example-task", "path": self.task_rel, "status": "in_progress", "branch": "feat/example-task"},
             "git": {
@@ -1727,15 +1588,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             "exact_stage_paths": sorted(exact_paths),
             "message": message,
             "ai_review": {"status": "passed", "summary": "Reviewed exact test scope.", "evidence": ["Phase 2 covers each task-reviewed path."]},
-            "routine_auto_commit_facts": copy.deepcopy(self.objective_commit_facts),
-            "routine_auto_commit_eligible": {
-                "eligible": True,
-                "reason": "Dedicated unpublished task branch is current and exact.",
-                "evidence_refs": [
-                    *gtt.TASK_COMMIT_ROUTINE_FACT_IDS,
-                    *gtt.TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
-                ],
-            },
         }
         gtt.write_json(candidate, plan)
         return candidate
@@ -1915,22 +1767,6 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
                 "summary": "AI reviewed the exact commit message and path set.",
                 "evidence": ["Current Phase 2 covers every task-reviewed path."],
             },
-            "routine_auto_commit_eligible": {
-                "eligible": status == "passed",
-                "reason": (
-                    "Dedicated unpublished task branch is current and exact."
-                    if status == "passed"
-                    else "Semantic review blocks routine automatic execution."
-                ),
-                "evidence_refs": (
-                    [
-                        *gtt.TASK_COMMIT_ROUTINE_FACT_IDS,
-                        *gtt.TASK_COMMIT_ROUTINE_SEMANTIC_EVIDENCE_IDS,
-                    ]
-                    if status == "passed"
-                    else ["authority_unchanged"]
-                ),
-            },
         }
 
     def test_public_candidate_builder_materializes_exact_authority_and_preserves_unrelated(self) -> None:
@@ -1962,91 +1798,88 @@ class TaskCommitCandidateExecutorTest(unittest.TestCase):
             [],
         )
 
-    def test_routine_auto_commit_exclusion_matrix_rejects_ai_eligible_conclusion(self) -> None:
-        for fact_id in gtt.TASK_COMMIT_ROUTINE_FACT_IDS:
-            with self.subTest(fact_id=fact_id):
-                (self.root / "src/task.txt").write_text(
-                    f"changed for {fact_id}\n", encoding="utf-8"
-                )
-                self.objective_commit_facts = {
-                    item: item != fact_id
-                    for item in gtt.TASK_COMMIT_ROUTINE_FACT_IDS
-                }
-                with self.assertRaisesRegex(
-                    gtt.WorkflowError,
-                    "AI marked the task commit routine-eligible",
-                ):
-                    gtt.build_task_commit_candidate(
-                        self.root,
-                        self.task_dir,
-                        self.public_commit_input(),
-                        self.task_commit_authoring(["src/task.txt"]),
-                    )
-                self.assertEqual(
-                    list(
-                        (self.root / gtt.TASK_COMMIT_RUNTIME_DIR).glob(
-                            "**/[0-9][0-9][0-9].json"
-                        )
-                    ),
-                    [],
-                )
-        self.objective_commit_facts = {
-            fact_id: True for fact_id in gtt.TASK_COMMIT_ROUTINE_FACT_IDS
-        }
-
-    def test_checker_recomputes_objective_eligibility_facts(self) -> None:
+    def test_candidate_builder_does_not_read_github_or_remote_publication_state(self) -> None:
         (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
-        candidate, _, _ = gtt.build_task_commit_candidate(
+        with (
+            mock.patch.object(
+                gtt, "gh_json", side_effect=AssertionError("GitHub read is forbidden")
+            ),
+            mock.patch.object(gtt, "run", wraps=gtt.run) as run,
+        ):
+            candidate, _, _ = gtt.build_task_commit_candidate(
+                self.root,
+                self.task_dir,
+                self.public_commit_input(),
+                self.task_commit_authoring(["src/task.txt"]),
+            )
+
+        self.assertTrue(candidate.is_file())
+        self.assertFalse(
+            any(
+                call.args and call.args[0][:2] == ["git", "ls-remote"]
+                for call in run.mock_calls
+            )
+        )
+
+    def test_candidate_builder_accepts_arbitrary_current_task_ref(self) -> None:
+        branch = "release/user-selected-target"
+        subprocess.run(["git", "branch", "-m", branch], cwd=self.root, check=True)
+        self.task["branch"] = branch
+        self.context["branch_name"] = branch
+        gtt.write_json(self.task_dir / "task.json", self.task)
+        gtt.write_runtime_mappings(
+            self.root,
+            gtt.load_config(self.root),
+            {
+                "workspace_slug": "example-task",
+                "task_slug": "example-task",
+                "task_dir": self.task_rel,
+                "branch_name": branch,
+            },
+            self.root,
+        )
+        (self.root / "src/task.txt").write_text("arbitrary target\n", encoding="utf-8")
+
+        candidate, plan, _ = gtt.build_task_commit_candidate(
             self.root,
             self.task_dir,
             self.public_commit_input(),
             self.task_commit_authoring(["src/task.txt"]),
         )
-        self.objective_commit_facts["remote_branch_absent"] = False
 
-        _, facts, errors = gtt.validate_task_commit_candidate(
-            self.root, candidate, self.task_dir
+        self.assertEqual(plan["task"]["branch"], branch)
+        self.assertEqual(
+            gtt.validate_task_commit_candidate(self.root, candidate, self.task_dir)[2],
+            [],
         )
 
-        self.assertFalse(facts["routine_auto_commit_eligible"])
-        self.assertIn(
-            "task commit candidate objective eligibility facts are stale.",
-            errors,
+    def test_legacy_candidate_is_fully_reprepared_as_current(self) -> None:
+        candidate, _ = gtt.task_commit_prepare_candidate_path(self.root, self.task_dir)
+        gtt.write_json(
+            candidate,
+            {
+                "$schema": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-4.0.json",
+                "schema_version": "4.0",
+                "skill_id": gtt.TASK_COMMIT_SKILL_ID,
+            },
         )
-        self.assertIn(
-            "eligible task commit conclusion conflicts with current objective facts or semantic result.",
-            errors,
-        )
+        (self.root / "src/task.txt").write_text("reprepared\n", encoding="utf-8")
 
-    def test_production_wrapper_fails_closed_for_checked_ineligible_candidate(self) -> None:
-        (self.root / "src/task.txt").write_text("changed\n", encoding="utf-8")
-        authoring = self.task_commit_authoring(["src/task.txt"])
-        authoring["routine_auto_commit_eligible"] = {
-            "eligible": False,
-            "reason": "A real semantic choice still exists.",
-            "evidence_refs": ["authority_unchanged"],
-        }
-        candidate, _, _ = gtt.build_task_commit_candidate(
+        prepared, plan, _ = gtt.build_task_commit_candidate(
             self.root,
             self.task_dir,
             self.public_commit_input(),
-            authoring,
-        )
-        before = gtt.current_head(self.root)
-
-        owner_result, evidence = gtt.production_commit_result(
-            self.root,
-            argparse.Namespace(owner_result=candidate.relative_to(self.root).as_posix()),
-            self.public_commit_input(),
+            self.task_commit_authoring(["src/task.txt"]),
         )
 
-        self.assertEqual(owner_result, {"typed_exit": "blocked"})
-        self.assertEqual(gtt.current_head(self.root), before)
-        self.assertEqual(
-            evidence["errors"],  # type: ignore[index]
-            ["Task commit candidate is not eligible for routine automatic execution."],
-        )
-        self.assertTrue(candidate.is_file())
+        self.assertEqual(prepared, candidate)
+        self.assertEqual(plan["schema_version"], "5.0")
+        self.assertEqual(plan["$schema"], gtt.TASK_COMMIT_CANDIDATE_SCHEMA_ID)
+        self.assertEqual(set(plan), {
+            "$schema", "schema_version", "skill_id", "sequence", "task", "git",
+            "dirty_snapshot", "path_classifications", "exact_stage_paths", "message",
+            "ai_review",
+        })
 
     def test_metadata_only_descendant_uses_live_head_as_commit_parent(self) -> None:
         phase2_commit_anchor = gtt.current_head(self.root)

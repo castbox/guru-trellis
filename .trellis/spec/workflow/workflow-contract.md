@@ -260,8 +260,11 @@ For an existing Open Issue, the happy-path budget is exactly three
 `确认继续` boundaries: workspace/task creation, the complete Finalizer side-effect
 set, and expected-head merge. Creating a new Issue adds one independent Issue
 creation confirmation for a total of four. Planning, task activation,
-implementation, Phase 2 check, Branch Review, an eligible unpublished task
-commit, mapped exits and read-only recovery add no routine confirmation.
+implementation, Phase 2 check, Branch Review, an exactly requested task commit,
+mapped exits and read-only recovery add no routine confirmation. Branch
+classification, protection, sharing, ownership and publication state are not
+operation authority; without a current exact commit request, Task Commit asks
+once for the fully displayed action.
 Finalizer and merge confirmation remain separate because merge readiness exists
 only after Finalizer reaches `ready_for_merge`.
 

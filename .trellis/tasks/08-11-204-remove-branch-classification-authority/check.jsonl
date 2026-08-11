@@ -1,0 +1,7 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 semantic check, full rerun, distribution, and current-HEAD evidence requirements."}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Verify candidate 5.0 migration and no silent public API break."}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"Verify removed eligibility state is not reintroduced under another name."}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Verify scripts retain only deterministic identity and exact execution checks."}
+{"file":".trellis/spec/preset/installer.md","reason":"Verify dogfood, clean install, and upgrade/update coverage."}
+{"file":".trellis/tasks/08-11-204-remove-branch-classification-authority/prd.md","reason":"Bind the check to Issue #204 requirements and acceptance criteria."}
+{"file":".trellis/tasks/08-11-204-remove-branch-classification-authority/design.md","reason":"Bind the check to candidate 5.0 architecture and migration design."}
