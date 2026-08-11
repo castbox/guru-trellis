@@ -497,8 +497,6 @@ def run_closeout(
     dry_payload = json.loads(run(preview_command, root, env=env).stdout)
     if dry_payload.get("side_effects") is not False:
         raise RuntimeError("installed Finalizer preview reported side effects")
-    if dry_payload.get("verification_required") is not False:
-        raise RuntimeError("installed non-extension closeout unexpectedly requires verification")
     digest = dry_payload["closeout_plan_digest"]
     recorded_payload = json.loads(run(record_command, root, env=env).stdout)
     if (

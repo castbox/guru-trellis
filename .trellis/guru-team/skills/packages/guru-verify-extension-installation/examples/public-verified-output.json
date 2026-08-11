@@ -1,9 +1,6 @@
 {
   "exit_id": "verified",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
-  "plan_ref": "closeout-plan:0123456789abcdef",
-  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "publication_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  "verification_ref": "extension-verification:0123456789abcdef"
+  "repo_ref": "castbox/guru-trellis",
+  "resolved_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "session_ref": "extension-verification:0123456789abcdef01234567"
 }

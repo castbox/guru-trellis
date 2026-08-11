@@ -43,7 +43,6 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
     testcase.assertIn("`.trellis/workflow.md`", text, path)
     for skill_id in (
         "guru-review-task-publication",
-        "guru-verify-extension-installation",
         "guru-finalize-task",
         "guru-merge-task-pr",
     ):
@@ -51,12 +50,9 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
     for exit_id in (
         "ready",
         "return_to_task_work",
-        "verification_required",
         "publication_review_stale",
         "resume_finalization",
         "reprepare_required",
-        "verified",
-        "not_required",
         "ready_for_merge",
         "merged",
         "merge_blocked",
@@ -66,9 +62,10 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
         testcase.assertIn(exit_id, text, path)
     testcase.assertIn("not user choices", text, path)
     testcase.assertIn("Do not add a routine confirmation", text, path)
-    testcase.assertIn("Workflow verification accepts only `verified`", text, path)
-    testcase.assertIn("Standalone `not_required`", text, path)
     for forbidden in (
+        "guru-verify-extension-installation",
+        "verification_required",
+        "not_required",
         "finish-work.sh",
         "--expected-plan-digest",
         "closeout_plan_digest",
@@ -1019,6 +1016,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
         ).read_text(encoding="utf-8")
 
+        current_private_schema = (
+            'assert "guru-extension-installation-verification-result-5.0" '
+            'in api["skill_contracts"]["private_artifact_schema_ids"]'
+        )
+        retired_private_schema = current_private_schema.replace("5.0", "4.0")
+        self.assertIn(current_private_schema, verifier)
+        self.assertNotIn(retired_private_schema, verifier)
+
         preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
         preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)
         initial_switch = verifier.index(
@@ -1145,6 +1150,16 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn(
             'verify_finish_family_integration "after-update-reapply"', verifier
         )
+        self.assertIn(
+            '"$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh"',
+            verifier,
+        )
+        self.assertIn(
+            '--root "$REPO_ROOT" \\\n'
+            '    --mode source \\\n'
+            '    --skill guru-verify-extension-installation',
+            verifier,
+        )
         self.assertNotIn("record_throwaway_completed_agent", verifier)
         self.assertIn('! grep -q "record-subagent-liveness-event.sh"', verifier)
         self.assertIn("record-agent-recovery.sh", verifier)
@@ -1232,6 +1247,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('hook_executed', installed_closeout)
         self.assertIn('installed-after-archive-hook-', installed_closeout)
         self.assertIn('"schema_version": "2.0"', installed_closeout)
+        self.assertNotIn("verification_required", installed_closeout)
         self.assertNotIn("copytree", installed_closeout)
         self.assertIn(
             '"branch_review_commit": branch_check["review_commit"]',
@@ -1393,6 +1409,12 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertEqual(completed["skill_packages"]["sidecars"], [])
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
         self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
+        self.assertTrue(
+            (self.install_dst / "skills/schemas/skill-interface-1.5.schema.json").is_file()
+        )
+        self.assertTrue(
+            (self.install_dst / "skills/schemas/skill-registry-1.4.schema.json").is_file()
+        )
         self.assertTrue((self.install_dst / "skills/contracts/production-current.json").is_file())
         self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest.schema.json").is_file())
         self.assertEqual(
@@ -1526,7 +1548,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-phase2-check-4.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
-        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.3")
+        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.4")
         self.assertEqual(
             set(public_api["skill_contracts"]),
             {
@@ -1534,6 +1556,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "installed_root",
                 "registry_schema_id",
                 "interface_schema_id",
+                "interface_schema_ids",
                 "public_input_schema_ids",
                 "typed_output_schema_ids",
                 "legacy_typed_output_schema_ids",
@@ -1547,8 +1570,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 35),
-            ("typed_output_schema_ids", 57),
+            ("public_input_schema_ids", 32),
+            ("typed_output_schema_ids", 54),
             ("private_artifact_schema_ids", 17),
         ):
             self.assertEqual(

@@ -375,33 +375,13 @@ The installed manifest is one closed current contract:
 - `selected_platforms` records installer input and should not be inferred from
   directory presence alone.
 
-Extension installation verification treats this manifest as source provenance,
-not target identity. Workflow and task-bearing standalone calls read it from
-the verified target checkout and require closed `source.repo/ref/commit/`
-`tree_state/is_mutable_ref` facts. The source repo is canonicalized to
-credential-free GitHub HTTPS; annotated tags bind both direct object and peeled
-commit, while branches/lightweight tags use the direct commit. The selected
-commit must equal `source.commit` before source checkout. A full 40-hex source
-ref configures the canonical locator as the isolated checkout's `origin`, is
-fetched directly through that remote, and
-`FETCH_HEAD^{commit}` must match both the requested OID and `source.commit`.
-Task-bearing source
-provenance must have `tree_state=clean`; dirty provenance stops before source
-ref resolution, clone, or verification and cannot produce `verified`. Only taskless standalone
-with explicit source-repository intent may use `manifest_provenance=not_available`
-when the manifest is absent; malformed content never falls back.
-
-Private extension verification schema 3.0 contains separate
-`target_repository` and `extension_source` objects in execution facts and
-`marketplace-verification.json`. Target reviewed-content identity never comes
-from the source checkout, and installer/canonical assets/ownership/source
-sidecars never come from the target checkout. The four public exits and their
-minimal consumer DTOs are unchanged.
-Command evidence uses only `target_checkout` or
-`extension_source_checkout` as its closed owner label. Every asset expectation,
-installed digest, ownership fact, and sidecar fact carries the exact
-`extension_source_checkout` owner; an empty sidecar path set still retains that
-owner binding.
+The installed manifest is installer and ownership provenance only. Its presence,
+content, drift, or changed path never makes extension verification applicable to
+a business task, Publication, Finalizer, finish-work, re-entry, or recovery.
+`guru-verify-extension-installation` instead validates the live clean canonical
+source checkout and its `origin`/requested-ref/HEAD identity before any clone,
+tempdir, installer, artifact write, or mutation. Its private result belongs only
+to ignored source-session runtime and has no target-task identity.
 
 The installed manifest also has an independent closed `overlays` provenance
 domain with exactly `schema_version`, `status`, `selected_platforms`, `files`,
@@ -423,8 +403,9 @@ team extension version. The canonical source is `trellis/guru-team-extension.jso
 The canonical and installed extension manifests publish one closed current
 contract under `public_api.skill_contracts`:
 
-- `interface_schema_id` is `guru-team-skill-interface-1.4`;
-- `registry_schema_id` is `guru-team-skill-registry-1.3`;
+- `interface_schema_id` is `guru-team-skill-interface-1.4`, with
+  `interface_schema_ids` publishing current 1.4 and 1.5 selectors;
+- `registry_schema_id` is `guru-team-skill-registry-1.4`;
 - `public_input_schema_ids`, `typed_output_schema_ids`, and
   `private_artifact_schema_ids` are exact inventories from all active
   production packages.
@@ -449,11 +430,12 @@ projection, or manifest participates in current invocation.
 
 The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
-contracts, and package-local corpora. It requires every active row to select
-Interface 1.4 and requires exact profile, exit, consumer, projection,
-current-case, and authoring-edge equality. Fifteen Skills
-and 57 exits are the current cardinality regression, not a hard-coded future
-registry allowlist.
+contracts, and package-local corpora. Fourteen integrated rows select Interface
+1.4; the standalone verifier selects Interface 1.5. Exact profile, exit,
+consumer, projection, current-case, and authoring-edge equality is required.
+Fifteen Skills and 54 exits are the current package cardinality regression, not
+a hard-coded future registry allowlist; the business workflow independently
+asserts 14 invokes, 52 exits, and 31 targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -470,8 +452,9 @@ The immutable `production-current.json` v1 asset remains legacy-only and is not
 selected by current registry, extension, installation, or invocation. Test
 fixture schema ids belong only to the fixture extension manifest and must
 not appear in production extension, installed production inventory, platform
-copies, or workflow mandatory routes. Registry schema 1.3 requires every
-active row to select Interface 1.4; planned rows remain lifecycle-only.
+copies, or workflow mandatory routes. Registry schema 1.3 remains legacy-only;
+current registry 1.4 selects Interface 1.4 for integrated rows and Interface
+1.5 for the standalone verifier. Planned rows remain lifecycle-only.
 
 `public_api.companion_scripts` includes stable id
 `discover-skill-contract`. Its success DTO exposes the current package-relative
@@ -1160,7 +1143,7 @@ children remain valid historical references.
 
 ## Current Finalizer Transaction
 
-Current Finalizer transaction schema `guru-finalization-transaction-1.0` is an
+Current Finalizer transaction schema `guru-finalization-transaction-2.0` is an
 owner-private, task-scoped ignored-runtime contract named
 `finalization-transaction.json`. It is persisted before the first remote
 mutation so the same owner can distinguish its own pushed state from an
@@ -1173,9 +1156,7 @@ The closed transaction contains only:
   deterministic transition;
 - exact `pre_push_remote_head` while `next_transition=push_content`, using an
   empty string for an absent ref and a full commit OID for a historical baseline;
-- optional canonical PR number/URL after Draft creation; and
-- the immutable verification tuple/ref only while that same-owner transition
-  still consumes it.
+- optional canonical PR number/URL after Draft creation.
 
 It never stores live Git/GitHub/Trellis snapshots, reviewed path inventories,
 archive projections, finish-summary templates, semantic review history,
@@ -1183,30 +1164,28 @@ authorization, command argv/output, retry history, timestamps, or digest
 bundles. Preview and executor reread live authority and compare it with these
 minimal immutable inputs immediately before mutation.
 
-`ready_for_merge` deletes the transaction, Finalizer gate/request, Verifier
-execution checkpoint/result and every superseded Finalizer-owned file. A
+`ready_for_merge` deletes the transaction, Finalizer gate/request and every
+superseded Finalizer-owned file. A
 `blocked` route retains a transaction only when the declared same-owner recovery
 input schema requires it; otherwise it deletes owner state. The official archive
 never moves or retains a transaction. Durable `finish-summary.json` remains only
 the minimal archived change-context index/summary and PR identity.
 
-## Current Marketplace Verification Result
+## Current Source Verification Result
 
-The exactly-once identity is the closed tuple of target repository, immutable
-remote/ref, `branch_review_commit`, `publication_head`, extension source commit,
-and capability profile. The owner-private execution checkpoint records each
-completed capability and sanitized stable result reference incrementally.
-After command success but wrapper/stdout capture failure, re-entry first proves
-the tuple from command exit, remote/ref, isolated checkout and owner state, then
-reconstructs the missing result. It reruns only capabilities whose completion
-cannot be proved; identity drift creates a new execution.
+The verifier current input profile is only `source_repository_verification` in
+standalone mode. Its immutable identity binds `castbox/guru-trellis`, remote,
+requested ref, resolved current HEAD and selected capability profile. Current
+public exits are only `verified|blocked`; neither projects to Finalizer.
 
-The durable result schema `guru-extension-installation-verification-result-4.0`
-contains only schema/skill identity, stable `verification_ref`, the exact tuple,
-semantic result, explicit unverified boundaries, and the minimal stable result
-identity used by Finalizer/archive history. Command transcripts, argv, asset
-catalogs, ownership scans, complete findings and retry metadata remain private
-and are deleted after the checked Finalizer consumer completes.
+The private result schema `guru-extension-installation-verification-result-5.0`
+contains source identity, semantic result, explicit unverified boundaries and a
+session reference. It is ignored source-session runtime, deleted after direct
+standalone consumption, and never written below `.trellis/tasks/**`. Legacy
+task-bearing verification schemas, including the immutable result 4.0 bytes,
+remain compatibility assets only and are absent from current inventories. The
+current semantic input requires `applicability.status=required`; explicit source
+intent cannot route through `not_required`.
 
 ## Current Task Commit Authority
 
@@ -1680,7 +1659,7 @@ histories, and derived bindings stay owner-private or transient.
 The ready output schema is
 `guru-production-review-task-publication-output-ready-4.0`. Its sole active
 consumer is `guru-finalize-task-input-publication-ready-4.0` within aggregate
-input schema `guru-finalize-task-input-aggregate-5.0`; the `select` projection
+input schema `guru-finalize-task-input-aggregate-6.0`; the `select` projection
 carries `task_ref/branch_review_commit/pr_title/pr_body`, and target-owned
 authoring adds `profile/mode`. Legacy 3.0 shapes fail closed and require a fresh
 Publication run; no compatibility reader or task-local fallback exists.

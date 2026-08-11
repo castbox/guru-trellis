@@ -8,7 +8,7 @@
     "applicability": {"$ref": "marketplace-verification.schema.json#/properties/applicability"},
     "verification_profile": {"$ref": "marketplace-verification.schema.json#/properties/verification_profile"},
     "semantic_review": {"$ref": "marketplace-verification.schema.json#/properties/semantic_review"},
-    "typed_exit": {"enum": ["verified", "not_required", "return_to_task_work", "blocked"]},
+    "typed_exit": {"enum": ["verified", "blocked"]},
     "redaction": {"$ref": "marketplace-verification.schema.json#/properties/redaction"},
     "reason_code": {"type": "string", "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"},
     "remediation": {"type": "string", "minLength": 1},

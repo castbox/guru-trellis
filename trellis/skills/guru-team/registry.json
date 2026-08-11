@@ -1,6 +1,6 @@
 {
-  "$schema": "schemas/skill-registry-1.3.schema.json",
-  "schema_version": "1.3",
+  "$schema": "schemas/skill-registry-1.4.schema.json",
+  "schema_version": "1.4",
   "skills": [
     {
       "id": "guru-approve-task-plan",
@@ -163,7 +163,8 @@
       "name": "guru-verify-extension-installation",
       "package": "packages/guru-verify-extension-installation",
       "interface": "packages/guru-verify-extension-installation/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.5",
+      "workflow_integration_state": "standalone_only",
       "supported_platforms": [
         "shared",
         "codex",

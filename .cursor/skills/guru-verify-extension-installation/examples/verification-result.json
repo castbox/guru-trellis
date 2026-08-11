@@ -1,13 +1,13 @@
 {
-  "schema_version": "4.0",
+  "schema_version": "5.0",
   "skill_id": "guru-verify-extension-installation",
-  "mode": "workflow",
-  "profile": "verification_required",
+  "mode": "standalone",
+  "profile": "source_repository_verification",
   "immutable_identity": {
     "repo_ref": "castbox/guru-trellis",
     "remote": "origin",
-    "ref": "refs/heads/codex/180-minimal-finalizer-replay-174",
-    "branch_review_commit": "1111111111111111111111111111111111111111",
+    "ref": "refs/heads/main",
+    "branch_review_commit": null,
     "publication_head": "2222222222222222222222222222222222222222",
     "extension_source_commit": "3333333333333333333333333333333333333333",
     "capability_profile": ["marketplace_index", "redaction"]

@@ -407,8 +407,8 @@ approval/check/commit/review artifact bodies or present eval `expected_exit` as
 a production input.
 
 The docs also name target-owned `skill_input_authoring_seed` for the complete
-set of twelve semantic handoffs: the five production/review/publication edges
-and the seven finalization-family edges. They
+set of nine semantic handoffs: the five production/review/publication edges
+and the four finalization-family edges. They
 explain that producer projection supplies only minimal seed fields, the caller
 AI authors every remaining required semantic field, validation proves a
 disjoint exact required-field partition and a no-overwrite full-schema merge,
@@ -424,7 +424,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe fifteen active Skills and 57 external exits, identify
+Public READMEs describe fifteen active Skills and 54 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -437,8 +437,8 @@ Publication AI directly authors and reviews the exact Chinese PR title/body;
 its ready 4.0 output projects that payload to active `guru-finalize-task`
 through the integrated global invocation without a task-local body or summary
 index handoff. `production-current-v2` binds the current
-three-Skill/11-exit membership, and the current package graph contains twelve
-target-owned authoring handoffs.
+three-Skill/11-exit membership, and the current package graph contains nine
+target-owned `skill_input_authoring_seed` handoffs.
 
 ## Task Publication Review Documentation
 
@@ -467,113 +467,63 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are fifteen active Skills and 57 external exits;
-global workflow markers remain 15 invokes, 57 exits, and 33 targets.
+README package closure numbers are fifteen active Skills and 54 external exits;
+business workflow markers remain 14 invokes, 52 exits, and 31 targets.
 `production-current-v2` owns the current planning/check/commit contract; the
 live Intake contract remains six Skills/23 exits.
 
 ## Extension Installation Verification Documentation
 
-All three public README files name active Interface 1.4 semantic
-`guru-verify-extension-installation`, its `verification_required` and
-`standalone_verification` inputs, runtime commands
-`execute-extension-verification`, `record-extension-verification`,
-`check-extension-verification`, and `invoke-extension-verification`, and four
-minimal exits. They state that workflow `verified` and reachable task-bearing
-standalone `not_required` target active `guru-finalize-task`.
-`return_to_task_work` repeats Phase 2 and downstream review, and `blocked`
-stops. A workflow applicability conflict has no `not_required` output branch.
+All three public README files describe active Interface 1.5 semantic
+`guru-verify-extension-installation` as a standalone-only source-repository
+package. They name its single `source_repository_verification` input, stable
+execute/record/check/invoke commands, and `verified|blocked` exits. They state
+that it has no workflow marker, task-bearing profile, `not_required` round,
+`return_to_task_work`, Finalizer projection, or task-local artifact.
 
-Docs explain that the package owns applicability, capability profile, adequacy,
-findings, and route. Changed paths, successful commands, checker pass, and
-production eval are facts only. A workflow-required target cannot silently
-return `not_required`; an applicability conflict blocks. #117 owns the target
-input contract. The #119 combined route continues to carry checker-passed owner
-evidence only in the private in-memory finalizer projection through retry,
-final projection, normal archive, and active-completed recovery. Issue #191 adds
-the minimal `publication_head` field to the workflow verification input and
-`verified` output: target checkout/ref/PR identity binds that publication
-commit, while `branch_review_commit` continues to bind reviewed source content.
+Docs explain that explicit verification begins from a clean
+`castbox/guru-trellis` source checkout. Canonical assets, origin, repo/ref,
+resolved commit, HEAD, and clean state are checked before clone, tempdir,
+installer, artifact write, or mutation. Non-source and task-bearing calls fail
+closed with zero external actions. Successful execution uses a clean throwaway
+target and covers marketplace, preset, workflow, platform equality, ownership,
+update/reapply, sidecars, README commands, and redaction. Source-session owner
+state is ignored runtime and is deleted after direct consumption.
 
-The READMEs distinguish task-bearing
-`marketplace-verification.json` from taskless session-only owner state, name the
-one-artifact/no-cache boundary, and keep private profile/reason/commands/digests/
-assets/ownership/findings out of public DTOs. They document full-preset runtime
-requirements, source/installed discovery, canonical/installed/shared/Codex/
-Cursor/Claude byte identity, update/reapply, current ownership, sidecar cleanup,
-and redaction.
-
-They also distinguish the business target from the Guru Team extension source.
-The target public repo/ref/HEAD and reviewed content stay target-owned;
-task-bearing source repo/ref/commit comes from the target's installed manifest.
-Task-bearing source provenance must be clean before any source ref resolution or
-checkout; dirty provenance blocks verification.
-Annotated source tags select the peeled commit and compare it to manifest
-`source.commit`; branch/lightweight tags select the direct commit. Preset apply
-from a Git worktree records the full apply-time commit as immutable
-`source.ref` and `source.commit`; verification preserves the canonical source
-repository as the isolated checkout's `origin`, fetches that OID through it, and
-requires the fetched commit and checkout HEAD to match even after the target
-branch advances.
-Taskless
-standalone fallback is explicit-source and absent-manifest only. Installer,
-canonical assets, ownership, and source sidecars are source-checkout-owned, and
-unsafe credential-bearing source locators stop before clone or retained output.
-Public exit DTOs intentionally do not expose source inventory or machine paths.
-
-Public validation text treats package-local real-wrapper production eval and
-real pushed-remote clean installation as independent acceptance surfaces. It
-must not claim the remote-ref gate passed when only local or public stable
-marketplace sampling ran. It identifies local/install combined acceptance
-separately from the pushed-remote gate and states that installation is complete
-only when ownership schema 3.0, the 11-rule/nine-claim/three-overlay inventory,
-the current installed manifest, update/reapply, and zero-sidecar checks all pass.
-
-Install/update text requires canonical/installed/shared/Codex/Cursor/Claude
-byte identity, source and installed validation, real-wrapper eval, workflow
-consumer uniqueness, preset reapply after `trellis update`, dogfood drift, and
-zero unresolved `.new`/`.bak`. It names the three canonical
-`guru-finish-work` platform entries, executes the installed combined integration
-suite before and after update/reapply, explicitly leaves pushed-remote branch
-verification to the finalization gate, and states that upstream
-`trellis-finish-work` files are official Trellis assets outside Guru managed
-ownership.
+Install/update text requires canonical/installed/shared/Codex/Cursor/Claude byte
+identity, source and installed validation, real-wrapper eval, preset reapply
+after `trellis update`, dogfood drift, and zero unresolved `.new`/`.bak`. It
+distinguishes standalone source verification from business closeout and never
+claims that an installed target manifest transfers source verification
+responsibility to a business repository.
 
 ## Task Finalization Documentation
 
 All three public README files name active Interface 1.4 semantic
-`guru-finalize-task`, its six distinct public input profiles, six `exit_id`
-outputs, owner-private transaction/gate/recovery facts, current-dialogue
-side-effect confirmation without digest recital, and the current transaction
-executor. They state that scripts execute, validate, and record only after AI
-review and any required human confirmation; scripts do not choose plan, scope,
+`guru-finalize-task`, its four current public input profiles, five outputs,
+current gate 4.0, transaction 2.0, owner-private recovery, dialogue-local
+side-effect confirmation, and deterministic executor. Scripts execute, validate,
+and record facts after semantic review; they do not choose plan, scope,
 readiness, recovery route, or semantic pass.
-They document the task-bearing standalone #117 not-required edge. That edge publishes only
-`repo_ref/resolved_head/verification_ref`; the finalizer target authors
-`profile/mode/task_ref`, binds current task-local evidence to the private
-transaction, and does not expose transaction identity in the producer handoff.
 
-The READMEs describe the current package graph as fifteen active Skills and 57
-external exits with twelve target-owned `skill_input_authoring_seed` handoffs.
-They identify the integrated global workflow projection as 15 invokes, 57 exits,
-and 33 targets. They name `guru-finish-work` as the canonical Codex, Claude, and
-Cursor finish entry; document terminal `ready_for_merge` and Merge evals plus
-the private checked-verification projection; and explain that executor-owned reprepare
-projects task/reason plus `branch_review_commit/publication_head` only after the
-tail and private-state retirement complete. Official
-`trellis-finish-work` payloads remain upstream-owned and are not installed or
-managed by the Guru preset.
+The READMEs describe the current package graph as fifteen active Skills and 54
+external exits with nine target-owned authoring handoffs. The integrated business
+workflow is 14 invokes, 52 exits, and 31 targets. The three `guru-finish-work`
+entries route Publication -> Finalizer -> Merge only. Publication
+`return_to_task_work` remains available for real content drift.
 
-The READMEs state that current Finalizer preparation and archive paths never
-select, create, read, move, or retain `closeout-plan.json`; that file's schema
-and examples are explicit immutable legacy compatibility assets only. Current
-Finalizer persists `finalization-transaction.json` only for same-owner re-entry,
-deletes it on `ready_for_merge`, and archives six core files with the minimal
-verification result as the only optional seventh file.
+Current Finalizer content push proceeds directly to Draft PR, archive, Ready,
+and Merge. It never invokes verifier, emits `verification_required`, accepts a
+verification re-entry profile, reads verifier state/ref, or moves a verifier
+artifact. Current archive contains exactly six durable core files. Legacy
+closeout-plan, task-bearing verifier, and verification re-entry schemas remain
+immutable compatibility assets but are absent from current Interface, manifest,
+eval, runtime, and documentation inventories.
 
-They also name active semantic `guru-merge-task-pr`, its workflow and standalone
-inputs, three exits, repo-bound `gh` fact/merge operations, expected-head
-precondition, separate merge confirmation, and post-merge close-keyword
-verification. `merged` alone reaches the finish response; `merge_blocked` and
-`closure_mismatch` stop distinctly. No Finalizer or Merge path calls Issue-close
-APIs, updates the PR branch, synchronizes local `main`, or cleans resources.
+The READMEs also name active semantic `guru-merge-task-pr`, its workflow and
+standalone inputs, three exits, repo-bound `gh` fact/merge operations,
+expected-head precondition, separate merge confirmation, and post-merge
+close-keyword verification. `merged` alone reaches the finish response;
+`merge_blocked` and `closure_mismatch` stop distinctly. No Finalizer or Merge
+path calls Issue-close APIs, updates the PR branch, synchronizes local `main`, or
+cleans resources.

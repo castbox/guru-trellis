@@ -5,25 +5,6 @@
   "skill_name": "guru-finalize-task",
   "evals": [
     {
-      "id": "publication-verification-required",
-      "prompt": "Invoke the finalizer from current publication evidence and return the checker-derived verification boundary.",
-      "expected_exit": "verification_required",
-      "expected_output": "The minimal DTO identifies the same plan, repository, branch_review_commit and verification target.",
-      "input_profile_id": "publication_ready",
-      "assertions": {
-        "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "verification_required"},
-          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
-          {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
-          {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
-        ]
-      },
-      "files": [
-        "evals/files/publication-ready-input.json",
-        "evals/files/publication-verification-required-facts.json"
-      ]
-    },
-    {
       "id": "publication-review-stale",
       "prompt": "Invoke the finalizer from stale publication evidence and return the checked publication-review re-entry.",
       "expected_exit": "publication_review_stale",
@@ -101,6 +82,21 @@
             "pointer": "/exit_id",
             "operation": "equals",
             "expected": "ready_for_merge"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
           }
         ]
       },
@@ -145,38 +141,6 @@
       "files": [
         "evals/files/standalone-finalization-input.json",
         "evals/files/blocked-private-state-facts.json"
-      ]
-    },
-    {
-      "id": "verified-reentry-ready-for-merge",
-      "prompt": "Invoke the finalizer from current verified installation evidence for the same plan and branch_review_commit.",
-      "expected_exit": "ready_for_merge",
-      "expected_output": "The checked terminal DTO contains the exact ready_for_merge pull request identity.",
-      "input_profile_id": "verification_verified",
-      "assertions": {
-        "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"}
-        ]
-      },
-      "files": [
-        "evals/files/verification-verified-input.json",
-        "evals/files/verified-reentry-ready-for-merge-facts.json"
-      ]
-    },
-    {
-      "id": "not-required-reentry-ready-for-merge",
-      "prompt": "Invoke the standalone verifier, apply its declared not-required projection without overwrite, and invoke the finalizer for the same private plan and resolved HEAD.",
-      "expected_exit": "ready_for_merge",
-      "expected_output": "The checked terminal DTO contains the exact ready_for_merge pull request identity.",
-      "input_profile_id": "standalone_verification_not_required",
-      "assertions": {
-        "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "ready_for_merge"}
-        ]
-      },
-      "files": [
-        "evals/files/verification-not-required-input.json",
-        "evals/files/not-required-reentry-ready-for-merge-facts.json"
       ]
     }
   ]

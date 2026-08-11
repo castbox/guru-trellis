@@ -46,7 +46,7 @@ unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
 invalid interface projections stop fail closed.
 
 ## Integrated Public Graph
-The active graph is exactly 15 mandatory Skills and 57 external exits.
+The business-task graph is exactly 14 mandatory Skills and 52 external exits.
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
@@ -107,13 +107,7 @@ The active graph is exactly 15 mandatory Skills and 57 external exits.
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"ready","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-task-publication-work-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"blocked","consumer":{"kind":"stop","id":"task-publication-review-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-verify-extension-installation","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"verified","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"not_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-extension-verification-work-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-verify-extension-installation","exit":"blocked","consumer":{"kind":"stop","id":"extension-installation-verification-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-finalize-task","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"verification_required","consumer":{"kind":"skill","id":"guru-verify-extension-installation"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"publication_review_stale","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"resume_finalization","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"reprepare_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
@@ -124,7 +118,7 @@ The active graph is exactly 15 mandatory Skills and 57 external exits.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
 ## Workflow And Stop Targets
-The graph contains exactly 17 workflow targets and 16 stop targets.
+The graph contains exactly 16 workflow targets and 15 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-current-checkout"} -->
@@ -140,7 +134,6 @@ The graph contains exactly 17 workflow targets and 16 stop targets.
 <!-- guru-workflow-target: {"id":"guru-branch-review-implementation-router"} -->
 <!-- guru-workflow-target: {"id":"guru-branch-review-scope-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
-<!-- guru-workflow-target: {"id":"guru-extension-verification-work-router"} -->
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
@@ -154,7 +147,6 @@ The graph contains exactly 17 workflow targets and 16 stop targets.
 <!-- guru-stop-target: {"id":"task-commit-blocked"} -->
 <!-- guru-stop-target: {"id":"branch-review-blocked"} -->
 <!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
-<!-- guru-stop-target: {"id":"extension-installation-verification-blocked"} -->
 <!-- guru-stop-target: {"id":"task-finalization-blocked"} -->
 <!-- guru-stop-target: {"id":"task-pr-merge-blocked"} -->
 <!-- guru-stop-target: {"id":"task-pr-closure-mismatch"} -->
@@ -174,7 +166,6 @@ The graph contains exactly 17 workflow targets and 16 stop targets.
 | guru-branch-review-implementation-router | Resume Phase 2, then repeat the downstream graph. |
 | guru-branch-review-scope-router | Enter the Scope Change Gate, then repeat affected phases. |
 | guru-task-publication-work-router | Resume Phase 2 for task-content findings. |
-| guru-extension-verification-work-router | Resume Phase 2 for installation findings. |
 | guru-finalization-finish-response | Return the canonical merged PR URL and merge commit identity. |
 | task-pr-merge-blocked | Stop before merge and report the exact live readiness remediation. |
 | task-pr-closure-mismatch | Stop after merge and report the exact GitHub Issue closure mismatch without hand-closing it. |

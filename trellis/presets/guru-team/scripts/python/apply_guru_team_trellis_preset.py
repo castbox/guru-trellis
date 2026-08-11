@@ -70,7 +70,9 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-evals.schema.json",
     "skill-interface-1.3.schema.json",
     "skill-interface-1.4.schema.json",
+    "skill-interface-1.5.schema.json",
     "skill-registry-1.3.schema.json",
+    "skill-registry-1.4.schema.json",
     "skill-registry.schema.json",
 })
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))

@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 205,
+    "url": "https://github.com/castbox/guru-trellis/issues/205",
+    "title": "禁止业务仓库触发 guru-verify-extension-installation",
+    "reason": "当前任务完整覆盖 Issue #205 的 ownership、routing、migration 与验收范围。"
+  },
+  "close_issues": [
+    {
+      "number": 205,
+      "url": "https://github.com/castbox/guru-trellis/issues/205",
+      "title": "禁止业务仓库触发 guru-verify-extension-installation",
+      "reason": "当前任务完整覆盖 Issue #205 的 ownership、routing、migration 与验收范围。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 195,
+      "url": "https://github.com/castbox/guru-trellis/issues/195",
+      "title": "迁移全部 Guru Team Skills 到 package-local runtime 并删除单体实现",
+      "reason": "Dependent follow-on migration must adopt the #205 boundary."
+    },
+    {
+      "number": 184,
+      "url": "https://github.com/castbox/guru-trellis/issues/184",
+      "title": "修复 guru-verify-extension-installation 的目标仓库与扩展源身份混淆",
+      "reason": "Prior target-business-repository assumption is superseded by #205."
+    },
+    {
+      "number": 198,
+      "url": "https://github.com/castbox/guru-trellis/issues/198",
+      "title": "[Skill Runtime 4/6] 迁移 Publication 与 Extension Verification Skills",
+      "reason": "Prior migration compatibility assumption is superseded by #205."
+    }
+  ],
+  "followup_issues": []
+}

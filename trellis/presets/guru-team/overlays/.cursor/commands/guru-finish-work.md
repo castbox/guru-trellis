@@ -10,7 +10,6 @@ All GitHub platform operations use authenticated, explicitly repo-bound
 UI; keep Git transport on `git`.
 
 - `guru-review-task-publication`
-- `guru-verify-extension-installation`
 - `guru-finalize-task`
 - `guru-merge-task-pr`
 
@@ -18,20 +17,15 @@ Consume only their current public typed exits and mapped workflow consumers:
 
 - Publication `ready` enters finalization; `return_to_task_work` resumes the
   complete Phase 2 route; `blocked` stops with its concrete reason.
-- Finalization `verification_required` enters extension verification,
-  `publication_review_stale` re-enters publication review, and
+- Finalization `publication_review_stale` re-enters publication review, and
   `resume_finalization` or `reprepare_required` re-enters finalization.
   `ready_for_merge` enters `guru-merge-task-pr`; `blocked` stops with its
   concrete reason.
-- Workflow verification accepts only `verified` as the finalization return.
-  Standalone `not_required` returns only through finalizer profile
-  `standalone_verification_not_required`; `return_to_task_work` resumes the
-  complete Phase 2 route, and `blocked` stops.
 - Merge `merged` is terminal; `merge_blocked` and `closure_mismatch` stop with
   their concrete reason.
 
 Missing, stale, unknown, multiple, or unmapped exits fail closed. Mapped
-verification, stale, resume, and reprepare transitions are internal workflow
+stale, resume, and reprepare transitions are internal workflow
 routes, not user choices. Do not add a routine confirmation between them.
 Finalizer side effects and expected-head merge each keep their own exact
 dialogue-local confirmation; new external authority or a material scope decision

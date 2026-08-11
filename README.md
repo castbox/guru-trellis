@@ -83,16 +83,13 @@ Phase 0 六包、transition schemas、invocation envelopes、shared runtime 和 
 版本单元安装。Clean install、existing-project update/reapply、dogfood 与平台副本验证必须同时
 通过，任何 mixed graph 或未处理的 `.new` / `.bak` 都会阻止激活。
 
-远端安装验证也会区分业务目标仓库与 Guru Trellis 扩展源。目标仓库的
-ref、HEAD 和已审查内容只在目标 checkout 中校验；安装器、canonical assets、
-ownership 与 sidecar 只从目标仓库已安装 manifest 指定的 Guru Trellis source
-commit 读取。Annotated tag 使用 peeled commit，branch/lightweight tag 使用 direct
-commit。Preset 从 Git worktree 安装时会把 apply-time 的完整 commit OID 同时记录为
-immutable `source.ref` 与 `source.commit`；验证会直接 fetch 该 OID，并要求 fetched commit
-和 source checkout HEAD 精确一致，因此 target branch 后续前进不会移动 source identity。
-带 task 的验证不允许绕过缺失或损坏的 manifest；taskless standalone 仅在
-明确验证 source repository 且 manifest 缺失时使用安全的 GitHub HTTPS locator。
-任何携带 credential 的 locator 都会在 clone 和证据写入前被拒绝。
+扩展安装验证不属于业务 task 或业务 closeout。业务仓库即使已经安装完整 preset、
+manifest 和 Skill package，也不会调用或路由到 `guru-verify-extension-installation`。
+该 Skill 只允许从 clean `castbox/guru-trellis` source checkout 显式发起 standalone
+验证；runtime 会在 clone、临时目录、安装或 artifact 写入前核对 canonical assets、
+origin、requested ref、resolved commit、HEAD 和 clean tree。验证目标由 source 流程创建
+clean throwaway repo，不绑定真实业务 task、branch、Finalizer plan 或 publication HEAD。
+任何携带 credential 的 locator 都会在外部动作和证据写入前被拒绝。
 
 ## 适合哪些仓库
 

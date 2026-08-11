@@ -39,12 +39,10 @@ else:
 
 FINISH_EXITS = {
     "guru-review-task-publication": {"ready", "return_to_task_work", "blocked"},
-    "guru-verify-extension-installation": {
-        "verified", "not_required", "return_to_task_work", "blocked",
-    },
+    "guru-verify-extension-installation": {"verified", "blocked"},
     "guru-finalize-task": {
-        "verification_required", "publication_review_stale",
-        "resume_finalization", "reprepare_required", "ready_for_merge", "blocked",
+        "publication_review_stale", "resume_finalization", "reprepare_required",
+        "ready_for_merge", "blocked",
     },
     "guru-merge-task-pr": {"merged", "merge_blocked", "closure_mismatch"},
 }
@@ -57,19 +55,10 @@ EXPECTED_CONSUMERS = {
         "stop", "task-publication-review-blocked",
     ),
     ("guru-verify-extension-installation", "verified"): (
-        "skill", "guru-finalize-task",
-    ),
-    ("guru-verify-extension-installation", "not_required"): (
-        "skill", "guru-finalize-task",
-    ),
-    ("guru-verify-extension-installation", "return_to_task_work"): (
-        "workflow", "guru-extension-verification-work-router",
+        "stop", "extension-installation-verification-verified",
     ),
     ("guru-verify-extension-installation", "blocked"): (
         "stop", "extension-installation-verification-blocked",
-    ),
-    ("guru-finalize-task", "verification_required"): (
-        "skill", "guru-verify-extension-installation",
     ),
     ("guru-finalize-task", "publication_review_stale"): (
         "skill", "guru-review-task-publication",
@@ -102,15 +91,8 @@ ROUTE_GROUPS = {
         ("guru-finalize-task", "ready_for_merge"),
         ("guru-merge-task-pr", "merged"),
     ],
-    "extension": [
-        ("guru-finalize-task", "verification_required"),
-        ("guru-verify-extension-installation", "verified"),
-        ("guru-finalize-task", "ready_for_merge"),
-        ("guru-merge-task-pr", "merged"),
-    ],
     "return_to_work": [
         ("guru-review-task-publication", "return_to_task_work"),
-        ("guru-verify-extension-installation", "return_to_task_work"),
     ],
     "publication_refresh": [
         ("guru-finalize-task", "publication_review_stale"),
@@ -122,10 +104,13 @@ ROUTE_GROUPS = {
     ],
     "terminal": [
         ("guru-review-task-publication", "blocked"),
-        ("guru-verify-extension-installation", "blocked"),
         ("guru-finalize-task", "blocked"),
         ("guru-merge-task-pr", "merge_blocked"),
         ("guru-merge-task-pr", "closure_mismatch"),
+    ],
+    "standalone_verification": [
+        ("guru-verify-extension-installation", "verified"),
+        ("guru-verify-extension-installation", "blocked"),
     ],
 }
 PRIVATE_FIELDS = {
@@ -283,7 +268,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 "guru-review-branch",
                 "guru-review-task-publication",
                 "guru-finalize-task",
-                "guru-verify-extension-installation",
                 "guru-merge-task-pr",
             )
         }
@@ -430,69 +414,6 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
             })
             return target_input, target_path
 
-        nested_verifier = (
-            fixture
-            / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
-        )
-        nested_verifier.write_text(
-            r"""#!/usr/bin/env bash
-set -euo pipefail
-export PYTHONDONTWRITEBYTECODE=1
-
-WORK_DIR="${1:?missing work directory}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-TARGET="$WORK_DIR/project"
-
-mkdir -p "$TARGET/.trellis"
-git -C "$TARGET" init -q -b main
-git -C "$TARGET" config user.name "Nested Replay Verifier"
-git -C "$TARGET" config user.email "nested-replay@example.invalid"
-cp -R "$REPO_ROOT/.trellis/scripts" "$TARGET/.trellis/scripts"
-cp "$REPO_ROOT/trellis/workflows/guru-team/workflow.md" "$TARGET/.trellis/workflow.md"
-"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
-  --repo "$TARGET" --all-platforms --json >/dev/null
-"$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" \
-  --root "$TARGET" --mode installed --json >/dev/null
-"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh" \
-  --repo "$REPO_ROOT" --json >/dev/null
-if find "$REPO_ROOT" "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit | grep -q .; then
-  echo "nested replay produced sidecars" >&2
-  exit 2
-fi
-""",
-            encoding="utf-8",
-        )
-        nested_verifier.chmod(0o755)
-        nested_apply = subprocess.run(
-            [
-                str(fixture / "trellis/presets/guru-team/scripts/bash/apply.sh"),
-                "--repo",
-                str(fixture),
-                "--all-platforms",
-                "--json",
-            ],
-            cwd=fixture,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-        )
-        self.assertEqual(nested_apply.returncode, 0, nested_apply.stderr)
-
-        manifest_path = fixture / ".trellis/guru-team/extension.json"
-        manifest = read_json(manifest_path)
-        manifest["source"].update(
-            {
-                "repo": "https://github.com/castbox/guru-trellis.git",
-                "ref": "0" * 40,
-                "commit": "0" * 40,
-                "tree_state": "clean",
-                "is_mutable_ref": False,
-            }
-        )
-        runtime.write_json(manifest_path, manifest)
         task, _ = adapter.production_task_fixture(runtime, fixture)
         adapter.run_git(
             fixture,
@@ -559,8 +480,6 @@ fi
             check=False,
         )
         self.assertEqual(task_start.returncode, 0, task_start.stderr)
-        with nested_verifier.open("a", encoding="utf-8") as handle:
-            handle.write("\n# reviewed extension change for the controlled replay\n")
         (fixture / "src/production-eval.txt").write_text(
             "issue-174-controlled-replay\n", encoding="utf-8"
         )
@@ -800,12 +719,11 @@ fi
                 "source": source,
             })
 
-        provenance = with_finalizer_transport(
-            lambda: runtime.prepare_provenance_metadata_tail(
-                fixture,
-                finalizer_input["branch_review_commit"],
-            )
-        )
+        provenance = {
+            "reviewed_content_head": finalizer_input["branch_review_commit"],
+            "publication_head": finalizer_input["branch_review_commit"],
+            "metadata_tail": None,
+        }
         self.assertEqual(
             provenance["reviewed_content_head"],
             finalizer_input["branch_review_commit"],
@@ -820,108 +738,18 @@ fi
             {"prepared", "content_pushed"},
             finalizer_preview,
         )
-        self.assertTrue(finalizer_preview["verification_required"], finalizer_preview)
-        verification_route = {
-            "exit_id": "verification_required",
-            "task_ref": finalizer_input["task_ref"],
-            "plan_ref": finalizer_preview["plan_ref"],
-            "repo_ref": "castbox/guru-trellis",
-            "branch_review_commit": finalizer_preview["branch_review_commit"],
-            "publication_head": provenance["publication_head"],
-            "verification_target": "extension-installation",
-        }
-        _, verification_gate = run_finalization_round(
-            finalizer_input,
-            finalizer_input_path,
-            exit_id="verification_required",
-            output=verification_route,
-        )
-        verification_required, finalizer_required_receipt = invoke_wrapper(
-            "guru-finalize-task",
-            finalizer_input_path,
-            "--owner-result",
-            verification_gate,
-            environment={
-                "PATH": f"{finalizer_bin}{os.pathsep}{os.environ.get('PATH', '')}"
-            },
-        )
-        verification_input, verification_input_path = project(
-            "guru-finalize-task",
-            "project_verification_required",
-            verification_required,
-            finalizer_required_receipt,
-        )
-
-        capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
-        verifier_execution_path = (
-            fixture / ".trellis/.runtime/guru-team/evals/replay-verifier-execution.json"
-        )
-        verifier_review_path = (
-            fixture / ".trellis/.runtime/guru-team/evals/replay-verifier-review.json"
-        )
-        runtime.write_json(
-            verifier_execution_path,
-            with_finalizer_transport(
-                lambda: runtime.cmd_execute_extension_verification(
-                    argparse.Namespace(
-                        root=str(fixture),
-                        input=repo_relative(verification_input_path),
-                        capability=capabilities,
-                    )
-                )
-            ),
-        )
-        runtime.write_json(
-            verifier_review_path,
-            adapter.extension_verification_review("verified", capabilities),
-        )
-        verifier_owner = runtime.cmd_record_extension_verification(argparse.Namespace(
-            root=str(fixture),
-            input=repo_relative(verification_input_path),
-            execution_input=repo_relative(verifier_execution_path),
-            review_input=repo_relative(verifier_review_path),
-        ))
-        verifier_owner_path = task / "marketplace-verification.json"
-        checked_verifier = with_finalizer_transport(
-            lambda: runtime.cmd_check_extension_verification(
-                argparse.Namespace(
-                    root=str(fixture),
-                    input=repo_relative(verifier_owner_path),
-                    public_input=repo_relative(verification_input_path),
-                )
-            )
-        )
-        self.assertEqual(checked_verifier["typed_exit"], "verified")
-        verified_output, verifier_receipt = invoke_wrapper(
-            "guru-verify-extension-installation",
-            verification_input_path,
-            "--owner-result",
-            verifier_owner_path,
-            environment={
-                "PATH": f"{finalizer_bin}{os.pathsep}{os.environ.get('PATH', '')}"
-            },
-        )
-        verified_finalizer_input, verified_finalizer_input_path = project(
-            "guru-verify-extension-installation",
-            "project_verified",
-            verified_output,
-            verifier_receipt,
-        )
-        self.assertEqual(
-            verified_finalizer_input["verification_ref"],
-            verified_output["verification_ref"],
-        )
+        self.assertNotIn("verification_required", finalizer_preview)
 
         ready_result, ready_gate = run_finalization_round(
-            verified_finalizer_input,
-            verified_finalizer_input_path,
+            finalizer_input,
+            finalizer_input_path,
             exit_id="ready_for_merge",
             output=runtime.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
         )
         self.assertEqual(ready_result["stage"], "ready")
         ready_for_merge, ready_receipt = invoke_wrapper(
             "guru-finalize-task",
-            verified_finalizer_input_path,
+            finalizer_input_path,
             "--owner-result",
             ready_gate,
             environment={
@@ -1104,7 +932,7 @@ fi
                 "new_issue_confirmations": 4,
                 "commit_confirmations": 0,
                 "branch_review_executions": 1,
-                "immutable_verification_executions": 1,
+                "immutable_verification_executions": 0,
                 "finalizer_confirmations": 1,
                 "merge_confirmations": 1,
                 "terminal_transaction_artifacts": 0,
@@ -1218,7 +1046,6 @@ fi
                     "head_branch": "codex/example-task",
                     "branch_review_commit": gate["review_commit"],
                 },
-                "marketplace": {"required": False},
             }
             prepared = {
                 "plan": plan,
@@ -1243,12 +1070,10 @@ fi
                 _task_context: dict[str, Any],
                 *,
                 publication_ready: dict[str, Any] | None = None,
-                verification_owner_result: Any = None,
                 allowed_current_gate: dict[str, Any] | None = None,
                 current_finalizer: bool = False,
             ) -> dict[str, Any]:
                 self.assertEqual(publication_ready, finalization_input)
-                self.assertIsNone(verification_owner_result)
                 self.assertIsNone(allowed_current_gate)
                 self.assertTrue(current_finalizer)
                 return prepared
@@ -1273,11 +1098,6 @@ fi
                     return_value=task_context,
                 ),
                 mock.patch.object(runtime, "assert_workspace_boundary"),
-                mock.patch.object(
-                    runtime,
-                    "finalization_verification_owner_result",
-                    return_value=None,
-                ),
                 mock.patch.object(
                     runtime,
                     "task_publication_repository_binding",
@@ -1337,250 +1157,6 @@ fi
             private_artifact.assert_not_called()
             owner_checker.assert_not_called()
 
-    def test_verification_verified_reentry_keeps_scope_ledger_unchanged(
-        self,
-    ) -> None:
-        runtime = load_selected_runtime()
-        task_ref = ".trellis/tasks/example-finalizer-reentry"
-        ledger_locator = f"{task_ref}/issue-scope-ledger.json"
-        branch_review_commit = "a" * 40
-        issue = {
-            "number": 177,
-            "url": "https://github.com/castbox/guru-trellis/issues/177",
-            "title": "Content identity boundary",
-            "reason": "Primary delivered scope.",
-        }
-        ledger = {
-            "schema_version": "2.0",
-            "primary_issue": issue,
-            "close_issues": [issue],
-            "related_issues": [],
-            "followup_issues": [],
-        }
-
-        with tempfile.TemporaryDirectory(prefix="guru-finalizer-reentry-") as temporary:
-            root = Path(temporary)
-            task_dir = root / task_ref
-            task_dir.mkdir(parents=True)
-            (task_dir / "issue-scope-ledger.json").write_text(
-                json.dumps(ledger),
-                encoding="utf-8",
-            )
-            ledger_before = (task_dir / "issue-scope-ledger.json").read_bytes()
-            plan = {
-                "schema_version": runtime.CLOSEOUT_PLAN_SCHEMA_VERSION,
-                "plan_digest": "d" * 64,
-                "task": {
-                    "active_locator": task_ref,
-                    "archive_locator": (
-                        ".trellis/tasks/archive/2026-08/"
-                        "example-finalizer-reentry"
-                    ),
-                },
-                "git": {"branch_review_commit": branch_review_commit},
-                "review": {"changed_paths": []},
-                "publish": {"title": "title", "body": "body"},
-                "marketplace": {"required": True},
-                "inputs": {
-                    "issue_scope_ledger": {
-                        "path": ledger_locator,
-                        "sha256": hashlib.sha256(ledger_before).hexdigest(),
-                    },
-                },
-            }
-            (task_dir / runtime.CLOSEOUT_PLAN_ARTIFACT).write_text(
-                json.dumps(plan),
-                encoding="utf-8",
-            )
-            with mock.patch.object(
-                runtime,
-                "git_status_paths",
-                return_value=[ledger_locator],
-            ):
-                self.assertEqual(
-                    runtime.finalizer_unreviewed_dirty_paths(root, task_dir),
-                    [],
-                )
-            owner_result = {
-                "profile": "verification_required",
-                "typed_exit": "verified",
-            }
-            checked_result = {"status": "ok", "typed_exit": "verified"}
-            args = argparse.Namespace(
-                repo=None,
-                remote=None,
-            )
-            with ExitStack() as stack:
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "official_after_archive_hook_state",
-                        return_value={},
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "validate_closeout_plan",
-                        side_effect=lambda value: value,
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "validate_closeout_plan_for_migration",
-                        side_effect=lambda value: value,
-                    )
-                )
-                private_review_gate = stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "validate_review_gate",
-                        side_effect=AssertionError(
-                            "Finalizer reopened Branch Review private evidence"
-                        ),
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "validate_closeout_reviewed_content",
-                        return_value="c" * 64,
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "current_head",
-                        return_value=branch_review_commit,
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "closeout_reviewed_change_facts",
-                        return_value={
-                            "changed_paths": [],
-                            "candidate_surfaces": ["workflow"],
-                            "marketplace_required": True,
-                        },
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "git_status_paths",
-                        return_value=[ledger_locator],
-                    )
-                )
-                dirty_paths = stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "finalizer_unreviewed_dirty_paths",
-                        wraps=runtime.finalizer_unreviewed_dirty_paths,
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "load_issue_scope_ledger",
-                        return_value=ledger,
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "validate_ledger_for_publish",
-                        return_value=[],
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "validate_pr_body_quality",
-                        return_value=[],
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "task_json",
-                        return_value={"status": "in_progress"},
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(runtime, "validate_closeout_task_children")
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "infer_github_repo",
-                        return_value="castbox/guru-trellis",
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "normalize_github_repository",
-                        return_value="castbox/guru-trellis",
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "base_branch_from_sources",
-                        return_value="main",
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "current_branch",
-                        return_value="codex/example",
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(runtime, "validate_github_remote_repository")
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "pr_title_from_task",
-                        return_value="title",
-                    )
-                )
-                stack.enter_context(
-                    mock.patch.object(
-                        runtime,
-                        "build_closeout_plan",
-                        return_value=plan,
-                    )
-                )
-                prepared = runtime.prepare_closeout(
-                    root,
-                    args,
-                    {},
-                    task_dir,
-                    {},
-                    verification_owner_result=(owner_result, checked_result),
-                )
-
-            self.assertEqual(prepared["plan"], plan)
-            private_review_gate.assert_not_called()
-            dirty_paths.assert_called_once_with(root, task_dir)
-            self.assertEqual(
-                (task_dir / "issue-scope-ledger.json").read_bytes(),
-                ledger_before,
-            )
-            with mock.patch.object(
-                runtime,
-                "git_status_paths",
-                return_value=[ledger_locator, "unrelated.txt"],
-            ):
-                self.assertEqual(
-                    runtime.finalizer_unreviewed_dirty_paths(root, task_dir),
-                    ["unrelated.txt"],
-                )
 
     def test_stale_finalizer_projection_returns_content_drift_to_phase_2(
         self,
@@ -1834,7 +1410,6 @@ fi
                 "base_branch": "main",
                 "branch_review_commit": branch_review_commit,
             },
-            "marketplace": {"required": True},
         }
         public_input = {
             "profile": "same_plan_resume",
@@ -1846,14 +1421,6 @@ fi
             "owner_status": "current",
             "publication_ref": f"publication:{'c' * 64}",
         }
-        verification = (
-            {"source": "committed-finalization-gate"},
-            {
-                "status": "ok",
-                "typed_exit": "verified",
-                "verification_ref": "extension-verification:checked",
-            },
-        )
         transaction = {
             "commit": "d" * 40,
             "parent": "e" * 40,
@@ -1867,7 +1434,6 @@ fi
             archived = root / archive
             archived.mkdir(parents=True)
             retained = set(runtime.CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
-            retained.update(runtime.CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
             for relative in retained:
                 path = archived / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -1921,7 +1487,7 @@ fi
                 mock.patch.object(
                     runtime,
                     "finalization_archived_owner_results",
-                    return_value=(publication, verification),
+                    return_value=(publication, None),
                 ),
                 mock.patch.object(
                     runtime,
@@ -1933,11 +1499,6 @@ fi
                     "finalization_publication_owner_result",
                     side_effect=AssertionError("active readiness was reopened"),
                 ) as readiness,
-                mock.patch.object(
-                    runtime,
-                    "finalization_verification_owner_result",
-                    side_effect=AssertionError("archived #117 artifact was reopened"),
-                ) as verification_owner,
                 mock.patch.object(runtime, "create_pull_request") as create_pr,
                 mock.patch.object(
                     runtime,
@@ -1952,11 +1513,10 @@ fi
             self.assertEqual(context["transaction_state"], "archived")
             self.assertEqual(context["publication"], publication)
             readiness.assert_not_called()
-            verification_owner.assert_not_called()
             create_pr.assert_not_called()
             archive_transaction.assert_not_called()
 
-    def test_selected_runtime_archived_transition_skips_gate_and_verifier_mutation(
+    def test_selected_runtime_archived_transition_skips_gate_mutation(
         self,
     ) -> None:
         runtime = load_selected_runtime()
@@ -1970,7 +1530,6 @@ fi
             "plan_digest": plan_digest,
             "task": {"active_locator": active, "archive_locator": archive},
             "git": {"branch_review_commit": "b" * 40},
-            "marketplace": {"required": True},
         }
         public_input = {
             "profile": "same_plan_resume",
@@ -1989,10 +1548,7 @@ fi
             "publication": {"owner_status": "current"},
             "publication_status": "current",
             "publication_stale_reason": None,
-            "verification": (
-                {"source": "committed-finalization-gate"},
-                {"status": "ok", "typed_exit": "verified"},
-            ),
+            "verification": None,
             "facts": {"transaction_state": "archived"},
             "current_facts_sha256": "c" * 64,
         }
@@ -2115,10 +1671,10 @@ fi
             self.assertIsNone(getattr(finish.call_args.args[0], "external_verification", None))
             self.assertEqual(gate_path.read_bytes(), committed_bytes)
 
-    def test_16_public_exits_have_unique_consumers_and_private_fields_stay_private(
+    def test_13_public_exits_have_unique_consumers_and_private_fields_stay_private(
         self,
     ) -> None:
-        self.assertEqual(sum(len(exits) for exits in FINISH_EXITS.values()), 16)
+        self.assertEqual(sum(len(exits) for exits in FINISH_EXITS.values()), 13)
         self.assertEqual(set(EXPECTED_CONSUMERS), {
             (skill_id, exit_id)
             for skill_id, exits in FINISH_EXITS.items()
@@ -2175,28 +1731,40 @@ fi
                             PRIVATE_FIELDS & set(branch["properties"])
                         )
 
-    def test_workflow_keeps_57_production_exits_33_targets_and_six_route_groups(
+    def test_workflow_keeps_52_production_exits_31_targets_and_six_route_groups(
         self,
     ) -> None:
         rows = workflow_exits()
         production_rows = [
             row for row in rows if row.get("skill") != "guru-example-action"
         ]
-        self.assertEqual(len(production_rows), 57)
+        self.assertEqual(len(production_rows), 52)
+        invoke_rows = re.findall(
+            r'<!-- guru-skill-invoke: \{"skill":"([^"]+)","required":true\} -->',
+            WORKFLOW.read_text(encoding="utf-8"),
+        )
+        self.assertEqual(len(invoke_rows), 14)
+        self.assertEqual(len(set(invoke_rows)), 14)
+        self.assertNotIn("guru-verify-extension-installation", invoke_rows)
         targets = set(
             re.findall(
                 r'<!-- guru-(?:workflow|stop)-target: \{"id":"([^"]+)"\} -->',
                 WORKFLOW.read_text(encoding="utf-8"),
             )
         )
-        self.assertEqual(len(targets), 33)
+        self.assertEqual(len(targets), 31)
         finish_rows: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        business_consumers = {
+            key: value
+            for key, value in EXPECTED_CONSUMERS.items()
+            if key[0] != "guru-verify-extension-installation"
+        }
         for row in rows:
             key = (row["skill"], row["exit"])
-            if key in EXPECTED_CONSUMERS:
+            if key in business_consumers:
                 finish_rows.setdefault(key, []).append(row)
-        self.assertEqual(set(finish_rows), set(EXPECTED_CONSUMERS))
-        for key, expected in EXPECTED_CONSUMERS.items():
+        self.assertEqual(set(finish_rows), set(business_consumers))
+        for key, expected in business_consumers.items():
             self.assertEqual(len(finish_rows[key]), 1, key)
             consumer = finish_rows[key][0]["consumer"]
             self.assertEqual((consumer["kind"], consumer["id"]), expected)
@@ -2204,7 +1772,66 @@ fi
         for group, edges in ROUTE_GROUPS.items():
             with self.subTest(group=group):
                 self.assertTrue(edges)
-                self.assertTrue(all(edge in finish_rows for edge in edges))
+                if group == "standalone_verification":
+                    self.assertTrue(all(edge in EXPECTED_CONSUMERS for edge in edges))
+                    self.assertTrue(all(edge not in finish_rows for edge in edges))
+                else:
+                    self.assertTrue(all(edge in finish_rows for edge in edges))
+
+    def test_business_change_matrix_has_zero_verifier_routes_and_artifacts(
+        self,
+    ) -> None:
+        runtime = load_selected_runtime()
+        changed_paths = [
+            "docs/requirements/example.md",
+            "src/example.py",
+            "config/example.yml",
+            ".trellis/spec/example.md",
+            ".codex/skills/guru-finalize-task/SKILL.md",
+            ".trellis/guru-team/extension.json",
+        ]
+        completed = subprocess.CompletedProcess(
+            args=["git", "diff"],
+            returncode=0,
+            stdout="\n".join(reversed(changed_paths)) + "\n",
+            stderr="",
+        )
+        with mock.patch.object(runtime, "run", return_value=completed):
+            facts = runtime.closeout_reviewed_change_facts(
+                Path("/business-fixture"),
+                {"base_head_sha": "a" * 40},
+                "b" * 40,
+            )
+        self.assertEqual(facts, {"changed_paths": sorted(changed_paths)})
+
+        rows = workflow_exits()
+        self.assertFalse(
+            any(row["skill"] == "guru-verify-extension-installation" for row in rows)
+        )
+        self.assertFalse(
+            any(
+                row["consumer"] == {
+                    "kind": "skill",
+                    "id": "guru-verify-extension-installation",
+                }
+                for row in rows
+            )
+        )
+        with tempfile.TemporaryDirectory(prefix="guru-business-closeout-") as temporary:
+            root = Path(temporary)
+            for relative in changed_paths:
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("business fixture\n", encoding="utf-8")
+            verifier_artifacts = [
+                path for path in root.rglob("*")
+                if path.is_file()
+                and (
+                    path.name == "marketplace-verification.json"
+                    or "extension-verification" in path.name
+                )
+            ]
+            self.assertEqual(verifier_artifacts, [])
 
     def test_guru_entries_are_equal_thin_managed_routes(self) -> None:
         canonical_root = (
@@ -2220,8 +1847,13 @@ fi
             text = path.read_text(encoding="utf-8")
             self.assertIn("guru-team-overlay: v1", text)
             self.assertIn(".trellis/workflow.md", text)
-            for skill_id in FINISH_EXITS:
+            for skill_id in (
+                "guru-review-task-publication",
+                "guru-finalize-task",
+                "guru-merge-task-pr",
+            ):
                 self.assertIn(skill_id, text)
+            self.assertNotIn("guru-verify-extension-installation", text)
             self.assertIn("not user choices", text)
             self.assertIn("Do not add a routine confirmation", text)
             self.assertNotIn("finish-work.sh", text)
