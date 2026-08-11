@@ -3,7 +3,7 @@
   "$id": "guru-stage0-transition-context-current-1.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "transition_id", "stage", "mode", "repo_locator", "base", "target_locator", "continuation_id", "context_result_sha256"],
+  "required": ["schema_version", "transition_id", "stage", "mode", "repo_locator", "base", "target_locator", "continuation_id", "context_result_sha256", "authority_content_sha256"],
   "properties": {
     "schema_version": {"const": "1.0"},
     "transition_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]+$"},
@@ -13,7 +13,8 @@
     "base": {"$ref": "#/$defs/base"},
     "target_locator": {"type": "string", "minLength": 1},
     "continuation_id": {"type": "string", "minLength": 1},
-    "context_result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    "context_result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authority_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "$defs": {
     "sha40": {"type": "string", "pattern": "^[0-9a-f]{40}$"},

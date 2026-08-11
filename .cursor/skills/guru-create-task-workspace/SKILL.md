@@ -27,10 +27,14 @@ do not generate a plan, result, DTO, or typed exit. After the semantic gate,
 confirmation, and owner recorder/executor/checker complete, pipe one closed
 call-local workspace envelope to `scripts/invoke.sh --invocation -`. The
 envelope contains the current public input, `readiness_current` transition,
-checked in-memory prerequisite payloads, owner plan, and owner result. The
-runtime reruns the existing result checker, requires its embedded
+owner plan, and checked owner result. Runtime deterministically reconstructs
+only the checker projections required by this Skill from `readiness_current`;
+complete predecessor owner payloads remain private to their owning Skills and
+never cross the Skill boundary. The runtime reruns the existing result checker,
+requires its embedded
 executor/checker evidence, and derives the route from the checked executor
 result. It does not perform an additional issue, worktree, branch, or task
-mutation. Repo-relative plan/result/prerequisite locators remain
+mutation. No predecessor payload, plan, result, or authorization is persisted
+for normal transport. Repo-relative plan/result/prerequisite locators remain
 compatibility-only until the next breaking Interface migration and must not be
 used by normal workflow, production eval, or installed transcript paths.

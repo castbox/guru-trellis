@@ -20225,6 +20225,12 @@ def stage0_transition_owner_errors(
             transition.get("target_locator"), owner_target
         ):
             errors.append("transition_clarity_target_mismatch")
+        if (
+            transition.get("authority_content_sha256")
+            != (target.get("body_sha256") if isinstance(target, dict) else None)
+            and owner_result.get("typed_exit") != "refresh_context"
+        ):
+            errors.append("transition_clarity_authority_content_mismatch")
     elif skill_id == "guru-review-contract-wording":
         scope = owner_result.get("scope") if isinstance(owner_result.get("scope"), dict) else {}
         scope_identity = str(scope.get("identity") or "")
@@ -20249,6 +20255,8 @@ def stage0_transition_owner_errors(
         )
         clarity = prerequisites.get("clarity") if isinstance(prerequisites.get("clarity"), dict) else {}
         wording = prerequisites.get("wording") if isinstance(prerequisites.get("wording"), dict) else {}
+        transition_clarity = transition.get("clarity") if isinstance(transition.get("clarity"), dict) else {}
+        transition_wording = transition.get("wording") if isinstance(transition.get("wording"), dict) else {}
         owner_target = stage0_owner_target_locator(
             target, public_input.get("target_locator")
         )
@@ -20257,19 +20265,19 @@ def stage0_transition_owner_errors(
             or not stage0_target_locators_match(
                 transition.get("target_locator"), owner_target
             )
-            or transition.get("target_content_sha256") != target.get("body_sha256")
+            or transition.get("target_content_sha256") != target.get("content_sha256")
             or transition.get("clarity_result_sha256") != clarity.get("facts_sha256")
             or transition.get("wording_facts_sha256") != wording.get("facts_sha256")
+            or transition_clarity.get("facts_sha256") != clarity.get("facts_sha256")
+            or transition_clarity.get("disposition_sha256") != clarity.get("disposition_sha256")
+            or transition_wording.get("facts_sha256") != wording.get("facts_sha256")
+            or transition_wording.get("target_content_sha256") != target.get("content_sha256")
         ):
             errors.append("transition_readiness_prerequisite_mismatch")
     elif skill_id == "guru-create-task-workspace":
         plan = owner_plan if isinstance(owner_plan, dict) else {}
         target = plan.get("target") if isinstance(plan.get("target"), dict) else {}
-        prerequisites = plan.get("prerequisites") if isinstance(plan.get("prerequisites"), dict) else {}
         plan_base = plan.get("base") if isinstance(plan.get("base"), dict) else {}
-        clarity = prerequisites.get("clarity") if isinstance(prerequisites.get("clarity"), dict) else {}
-        wording = prerequisites.get("wording") if isinstance(prerequisites.get("wording"), dict) else {}
-        readiness = prerequisites.get("readiness") if isinstance(prerequisites.get("readiness"), dict) else {}
         plan_content_sha256 = context_digest({
             "title_sha256": target.get("title_sha256"),
             "body_sha256": target.get("body_sha256"),
@@ -20279,10 +20287,6 @@ def stage0_transition_owner_errors(
                 transition.get("target_locator"), target.get("url")
             )
             or transition.get("target_content_sha256") != plan_content_sha256
-            or transition.get("clarity_result_sha256") != clarity.get("facts_sha256")
-            or transition.get("wording_facts_sha256") != wording.get("facts_sha256")
-            or transition.get("readiness_facts_sha256") != readiness.get("facts_sha256")
-            or transition.get("readiness_linkage_sha256") != readiness.get("linkage_sha256")
             or base.get("selected_base") != plan_base.get("selected_base")
             or base.get("remote") != plan_base.get("remote")
             or base.get("decision_head") != plan_base.get("decision_head")
@@ -20439,7 +20443,6 @@ def stage0_call_local_invocation(
             "schema_version",
             "public_input",
             "transition",
-            "owner_prerequisites",
             "owner_plan",
             "owner_result",
         }
@@ -20457,10 +20460,6 @@ def stage0_call_local_invocation(
         or (
             skill_id not in {"guru-sync-base", "guru-create-task-workspace"}
             and not isinstance(payload.get("owner_context"), dict)
-        )
-        or (
-            skill_id == "guru-create-task-workspace"
-            and not isinstance(payload.get("owner_prerequisites"), dict)
         )
         or (skill_id == "guru-create-task-workspace" and not isinstance(payload.get("owner_plan"), dict))
     ):
@@ -20656,7 +20655,6 @@ def stage0_owner_result(
     plan: dict[str, Any] | None = None
     direct_result = getattr(args, "invocation_owner_result", None)
     direct_plan = getattr(args, "invocation_owner_plan", None)
-    direct_prerequisites = getattr(args, "invocation_owner_prerequisites", None)
     direct_context = getattr(args, "invocation_owner_context", None)
     invocation_transition = getattr(args, "invocation_transition", None)
     if skill_id == "guru-discover-change-context":
@@ -20839,7 +20837,8 @@ def stage0_owner_result(
                 if (
                     not isinstance(direct_context, dict)
                     or not isinstance(direct_context.get("change_request"), dict)
-                    or not isinstance(direct_context.get("prerequisite_payloads"), dict)
+                    or set(direct_context) != {"change_request"}
+                    or not isinstance(invocation_transition, dict)
                 ):
                     raise WorkflowError(
                         "Call-local change request review owner context is invalid.",
@@ -20849,25 +20848,45 @@ def stage0_owner_result(
                     "generated_at": result.get("generated_at"),
                     "mode": public_input.get("mode"),
                     "target": copy.deepcopy(result.get("target")),
-                    "prerequisite_payloads": copy.deepcopy(
-                        direct_context["prerequisite_payloads"]
-                    ),
+                    "prerequisite_payloads": {},
                     "semantic_review": copy.deepcopy(result.get("semantic_review")),
                     "typed_exit": result.get("typed_exit"),
                     "reason": result.get("reason"),
                     "affected_evidence": copy.deepcopy(result.get("affected_evidence")),
                     "consumer": copy.deepcopy(result.get("consumer")),
                 }
-                result = cmd_record_change_request_review(argparse.Namespace(
-                    root=str(root), mode=public_input.get("mode"), input=authored,
-                    change_request_input=direct_context["change_request"],
-                ))
-                checked = cmd_check_change_request_review(argparse.Namespace(
-                    root=str(root), input=result,
-                    prerequisites_input=direct_context["prerequisite_payloads"],
-                    change_request_input=direct_context["change_request"],
-                    expected_facts_sha256=result.get("facts_sha256"),
-                ))
+                target, scope, _ = change_request_review_normalize_target(
+                    root,
+                    authored.get("target"),
+                    direct_context["change_request"],
+                    str(public_input.get("mode") or ""),
+                )
+                prerequisites = change_request_review_transition_prerequisites(
+                    invocation_transition,
+                    target,
+                )
+                linkage = change_request_review_linkage(target, prerequisites)
+                result = change_request_review_derive_result(
+                    target, prerequisites, linkage, authored
+                )
+                review_errors = change_request_review_structural_errors(
+                    root, result, target, prerequisites, linkage
+                )
+                if review_errors:
+                    raise WorkflowError(
+                        "Call-local change request review result is invalid.",
+                        exit_code=2,
+                        payload={"error_codes": review_errors},
+                    )
+                checked = {
+                    "status": "passed",
+                    "skill_id": CHANGE_REQUEST_REVIEW_SKILL_ID,
+                    "typed_exit": result["typed_exit"],
+                    "target_identity_sha256": target["identity_sha256"],
+                    "target_content_sha256": target["content_sha256"],
+                    "linkage_sha256": linkage["linkage_sha256"],
+                    "facts_sha256": result["facts_sha256"],
+                }
             else:
                 prerequisites = stage0_owner_path(
                     root, args.owner_prerequisites, "arguments.owner_prerequisites"
@@ -20884,14 +20903,14 @@ def stage0_owner_result(
         elif skill_id == "guru-create-task-workspace":
             if (
                 isinstance(direct_plan, dict)
-                and isinstance(direct_prerequisites, dict)
+                and isinstance(invocation_transition, dict)
                 and direct_result is not None
             ):
                 plan = copy.deepcopy(direct_plan)
-                payloads, direct_errors = task_workspace_validate_plan(
+                payloads, direct_errors = task_workspace_validate_transition_plan(
                     root,
                     plan,
-                    direct_prerequisites,
+                    invocation_transition,
                 )
                 if not direct_errors:
                     direct_errors.extend(
@@ -21498,6 +21517,101 @@ def stage0_transition_id(stage: str, identity: Any) -> str:
     return f"{stage}:{digest[:24]}"
 
 
+def stage0_clarity_projection(owner_result: dict[str, Any]) -> dict[str, Any]:
+    identity = (
+        owner_result.get("content_identity")
+        if isinstance(owner_result.get("content_identity"), dict)
+        else {}
+    )
+    return {
+        "facts_sha256": identity.get("result_sha256"),
+        "target_sha256": identity.get("target_sha256"),
+        "disposition_sha256": identity.get("disposition_sha256"),
+        "content_sha256": identity.get("content_sha256"),
+        "scope_sha256": identity.get("scope_sha256"),
+    }
+
+
+def stage0_target_disposition_projection(owner_result: dict[str, Any]) -> dict[str, Any]:
+    disposition = (
+        owner_result.get("target_disposition")
+        if isinstance(owner_result.get("target_disposition"), dict)
+        else {}
+    )
+    return {
+        "disposition_sha256": disposition.get("disposition_digest"),
+        "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
+    }
+
+
+def stage0_wording_projection(owner_result: dict[str, Any]) -> dict[str, Any]:
+    scope = owner_result.get("scope") if isinstance(owner_result.get("scope"), dict) else {}
+    scan = owner_result.get("scan") if isinstance(owner_result.get("scan"), dict) else {}
+    _, _, target_content_sha256 = change_request_review_scope_hashes(scope)
+    return {
+        "facts_sha256": owner_result.get("facts_sha256"),
+        "scope_sha256": scope.get("scope_sha256"),
+        "scan_sha256": scan.get("scan_sha256"),
+        "target_content_sha256": target_content_sha256,
+    }
+
+
+def stage0_readiness_target_projection(target: dict[str, Any]) -> dict[str, Any]:
+    common = {
+        "kind": target.get("kind"),
+        "repo": target.get("repo"),
+        "title_sha256": target.get("title_sha256"),
+        "body_sha256": target.get("body_sha256"),
+        "identity_sha256": target.get("identity_sha256"),
+        "content_sha256": target.get("content_sha256"),
+    }
+    if target.get("kind") == "existing_issue":
+        return {
+            **common,
+            "issue_number": target.get("issue_number"),
+            "url": target.get("url"),
+            "updated_at": target.get("updated_at"),
+        }
+    if target.get("kind") == "proposed_draft":
+        return {
+            **common,
+            "draft_id": target.get("draft_id"),
+            "source_request_sha256": target.get("source_request_sha256"),
+        }
+    return {
+        **common,
+        "caller_locator": target.get("caller_locator"),
+        "request_id": target.get("request_id"),
+        "source_request_sha256": target.get("source_request_sha256"),
+    }
+
+
+def stage0_readiness_target_payload(target: dict[str, Any]) -> dict[str, Any]:
+    kind = target.get("kind")
+    return {
+        "kind": kind,
+        "repo": target.get("repo"),
+        "issue_number": target.get("issue_number") if kind == "existing_issue" else None,
+        "url": target.get("url") if kind == "existing_issue" else None,
+        "updated_at": target.get("updated_at") if kind == "existing_issue" else None,
+        "draft_id": target.get("draft_id") if kind == "proposed_draft" else None,
+        "source_request_sha256": (
+            target.get("source_request_sha256")
+            if kind in {"proposed_draft", "standalone_request"}
+            else None
+        ),
+        "caller_locator": (
+            target.get("caller_locator") if kind == "standalone_request" else None
+        ),
+        "request_id": target.get("request_id") if kind == "standalone_request" else None,
+        "title_sha256": target.get("title_sha256"),
+        "body_sha256": target.get("body_sha256"),
+        "side_effect_free": kind != "existing_issue",
+        "identity_sha256": target.get("identity_sha256"),
+        "content_sha256": target.get("content_sha256"),
+    }
+
+
 def stage0_build_transition(
     skill_id: str,
     exit_id: str,
@@ -21538,6 +21652,9 @@ def stage0_build_transition(
             "target_locator": stage0_target_locator(owner_result.get("live_change")),
             "continuation_id": public_input.get("continuation_id"),
             "context_result_sha256": digest,
+            "authority_content_sha256": (owner_result.get("live_change") or {}).get(
+                "body_sha256"
+            ),
         }
     if skill_id == "guru-clarify-requirements" and exit_id == "clear":
         identity = owner_result.get("content_identity") or {}
@@ -21554,9 +21671,12 @@ def stage0_build_transition(
             "context_result_sha256": upstream.get("context_result_sha256"),
             "clarity_result_sha256": digest,
             "target_content_sha256": target.get("body_sha256"),
+            "clarity": stage0_clarity_projection(owner_result),
+            "target_disposition": stage0_target_disposition_projection(owner_result),
         }
     if skill_id == "guru-review-contract-wording" and exit_id == "pass":
         digest = owner_result.get("facts_sha256")
+        wording_projection = stage0_wording_projection(owner_result)
         return {
             **common,
             "transition_id": stage0_transition_id("wording_current", digest),
@@ -21566,12 +21686,22 @@ def stage0_build_transition(
             "context_result_sha256": upstream.get("context_result_sha256"),
             "clarity_result_sha256": upstream.get("clarity_result_sha256"),
             "wording_facts_sha256": digest,
-            "target_content_sha256": upstream.get("target_content_sha256"),
+            "target_content_sha256": wording_projection.get(
+                "target_content_sha256"
+            ),
+            "clarity": copy.deepcopy(upstream.get("clarity")),
+            "wording": wording_projection,
+            "target_disposition": copy.deepcopy(upstream.get("target_disposition")),
         }
     if skill_id == "guru-review-change-request" and exit_id == "ready":
         target = owner_result.get("target") or {}
         linkage = owner_result.get("evidence_linkage") or {}
         digest = owner_result.get("facts_sha256")
+        scope_conclusion = (
+            (owner_result.get("semantic_review") or {}).get("scope_conclusion")
+            if isinstance(owner_result.get("semantic_review"), dict)
+            else {}
+        )
         return {
             **common,
             "transition_id": stage0_transition_id("readiness_current", digest),
@@ -21585,6 +21715,21 @@ def stage0_build_transition(
             "readiness_facts_sha256": digest,
             "readiness_linkage_sha256": linkage.get("linkage_sha256"),
             "target_content_sha256": target.get("content_sha256"),
+            "clarity": copy.deepcopy(upstream.get("clarity")),
+            "wording": copy.deepcopy(upstream.get("wording")),
+            "readiness": {
+                "payload_sha256": context_digest(owner_result),
+                "facts_sha256": digest,
+                "content_sha256": target.get("content_sha256"),
+                "linkage_sha256": linkage.get("linkage_sha256"),
+            },
+            "target": stage0_readiness_target_projection(target),
+            "target_disposition": copy.deepcopy(upstream.get("target_disposition")),
+            "scope": {
+                "close_issues": copy.deepcopy(scope_conclusion.get("close_issues")),
+                "related_issues": copy.deepcopy(scope_conclusion.get("related_issues")),
+                "followup_issues": copy.deepcopy(scope_conclusion.get("followup_issues")),
+            },
         }
     return None
 
@@ -21949,9 +22094,6 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
             args.invocation_owner_context = invocation.get("owner_context")
             args.invocation_transition = input_transition
             args.invocation_owner_plan = invocation.get("owner_plan")
-            args.invocation_owner_prerequisites = invocation.get(
-                "owner_prerequisites"
-            )
         else:
             public_input = stage0_structured_input(skill_id, root, package, interface, args.input)
         if skill_id == FINALIZE_TASK_SKILL_ID:
@@ -22077,6 +22219,15 @@ def cmd_invoke_stage0_skill(args: argparse.Namespace) -> dict[str, Any]:
                 owner_result,
                 owner_plan,
             )
+            if (
+                skill_id == "guru-clarify-requirements"
+                and candidate_exit == "refresh_context"
+            ):
+                transition_errors = [
+                    item
+                    for item in transition_errors
+                    if item != "transition_clarity_authority_content_mismatch"
+                ]
             if transition_errors:
                 raise stage0_invocation_error(
                     "owner_result_input_mismatch",
@@ -35530,6 +35681,69 @@ def change_request_review_prerequisite_projections(
     return projections
 
 
+def change_request_review_transition_prerequisites(
+    transition: dict[str, Any],
+    target: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    clarity = transition.get("clarity")
+    wording = transition.get("wording")
+    if not isinstance(clarity, dict) or not isinstance(wording, dict):
+        raise WorkflowError(
+            "Change request transition is missing current prerequisite projections.",
+            exit_code=2,
+            payload={"error_codes": ["change_request_review_transition_prerequisites_missing"]},
+        )
+    projections = {
+        "clarity": {
+            "status": "current",
+            "schema_id": "guru-requirements-clarification-2.0",
+            "typed_exit": "clear",
+            "payload_sha256": context_digest({"stage": "clarity_current", **clarity}),
+            "facts_sha256": clarity.get("facts_sha256"),
+            "target_sha256": clarity.get("target_sha256"),
+            "disposition_sha256": clarity.get("disposition_sha256"),
+            "content_sha256": clarity.get("content_sha256"),
+            "scope_sha256": clarity.get("scope_sha256"),
+            "error_codes": [],
+        },
+        "wording": {
+            "status": "current",
+            "schema_id": "guru-contract-wording-review-1.0",
+            "profile": "change_request",
+            "typed_exit": "pass",
+            "payload_sha256": context_digest({"stage": "wording_current", **wording}),
+            "facts_sha256": wording.get("facts_sha256"),
+            "scope_sha256": wording.get("scope_sha256"),
+            "scan_sha256": wording.get("scan_sha256"),
+            "target_content_sha256": wording.get("target_content_sha256"),
+            "error_codes": [],
+        },
+    }
+    errors: list[str] = []
+    if transition.get("target_content_sha256") != target.get("content_sha256"):
+        errors.append("change_request_review_transition_target_content_mismatch")
+    if wording.get("target_content_sha256") != target.get("content_sha256"):
+        errors.append("change_request_review_transition_wording_content_mismatch")
+    if transition.get("clarity_result_sha256") != clarity.get("facts_sha256"):
+        errors.append("change_request_review_transition_clarity_identity_mismatch")
+    if transition.get("wording_facts_sha256") != wording.get("facts_sha256"):
+        errors.append("change_request_review_transition_wording_identity_mismatch")
+    if any(
+        change_request_review_sha256(value) is None
+        for projection in projections.values()
+        for key, value in projection.items()
+        if key.endswith("_sha256")
+    ):
+        errors.append("change_request_review_transition_prerequisite_digest_invalid")
+    if errors:
+        raise WorkflowError(
+            "Change request transition prerequisite linkage is invalid.",
+            exit_code=2,
+            payload={"error_codes": context_sort(errors)},
+        )
+    return projections
+
+
 def change_request_review_linkage(
     target: dict[str, Any],
     prerequisites: dict[str, dict[str, Any]],
@@ -36403,6 +36617,174 @@ def task_workspace_validate_plan(
     return payloads, context_sort(errors)
 
 
+def task_workspace_transition_payloads(
+    root: Path,
+    transition: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    compact_target = (
+        transition.get("target") if isinstance(transition.get("target"), dict) else {}
+    )
+    target = stage0_readiness_target_payload(compact_target)
+    clarity_projection = (
+        transition.get("clarity") if isinstance(transition.get("clarity"), dict) else {}
+    )
+    wording_projection = (
+        transition.get("wording") if isinstance(transition.get("wording"), dict) else {}
+    )
+    disposition = (
+        transition.get("target_disposition")
+        if isinstance(transition.get("target_disposition"), dict)
+        else {}
+    )
+    scope = transition.get("scope") if isinstance(transition.get("scope"), dict) else {}
+    target_kind = target.get("kind")
+    clarity_kind = "issue" if target_kind == "existing_issue" else "draft"
+    invocation_kind = {
+        "existing_issue": "initial_issue",
+        "proposed_draft": "proposed_draft",
+        "standalone_request": "standalone_review",
+    }.get(target_kind)
+    clarity = {
+        "schema_version": "2.0",
+        "skill_id": "guru-clarify-requirements",
+        "mode": transition.get("mode"),
+        "typed_exit": "clear",
+        "invocation_context": {
+            "kind": invocation_kind,
+            "caller": target.get("caller_locator"),
+            "task_locator": None,
+            "resume_target": "guru-review-contract-wording",
+        },
+        "review_target": {
+            "kind": clarity_kind,
+            "repo": target.get("repo"),
+            "issue_number": target.get("issue_number"),
+            "url": target.get("url"),
+            "state": "open" if target_kind == "existing_issue" else "draft",
+            "updated_at": target.get("updated_at"),
+            "body_sha256": target.get("body_sha256"),
+            "facts_sha256": clarity_projection.get("target_sha256"),
+        },
+        "target_disposition": {
+            "disposition_digest": disposition.get("disposition_sha256"),
+            "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
+        },
+        "content_identity": {
+            "result_sha256": clarity_projection.get("facts_sha256"),
+            "target_sha256": clarity_projection.get("target_sha256"),
+            "disposition_sha256": clarity_projection.get("disposition_sha256"),
+            "content_sha256": clarity_projection.get("content_sha256"),
+            "context_sha256": clarity_projection.get("content_sha256"),
+            "scope_sha256": clarity_projection.get("scope_sha256"),
+        },
+    }
+    wording = {
+        "schema_version": "1.0",
+        "skill_id": "guru-review-contract-wording",
+        "profile": "change_request",
+        "mode": transition.get("mode"),
+        "typed_exit": "pass",
+        "facts_sha256": wording_projection.get("facts_sha256"),
+        "scope": {"scope_sha256": wording_projection.get("scope_sha256")},
+        "scan": {"scan_sha256": wording_projection.get("scan_sha256")},
+    }
+    prerequisites = change_request_review_transition_prerequisites(
+        {
+            **transition,
+            "clarity": clarity_projection,
+            "wording": wording_projection,
+        },
+        target,
+    )
+    prerequisites["clarity"]["payload_sha256"] = context_digest(clarity)
+    prerequisites["wording"]["payload_sha256"] = context_digest(wording)
+    linkage = change_request_review_linkage(target, prerequisites)
+    readiness_scope = {
+        "close_issues": copy.deepcopy(scope.get("close_issues")),
+        "related_issues": copy.deepcopy(scope.get("related_issues")),
+        "followup_issues": copy.deepcopy(scope.get("followup_issues")),
+    }
+    readiness = {
+        "schema_version": CHANGE_REQUEST_REVIEW_SCHEMA_VERSION,
+        "skill_id": CHANGE_REQUEST_REVIEW_SKILL_ID,
+        "mode": transition.get("mode"),
+        "target": copy.deepcopy(target),
+        "prerequisites": prerequisites,
+        "evidence_linkage": linkage,
+        "semantic_review": {
+            "scope_conclusion": readiness_scope,
+            "ai_review_gate": {
+                "status": "passed",
+                "reviewed_linkage_sha256": linkage["linkage_sha256"],
+                "scope_conclusion_sha256": context_digest(readiness_scope),
+            },
+        },
+        "typed_exit": "ready",
+        "consumer": copy.deepcopy(CHANGE_REQUEST_REVIEW_CONSUMERS["ready"]),
+        "facts_sha256": transition.get("readiness_facts_sha256"),
+    }
+    expected_readiness = transition.get("readiness")
+    if not isinstance(expected_readiness, dict) or any(
+        expected_readiness.get(field) != value
+        for field, value in (
+            ("facts_sha256", readiness["facts_sha256"]),
+            ("content_sha256", target.get("content_sha256")),
+            ("linkage_sha256", linkage.get("linkage_sha256")),
+        )
+    ):
+        raise WorkflowError(
+            "Task workspace readiness transition is internally inconsistent.",
+            exit_code=2,
+        )
+    base = stage0_context_base_evidence(
+        root, transition, validate_live=False
+    )["sync_result"]
+    return {
+        "base": base,
+        "clarity": clarity,
+        "wording": wording,
+        "readiness": readiness,
+    }
+
+
+def task_workspace_validate_transition_plan(
+    root: Path,
+    plan: dict[str, Any],
+    transition: dict[str, Any],
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    errors = skill_json_schema_validation_errors(
+        plan,
+        task_workspace_schema(root, "plan"),
+        "task workspace plan",
+    )
+    try:
+        checked_transition = stage0_validate_transition(
+            root,
+            TASK_WORKSPACE_SKILL_ID,
+            transition,
+            public_input={"mode": plan.get("mode")},
+        )
+        payloads = task_workspace_transition_payloads(root, checked_transition)
+    except WorkflowError as exc:
+        return {}, [
+            f"task_workspace_transition_invalid:{exc.payload.get('code') or exc}"
+        ]
+    expected_rows = {
+        key: task_workspace_prerequisite_projection(
+            key,
+            f"call-local:{key}",
+            payload,
+            context_digest(payload),
+        )
+        for key, payload in payloads.items()
+    }
+    if plan.get("prerequisites") != expected_rows:
+        errors.append("task_workspace_transition_prerequisite_projection_mismatch")
+    if not errors:
+        errors.extend(task_workspace_plan_semantic_errors(root, plan, payloads))
+    return payloads, context_sort(errors)
+
+
 def task_workspace_call_local_invocation(
     args: argparse.Namespace,
     command: str,
@@ -36426,7 +36808,7 @@ def task_workspace_call_local_invocation(
             "Task workspace call-local invocation is invalid JSON.",
             exit_code=2,
         ) from exc
-    expected = {"schema_version", "plan", "prerequisite_payloads"}
+    expected = {"schema_version", "plan", "transition"}
     if command == "check":
         expected.add("result")
     if (
@@ -36434,7 +36816,7 @@ def task_workspace_call_local_invocation(
         or set(payload) != expected
         or payload.get("schema_version") != "1.0"
         or not isinstance(payload.get("plan"), dict)
-        or not isinstance(payload.get("prerequisite_payloads"), dict)
+        or not isinstance(payload.get("transition"), dict)
         or (command == "check" and not isinstance(payload.get("result"), dict))
     ):
         raise WorkflowError(
@@ -36465,11 +36847,18 @@ def cmd_record_task_workspace_plan(args: argparse.Namespace) -> dict[str, Any]:
         input_path = task_workspace_input_path(root, args.input, "task workspace authored plan")
         plan = read_json(input_path)
         direct_payloads = None
+        direct_transition = None
     else:
         plan = invocation["plan"]
-        direct_payloads = invocation["prerequisite_payloads"]
+        direct_transition = invocation["transition"]
+        direct_payloads = None
     before = task_workspace_snapshot(root, plan)
-    _, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+    if direct_transition is None:
+        _, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+    else:
+        _, errors = task_workspace_validate_transition_plan(
+            root, plan, direct_transition
+        )
     after = task_workspace_snapshot(root, plan)
     if before != after:
         errors.append("task_workspace_plan_recorder_wrote_repository_state")
@@ -36893,16 +37282,21 @@ def task_workspace_require_execution_boundary(
     root: Path,
     plan: dict[str, Any],
     workspace: Path | None = None,
-    direct_payloads: dict[str, Any] | None = None,
+    direct_transition: dict[str, Any] | None = None,
 ) -> None:
     if (
-        direct_payloads is None
+        direct_transition is None
         and workspace is not None
         and workspace.resolve() == root.resolve()
     ):
         errors = task_workspace_static_plan_errors(root, plan)
     else:
-        _, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+        if direct_transition is None:
+            _, errors = task_workspace_validate_plan(root, plan)
+        else:
+            _, errors = task_workspace_validate_transition_plan(
+                root, plan, direct_transition
+            )
     if run(["git", "rev-parse", "HEAD"], cwd=root, check=False).stdout.strip() != plan["base"]["decision_head"]:
         errors.append("task_workspace_source_head_stale")
     if workspace is not None:
@@ -37072,7 +37466,7 @@ def task_workspace_created_workspace_result(
     root: Path,
     plan: dict[str, Any],
     payloads: dict[str, dict[str, Any]],
-    direct_payloads: dict[str, Any] | None = None,
+    direct_transition: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     target = plan["target"]
     live = task_workspace_live_issue(root, target)
@@ -37081,14 +37475,14 @@ def task_workspace_created_workspace_result(
         raise WorkflowError("Task workspace source HEAD drifted from the reviewed base.", exit_code=2)
 
     workspace, task_dir, config = task_workspace_prepare_objects(root, plan)
-    task_workspace_require_execution_boundary(root, plan, workspace, direct_payloads)
+    task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
     live = task_workspace_live_issue(root, target)
     task_workspace_validate_assignee(root, plan, live)
     naming = plan["naming"]
     assignee = plan["assignee"]["login"]
 
     if naming["task_disposition"] == "create_new":
-        task_workspace_require_execution_boundary(root, plan, workspace, direct_payloads)
+        task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
         proc = task_workspace_run_official_task_create(
             workspace,
             naming["task_title"],
@@ -37123,12 +37517,12 @@ def task_workspace_created_workspace_result(
         if task_data.get(key) != value:
             raise WorkflowError(f"Task workspace task identity mismatch at {key}.", exit_code=2)
 
-    task_workspace_require_execution_boundary(root, plan, workspace, direct_payloads)
+    task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
     intended_json = task_workspace_intended_artifacts(root, workspace, task_dir, plan, live)
     for name in TASK_WORKSPACE_ARTIFACT_NAMES:
         task_workspace_write_exact(task_dir / name, intended_json[name], name)
 
-    task_workspace_require_execution_boundary(root, plan, workspace, direct_payloads)
+    task_workspace_require_execution_boundary(root, plan, workspace, direct_transition)
     mapping_payload = {
         "workspace_slug": naming["workspace_slug"],
         "branch_name": naming["branch_name"],
@@ -37192,10 +37586,17 @@ def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
     if invocation is None:
         plan = read_json(task_workspace_input_path(root, args.input, "task workspace plan"))
         direct_payloads = None
+        direct_transition = None
     else:
         plan = invocation["plan"]
-        direct_payloads = invocation["prerequisite_payloads"]
-    payloads, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+        direct_payloads = None
+        direct_transition = invocation["transition"]
+    if direct_transition is None:
+        payloads, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+    else:
+        payloads, errors = task_workspace_validate_transition_plan(
+            root, plan, direct_transition
+        )
     if errors:
         raise WorkflowError(
             "Task workspace plan is stale or invalid before execution.",
@@ -37236,7 +37637,7 @@ def cmd_create_task_workspace(args: argparse.Namespace) -> dict[str, Any]:
             root,
             plan,
             payloads,
-            direct_payloads,
+            direct_transition,
         )
     schema_errors = skill_json_schema_validation_errors(
         result,
@@ -37470,11 +37871,18 @@ def cmd_check_task_workspace_result(args: argparse.Namespace) -> dict[str, Any]:
         plan = read_json(task_workspace_input_path(root, args.plan_input, "task workspace plan"))
         result = read_json(task_workspace_input_path(root, args.input, "task workspace result"))
         direct_payloads = None
+        direct_transition = None
     else:
         plan = invocation["plan"]
         result = invocation["result"]
-        direct_payloads = invocation["prerequisite_payloads"]
-    payloads, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+        direct_payloads = None
+        direct_transition = invocation["transition"]
+    if direct_transition is None:
+        payloads, errors = task_workspace_validate_plan(root, plan, direct_payloads)
+    else:
+        payloads, errors = task_workspace_validate_transition_plan(
+            root, plan, direct_transition
+        )
     if not errors:
         errors.extend(task_workspace_result_check_errors(root, plan, result, payloads))
     if errors:

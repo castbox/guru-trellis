@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import json
 import hashlib
+import importlib.util
+import copy
 import os
 import shutil
 import subprocess
@@ -79,6 +81,95 @@ def install_canonical_workflow(repo: Path) -> None:
     source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
     target = repo / ".trellis/workflow.md"
     target.write_bytes(source.read_bytes())
+
+
+class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        guru_root = preset.guru_root_from_script()
+        module_path = (
+            guru_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "guru_phase0_transcript_verifier_test", module_path
+        )
+        assert spec is not None and spec.loader is not None
+        cls.verifier = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.verifier)
+
+    @staticmethod
+    def clarity_owner() -> dict[str, object]:
+        return {
+            "mode": "workflow",
+            "invocation_context": {"kind": "initial_issue"},
+            "review_target": {
+                "kind": "issue",
+                "url": "https://github.com/example/guru-extension/issues/145",
+            },
+        }
+
+    def test_rejects_clear_transcript_owner_mode_mismatch(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "owner mode"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {"profile": "initial_change_request", "mode": "workflow"},
+                {**self.clarity_owner(), "mode": "standalone"},
+            )
+
+    def test_rejects_clear_transcript_owner_profile_mismatch(self) -> None:
+        owner = self.clarity_owner()
+        owner["invocation_context"] = {"kind": "standalone_review"}
+        with self.assertRaisesRegex(RuntimeError, "owner profile"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {
+                    "profile": "initial_change_request",
+                    "mode": "workflow",
+                    "target_locator": "https://github.com/example/guru-extension/issues/145",
+                },
+                owner,
+            )
+
+    def test_rejects_clear_transcript_owner_live_target_mismatch(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "owner profile"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {
+                    "profile": "initial_change_request",
+                    "mode": "workflow",
+                    "target_locator": "https://github.com/example/guru-extension/issues/146",
+                },
+                self.clarity_owner(),
+            )
+
+    def test_rejects_forbidden_private_runtime_material_recursively(self) -> None:
+        cases = (
+            ".trellis/.runtime/guru-team/evals/owner-result.json",
+            ".trellis/.runtime/guru-team/phase0-transcript/change-request.json",
+            ".trellis/.runtime/guru-team/checkpoints/owner-plan.json",
+            ".trellis/.runtime/guru-team/checkpoints/current-transition.json",
+        )
+        for relative in cases:
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as raw:
+                root = Path(raw)
+                target = root / relative
+                target.parent.mkdir(parents=True)
+                target.write_text("{}\n", encoding="utf-8")
+                with self.assertRaisesRegex(RuntimeError, "forbidden private runtime"):
+                    self.verifier.assert_forbidden_runtime_absent(root)
+
+    def test_allows_only_workspace_and_task_runtime_mappings(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            for relative in (
+                ".trellis/.runtime/guru-team/workspaces/145-phase0.json",
+                ".trellis/.runtime/guru-team/tasks/145-phase0.json",
+            ):
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("{}\n", encoding="utf-8")
+            self.verifier.assert_forbidden_runtime_absent(root)
 
 
 class CodexDispatchModeInstallerTest(unittest.TestCase):
@@ -1097,7 +1188,21 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("check-task-workspace-result.sh", installed_phase0)
         self.assertIn('"gh",', installed_phase0)
         self.assertIn('issue["facts_sha256"] = context_digest(issue)', installed_phase0)
-        self.assertIn('owner["history_preview"] = preview', installed_phase0)
+        self.assertIn('"history_preview": preview', installed_phase0)
+        self.assertNotIn("owner_eval_payload", installed_phase0)
+        self.assertNotIn("cleanup_seed_workspace", installed_phase0)
+        self.assertNotIn("bind_workspace_plan_to_transition", installed_phase0)
+        self.assertNotIn("phase0-transcript/change-request.json", installed_phase0)
+        self.assertIn("stage_transcript_owner_repo", installed_phase0)
+        self.assertIn("workspace_plan_for_transition", installed_phase0)
+        self.assertIn("assert_forbidden_runtime_absent", installed_phase0)
+        chain_source = installed_phase0[
+            installed_phase0.index("def six_step_transcript("):
+            installed_phase0.index("def parse_args()")
+        ]
+        self.assertNotIn("records", chain_source)
+        self.assertNotIn("HAPPY_CASES", chain_source)
+        self.assertNotIn("evals", chain_source)
         installed_closeout = (
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"

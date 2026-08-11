@@ -3,7 +3,7 @@
   "$id": "guru-stage0-transition-wording-current-1.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "transition_id", "stage", "mode", "repo_locator", "base", "target_locator", "continuation_id", "context_result_sha256", "clarity_result_sha256", "wording_facts_sha256", "target_content_sha256"],
+  "required": ["schema_version", "transition_id", "stage", "mode", "repo_locator", "base", "target_locator", "continuation_id", "context_result_sha256", "clarity_result_sha256", "wording_facts_sha256", "target_content_sha256", "clarity", "wording", "target_disposition"],
   "properties": {
     "schema_version": {"const": "1.0"},
     "transition_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._:-]+$"},
@@ -16,11 +16,46 @@
     "context_result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "clarity_result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "wording_facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "target_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    "target_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "clarity": {"$ref": "#/$defs/clarity"},
+    "wording": {"$ref": "#/$defs/wording"},
+    "target_disposition": {"$ref": "#/$defs/targetDisposition"}
   },
   "$defs": {
     "sha40": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "clarity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256"],
+      "properties": {
+        "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "target_sha256": {"$ref": "#/$defs/sha256"},
+        "disposition_sha256": {"$ref": "#/$defs/sha256"},
+        "content_sha256": {"$ref": "#/$defs/sha256"},
+        "scope_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "wording": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["facts_sha256", "scope_sha256", "scan_sha256", "target_content_sha256"],
+      "properties": {
+        "facts_sha256": {"$ref": "#/$defs/sha256"},
+        "scope_sha256": {"$ref": "#/$defs/sha256"},
+        "scan_sha256": {"$ref": "#/$defs/sha256"},
+        "target_content_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "targetDisposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposition_sha256", "duplicate_facts_sha256"],
+      "properties": {
+        "disposition_sha256": {"$ref": "#/$defs/sha256"},
+        "duplicate_facts_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
     "base": {
       "type": "object",
       "additionalProperties": false,

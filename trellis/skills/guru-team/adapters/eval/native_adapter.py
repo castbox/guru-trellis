@@ -389,6 +389,7 @@ def stage0_eval_transition(
     public_input: dict[str, Any],
     owner_result: dict[str, Any],
     owner_plan: dict[str, Any] | None = None,
+    owner_prerequisites: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any] | None:
     if (
         skill_id == "guru-review-contract-wording"
@@ -475,7 +476,7 @@ def stage0_eval_transition(
         wording = prerequisites.get("wording") if isinstance(prerequisites.get("wording"), dict) else {}
         clarity_digest = str(clarity.get("facts_sha256") or clarity_digest)
         wording_digest = str(wording.get("facts_sha256") or wording_digest)
-        content_digest = str(owner_target.get("body_sha256") or content_digest)
+        content_digest = str(owner_target.get("content_sha256") or content_digest)
     elif stage == "readiness_current" and isinstance(owner_plan, dict):
         plan_target = owner_plan.get("target") if isinstance(owner_plan.get("target"), dict) else {}
         target = str(plan_target.get("url") or target)
@@ -518,20 +519,78 @@ def stage0_eval_transition(
     })
     if stage == "context_current":
         transition["context_result_sha256"] = context_digest
+        target_value = owner_result.get("review_target")
+        target_value = target_value if isinstance(target_value, dict) else {}
+        transition["authority_content_sha256"] = str(
+            target_value.get("body_sha256") or content_digest
+        )
     elif stage == "clarity_current":
         transition.update({
             "context_result_sha256": context_digest,
             "clarity_result_sha256": clarity_digest,
             "target_content_sha256": content_digest,
+            "clarity": {
+                "facts_sha256": clarity_digest,
+                "target_sha256": stage0_eval_hash("clarity-target", target),
+                "disposition_sha256": stage0_eval_hash("clarity-disposition", target),
+                "content_sha256": stage0_eval_hash("clarity-content", target),
+                "scope_sha256": stage0_eval_hash("clarity-scope", target),
+            },
+            "target_disposition": {
+                "disposition_sha256": stage0_eval_hash("clarity-disposition", target),
+                "duplicate_facts_sha256": stage0_eval_hash("clarity-duplicates", target),
+            },
         })
     elif stage == "wording_current":
+        prerequisites = owner_result.get("prerequisites")
+        prerequisites = prerequisites if isinstance(prerequisites, dict) else {}
+        clarity_projection = prerequisites.get("clarity")
+        clarity_projection = clarity_projection if isinstance(clarity_projection, dict) else {}
+        wording_projection = prerequisites.get("wording")
+        wording_projection = wording_projection if isinstance(wording_projection, dict) else {}
         transition.update({
             "context_result_sha256": context_digest,
             "clarity_result_sha256": clarity_digest,
             "wording_facts_sha256": wording_digest,
             "target_content_sha256": content_digest,
+            "clarity": {
+                "facts_sha256": clarity_projection.get("facts_sha256") or clarity_digest,
+                "target_sha256": clarity_projection.get("target_sha256") or stage0_eval_hash("clarity-target", target),
+                "disposition_sha256": clarity_projection.get("disposition_sha256") or stage0_eval_hash("clarity-disposition", target),
+                "content_sha256": clarity_projection.get("content_sha256") or stage0_eval_hash("clarity-content", target),
+                "scope_sha256": clarity_projection.get("scope_sha256") or stage0_eval_hash("clarity-scope", target),
+            },
+            "wording": {
+                "facts_sha256": wording_projection.get("facts_sha256") or wording_digest,
+                "scope_sha256": wording_projection.get("scope_sha256") or stage0_eval_hash("wording-scope", target),
+                "scan_sha256": wording_projection.get("scan_sha256") or stage0_eval_hash("wording-scan", target),
+                "target_content_sha256": wording_projection.get("target_content_sha256") or content_digest,
+            },
+            "target_disposition": {
+                "disposition_sha256": clarity_projection.get("disposition_sha256") or stage0_eval_hash("clarity-disposition", target),
+                "duplicate_facts_sha256": stage0_eval_hash("clarity-duplicates", target),
+            },
         })
     else:
+        prerequisite_payloads = owner_prerequisites or {}
+        readiness_payload = prerequisite_payloads.get("readiness")
+        readiness_payload = readiness_payload if isinstance(readiness_payload, dict) else {}
+        clarity_payload = prerequisite_payloads.get("clarity")
+        clarity_payload = clarity_payload if isinstance(clarity_payload, dict) else {}
+        wording_payload = prerequisite_payloads.get("wording")
+        wording_payload = wording_payload if isinstance(wording_payload, dict) else {}
+        runtime = load_owner_runtime(
+            fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        )
+        readiness_target = readiness_payload.get("target")
+        readiness_target = readiness_target if isinstance(readiness_target, dict) else {}
+        readiness_semantic = readiness_payload.get("semantic_review")
+        readiness_semantic = readiness_semantic if isinstance(readiness_semantic, dict) else {}
+        scope_conclusion = readiness_semantic.get("scope_conclusion")
+        scope_conclusion = scope_conclusion if isinstance(scope_conclusion, dict) else {}
+        clarity_compact = runtime.stage0_clarity_projection(clarity_payload)
+        wording_compact = runtime.stage0_wording_projection(wording_payload)
+        disposition_compact = runtime.stage0_target_disposition_projection(clarity_payload)
         transition.update({
             "clarity_result_sha256": clarity_digest,
             "wording_facts_sha256": wording_digest,
@@ -546,6 +605,21 @@ def stage0_eval_transition(
                 else stage0_eval_hash("readiness-linkage", target, owner_result)
             ),
             "target_content_sha256": content_digest,
+            "clarity": clarity_compact,
+            "wording": wording_compact,
+            "readiness": {
+                "payload_sha256": runtime.context_digest(readiness_payload),
+                "facts_sha256": readiness_payload.get("facts_sha256"),
+                "content_sha256": readiness_target.get("content_sha256"),
+                "linkage_sha256": (readiness_payload.get("evidence_linkage") or {}).get("linkage_sha256"),
+            },
+            "target": runtime.stage0_readiness_target_projection(readiness_target),
+            "target_disposition": disposition_compact,
+            "scope": {
+                "close_issues": copy.deepcopy(scope_conclusion.get("close_issues") or []),
+                "related_issues": copy.deepcopy(scope_conclusion.get("related_issues") or []),
+                "followup_issues": copy.deepcopy(scope_conclusion.get("followup_issues") or []),
+            },
         })
     identity_field = {
         "context_current": "context_result_sha256",
@@ -589,7 +663,6 @@ def bind_stage0_call_local_invocation(
         if workspace_state is None:
             raise ValueError("workspace call-local owner state is unavailable")
         envelope["owner_plan"] = copy.deepcopy(workspace_state[0])
-        envelope["owner_prerequisites"] = copy.deepcopy(workspace_state[1])
     else:
         envelope["owner_context"] = copy.deepcopy(owner_context)
     transition = stage0_eval_transition(
@@ -598,6 +671,11 @@ def bind_stage0_call_local_invocation(
         public_input,
         owner_result,
         envelope.get("owner_plan"),
+        (
+            workspace_state[1]
+            if skill_id == "guru-create-task-workspace"
+            else None
+        ),
     )
     if transition is not None:
         envelope["transition"] = transition
@@ -1393,25 +1471,51 @@ def build_wording_owner(
 
 
 def readiness_prerequisites(
-    runtime: Any, fixture: Path, source: dict[str, Any], source_path: Path,
+    runtime: Any,
+    fixture: Path,
+    source: dict[str, Any],
+    source_path: Path,
+    mode: str,
 ) -> dict[str, dict[str, Any]]:
-    body_sha256 = hashlib.sha256(source["body"].encode("utf-8")).hexdigest()
+    if source.get("kind") == "issue":
+        live = runtime.issue_view(
+            str(source.get("repo") or ""), int(source.get("number") or 0), fixture
+        )
+        body_sha256 = hashlib.sha256(
+            str(live.get("body") or "").encode("utf-8")
+        ).hexdigest()
+        invocation_kind = "initial_issue"
+        authority = {
+            "kind": "issue",
+            "repo": source.get("repo"),
+            "issue_number": source.get("number"),
+            "url": live.get("url"),
+            "state": str(live.get("state") or "").casefold(),
+            "updated_at": live.get("updatedAt"),
+            "body_sha256": body_sha256,
+        }
+        disposition = "keep_current_open_issue"
+    else:
+        body_sha256 = hashlib.sha256(source["body"].encode("utf-8")).hexdigest()
+        invocation_kind = "proposed_draft"
+        authority = {
+            "kind": "draft", "repo": "example/guru-extension",
+            "issue_number": None, "url": None, "state": "draft",
+            "updated_at": None, "body_sha256": body_sha256,
+        }
+        disposition = "keep_current_draft"
     clarity_package = fixture / ".trellis/guru-team/skills/packages/guru-clarify-requirements"
     clarity = json.loads(
         (clarity_package / "examples/requirements-clarification.json").read_text(encoding="utf-8")
     )
-    clarity["mode"] = "standalone"
+    clarity["mode"] = mode
     clarity["invocation_context"] = {
-        "kind": "proposed_draft", "caller": "stage0 readiness eval",
+        "kind": invocation_kind, "caller": "stage0 readiness eval",
         "task_locator": None, "resume_target": "guru-review-contract-wording",
-    }
-    authority = {
-        "kind": "draft", "repo": "example/guru-extension", "issue_number": None,
-        "url": None, "state": "draft", "updated_at": None, "body_sha256": body_sha256,
     }
     clarity["review_target"] = {**authority, "facts_sha256": runtime.context_digest(authority)}
     clarity["target_disposition"] = {
-        "disposition": "keep_current_draft",
+        "disposition": disposition,
         "duplicate_query": "repo:example/guru-extension is:issue is:open readiness eval",
         "duplicate_checked_at": "2026-01-01T00:00:00Z", "duplicate_candidates": [],
         "duplicate_facts_sha256": "0" * 64, "selected_issue": None,
@@ -1427,11 +1531,11 @@ def readiness_prerequisites(
     clarity = runtime.derive_requirements_clarification_result(clarity)
 
     scope, contents = runtime.contract_wording_build_scope(
-        fixture, "change_request", "standalone",
+        fixture, "change_request", mode,
         change_request_input=source_path.relative_to(fixture).as_posix(),
     )
     scan = runtime.scan_contract_wording(scope, contents)
-    wording = wording_review(runtime, "change_request", "standalone", scope, scan, "pass")
+    wording = wording_review(runtime, "change_request", mode, scope, scan, "pass")
     return {"clarity": clarity, "wording": wording}
 
 
@@ -1484,7 +1588,12 @@ def readiness_semantic_review(
 
 
 def build_readiness_owner(
-    runtime: Any, fixture: Path, package_root: Path, recipe: str, mode: str,
+    runtime: Any,
+    fixture: Path,
+    package_root: Path,
+    recipe: str,
+    mode: str,
+    profile: str,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any]]:
     route_by_recipe = {
         "readiness-ready": "ready",
@@ -1496,31 +1605,68 @@ def build_readiness_owner(
     typed_exit = route_by_recipe.get(recipe)
     if typed_exit is None:
         raise ValueError(f"unsupported readiness owner staging recipe: {recipe}")
-    source = {
-        "kind": "draft", "draft_id": "stage0-readiness-eval",
-        "title": "Review Stage 0 readiness",
-        "body": "The current Intake workflow is one independently deliverable unit.",
-        "selected_comments": [],
-    }
+    repo = "example/guru-extension"
+    request_id = "stage0-readiness-eval"
+    if profile == "current_issue":
+        issue = runtime.issue_view(repo, 145, fixture)
+        source = {
+            "kind": "issue",
+            "repo": repo,
+            "number": 145,
+            "selected_comments": [],
+        }
+    elif profile in {"proposed_draft", "standalone_request"}:
+        issue = None
+        source = {
+            "kind": "draft", "draft_id": request_id,
+            "title": "Review Stage 0 readiness",
+            "body": "The current Intake workflow is one independently deliverable unit.",
+            "selected_comments": [],
+        }
+    else:
+        raise ValueError(f"unsupported readiness input profile: {profile}")
     source_path = fixture / ".trellis/.runtime/guru-team/evals/change-request.json"
     source_path.write_text(json.dumps(source) + "\n", encoding="utf-8")
-    prerequisites = readiness_prerequisites(runtime, fixture, source, source_path)
+    prerequisites = readiness_prerequisites(
+        runtime, fixture, source, source_path, mode
+    )
     scope, _ = runtime.contract_wording_build_scope(
         fixture, "change_request", mode,
         change_request_input=source_path.relative_to(fixture).as_posix(),
     )
     title_sha256, body_sha256, _ = runtime.change_request_review_scope_hashes(scope)
-    raw_target = {
-        "kind": "proposed_draft", "repo": "example/guru-extension",
-        "draft_id": source["draft_id"],
-        "source_request_sha256": runtime.context_digest(
+    if profile == "current_issue":
+        raw_target = {
+            "kind": "existing_issue",
+            "repo": repo,
+            "issue_number": 145,
+            "url": issue.get("url") if isinstance(issue, dict) else None,
+            "updated_at": issue.get("updatedAt") if isinstance(issue, dict) else None,
+            "title_sha256": title_sha256,
+            "body_sha256": body_sha256,
+        }
+    else:
+        source_request_sha256 = runtime.context_digest(
             runtime.change_request_review_request_authority_projection(
-                "example/guru-extension", source, body_sha256
+                repo, source, body_sha256
             )
-        ),
-        "title_sha256": title_sha256, "body_sha256": body_sha256,
-        "side_effect_free": True,
-    }
+        )
+        raw_target = {
+            "kind": profile,
+            "repo": repo,
+            "source_request_sha256": source_request_sha256,
+            "title_sha256": title_sha256,
+            "body_sha256": body_sha256,
+            "side_effect_free": True,
+            **(
+                {"draft_id": request_id}
+                if profile == "proposed_draft"
+                else {
+                    "caller_locator": "stage0-eval",
+                    "request_id": request_id,
+                }
+            ),
+        }
     target, scope, contents = runtime.change_request_review_normalize_target(
         fixture, raw_target, source_path.relative_to(fixture).as_posix(), mode,
     )
@@ -1763,6 +1909,34 @@ def build_workspace_owner(
     plan = workspace_plan(
         runtime, fixture, recipe, mode, prerequisites, issue
     )
+    transition = stage0_eval_transition(
+        "guru-create-task-workspace",
+        fixture,
+        {"profile": "execute_reviewed_plan", "mode": mode},
+        prerequisites["readiness"],
+        plan,
+        prerequisites,
+    )
+    if not isinstance(transition, dict):
+        raise ValueError("workspace readiness transition is unavailable")
+    transition_payloads = runtime.task_workspace_transition_payloads(
+        fixture, transition
+    )
+    plan["prerequisites"] = {
+        key: runtime.task_workspace_prerequisite_projection(
+            key,
+            f"call-local:{key}",
+            payload,
+            runtime.context_digest(payload),
+        )
+        for key, payload in transition_payloads.items()
+    }
+    reviewable = runtime.context_digest(
+        runtime.task_workspace_reviewable_projection(plan)
+    )
+    plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable
+    plan["freshness"]["reviewable_plan_sha256"] = reviewable
+    plan["freshness"]["plan_sha256"] = runtime.task_workspace_plan_digest(plan)
     WORKSPACE_CALL_LOCAL_STATE[str(fixture.resolve())] = (
         copy.deepcopy(plan),
         copy.deepcopy(prerequisites),
@@ -1770,7 +1944,7 @@ def build_workspace_owner(
     common = {
         "schema_version": "1.0",
         "plan": plan,
-        "prerequisite_payloads": prerequisites,
+        "transition": transition,
     }
     call_runtime_with_json(
         runtime.cmd_record_task_workspace_plan,
@@ -3897,16 +4071,15 @@ def stage_owner_execution(
             if owner.get("profile") == "change_request":
                 owner_context["change_request"] = change_request
         elif skill_id == "guru-review-change-request":
-            owner, prerequisites, change_request = build_readiness_owner(
-                runtime, fixture, package, recipe, public_mode
+            owner, _, change_request = build_readiness_owner(
+                runtime,
+                fixture,
+                package,
+                recipe,
+                public_mode,
+                str(public_payload.get("profile") or ""),
             )
-            owner_context = {
-                "change_request": change_request,
-                "prerequisite_payloads": prerequisites,
-            }
-            (fixture / ".trellis/.runtime/guru-team/evals/prerequisites.json").write_text(
-                json.dumps(prerequisites) + "\n", encoding="utf-8"
-            )
+            owner_context = {"change_request": change_request}
         elif skill_id == "guru-create-task-workspace":
             owner = build_workspace_owner(runtime, fixture, recipe, public_mode)
         else:

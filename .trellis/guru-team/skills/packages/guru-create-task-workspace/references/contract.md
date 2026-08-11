@@ -45,8 +45,12 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
 9. After confirmation, run `record-task-workspace-plan --invocation -`,
    `create-task-workspace --invocation -`, and
    `check-task-workspace-result --invocation -` in order. Their closed stdin
-   envelopes carry the plan, current prerequisite payloads, and when applicable
-   the executor result without creating repository evidence files.
+   envelopes carry the current `readiness_current` transition, owner plan, and,
+   when applicable, the checked executor result. Runtime deterministically
+   reconstructs the minimal checker projections from the transition; complete
+   predecessor owner payloads stay private to their owning Skills. No
+   prerequisite payload or locator crosses the Skill boundary, and the calls
+   create no repository evidence files.
 10. Return exactly one declared typed exit.
 
 ## AI Review Gate

@@ -4498,10 +4498,11 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             key: {"payload": key}
             for key in gtt.TASK_WORKSPACE_PREREQUISITES
         }
+        transition = {"stage": "readiness_current"}
         common = {
             "schema_version": "1.0",
             "plan": plan,
-            "prerequisite_payloads": prerequisites,
+            "transition": transition,
         }
         snapshot = {
             "head": "b" * 40,
@@ -4522,7 +4523,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(
                 gtt,
-                "task_workspace_validate_plan",
+                "task_workspace_validate_transition_plan",
                 return_value=(prerequisites, []),
             ) as validate,
             mock.patch.object(gtt, "task_workspace_snapshot", return_value=snapshot),
@@ -4547,14 +4548,14 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
 
         self.assertEqual(recorded, plan)
         self.assertEqual(executed, executor_result)
-        self.assertEqual(validate.call_args_list[0].args, (self.root, plan, prerequisites))
-        self.assertEqual(validate.call_args_list[1].args, (self.root, plan, prerequisites))
+        self.assertEqual(validate.call_args_list[0].args, (self.root, plan, transition))
+        self.assertEqual(validate.call_args_list[1].args, (self.root, plan, transition))
 
         with (
             mock.patch.object(gtt, "repo_root", return_value=self.root),
             mock.patch.object(
                 gtt,
-                "task_workspace_validate_plan",
+                "task_workspace_validate_transition_plan",
                 return_value=(prerequisites, []),
             ) as validate,
             mock.patch.object(gtt, "task_workspace_result_check_errors", return_value=[]),
@@ -4570,7 +4571,7 @@ class TaskWorkspaceRuntimeTest(unittest.TestCase):
             )
 
         self.assertEqual(checked, checked_result)
-        self.assertEqual(validate.call_args.args, (self.root, plan, prerequisites))
+        self.assertEqual(validate.call_args.args, (self.root, plan, transition))
 
     def test_call_local_workspace_envelope_rejects_locators_and_open_shapes(self) -> None:
         valid = {
@@ -21657,6 +21658,17 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             "context_result_sha256": digest("context"),
             "clarity_result_sha256": clarity_digest,
             "target_content_sha256": digest("content"),
+            "clarity": {
+                "facts_sha256": clarity_digest,
+                "target_sha256": digest("target"),
+                "disposition_sha256": digest("disposition"),
+                "content_sha256": digest("clarity-content"),
+                "scope_sha256": digest("scope"),
+            },
+            "target_disposition": {
+                "disposition_sha256": digest("disposition"),
+                "duplicate_facts_sha256": digest("duplicates"),
+            },
         }
         package = (
             Path(gtt.__file__).resolve().parents[4]
@@ -21905,6 +21917,107 @@ class ChangeContextDiscoveryTests(unittest.TestCase):
             },
         )
         self.assertIn("transition_workspace_plan_mismatch", workspace_errors)
+
+    def test_old_context_body_allows_only_semantic_refresh_context(self) -> None:
+        digest = lambda value: hashlib.sha256(value.encode()).hexdigest()
+        url = "https://github.com/example/repo/issues/1"
+        public_input = {
+            "mode": "workflow",
+            "target_locator": url,
+            "continuation_id": "current",
+        }
+        transition = {
+            "mode": "workflow",
+            "target_locator": url,
+            "continuation_id": "current",
+            "base": {},
+            "authority_content_sha256": digest("old body"),
+        }
+        refreshed_owner = {
+            "typed_exit": "refresh_context",
+            "review_target": {"url": url, "body_sha256": digest("new body")},
+        }
+
+        self.assertEqual(
+            gtt.stage0_transition_owner_errors(
+                "guru-clarify-requirements",
+                public_input,
+                transition,
+                refreshed_owner,
+                None,
+            ),
+            [],
+        )
+
+        clear_owner = copy.deepcopy(refreshed_owner)
+        clear_owner["typed_exit"] = "clear"
+        self.assertIn(
+            "transition_clarity_authority_content_mismatch",
+            gtt.stage0_transition_owner_errors(
+                "guru-clarify-requirements",
+                public_input,
+                transition,
+                clear_owner,
+                None,
+            ),
+        )
+
+    def test_readiness_target_projection_round_trips_closed_variants(self) -> None:
+        common = {
+            "repo": "example/repo",
+            "title_sha256": "1" * 64,
+            "body_sha256": "2" * 64,
+            "identity_sha256": "3" * 64,
+            "content_sha256": "4" * 64,
+        }
+        variants = (
+            {
+                **common,
+                "kind": "existing_issue",
+                "issue_number": 1,
+                "url": "https://github.com/example/repo/issues/1",
+                "updated_at": "2026-01-01T00:00:00Z",
+                "draft_id": None,
+                "source_request_sha256": None,
+                "caller_locator": None,
+                "request_id": None,
+                "side_effect_free": False,
+            },
+            {
+                **common,
+                "kind": "proposed_draft",
+                "issue_number": None,
+                "url": None,
+                "updated_at": None,
+                "draft_id": "draft-1",
+                "source_request_sha256": "5" * 64,
+                "caller_locator": None,
+                "request_id": None,
+                "side_effect_free": True,
+            },
+            {
+                **common,
+                "kind": "standalone_request",
+                "issue_number": None,
+                "url": None,
+                "updated_at": None,
+                "draft_id": None,
+                "source_request_sha256": "5" * 64,
+                "caller_locator": "standalone-test",
+                "request_id": "request-1",
+                "side_effect_free": True,
+            },
+        )
+
+        for target in variants:
+            with self.subTest(kind=target["kind"]):
+                projection = gtt.stage0_readiness_target_projection(target)
+                self.assertNotIn(None, projection.values())
+                self.assertNotIn("side_effect_free", projection)
+                self.assertEqual(
+                    gtt.stage0_readiness_target_payload(projection),
+                    target,
+                )
 
     def valid_index(self, issue: int, token: str, path: str) -> dict[str, object]:
         return {
