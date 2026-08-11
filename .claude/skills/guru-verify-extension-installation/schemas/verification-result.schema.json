@@ -7,8 +7,8 @@
   "properties": {
     "schema_version": {"const": "4.0"},
     "skill_id": {"const": "guru-verify-extension-installation"},
-    "mode": {"enum": ["workflow", "standalone"]},
-    "profile": {"type": "string", "minLength": 1},
+    "mode": {"const": "standalone"},
+    "profile": {"const": "source_repository_verification"},
     "immutable_identity": {
       "type": "object", "additionalProperties": false,
       "required": ["repo_ref", "remote", "ref", "branch_review_commit", "publication_head", "extension_source_commit", "capability_profile"],
@@ -26,7 +26,7 @@
       "type": "object", "additionalProperties": false,
       "required": ["typed_exit", "conclusion", "finding_refs", "blocker"],
       "properties": {
-        "typed_exit": {"enum": ["verified", "not_required", "return_to_task_work", "blocked"]},
+        "typed_exit": {"enum": ["verified", "blocked"]},
         "conclusion": {"type": "string", "minLength": 1},
         "finding_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
         "blocker": {
@@ -43,21 +43,5 @@
       "required": ["verification_ref"],
       "properties": {"verification_ref": {"type": "string", "pattern": "^extension-verification:[0-9a-f]{24}$"}}
     }
-  },
-  "allOf": [
-    {
-      "if": {"properties": {"mode": {"const": "workflow"}}, "required": ["mode"]},
-      "then": {
-        "properties": {
-          "immutable_identity": {
-            "properties": {
-              "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-              "publication_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-              "extension_source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
-            }
-          }
-        }
-      }
-    }
-  ]
+  }
 }

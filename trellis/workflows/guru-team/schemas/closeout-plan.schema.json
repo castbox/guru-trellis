@@ -4,9 +4,9 @@
   "title": "Guru Team closeout plan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "task", "git", "inputs", "review", "publish", "marketplace", "projection", "transitions", "plan_digest"],
+  "required": ["schema_version", "task", "git", "inputs", "review", "publish", "projection", "transitions", "plan_digest"],
   "properties": {
-    "schema_version": {"const": "3.0"},
+    "schema_version": {"const": "4.0"},
     "task": {
       "type": "object",
       "additionalProperties": false,
@@ -77,15 +77,6 @@
         }
       }
     },
-    "marketplace": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["required", "verifier_artifact_locator"],
-      "properties": {
-        "required": {"type": "boolean"},
-        "verifier_artifact_locator": {"const": "marketplace-verification.json"}
-      }
-    },
     "projection": {
       "type": "object",
       "additionalProperties": false,
@@ -151,7 +142,7 @@
       }
     },
     "transitions": {
-      "const": ["prepared", "content_pushed", "evidence_ready", "draft_bound", "projection_validated", "archive_moved", "archive_pushed", "ready"]
+      "const": ["prepared", "content_pushed", "draft_bound", "projection_validated", "archive_moved", "archive_pushed", "ready"]
     },
     "plan_digest": {"$ref": "#/$defs/sha256"}
   },

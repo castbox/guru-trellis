@@ -430,7 +430,7 @@ FINALIZATION_TRANSACTION_ARTIFACT = "finalization-transaction.json"
 TASK_FINALIZATION_GATE_ARTIFACT = "task-finalization-gate.json"
 TASK_FINALIZATION_TRANSITION_GATE_ARTIFACT = "task-finalization-transition-gate.json"
 TASK_PR_MERGE_GATE_ARTIFACT = "task-pr-merge-gate.json"
-CLOSEOUT_PLAN_SCHEMA_VERSION = "3.0"
+CLOSEOUT_PLAN_SCHEMA_VERSION = "4.0"
 LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION = "2.0"
 LEGACY_CLOSEOUT_RETIRED_ARTIFACTS = {
     "pr-" "body.md",
@@ -447,10 +447,7 @@ CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS = {
 CLOSEOUT_ARCHIVE_CORE_ARTIFACTS = {
     *CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS,
 }
-CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS = {
-    MARKETPLACE_VERIFICATION_ARTIFACT,
-}
-CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 7
+CLOSEOUT_ARCHIVE_MAX_ARTIFACTS = 6
 CLOSEOUT_ARCHIVE_LEGACY_MAX_ARTIFACTS = 8
 CLOSEOUT_PR_PLACEHOLDER_NUMBER = 9223372036854775807
 CLOSEOUT_PR_HEAD_READ_ATTEMPTS = 6
@@ -462,7 +459,6 @@ CLOSEOUT_SUMMARY_RUNTIME_FACT_FIELDS = [
 CLOSEOUT_TRANSITIONS = [
     "prepared",
     "content_pushed",
-    "evidence_ready",
     "draft_bound",
     "projection_validated",
     "archive_moved",
@@ -11409,18 +11405,8 @@ def marketplace_verification_path(task_dir: Path, config: dict[str, Any] | None 
     return task_dir / name
 
 
-MARKETPLACE_VERIFICATION_PREFIXES = (
-    "trellis/index.json",
-    "trellis/guru-team-extension.json",
-    "trellis/workflows/",
-    "trellis/presets/",
-    "trellis/skills/guru-team/",
-    "docs/requirements/",
-    "README.md",
-)
-
 EXTENSION_VERIFICATION_SKILL_ID = "guru-verify-extension-installation"
-EXTENSION_VERIFICATION_SCHEMA_VERSION = "3.0"
+EXTENSION_VERIFICATION_SCHEMA_VERSION = "4.0"
 EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION = "4.0"
 EXTENSION_VERIFICATION_CAPABILITIES = (
     "marketplace_index",
@@ -11538,36 +11524,6 @@ EXTENSION_VERIFICATION_CONSUMERS = {
 }
 
 
-def marketplace_verification_required(gate: dict[str, Any]) -> dict[str, Any]:
-    """Return candidate extension-surface facts without making a route decision."""
-    files = gate.get("changed_files") if isinstance(gate.get("changed_files"), list) else []
-    changed_paths = sorted(
-        {
-            str(path)
-            for path in files
-            if isinstance(path, str)
-            and any(path.startswith(prefix) for prefix in MARKETPLACE_VERIFICATION_PREFIXES)
-        }
-    )
-    return {
-        "changed_paths": changed_paths,
-        "candidate_surfaces": sorted(
-            {
-                "public_docs"
-                if path == "README.md" or path.startswith("docs/requirements/")
-                else "skill_contract"
-                if path.startswith("trellis/skills/guru-team/")
-                else "preset"
-                if path.startswith("trellis/presets/")
-                else "workflow"
-                if path.startswith("trellis/workflows/")
-                else "marketplace"
-                for path in changed_paths
-            }
-        ),
-    }
-
-
 def closeout_reviewed_change_facts(
     root: Path,
     task_context: dict[str, Any],
@@ -11602,14 +11558,7 @@ def closeout_reviewed_change_facts(
             if path.strip()
         }
     )
-    marketplace = marketplace_verification_required(
-        {"changed_files": changed_paths}
-    )
-    return {
-        "changed_paths": changed_paths,
-        "candidate_surfaces": marketplace["candidate_surfaces"],
-        "marketplace_required": bool(marketplace["candidate_surfaces"]),
-    }
+    return {"changed_paths": changed_paths}
 
 
 def command_evidence(command: list[str], proc: subprocess.CompletedProcess[str], display_command: list[str] | None = None) -> dict[str, Any]:
@@ -12117,15 +12066,13 @@ def extension_verification_public_input(
     payload, _ = extension_verification_json_input(root, value)
     profile = payload.get("profile")
     schema_name = (
-        "public-verification-required-input-3.0.schema.json"
-        if profile == "verification_required"
-        else "public-standalone-verification-input.schema.json"
-        if profile == "standalone_verification"
+        "public-source-repository-verification-input.schema.json"
+        if profile == "source_repository_verification"
         else ""
     )
     if not schema_name:
         raise WorkflowError(
-            "Extension verification input does not select a declared profile.",
+            "retired_task_bearing_extension_verification: rebuild a current source_repository_verification standalone input; business task and Finalizer verification inputs are retired.",
             exit_code=2,
         )
     package = extension_verification_package_root(root)
@@ -12150,6 +12097,63 @@ def extension_verification_public_input(
             payload={"errors": errors},
         )
     return payload
+
+
+def extension_verification_source_preflight(
+    root: Path,
+    public_input: dict[str, Any],
+) -> str:
+    """Reject non-source or stale calls before clone, tempdir, or artifact writes."""
+    required_assets = (
+        root / "trellis/guru-team-extension.json",
+        root / "trellis/index.json",
+        root / "trellis/workflows/guru-team/workflow.md",
+        root / "trellis/presets/guru-team/scripts/bash/apply.sh",
+    )
+    if any(not path.is_file() or path.is_symlink() for path in required_assets):
+        raise WorkflowError(
+            "source_repository_required: canonical Guru Team source assets are unavailable.",
+            exit_code=2,
+        )
+    if public_input.get("repo_ref") != "castbox/guru-trellis":
+        raise WorkflowError(
+            "source_repository_mismatch: verifier accepts only castbox/guru-trellis.",
+            exit_code=2,
+        )
+    origin = run(["git", "remote", "get-url", "origin"], cwd=root, check=False)
+    if (
+        origin.returncode != 0
+        or parse_github_remote_repository_url(origin.stdout.strip())
+        != "castbox/guru-trellis"
+    ):
+        raise WorkflowError(
+            "source_origin_mismatch: origin must identify castbox/guru-trellis.",
+            exit_code=2,
+        )
+    requested = str(public_input.get("ref") or "")
+    resolved = run(
+        ["git", "rev-parse", "--verify", f"{requested}^{{commit}}"],
+        cwd=root,
+        check=False,
+    )
+    head = current_head(root)
+    resolved_commit = resolved.stdout.strip()
+    if (
+        resolved.returncode != 0
+        or re.fullmatch(r"[0-9a-f]{40}", resolved_commit) is None
+        or resolved_commit != head
+    ):
+        raise WorkflowError(
+            "source_ref_head_mismatch: requested ref must resolve to current HEAD.",
+            exit_code=2,
+        )
+    status = run(["git", "status", "--porcelain"], cwd=root, check=False)
+    if status.returncode != 0 or status.stdout.strip():
+        raise WorkflowError(
+            "source_checkout_not_clean: commit source changes before standalone verification.",
+            exit_code=2,
+        )
+    return resolved_commit
 
 
 def extension_verification_remote_identity(
@@ -14768,11 +14772,22 @@ SKILL_INTERFACE_SCHEMAS = {
         "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.4.json",
         "sha256": "5dd8e1913de60204de8e22b9f296a4b38f36fb7f0918eb77dd686533f7622f55",
     },
+    "guru-team-skill-interface-1.5": {
+        "version": "1.5",
+        "schema_path": Path("schemas/skill-interface-1.5.schema.json"),
+        "interface_ref": "../../schemas/skill-interface-1.5.schema.json",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.5.json",
+        "sha256": "53b240a7d66742a82cdb3150973872fa66b7ed9bf776bb6cebd0f27e33ab7f45",
+    },
 }
 CURRENT_SKILL_INTERFACE_SCHEMA_ID = "guru-team-skill-interface-1.4"
 CURRENT_SKILL_INTERFACE_VERSION = "1.4"
-CURRENT_SKILL_REGISTRY_SCHEMA_ID = "guru-team-skill-registry-1.3"
-CURRENT_SKILL_REGISTRY_VERSION = "1.3"
+CURRENT_SKILL_INTERFACE_SCHEMA_IDS = (
+    "guru-team-skill-interface-1.4",
+    "guru-team-skill-interface-1.5",
+)
+CURRENT_SKILL_REGISTRY_SCHEMA_ID = "guru-team-skill-registry-1.4"
+CURRENT_SKILL_REGISTRY_VERSION = "1.4"
 SKILL_RUNTIME_DEPENDENCY = {
     "extension_id": "guru-team",
     "api_version": "1.0",
@@ -14867,11 +14882,12 @@ SKILL_RUNTIME_REMEDIATION = (
 )
 SKILL_CONTRACT_SCHEMAS = {
     "registry": {
-        "sha256": "36ddfdb5901e655c1d41f93800cc98879b3e00f8225836681eb121f8fe69f655",
-        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.3.json",
+        "sha256": "907b36e5c26a24cd87129ad48dfd8cbd9faefc96d1904343f27b658ab6b6b129",
+        "id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-registry-1.4.json",
     },
     "interface-1.3": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.3"],
     "interface-1.4": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.4"],
+    "interface-1.5": SKILL_INTERFACE_SCHEMAS["guru-team-skill-interface-1.5"],
 }
 
 
@@ -16168,6 +16184,7 @@ def skill_extension_runtime_contract(
             "installed_root",
             "registry_schema_id",
             "interface_schema_id",
+            "interface_schema_ids",
             "public_input_schema_ids",
             "typed_output_schema_ids",
             "legacy_typed_output_schema_ids",
@@ -16183,6 +16200,8 @@ def skill_extension_runtime_contract(
         != CURRENT_SKILL_REGISTRY_SCHEMA_ID
         or
         skill_contracts.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID
+        or skill_contracts.get("interface_schema_ids")
+        != list(CURRENT_SKILL_INTERFACE_SCHEMA_IDS)
     ):
         errors.append(f"{label} has an incompatible Skill interface schema id")
     if isinstance(skill_contracts, dict):
@@ -17810,6 +17829,7 @@ def validate_skill_interface(
     if entry.get("workflow_integration_state", "integrated") not in {
         "integrated",
         "deferred",
+        "standalone_only",
     }:
         errors.append(
             f"active registry entry {skill_id} has invalid workflow integration state"
@@ -17923,23 +17943,38 @@ def validate_skill_interface(
         mode_ids: list[list[str]] = []
         for mode_name in ("workflow", "standalone"):
             mode = modes.get(mode_name)
-            expected_routing = "global_workflow" if mode_name == "workflow" else "direct_discovery"
             ids = mode.get("entry_precondition_ids") if isinstance(mode, dict) and set(mode) == {"routing", "entry_precondition_ids"} else None
+            standalone_only = (
+                entry.get("workflow_integration_state") == "standalone_only"
+                and mode_name == "workflow"
+            )
+            expected_routing = (
+                "not_applicable"
+                if standalone_only
+                else "global_workflow"
+                if mode_name == "workflow"
+                else "direct_discovery"
+            )
             valid_ids = (
                 isinstance(ids, list)
-                and bool(ids)
+                and (not standalone_only or not ids)
+                and (standalone_only or bool(ids))
                 and all(isinstance(item, str) for item in ids)
             )
             if (
                 not valid_ids
                 or mode.get("routing") != expected_routing
                 or len(ids) != len(set(ids))
-                or set(ids) != precondition_ids
+                or (not standalone_only and set(ids) != precondition_ids)
             ):
                 errors.append(f"interface for {skill_id} has invalid {mode_name} preconditions")
             else:
                 mode_ids.append(ids)
-        if len(mode_ids) == 2 and mode_ids[0] != mode_ids[1]:
+        if (
+            entry.get("workflow_integration_state") != "standalone_only"
+            and len(mode_ids) == 2
+            and mode_ids[0] != mode_ids[1]
+        ):
             errors.append(f"workflow and standalone preconditions differ for {skill_id}")
 
     artifacts = skill_unique_ids(interface.get("artifacts"), f"{skill_id}.artifacts", errors)
@@ -18161,9 +18196,9 @@ def validate_production_contract_manifest(
         errors.append("production contract manifest skill_ids do not match the ordered contract")
     if manifest.get("contract_id") != PRODUCTION_CONTRACT_ID:
         errors.append("production contract manifest has an unknown contract id")
-    if manifest.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID:
-        errors.append(f"production contract manifest does not require Interface {CURRENT_SKILL_INTERFACE_VERSION}")
-    if manifest.get("registry_schema_id") != CURRENT_SKILL_REGISTRY_SCHEMA_ID:
+    if manifest.get("interface_schema_id") != "guru-team-skill-interface-1.4":
+        errors.append("production contract manifest does not require its immutable Interface 1.4")
+    if manifest.get("registry_schema_id") != "guru-team-skill-registry-1.3":
         errors.append("production contract manifest has an unknown registry schema")
     if manifest.get("eval_schema_id") != SKILL_EVAL_SCHEMA_ID:
         errors.append("production contract manifest has an unknown eval schema")
@@ -18338,7 +18373,7 @@ def _validate_skill_source(
         }
     registry_stat = skill_lstat_path(boundary, skills_root / "registry.json", "skill registry", errors, kind="file")
     registry = skill_read_json(skills_root / "registry.json", "skill registry", errors) if registry_stat is not None else None
-    registry_schema_path = skills_root / "schemas/skill-registry-1.3.schema.json"
+    registry_schema_path = skills_root / "schemas/skill-registry-1.4.schema.json"
     registry_schema = None
     interface_schemas: dict[str, dict[str, Any]] = {}
     if skill_lstat_path(boundary, registry_schema_path, "skill registry schema", errors, kind="file") is not None:
@@ -18383,7 +18418,7 @@ def _validate_skill_source(
             ))
         if set(registry) != {"$schema", "schema_version", "skills"}:
             errors.append("skill registry has invalid fields")
-        if registry.get("$schema") != "schemas/skill-registry-1.3.schema.json" or registry.get("schema_version") != CURRENT_SKILL_REGISTRY_VERSION:
+        if registry.get("$schema") != "schemas/skill-registry-1.4.schema.json" or registry.get("schema_version") != CURRENT_SKILL_REGISTRY_VERSION:
             errors.append("skill registry has unknown schema id/version")
         entries = skill_unique_ids(registry.get("skills"), "skill registry", errors)
         active_registry_entries = {
@@ -18514,7 +18549,7 @@ def _validate_skill_source(
         if not (intake_ids | production_ids).issubset(active_ids):
             errors.append("active registry is missing a current contract Skill")
         if any(
-            entry.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID
+            entry.get("interface_schema_id") not in SKILL_INTERFACE_SCHEMAS
             for entry in active.values()
         ):
             errors.append("active registry contains an unknown interface schema id")
@@ -18523,6 +18558,8 @@ def _validate_skill_source(
             TASK_PUBLICATION_SKILL_ID,
             EXTENSION_VERIFICATION_SKILL_ID,
             FINALIZE_TASK_SKILL_ID,
+            "guru-select-workflow-mode",
+            "guru-merge-task-pr",
         }
         if active_ids == current_active_ids:
             exit_count = sum(
@@ -18530,8 +18567,8 @@ def _validate_skill_source(
                 for interface in interfaces.values()
                 if isinstance(interface.get("external_exits"), list)
             )
-            if len(active_ids) != 14 or exit_count != 54:
-                errors.append("current active Skill closure must remain exactly 14 Skills and 54 exits")
+            if len(active_ids) != 15 or exit_count != 54:
+                errors.append("current active Skill closure must remain exactly 15 Skills and 54 exits")
 
     workflow_stat = None
     if not require_workflow:
@@ -18575,9 +18612,9 @@ def _validate_skill_source(
         integration_state = active[skill_id].get(
             "workflow_integration_state", "integrated"
         )
-        if integration_state == "deferred" and count != 0:
+        if integration_state in {"deferred", "standalone_only"} and count != 0:
             errors.append(
-                f"deferred workflow skill {skill_id} has a mandatory invoke marker"
+                f"non-integrated workflow skill {skill_id} has a mandatory invoke marker"
             )
         elif integration_state == "integrated" and count == 0:
             errors.append(f"active skill {skill_id} has no mandatory invoke marker")
@@ -22189,11 +22226,11 @@ def build_skill_contract_discovery(
         "skill_id": skill_id,
         "interface_schema_id": interface_schema_id,
     }
-    if interface_schema_id != CURRENT_SKILL_INTERFACE_SCHEMA_ID:
+    if interface_schema_id not in CURRENT_SKILL_INTERFACE_SCHEMA_IDS:
         raise skill_contract_error(
             "version_state_mismatch",
             f"skills.{skill_id}.interface_schema_id",
-            f"Use the current Interface {CURRENT_SKILL_INTERFACE_VERSION} contract.",
+            "Use one of the registry-supported current Interface contracts.",
             "Skill contract identity is inconsistent with the current registry.",
         )
     contracts = interface.get("public_contracts")
@@ -22201,7 +22238,7 @@ def build_skill_contract_discovery(
         raise skill_contract_error(
             "public_contracts_missing",
             f"skills.{skill_id}.public_contracts",
-            f"Declare all six Interface {CURRENT_SKILL_INTERFACE_VERSION} public/private contract sections.",
+            "Declare all six current Interface public/private contract sections.",
             "Minimal handoff Skill has no public contracts.",
         )
     return {
@@ -22258,10 +22295,10 @@ def skill_eval_package_context(skills_root: Path, skill_id: str) -> tuple[Path, 
             "Skill eval discovery could not find one active registry entry.",
         )
     entry = matches[0]
-    if entry.get("interface_schema_id") != CURRENT_SKILL_INTERFACE_SCHEMA_ID:
+    if entry.get("interface_schema_id") not in CURRENT_SKILL_INTERFACE_SCHEMA_IDS:
         raise skill_eval_error(
             "evals_unsupported", f"skills.{skill_id}.interface_schema_id",
-            f"Use the current Interface {CURRENT_SKILL_INTERFACE_VERSION} Skill contract before running behavior evals.",
+            "Use one of the registry-supported current Interface contracts before running behavior evals.",
             "This Skill does not publish the current eval contract.",
         )
     package_relative = skill_safe_relative(entry.get("package"))
@@ -22666,12 +22703,14 @@ def skill_eval_side_validation_context(
     root: Path,
     skills_root: Path,
     mode: str,
+    interface_schema_id: str,
 ) -> tuple[dict[str, Any], set[str], dict[str, dict[str, Any]]]:
     errors: list[str] = []
+    interface_contract = SKILL_INTERFACE_SCHEMAS[interface_schema_id]
     interface_schema = skill_read_contract_schema(
-        skills_root / SKILL_INTERFACE_SCHEMAS[CURRENT_SKILL_INTERFACE_SCHEMA_ID]["schema_path"],
-        f"Skill Interface {CURRENT_SKILL_INTERFACE_VERSION} schema",
-        f"interface-{CURRENT_SKILL_INTERFACE_VERSION}",
+        skills_root / interface_contract["schema_path"],
+        f"Skill Interface {interface_contract['version']} schema",
+        f"interface-{interface_contract['version']}",
         errors,
     )
     registry = skill_read_json(skills_root / "registry.json", "skill registry", errors)
@@ -22715,8 +22754,10 @@ def skill_eval_discover_side(
     interface_schema: dict[str, Any],
     runtime_commands: set[str],
     active_registry_entries: dict[str, dict[str, Any]],
+    interface_schema_id: str,
 ) -> dict[str, Any]:
     errors: list[str] = []
+    expected_interface_version = SKILL_INTERFACE_SCHEMAS[interface_schema_id]["version"]
     if skill_lstat_path(package_root, package_root, f"{side} exact package", errors, kind="directory") is None:
         raise skill_eval_error(
             "eval_comparison_identity_invalid",
@@ -22731,13 +22772,13 @@ def skill_eval_discover_side(
         interface = skill_read_json(interface_path, f"{side} Interface", errors)
     if isinstance(interface, dict):
         errors.extend(skill_json_schema_validation_errors(interface, interface_schema, f"{side} Interface"))
-        if interface.get("id") != skill_id or interface.get("schema_version") != CURRENT_SKILL_INTERFACE_VERSION:
-            errors.append(f"{side} Interface identity does not match the selected Interface {CURRENT_SKILL_INTERFACE_VERSION} Skill")
+        if interface.get("id") != skill_id or interface.get("schema_version") != expected_interface_version:
+            errors.append(f"{side} Interface identity does not match the selected Interface {expected_interface_version} Skill")
     if errors or not isinstance(interface, dict):
         raise skill_eval_error(
             "eval_side_interface_invalid",
             f"comparison.{side}.interface",
-            f"Restore the exact closed Interface {CURRENT_SKILL_INTERFACE_VERSION} contract for this comparison side.",
+            f"Restore the exact closed Interface {expected_interface_version} contract for this comparison side.",
             "Skill eval comparison side failed Interface validation.",
         )
 
@@ -22795,7 +22836,7 @@ def skill_eval_discover_side(
         "side": side,
         "package_root": package_root,
         "interface": {
-            "interface_schema_id": CURRENT_SKILL_INTERFACE_SCHEMA_ID,
+            "interface_schema_id": interface_schema_id,
             "interface_version": interface["schema_version"],
             "public_invocation": invocation,
             "output_schemas": {
@@ -22813,7 +22854,8 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
         raise skill_contract_validation_error(args.mode, validation.get("errors", []))
     discovery = build_skill_eval_discovery(skills_root, args.skill)
     descriptor = skill_eval_descriptor_index(skills_root)[args.adapter]
-    selected_package, interface, _ = skill_eval_package_context(skills_root, args.skill)
+    selected_package, interface, entry = skill_eval_package_context(skills_root, args.skill)
+    interface_schema_id = str(entry["interface_schema_id"])
     corpus, _ = skill_eval_validate_corpus(skills_root, selected_package, interface)
     run_input = Path(args.run_root)
     if not run_input.is_absolute():
@@ -22821,7 +22863,7 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
     run_root = run_input.resolve(strict=False)
     side_paths = skill_eval_comparison_sides(args, selected_package)
     interface_schema, runtime_commands, active_registry_entries = skill_eval_side_validation_context(
-        root, skills_root, args.mode
+        root, skills_root, args.mode, interface_schema_id
     )
     sides = [
         skill_eval_discover_side(
@@ -22833,6 +22875,7 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
             interface_schema,
             runtime_commands,
             active_registry_entries,
+            interface_schema_id,
         )
         for side, package_root in side_paths
     ]
@@ -22974,7 +23017,7 @@ def cmd_run_skill_evals(args: argparse.Namespace) -> dict[str, Any]:
     evidence_path = run_root / f"{args.skill}-{args.adapter}-run.json"
     result = {
         "schema_version": "2.0", "skill_id": args.skill,
-        "interface_schema_id": CURRENT_SKILL_INTERFACE_SCHEMA_ID,
+        "interface_schema_id": interface_schema_id,
         "corpus_schema_id": SKILL_EVAL_SCHEMA_ID, "corpus_version": SKILL_EVAL_SCHEMA_VERSION,
         "adapter": args.adapter, "platform": args.adapter, "status": status,
         "cases": case_results, "evidence_path": str(evidence_path),
@@ -23008,6 +23051,23 @@ def extension_verification_owner_state_path(
         runtime_root(root, load_config(root))
         / "extension-verification-result"
         / ai_first_task_checkpoint_key(task_dir)
+        / "owner-state.json"
+    )
+
+
+def extension_verification_source_owner_state_path(
+    root: Path,
+    resolved_head: str,
+) -> Path:
+    if re.fullmatch(r"[0-9a-f]{40}", resolved_head) is None:
+        raise WorkflowError(
+            "Source verification owner state requires one resolved commit.",
+            exit_code=2,
+        )
+    return (
+        runtime_root(root, load_config(root))
+        / "extension-verification-result"
+        / f"source-{resolved_head[:24]}"
         / "owner-state.json"
     )
 
@@ -23048,43 +23108,9 @@ def extension_verification_execution_identity(
 def cmd_execute_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input = extension_verification_public_input(root, args.input)
+    extension_verification_source_preflight(root, public_input)
     selected = list(args.capability or [])
-    task_dir = extension_verification_task_dir(root, public_input)
-    if task_dir is None:
-        return extension_verification_execute_facts(root, public_input, selected)
-    identity = extension_verification_execution_identity(
-        root,
-        public_input,
-        selected,
-    )
-    identity_sha256 = canonical_json_sha256(identity)
-    checkpoint_root = extension_verification_execution_checkpoint_root(
-        root,
-        task_dir,
-    )
-    checkpoint = checkpoint_root / f"{identity_sha256}.json"
-    if checkpoint.is_file() and not checkpoint.is_symlink():
-        cached = read_json(checkpoint)
-        if (
-            isinstance(cached, dict)
-            and cached.get("identity") == identity
-            and isinstance(cached.get("execution"), dict)
-        ):
-            return copy.deepcopy(cached["execution"])
-    execution = extension_verification_execute_facts(root, public_input, selected)
-    write_json(
-        checkpoint,
-        {
-            "schema_version": "1.0",
-            "skill_id": EXTENSION_VERIFICATION_SKILL_ID,
-            "identity": identity,
-            "execution": execution,
-        },
-    )
-    for stale in checkpoint_root.glob("*.json"):
-        if stale != checkpoint and stale.is_file() and not stale.is_symlink():
-            stale.unlink()
-    return execution
+    return extension_verification_execute_facts(root, public_input, selected)
 
 
 def extension_verification_review_input(
@@ -23259,8 +23285,6 @@ def extension_verification_minimal_result(
     typed_exit = str(reviewed.get("typed_exit") or "")
     unverified_boundaries = {
         "verified": [],
-        "not_required": ["extension-installation-not-required"],
-        "return_to_task_work": ["task-work-findings-open"],
         "blocked": ["verification-blocked"],
     }.get(typed_exit, ["verification-incomplete"])
     payload: dict[str, Any] = {
@@ -23340,6 +23364,7 @@ def extension_verification_minimal_errors(
 def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input = extension_verification_public_input(root, args.input)
+    resolved_head = extension_verification_source_preflight(root, public_input)
     task_dir = extension_verification_task_identity(root, public_input)
     execution = extension_verification_execution_input(root, args.execution_input)
     reviewed = extension_verification_review_input(root, args.review_input)
@@ -23372,6 +23397,31 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
             exit_code=2,
             payload={"errors": semantic_errors},
         )
+    result = extension_verification_minimal_result(public_input, execution, reviewed)
+    result["immutable_identity"]["repo_ref"] = public_input["repo_ref"]
+    result["immutable_identity"]["remote"] = public_input["remote"]
+    result["immutable_identity"]["ref"] = public_input["ref"]
+    result["immutable_identity"]["branch_review_commit"] = None
+    result["immutable_identity"]["publication_head"] = resolved_head
+    result["identity"]["verification_ref"] = "<pending>"
+    result["identity"]["verification_ref"] = (
+        f"extension-verification:{canonical_json_sha256(result)[:24]}"
+    )
+    result_errors = extension_verification_minimal_errors(root, result, public_input)
+    if result_errors:
+        raise WorkflowError(
+            "Extension verification recorder produced an invalid source result.",
+            exit_code=2,
+            payload={"errors": result_errors},
+        )
+    write_json(
+        extension_verification_source_owner_state_path(root, resolved_head),
+        result,
+    )
+    return result
+
+    # Legacy task-bearing recorder remains below only to provide stable rejection
+    # for old inputs; the current source profile returns above before task artifacts.
     reviewed_content_sha256 = (
         extension_verification_reviewed_content_sha256(root, task_dir)
         if task_dir is not None
@@ -23621,8 +23671,28 @@ def check_extension_verification_result(
                             errors.append(
                                 "task-bearing verification evidence is stale after reviewed-content drift"
                             )
-        elif locator != "<stdin>":
-            errors.append("taskless minimal verification result must remain session-only stdin")
+        else:
+            try:
+                live_source_head = extension_verification_source_preflight(
+                    root, public_input
+                )
+                expected_owner_locator = repo_relative(
+                    root,
+                    extension_verification_source_owner_state_path(
+                        root, live_source_head
+                    ),
+                )
+            except WorkflowError:
+                errors.append("source repository verification identity is no longer current")
+                expected_owner_locator = ""
+            allowed_eval = (
+                os.environ.get("GURU_TEAM_EVAL_STAGING") == "1"
+                and locator.startswith(".trellis/.runtime/guru-team/evals/")
+            )
+            if locator not in {"<stdin>", expected_owner_locator} and not allowed_eval:
+                errors.append(
+                    "source verification result must use stdin or its ignored source-session owner state"
+                )
         identity = payload.get("immutable_identity") if isinstance(payload.get("immutable_identity"), dict) else {}
         if os.environ.get("GURU_TEAM_EVAL_STAGING") != "1":
             remote_proc = run(
@@ -23828,10 +23898,8 @@ def extension_verification_output_schema(
 ) -> dict[str, Any]:
     package = extension_verification_package_root(root)
     names = {
-        "verified": "public-verified-output-3.0.schema.json",
-        "not_required": "public-not-required-output.schema.json",
-        "return_to_task_work": "public-return-to-task-work-output.schema.json",
-        "blocked": "public-blocked-output.schema.json",
+        "verified": "public-verified-output-4.0.schema.json",
+        "blocked": "public-blocked-output-2.0.schema.json",
     }
     errors: list[str] = []
     schema = skill_read_schema(
@@ -23859,89 +23927,31 @@ def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any
         public_input,
     )
     exit_id = str(checked["typed_exit"])
-    mode = str(public_input["mode"])
+    if exit_id not in {"verified", "blocked"}:
+        raise WorkflowError(
+            "retired_task_bearing_extension_verification: current standalone verifier supports only verified or blocked.",
+            exit_code=2,
+        )
     minimal = owner.get("schema_version") == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION
     semantic_result = owner.get("semantic_result") if minimal else None
     immutable_identity = owner.get("immutable_identity") if minimal else None
-    payload: dict[str, Any] = {"exit_id": exit_id, "mode": mode}
-    if mode == "workflow":
-        if exit_id == "verified":
-            payload.update(
-                {
-                    "task_ref": public_input["task_ref"],
-                    "plan_ref": public_input["plan_ref"],
-                    "branch_review_commit": public_input["branch_review_commit"],
-                    "publication_head": public_input["publication_head"],
-                    "verification_ref": owner["identity"]["verification_ref"],
-                }
-            )
-        elif exit_id == "not_required":
-            raise WorkflowError(
-                "Workflow extension verification cannot emit not_required.",
-                exit_code=2,
-            )
-        elif exit_id == "return_to_task_work":
-            payload.update(
-                {
-                    "task_ref": public_input["task_ref"],
-                    "finding_refs": (
-                        semantic_result["finding_refs"]
-                        if isinstance(semantic_result, dict)
-                        else [
-                        item["finding_ref"]
-                        for item in owner["semantic_review"]["findings"]
-                        if item["status"] == "open"
-                        and item["route_class"] == "task_work"
-                        ]
-                    ),
-                    "resume_target": "phase-2",
-                }
-            )
-        else:
-            payload.update(
-                {
-                    "reason_code": (semantic_result["blocker"] if minimal else owner["blocker"])["reason_code"],
-                    "remediation": (semantic_result["blocker"] if minimal else owner["blocker"])["remediation"],
-                }
-            )
+    payload: dict[str, Any] = {"exit_id": exit_id}
+    if exit_id == "verified":
+        payload.update(
+            {
+                "repo_ref": public_input["repo_ref"],
+                "resolved_head": immutable_identity["publication_head"],
+                "session_ref": owner["identity"]["verification_ref"],
+            }
+        )
     else:
-        if exit_id in {"verified", "not_required"}:
-            payload.update(
-                {
-                    "repo_ref": public_input["repo_ref"],
-                    "resolved_head": (
-                        immutable_identity["publication_head"]
-                        if isinstance(immutable_identity, dict)
-                        else owner["target_repository"]["resolved_head"]
-                    ),
-                    "verification_ref": owner["identity"]["verification_ref"],
-                }
-            )
-        elif exit_id == "return_to_task_work":
-            payload.update(
-                {
-                    "task_ref": public_input["task_ref"],
-                    "finding_refs": (
-                        semantic_result["finding_refs"]
-                        if isinstance(semantic_result, dict)
-                        else [
-                        item["finding_ref"]
-                        for item in owner["semantic_review"]["findings"]
-                        if item["status"] == "open"
-                        and item["route_class"] == "task_work"
-                        ]
-                    ),
-                    "resume_target": "phase-2",
-                }
-            )
-        else:
-            payload.update(
-                {
-                    "repo_ref": public_input["repo_ref"],
-                    "reason_code": (semantic_result["blocker"] if minimal else owner["blocker"])["reason_code"],
-                    "remediation": (semantic_result["blocker"] if minimal else owner["blocker"])["remediation"],
-                }
-            )
+        blocker = semantic_result["blocker"] if minimal else owner["blocker"]
+        payload.update(
+            {
+                "reason_code": blocker["reason_code"],
+                "remediation": blocker["remediation"],
+            }
+        )
     schema = extension_verification_output_schema(root, exit_id)
     errors = skill_json_schema_validation_errors(
         payload,
@@ -24679,9 +24689,6 @@ def closeout_archive_retained_paths(plan: dict[str, Any]) -> list[str]:
     allowed = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
     if CLOSEOUT_PLAN_ARTIFACT in move_paths:
         allowed.add(CLOSEOUT_PLAN_ARTIFACT)
-    marketplace = plan.get("marketplace")
-    if isinstance(marketplace, dict) and marketplace.get("required") is True:
-        allowed.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
     retained = sorted(
         set(move_paths) & allowed
     )
@@ -24708,7 +24715,7 @@ def closeout_plan_errors(
         return ["closeout plan must be an object."]
     expected = {
         "schema_version", "task", "git", "inputs", "review", "publish",
-        "marketplace", "projection", "transitions", "plan_digest",
+        "projection", "transitions", "plan_digest",
     }
     errors: list[str] = []
     if set(plan) != expected:
@@ -24728,7 +24735,6 @@ def closeout_plan_errors(
     git = plan.get("git") if isinstance(plan.get("git"), dict) else {}
     review = plan.get("review") if isinstance(plan.get("review"), dict) else {}
     publish = plan.get("publish") if isinstance(plan.get("publish"), dict) else {}
-    marketplace = plan.get("marketplace") if isinstance(plan.get("marketplace"), dict) else {}
     projection = plan.get("projection") if isinstance(plan.get("projection"), dict) else {}
     projection_keys = {
         "active_locator", "archive_locator", "finish_summary_locator",
@@ -24750,7 +24756,6 @@ def closeout_plan_errors(
                 "match",
             },
         ),
-        "marketplace": (marketplace, {"required", "verifier_artifact_locator"}),
         "projection": (
             projection,
             projection_keys,
@@ -24815,10 +24820,6 @@ def closeout_plan_errors(
     expected_match = {"repo": git.get("repo"), "head": git.get("head_branch"), "base": git.get("base_branch")}
     if publish.get("match") != expected_match:
         errors.append("closeout publish match identity does not match git identity.")
-    if not isinstance(marketplace.get("required"), bool):
-        errors.append("closeout marketplace required must be boolean.")
-    if marketplace.get("verifier_artifact_locator") != MARKETPLACE_VERIFICATION_ARTIFACT:
-        errors.append("closeout marketplace artifact locator must be task-relative.")
     if projection.get("active_locator") != task.get("active_locator") or projection.get("archive_locator") != task.get("archive_locator"):
         errors.append("closeout projection task locators do not match task identity.")
     if projection.get("finish_summary_locator") != f"{task.get('archive_locator')}/{FINISH_SUMMARY_ARTIFACT}":
@@ -24909,8 +24910,6 @@ def closeout_plan_errors(
             *CLOSEOUT_ARCHIVE_CORE_ARTIFACTS,
             CLOSEOUT_PLAN_ARTIFACT,
         }
-        if marketplace.get("required") is True:
-            legacy_retained.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
         retained_paths = sorted(set(move_paths) & legacy_retained)
     else:
         retained_paths = closeout_archive_retained_paths(plan)
@@ -24926,9 +24925,6 @@ def closeout_plan_errors(
     )
     if len(retained_paths) > archive_limit:
         errors.append("closeout archive exceeds the long-term artifact budget.")
-    marketplace_retained = MARKETPLACE_VERIFICATION_ARTIFACT in retained_paths
-    if marketplace.get("required") is not marketplace_retained:
-        errors.append("closeout archive marketplace artifact must match applicability.")
     placeholder = projection.get("summary_placeholder")
     expected_placeholder = closeout_pr_placeholder(str(git.get("repo") or "invalid/invalid"))
     if placeholder != expected_placeholder:
@@ -25113,7 +25109,6 @@ def build_closeout_plan(
             exit_code=2,
         )
     reviewed_paths = list(review_facts["changed_paths"])
-    requires_marketplace = bool(review_facts["marketplace_required"])
     active_locator = repo_relative(root, task_dir)
     existing_plan_path = closeout_plan_path(task_dir)
     existing_plan = copy.deepcopy(existing_plan_override) if existing_plan_override else (
@@ -25177,8 +25172,6 @@ def build_closeout_plan(
         task_files.add(FINISH_SUMMARY_ARTIFACT)
         if include_closeout_plan:
             task_files.add(CLOSEOUT_PLAN_ARTIFACT)
-        if requires_marketplace:
-            task_files.add(MARKETPLACE_VERIFICATION_ARTIFACT)
     move_paths = sorted(task_files)
     tracked_move_paths, untracked_archive_outputs = closeout_live_move_classes(
         root,
@@ -25205,8 +25198,6 @@ def build_closeout_plan(
                 "migration_predecessor_plan_digest"
             )
     retained_names = set(CLOSEOUT_ARCHIVE_CORE_ARTIFACTS)
-    if requires_marketplace:
-        retained_names.update(CLOSEOUT_ARCHIVE_OPTIONAL_ARTIFACTS)
     retained_archive_paths = sorted(set(move_paths) & retained_names)
     transaction_paths = sorted(
         {f"{active_locator}/{name}" for name in tracked_move_paths}
@@ -25309,10 +25300,6 @@ def build_closeout_plan(
             "draft_to_ready": True,
             "match": {"repo": repo, "head": head_branch, "base": normalize_ref(base_branch).removeprefix("origin/")},
         },
-        "marketplace": {
-            "required": requires_marketplace,
-            "verifier_artifact_locator": MARKETPLACE_VERIFICATION_ARTIFACT,
-        },
         "projection": {
             "active_locator": active_locator,
             "archive_locator": archive_locator,
@@ -25346,7 +25333,7 @@ def closeout_schema2_migration_errors(
     errors: list[str] = []
     if previous.get("schema_version") != LEGACY_CLOSEOUT_PLAN_SCHEMA_VERSION:
         return ["schema 2.0 migration requires one legacy plan"]
-    for key in ("task", "review", "marketplace", "transitions"):
+    for key in ("task", "review", "transitions"):
         if previous.get(key) != current.get(key):
             errors.append(f"schema 2.0 migration changed protected {key} facts")
 
@@ -25519,7 +25506,6 @@ def prepare_closeout(
     task_context: dict[str, Any],
     *,
     publication_ready: dict[str, Any] | None = None,
-    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
     allowed_current_gate: dict[str, Any] | None = None,
     current_finalizer: bool = False,
 ) -> dict[str, Any]:
@@ -25753,9 +25739,8 @@ def prepare_closeout(
                         task_dir,
                         persisted,
                         ledger,
-                        verification_owner_result=verification_owner_result,
                     )
-                    if prior_state not in {"content_pushed", "evidence_ready"}:
+                    if prior_state != "content_pushed":
                         raise WorkflowError(
                             "Stale-month plan has no unique current-contract reprepare state.",
                             exit_code=2,
@@ -25791,7 +25776,6 @@ def resolve_closeout_pre_draft_state(
     plan: dict[str, Any],
     ledger: dict[str, Any],
     *,
-    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
     require_plan_artifact: bool = True,
 ) -> str:
     plan_path = closeout_plan_path(task_dir)
@@ -25836,36 +25820,7 @@ def resolve_closeout_pre_draft_state(
         remote_head = closeout_remote_branch_head(root, plan)
         if remote_head != publication_head:
             return "prepared"
-    if not plan["marketplace"]["required"]:
-        return "evidence_ready"
-    artifact = marketplace_verification_path(task_dir, load_config(root))
-    if not artifact.exists():
-        return "content_pushed"
-    if artifact.is_symlink() or not artifact.is_file():
-        raise WorkflowError(
-            "Extension verification owner artifact is unsafe.",
-            exit_code=2,
-        )
-    verification = verification_owner_result
-    if verification is None:
-        verification = finalization_current_verification_owner_result(
-            root,
-            task_dir,
-            task_ref=plan["task"]["active_locator"],
-            plan_ref=f"closeout-plan:{plan['plan_digest']}",
-            branch_review_commit=branch_review_commit,
-            plan=plan,
-        )
-    if (
-        not isinstance(verification, tuple)
-        or len(verification) != 2
-        or verification[1].get("typed_exit") != "verified"
-    ):
-        raise WorkflowError(
-            "Extension verification owner artifact is not current for closeout.",
-            exit_code=2,
-        )
-    return "evidence_ready"
+    return "content_pushed"
 
 
 def closeout_remote_branch_head(root: Path, plan: dict[str, Any]) -> str:
@@ -26433,8 +26388,6 @@ def build_final_archive_projection(
     task_dir: Path,
     prepared: dict[str, Any],
     pr: dict[str, Any],
-    *,
-    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     plan = prepared["plan"]
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
@@ -26468,12 +26421,6 @@ def build_final_archive_projection(
         expected_draft=True,
         require_summary=False,
         expected_head=current_head(root),
-    )
-    validate_closeout_marketplace_artifact(
-        root,
-        task_dir,
-        plan,
-        verification_owner_result,
     )
     summary = closeout_summary_for_pr(plan, pr)
     if summary["index"]["search_terms"]["pr_refs"] != [f"PR #{pr['number']}"]:
@@ -26549,8 +26496,6 @@ def validate_closeout_active_projection(
     root: Path,
     task_dir: Path,
     plan: dict[str, Any],
-    *,
-    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> None:
     if repo_relative(root, task_dir) != plan["task"]["active_locator"] or not task_dir.is_dir():
         raise WorkflowError("Closeout active projection locator is invalid.", exit_code=2)
@@ -26563,12 +26508,6 @@ def validate_closeout_active_projection(
             payload={"expected_files": expected_files, "actual_files": actual_files},
         )
     read_and_validate_closeout_final_summary(task_dir / FINISH_SUMMARY_ARTIFACT, plan)
-    validate_closeout_marketplace_artifact(
-        root,
-        task_dir,
-        plan,
-        verification_owner_result,
-    )
 
 
 def closeout_commit_tree_entry(root: Path, commit: str, path: str) -> tuple[str, str, str]:
@@ -27452,7 +27391,6 @@ def execute_archive_metadata_transaction(
     plan: dict[str, Any],
     *,
     bound_pr: dict[str, Any] | None = None,
-    verification_owner_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     archive_script = root / ".trellis/scripts/task.py"
     if not archive_script.is_file():
@@ -27468,7 +27406,6 @@ def execute_archive_metadata_transaction(
         root,
         task_dir,
         plan,
-        verification_owner_result=verification_owner_result,
     )
     assert_closeout_archive_path_preflight(root, plan["task"]["archive_locator"])
     validate_closeout_pre_move_continuity(
@@ -27852,21 +27789,10 @@ def resume_active_archive_move(
     summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
     if not summary_path.is_file():
         raise WorkflowError("Archive-move recovery requires the validated final summary.", exit_code=2)
-    verification_owner_result = getattr(args, "verification_owner_result", None)
-    if plan["marketplace"]["required"] and verification_owner_result is None:
-        verification_owner_result = finalization_current_verification_owner_result(
-            root,
-            task_dir,
-            task_ref=plan["task"]["active_locator"],
-            plan_ref=f"closeout-plan:{plan['plan_digest']}",
-            branch_review_commit=plan["git"]["branch_review_commit"],
-            plan=plan,
-        )
     validate_closeout_active_projection(
         root,
         task_dir,
         plan,
-        verification_owner_result=verification_owner_result,
     )
     assert_closeout_archive_month_current(plan)
     official_after_archive_hook_state(root)
@@ -27894,7 +27820,6 @@ def resume_active_archive_move(
         task_dir,
         plan,
         bound_pr=pr,
-        verification_owner_result=verification_owner_result,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     return {
@@ -27918,7 +27843,7 @@ def execute_closeout_content_push(
     *,
     persist_closeout_plan: bool = True,
 ) -> dict[str, Any]:
-    """Run the existing first closeout transition and stop at the verification boundary."""
+    """Push reviewed content before continuing directly to Draft PR binding."""
     plan = prepared["plan"]
     validate_closeout_reviewed_content(
         root,
@@ -27953,7 +27878,6 @@ def execute_closeout_content_push(
             else f"finalization:{plan['plan_digest']}"
         ),
         "branch_review_commit": plan["git"]["branch_review_commit"],
-        "verification_required": bool(plan["marketplace"]["required"]),
     }
 
 
@@ -28020,7 +27944,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             raise WorkflowError("Interrupted archive move must resume through formal finish-work.", exit_code=2)
         return resume_active_archive_move(root, args, config, task_dir, task_context)
 
-    verification_owner_result = getattr(args, "verification_owner_result", None)
     prepared = prepare_closeout(
         root,
         args,
@@ -28028,7 +27951,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         task_context,
         publication_ready=getattr(args, "publication_ready", None),
-        verification_owner_result=verification_owner_result,
         current_finalizer=current_finalizer,
     )
     plan = prepared["plan"]
@@ -28081,10 +28003,7 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             transaction = finalization_transaction_from_plan(
                 plan,
                 next_transition=(
-                    "verify"
-                    if recovered_legacy_pr and plan["marketplace"]["required"]
-                    else "bind_draft"
-                    if recovered_legacy_pr
+                    "bind_draft" if recovered_legacy_pr
                     else "push_content"
                 ),
                 pr=recovered_legacy_pr,
@@ -28101,11 +28020,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
                     pr=(
                         transaction["pr"]
                         if isinstance(transaction.get("pr"), dict)
-                        else None
-                    ),
-                    verification_ref=(
-                        str(transaction["verification_ref"])
-                        if isinstance(transaction.get("verification_ref"), str)
                         else None
                     ),
                     pre_push_remote_head=(
@@ -28168,7 +28082,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             state_plan,
             ledger,
-            verification_owner_result=verification_owner_result,
             require_plan_artifact=not current_finalizer,
         )
         if recovered_legacy_pr is not None and entry_state == "prepared":
@@ -28198,51 +28111,15 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
         if current_finalizer:
             transaction = finalization_transaction_from_plan(
                 plan,
-                next_transition=("verify" if plan["marketplace"]["required"] else "bind_draft"),
+                next_transition="bind_draft",
             )
             finalization_write_transaction(root, task_dir, transaction)
 
-    if entry_state in {"content_pushed", "evidence_ready"}:
+    if entry_state == "content_pushed":
         validate_publish_identity_and_remote_head(
             root, prepared["task"], task_context, plan["git"]["repo"],
             plan["git"]["base_branch"], plan["git"]["head_branch"], plan["git"]["remote"],
         )
-
-    if plan["marketplace"]["required"]:
-        if verification_owner_result is None:
-            verification_owner_result = finalization_current_verification_owner_result(
-                root,
-                task_dir,
-                task_ref=plan["task"]["active_locator"],
-                plan_ref=(
-                    f"finalization:{plan['plan_digest']}"
-                    if current_finalizer
-                    else f"closeout-plan:{plan['plan_digest']}"
-                ),
-                branch_review_commit=plan["git"]["branch_review_commit"],
-                plan=plan,
-            )
-        if verification_owner_result is None:
-            raise WorkflowError(
-                "Task finalization requires current extension verification owner evidence.",
-                exit_code=2,
-            )
-        validate_closeout_marketplace_artifact(
-            root,
-            task_dir,
-            plan,
-            verification_owner_result,
-        )
-        entry_state = "evidence_ready"
-        if current_finalizer:
-            checked_verification = verification_owner_result[1]
-            transaction = finalization_transaction_from_plan(
-                plan,
-                next_transition="bind_draft",
-                pr=recovered_legacy_pr,
-                verification_ref=str(checked_verification["verification_ref"]),
-            )
-            finalization_write_transaction(root, task_dir, transaction)
 
     validate_closeout_reviewed_content(
         root,
@@ -28263,14 +28140,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             plan,
             next_transition="archive",
             pr=pr,
-            verification_ref=(
-                str(verification_owner_result[1]["verification_ref"])
-                if isinstance(verification_owner_result, tuple)
-                and len(verification_owner_result) == 2
-                and isinstance(verification_owner_result[1], dict)
-                and isinstance(verification_owner_result[1].get("verification_ref"), str)
-                else None
-            ),
         )
         finalization_write_transaction(root, task_dir, transaction)
     finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
@@ -28279,7 +28148,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             root,
             task_dir,
             plan,
-            verification_owner_result=verification_owner_result,
         )
         validate_closeout_pull_request_identity(
             root,
@@ -28296,7 +28164,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             prepared,
             pr,
-            verification_owner_result=verification_owner_result,
         )
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
@@ -28314,19 +28181,10 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
         task_dir,
         plan,
         bound_pr=pr,
-        verification_owner_result=verification_owner_result,
     )
     publish_payload = ensure_closeout_pr_ready(root, plan, bound_pr=pr)
     retired_owner_state: list[str] = []
     if current_finalizer:
-        verification_ref = (
-            str(verification_owner_result[1]["verification_ref"])
-            if isinstance(verification_owner_result, tuple)
-            and len(verification_owner_result) == 2
-            and isinstance(verification_owner_result[1], dict)
-            and isinstance(verification_owner_result[1].get("verification_ref"), str)
-            else None
-        )
         finalization_write_transaction(
             root,
             archived_task_dir,
@@ -28334,7 +28192,6 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
                 plan,
                 next_transition="mark_ready",
                 pr=publish_payload["pr"],
-                verification_ref=verification_ref,
             ),
         )
     return {
@@ -28356,10 +28213,6 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
 
 
 FINALIZATION_CONSUMERS = {
-    "verification_required": {
-        "kind": "skill",
-        "id": EXTENSION_VERIFICATION_SKILL_ID,
-    },
     "publication_review_stale": {
         "kind": "skill",
         "id": TASK_PUBLICATION_SKILL_ID,
@@ -28383,13 +28236,12 @@ FINALIZATION_CONSUMERS = {
 }
 
 FINALIZATION_EXECUTOR_OUTPUT_MARKER = {"materialization": "executor"}
-FINALIZATION_GATE_SCHEMA_VERSION = "3.0"
+FINALIZATION_GATE_SCHEMA_VERSION = "4.0"
 FINALIZATION_REPREPARE_ARCHIVE_MONTH = "archive_month_changed"
 FINALIZATION_REPREPARE_PROVENANCE_TAIL = "provenance_tail_required"
 FINALIZATION_COMMITTED_RECOVERY_STATES = {"archived", "ready"}
 FINALIZATION_RESUME_RECOVERY_STATES = {
     "content_pushed",
-    "evidence_ready",
     "draft_bound",
     "projection_validated",
     "archive_moved",
@@ -28607,11 +28459,10 @@ def finalization_transaction_from_plan(
     *,
     next_transition: str,
     pr: dict[str, Any] | None = None,
-    verification_ref: str | None = None,
     pre_push_remote_head: str | None = None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "skill_id": FINALIZE_TASK_SKILL_ID,
         "task_ref": plan["task"]["active_locator"],
         "repo_ref": plan["git"]["repo"],
@@ -28635,8 +28486,6 @@ def finalization_transaction_from_plan(
             "number": pr["number"],
             "url": pr["url"],
         }
-    if verification_ref is not None:
-        payload["verification_ref"] = verification_ref
     if pre_push_remote_head is not None:
         payload["pre_push_remote_head"] = pre_push_remote_head
     return payload
@@ -28650,11 +28499,6 @@ def finalization_validate_transaction_plan(
         plan,
         next_transition=str(transaction.get("next_transition") or "push_content"),
         pr=(transaction.get("pr") if isinstance(transaction.get("pr"), dict) else None),
-        verification_ref=(
-            str(transaction["verification_ref"])
-            if isinstance(transaction.get("verification_ref"), str)
-            else None
-        ),
         pre_push_remote_head=(
             str(transaction["pre_push_remote_head"])
             if transaction.get("next_transition") == "push_content"
@@ -29723,16 +29567,13 @@ def finalization_eval_preview_context(
         "repo_ref",
         "remote",
         "head_branch",
-        "verification_ref",
         "publication_status",
         "publication_stale_reason",
-        "marketplace_required",
         "transaction_state",
     }
     states = {
         "prepared",
         "content_pushed",
-        "evidence_ready",
         "draft_bound",
         "projection_validated",
         "archive_moved",
@@ -29741,11 +29582,6 @@ def finalization_eval_preview_context(
         "ready",
         "reprepare_required",
     }
-    verification_exit = {
-        "verification_verified": "verified",
-        "standalone_verification_not_required": "not_required",
-    }.get(public_input.get("profile"))
-    verification_ref = payload.get("verification_ref")
     if (
         set(payload) != expected_keys
         or payload.get("schema_version") != "2.0"
@@ -29773,7 +29609,6 @@ def finalization_eval_preview_context(
                 "publication_review_stale",
             }
         )
-        or not isinstance(payload.get("marketplace_required"), bool)
         or payload.get("transaction_state") not in states
         or (
             payload.get("transaction_state") == "reprepare_required"
@@ -29785,14 +29620,6 @@ def finalization_eval_preview_context(
                 }
             )
         )
-        or (
-            verification_exit is not None
-            and (
-                not isinstance(verification_ref, str)
-                or not verification_ref
-            )
-        )
-        or (verification_exit is None and verification_ref is not None)
     ):
         raise WorkflowError(
             "Task finalization eval objective facts are invalid.",
@@ -29826,92 +29653,11 @@ def finalization_eval_preview_context(
             "publication_head": payload["publication_head"],
         },
         "review": {"close_issues_reviewed": [174]},
-        "marketplace": {"required": payload["marketplace_required"]},
         "task": {
             "active_locator": payload["task_ref"],
             "archive_locator": payload["archive_locator"],
         },
     }
-    if public_input.get("profile") == "standalone_verification_not_required":
-        owner, locator = finalization_verification_owner_payload(
-            root,
-            task_dir,
-        )
-        if owner.get("schema_version") == EXTENSION_VERIFICATION_RESULT_SCHEMA_VERSION:
-            errors = extension_verification_minimal_errors(root, owner)
-            semantic = (
-                owner.get("semantic_result")
-                if isinstance(owner.get("semantic_result"), dict)
-                else {}
-            )
-            checked = {
-                "status": "ok",
-                "typed_exit": semantic.get("typed_exit"),
-                "mode": owner.get("mode"),
-                "verification_ref": owner.get("identity", {}).get(
-                    "verification_ref"
-                ),
-                "artifact_sha256": context_digest(owner),
-            }
-        else:
-            owner_input = (
-                owner.get("public_input")
-                if isinstance(owner.get("public_input"), dict)
-                else {}
-            )
-            errors = extension_verification_payload_errors(
-                root,
-                owner,
-                expected_public_input=owner_input,
-            )
-            checked = {
-                "status": "ok",
-                "typed_exit": owner.get("typed_exit"),
-                "mode": owner.get("mode"),
-                "verification_ref": owner.get("identity", {}).get(
-                    "verification_ref"
-                ),
-                "artifact_sha256": context_digest(owner),
-            }
-        expected_locator = (
-            f"{repo_relative(root, task_dir)}/{MARKETPLACE_VERIFICATION_ARTIFACT}"
-        )
-        if (
-            errors
-            or locator != expected_locator
-            or not finalization_standalone_not_required_owner_is_current(
-                owner,
-                checked,
-                plan,
-                task_ref=payload["task_ref"],
-            )
-            or public_input.get("repo_ref") != payload["repo_ref"]
-            or public_input.get("resolved_head")
-            != payload["publication_head"]
-            or public_input.get("verification_ref")
-            != checked.get("verification_ref")
-        ):
-            raise WorkflowError(
-                "Task finalization eval standalone owner evidence is invalid.",
-                exit_code=2,
-                payload={"errors": errors},
-            )
-        verification: tuple[dict[str, Any], dict[str, Any]] | None = (
-            owner,
-            checked,
-        )
-    else:
-        verification = (
-            (
-                {"eval_owner_result": True},
-                {
-                    "typed_exit": verification_exit,
-                    "verification_ref": verification_ref,
-                },
-            )
-            if verification_exit is not None
-            else None
-        )
     return {
         "task_dir": task_dir,
         "task_context": None,
@@ -29938,7 +29684,7 @@ def finalization_eval_preview_context(
             if payload["transaction_state"] == "reprepare_required"
             else None
         ),
-        "verification": verification,
+        "verification": None,
     }
 
 
@@ -30338,27 +30084,7 @@ def finalization_preview_context(
         task_context = None
     else:
         current_transaction = finalization_read_transaction(root, task_dir)
-        try:
-            verification = finalization_verification_owner_result(
-                root,
-                task_dir,
-                public_input,
-            )
-        except WorkflowError as exc:
-            existing_for_reprepare = finalization_closeout_plan(root, task_dir)
-            if (
-                existing_for_reprepare is None
-                or existing_for_reprepare.get("marketplace", {}).get("required") is not True
-                or task_json(task_dir).get("status") != "in_progress"
-                or not finalizer_provenance_reprepare_error(exc)
-                or not finalizer_pre_pr_provenance_tail_required(
-                    root,
-                    existing_for_reprepare,
-                )
-            ):
-                raise
-            verification = None
-        reuse_current_verification = public_input["profile"] != "publication_ready"
+        verification = None
         publication = finalization_publication_owner_result(
             root,
             task_dir,
@@ -30405,7 +30131,6 @@ def finalization_preview_context(
                     existing_plan=existing_plan_for_payload,
                     transaction=current_transaction,
                 ),
-                verification_owner_result=verification,
                 allowed_current_gate=getattr(
                     args,
                     "_finalization_checked_gate",
@@ -30446,31 +30171,6 @@ def finalization_preview_context(
                 state = "reprepare_required"
                 reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
             else:
-                if verification is None and reuse_current_verification:
-                    try:
-                        verification = finalization_current_verification_owner_result(
-                            root,
-                            task_dir,
-                            task_ref=public_input["task_ref"],
-                            plan_ref=f"finalization:{plan['plan_digest']}",
-                            branch_review_commit=plan["git"]["branch_review_commit"],
-                            plan=plan,
-                        )
-                    except WorkflowError as exc:
-                        if (
-                            plan.get("marketplace", {}).get("required") is not True
-                            or not finalizer_provenance_reprepare_error(exc)
-                            or not finalizer_pre_pr_provenance_tail_required(root, plan)
-                        ):
-                            raise
-                        verification = None
-                checked_verification = (
-                    verification[1]
-                    if isinstance(verification, tuple)
-                    and len(verification) == 2
-                    and isinstance(verification[1], dict)
-                    else {}
-                )
                 migration = prepared.get("migration_normalization")
                 state_plan = (
                     migration["previous_plan"]
@@ -30483,11 +30183,6 @@ def finalization_preview_context(
                     task_dir,
                     state_plan,
                     prepared["ledger"],
-                    verification_owner_result=(
-                        verification
-                        if checked_verification.get("typed_exit") == "verified"
-                        else None
-                    ),
                     require_plan_artifact=False,
                 )
                 if (
@@ -30514,7 +30209,7 @@ def finalization_preview_context(
                                 },
                             )
                 if (
-                    state in {"content_pushed", "evidence_ready"}
+                    state == "content_pushed"
                     and prepared.get("metadata_tail") is None
                     and finalizer_pre_pr_provenance_tail_required(root, plan)
                 ):
@@ -30586,7 +30281,6 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             "transaction_state": context["transaction_state"],
             "publication_status": context["publication_status"],
             "publication_stale_reason": context["publication_stale_reason"],
-            "verification_required": False,
             "expected_actions": [],
         }
     return {
@@ -30604,7 +30298,6 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
         "closeout_plan_digest": plan["plan_digest"],
         "branch_review_commit": plan["git"]["branch_review_commit"],
         "transaction_state": context["transaction_state"],
-        "verification_required": bool(plan["marketplace"]["required"]),
         "expected_actions": list(CLOSEOUT_TRANSITIONS[1:]),
     }
 
@@ -30773,38 +30466,8 @@ def finalization_validate_route(
         )
     if plan is None:
         return
-    if exit_id == "verification_required":
-        compatible_states = (
-            {"prepared", "content_pushed"}
-            if allow_pending_transition
-            else {"content_pushed"}
-        )
-        if (
-            not plan["marketplace"]["required"]
-            or state not in compatible_states
-            or output.get("repo_ref") != plan["git"]["repo"]
-        ):
-            raise WorkflowError(
-                "verification_required is not compatible with the completed plan transition.",
-                exit_code=2,
-            )
     if exit_id == "resume_finalization":
-        verification = context.get("verification")
-        checked = (
-            verification[1]
-            if isinstance(verification, tuple)
-            and len(verification) == 2
-            and isinstance(verification[1], dict)
-            else {}
-        )
-        content_pushed_recovery = (
-            state == "content_pushed"
-            and checked.get("typed_exit") in {"verified", "not_required"}
-        )
-        if (
-            state not in FINALIZATION_RESUME_RECOVERY_STATES
-            or (state == "content_pushed" and not content_pushed_recovery)
-        ):
+        if state not in FINALIZATION_RESUME_RECOVERY_STATES:
             raise WorkflowError(
                 "resume_finalization is not compatible with a legal same-plan recovery state.",
                 exit_code=2,
@@ -30832,22 +30495,6 @@ def finalization_validate_route(
             exit_code=2,
         )
     if exit_id == "ready_for_merge" and state not in FINALIZATION_COMMITTED_RECOVERY_STATES:
-        verification = context.get("verification")
-        checked = (
-            verification[1]
-            if isinstance(verification, tuple)
-            and len(verification) == 2
-            and isinstance(verification[1], dict)
-            else {}
-        )
-        if (
-            plan["marketplace"]["required"]
-            and checked.get("typed_exit") not in {"verified", "not_required"}
-        ):
-            raise WorkflowError(
-                "ready_for_merge requires current same-plan verification owner evidence when the plan requires verification.",
-                exit_code=2,
-            )
         if not allow_pending_transition or not executor_materialized:
             raise WorkflowError(
                 "ready_for_merge requires the exact private marker before its executor transition.",
@@ -31302,61 +30949,6 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
     )
     exit_id = gate["route"]["typed_exit"]
     task_dir = context["task_dir"]
-    if exit_id == "verification_required":
-        if context["transaction_state"] == "prepared":
-            prior_transaction = finalization_read_transaction(root, task_dir)
-            _existing_pr, pre_push_remote_head = finalization_pre_mutation_remote_preflight(
-                root,
-                context["plan"],
-                prior_transaction,
-            )
-            finalization_write_transaction(
-                root,
-                task_dir,
-                finalization_transaction_from_plan(
-                    context["plan"],
-                    next_transition="push_content",
-                    pre_push_remote_head=pre_push_remote_head,
-                ),
-            )
-            result = execute_closeout_content_push(
-                root,
-                task_dir,
-                context["task_context"],
-                context["prepared"],
-                persist_closeout_plan=False,
-            )
-        else:
-            result = {
-                "status": "ok",
-                "stage": "content_pushed",
-                "entry_state": context["transaction_state"],
-            }
-        finalization_write_transaction(
-            root,
-            task_dir,
-            finalization_transaction_from_plan(
-                context["plan"],
-                next_transition="verify",
-            ),
-        )
-        gate["route"]["output"] = {
-            "exit_id": "verification_required",
-            "task_ref": public_input["task_ref"],
-            "plan_ref": context["plan_ref"],
-            "repo_ref": context["plan"]["git"]["repo"],
-            "branch_review_commit": context["plan"]["git"]["branch_review_commit"],
-            "publication_head": (
-                context["plan"]["git"].get("publication_head")
-                or context["plan"]["git"].get("branch_review_commit")
-            ),
-            "verification_target": "extension-installation",
-        }
-        return {
-            **result,
-            "typed_exit": exit_id,
-            "output": gate["route"]["output"],
-        }
     if exit_id == "reprepare_required":
         reason_code = context["reprepare_reason_code"]
         reviewed_content_head = context["plan"]["git"]["reviewed_content_head"]
@@ -31498,18 +31090,6 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             public_input,
             transaction=finalization_read_transaction(root, task_dir),
         )
-        if (
-            context["plan"]["marketplace"]["required"]
-            and context["transaction_state"]
-            not in FINALIZATION_COMMITTED_RECOVERY_STATES
-        ):
-            verification = context["verification"]
-            if not isinstance(verification, tuple) or len(verification) != 2:
-                raise WorkflowError(
-                    "Task finalization requires current extension verification evidence.",
-                    exit_code=2,
-                )
-            finish_args.verification_owner_result = verification
         result = cmd_finish_work(finish_args)
         materialized_gate = finalization_gate_with_ready_for_merge_output(
             root,

@@ -306,16 +306,17 @@ active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude root
 Test fixtures 永不安装，未选择的平台 root 不因 skill 分发
 而创建。
 
-Preset 安装 current Interface 1.4 schema 与 registry 1.3。每个 active registry row
-只允许 `interface_schema_id=guru-team-skill-interface-1.4`。Live Intake 合同为
+Preset 安装 current Interface 1.4/1.5 schemas 与 registry 1.4。十四个 integrated
+active rows 选择 `guru-team-skill-interface-1.4`，standalone verifier 选择
+`guru-team-skill-interface-1.5`。Live Intake 合同为
 六包/23 exits；current registry、discovery DTO、invocation 与安装 provenance 不接受
 历史 manifest、schema、example 或 eval。`production-current-v2` 是
 planning/check/commit 唯一 current manifest，精确绑定
 三包、十 profiles、11 exits、current output schemas、四条 authoring-seed edges、private
 artifact ids、examples 与 eval cases；不存在 alternate production projector 或 fixture。
-当前 active closure 为 15/57，live Intake 合同为 6/23。Preset 在一次 staging
+当前 active closure 为 15/54，live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
-Interface 1.4、production-current manifest/schema、十五包 public
+Interface 1.4/1.5、production-current manifest/schema、十五包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Representative fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -324,7 +325,7 @@ production registry、extension inventory、installed files 或 selected-platfor
 同一 transaction 还安装 Interface 1.4 additive
 `skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
 commit self-reentry、commit-to-Branch-Review、Branch-Review-to-publication 与
-finalization family 共十二条声明 edge 的 target-owned
+finalization family 共九条声明 edge 的 target-owned
 authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
 projection operation；部分 edge、缺失 authoring example 或 canonical/installed/platform
 字节不一致均视为 mixed production graph。
@@ -344,15 +345,15 @@ additive overlays。Preset 不安装或更新任何 `trellis-continue`、`trelli
 只验证 current ownership、provenance 与 Guru namespace，不复制 owner Skill 的
 semantic 结论。
 
-新增 additive active `guru-verify-extension-installation` package 安装两个
-structurally distinct inputs、四个 per-exit contracts、private
-`marketplace-verification.json` schema、seven-case production corpus 与 thin wrappers。
+新增 additive active `guru-verify-extension-installation` package 安装单一
+`source_repository_verification` standalone input、`verified|blocked` 两个 per-exit
+contracts、source-session private result schema、两例 production corpus 与 thin wrappers。
 它不修改 live Intake 6/23 或 production 3/11 合同。Active
-`guru-finalize-task` 另行安装六个 distinct profiles、六个 `exit_id` outputs、
-private gate、十条 production eval cases 与五个 finalization runtime wrappers，并
-具体绑定 #116/#117 producer edges。独立 `guru-merge-task-pr` 再安装两种 inputs、三个
+`guru-finalize-task` 另行安装四个 distinct profiles、五个 `exit_id` outputs、
+private gate、七条 production eval cases 与 finalization runtime wrappers。独立
+`guru-merge-task-pr` 再安装两种 inputs、三个
 exits 与五个 merge runtime wrappers。Source/installed package closure 为 15 Skills /
-57 exits；global workflow marker closure 为 15 invokes / 57 exits / 33 targets。
+54 exits；business global workflow marker closure 为 14 invokes / 52 exits / 31 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -408,7 +409,8 @@ platform selection:
 - `.trellis/guru-team/extension.json`
 - `.trellis/guru-team/schemas/closeout-plan.schema.json`
 - `.trellis/guru-team/schemas/finish-summary.schema.json`
-- `.trellis/guru-team/schemas/marketplace-verification.schema.json`
+- `.trellis/guru-team/schemas/marketplace-verification.schema.json`（verifier
+  package 的 legacy/private schema dependency，不是业务 task artifact）
 - `.trellis/guru-team/scripts/bash/check-env.sh`
 - `.trellis/guru-team/scripts/bash/version.sh`
 - `.trellis/guru-team/scripts/bash/prepare-task.sh`
@@ -470,10 +472,11 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
 `guru-finalize-task`、`guru-merge-task-pr`、`guru-review-branch`、
 `guru-review-task-publication`、`guru-select-workflow-mode`、
-`guru-verify-extension-installation`。这十五个 active packages 共声明 57 个 external exits。
+`guru-verify-extension-installation`。十四个 integrated business packages 加一个
+standalone-only verifier 共声明 54 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前 canonical extension version
+invoke 与五个 exit marker。当前 canonical extension version
 `0.6.5-guru.27` 对应 stable source `v0.6.5-guru.5`，并以官方 Trellis CLI `0.6.5`
 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
 由 immutable Git facts、GitHub Release notes 与 release evidence 精确记录。Repo release
@@ -518,24 +521,19 @@ repo-local owner/prerequisite/transition 文件，也不进入 downstream DTO。
   --root . --mode installed --skill guru-verify-extension-installation --json
 ```
 
-Package wrapper 在 AI 完成 applicability/profile/adequacy/findings review 后才调用
-executor、recorder、checker 与 public invocation。Task-bearing 调用只写一个 task-local
-owner result；taskless standalone 不写 repo cache/index。Production eval 证明两个
-inputs、四 exits、retry/unavailable/stale route；真实 pushed-remote clean install 另行
-证明 init/preview/switch/update/reapply/ownership/sidecar/README/redaction。两者互不替代。
+Package wrapper 在 AI 完成 source capability profile、adequacy、findings review 后才调用
+executor、recorder、checker 与 public invocation。它只接受
+`source_repository_verification`，不接受 task-bearing input，不写 task-local owner result
+或 repo cache/index。Production eval 覆盖 `verified|blocked`；真实 clean source
+checkout 的 throwaway install 另行证明 init/preview/switch/update/reapply/ownership/
+sidecar/README/redaction。两者互不替代。
 
-Verifier public repo/ref 指向 target repository；task-bearing source provenance
-来自 target checkout 的 installed manifest，并要求 `tree_state=clean` 后才解析 source
-ref 或 clone。Runtime 使用隔离的 target/source
-checkouts：reviewed-content 只属于 target，installer/canonical package/ownership/source
-sidecars 只属于 source。Annotated source tag 记录 direct object 但选择 peeled commit，
-并要求 selected commit 等于 manifest commit。Git worktree apply 把完整 apply-time
-commit OID 同时记录为 immutable `source.ref` 与 `source.commit`；runtime 直接 fetch 该
-OID，并要求 `FETCH_HEAD^{commit}` 和 source checkout HEAD 精确一致，即使 target branch
-随后前进也不改变 source identity。Taskless fallback 仅适用于显式 source
-verification 且 manifest absent；malformed manifest 不降级。Source clone locator 必须为
-credential-free canonical GitHub HTTPS，unsafe locator 在 clone/artifact 前阻断。
-Private/execution schema 3.0 current-only，public inputs 与四个 exit DTO 未改变。
+Verifier public repo/ref 固定指向 `castbox/guru-trellis` source repository。Runtime 在任何
+clone、tempdir、installer 或 artifact write 前校验 canonical source assets、origin、
+requested ref、resolved commit、HEAD 与 clean tree；失败不执行外部动作。通过后只使用
+隔离的 source checkout 和 clean throwaway target。Source clone locator 必须为
+credential-free canonical GitHub HTTPS。Current public contract 只有一个 input profile、
+两个 exits 与 ignored source-session private state。
 
 `guru-discover-change-context` package 同时安装
 `guru-change-context-owner-result-2.0` schema/example、public schemas/examples、contract、
@@ -800,11 +798,10 @@ a thin live-workflow router: it runs Phase 3.6 through
 after its semantic review and exact plan confirmation. It automatically routes
 verification, stale publication evidence, same-plan recovery, and reprepare;
 every interruption resumes through the same semantic owner loop.
-When the current plan requires extension verification, the finalizer consumes
-only the checker-passed current owner result and task-local
-`marketplace-verification.json` through retry, final projection, normal archive,
-and active-completed recovery. It neither rewrites the owner artifact, changes
-the scope-only Ledger, nor adds any public DTO field.
+Finalizer never invokes or consumes extension verification. Business task,
+Publication, Finalizer, finish-work, re-entry, and recovery do not read a
+verifier DTO, owner checkpoint, verification ref, or task-local verification
+artifact. Publication's own `return_to_task_work` route remains unchanged.
 Shared prepare lexically `lstat`s each existing archive root, month, and final
 destination component, rejects every symlink including dangling and
 repo-internal targets without following it, and requires the final locator to
@@ -1028,9 +1025,8 @@ continuity, and official `task.json` delta.
 
 The current retained set contains exactly 6 durable files: `task.json`,
 `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, and
-`finish-summary.json`. The minimal marketplace verification result is the only
-optional seventh file. Publication readiness, Finalizer
-transaction/gate/request, Verifier owner state, intake snapshots, assignments,
+`finish-summary.json`; there is no optional verifier artifact. Publication readiness,
+Finalizer transaction/gate/request, intake snapshots, assignments,
 commit plans, raw review rounds and rollups, PR preparation, and other
 reconstructible checkpoints remain ignored runtime and do not enter the
 archive.
@@ -1109,16 +1105,18 @@ bounded follow-up and PR limitation; `no_docs_update_needed` must still have a
 concrete reason after the final diff is reviewed.
 
 
-## Push 后远端 Marketplace 门禁
+## Source-owned Standalone Installation Verification
 
-修改 marketplace/preset/overlay/schema/public API 时，Finalizer 在 reviewed content push 后调用 `guru-verify-extension-installation` 生成并校验 task-local `marketplace-verification.json`；`issue-scope-ledger.json` bytes 全程保持不变。Closeout schema 2.0 不创建独立的 plan/readiness/evidence commit；passed artifact 与 remote HEAD 校验完成后才允许绑定 draft PR，并最终随单次 archive metadata transaction 提交。缺失、重复、pending、失败、内容不一致、HEAD 不匹配或 stale 均阻止创建 PR；human reason 不参与 machine identity，该门禁不创建 tag，AI 仍负责 close scope 与 PR readiness 判断。
+业务 changed path、installed manifest 或 Finalizer plan 从不触发
+`guru-verify-extension-installation`。该 package 只可从 clean
+`castbox/guru-trellis` source checkout 以 `source_repository_verification`
+standalone profile 显式调用，并只返回 `verified|blocked`。Source identity mismatch、
+task-bearing field 或 dirty checkout 必须在 clone、tempdir、installer、artifact write 与
+mutation 前 fail closed；owner state 只在 source session ignored runtime 中短暂存在。
 
-Finalizer 的 clean provenance recovery 只接受 canonical preset apply 生成的
-单个 `.trellis/guru-team/extension.json` metadata-tail commit；允许字段固定为
-`installed_at` 与四个 `source.*` identity/state 字段。Verifier 用
-`reviewed_content_head` 校验 source bytes，用 `publication_head` 绑定 target
-remote ref 与 PR identity；任意 sidecar、managed byte drift、额外 path 或第二个
-tail 都 fail closed。
+Finalizer 的 current recovery 只接受自身 transaction 合同，不以 installed manifest
+provenance 或 changed path 创建 metadata tail 或 verifier route。任意 sidecar、managed
+byte drift 或业务安装副本问题由 installer/ownership owner 处理，不转交 standalone verifier。
 
 ## Eval 安装与升级清单
 

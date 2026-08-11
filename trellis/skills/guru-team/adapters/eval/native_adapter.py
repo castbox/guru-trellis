@@ -2580,6 +2580,9 @@ def production_publication_authoring(
     return path
 
 
+
+
+
 def extension_verification_execution(
     runtime: Any,
     fixture: Path,
@@ -2588,57 +2591,23 @@ def extension_verification_execution(
     selected: list[str],
     package: Path,
     *,
-    standalone_resolved_head: str | None = None,
+    resolved_head: str,
 ) -> dict[str, Any]:
-    content_sha256 = runtime.reviewed_content_identity(fixture)["sha256"]
-    task_bearing = isinstance(public_input.get("task_ref"), str)
-    target_ref = (
-        runtime.extension_verification_remote_identity(fixture, public_input)[2]
-        if task_bearing
-        else public_input.get("ref", "refs/heads/main")
-    )
-    branch_review_commit = (
-        public_input["branch_review_commit"]
-        if public_input["mode"] == "workflow"
-        else None
-    )
-    remote_head = (
-        None
-        if status == "blocked" and public_input["mode"] == "standalone"
-        else branch_review_commit or standalone_resolved_head or "a" * 40
-    )
-    capability_status = {
-        "passed": "passed",
-        "failed": "failed",
-        "blocked": "blocked",
-        "not_run": "not_run",
-    }[status]
-    commands = (
-        []
-        if status == "not_run"
-        else [{
-            "id": "verify_throwaway_installation",
-            "checkout_owner": "extension_source_checkout",
-            "argv": [
-                "git",
-                "ls-remote",
-                "origin",
-                target_ref,
-            ],
-            "exit_code": 0 if status == "passed" else 2,
-            "stdout_sha256": runtime.digest_text(""),
-            "stderr_sha256": runtime.digest_text(
-                "" if status == "passed" else "synthetic unavailable"
-            ),
-            "stdout_size_bytes": 0,
-            "stderr_size_bytes": 0 if status == "passed" else 21,
-        }]
-    )
+    commands = [{
+        "id": "verify_throwaway_installation",
+        "checkout_owner": "extension_source_checkout",
+        "argv": ["git", "ls-remote", "origin", public_input["ref"]],
+        "exit_code": 0 if status == "passed" else 2,
+        "stdout_sha256": runtime.digest_text(""),
+        "stderr_sha256": runtime.digest_text(
+            "" if status == "passed" else "synthetic unavailable"
+        ),
+        "stdout_size_bytes": 0,
+        "stderr_size_bytes": 0 if status == "passed" else 21,
+    }]
     if status == "passed":
         example = json.loads(
-            (package / "examples/execution-facts.json").read_text(
-                encoding="utf-8"
-            )
+            (package / "examples/execution-facts.json").read_text(encoding="utf-8")
         )
         asset_expectations = copy.deepcopy(example["asset_expectations"])
         asset_digests = copy.deepcopy(example["asset_digests"])
@@ -2646,79 +2615,43 @@ def extension_verification_execution(
     else:
         asset_expectations = []
         asset_digests = []
-        asset_inventory = runtime.extension_verification_asset_inventory_summary(
-            [],
-            [],
-        )
-    reviewed_content_sha256 = content_sha256 if task_bearing else None
-    if task_bearing:
-        selected_source = runtime.extension_verification_manifest_source(
-            fixture,
-            public_input,
-            task_bearing=True,
-        )
-        source_commit = selected_source.pop("manifest_commit")
-        requested_ref = str(selected_source["requested_ref"])
-        resolved_ref = (
-            requested_ref
-            if requested_ref.startswith("refs/")
-            else f"refs/tags/{requested_ref}"
-            if selected_source["is_mutable_ref"] is False
-            else f"refs/heads/{requested_ref}"
-        )
-    else:
-        source_commit = remote_head
-        requested_ref = str(public_input.get("ref", "refs/heads/main"))
-        resolved_ref = (
-            requested_ref
-            if requested_ref.startswith("refs/")
-            else f"refs/heads/{requested_ref}"
-        )
-        selected_source = {
+        asset_inventory = runtime.extension_verification_asset_inventory_summary([], [])
+    return {
+        "schema_version": "3.0",
+        "target_repository": {
+            "repo_ref": public_input["repo_ref"],
+            "remote": public_input["remote"],
+            "ref": public_input["ref"],
+            "branch_review_commit": None,
+            "publication_head": None,
+            "resolved_head": resolved_head,
+            "checkout_head": resolved_head if status == "passed" else None,
+            "reviewed_content_sha256": None,
+            "remote_reviewed_content_sha256": None,
+            "content_identity_matches": status == "passed",
+        },
+        "extension_source": {
             "selection": "standalone_fallback",
             "manifest_provenance": "not_available",
             "repo": public_input["repo_ref"],
             "locator": runtime.extension_verification_canonical_github_locator(
                 public_input["repo_ref"]
             ),
-            "requested_ref": requested_ref,
+            "requested_ref": public_input["ref"],
+            "resolved_ref": public_input["ref"],
             "tree_state": "clean",
-            "is_mutable_ref": True,
-        }
-    target_repository = {
-        "repo_ref": public_input["repo_ref"],
-        "remote": public_input.get("remote", "origin"),
-        "ref": target_ref,
-        "branch_review_commit": branch_review_commit,
-        "publication_head": (
-            public_input["publication_head"]
-            if public_input["mode"] == "workflow"
-            else None
-        ),
-        "resolved_head": remote_head,
-        "checkout_head": remote_head,
-        "reviewed_content_sha256": reviewed_content_sha256,
-        "remote_reviewed_content_sha256": reviewed_content_sha256,
-        "content_identity_matches": status == "passed",
-    }
-    extension_source = {
-        **selected_source,
-        "resolved_ref": resolved_ref,
-        "direct_oid": source_commit,
-        "commit": source_commit,
-        "checkout_head": source_commit if status == "passed" else None,
-        "ref_matches_commit": status == "passed",
-        "checkout_head_matches": status == "passed",
-    }
-    return {
-        "schema_version": "3.0",
-        "target_repository": target_repository,
-        "extension_source": extension_source,
+            "is_mutable_ref": False,
+            "direct_oid": resolved_head,
+            "commit": resolved_head,
+            "checkout_head": resolved_head if status == "passed" else None,
+            "ref_matches_commit": status == "passed",
+            "checkout_head_matches": status == "passed",
+        },
         "status": status,
         "commands": commands,
         "capabilities": runtime.extension_verification_capability_facts(
             selected,
-            capability_status,
+            "passed" if status == "passed" else "blocked",
             commands,
             asset_digests,
         ),
@@ -2733,119 +2666,52 @@ def extension_verification_execution(
             "guru_owned_rule_count": 11,
             "managed_claim_count": 9,
         },
-        "sidecars": {
-            "checkout_owner": "extension_source_checkout",
-            "paths": [],
-        },
+        "sidecars": {"checkout_owner": "extension_source_checkout", "paths": []},
     }
 
 
 def extension_verification_review(
     typed_exit: str,
     selected: list[str],
-    *,
-    supersedes: str | None = None,
-    applicability_status: str | None = None,
 ) -> dict[str, Any]:
-    applicability = (
-        applicability_status
-        if applicability_status is not None
-        else "not_required"
-        if typed_exit == "not_required"
-        else "required"
-    )
-    execution_status = {
-        "verified": "passed",
-        "not_required": "not_run",
-        "return_to_task_work": "failed",
-        "blocked": "blocked",
-    }[typed_exit]
-    adequacy_status = (
-        "passed"
-        if typed_exit == "verified"
-        else "not_applicable"
-        if typed_exit == "not_required"
-        else "failed"
-        if typed_exit == "return_to_task_work"
-        else "blocked"
-    )
-    findings: list[dict[str, Any]] = []
-    if typed_exit == "return_to_task_work":
-        findings.append({
-            "finding_ref": "extension-eval-finding-001",
-            "evidence": "The selected install capability did not meet the reviewed contract.",
-            "route_class": "task_work",
-            "status": "open",
-            "closure_evidence": "",
-        })
-    elif typed_exit == "blocked":
-        findings.append({
-            "finding_ref": "extension-eval-blocker-001",
-            "evidence": "The synthetic remote is unavailable for the current owner round.",
-            "route_class": "external_blocker",
-            "status": "open",
-            "closure_evidence": "",
-        })
+    blocked = typed_exit == "blocked"
     review: dict[str, Any] = {
         "applicability": {
-            "status": applicability,
-            "reason": (
-                "The reviewed target does not change an installable extension surface."
-                if applicability == "not_required"
-                else "The reviewed target requires extension installation verification."
-            ),
+            "status": "required",
+            "reason": "The explicit source-repository invocation requires installation verification.",
             "evidence_paths": ["trellis/skills/guru-team/registry.json"],
         },
         "verification_profile": {
             "selected_capabilities": selected,
-            "selection_reason": (
-                "No execution profile is selected for a not-required target."
-                if not selected
-                else "The closed profile covers every synthetic extension surface."
-            ),
-            "coverage": (
-                []
-                if not selected
-                else [f"extension surface -> {capability}" for capability in selected]
-            ),
+            "selection_reason": "The closed source profile covers every extension capability.",
+            "coverage": [f"source extension -> {capability}" for capability in selected],
         },
         "semantic_review": {
             "adequacy": [{
                 "id": "profile_coverage",
-                "status": adequacy_status,
-                "evidence_refs": ["owner-staging:extension-verification"],
+                "status": "blocked" if blocked else "passed",
+                "evidence_refs": ["owner-staging:source-extension-verification"],
             }],
-            "findings": findings,
+            "findings": ([{
+                "finding_ref": "extension-eval-blocker-001",
+                "evidence": "The synthetic source remote is unavailable.",
+                "route_class": "external_blocker",
+                "status": "open",
+                "closure_evidence": "",
+            }] if blocked else []),
             "conclusion": typed_exit,
         },
         "typed_exit": typed_exit,
         "redaction": {
             "status": "passed",
-            "scanned_surfaces": [
-                "artifact",
-                "wrapper_stdout",
-                "eval_trace",
-                "retained_logs",
-            ],
+            "scanned_surfaces": ["artifact", "wrapper_stdout", "eval_trace", "retained_logs"],
         },
     }
-    if typed_exit == "blocked":
-        review.update(
-            {
-                "reason_code": (
-                    "applicability_conflict"
-                    if applicability == "not_required"
-                    else "remote_unavailable"
-                ),
-                "remediation": (
-                    "Reconcile the reviewed applicability with the required workflow plan and rerun the complete verification."
-                    if applicability == "not_required"
-                    else "Restore remote access and rerun the complete verification."
-                ),
-            }
-        )
-    if supersedes is not None:
-        review["supersedes_verification_ref"] = supersedes
+    if blocked:
+        review.update({
+            "reason_code": "remote_unavailable",
+            "remediation": "Restore source remote access and rerun standalone verification.",
+        })
     return review
 
 
@@ -2857,208 +2723,81 @@ def stage_extension_verification_owner_execution(
     recipe: str,
     public_input_path: Path,
 ) -> tuple[Path, Path, dict[str, str]]:
-    if not recipe.startswith("extension-"):
-        raise ValueError("extension owner staging recipe is invalid")
-    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
-    repo_ref = public_input.get("repo_ref")
-    if not isinstance(repo_ref, str) or not repo_ref:
-        raise ValueError("extension owner staging repo identity is invalid")
-    package = (
-        fixture
-        / ".trellis/guru-team/skills/packages/"
-        "guru-verify-extension-installation"
+    typed_exit = {
+        "extension-source-verified": "verified",
+        "extension-source-unavailable": "blocked",
+    }.get(recipe)
+    if typed_exit is None:
+        raise ValueError(f"unsupported source extension recipe: {recipe}")
+    source_repo = request_package.parents[4]
+    canonical_source = source_repo / "trellis"
+    if canonical_source.is_symlink() or not canonical_source.is_dir():
+        raise ValueError("canonical source tree is unavailable for extension staging")
+    shutil.copytree(
+        canonical_source,
+        fixture / "trellis",
+        dirs_exist_ok=True,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
+    package = fixture / ".trellis/guru-team/skills/packages/guru-verify-extension-installation"
     if (
         hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
         != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
         or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
         != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
     ):
-        raise ValueError(
-            "extension owner staging package does not match the evaluated contract"
-        )
-    task = fixture / ".trellis/tasks/current"
-    task.mkdir(parents=True, exist_ok=True)
-    (fixture / ".trellis/guru-team/config.yml").write_text(
-        f"workspace_mode: current\ngithub_repo: {json.dumps(repo_ref)}\n",
-        encoding="utf-8",
+        raise ValueError("extension owner staging package does not match the evaluated contract")
+
+    remotes = run_git(fixture, "remote").splitlines()
+    remote_command = "set-url" if "origin" in remotes else "add"
+    run_git(
+        fixture,
+        "remote",
+        remote_command,
+        "origin",
+        "https://github.com/castbox/guru-trellis.git",
     )
-    runtime.write_json(task / "task.json", {
-        "id": "current",
-        "name": "current",
-        "title": "Extension verification eval",
-        "status": "in_progress",
-        "branch": "main",
-        "base_branch": "main",
-    })
-    manifest_path = fixture / ".trellis/guru-team/extension.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    source = manifest.get("source")
-    if not isinstance(source, dict):
-        raise ValueError("extension owner staging source provenance is unavailable")
-    source["tree_state"] = "clean"
-    runtime.write_json(manifest_path, manifest)
     run_git(fixture, "add", ".")
-    run_git(fixture, "commit", "-q", "-m", "stage extension verification owner")
+    if subprocess.run(
+        ["git", "diff", "--cached", "--quiet"], cwd=fixture, check=False
+    ).returncode != 0:
+        run_git(fixture, "commit", "-q", "-m", "stage source verification owner")
     head = run_git(fixture, "rev-parse", "HEAD")
-    runtime.write_runtime_mappings(
-        fixture,
-        runtime.load_config(fixture),
-        {
-            "workspace_slug": "current",
-            "task_slug": "current",
-            "task_dir": ".trellis/tasks/current",
-            "branch_name": "main",
-        },
-        fixture,
-    )
-    os.environ["TRELLIS_CONTEXT_ID"] = (
-        f"extension-eval-{hashlib.sha256(str(fixture).encode()).hexdigest()[:16]}"
-    )
-    task_start = subprocess.run(
-        [
-            sys.executable,
-            str(fixture / ".trellis/scripts/task.py"),
-            "start",
-            ".trellis/tasks/current",
-        ],
-        cwd=fixture,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if task_start.returncode != 0:
-        raise ValueError("extension owner staging could not activate its task")
-    if public_input["mode"] == "workflow":
-        public_input["branch_review_commit"] = head
-        public_input["publication_head"] = head
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    public_input.update({
+        "profile": "source_repository_verification",
+        "mode": "standalone",
+        "repo_ref": "castbox/guru-trellis",
+        "remote": "origin",
+        "ref": head,
+        "caller_intent": "verify-extension-installation",
+    })
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
-    all_capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
-
-    def record(
-        invocation_input: dict[str, Any],
-        typed_exit: str,
-        *,
-        supersedes: str | None = None,
-        applicability_status: str | None = None,
-    ) -> dict[str, Any]:
-        invocation_path = (
-            fixture / ".trellis/.runtime/guru-team/evals/"
-            "extension-invocation-input.json"
-        )
-        execution_path = (
-            fixture / ".trellis/.runtime/guru-team/evals/"
-            "extension-execution-input.json"
-        )
-        review_path = (
-            fixture / ".trellis/.runtime/guru-team/evals/"
-            "extension-review-input.json"
-        )
-        runtime.write_json(invocation_path, invocation_input)
-        selected = (
-            []
-            if typed_exit == "not_required" or applicability_status == "not_required"
-            else all_capabilities
-        )
-        status = {
-            "verified": "passed",
-            "not_required": "not_run",
-            "return_to_task_work": "failed",
-            "blocked": "blocked",
-        }[typed_exit]
-        if applicability_status == "not_required":
-            status = "not_run"
-        runtime.write_json(
-            execution_path,
-            extension_verification_execution(
-                runtime,
-                fixture,
-                invocation_input,
-                status,
-                selected,
-                request_package,
-                standalone_resolved_head=(
-                    head
-                    if invocation_input.get("mode") == "standalone"
-                    and isinstance(invocation_input.get("task_ref"), str)
-                    else None
-                ),
-            ),
-        )
-        runtime.write_json(
-            review_path,
-            extension_verification_review(
-                typed_exit,
-                selected,
-                supersedes=supersedes,
-                applicability_status=applicability_status,
-            ),
-        )
-        return runtime.cmd_record_extension_verification(argparse.Namespace(
-            root=str(fixture),
-            input=invocation_path.relative_to(fixture).as_posix(),
-            execution_input=execution_path.relative_to(fixture).as_posix(),
-            review_input=review_path.relative_to(fixture).as_posix(),
-        ))
-
-    if recipe in {
-        "extension-workflow-retry-verified",
-        "extension-workflow-stale-reentry-verified",
-    }:
-        prior_input = copy.deepcopy(public_input)
-        if recipe == "extension-workflow-stale-reentry-verified":
-            prior_input["plan_ref"] = "closeout-plan:stale"
-        prior = record(prior_input, "blocked")
-        prior_ref = prior["identity"]["verification_ref"]
-        owner = record(public_input, "verified", supersedes=prior_ref)
-    elif recipe == "extension-workflow-conflict-blocked":
-        owner = record(
-            public_input,
-            "blocked",
-            applicability_status="not_required",
-        )
-    else:
-        typed_exit = {
-            "extension-workflow-verified": "verified",
-            "extension-standalone-not-required": "not_required",
-            "extension-task-return": "return_to_task_work",
-            "extension-standalone-unavailable": "blocked",
-        }.get(recipe)
-        if typed_exit is None:
-            raise ValueError(
-                f"unsupported extension owner staging recipe: {recipe}"
-            )
-        owner = record(public_input, typed_exit)
-
-    task_bearing = isinstance(public_input.get("task_ref"), str)
-    owner_locator = (
-        fixture / ".trellis/tasks/current/marketplace-verification.json"
-        if task_bearing
-        else fixture / OWNER_RESULT
-    )
-    if not task_bearing:
-        runtime.write_json(owner_locator, owner)
-    previous_eval = os.environ.get("GURU_TEAM_EVAL_STAGING")
-    os.environ["GURU_TEAM_EVAL_STAGING"] = "1"
-    try:
-        runtime.check_extension_verification_result(
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    execution_path = runtime_dir / "extension-execution-input.json"
+    review_path = runtime_dir / "extension-review-input.json"
+    capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
+    runtime.write_json(
+        execution_path,
+        extension_verification_execution(
+            runtime,
             fixture,
-            owner,
-            (
-                owner_locator.relative_to(fixture).as_posix()
-                if task_bearing
-                else "<stdin>"
-            ),
             public_input,
-        )
-    finally:
-        if previous_eval is None:
-            os.environ.pop("GURU_TEAM_EVAL_STAGING", None)
-        else:
-            os.environ["GURU_TEAM_EVAL_STAGING"] = previous_eval
-    runtime.write_json(runtime_input, public_input)
+            "passed" if typed_exit == "verified" else "blocked",
+            capabilities,
+            request_package,
+            resolved_head=head,
+        ),
+    )
+    runtime.write_json(review_path, extension_verification_review(typed_exit, capabilities))
+    owner = runtime.cmd_record_extension_verification(argparse.Namespace(
+        root=str(fixture),
+        input=runtime_input.relative_to(fixture).as_posix(),
+        execution_input=execution_path.relative_to(fixture).as_posix(),
+        review_input=review_path.relative_to(fixture).as_posix(),
+    ))
+    runtime.write_json(fixture / OWNER_RESULT, owner)
     return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
 
 
@@ -3166,159 +2905,6 @@ def stage_task_pr_merge_owner_execution(
     return package, fixture_runtime_target, environment
 
 
-def stage_finalization_not_required_edge(
-    runtime: Any,
-    fixture: Path,
-    fixture_runtime_target: Path,
-    finalizer_package: Path,
-    authored_input_path: Path,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
-    runtime_dir.mkdir(parents=True, exist_ok=True)
-    verifier_package = (
-        fixture
-        / ".trellis/guru-team/skills/packages/"
-        "guru-verify-extension-installation"
-    )
-    verifier_input_path = runtime_dir / "not-required-verifier-input.json"
-    runtime.write_json(
-        verifier_input_path,
-        {
-            "profile": "standalone_verification",
-            "mode": "standalone",
-            "repo_ref": "example/guru-extension",
-            "remote": "origin",
-            "ref": "refs/heads/main",
-            "caller_intent": "verify-extension-installation",
-            "task_ref": ".trellis/tasks/current",
-        },
-    )
-    stage_extension_verification_owner_execution(
-        runtime,
-        fixture,
-        fixture_runtime_target,
-        verifier_package,
-        "extension-standalone-not-required",
-        verifier_input_path,
-    )
-
-    producer_wrapper = verifier_package / "scripts/invoke.sh"
-    producer = subprocess.run(
-        [
-            str(producer_wrapper),
-            "--input",
-            verifier_input_path.relative_to(fixture).as_posix(),
-            "--owner-result",
-            ".trellis/tasks/current/marketplace-verification.json",
-        ],
-        cwd=fixture,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-        env={**os.environ, "GURU_TEAM_EVAL_STAGING": "1"},
-    )
-    if producer.returncode != 0:
-        raise ValueError(
-            "not-required producer wrapper failed: " + producer.stderr.strip()
-        )
-    try:
-        producer_output = json.loads(producer.stdout)
-    except json.JSONDecodeError as exc:
-        raise ValueError("not-required producer wrapper returned invalid JSON") from exc
-    if not isinstance(producer_output, dict) or producer_output.get("exit_id") != "not_required":
-        raise ValueError("not-required producer wrapper returned the wrong typed exit")
-
-    verifier_interface = json.loads(
-        (verifier_package / "interface.json").read_text(encoding="utf-8")
-    )
-    projection = next(
-        (
-            item
-            for item in verifier_interface["public_contracts"]["projections"]
-            if item.get("id") == "project_not_required"
-        ),
-        None,
-    )
-    consumer = next(
-        (
-            item
-            for item in verifier_interface["public_contracts"]["consumer_inputs"]
-            if item.get("id") == "not_required_finalization_seed"
-        ),
-        None,
-    )
-    if not isinstance(projection, dict) or not isinstance(consumer, dict):
-        raise ValueError("not-required declared projection is unavailable")
-    contract = consumer.get("contract")
-    mappings = projection.get("mappings")
-    if not isinstance(contract, dict) or not isinstance(mappings, list):
-        raise ValueError("not-required declared projection is malformed")
-    seed = {
-        str(item["target"]): producer_output[str(item["source"])]
-        for item in mappings
-        if isinstance(item, dict)
-        and isinstance(item.get("source"), str)
-        and isinstance(item.get("target"), str)
-    }
-    seed_fields = contract.get("seed_fields")
-    authoring_fields = contract.get("authoring_fields")
-    if (
-        list(seed) != seed_fields
-        or not isinstance(authoring_fields, list)
-        or set(seed_fields) & set(authoring_fields)
-        or contract.get("profile_id") != "standalone_verification_not_required"
-    ):
-        raise ValueError("not-required seed and authoring partition is invalid")
-    authored = json.loads(authored_input_path.read_text(encoding="utf-8"))
-    authoring = {
-        field: authored[field]
-        for field in authoring_fields
-        if field in authored
-    }
-    if set(authoring) != set(authoring_fields):
-        raise ValueError("not-required target authoring fields are incomplete")
-    merged = {**seed, **authoring}
-    if len(merged) != len(seed) + len(authoring):
-        raise ValueError("not-required target authoring overwrote producer seed")
-
-    finalizer_interface = json.loads(
-        (finalizer_package / "interface.json").read_text(encoding="utf-8")
-    )
-    target_profile = next(
-        item
-        for item in finalizer_interface["public_contracts"]["input"]["profiles"]
-        if item.get("id") == contract["profile_id"]
-    )
-    target_schema = runtime.skill_read_schema(
-        finalizer_package / target_profile["schema"]["path"],
-        "not-required finalizer target schema",
-        [],
-    )
-    target_errors = runtime.skill_json_schema_validation_errors(
-        merged,
-        target_schema,
-        "not-required finalizer target input",
-    )
-    if target_errors:
-        raise ValueError(
-            "not-required projected finalizer input is invalid: "
-            + "; ".join(target_errors)
-        )
-    runtime.write_json(fixture / OWNER_INPUT, merged)
-    runtime.write_json(
-        runtime_dir / "not-required-producer-edge.json",
-        {
-            "producer_wrapper": producer_wrapper.relative_to(fixture).as_posix(),
-            "producer_output": producer_output,
-            "projection_id": projection["id"],
-            "seed": seed,
-            "authoring": authoring,
-            "target_input": merged,
-        },
-    )
-    return merged, producer_output
-
 
 def stage_finalization_owner_execution(
     runtime: Any,
@@ -3330,55 +2916,33 @@ def stage_finalization_owner_execution(
     public_input_path: Path,
 ) -> tuple[Path, Path, dict[str, str]]:
     routes = {
-        "finalization-publication-verification-required": (
-            "verification_required",
-            "content_pushed",
-            True,
-        ),
         "finalization-publication-stale": (
             "publication_review_stale",
             "prepared",
-            True,
         ),
         "finalization-same-plan-resume": (
             "resume_finalization",
             "draft_bound",
-            True,
         ),
         "finalization-cross-month-reprepare": (
             "reprepare_required",
             "reprepare_required",
-            True,
         ),
         "finalization-ready-for-merge-recovery": (
             "ready_for_merge",
             "ready",
-            False,
         ),
         "finalization-publication-ready-ready-for-merge": (
             "ready_for_merge",
             "ready",
-            False,
         ),
         "finalization-same-plan-ready-for-merge": (
             "ready_for_merge",
             "ready",
-            False,
         ),
         "finalization-blocked": (
             "blocked",
             "prepared",
-            False,
-        ),
-        "finalization-verified-ready_for_merge": (
-            "ready_for_merge",
-            "ready",
-            True,
-        ),
-        "finalization-not-required-ready_for_merge": (
-            "ready_for_merge",
-            "ready",
-            False,
         ),
     }
     selected = routes.get(recipe)
@@ -3386,7 +2950,7 @@ def stage_finalization_owner_execution(
         raise ValueError(
             f"unsupported finalization owner staging recipe: {recipe}"
         )
-    exit_id, transaction_state, marketplace_required = selected
+    exit_id, transaction_state = selected
     package = (
         fixture
         / ".trellis/guru-team/skills/packages/guru-finalize-task"
@@ -3402,41 +2966,26 @@ def stage_finalization_owner_execution(
         )
 
     task = fixture / ".trellis/tasks/current"
-    if recipe == "finalization-not-required-ready_for_merge":
-        public_input, producer_output = stage_finalization_not_required_edge(
-            runtime,
-            fixture,
-            fixture_runtime_target,
-            package,
-            public_input_path,
-        )
-        head = run_git(fixture, "rev-parse", "HEAD")
-    else:
-        task.mkdir(parents=True, exist_ok=True)
-        runtime.write_json(task / "task.json", {
-            "id": "current",
-            "name": "current",
-            "title": "Finalization eval",
-            "status": "in_progress",
-            "branch": "main",
-            "base_branch": "main",
-        })
-        run_git(fixture, "add", ".")
-        run_git(fixture, "commit", "-q", "-m", "stage finalization owner")
-        head = run_git(fixture, "rev-parse", "HEAD")
-        public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
-        public_input["task_ref"] = ".trellis/tasks/current"
-        producer_output = None
+    task.mkdir(parents=True, exist_ok=True)
+    runtime.write_json(task / "task.json", {
+        "id": "current",
+        "name": "current",
+        "title": "Finalization eval",
+        "status": "in_progress",
+        "branch": "main",
+        "base_branch": "main",
+    })
+    run_git(fixture, "add", ".")
+    run_git(fixture, "commit", "-q", "-m", "stage finalization owner")
+    head = run_git(fixture, "rev-parse", "HEAD")
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    public_input["task_ref"] = ".trellis/tasks/current"
     plan_digest = "b" * 64
     plan_ref = f"closeout-plan:{plan_digest}"
     if "plan_ref" in public_input:
         public_input["plan_ref"] = plan_ref
     if "branch_review_commit" in public_input:
         public_input["branch_review_commit"] = head
-    if "resolved_head" in public_input:
-        public_input["resolved_head"] = head
-    if "verification_ref" in public_input and producer_output is None:
-        public_input["verification_ref"] = "verification:eval-current"
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
 
@@ -3445,27 +2994,7 @@ def stage_finalization_owner_execution(
     context_path = runtime_dir / "finalization-context.json"
     archive_locator = ".trellis/tasks/archive/2026-07/current"
     if transaction_state == "ready":
-        archive_dir = fixture / archive_locator
-        archive_dir.mkdir(parents=True, exist_ok=True)
-        if recipe == "finalization-not-required-ready_for_merge":
-            archived_verification = archive_dir / "marketplace-verification.json"
-            shutil.copy2(
-                task / "marketplace-verification.json",
-                archived_verification,
-            )
-            run_git(
-                fixture,
-                "add",
-                "--",
-                archived_verification.relative_to(fixture).as_posix(),
-            )
-            run_git(
-                fixture,
-                "commit",
-                "-q",
-                "-m",
-                "stage archived not-required owner evidence",
-            )
+        (fixture / archive_locator).mkdir(parents=True, exist_ok=True)
     context_payload = {
         "schema_version": "2.0",
         "task_ref": public_input["task_ref"],
@@ -3477,15 +3006,6 @@ def stage_finalization_owner_execution(
         "repo_ref": "example/guru-extension",
         "remote": "origin",
         "head_branch": "main",
-        "verification_ref": (
-            public_input.get("verification_ref")
-            if public_input.get("profile")
-            in {
-                "verification_verified",
-                "standalone_verification_not_required",
-            }
-            else None
-        ),
         "publication_status": (
             "stale"
             if exit_id == "publication_review_stale"
@@ -3496,7 +3016,6 @@ def stage_finalization_owner_execution(
             if exit_id == "publication_review_stale"
             else None
         ),
-        "marketplace_required": marketplace_required,
         "transaction_state": transaction_state,
     }
     runtime.write_json(context_path, context_payload)
@@ -3510,15 +3029,6 @@ def stage_finalization_owner_execution(
         if context is None:
             raise ValueError("finalization eval context was not accepted")
         outputs = {
-            "verification_required": {
-                "exit_id": "verification_required",
-                "task_ref": public_input["task_ref"],
-                "plan_ref": plan_ref,
-                "repo_ref": "example/guru-extension",
-                "branch_review_commit": head,
-                "publication_head": head,
-                "verification_target": "extension-installation",
-            },
             "publication_review_stale": {
                 "exit_id": "publication_review_stale",
                 "task_ref": public_input["task_ref"],
@@ -3547,7 +3057,7 @@ def stage_finalization_owner_execution(
             },
         }
         gate = {
-            "schema_version": "3.0",
+            "schema_version": "4.0",
             "skill_id": "guru-finalize-task",
             "identity": {
                 "task_ref": public_input["task_ref"],
@@ -3722,48 +3232,39 @@ def stage_production_owner_execution(
                 "commit-blocked-recovery": "blocked",
             }.get(recipe, "passed")
             if recipe == "commit-revision-required":
-                with_path_prefix(
-                    production_facts,
-                    lambda: runtime.build_task_commit_candidate(
-                        fixture,
-                        task,
-                        {
-                            "profile": "initial_commit",
-                            "mode": public_input["mode"],
-                            "task_ref": task.relative_to(fixture).as_posix(),
-                            "source_exit": "passed",
-                            "phase2_commit_anchor": checked[
-                                "phase2_capture_commit"
-                            ],
-                        },
-                        production_task_commit_authoring(
-                            runtime,
-                            fixture,
-                            checked,
-                            "revision-required",
-                        ),
-                    ),
-                )
-            owner_result_path, _, _ = with_path_prefix(
-                production_facts,
-                lambda: runtime.build_task_commit_candidate(
+                runtime.build_task_commit_candidate(
                     fixture,
                     task,
-                    public_input,
+                    {
+                        "profile": "initial_commit",
+                        "mode": public_input["mode"],
+                        "task_ref": task.relative_to(fixture).as_posix(),
+                        "source_exit": "passed",
+                        "phase2_commit_anchor": checked[
+                            "phase2_capture_commit"
+                        ],
+                    },
                     production_task_commit_authoring(
                         runtime,
                         fixture,
                         checked,
-                        review_status,
+                        "revision-required",
                     ),
+                )
+            owner_result_path, _, _ = runtime.build_task_commit_candidate(
+                fixture,
+                task,
+                public_input,
+                production_task_commit_authoring(
+                    runtime,
+                    fixture,
+                    checked,
+                    review_status,
                 ),
             )
         elif skill_id == "guru-review-branch":
-            with_path_prefix(
-                production_facts,
-                lambda: production_commit_for_review(
-                    runtime, fixture, task, checked
-                ),
+            production_commit_for_review(
+                runtime, fixture, task, checked
             )
             branch_owner = production_record_review(
                 runtime,
@@ -3797,11 +3298,8 @@ def stage_production_owner_execution(
                 ):
                     runtime_artifact.unlink()
         elif skill_id == "guru-review-task-publication":
-            with_path_prefix(
-                production_facts,
-                lambda: production_commit_for_review(
-                    runtime, fixture, task, checked
-                ),
+            production_commit_for_review(
+                runtime, fixture, task, checked
             )
             branch_input = {
                 "profile": "branch_review",

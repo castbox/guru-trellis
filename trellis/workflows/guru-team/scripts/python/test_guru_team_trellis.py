@@ -9052,8 +9052,8 @@ class FinishWorkEntrypointContractTest(unittest.TestCase):
                     "read `.trellis/workflow.md`",
                     "Phase 3.6/3.7",
                     "guru-review-task-publication",
-                    "guru-verify-extension-installation",
                     "guru-finalize-task",
+                    "guru-merge-task-pr",
                     "Consume only their current public typed exits",
                     "Mapped",
                 ):
@@ -9175,6 +9175,18 @@ class ThinWorkflowPublicGraphContractTest(unittest.TestCase):
         active_ids, expected_exits, expected_workflow_targets, expected_stop_targets = (
             self.expected_public_graph()
         )
+        expected_business_exits = {
+            key: value
+            for key, value in expected_exits.items()
+            if key[0] != "guru-verify-extension-installation"
+        }
+        standalone_targets = {
+            value["id"]
+            for key, value in expected_exits.items()
+            if key[0] == "guru-verify-extension-installation"
+        }
+        expected_workflow_targets -= standalone_targets
+        expected_stop_targets -= standalone_targets
 
         invokes = self.marker_payloads(text, "invoke")
         exits = self.marker_payloads(text, "exit")
@@ -9182,14 +9194,17 @@ class ThinWorkflowPublicGraphContractTest(unittest.TestCase):
         stop_targets = self.marker_payloads(text, "stop")
 
         self.assertEqual(len(active_ids), 15)
-        self.assertEqual(len(expected_exits), 57)
-        self.assertEqual(len(expected_workflow_targets) + len(expected_stop_targets), 33)
-        self.assertEqual(len(invokes), 15)
-        self.assertEqual(len(exits), 57)
-        self.assertEqual(len(workflow_targets) + len(stop_targets), 33)
+        self.assertEqual(len(expected_exits), 54)
+        self.assertEqual(len(expected_workflow_targets) + len(expected_stop_targets), 31)
+        self.assertEqual(len(invokes), 14)
+        self.assertEqual(len(exits), 52)
+        self.assertEqual(len(workflow_targets) + len(stop_targets), 31)
 
         invoke_ids = [payload["skill"] for payload in invokes]
-        self.assertEqual(set(invoke_ids), active_ids)
+        self.assertEqual(
+            set(invoke_ids),
+            active_ids - {"guru-verify-extension-installation"},
+        )
         self.assertEqual(len(invoke_ids), len(set(invoke_ids)))
         self.assertTrue(
             all(
@@ -9203,7 +9218,7 @@ class ThinWorkflowPublicGraphContractTest(unittest.TestCase):
             key = (payload["skill"], payload["exit"])
             self.assertNotIn(key, actual_exits)
             actual_exits[key] = payload["consumer"]
-        self.assertEqual(actual_exits, expected_exits)
+        self.assertEqual(actual_exits, expected_business_exits)
 
         actual_workflow_targets = [payload["id"] for payload in workflow_targets]
         actual_stop_targets = [payload["id"] for payload in stop_targets]
@@ -10416,6 +10431,7 @@ printf '{"status":"ok"}\\n'
         self.assertEqual(plan_path.read_bytes(), legacy_plan_bytes)
         self.assertEqual(self.git(root, "rev-parse", "HEAD"), head_before)
 
+    @unittest.skip("Issue #205 retired verifier-bound predecessor transactions")
     def test_current_transaction_evolution_routes_to_provenance_reprepare(
         self,
     ) -> None:
@@ -10539,6 +10555,7 @@ printf '{"status":"ok"}\\n'
             remote_before,
         )
 
+    @unittest.skip("Issue #205 retired verifier-bound predecessor plans")
     def test_current_plan_evolution_rejection_matrix(self) -> None:
         cases = {
             "non_ancestor": "provenance_reprepare_base_evolution_mismatch",
@@ -10661,6 +10678,7 @@ printf '{"status":"ok"}\\n'
                             True,
                         )
 
+    @unittest.skip("Issue #205 retired verifier supersession")
     def test_base_evolution_supersession_is_exact_and_fail_closed(self) -> None:
         root, task_dir, previous_plan, current_plan, previous_reviewed, current_reviewed = self.base_evolution_fixture()
         with mock.patch.object(gtt, "resolve_closeout_pull_request", return_value=None):
@@ -10730,6 +10748,7 @@ printf '{"status":"ok"}\\n'
             [".trellis/tasks/fixture/closeout-plan.json"],
         )
 
+    @unittest.skip("Issue #205 retired verifier supersession")
     def test_base_evolution_gate_record_check_execute_preserves_legacy_until_supersession(
         self,
     ) -> None:
@@ -10932,6 +10951,7 @@ printf '{"status":"ok"}\\n'
         )
         self.assertNotEqual(previous_reviewed, current_reviewed)
 
+    @unittest.skip("Issue #205 retired verifier predecessor gates")
     def test_transition_gate_without_legacy_predecessor_fails_closed(self) -> None:
         root, task_dir, _, _, _, _ = self.base_evolution_fixture()
         legacy_path = gtt.task_finalization_path(root, task_dir)
@@ -10952,6 +10972,7 @@ printf '{"status":"ok"}\\n'
 
         self.assertIn("legacy predecessor checkpoint", str(blocked.exception))
 
+    @unittest.skip("Issue #205 retired verifier predecessor gates")
     def test_base_evolution_retirement_ignores_unrelated_finalizer_input_profiles(self) -> None:
         root, task_dir, previous_plan, current_plan, _, _ = self.base_evolution_fixture()
         request_dir = root / ".trellis/.runtime/guru-team/finalizer-inputs/fixture"
@@ -11372,6 +11393,7 @@ printf '{\"status\":\"ok\"}\\n'
             "finalizer_remote_head_drift",
         )
 
+    @unittest.skip("Issue #205 removed the verify transition")
     def test_verification_transition_persists_transaction_before_push(self) -> None:
         root = Path("/tmp/repo")
         task_dir = root / ".trellis/tasks/current"
@@ -11771,6 +11793,7 @@ def copy_extension_verification_source_fixture(destination: Path) -> None:
     )
 
 
+@unittest.skip("Issue #205 retired the task-bearing extension verifier contract")
 class ExtensionVerificationRuntimeTest(unittest.TestCase):
     PACKAGE = (
         Path(__file__).resolve().parents[5]
@@ -14512,6 +14535,201 @@ class ExtensionVerificationRuntimeTest(unittest.TestCase):
         )
 
 
+class SourceOwnedExtensionVerificationRuntimeTest(unittest.TestCase):
+    PACKAGE = (
+        Path(__file__).resolve().parents[5]
+        / "trellis/skills/guru-team/packages/guru-verify-extension-installation"
+    )
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "source-verifier@example.invalid"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Source Verifier"],
+            cwd=self.root,
+            check=True,
+        )
+        required = {
+            "trellis/guru-team-extension.json": "{}\n",
+            "trellis/index.json": "{}\n",
+            "trellis/workflows/guru-team/workflow.md": "# Guru Team\n",
+            "trellis/presets/guru-team/scripts/bash/apply.sh": "#!/usr/bin/env bash\n",
+            ".gitignore": ".trellis/.runtime/\n",
+        }
+        for relative, content in required.items():
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+        subprocess.run(
+            ["git", "remote", "add", "origin", "https://github.com/castbox/guru-trellis.git"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "fixture"], cwd=self.root, check=True)
+        self.env = mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INVOKED_PACKAGE_ROOT": str(self.PACKAGE)},
+        )
+        self.env.start()
+
+    def tearDown(self) -> None:
+        self.env.stop()
+        self.tmp.cleanup()
+
+    def public_input(self) -> dict[str, Any]:
+        return {
+            "profile": "source_repository_verification",
+            "mode": "standalone",
+            "repo_ref": "castbox/guru-trellis",
+            "remote": "origin",
+            "ref": "refs/heads/main",
+            "caller_intent": "verify-extension-installation",
+        }
+
+    def commit_json_inputs(self) -> tuple[str, str, str]:
+        public_input = self.public_input()
+        execution = json.loads(
+            (self.PACKAGE / "examples/execution-facts.json").read_text(encoding="utf-8")
+        )
+        review = json.loads(
+            (self.PACKAGE / "examples/semantic-review-input.json").read_text(encoding="utf-8")
+        )
+        head = gtt.current_head(self.root)
+        execution["target_repository"].update({
+            "repo_ref": "castbox/guru-trellis",
+            "remote": "origin",
+            "ref": "refs/heads/main",
+            "branch_review_commit": None,
+            "publication_head": None,
+            "resolved_head": head,
+            "checkout_head": head,
+            "reviewed_content_sha256": None,
+            "remote_reviewed_content_sha256": None,
+            "content_identity_matches": True,
+        })
+        execution["extension_source"].update({
+            "selection": "standalone_fallback",
+            "manifest_provenance": "not_available",
+            "repo": "castbox/guru-trellis",
+            "locator": "https://github.com/castbox/guru-trellis.git",
+            "requested_ref": "refs/heads/main",
+            "resolved_ref": "refs/heads/main",
+            "direct_oid": head,
+            "commit": head,
+            "checkout_head": head,
+            "tree_state": "clean",
+            "is_mutable_ref": True,
+            "ref_matches_commit": True,
+            "checkout_head_matches": True,
+        })
+        locators = []
+        for name, payload in (
+            ("public-input.json", public_input),
+            ("execution.json", execution),
+            ("review.json", review),
+        ):
+            path = self.root / name
+            gtt.write_json(path, payload)
+            locators.append(name)
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "inputs"], cwd=self.root, check=True)
+        new_head = gtt.current_head(self.root)
+        execution["target_repository"]["resolved_head"] = new_head
+        execution["target_repository"]["checkout_head"] = new_head
+        execution["extension_source"]["direct_oid"] = new_head
+        execution["extension_source"]["commit"] = new_head
+        execution["extension_source"]["checkout_head"] = new_head
+        gtt.write_json(self.root / "execution.json", execution)
+        subprocess.run(["git", "add", "execution.json"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "bind current head"], cwd=self.root, check=True)
+        final_head = gtt.current_head(self.root)
+        execution["target_repository"]["resolved_head"] = final_head
+        execution["target_repository"]["checkout_head"] = final_head
+        execution["extension_source"]["direct_oid"] = final_head
+        execution["extension_source"]["commit"] = final_head
+        execution["extension_source"]["checkout_head"] = final_head
+        gtt.write_json(self.root / "execution.json", execution)
+        return tuple(locators)
+
+    def test_clean_canonical_source_preflight_binds_head(self) -> None:
+        self.assertEqual(
+            gtt.extension_verification_source_preflight(self.root, self.public_input()),
+            gtt.current_head(self.root),
+        )
+
+    def test_non_source_checkout_fails_before_external_or_artifact_actions(self) -> None:
+        (self.root / "trellis/index.json").unlink()
+        with (
+            mock.patch.object(gtt, "run") as run_mock,
+            mock.patch.object(gtt, "extension_verification_execute_facts") as execute_mock,
+            self.assertRaisesRegex(gtt.WorkflowError, "source_repository_required"),
+        ):
+            gtt.cmd_execute_extension_verification(argparse.Namespace(
+                root=str(self.root),
+                input="examples/public-source-repository-verification-input.json",
+                capability=["marketplace_index"],
+            ))
+        self.assertEqual(run_mock.call_count, 1)
+        self.assertEqual(
+            run_mock.call_args.args[0],
+            ["git", "rev-parse", "--show-toplevel"],
+        )
+        execute_mock.assert_not_called()
+        self.assertFalse((self.root / ".trellis/.runtime").exists())
+
+    def test_task_bearing_input_is_retired_before_source_preflight(self) -> None:
+        gtt.write_json(self.root / "legacy.json", {
+            "profile": "verification_required",
+            "mode": "workflow",
+            "task_ref": ".trellis/tasks/current",
+        })
+        with (
+            mock.patch.object(gtt, "extension_verification_source_preflight") as preflight,
+            mock.patch.object(gtt, "extension_verification_execute_facts") as execute,
+            self.assertRaisesRegex(
+                gtt.WorkflowError,
+                "retired_task_bearing_extension_verification",
+            ),
+        ):
+            gtt.cmd_execute_extension_verification(argparse.Namespace(
+                root=str(self.root),
+                input="legacy.json",
+                capability=["marketplace_index"],
+            ))
+        preflight.assert_not_called()
+        execute.assert_not_called()
+        self.assertFalse((self.root / ".trellis/tasks").exists())
+
+    def test_source_recorder_uses_only_ignored_session_state(self) -> None:
+        public_locator, execution_locator, review_locator = self.commit_json_inputs()
+        with mock.patch.object(
+            gtt,
+            "extension_verification_source_preflight",
+            return_value=gtt.current_head(self.root),
+        ):
+            result = gtt.cmd_record_extension_verification(argparse.Namespace(
+                root=str(self.root),
+                input=public_locator,
+                execution_input=execution_locator,
+                review_input=review_locator,
+            ))
+        owner_path = gtt.extension_verification_source_owner_state_path(
+            self.root,
+            gtt.current_head(self.root),
+        )
+        self.assertEqual(result["schema_version"], "4.0")
+        self.assertTrue(owner_path.is_file())
+        self.assertFalse((self.root / ".trellis/tasks").exists())
+        self.assertFalse((self.root / "marketplace-verification.json").exists())
+
+
 class CloseoutTransactionContractTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
@@ -14803,7 +15021,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         generated_outputs = [
             gtt.CLOSEOUT_PLAN_ARTIFACT,
             gtt.FINISH_SUMMARY_ARTIFACT,
-            gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
         ]
         with (
             mock.patch.object(gtt, "run", side_effect=fake_run),
@@ -14836,7 +15053,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 body=self.body,
                 review_facts={
                     "changed_paths": ["trellis/workflows/guru-team/workflow.md"],
-                    "marketplace_required": True,
                 },
             )
 
@@ -15054,12 +15270,14 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 return gtt.cmd_check_finalization_gate(runtime_args)
             return gtt.cmd_check_finalization_gate(runtime_args)
 
+    @unittest.skip("Issue #205 retired verification_required Finalizer re-entry")
     def test_prepared_finalization_gate_recorder_reenters_checker(self) -> None:
         checked = self.exercise_prepared_finalization_gate_reentry()
         assert checked is not None
         self.assertEqual(checked["transaction_state"], "prepared")
         self.assertEqual(checked["typed_exit"], "verification_required")
 
+    @unittest.skip("Issue #205 retired verification_required Finalizer re-entry")
     def test_prepared_finalization_gate_reentry_accepts_task_metadata_tail(self) -> None:
         checked = self.exercise_prepared_finalization_gate_reentry(
             arbitrary_metadata=True
@@ -15079,6 +15297,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertFalse(hasattr(gtt, "load_finish_summary_index"))
         self.assertFalse(hasattr(gtt, "resolve_closeout_reviewed_body"))
 
+    @unittest.skip("Issue #205 retired the evidence_ready verifier transition")
     def test_existing_plan_public_wrapper_preserves_checked_blocked_evidence_ready_route(
         self,
     ) -> None:
@@ -15221,10 +15440,8 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 "repo_ref": "owner/repo",
                 "remote": "origin",
                 "head_branch": "main",
-                "verification_ref": None,
                 "publication_status": "stale",
                 "publication_stale_reason": "publication_review_missing",
-                "marketplace_required": True,
                 "transaction_state": "prepared",
             },
         )
@@ -15262,6 +15479,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 },
             )
 
+    @unittest.skip("Issue #205 removed Finalizer verification evidence")
     def test_ready_for_merge_route_requires_current_verification_before_committed_recovery(
         self,
     ) -> None:
@@ -15371,6 +15589,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 allow_pending_transition=True,
             )
 
+    @unittest.skip("Issue #205 removed marketplace applicability from Finalizer plans")
     def test_ready_for_merge_route_skips_verification_for_non_extension_plan(self) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
         public_input = {
@@ -15485,14 +15704,13 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                 public_input,
                 {**context, "transaction_state": "prepared"},
                 {
-                    "typed_exit": "verification_required",
-                    "consumer": gtt.FINALIZATION_CONSUMERS[
-                        "verification_required"
-                    ],
+                    "typed_exit": "retired_verification_required",
+                    "consumer": gtt.FINALIZATION_CONSUMERS["blocked"],
                     "output": gtt.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
                 },
             )
 
+    @unittest.skip("Issue #205 retired verification_verified Finalizer input")
     def test_ready_for_merge_executor_marker_is_private_and_materialized_to_public_dto(
         self,
     ) -> None:
@@ -15879,6 +16097,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertFalse(finalization_checkpoint.parent.exists())
         self.assertTrue(other_checkpoint.is_file())
 
+    @unittest.skip("Issue #205 retired verification_required Finalizer output")
     def test_verification_required_binds_repo_to_immutable_plan(self) -> None:
         task_ref = self.task_dir.relative_to(self.root).as_posix()
         plan_ref = f"closeout-plan:{'b' * 64}"
@@ -15989,16 +16208,11 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             return_value={"type": "object"},
         ):
             for state in sorted(gtt.FINALIZATION_RESUME_RECOVERY_STATES):
-                verification = (
-                    ({}, {"typed_exit": "verified"})
-                    if state == "content_pushed"
-                    else None
-                )
                 with self.subTest(legal_state=state):
                     gtt.finalization_validate_route(
                         self.root,
                         public_input,
-                        context(state, verification),
+                        context(state),
                         route,
                     )
             for state in ["prepared", "reprepare_required", "ready"]:
@@ -16011,13 +16225,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
                         context(state),
                         route,
                     )
-            with self.assertRaises(gtt.WorkflowError):
-                gtt.finalization_validate_route(
-                    self.root,
-                    public_input,
-                    context("content_pushed"),
-                    route,
-                )
+            gtt.finalization_validate_route(
+                self.root,
+                public_input,
+                context("content_pushed"),
+                route,
+            )
 
     def install_official_config_parser(self) -> Path:
         source = Path(__file__).resolve().parents[5] / ".trellis/scripts/common"
@@ -16087,10 +16300,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         self.assertEqual(first["transitions"], gtt.CLOSEOUT_TRANSITIONS)
         serialized = json.dumps(first, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         self.assertNotIn(str(self.root), serialized)
-        self.assertEqual(
-            first["marketplace"]["verifier_artifact_locator"],
-            gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
-        )
+        self.assertNotIn("marketplace", first)
         self.assertEqual(
             first["projection"]["summary_template_sha256"],
             gtt.closeout_json_artifact_sha256(first["projection"]["summary_template"]),
@@ -16100,7 +16310,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             [
                 gtt.CLOSEOUT_PLAN_ARTIFACT,
                 gtt.FINISH_SUMMARY_ARTIFACT,
-                gtt.MARKETPLACE_VERIFICATION_ARTIFACT,
             ],
         )
         self.assertEqual(
@@ -16300,6 +16509,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.assertTrue((task_dir / gtt.CLOSEOUT_PLAN_ARTIFACT).is_file())
             self.assertTrue((task_dir / gtt.FINISH_SUMMARY_ARTIFACT).is_file())
 
+    @unittest.skip("Issue #205 retired task-bearing verifier owner reuse")
     def test_minimal_verified_result_reenters_and_is_reused_by_finalizer(
         self,
     ) -> None:
@@ -16437,6 +16647,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             verifier_input,
         )
 
+    @unittest.skip("Issue #205 retired verification_verified Finalizer input")
     def test_verified_ready_executor_restores_publication_from_transaction(
         self,
     ) -> None:
@@ -16558,6 +16769,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         )
         self.assertEqual(result["typed_exit"], "ready_for_merge")
 
+    @unittest.skip("Issue #205 retired verifier plan refs")
     def test_migration_verification_plan_ref_is_exact_and_reprepare_retires_it(
         self,
     ) -> None:
@@ -16865,7 +17077,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.task_dir,
             normalized,
             bound_pr=draft,
-            verification_owner_result=None,
         )
         ready.assert_called_once_with(self.root, normalized, bound_pr=draft)
         create_pr.assert_not_called()
@@ -16945,6 +17156,7 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             mutation.assert_not_called()
         self.assertEqual(observed[0], observed[1])
 
+    @unittest.skip("Issue #205 retired historical verifier re-entry")
     def test_same_plan_preview_keeps_historical_verification_fail_closed(self) -> None:
         plan = self.build_plan()
         task_ref = plan["task"]["active_locator"]
@@ -18664,11 +18876,6 @@ class CloseoutTransactionContractTest(unittest.TestCase):
         gtt.write_json(self.task_dir / gtt.FINISH_SUMMARY_ARTIFACT, {"schema_version": 1})
         archived = self.root / plan["task"]["archive_locator"]
         args = finish_args(dry_run=False, expected_plan_digest=plan["plan_digest"])
-        verification_owner_result = {
-            "typed_exit": "verified",
-            "branch_review_commit": self.head,
-        }
-        args.verification_owner_result = verification_owner_result
         body = self.body
         summary = gtt.closeout_summary_for_pr(
             plan, {"number": 105, "url": "https://github.com/owner/repo/pull/105"}
@@ -18706,14 +18913,12 @@ class CloseoutTransactionContractTest(unittest.TestCase):
             self.root,
             self.task_dir,
             plan,
-            verification_owner_result=verification_owner_result,
         )
         archive.assert_called_once_with(
             self.root,
             self.task_dir,
             plan,
             bound_pr=draft,
-            verification_owner_result=verification_owner_result,
         )
         create.assert_not_called()
 

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-verify-installation-output-verified-4.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "repo_ref", "resolved_head", "session_ref"],
+  "properties": {
+    "exit_id": {"const": "verified"},
+    "repo_ref": {"const": "castbox/guru-trellis"},
+    "resolved_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "session_ref": {"type": "string", "pattern": "^extension-verification:[0-9a-f]{24}$"}
+  }
+}

@@ -61,10 +61,12 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current graph contains exactly 15 active mandatory Skill ids, 57 external
-exits, and 33 workflow/stop targets. Each exit below has one consumer; the
-package Interface owns the exact projection and any target-owned authoring
-partition.
+The current package registry contains exactly 15 active Skill ids and 54
+external exits. Fourteen Skills participate in the business-task workflow,
+whose global graph contains 14 mandatory invokes, 52 mapped exits, and 31
+workflow/stop targets. `guru-verify-extension-installation` is the remaining
+standalone-only source-repository Skill; its two exits return directly to its
+caller-owned stop targets and never appear in the business workflow.
 
 | Skill | Typed exit -> unique consumer |
 | --- | --- |
@@ -79,8 +81,8 @@ partition.
 | `guru-create-task-commit` | `committed -> guru-review-branch`; `revision-required -> guru-create-task-commit`; `blocked -> task-commit-blocked` |
 | `guru-review-branch` | `passed -> guru-review-task-publication`; `implementation_required -> guru-branch-review-implementation-router`; `scope_confirmation_required -> guru-branch-review-scope-router`; `blocked -> branch-review-blocked` |
 | `guru-review-task-publication` | `ready -> guru-finalize-task`; `return_to_task_work -> guru-task-publication-work-router`; `blocked -> task-publication-review-blocked` |
-| `guru-verify-extension-installation` | `verified -> guru-finalize-task`; `not_required -> guru-finalize-task`; `return_to_task_work -> guru-extension-verification-work-router`; `blocked -> extension-installation-verification-blocked` |
-| `guru-finalize-task` | `verification_required -> guru-verify-extension-installation`; `publication_review_stale -> guru-review-task-publication`; `resume_finalization -> guru-finalize-task`; `reprepare_required -> guru-finalize-task`; `ready_for_merge -> guru-merge-task-pr`; `blocked -> task-finalization-blocked` |
+| `guru-verify-extension-installation` (standalone only) | `verified -> extension-installation-verification-verified`; `blocked -> extension-installation-verification-blocked` |
+| `guru-finalize-task` | `publication_review_stale -> guru-review-task-publication`; `resume_finalization -> guru-finalize-task`; `reprepare_required -> guru-finalize-task`; `ready_for_merge -> guru-merge-task-pr`; `blocked -> task-finalization-blocked` |
 | `guru-merge-task-pr` | `merged -> guru-finalization-finish-response`; `merge_blocked -> task-pr-merge-blocked`; `closure_mismatch -> task-pr-closure-mismatch` |
 
 Missing Skill packages, missing or duplicate markers, unknown/multiple/unmapped
@@ -172,9 +174,10 @@ complete committed base-to-HEAD range. After `passed`, mandatory invoke
 Chinese PR title/body directly from live authority without a task-local
 publication handoff file.
 
-Only publication `ready` enters `guru-finalize-task`. Finalizer verification,
-stale publication, resume, and reprepare exits are automatically consumed by
-their declared Skills. Only the finalizer may display and execute the bounded
+Only publication `ready` enters `guru-finalize-task`. Stale publication,
+resume, and reprepare exits are automatically consumed by their declared
+Skills. The Finalizer never routes a business task to extension installation
+verification. Only the finalizer may display and execute the bounded
 commit/push/PR/archive/ready side-effect plan. The global workflow never calls
 deterministic closeout scripts directly.
 

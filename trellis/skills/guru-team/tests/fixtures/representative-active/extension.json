@@ -6,8 +6,12 @@
     "skill_contracts": {
       "canonical_root": "trellis/skills/guru-team/",
       "installed_root": ".trellis/guru-team/skills/",
-      "registry_schema_id": "guru-team-skill-registry-1.3",
+      "registry_schema_id": "guru-team-skill-registry-1.4",
       "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_ids": [
+        "guru-team-skill-interface-1.4",
+        "guru-team-skill-interface-1.5"
+      ],
       "public_input_schema_ids": [
         "guru-fixture-action-initial-input-1.0",
         "guru-fixture-action-reentry-input-1.0"

@@ -11,8 +11,8 @@ and the six stable error facts defined by `workflow-contract.md`.
 
 It never infers semantic readiness, severity, scope, issue disposition, close
 semantics, or workflow route and never falls back to an App, MCP, connector, or
-browser. `verification_required` remains reserved for extension-installation
-evidence and is not a generic GitHub failure.
+browser. Extension verification is standalone source-repository work and is not
+a GitHub-error or business Finalizer route.
 
 ## Script Boundaries
 
@@ -20,7 +20,7 @@ evidence and is not a generic GitHub failure.
 
 Current Finalizer commands use ignored
 `finalization-transaction.json`, not task-local/archive `closeout-plan.json`.
-Preview rebuilds live publication/archive/verification facts; record/check own
+Preview rebuilds live publication/archive facts; record/check own
 only the semantic gate; execute persists the minimal transaction only when it
 must return a same-owner recovery exit and retires it at `ready_for_merge`.
 Finalizer and `finish-work` never call an Issue-close command.
@@ -1199,88 +1199,33 @@ or representative script paths in a disposable worktree whenever practical.
 
 ### Extension Installation Verification Runtime
 
-The stable runtime commands for `guru-verify-extension-installation` are
-`execute-extension-verification`, `record-extension-verification`,
-`check-extension-verification`, and `invoke-extension-verification`. Canonical
-package wrappers and current closeout invoke those commands only through
-`run-skill-command`.
+The stable runtime commands are `execute-extension-verification`,
+`record-extension-verification`, `check-extension-verification`, and
+`invoke-extension-verification`. They are called only by the standalone
+`guru-verify-extension-installation` package with current profile
+`source_repository_verification`; business closeout and platform finish entries
+do not call them.
 
-`marketplace_verification_required()` returns changed-surface facts only and
-does not decide applicability for the active Skill. Closeout uses those same
-candidate-surface facts after rebuilding the reviewed path set from the pinned
-task base through `branch_review_commit`.
+Before executor dispatch, source preflight validates canonical source assets,
+`castbox/guru-trellis` repository identity, credential-free canonical `origin`,
+requested ref resolution, current HEAD, and clean tree. Task-bearing fields,
+non-source checkout, dirty tree, ref mismatch, or HEAD mismatch fail closed
+before clone, tempdir creation, installer execution, artifact write, or
+mutation. No changed-path classifier or installed target manifest participates.
 
-The executor accepts an already AI-selected closed capability list and creates
-three disjoint roots: `target-checkout`, `extension-source-checkout`, and
-`install/project`. It resolves and verifies target ref/HEAD/reviewed content
-first, reads installed source provenance only from the target checkout, then
-requires clean task-bearing source provenance, resolves source direct/peeled facts,
-and requires the selected source commit to
-equal the manifest commit before source checkout. A full 40-hex source ref
-initializes the isolated source checkout, configures the canonical locator as
-`origin`, fetches exactly that OID through `origin`, and requires
-`FETCH_HEAD^{commit}` to match the requested and manifest commits. Branch and
-tag refs retain the `ls-remote` direct/peeled path. Taskless standalone fallback is
-allowed only for an absent manifest and explicit source-repository intent.
-Malformed provenance and unsafe non-canonical or credential-bearing source
-locators fail before clone or artifact reflection.
-Dirty task-bearing provenance fails before source ref resolution and cannot be
-accepted as passed private evidence by the recorder or checker.
+After preflight, the executor uses an isolated source checkout and clean
+throwaway target for the selected marketplace, preset, update/reapply,
+ownership, sidecar, discovery, platform, README, and redaction capabilities. It
+records sanitized deterministic facts but does not choose capabilities or turn
+command success into semantic `verified`.
 
-Installer, canonical workflow/runtime/schema/package bytes, ownership and
-source sidecars are read only from `extension-source-checkout`; target
-reviewed-content facts are read only from the target checkout/current task.
-Recorded command ownership is the closed `target_checkout` or
-`extension_source_checkout` label, and every asset expectation/digest,
-ownership fact, and sidecar fact explicitly carries
-`extension_source_checkout`.
-The executor then runs the selected clean install,
-preview/switch, preset, update/reapply, ownership, sidecar, discovery, platform,
-README, and redaction probes. It records sanitized argv, exit code, output
-digest/size, capability status, asset digests, current ownership inventory, and
-sidecar facts. It neither chooses the capability set nor turns command success
-into `verified`.
-
-The recorder consumes the public input, deterministic execution facts, and an
-already completed AI review containing applicability, profile coverage,
-adequacy, findings, route, redaction, and optional supersession. It rebuilds
-current identity and writes the sole task-local
-`marketplace-verification.json`, or returns the same owner result without a
-repository write for taskless standalone. The checker validates the closed
-schema, task/session persistence, target repo/ref/HEAD/content, installed
-manifest/source repo/ref/direct/peeled/checkout HEAD, and plan bindings,
-machine/semantic/final digests, redaction, unique consumer, and current
-supersession. It does not revisit semantic conclusions.
-
-For workflow and task-bearing standalone invocations, execute, record, and
-check each rebuild the exact direct active-task identity before continuing.
-They require the current active-task pointer, reject archived/completed tasks,
-match public `task_ref`/`repo_ref` to current `task.json` and repository facts,
-match the live branch, and run the shared workspace-boundary validator using
-the current task, ignored runtime mapping, and live Git worktree inventory.
-Wrong-task, missing-identity, and wrong-worktree invocations fail before command
-execution, artifact mutation, or DTO projection. Session-only standalone mode
-bypasses only the task-specific checks and remains repository-write-free.
-
-The public invocation reruns the checker, reads the actual exit only from the
-checked owner result, selects that exit's schema, and emits one minimal DTO.
-`expected_exit` is eval-only. Workflow `not_required` is rejected; when a
-plan-required target conflicts with AI `applicability=not_required`, private
-evidence records the conflict and returns `blocked` without fabricating an
-execution profile. A taskless installation failure also returns a standalone
-`blocked` report rather than a false task-work route.
-
-The ownership fact reader consumes only current schema 3.0: exactly 11 Guru
-rules, nine managed claims, and three additive overlays. Non-current schema,
-additional fields, unknown claims, or unexpected overlays fail verification.
-Raw command output, credential URLs, tokens, and temporary repository locators
-are never retained; only safe locators and digest/size facts cross the runtime
-boundary.
-HTTP(S) URL scanning treats authority userinfo as sensitive across
-username-only, username/password, percent-encoded, empty, and multiple-`@`
-forms. Whitespace and `/` terminate the authority candidate. Recorder errors,
-public wrapper output, and eval traces expose only generic failure text or
-digests and never the rejected credential URL.
+The recorder consumes execution facts plus the completed AI adequacy/findings/
+redaction review and writes only ignored source-session owner state. The checker
+validates source identity, schema, capability evidence, redaction, and the actual
+`verified|blocked` exit. Public invocation reruns the checker, selects the actual
+exit schema, emits the minimal DTO, and retires owner state after direct
+standalone consumption. No path under `.trellis/tasks/**`, verifier cache/index,
+Finalizer projection, or task-work route is permitted.
 
 ## Skill Eval Discovery And Runner
 
@@ -1427,108 +1372,35 @@ owner invocation.
 
 Stable commands are `preview-finalization`, `record-finalization-gate`,
 `check-finalization-gate`, `execute-finalization-transition`, and the package
-`scripts/invoke.sh`. The recorder and executor may validate a pending transition
-route; public invocation always reruns strict route validation and never calls
-the transition executor implicitly.
+`scripts/invoke.sh`. The recorder and executor validate only the five current
+Finalizer exits: `publication_review_stale`, `resume_finalization`,
+`reprepare_required`, `ready_for_merge`, and `blocked`. Public invocation reruns
+strict route validation and never calls the transition executor implicitly.
 
-Current Finalizer uses `guru-finalization-transaction-1.0` for its complete
-remote mutation interval. Preview and execute
-rebuild live Git/GitHub/Trellis facts, locate the transaction by exact
-`task_ref`, and bind immutable publication input plus the local `plan_digest`
-consumer token. The first transition persists the exact accepted
-`pre_push_remote_head` and immutable publication input before push; a
-`push_content` retry accepts only that exact pre-push value or the owner-produced
-reviewed/publication head. Verification-required writes the transaction before returning;
-terminal `ready_for_merge` retires Finalizer and Verifier owner state. Current
-archive preparation allows six core files and the minimal verification result
-as the only optional seventh file. Archive-move failure restores the task
-locator's tracked bytes from immutable `publication_head`; archived recovery
-reads committed task/summary facts and ignores damaged working-tree copies.
+Current Finalizer uses `guru-finalization-transaction-2.0` for its complete
+remote mutation interval. Preview and execute rebuild live Git/GitHub/Trellis
+facts, bind exact Publication input, and proceed from content push directly to
+Draft PR, archive, and Ready. Finalizer never calls extension verification,
+reads verifier owner state, accepts a verification re-entry profile, or retains
+a verification artifact. Business changed paths and the installed extension
+manifest have no verifier applicability semantics. Archive preparation permits
+exactly the six durable core files.
 
-### Legacy Plan Engine Selectors
+`guru-verify-extension-installation` retains the stable execute/record/check/
+invoke commands only for explicit `source_repository_verification` standalone
+use from a clean `castbox/guru-trellis` source checkout. Source preflight runs
+before clone, tempdir creation, installer execution, artifact write, or
+mutation. The recorder/checker owns ignored source-session state and serializes
+only `verified|blocked`; it never writes under `.trellis/tasks/**` or projects
+into Finalizer. Retired task-bearing verifier inputs and Finalizer verification
+re-entry fail closed with stable reprepare remediation.
 
-The remainder of this section preserves the explicit pre-#180 plan engine and
-#191 recovery selectors. It is not current Interface, registry, manifest,
-preparation, recovery, or archive authority.
+### Legacy Compatibility Assets
 
-The legacy extension-verification checker validates the dedicated
-`marketplace-verification.json` owner artifact against the immutable plan,
-task, repository, remote ref, `branch_review_commit`, reviewed-content identity,
-and exact transaction paths. Closeout schema 3.0 creates no pre-draft commit and
-rejects every additional dirty path or identity/commit drift.
-
-The verifier treats `branch_review_commit` as `reviewed_content_head` and
-`publication_head` as the exact target/ref checkout identity. Current producers
-always emit both fields. Legacy closed schemas remain byte-stable historical
-contracts, but a legacy payload without `publication_head` fails current-schema
-validation and must be regenerated by the owning current producer; the verifier
-never defaults or derives the missing identity. A validated single manifest-only
-provenance tail preserves reviewed-content identity while moving the
-remote/PR/archive parent to `publication_head`.
-
-When the current closeout plan requires extension verification, finalization
-consumes only a checker-passed current `guru-verify-extension-installation`
-owner result and its task-local artifact. The artifact is passed unchanged
-through preview, retry, final archive projection, active projection validation,
-normal archive execution, and archive recovery. It never rewrites the owner
-result, creates a second artifact, enters a public DTO, or augments the Ledger.
-A missing, stale, consumer-mismatched, or otherwise invalid owner result stops
-before archive mutation. Plans that do not require verification carry no
-verification artifact.
-
-Closeout plan preparation owns one deterministic reviewed-change projection.
-It derives `review.changed_paths` from the live merge base of the task's current
-`base_branch` through immutable `branch_review_commit`, derives
-`review.close_issues_reviewed` from the publication-validated Issue Scope
-Ledger, and feeds the same reviewed paths to marketplace candidate-surface
-classification, archive retention, and the finish-summary template. Compact Branch Review remains semantic and
-small; the finalizer does not require it to duplicate path or issue-scope
-inventories.
-
-`verification_required.repo_ref` must equal the immutable plan repository.
-Its current DTO also carries both reviewed and publication HEADs. The
-pre-PR `reprepare_required` executor uses the canonical preset apply entry in a
-detached clean worktree, validates the five-field manifest allowlist, commits
-one tail, fast-forwards the task branch, and removes only the superseded private
-plan/gate/request state. Its private gate retains an executor marker; only after
-the tail is committed does the executor return the public task/reason plus
-`branch_review_commit/publication_head` DTO. A pre-#191 base-evolution candidate
-must first prove its exact legacy gate/request, matching task/repository/remote/
-base/head identities, active/no-PR/no-archive/single-consumer state, untracked
-artifacts, old-to-current ancestry, and a fast-forwardable remote ancestor.
-Preview and discovery only prove those facts. The checked transition repeats the
-proof, retires the predecessor, and persists only the freshly rebuilt ignored
-Finalizer transaction; the next preview rebuilds the plan from its exact
-publication payload and validates both heads.
-For an unused current schema 3.0 predecessor, the runtime instead validates the
-complete seven-field Git shape, the historical tail structure and ancestry, a
-remote branch at or before the predecessor reviewed-content head, untracked
-owner state, and the absence of PR/archive/verification/request/gate consumers.
-A remote at the predecessor publication tail or any later descendant proves an
-outbound publication side effect and fails closed. Initial preview rejects every
-preexisting gate. Recorder then writes the ordinary Finalizer gate; checker and
-executor pass only that exact checked in-memory gate back into the repeated
-preflight. The executor retires the old plan/gate, creates or reuses the current
-tail, uses the real `prepare_closeout()` path to rebuild the candidate, and
-records only its minimal `finalization-transaction.json` recovery projection.
-The initial `publication_ready` invocation supplies the current reviewed exact
-title/body to the base-evolution candidate even when they differ from the
-predecessor plan. Only after the executor records that transaction does a
-minimal `reprepare_preview` reuse its immutable exact publication payload;
-public `reprepare_required`
-remains task/reason/two-head identity only.
-For the pre-#191 base-evolution route, recorder does not overwrite the legacy
-gate whose bytes the checker and executor must still validate. It writes the
-current marker to the same-owner ignored
-`task-finalization-transition-gate.json`; default gate resolution selects it
-only while the exact legacy gate and base-evolution state remain current.
-Successful checked supersession removes both gate files, while an orphan or a
-transition gate outside that state fails closed.
-`resume_finalization` accepts only declared same-plan post-content recovery
-states; `prepared`, reprepare/stale state, and terminal `ready` are invalid. The
-ignored owner-private gate stores the private executor marker for publication
-and provenance reprepare, while archive-month reprepare retains its complete
-current DTO because HEAD does not change. After the archive transaction and
-ready PR are objectively complete, public invocation
-materializes the DTO in memory with the exact archive locator and canonical PR
-identity; it never rewrites the gate with that public DTO.
+Legacy closeout plan, task-bearing verifier, `verification_required`,
+`not_required`, verification re-entry, and task-local
+`marketplace-verification.json` schemas may remain immutable at their published
+paths. They are not current Interface, registry, manifest, eval, preparation,
+recovery, archive, or workflow authority. Current runtime must reject them; it
+must not infer missing fields, adapt them into current inputs, or inspect their
+artifacts to continue a business closeout.

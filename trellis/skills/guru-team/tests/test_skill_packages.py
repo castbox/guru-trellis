@@ -28,8 +28,16 @@ def install_current_contract_schemas(skills_root: Path) -> None:
         schemas / "skill-interface-1.4.schema.json",
     )
     shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-interface-1.5.schema.json",
+        schemas / "skill-interface-1.5.schema.json",
+    )
+    shutil.copyfile(
         SKILLS_ROOT / "schemas/skill-registry-1.3.schema.json",
         schemas / "skill-registry-1.3.schema.json",
+    )
+    shutil.copyfile(
+        SKILLS_ROOT / "schemas/skill-registry-1.4.schema.json",
+        schemas / "skill-registry-1.4.schema.json",
     )
     shutil.copyfile(
         SKILLS_ROOT / "schemas/skill-eval-run-2.0.schema.json",
@@ -307,9 +315,9 @@ class SourceValidationTests(unittest.TestCase):
             result["facts"]["active_ids"],
             ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-finalize-task", "guru-merge-task-pr", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"],
         )
-        self.assertEqual(result["facts"]["invoke_markers"], 15)
-        self.assertEqual(result["facts"]["exit_markers"], 57)
-        self.assertEqual(result["facts"]["target_markers"], 33)
+        self.assertEqual(result["facts"]["invoke_markers"], 14)
+        self.assertEqual(result["facts"]["exit_markers"], 52)
+        self.assertEqual(result["facts"]["target_markers"], 31)
 
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         self.assertEqual(
@@ -776,11 +784,11 @@ class SourceValidationTests(unittest.TestCase):
             self.assertIn("guru-review-branch", text, path)
             self.assertRegex(
                 text,
-                r"(?:15 Skills\s*/\s*57 exits|15/57|十五个 active packages 共声明\s*57)",
+                r"(?:15 Skills\s*/\s*54(?: package)? exits|15/54|十五个 active packages 共声明\s*54)",
             )
             self.assertRegex(
                 text,
-                r"(?:15/57/33|15 invokes?\s*/\s*57 exits?\s*/\s*33 targets?)",
+                r"(?:14/52/31|14 invokes?\s*/\s*52 exits?\s*/\s*31 targets?)",
             )
             self.assertRegex(text, r"(?:唯一的|sole) Phase 3\.5 semantic owner")
             self.assertIn("deterministic", text, path)
@@ -795,7 +803,7 @@ class SourceValidationTests(unittest.TestCase):
         for path in durable_docs:
             text = path.read_text(encoding="utf-8")
             self.assertIn("fifteen active", text, path)
-            self.assertRegex(text, r"57\s+external\s+exits")
+            self.assertRegex(text, r"54\s+external\s+exits")
             self.assertIn("guru-review-branch", text, path)
             for phrase in stale_phrases:
                 self.assertNotIn(phrase, text, path)
@@ -825,14 +833,13 @@ class SourceValidationTests(unittest.TestCase):
             with self.subTest(path=path):
                 text = path.read_text(encoding="utf-8")
                 normalized = " ".join(text.split())
-                self.assertIn("fifteen active Skills and 57 external exits", normalized)
+                self.assertIn("fifteen active Skills and 54 external exits", normalized)
                 self.assertIn(
-                    "twelve target-owned `skill_input_authoring_seed` handoffs",
+                    "nine target-owned `skill_input_authoring_seed` handoffs",
                     normalized,
                 )
-                self.assertIn("15 invokes, 57 exits, and 33 targets", normalized)
+                self.assertIn("14 invokes, 52 exits, and 31 targets", normalized)
                 self.assertIn("guru-finalize-task", text)
-                self.assertIn("#119", text)
                 for claim in stale_current_claims:
                     self.assertNotIn(claim, normalized, path)
 
@@ -2757,11 +2764,11 @@ class SourceValidationTests(unittest.TestCase):
         self.assertTrue(any("workflow and standalone preconditions differ" in item for item in self.validate()["errors"]))
 
     def test_registry_schema_identity_and_constraint_matrix_fail(self) -> None:
-        schema = self.root / "schemas/skill-registry-1.3.schema.json"
+        schema = self.root / "schemas/skill-registry-1.4.schema.json"
         schema.write_text(json.dumps({"type": "string"}), encoding="utf-8")
         self.assertTrue(any("skill registry schema" in item and "canonical schema contract digest" in item for item in self.validate()["errors"]))
 
-        shutil.copyfile(SKILLS_ROOT / "schemas/skill-registry-1.3.schema.json", schema)
+        shutil.copyfile(SKILLS_ROOT / "schemas/skill-registry-1.4.schema.json", schema)
         original = self.read_registry()
         mutations = {
             "missing-required": lambda value: value.pop("schema_version"),
@@ -4368,8 +4375,8 @@ class IntakePublicInvocationTests(unittest.TestCase):
             ("guru-create-task-commit", "revision-required", "revision-required"),
             (
                 "guru-finalize-task",
-                "publication-verification-required",
-                "verification_required",
+                "publication-ready-ready-for-merge",
+                "ready_for_merge",
             ),
             (
                 "guru-merge-task-pr",
@@ -4378,11 +4385,6 @@ class IntakePublicInvocationTests(unittest.TestCase):
             ),
             ("guru-review-branch", "workflow-passed", "passed"),
             ("guru-review-task-publication", "workflow-initial-ready", "ready"),
-            (
-                "guru-verify-extension-installation",
-                "workflow-required-verified",
-                "verified",
-            ),
         )
         fallback_request: dict | None = None
         for skill_id, case_id, expected_exit in cases:
@@ -4435,58 +4437,67 @@ class IntakePublicInvocationTests(unittest.TestCase):
         finally:
             native_adapter.PRODUCTION_SKILLS = original_allowlist
 
-    def test_not_required_eval_executes_producer_projection_and_finalizer_wrappers(
-        self,
-    ) -> None:
-        result = self.run_shared_eval(
-            "guru-finalize-task",
-            "not-required-reentry-ready-for-merge",
+    def test_source_verifier_shared_adapter_uses_source_checkout(self) -> None:
+        run_root = Path(self.temp.name) / "source-verifier-eval"
+        process = subprocess.run(
+            [
+                str(
+                    REPO
+                    / "trellis/workflows/guru-team/scripts/bash/"
+                    "run-skill-evals.sh"
+                ),
+                "--root", str(REPO),
+                "--mode", "source",
+                "--skill", "guru-verify-extension-installation",
+                "--adapter", "shared",
+                "--case", "source-repository-verified",
+                "--run-root", str(run_root),
+                "--json",
+            ],
+            cwd=REPO,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
-        case = result["cases"][0]
-        self.assertEqual(case["actual_exit"], "ready_for_merge")
-        transcript_path = Path(case["transcript_locator"])
-        execution = transcript_path.parent / "execution"
-        owner_repo = execution / "owner-repo"
-        chain = json.loads((
-            owner_repo
-            / ".trellis/.runtime/guru-team/evals/not-required-producer-edge.json"
+        self.assertEqual(process.returncode, 0, process.stderr)
+        result = json.loads(process.stdout)
+        self.assertEqual(result["status"], "passed", result)
+        self.assertEqual(result["cases"][0]["actual_exit"], "verified")
+
+    def test_verifier_has_no_finalizer_projection_or_not_required_exit(self) -> None:
+        interface = json.loads((
+            self.repo
+            / ".trellis/guru-team/skills/packages/"
+            "guru-verify-extension-installation/interface.json"
         ).read_text(encoding="utf-8"))
         self.assertEqual(
-            chain["producer_wrapper"],
-            ".trellis/guru-team/skills/packages/"
-            "guru-verify-extension-installation/scripts/invoke.sh",
+            [item["id"] for item in interface["external_exits"]],
+            ["verified", "blocked"],
         )
-        self.assertEqual(chain["producer_output"]["exit_id"], "not_required")
-        self.assertEqual(chain["producer_output"]["mode"], "standalone")
-        self.assertEqual(chain["projection_id"], "project_not_required")
-        self.assertEqual(
-            set(chain["seed"]),
-            {"repo_ref", "resolved_head", "verification_ref"},
-        )
-        self.assertEqual(
-            set(chain["authoring"]),
-            {"profile", "mode", "task_ref"},
-        )
-        self.assertFalse(set(chain["seed"]) & set(chain["authoring"]))
-        self.assertEqual(
-            chain["target_input"]["profile"],
-            "standalone_verification_not_required",
-        )
-        owner = json.loads((
-            owner_repo
-            / ".trellis/tasks/archive/2026-07/current/"
-            "marketplace-verification.json"
-        ).read_text(encoding="utf-8"))
-        self.assertEqual(owner["schema_version"], "4.0")
-        self.assertEqual(owner["semantic_result"]["typed_exit"], "not_required")
-        self.assertEqual(owner["mode"], "standalone")
-        self.assertNotIn("public_input", owner)
-        transcript = json.loads(transcript_path.read_text(encoding="utf-8"))
-        self.assertTrue(
-            transcript["wrapper_path"].endswith(
-                "public-packages/guru-finalize-task/scripts/invoke.sh"
-            )
-        )
+        self.assertTrue(interface["public_contracts"]["projections"])
+        self.assertTrue(interface["public_contracts"]["consumer_inputs"])
+        self.assertTrue(all(
+            item["consumer"]["kind"] == "stop"
+            for item in interface["public_contracts"]["consumer_inputs"]
+        ))
+        current_contract = {
+            "modes": interface["modes"],
+            "external_exits": interface["external_exits"],
+            "input": interface["public_contracts"]["input"],
+            "outputs": interface["public_contracts"]["outputs"],
+            "consumer_inputs": interface["public_contracts"]["consumer_inputs"],
+            "projections": interface["public_contracts"]["projections"],
+        }
+        serialized = json.dumps(current_contract, sort_keys=True)
+        self.assertNotIn("not_required", serialized)
+        self.assertNotIn("guru-finalize-task", serialized)
+        self.assertTrue(all(
+            item["id"].startswith("legacy_")
+            for item in interface["schemas"]
+            if "not_required" in item["id"]
+        ))
 
     def test_publication_shared_eval_executes_all_three_actual_wrappers(self) -> None:
         for case_id, expected_exit in (

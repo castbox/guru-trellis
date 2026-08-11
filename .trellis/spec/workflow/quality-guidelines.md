@@ -79,8 +79,8 @@ git diff --check
 Add targeted script invocations when changing phase parsing, intake, review,
 finish, publish, installer behavior, or source-repo dogfood overlay sync.
 
-For versioned public Skill I/O, the test matrix validates only the current
-Interface 1.4 and registry 1.3 schemas. One mixed test-only registry contains
+For versioned public Skill I/O, the test matrix validates the current Interface
+1.4/1.5 and registry 1.4 schemas. One mixed test-only registry contains
 structured semantic 1.4 and scalar deterministic 1.4 packages in the same run.
 Tests cover discriminator/`oneOf`, every per-exit schema/example,
 every output field's direct consumer use, Skill/workflow/stop consumers,
@@ -125,8 +125,8 @@ manifest: exactly three packages, ten profiles, 11 exits, current output schema
 ids, four authoring-seed edges, private artifact ids, examples, and eval case
 bindings. No alternate production manifest, input projector, or fixture may be
 present. Then validate the current package closure
-at fifteen active Skills and 57 external exits, while the integrated global
-workflow projection is 15 invokes, 57 exits, and 33 targets. Negative tests cover missing, extra,
+at fifteen active Skills and 54 external exits, while the integrated business
+workflow projection is 14 invokes, 52 exits, and 31 targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -142,8 +142,9 @@ closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The twelve `skill_input_authoring_seed` edges have positive partition/projection
-probes and negative overlap, overwrite, missing, extra, unknown, private-lookup,
+The package graph contains nine target-owned `skill_input_authoring_seed`
+handoffs. These edges have positive partition/projection probes and negative
+overlap, overwrite, missing, extra, unknown, private-lookup,
 runtime-semantic-reconstruction, and unsupported fifth-operation fixtures. Each positive
 probe independently validates seed and authoring example keys, proves disjoint
 union equals the complete target required set, performs a no-overwrite merge,
@@ -655,9 +656,9 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  fifteen-Skill/57-exit current package closure while the production activation
-  unit remains three Skills/11 exits and global markers remain integrated at
-  15 invokes, 57 exits, and 33 targets. Update and preset reapply must reproduce
+  fifteen-Skill/54-exit current package closure while the production activation
+  unit remains three Skills/11 exits and business markers remain integrated at
+  14 invokes, 52 exits, and 31 targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Task Publication Review Quality
@@ -704,11 +705,10 @@ returns `finding_refs` with `resume_target=phase-2`;
 the Publication wrapper retires its checkpoint after valid output, old 3.0
 Publication/Finalizer shapes fail closed, and Finalizer
 never augments, parses, or deletes that checkpoint. Finalizer terminal tests
-prove it retires its transaction, gate, request, and superseded Verifier owner
-state only after the `ready_for_merge` DTO validates. The closeout transaction
-must leave Issue Scope Ledger bytes unchanged; required marketplace verification
-is carried only by its dedicated minimal owner result and immutable transaction
-binding.
+prove it retires its transaction, gate, and request only after the
+`ready_for_merge` DTO validates. The closeout transaction must leave Issue Scope
+Ledger bytes unchanged and must not invoke, read, archive, or retain extension
+verification state.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
@@ -719,162 +719,64 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert fifteen active Skills and 57
-external exits, exactly one `production-current-v2` three-Skill/11-exit current
-manifest, and global workflow markers of 15
-invokes, 57 exits, and 33 targets.
+Source/installed/platform/throwaway checks assert fifteen active Skills and 54
+package exits, exactly one `production-current-v2` three-Skill/11-exit current
+manifest, and business workflow markers of 14 invokes, 52 exits, and 31 targets.
 
 ## Extension Installation Verification Quality
 
-`guru-verify-extension-installation` tests cover both structurally distinct
-inputs, four independent outputs/consumers/projections, the active finalizer
-  producer/consumer edges with active global routing, task-local and session-only
-persistence, and public/private field exclusion.
+`guru-verify-extension-installation` quality coverage exercises the single
+`source_repository_verification` profile and independent `verified|blocked`
+outputs. Contract tests prove Interface 1.5 standalone-only discovery, no global
+workflow marker, no Finalizer consumer/projection, ignored source-session state,
+and exclusion of task identity and private fields from public DTOs.
 
-Runtime coverage includes changed-surface facts without route ownership,
-workflow-required applicability conflict, command exit zero plus failed
-adequacy, partial/early failure, remote/local HEAD drift, same-identity retry
-with exact supersession, stale plan re-entry, taskless route limits, sanitized
-argv/output, and invalid or non-current ownership-manifest rejection. The
-conflict case must
-prove private `applicability=not_required`, no selected capability or execution
-profile, `typed_exit=blocked`, and stable remediation.
+Runtime coverage proves canonical source assets, source repository/origin,
+requested ref, resolved commit, HEAD, and clean tree are validated before clone,
+tempdir creation, installer execution, artifact write, or mutation. Non-source,
+task-bearing, dirty, ref-mismatch, and HEAD-mismatch cases assert zero executor
+calls and zero verifier artifacts. Source success uses an isolated clean
+throwaway target and covers marketplace, preset, workflow, platform equality,
+ownership, update/reapply, sidecars, README commands, and redaction.
 
-Dual-identity regressions must independently cover target/source repository
-separation, isolated checkout paths, target reviewed-content drift, target and
-source checkout HEAD mismatch, target fixture without an installer, source
-installer absence with a correct source ref and checkout HEAD, task-bearing
-dirty provenance blocked before source resolution/clone/installer, task-bearing missing manifest, malformed-manifest no
-fallback, taskless absent-manifest fallback, source commit drift, branch and
-lightweight direct commits, annotated direct object plus peeled commit, and
-credential-locator rejection without clone/artifact/error reflection. These
-are normal correctness cases; hostile actors, concurrency, locks, TOCTOU, fault
-injection and crash consistency remain out of scope.
-Coverage must also prove full-OID fetch resolution and the self-hosted case
-where a manifest records source commit A, the target branch advances to commit
-B, and source resolution remains fixed at A without ancestor substitution.
-Schema and recorder/checker regressions also reject target/source command-owner
-substitution and any asset, digest, ownership, or sidecar fact not explicitly
-bound to `extension_source_checkout`; dirty task-bearing passed evidence is also
-rejected independently of executor behavior.
-Real-wrapper task-bearing eval staging must author an explicit clean synthetic
-source provenance instead of inheriting the developer worktree's dirty manifest.
-
-The package-local production corpus contains seven real-wrapper cases spanning
-workflow/standalone, all four exits, transient retry, remote unavailable, and
-stale plan. Shared/Codex/Claude/Cursor consume byte-identical canonical corpus
-and package bytes. Actual exit chooses the output schema before
-`expected_exit` comparison; native requests must not receive expected exit or
-private verification state.
-
-Remote installation acceptance must use a real pushed ref and prove marketplace
-index, new init, existing preview/switch, initial apply/reapply, `trellis
-update`, second workflow selection/apply, package/runtime/schema/executable
-inventory, platform equality, ownership freeze, managed sidecars, README
-commands, redaction, and final zero unresolved `.new`/`.bak`. Production eval
-and this remote-ref run are recorded independently and neither substitutes for
-the other.
+The package-local production corpus contains two real-wrapper cases spanning
+`verified` and `blocked`. Shared/Codex/Claude/Cursor consume byte-identical
+canonical corpus and package bytes. Actual exit chooses the output schema before
+`expected_exit` comparison; native requests do not receive expected exit or
+private verification state. Remote-ref acceptance and production eval remain
+independent evidence surfaces.
 
 ## Task Finalization Quality
 
-`guru-finalize-task` quality coverage exercises all six distinct public input
-profiles, all six `exit_id` outputs, the seven finalization-family target-owned
-authoring handoffs, semantic Gate/confirmation ordering, and the owner-private
-recovery loop. Together with the five prior handoffs, the active package graph
-contains twelve target-owned `skill_input_authoring_seed` handoffs.
+`guru-finalize-task` quality coverage exercises four current public input
+profiles, five outputs, the four finalization-family authoring handoffs, semantic
+Gate/confirmation ordering, and the owner-private recovery loop. Together with
+the five prior handoffs, the active package graph contains nine target-owned
+`skill_input_authoring_seed` handoffs.
 
-The package-private `finalization-transaction.schema.json` and workflow runtime
-owner schema share identity `guru-finalization-transaction-1.0`. Source and
-installed regressions prove the transaction contains only recovery-required
-identity, immutable publication input, stage, optional PR identity and the one
-local `plan_digest` consumer binding. Current interfaces, manifests, runtime
-preparation and archives must not select, create, read, move, or retain
-`closeout-plan.json`; its schema/examples remain immutable legacy assets tested
-only through explicit compatibility selectors.
+Current gate 4.0 and transaction 2.0 regressions prove Publication input, exact
+pre-push authority, Draft/Ready identity, archive recovery, and terminal cleanup.
+Current interfaces, manifests, runtime preparation and archives do not select,
+create, read, move, or retain `closeout-plan.json` or a verifier result; legacy
+schemas/examples remain immutable and are tested only by explicit rejection or
+compatibility selectors. Archive projection contains exactly six durable core
+files.
 
-Package-local production eval executes the real public wrapper, selects the
-per-exit schema from the actual returned `exit_id`, and only then compares
-`expected_exit`. Current transaction regressions cover durable pre-push authority,
-verification re-entry persistence, exact task-ref recovery after archive,
-archive-move restoration from immutable `publication_head`, six-core/
-seven-maximum archive projection, terminal owner cleanup, and
-`ready_for_merge` materialization. The bounded interrupted-transition recovery
-is part of the declared Finalizer transaction; tests do not generalize it into
-hostile-input, concurrency, locking, TOCTOU, fault-injection, or cross-OS mechanisms.
+Representative business fixtures cover docs, code, config, `.trellis/**`,
+platform copies, and an installed extension manifest. Their complete
+Publication -> Finalizer -> Merge trace asserts zero verifier wrapper calls,
+zero verifier commands, and zero verifier artifacts even when verifier network
+or API access is unavailable. Publication `return_to_task_work` remains covered
+for real descendant content drift.
 
-Production Finalizer regressions cover both an absent remote task ref and a
-strict historical-ancestor remote task ref. At the actual first content push,
-the ignored transaction must already exist on disk and bind the exact accepted
-`pre_push_remote_head`; a different historical or descendant head fails closed.
-Terminal public consumption still retires that checkpoint.
-
-Finalizer regressions also prove the current verification owner checker remains
-strict, an identical immutable verification tuple executes once, and result
-capture recovery reruns only missing capabilities. Tests reject extra paths,
-wrong repository identity, locator drift, non-exact archive commits and stale
-tuple reuse. They require a private `ready_for_merge` or provenance-reprepare
-marker before output identity exists, forbid early or persisted public DTOs,
-materialize the terminal DTO only through the public wrapper, prove the wrapper
-performs no transition, and cover every legal and illegal same-owner resume
-state including rejection of terminal `ready`.
-
-Finalizer and Merge cardinality regressions cover `expected_close_issues=[]`,
-one Issue, and multiple Issues. The empty case must accept a refs-only PR with
-no close keyword, reject any accidental close keyword, produce the same
-`ready_for_merge` route, merge by expected head, and complete with zero Issue
-closure reads. Non-empty cases retain exact missing/extra keyword rejection and
-post-merge closure verification.
-
-Explicit legacy compatibility regressions preserve the pre-#180 #105/#191 plan
-engine and two-gate fixtures byte-for-byte. Those fixtures must remain selected
-only by legacy test selectors and must not restore plan-based current routing.
-
-The current base-evolution regression uses a disposable real Git repository and
-bare remote, creates a valid current plan through real `prepare_closeout()`,
-advances reviewed content after its unpushed provenance tail, and executes real
-preview, recorder, checker, executor, tail creation, minimal transaction persistence,
-and side-effect-free reprepare preview. It proves the ordinary gate lifecycle,
-the explicit old/current payload difference, current Publication payload in the
-initial candidate and transaction, exact transaction-payload reuse by minimal
-reprepare, absence of current `closeout-plan.json`, unchanged HEAD on the final
-preview, and no transition gate. Its rejection matrix covers a
-non-ancestor reviewed head, divergent remote, remote at the predecessor
-publication tail, remote at the real current reviewed commit, existing
-PR/archive, verification artifact or matching request, either preexisting gate,
-and a tracked closeout plan. Mocking
-`prepare_closeout` does not satisfy this
-regression; the pre-#191 two-gate fixture remains independently passing.
-
-The same regression must prove that minimal `reprepare_required` output does
-not lose Publication authority: the reprepare consumer reloads the retained
-Finalizer-owned immutable publication input and supplies byte-identical title
-and body to the rebuilt plan. Missing/stale private authority, identity drift,
-an existing PR, and any Closed/replacement-PR fallback fail closed.
+Finalizer and Merge cardinality regressions retain empty, one-Issue, and
+multi-Issue cases, expected-head merge, close-keyword validation, and post-merge
+closure verification. The installed #174 replay executes Branch Review,
+Publication, Finalizer, and Merge public wrappers in one shared owner repository;
+actual stdout and declared projections bind every edge. It explicitly excludes a
+verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
-script modes must match after fresh install, update, and preset reapply. The
-  package closure is fifteen active Skills and 57 external exits; global markers
-  remain 15 invokes, 57 exits, and 33 targets. Issue #119 combined acceptance
-  additionally requires the three Guru-owned daily entries, terminal
-  `ready_for_merge` and Merge evals, checked-verification projection bridge, and installed
-  integration coverage. Upstream Finish assets remain unchanged, with physical
-  overlay cleanup owned by #132.
-
-Issue #180 adds one #174 controlled replay session to the installed Finish-family
-integration. The replay uses one clean installed owner repository, one shared run
-root, and one stateful GitHub fixture. It executes the real Branch Review,
-Publication, Finalizer, Verifier, Finalizer re-entry, and Merge public wrappers.
-Each producer's actual stdout is the only producer payload supplied to its
-declared Interface projection; the projected and schema-validated target input
-is then the actual next wrapper input. Receipts bind each stdout digest to the
-next input digest in one event log.
-
-Manually authored producer or terminal DTOs, separate fixed eval cases, and
-isolated fixtures that merely return the expected exits are not end-to-end
-replay evidence. The stateful GitHub fixture must prove the ordered Open Issue
-preflight, expected-head merge, merged PR reread, and merge-time Issue closure,
-while rejecting any Issue-close mutation. Confirmation counts are derived from
-event receipts plus canonical `guru-confirmation-boundary` profile membership;
-execution counts are derived only from wrapper receipts. Fixed confirmation
-arrays, case-name totals, or literal execution totals are invalid. The same
-shared owner repository is scanned for terminal Finalizer state.
+script modes match after fresh install, update, and preset reapply. Package
+closure is fifteen active Skills and 54 exits; business global markers remain 14
+invokes, 52 exits, and 31 targets. Upstream Finish assets remain unchanged.

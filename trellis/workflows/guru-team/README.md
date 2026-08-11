@@ -13,7 +13,7 @@ fallback. Local Git and Git transport remain `git` operations.
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、15 个 mandatory Skill invocation、57 个 typed exit、33 个
+phase/status route、14 个 mandatory Skill invocation、52 个 typed exit、31 个
 workflow/stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
@@ -65,9 +65,9 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 15 Skills / 57 exits，global workflow closure 为
-15/57/33（15 invokes / 57 exits / 33 targets）。Phase 0 到 Finalization 的
-active ids 为：
+当前 registry 激活 15 Skills / 54 package exits；其中业务 global workflow closure
+为 14/52/31（14 invokes / 52 exits / 31 targets）。下列 14 个业务 active ids 参与
+global workflow：
 
 - guru-select-workflow-mode
 - guru-sync-base
@@ -81,9 +81,12 @@ active ids 为：
 - guru-create-task-commit
 - guru-review-branch
 - guru-review-task-publication
-- guru-verify-extension-installation
 - guru-finalize-task
 - guru-merge-task-pr
+
+`guru-verify-extension-installation` 是第 15 个 active package，但不拥有 global
+workflow marker。它只接受 clean `castbox/guru-trellis` source checkout 中显式发起的
+`source_repository_verification` standalone 调用，并只返回 `verified|blocked`。
 
 Global workflow 只写 phase/status route、mandatory invoke marker、typed exit、唯一
 consumer/stop 与全局边界。每个 package interface.json 独占 public input、per-exit
@@ -94,9 +97,9 @@ artifact 重建路由。
 guru-review-branch 是 sole Phase 3.5 semantic owner。Branch Review passed 后，
 workflow mandatory invoke guru-review-task-publication；Publication owner 直接从 live
 authority 生成并审查 exact Chinese PR title/body。其 ready 4.0 DTO 无损投影 payload，
-只有 ready 进入 guru-finalize-task。Finalizer 的
-verification、stale、resume 与 reprepare exits 按 Interface 自动路由，不形成新的用户
-continuation gate。
+只有 ready 进入 guru-finalize-task。Finalizer 的 stale、resume 与 reprepare exits
+按 Interface 自动路由，不形成新的用户 continuation gate；业务 Finalizer 不调用、投影或
+读取 extension verifier。
 
 Finalizer `ready_for_merge` 只证明唯一 PR 已 Ready、expected head 对齐且 close Issues
 仍 Open；它不是 finish。Workflow 随即 mandatory invoke `guru-merge-task-pr`。Merge owner
@@ -109,7 +112,7 @@ Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
 `branch_review_commit`；真实 descendant content
 drift 只能由 Publication 语义门禁返回现有 Phase 2 router，不能产生 `ready`。
 
-Interface 1.4 的十二条 semantic package handoff 使用 target-owned
+Interface 1.4 的九条 semantic package handoff 使用 target-owned
 skill_input_authoring_seed；producer 只给 minimal seed，target authoring 补齐其自己拥有
 的 fresh semantic input，projection 只允许 direct/select/rename/normalize。
 `production-current-v2` 是 planning/check/commit 唯一 current manifest，固定为三包、
@@ -123,14 +126,15 @@ dispatcher；缺 runtime、版本漂移或未解决 sidecar 时必须在业务�
 
 当前 canonical extension version `0.6.5-guru.27` 对应上文 pin 的 stable release tag
 `v0.6.5-guru.5`。Source/installed package validation 必须同时验证
-registry、15/57/33 marker graph、consumer uniqueness、projection、selected-platform
+registry、14/52/31 business marker graph、15-package/54-exit closure、consumer
+uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
 ## Workflow Authoring Ownership
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、15 mandatory Skill markers、57 exits、33 workflow/stop targets、
+current-task router、14 mandatory Skill markers、52 exits、31 workflow/stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -797,7 +801,7 @@ PR 发布只从显式 canonical `guru-finish-work` 薄入口开始：该入口�
 preview 在内存中生成 exact side-effect plan；只有 same-owner re-entry 需要时才写 ignored
 `finalization-transaction.json`，其中 `plan_digest` 只绑定下一 deterministic consumer。
 语义 Gate 在当前对话完成真实副作用确认后才执行
-reviewed content push、按需 marketplace verification、draft PR、final archive
+reviewed content push、draft PR、final archive
 projection、单次 archive metadata commit/push、三方 HEAD 对齐与 draft-to-ready。裸
 `finish-work.sh` 默认拒绝普通直接调用；中断由同一 finalizer 自动消费 recovery
 route，不暴露内部 flag 或要求用户选择下一条命令。
@@ -854,9 +858,9 @@ transaction、readiness、active locator 与 live facts 恢复。official move �
 `task.json` delta；失败只从 immutable `publication_head` 恢复 task locator 的 tracked bytes。
 
 Current core 固定为 6 个 durable 文件：`task.json`、`prd.md`、`design.md`、`implement.md`、
-`issue-scope-ledger.json`、`finish-summary.json`；适用 marketplace gate 时最小 verification result
-是唯一第 7 个文件。Publication readiness、Finalizer transaction/gate/request 与 Verifier owner
-checkpoint 为 ignored runtime，不进入 archive，terminal `ready_for_merge` 后全部退休。
+`issue-scope-ledger.json`、`finish-summary.json`。Publication readiness 与 Finalizer
+transaction/gate/request 为 ignored runtime，不进入 archive，terminal
+`ready_for_merge` 后全部退休。业务 task 不创建、读取、移动或归档 verifier artifact。
 
 一旦当前 `HEAD` 已是精确 archive commit，recovery 从该 commit blob 读取 `task.json` 与
 `finish-summary.json`，并以 Git parent/path/tree/blob lineage 作为 deterministic inputs；本地
@@ -877,44 +881,33 @@ Finalizer 从 reviewed body 的 `变更摘要` 与 live Git/task/ledger/PR facts
 不能用脚本生成的空泛摘要或 `generated` body 替代 AI 发布判断。
 
 
-## Push 后远端 Marketplace 门禁
+## Source-owned Standalone Installation Verification
 
-`guru-verify-extension-installation` 是 extension installation 唯一 semantic owner。
-Workflow 或 task-bearing standalone 只持久化 task-local
-`marketplace-verification.json`；taskless standalone 为 session-only。Runtime command
-固定为 `execute-extension-verification`、`record-extension-verification`、
-`check-extension-verification`、`invoke-extension-verification`，只执行、记录、
-校验和按 actual exit 序列化，不判断语义通过。
+`guru-verify-extension-installation` 是 extension installation 唯一 semantic owner，
+但不是业务 task、Publication、Finalizer、finish-work、re-entry 或 recovery 的步骤。
+它只接受 clean `castbox/guru-trellis` source checkout 中的显式
+`source_repository_verification` standalone input，并只返回 `verified|blocked` 给直接
+standalone caller。不存在 workflow profile、task-bearing fallback、`not_required` round、
+Finalizer projection 或 task-local verification artifact。
 
-Public `repo_ref` 始终表示业务 target。Workflow 与 task-bearing standalone
-从 target checkout 的 `.trellis/guru-team/extension.json` 解析 extension source，
-且 task-bearing source 必须为 `tree_state=clean`，否则在 source ref resolution
-与 clone 前阻断。Runtime 分别校验 target checkout 与 extension-source checkout。Target reviewed-content
-不得从 source 计算；installer、canonical assets、ownership 与 source sidecars
-不得从 target 读取。Annotated source tag 选择 peeled commit 并与 manifest
-`source.commit` 比较；branch/lightweight tag 使用 direct commit。Git worktree preset
-apply 把完整 apply-time commit OID 同时记录为 immutable `source.ref` 与
-`source.commit`；runtime 直接 fetch 该 OID，并要求 fetched commit 和 source checkout
-HEAD 精确一致，target branch 后续前进不改变 source identity。Taskless
-standalone 只有在明确验证 source repo 且 manifest 缺失时才允许 fallback，malformed
-manifest 与 credential-bearing/non-canonical GitHub locator 均在 clone 前 fail closed。
-Private schema 3.0 记录这两套 identity；四个 public exits/consumer DTO 保持不变。
-
-Remote matrix 必须绑定 pushed ref/HEAD，覆盖 new init、preview/switch、preset
-apply/reapply、`trellis update`、ownership/sidecar、contract discovery、platform
-equality、README command 与 redaction。Workflow-required applicability conflict 会
-`blocked`，不能 silently `not_required`。Production real-wrapper eval 与 pushed-remote
-clean install 分别记录，任一不能替代另一份验收。
+Source identity preflight 在 clone、tempdir、installer、artifact write 或任何 Git/GitHub
+mutation 前验证 canonical source assets、`origin`、`repo_ref`、requested ref、resolved
+commit、当前 HEAD 与 clean checkout。非 source checkout、task-bearing field 或 identity
+mismatch 使用稳定 invocation error fail closed，且 executor command count 必须为零。
+通过 preflight 后，runtime 才创建 isolated source checkout 和 clean throwaway target，覆盖
+new init、preview/switch、preset apply/reapply、`trellis update`、ownership/sidecar、contract
+discovery、platform equality、README command 与 redaction。Owner state 只存在 source
+session 的 ignored runtime，完成后删除，不写入 `.trellis/tasks/**`。
 
 ## Skill 行为评测
 
-安装完整 Guru Team preset 后，可用 `discover-skill-evals` 发现 Interface 1.4
-package 的 `evals/evals.json`，并用 `run-skill-evals` 经
+安装完整 Guru Team preset 后，可用 `discover-skill-evals` 发现 current Interface
+1.4/1.5 package 的 `evals/evals.json`，并用 `run-skill-evals` 经
 `shared|codex|claude|cursor` adapter 实际执行 public wrapper。Schema id 是
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十五个 packages 已维护 canonical corpora 并覆盖全部 57 exits/profile；六个 Intake
+中的十五个 packages 已维护 canonical corpora 并覆盖全部 54 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台
@@ -929,11 +922,8 @@ native command 为 `unsupported`，不依赖隐藏环境变量替代 adapter。
 Semantic case 必须引用 repo-local checker-passed owner result；actual exit 选择 output schema
 后才比较 expected exit。Codex 使用 trusted Git root，Claude 使用 safe non-interactive 协议，
 Cursor 未登录直接返回 `unsupported`。
-Finalizer transaction 同时绑定 `reviewed_content_head` 与
-`publication_head`。当 reviewed HEAD 已 push、PR/archive 尚未开始且 installed
-manifest 仅缺 clean provenance 时，workflow 自动消费 `reprepare_required`：从
-detached clean checkout 运行 canonical preset apply，提交一次 manifest-only tail，
-废弃旧 private transaction/gate/request，并由 executor 输出 unchanged reviewed HEAD 与新
-publication HEAD；下一次 preview 直接验证这两个 identity 和单 tail 合同，不读取已删除
-transaction，然后继续 exact-ref verification。其它 diff、已有 PR、archive 已开始或
-non-fast-forward 继续 fail closed。
+Finalizer transaction 同时绑定 `reviewed_content_head` 与 `publication_head`。业务
+content push 后直接继续 Draft PR、archive 与 Ready transaction；installed manifest、
+README、docs、config、`.trellis/**` 或平台副本 changed path 都不会产生 verifier route。
+`reprepare_required` 只服务 Finalizer 自身 current transaction 的稳定重建，不读取 verifier
+owner state、verification ref 或 legacy task artifact。

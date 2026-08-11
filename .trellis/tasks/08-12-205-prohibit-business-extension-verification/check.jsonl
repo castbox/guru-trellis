@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查 package、graph、eval、runtime 与完整分发验证覆盖。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 versioned schema、artifact lifecycle 与 recovery migration。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 clean install、upgrade/update、platform projection 与 zero-sidecar。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"检查 README 命令、ownership 描述与验证声明真实一致。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 workflow、runtime、schema、installer、docs 和 tests 的跨层数据流。"}
