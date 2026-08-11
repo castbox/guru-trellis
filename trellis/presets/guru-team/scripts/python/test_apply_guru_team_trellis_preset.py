@@ -1016,6 +1016,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
         ).read_text(encoding="utf-8")
 
+        current_private_schema = (
+            'assert "guru-extension-installation-verification-result-5.0" '
+            'in api["skill_contracts"]["private_artifact_schema_ids"]'
+        )
+        retired_private_schema = current_private_schema.replace("5.0", "4.0")
+        self.assertIn(current_private_schema, verifier)
+        self.assertNotIn(retired_private_schema, verifier)
+
         preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
         preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)
         initial_switch = verifier.index(
