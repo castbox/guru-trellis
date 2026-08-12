@@ -955,12 +955,21 @@ bind the DTO's `phase2_commit_anchor` without exposing the checkpoint or its
 digest in the candidate or public output.
 
 Execution requires a passed AI review, no blocking classifications, fresh
-task/HEAD/snapshot/message/parser facts, and exact index equality. The
+task/HEAD/snapshot/message/parser facts, and exact semantic index equality. The
 executor first revalidates planned gitlinks before any stage side effect, binds
 their artifact OIDs into the exact index, and then binds the complete pre-hook
-index tree and each exact path's blob/mode,
-then verifies the real commit SHA, parent, message/path evidence, tree, blobs,
-modes and unrelated preservation from Git before advancing the live ref/index.
+index tree and each exact path's blob/mode. Real hooks run against a temporary
+detached worktree plus that isolated index. Their objective exit records,
+message-file bytes, post-hook index/worktree state and the created commit object
+must all match the reviewed candidate before the live ref can advance.
+
+The failure result separates transaction creation from live publication. If a
+hook or post-hook gate fails after Git created the temporary commit, it reports
+`created_commit_sha` and a transaction stage while the live branch remains at
+`pre_commit_head`; candidate and Phase 2 checkpoint remain recovery inputs. A
+failure after conditional live-ref advance reports
+`transaction_stage=live_ref_published`. The successful public DTO remains only
+`pre_commit_head` and `commit_sha`.
 Before publication, the executor creates and validates the isolated commit. It
 then uses standard `git update-ref <ref> <new> <old>` followed by `git reset
 --mixed --quiet HEAD`; it owns no custom lock, atomic replacement, rollback, or

@@ -1,0 +1,11 @@
+{
+  "id": "211-task-commit-hooks",
+  "name": "211-task-commit-hooks",
+  "title": "#211 修复 task commit hooks 执行语义",
+  "status": "in_progress",
+  "branch": "fix/211-task-commit-hooks",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/211"
+}

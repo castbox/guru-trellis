@@ -78,11 +78,38 @@ objective validation immediately before execution. `scripts/create-task-commit.s
 that validation, rejects active merge/cherry-pick/revert/rebase/sequencer/`git
 am` state, and rejects staged paths outside the exact plan.
 
-The executor materializes exact blobs/modes in an isolated index, runs the real
-repository commit hooks through a detached commit transaction, and verifies
-parent, raw message, committed path set and complete tree before conditionally
-advancing the live branch with `git update-ref <ref> <new> <old>`. It then uses
-`git reset --mixed --quiet HEAD` only to refresh the live index. It never pushes,
+The executor creates a temporary detached worktree at the reviewed parent,
+materializes exact blobs/modes in an isolated index, checks that index out into
+the transaction worktree, and invokes real repository hooks through
+`git commit --cleanup=verbatim -F <0600-message-file>`. The hook lookup honors
+the repository's current `core.hooksPath`; a transaction-local proxy only
+forwards arguments and records each hook exit code so `post-commit` failure can
+be reported even though Git itself does not fail the command for that exit.
+Hooks therefore observe the reviewed parent HEAD, exact index and worktree, and
+the reviewed message file rather than the unrelated live workspace.
+
+Before live-ref publication, the executor verifies hook exits, the unchanged
+message file, transaction index and worktree, parent, raw commit-object message,
+committed path set, every blob/mode and complete tree. Any hook rejection,
+message rewrite, extra tracked or untracked path, rename, deletion, stage,
+unstage, exact-path mutation or mode drift fails closed. A transaction commit
+created before such a failure is reported as `created_commit_sha`; the live
+branch remains at the reviewed parent and the private candidate plus Phase 2
+checkpoint remain available for bounded recovery.
+
+The same pre-publication gate compares the live worktree's semantic dirty
+snapshot as well as its branch and semantic index preimage, so a normally
+misconfigured hook cannot publish after touching the user's live tracked,
+untracked, staged, unstaged, or gitlink state. The isolated index lives inside
+the transaction temporary directory. Every success and failure path removes
+the detached worktree registration; cleanup failure is a bounded recovery and
+retains any already-created commit identity.
+
+Only after those checks pass does the executor conditionally advance the live
+branch with `git update-ref <ref> <new> <old>`. It then refreshes only the exact
+live index paths and compares semantic `mode/blob/stage/path` entries, never raw
+index-file bytes. A failure after live ref advance reports the same created
+commit with `transaction_stage=live_ref_published`. It never pushes,
 rewrites published history, stashes, amends, or guesses a correction, and owns
 no custom lock, rollback, atomic-replace, or concurrency protocol. A failure
 before ref publication preserves the live ref/index and keeps the private

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"实现代理必须遵守 package-local executor、exact Git transaction、hook 与 pre-ref/post-ref recovery 边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"实现代理必须保持 candidate 5.0、Phase 2 checkpoint、semantic index entry 与 public DTO 合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现代理必须覆盖 canonical/installed parity、真实 Git tests、preset apply 与 upgrade/update 门禁。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"实现代理必须保持 package-local ownership、公共 Interface 与 typed exits 不被破坏。"}

@@ -720,21 +720,41 @@ Branch Review, Publication, and Finalizer do not consume it or use commit
 subject/body/`Refs` as a freshness gate.
 
 The executor materializes exact reviewed blobs/modes in an isolated index and
-detached transaction HEAD, runs the repository's real commit hooks, and verifies
-parent, raw message bytes, committed paths, complete tree, gitlink identities,
-candidate bytes, live worktree, operation state, branch ref, and live index
-preimage before publication. Rename sources inherit deletion authority; copy
-sources do not. A non-deleted gitlink is written with `git update-index
+temporary detached worktree at the reviewed parent, then invokes `git commit
+--cleanup=verbatim -F` so `pre-commit`, `prepare-commit-msg`, `commit-msg` and
+`post-commit` receive normal Git arguments and the exact transaction
+HEAD/index/worktree/message view. A transaction-local hooksPath proxy forwards
+to the repository's configured hook path and records objective exit codes; it
+does not replace hook behavior or decide whether a mutation is allowed.
+
+Before live-ref publication, the executor verifies hook exits, unchanged
+message-file bytes, transaction index/worktree state, parent, raw commit-object
+message, committed paths, complete tree, gitlink identities, candidate bytes,
+live worktree, operation state, branch ref, and semantic live index preimage.
+Any hook-added tracked/untracked path, rename, deletion, stage/unstage,
+exact-path mutation, mode drift or message rewrite fails closed. Rename sources
+inherit deletion authority; copy sources do not. A non-deleted gitlink is
+written with `git update-index
 --cacheinfo` from the reviewed `gitlink_head`, never reread through broad
 `git add`.
+
+Live-worktree preservation uses the semantic dirty snapshot rather than raw
+filesystem metadata. The isolated index is transaction-temporary, and every
+success/failure path must remove the detached worktree registration. A cleanup
+failure returns bounded recovery facts, including the created commit identity
+when Git already created it; it is never silently ignored.
 
 After isolated validation, standard Git compare-and-swap
 `git update-ref <ref> <new> <old>` publishes the commit and `git reset --mixed
 --quiet HEAD` refreshes the live index. The runtime does not create its own
 lock, atomic-replace, rollback, linearization, or concurrency protocol. Any
-failure before `update-ref` leaves the live ref/index untouched; a failure after
-the conditional ref advance reports the created commit for bounded same-plan
-recovery instead of attempting a custom rollback. On success the candidate is
+failure before `update-ref` leaves the live ref/index untouched. When the
+temporary transaction has already created a commit, including `post-commit`
+failure or mutation, the failure output includes that created commit identity
+while retaining the candidate and Phase 2 checkpoint. A failure after the
+conditional ref advance uses `transaction_stage=live_ref_published` and reports
+the same commit for bounded same-plan recovery instead of attempting a custom
+rollback. On success the candidate is
 removed and immutable Git history remains the source for parent, message, paths,
 and tree facts.
 

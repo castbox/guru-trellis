@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 211,
+      "reason": "Issue #211 is the sole independently deliverable regression authority.",
+      "title": "修复 package-local task commit 执行器绕过 repository commit hooks",
+      "url": "https://github.com/castbox/guru-trellis/issues/211"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 211,
+    "reason": "Issue #211 is the sole independently deliverable regression authority.",
+    "title": "修复 package-local task commit 执行器绕过 repository commit hooks",
+    "url": "https://github.com/castbox/guru-trellis/issues/211"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
