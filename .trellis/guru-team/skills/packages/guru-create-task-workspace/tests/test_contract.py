@@ -1,5 +1,5 @@
 from __future__ import annotations
-import copy,json,subprocess,sys,tempfile,unittest
+import copy,json,shutil,subprocess,sys,tempfile,unittest
 from unittest import mock
 from datetime import datetime,timezone
 from pathlib import Path
@@ -25,6 +25,13 @@ class WorkspaceTest(unittest.TestCase):
   plan=plan or self.plan;pp=self.write("plan.json",plan);result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);rp=self.write("result.json",result);return result,check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
  def assert_no_workspace_writes(self,workspace):
   self.assertFalse(workspace.exists());self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet",f"refs/heads/{self.plan['naming']['branch_name']}"],cwd=self.repo).returncode);self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
+ def test_prepare_file_entrypoint_loads_package_runtime(self):
+  process=subprocess.run([sys.executable,str(LOCAL/"prepare.py"),"--help"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  self.assertEqual(0,process.returncode,process.stderr);self.assertIn("usage: prepare-task",process.stdout)
+ def test_prepare_file_entrypoint_loads_installed_runtime_layout(self):
+  root=self.parent/"installed/guru-team";package=root/"skills/packages/guru-create-task-workspace";shutil.copytree(PACKAGE,package);shutil.copytree(SKILLS/"runtime",root/"runtime")
+  process=subprocess.run([sys.executable,str(package/"runtime/prepare.py"),"--help"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  self.assertEqual(0,process.returncode,process.stderr);self.assertIn("usage: prepare-task",process.stdout)
  def test_real_workspace_mutation_check_and_invoke(self):
   pp=self.write("plan.json",self.plan);self.assertEqual(self.plan,record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]));result,checked=self.execute_and_check();workspace=(self.parent/"repo-worktrees/027-workspace").resolve();self.assertTrue(workspace.is_dir());mapping=json.loads((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").read_text());self.assertEqual({"schema_version":"1.0","workspace_slug":"027-workspace","workspace_path":str(workspace),"task_artifact_dir":".trellis/tasks/08-12-027-workspace"},{key:mapping[key] for key in ("schema_version","workspace_slug","workspace_path","task_artifact_dir")});self.assertTrue((workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json").is_file());boundary=PACKAGE.parents[0]/"guru-finalize-task/runtime/legacy.py";boundary_result=subprocess.run([sys.executable,str(boundary),"check-workspace-boundary","--root",str(workspace),"--task",".trellis/tasks/08-12-027-workspace","--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE);self.assertEqual(0,boundary_result.returncode,boundary_result.stderr);self.assertEqual("ok",json.loads(boundary_result.stdout)["status"]);self.assertNotIn(str(self.parent.resolve()),json.dumps(result));env=self.write("invoke.json",{"result":checked});self.assertEqual({"exit_id":"created"},invoke.run(PACKAGE,{},["--root",str(self.repo),"--invocation",str(env)]))
  def test_absolute_root_create_exact_reuse_and_checker(self):
