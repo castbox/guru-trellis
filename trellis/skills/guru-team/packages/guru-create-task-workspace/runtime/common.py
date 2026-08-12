@@ -37,7 +37,9 @@ def config(repo):
    if current=="":current=[];values[active_list]=current
    if not isinstance(current,list):raise CommandError("unsafe_path","workspace_config",f"Configuration key is not a list: {active_list}.")
    current.append(text[2:].strip().strip("'\""));continue
-  if len(line)!=len(line.lstrip()):continue
+  if len(line)!=len(line.lstrip()):
+   if active_list:values[active_list]={"invalid_structure":text};active_list=None
+   continue
   active_list=None
   if ":" not in text:continue
   key,value=(part.strip() for part in text.split(":",1));active_list=key if not value else None

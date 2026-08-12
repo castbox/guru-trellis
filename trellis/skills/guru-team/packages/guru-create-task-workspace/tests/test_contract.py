@@ -28,6 +28,10 @@ class WorkspaceTest(unittest.TestCase):
  def workspace_state(self,workspace):
   paths=[workspace/".trellis/tasks/08-12-027-workspace/task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
   return {"refs":self.git("show-ref"),"worktrees":self.git("worktree","list","--porcelain"),"repo_status":common.git(self.repo,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"workspace_status":common.git(workspace,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"files":{str(path):path.read_bytes() for path in paths}}
+ def mutation_state(self,workspace):
+  paths=[workspace/".trellis/tasks/08-12-027-workspace/task.json",workspace/self.plan["side_effects"]["task_artifacts"][0],self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
+  target_status=common.git(workspace,"status","--porcelain=v1","-z","--untracked-files=all").stdout if (workspace/".git").exists() else None
+  return {"refs":self.git("show-ref"),"worktrees":self.git("worktree","list","--porcelain"),"source_status":common.git(self.repo,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"target_status":target_status,"files":{str(path):path.read_bytes() if path.is_file() else None for path in paths}}
  def test_prepare_file_entrypoint_loads_package_runtime(self):
   process=subprocess.run([sys.executable,str(LOCAL/"prepare.py"),"--help"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   self.assertEqual(0,process.returncode,process.stderr);self.assertIn("usage: prepare-task",process.stdout)
@@ -77,6 +81,14 @@ class WorkspaceTest(unittest.TestCase):
   config=self.repo/".trellis/guru-team/config.yml";config.write_text("base_branch: main\nbase_branch_candidates:\n  - main\nworkspace_mode: worktree\nworktree_root:\ncloseout_markers:\n  - 'Final Closeout'\n")
   values=common.config(self.repo);resolved=common.resolve_workspace(self.repo,"027-workspace")
   self.assertEqual(["Final Closeout"],values["closeout_markers"]);self.assertEqual("",values["worktree_root"]);self.assertEqual((self.parent/"repo-worktrees/027-workspace").resolve(),resolved.path)
+ def test_non_scalar_worktree_root_fails_before_all_workspace_writes(self):
+  config=self.repo/".trellis/guru-team/config.yml";workspace=self.parent/"repo-worktrees/027-workspace";pp=self.write("non-scalar-root.json",self.plan)
+  cases={"mapping":"worktree_root:\n  path: ../other\n","list":"worktree_root:\n  - ../other\n"}
+  for name,root in cases.items():
+   with self.subTest(name=name):
+    config.write_text(f"workspace_mode: worktree\n{root}base_branch: main\n");before=self.mutation_state(workspace)
+    with self.assertRaises(CommandError) as raised:execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+    self.assertEqual(("unsafe_path","worktree_root"),(raised.exception.code,raised.exception.field_path));self.assertEqual(before,self.mutation_state(workspace))
  def test_non_directory_root_parent_fails_before_business_writes(self):
   blocked=self.parent/"blocked";blocked.write_text("not a directory\n");self.configure(root="../blocked/worktrees");pp=self.write("blocked-parent.json",self.plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
