@@ -1,6 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"约束 package-local semantic ownership、最小 public projection、private state 与 public API 迁移。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 recorder/checker/serializer、live validation 和确定性 call-count harness 边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"约束 snapshot、receipt、transition 与 producer-output 到 consumer-input 的 schema 合同。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"约束 Phase 0 mandatory invocation、typed exit、定向 re-entry 与 mutation boundary。"}
-{"file":".trellis/spec/preset/installer.md","reason":"约束 canonical 到 installed/dogfood/platform 的同步、update/reapply 和 sidecar 处理。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束平台副本、overlay ownership 与禁止恢复 upstream/shared private implementation。"}

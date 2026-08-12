@@ -1,6 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核完整 task scope、性能证据、独立 check 与 clean install/update 门禁充分性。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"验证 semantic ownership 未削弱、receipt 非 authority、public DTO 最小且唯一 consumer 明确。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"验证脚本只执行确定性 capture/validate/count，不替代 AI review 或 route 判断。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"验证 snapshot/receipt identity、stale rejection 与 dependency-aware invalidation 完整。"}
-{"file":".trellis/spec/preset/installer.md","reason":"验证 canonical/installed parity、clean install、update/reapply、provenance 和 sidecar。"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"验证公开安装命令、声明平台入口和用户可见行为与 current package graph 一致。"}
