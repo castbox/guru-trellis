@@ -66,6 +66,10 @@ class WorkspaceTest(unittest.TestCase):
   config=self.repo/".trellis/guru-team/config.yml";config.write_text("workspace_mode: worktree\nworktree_root: '../root#named' # comment\npublish:\n  workspace_mode: current\n")
   resolved=common.resolve_workspace(self.repo,"027-workspace")
   self.assertEqual((self.parent/"root#named/027-workspace").resolve(),resolved.path)
+ def test_unrelated_top_level_list_preserves_empty_workspace_scalar(self):
+  config=self.repo/".trellis/guru-team/config.yml";config.write_text("base_branch: main\nbase_branch_candidates:\n  - main\nworkspace_mode: worktree\nworktree_root:\ncloseout_markers:\n  - 'Final Closeout'\n")
+  values=common.config(self.repo);resolved=common.resolve_workspace(self.repo,"027-workspace")
+  self.assertEqual(["Final Closeout"],values["closeout_markers"]);self.assertEqual("",values["worktree_root"]);self.assertEqual((self.parent/"repo-worktrees/027-workspace").resolve(),resolved.path)
  def test_non_directory_root_parent_fails_before_business_writes(self):
   blocked=self.parent/"blocked";blocked.write_text("not a directory\n");self.configure(root="../blocked/worktrees");pp=self.write("blocked-parent.json",self.plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])

@@ -34,7 +34,10 @@ def config(repo):
   if not line.strip():continue
   text=line.strip()
   if text.startswith("- ") and active_list:
-   values.setdefault(active_list,[]).append(text[2:].strip().strip("'\""));continue
+   current=values.setdefault(active_list,[])
+   if current=="":current=[];values[active_list]=current
+   if not isinstance(current,list):raise CommandError("unsafe_path","workspace_config",f"Configuration key is not a list: {active_list}.")
+   current.append(text[2:].strip().strip("'\""));continue
   if len(line)!=len(line.lstrip()):continue
   active_list=None
   if ":" not in text:continue
