@@ -5,6 +5,7 @@ import argparse
 import copy
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 from datetime import datetime
@@ -164,6 +165,8 @@ def build_plan(package: Path, source: Path, base_head: str) -> dict[str, Any]:
         },
     }
     issue_number = 112
+    issue_title = "Verify installed task workspace execution"
+    issue_body = "Installed boundary fixture."
     task_slug = "112-installed-task-workspace"
     task_dir = f".trellis/tasks/{datetime.now().strftime('%m-%d')}-{task_slug}"
     issue_url = f"https://github.com/example/installed-fixture/issues/{issue_number}"
@@ -184,12 +187,14 @@ def build_plan(package: Path, source: Path, base_head: str) -> dict[str, Any]:
             "draft": None,
             "created_issue_binding_sha256": None,
             "created_issue_result": None,
+            "title_sha256": hashlib.sha256(issue_title.encode()).hexdigest(),
+            "body_sha256": hashlib.sha256(issue_body.encode()).hexdigest(),
         }
     )
     scope_item = {
         "number": issue_number,
         "url": issue_url,
-        "title": "Verify installed task workspace execution",
+        "title": issue_title,
         "reason": "Exercise the installed package through its public commands.",
     }
     plan["scope"].update(
@@ -288,7 +293,25 @@ def main() -> int:
     run("git", "config", "user.email", "installed-fixture@example.invalid", cwd=source)
     run("git", "add", ".", cwd=source)
     run("git", "commit", "-qm", "fixture base", cwd=source)
+    remote = work_root / "installed-task-workspace-remote.git"
+    run("git", "init", "-q", "--bare", str(remote), cwd=source)
+    run("git", "remote", "add", "origin", str(remote), cwd=source)
+    run("git", "push", "-qu", "origin", "main", cwd=source)
     base_head = run("git", "rev-parse", "HEAD", cwd=source)
+
+    fake_bin = work_root / "installed-task-workspace-bin"
+    fake_bin.mkdir()
+    fake_gh = fake_bin / "gh"
+    fake_gh.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json,sys\n"
+        "args=sys.argv[1:]\n"
+        "if args[:2]==['issue','view']:\n"
+        " print(json.dumps({'number':112,'url':'https://github.com/example/installed-fixture/issues/112','state':'OPEN','title':'Verify installed task workspace execution','body':'Installed boundary fixture.','updatedAt':'2026-08-12T00:00:00Z'})); raise SystemExit(0)\n"
+        "raise SystemExit(2)\n"
+    )
+    fake_gh.chmod(0o755)
+    os.environ["PATH"] = f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"
 
     identity = source / ".trellis/.developer"
     identity_bytes = b"name=existing-installed-identity\n"

@@ -213,7 +213,7 @@ class SharedRuntimeTests(unittest.TestCase):
                 installed_root
                 / "skills/packages"
                 / skill_id
-                / "examples/public-context-ready-output-2.0.json"
+                / "examples/public-context-ready-output-3.0.json"
             ).read_text())
             owner["mode"] = "workflow"
             invocation = outside / "invocation.json"

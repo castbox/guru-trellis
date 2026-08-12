@@ -53,6 +53,10 @@ def scan(scope,contents):
      hit={"scope_item_id":item["id"],"locator":item.get("path") or item["id"],"line":line_no,"term":term,"text":line,"content_sha256":item["content_sha256"]};hit["hit_id"]=digest(hit);hits.append(hit);start=pos+len(term)
  out={"hits":hits};out["scan_sha256"]=digest(out);return out
 def validate_result(package_root,v):validate_json(v,package_root/"schemas/contract-wording-review.schema.json","result");return v
+def validation_receipt(v):
+ value={"schema_version":"1.0","skill_id":"guru-review-contract-wording","operation":"check-contract-wording-review","result_sha256":v["facts_sha256"],"prerequisite_sha256":digest({"profile":v["profile"],"mode":v["mode"]}),"snapshot_sha256":digest({"scope":v["scope"],"scan":v["scan"]})};value["receipt_sha256"]=digest(value);return value
+def check_receipt(v,receipt):
+ if receipt!=validation_receipt(v):raise CommandError("stale_identity","validation_receipt","Run the wording checker for this exact result and snapshot.",3)
 def live_issue_source(change):
  if not isinstance(change,dict) or change.get("source_kind")!="issue":return change
  locator=str(change.get("identity") or change.get("url") or "");match=re.fullmatch(r"https://github\.com/([^/]+/[^/]+)/issues/([1-9][0-9]*)",locator)

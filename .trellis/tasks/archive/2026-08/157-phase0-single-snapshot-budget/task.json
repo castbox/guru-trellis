@@ -1,0 +1,12 @@
+{
+  "id": "157-phase0-single-snapshot-budget",
+  "name": "157-phase0-single-snapshot-budget",
+  "title": "#157 收敛 Phase 0 重复校验与 GitHub I/O",
+  "status": "completed",
+  "branch": "perf/157-phase0-single-snapshot-budget",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/157",
+  "completedAt": "2026-08-13"
+}

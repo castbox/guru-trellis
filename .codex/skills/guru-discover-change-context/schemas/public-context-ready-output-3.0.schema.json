@@ -1,15 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-discover-change-context-output-context-ready-2.0",
+  "$id": "guru-stage0-discover-change-context-output-context-ready-3.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["exit_id", "handoff_profile", "handoff_mode", "handoff_target_locator", "handoff_continuation_id", "transition"],
+  "required": ["exit_id", "handoff_profile", "handoff_mode", "handoff_target_locator", "handoff_continuation_id", "duplicate_snapshot", "transition"],
   "properties": {
     "exit_id": {"const": "context_ready"},
     "handoff_profile": {"const": "initial_change_request"},
     "handoff_mode": {"enum": ["workflow", "standalone"]},
     "handoff_target_locator": {"type": "string", "minLength": 1},
     "handoff_continuation_id": {"type": "string", "minLength": 1},
+    "duplicate_snapshot": {
+      "type": "object", "additionalProperties": false,
+      "required": ["query", "checked_at", "target_locator", "authority_content_sha256", "candidates", "facts_sha256"],
+      "properties": {
+        "query": {"type": "string", "minLength": 1}, "checked_at": {"type": "string", "format": "date-time"},
+        "target_locator": {"type": "string", "minLength": 1}, "authority_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "candidates": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["repo", "number", "url", "updated_at", "facts_sha256"], "properties": {"repo": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"}, "number": {"type": "integer", "minimum": 1}, "url": {"type": "string", "format": "uri"}, "updated_at": {"type": "string", "format": "date-time"}, "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}}
+      }
+    },
     "transition": {
       "type": "object",
       "additionalProperties": false,

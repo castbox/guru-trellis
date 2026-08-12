@@ -51,6 +51,37 @@ def digest(value: Any) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def operation_counts(env: dict[str, str]) -> dict[str, int]:
+    path = Path(str(env.get("GURU_PHASE0_OPERATION_LOG") or ""))
+    counts: dict[str, int] = {}
+    if not path.is_file():
+        return counts
+    for line in path.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        operation = str(row["operation"])
+        counts[operation] = counts.get(operation, 0) + 1
+    return counts
+
+
+def operation_delta(before: dict[str, int], after: dict[str, int]) -> dict[str, int]:
+    return {
+        operation: after.get(operation, 0) - before.get(operation, 0)
+        for operation in sorted(set(before) | set(after))
+        if after.get(operation, 0) != before.get(operation, 0)
+    }
+
+
+def empty_duplicate_snapshot(transition: dict[str, Any]) -> dict[str, Any]:
+    value = {
+        "query": "repo:example/guru-extension is:issue is:open phase0 transition",
+        "checked_at": "2026-01-01T00:00:00Z",
+        "target_locator": transition["target_locator"],
+        "authority_content_sha256": transition["authority_content_sha256"],
+        "candidates": [],
+    }
+    return {**value, "facts_sha256": digest(value)}
+
+
 def context_digest(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value) + b"\n").hexdigest()
 
@@ -371,6 +402,7 @@ def stage_transcript_owner_repo(
 
     fake_bin = chain_root / "fake-bin"
     fake_bin.mkdir()
+    operation_log = chain_root / "operation-counts.jsonl"
     issue_body = chain_root / "issue-body.txt"
     issue_body.write_text(
         "The current Intake workflow must preserve one public transition chain.",
@@ -382,11 +414,17 @@ def stage_transcript_owner_repo(
         "import json,sys\n"
         "from pathlib import Path\n"
         f"issue_body_path={str(issue_body)!r}\n"
+        f"operation_log_path={str(operation_log)!r}\n"
         "args=sys.argv[1:]\n"
+        "def count(operation):\n"
+        " with Path(operation_log_path).open('a',encoding='utf-8') as stream:\n"
+        "  stream.write(json.dumps({'adapter':'gh','operation':operation},sort_keys=True)+'\\n')\n"
         "if args[:2]==['auth','status']: raise SystemExit(0)\n"
         "if args[:2]==['api','user']:\n"
+        " count('prerequisite.project')\n"
         " print(json.dumps({'login':'stage0-transcript'})); raise SystemExit(0)\n"
         "if len(args)>=3 and args[:2]==['issue','view']:\n"
+        " count('issue.get')\n"
         " number=int(args[2])\n"
         " if number != 145: raise SystemExit(2)\n"
         " body=Path(issue_body_path).read_text(encoding='utf-8')\n"
@@ -396,6 +434,12 @@ def stage_transcript_owner_repo(
         "'body':body,"
         "'comments':[],'assignees':[{'login':'stage0-transcript'}],'labels':[]}))\n"
         " raise SystemExit(0)\n"
+        "if len(args)>=2 and args[:2]==['issue','list']:\n"
+        " count('issue.search')\n"
+        " print('[]'); raise SystemExit(0)\n"
+        "if len(args)>=2 and args[:2]==['api','repos/example/guru-extension/issues/145/comments']:\n"
+        " count('issue.comments.list')\n"
+        " print('[]'); raise SystemExit(0)\n"
         "print('unsupported transcript gh invocation',file=sys.stderr); raise SystemExit(2)\n",
         encoding="utf-8",
     )
@@ -406,17 +450,28 @@ def stage_transcript_owner_repo(
     fake_git = fake_bin / "git"
     fake_git.write_text(
         "#!/usr/bin/env python3\n"
-        "import os,subprocess,sys\n"
+        "import json,os,subprocess,sys\n"
+        "from pathlib import Path\n"
         f"real_git={real_git!r}\n"
+        f"operation_log_path={str(operation_log)!r}\n"
         "args=sys.argv[1:]\n"
-        "if args and args[0]=='fetch': raise SystemExit(0)\n"
+        "def count(operation):\n"
+        " with Path(operation_log_path).open('a',encoding='utf-8') as stream:\n"
+        "  stream.write(json.dumps({'adapter':'git','operation':operation},sort_keys=True)+'\\n')\n"
+        "if args and args[0]=='fetch':\n"
+        " rows=Path(operation_log_path).read_text(encoding='utf-8').splitlines() if Path(operation_log_path).is_file() else []\n"
+        " previous=json.loads(rows[-1]).get('operation') if rows else None\n"
+        " count('workspace.base.fetch' if previous=='workspace.mutation_boundary_recheck' else 'base.fetch')\n"
+        " raise SystemExit(0)\n"
         "if args==['ls-remote','--symref','origin','HEAD']:\n"
+        " count('base.resolve')\n"
         " result=subprocess.run([real_git,'rev-parse','--verify','refs/remotes/origin/main'],"
         "text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)\n"
         " if result.returncode: raise SystemExit(result.returncode)\n"
         " print('ref: refs/heads/main\\tHEAD')\n"
         " print(result.stdout.strip()+'\\tHEAD'); raise SystemExit(0)\n"
         "if args==['ls-remote','--heads','origin','main']:\n"
+        " count('base.check')\n"
         " result=subprocess.run([real_git,'rev-parse','--verify','refs/remotes/origin/main'],"
         "text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)\n"
         " if result.returncode: raise SystemExit(result.returncode)\n"
@@ -429,6 +484,7 @@ def stage_transcript_owner_repo(
         **os.environ,
         "PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}",
         "PYTHONDONTWRITEBYTECODE": "1",
+        "GURU_PHASE0_OPERATION_LOG": str(operation_log),
     }
     assert_forbidden_runtime_absent(root)
     return root, env
@@ -539,7 +595,12 @@ def invoke_public(
         "-",
     ]
     input_sha256 = digest(envelope)
+    operations_before = operation_counts(env)
     process = run(argv, cwd=root, env=env, stdin=envelope)
+    operations_after = operation_counts(env)
+    serializer_delta = operation_delta(operations_before, operations_after)
+    if envelope.get("validation_receipt") is not None and serializer_delta:
+        raise RuntimeError(f"{skill_id} public serializer made live calls: {serializer_delta}")
     actual = json_stdout(process, f"public wrapper {skill_id}")
     actual_exit = actual.get("exit_id")
     if actual_exit != expected_exit:
@@ -552,6 +613,7 @@ def invoke_public(
         "input_sha256": input_sha256,
         "actual_exit": actual_exit,
         "stdout_sha256": digest(process.stdout.encode()),
+        "public_serializer_operation_delta": serializer_delta,
     }
 
 
@@ -694,6 +756,19 @@ def live_issue(root: Path, env: dict[str, str]) -> dict[str, Any]:
     return issue
 
 
+def live_issue_comments(root: Path, env: dict[str, str]) -> list[dict[str, Any]]:
+    value = json.loads(
+        run(
+            ["gh", "api", "repos/example/guru-extension/issues/145/comments"],
+            cwd=root,
+            env=env,
+        ).stdout
+    )
+    if not isinstance(value, list):
+        raise RuntimeError("live issue comments did not return one array")
+    return value
+
+
 def context_owner_for_issue(
     root: Path,
     env: dict[str, str],
@@ -704,6 +779,15 @@ def context_owner_for_issue(
     url = f"https://github.com/{repo}/issues/{number}"
     if live.get("number") != number or live.get("url") != url:
         raise RuntimeError("live issue authority returned a different identity")
+    candidates = json.loads(
+        run(
+            ["gh", "issue", "list", "--repo", repo, "--state", "open", "--search", "phase0 transition", "--json", "number,url,state,updatedAt,title,body"],
+            cwd=root,
+            env=env,
+        ).stdout
+    )
+    if not isinstance(candidates, list):
+        raise RuntimeError("duplicate issue search returned a non-array JSON root")
     issue = {
         "repo": repo,
         "number": number,
@@ -792,7 +876,7 @@ def context_owner_for_issue(
             "query": "repo:example/guru-extension is:issue is:open phase0 transition",
             "checked_at": "2026-01-01T00:00:00Z",
             "scope": "open_issues",
-            "candidates": [],
+            "candidates": candidates,
         },
         "current_state": {
             "sequence_trace": [
@@ -893,6 +977,7 @@ def clarification_owner_for_issue(
     root: Path,
     env: dict[str, str],
     transition: dict[str, Any],
+    duplicate_snapshot: dict[str, Any],
     typed_exit: str = "clear",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     issue = live_issue(root, env)
@@ -927,7 +1012,7 @@ def clarification_owner_for_issue(
             "duplicate_query": "repo:example/guru-extension is:issue is:open phase0 transition",
             "duplicate_checked_at": "2026-01-01T00:00:00Z",
             "duplicate_candidates": [],
-            "duplicate_facts_sha256": "0" * 64,
+            "duplicate_facts_sha256": duplicate_snapshot["facts_sha256"],
             "selected_issue": None,
             "original_target_role": "primary",
             "decision_summary": "The current open issue remains the primary delivery authority.",
@@ -1017,6 +1102,12 @@ def clarification_owner_for_issue(
         })
     elif typed_exit != "clear":
         raise RuntimeError(f"unsupported transcript clarification exit: {typed_exit}")
+    owner["target_disposition"]["duplicate_query"] = duplicate_snapshot["query"]
+    owner["target_disposition"]["duplicate_checked_at"] = duplicate_snapshot["checked_at"]
+    owner["target_disposition"]["duplicate_candidates"] = [
+        {**candidate, "identity": f"#{candidate['number']}", "state": "open", "decision": "rejected", "reason": "The candidate does not replace the current delivery authority."}
+        for candidate in duplicate_snapshot["candidates"]
+    ]
     owner = finalize_clarification_owner(owner)
     recorded = record_semantic(
         root,
@@ -1120,7 +1211,7 @@ def readiness_owner_for_issue(
     transition: dict[str, Any],
     typed_exit: str = "ready",
 ) -> dict[str, Any]:
-    issue = live_issue(root, env)
+    issue = transition.get("readiness_source") or live_issue(root, env)
     title_sha256 = hashlib.sha256(str(issue.get("title") or "").encode()).hexdigest()
     body_sha256 = hashlib.sha256(str(issue.get("body") or "").encode()).hexdigest()
     raw_target = {
@@ -1128,7 +1219,7 @@ def readiness_owner_for_issue(
         "repo": "example/guru-extension",
         "issue_number": 145,
         "url": issue.get("url"),
-        "updated_at": issue.get("updatedAt"),
+        "updated_at": issue.get("updatedAt") or issue.get("updated_at"),
         "title_sha256": title_sha256,
         "body_sha256": body_sha256,
     }
@@ -1273,6 +1364,8 @@ def checked_readiness_owner_for_issue(
     wording_result: dict[str, Any],
     typed_exit: str = "ready",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    transition = copy.deepcopy(transition)
+    transition["readiness_source"] = load_json(source_path)
     authored = readiness_owner_for_issue(root, env, transition, typed_exit)
     clarity_identity = clarity_result["content_identity"]
     wording_content_hashes = {
@@ -1757,12 +1850,13 @@ def reentry_transcripts(
     clarity_result: dict[str, Any],
     wording_result: dict[str, Any],
     context_transition: dict[str, Any],
+    context_duplicate_snapshot: dict[str, Any],
     wording_transition: dict[str, Any],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
 
     needs_owner, needs_checked = clarification_owner_for_issue(
-        root, env, context_transition, "needs_context"
+        root, env, context_transition, context_duplicate_snapshot, "needs_context"
     )
     needs_envelope = {
         "schema_version": "1.0",
@@ -1772,6 +1866,7 @@ def reentry_transcripts(
             "mode": "workflow",
             "target_locator": context_transition["target_locator"],
             "continuation_id": context_transition["continuation_id"],
+            "duplicate_snapshot": context_duplicate_snapshot,
         },
         "transition": context_transition,
         "owner_context": {},
@@ -1845,6 +1940,7 @@ def reentry_transcripts(
             "transition": producer_transition,
             "owner_context": {"change_request": source},
             "owner_result": readiness_owner,
+            "validation_receipt": readiness_checked["validation_receipt"],
         }
         producer, producer_row = invoke_public(
             root,
@@ -1858,7 +1954,7 @@ def reentry_transcripts(
         )
         if target_skill == "guru-clarify-requirements":
             target_owner, target_checked = clarification_owner_for_issue(
-                root, env, producer["transition"], "clear"
+                root, env, producer["transition"], empty_duplicate_snapshot(producer["transition"]), "clear"
             )
             owner_context: dict[str, Any] = {}
         else:
@@ -1873,6 +1969,8 @@ def reentry_transcripts(
             "owner_context": owner_context,
             "owner_result": target_owner,
         }
+        if target_skill == "guru-review-contract-wording":
+            target_envelope["validation_receipt"] = target_checked["validation_receipt"]
         if target_skill == "guru-clarify-requirements":
             target_envelope["typed_output"] = clarification_typed_output(
                 target_owner, target_input, producer["transition"]
@@ -1911,6 +2009,7 @@ def six_step_transcript(
     chain_root: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     root, env = stage_transcript_owner_repo(installed_repo, chain_root)
+    call_counts_before = operation_counts(env)
     before_status = run(
         ["git", "status", "--porcelain=v1", "--untracked-files=all"], cwd=root, env=env
     ).stdout
@@ -1959,7 +2058,7 @@ def six_step_transcript(
     rows.append(row)
 
     clarity_owner, clarity_checked = clarification_owner_for_issue(
-        root, env, context["transition"]
+        root, env, context["transition"], context["duplicate_snapshot"]
     )
     clarity_envelope = {
         "schema_version": "1.0",
@@ -1969,6 +2068,7 @@ def six_step_transcript(
             "mode": "workflow",
             "target_locator": context["transition"]["target_locator"],
             "continuation_id": context["transition"]["continuation_id"],
+            "duplicate_snapshot": context["duplicate_snapshot"],
         },
         "transition": context["transition"],
         "owner_context": {},
@@ -1987,11 +2087,15 @@ def six_step_transcript(
         root, env, "guru-clarify-requirements", clarity_envelope, "clear"
     )
     rows.append(row)
+    discover_clarify_delta = operation_delta(call_counts_before, operation_counts(env))
+    if discover_clarify_delta.get("issue.search", 0) != 1:
+        raise RuntimeError(f"discover -> clarify duplicate search budget exceeded: {discover_clarify_delta}")
 
     source = {
         "kind": "issue",
         "repo": "example/guru-extension",
         "number": 145,
+        "url": "https://github.com/example/guru-extension/issues/145",
         "selected_comments": [],
     }
     issue = live_issue(root, env)
@@ -2026,6 +2130,7 @@ def six_step_transcript(
         "transition": clarity["transition"],
         "owner_context": {"change_request": source},
         "owner_result": wording_owner,
+        "validation_receipt": wording_checked["validation_receipt"],
     }
     assert_owner_binding(
         "guru-review-contract-wording",
@@ -2047,9 +2152,16 @@ def six_step_transcript(
         clarity_owner,
         wording_owner,
         context["transition"],
+        context["duplicate_snapshot"],
         wording["transition"],
     )
 
+    readiness_counts_before = operation_counts(env)
+    source["selected_comments"] = live_issue_comments(root, env)
+    readiness_source_path.write_text(
+        json.dumps(source, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     readiness_owner, readiness_checked = checked_readiness_owner_for_issue(
         root, env, wording["transition"], readiness_source_path,
         clarity_owner, wording_owner,
@@ -2066,6 +2178,7 @@ def six_step_transcript(
         "transition": wording["transition"],
         "owner_context": {"change_request": source},
         "owner_result": readiness_owner,
+        "validation_receipt": readiness_checked["validation_receipt"],
     }
     assert_owner_binding(
         "guru-review-change-request",
@@ -2073,10 +2186,17 @@ def six_step_transcript(
         readiness_owner,
     )
     rows[-1]["next_input_sha256"] = digest(readiness_envelope)
+    serializer_counts_before = operation_counts(env)
     readiness, row = invoke_public(
         root, env, "guru-review-change-request", readiness_envelope, "ready"
     )
+    serializer_delta = operation_delta(serializer_counts_before, operation_counts(env))
+    if serializer_delta:
+        raise RuntimeError(f"readiness public serializer made live calls: {serializer_delta}")
     rows.append(row)
+    readiness_delta = operation_delta(readiness_counts_before, operation_counts(env))
+    if readiness_delta.get("issue.get", 0) > 1 or readiness_delta.get("issue.comments.list", 0) > 1:
+        raise RuntimeError(f"readiness authority budget exceeded: {readiness_delta}")
 
     if (
         run(["git", "status", "--porcelain=v1", "--untracked-files=all"], cwd=root, env=env).stdout
@@ -2149,6 +2269,14 @@ def six_step_transcript(
         "created",
     )
     rows.append(row)
+    final_counts = operation_counts(env)
+    expected_exact = {
+        "base.fetch": 1,
+        "workspace.base.fetch": 1,
+        "workspace.mutation_boundary_recheck": 1,
+    }
+    if any(final_counts.get(operation, 0) != expected for operation, expected in expected_exact.items()) or final_counts.get("issue.comments.list", 0) > 1 or final_counts.get("issue.get", 0) > 15:
+        raise RuntimeError(f"Phase 0 operation budget exceeded: {final_counts}")
     created = checked_result.get("created_workspace")
     if not isinstance(created, dict):
         raise RuntimeError("workspace checker did not return created workspace facts")
@@ -2180,6 +2308,10 @@ def six_step_transcript(
         "context_checker_status": context_checked.get("status"),
         "forbidden_runtime_checks": 3,
         "owner_repo": str(root),
+        "operation_counts": final_counts,
+        "discover_clarify_operation_delta": discover_clarify_delta,
+        "readiness_operation_delta": readiness_delta,
+        "public_serializer_operation_delta": serializer_delta,
     }
 
 
@@ -2266,7 +2398,7 @@ def refresh_provenance_transcripts(
             root, "guru-discover-change-context", "context_ready", context
         )
         refresh_owner, refresh_checked = clarification_owner_for_issue(
-            root, env, context["transition"], "refresh_context"
+            root, env, context["transition"], context["duplicate_snapshot"], "refresh_context"
         )
         refresh_envelope = {
             "schema_version": "1.0",

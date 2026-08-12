@@ -99,7 +99,7 @@ class ContractWordingPackageTest(unittest.TestCase):
         checked = wording_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--path", "docs/contract.md"])
         self.assertEqual("pass", checked["typed_exit"])
         public_input = {"profile": "explicit_paths", "source_exit": "start", "mode": "standalone", "paths": ["docs/contract.md"], "continuation_id": "stage0-current"}
-        envelope = self.write_json("invoke.json", {"public_input": public_input, "owner_result": result})
+        envelope = self.write_json("invoke.json", {"public_input": public_input, "owner_result": result, "validation_receipt": checked["validation_receipt"]})
         output = wording_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)])
         self.assertEqual({"exit_id": "pass", "profile": "explicit_paths", "continuation_id": "stage0-current"}, output)
         schema = json.loads((PACKAGE_ROOT / "schemas/public-pass-output-2.0.schema.json").read_text())
@@ -112,9 +112,20 @@ class ContractWordingPackageTest(unittest.TestCase):
             wording_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--path", "docs/contract.md"])
         self.assertEqual("stale_identity", raised.exception.code)
 
+    def test_public_invocation_rejects_missing_or_stale_receipt(self) -> None:
+        result = self.record()
+        public_input = {"profile": "explicit_paths", "source_exit": "start", "mode": "standalone", "paths": ["docs/contract.md"], "continuation_id": "stage0-current"}
+        for receipt in (None, {"schema_version": "1.0"}):
+            envelope = self.write_json("receipt.json", {"public_input": public_input, "owner_result": result, "validation_receipt": receipt})
+            with self.assertRaises(CommandError) as raised:
+                wording_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)])
+            self.assertEqual("stale_identity", raised.exception.code)
+
     def test_contract_violation_routes_blocked(self) -> None:
         result = self.record(typed_exit="blocked", classification="contract_violation")
-        envelope = self.write_json("blocked.json", {"public_input": {"profile": "explicit_paths", "source_exit": "start", "mode": "standalone", "paths": ["docs/contract.md"], "continuation_id": "stage0-current"}, "owner_result": result})
+        result_path = self.write_json("blocked-result.json", result)
+        checked = wording_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--path", "docs/contract.md"])
+        envelope = self.write_json("blocked.json", {"public_input": {"profile": "explicit_paths", "source_exit": "start", "mode": "standalone", "paths": ["docs/contract.md"], "continuation_id": "stage0-current"}, "owner_result": result, "validation_receipt": checked["validation_receipt"]})
         self.assertEqual({"exit_id": "blocked"}, wording_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)]))
 
     def test_incomplete_classification_fails_closed(self) -> None:

@@ -25,7 +25,8 @@ Execute in this order:
 1. validate invocation, review target, current context and authority;
 2. classify input into confirmed facts, repository-answerable questions,
    product-intent questions, scope-risk decisions and out-of-scope facts;
-3. search current open issues for duplicates and author one mutually exclusive
+3. consume Discovery's checker-passed `duplicate_snapshot` on the current
+   initial path and author one mutually exclusive
    target disposition, including a selected/rejected decision for every
    candidate;
 4. inspect current Docs/code/tests/history/GitHub/Git evidence until every
@@ -74,6 +75,14 @@ Every initial issue/draft review records exactly one disposition:
 - `keep_current_open_issue`: retain the current open issue;
 - `keep_current_draft`: retain the side-effect-free proposed draft;
 - `retarget_existing_issue`: select one different open duplicate candidate;
+
+Initial-change-request input schema 2.0 replaces 1.0 in the current graph. Its
+required snapshot is accepted only when target locator, authority body digest,
+query, checked time, candidates and aggregate digest match the current context
+transition and the owner disposition. Policy staleness, authority mutation,
+retarget or explicit refresh invalidates the projection and routes through the
+existing context refresh owner; Clarification never reads Discovery private
+state and never performs the normal initial search again.
 - `reopen_closed_issue`: retain and reopen the closed source issue;
 - `create_followup_draft`: retain the closed issue only as related/reference
   and produce a new side-effect-free issue draft;

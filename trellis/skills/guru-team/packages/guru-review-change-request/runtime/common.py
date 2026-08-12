@@ -197,3 +197,14 @@ def check_result(package_root, payload, target, prerequisites):
     if payload != expected:
         raise CommandError("stale_identity", "input", "Rerun review against current target and prerequisites.", 3)
     return payload
+
+
+def validation_receipt(payload):
+    value = {"schema_version": "1.0", "skill_id": "guru-review-change-request", "operation": "check-change-request-review", "result_sha256": payload["facts_sha256"], "prerequisite_sha256": digest(payload["prerequisites"]), "snapshot_sha256": digest(payload["target"])}
+    value["receipt_sha256"] = digest(value)
+    return value
+
+
+def check_receipt(payload, receipt):
+    if receipt != validation_receipt(payload):
+        raise CommandError("stale_identity", "validation_receipt", "Run the readiness checker for this exact result and prerequisites.", 3)

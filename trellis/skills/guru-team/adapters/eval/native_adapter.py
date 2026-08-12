@@ -646,6 +646,11 @@ def stage0_eval_hash(label: str, *values: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def stage0_contract_digest(value: Any) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def stage0_eval_base(fixture: Path) -> dict[str, Any]:
     head = run_git(fixture, "rev-parse", "HEAD")
     runtime = load_package_owner_runtime(
@@ -958,6 +963,28 @@ def bind_stage0_call_local_invocation(
         "public_input": public_input,
         "owner_result": owner_result,
     }
+    if skill_id == "guru-review-contract-wording":
+        receipt = {
+            "schema_version": "1.0",
+            "skill_id": skill_id,
+            "operation": "check-contract-wording-review",
+            "result_sha256": owner_result["facts_sha256"],
+            "prerequisite_sha256": stage0_contract_digest({"profile": owner_result["profile"], "mode": owner_result["mode"]}),
+            "snapshot_sha256": stage0_contract_digest({"scope": owner_result["scope"], "scan": owner_result["scan"]}),
+        }
+        receipt["receipt_sha256"] = stage0_contract_digest(receipt)
+        envelope["validation_receipt"] = receipt
+    elif skill_id == "guru-review-change-request":
+        receipt = {
+            "schema_version": "1.0",
+            "skill_id": skill_id,
+            "operation": "check-change-request-review",
+            "result_sha256": owner_result["facts_sha256"],
+            "prerequisite_sha256": stage0_contract_digest(owner_result["prerequisites"]),
+            "snapshot_sha256": stage0_contract_digest(owner_result["target"]),
+        }
+        receipt["receipt_sha256"] = stage0_contract_digest(receipt)
+        envelope["validation_receipt"] = receipt
     if skill_id == "guru-create-task-workspace":
         workspace_state = WORKSPACE_CALL_LOCAL_STATE.get(str(fixture.resolve()))
         if workspace_state is None:

@@ -1944,6 +1944,37 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 canonical["public_api"]["skill_contracts"][field],
             )
             self.assertEqual(len(public_api["skill_contracts"][field]), expected_count)
+        public_input_schema_ids = public_api["skill_contracts"]["public_input_schema_ids"]
+        self.assertIn(
+            "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
+            public_input_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
+            public_input_schema_ids,
+        )
+        typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
+        self.assertIn(
+            "guru-stage0-discover-change-context-output-context-ready-3.0",
+            typed_output_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-stage0-discover-change-context-output-context-ready-2.0",
+            typed_output_schema_ids,
+        )
+        discovery_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-discover-change-context/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        artifact_by_path = {
+            artifact["path"]: artifact["id"] for artifact in discovery_interface["artifacts"]
+        }
+        self.assertEqual(
+            artifact_by_path["examples/public-context-ready-output-3.0.json"],
+            "public_output_context_ready_example_3_0",
+        )
         self.assertEqual(public_api["skill_evals"]["schema_id"], "guru-team-skill-evals-1.0")
         self.assertEqual(public_api["skill_evals"]["adapter_ids"], ["shared", "codex", "claude", "cursor"])
         for relative in (

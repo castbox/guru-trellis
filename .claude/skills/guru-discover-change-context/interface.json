@@ -93,8 +93,8 @@
       "path": "examples/public-context-ready-output.json"
     },
     {
-      "id": "public_output_context_ready_example_2_0",
-      "path": "examples/public-context-ready-output-2.0.json"
+      "id": "public_output_context_ready_example_3_0",
+      "path": "examples/public-context-ready-output-3.0.json"
     },
     {
       "id": "public_output_refresh_base_example",
@@ -131,8 +131,8 @@
       "path": "schemas/public-context-ready-output.schema.json"
     },
     {
-      "id": "public_output_context_ready_2_0",
-      "path": "schemas/public-context-ready-output-2.0.schema.json"
+      "id": "public_output_context_ready_3_0",
+      "path": "schemas/public-context-ready-output-3.0.schema.json"
     },
     {
       "id": "public_output_refresh_base",
@@ -267,12 +267,12 @@
       {
         "exit_id": "context_ready",
         "schema": {
-          "schema_id": "guru-stage0-discover-change-context-output-context-ready-2.0",
-          "path": "schemas/public-context-ready-output-2.0.schema.json"
+          "schema_id": "guru-stage0-discover-change-context-output-context-ready-3.0",
+          "path": "schemas/public-context-ready-output-3.0.schema.json"
         },
         "example": {
           "id": "context_ready_output",
-          "path": "examples/public-context-ready-output-2.0.json"
+          "path": "examples/public-context-ready-output-3.0.json"
         },
         "consumer_use_ids": [
           "project_context_ready"
@@ -376,6 +376,10 @@
           {
             "source": "handoff_continuation_id",
             "target": "continuation_id"
+          },
+          {
+            "source": "duplicate_snapshot",
+            "target": "duplicate_snapshot"
           }
         ]
       },

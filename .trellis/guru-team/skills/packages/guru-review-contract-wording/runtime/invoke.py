@@ -1,13 +1,14 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from common import digest,load,parse,root,validate_result
+from common import check_receipt,digest,load,parse,root,validate_result
 from runtime.io import CommandError
 from runtime.schema import validate_json
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation");public=e.get("public_input");owner=e.get("owner_result");transition=e.get("transition")
  if not isinstance(public,dict) or not isinstance(owner,dict):raise CommandError("invalid_arguments","invocation","Provide public input and owner result.")
  validate_result(package_root,owner)
+ check_receipt(owner,e.get("validation_receipt"))
  if owner["profile"]!=public["profile"] or owner["mode"]!=public["mode"]:raise CommandError("stale_identity","owner_result","Rerun wording for the fixed profile.",3)
  exit_id=owner["typed_exit"];out={"exit_id":exit_id}
  if exit_id=="pass":

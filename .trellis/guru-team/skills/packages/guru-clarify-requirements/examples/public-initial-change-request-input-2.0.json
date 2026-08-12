@@ -1,0 +1,15 @@
+{
+  "profile": "initial_change_request",
+  "source_exit": "start",
+  "mode": "workflow",
+  "target_locator": "#145",
+  "continuation_id": "stage0-current",
+  "duplicate_snapshot": {
+    "query": "repo:example/guru-extension is:issue is:open phase0",
+    "checked_at": "2026-01-01T00:00:00Z",
+    "target_locator": "#145",
+    "authority_content_sha256": "2323232323232323232323232323232323232323232323232323232323232323",
+    "candidates": [],
+    "facts_sha256": "2424242424242424242424242424242424242424242424242424242424242424"
+  }
+}

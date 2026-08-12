@@ -45,6 +45,12 @@ Each duplicate candidate fact projection is exactly `repo`, `number`,
 AI-authored reason/observation. Recorder/checker validate that same projection;
 they do not issue a second duplicate search or re-read candidates after review.
 
+`context_ready` schema 3.0 additionally projects one minimal immutable
+`duplicate_snapshot` to the sole Clarification consumer. It binds the query,
+checked time, target locator, authority body digest, canonical open-candidate
+facts and their aggregate digest. This replaces the former 2.0 handoff for the
+current graph; missing or mismatched projections require context refresh.
+
 ## History Preview And Deep Read
 
 History uses `guru-context-history-score-1.0`. The runtime enumerates only
@@ -140,11 +146,12 @@ self-contained or portable.
 
 `pre_task` is the only public profile. After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
-`base_current` transition, and current owner result, reruns the existing result
-checker, and derives the matching per-exit DTO from the checked owner result.
-`context_ready` contains
-only route/profile/mode/target/continuation identity; Clarification rereads live
-authority and receives no owner-result locator. Active-task identity remains an
+`base_current` transition, and checker-passed owner result, then derives the
+matching per-exit DTO without another live authority read or duplicate search.
+`context_ready` contains route/profile/mode/target/continuation identity plus the
+minimal checker-bound `duplicate_snapshot`. Clarification validates and consumes
+that snapshot on the normal current path without repeating duplicate search or
+candidate reads. It still receives no owner-result locator. Active-task identity remains an
 ephemeral `--active-task` invocation argument rather than a public DTO field. A
 genuinely interrupted owner additionally supplies one recovery continuation and
 may lazily use one minimal ignored checkpoint, which the same owner deletes on
