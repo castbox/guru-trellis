@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核完整 diff、测试充分性、零 finding 与未验证边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核 commands/errors/public DTO/schema closure、freshness 与 consumer projection。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审核 mandatory Skill invocation、judgment ownership、typed exit consumer 与 fail-closed routing。"}
-{"file":".trellis/spec/preset/installer.md","reason":"审核 clean install、.5 upgrade、managed removal、manifest 与 executable mode。"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"审核 README 命令、Docs SSOT、删除路径引用与用户可执行说明。"}

@@ -4,7 +4,7 @@
     "number": 195,
     "url": "https://github.com/castbox/guru-trellis/issues/195",
     "title": "迁移全部 Guru Team Skills 到 package-local runtime 并删除单体实现",
-    "reason": "Issue #195 is the primary independently deliverable runtime migration."
+    "reason": "The task scope fully covers Issue #195 and the final PR closes only it."
   },
   "close_issues": [
     {

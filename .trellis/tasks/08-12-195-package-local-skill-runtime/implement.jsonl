@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"约束 15 个公共 Skill 的 package ownership、public I/O、private state、typed exit 与 runtime 分层。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 package-local Python 与薄 wrapper 只能承担 executor、validator、recorder 职责。"}
-{"file":".trellis/spec/preset/installer.md","reason":"指导 canonical package、shared kernel、managed removal 与 installed manifest 的安装实现。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束 shared、Codex、Cursor、Claude 仅接收 public projection 并保持 dogfood 同步。"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"约束 official Trellis update 后 preset reapply、ownership 与 sidecar 处理。"}
