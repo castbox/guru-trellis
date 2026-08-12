@@ -1,0 +1,202 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-12T13:14:00Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-12-211-task-commit-hooks",
+    "title": "#211 修复 task commit hooks 执行语义",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-12-211-task-commit-hooks",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/211-task-commit-hooks",
+    "commits": [
+      "5c7be981ba2c8e1c9e2680912b5be69e2eeab6c6",
+      "e982969f4f1ad6f3e60e158c99c519171c63175a",
+      "f5bb82b1d79887d92022a85ce98fa137b162719a"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-create-task-commit/references/contract.md",
+      ".claude/skills/guru-create-task-commit/references/contract.md",
+      ".codex/skills/guru-create-task-commit/references/contract.md",
+      ".cursor/skills/guru-create-task-commit/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_runtime.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/08-12-211-task-commit-hooks/check.jsonl",
+      ".trellis/tasks/08-12-211-task-commit-hooks/design.md",
+      ".trellis/tasks/08-12-211-task-commit-hooks/implement.jsonl",
+      ".trellis/tasks/08-12-211-task-commit-hooks/implement.md",
+      ".trellis/tasks/08-12-211-task-commit-hooks/issue-scope-ledger.json",
+      ".trellis/tasks/08-12-211-task-commit-hooks/prd.md",
+      ".trellis/tasks/08-12-211-task-commit-hooks/task.json",
+      ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/design.md",
+      ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/implement.md",
+      ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/prd.md",
+      ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/task.json",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+      "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_runtime.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      211
+    ],
+    "close_issues": [
+      211
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/213"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#211 修复 task commit hooks 执行语义",
+    "outcome": "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。",
+    "changed_behavior": [
+      "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。",
+      "代理并校验 `pre-commit`、`prepare-commit-msg`、`commit-msg`、`post-commit` 的参数与退出码。",
+      "在 live ref 发布前校验 message、tree、index、worktree、hook mutation 和 live state；提交已创建后的失败返回 created commit identity 供有界恢复。",
+      "保持 relative `core.hooksPath`、gitlink、无关 staged/unstaged/untracked 状态及 semantic index 比较语义。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/08-12-211-task-commit-hooks/design.md",
+          ".trellis/tasks/08-12-211-task-commit-hooks/implement.md",
+          ".trellis/tasks/08-12-211-task-commit-hooks/prd.md",
+          ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/design.md",
+          ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/implement.md",
+          ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/prd.md"
+        ],
+        "change": "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_runtime.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_runtime.py"
+        ],
+        "change": "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-create-task-commit/references/contract.md",
+          ".claude/skills/guru-create-task-commit/references/contract.md",
+          ".codex/skills/guru-create-task-commit/references/contract.md",
+          ".cursor/skills/guru-create-task-commit/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md"
+        ],
+        "change": "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-12-211-task-commit-hooks/check.jsonl",
+          ".trellis/tasks/08-12-211-task-commit-hooks/implement.jsonl",
+          ".trellis/tasks/08-12-211-task-commit-hooks/issue-scope-ledger.json",
+          ".trellis/tasks/08-12-211-task-commit-hooks/task.json",
+          ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/task.json"
+        ],
+        "change": "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#211"
+      ],
+      "pr_refs": [
+        "PR #213"
+      ],
+      "branches": [
+        "fix/211-task-commit-hooks"
+      ],
+      "paths": [
+        ".agents/skills/guru-create-task-commit/references/contract.md",
+        ".claude/skills/guru-create-task-commit/references/contract.md",
+        ".codex/skills/guru-create-task-commit/references/contract.md",
+        ".cursor/skills/guru-create-task-commit/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_runtime.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/08-12-211-task-commit-hooks/check.jsonl",
+        ".trellis/tasks/08-12-211-task-commit-hooks/design.md",
+        ".trellis/tasks/08-12-211-task-commit-hooks/implement.jsonl",
+        ".trellis/tasks/08-12-211-task-commit-hooks/implement.md",
+        ".trellis/tasks/08-12-211-task-commit-hooks/issue-scope-ledger.json",
+        ".trellis/tasks/08-12-211-task-commit-hooks/prd.md",
+        ".trellis/tasks/08-12-211-task-commit-hooks/task.json",
+        ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/design.md",
+        ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/implement.md",
+        ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/prd.md",
+        ".trellis/tasks/archive/2026-08/08-12-211-task-commit-hooks/task.json",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+        "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_runtime.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#211 修复 task commit hooks 执行语义",
+        "将 package-local Task Commit executor 改为在临时 detached worktree",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#211 修复 task commit hooks 执行语义\n将 package-local Task Commit executor 改为在临时 detached worktree 和 isolated index 中执行真实 `git commit --cleanup=verbatim -F`。\n代理并校验 `pre-commit`、`prepare-commit-msg`、`commit-msg`、`post-commit` 的参数与退出码。\n在 live ref 发布前校验 message、tree、index、worktree、hook mutation 和 live state；提交已创建后的失败返回 created commit identity 供有界恢复。\n保持 relative `core.hooksPath`、gitlink、无关 staged/unstaged/untracked 状态及 semantic index 比较语义。\n将 package-local Task Commit executor 改为在临时 detached worktree\n完成 contract.md 相关变更"
+  }
+}

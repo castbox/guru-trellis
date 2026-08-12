@@ -492,6 +492,13 @@ recovery；既有 tracked plan 只读兼容。`committed`、`revision-required`�
 分别由 Branch Review/finding closure、skill re-entry、fail-closed stop 唯一消费；finding
 fix 必须先返回完整 Phase 2，并创建新 sequence。
 
+Exact executor 在临时 detached worktree 与 isolated index 中调用真实 `git commit -F`，
+因此 repository 的 `pre-commit`、`prepare-commit-msg`、`commit-msg`、`post-commit`
+看到的是本次 reviewed candidate，而不是 live workspace 的无关状态。hook 拒绝、改写
+message、增加或修改路径会在 live branch 发布前阻断；若 transaction commit 已创建，
+失败结果携带其 identity 并保留 candidate/Phase 2 checkpoint。live ref 已推进后的失败
+同样返回 created commit 供 bounded recovery，不尝试自定义 rollback。
+
 `finish-work` dry-run 会输出合规 metadata commit subject 和 publish 计划；
 `format-merge-commit` payload 会输出 `merge_commit.subject`、`merge_commit.body`
 和显式 `gh pr merge ... --subject ... --body-file ...` 命令。维护者合并 PR 时不得使用

@@ -16,6 +16,18 @@ covers source/installed checks, preset initial/reapply, overlay drift and
 sidecars, clean marketplace init/preview/switch, official update/upgrade, and
 Codex/Claude/Cursor equality.
 
+Task Commit hook regressions use executable hooks in real temporary Git
+repositories, not mocked subprocess assertions. The matrix proves all four
+standard commit hooks observe the reviewed parent, exact transaction
+index/worktree and message file; pre-ref rejection, message rewrite, extra
+tracked/untracked state, rename/delete, stage/unstage and exact-path mutation do
+not advance the live branch; post-commit and post-publication failures report a
+created commit identity and retain recovery inputs. Tests compare semantic
+`mode/blob/stage/path` index entries so stat-cache-only refresh is non-semantic.
+The positive matrix includes a parent-tree gitlink plus unrelated
+staged/unstaged/untracked state, and both positive and negative paths assert
+that transaction worktree registrations and isolated indexes are cleaned up.
+
 Finish-work quality evidence must distinguish the reviewed-content identity and
 its `branch_review_commit` anchor from the current metadata tail and the final
 archive metadata commit. A dry-run pass is valid only when formal execution
