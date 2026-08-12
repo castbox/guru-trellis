@@ -1,5 +1,5 @@
 from __future__ import annotations
-import copy,json,shutil,subprocess,sys,tempfile,unittest
+import copy,importlib.util,json,shutil,subprocess,sys,tempfile,unittest
 from unittest import mock
 from datetime import datetime,timezone
 from pathlib import Path
@@ -32,6 +32,10 @@ class WorkspaceTest(unittest.TestCase):
   root=self.parent/"installed/guru-team";package=root/"skills/packages/guru-create-task-workspace";shutil.copytree(PACKAGE,package);shutil.copytree(SKILLS/"runtime",root/"runtime")
   process=subprocess.run([sys.executable,str(package/"runtime/prepare.py"),"--help"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   self.assertEqual(0,process.returncode,process.stderr);self.assertIn("usage: prepare-task",process.stdout)
+ def test_common_loads_through_shared_dynamic_command_loader_pattern(self):
+  path=LOCAL/"common.py";spec=importlib.util.spec_from_file_location("guru_runtime_dynamic_common",path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+  resolved=module.WorkspaceConfig("worktree",self.parent,self.repo)
+  self.assertEqual(("worktree",self.parent,self.repo),tuple(resolved))
  def test_real_workspace_mutation_check_and_invoke(self):
   pp=self.write("plan.json",self.plan);self.assertEqual(self.plan,record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]));result,checked=self.execute_and_check();workspace=(self.parent/"repo-worktrees/027-workspace").resolve();self.assertTrue(workspace.is_dir());mapping=json.loads((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").read_text());self.assertEqual({"schema_version":"1.0","workspace_slug":"027-workspace","workspace_path":str(workspace),"task_artifact_dir":".trellis/tasks/08-12-027-workspace"},{key:mapping[key] for key in ("schema_version","workspace_slug","workspace_path","task_artifact_dir")});self.assertTrue((workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json").is_file());boundary=PACKAGE.parents[0]/"guru-finalize-task/runtime/legacy.py";boundary_result=subprocess.run([sys.executable,str(boundary),"check-workspace-boundary","--root",str(workspace),"--task",".trellis/tasks/08-12-027-workspace","--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE);self.assertEqual(0,boundary_result.returncode,boundary_result.stderr);self.assertEqual("ok",json.loads(boundary_result.stdout)["status"]);self.assertNotIn(str(self.parent.resolve()),json.dumps(result));env=self.write("invoke.json",{"result":checked});self.assertEqual({"exit_id":"created"},invoke.run(PACKAGE,{},["--root",str(self.repo),"--invocation",str(env)]))
  def test_absolute_root_create_exact_reuse_and_checker(self):

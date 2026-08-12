@@ -1,15 +1,14 @@
 from __future__ import annotations
 import argparse,copy,hashlib,json,subprocess,sys
-from dataclasses import dataclass
 from datetime import datetime,timezone
 from pathlib import Path
+from typing import NamedTuple
 SHARED_ROOT=next((p for p in Path(__file__).resolve().parents if (p/"runtime/io.py").is_file() and (p/"runtime/schema.py").is_file()),None)
 if SHARED_ROOT is not None and str(SHARED_ROOT) not in sys.path:sys.path.insert(0,str(SHARED_ROOT))
 from runtime.io import CommandError
 from runtime.schema import validate_json
 CONSUMERS={"created":{"kind":"workflow","id":"guru-task-workspace-created"},"refresh_review":{"kind":"skill","id":"guru-sync-base"},"blocked":{"kind":"stop","id":"task-workspace-blocked"}}
-@dataclass(frozen=True)
-class WorkspaceConfig:
+class WorkspaceConfig(NamedTuple):
  mode:str
  root:Path
  path:Path
