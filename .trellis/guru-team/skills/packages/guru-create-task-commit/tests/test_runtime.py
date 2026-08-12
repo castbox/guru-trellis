@@ -74,11 +74,13 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    "pre-commit":'printf "injected\\n" > injected.txt\ngit add injected.txt',
    "pre-commit-exact-modify":'printf "hook changed\\n" > exact.txt',
    "pre-commit-unstage":'git reset -q HEAD -- exact.txt',
+   "pre-commit-rename":'git mv unrelated.txt renamed-by-hook.txt',
+   "pre-commit-delete":'git rm -q unrelated.txt',
    "post-commit":'printf "surprise\\n" > post-commit-untracked.txt',
   }
   for hook_name,body in cases.items():
    with self.subTest(hook=hook_name):
-    installed_name=hook_name.split("-exact",1)[0].split("-unstage",1)[0]
+    installed_name=hook_name.split("-exact",1)[0].split("-unstage",1)[0].split("-rename",1)[0].split("-delete",1)[0]
     repo,parent,candidate_path,phase2=self.hook_case(installed_name,body)
     with self.assertRaises(CommandError) as raised:
      execute_commit(PACKAGE,{},["--root",str(repo),"--candidate-artifact",str(candidate_path)])

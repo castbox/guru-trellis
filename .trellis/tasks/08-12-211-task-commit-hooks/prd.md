@@ -92,4 +92,3 @@ commit 已创建后的 recovery。
 - 不新增 hostile hook、恶意篡改、并发竞态、TOCTOU、锁、fault injection、额外
   crash consistency 或跨 OS 原子性范围。
 - 不创建 push、PR、archive 或 merge 行为。
-

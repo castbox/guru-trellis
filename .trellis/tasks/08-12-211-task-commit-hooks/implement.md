@@ -89,4 +89,3 @@ find . -type f \( -name '*.new' -o -name '*.bak' \) -print
 | source validator 失败 | 不运行 preset apply |
 | dogfood drift 或 sidecar | 不记录 Phase 2 pass |
 | throwaway/update 未通过 | 不宣称开箱即用完成 |
-

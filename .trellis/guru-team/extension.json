@@ -306,11 +306,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-12T12:28:26Z",
+  "installed_at": "2026-08-12T12:51:51Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "8d52f2b5bfa64c29a64deb616e9f5b4a7c4ebce8",
-    "commit": "8d52f2b5bfa64c29a64deb616e9f5b4a7c4ebce8",
+    "ref": "5c7be981ba2c8e1c9e2680912b5be69e2eeab6c6",
+    "commit": "5c7be981ba2c8e1c9e2680912b5be69e2eeab6c6",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -431,7 +431,7 @@
       {
         "id": "guru-create-task-commit",
         "interface_sha256": "2bd63f7ae00612dafbf3c4dacd36352c6525da555210556d431bdcac304d4f70",
-        "tree_sha256": "728826711cb9af9cdcecb6a7c3f86af7eb7817c71997a6341237e9aec5c00d39"
+        "tree_sha256": "be254def4cc01e62c0904dc8e321107d601e306f8d6a91bff3cc88bf5e57c6f4"
       },
       {
         "id": "guru-check-task",
@@ -1898,7 +1898,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/tests/test_runtime.py",
-        "sha256": "aa1ebf185a146a05d20775c74c9a1afce26f757ef10e31da8a284f045241ed82",
+        "sha256": "d01aaf27f441355c083f517b621b564828b5806fa868d9b7a009614eabec8718",
         "executable": false,
         "action": "unchanged"
       },
