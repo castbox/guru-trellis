@@ -277,8 +277,35 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
                 )
     expected_packages: dict[str, dict[str, str]] = {}
     expected_ids_by_platform: dict[str, set[str]] = {key:set() for key in PLATFORM_ROOTS}
+    command_owners: dict[str, str] = {}
     for skill_id, entry in active.items():
         package = skills_root / entry["package_rel"]
+        commands = read_json(root, package / "commands.json", f"installed commands for {skill_id}", errors) or {}
+        if commands.get("package_id") != skill_id or not isinstance(commands.get("commands"), list):
+            errors.append(f"installed command ownership is invalid for {skill_id}")
+        else:
+            validators = {
+                item.get("id"): item.get("runtime_command")
+                for item in entry["interface_data"].get("validators", [])
+                if isinstance(item, dict)
+            }
+            seen_validators: set[str] = set()
+            for command in commands["commands"]:
+                if not isinstance(command, dict) or not isinstance(command.get("id"), str):
+                    errors.append(f"installed command metadata is invalid for {skill_id}")
+                    continue
+                command_id = command["id"]
+                previous = command_owners.get(command_id)
+                if previous is not None:
+                    errors.append(f"installed command id {command_id} has multiple owners: {previous}, {skill_id}")
+                else:
+                    command_owners[command_id] = skill_id
+                validator_id = command.get("validator_id")
+                seen_validators.add(str(validator_id))
+                if command.get("owner") != skill_id or validators.get(validator_id) != command_id:
+                    errors.append(f"installed command owner or interface binding is invalid for {skill_id}/{command_id}")
+            if seen_validators != set(validators):
+                errors.append(f"installed command validator coverage is incomplete for {skill_id}")
         files = collect_files(root, package, f"installed package {skill_id}", errors)
         tree_hash = hashlib.sha256()
         for path in files:
@@ -342,7 +369,7 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
         rel=lexical_relative(root,candidate)
         if rel and rel.as_posix() not in allowed and any(child.name.startswith("guru-") for child in candidate.iterdir()): errors.append(f"workflow skill copy exists in unknown platform root: {rel.as_posix()}")
     overlay=manifest.get("overlays") if isinstance(manifest.get("overlays"),dict) else {}
-    return {"status":"passed" if not errors else "failed","mode":"installed","facts":{**facts,"selected_platforms":selected,"managed_file_count":len(files),"sidecar_count":len(sidecars),"removal_count":len(removals),"conflict_count":len(conflicts),"overlay_managed_file_count":len(overlay.get("files",[])) if isinstance(overlay.get("files"),list) else 0,"overlay_sidecar_count":len(overlay.get("sidecars",[])) if isinstance(overlay.get("sidecars"),list) else 0,"overlay_removal_count":len(overlay.get("removals",[])) if isinstance(overlay.get("removals"),list) else 0,"overlay_conflict_count":len(overlay.get("conflicts",[])) if isinstance(overlay.get("conflicts"),list) else 0},"errors":errors}
+    return {"status":"passed" if not errors else "failed","mode":"installed","facts":{**facts,"selected_platforms":selected,"command_count":len(command_owners),"managed_file_count":len(files),"sidecar_count":len(sidecars),"removal_count":len(removals),"conflict_count":len(conflicts),"overlay_managed_file_count":len(overlay.get("files",[])) if isinstance(overlay.get("files"),list) else 0,"overlay_sidecar_count":len(overlay.get("sidecars",[])) if isinstance(overlay.get("sidecars"),list) else 0,"overlay_removal_count":len(overlay.get("removals",[])) if isinstance(overlay.get("removals"),list) else 0,"overlay_conflict_count":len(overlay.get("conflicts",[])) if isinstance(overlay.get("conflicts"),list) else 0},"errors":errors}
 
 
 def _validate_removals(root:Path,value:Any,label:str,allowed_paths:set[str]|None,errors:list[str])->list[Any]:

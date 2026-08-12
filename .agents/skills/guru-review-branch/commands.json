@@ -11,25 +11,33 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--task",
           "required": false,
           "kind": "string",
-          "description": "Task locator."
+          "description": "Task locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--skill-input",
           "required": true,
           "kind": "string",
-          "description": "Public branch review input."
+          "description": "Public branch review input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--semantic-review-file",
           "required": true,
           "kind": "string",
-          "description": "AI semantic review JSON."
+          "description": "AI semantic review JSON.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--typed-exit",
@@ -41,13 +49,16 @@
             "scope_confirmation_required",
             "blocked"
           ],
-          "description": "AI-selected typed exit."
+          "description": "AI-selected typed exit.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "none",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "invalid_json",
         "schema_mismatch",
         "unsafe_path",
@@ -56,7 +67,8 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [],
-      "validator_id": "review_gate_recorder"
+      "validator_id": "review_gate_recorder",
+      "runtime_role": "record"
     },
     {
       "id": "check-review-gate",
@@ -67,19 +79,25 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--task",
           "required": false,
           "kind": "string",
-          "description": "Task locator."
+          "description": "Task locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "string",
-          "description": "Recorded review gate JSON locator."
+          "description": "Recorded review gate JSON locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--expected-exit",
@@ -91,13 +109,16 @@
             "scope_confirmation_required",
             "blocked"
           ],
-          "description": "Required typed exit."
+          "description": "Required typed exit.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "none",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "invalid_json",
         "schema_mismatch",
         "unsafe_path",
@@ -106,10 +127,11 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [],
-      "validator_id": "review_gate_checker"
+      "validator_id": "review_gate_checker",
+      "runtime_role": "check"
     },
     {
-      "id": "invoke-stage0-skill",
+      "id": "invoke-guru-review-branch",
       "owner": "guru-review-branch",
       "entrypoint": "runtime/invoke.py",
       "arguments": [
@@ -117,25 +139,16 @@
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local invocation envelope or dash for stdin."
-        },
-        {
-          "flag": "--input",
-          "required": false,
-          "kind": "string",
-          "description": "Public input JSON locator."
-        },
-        {
-          "flag": "--owner-result",
-          "required": false,
-          "kind": "string",
-          "description": "Completed owner result JSON locator."
+          "description": "Call-local invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "invalid_json",
         "schema_mismatch",
         "unsafe_path",
@@ -144,7 +157,8 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [],
-      "validator_id": "public_invocation"
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
     }
   ]
 }

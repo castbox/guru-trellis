@@ -47,7 +47,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             {
                 "sync_executor": "sync-base",
                 "result_validator": "check-base-sync",
-                "public_invocation": "invoke-stage0-skill",
+                "public_invocation": "invoke-guru-sync-base",
             },
         )
         self.assertEqual(

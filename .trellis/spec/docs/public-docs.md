@@ -122,7 +122,7 @@ All three README files must state that current task identity comes only from
 `task.json`, ignored runtime mapping, current checkout, and live Git worktree
 facts. They must document `finish-summary.json` as output of the normal current
 `guru-team.finish-work` path only, with no alternate summary command. Public
-package documentation keeps live ids such as `invoke-stage0-skill` and
+package documentation keeps live ids such as `invoke-guru-check-task` and
 `guru-stage0-*`, and lists only schemas, examples, fixtures, and eval contracts
 declared by the live registry and current packages.
 

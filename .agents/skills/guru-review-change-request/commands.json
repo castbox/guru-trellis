@@ -11,7 +11,9 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--mode",
@@ -21,25 +23,32 @@
             "workflow",
             "standalone"
           ],
-          "description": "Invocation mode."
+          "description": "Invocation mode.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "string",
-          "description": "AI review JSON locator."
+          "description": "AI review JSON locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--change-request-input",
           "required": true,
           "kind": "string",
-          "description": "Reviewed change request JSON locator."
+          "description": "Reviewed change request JSON locator.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "none",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "invalid_json",
         "schema_mismatch",
         "unsafe_path",
@@ -48,7 +57,8 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [],
-      "validator_id": "change_request_review_recorder"
+      "validator_id": "change_request_review_recorder",
+      "runtime_role": "record"
     },
     {
       "id": "check-change-request-review",
@@ -59,31 +69,40 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "string",
-          "description": "Review result JSON locator."
+          "description": "Review result JSON locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--prerequisites-input",
           "required": true,
           "kind": "string",
-          "description": "Prerequisites JSON locator."
+          "description": "Prerequisites JSON locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--change-request-input",
           "required": true,
           "kind": "string",
-          "description": "Reviewed request JSON locator."
+          "description": "Reviewed request JSON locator.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "none",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "invalid_json",
         "schema_mismatch",
         "unsafe_path",
@@ -92,10 +111,11 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [],
-      "validator_id": "change_request_review_checker"
+      "validator_id": "change_request_review_checker",
+      "runtime_role": "check"
     },
     {
-      "id": "invoke-stage0-skill",
+      "id": "invoke-guru-review-change-request",
       "owner": "guru-review-change-request",
       "entrypoint": "runtime/invoke.py",
       "arguments": [
@@ -103,25 +123,16 @@
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local invocation envelope or dash for stdin."
-        },
-        {
-          "flag": "--input",
-          "required": false,
-          "kind": "string",
-          "description": "Public input JSON locator."
-        },
-        {
-          "flag": "--owner-result",
-          "required": false,
-          "kind": "string",
-          "description": "Completed owner result JSON locator."
+          "description": "Call-local invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "invalid_json",
         "schema_mismatch",
         "unsafe_path",
@@ -130,7 +141,8 @@
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [],
-      "validator_id": "public_invocation"
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
     }
   ]
 }

@@ -11,27 +11,33 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input."
+          "description": "Ready-for-merge input.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "merge_precondition_failed",
         "internal_error"
       ],
-      "side_effect": "git_read",
+      "side_effect": "github_read",
       "schema_bindings": [
         "schemas/public-ready-for-merge-input.schema.json"
       ],
-      "validator_id": "merge_previewer"
+      "validator_id": "merge_previewer",
+      "runtime_role": "preview"
     },
     {
       "id": "record-task-pr-merge",
@@ -42,25 +48,32 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input."
+          "description": "Ready-for-merge input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--review-input",
           "required": true,
           "kind": "json",
-          "description": "Semantic review."
+          "description": "Semantic review.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "merge_precondition_failed",
         "internal_error"
       ],
@@ -69,7 +82,8 @@
         "schemas/public-ready-for-merge-input.schema.json",
         "schemas/task-pr-merge-gate.schema.json"
       ],
-      "validator_id": "merge_recorder"
+      "validator_id": "merge_recorder",
+      "runtime_role": "record"
     },
     {
       "id": "check-task-pr-merge",
@@ -80,33 +94,41 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input."
+          "description": "Ready-for-merge input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--gate",
           "required": false,
           "kind": "string",
-          "description": "Private gate path."
+          "description": "Private gate path.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "merge_precondition_failed",
         "internal_error"
       ],
-      "side_effect": "git_read",
+      "side_effect": "github_read",
       "schema_bindings": [
         "schemas/task-pr-merge-gate.schema.json"
       ],
-      "validator_id": "merge_checker"
+      "validator_id": "merge_checker",
+      "runtime_role": "check"
     },
     {
       "id": "execute-task-pr-merge",
@@ -117,33 +139,41 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input."
+          "description": "Ready-for-merge input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--gate",
           "required": false,
           "kind": "string",
-          "description": "Private gate path."
+          "description": "Private gate path.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "merge_precondition_failed",
         "internal_error"
       ],
-      "side_effect": "git_write",
+      "side_effect": "github_write",
       "schema_bindings": [
         "schemas/task-pr-merge-gate.schema.json"
       ],
-      "validator_id": "merge_executor"
+      "validator_id": "merge_executor",
+      "runtime_role": "execute"
     },
     {
       "id": "invoke-task-pr-merge",
@@ -154,25 +184,32 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Ready-for-merge input."
+          "description": "Ready-for-merge input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--gate",
           "required": false,
           "kind": "string",
-          "description": "Private gate path."
+          "description": "Private gate path.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "merge_precondition_failed",
         "internal_error"
       ],
@@ -180,7 +217,8 @@
       "schema_bindings": [
         "schemas/public-invocation-error.schema.json"
       ],
-      "validator_id": "public_invocation"
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
     }
   ]
 }

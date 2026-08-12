@@ -11,11 +11,13 @@ from .io import CommandError, fail, read_json_file, write_json
 
 def _help(package_id: str, command: dict) -> str:
     usage = [command["id"]]
-    lines = [f"usage: {' '.join(usage)} [arguments]", "", f"owner: {package_id}", f"stdin: {command['stdin']}", f"stdout: {command['stdout']}", f"side-effect: {command['side_effect']}", "", "arguments:", "  --help                show this help and exit", "  --json                emit one JSON object"]
+    lines = [f"usage: {' '.join(usage)} [arguments]", "", f"owner: {package_id}", f"runtime-role: {command['runtime_role']}", f"stdin: {command['stdin']}", f"stdout: {command['stdout']}", f"side-effect: {command['side_effect']}", "", "arguments:", "  --help                show this help and exit", "  --json                emit one JSON object"]
     for item in command["arguments"]:
         marker = "required" if item["required"] else "optional"
         values = f" ({'|'.join(item.get('values', []))})" if item.get("values") else ""
-        lines.append(f"  {item['flag']:<22} {marker}{values}: {item['description']}")
+        repeatable = ", repeatable" if item["repeatable"] else ""
+        conflicts = f", conflicts: {','.join(item['conflicts'])}" if item["conflicts"] else ""
+        lines.append(f"  {item['flag']:<22} {marker}{repeatable}{conflicts}{values}: {item['description']}")
     lines.extend(["", "errors:", *[f"  {code}" for code in command["errors"]]])
     return "\n".join(lines) + "\n"
 
@@ -43,6 +45,36 @@ def _consume_global_json_flag(argv: list[str]) -> list[str]:
     return [value for value in argv if value != "--json"]
 
 
+def _validate_argument_cardinality(command: dict, argv: list[str]) -> None:
+    counts: dict[str, int] = {}
+    for token in argv:
+        if not token.startswith("--"):
+            continue
+        flag = token.split("=", 1)[0]
+        counts[flag] = counts.get(flag, 0) + 1
+    declared = {item["flag"]: item for item in command["arguments"]}
+    for flag, count in counts.items():
+        item = declared.get(flag)
+        if item is not None and count > 1 and not item["repeatable"]:
+            raise CommandError(
+                "conflicting_arguments",
+                f"arguments.{flag}",
+                f"Provide {flag} at most once.",
+            )
+    present = set(counts)
+    for item in command["arguments"]:
+        if item["flag"] not in present:
+            continue
+        conflicts = present.intersection(item["conflicts"])
+        if conflicts:
+            other = sorted(conflicts)[0]
+            raise CommandError(
+                "conflicting_arguments",
+                f"arguments.{item['flag']}",
+                f"Do not combine {item['flag']} with {other}.",
+            )
+
+
 def main(package_root: Path, argv: list[str]) -> int:
     try:
         metadata = read_json_file(package_root / "commands.json", "commands.json")
@@ -62,8 +94,10 @@ def main(package_root: Path, argv: list[str]) -> int:
                 raise CommandError("conflicting_arguments", "arguments", "Use --help by itself.")
             sys.stdout.write(_help(package_root.name, command))
             return 0
+        rest = _consume_global_json_flag(rest)
+        _validate_argument_cardinality(command, rest)
         module = _load_entrypoint(package_root, command["entrypoint"])
-        result = module.run(package_root, command, _consume_global_json_flag(rest))
+        result = module.run(package_root, command, rest)
         if not isinstance(result, dict):
             raise CommandError("invalid_runtime_output", "stdout", "Return one JSON object from the package entrypoint.")
         write_json(result)

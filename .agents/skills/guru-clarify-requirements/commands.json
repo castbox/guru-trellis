@@ -1,5 +1,159 @@
-{"schema_version":"1.0","package_id":"guru-clarify-requirements","commands":[
-{"id":"record-requirements-clarification","owner":"guru-clarify-requirements","validator_id":"clarification_recorder","entrypoint":"runtime/record.py","arguments":[{"flag":"--root","required":false,"kind":"string","description":"Repository root."},{"flag":"--mode","required":true,"kind":"enum","values":["workflow","standalone"],"description":"Invocation mode."},{"flag":"--input","required":true,"kind":"json","description":"AI-reviewed owner result or dash for stdin."},{"flag":"--task","required":false,"kind":"string","description":"Active task locator."}],"stdin":"optional_json","stdout":"single_json_object","errors":["invalid_arguments","invalid_json","schema_mismatch","semantic_result_invalid","stale_identity","internal_error"],"side_effect":"none","schema_bindings":["schemas/requirements-clarification.schema.json"]},
-{"id":"check-requirements-clarification","owner":"guru-clarify-requirements","validator_id":"clarification_checker","entrypoint":"runtime/check.py","arguments":[{"flag":"--root","required":false,"kind":"string","description":"Repository root."},{"flag":"--input","required":true,"kind":"json","description":"Recorded owner result or dash for stdin."},{"flag":"--task","required":false,"kind":"string","description":"Active task locator."},{"flag":"--expected-result-sha256","required":false,"kind":"string","description":"Expected owner-result digest."}],"stdin":"optional_json","stdout":"single_json_object","errors":["invalid_arguments","invalid_json","schema_mismatch","semantic_result_invalid","stale_identity","internal_error"],"side_effect":"none","schema_bindings":["schemas/requirements-clarification.schema.json"]},
-{"id":"invoke-stage0-skill","owner":"guru-clarify-requirements","validator_id":"public_invocation","entrypoint":"runtime/invoke.py","arguments":[{"flag":"--invocation","required":true,"kind":"json","description":"Semantic owner invocation envelope or dash for stdin."}],"stdin":"required_json","stdout":"single_json_object","errors":["invalid_arguments","invalid_json","schema_mismatch","semantic_result_invalid","stale_identity","internal_error"],"side_effect":"none","schema_bindings":["schemas/public-clear-output-2.0.schema.json","schemas/public-needs-context-output.schema.json","schemas/public-refresh-context-output.schema.json","schemas/public-retarget-context-output.schema.json","schemas/public-new-task-output.schema.json","schemas/public-blocked-output.schema.json"]}
-]}
+{
+  "schema_version": "1.0",
+  "package_id": "guru-clarify-requirements",
+  "commands": [
+    {
+      "id": "record-requirements-clarification",
+      "owner": "guru-clarify-requirements",
+      "validator_id": "clarification_recorder",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--mode",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "workflow",
+            "standalone"
+          ],
+          "description": "Invocation mode.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "AI-reviewed owner result or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Active task locator.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "semantic_result_invalid",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [
+        "schemas/requirements-clarification.schema.json"
+      ],
+      "runtime_role": "record"
+    },
+    {
+      "id": "check-requirements-clarification",
+      "owner": "guru-clarify-requirements",
+      "validator_id": "clarification_checker",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Recorded owner result or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Active task locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--expected-result-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Expected owner-result digest.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "semantic_result_invalid",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [
+        "schemas/requirements-clarification.schema.json"
+      ],
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-clarify-requirements",
+      "owner": "guru-clarify-requirements",
+      "validator_id": "public_invocation",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": true,
+          "kind": "json",
+          "description": "Semantic owner invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "required_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "semantic_result_invalid",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [
+        "schemas/public-clear-output-2.0.schema.json",
+        "schemas/public-needs-context-output.schema.json",
+        "schemas/public-refresh-context-output.schema.json",
+        "schemas/public-retarget-context-output.schema.json",
+        "schemas/public-new-task-output.schema.json",
+        "schemas/public-blocked-output.schema.json"
+      ],
+      "runtime_role": "invoke"
+    }
+  ]
+}

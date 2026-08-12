@@ -11,13 +11,17 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Source root."
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Standalone input."
+          "description": "Standalone input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--capability",
@@ -30,13 +34,16 @@
             "upgrade_update",
             "platform_projection"
           ],
-          "description": "Capability."
+          "description": "Capability.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "source_verification_failed",
         "internal_error"
       ],
@@ -44,7 +51,8 @@
       "schema_bindings": [
         "schemas/public-source-repository-verification-input.schema.json"
       ],
-      "validator_id": "verification_executor"
+      "validator_id": "verification_executor",
+      "runtime_role": "execute"
     },
     {
       "id": "record-extension-verification",
@@ -55,31 +63,40 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Source root."
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Standalone input."
+          "description": "Standalone input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--execution-input",
           "required": true,
           "kind": "json",
-          "description": "Execution facts."
+          "description": "Execution facts.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--review-input",
           "required": true,
           "kind": "json",
-          "description": "Semantic review."
+          "description": "Semantic review.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "source_verification_failed",
         "internal_error"
       ],
@@ -87,7 +104,8 @@
       "schema_bindings": [
         "schemas/verification-result-5.0.schema.json"
       ],
-      "validator_id": "verification_recorder"
+      "validator_id": "verification_recorder",
+      "runtime_role": "record"
     },
     {
       "id": "check-extension-verification",
@@ -98,25 +116,32 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Source root."
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Owner result."
+          "description": "Owner result.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--public-input",
           "required": false,
           "kind": "json",
-          "description": "Public input."
+          "description": "Public input.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "source_verification_failed",
         "internal_error"
       ],
@@ -124,7 +149,8 @@
       "schema_bindings": [
         "schemas/verification-result-5.0.schema.json"
       ],
-      "validator_id": "verification_checker"
+      "validator_id": "verification_checker",
+      "runtime_role": "check"
     },
     {
       "id": "invoke-extension-verification",
@@ -135,25 +161,32 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Source root."
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Standalone input."
+          "description": "Standalone input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--owner-result",
           "required": true,
           "kind": "json",
-          "description": "Owner result."
+          "description": "Owner result.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "source_verification_failed",
         "internal_error"
       ],
@@ -161,7 +194,8 @@
       "schema_bindings": [
         "schemas/public-invocation-error.schema.json"
       ],
-      "validator_id": "public_invocation"
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
     }
   ]
 }

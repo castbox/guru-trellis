@@ -17,4 +17,3 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  path=checkpoint(repo,td,"planning-approval.json")
  if not a.dry_run:store(path,value)
  return {**value,"artifact_path":str(path),"dry_run":a.dry_run}
-

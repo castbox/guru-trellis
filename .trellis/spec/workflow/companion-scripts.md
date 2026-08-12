@@ -130,9 +130,13 @@ different owner or runtime path.
 
 Before execution, source/installed validation checks all 15 `commands.json` and
 error catalogs, exact `command.id == interface.validator.runtime_command`,
-explicit `validator_id`, unique qualified owner, entrypoint/wrapper existence,
-catalog closure and absence of monolith dependencies. The dispatcher validates
-the same selected package command at invocation time.
+explicit `validator_id`, globally unique command id and owner, runtime role,
+argument repeatability/conflict metadata, side-effect classification,
+entrypoint/wrapper existence, catalog closure and absence of monolith
+dependencies. The installed validator independently rebuilds the same global
+command map. The dispatcher validates the same selected package command at
+invocation time and rejects repeated scalar flags or declared conflict sets
+before loading the entrypoint.
 
 Any missing manifest/dispatcher/package, incompatible API, dependency or
 command mismatch, unmanaged discovery copy, sidecar, or drift exits 2 before
@@ -258,11 +262,11 @@ transcript must have zero references to them.
 ## Production Public Invocation Runtime
 
 `guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit` use
-the same dispatcher-only wrapper template and shared public invocation command
-as the Intake packages. Invocation identity is resolved from the active
+the same dispatcher-only wrapper template as the Intake packages. Each package
+owns one globally unique `invoke-<skill-id>` command. Invocation identity is resolved from the active
 Interface 1.4 registry and the sole current `production-current-v2` contract
-manifest. `invoke-stage0-skill` is the current shared dispatcher command id
-even though it serves every active production package.
+manifest; the retired workflow-level `invoke-stage0-skill.sh` compatibility
+entry does not own or dispatch a package command.
 
 Planning/check invocation validates the selected closed public profile,
 materializes the current owner input in ignored runtime state, calls the

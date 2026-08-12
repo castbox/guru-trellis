@@ -11,4 +11,3 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if value["task_ref"]!=rel(repo,td) or value["planning_paths"]!=paths or value["reviewed_content_sha256"]!=file_set(repo,paths):raise CommandError("stale_identity","artifact","Rerun planning review from current files.",3)
  if a.require_exit and value["typed_exit"]!=a.require_exit:raise CommandError("stale_identity","typed_exit","Rerun planning for the required exit.",3)
  return {"status":"ok","artifact_path":str(path),"task_dir":str(td),"typed_exit":value["typed_exit"],"consumer":value["consumer"]}
-

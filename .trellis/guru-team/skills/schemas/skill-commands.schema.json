@@ -11,17 +11,18 @@
       "type": "array", "minItems": 1,
       "items": {
         "type": "object", "additionalProperties": false,
-        "required": ["id", "owner", "validator_id", "entrypoint", "arguments", "stdin", "stdout", "errors", "side_effect", "schema_bindings"],
+        "required": ["id", "owner", "validator_id", "entrypoint", "runtime_role", "arguments", "stdin", "stdout", "errors", "side_effect", "schema_bindings"],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
           "owner": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)*$"},
           "validator_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
           "entrypoint": {"type": "string", "pattern": "^runtime/(record|check|execute|invoke)\\.py$"},
-          "arguments": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["flag", "required", "kind", "description"], "properties": {"flag": {"type": "string", "pattern": "^--[a-z0-9]+(?:-[a-z0-9]+)*$"}, "required": {"type": "boolean"}, "kind": {"enum": ["string", "enum", "json", "boolean"]}, "values": {"type": "array", "items": {"type": "string"}, "minItems": 1}, "description": {"type": "string", "minLength": 1}}}},
+          "runtime_role": {"enum": ["record", "check", "execute", "invoke", "preview", "sync"]},
+          "arguments": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["flag", "required", "repeatable", "conflicts", "kind", "description"], "properties": {"flag": {"type": "string", "pattern": "^--[a-z0-9]+(?:-[a-z0-9]+)*$"}, "required": {"type": "boolean"}, "repeatable": {"type": "boolean"}, "conflicts": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^--[a-z0-9]+(?:-[a-z0-9]+)*$"}}, "kind": {"enum": ["string", "enum", "json", "boolean"]}, "values": {"type": "array", "items": {"type": "string"}, "minItems": 1}, "description": {"type": "string", "minLength": 1}}}},
           "stdin": {"enum": ["none", "optional_json", "required_json"]},
           "stdout": {"enum": ["single_json_object"]},
           "errors": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^[a-z0-9_]+$"}},
-          "side_effect": {"enum": ["none", "git_read", "git_write", "runtime_write"]},
+          "side_effect": {"enum": ["none", "repo_read", "repo_write", "git_read", "git_write", "github_read", "github_write", "runtime_write"]},
           "schema_bindings": {"type": "array", "items": {"type": "string", "pattern": "^(?:schemas|../../schemas)/[^/]+\\.json$"}}
         }
       }

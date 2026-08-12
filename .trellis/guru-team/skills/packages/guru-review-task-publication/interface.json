@@ -60,7 +60,7 @@
   "validators": [
     {"id": "publication_review_recorder", "command": "scripts/record-task-publication-review.sh", "runtime_command": "record-task-publication-review", "objective_scope": "Record only the completed semantic dimensions, findings, conclusions and route after current owner preflight"},
     {"id": "publication_review_checker", "command": "scripts/check-task-publication-review.sh", "runtime_command": "check-task-publication-review", "objective_scope": "Reread live owner facts and the shared Finalizer preflight without persisting derived bindings"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"}
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-task-publication", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"}
   ],
   "external_exits": [
     {"id": "ready", "evidence": "all ten current semantic dimensions pass and every current-scope finding is closed", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},

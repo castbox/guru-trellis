@@ -11,37 +11,48 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--task",
           "required": false,
           "kind": "string",
-          "description": "Task locator."
+          "description": "Task locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Semantic review."
+          "description": "Semantic review.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--branch-review-commit",
           "required": true,
           "kind": "string",
-          "description": "Reviewed commit."
+          "description": "Reviewed commit.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--dry-run",
           "required": false,
           "kind": "boolean",
-          "description": "Do not write."
+          "description": "Do not write.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "publication_stale",
         "internal_error"
       ],
@@ -49,7 +60,8 @@
       "schema_bindings": [
         "schemas/pr-readiness.schema.json"
       ],
-      "validator_id": "publication_review_recorder"
+      "validator_id": "publication_review_recorder",
+      "runtime_role": "record"
     },
     {
       "id": "check-task-publication-review",
@@ -60,25 +72,32 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--task",
           "required": false,
           "kind": "string",
-          "description": "Task locator."
+          "description": "Task locator.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--expected-exit",
           "required": false,
           "kind": "string",
-          "description": "Expected exit."
+          "description": "Expected exit.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "none",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "publication_stale",
         "internal_error"
       ],
@@ -86,10 +105,11 @@
       "schema_bindings": [
         "schemas/pr-readiness.schema.json"
       ],
-      "validator_id": "publication_review_checker"
+      "validator_id": "publication_review_checker",
+      "runtime_role": "check"
     },
     {
-      "id": "invoke-stage0-skill",
+      "id": "invoke-guru-review-task-publication",
       "owner": "guru-review-task-publication",
       "entrypoint": "runtime/invoke.py",
       "arguments": [
@@ -97,25 +117,32 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input."
+          "description": "Public input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--owner-result",
           "required": true,
           "kind": "json",
-          "description": "Owner result."
+          "description": "Owner result.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "publication_stale",
         "internal_error"
       ],
@@ -123,7 +150,8 @@
       "schema_bindings": [
         "schemas/public-invocation-error.schema.json"
       ],
-      "validator_id": "public_invocation"
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
     }
   ]
 }

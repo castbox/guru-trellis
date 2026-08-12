@@ -12,26 +12,32 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Publication-ready input."
+          "description": "Publication-ready input.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "finalization_stale",
         "internal_error"
       ],
       "side_effect": "git_read",
       "schema_bindings": [
         "schemas/public-publication-ready-input.schema.json"
-      ]
+      ],
+      "runtime_role": "preview"
     },
     {
       "id": "record-finalization-gate",
@@ -43,38 +49,48 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Publication-ready input."
+          "description": "Publication-ready input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--review-input",
           "required": true,
           "kind": "json",
-          "description": "Semantic review."
+          "description": "Semantic review.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--dry-run",
           "required": false,
           "kind": "boolean",
-          "description": "Do not write."
+          "description": "Do not write.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "finalization_stale",
         "internal_error"
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [
         "schemas/task-finalization-gate.schema.json"
-      ]
+      ],
+      "runtime_role": "record"
     },
     {
       "id": "check-finalization-gate",
@@ -86,32 +102,40 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Publication-ready input."
+          "description": "Publication-ready input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--gate",
           "required": false,
           "kind": "string",
-          "description": "Private gate path."
+          "description": "Private gate path.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "finalization_stale",
         "internal_error"
       ],
       "side_effect": "git_read",
       "schema_bindings": [
         "schemas/task-finalization-gate.schema.json"
-      ]
+      ],
+      "runtime_role": "check"
     },
     {
       "id": "execute-finalization-transition",
@@ -123,35 +147,43 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Publication-ready input."
+          "description": "Publication-ready input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--gate",
           "required": false,
           "kind": "string",
-          "description": "Private gate path."
+          "description": "Private gate path.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "finalization_stale",
         "internal_error"
       ],
-      "side_effect": "git_write",
+      "side_effect": "github_write",
       "schema_bindings": [
         "schemas/task-finalization-transaction.schema.json"
-      ]
+      ],
+      "runtime_role": "execute"
     },
     {
-      "id": "invoke-stage0-skill",
+      "id": "invoke-guru-finalize-task",
       "validator_id": "public_invocation",
       "owner": "guru-finalize-task",
       "entrypoint": "runtime/invoke.py",
@@ -160,32 +192,40 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root."
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Publication-ready input."
+          "description": "Publication-ready input.",
+          "repeatable": false,
+          "conflicts": []
         },
         {
           "flag": "--owner-result",
           "required": true,
           "kind": "json",
-          "description": "Owner result."
+          "description": "Owner result.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
       "stdout": "single_json_object",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "finalization_stale",
         "internal_error"
       ],
-      "side_effect": "runtime_write",
+      "side_effect": "github_write",
       "schema_bindings": [
         "schemas/public-invocation-error.schema.json"
-      ]
+      ],
+      "runtime_role": "invoke"
     }
   ]
 }

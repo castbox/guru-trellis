@@ -62,16 +62,30 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
         actual = {item["validator_id"] for item in metadata["commands"]}
         if set(declared) != actual:
             raise CommandError("owner_mismatch", f"{package_id}.commands", "Cover every interface validator runtime_command exactly once.")
+        flags_by_command = {
+            command["id"]: {argument["flag"] for argument in command["arguments"]}
+            for command in metadata["commands"]
+        }
         for command in metadata["commands"]:
             command_id = command["id"]
-            qualified_id = f"{package_id}:{command_id}"
-            if qualified_id in commands_seen:
-                raise CommandError("duplicate_command", qualified_id, "Assign each qualified command id to one package owner.")
-            commands_seen[qualified_id] = package_id
+            if command_id in commands_seen:
+                raise CommandError("duplicate_command", command_id, "Assign each global command id to one package owner.")
+            commands_seen[command_id] = package_id
             wrapper = package / declared[command["validator_id"]]
             entrypoint = package / command["entrypoint"]
             if command["owner"] != package_id or not wrapper.is_file() or not entrypoint.is_file() or wrapper.is_symlink() or entrypoint.is_symlink():
                 raise CommandError("owner_mismatch", f"{package_id}.{command_id}", "Restore the declared owner, wrapper and entrypoint.")
+            expected_role = "preview" if command_id.startswith("preview-") else "sync" if command_id == "sync-base" else Path(command["entrypoint"]).stem
+            if command["runtime_role"] != expected_role:
+                raise CommandError("owner_mismatch", f"{package_id}.{command_id}.runtime_role", "Match runtime role to the package-local entrypoint.")
+            flags = flags_by_command[command_id]
+            for argument in command["arguments"]:
+                if argument["flag"] in argument["conflicts"] or not set(argument["conflicts"]).issubset(flags):
+                    raise CommandError("schema_mismatch", f"{package_id}.{command_id}.arguments", "Declare conflicts only against other arguments of the same command.")
+                for conflict in argument["conflicts"]:
+                    peer = next(item for item in command["arguments"] if item["flag"] == conflict)
+                    if argument["flag"] not in peer["conflicts"]:
+                        raise CommandError("schema_mismatch", f"{package_id}.{command_id}.arguments", "Declare argument conflicts symmetrically.")
             wrapper_source = wrapper.read_text(encoding="utf-8")
             if not package_id.startswith("guru-example-") and not all(
                 candidate in wrapper_source

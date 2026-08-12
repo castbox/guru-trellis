@@ -82,7 +82,7 @@
   "validators": [
     {"id": "review_gate_recorder", "command": "scripts/review-branch.sh", "runtime_command": "review-branch", "objective_scope": "Record an already completed AI review while rebuilding objective task, range, HEAD and freshness facts"},
     {"id": "review_gate_checker", "command": "scripts/check-review-gate.sh", "runtime_command": "check-review-gate", "objective_scope": "Validate the compact gate, complete range, finding closure, fresh final review and exact typed exit"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate the public input, rerun the owner checker, derive actual exit and serialize one declared minimal DTO"}
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-branch", "objective_scope": "Validate the public input, rerun the owner checker, derive actual exit and serialize one declared minimal DTO"}
   ],
   "external_exits": [
     {"id": "passed", "evidence": "all qualified findings closed and a fresh final reviewer passed the complete current range", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}},

@@ -126,6 +126,39 @@ class ContractWordingPackageTest(unittest.TestCase):
             wording_record.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(path), "--path", "docs/contract.md"])
         self.assertEqual("schema_mismatch", raised.exception.code)
 
+    def test_recorder_requires_explicit_semantic_exit(self) -> None:
+        scan = self.scan()
+        for value in (None, "unknown"):
+            authoring = self.authoring(scan)
+            if value is None:
+                authoring.pop("typed_exit")
+            else:
+                authoring["typed_exit"] = value
+            path = self.write_json(f"exit-{value}.json", authoring)
+            with self.subTest(typed_exit=value), self.assertRaises(CommandError) as raised:
+                wording_record.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(path), "--path", "docs/contract.md"])
+            self.assertEqual("schema_mismatch", raised.exception.code)
+
+    def test_exit_gate_and_revision_relations_fail_closed(self) -> None:
+        scan = self.scan()
+        cases = []
+        blocked_with_passed_gate = self.authoring(scan, typed_exit="blocked")
+        blocked_with_passed_gate["ai_review_gate"]["status"] = "passed"
+        cases.append(blocked_with_passed_gate)
+        pass_with_blocked_gate = self.authoring(scan, typed_exit="pass")
+        pass_with_blocked_gate["ai_review_gate"]["status"] = "blocked"
+        cases.append(pass_with_blocked_gate)
+        changed_without_revision = self.authoring(scan, typed_exit="content_changed")
+        cases.append(changed_without_revision)
+        changed_with_unchecked = self.authoring(scan, typed_exit="content_changed", classification="contract_violation")
+        changed_with_unchecked["revisions"] = [{"path": "docs/contract.md", "before_sha256": "0" * 64, "after_sha256": "1" * 64, "summary": "Reviewed revision."}]
+        cases.append(changed_with_unchecked)
+        for index, authoring in enumerate(cases):
+            path = self.write_json(f"relation-{index}.json", authoring)
+            with self.subTest(index=index), self.assertRaises(CommandError) as raised:
+                wording_record.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(path), "--path", "docs/contract.md"])
+            self.assertEqual("schema_mismatch", raised.exception.code)
+
     def test_eval_owner_staging_api_builds_schema_valid_result(self) -> None:
         scope, contents = wording_common.contract_wording_build_scope(
             self.root, "explicit_paths", "standalone", explicit_paths=["docs/contract.md"]

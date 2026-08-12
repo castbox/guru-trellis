@@ -38,7 +38,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
                 "history_previewer": "preview-change-context-history",
                 "owner_result_recorder": "record-context-discovery",
                 "owner_result_validator": "check-context-discovery",
-                "public_invocation": "invoke-stage0-skill",
+                "public_invocation": "invoke-guru-discover-change-context",
             },
         )
         self.assertEqual(

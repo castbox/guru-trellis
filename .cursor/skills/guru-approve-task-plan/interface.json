@@ -139,7 +139,7 @@
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
-      "runtime_command": "invoke-stage0-skill",
+      "runtime_command": "invoke-guru-approve-task-plan",
       "objective_scope": "validate the minimal route input, check the owner-private result, and serialize one minimal typed exit"
     }
   ],

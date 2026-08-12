@@ -21,7 +21,7 @@ SKILLS = ROOT.parent
 
 class SharedRuntimeTests(unittest.TestCase):
     def test_command_runtime_consumes_one_global_json_flag(self) -> None:
-        from runtime.command import _consume_global_json_flag
+        from runtime.command import _consume_global_json_flag, _validate_argument_cardinality
         from runtime.io import CommandError
 
         self.assertEqual(
@@ -31,6 +31,21 @@ class SharedRuntimeTests(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             _consume_global_json_flag(["--json", "--json"])
         self.assertEqual(raised.exception.code, "conflicting_arguments")
+        command = {
+            "arguments": [
+                {"flag": "--profile", "repeatable": False, "conflicts": []},
+                {"flag": "--path", "repeatable": True, "conflicts": []},
+                {"flag": "--resolve-only", "repeatable": False, "conflicts": ["--execute"]},
+                {"flag": "--execute", "repeatable": False, "conflicts": ["--resolve-only"]},
+            ]
+        }
+        with self.assertRaises(CommandError) as repeated:
+            _validate_argument_cardinality(command, ["--profile", "one", "--profile=two"])
+        self.assertEqual(repeated.exception.code, "conflicting_arguments")
+        _validate_argument_cardinality(command, ["--path", "one", "--path=two"])
+        with self.assertRaises(CommandError) as conflicting:
+            _validate_argument_cardinality(command, ["--resolve-only", "--execute"])
+        self.assertEqual(conflicting.exception.code, "conflicting_arguments")
 
     def test_command_error_can_preserve_declared_private_stderr_payload(self) -> None:
         from runtime.io import CommandError, fail
@@ -267,7 +282,7 @@ class SharedRuntimeTests(unittest.TestCase):
                     check=False,
                 )
                 self.assertEqual(result.returncode, 0, result)
-                self.assertIn("usage: invoke-stage0-skill", result.stdout)
+                self.assertIn("usage: invoke-guru-sync-base", result.stdout)
                 self.assertEqual(result.stderr, "")
 
     def test_platform_projection_uses_installed_repo_as_default_root(self) -> None:

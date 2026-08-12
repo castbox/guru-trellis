@@ -26,7 +26,7 @@
     {"id": "public_task_free_output", "path": "schemas/public-task-free-output.schema.json"},
     {"id": "public_blocked_output", "path": "schemas/public-blocked-output.schema.json"}
   ],
-  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-stage0-skill", "objective_scope": "Validate one current owner selection, reject missing/unknown/multiple/unmapped exits, and serialize the selected typed output."}],
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-select-workflow-mode", "objective_scope": "Validate one current owner selection, reject missing/unknown/multiple/unmapped exits, and serialize the selected typed output."}],
   "external_exits": [
     {"id": "standard_intake", "evidence": "AI selected the normal Guru Team Intake route", "consumer": {"kind": "workflow", "id": "guru-workflow-standard-intake-router"}},
     {"id": "task_free", "evidence": "AI selected the bounded current-checkout task-free route", "consumer": {"kind": "workflow", "id": "guru-task-free-current-checkout"}},

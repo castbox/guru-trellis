@@ -21,4 +21,3 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  names={"passed":"public-passed-output.schema.json","implementation_required":"public-implementation-required-output.schema.json","planning_stale":"public-planning-stale-output.schema.json","blocked":"public-blocked-output.schema.json"}
  if exit_id not in names:raise CommandError("schema_mismatch","typed_exit","Return one declared typed exit.")
  validate_json(out,package_root/"schemas"/names[exit_id],"stdout");return out
-

@@ -52,7 +52,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertEqual(
                     invoke.run(
                         PACKAGE,
-                        {"id": "invoke-stage0-skill"},
+                        {"id": "invoke-guru-finalize-task"},
                         ["--input", "input.json", "--owner-result", "gate.json"],
                     ),
                     output,

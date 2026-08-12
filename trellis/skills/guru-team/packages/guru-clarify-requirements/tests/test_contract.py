@@ -38,7 +38,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             {
                 "clarification_recorder": "record-requirements-clarification",
                 "clarification_checker": "check-requirements-clarification",
-                "public_invocation": "invoke-stage0-skill",
+                "public_invocation": "invoke-guru-clarify-requirements",
             },
         )
         self.assertEqual(
