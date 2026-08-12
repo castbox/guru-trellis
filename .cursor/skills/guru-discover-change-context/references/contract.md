@@ -146,11 +146,12 @@ self-contained or portable.
 
 `pre_task` is the only public profile. After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
-`base_current` transition, and current owner result, reruns the existing result
-checker, and derives the matching per-exit DTO from the checked owner result.
-`context_ready` contains
-only route/profile/mode/target/continuation identity; Clarification rereads live
-authority and receives no owner-result locator. Active-task identity remains an
+`base_current` transition, and checker-passed owner result, then derives the
+matching per-exit DTO without another live authority read or duplicate search.
+`context_ready` contains route/profile/mode/target/continuation identity plus the
+minimal checker-bound `duplicate_snapshot`. Clarification validates and consumes
+that snapshot on the normal current path without repeating duplicate search or
+candidate reads. It still receives no owner-result locator. Active-task identity remains an
 ephemeral `--active-task` invocation argument rather than a public DTO field. A
 genuinely interrupted owner additionally supplies one recovery continuation and
 may lazily use one minimal ignored checkpoint, which the same owner deletes on
