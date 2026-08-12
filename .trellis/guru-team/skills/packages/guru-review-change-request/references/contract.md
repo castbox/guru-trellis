@@ -166,3 +166,12 @@ evidence remains private. The `ready` DTO contains only the fixed
 workspace consumer; it does not copy target, repository, continuation,
 authorization, or owner artifact fields. Locator arguments remain
 compatibility-only and are excluded from the normal workflow.
+# Invocation-Local Authority Snapshot And Receipt
+
+One readiness invocation captures the target issue authority once. Recorder,
+clarity projection, wording projection and target normalization use that same
+snapshot; the checker performs the one authoritative validation and returns a
+call-local receipt bound to exact result, prerequisites and target snapshot.
+The serializer validates only that receipt and the public output schema, adding
+zero live Git/GitHub calls. Any target, prerequisite or result identity change
+rejects the old receipt.

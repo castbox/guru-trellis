@@ -45,6 +45,12 @@ Each duplicate candidate fact projection is exactly `repo`, `number`,
 AI-authored reason/observation. Recorder/checker validate that same projection;
 they do not issue a second duplicate search or re-read candidates after review.
 
+`context_ready` schema 3.0 additionally projects one minimal immutable
+`duplicate_snapshot` to the sole Clarification consumer. It binds the query,
+checked time, target locator, authority body digest, canonical open-candidate
+facts and their aggregate digest. This replaces the former 2.0 handoff for the
+current graph; missing or mismatched projections require context refresh.
+
 ## History Preview And Deep Read
 
 History uses `guru-context-history-score-1.0`. The runtime enumerates only

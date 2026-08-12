@@ -77,7 +77,7 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
         self.assertEqual("ready", checked["typed_exit"])
         transition = json.loads((PACKAGE_ROOT.parent / "guru-review-contract-wording/examples/public-pass-output-2.0.json").read_text())["transition"]
         public_input = {"profile": "proposed_draft", "source_exit": "start", "mode": "standalone", "target_locator": "draft-27", "continuation_id": "stage0-current"}
-        envelope = self.write(self.root / "invoke.json", {"public_input": public_input, "owner_result": result, "transition": transition})
+        envelope = self.write(self.root / "invoke.json", {"public_input": public_input, "owner_result": result, "transition": transition, "validation_receipt": checked["validation_receipt"]})
         output = review_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)])
         self.assertEqual("ready", output["exit_id"])
         self.assertEqual(result["facts_sha256"], output["transition"]["readiness_facts_sha256"])
@@ -94,9 +94,25 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
             review_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--prerequisites-input", str(prereq_path), "--change-request-input", str(self.source)])
         self.assertEqual("stale_identity", raised.exception.code)
 
+    def test_public_invocation_rejects_receipt_for_changed_result(self) -> None:
+        result = self.record()
+        result_path = self.write(self.root / "receipt-result.json", result)
+        prereq_path = self.write(self.root / "receipt-prerequisites.json", self.prerequisites)
+        checked = review_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--prerequisites-input", str(prereq_path), "--change-request-input", str(self.source)])
+        changed = copy.deepcopy(result)
+        changed["reason"] = "A changed semantic result cannot reuse the receipt."
+        changed["facts_sha256"] = review_common.digest({key: value for key, value in changed.items() if key != "facts_sha256"})
+        envelope = self.write(self.root / "stale-receipt.json", {"public_input": {"profile": "proposed_draft", "source_exit": "start", "mode": "standalone", "target_locator": "draft-27", "continuation_id": "stage0-current"}, "owner_result": changed, "validation_receipt": checked["validation_receipt"]})
+        with self.assertRaises(CommandError) as raised:
+            review_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)])
+        self.assertEqual("stale_identity", raised.exception.code)
+
     def test_non_ready_exit_requires_closed_finding_and_projects_route(self) -> None:
         result = self.record("blocked")
-        envelope = self.write(self.root / "blocked.json", {"public_input": {"profile": "proposed_draft", "source_exit": "start", "mode": "standalone", "target_locator": "draft-27", "continuation_id": "stage0-current"}, "owner_result": result})
+        result_path = self.write(self.root / "blocked-result.json", result)
+        prereq_path = self.write(self.root / "blocked-prerequisites.json", self.prerequisites)
+        checked = review_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--prerequisites-input", str(prereq_path), "--change-request-input", str(self.source)])
+        envelope = self.write(self.root / "blocked.json", {"public_input": {"profile": "proposed_draft", "source_exit": "start", "mode": "standalone", "target_locator": "draft-27", "continuation_id": "stage0-current"}, "owner_result": result, "validation_receipt": checked["validation_receipt"]})
         self.assertEqual({"exit_id": "blocked"}, review_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)]))
 
     def test_missing_dimension_fails_closed(self) -> None:

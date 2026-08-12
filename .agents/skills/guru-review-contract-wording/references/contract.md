@@ -187,3 +187,11 @@ closed call-local public input, current transition, and owner result only after
 the semantic owner loop, reruns the existing checker, and emits a router DTO
 containing the fixed profile selected by the checked owner result. The complete
 review result remains stdout-only owner-private evidence.
+# Invocation-Local Validation Receipt
+
+For change-request scope, the recorder consumes the already captured authority
+snapshot without another live read. The checker performs the single current
+authority validation and returns a call-local receipt bound to exact result,
+profile/mode prerequisite and scope/scan snapshot digests. The public serializer
+requires that receipt and performs no GitHub read. Independent CLI invocations
+still validate live authority in the checker.

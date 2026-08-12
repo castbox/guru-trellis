@@ -9,9 +9,24 @@
     "public_input": {"type": "object"},
     "transition": {"type": "object"},
     "owner_context": {"type": "object"},
-    "owner_result": {"type": "object"}
+    "owner_result": {"type": "object"},
+    "validation_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "skill_id", "operation", "result_sha256", "prerequisite_sha256", "snapshot_sha256", "receipt_sha256"],
+      "properties": {
+        "schema_version": {"const": "1.0"}, "skill_id": {"enum": ["guru-review-contract-wording", "guru-review-change-request"]},
+        "operation": {"enum": ["check-contract-wording-review", "check-change-request-review"]},
+        "result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "prerequisite_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "snapshot_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "receipt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
   },
   "allOf": [
+    {
+      "if": {"properties": {"public_input": {"properties": {"profile": {"enum": ["change_request", "current_issue", "proposed_draft", "standalone_request"]}}, "required": ["profile"]}}},
+      "then": {"required": ["validation_receipt"]}
+    },
     {
       "if": {
         "properties": {

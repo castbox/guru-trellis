@@ -8,6 +8,21 @@ def github(repo,*args):
  if p.returncode:raise CommandError("stale_identity","target",p.stderr.strip() or "Repair GitHub access and refresh the reviewed target.",3)
  try:return json.loads(p.stdout)
  except Exception as exc:raise CommandError("invalid_json","target","GitHub returned invalid JSON.") from exc
+def count_operation(operation):
+ path=os.environ.get("GURU_PHASE0_OPERATION_LOG")
+ if path:
+  with Path(path).open("a",encoding="utf-8") as stream:stream.write(json.dumps({"adapter":"workspace","operation":operation},sort_keys=True)+"\n")
+def mutation_boundary_current(repo,plan):
+ count_operation("workspace.mutation_boundary_recheck")
+ b=plan["base"];remote=b["remote"];selected=b["selected_base"]
+ fetched=git(repo,"fetch","--no-tags",remote,f"refs/heads/{selected}:refs/remotes/{remote}/{selected}",check=False)
+ if fetched.returncode:return False
+ if git(repo,"rev-parse","HEAD").stdout.strip()!=b["decision_head"] or git(repo,"rev-parse",f"refs/heads/{selected}").stdout.strip()!=b["local_head"] or git(repo,"rev-parse",f"refs/remotes/{remote}/{selected}").stdout.strip()!=b["remote_head"]:return False
+ t=plan["target"]
+ if t["kind"]=="existing_issue":
+  live=github(t["repo"],"issue","view",str(t["issue_number"]),"--json","number,url,state,title,body,updatedAt")
+  if live.get("number")!=t["issue_number"] or live.get("url")!=t["url"] or str(live.get("state") or "").lower()!=t["state"] or live.get("updatedAt")!=t["updated_at"] or hashlib.sha256(str(live.get("title") or "").encode()).hexdigest()!=t["title_sha256"] or hashlib.sha256(str(live.get("body") or "").encode()).hexdigest()!=t["body_sha256"]:return False
+ return True
 def create_issue(plan):
  t=plan["target"];d=t["draft"];args=["issue","create","--title",d["title"],"--body",d["body"]]
  for label in d["labels"]:args.extend(["--label",label])
@@ -74,8 +89,14 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if gate!="passed":
   before=snapshot(repo,plan);exit_id="refresh_review" if gate=="reroute" else "blocked";result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The semantic gate did not authorize mutation."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"target_changed" if exit_id=="refresh_review" else "execution_blocked","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":exit_id,"reason":"The reviewed plan requires refresh or is blocked.","consumer":CONSUMERS[exit_id],"facts_sha256":""};return finalize(package_root,result)
  if plan["target"]["kind"]=="reviewed_draft":
+  before=snapshot(repo,plan)
+  if not mutation_boundary_current(repo,plan):
+   result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
   created=create_issue(plan);result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"created_issue","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("passed",["Created and immediately reread the exact reviewed GitHub issue."]),"checker":stage("not_run",[]),"created_issue":created,"created_workspace":None,"no_side_effect":None,"typed_exit":"refresh_review","reason":"The reviewed issue was created and now requires a complete Intake refresh.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
  n=plan["naming"];workspace_config=resolve_workspace(repo,n["workspace_slug"]);workspace=workspace_config.path;branch=n["branch_name"];artifact_rel,task_dir,task,ledger_bytes=preflight(repo,plan,workspace_config)
+ before=snapshot(repo,plan)
+ if not mutation_boundary_current(repo,plan):
+  result={"schema_version":"2.0","skill_id":"guru-create-task-workspace","generated_at":now(),"mode":plan["mode"],"variant":"no_side_effect","plan_sha256":plan["freshness"]["plan_sha256"],"executor":stage("blocked",["The authoritative base or target changed at the mutation boundary."]),"checker":stage("not_run",[]),"created_issue":None,"created_workspace":None,"no_side_effect":{"reason_code":"prerequisite_refresh","before":before,"after":snapshot(repo,plan),"zero_writes":True},"typed_exit":"refresh_review","reason":"Current authority changed before the first business write.","consumer":CONSUMERS["refresh_review"],"facts_sha256":""};return finalize(package_root,result)
  if n["branch_disposition"]=="create_new":
   if workspace_config.mode=="current":git(repo,"switch","-c",branch,plan["base"]["base_ref"])
   else:git(repo,"worktree","add","-b",branch,str(workspace),plan["base"]["base_ref"])

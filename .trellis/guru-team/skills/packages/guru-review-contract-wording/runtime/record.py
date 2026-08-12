@@ -1,11 +1,11 @@
 from __future__ import annotations
 import argparse,hashlib
 from pathlib import Path
-from common import digest,live_issue_source,load,parse,root,scan,scope,validate_result
+from common import digest,load,parse,root,scan,scope,validate_result
 from runtime.io import CommandError
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--mode",required=True,choices=("workflow","standalone"));p.add_argument("--profile",required=True,choices=("change_request","planning_artifacts","explicit_paths"));p.add_argument("--input");p.add_argument("--task");p.add_argument("--path",action="append",default=[]);p.add_argument("--change-request-input");p.add_argument("--scan-only",action="store_true")
- a=parse(p,argv);repo=root(package_root,a.root);change=load(repo,package_root,a.change_request_input,"change_request") if a.change_request_input else None;change=live_issue_source(change);sc=scope(repo,a.profile,a.task,a.path,change);contents={}
+ a=parse(p,argv);repo=root(package_root,a.root);change=load(repo,package_root,a.change_request_input,"change_request") if a.change_request_input else None;sc=scope(repo,a.profile,a.task,a.path,change);contents={}
  for item in sc["items"]:
   contents[item["id"]]=(repo/item["path"]).read_text() if item["kind"]=="markdown_file" else str(change[item["field"]])
  sn=scan(sc,contents)

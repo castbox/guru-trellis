@@ -4,6 +4,14 @@
   "handoff_mode": "workflow",
   "handoff_target_locator": "stage0-handoff-target-locator",
   "handoff_continuation_id": "stage0-handoff-continuation-id",
+  "duplicate_snapshot": {
+    "query": "repo:example/repo is:issue is:open phase0",
+    "checked_at": "2026-01-01T00:00:00Z",
+    "target_locator": "https://github.com/example/repo/issues/1",
+    "authority_content_sha256": "2323232323232323232323232323232323232323232323232323232323232323",
+    "candidates": [],
+    "facts_sha256": "2424242424242424242424242424242424242424242424242424242424242424"
+  },
   "transition": {
     "schema_version": "1.0",
     "transition_id": "context_current:222222222222222222222222",

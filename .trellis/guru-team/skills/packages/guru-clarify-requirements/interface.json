@@ -82,7 +82,7 @@
     },
     {
       "id": "public_input_initial_change_request_example",
-      "path": "examples/public-initial-change-request-input.json"
+      "path": "examples/public-initial-change-request-input-2.0.json"
     },
     {
       "id": "public_input_active_task_scope_change_example",
@@ -131,8 +131,8 @@
       "path": "schemas/requirements-clarification.schema.json"
     },
     {
-      "id": "public_input_initial_change_request",
-      "path": "schemas/public-initial-change-request-input.schema.json"
+      "id": "public_input_initial_change_request_2_0",
+      "path": "schemas/public-initial-change-request-input-2.0.schema.json"
     },
     {
       "id": "public_input_active_task_scope_change",
@@ -274,12 +274,12 @@
         {
           "id": "initial_change_request",
           "schema": {
-            "schema_id": "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
-            "path": "schemas/public-initial-change-request-input.schema.json"
+            "schema_id": "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
+            "path": "schemas/public-initial-change-request-input-2.0.schema.json"
           },
           "example": {
             "id": "initial_change_request_input",
-            "path": "examples/public-initial-change-request-input.json"
+            "path": "examples/public-initial-change-request-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",

@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 157,
+      "reason": "Issue #157 is the complete independently deliverable performance and correctness scope.",
+      "title": "收敛 Phase 0 重复校验与 GitHub I/O，建立单快照性能预算",
+      "url": "https://github.com/castbox/guru-trellis/issues/157"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 157,
+    "reason": "Issue #157 is the complete independently deliverable performance and correctness scope.",
+    "title": "收敛 Phase 0 重复校验与 GitHub I/O，建立单快照性能预算",
+    "url": "https://github.com/castbox/guru-trellis/issues/157"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
