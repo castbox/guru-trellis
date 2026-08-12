@@ -640,6 +640,15 @@ plan/result 保持 ignored owner-private，本机 mapping 只在 ignored
 `.trellis/.runtime/guru-team/**`。Public result 不含 absolute workspace path；checker
 从 current config、reviewed slug 与 live Git facts 推导 worktree。
 
+`guru-create-task-workspace` 使用 package-local resolver 统一 planner diagnostic、executor、
+checker 与 reuse/recovery 的配置语义。`workspace_mode: worktree` 下，空
+`worktree_root` 解析为 `<repo-parent>/<repo-name>-worktrees`，绝对值直接作为规范化根目录，
+相对值从 repository root 解析；`workspace_mode: current` 使用当前 checkout 且不调用
+`git worktree add`，此时 `worktree_root` 必须为空。缺失/不支持 mode、不可接受路径、
+object conflict 或 stale mapping 在 branch/worktree/task/mapping 业务写入前 fail closed。
+Public DTO 与 tracked task artifact 不携带本机绝对路径，只有 ignored runtime mapping 保存
+与 live workspace 一致的规范化 `workspace_path`。
+
 `workspace_mode: worktree` 下，task artifact 写入边界由 current `task.json`、当前 checkout、
 `.trellis/.runtime/guru-team/**`、`git worktree list` 和
 `check-workspace-boundary.sh --task` 推导/校验。

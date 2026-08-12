@@ -25,8 +25,9 @@ scope, author names, choose an assignee, grant confirmation, or choose an exit.
 2. Project the final target, duplicate and disposition decisions, authority
    impact, and readiness close/related/follow-up conclusion without changing
    them.
-3. Read current Git, GitHub, configured worktree-root, branch, worktree and task
-   facts without mutation.
+3. Read current Git, GitHub, package-local workspace configuration, branch,
+   worktree and task facts without mutation. `workspace_mode` must be exactly
+   `worktree` or `current`; missing or unsupported modes fail closed.
 4. Author semantic branch/workspace/task names and classify each object as
    `create_new`, `reuse_exact`, or `conflict_blocked`.
 5. Resolve one non-empty assignee in this order: explicit input; the issue's
@@ -108,8 +109,18 @@ draft. Workspace never reopens Discovery private evidence.
 Ordinary existing issues use null result/binding provenance; partial or mixed
 provenance fails closed.
 
+The package-local resolver is the single configuration/path authority for
+planner diagnostics, executor, checker and recovery. In `worktree` mode an
+empty `worktree_root` resolves to
+`<repository-parent>/<repository-name>-worktrees`; an absolute value is used as
+the normalized root, and a relative value is normalized from repository root.
+In `current` mode `worktree_root` must be empty, the current repository checkout
+is the workspace, and runtime never invokes `git worktree add`. Paths that put
+the worktree root inside the repository, non-scalar paths, and mode/root
+conflicts fail before branch, worktree, task, artifact or mapping writes.
+
 An open-issue transaction creates or exactly reuses the reviewed branch and
-worktree and reruns the guards in the target worktree. In an isolated
+workspace and reruns the guards in the resolved workspace. In an isolated
 subprocess, its adapter invokes official `common.task_store.cmd_create` with the
 reviewed assignee and replaces the module's developer accessor with a null
 result only for that handler invocation. Official fallback therefore writes
@@ -130,10 +141,11 @@ written only under ignored `.trellis/.runtime/guru-team/workspaces/` and
 initializes, restores, or requires `.trellis/.developer` or
 `.trellis/workspace/**`; existing official identity bytes remain exact.
 
-Public plan/result stdout and examples contain no machine-local absolute path.
-The checker derives the expected worktree from current repo config, the
-reviewed workspace slug, and live Git facts. Absolute mappings remain only in
-ignored runtime files.
+Public plan/result stdout, tracked task artifacts, examples and public DTOs
+contain no machine-local absolute path. The checker uses the same package-local
+resolver as the executor and verifies the resolved workspace against live Git,
+task and mapping facts. The exact normalized `workspace_path` remains only in
+ignored runtime mappings.
 
 Ordinary re-entry may reuse only an identity-exact branch/worktree/task and
 byte-identical artifacts. Any repo, base, issue, branch, task locator, status or

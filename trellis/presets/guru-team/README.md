@@ -950,8 +950,20 @@ is `<branch-type>/NNN-business-capability`, for example
 perform Chinese transliteration or pinyin conversion; it deterministically
 infers a supported branch type, assembles the name, checks conflicts, and blocks
 low-information names before executor side effects.
-When `workspace_mode: worktree`, create the execution workspace and task through
-active `guru-create-task-workspace`. Task creation consent is not approval to run bare
+Active `guru-create-task-workspace` uses one package-local resolver for planner
+diagnostics, execution, checking, and exact reuse/recovery. With
+`workspace_mode: worktree`, an empty `worktree_root` means
+`<repo-parent>/<repo-name>-worktrees`, an absolute value is the normalized root,
+and a relative value resolves from repository root. With
+`workspace_mode: current`, `worktree_root` must be empty, the current checkout is
+the workspace, and no `git worktree add` is run. Missing/unsupported modes,
+unsafe paths, object conflicts, and stale mappings fail before branch, worktree,
+task, artifact, or mapping writes. Public DTOs and tracked task artifacts omit
+machine-local absolute paths; only ignored runtime mappings carry the exact
+normalized `workspace_path` checked against live Git facts.
+
+Create the execution workspace and task through active
+`guru-create-task-workspace`. Task creation consent is not approval to run bare
 `python3 ./.trellis/scripts/task.py create ...` in the source checkout.
 Executor paths also enforce `naming_quality` and fail closed before creating a
 worktree, branch, or Trellis task if the generated or overridden name is low

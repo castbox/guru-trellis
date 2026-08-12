@@ -1,0 +1,30 @@
+{
+  "id": "08-12-212-worktree-config-path",
+  "name": "08-12-212-worktree-config-path",
+  "title": "#212 修复 task workspace 配置路径回归",
+  "description": "恢复 guru-create-task-workspace package-local runtime 对 workspace_mode/worktree_root 的完整配置语义。",
+  "status": "in_progress",
+  "dev_type": "fix",
+  "scope": "workflow",
+  "package": null,
+  "priority": "P1",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "createdAt": "2026-08-12",
+  "completedAt": null,
+  "branch": "fix/212-worktree-config-path",
+  "base_branch": "main",
+  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/212-worktree-config-path",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "trellis/skills/guru-team/packages/guru-create-task-workspace/",
+    "trellis/workflows/guru-team/README.md",
+    "trellis/presets/guru-team/README.md"
+  ],
+  "notes": "Issue #212; regression from #195; #152 and #211 remain independent.",
+  "meta": {}
+}

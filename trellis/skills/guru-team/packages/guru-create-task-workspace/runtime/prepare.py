@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from common import config, resolve_workspace
+from runtime.io import CommandError
 
 
 REVIEWED_BASE_PROVENANCE_FIELDS = {
@@ -34,40 +36,6 @@ def git(root: Path, *arguments: str, required: bool = True) -> str:
     if required and process.returncode:
         raise ValueError(process.stderr.strip() or f"git {' '.join(arguments)} failed")
     return process.stdout.strip()
-
-
-def config(root: Path) -> dict[str, Any]:
-    values: dict[str, Any] = {
-        "github_repo": "",
-        "base_branch": "",
-        "base_branch_candidates": ["dev", "develop", "main", "master"],
-    }
-    path = root / ".trellis/guru-team/config.yml"
-    if not path.is_file():
-        return values
-    active_list: str | None = None
-    for raw in path.read_text(encoding="utf-8").splitlines():
-        line = raw.split("#", 1)[0].rstrip()
-        if not line.strip():
-            continue
-        text = line.strip()
-        if text.startswith("- ") and active_list:
-            values.setdefault(active_list, []).append(text[2:].strip().strip("'\""))
-            continue
-        if ":" not in text or len(line) != len(line.lstrip()):
-            continue
-        key, value = (part.strip() for part in text.split(":", 1))
-        active_list = key if not value else None
-        if not value:
-            if key in values and isinstance(values[key], list):
-                values[key] = []
-        elif value.casefold() in {"true", "false"}:
-            values[key] = value.casefold() == "true"
-        elif value.isdigit():
-            values[key] = int(value)
-        else:
-            values[key] = value.strip("'\"")
-    return values
 
 
 def origin_repo(root: Path) -> str:
@@ -238,6 +206,7 @@ def prepare(root: Path, args: argparse.Namespace) -> dict[str, Any]:
     branch = args.branch or f"feat/{issue_token}-{slug}"
     task_slug = args.task_slug or f"{issue_token}-{slug}"
     workspace_slug = args.workspace_slug or task_slug
+    resolve_workspace(root, workspace_slug)
     proposed = None if issue else {"repo": repo, "title": title, "body": requirement, "labels": []}
     return {
         "schema_version": "1.2", "source_repo": repo,
@@ -272,7 +241,7 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     try:
         payload = prepare(Path(args.root or Path.cwd()), args)
-    except (OSError, ValueError) as exc:
+    except (CommandError, OSError, ValueError) as exc:
         if args.json:
             print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False, indent=2), file=sys.stderr)
         else:

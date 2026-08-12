@@ -275,7 +275,10 @@ def main() -> int:
     if source.exists():
         raise RuntimeError(f"installed task workspace fixture already exists: {source}")
     source.mkdir(parents=True)
-    (source / ".trellis").mkdir()
+    (source / ".trellis/guru-team").mkdir(parents=True)
+    (source / ".trellis/guru-team/config.yml").write_text(
+        "workspace_mode: worktree\nworktree_root:\nbase_branch: main\n"
+    )
     (source / ".gitignore").write_text(
         ".trellis/.developer\n.trellis/.runtime/\n__pycache__/\n*.py[cod]\n"
     )
@@ -327,7 +330,7 @@ def main() -> int:
         raise AssertionError(f"unexpected installed public output: {public_output}")
 
     created = checked["created_workspace"]
-    workspace = source.parent / created["workspace_slug"]
+    workspace = source.parent / f"{source.name}-worktrees" / created["workspace_slug"]
     task_dir = workspace / created["task_artifact_dir"]
     task_data = json.loads((task_dir / "task.json").read_text())
     ledger = task_dir / "issue-scope-ledger.json"
