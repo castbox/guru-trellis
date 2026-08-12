@@ -1,0 +1,234 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-12T16:45:34Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-12-212-worktree-config-path",
+    "title": "#212 修复 task workspace 配置路径回归",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-12-212-worktree-config-path",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/212-worktree-config-path",
+    "commits": [
+      "672473924b5cc21864424621f2ae40f573bfd1c3",
+      "eddde227a29fbfb2d25167019c735a6e92503468",
+      "ed79ce2d78f9dd30f75beaf541b304dac5466c27",
+      "7eb30512570277e3661a02a94fb0c1eb4c9d19da",
+      "4ac53b57c7f22e009ef8e3c2c9a0dc2e40c2456e",
+      "489d5d24643461947904e046611400a60defe891",
+      "fe191224fadeda71bca75711b84659645edbe997"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-create-task-workspace/references/contract.md",
+      ".claude/skills/guru-create-task-workspace/references/contract.md",
+      ".codex/skills/guru-create-task-workspace/references/contract.md",
+      ".cursor/skills/guru-create-task-workspace/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/check.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/prepare.py",
+      ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+      ".trellis/tasks/08-12-212-worktree-config-path/check.jsonl",
+      ".trellis/tasks/08-12-212-worktree-config-path/design.md",
+      ".trellis/tasks/08-12-212-worktree-config-path/implement.jsonl",
+      ".trellis/tasks/08-12-212-worktree-config-path/implement.md",
+      ".trellis/tasks/08-12-212-worktree-config-path/issue-scope-ledger.json",
+      ".trellis/tasks/08-12-212-worktree-config-path/prd.md",
+      ".trellis/tasks/08-12-212-worktree-config-path/task.json",
+      ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/design.md",
+      ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/implement.md",
+      ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/prd.md",
+      ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/task.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/check.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py",
+      "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      212
+    ],
+    "close_issues": [
+      212
+    ],
+    "related_issues": [
+      152,
+      195,
+      211
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/214"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#212 修复 task workspace 配置路径回归",
+    "outcome": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。",
+    "changed_behavior": [
+      "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。",
+      "收紧 create/reuse/checker 的一致性门禁：路径或 task/ledger 漂移在 mutation 前阻塞，runtime mapping 与 live workspace 保持一致，public DTO 不暴露本机绝对路径。",
+      "同步 canonical、dogfood installed、Claude/Codex/Cursor projections、preset manifest、Skill contract 与相关 README。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-12-212-worktree-config-path/design.md",
+          ".trellis/tasks/08-12-212-worktree-config-path/implement.md",
+          ".trellis/tasks/08-12-212-worktree-config-path/prd.md",
+          ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/design.md",
+          ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/implement.md",
+          ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/prd.md"
+        ],
+        "change": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md"
+        ],
+        "change": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/check.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/prepare.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/check.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py"
+        ],
+        "change": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-create-task-workspace/references/contract.md",
+          ".claude/skills/guru-create-task-workspace/references/contract.md",
+          ".codex/skills/guru-create-task-workspace/references/contract.md",
+          ".cursor/skills/guru-create-task-workspace/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md"
+        ],
+        "change": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-12-212-worktree-config-path/check.jsonl",
+          ".trellis/tasks/08-12-212-worktree-config-path/implement.jsonl",
+          ".trellis/tasks/08-12-212-worktree-config-path/issue-scope-ledger.json",
+          ".trellis/tasks/08-12-212-worktree-config-path/task.json",
+          ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/task.json"
+        ],
+        "change": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#152",
+        "#195",
+        "#211",
+        "#212"
+      ],
+      "pr_refs": [
+        "PR #214"
+      ],
+      "branches": [
+        "fix/212-worktree-config-path"
+      ],
+      "paths": [
+        ".agents/skills/guru-create-task-workspace/references/contract.md",
+        ".claude/skills/guru-create-task-workspace/references/contract.md",
+        ".codex/skills/guru-create-task-workspace/references/contract.md",
+        ".cursor/skills/guru-create-task-workspace/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/check.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/common.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/execute.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/prepare.py",
+        ".trellis/guru-team/skills/packages/guru-create-task-workspace/tests/test_contract.py",
+        ".trellis/tasks/08-12-212-worktree-config-path/check.jsonl",
+        ".trellis/tasks/08-12-212-worktree-config-path/design.md",
+        ".trellis/tasks/08-12-212-worktree-config-path/implement.jsonl",
+        ".trellis/tasks/08-12-212-worktree-config-path/implement.md",
+        ".trellis/tasks/08-12-212-worktree-config-path/issue-scope-ledger.json",
+        ".trellis/tasks/08-12-212-worktree-config-path/prd.md",
+        ".trellis/tasks/08-12-212-worktree-config-path/task.json",
+        ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/design.md",
+        ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/implement.md",
+        ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/prd.md",
+        ".trellis/tasks/archive/2026-08/08-12-212-worktree-config-path/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/check.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/common.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/execute.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py",
+        "trellis/skills/guru-team/packages/guru-create-task-workspace/tests/test_contract.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#212 修复 task workspace 配置路径回归",
+        "恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktr",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#212 修复 task workspace 配置路径回归\n恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktree_root` 的统一解析，默认空根目录、绝对根目录、相对根目录及 `current` 模式均由同一 package-local resolver 处理。\n收紧 create/reuse/checker 的一致性门禁：路径或 task/ledger 漂移在 mutation 前阻塞，runtime mapping 与 live workspace 保持一致，public DTO 不暴露本机绝对路径。\n同步 canonical、dogfood installed、Claude/Codex/Cursor projections、preset manifest、Skill contract 与相关 README。\n恢复 `guru-create-task-workspace` 对 `workspace_mode` 和 `worktr\n完成 contract.md 相关变更"
+  }
+}

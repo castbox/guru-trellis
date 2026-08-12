@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 212,
+    "url": "https://github.com/castbox/guru-trellis/issues/212",
+    "title": "修复 package-local task workspace 忽略 worktree 配置的路径回归",
+    "reason": "本任务完整实现并验证 Issue #212 的现有 workspace 配置语义恢复。"
+  },
+  "close_issues": [
+    {
+      "number": 212,
+      "url": "https://github.com/castbox/guru-trellis/issues/212",
+      "title": "修复 package-local task workspace 忽略 worktree 配置的路径回归",
+      "reason": "本任务完整实现并验证 Issue #212 的现有 workspace 配置语义恢复。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 195,
+      "url": "https://github.com/castbox/guru-trellis/issues/195",
+      "title": "迁移全部 Guru Team Skills 到 package-local runtime 并删除单体实现",
+      "reason": "Issue #212 修复由 #195 迁移引入的独立行为回归，不重新打开或关闭 #195。"
+    },
+    {
+      "number": 152,
+      "url": "https://github.com/castbox/guru-trellis/issues/152",
+      "title": "支持 Unity 重型项目的可复用暖 Worktree 槽位池",
+      "reason": "#152 独立拥有未来 pooled workspace mode，本任务不实现该能力。"
+    },
+    {
+      "number": 211,
+      "url": "https://github.com/castbox/guru-trellis/issues/211",
+      "title": "修复 package-local task commit 执行器绕过 repository commit hooks",
+      "reason": "#211 的 commit hook scope 与现有工作区明确不属于本任务。"
+    }
+  ],
+  "followup_issues": []
+}
