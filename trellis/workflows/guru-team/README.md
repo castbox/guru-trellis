@@ -543,7 +543,8 @@ guru-create-task-workspace`。环境检查可独立运行：
 ```
 
 Compatibility `prepare-task.sh --json` 只执行显式 local query，不是 workflow hop，也不创建 GitHub
-issue、worktree、branch 或 Trellis task。
+issue、worktree、branch 或 Trellis task。它的确定性实现由
+`guru-create-task-workspace/runtime/prepare.py` 独占，不属于 shared kernel。
 其实际 CLI 形态为：
 
 ```bash

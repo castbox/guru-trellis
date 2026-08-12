@@ -83,6 +83,11 @@ Keep deterministic argument parsing and command behavior in the owning
 package's `runtime/` modules. Semantic workflow logic remains in `SKILL.md` and
 `references/contract.md`. Shared kernel modules may contain only primitives
 with at least two identical consumers and never branch on Skill/profile/exit.
+Compatibility `prepare-task.sh` is owned by
+`guru-create-task-workspace/runtime/prepare.py`; it must not place reviewed-base,
+issue, task, or workspace proposal behavior in the shared kernel. Kernel boundary
+validation folds constant string expressions and checks forbidden business entry
+points so split literals cannot hide Skill-specific ownership.
 
 - `trellis/workflows/guru-team/scripts/bash/prepare-task.sh`
 - `trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh`

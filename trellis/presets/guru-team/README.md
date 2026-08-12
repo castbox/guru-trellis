@@ -890,7 +890,9 @@ the step-local review loop into a platform overlay.
 ```
 
 `prepare-task.sh --json` is a compatibility-only local diagnostic whose exact
-CLI is defined by current runtime help. It is never a workflow hop:
+CLI is defined by current runtime help. Its deterministic implementation is
+owned by `guru-create-task-workspace/runtime/prepare.py`, not the shared kernel.
+It is never a workflow hop:
 
 ```bash
 BASE_PROVENANCE_JSON='<exact base_current.base JSON>'

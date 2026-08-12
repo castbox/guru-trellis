@@ -12,6 +12,17 @@ from .installed import validate_skill_installed
 from .schema import validate_json
 
 
+def _fold_string(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+        left = _fold_string(node.left)
+        right = _fold_string(node.right)
+        if left is not None and right is not None:
+            return left + right
+    return None
+
+
 def _active_rows(registry: dict[str, Any]) -> list[dict[str, Any]]:
     rows = registry.get("skills")
     if not isinstance(rows, list):
@@ -112,12 +123,25 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
                 raise CommandError("unknown_error", f"{package_id}.{command_id}.errors", "Declare every referenced error in the package catalog.")
             if "guru_team_trellis.py" in wrapper_source or "guru_team_trellis.py" in entrypoint.read_text(encoding="utf-8"):
                 raise CommandError("legacy_dependency", f"{package_id}.{command_id}", "Remove the shared monolith dependency.")
+    forbidden_kernel_values = {
+        "guru-sync-base", "guru-clarify-requirements", "typed_exit", "profile"
+    }
+    forbidden_kernel_functions = {"prepare", "reviewed_base_freshness", "_reviewed_base_freshness"}
     for path in kernel.glob("*.py"):
         if path.name == "validate.py":
             continue
         source = path.read_text(encoding="utf-8")
-        ast.parse(source)
-        if any(token in source for token in ("guru-" + "sync-base", "guru-" + "clarify-requirements", "typed" + "_exit", "pro" + "file")):
+        tree = ast.parse(source)
+        folded_values = set()
+        for node in ast.walk(tree):
+            folded = _fold_string(node)
+            if folded is not None:
+                folded_values.add(folded)
+        function_names = {
+            node.name for node in ast.walk(tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        if forbidden_kernel_values & folded_values or forbidden_kernel_functions & function_names:
             raise CommandError("kernel_branching", str(path), "Keep Skill, profile and typed-exit behavior package-local.")
     return {"status": "passed", "mode": mode, "active_packages": len(active), "complete_package_commands": complete, "public_projections": public_only, "commands": len(commands_seen)}
 

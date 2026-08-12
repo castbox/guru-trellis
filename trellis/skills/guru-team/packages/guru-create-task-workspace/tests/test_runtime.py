@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, os, subprocess, sys, unittest
+import json, os, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from jsonschema import Draft202012Validator
 
@@ -8,8 +8,28 @@ SKILLS=PACKAGE.parents[1]
 RUNTIME=SKILLS/"runtime"
 if str(SKILLS) not in sys.path: sys.path.insert(0,str(SKILLS))
 from runtime.command import main
+sys.path.insert(0,str(PACKAGE/"runtime"))
+import prepare
 
 class PackageLocalRuntimeTest(unittest.TestCase):
+ def test_prepare_base_freshness_revalidates_reviewed_provenance(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   root=Path(tmp);repo=root/"repo";remote=root/"origin.git"
+   subprocess.run(["git","init","-q","--bare",str(remote)],check=True)
+   subprocess.run(["git","init","-q","-b","main",str(repo)],check=True)
+   subprocess.run(["git","config","user.name","Workspace Test"],cwd=repo,check=True)
+   subprocess.run(["git","config","user.email","workspace@example.invalid"],cwd=repo,check=True)
+   (repo/"README.md").write_text("base\n");subprocess.run(["git","add","README.md"],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","test: base"],cwd=repo,check=True)
+   subprocess.run(["git","remote","add","origin",str(remote)],cwd=repo,check=True);subprocess.run(["git","push","-q","-u","origin","main"],cwd=repo,check=True)
+   head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,check=True,text=True,stdout=subprocess.PIPE).stdout.strip()
+   resolution={"schema_version":"1.0","skill_id":"guru-sync-base","status":"resolved","source":"explicit","selected_base":"main","remote":"origin","candidates":["main"],"decision_checkout":{"branch":"main","head":head,"clean":True}}
+   provenance={"source":"explicit","selected_base":"main","remote":"origin","ordered_candidates":["main"],"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":prepare.digest(resolution)}
+   freshness=prepare.reviewed_base_freshness(repo,{"base_branch":"main","base_branch_candidates":[]},provenance,"main")
+   self.assertEqual(freshness["post_sync_resolution"],resolution);self.assertTrue(freshness["three_way_equal"]);self.assertTrue(freshness["fresh"])
+   self.assertEqual(freshness["facts_sha256"],prepare.digest({k:v for k,v in freshness.items() if k!="facts_sha256"}))
+   invalid=dict(provenance);invalid.pop("remote_base_head")
+   with self.assertRaisesRegex(ValueError,"exactly eight fields"):prepare.reviewed_base_freshness(repo,{"base_branch":"main","base_branch_candidates":[]},invalid,"main")
+
  def test_command_and_error_contract_close(self):
   commands=json.loads((PACKAGE/"commands.json").read_text())
   catalog=json.loads((PACKAGE/"errors/catalog.json").read_text())

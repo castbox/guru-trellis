@@ -136,60 +136,6 @@ class SharedRuntimeTests(unittest.TestCase):
                 self.assertEqual(payload["status"], "ok")
                 self.assertEqual(payload["repo_root"], str(root.resolve()))
 
-    def test_prepare_base_freshness_revalidates_reviewed_provenance(self) -> None:
-        from runtime.utility import _digest, _reviewed_base_freshness
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            repo = root / "repo"
-            remote = root / "origin.git"
-            subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
-            subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
-            subprocess.run(["git", "config", "user.name", "Kernel Test"], cwd=repo, check=True)
-            subprocess.run(["git", "config", "user.email", "kernel@example.invalid"], cwd=repo, check=True)
-            (repo / "README.md").write_text("base\n")
-            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
-            subprocess.run(["git", "commit", "-q", "-m", "test: base"], cwd=repo, check=True)
-            subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=repo, check=True)
-            subprocess.run(["git", "push", "-q", "-u", "origin", "main"], cwd=repo, check=True)
-            head = subprocess.run(
-                ["git", "rev-parse", "HEAD"], cwd=repo, check=True,
-                text=True, stdout=subprocess.PIPE,
-            ).stdout.strip()
-            resolution = {
-                "schema_version": "1.0",
-                "skill_id": "guru-sync-base",
-                "status": "resolved",
-                "source": "explicit",
-                "selected_base": "main",
-                "remote": "origin",
-                "candidates": ["main"],
-                "decision_checkout": {"branch": "main", "head": head, "clean": True},
-            }
-            provenance = {
-                "source": "explicit",
-                "selected_base": "main",
-                "remote": "origin",
-                "ordered_candidates": ["main"],
-                "decision_head": head,
-                "local_base_head": head,
-                "remote_base_head": head,
-                "post_sync_resolution_sha256": _digest(resolution),
-            }
-            config = {"base_branch": "main", "base_branch_candidates": []}
-            freshness = _reviewed_base_freshness(repo, config, provenance, "main")
-            self.assertEqual(freshness["reviewed_resolution_sha256"], _digest(resolution))
-            self.assertEqual(freshness["post_sync_resolution"], resolution)
-            self.assertTrue(freshness["three_way_equal"])
-            self.assertTrue(freshness["fresh"])
-            self.assertEqual(freshness["facts_sha256"], _digest({
-                key: value for key, value in freshness.items() if key != "facts_sha256"
-            }))
-            invalid = dict(provenance)
-            invalid.pop("remote_base_head")
-            with self.assertRaisesRegex(ValueError, "exactly eight fields"):
-                _reviewed_base_freshness(repo, config, invalid, "main")
-
     def test_contract_discovery_projects_every_active_public_contract(self) -> None:
         from runtime.discovery import discover
 
@@ -393,13 +339,23 @@ class SharedRuntimeTests(unittest.TestCase):
 
     def test_kernel_has_no_skill_specific_branching(self) -> None:
         forbidden = ("guru-sync-base", "guru-clarify-requirements", "typed_exit", "profile")
+        forbidden_functions = {"prepare", "reviewed_base_freshness", "_reviewed_base_freshness"}
         for path in ROOT.glob("*.py"):
             if path.name == "validate.py":
                 continue
             source = path.read_text()
-            ast.parse(source)
-            for token in forbidden:
-                self.assertNotIn(token, source)
+            tree = ast.parse(source)
+            from runtime.validate import _fold_string
+            folded = {value for node in ast.walk(tree) if (value := _fold_string(node)) is not None}
+            self.assertFalse(set(forbidden) & folded, path)
+            functions = {node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
+            self.assertFalse(forbidden_functions & functions, path)
+
+    def test_kernel_guard_folds_concatenated_skill_ids(self) -> None:
+        from runtime.validate import _fold_string
+        tree = ast.parse('SKILL = "guru-" + "sync-base"')
+        values = [_fold_string(node) for node in ast.walk(tree)]
+        self.assertIn("guru-sync-base", values)
 
     def test_compat_dispatch_resolves_validator_metadata(self) -> None:
         package = SKILLS / "packages/guru-sync-base"

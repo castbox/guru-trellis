@@ -2,9 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "$SCRIPT_DIR/../../../../skills/guru-team/runtime/utility.py" ]]; then
-  RUNTIME="$SCRIPT_DIR/../../../../skills/guru-team/runtime"
+if [[ -f "$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py" ]]; then
+  PREPARE="$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py"
 else
-  RUNTIME="$SCRIPT_DIR/../../runtime"
+  PREPARE="$SCRIPT_DIR/../../skills/packages/guru-create-task-workspace/runtime/prepare.py"
 fi
-python3 "$RUNTIME/utility.py" prepare "$@"
+python3 "$PREPARE" "$@"

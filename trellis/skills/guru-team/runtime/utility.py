@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -18,13 +17,6 @@ HUMAN_ARTIFACTS = (
     ("Design", "design.md", "技术设计与取舍"),
     ("Implement Plan", "implement.md", "执行计划与验证计划"),
 )
-REVIEWED_BASE_PROVENANCE_FIELDS = {
-    "source", "selected_base", "remote", "ordered_candidates",
-    "decision_head", "local_base_head", "remote_base_head",
-    "post_sync_resolution_sha256",
-}
-
-
 def repo_root(start: Path) -> Path:
     current = start.resolve()
     for candidate in (current, *current.parents):
@@ -209,180 +201,6 @@ def human_artifacts(root: Path, task: str | None) -> dict[str, Any]:
     return {"status": "ok", "task_dir": str(task_dir), "task_dir_relative": relative, "archived": relative.startswith(".trellis/tasks/archive/"), "markdown_artifacts": artifacts}
 
 
-def _json_argument(value: str | None, label: str) -> dict[str, Any]:
-    if not value:
-        raise ValueError(f"{label} is required")
-    try:
-        payload = json.loads(value)
-    except json.JSONDecodeError:
-        path = Path(value)
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"{label} must be one JSON object")
-    return payload
-
-
-def _digest(value: Any) -> str:
-    encoded = json.dumps(
-        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
-def _reviewed_base_freshness(
-    root: Path,
-    config: dict[str, Any],
-    provenance: dict[str, Any],
-    base_assertion: str | None,
-) -> dict[str, Any]:
-    if set(provenance) != REVIEWED_BASE_PROVENANCE_FIELDS:
-        raise ValueError("Reviewed base provenance must contain exactly eight fields.")
-    source = provenance.get("source")
-    if source not in {"explicit", "config", "config-candidate", "remote-default"}:
-        raise ValueError("Reviewed base provenance source is invalid.")
-    base = provenance.get("selected_base")
-    remote = provenance.get("remote")
-    candidates = provenance.get("ordered_candidates")
-    if not isinstance(base, str) or not base or not isinstance(remote, str) or not remote:
-        raise ValueError("Reviewed base provenance branch or remote is invalid.")
-    if (
-        not isinstance(candidates, list)
-        or not candidates
-        or any(not isinstance(item, str) or not item for item in candidates)
-        or len(candidates) != len(set(candidates))
-        or base not in candidates
-    ):
-        raise ValueError("Reviewed base provenance candidates are invalid.")
-    for field in ("decision_head", "local_base_head", "remote_base_head"):
-        if not re.fullmatch(r"[0-9a-f]{40}", str(provenance.get(field) or "")):
-            raise ValueError(f"Reviewed base provenance {field} is invalid.")
-    reviewed_digest = str(provenance.get("post_sync_resolution_sha256") or "")
-    if not re.fullmatch(r"[0-9a-f]{64}", reviewed_digest):
-        raise ValueError("Reviewed base provenance digest is invalid.")
-    if base_assertion and base_assertion != base:
-        raise ValueError("Reviewed base provenance does not match --base-branch.")
-
-    resolved_base, _ = _base(root, config)
-    if resolved_base != base or candidates != [base]:
-        raise ValueError("Reviewed base provenance no longer matches current resolution.")
-    decision = {
-        "branch": _git(root, "branch", "--show-current"),
-        "head": _git(root, "rev-parse", "HEAD"),
-        "clean": not bool(_git(root, "status", "--porcelain")),
-    }
-    resolution = {
-        "schema_version": "1.0",
-        "skill_id": "guru-" + "sync-base",
-        "status": "resolved",
-        "source": source,
-        "selected_base": base,
-        "remote": remote,
-        "candidates": candidates,
-        "decision_checkout": decision,
-    }
-    if _digest(resolution) != reviewed_digest:
-        raise ValueError("Reviewed base provenance no longer matches current resolution.")
-    local_ref = f"refs/heads/{base}"
-    remote_ref = f"refs/remotes/{remote}/{base}"
-    if (
-        not decision["clean"]
-        or decision["head"] != provenance["decision_head"]
-        or _git(root, "rev-parse", "--verify", local_ref) != provenance["local_base_head"]
-        or _git(root, "rev-parse", "--verify", remote_ref) != provenance["remote_base_head"]
-    ):
-        raise ValueError("Reviewed base provenance is stale against current Git facts.")
-    fetched = _run(
-        root,
-        "git", "fetch", "--no-tags", remote,
-        f"refs/heads/{base}:refs/remotes/{remote}/{base}",
-    )
-    if fetched.returncode:
-        raise ValueError(fetched.stderr.strip() or "Reviewed base remote refresh failed.")
-    if (
-        _git(root, "rev-parse", "HEAD") != provenance["decision_head"]
-        or _git(root, "rev-parse", "--verify", local_ref) != provenance["local_base_head"]
-        or _git(root, "rev-parse", "--verify", remote_ref) != provenance["remote_base_head"]
-        or _git(root, "status", "--porcelain")
-    ):
-        raise ValueError("Reviewed base changed during remote refresh.")
-
-    decision_checkout = {
-        "branch": decision["branch"],
-        "head_before": provenance["decision_head"],
-        "head_after": provenance["decision_head"],
-        "clean_before": True,
-        "clean_after": True,
-    }
-    freshness = {
-        "remote": remote,
-        "base_branch": base,
-        "base_ref": base,
-        "remote_ref": f"{remote}/{base}",
-        "local_head_before": provenance["local_base_head"],
-        "local_head_after": provenance["local_base_head"],
-        "remote_head": provenance["remote_base_head"],
-        "remote_head_source": "fetched",
-        "fetch_attempted": True,
-        "fetch_performed": True,
-        "fast_forwarded": False,
-        "fresh": True,
-        "status": "fresh",
-        "base_ref_for_worktree": base,
-        "resolution": {
-            "source": source,
-            "selected_base": base,
-            "remote": remote,
-            "candidates": candidates,
-            "resolution_sha256": reviewed_digest,
-        },
-        "reviewed_resolution_sha256": reviewed_digest,
-        "post_sync_resolution": resolution,
-        "post_sync_resolution_sha256": reviewed_digest,
-        "decision_checkout": decision_checkout,
-        "three_way_equal": (
-            provenance["decision_head"]
-            == provenance["local_base_head"]
-            == provenance["remote_base_head"]
-        ),
-    }
-    freshness["facts_sha256"] = _digest(freshness)
-    return freshness
-
-
-def prepare(root: Path, args: argparse.Namespace) -> dict[str, Any]:
-    root = repo_root(root)
-    config = _config(root)
-    requirement = " ".join(args.requirement).strip()
-    if not requirement:
-        raise ValueError("No requirement description provided.")
-    provenance = _json_argument(args.reviewed_base_provenance, "reviewed base provenance")
-    base, candidates = _base(root, config)
-    freshness = _reviewed_base_freshness(root, config, provenance, args.base_branch)
-    repo = str(config.get("github_repo") or "").strip() or _origin_repo(root)
-    if not repo:
-        raise ValueError("Could not resolve GitHub repo.")
-    if shutil.which("gh") is None or _run(root, "gh", "auth", "status").returncode:
-        raise ValueError("GitHub CLI authentication is unavailable.")
-    issue_match = re.search(r"(?:github\.com/([^/]+/[^/]+)/issues/|#)(\d+)", requirement)
-    issue = None
-    if args.reuse_issue or issue_match:
-        number = args.reuse_issue or int(issue_match.group(2))
-        target_repo = issue_match.group(1) if issue_match and issue_match.group(1) else repo
-        process = _run(root, "gh", "issue", "view", str(number), "--repo", target_repo, "--json", "number,url,title,body")
-        if process.returncode:
-            raise ValueError(process.stderr.strip() or "GitHub issue lookup failed.")
-        issue = json.loads(process.stdout)
-        repo = target_repo
-    title = str(issue.get("title") if issue else args.issue_title or requirement.splitlines()[0][:80]).strip()
-    slug = re.sub(r"[^a-z0-9]+", "-", title.casefold()).strip("-")[:48] or "task"
-    issue_token = str(issue["number"]) if issue else "new"
-    branch = args.branch or f"feat/{issue_token}-{slug}"
-    task_slug = args.task_slug or f"{issue_token}-{slug}"
-    workspace_slug = args.workspace_slug or task_slug
-    proposed = None if issue else {"repo": repo, "title": title, "body": requirement, "labels": []}
-    return {"schema_version": "1.2", "source_repo": repo, "source_issue": ({"number": issue["number"], "url": issue["url"], "title": issue["title"], "created_by_workflow": False} if issue else None), "proposed_issue": proposed, "slug": slug, "naming_quality": {"status": "generated"}, "task_slug": task_slug, "task_title": args.title or (f"#{issue_token} {title}" if issue else f"[proposed-issue] {title}"), "branch_name": branch, "workspace_slug": workspace_slug, "base_branch": base, "base_branch_candidates": candidates, "base_freshness": freshness, "duplicate_search": {"performed": False, "candidates": []}}
-
-
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="guru-team-utility")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -396,24 +214,6 @@ def main(argv: list[str]) -> int:
     artifacts.add_argument("--root")
     artifacts.add_argument("--json", action="store_true")
     artifacts.add_argument("--task")
-    prepare_parser = commands.add_parser("prepare")
-    prepare_parser.add_argument("--root")
-    prepare_parser.add_argument("--json", action="store_true")
-    prepare_parser.add_argument("--short-name")
-    prepare_parser.add_argument("--reuse-issue", type=int)
-    prepare_parser.add_argument("--force-new", action="store_true")
-    prepare_parser.add_argument("--issue-title")
-    prepare_parser.add_argument("--reviewed-base-provenance")
-    prepare_parser.add_argument("--base-branch")
-    prepare_parser.add_argument("--branch")
-    prepare_parser.add_argument("--task-slug")
-    prepare_parser.add_argument("--workspace-slug")
-    prepare_parser.add_argument("--title")
-    prepare_parser.add_argument("--assignee")
-    prepare_parser.add_argument("--priority")
-    prepare_parser.add_argument("--description")
-    prepare_parser.add_argument("--worktree", action="store_true")
-    prepare_parser.add_argument("requirement", nargs="*")
     args = parser.parse_args(argv)
     try:
         root = Path(args.root or Path.cwd())
@@ -424,7 +224,7 @@ def main(argv: list[str]) -> int:
         elif args.command == "resolve-human-artifacts":
             payload = human_artifacts(root, args.task)
         else:
-            payload = prepare(root, args)
+            payload = human_artifacts(root, args.task)
     except (OSError, ValueError) as exc:
         if args.json:
             print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False, indent=2), file=sys.stderr)
