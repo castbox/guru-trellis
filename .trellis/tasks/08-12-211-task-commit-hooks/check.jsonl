@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查代理需要核对真实 hooks、exact candidate、失败边界与无关状态保护。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查代理需要验证 candidate/checkpoint/index semantics 与 commit postconditions。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查代理需要执行测试、分发、dogfood drift、throwaway 与 update/reapply 门禁。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查代理需要确认 package ownership、public I/O 和 typed exits 没有漂移。"}
