@@ -25,6 +25,9 @@ class WorkspaceTest(unittest.TestCase):
   plan=plan or self.plan;pp=self.write("plan.json",plan);result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);rp=self.write("result.json",result);return result,check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
  def assert_no_workspace_writes(self,workspace):
   self.assertFalse(workspace.exists());self.assertNotEqual(0,subprocess.run(["git","show-ref","--verify","--quiet",f"refs/heads/{self.plan['naming']['branch_name']}"],cwd=self.repo).returncode);self.assertFalse((self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json").exists())
+ def workspace_state(self,workspace):
+  paths=[workspace/".trellis/tasks/08-12-027-workspace/task.json",self.repo/".trellis/.runtime/guru-team/workspaces/027-workspace.json",self.repo/".trellis/.runtime/guru-team/tasks/027-workspace.json",workspace/".trellis/.runtime/guru-team/workspaces/027-workspace.json",workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json"]
+  return {"refs":self.git("show-ref"),"worktrees":self.git("worktree","list","--porcelain"),"repo_status":common.git(self.repo,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"workspace_status":common.git(workspace,"status","--porcelain=v1","-z","--untracked-files=all").stdout,"files":{str(path):path.read_bytes() for path in paths}}
  def test_prepare_file_entrypoint_loads_package_runtime(self):
   process=subprocess.run([sys.executable,str(LOCAL/"prepare.py"),"--help"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   self.assertEqual(0,process.returncode,process.stderr);self.assertIn("usage: prepare-task",process.stdout)
@@ -88,6 +91,17 @@ class WorkspaceTest(unittest.TestCase):
   self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";target_mapping=workspace/".trellis/.runtime/guru-team/tasks/027-workspace.json";target_mapping.write_text(json.dumps({"workspace_path":"/stale"}));plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("reuse-stale-target.json",plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
   self.assertEqual("/stale",json.loads(target_mapping.read_text())["workspace_path"])
+ def test_reuse_missing_ledger_fails_before_writes_and_preserves_state(self):
+  self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";ledger=workspace/self.plan["side_effects"]["task_artifacts"][0];ledger.unlink();plan=copy.deepcopy(self.plan);plan["naming"].update({"branch_disposition":"reuse_exact","workspace_disposition":"reuse_exact","task_disposition":"reuse_exact"});self.refresh(plan);pp=self.write("reuse-missing-ledger.json",plan);before=self.workspace_state(workspace)
+  with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)])
+  self.assertFalse(ledger.exists());self.assertEqual(before,self.workspace_state(workspace))
+ def test_checker_rejects_every_task_payload_field_drift(self):
+  result,_=self.execute_and_check();workspace=self.parent/"repo-worktrees/027-workspace";task_path=workspace/".trellis/tasks/08-12-027-workspace/task.json";expected=json.loads(task_path.read_text());pp=self.write("checker-task-drift-plan.json",self.plan);rp=self.write("checker-task-drift-result.json",result)
+  for field in ("name","title","status","creator","scope"):
+   with self.subTest(field=field):
+    drifted=copy.deepcopy(expected);drifted[field]=f"drifted-{field}";task_path.write_text(json.dumps(drifted))
+    with self.assertRaises(CommandError):check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+  task_path.write_text(json.dumps(expected))
  def test_stale_head_rejected_before_mutation(self):
   plan=copy.deepcopy(self.plan);plan["base"]["decision_head"]="0"*40;r=common.digest(common.reviewable(plan));plan["freshness"]["reviewable_plan_sha256"]=r;plan["ai_review_gate"]["reviewed_plan_sha256"]=r;plan["freshness"]["plan_sha256"]=common.plan_digest(plan);p=self.write("stale.json",plan)
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(p)])

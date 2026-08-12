@@ -37,6 +37,9 @@
 - `TRELLIS_WORKFLOW_SOURCE='gh:castbox/guru-trellis/trellis#fix/212-worktree-config-path' verify-throwaway-install.sh <temp>`：远端 exact ref/commit `7eb30512570277e3661a02a94fb0c1eb4c9d19da`，source tree clean，退出码 0；fresh install 与 official update 后 reapply 均通过 15 个 installed packages、四个 public projections、Phase 0 transcript、Finish-family/closeout、workspace create/check、source/installed validators、ownership、平台 parity 和递归 zero-sidecar 检查，最终输出 `Verified throwaway Guru Team Trellis install`。
 - Exact-ref 逐步验证发现并已修复三个正常路径缺陷：installed `prepare.py` 文件入口无法定位 shared runtime、完整合法配置的 `closeout_markers` 顶层列表触发字符串 `.append()`、Python 3.12 shared dynamic-loader 无 `sys.modules` 注册时 `@dataclass` 初始化失败；对应回归与 source/installed eval 均已通过。
 - `guru-check-task`：对当前完整 task scope、committed diff、installed/upgrade evidence 与 Docs SSOT 完成 fresh semantic round，无未关闭 P0-P3 finding，typed exit 为 `passed`。
+- Independent Branch Review 在 `4ac53b57c7f22e009ef8e3c2c9a0dc2e40c2456e` 发现并返回 `BR212-P2-001`、`BR212-P2-002`：`reuse_exact` 的 ledger 缺失会被静默重建，且 checker 未比较完整 task payload。
+- Finding 修复：preflight 现在要求 reusable task 的 ledger 存在且 bytes 完全一致；checker 复用 `workspace_payloads()` 比较完整 task JSON。新增真实 Git 回归证明 missing-ledger reuse 在任何写入前阻塞并保持 refs/worktrees/task/mappings/status 不变，且 `name/title/status/creator/scope` 任一漂移均被 checker 拒绝。
+- Finding-fix focused validation：package + registry 29 tests 通过；source/installed package validators、preset reapply、canonical/installed parity、dogfood drift、task validation 与 `git diff --check` 通过，0 conflict、0 sidecar。
 
 ## 实现边界
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 import argparse,copy,hashlib,json,os,subprocess
 from pathlib import Path
 from common import digest,finalize,git,load,parse,resolve_workspace,root,stage,validate,validate_plan,worktrees
-from execute import expected_mapping,mapping_payloads
+from execute import expected_mapping,mapping_payloads,workspace_payloads
 from runtime.io import CommandError
 def github(repo,number):
  p=subprocess.run(["gh","issue","view",str(number),"--repo",repo,"--json","number,url,state,title,body,updatedAt,labels"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -24,7 +24,8 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   if not task.is_file() or not ledger.is_file():raise CommandError("stale_identity","created_workspace.artifacts","Task artifacts are missing.",3)
   try:task_value=json.loads(task.read_text())
   except Exception as exc:raise CommandError("stale_identity","created_workspace.artifacts","Task identity is invalid.",3) from exc
-  if task_value.get("id")!=c["task_slug"] or task_value.get("branch")!=c["branch_name"] or task_value.get("assignee")!=c["assignee"] or task_value.get("base_branch")!=plan["base"]["selected_base"]:raise CommandError("stale_identity","created_workspace.artifacts","Task identity drifted.",3)
+  expected_task,_=workspace_payloads(plan,Path(c["artifacts"][0]["path"]))
+  if task_value!=expected_task:raise CommandError("stale_identity","created_workspace.artifacts","Task identity drifted.",3)
   data=ledger.read_bytes();row=c["artifacts"][0]
   if hashlib.sha256(data).hexdigest()!=row["sha256"] or len(data)!=row["size"] or oct(os.stat(ledger).st_mode&0o777)!="0o644":raise CommandError("stale_identity","created_workspace.artifacts","Ledger bytes or mode drifted.",3)
   workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace,Path(c["artifacts"][0]["path"]))

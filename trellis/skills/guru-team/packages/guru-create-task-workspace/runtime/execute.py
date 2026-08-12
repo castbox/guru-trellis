@@ -55,7 +55,10 @@ def preflight(repo,plan,workspace):
   if disposition=="create_new" and exists:raise CommandError("stale_identity",f"naming.{field}",f"Reviewed {key} already exists.",3)
   if disposition=="reuse_exact" and not exact:raise CommandError("stale_identity",f"naming.{field}",f"Reviewed {key} is not an exact reusable object.",3)
   if disposition=="conflict_blocked":raise CommandError("stale_identity",f"naming.{field}",f"Reviewed {key} disposition blocks mutation.",3)
- if ledger_path.exists() and (not ledger_path.is_file() or ledger_path.read_text()!=expected_ledger):raise CommandError("stale_identity","created_workspace.artifacts","Existing ledger conflicts with the reviewed scope.",3)
+ ledger_exists=ledger_path.exists()
+ ledger_exact=ledger_exists and ledger_path.is_file() and ledger_path.read_bytes()==expected_ledger.encode()
+ if n["task_disposition"]=="reuse_exact" and not ledger_exact:raise CommandError("stale_identity","created_workspace.artifacts","Reusable task ledger is missing or does not match the reviewed scope.",3)
+ if ledger_exists and not ledger_exact:raise CommandError("stale_identity","created_workspace.artifacts","Existing ledger conflicts with the reviewed scope.",3)
  for rel in plan["side_effects"]["runtime_mappings"]:
   workspace_mapping,task_mapping=mapping_payloads(repo,plan,workspace.path,artifact_rel);expected_mapping_value=expected_mapping(rel,workspace_mapping,task_mapping)
   for mapping_root in {repo.resolve(),workspace.path.resolve()}:
