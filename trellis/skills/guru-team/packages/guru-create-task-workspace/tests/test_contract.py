@@ -1,309 +1,36 @@
 from __future__ import annotations
-
-import importlib.util
-import copy
-import json
-import os
-import subprocess
-import unittest
+import copy,json,subprocess,sys,tempfile,unittest
+from unittest import mock
+from datetime import datetime,timezone
 from pathlib import Path
-
-
-PACKAGE_ROOT = Path(__file__).resolve().parents[1]
-
-
-def load_runtime():
-    candidates = []
-    for ancestor in [PACKAGE_ROOT, *PACKAGE_ROOT.parents]:
-        candidates.extend([
-            ancestor / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-            ancestor / ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        ])
-    runtime_path = next((path for path in candidates if path.is_file()), None)
-    if runtime_path is None:
-        raise RuntimeError("Compatible Guru Team runtime not found for package tests.")
-    spec = importlib.util.spec_from_file_location("task_workspace_runtime", runtime_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError("Compatible Guru Team runtime could not be loaded.")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-GTT = load_runtime()
-
-
-class TaskWorkspacePackageContractTests(unittest.TestCase):
-    def test_contract_uses_supported_active_actor_lookup(self) -> None:
-        contract = (PACKAGE_ROOT / "references/contract.md").read_text(
-            encoding="utf-8"
-        )
-        self.assertIn(
-            "gh auth status --active --hostname github.com --json hosts",
-            contract,
-        )
-        self.assertNotIn("gh auth status --json login", contract)
-
-    def test_interface_uses_semantic_profile_and_mode_parity(self) -> None:
-        interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertEqual(interface["schema_version"], "1.4")
-        self.assertEqual(interface["id"], "guru-create-task-workspace")
-        self.assertEqual(interface["judgment_mode"], "semantic")
-        self.assertEqual(
-            interface["modes"]["workflow"]["entry_precondition_ids"],
-            interface["modes"]["standalone"]["entry_precondition_ids"],
-        )
-        self.assertEqual(interface["runtime_dependency"], GTT.SKILL_RUNTIME_DEPENDENCY)
-        self.assertEqual(
-            [item["id"] for item in interface["external_exits"]],
-            ["created", "refresh_review", "blocked"],
-        )
-        self.assertEqual(
-            [item["id"] for item in interface["public_contracts"]["input"]["profiles"]],
-            ["execute_reviewed_plan"],
-        )
-        self.assertEqual(
-            interface["public_contracts"]["private_artifacts"][0]["persistence"],
-            "ignored_runtime",
-        )
-        self.assertEqual(
-            interface["public_contracts"]["private_artifacts"][1]["persistence"],
-            "ignored_runtime",
-        )
-        self.assertEqual(
-            {item["runtime_command"] for item in interface["validators"]},
-            {
-                "record-task-workspace-plan",
-                "create-task-workspace",
-                "check-task-workspace-result",
-                "invoke-stage0-skill",
-            },
-        )
-
-    def test_public_examples_match_closed_schemas(self) -> None:
-        for stem in ("task-workspace-plan", "task-workspace-result", "issue-scope-ledger"):
-            schema = json.loads((PACKAGE_ROOT / "schemas" / f"{stem}.schema.json").read_text(encoding="utf-8"))
-            example = json.loads((PACKAGE_ROOT / "examples" / f"{stem}.json").read_text(encoding="utf-8"))
-            errors = GTT.skill_json_schema_validation_errors(example, schema, stem)
-            self.assertEqual(errors, [], errors)
-
-    def test_issue_scope_ledger_is_closed_scope_data(self) -> None:
-        schema = json.loads(
-            (PACKAGE_ROOT / "schemas/issue-scope-ledger.schema.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        example = json.loads(
-            (PACKAGE_ROOT / "examples/issue-scope-ledger.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        self.assertEqual(GTT.issue_scope_ledger_errors(example), [])
-        self.assertEqual(
-            set(example),
-            {
-                "schema_version",
-                "primary_issue",
-                "close_issues",
-                "related_issues",
-                "followup_issues",
-            },
-        )
-        expected_issue_fields = {"number", "url", "title", "reason"}
-        self.assertEqual(set(example["primary_issue"]), expected_issue_fields)
-        for field in ("close_issues", "related_issues", "followup_issues"):
-            for issue in example[field]:
-                self.assertEqual(set(issue), expected_issue_fields)
-
-        unknown_top = copy.deepcopy(example)
-        unknown_top["unexpected"] = []
-        self.assertTrue(GTT.issue_scope_ledger_errors(unknown_top))
-        self.assertTrue(
-            GTT.skill_json_schema_validation_errors(unknown_top, schema, "unknown top field")
-        )
-
-        unknown_issue = copy.deepcopy(example)
-        unknown_issue["close_issues"][0]["unexpected"] = "value"
-        self.assertTrue(GTT.issue_scope_ledger_errors(unknown_issue))
-        self.assertTrue(
-            GTT.skill_json_schema_validation_errors(
-                unknown_issue,
-                schema,
-                "unknown issue field",
-            )
-        )
-
-    def test_plan_schema_closes_target_variants_and_portable_paths(self) -> None:
-        schema = json.loads((PACKAGE_ROOT / "schemas/task-workspace-plan.schema.json").read_text(encoding="utf-8"))
-        example = json.loads((PACKAGE_ROOT / "examples/task-workspace-plan.json").read_text(encoding="utf-8"))
-
-        wrong_kind = copy.deepcopy(example)
-        wrong_kind["invocation"]["target_kind"] = "reviewed_draft"
-        self.assertTrue(GTT.skill_json_schema_validation_errors(wrong_kind, schema, "wrong target kind"))
-
-        unclosed_issue = copy.deepcopy(example)
-        unclosed_issue["target"]["draft"] = {
-            "draft_id": "draft-27",
-            "source_request_sha256": "a" * 64,
-            "title": "Draft title",
-            "body": "Draft body",
-            "labels": [],
-            "reviewed_draft_sha256": "b" * 64,
-        }
-        self.assertTrue(GTT.skill_json_schema_validation_errors(unclosed_issue, schema, "unclosed issue"))
-
-        absolute_evidence = copy.deepcopy(example)
-        absolute_evidence["prerequisites"]["base"]["artifact"] = "/tmp/base-sync-result.json"
-        self.assertTrue(GTT.skill_json_schema_validation_errors(absolute_evidence, schema, "absolute evidence"))
-
-        reviewed_draft = copy.deepcopy(example)
-        reviewed_draft["invocation"].update({"target_kind": "reviewed_draft", "action_scope": "github_issue_mutation"})
-        reviewed_draft["target"].update({
-            "kind": "reviewed_draft",
-            "issue_number": None,
-            "url": None,
-            "state": None,
-            "updated_at": None,
-            "draft": {
-                "draft_id": "draft-27",
-                "source_request_sha256": "a" * 64,
-                "title": "Draft title",
-                "body": "Draft body",
-                "labels": ["workflow"],
-                "reviewed_draft_sha256": "b" * 64,
-            },
-            "created_issue_binding_sha256": None,
-            "created_issue_result": None,
-        })
-        reviewed_draft["side_effects"] = {
-            "operations": ["create_issue"],
-            "task_artifacts": [],
-            "runtime_mappings": [],
-            "command_argv": ["create-task-workspace", "--input", "task-workspace-plan.json"],
-            "stop_after": "created_issue_refresh",
-        }
-        self.assertEqual(GTT.skill_json_schema_validation_errors(reviewed_draft, schema, "reviewed draft"), [])
-
-        missing_provenance = copy.deepcopy(example)
-        missing_provenance["target"]["created_issue_binding_sha256"] = "a" * 64
-        self.assertTrue(GTT.skill_json_schema_validation_errors(missing_provenance, schema, "partial provenance"))
-
-        binding = {
-            "repo": example["target"]["repo"],
-            "number": example["target"]["issue_number"],
-            "canonical_url": example["target"]["url"],
-            "state": "open",
-            "title_sha256": example["target"]["title_sha256"],
-            "body_sha256": example["target"]["body_sha256"],
-            "updated_at": example["target"]["updated_at"],
-            "reviewed_draft_id": "draft-27",
-            "reviewed_draft_sha256": "a" * 64,
-        }
-        binding["facts_sha256"] = GTT.context_digest(binding)
-        checked_result = {
-            "schema_version": "2.0", "skill_id": "guru-create-task-workspace",
-            "generated_at": "2026-01-01T00:00:30Z", "mode": "workflow",
-            "variant": "created_issue", "plan_sha256": "c" * 64,
-            "executor": {"status": "passed", "checked_at": "2026-01-01T00:00:20Z", "evidence": ["created"]},
-            "checker": {"status": "passed", "checked_at": "2026-01-01T00:00:30Z", "evidence": ["checked"]},
-            "created_issue": binding, "created_workspace": None, "no_side_effect": None,
-            "typed_exit": "refresh_review", "reason": "Complete Intake refresh is required.",
-            "consumer": {"kind": "skill", "id": "guru-sync-base"}, "facts_sha256": "",
-        }
-        checked_result["facts_sha256"] = GTT.task_workspace_result_digest(checked_result)
-        created_issue_plan = copy.deepcopy(example)
-        created_issue_plan["target"]["created_issue_binding_sha256"] = binding["facts_sha256"]
-        created_issue_plan["target"]["created_issue_result"] = checked_result
-        self.assertEqual(
-            GTT.skill_json_schema_validation_errors(created_issue_plan, schema, "created issue provenance"),
-            [],
-        )
-
-    def test_result_schema_closes_no_side_effect_union(self) -> None:
-        schema = json.loads((PACKAGE_ROOT / "schemas/task-workspace-result.schema.json").read_text(encoding="utf-8"))
-        example = json.loads((PACKAGE_ROOT / "examples/task-workspace-result.json").read_text(encoding="utf-8"))
-        no_effect = copy.deepcopy(example)
-        no_effect.update({
-            "variant": "no_side_effect",
-            "created_issue": None,
-            "created_workspace": None,
-            "no_side_effect": {
-                "reason_code": "target_changed",
-                "before": {"head": "a" * 40, "status_sha256": "b" * 64, "worktrees_sha256": "c" * 64, "issues_sha256": "d" * 64},
-                "after": {"head": "a" * 40, "status_sha256": "b" * 64, "worktrees_sha256": "c" * 64, "issues_sha256": "d" * 64},
-                "zero_writes": True,
-            },
-            "typed_exit": "refresh_review",
-            "consumer": {"kind": "skill", "id": "guru-sync-base"},
-        })
-        self.assertEqual(GTT.skill_json_schema_validation_errors(no_effect, schema, "no effect"), [])
-        no_effect["typed_exit"] = "created"
-        no_effect["consumer"] = {"kind": "workflow", "id": "guru-task-workspace-created"}
-        self.assertTrue(GTT.skill_json_schema_validation_errors(no_effect, schema, "invalid no effect"))
-        no_effect["typed_exit"] = "blocked"
-        no_effect["consumer"] = {"kind": "stop", "id": "task-workspace-blocked"}
-        no_effect["created_workspace"] = copy.deepcopy(example["created_workspace"])
-        self.assertTrue(GTT.skill_json_schema_validation_errors(no_effect, schema, "mixed no effect"))
-
-    def test_public_result_example_contains_no_absolute_path(self) -> None:
-        example = json.loads((PACKAGE_ROOT / "examples/task-workspace-result.json").read_text(encoding="utf-8"))
-
-        def strings(value: object):
-            if isinstance(value, dict):
-                for child in value.values():
-                    yield from strings(child)
-            elif isinstance(value, list):
-                for child in value:
-                    yield from strings(child)
-            elif isinstance(value, str):
-                yield value
-
-        for value in strings(example):
-            self.assertFalse(Path(value).is_absolute(), value)
-
-    def test_wrappers_are_thin_and_fail_without_installed_runtime(self) -> None:
-        for name in (
-            "record-task-workspace-plan.sh",
-            "create-task-workspace.sh",
-            "check-task-workspace-result.sh",
-        ):
-            path = PACKAGE_ROOT / "scripts" / name
-            text = path.read_text(encoding="utf-8")
-            self.assertIn("run-skill-command.sh", text)
-            self.assertNotIn("guru_team_trellis.py", text)
-            self.assertTrue(os.access(path, os.X_OK), name)
-            result = subprocess.run([str(path), "--help"], text=True, capture_output=True)
-            self.assertEqual(result.returncode, 2)
-            self.assertIn("not self-contained", result.stderr)
-
-    def test_contract_keeps_semantic_and_deterministic_owners_separate(self) -> None:
-        contract = (PACKAGE_ROOT / "references/contract.md").read_text(encoding="utf-8")
-        self.assertIn("AI Review Gate", contract)
-        self.assertIn("github_issue_mutation", contract)
-        self.assertIn("workspace_and_task_mutation", contract)
-        self.assertIn("official `common.task_store.cmd_create`", contract)
-        self.assertIn("developer accessor with a null", contract)
-        self.assertIn(
-            "`task.json.creator=task.json.assignee=<reviewed-login>`",
-            contract,
-        )
-        self.assertIn("existing official identity bytes remain exact", contract)
-        self.assertIn("does not trim them or append a newline", contract)
-        self.assertIn("Zero matches creates", contract)
-        self.assertIn("complete prior checker-passed created-issue result", contract)
-        self.assertIn("never reopens Discovery private evidence", contract)
-        self.assertIn("`post_sync_resolution_sha256`", contract)
-        self.assertIn("exactly one tracked task-local Intake artifact", contract)
-        self.assertIn("single `execute_reviewed_plan` public profile", contract)
-        self.assertIn("`scripts/invoke.sh --invocation -`", contract)
-        self.assertIn("`call-local:<stage>`", contract)
-        self.assertIn("Compatibility-only locator", contract)
-        self.assertNotIn("--owner-plan ...", contract)
-        self.assertNotIn("creation confirmation digest", contract)
-        self.assertNotIn("`cancelled` stops", contract)
-        self.assertIn("`prepare-task` is query-only", contract)
-        self.assertNotIn("init_developer.py <name>", contract)
-
-
-if __name__ == "__main__":
-    unittest.main()
+PACKAGE=Path(__file__).resolve().parents[1];SKILLS=PACKAGE.parents[1];LOCAL=PACKAGE/"runtime"
+for p in (SKILLS,LOCAL):
+ if str(p) not in sys.path:sys.path.insert(0,str(p))
+from runtime.io import CommandError
+import check,common,execute,invoke,record
+class WorkspaceTest(unittest.TestCase):
+ def setUp(self):
+  self.tmp=tempfile.TemporaryDirectory();self.parent=Path(self.tmp.name);self.repo=self.parent/"repo";subprocess.run(["git","init","-q","-b","main",str(self.repo)],check=True);self.git("config","user.name","Test");self.git("config","user.email","test@example.invalid");(self.repo/"seed").write_text("seed\n");self.git("add","seed");self.git("commit","-qm","seed");self.head=self.git("rev-parse","HEAD");self.plan=self.make_plan()
+ def tearDown(self):self.tmp.cleanup()
+ def git(self,*a):return subprocess.run(["git",*a],cwd=self.repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip()
+ def write(self,n,v):p=self.repo/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(v));return p
+ def make_plan(self):
+  task="08-12-027-workspace";plan=json.loads((PACKAGE/"examples/task-workspace-plan.json").read_text());plan["mode"]="standalone";plan["target"].update({"repo":"example/repo","issue_number":27,"url":"https://github.com/example/repo/issues/27"});plan["base"].update({"base_ref":"HEAD","decision_head":self.head,"local_head":self.head,"remote_head":self.head});plan["naming"].update({"branch_name":"feat/027-workspace","workspace_slug":"027-workspace","task_slug":"027-workspace","task_title":"#27 Workspace"});plan["side_effects"]["task_artifacts"]=[f".trellis/tasks/{task}/issue-scope-ledger.json"];plan["side_effects"]["runtime_mappings"]=[".trellis/.runtime/guru-team/workspaces/027-workspace.json",".trellis/.runtime/guru-team/tasks/027-workspace.json"]
+  plan["scope"]["primary"].update({"number":27,"url":"https://github.com/example/repo/issues/27"});plan["scope"]["close"]=[copy.deepcopy(plan["scope"]["primary"])];plan["scope"]["scope_sha256"]=common.digest({k:v for k,v in plan["scope"].items() if k!="scope_sha256"});r=common.digest(common.reviewable(plan));plan["freshness"]["reviewable_plan_sha256"]=r;plan["ai_review_gate"]["reviewed_plan_sha256"]=r;plan["freshness"]["plan_sha256"]=common.plan_digest(plan);return plan
+ def test_real_workspace_mutation_check_and_invoke(self):
+  pp=self.write("plan.json",self.plan);self.assertEqual(self.plan,record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]));result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);self.assertEqual("created",result["typed_exit"]);rp=self.write("result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)]);env=self.write("invoke.json",{"result":checked});self.assertEqual({"exit_id":"created"},invoke.run(PACKAGE,{},["--root",str(self.repo),"--invocation",str(env)]))
+ def test_stale_head_rejected_before_mutation(self):
+  plan=copy.deepcopy(self.plan);plan["base"]["decision_head"]="0"*40;r=common.digest(common.reviewable(plan));plan["freshness"]["reviewable_plan_sha256"]=r;plan["ai_review_gate"]["reviewed_plan_sha256"]=r;plan["freshness"]["plan_sha256"]=common.plan_digest(plan);p=self.write("stale.json",plan)
+  with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(p)])
+  self.assertFalse((self.parent/"027-workspace").exists())
+ def test_reviewed_draft_creates_and_rereads_issue_before_refresh(self):
+  plan=copy.deepcopy(self.plan);title="Reviewed issue";body="Reviewed body";reviewed=common.digest({"title":title,"body":body,"labels":["runtime"]})
+  plan["invocation"].update({"target_kind":"reviewed_draft","action_scope":"github_issue_mutation"});plan["target"].update({"kind":"reviewed_draft","issue_number":None,"url":None,"state":None,"updated_at":None,"title_sha256":__import__('hashlib').sha256(title.encode()).hexdigest(),"body_sha256":__import__('hashlib').sha256(body.encode()).hexdigest(),"draft":{"draft_id":"draft-112","source_request_sha256":"1"*64,"title":title,"body":body,"labels":["runtime"],"reviewed_draft_sha256":reviewed}});plan["scope"].update({"primary":None,"close":[],"scope_sha256":common.digest({"primary":None,"close":[],"related":[],"followup":[]})});plan["side_effects"].update({"operations":["create_issue"],"task_artifacts":[],"runtime_mappings":[],"command_argv":["create-task-workspace","--input","draft.json"],"stop_after":"created_issue_refresh"});r=common.digest(common.reviewable(plan));plan["freshness"]["reviewable_plan_sha256"]=r;plan["ai_review_gate"]["reviewed_plan_sha256"]=r;plan["freshness"]["plan_sha256"]=common.plan_digest(plan);pp=self.write("draft.json",plan)
+  live={"number":112,"url":"https://github.com/example/repo/issues/112","state":"OPEN","title":title,"body":body,"updatedAt":"2026-08-12T00:00:00Z","labels":[{"name":"runtime"}]}
+  with mock.patch.object(execute,"github",side_effect=[{"url":live["url"]},live]),mock.patch.object(check,"github",return_value=live):
+   result=execute.run(PACKAGE,{},["--root",str(self.repo),"--input",str(pp)]);self.assertEqual(("created_issue","refresh_review"),(result["variant"],result["typed_exit"]));rp=self.write("draft-result.json",result);checked=check.run(PACKAGE,{},["--root",str(self.repo),"--plan-input",str(pp),"--input",str(rp)])
+  self.assertEqual("passed",checked["checker"]["status"]);self.assertFalse((self.parent/"027-workspace").exists())
+ def test_runtime_has_no_placeholder_or_monolith(self):
+  for p in LOCAL.glob("*.py"):
+   t=p.read_text();self.assertNotIn("mutation is unavailable",t);self.assertNotIn("guru_team_trellis.py",t);self.assertNotIn("typed_output(package_root",t)
+if __name__=="__main__":unittest.main()

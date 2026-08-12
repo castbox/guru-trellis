@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-merge-task-pr",
+  "errors": [
+    {
+      "code": "invalid_arguments",
+      "trigger": "Declared CLI arguments are missing or invalid.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use command help and provide the declared arguments."
+    },
+    {
+      "code": "conflicting_arguments",
+      "trigger": "A non-repeatable flag is repeated or a declared conflict set is present.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use each scalar flag at most once and remove conflicting flags."
+    },
+    {
+      "code": "merge_precondition_failed",
+      "trigger": "Live readiness or expected-head facts mismatch.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Refresh live facts and repeat semantic review."
+    },
+    {
+      "code": "internal_error",
+      "trigger": "Unexpected package-local runtime error.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Inspect the package runtime and retry."
+    }
+  ]
+}

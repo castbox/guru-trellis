@@ -1,0 +1,216 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-verify-extension-installation",
+  "commands": [
+    {
+      "id": "show-extension-version",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root or a path below it.", "repeatable": false, "conflicts": []}
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments", "conflicting_arguments", "internal_error"],
+      "side_effect": "repo_read",
+      "schema_bindings": [],
+      "validator_id": "extension_version_projection",
+      "runtime_role": "check"
+    },
+    {
+      "id": "execute-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/execute.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Standalone input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--capability",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "initial_install",
+            "workflow_marketplace",
+            "preset_overlay",
+            "upgrade_update",
+            "platform_projection"
+          ],
+          "description": "Capability.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/public-source-repository-verification-input.schema.json"
+      ],
+      "validator_id": "verification_executor",
+      "runtime_role": "execute"
+    },
+    {
+      "id": "record-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Standalone input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--execution-input",
+          "required": true,
+          "kind": "json",
+          "description": "Execution facts.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--review-input",
+          "required": true,
+          "kind": "json",
+          "description": "Semantic review.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/verification-result-5.0.schema.json"
+      ],
+      "validator_id": "verification_recorder",
+      "runtime_role": "record"
+    },
+    {
+      "id": "check-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Owner result.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--public-input",
+          "required": false,
+          "kind": "json",
+          "description": "Public input.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/verification-result-5.0.schema.json"
+      ],
+      "validator_id": "verification_checker",
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Standalone input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--owner-result",
+          "required": true,
+          "kind": "json",
+          "description": "Owner result.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

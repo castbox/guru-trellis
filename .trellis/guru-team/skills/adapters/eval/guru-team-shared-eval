@@ -77,7 +77,9 @@ def main() -> int:
 
     invoked = helper_call(
         protocol,
-        "invoke", "--wrapper", str(protocol["wrapper_path"]), "--", *invocation_arguments,
+        "invoke", "--wrapper", str(protocol["wrapper_path"]),
+        "--execution-wrapper", str(protocol["execution_wrapper_path"]),
+        "--", *invocation_arguments,
     )
     sys.stdout.write(invoked.stdout)
     sys.stderr.write(invoked.stderr)

@@ -1,6 +1,0 @@
-{
-  "profile": "initial_check",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/07-26-example",
-  "source_exit": "implementation_complete"
-}

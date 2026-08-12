@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 195,
+    "url": "https://github.com/castbox/guru-trellis/issues/195",
+    "title": "迁移全部 Guru Team Skills 到 package-local runtime 并删除单体实现",
+    "reason": "The task scope fully covers Issue #195 and the final PR closes only it."
+  },
+  "close_issues": [
+    {
+      "number": 195,
+      "url": "https://github.com/castbox/guru-trellis/issues/195",
+      "title": "迁移全部 Guru Team Skills 到 package-local runtime 并删除单体实现",
+      "reason": "The task scope fully covers Issue #195 and the final PR closes only it."
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 156,
+      "url": "https://github.com/castbox/guru-trellis/issues/156",
+      "title": "修复 Phase 0 跨 Skill 编排闭环与 source-preserving freshness 传递",
+      "reason": "Related public transition correctness remains independently owned and is not closed by this task."
+    },
+    {
+      "number": 205,
+      "url": "https://github.com/castbox/guru-trellis/issues/205",
+      "title": "禁止业务仓库触发 guru-verify-extension-installation",
+      "reason": "Merged verifier ownership and unreachable business-repository routing are the required current baseline."
+    }
+  ],
+  "followup_issues": []
+}

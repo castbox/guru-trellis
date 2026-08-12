@@ -201,7 +201,7 @@
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
-      "runtime_command": "invoke-stage0-skill",
+      "runtime_command": "invoke-guru-create-task-commit",
       "objective_scope": "Minimal public seed validation, prepared private-candidate actual-exit derivation, exact execution, and deterministic single typed-exit serialization"
     }
   ],

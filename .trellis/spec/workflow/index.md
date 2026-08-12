@@ -31,7 +31,7 @@ Before editing workflow behavior:
 - `.trellis/workflow.md` is this repository's dogfooded active copy and must stay synchronized when runtime parsing or local validation depends on the updated workflow.
 - `trellis/workflows/guru-team/config-template.yml` defines default Guru Team behavior.
 - `trellis/workflows/guru-team/scripts/bash/*.sh` are thin executable wrappers.
-- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py` owns companion behavior.
+- `trellis/skills/guru-team/packages/*/runtime/` owns Skill-specific deterministic behavior; `trellis/skills/guru-team/runtime/` is a closed inventory containing only shared command dispatch, schema, discovery, installation validation, eval, and I/O primitives.
 - Phase 0 base selection/sync is owned by the active `guru-sync-base` package plus
   shared `sync-base` / `check-base-sync` runtime commands; `prepare-task` reuses
   that core and does not define a second resolver.
@@ -110,7 +110,8 @@ Run the narrowest reliable set for your change, and include the result in the ta
 ```bash
 python3 -m json.tool trellis/index.json
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
-python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
+find trellis/skills/guru-team/runtime trellis/skills/guru-team/packages -name '*.py' -type f -print0 | xargs -0 python3 -m py_compile
+python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
 .trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-sync-base --json
 git diff --check

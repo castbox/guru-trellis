@@ -47,7 +47,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             {
                 "sync_executor": "sync-base",
                 "result_validator": "check-base-sync",
-                "public_invocation": "invoke-stage0-skill",
+                "public_invocation": "invoke-guru-sync-base",
             },
         )
         self.assertEqual(
@@ -107,14 +107,13 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         for forbidden in ("--resolution-file", "--evidence-file", "--release-resolution-evidence", "quarantine"):
             self.assertNotIn(forbidden, skill + contract + json.dumps(self.interface))
 
-    def test_wrappers_are_dispatcher_only(self) -> None:
+    def test_wrappers_are_package_local_launcher_only(self) -> None:
         for name, validator in (
             ("sync-base.sh", "sync_executor"),
             ("check-base-sync.sh", "result_validator"),
         ):
             wrapper = (self.package / "scripts" / name).read_text(encoding="utf-8")
-            self.assertIn("run-skill-command.sh", wrapper)
-            self.assertIn(f"--validator {validator}", wrapper)
+            self.assertIn("runtime/launch.sh", wrapper)
             self.assertNotIn("guru_team_trellis.py", wrapper)
             self.assertNotIn("git fetch", wrapper)
             self.assertNotIn("git merge", wrapper)
@@ -204,6 +203,174 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(example["git"]["local_head_after"], example["git"]["remote_head_after"])
         self.assertNotIn("/Users/", json.dumps(example))
+
+    def test_package_local_resolve_only_and_closed_json_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            (root / ".gitignore").write_text(".trellis/guru-team/config.yml\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md", ".gitignore"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(
+                [str(self.package / "scripts/sync-base.sh"), "--json", "--root", str(root), "--mode", "workflow", "--resolve-only", "--base", "main"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["skill_id"], "guru-sync-base")
+            self.assertEqual(payload["selected_base"], "main")
+            self.assertNotIn("guru_team_trellis", result.stdout + result.stderr)
+
+            invalid = subprocess.run(
+                [str(self.package / "scripts/sync-base.sh"), "--json", "--mode", "workflow"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(invalid.returncode, 0)
+            self.assertEqual(json.loads(invalid.stdout)["code"], "invalid_arguments")
+            self.assertNotIn("Traceback", invalid.stdout + invalid.stderr)
+
+    def test_base_resolution_provenance_and_precedence_use_live_git_facts(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            root = temp_root / "repo"
+            remote = temp_root / "remote.git"
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            (root / ".gitignore").write_text(".trellis/guru-team/config.yml\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md", ".gitignore"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "branch", "develop"], check=True)
+            subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "remote", "add", "origin", str(remote)], check=True)
+            subprocess.run(["git", "-C", str(root), "push", "origin", "main"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(remote), "symbolic-ref", "HEAD", "refs/heads/main"], check=True)
+            config = root / ".trellis/guru-team/config.yml"
+            config.parent.mkdir(parents=True)
+
+            def resolve(*extra: str) -> dict:
+                result = subprocess.run(
+                    [str(self.package / "scripts/sync-base.sh"), "--json", "--root", str(root), "--mode", "workflow", "--resolve-only", *extra],
+                    text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result)
+                return json.loads(result.stdout)
+
+            config.write_text("base_branch: 42\nbase_branch_candidates: invalid\n")
+            explicit = resolve("--base", "main")
+            self.assertEqual((explicit["source"], explicit["selected_base"], explicit["candidates"]), ("explicit", "main", ["main"]))
+
+            config.write_text("base_branch: main\nbase_branch_candidates: invalid\n")
+            scalar = resolve()
+            self.assertEqual((scalar["source"], scalar["selected_base"], scalar["candidates"]), ("config", "main", ["main"]))
+
+            config.write_text("base_branch: \nbase_branch_candidates:\n  - missing\n  - develop\n  - main\n  - develop\n")
+            candidate = resolve()
+            self.assertEqual(candidate["source"], "config-candidate")
+            self.assertEqual(candidate["selected_base"], "develop")
+            self.assertEqual(candidate["candidates"], ["missing", "develop", "main"])
+
+            config.write_text("base_branch: \nbase_branch_candidates:\n  - missing\n")
+            default = resolve()
+            self.assertEqual(default["source"], "remote-default")
+            self.assertEqual(default["selected_base"], "main")
+            self.assertEqual(default["candidates"], ["missing", "main"])
+
+    def test_public_invoke_skipped_is_schema_valid(self) -> None:
+        invocation = {"public_input": {"source_exit": "start", "mode": "workflow", "route": "original_request"}}
+        result = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload, {"exit_id": "skipped", "continuation_id": "start-original-request"})
+        if importlib.util.find_spec("jsonschema") is not None:
+            from jsonschema import Draft202012Validator
+            schema = json.loads((self.package / "schemas/public-skipped-output.schema.json").read_text())
+            self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+
+    def test_public_invoke_synced_is_schema_valid(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            root = temp_root / "repo"
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            remote = temp_root / "remote.git"
+            subprocess.run(["git", "init", "--bare", str(remote)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "remote", "add", "origin", str(remote)], check=True)
+            subprocess.run(["git", "-C", str(root), "push", "origin", "main"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            invocation = {"public_input": {"source_exit": "start", "mode": "workflow", "repo_root": str(root), "base_branch": "main", "route": "repo_change"}}
+            result = subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+            schema = json.loads((self.package / "schemas/public-synced-output-2.0.schema.json").read_text())
+            if importlib.util.find_spec("jsonschema") is not None:
+                from jsonschema import Draft202012Validator
+                self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+            transition = payload["transition"]
+            self.assertEqual(transition["stage"], "base_current")
+            self.assertEqual(transition["mode"], "workflow")
+            self.assertEqual(transition["base"]["decision_head"], transition["base"]["local_base_head"])
+            self.assertEqual(transition["base"]["local_base_head"], transition["base"]["remote_base_head"])
+
+    def test_public_invoke_unresolved_base_returns_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            invocation = {"public_input": {"source_exit": "start", "mode": "workflow", "repo_root": str(root), "base_branch": "missing-base", "route": "repo_change"}}
+            result = subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload, {"exit_id": "blocked"})
+            if importlib.util.find_spec("jsonschema") is not None:
+                from jsonschema import Draft202012Validator
+                schema = json.loads((self.package / "schemas/public-blocked-output.schema.json").read_text())
+                self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+
+    def test_public_invoke_does_not_hide_invalid_public_input_as_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            (root / "README.md").write_text("test\n")
+            subprocess.run(["git", "-C", str(root), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-m", "test"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            invocation = {"public_input": {"source_exit": "start", "mode": "workflow", "repo_root": str(root), "base_branch": "-unsafe", "route": "repo_change"}}
+            result = subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(result.returncode, 0, result)
+            self.assertEqual(json.loads(result.stdout)["code"], "invalid_arguments")
+
+            invalid_route = {"public_input": {"source_exit": "start", "mode": "workflow", "repo_root": str(root), "route": "unsupported"}}
+            result = subprocess.run(
+                [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+                input=json.dumps(invalid_route), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(result.returncode, 0, result)
+            self.assertEqual(json.loads(result.stdout)["code"], "invalid_arguments")
 
 
 if __name__ == "__main__":

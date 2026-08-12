@@ -1,8 +1,0 @@
-{
-  "profile": "finding_fix_rerun",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/07-26-example",
-  "source_exit": "implementation_required",
-  "rerun_reason": "finding_fix",
-  "finding_refs": ["BR-27-01"]
-}

@@ -6,7 +6,7 @@ Installed Guru Team surfaces use authenticated `gh`/`gh api` only for GitHub
 platform reads and writes. Every high-level Issue/PR/run operation includes
 `--repo owner/repo`; REST operations use complete
 `repos/<owner>/<repo>/...` endpoints. App, MCP, connector and browser UI
-fallbacks are unsupported. The shared runtime distinguishes CLI, auth,
+fallbacks are unsupported. Package-owned runtime distinguishes CLI, auth,
 repository-access, permission, API-availability and incomplete-response
 failures. `git` continues to own fetch, push, ls-remote and local worktrees.
 
@@ -63,9 +63,11 @@ lives in the active marketplace workflow and additive `guru-*` Skill packages;
 the preset only configures the supported Codex dispatch mode needed to invoke the
 official Trellis agents.
 
-Platform distribution is selectable. Shared `.agents/skills/guru-*` packages are
-always installed; selected platforms receive their matching `guru-*` package
-copies and additive finish entry. Defaults are Codex and Cursor. Repeat
+Platform distribution is selectable. Shared `.agents/skills/guru-*` public
+projections are always installed; selected platforms receive matching public
+projections and the additive finish entry. Complete package runtime, internal
+tests and error implementation remain only below `.trellis/guru-team/`.
+Defaults are Codex and Cursor. Repeat
 `--platform <name>` to select a specific set; supported values are `codex`,
 `cursor`, and `claude`. `--all-platforms` selects all three. `--platform` and
 `--all-platforms` are mutually exclusive, and invalid platform names fail
@@ -464,7 +466,18 @@ platform selection:
 - `.trellis/guru-team/scripts/bash/execute-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/invoke-task-pr-merge.sh`
 - `.trellis/guru-team/scripts/bash/finish-work.sh`
-- `.trellis/guru-team/scripts/python/guru_team_trellis.py`
+- `.trellis/guru-team/runtime/` (minimal shared kernel)
+- `.trellis/guru-team/skills/packages/<skill-id>/commands.json`
+- `.trellis/guru-team/skills/packages/<skill-id>/errors/catalog.json`
+- `.trellis/guru-team/skills/packages/<skill-id>/runtime/`
+
+The shared kernel file inventory is closed to command dispatch, discovery,
+evaluation, installed/source validation, schema and JSON I/O primitives. The
+compatibility commands `show-extension-version`, `check-workflow-environment`,
+and `resolve-planning-artifacts` are owned respectively by
+`guru-verify-extension-installation`, `guru-select-workflow-mode`, and
+`guru-approve-task-plan`; their top-level wrappers only forward to declared
+package validators.
 
 Production skill registry 包含 active `guru-create-task-workspace`、`guru-sync-base`、
 `guru-discover-change-context`、`guru-clarify-requirements`、
@@ -482,9 +495,10 @@ invoke 与五个 exit marker。当前 canonical extension version
 由 immutable Git facts、GitHub Release notes 与 release evidence 精确记录。Repo release
 tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
 Preset 将 active package
-（含 interface、artifact schema、
-example、thin wrappers 与 tests）安装到 `.trellis/guru-team/skills/`，并分发到 shared
-root 和所选 Codex/Cursor/Claude skill roots；planned id 不安装。升级后必须处理
+（含 interface、artifact schema、commands、error catalog、runtime、thin wrappers 与 tests）
+完整安装到 `.trellis/guru-team/skills/`。Shared root 和所选 Codex/Cursor/Claude
+skill roots 仅接收 public projection，不包含 private runtime、tests 或 error
+implementation；planned id 不安装。升级后必须处理
 `.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
 
 Interface 1.4 中 `workflow` 表示 global mandatory routing，`standalone` 表示
@@ -497,7 +511,7 @@ audited package inventory 与 discovery copies。Wrapper 只能经过该 dispatc
 
 Phase 0 的六包、23 个既有 exits、`base_current` / `context_current` /
 `clarity_current` / `wording_current` / `readiness_current` 五阶段 closed transition、
-call-local invocation envelopes、consumer projections、shared runtime、registry/extension
+call-local invocation envelopes、consumer projections、package runtimes、minimal shared kernel、registry/extension
 inventory 与 activation manifest 是一个 versioned activation unit。Apply 必须先在 staging
 校验完整 unit，再一次发布；任一 mixed old/new graph、缺失 asset、manifest mismatch 或 sidecar
 都保留上一完整安装并阻断。
@@ -884,7 +898,9 @@ the step-local review loop into a platform overlay.
 ```
 
 `prepare-task.sh --json` is a compatibility-only local diagnostic whose exact
-CLI is defined by current runtime help. It is never a workflow hop:
+CLI is defined by current runtime help. Its deterministic implementation is
+owned by `guru-create-task-workspace/runtime/prepare.py`, not the shared kernel.
+It is never a workflow hop:
 
 ```bash
 BASE_PROVENANCE_JSON='<exact base_current.base JSON>'

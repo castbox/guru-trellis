@@ -14,13 +14,7 @@ PUBLICATION_PACKAGE = PACKAGE.parent / "guru-review-task-publication"
 
 
 def load_runtime():
-    candidates: list[Path] = []
-    for parent in PACKAGE.parents:
-        candidates.extend([
-            parent / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-            parent / ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        ])
-    runtime_path = next(path for path in candidates if path.is_file())
+    runtime_path = PACKAGE / "runtime/owner.py"
     spec = importlib.util.spec_from_file_location("merge_task_pr_runtime", runtime_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -32,6 +26,19 @@ GTT = load_runtime()
 
 
 class MergeTaskPrContractTest(unittest.TestCase):
+    def test_package_local_runtime_is_monolith_independent(self) -> None:
+        runtime_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted((PACKAGE / "runtime").glob("*.py"))
+        )
+        for retired in ("guru_team_trellis.py", "verification_required", "not_required", "finalization_verification"):
+            self.assertNotIn(retired, runtime_text)
+        commands = json.loads((PACKAGE / "commands.json").read_text(encoding="utf-8"))
+        interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            {(item["validator_id"], item["id"]) for item in commands["commands"]},
+            {(item["id"], item["runtime_command"]) for item in interface["validators"]},
+        )
     @classmethod
     def setUpClass(cls) -> None:
         cls.interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))

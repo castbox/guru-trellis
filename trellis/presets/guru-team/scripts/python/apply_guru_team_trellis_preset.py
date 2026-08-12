@@ -74,7 +74,21 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-registry-1.3.schema.json",
     "skill-registry-1.4.schema.json",
     "skill-registry.schema.json",
+    "skill-commands.schema.json",
+    "skill-error-catalog.schema.json",
 })
+SKILL_RUNTIME_KERNEL_PATHS = (
+    Path("__init__.py"),
+    Path("command.py"),
+    Path("compat.py"),
+    Path("discovery.py"),
+    Path("eval_runner.py"),
+    Path("installed.py"),
+    Path("io.py"),
+    Path("launch.sh"),
+    Path("schema.py"),
+    Path("validate.py"),
+)
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
 CODEX_DISPATCH_HEADER = """#-------------------------------------------------------------------------------
 # Codex (dispatch behavior)
@@ -102,6 +116,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/discover-skill-evals.sh"),
     Path("scripts/bash/run-skill-evals.sh"),
     Path("scripts/bash/run-skill-command.sh"),
+    Path("scripts/bash/run-package-command.sh"),
     Path("scripts/bash/invoke-stage0-skill.sh"),
     Path("scripts/bash/sync-base.sh"),
     Path("scripts/bash/check-base-sync.sh"),
@@ -146,8 +161,21 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
     Path("scripts/bash/finish-work.sh"),
-    Path("scripts/python/guru_team_trellis.py"),
 ]
+LEGACY_MANAGED_ASSET_HASHES = {
+    Path("scripts/python/guru_team_trellis.py"): frozenset({
+        # v0.6.5-guru.5, the required Issue #195 upgrade baseline.
+        "c9ac793cbf02cbffa5b77e207a0c0de39fada462361d788388827798756ce9da",
+        # The live main baseline from which the Issue #195 worktree was created.
+        "78fb34e209c7b87eecdb515929b726dab160399001f3deed582eaaa9bcb90377",
+    }),
+}
+LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR = (
+    "This former Guru Team managed runtime is obsolete after the package-local "
+    "Skill runtime migration. The installed bytes do not match a known managed "
+    "baseline. Review and preserve any local changes, remove the obsolete file, "
+    "then delete this sidecar and reapply the preset.\n"
+).encode("utf-8")
 ENGLISH_LANGUAGE_RULES = (
     "**Language**: All documentation must be written in **English**.",
     "**Language**: All documentation should be written in **English**.",
@@ -726,6 +754,7 @@ def skill_registry_entries(skills_root: Path) -> tuple[dict[str, Any], list[dict
 
 SKILL_MANAGED_ROOTS = (
     Path(".trellis/guru-team/skills"),
+    Path(".trellis/guru-team/runtime"),
     Path(".agents/skills"),
     Path(".codex/skills"),
     Path(".cursor/skills"),
@@ -806,16 +835,27 @@ def run_skill_package_validator(
     guru_root: Path,
     mode: str,
 ) -> dict[str, Any]:
-    runtime = guru_root / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+    runtime_root = (
+        guru_root / "trellis/skills/guru-team"
+        if mode == "source"
+        else repo / ".trellis/guru-team"
+    )
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(runtime_root) + (
+        os.pathsep + environment["PYTHONPATH"]
+        if environment.get("PYTHONPATH")
+        else ""
+    )
     proc = subprocess.run(
-        [sys.executable, str(runtime), "check-skill-packages", "--json", "--mode", mode, "--root", str(repo)],
+        [sys.executable, "-m", "runtime.validate", "--json", "--mode", mode, "--root", str(repo)],
         cwd=repo,
+        env=environment,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,
     )
-    raw = proc.stdout if proc.returncode == 0 else proc.stderr
+    raw = proc.stdout.strip() or proc.stderr.strip()
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
@@ -835,6 +875,46 @@ def skill_package_source_files(package_root: Path) -> list[Path]:
         and "__pycache__" not in path.relative_to(package_root).parts
         and path.suffix not in {".pyc", ".pyo"}
     )
+
+
+def skill_platform_public_files(package_root: Path) -> list[Path]:
+    """Return the Agent-readable projection without package-private runtime assets."""
+    interface = json.loads((package_root / "interface.json").read_text(encoding="utf-8"))
+    private_paths = {
+        str(item["schema"]["path"])
+        for item in interface.get("public_contracts", {}).get("private_artifacts", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("schema"), dict)
+        and isinstance(item["schema"].get("path"), str)
+    }
+    private_artifact_paths = {
+        str(item["path"])
+        for item in interface.get("artifacts", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and str(item["path"]) not in {
+            str(ref.get("example", {}).get("path"))
+            for ref in interface.get("public_contracts", {}).get("outputs", [])
+            if isinstance(ref, dict) and isinstance(ref.get("example"), dict)
+        }
+    }
+    public_wrapper = str(
+        interface.get("public_contracts", {})
+        .get("invocation", {})
+        .get("wrapper", "")
+    )
+    excluded_roots = {"runtime", "tests", "errors"}
+    return [
+        path
+        for path in skill_package_source_files(package_root)
+        if path.relative_to(package_root).parts[0] not in excluded_roots
+        and (
+            path.relative_to(package_root).parts[0] != "scripts"
+            or path.relative_to(package_root).as_posix() == public_wrapper
+        )
+        and path.relative_to(package_root).as_posix() not in private_paths
+        and path.relative_to(package_root).as_posix() not in private_artifact_paths
+    ]
 
 
 def install_skill_packages(
@@ -950,6 +1030,13 @@ def install_skill_packages(
     installed_root = dst / "skills"
     for source, relative in source_files:
         desired_files.append((source, installed_root / relative))
+    runtime_root = canonical_root / "runtime"
+    if runtime_root.is_dir():
+        for relative in SKILL_RUNTIME_KERNEL_PATHS:
+            source = runtime_root / relative
+            if not source.is_file() or source.is_symlink():
+                raise SystemExit(f"Missing canonical Skill runtime kernel file: {source}")
+            desired_files.append((source, dst / "runtime" / relative))
 
     destination_roots = [
         (
@@ -965,7 +1052,7 @@ def install_skill_packages(
         skill_id = str(entry["id"])
         supported = set(entry.get("supported_platforms") or [])
         package_root = canonical_root / str(entry["package"])
-        package_files = skill_package_source_files(package_root)
+        package_files = skill_platform_public_files(package_root)
         for platform, target_root in destination_roots:
             if platform not in supported:
                 continue
@@ -1230,6 +1317,51 @@ def copy_managed(source: Path, target: Path) -> dict[str, str]:
     shutil.copyfile(target, backup)
     shutil.copyfile(source, target)
     return {"path": str(target), "action": "updated_managed", "backup": str(backup)}
+
+
+def remove_legacy_managed_assets(
+    repo: Path,
+    dst: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    removals: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    sidecars: list[str] = []
+    for relative, known_hashes in LEGACY_MANAGED_ASSET_HASHES.items():
+        target = dst / relative
+        relative_target = lexical_repo_relative(repo, target)
+        checked_relative, target_stat, error = lstat_repo_path(repo, target)
+        if error or checked_relative != relative_target:
+            conflicts.append(skill_conflict(relative_target.as_posix(), "unsafe_legacy_path_boundary"))
+            continue
+        if target_stat is None:
+            continue
+        if not stat.S_ISREG(target_stat.st_mode):
+            conflicts.append(skill_conflict(relative_target.as_posix(), "legacy_target_not_regular_file"))
+            continue
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+        if digest in known_hashes:
+            target.unlink()
+            removals.append({
+                "path": relative_target.as_posix(),
+                "action": "removed_managed",
+                "previous_managed_sha256": digest,
+            })
+            continue
+        sidecar = target.with_name(f"{target.name}.new")
+        try:
+            write_safe_repo_file(repo, sidecar, LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR, 0o644)
+            sidecar_relative = lexical_repo_relative(repo, sidecar).as_posix()
+        except ValueError:
+            sidecar_relative = None
+        conflicts.append(skill_conflict(
+            relative_target.as_posix(),
+            "legacy_unknown_local_edit",
+            sidecar=sidecar_relative,
+            previous_managed_sha256=digest,
+        ))
+        if sidecar_relative:
+            sidecars.append(sidecar_relative)
+    return removals, conflicts, sidecars
 
 
 def prune_empty_overlay_parents(repo: Path, path: Path) -> None:
@@ -1672,6 +1804,10 @@ def _install_assets_in_place(
     previous_manifest = load_previous_installed_manifest(dst)
     dst.mkdir(parents=True, exist_ok=True)
 
+    legacy_removals, legacy_conflicts, legacy_sidecars = remove_legacy_managed_assets(
+        repo, dst
+    )
+
     installed: list[str] = []
     unchanged: list[str] = []
     new_copies: list[str] = []
@@ -1706,6 +1842,7 @@ def _install_assets_in_place(
         dst / "scripts/bash/discover-skill-evals.sh",
         dst / "scripts/bash/run-skill-evals.sh",
         dst / "scripts/bash/run-skill-command.sh",
+        dst / "scripts/bash/run-package-command.sh",
         dst / "scripts/bash/invoke-stage0-skill.sh",
         dst / "scripts/bash/sync-base.sh",
         dst / "scripts/bash/check-base-sync.sh",
@@ -1750,13 +1887,17 @@ def _install_assets_in_place(
         dst / "scripts/bash/review-branch.sh",
         dst / "scripts/bash/check-review-gate.sh",
         dst / "scripts/bash/finish-work.sh",
-        dst / "scripts/python/guru_team_trellis.py",
     ]:
         if script.exists():
             ensure_executable(script)
 
     selected = platforms or set(DEFAULT_PLATFORMS)
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
+    skill_packages["removals"].extend(legacy_removals)
+    skill_packages["conflicts"].extend(legacy_conflicts)
+    skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + legacy_sidecars))
+    if skill_packages["conflicts"] or skill_packages["sidecars"]:
+        skill_packages["status"] = "conflict"
     overlays = install_overlays(repo, guru_root, selected, previous_manifest)
     installed.extend(overlays["installed"])
     unchanged.extend(overlays["unchanged"])

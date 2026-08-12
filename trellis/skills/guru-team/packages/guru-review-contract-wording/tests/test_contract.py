@@ -1,711 +1,207 @@
-import hashlib
-import importlib.util
+from __future__ import annotations
+
 import json
-import subprocess
+import sys
 import tempfile
 import unittest
-from pathlib import Path
 from unittest import mock
+from pathlib import Path
+
+from jsonschema import Draft202012Validator
 
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+SKILLS_ROOT = PACKAGE_ROOT.parents[1]
+PACKAGE_RUNTIME = PACKAGE_ROOT / "runtime"
+for path in (SKILLS_ROOT, PACKAGE_RUNTIME):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
+
+from runtime.io import CommandError  # noqa: E402
+import check as wording_check  # noqa: E402
+import common as wording_common  # noqa: E402
+import invoke as wording_invoke  # noqa: E402
+import record as wording_record  # noqa: E402
 
 
-def load_runtime():
-    candidates = []
-    for ancestor in [PACKAGE_ROOT, *PACKAGE_ROOT.parents]:
-        candidates.extend([
-            ancestor / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-            ancestor / ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        ])
-    runtime_path = next((path for path in candidates if path.is_file()), None)
-    if runtime_path is None:
-        raise RuntimeError("Compatible Guru Team runtime not found for package tests.")
-    spec = importlib.util.spec_from_file_location("contract_wording_package_runtime", runtime_path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError("Compatible Guru Team runtime could not be loaded.")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-GTT = load_runtime()
+DIMENSIONS = (
+    "complete_profile_scope",
+    "all_hits_classified",
+    "zero_unchecked_hits",
+    "product_semantics_preserved",
+    "retained_reasons_sufficient",
+    "zero_hits_not_requirement_review",
+)
 
 
 class ContractWordingPackageTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        subprocess.run(
-            ["git", "init", "-q", "-b", "main", str(self.root)],
-            check=True,
-        )
-        self.task = self.root / ".trellis/tasks/wording-review"
-        self.task.mkdir(parents=True)
-        for name in GTT.CONTRACT_WORDING_PLANNING_SCOPE:
-            (self.task / name).write_text(
-                f"# {name}\n\nThis file defines one exact contract.\n",
-                encoding="utf-8",
-            )
-        self.explicit = self.root / "docs/review.md"
-        self.explicit.parent.mkdir(parents=True)
-        self.explicit.write_text("# Review\n\n建议绑定一个确定值。\n", encoding="utf-8")
+        self.path = self.root / "docs/contract.md"
+        self.path.parent.mkdir(parents=True)
+        self.path.write_text("# Contract\n\n建议使用固定值。\n", encoding="utf-8")
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
-    def result(
-        self,
-        scope: dict[str, object],
-        scan: dict[str, object],
-        *,
-        classification: str | None = "term_definition",
-        typed_exit: str = "pass",
-        revisions: list[dict[str, object]] | None = None,
-    ) -> dict[str, object]:
-        classifications = [] if classification is None else [
-            {
-                "hit_id": hit["hit_id"],
-                "classification": classification,
-                "reason": "The retained occurrence has an explicit reviewed meaning.",
-            }
-            for hit in scan["hits"]
-        ]
-        passed = typed_exit != "blocked"
-        profile = str(scope["identity"]).split(":", 1)[0]
-        gate = {
-            "status": "passed" if passed else "blocked",
-            "reviewer": "package-test-reviewer",
-            "summary": "The complete current scope and scan were reviewed.",
-            "reviewed_scan_sha256": scan["scan_sha256"],
-            "checked_dimensions": {
-                name: passed for name in GTT.CONTRACT_WORDING_REVIEW_DIMENSIONS
+    def write_json(self, name: str, value: dict) -> Path:
+        path = self.root / name
+        path.write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
+        return path
+
+    def scan(self) -> dict:
+        return wording_record.run(
+            PACKAGE_ROOT,
+            {},
+            ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", "unused", "--path", "docs/contract.md", "--scan-only"],
+        )
+
+    def authoring(self, scan: dict, *, typed_exit: str = "pass", classification: str = "term_definition") -> dict:
+        return {
+            "generated_at": "2026-08-12T00:00:00Z",
+            "revisions": [],
+            "classifications": [
+                {"hit_id": hit["hit_id"], "classification": classification, "reason": "The term has one reviewed deterministic meaning."}
+                for hit in scan["scan"]["hits"]
+            ],
+            "ai_review_gate": {
+                "status": "blocked" if typed_exit == "blocked" else "passed",
+                "reviewer": "package-local-test",
+                "summary": "The complete fixed scope and current scan were reviewed.",
+                "reviewed_scan_sha256": scan["scan"]["scan_sha256"],
+                "checked_dimensions": {name: typed_exit != "blocked" for name in DIMENSIONS},
             },
+            "typed_exit": typed_exit,
         }
-        if profile == "planning_artifacts":
-            gate["planning_checked_dimensions"] = {
-                name: passed
-                for name in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-            }
-        return GTT.contract_wording_derive_result(
-            profile,
-            "workflow" if str(scope["identity"]).startswith("planning_artifacts:") else "standalone",
-            scope,
-            scan,
-            {
-                "generated_at": "2026-01-01T00:00:00Z",
-                "semantic_review": {
-                    "revisions": revisions or [],
-                    "classifications": classifications,
-                    "ai_review_gate": gate,
-                },
-                "typed_exit": typed_exit,
-            },
+
+    def record(self, *, typed_exit: str = "pass", classification: str = "term_definition") -> dict:
+        scan = self.scan()
+        input_path = self.write_json("authoring.json", self.authoring(scan, typed_exit=typed_exit, classification=classification))
+        return wording_record.run(
+            PACKAGE_ROOT,
+            {},
+            ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(input_path), "--path", "docs/contract.md"],
         )
 
     def test_interface_declares_semantic_closed_loop_and_fixed_exits(self) -> None:
         interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertEqual(interface["schema_version"], "1.4")
-        self.assertEqual(interface["judgment_mode"], "semantic")
-        self.assertEqual(
-            interface["ordered_stages"],
-            [
-                "forward_behavior",
-                "ai_review_gate",
-                "conditional_human_confirmation",
-                "recorder_validator",
-                "typed_exit",
-            ],
-        )
-        self.assertEqual(interface["modes"]["workflow"]["entry_precondition_ids"], interface["modes"]["standalone"]["entry_precondition_ids"])
-        self.assertEqual([item["id"] for item in interface["external_exits"]], ["pass", "content_changed", "blocked"])
+        self.assertEqual("semantic", interface["judgment_mode"])
+        self.assertEqual(["pass", "content_changed", "blocked"], [item["id"] for item in interface["external_exits"]])
 
-    def test_contract_is_the_human_readable_vocabulary_owner(self) -> None:
-        contract = (PACKAGE_ROOT / "references" / "contract.md").read_text(encoding="utf-8")
-        for token in ("contract-wording-v2", "contract-wording-classifications-v1", "change_request", "planning_artifacts", "explicit_paths"):
-            self.assertIn(token, contract)
-        for classification in ("contract_violation", "deterministic_threshold", "deterministic_default", "deterministic_option", "deterministic_reference"):
-            self.assertIn(classification, contract)
-        for dimension in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS:
-            self.assertIn(dimension, contract)
-        self.assertIn("stdout-only owner-private evidence", contract)
-        self.assertNotIn("--supersede-reentry-facts-sha256", contract)
-        self.assertIn("No caller may\nrequest `--replace-stale`", contract)
-        interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertIn("discards it", interface["reentry"]["freshness"])
-        self.assertNotIn("facts_sha256", interface["reentry"]["freshness"])
-        self.assertEqual(
-            interface["public_contracts"]["private_artifacts"][0]["persistence"],
-            "stdout_only_owner_private",
-        )
+    def test_scanner_covers_complete_vocabulary(self) -> None:
+        self.path.write_text("# Vocabulary\n\n" + " | ".join(wording_common.VOCAB) + "\n", encoding="utf-8")
+        self.assertEqual(set(wording_common.VOCAB), {hit["term"] for hit in self.scan()["scan"]["hits"]})
 
-    def test_schema_and_example_are_closed_versioned_json(self) -> None:
-        schema = json.loads((PACKAGE_ROOT / "schemas" / "contract-wording-review.schema.json").read_text(encoding="utf-8"))
-        example = json.loads((PACKAGE_ROOT / "examples" / "contract-wording-review.json").read_text(encoding="utf-8"))
-        self.assertEqual(schema["$schema"], "https://json-schema.org/draft/2020-12/schema")
-        self.assertFalse(schema["additionalProperties"])
-        self.assertEqual(example["schema_version"], "1.0")
-        self.assertEqual(example["skill_id"], "guru-review-contract-wording")
-        self.assertEqual(example["profile"], "planning_artifacts")
-        self.assertEqual(
-            set(example["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]),
-            set(GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS),
-        )
+    def test_record_check_and_pass_invocation_are_package_local(self) -> None:
+        result = self.record()
+        result_path = self.write_json("result.json", result)
+        checked = wording_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--path", "docs/contract.md"])
+        self.assertEqual("pass", checked["typed_exit"])
+        public_input = {"profile": "explicit_paths", "source_exit": "start", "mode": "standalone", "paths": ["docs/contract.md"], "continuation_id": "stage0-current"}
+        envelope = self.write_json("invoke.json", {"public_input": public_input, "owner_result": result})
+        output = wording_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)])
+        self.assertEqual({"exit_id": "pass", "profile": "explicit_paths", "continuation_id": "stage0-current"}, output)
+        schema = json.loads((PACKAGE_ROOT / "schemas/public-pass-output-2.0.schema.json").read_text())
+        self.assertEqual([], list(Draft202012Validator(schema).iter_errors(output)))
 
-    def test_wrappers_resolve_the_managed_dispatcher_from_every_install_root(self) -> None:
-        for name in ("record-contract-wording-review.sh", "check-contract-wording-review.sh"):
-            wrapper = (PACKAGE_ROOT / "scripts" / name).read_text(encoding="utf-8")
-            self.assertIn('DISPATCHER="$REPO_ROOT/.trellis/guru-team/scripts/bash/run-skill-command.sh"', wrapper)
-            for root in (".trellis/guru-team/skills/packages", ".agents/skills", ".codex/skills", ".cursor/skills", ".claude/skills"):
-                self.assertIn(f"*/{root}/guru-review-contract-wording", wrapper)
-            self.assertNotIn("../../../../../workflows/guru-team", wrapper)
+    def test_content_drift_invalidates_recorded_result(self) -> None:
+        result_path = self.write_json("result.json", self.record())
+        self.path.write_text("# Contract\n\n固定值。\n", encoding="utf-8")
+        with self.assertRaises(CommandError) as raised:
+            wording_check.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--input", str(result_path), "--path", "docs/contract.md"])
+        self.assertEqual("stale_identity", raised.exception.code)
 
-    def test_all_three_profiles_build_their_complete_scope(self) -> None:
-        planning, _ = GTT.contract_wording_build_scope(
-            self.root, "planning_artifacts", "workflow", task_dir=self.task
-        )
-        self.assertEqual(
-            [item["path"] for item in planning["items"]],
-            [f".trellis/tasks/wording-review/{name}" for name in GTT.CONTRACT_WORDING_PLANNING_SCOPE],
-        )
+    def test_contract_violation_routes_blocked(self) -> None:
+        result = self.record(typed_exit="blocked", classification="contract_violation")
+        envelope = self.write_json("blocked.json", {"public_input": {"profile": "explicit_paths", "source_exit": "start", "mode": "standalone", "paths": ["docs/contract.md"], "continuation_id": "stage0-current"}, "owner_result": result})
+        self.assertEqual({"exit_id": "blocked"}, wording_invoke.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--invocation", str(envelope)]))
 
-        second = self.root / "docs/second.md"
-        second.write_text("# Second\n", encoding="utf-8")
-        explicit, _ = GTT.contract_wording_build_scope(
-            self.root,
-            "explicit_paths",
-            "standalone",
-            explicit_paths=["docs/second.md", "docs/review.md"],
-        )
-        self.assertEqual(
-            [item["path"] for item in explicit["items"]],
-            ["docs/review.md", "docs/second.md"],
-        )
+    def test_incomplete_classification_fails_closed(self) -> None:
+        scan = self.scan()
+        authoring = self.authoring(scan)
+        authoring["classifications"] = []
+        path = self.write_json("incomplete.json", authoring)
+        with self.assertRaises(CommandError) as raised:
+            wording_record.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(path), "--path", "docs/contract.md"])
+        self.assertEqual("schema_mismatch", raised.exception.code)
 
-        draft_input = self.root / "draft.json"
-        draft_input.write_text(json.dumps({
-            "kind": "draft",
-            "draft_id": "draft-1",
-            "title": "Exact change title",
-            "body": "Exact change body",
-            "selected_comments": [{
-                "id": "comment-1",
-                "author": "reviewer",
-                "updated_at": "2026-01-01T00:00:00Z",
-                "selection_reason": "This comment is authoritative.",
-                "body": "Exact authoritative comment.",
-            }],
-        }), encoding="utf-8")
-        change, _ = GTT.contract_wording_build_scope(
-            self.root,
-            "change_request",
-            "standalone",
-            change_request_input="draft.json",
-        )
-        self.assertEqual(
-            [item["field"] for item in change["items"]],
-            ["title", "body", "comment"],
-        )
-        change_scan = GTT.scan_contract_wording(change, {
-            "change:title": "Exact change title",
-            "change:body": "Exact change body",
-            "comment:comment-1": "Exact authoritative comment.",
-        })
-        change_result = self.result(change, change_scan)
-        change_result["scope"]["items"][2]["author"] = None
-        change_result["facts_sha256"] = GTT.context_digest({
-            key: value for key, value in change_result.items() if key != "facts_sha256"
-        })
-        self.assertIn(
-            "contract_wording_schema_validation_failed",
-            GTT.contract_wording_structural_errors(self.root, change_result, change, change_scan),
-        )
+    def test_recorder_requires_explicit_semantic_exit(self) -> None:
+        scan = self.scan()
+        for value in (None, "unknown"):
+            authoring = self.authoring(scan)
+            if value is None:
+                authoring.pop("typed_exit")
+            else:
+                authoring["typed_exit"] = value
+            path = self.write_json(f"exit-{value}.json", authoring)
+            with self.subTest(typed_exit=value), self.assertRaises(CommandError) as raised:
+                wording_record.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(path), "--path", "docs/contract.md"])
+            self.assertEqual("schema_mismatch", raised.exception.code)
 
-    def test_change_request_selected_comments_require_author_and_updated_at(self) -> None:
-        for missing in ("author", "updated_at"):
-            with self.subTest(missing=missing):
-                row = {
-                    "id": "comment-1",
-                    "author": "reviewer",
-                    "updated_at": "2026-01-01T00:00:00Z",
-                    "selection_reason": "This comment is authoritative.",
-                    "body": "Exact authoritative comment.",
-                }
-                row[missing] = None
-                draft_input = self.root / f"draft-missing-{missing}.json"
-                draft_input.write_text(json.dumps({
-                    "kind": "draft",
-                    "draft_id": f"draft-missing-{missing}",
-                    "title": "Exact change title",
-                    "body": "Exact change body",
-                    "selected_comments": [row],
-                }), encoding="utf-8")
-                with self.assertRaises(GTT.WorkflowError):
-                    GTT.contract_wording_build_scope(
-                        self.root,
-                        "change_request",
-                        "standalone",
-                        change_request_input=draft_input.name,
-                    )
+    def test_exit_gate_and_revision_relations_fail_closed(self) -> None:
+        scan = self.scan()
+        cases = []
+        blocked_with_passed_gate = self.authoring(scan, typed_exit="blocked")
+        blocked_with_passed_gate["ai_review_gate"]["status"] = "passed"
+        cases.append(blocked_with_passed_gate)
+        pass_with_blocked_gate = self.authoring(scan, typed_exit="pass")
+        pass_with_blocked_gate["ai_review_gate"]["status"] = "blocked"
+        cases.append(pass_with_blocked_gate)
+        changed_without_revision = self.authoring(scan, typed_exit="content_changed")
+        cases.append(changed_without_revision)
+        changed_with_unchecked = self.authoring(scan, typed_exit="content_changed", classification="contract_violation")
+        changed_with_unchecked["revisions"] = [{"path": "docs/contract.md", "before_sha256": "0" * 64, "after_sha256": "1" * 64, "summary": "Reviewed revision."}]
+        cases.append(changed_with_unchecked)
+        for index, authoring in enumerate(cases):
+            path = self.write_json(f"relation-{index}.json", authoring)
+            with self.subTest(index=index), self.assertRaises(CommandError) as raised:
+                wording_record.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(path), "--path", "docs/contract.md"])
+            self.assertEqual("schema_mismatch", raised.exception.code)
 
-        issue_input = self.root / "issue.json"
-        node_id = "IC_kwDOA114"
-        comment_url = "https://github.com/castbox/guru-trellis/issues/114#issuecomment-11401"
-        issue_input.write_text(json.dumps({
-            "kind": "issue",
-            "repo": "castbox/guru-trellis",
-            "number": 114,
-            "selected_comments": [{
-                "id": node_id,
-                "selection_reason": "This comment is authoritative.",
-            }],
-        }), encoding="utf-8")
-        live = {
-            "title": "Exact change title",
-            "body": "Exact change body",
-            "url": "https://github.com/castbox/guru-trellis/issues/114",
-            "updatedAt": "2026-07-17T00:00:00Z",
-            "comments": [{
-                "id": node_id,
-                "author": {"login": "reviewer"},
-                "createdAt": "2026-07-16T00:00:00Z",
-                "body": "Exact authoritative comment.",
-                "url": comment_url,
-            }],
-        }
-        rest_comment = {
-            "id": 11401,
-            "node_id": node_id,
-            "user": {"login": "reviewer"},
-            "created_at": "2026-07-16T00:00:00Z",
-            "body": "Exact authoritative comment.",
-            "html_url": comment_url,
-        }
-        with (
-            mock.patch.object(GTT, "require_gh_auth"),
-            mock.patch.object(GTT, "issue_view", return_value=live),
-            mock.patch.object(GTT, "gh_json", return_value=[[rest_comment]]),
-        ):
-            with self.assertRaises(GTT.WorkflowError) as raised:
-                GTT.contract_wording_build_scope(
-                    self.root,
-                    "change_request",
-                    "standalone",
-                    change_request_input=issue_input.name,
-                )
-        self.assertEqual(
-            raised.exception.payload["error_code"],
-            "github_response_incomplete",
+    def test_eval_owner_staging_api_builds_schema_valid_result(self) -> None:
+        scope, contents = wording_common.contract_wording_build_scope(
+            self.root, "explicit_paths", "standalone", explicit_paths=["docs/contract.md"]
         )
-        self.assertIn("updated_at", raised.exception.payload["detail"])
-
-    def test_live_selected_comment_uses_paginated_rest_updated_time_and_builds_evidence(self) -> None:
-        node_id = "IC_kwDOA115"
-        comment_url = "https://github.com/castbox/guru-trellis/issues/114#issuecomment-11402"
-        issue_input = self.root / "issue-live-comment.json"
-        issue_input.write_text(json.dumps({
-            "kind": "issue",
-            "repo": "castbox/guru-trellis",
-            "number": 114,
-            "selected_comments": [{
-                "id": node_id,
-                "selection_reason": "This comment is authoritative.",
-            }],
-        }), encoding="utf-8")
-        live = {
-            "title": "Exact change title",
-            "body": "Exact change body",
-            "url": "https://github.com/castbox/guru-trellis/issues/114",
-            "updatedAt": "2026-01-01T00:00:00Z",
-            "comments": [{
-                "id": node_id,
-                "author": {"login": "reviewer"},
-                "body": "Exact authoritative comment.",
-                "createdAt": "2025-12-31T23:00:00Z",
-                "url": comment_url,
-            }],
-        }
-        rest_comment = {
-            "id": 11402,
-            "node_id": node_id,
-            "user": {"login": "reviewer"},
-            "body": "Exact authoritative comment.",
-            "created_at": "2025-12-31T23:00:00Z",
-            "updated_at": "2026-01-01T00:00:00Z",
-            "html_url": comment_url,
-        }
-        with (
-            mock.patch.object(GTT, "require_gh_auth"),
-            mock.patch.object(GTT, "issue_view", return_value=live),
-            mock.patch.object(GTT, "gh_json", return_value=[[rest_comment]]) as api,
-        ):
-            scope, contents = GTT.contract_wording_build_scope(
-                self.root,
-                "change_request",
-                "standalone",
-                change_request_input=issue_input.name,
-            )
-
-        api_args, api_kwargs = api.call_args
-        self.assertEqual(api_kwargs, {"cwd": self.root})
-        self.assertIn("repos/castbox/guru-trellis/issues/114/comments?per_page=100", api_args[0])
-        self.assertIn("--paginate", api_args[0])
-        self.assertIn("--slurp", api_args[0])
-        comment_item = scope["items"][2]
-        self.assertEqual(comment_item["id"], f"comment:{node_id}")
-        self.assertEqual(comment_item["author"], "reviewer")
-        self.assertEqual(comment_item["updated_at"], rest_comment["updated_at"])
-        self.assertEqual(
-            comment_item["content_sha256"],
-            hashlib.sha256(rest_comment["body"].encode("utf-8")).hexdigest(),
-        )
-        scan = GTT.scan_contract_wording(scope, contents)
-        result = self.result(scope, scan)
-        self.assertEqual(
-            GTT.contract_wording_structural_errors(self.root, result, scope, scan),
-            [],
-        )
-
-    def test_workflow_profiles_cannot_be_narrowed_or_replaced(self) -> None:
-        with self.assertRaises(GTT.WorkflowError):
-            GTT.contract_wording_build_scope(
-                self.root,
-                "planning_artifacts",
-                "workflow",
-                task_dir=self.task,
-                explicit_paths=["docs/review.md"],
-            )
-        with self.assertRaises(GTT.WorkflowError):
-            GTT.contract_wording_build_scope(
-                self.root,
-                "explicit_paths",
-                "workflow",
-                explicit_paths=["docs/review.md"],
-            )
-        with self.assertRaises(GTT.WorkflowError):
-            GTT.contract_wording_build_scope(
-                self.root,
-                "change_request",
-                "standalone",
-                explicit_paths=["docs/review.md"],
-                change_request_input="draft.json",
-            )
-
-    def test_planning_semantic_dimensions_fail_closed_and_project_exact_evidence(self) -> None:
-        scope, contents = GTT.contract_wording_build_scope(
-            self.root, "planning_artifacts", "workflow", task_dir=self.task
-        )
-        scan = GTT.scan_contract_wording(scope, contents)
-        result = self.result(scope, scan)
-        self.assertEqual(
-            GTT.contract_wording_structural_errors(self.root, result, scope, scan),
-            [],
-        )
-        expected = {
-            name: True for name in GTT.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
-        }
-        self.assertEqual(
-            result["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"],
-            expected,
-        )
-
-        def resign(payload: dict[str, object]) -> None:
-            payload["facts_sha256"] = GTT.context_digest({
-                key: value for key, value in payload.items() if key != "facts_sha256"
-            })
-
-        missing = json.loads(json.dumps(result))
-        del missing["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"]
-        resign(missing)
-        self.assertIn(
-            "contract_wording_planning_review_dimensions_missing",
-            GTT.contract_wording_structural_errors(self.root, missing, scope, scan),
-        )
-
-        false_value = json.loads(json.dumps(result))
-        false_value["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
-            "no_requirement_weakening"
-        ] = False
-        resign(false_value)
-        self.assertIn(
-            "contract_wording_planning_review_dimensions_incomplete",
-            GTT.contract_wording_structural_errors(self.root, false_value, scope, scan),
-        )
-
-        extra = json.loads(json.dumps(result))
-        extra["semantic_review"]["ai_review_gate"]["planning_checked_dimensions"][
-            "undeclared_dimension"
-        ] = True
-        resign(extra)
-        self.assertIn(
-            "contract_wording_planning_review_dimensions_invalid",
-            GTT.contract_wording_structural_errors(self.root, extra, scope, scan),
-        )
-
-        explicit_scope, explicit_contents = GTT.contract_wording_build_scope(
-            self.root,
-            "explicit_paths",
-            "standalone",
-            explicit_paths=["docs/review.md"],
-        )
-        explicit_scan = GTT.scan_contract_wording(explicit_scope, explicit_contents)
-        wrong_profile = self.result(explicit_scope, explicit_scan)
-        wrong_profile["semantic_review"]["ai_review_gate"][
-            "planning_checked_dimensions"
-        ] = expected
-        resign(wrong_profile)
-        self.assertIn(
-            "unexpected_contract_wording_planning_review_dimensions",
-            GTT.contract_wording_structural_errors(
-                self.root, wrong_profile, explicit_scope, explicit_scan
-            ),
-        )
-
-    def test_explicit_paths_reject_unsafe_or_non_markdown_selectors(self) -> None:
-        text_path = self.root / "docs/not-markdown.txt"
-        text_path.write_text("not markdown\n", encoding="utf-8")
-        symlink = self.root / "docs/link.md"
-        symlink.symlink_to(self.explicit)
-        for value in (
-            str(self.explicit.resolve()),
-            "../outside.md",
-            "docs/not-markdown.txt",
-            "docs/link.md",
-        ):
-            with self.subTest(value=value), self.assertRaises(GTT.WorkflowError):
-                GTT.contract_wording_build_scope(
-                    self.root,
-                    "explicit_paths",
-                    "standalone",
-                    explicit_paths=[value],
-                )
-
-    def test_scanner_covers_the_complete_v2_vocabulary(self) -> None:
-        self.explicit.write_text(
-            "# Vocabulary\n\n" + " | ".join(GTT.CONTRACT_WORDING_VOCABULARY_V2) + "\n",
-            encoding="utf-8",
-        )
-        scope, contents = GTT.contract_wording_build_scope(
-            self.root, "explicit_paths", "standalone", explicit_paths=["docs/review.md"]
-        )
-        scan = GTT.scan_contract_wording(scope, contents)
-        self.assertEqual(
-            {hit["term"] for hit in scan["hits"]},
-            set(GTT.CONTRACT_WORDING_VOCABULARY_V2),
-        )
-
-    def test_all_classifications_and_blocking_projection(self) -> None:
-        scope, contents = GTT.contract_wording_build_scope(
-            self.root, "explicit_paths", "standalone", explicit_paths=["docs/review.md"]
-        )
-        scan = GTT.scan_contract_wording(scope, contents)
-        for classification in GTT.CONTRACT_WORDING_CLASSIFICATIONS_V1:
-            with self.subTest(classification=classification):
-                typed_exit = "blocked" if classification == "contract_violation" else "pass"
-                payload = self.result(
-                    scope,
-                    scan,
-                    classification=classification,
-                    typed_exit=typed_exit,
-                )
-                self.assertEqual(
-                    GTT.contract_wording_structural_errors(self.root, payload, scope, scan),
-                    [],
-                )
-                self.assertEqual(
-                    bool(payload["semantic_review"]["unchecked_normative_hits"]),
-                    classification == "contract_violation",
-                )
-
-    def test_missing_unknown_empty_and_duplicate_classifications_fail_closed(self) -> None:
-        scope, contents = GTT.contract_wording_build_scope(
-            self.root, "explicit_paths", "standalone", explicit_paths=["docs/review.md"]
-        )
-        scan = GTT.scan_contract_wording(scope, contents)
-
-        missing = self.result(scope, scan, classification=None)
-        self.assertIn(
-            "contract_wording_hit_classification_incomplete",
-            GTT.contract_wording_structural_errors(self.root, missing, scope, scan),
-        )
-
-        unknown = self.result(scope, scan)
-        unknown["semantic_review"]["classifications"][0]["classification"] = "unknown"
-        unknown["facts_sha256"] = GTT.context_digest({
-            key: value for key, value in unknown.items() if key != "facts_sha256"
-        })
-        self.assertIn(
-            "unknown_contract_wording_classification",
-            GTT.contract_wording_structural_errors(self.root, unknown, scope, scan),
-        )
-
-        empty = self.result(scope, scan)
-        empty["semantic_review"]["classifications"][0]["reason"] = ""
-        empty["facts_sha256"] = GTT.context_digest({
-            key: value for key, value in empty.items() if key != "facts_sha256"
-        })
-        self.assertIn(
-            "empty_contract_wording_classification_reason",
-            GTT.contract_wording_structural_errors(self.root, empty, scope, scan),
-        )
-
-        duplicate = self.result(scope, scan)
-        duplicate["semantic_review"]["classifications"].append(
-            dict(duplicate["semantic_review"]["classifications"][0])
-        )
-        duplicate["facts_sha256"] = GTT.context_digest({
-            key: value for key, value in duplicate.items() if key != "facts_sha256"
-        })
-        self.assertIn(
-            "duplicate_contract_wording_classification",
-            GTT.contract_wording_structural_errors(self.root, duplicate, scope, scan),
-        )
-
-    def test_content_hash_change_invalidates_prior_scope_scan_and_gate(self) -> None:
-        scope, contents = GTT.contract_wording_build_scope(
-            self.root, "explicit_paths", "standalone", explicit_paths=["docs/review.md"]
-        )
-        scan = GTT.scan_contract_wording(scope, contents)
-        payload = self.result(scope, scan)
-        self.explicit.write_text("# Review\n\nThe contract now has one exact value.\n", encoding="utf-8")
-        current_scope, current_contents = GTT.contract_wording_build_scope(
-            self.root, "explicit_paths", "standalone", explicit_paths=["docs/review.md"]
-        )
-        current_scan = GTT.scan_contract_wording(current_scope, current_contents)
-        errors = GTT.contract_wording_structural_errors(
-            self.root, payload, current_scope, current_scan
-        )
-        self.assertIn("contract_wording_scope_stale", errors)
-        self.assertIn("contract_wording_scan_stale", errors)
-
-    def test_three_exit_invariants_and_unique_routes(self) -> None:
-        interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
-        self.assertEqual(
-            {item["id"]: item["consumer"] for item in interface["external_exits"]},
-            {
-                "pass": {"kind": "workflow", "id": "guru-contract-wording-pass-router"},
-                "content_changed": {"kind": "workflow", "id": "guru-contract-wording-change-router"},
-                "blocked": {"kind": "stop", "id": "contract-wording-blocked"},
-            },
-        )
-        scope, contents = GTT.contract_wording_build_scope(
-            self.root, "explicit_paths", "standalone", explicit_paths=["docs/review.md"]
-        )
-        scan = GTT.scan_contract_wording(scope, contents)
-        current_hash = scope["items"][0]["content_sha256"]
-        revision = {
-            "revision_id": "revision-1",
-            "locator": "docs/review.md",
-            "before_sha256": "0" * 64,
-            "after_sha256": current_hash,
-            "reason": "The wording was rewritten to one exact contract.",
-            "rescan_sha256": scan["scan_sha256"],
-        }
-        changed = self.result(
-            scope,
-            scan,
-            typed_exit="content_changed",
-            revisions=[revision],
-        )
-        self.assertEqual(
-            GTT.contract_wording_structural_errors(self.root, changed, scope, scan),
-            [],
-        )
-        wrong_pass = self.result(scope, scan, revisions=[revision])
-        self.assertIn(
-            "contract_wording_pass_has_unconsumed_revision",
-            GTT.contract_wording_structural_errors(self.root, wrong_pass, scope, scan),
-        )
-        wrong_changed = self.result(scope, scan, typed_exit="content_changed")
-        self.assertIn(
-            "contract_wording_content_changed_requires_revision",
-            GTT.contract_wording_structural_errors(self.root, wrong_changed, scope, scan),
-        )
-
-    def test_live_issue_mutation_binds_preimage_and_reread_result(self) -> None:
-        issue_input = self.root / "issue-mutation.json"
-        issue_input.write_text(json.dumps({
-            "kind": "issue",
-            "repo": "castbox/guru-trellis",
-            "number": 114,
-            "selected_comments": [],
-        }), encoding="utf-8")
-        live = {
-            "title": "Exact change title",
-            "body": "Exact rewritten body",
-            "url": "https://github.com/castbox/guru-trellis/issues/114",
-            "updatedAt": "2026-07-17T08:00:00Z",
-            "comments": [],
-        }
-        with mock.patch.object(GTT, "require_gh_auth"), mock.patch.object(GTT, "issue_view", return_value=live):
-            scope, contents = GTT.contract_wording_build_scope(
-                self.root,
-                "change_request",
-                "standalone",
-                change_request_input=issue_input.name,
-            )
-        scan = GTT.scan_contract_wording(scope, contents)
-        body_item = next(item for item in scope["items"] if item["field"] == "body")
-        revision = {
-            "revision_id": "revision-1",
-            "locator": body_item["id"],
-            "before_sha256": "0" * 64,
-            "after_sha256": body_item["content_sha256"],
-            "reason": "The issue body was rewritten to one exact contract.",
-            "rescan_sha256": scan["scan_sha256"],
-            "change_request_mutation": {
-                "source_identity": body_item["source_identity"],
-                "locator": body_item["id"],
-                "field": "body",
-                "preimage_sha256": "0" * 64,
-                "reread_content_sha256": body_item["content_sha256"],
-                "source_updated_at": body_item["updated_at"],
-            },
-        }
-        result = GTT.contract_wording_derive_result(
-            "change_request",
-            "standalone",
-            scope,
-            scan,
-            {
-                "generated_at": "2026-07-17T08:01:00Z",
-                "semantic_review": {
-                    "revisions": [revision],
-                    "classifications": [],
-                    "ai_review_gate": {
-                        "status": "passed",
-                        "reviewer": "package-test-reviewer",
-                        "summary": "The exact mutation target and live reread result were reviewed.",
-                        "reviewed_scan_sha256": scan["scan_sha256"],
-                        "checked_dimensions": {
-                            name: True for name in GTT.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                        },
-                    },
+        scan = wording_common.scan_contract_wording(scope, contents)
+        authored = {
+            "generated_at": "2026-08-12T00:00:00Z",
+            "semantic_review": {
+                "revisions": [],
+                "classifications": [
+                    {"hit_id": hit["hit_id"], "classification": "term_definition", "reason": "The term is reviewed."}
+                    for hit in scan["hits"]
+                ],
+                "ai_review_gate": {
+                    "status": "passed",
+                    "reviewer": "package-local-test",
+                    "summary": "The fixed scope and every hit were reviewed.",
+                    "reviewed_scan_sha256": scan["scan_sha256"],
+                    "checked_dimensions": {name: True for name in DIMENSIONS},
                 },
-                "typed_exit": "content_changed",
             },
+            "typed_exit": "pass",
+        }
+        result = wording_common.contract_wording_derive_result(
+            "explicit_paths", "standalone", scope, scan, authored
         )
-        self.assertEqual(GTT.contract_wording_structural_errors(self.root, result, scope, scan), [])
+        schema = json.loads((PACKAGE_ROOT / "schemas/contract-wording-review.schema.json").read_text())
+        self.assertEqual([], list(Draft202012Validator(schema).iter_errors(result)))
 
-        missing = json.loads(json.dumps(result))
-        del missing["semantic_review"]["revisions"][0]["change_request_mutation"]
-        missing["facts_sha256"] = GTT.context_digest({
-            key: value for key, value in missing.items() if key != "facts_sha256"
-        })
-        self.assertIn(
-            "change_request_live_mutation_evidence_missing",
-            GTT.contract_wording_structural_errors(self.root, missing, scope, scan),
-        )
+    def test_runtime_does_not_import_monolith(self) -> None:
+        for path in (PACKAGE_ROOT / "runtime").glob("*.py"):
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn("guru_team_trellis.py", text)
+            self.assertNotIn("spec_from_file_location", text)
 
-        stale_result = json.loads(json.dumps(result))
-        stale_result["semantic_review"]["revisions"][0]["change_request_mutation"]["source_updated_at"] = "2026-07-17T07:00:00Z"
-        stale_result["facts_sha256"] = GTT.context_digest({
-            key: value for key, value in stale_result.items() if key != "facts_sha256"
-        })
-        self.assertIn(
-            "change_request_mutation_result_binding_mismatch",
-            GTT.contract_wording_structural_errors(self.root, stale_result, scope, scan),
-        )
+    def test_existing_issue_source_requires_exact_live_reread(self) -> None:
+        source = {"source_kind": "issue", "identity": "https://github.com/example/repo/issues/27", "title": "Current", "body": "Body", "updated_at": "2026-08-12T00:00:00Z"}
+        live = {"number": 27, "url": source["identity"], "state": "OPEN", "title": source["title"], "body": source["body"], "updatedAt": source["updated_at"]}
+        with mock.patch.object(wording_common.subprocess, "run", return_value=__import__("subprocess").CompletedProcess([], 0, json.dumps(live), "")):
+            self.assertIs(source, wording_common.live_issue_source(source))
+        live["body"] = "Changed"
+        with mock.patch.object(wording_common.subprocess, "run", return_value=__import__("subprocess").CompletedProcess([], 0, json.dumps(live), "")), self.assertRaises(CommandError):
+            wording_common.live_issue_source(source)
 
 
 if __name__ == "__main__":

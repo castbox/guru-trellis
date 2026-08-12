@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-review-branch",
+  "commands": [
+    {
+      "id": "review-branch",
+      "owner": "guru-review-branch",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--skill-input",
+          "required": true,
+          "kind": "string",
+          "description": "Public branch review input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--semantic-review-file",
+          "required": true,
+          "kind": "string",
+          "description": "AI semantic review JSON.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--typed-exit",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "passed",
+            "implementation_required",
+            "scope_confirmation_required",
+            "blocked"
+          ],
+          "description": "AI-selected typed exit.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "review_gate_recorder",
+      "runtime_role": "record"
+    },
+    {
+      "id": "check-review-gate",
+      "owner": "guru-review-branch",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "Recorded review gate JSON locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--expected-exit",
+          "required": false,
+          "kind": "enum",
+          "values": [
+            "passed",
+            "implementation_required",
+            "scope_confirmation_required",
+            "blocked"
+          ],
+          "description": "Required typed exit.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "review_gate_checker",
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-review-branch",
+      "owner": "guru-review-branch",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

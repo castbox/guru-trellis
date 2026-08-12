@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" check-task-pr-merge "$@"
+exec "$SCRIPT_DIR/run-package-command.sh" "guru-merge-task-pr" "scripts/check-task-pr-merge.sh" "$@"

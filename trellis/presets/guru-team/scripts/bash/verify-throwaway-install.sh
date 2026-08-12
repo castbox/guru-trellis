@@ -96,7 +96,64 @@ assert_official_state_absent() {
 verify_change_request_review_package() {
   local label="$1"
   printf 'Change request review package smoke: %s\n' "$label"
-  python3 "$TARGET/.agents/skills/guru-review-change-request/tests/test_contract.py" -q
+  PYTHONPATH="$TARGET/.trellis/guru-team" \
+    python3 "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py" -q
+}
+
+verify_package_projections() {
+  local label="$1"
+  python3 - "$TARGET" "$label" <<'PY'
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+label = sys.argv[2]
+registry = json.loads(
+    (root / ".trellis/guru-team/skills/registry.json").read_text(encoding="utf-8")
+)
+skill_ids = sorted(
+    item["id"] for item in registry["skills"] if item["state"] == "active"
+)
+platform_roots = (".agents", ".claude", ".codex", ".cursor")
+for skill_id in skill_ids:
+    installed = root / ".trellis/guru-team/skills/packages" / skill_id
+    interface = json.loads((installed / "interface.json").read_text(encoding="utf-8"))
+    wrappers = {item["command"] for item in interface["validators"]}
+    if "scripts/invoke.sh" not in wrappers:
+        raise SystemExit(f"{label}: {skill_id} does not declare its public invoke wrapper")
+    for relative in sorted(wrappers):
+        wrapper = installed / relative
+        if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
+            raise SystemExit(f"{label}: installed wrapper is missing: {wrapper}")
+    private_wrappers = wrappers - {"scripts/invoke.sh"}
+    for platform_root in platform_roots:
+        projection = root / platform_root / "skills" / skill_id
+        public_invoke = projection / "scripts/invoke.sh"
+        if not public_invoke.is_file() or not os.access(public_invoke, os.X_OK):
+            raise SystemExit(f"{label}: public invoke is missing: {public_invoke}")
+        help_result = subprocess.run(
+            [str(public_invoke), "--help"], cwd=root, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        if help_result.returncode != 0 or "usage:" not in help_result.stdout:
+            raise SystemExit(
+                f"{label}: {platform_root}/{skill_id} public invoke did not "
+                f"reach the installed package runtime "
+                f"(rc={help_result.returncode}, stderr={help_result.stderr!r})"
+            )
+        leaked = [projection / relative for relative in private_wrappers]
+        leaked.extend(projection / name for name in ("runtime", "tests", "errors"))
+        leaked = [path for path in leaked if path.exists()]
+        if leaked:
+            raise SystemExit(
+                f"{label}: {platform_root}/{skill_id} leaked private assets: "
+                + ", ".join(str(path.relative_to(root)) for path in leaked)
+            )
+print(f"{label}: {len(skill_ids)} installed packages and four public projections passed")
+PY
 }
 
 verify_task_publication_validator_wrappers() {
@@ -112,15 +169,15 @@ from pathlib import Path
 root = Path(sys.argv[1])
 label = sys.argv[2]
 skill_id = "guru-review-task-publication"
-layouts = {
-    "installed-shared": root / ".trellis/guru-team/skills/packages" / skill_id,
+installed = root / ".trellis/guru-team/skills/packages" / skill_id
+platforms = {
     "agents": root / ".agents/skills" / skill_id,
     "codex": root / ".codex/skills" / skill_id,
     "cursor": root / ".cursor/skills" / skill_id,
     "claude": root / ".claude/skills" / skill_id,
 }
 interface = json.loads(
-    (layouts["installed-shared"] / "interface.json").read_text(encoding="utf-8")
+    (installed / "interface.json").read_text(encoding="utf-8")
 )
 validator_ids = {
     "publication_review_recorder",
@@ -139,32 +196,80 @@ if set(validators) != validator_ids:
 
 env = os.environ.copy()
 env.pop("GURU_TEAM_DISPATCHER", None)
-for layout, package_root in layouts.items():
-    if not package_root.is_dir():
-        raise SystemExit(f"{label}: missing publication layout: {layout}")
-    for validator_id in sorted(validator_ids):
-        validator = validators[validator_id]
-        command = package_root / validator["command"]
-        result = subprocess.run(
-            [str(command), "--help"],
-            cwd=root,
-            env=env,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+for validator_id in sorted(validator_ids):
+    validator = validators[validator_id]
+    command = installed / validator["command"]
+    result = subprocess.run(
+        [str(command), "--help"], cwd=root, env=env, text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+    )
+    expected_usage = f"usage: {validator['runtime_command']}"
+    if result.returncode != 0 or expected_usage not in result.stdout:
+        raise SystemExit(
+            f"{label}: installed/{validator_id} did not reach package help "
+            f"(rc={result.returncode}, stderr={result.stderr!r})"
         )
-        expected_usage = (
-            "usage: guru_team_trellis.py "
-            f"{validator['runtime_command']}"
-        )
-        if result.returncode != 0 or expected_usage not in result.stdout:
+for layout, package_root in platforms.items():
+    invoke = package_root / "scripts/invoke.sh"
+    if not invoke.is_file() or not os.access(invoke, os.X_OK):
+        raise SystemExit(f"{label}: {layout} public invoke is missing")
+    private = [
+        package_root / validators[item]["command"]
+        for item in sorted(validator_ids)
+    ]
+    if any(path.exists() for path in private):
+        raise SystemExit(f"{label}: {layout} leaked publication private wrappers")
+print(f"{label}: installed private commands and four public projections passed")
+PY
+}
+
+verify_closeout_package_boundaries() {
+  local label="$1"
+  python3 - "$TARGET" "$label" <<'PY'
+import json
+import os
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+label = sys.argv[2]
+skill_ids = (
+    "guru-review-task-publication",
+    "guru-verify-extension-installation",
+    "guru-finalize-task",
+    "guru-merge-task-pr",
+)
+platform_roots = (".agents", ".claude", ".codex", ".cursor")
+for skill_id in skill_ids:
+    installed = root / ".trellis/guru-team/skills/packages" / skill_id
+    interface = json.loads((installed / "interface.json").read_text(encoding="utf-8"))
+    if not (installed / "commands.json").is_file() or not (installed / "runtime/owner.py").is_file():
+        raise SystemExit(f"{label}: {skill_id} installed runtime contract is incomplete")
+    for validator in interface["validators"]:
+        wrapper = installed / validator["command"]
+        if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
+            raise SystemExit(f"{label}: {skill_id} installed wrapper is missing: {wrapper}")
+    for platform_root in platform_roots:
+        projection = root / platform_root / "skills" / skill_id
+        invoke = projection / "scripts/invoke.sh"
+        if not invoke.is_file() or not os.access(invoke, os.X_OK):
+            raise SystemExit(f"{label}: {platform_root}/{skill_id} public invoke is missing")
+        private_dirs = [projection / name for name in ("runtime", "tests", "errors")]
+        private_scripts = [
+            path for path in (projection / "scripts").glob("*")
+            if path.name != "invoke.sh"
+        ]
+        private_schemas = [
+            projection / artifact["schema"]["path"]
+            for artifact in interface["public_contracts"]["private_artifacts"]
+        ]
+        leaked = [path for path in (*private_dirs, *private_scripts, *private_schemas) if path.exists()]
+        if leaked:
             raise SystemExit(
-                f"{label}: {layout}/{validator_id} did not reach the "
-                f"shared dispatcher help (rc={result.returncode}, "
-                f"stderr={result.stderr!r})"
+                f"{label}: {platform_root}/{skill_id} leaked private assets: "
+                + ", ".join(str(path.relative_to(root)) for path in leaked)
             )
-print(f"{label}: 10/10 publication validator wrappers reached shared help")
+print(f"{label}: four D/E packages preserve installed ownership and public-only projections")
 PY
 }
 
@@ -175,30 +280,6 @@ verify_finish_family_integration() {
     GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
     GURU_FINISH_INTEGRATION_SOURCE_ROOT="$REPO_ROOT" \
     python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q
-}
-
-verify_issue_174_controlled_replay() {
-  printf 'Issue #174 controlled replay counters\n'
-  local replay_root="$WORK_DIR/issue-174-controlled-replay"
-  local report="$replay_root/report.json"
-  mkdir -p "$replay_root"
-  GURU_FINISH_INTEGRATION_MODE=installed \
-    GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
-    GURU_FINISH_INTEGRATION_SOURCE_ROOT="$REPO_ROOT" \
-    GURU_ISSUE_174_REPLAY_REPORT="$report" \
-    python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" \
-      FinishFamilyIntegrationTests.test_issue_174_controlled_replay_is_one_chained_session \
-      -q
-  python3 - "$report" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-if report.get("status") != "passed" or report.get("terminal_artifacts") != []:
-    raise SystemExit("controlled replay report is incomplete or non-terminal")
-print(json.dumps(report, indent=2, sort_keys=True))
-PY
 }
 
 fail_if_python_cache() {
@@ -215,476 +296,48 @@ fail_if_python_cache() {
 
 verify_requirements_clarification_exits() {
   local label="$1"
-  local probe_dir="$WORK_DIR/requirements-clarification-$label"
-  local fake_bin="$probe_dir/bin"
-  mkdir -p "$probe_dir" "$fake_bin"
-  cat >"$fake_bin/gh" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-
-if [[ "${1:-}" == "auth" && "${2:-}" == "status" ]]; then
-  exit 0
-fi
-
-if [[ "${1:-}" != "issue" || "${2:-}" != "view" ]]; then
-  echo "unsupported throwaway gh invocation" >&2
-  exit 2
-fi
-
-number="${3:-}"
-case "$number" in
-  7)
-    state="${GURU_FAKE_ISSUE_7_STATE:-closed}"
-    if [[ "$state" == "open" ]]; then
-      updated_at="2026-01-01T00:00:02Z"
-    else
-      updated_at="2026-01-01T00:00:00Z"
-    fi
-    ;;
-  8)
-    state="open"
-    updated_at="2026-01-01T00:00:00Z"
-    ;;
-  *)
-    echo "unknown throwaway issue: $number" >&2
-    exit 2
-    ;;
-esac
-
-printf '{"number":%s,"title":"Reviewed source issue","url":"https://github.com/example/guru-extension/issues/%s","state":"%s","updatedAt":"%s","body":"Reviewed source issue body.","comments":[],"assignees":[],"labels":[]}\n' \
-  "$number" "$number" "$state" "$updated_at"
-SH
-  chmod +x "$fake_bin/gh"
-  python3 - "$TARGET" "$probe_dir" <<'PY'
-import copy
-import hashlib
-import importlib.util
-import json
-import sys
-from pathlib import Path
-
-root = Path(sys.argv[1])
-probe_dir = Path(sys.argv[2])
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_requirements_clarification_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed clarification runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-example = json.loads(
-    (root / ".agents/skills/guru-clarify-requirements/examples/requirements-clarification.json")
-    .read_text(encoding="utf-8")
-)
-multiline_markdown = "# Clarification\n\n- first\tvalue\r\n- second"
-issue_body = "Reviewed source issue body."
-
-
-def derive(payload):
-    return gtt.derive_requirements_clarification_result(payload)
-
-
-def issue_target(payload, *, state="open"):
-    payload = copy.deepcopy(payload)
-    payload["invocation_context"] = {
-        "kind": "initial_issue",
-        "caller": "throwaway install",
-        "task_locator": None,
-        "resume_target": "guru-review-contract-wording",
-    }
-    projection = {
-        "kind": "issue",
-        "repo": "example/guru-extension",
-        "issue_number": 7,
-        "url": "https://github.com/example/guru-extension/issues/7",
-        "state": state,
-        "updated_at": "2026-01-01T00:00:00Z",
-        "body_sha256": hashlib.sha256(issue_body.encode("utf-8")).hexdigest(),
-    }
-    payload["review_target"] = {
-        **projection,
-        "facts_sha256": gtt.context_digest(projection),
-    }
-    return payload
-
-
-def candidate(number, decision):
-    projection = {
-        "repo": "example/guru-extension",
-        "number": number,
-        "identity": f"#{number}",
-        "url": f"https://github.com/example/guru-extension/issues/{number}",
-        "state": "open",
-        "updated_at": "2026-01-01T00:00:00Z",
-    }
-    return {
-        **projection,
-        "facts_sha256": gtt.context_digest(projection),
-        "decision": decision,
-        "reason": "The candidate was compared with the reviewed delivery unit.",
-    }
-
-
-def disposition(
-    payload,
-    kind,
-    *,
-    candidates=None,
-    selected_issue=None,
-    original_target_role="primary",
-):
-    payload = copy.deepcopy(payload)
-    payload["target_disposition"] = {
-        "disposition": kind,
-        "duplicate_query": "repo:example/guru-extension is:issue is:open reviewed target",
-        "duplicate_checked_at": "2026-01-01T00:00:00Z",
-        "duplicate_candidates": candidates or [],
-        "duplicate_facts_sha256": "0" * 64,
-        "selected_issue": selected_issue,
-        "original_target_role": original_target_role,
-        "decision_summary": f"The AI selected {kind} from the current evidence.",
-        "disposition_digest": "0" * 64,
-    }
-    return derive(payload)
-
-
-def finalized(payload):
-    return derive(payload)
-
-
-def retarget(payload):
-    selected_candidate = candidate(8, "selected")
-    selected_issue = {
-        "repo": selected_candidate["repo"],
-        "issue_number": selected_candidate["number"],
-        "url": selected_candidate["url"],
-        "state": selected_candidate["state"],
-        "updated_at": selected_candidate["updated_at"],
-        "facts_sha256": selected_candidate["facts_sha256"],
-    }
-    payload = copy.deepcopy(payload)
-    payload["typed_exit"] = "retarget_context"
-    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-    payload["source_actions"] = [{
-        "action_id": "select_existing",
-        "kind": "select_existing_issue",
-        "target": {"repo": selected_candidate["repo"], "issue_number": 8},
-        "payload": selected_issue,
-        "preimage_sha256": payload["review_target"]["facts_sha256"],
-        "payload_sha256": None,
-        "action_digest": "0" * 64,
-        "status": "validated",
-        "mutation_evidence": None,
-    }]
-    payload = disposition(
-        payload,
-        "retarget_existing_issue",
-        candidates=[selected_candidate],
-        selected_issue=selected_issue,
-        original_target_role="related",
-    )
-    return finalized(payload)
-
-
-def reopened():
-    payload = issue_target(example, state="closed")
-    payload["typed_exit"] = "refresh_context"
-    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-    payload["source_actions"] = [{
-        "action_id": "reopen_source",
-        "kind": "reopen_issue",
-        "target": {"repo": "example/guru-extension", "issue_number": 7},
-        "payload": {"state": "open"},
-        "preimage_sha256": payload["review_target"]["facts_sha256"],
-        "payload_sha256": None,
-        "action_digest": "0" * 64,
-        "status": "executed",
-        "mutation_evidence": {"source": "ai-reviewed-gh"},
-    }]
-    payload = disposition(
-        payload,
-        "reopen_closed_issue",
-    )
-    action_digest = payload["source_actions"][0]["action_digest"]
-    payload["mutation_results"] = [{
-        "action_id": "reopen_source",
-        "kind": "reopen_issue",
-        "status": "succeeded",
-        "url": payload["review_target"]["url"],
-        "state": "open",
-        "updated_at": "2026-01-01T00:00:02Z",
-        "content_sha256": payload["review_target"]["body_sha256"],
-        "action_digest": action_digest,
-        "facts_sha256": "0" * 64,
-    }]
-    return finalized(payload)
-
-
-def followup(body=multiline_markdown):
-    payload = issue_target(example, state="closed")
-    payload["typed_exit"] = "new_task"
-    payload["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
-    payload["source_actions"] = [{
-        "action_id": "new_issue",
-        "kind": "new_issue_draft",
-        "target": {"repo": "example/guru-extension"},
-        "payload": {"title": "Independent follow-up delivery", "body": body},
-        "preimage_sha256": None,
-        "payload_sha256": None,
-        "action_digest": "0" * 64,
-        "status": "draft_ready",
-        "mutation_evidence": None,
-    }]
-    payload = disposition(
-        payload,
-        "create_followup_draft",
-        original_target_role="related",
-    )
-    return finalized(payload)
-
-
-def complete():
-    payload = issue_target(example, state="closed")
-    payload["typed_exit"] = "blocked"
-    payload["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
-    payload["ai_review_gate"]["status"] = "blocked"
-    payload["error"] = {
-        "codes": ["requirements_target_complete"],
-        "summary": "The closed target is complete and no independent gap remains.",
-    }
-    payload = disposition(
-        payload,
-        "block_target_complete",
-        original_target_role="reference",
-    )
-    return finalized(payload)
-
-
-def add_authority_round(payload, *, impact, action_ids):
-    payload = copy.deepcopy(payload)
-    payload["clarification_rounds"] = [{
-        "round_id": "round_authority",
-        "question_id": "acceptance_boundary",
-        "atomic_group_id": None,
-        "atomic_group_reason": None,
-        "category": "product_intent",
-        "question": "Which acceptance boundary is authoritative?",
-        "answer_summary": "The exact acceptance boundary was selected.",
-        "answer_status": "complete",
-        "authority_impact": impact,
-        "authority_action_ids": action_ids,
-        "affected_contracts": ["acceptance criteria"],
-        "opened_question_ids": ["acceptance_boundary"],
-        "closed_question_ids": ["acceptance_boundary"],
-    }]
-    payload["open_questions"] = []
-    return derive(payload)
-
-
-def issue_authority(kind):
-    body = f"Confirmed load-bearing authority through {kind}."
-    payload = issue_target(example, state="open")
-    payload["typed_exit"] = "refresh_context"
-    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-    payload["source_actions"] = [{
-        "action_id": "persist_authority",
-        "kind": kind,
-        "target": {"repo": "example/guru-extension", "issue_number": 7},
-        "payload": {"body": body},
-        "preimage_sha256": payload["review_target"]["body_sha256"],
-        "payload_sha256": None,
-        "action_digest": "0" * 64,
-        "status": "executed",
-        "mutation_evidence": {"source": "ai-reviewed-gh"},
-    }]
-    payload = disposition(payload, "keep_current_open_issue")
-    action_digest = payload["source_actions"][0]["action_digest"]
-    url = payload["review_target"]["url"]
-    if kind == "issue_comment":
-        url += "#issuecomment-99"
-    payload["mutation_results"] = [{
-        "action_id": "persist_authority",
-        "kind": kind,
-        "status": "succeeded",
-        "url": url,
-        "state": "open",
-        "updated_at": "2026-01-01T00:00:02Z",
-        "content_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
-        "action_digest": action_digest,
-        "facts_sha256": "0" * 64,
-    }]
-    return add_authority_round(
-        payload,
-        impact="load_bearing",
-        action_ids=["persist_authority"],
-    )
-
-
-def draft_authority():
-    body = "The proposed draft persists the load-bearing acceptance boundary."
-    payload = copy.deepcopy(example)
-    payload["typed_exit"] = "refresh_context"
-    payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
-    payload["review_target"]["body_sha256"] = hashlib.sha256(body.encode("utf-8")).hexdigest()
-    payload["source_actions"] = [{
-        "action_id": "persist_draft",
-        "kind": "proposed_draft_update",
-        "target": {"repo": "example/guru-extension"},
-        "payload": {"title": "Clarified draft", "body": body},
-        "preimage_sha256": "1" * 64,
-        "payload_sha256": None,
-        "action_digest": "0" * 64,
-        "status": "validated",
-        "mutation_evidence": None,
-    }]
-    payload = derive(payload)
-    action_digest = payload["source_actions"][0]["action_digest"]
-    payload["mutation_results"] = [{
-        "action_id": "persist_draft",
-        "kind": "proposed_draft_update",
-        "status": "succeeded",
-        "url": None,
-        "state": "draft",
-        "updated_at": None,
-        "content_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
-        "action_digest": action_digest,
-        "facts_sha256": "0" * 64,
-    }]
-    return add_authority_round(
-        payload,
-        impact="load_bearing",
-        action_ids=["persist_draft"],
-    )
-
-
-def assert_structural(label, payload):
-    errors = gtt.requirements_clarification_structural_errors(root, payload, None)
-    if errors:
-        raise SystemExit(f"installed {label} fixture failed: {errors}")
-
-clear = derive(example)
-needs_context = copy.deepcopy(clear)
-needs_context["typed_exit"] = "needs_context"
-needs_context["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
-needs_context["context_evidence"] = {
-    "status": "missing",
-    "evidence_refs": ["repository evidence"],
-    "missing_reason": "Current repository context is unavailable.",
-}
-cases = {
-    "clear": clear,
-    "needs_context": derive(needs_context),
-    "refresh_context": reopened(),
-    "retarget_context": retarget(example),
-    "new_task": followup(),
-    "blocked": complete(),
+  local result
+  result="$(
+    "$TARGET/.trellis/guru-team/scripts/bash/run-skill-evals.sh" \
+      --root "$TARGET" \
+      --mode installed \
+      --skill guru-clarify-requirements \
+      --adapter shared \
+      --run-root "$WORK_DIR/requirements-clarification-$label" \
+      --json
+  )"
+  python3 -c '
+import json, sys
+payload = json.load(sys.stdin)
+assert payload["status"] == "passed"
+assert [case["actual_exit"] for case in payload["cases"]] == [
+    "clear", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"
+]
+assert all(case["status"] == "passed" for case in payload["cases"])
+' <<<"$result"
 }
 
-# The clean install exercises the complete #139 normal-path scenario matrix
-# against the installed runtime, while the wrapper loop below verifies every
-# public exit through its recorder and checker.
-rejected = candidate(8, "rejected")
-retain_draft = disposition(
-    example,
-    "keep_current_draft",
-    candidates=[rejected],
-)
-retain_draft = finalized(retain_draft)
-retain_issue = disposition(
-    issue_target(example),
-    "keep_current_open_issue",
-    candidates=[rejected],
-)
-retain_issue = finalized(retain_issue)
-open_without_duplicate = disposition(
-    issue_target(example),
-    "keep_current_open_issue",
-)
-matrix = {
-    "draft_duplicate_retain": retain_draft,
-    "draft_duplicate_retarget": cases["retarget_context"],
-    "issue_duplicate_retain": retain_issue,
-    "issue_duplicate_retarget": retarget(issue_target(example)),
-    "open_issue_without_duplicate": open_without_duplicate,
-    "closed_issue_reopen": cases["refresh_context"],
-    "closed_issue_followup": cases["new_task"],
-    "closed_issue_complete": cases["blocked"],
-    "issue_load_bearing_comment": issue_authority("issue_comment"),
-    "issue_load_bearing_body_edit": issue_authority("issue_body_edit"),
-    "draft_load_bearing_update": draft_authority(),
-}
-for scenario, payload in matrix.items():
-    assert_structural(scenario, payload)
-
-illegal_load_bearing = add_authority_round(
-    example,
-    impact="load_bearing",
-    action_ids=[],
-)
-illegal_errors = gtt.requirements_clarification_structural_errors(
-    root, illegal_load_bearing, None
-)
-for code in (
-    "load_bearing_round_requires_authority_action",
-    "load_bearing_authority_update_requires_refresh_context",
-):
-    if code not in illegal_errors:
-        raise SystemExit(f"installed load-bearing none+clear did not fail with {code}")
-non_load_bearing = add_authority_round(
-    example,
-    impact="non_load_bearing",
-    action_ids=[],
-)
-assert_structural("non_load_bearing_without_mutation", non_load_bearing)
-
-refresh_without_disposition = copy.deepcopy(matrix["draft_load_bearing_update"])
-refresh_without_disposition["target_disposition"] = None
-refresh_without_disposition = derive(refresh_without_disposition)
-if "requirements_target_disposition_required" not in gtt.requirements_clarification_structural_errors(
-    root, refresh_without_disposition, None
-):
-    raise SystemExit("installed authority refresh accepted a missing target disposition")
-
-wrong_disposition = copy.deepcopy(cases["retarget_context"])
-wrong_disposition["target_disposition"]["disposition_digest"] = "f" * 64
-if "requirements_target_disposition_digest_mismatch" not in gtt.requirements_clarification_structural_errors(
-    root, wrong_disposition, None
-):
-    raise SystemExit("installed retarget fixture accepted a stale disposition digest")
-
-stale_action = copy.deepcopy(cases["retarget_context"])
-stale_action["source_actions"][0]["payload"]["updated_at"] = "2026-01-01T00:00:09Z"
-stale_action = derive(stale_action)
-if "select_existing_issue_action_binding_invalid" not in gtt.requirements_clarification_structural_errors(
-    root, stale_action, None
-):
-    raise SystemExit("installed retarget fixture accepted stale selected action")
-
-for typed_exit, payload in cases.items():
-    (probe_dir / f"{typed_exit}.input.json").write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-PY
-
-  local typed_exit input result result_sha
-  for typed_exit in clear needs_context refresh_context retarget_context new_task blocked; do
-    input="$probe_dir/$typed_exit.input.json"
-    result="$probe_dir/$typed_exit.result.json"
-    if [[ "$typed_exit" == "refresh_context" ]]; then
-      export GURU_FAKE_ISSUE_7_STATE="open"
-    else
-      export GURU_FAKE_ISSUE_7_STATE="closed"
-    fi
-    PATH="$fake_bin:$PATH" "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh" \
-      --root "$TARGET" --json --mode standalone --input "$input" >"$result"
-    result_sha="$(python3 -c 'import json, sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["typed_exit"] == sys.argv[2]; print(payload["content_identity"]["result_sha256"])' "$result" "$typed_exit")"
-    PATH="$fake_bin:$PATH" "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh" \
-      --root "$TARGET" --json --input "$result" \
-      --expected-result-sha256 "$result_sha" >/dev/null
-  done
-  unset GURU_FAKE_ISSUE_7_STATE
-
+verify_context_discovery_exits() {
+  local label="$1"
+  local result
+  result="$(
+    "$TARGET/.trellis/guru-team/scripts/bash/run-skill-evals.sh" \
+      --root "$TARGET" \
+      --mode installed \
+      --skill guru-discover-change-context \
+      --adapter shared \
+      --run-root "$WORK_DIR/context-discovery-$label" \
+      --json
+  )"
+  python3 -c '
+import json, sys
+payload = json.load(sys.stdin)
+assert payload["status"] == "passed"
+assert [case["actual_exit"] for case in payload["cases"]] == [
+    "context_ready", "refresh_base", "blocked"
+]
+assert all(case["status"] == "passed" for case in payload["cases"])
+' <<<"$result"
 }
 
 verify_contract_wording_standalone_profiles() {
@@ -704,8 +357,8 @@ verify_contract_wording_standalone_profiles() {
 }
 JSON
   python3 - "$TARGET" "$probe_dir" "$explicit_rel" "$draft_rel" <<'PY'
-import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -713,44 +366,46 @@ root = Path(sys.argv[1])
 probe_dir = Path(sys.argv[2])
 explicit_rel = sys.argv[3]
 draft_rel = sys.argv[4]
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_contract_wording_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed contract wording runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-
+wrapper = root / ".trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
 cases = {
-    "explicit_paths": gtt.contract_wording_build_scope(
-        root, "explicit_paths", "standalone", explicit_paths=[explicit_rel]
-    ),
-    "change_request": gtt.contract_wording_build_scope(
-        root, "change_request", "standalone", change_request_input=draft_rel
-    ),
+    "explicit_paths": ["--path", explicit_rel],
+    "change_request": ["--change-request-input", draft_rel],
 }
-for profile, (scope, contents) in cases.items():
-    scan = gtt.scan_contract_wording(scope, contents)
+for profile, arguments in cases.items():
+    process = subprocess.run(
+        [str(wrapper), "--root", str(root), "--json", "--mode", "standalone",
+         "--profile", profile, *arguments, "--scan-only"],
+        cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=False,
+    )
+    if process.returncode != 0:
+        raise SystemExit(process.stderr)
+    scan = json.loads(process.stdout)["scan"]
     authored = {
         "generated_at": "2026-07-17T00:00:00Z",
-        "semantic_review": {
-            "revisions": [],
-            "classifications": [
-                {
-                    "hit_id": hit["hit_id"],
-                    "classification": "term_definition",
-                    "reason": "Throwaway semantic review confirms this retained wording is an explicit term definition.",
-                }
-                for hit in scan["hits"]
-            ],
-            "ai_review_gate": {
-                "status": "passed",
-                "reviewer": "throwaway-contract-wording-review",
-                "summary": "The complete current throwaway scope and deterministic scan were reviewed.",
-                "reviewed_scan_sha256": scan["scan_sha256"],
-                "checked_dimensions": {
-                    name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                },
+        "revisions": [],
+        "classifications": [
+            {
+                "hit_id": hit["hit_id"],
+                "classification": "term_definition",
+                "reason": "Throwaway semantic review confirms this retained wording is an explicit term definition.",
+            }
+            for hit in scan["hits"]
+        ],
+        "ai_review_gate": {
+            "status": "passed",
+            "reviewer": "throwaway-semantic-reviewer",
+            "summary": "The complete current throwaway scope and deterministic scan were reviewed.",
+            "reviewed_scan_sha256": scan["scan_sha256"],
+            "checked_dimensions": {
+                name: True for name in (
+                    "complete_profile_scope",
+                    "all_hits_classified",
+                    "zero_unchecked_hits",
+                    "product_semantics_preserved",
+                    "retained_reasons_sufficient",
+                    "zero_hits_not_requirement_review",
+                )
             },
         },
         "typed_exit": "pass",
@@ -760,95 +415,6 @@ for profile, (scope, contents) in cases.items():
         encoding="utf-8",
     )
 
-issue_rel = f"docs/contract-wording-{probe_dir.name}-issue.json"
-(root / issue_rel).write_text(json.dumps({
-    "kind": "issue",
-    "repo": "castbox/guru-trellis",
-    "number": 114,
-    "selected_comments": [],
-}), encoding="utf-8")
-live_issue = {
-    "title": "Exact live issue title",
-    "body": "Exact rewritten live issue body",
-    "url": "https://github.com/castbox/guru-trellis/issues/114",
-    "updatedAt": "2026-07-17T08:00:00Z",
-    "comments": [],
-}
-original_auth = gtt.require_gh_auth
-original_view = gtt.issue_view
-gtt.require_gh_auth = lambda _root: None
-gtt.issue_view = lambda _repo, _number, _root: live_issue
-try:
-    live_scope, live_contents = gtt.contract_wording_build_scope(
-        root, "change_request", "standalone", change_request_input=issue_rel
-    )
-finally:
-    gtt.require_gh_auth = original_auth
-    gtt.issue_view = original_view
-live_scan = gtt.scan_contract_wording(live_scope, live_contents)
-body_item = next(item for item in live_scope["items"] if item["field"] == "body")
-live_result = gtt.contract_wording_derive_result(
-    "change_request",
-    "standalone",
-    live_scope,
-    live_scan,
-    {
-        "generated_at": "2026-07-17T08:01:00Z",
-        "semantic_review": {
-            "revisions": [{
-                "revision_id": "throwaway-live-revision",
-                "locator": body_item["id"],
-                "before_sha256": "0" * 64,
-                "after_sha256": body_item["content_sha256"],
-                "reason": "The installed runtime binds the exact live issue rewrite.",
-                "rescan_sha256": live_scan["scan_sha256"],
-                "change_request_mutation": {
-                    "source_identity": body_item["source_identity"],
-                    "locator": body_item["id"],
-                    "field": "body",
-                    "preimage_sha256": "0" * 64,
-                    "reread_content_sha256": body_item["content_sha256"],
-                    "source_updated_at": body_item["updated_at"],
-                },
-            }],
-            "classifications": [],
-            "ai_review_gate": {
-                "status": "passed",
-                "reviewer": "throwaway-live-mutation-review",
-                "summary": "The installed runtime reviewed the exact mutation target and current reread result.",
-                "reviewed_scan_sha256": live_scan["scan_sha256"],
-                "checked_dimensions": {
-                    name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
-                },
-            },
-        },
-        "typed_exit": "content_changed",
-    },
-)
-assert gtt.contract_wording_structural_errors(root, live_result, live_scope, live_scan) == []
-
-missing_comment_rel = f"docs/contract-wording-{probe_dir.name}-missing-comment.json"
-(root / missing_comment_rel).write_text(json.dumps({
-    "kind": "draft",
-    "draft_id": "throwaway-missing-comment-metadata",
-    "title": "Exact title",
-    "body": "Exact body",
-    "selected_comments": [{
-        "id": "comment-1",
-        "author": None,
-        "updated_at": "2026-07-17T00:00:00Z",
-        "selection_reason": "This comment is authoritative.",
-        "body": "Exact comment body.",
-    }],
-}), encoding="utf-8")
-try:
-    gtt.contract_wording_build_scope(
-        root, "change_request", "standalone", change_request_input=missing_comment_rel
-    )
-except gtt.WorkflowError:
-    pass
-else:
-    raise AssertionError("installed runtime accepted selected comment without author")
 PY
 
   local profile input result facts
@@ -856,19 +422,19 @@ PY
     input="$probe_dir/$profile.input.json"
     result="$probe_dir/$profile.result.json"
     if [[ "$profile" == "explicit_paths" ]]; then
-      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+      "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
         --root "$TARGET" --json --mode standalone --profile "$profile" \
         --path "$explicit_rel" --input "$input" >"$result"
       facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
-      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+      "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
         --root "$TARGET" --json --input "$result" --path "$explicit_rel" \
         --expected-facts-sha256 "$facts" >/dev/null
     else
-      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+      "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
         --root "$TARGET" --json --mode standalone --profile "$profile" \
         --change-request-input "$draft_rel" --input "$input" >"$result"
       facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
-      "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+      "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
         --root "$TARGET" --json --input "$result" --change-request-input "$draft_rel" \
         --expected-facts-sha256 "$facts" >/dev/null
     fi
@@ -886,8 +452,8 @@ record_planning_contract_wording() {
   local bytes_before="$probe_dir/planning_artifacts.bytes.json"
   mkdir -p "$probe_dir"
   python3 - "$TARGET" "$task_rel" "$input" "$changed_input" "$bytes_before" <<'PY'
-import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -896,28 +462,43 @@ task_rel = sys.argv[2]
 output = Path(sys.argv[3])
 changed_output = Path(sys.argv[4])
 bytes_output = Path(sys.argv[5])
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_planning_wording_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed planning wording runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-scope, contents = gtt.contract_wording_build_scope(
-    root, "planning_artifacts", "workflow", task_dir=root / task_rel
+wrapper = root / ".trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
+process = subprocess.run(
+    [str(wrapper), "--root", str(root), "--json", "--mode", "workflow",
+     "--profile", "planning_artifacts", "--task", task_rel, "--scan-only"],
+    cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    check=False,
 )
-scan = gtt.scan_contract_wording(scope, contents)
+if process.returncode != 0:
+    raise SystemExit(process.stderr)
+scanned = json.loads(process.stdout)
+scope = scanned["scope"]
+scan = scanned["scan"]
 gate = {
     "status": "passed",
-    "reviewer": "throwaway-planning-wording-review",
+    "reviewer": "throwaway-semantic-reviewer",
     "summary": "The fixed three-file planning scope and complete current scan were reviewed.",
     "reviewed_scan_sha256": scan["scan_sha256"],
     "checked_dimensions": {
-        name: True for name in gtt.CONTRACT_WORDING_REVIEW_DIMENSIONS
+        name: True for name in (
+            "complete_profile_scope",
+            "all_hits_classified",
+            "zero_unchecked_hits",
+            "product_semantics_preserved",
+            "retained_reasons_sufficient",
+            "zero_hits_not_requirement_review",
+        )
     },
     "planning_checked_dimensions": {
-        name: True
-        for name in gtt.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+        name: True for name in (
+            "no_requirement_weakening",
+            "source_issue_semantics_preserved",
+            "conditional_paths_have_conditions",
+            "no_parallel_implementation_paths",
+            "gates_have_machine_verifiable_conditions",
+            "acceptance_criteria_are_deterministic",
+            "external_quotes_are_labeled_non_contract",
+        )
     },
 }
 classifications = [
@@ -930,30 +511,24 @@ classifications = [
 ]
 authored = {
     "generated_at": "2026-07-17T00:00:01Z",
-    "semantic_review": {
-        "revisions": [],
-        "classifications": classifications,
-        "ai_review_gate": gate,
-    },
+    "revisions": [],
+    "classifications": classifications,
+    "ai_review_gate": gate,
     "typed_exit": "pass",
 }
 first = scope["items"][0]
 changed_authored = {
     "generated_at": "2026-07-17T00:00:00Z",
-    "semantic_review": {
-        "revisions": [{
-            "revision_id": "throwaway-planning-content-change",
-            "locator": first["path"],
-            "before_sha256": "0" * 64,
-            "after_sha256": first["content_sha256"],
-            "reason": "The reviewed wording rewrite is already reflected in current bytes.",
-            "rescan_sha256": scan["scan_sha256"],
-        }],
-        "classifications": [
-            dict(row) for row in classifications
-        ],
-        "ai_review_gate": dict(gate),
-    },
+    "revisions": [{
+        "revision_id": "throwaway-planning-content-change",
+        "locator": first["path"],
+        "before_sha256": "0" * 64,
+        "after_sha256": first["content_sha256"],
+        "reason": "The reviewed wording rewrite is already reflected in current bytes.",
+        "rescan_sha256": scan["scan_sha256"],
+    }],
+    "classifications": [dict(row) for row in classifications],
+    "ai_review_gate": dict(gate),
     "typed_exit": "content_changed",
 }
 output.write_text(json.dumps(authored, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -964,20 +539,20 @@ changed_output.write_text(
 bytes_output.write_text(
     json.dumps({
         name: (root / task_rel / name).read_bytes().hex()
-        for name in gtt.CONTRACT_WORDING_PLANNING_SCOPE
+        for name in ("prd.md", "design.md", "implement.md")
     }, sort_keys=True) + "\n",
     encoding="utf-8",
 )
 PY
-  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
     --root "$TARGET" --json --mode workflow --profile planning_artifacts \
     --task "$task_rel" --input "$changed_input" >"$changed_result"
-  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
     --root "$TARGET" --json --task "$task_rel" --input "$changed_result" >/dev/null
-  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
     --root "$TARGET" --json --mode workflow --profile planning_artifacts \
     --task "$task_rel" --input "$input" >"$pass_result"
-  "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
     --root "$TARGET" --json --task "$task_rel" --input "$pass_result" >/dev/null
   test ! -e "$TARGET/$task_rel/contract-wording-review.json"
   python3 - "$pass_result" "$changed_result" "$TARGET" "$task_rel" "$bytes_before" <<'PY'
@@ -1065,9 +640,9 @@ output.write_text(
     encoding="utf-8",
 )
 PY
-  "$TARGET/.agents/skills/guru-approve-task-plan/scripts/record-planning-approval.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/record-planning-approval.sh" \
     --root "$TARGET" --json --task "$task_rel" --input "$input" >"$result"
-  "$TARGET/.agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/check-planning-approval.sh" \
     --root "$TARGET" --json --task "$task_rel" --require-exit approved >/dev/null
   python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["schema_version"] == "3.0"; assert payload["skill_id"] == "guru-approve-task-plan"; assert payload["typed_exit"] == "approved"' "$result"
   owner_result="$(python3 -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.load(open(sys.argv[2], encoding="utf-8"))["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$result")"
@@ -1111,9 +686,9 @@ prepare_task_commit_candidate() {
   local prepared_json
   input_path="$(mktemp "${TMPDIR:-/tmp}/guru-task-commit-input.XXXXXX")"
   authoring_json="$(python3 - "$TARGET" "$TASK_REL" "$profile" "$subject" "$input_path" "$passed_dto" <<'PY'
-import importlib.util
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -1123,22 +698,20 @@ profile = sys.argv[3]
 subject = sys.argv[4]
 input_path = Path(sys.argv[5])
 passed_dto = json.loads(sys.argv[6])
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-spec = importlib.util.spec_from_file_location("installed_task_commit_runtime", runtime)
-if spec is None or spec.loader is None:
-    raise SystemExit(f"could not load installed task commit runtime: {runtime}")
-gtt = importlib.util.module_from_spec(spec)
-sys.modules[spec.name] = gtt
-spec.loader.exec_module(gtt)
-
 task_dir = root / task_rel
-snapshot = gtt.task_commit_snapshot_without_digest(
-    gtt.capture_task_commit_snapshot(root, set())
-)
 unrelated = "unrelated-preserved.log"
 classifications = []
-for entry in snapshot["entries"]:
-    path = str(entry["path"])
+status = subprocess.run(
+    ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+    cwd=root,
+    check=True,
+    text=True,
+    capture_output=True,
+).stdout.splitlines()
+for row in status:
+    path = row[3:].split(" -> ", 1)[-1]
+    if path.startswith(".trellis/.runtime/"):
+        continue
     is_unrelated = path == unrelated
     classifications.append({
         "path": path,
@@ -1147,7 +720,7 @@ for entry in snapshot["entries"]:
         "coverage_source": "AI throwaway scope review" if is_unrelated else "guru-check-task passed DTO",
     })
 
-ledger = gtt.read_json(task_dir / "issue-scope-ledger.json")
+ledger = json.loads((task_dir / "issue-scope-ledger.json").read_text(encoding="utf-8"))
 primary_issue = int(ledger["primary_issue"]["number"])
 subject_match = re.fullmatch(
     r"(?P<type>[a-z]+)\((?P<scope>[a-z0-9._/-]+)\): #(?P<issue>[1-9][0-9]*) (?P<summary>.+)",
@@ -1193,7 +766,7 @@ print(json.dumps(authoring, ensure_ascii=False, separators=(",", ":")))
 PY
   )"
   prepared_json="$(
-    "$TARGET/.agents/skills/guru-create-task-commit/scripts/prepare-task-commit.sh" \
+    "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/prepare-task-commit.sh" \
       --root "$TARGET" \
       --json \
       --input "$input_path" \
@@ -1409,6 +982,8 @@ assert {
 } == {
     "production-contract-manifest-2.0.schema.json",
     "production-contract-manifest.schema.json",
+    "skill-commands.schema.json",
+    "skill-error-catalog.schema.json",
     "skill-eval-adapter-request.schema.json",
     "skill-eval-adapter-response.schema.json",
     "skill-eval-human-feedback.schema.json",
@@ -1541,7 +1116,7 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; expected={"invoke_markers":14,"exit_markers":52,"target_markers":31,"planned_ids":[]}; assert all(source["facts"][key] == installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; assert (source["active_packages"], source["commands"], source["complete_package_commands"]) == (15, 54, 15); expected={"invoke_markers":14,"exit_markers":52,"target_markers":31,"planned_ids":[]}; assert all(installed["facts"][key] == value for key,value in expected.items())' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.4"' <<<"$MINIMAL_CONTRACT_JSON"
 MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
@@ -1561,101 +1136,102 @@ guru-review-branch|["workflow-passed","standalone-passed","implementation-requir
 guru-review-task-publication|["workflow-initial-ready","standalone-initial-ready","return-to-task-work","blocked-external","stale-reentry-ready","metadata-fix-fresh-ready","metadata-fix-durable-drift-return"]
 guru-verify-extension-installation|["source-repository-verified","source-remote-unavailable"]
 EOF
+verify_package_projections "fresh-install"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/planning-approval.schema.json"
-test -x "$TARGET/.agents/skills/guru-approve-task-plan/scripts/record-planning-approval.sh"
-test -x "$TARGET/.agents/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
-test -x "$TARGET/.claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
-test -x "$TARGET/.codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
-test -x "$TARGET/.cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/record-planning-approval.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/check-planning-approval.sh"
+test ! -e "$TARGET/.claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
+test ! -e "$TARGET/.codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
+test ! -e "$TARGET/.cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
-test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh"
-test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
-"$TARGET/.agents/skills/guru-create-task-commit/scripts/prepare-task-commit.sh" --help >/dev/null
-"$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
-test -x "$TARGET/.claude/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
-test -x "$TARGET/.claude/skills/guru-create-task-commit/scripts/create-task-commit.sh"
-test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
-test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
-test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
-test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/prepare-task-commit.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh"
+"$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/prepare-task-commit.sh" --help >/dev/null
+"$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
+test ! -e "$TARGET/.claude/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
+test ! -e "$TARGET/.claude/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test ! -e "$TARGET/.codex/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
+test ! -e "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test ! -e "$TARGET/.cursor/skills/guru-create-task-commit/scripts/prepare-task-commit.sh"
+test ! -e "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-branch/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-review-branch/scripts/invoke.sh"
-test -x "$TARGET/.agents/skills/guru-review-branch/scripts/review-branch.sh"
-test -x "$TARGET/.agents/skills/guru-review-branch/scripts/check-review-gate.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-branch/scripts/review-branch.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-branch/scripts/check-review-gate.sh"
 test -x "$TARGET/.claude/skills/guru-review-branch/scripts/invoke.sh"
 test -x "$TARGET/.codex/skills/guru-review-branch/scripts/invoke.sh"
 test -x "$TARGET/.cursor/skills/guru-review-branch/scripts/invoke.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-task-publication/SKILL.md"
 test -x "$TARGET/.agents/skills/guru-review-task-publication/scripts/invoke.sh"
-test -x "$TARGET/.agents/skills/guru-review-task-publication/scripts/record-task-publication-review.sh"
-test -x "$TARGET/.agents/skills/guru-review-task-publication/scripts/check-task-publication-review.sh"
 test -x "$TARGET/.claude/skills/guru-review-task-publication/scripts/invoke.sh"
 test -x "$TARGET/.codex/skills/guru-review-task-publication/scripts/invoke.sh"
 test -x "$TARGET/.cursor/skills/guru-review-task-publication/scripts/invoke.sh"
 verify_task_publication_validator_wrappers "fresh-install"
+verify_closeout_package_boundaries "fresh-install"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md"
 for root in .agents .claude .codex .cursor; do
   test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/invoke.sh"
-  test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh"
-  test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh"
-  test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh"
+  test ! -e "$TARGET/$root/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh"
+  test ! -e "$TARGET/$root/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh"
+  test ! -e "$TARGET/$root/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh"
 done
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json"
-test -x "$TARGET/.agents/skills/guru-check-task/scripts/record-phase2-check.sh"
-test -x "$TARGET/.agents/skills/guru-check-task/scripts/check-phase2-check.sh"
-test -x "$TARGET/.claude/skills/guru-check-task/scripts/check-phase2-check.sh"
-test -x "$TARGET/.codex/skills/guru-check-task/scripts/record-phase2-check.sh"
-test -x "$TARGET/.cursor/skills/guru-check-task/scripts/check-phase2-check.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/scripts/record-phase2-check.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh"
+test ! -e "$TARGET/.claude/skills/guru-check-task/scripts/check-phase2-check.sh"
+test ! -e "$TARGET/.codex/skills/guru-check-task/scripts/record-phase2-check.sh"
+test ! -e "$TARGET/.cursor/skills/guru-check-task/scripts/check-phase2-check.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh"
-test -x "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh"
-test -x "$TARGET/.claude/skills/guru-sync-base/scripts/sync-base.sh"
-test -x "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
-test -x "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh"
+test ! -e "$TARGET/.claude/skills/guru-sync-base/scripts/sync-base.sh"
+test ! -e "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
+test ! -e "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-test -x "$TARGET/.agents/skills/guru-discover-change-context/scripts/record-context-discovery.sh"
-test -x "$TARGET/.agents/skills/guru-discover-change-context/scripts/check-context-discovery.sh"
-test -x "$TARGET/.claude/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-test -x "$TARGET/.codex/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-test -x "$TARGET/.cursor/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/record-context-discovery.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/check-context-discovery.sh"
+test ! -e "$TARGET/.claude/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test ! -e "$TARGET/.codex/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test ! -e "$TARGET/.cursor/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
-test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
-test -x "$TARGET/.claude/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
-test -x "$TARGET/.codex/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
-test -x "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test ! -e "$TARGET/.claude/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test ! -e "$TARGET/.codex/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
+test ! -e "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
-test -x "$TARGET/.agents/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
-test -x "$TARGET/.claude/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
-test -x "$TARGET/.codex/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
-test -x "$TARGET/.cursor/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test ! -e "$TARGET/.claude/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test ! -e "$TARGET/.codex/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
+test ! -e "$TARGET/.cursor/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-review-change-request/scripts/record-change-request-review.sh"
-test -x "$TARGET/.agents/skills/guru-review-change-request/scripts/check-change-request-review.sh"
-test -x "$TARGET/.claude/skills/guru-review-change-request/scripts/check-change-request-review.sh"
-test -x "$TARGET/.codex/skills/guru-review-change-request/scripts/record-change-request-review.sh"
-test -x "$TARGET/.codex/skills/guru-review-change-request/scripts/check-change-request-review.sh"
-test -x "$TARGET/.cursor/skills/guru-review-change-request/scripts/record-change-request-review.sh"
-test -x "$TARGET/.cursor/skills/guru-review-change-request/scripts/check-change-request-review.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/scripts/record-change-request-review.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/scripts/check-change-request-review.sh"
+test ! -e "$TARGET/.claude/skills/guru-review-change-request/scripts/check-change-request-review.sh"
+test ! -e "$TARGET/.codex/skills/guru-review-change-request/scripts/record-change-request-review.sh"
+test ! -e "$TARGET/.codex/skills/guru-review-change-request/scripts/check-change-request-review.sh"
+test ! -e "$TARGET/.cursor/skills/guru-review-change-request/scripts/record-change-request-review.sh"
+test ! -e "$TARGET/.cursor/skills/guru-review-change-request/scripts/check-change-request-review.sh"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"
 test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
 test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/create-task-workspace.sh"
 test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 test -f "$TARGET/.agents/skills/guru-create-task-workspace/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
-test -x "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
-test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
-test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
+test ! -e "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
+test ! -e "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
+test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 test -f "$TARGET/.codex/prompts/guru-finish-work.md"
 test -f "$TARGET/.claude/commands/guru/finish-work.md"
 test -f "$TARGET/.cursor/commands/guru-finish-work.md"
 test -f "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py"
 verify_requirements_clarification_exits "initial"
+verify_context_discovery_exits "initial"
 verify_contract_wording_standalone_profiles "initial"
 verify_change_request_review_package "initial"
 test ! -e "$TARGET/.agents/skills/guru-example-action"
@@ -1663,10 +1239,7 @@ test ! -e "$TARGET/.codex/skills/guru-example-action"
 test ! -e "$TARGET/.cursor/skills/guru-example-action"
 test ! -e "$TARGET/.claude/skills/guru-example-action"
 (cd "$REPO_ROOT" && python3 -m unittest \
-  trellis.skills.guru-team.tests.test_skill_packages.DistributionTests.test_unchanged_reapply \
-  trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_active_package_and_routes_pass \
-  trellis.skills.guru-team.tests.test_skill_packages.SourceValidationTests.test_representative_wrappers_emit_distinct_exits_and_stable_errors \
-  trellis.skills.guru-team.tests.test_skill_packages.EvalRunnerTests.test_four_adapters_execute_same_corpus_and_expected_non_success_exits)
+  trellis.skills.guru-team.tests.test_skill_packages.SkillPackageIntegrationTests)
 verify_finish_family_integration "initial"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
 python3 - "$TARGET" <<'PY'
@@ -1728,9 +1301,11 @@ for relative, content in current_files.items():
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
 PY
-grep -q "def prepare_closeout" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
-! grep -q "def resolve_closeout_state" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
-grep -q "def ensure_closeout_draft_pr" "$TARGET/.trellis/guru-team/scripts/python/guru_team_trellis.py"
+for skill_id in guru-review-task-publication guru-verify-extension-installation guru-finalize-task guru-merge-task-pr; do
+  test -f "$TARGET/.trellis/guru-team/skills/packages/$skill_id/commands.json"
+  test -f "$TARGET/.trellis/guru-team/skills/packages/$skill_id/runtime/owner.py"
+  ! grep -Rq 'guru_team_trellis.py' "$TARGET/.trellis/guru-team/skills/packages/$skill_id/runtime"
+done
 for relative in \
   ".codex/prompts/guru-finish-work.md" \
   ".claude/commands/guru/finish-work.md" \
@@ -1792,7 +1367,7 @@ git -C "$TARGET" add .trellis/guru-team/config.yml
 git -C "$TARGET" commit -q -m "chore: configure throwaway base remote"
 git -C "$TARGET" push -q origin main
 SYNC_RESOLUTION_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh" \
     --root "$TARGET" \
     --mode standalone \
     --resolve-only \
@@ -1801,7 +1376,7 @@ SYNC_RESOLUTION_JSON="$(
 )"
 SYNC_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$SYNC_RESOLUTION_JSON")"
 SYNC_RESULT_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh" \
     --root "$TARGET" \
     --mode standalone \
     --execute \
@@ -1811,7 +1386,7 @@ SYNC_RESULT_JSON="$(
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is False; assert payload["resolution"]["resolution_sha256"] == payload["post_sync_resolution_sha256"]; assert payload["decision_checkout"]["head_after"] == payload["git"]["local_head_after"] == payload["git"]["remote_head_after"]' <<<"$SYNC_RESULT_JSON"
 SYNC_VALIDATION_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh" \
     --root "$TARGET" \
     --mode standalone \
     --result-json "$SYNC_RESULT_JSON" \
@@ -1858,26 +1433,21 @@ print(json.dumps({
 PY
 }
 
-DISCOVERY_PREVIEW="$TARGET/.agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-DISCOVERY_RECORD="$TARGET/.agents/skills/guru-discover-change-context/scripts/record-context-discovery.sh"
-DISCOVERY_CHECK="$TARGET/.agents/skills/guru-discover-change-context/scripts/check-context-discovery.sh"
+DISCOVERY_PREVIEW="$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh"
+DISCOVERY_RECORD="$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/record-context-discovery.sh"
+DISCOVERY_CHECK="$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/check-context-discovery.sh"
 DISCOVERY_ZERO_JSON="$(
   "$DISCOVERY_PREVIEW" \
     --root "$TARGET" \
     --json \
-    --term "quasar nebula xyzzy"
+    --query-json '{"terms":["quasar nebula xyzzy"]}'
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert payload["candidates"] == []; assert payload["invalid"] == []' <<<"$DISCOVERY_ZERO_JSON"
 DISCOVERY_CANDIDATE_JSON="$(
   "$DISCOVERY_PREVIEW" \
     --root "$TARGET" \
     --json \
-    --issue-ref '#111' \
-    --path docs/context-discovery-smoke.md \
-    --command preview-change-context-history \
-    --schema-field snapshot_sha256 \
-    --term "context discovery" \
-    --query "current evidence before archived history"
+    --query-json '{"issue_refs":["#111"],"paths":["docs/context-discovery-smoke.md"],"commands":["preview-change-context-history"],"schema_fields":["snapshot_sha256"],"terms":["context discovery"],"queries":["current evidence before archived history"]}'
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert len(payload["candidates"]) == 1; candidate = payload["candidates"][0]; assert candidate["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json"); assert candidate["score"]["total"] > 0; assert payload["preview_sha256"]' <<<"$DISCOVERY_CANDIDATE_JSON"
 
@@ -1904,15 +1474,33 @@ root = Path(sys.argv[1]).resolve()
 sync_result = json.loads(sys.argv[2])
 preview = json.loads(sys.argv[3])
 zero_preview = json.loads(sys.argv[4])
-runtime = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
+sys.path.insert(0, str(root / ".trellis/guru-team"))
+runtime = root / ".trellis/guru-team/skills/packages/guru-discover-change-context/runtime/common.py"
 spec = importlib.util.spec_from_file_location(
-    "installed_ephemeral_context_runtime", runtime
+    "installed_ephemeral_context_package_runtime", runtime
 )
 if spec is None or spec.loader is None:
     raise SystemExit(f"could not load installed context runtime: {runtime}")
 gtt = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = gtt
 spec.loader.exec_module(gtt)
+gtt.context_digest = gtt.digest
+gtt.context_result_identity = gtt.identity
+gtt.CONTEXT_QUERY_KINDS = (
+    "issue_refs", "pr_refs", "branches", "paths", "commands",
+    "config_keys", "schema_fields", "symbols", "terms", "queries",
+)
+gtt.CONTEXT_SEQUENCE_TRACE = (
+    "fresh_base", "live_change", "duplicates", "docs", "code_contracts",
+    "tests", "query_clues", "history_preview",
+)
+def context_structural_errors(root, payload):
+    try:
+        gtt.validate(runtime.parents[1], payload)
+    except Exception as exc:
+        return [str(exc)]
+    return []
+gtt.context_structural_errors = context_structural_errors
 
 head = subprocess.run(
     ["git", "rev-parse", "HEAD"],
@@ -2376,7 +1964,7 @@ SH
 chmod +x "$PHASE0_FAKE_BIN/gh"
 
 PHASE0_RESOLUTION_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh" \
     --root "$TARGET" \
     --mode workflow \
     --resolve-only \
@@ -2393,7 +1981,7 @@ git -C "$SYNC_UPSTREAM" add phase0-behind.txt
 git -C "$SYNC_UPSTREAM" commit -q -m "test: advance throwaway base after resolution"
 git -C "$SYNC_UPSTREAM" push -q origin main
 PHASE0_RESULT_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh" \
     --root "$TARGET" \
     --mode workflow \
     --execute \
@@ -2403,7 +1991,7 @@ PHASE0_RESULT_JSON="$(
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is True; assert payload["resolution"]["resolution_sha256"] == sys.argv[1]; assert payload["post_sync_resolution_sha256"] != sys.argv[1]' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_RESULT_JSON"
 PHASE0_VALIDATION_JSON="$(
-  "$TARGET/.agents/skills/guru-sync-base/scripts/check-base-sync.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh" \
     --root "$TARGET" \
     --mode workflow \
     --result-json "$PHASE0_RESULT_JSON" \
@@ -2586,12 +2174,12 @@ payload["docs_ssot"] = {
 payload["semantic_review"]["summary"] = summary
 output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
-  record_json="$("$TARGET/.agents/skills/guru-check-task/scripts/record-phase2-check.sh" \
+  record_json="$("$TARGET/.trellis/guru-team/skills/packages/guru-check-task/scripts/record-phase2-check.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
     --input "$input_path" \
     --json)"
-  check_json="$("$TARGET/.agents/skills/guru-check-task/scripts/check-phase2-check.sh" \
+  check_json="$("$TARGET/.trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
     --json)"
@@ -2642,7 +2230,7 @@ PY
 PHASE2_DTO="$(record_throwaway_phase2 "已检查初次提交的需求、设计、代码、测试、文档与安装边界。" initial_check)"
 INITIAL_PLAN="$(prepare_task_commit_candidate initial_commit "feat(trellis): #122 验证安装后任务提交" "$PHASE2_DTO")"
 INITIAL_CANDIDATE_JSON="$(
-  "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
     --json \
@@ -2650,7 +2238,7 @@ INITIAL_CANDIDATE_JSON="$(
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["mode"] == "candidate"; assert payload["checked_commits"] == []; assert payload["candidate_validation"]["sequence"] == "001"' <<<"$INITIAL_CANDIDATE_JSON"
 INITIAL_COMMIT_JSON="$(
-  "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
     --json \
@@ -2669,7 +2257,7 @@ printf '%s\n' "finding fix task change" >"$TARGET/src/task-commit-smoke.txt"
 REVISION_PHASE2_DTO="$(record_throwaway_phase2 "已在 finding fix 后重新检查全部范围并绑定新的 HEAD 与 dirty state。" finding_fix_rerun)"
 REVISION_PLAN="$(prepare_task_commit_candidate finding_fix_commit "fix(trellis): #122 验证 finding 修订提交" "$REVISION_PHASE2_DTO")"
 REVISION_CANDIDATE_JSON="$(
-  "$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
     --json \
@@ -2677,7 +2265,7 @@ REVISION_CANDIDATE_JSON="$(
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["candidate_validation"]["sequence"] == "001"; assert payload["candidate_validation"]["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_CANDIDATE_JSON"
 REVISION_COMMIT_JSON="$(
-  "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
     --json \
@@ -2701,7 +2289,7 @@ TARGET="$INSTALL_TARGET"
 
 INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
 INITIAL_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-initial")"
 printf '%s\n' "$INITIAL_TASK_WORKSPACE_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is False; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$INITIAL_TASK_WORKSPACE_JSON"
@@ -2813,43 +2401,43 @@ test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md"
 test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"
 test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/create-task-workspace.sh"
-test -x "$TARGET/.agents/skills/guru-create-task-commit/scripts/create-task-commit.sh"
-"$TARGET/.agents/skills/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
-test -x "$TARGET/.claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
-test -x "$TARGET/.codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
-test -x "$TARGET/.cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
-test -x "$TARGET/.claude/skills/guru-create-task-commit/scripts/create-task-commit.sh"
-test -x "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
-test -x "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
-test -x "$TARGET/.agents/skills/guru-sync-base/scripts/sync-base.sh"
-test -x "$TARGET/.claude/skills/guru-sync-base/scripts/sync-base.sh"
-test -x "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
-test -x "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
-test -x "$TARGET/.agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-test -x "$TARGET/.claude/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-test -x "$TARGET/.codex/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-test -x "$TARGET/.cursor/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
-test -x "$TARGET/.agents/skills/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
-test -x "$TARGET/.claude/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
-test -x "$TARGET/.codex/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
-test -x "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
-test -x "$TARGET/.agents/skills/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
-test -x "$TARGET/.claude/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
-test -x "$TARGET/.codex/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
-test -x "$TARGET/.cursor/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
-test -x "$TARGET/.agents/skills/guru-review-change-request/scripts/record-change-request-review.sh"
-test -x "$TARGET/.claude/skills/guru-review-change-request/scripts/check-change-request-review.sh"
-test -x "$TARGET/.codex/skills/guru-review-change-request/scripts/check-change-request-review.sh"
-test -x "$TARGET/.cursor/skills/guru-review-change-request/scripts/check-change-request-review.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh"
+"$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/check-task-commit-plan.sh" --help >/dev/null
+test ! -e "$TARGET/.claude/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
+test ! -e "$TARGET/.codex/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
+test ! -e "$TARGET/.cursor/skills/guru-approve-task-plan/scripts/check-planning-approval.sh"
+test ! -e "$TARGET/.claude/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test ! -e "$TARGET/.codex/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test ! -e "$TARGET/.cursor/skills/guru-create-task-commit/scripts/create-task-commit.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh"
+test ! -e "$TARGET/.claude/skills/guru-sync-base/scripts/sync-base.sh"
+test ! -e "$TARGET/.codex/skills/guru-sync-base/scripts/sync-base.sh"
+test ! -e "$TARGET/.cursor/skills/guru-sync-base/scripts/sync-base.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test ! -e "$TARGET/.claude/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test ! -e "$TARGET/.codex/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test ! -e "$TARGET/.cursor/skills/guru-discover-change-context/scripts/preview-change-context-history.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/record-requirements-clarification.sh"
+test ! -e "$TARGET/.claude/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test ! -e "$TARGET/.codex/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test ! -e "$TARGET/.cursor/skills/guru-clarify-requirements/scripts/check-requirements-clarification.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh"
+test ! -e "$TARGET/.claude/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test ! -e "$TARGET/.codex/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test ! -e "$TARGET/.cursor/skills/guru-review-contract-wording/scripts/check-contract-wording-review.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/scripts/record-change-request-review.sh"
+test ! -e "$TARGET/.claude/skills/guru-review-change-request/scripts/check-change-request-review.sh"
+test ! -e "$TARGET/.codex/skills/guru-review-change-request/scripts/check-change-request-review.sh"
+test ! -e "$TARGET/.cursor/skills/guru-review-change-request/scripts/check-change-request-review.sh"
 test -f "$TARGET/.agents/skills/guru-create-task-workspace/SKILL.md"
-test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
-test -x "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
-test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
-test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
+test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"
+test ! -e "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
+test ! -e "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
+test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
+verify_package_projections "after-update-reapply"
 verify_finish_family_integration "after-update-reapply"
-verify_issue_174_controlled_replay
 "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json >/dev/null
 EXTENSION_CONTRACT_AFTER_UPDATE_JSON="$(
   "$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" \
@@ -2859,11 +2447,12 @@ EXTENSION_CONTRACT_AFTER_UPDATE_JSON="$(
     --json
 )"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.5"' <<<"$EXTENSION_CONTRACT_AFTER_UPDATE_JSON"
+verify_closeout_package_boundaries "after-update-reapply"
 for root in .agents .claude .codex .cursor; do
   test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/invoke.sh"
-  test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh"
-  test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh"
-  test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh"
+  test ! -e "$TARGET/$root/skills/guru-verify-extension-installation/scripts/execute-extension-verification.sh"
+  test ! -e "$TARGET/$root/skills/guru-verify-extension-installation/scripts/record-extension-verification.sh"
+  test ! -e "$TARGET/$root/skills/guru-verify-extension-installation/scripts/check-extension-verification.sh"
 done
 EXTENSION_EVAL_AFTER_UPDATE_JSON="$(
   "$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh" \
@@ -2876,14 +2465,14 @@ EXTENSION_EVAL_AFTER_UPDATE_JSON="$(
 )"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["status"] == "passed"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.5"; assert [case["actual_exit"] for case in payload["cases"]] == ["verified", "blocked"]; assert all(case["status"] == "passed" for case in payload["cases"])' <<<"$EXTENSION_EVAL_AFTER_UPDATE_JSON"
 DISCOVERY_AFTER_UPDATE_JSON="$(
-  "$TARGET/.agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh" \
+  "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh" \
     --root "$TARGET" \
     --json \
-    --issue-ref '#111' \
-    --command preview-change-context-history
+    --query-json '{"issue_refs":["#111"],"commands":["preview-change-context-history"]}'
 )"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert any(row["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json") for row in payload["candidates"])' <<<"$DISCOVERY_AFTER_UPDATE_JSON"
 verify_requirements_clarification_exits "after-update"
+verify_context_discovery_exits "after-update"
 verify_contract_wording_standalone_profiles "after-update"
 verify_change_request_review_package "after-update"
 POST_UPDATE_TASK_REL=".trellis/tasks/07-17-114-contract-wording-after-update"
@@ -2973,10 +2562,10 @@ grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
 
 UPDATED_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
 printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"]; assert payload["pr_ready"] is True; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
 UPDATED_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-after-update" --existing-developer-identity)"
 printf '%s\n' "$UPDATED_TASK_WORKSPACE_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is True; assert all(payload[key] for key in ("source_developer_identity", "target_developer_identity")); assert not any(payload[key] for key in ("source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
+python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is True; assert payload["source_developer_identity"] is True; assert payload["target_developer_identity"] is False; assert not any(payload[key] for key in ("source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
 UPDATED_PHASE0_TRANSCRIPT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-after-update" --checkpoint update-reapply)"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["checkpoint"] == "update-reapply"; assert payload["exit_family_count"] == 23; assert len(payload["six_step_transcript"]) == 6; assert [row["edge_id"] for row in payload["reentry_transcripts"]] == ["needs_context", "clarify_requirements", "review_wording"]; assert [row["source"] for row in payload["refresh_provenance_transcripts"]] == ["explicit", "config-candidate", "remote-default"]; assert payload["workspace"]["actual_exit"] == "created"; assert payload["workspace"]["checker_status"] == "passed"' <<<"$UPDATED_PHASE0_TRANSCRIPT_JSON"
 

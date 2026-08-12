@@ -165,7 +165,7 @@
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
-      "runtime_command": "invoke-stage0-skill",
+      "runtime_command": "invoke-guru-discover-change-context",
       "objective_scope": "Caller-owned input validation, optional ephemeral active-task binding, optional same-owner recovery consumption and deterministic typed-exit serialization after the owner closed loop"
     }
   ],

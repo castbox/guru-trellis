@@ -11,5 +11,10 @@ case "$PACKAGE_ROOT" in
   */.claude/skills/guru-verify-extension-installation) REPO_ROOT="${PACKAGE_ROOT%/.claude/skills/guru-verify-extension-installation}" ;;
   *) REPO_ROOT="" ;;
 esac
-DISPATCHER="${GURU_TEAM_DISPATCHER:-${REPO_ROOT:?unsupported Skill package root for guru-verify-extension-installation}/.trellis/guru-team/scripts/bash/run-skill-command.sh}"
-exec "$DISPATCHER" --package-root "$PACKAGE_ROOT" --validator verification_executor -- "$@"
+PACKAGE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LAUNCHER="$PACKAGE_SCRIPT_DIR/../../../runtime/launch.sh"
+if [[ ! -f "$LAUNCHER" ]]; then
+  LAUNCHER="$PACKAGE_SCRIPT_DIR/../../../../runtime/launch.sh"
+fi
+if [[ ! -f "$LAUNCHER" ]]; then echo 'unsupported Skill package root for guru-verify-extension-installation. Guru Team Skill packages are not self-contained or portable. Install or upgrade the complete Guru Team preset.' >&2; exit 2; fi
+source "$LAUNCHER" execute-extension-verification "$@"

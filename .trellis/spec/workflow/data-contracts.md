@@ -8,8 +8,8 @@ copy and must be preserved by the preset installer.
 
 When adding a config field:
 
-1. Add the default to `DEFAULTS` in
-   `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`.
+1. Add the default only to the package-local runtime or shared utility that
+   directly consumes the field; do not create a cross-Skill aggregate config owner.
 2. Document the field in `trellis/workflows/guru-team/config-template.yml`.
 3. Define each field's current omission behavior explicitly: either a current
    default or a required-field error, without a version-specific reader.

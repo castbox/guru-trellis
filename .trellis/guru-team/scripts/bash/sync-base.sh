@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" sync-base "$@"
+exec "$SCRIPT_DIR/run-package-command.sh" "guru-sync-base" "scripts/sync-base.sh" "$@"

@@ -68,7 +68,8 @@ Use these checks before committing workflow or preset changes:
 ```bash
 python3 -m json.tool trellis/index.json
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
-python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
+find trellis/skills/guru-team/runtime trellis/skills/guru-team/packages -name '*.py' -type f -print0 | xargs -0 python3 -m py_compile
+python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
 trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-dir>
 trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --candidate-artifact <task-commit-plan>
@@ -461,7 +462,7 @@ files.
 
 Source validation, preset staging, and installed validation treat the six
 packages, five transition schemas, call-local envelope schemas, consumer
-projections, shared runtime, registry/extension inventory, and activation
+projections, package runtimes, minimal shared kernel, registry/extension inventory, and activation
 manifest as one versioned unit. Mixed old/new bytes, missing assets, or a
 partially activated graph fail closed and preserve the prior complete
 installation. Clean init, existing-workflow preview/switch, official `trellis

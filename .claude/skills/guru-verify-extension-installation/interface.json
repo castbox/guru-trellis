@@ -59,6 +59,7 @@
     {"id": "verification_result", "path": "schemas/verification-result-5.0.schema.json"}
   ],
   "validators": [
+    {"id": "extension_version_projection", "command": "scripts/version.sh", "runtime_command": "show-extension-version", "objective_scope": "Project the installed Guru Team extension version and provenance from the repository-local manifest without semantic judgment"},
     {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Validate source identity before side effects, create isolated source and clean throwaway target checkouts, then execute the source-owned installation catalog"},
     {"id": "verification_recorder", "command": "scripts/record-extension-verification.sh", "runtime_command": "record-extension-verification", "objective_scope": "Record already completed AI adequacy, findings and route in ignored source-session runtime"},
     {"id": "verification_checker", "command": "scripts/check-extension-verification.sh", "runtime_command": "check-extension-verification", "objective_scope": "Validate source identity, schema, freshness, redaction, ignored persistence and terminal consumer without semantic judgment"},

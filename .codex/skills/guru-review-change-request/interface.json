@@ -187,7 +187,7 @@
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
-      "runtime_command": "invoke-stage0-skill",
+      "runtime_command": "invoke-guru-review-change-request",
       "objective_scope": "Caller-owned input validation and deterministic typed-exit serialization after the owner closed loop"
     }
   ],

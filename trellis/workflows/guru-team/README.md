@@ -191,8 +191,9 @@ guru-sync-base -> base_current -> guru-discover-change-context
 Semantic wrapper 通过 `--invocation -` 的 versioned call-local envelope 分开接收 public
 input、当前 transition 和本 Skill owner result；owner result 经当前 recorder/checker 复验后消费，不进入下一
 stage。正常 pre-task 只使用 stdin/stdout 或 caller memory，在 workspace/task creation 前不写
-owner-result、prerequisite、transition、task、workspace 或 ignored-runtime repo 文件，也不读取或
-import `guru_team_trellis.py` 来组装输入。
+owner-result、prerequisite、transition、task、workspace 或 ignored-runtime repo 文件。Agent
+不读取或 import package-private runtime 来组装输入；它只使用 public projection、command
+discovery 与准确 `--help`。
 
 `guru-sync-base` public wrapper 是唯一 authoritative sync。Workflow、platform entry 和 Skill
 Markdown 不先执行低层 resolve/execute/check；refresh 丢弃 stale transition 后重新调用一次完整
@@ -541,8 +542,16 @@ guru-create-task-workspace`。环境检查可独立运行：
 .trellis/guru-team/scripts/bash/check-env.sh --json
 ```
 
+该兼容入口由 `guru-select-workflow-mode` 的 package-local
+`check-workflow-environment` command 独占；extension version/provenance 由
+`guru-verify-extension-installation` 的 `show-extension-version` command 独占，
+Planning 三文档定位由 `guru-approve-task-plan` 的
+`resolve-planning-artifacts` command 独占。三个顶层 wrapper 只转发到对应
+package validator，不在 shared kernel 注册业务命令。
+
 Compatibility `prepare-task.sh --json` 只执行显式 local query，不是 workflow hop，也不创建 GitHub
-issue、worktree、branch 或 Trellis task。
+issue、worktree、branch 或 Trellis task。它的确定性实现由
+`guru-create-task-workspace/runtime/prepare.py` 独占，不属于 shared kernel。
 其实际 CLI 形态为：
 
 ```bash

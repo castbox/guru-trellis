@@ -1,7 +1,0 @@
-{
-  "profile": "clarification_reentry",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/07-26-example",
-  "source_exit": "clarify_scope",
-  "reentry_reason": "authority_refreshed"
-}

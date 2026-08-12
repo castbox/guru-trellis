@@ -2,4 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" resolve-human-artifacts "$@"
+if [[ -f "$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-approve-task-plan/scripts/resolve-human-artifacts.sh" ]]; then
+  TARGET="$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-approve-task-plan/scripts/resolve-human-artifacts.sh"
+else
+  TARGET="$SCRIPT_DIR/../../skills/packages/guru-approve-task-plan/scripts/resolve-human-artifacts.sh"
+fi
+exec "$TARGET" "$@"

@@ -1,0 +1,234 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-discover-change-context",
+  "commands": [
+    {
+      "id": "preview-change-context-history",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--query-json",
+          "required": false,
+          "kind": "json",
+          "description": "Canonical context query JSON.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--limit",
+          "required": false,
+          "kind": "string",
+          "description": "Maximum result count.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "history_previewer",
+      "runtime_role": "preview"
+    },
+    {
+      "id": "record-context-discovery",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--mode",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "workflow",
+            "standalone"
+          ],
+          "description": "Invocation mode.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "Owner result JSON locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--expected-result-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Expected result digest.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--active-task",
+          "required": false,
+          "kind": "string",
+          "description": "Ephemeral active task locator for workflow mode.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--recovery-continuation-id",
+          "required": false,
+          "kind": "string",
+          "description": "Explicit same-owner recovery continuation identity.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "owner_result_recorder",
+      "runtime_role": "record"
+    },
+    {
+      "id": "check-context-discovery",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "Owner result JSON locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--expected-result-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Expected result digest.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--active-task",
+          "required": false,
+          "kind": "string",
+          "description": "Ephemeral active task locator for workflow mode.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--recovery-continuation-id",
+          "required": false,
+          "kind": "string",
+          "description": "Explicit same-owner recovery continuation identity.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "owner_result_validator",
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-discover-change-context",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--active-task",
+          "required": false,
+          "kind": "string",
+          "description": "Ephemeral active task locator for workflow mode.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--recovery-continuation-id",
+          "required": false,
+          "kind": "string",
+          "description": "Explicit same-owner recovery continuation identity.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

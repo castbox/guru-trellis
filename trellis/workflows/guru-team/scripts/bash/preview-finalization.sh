@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" preview-finalization "$@"
+exec "$SCRIPT_DIR/run-package-command.sh" "guru-finalize-task" "scripts/preview-finalization.sh" "$@"

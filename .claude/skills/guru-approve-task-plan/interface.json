@@ -125,6 +125,12 @@
   ],
   "validators": [
     {
+      "id": "planning_artifact_resolver",
+      "command": "scripts/resolve-human-artifacts.sh",
+      "runtime_command": "resolve-planning-artifacts",
+      "objective_scope": "resolve the current or explicitly selected Trellis task and report its three human planning documents without judging plan adequacy"
+    },
+    {
       "id": "planning_approval_recorder",
       "command": "scripts/record-planning-approval.sh",
       "runtime_command": "record-planning-approval",
@@ -139,7 +145,7 @@
     {
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
-      "runtime_command": "invoke-stage0-skill",
+      "runtime_command": "invoke-guru-approve-task-plan",
       "objective_scope": "validate the minimal route input, check the owner-private result, and serialize one minimal typed exit"
     }
   ],

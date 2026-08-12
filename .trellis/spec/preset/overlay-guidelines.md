@@ -70,7 +70,7 @@ Shared/Codex/Claude/Cursor may differ only in discovery root or native adapter
 protocol; public Interface, exits, projections, eval corpus, and behavior remain
 identical.
 
-The six Phase 0 packages, transition/envelope schemas, shared runtime, and
+The six Phase 0 packages, transition/envelope schemas, package runtimes, minimal shared kernel, and
 activation manifest are distributed as one versioned package unit. A selected
 platform may never discover a new package copy against an old transition or
 runtime inventory.

@@ -15,8 +15,8 @@ import jsonschema
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
-REPO = next(parent for parent in PACKAGE.parents if (parent / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py").is_file())
-RUNTIME_PATH = REPO / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+REPO = PACKAGE.parents[4]
+RUNTIME_PATH = PACKAGE / "runtime/owner.py"
 
 
 def load(relative: str):
@@ -24,7 +24,7 @@ def load(relative: str):
 
 
 def load_runtime():
-    spec = importlib.util.spec_from_file_location("guru_team_trellis_issue205", RUNTIME_PATH)
+    spec = importlib.util.spec_from_file_location("guru_verify_extension_installation_runtime", RUNTIME_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -32,6 +32,98 @@ def load_runtime():
 
 
 class ExtensionVerificationContractTests(unittest.TestCase):
+    def test_version_projection_is_package_owned_and_manifest_compatible(self) -> None:
+        command = next(
+            item for item in load("commands.json")["commands"]
+            if item["id"] == "show-extension-version"
+        )
+        self.assertEqual(command["entrypoint"], "runtime/check.py")
+        self.assertEqual(command["runtime_role"], "check")
+        self.assertEqual(command["side_effect"], "repo_read")
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            manifest = root / ".trellis/guru-team/extension.json"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(json.dumps({
+                "schema_version": "1.0",
+                "installed_at": "2026-08-12T00:00:00Z",
+                "extension": {
+                    "extension_id": "guru-team",
+                    "version": "0.6.5-guru.5",
+                    "workflow_template_id": "guru-team",
+                    "target_trellis_cli": "0.6.5",
+                    "tested": {"trellis_cli": ["0.6.5"]},
+                },
+                "source": {
+                    "repo": "castbox/guru-trellis",
+                    "ref": "v0.6.5-guru.5",
+                    "commit": "a" * 40,
+                    "tree_state": "clean",
+                    "is_mutable_ref": False,
+                },
+                "install": {"selected_platforms": ["codex"], "all_platforms": False},
+            }), encoding="utf-8")
+            result = subprocess.run(
+                [str(PACKAGE / "scripts/version.sh"), "--root", str(root), "--json"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.5")
+            self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
+            self.assertEqual(result.stderr, "")
+
+    def test_version_help_and_compatibility_wrapper_route_to_package(self) -> None:
+        wrapper = (
+            REPO / "trellis/workflows/guru-team/scripts/bash/version.sh"
+            if (REPO / "trellis/skills/guru-team").is_dir()
+            else REPO / ".trellis/guru-team/scripts/bash/version.sh"
+        )
+        for target in (PACKAGE / "scripts/version.sh", wrapper):
+            result = subprocess.run(
+                [str(target), "--help"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            self.assertIn("usage: show-extension-version", result.stdout)
+            self.assertIn("owner: guru-verify-extension-installation", result.stdout)
+        repeated = subprocess.run(
+            [str(PACKAGE / "scripts/version.sh"), "--root", str(REPO), "--root", str(REPO), "--json"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(repeated.returncode, 2, repeated)
+        self.assertEqual(json.loads(repeated.stdout)["code"], "conflicting_arguments")
+
+    def test_active_runtime_is_source_only_and_monolith_independent(self) -> None:
+        runtime_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted((PACKAGE / "runtime").glob("*.py"))
+        )
+        for retired in (
+            "guru_team_trellis.py",
+            "verification_required",
+            "not_required",
+            "finalization_verification",
+            "task_ref",
+            "task-bearing",
+            "guru-finalize-task",
+        ):
+            self.assertNotIn(retired, runtime_text)
+        commands = load("commands.json")
+        self.assertEqual(
+            {item["id"] for item in commands["commands"]},
+            {item["runtime_command"] for item in load("interface.json")["validators"]},
+        )
+
     def test_interface_is_source_owned_standalone_only(self) -> None:
         interface = load("interface.json")
         self.assertEqual(interface["schema_version"], "1.5")
