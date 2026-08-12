@@ -46,7 +46,7 @@ The installer is idempotent:
 - the overlay tree contains only the three Guru-owned `guru-finish-work` entries
 - unknown local edits receive `.new` copies instead of being overwritten
 - the six-package/23-exit Phase 0 graph, five closed transition stages,
-  call-local envelopes, shared runtime, and activation manifest install as one
+  call-local envelopes, package runtimes, minimal shared kernel, and activation manifest install as one
   versioned unit; mixed old/new activation fails closed
 - clean install/update/reapply verifies the actual-stdout public graph, single
   authoritative sync, platform/dogfood parity, and recursive zero sidecars

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-error-catalog-1.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "package_id", "errors"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "package_id": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "errors": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["code", "trigger", "exit_status", "locator", "remediation"], "properties": {"code": {"type": "string", "pattern": "^[a-z0-9_]+$"}, "trigger": {"type": "string", "minLength": 1}, "exit_status": {"type": "integer", "minimum": 2, "maximum": 125}, "locator": {"enum": ["field_path", "path"]}, "remediation": {"type": "string", "minLength": 1}}}}
+  }
+}

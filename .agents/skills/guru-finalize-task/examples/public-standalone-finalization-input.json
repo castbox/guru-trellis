@@ -1,5 +1,0 @@
-{
-  "profile": "standalone_finalization",
-  "mode": "standalone",
-  "task_ref": ".trellis/tasks/07-26-example"
-}

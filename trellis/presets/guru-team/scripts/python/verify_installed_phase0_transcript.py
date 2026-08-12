@@ -55,6 +55,146 @@ def context_digest(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value) + b"\n").hexdigest()
 
 
+def finalize_clarification_owner(payload: dict[str, Any]) -> dict[str, Any]:
+    result = copy.deepcopy(payload)
+    actions = result.get("source_actions")
+    actions = actions if isinstance(actions, list) else []
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        action["payload_sha256"] = (
+            digest(action["payload"])
+            if isinstance(action.get("payload"), dict)
+            else None
+        )
+        action["action_digest"] = digest({
+            key: copy.deepcopy(action.get(key))
+            for key in (
+                "action_id", "kind", "target", "payload", "preimage_sha256",
+                "payload_sha256",
+            )
+        })
+    unsigned = copy.deepcopy(result)
+    unsigned.pop("content_identity", None)
+    content = {
+        "confirmed_facts": result.get("confirmed_facts"),
+        "repository_answerable_questions": result.get(
+            "repository_answerable_questions"
+        ),
+        "clarification_rounds": result.get("clarification_rounds"),
+        "open_questions": result.get("open_questions"),
+        "affected_contracts": result.get("affected_contracts"),
+        "reason": result.get("reason"),
+    }
+    result["content_identity"] = {
+        "target_sha256": digest(result.get("review_target")),
+        "disposition_sha256": digest(result.get("target_disposition")),
+        "content_sha256": digest(content),
+        "context_sha256": digest(result.get("context_evidence")),
+        "scope_sha256": digest(result.get("scope_proposals")),
+        "action_sha256": digest(actions),
+        "payload_sha256": digest([
+            action.get("payload") if isinstance(action, dict) else None
+            for action in actions
+        ]),
+        "result_sha256": digest(unsigned),
+    }
+    return result
+
+
+def clarification_typed_output(
+    owner: dict[str, Any],
+    public_input: dict[str, Any],
+    transition: dict[str, Any],
+) -> dict[str, Any]:
+    exit_id = owner["typed_exit"]
+    if exit_id == "clear":
+        identity = owner["content_identity"]
+        disposition = owner["target_disposition"]
+        clarity_transition = {
+            **copy.deepcopy(transition),
+            "transition_id": f"clarity_current:{identity['result_sha256'][:24]}",
+            "stage": "clarity_current",
+            "clarity_result_sha256": identity["result_sha256"],
+            "target_content_sha256": identity["content_sha256"],
+            "clarity": {
+                "facts_sha256": identity["result_sha256"],
+                "target_sha256": identity["target_sha256"],
+                "disposition_sha256": identity["disposition_sha256"],
+                "content_sha256": identity["content_sha256"],
+                "scope_sha256": identity["scope_sha256"],
+            },
+            "target_disposition": {
+                "disposition_sha256": disposition["disposition_digest"],
+                "duplicate_facts_sha256": disposition["duplicate_facts_sha256"],
+            },
+        }
+        clarity_transition.pop("authority_content_sha256", None)
+        return {
+            "exit_id": "clear",
+            "resume_target": owner["invocation_context"]["resume_target"],
+            "target_disposition": "retained",
+            "continuation_id": public_input["continuation_id"],
+            "transition": clarity_transition,
+        }
+    if exit_id == "needs_context":
+        base = copy.deepcopy(transition["base"])
+        return {
+            "exit_id": "needs_context",
+            "handoff_profile": "pre_task",
+            "handoff_mode": public_input["mode"],
+            "handoff_repo_locator": transition["repo_locator"],
+            "handoff_base_branch": base["selected_base"],
+            "handoff_continuation_id": public_input["continuation_id"],
+            "transition": {
+                "schema_version": "1.0",
+                "transition_id": (
+                    "base_current:" + base["post_sync_resolution_sha256"][:24]
+                ),
+                "stage": "base_current",
+                "mode": public_input["mode"],
+                "repo_locator": transition["repo_locator"],
+                "base": base,
+            },
+        }
+    if exit_id == "refresh_context":
+        output = {
+            "exit_id": "refresh_context",
+            "handoff_mode": public_input["mode"],
+            "handoff_repo_root": transition["repo_locator"],
+            "handoff_route": "repo_change",
+        }
+        if transition["base"].get("source") == "explicit":
+            output["handoff_base_branch"] = transition["base"]["selected_base"]
+        return output
+    raise RuntimeError(f"unsupported transcript clarification output: {exit_id}")
+
+
+def wording_change_request_source(issue: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "source_kind": "issue",
+        "identity": issue["url"],
+        "title": issue["title"],
+        "body": issue["body"],
+        "updated_at": issue["updatedAt"],
+    }
+
+
+def readiness_reentry_transition(
+    wording_transition: dict[str, Any], exit_id: str
+) -> dict[str, Any]:
+    transition = copy.deepcopy(wording_transition)
+    transition.pop("wording_facts_sha256", None)
+    transition.pop("wording", None)
+    if exit_id == "review_wording":
+        transition["stage"] = "clarity_current"
+        transition["transition_id"] = (
+            "clarity_current:" + transition["clarity_result_sha256"][:24]
+        )
+        return transition
+    raise RuntimeError(f"unsupported readiness re-entry transition: {exit_id}")
+
+
 def run(
     argv: list[str | Path],
     *,
@@ -74,9 +214,12 @@ def run(
         check=False,
     )
     if check and process.returncode != 0:
+        diagnostics = "\n".join(
+            value for value in (process.stderr.strip(), process.stdout.strip()) if value
+        )
         raise RuntimeError(
             f"command failed ({process.returncode}): {' '.join(map(str, argv))}\n"
-            f"{process.stderr.strip()}"
+            f"{diagnostics}"
         )
     return process
 
@@ -458,7 +601,13 @@ def record_semantic(
     arguments: list[str | Path],
     payload: dict[str, Any],
 ) -> dict[str, Any]:
-    path = root / ".agents/skills" / skill_id / "scripts" / script
+    path = (
+        root
+        / ".trellis/guru-team/skills/packages"
+        / skill_id
+        / "scripts"
+        / script
+    )
     return json_stdout(
         run([path, *arguments], cwd=root, env=env, stdin=payload),
         f"semantic recorder {skill_id}",
@@ -611,22 +760,12 @@ def context_owner_for_issue(
         current_rows[group][0]["blob_or_content_sha256"] = blob
     preview_args: list[str | Path] = [
         root
-        / ".agents/skills/guru-discover-change-context/scripts/preview-change-context-history.sh",
+        / ".trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh",
         "--root",
         root,
-        "--issue-ref",
-        "#145",
-        "--path",
-        "docs/requirements.md",
+        "--query-json",
+        json.dumps(change_input, ensure_ascii=False, sort_keys=True),
     ]
-    for command in change_input["commands"]:
-        preview_args.extend(["--command", str(command)])
-    for term in change_input["terms"]:
-        preview_args.extend(["--term", str(term)])
-    for query in change_input["queries"]:
-        preview_args.extend(["--query", str(query)])
-    for symbol in change_input["symbols"]:
-        preview_args.extend(["--symbol", str(symbol)])
     preview = json_stdout(run(preview_args, cwd=root, env=env), "context history preview")
     return {
         "schema_version": "2.0",
@@ -878,6 +1017,7 @@ def clarification_owner_for_issue(
         })
     elif typed_exit != "clear":
         raise RuntimeError(f"unsupported transcript clarification exit: {typed_exit}")
+    owner = finalize_clarification_owner(owner)
     recorded = record_semantic(
         root,
         env,
@@ -935,18 +1075,16 @@ def wording_owner_for_issue(
     }
     authored = {
         "generated_at": "2026-01-01T00:00:00Z",
-        "semantic_review": {
-            "revisions": [],
-            "classifications": [
-                {
-                    "hit_id": hit["hit_id"],
-                    "classification": "term_definition",
-                    "reason": "The semantic review retained this explicit contract term.",
-                }
-                for hit in scan["hits"]
-            ],
-            "ai_review_gate": gate,
-        },
+        "revisions": [],
+        "classifications": [
+            {
+                "hit_id": hit["hit_id"],
+                "classification": "term_definition",
+                "reason": "The semantic review retained this explicit contract term.",
+            }
+            for hit in scan["hits"]
+        ],
+        "ai_review_gate": gate,
         "typed_exit": "pass",
     }
     recorded = record_semantic(
@@ -994,8 +1132,8 @@ def readiness_owner_for_issue(
         "title_sha256": title_sha256,
         "body_sha256": body_sha256,
     }
-    target_identity_sha256 = context_digest(raw_target)
-    target_content_sha256 = context_digest({
+    target_identity_sha256 = digest(raw_target)
+    target_content_sha256 = digest({
         "title_sha256": title_sha256,
         "body_sha256": body_sha256,
     })
@@ -1008,7 +1146,7 @@ def readiness_owner_for_issue(
         "clarity_disposition_sha256": clarity["disposition_sha256"],
         "wording_facts_sha256": wording["facts_sha256"],
     }
-    linkage["linkage_sha256"] = context_digest(linkage)
+    linkage["linkage_sha256"] = digest(linkage)
     dimension_ids = (
         "requirement_completeness",
         "delivery_unit_consistency",
@@ -1062,7 +1200,7 @@ def readiness_owner_for_issue(
                 "reviewed_linkage_sha256": linkage["linkage_sha256"],
                 "summary": "The complete readiness evidence was reviewed for one declared route.",
                 "findings_count": 0,
-                "scope_conclusion_sha256": context_digest(scope),
+                "scope_conclusion_sha256": digest(scope),
             },
         },
         "typed_exit": "ready",
@@ -1124,6 +1262,88 @@ def readiness_owner_for_issue(
     elif typed_exit != "ready":
         raise RuntimeError(f"unsupported transcript readiness exit: {typed_exit}")
     return owner
+
+
+def checked_readiness_owner_for_issue(
+    root: Path,
+    env: dict[str, str],
+    transition: dict[str, Any],
+    source_path: Path,
+    clarity_result: dict[str, Any],
+    wording_result: dict[str, Any],
+    typed_exit: str = "ready",
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    authored = readiness_owner_for_issue(root, env, transition, typed_exit)
+    clarity_identity = clarity_result["content_identity"]
+    wording_content_hashes = {
+        item.get("field"): item.get("content_sha256")
+        for item in wording_result["scope"]["items"]
+        if isinstance(item, dict)
+    }
+    target_content_sha256 = digest({
+        "title_sha256": wording_content_hashes.get("title"),
+        "body_sha256": wording_content_hashes.get("body"),
+    })
+    prerequisites = {
+        "clarity": {
+            "status": "current",
+            "schema_id": "guru-requirements-clarification-2.0",
+            "typed_exit": "clear",
+            "payload_sha256": digest(clarity_result),
+            "facts_sha256": clarity_identity["result_sha256"],
+            "target_sha256": clarity_identity["target_sha256"],
+            "disposition_sha256": clarity_identity["disposition_sha256"],
+            "content_sha256": target_content_sha256,
+            "scope_sha256": clarity_identity["scope_sha256"],
+            "error_codes": [],
+        },
+        "wording": {
+            "status": "current",
+            "schema_id": "guru-contract-wording-review-1.0",
+            "profile": "change_request",
+            "typed_exit": "pass",
+            "payload_sha256": digest(wording_result),
+            "facts_sha256": wording_result["facts_sha256"],
+            "scope_sha256": wording_result["scope"]["scope_sha256"],
+            "scan_sha256": wording_result["scan"]["scan_sha256"],
+            "target_content_sha256": target_content_sha256,
+            "error_codes": [],
+        },
+    }
+    authored["prerequisite_payloads"] = prerequisites
+    recorded = record_semantic(
+        root,
+        env,
+        "guru-review-change-request",
+        "record-change-request-review.sh",
+        [
+            "--mode", "workflow", "--input", "-",
+            "--change-request-input", source_path,
+        ],
+        authored,
+    )
+    prerequisites_path = source_path.with_name(
+        f"readiness-prerequisites-{typed_exit}.json"
+    )
+    prerequisites_path.write_text(
+        json.dumps(prerequisites, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    checked = record_semantic(
+        root,
+        env,
+        "guru-review-change-request",
+        "check-change-request-review.sh",
+        [
+            "--input", "-", "--prerequisites-input", prerequisites_path,
+            "--change-request-input", source_path,
+            "--expected-facts-sha256", recorded["facts_sha256"],
+        ],
+        recorded,
+    )
+    if checked.get("status") != "passed" or checked.get("typed_exit") != typed_exit:
+        raise RuntimeError("current readiness owner did not pass its production checker")
+    return recorded, checked
 
 
 def base_sync_payload(transition: dict[str, Any]) -> dict[str, Any]:
@@ -1519,12 +1739,12 @@ def workspace_plan_for_transition(
             "target", "scope", "base", "naming", "assignee", "side_effects",
         )
     }
-    reviewable_sha256 = context_digest(reviewable)
+    reviewable_sha256 = digest(reviewable)
     plan["ai_review_gate"]["reviewed_plan_sha256"] = reviewable_sha256
     plan["freshness"]["reviewable_plan_sha256"] = reviewable_sha256
     projection = copy.deepcopy(plan)
     projection["freshness"].pop("plan_sha256", None)
-    plan["freshness"]["plan_sha256"] = context_digest(projection)
+    plan["freshness"]["plan_sha256"] = digest(projection)
     return plan
 
 
@@ -1532,7 +1752,10 @@ def reentry_transcripts(
     root: Path,
     env: dict[str, str],
     source: dict[str, Any],
-    source_path: Path,
+    readiness_source_path: Path,
+    wording_source_path: Path,
+    clarity_result: dict[str, Any],
+    wording_result: dict[str, Any],
     context_transition: dict[str, Any],
     wording_transition: dict[str, Any],
 ) -> list[dict[str, Any]]:
@@ -1554,6 +1777,9 @@ def reentry_transcripts(
         "owner_context": {},
         "owner_result": needs_owner,
     }
+    needs_envelope["typed_output"] = clarification_typed_output(
+        needs_owner, needs_envelope["public_input"], context_transition
+    )
     needs, needs_row = invoke_public(
         root, env, "guru-clarify-requirements", needs_envelope, "needs_context"
     )
@@ -1598,8 +1824,14 @@ def reentry_transcripts(
         ("clarify_requirements", "guru-clarify-requirements", "clear"),
         ("review_wording", "guru-review-contract-wording", "pass"),
     ):
-        readiness_owner = readiness_owner_for_issue(
-            root, env, wording_transition, producer_exit
+        readiness_owner, readiness_checked = checked_readiness_owner_for_issue(
+            root, env, wording_transition, readiness_source_path,
+            clarity_result, wording_result, producer_exit
+        )
+        producer_transition = (
+            context_transition
+            if producer_exit == "clarify_requirements"
+            else readiness_reentry_transition(wording_transition, producer_exit)
         )
         readiness_envelope = {
             "schema_version": "1.0",
@@ -1610,7 +1842,7 @@ def reentry_transcripts(
                 "target_locator": wording_transition["target_locator"],
                 "continuation_id": wording_transition["continuation_id"],
             },
-            "transition": wording_transition,
+            "transition": producer_transition,
             "owner_context": {"change_request": source},
             "owner_result": readiness_owner,
         }
@@ -1631,7 +1863,7 @@ def reentry_transcripts(
             owner_context: dict[str, Any] = {}
         else:
             target_owner, target_checked = wording_owner_for_issue(
-                root, env, source_path
+                root, env, wording_source_path
             )
             owner_context = {"change_request": source}
         target_envelope = {
@@ -1641,6 +1873,10 @@ def reentry_transcripts(
             "owner_context": owner_context,
             "owner_result": target_owner,
         }
+        if target_skill == "guru-clarify-requirements":
+            target_envelope["typed_output"] = clarification_typed_output(
+                target_owner, target_input, producer["transition"]
+            )
         assert_owner_binding(target_skill, target_input, target_owner)
         target, target_row = invoke_public(
             root, env, target_skill, target_envelope, target_exit
@@ -1658,6 +1894,7 @@ def reentry_transcripts(
             "producer_skill": producer_row["skill_id"],
             "producer_actual_exit": producer_row["actual_exit"],
             "producer_stdout_sha256": producer_row["stdout_sha256"],
+            "producer_checker_status": readiness_checked.get("status"),
             "projection_id": projection_id,
             "projected_input_sha256": digest(target_input),
             "target_skill": target_row["skill_id"],
@@ -1737,6 +1974,9 @@ def six_step_transcript(
         "owner_context": {},
         "owner_result": clarity_owner,
     }
+    clarity_envelope["typed_output"] = clarification_typed_output(
+        clarity_owner, clarity_envelope["public_input"], context["transition"]
+    )
     assert_owner_binding(
         "guru-clarify-requirements",
         clarity_envelope["public_input"],
@@ -1754,11 +1994,25 @@ def six_step_transcript(
         "number": 145,
         "selected_comments": [],
     }
-    source_path = chain_root / "inputs/change-request.json"
-    source_path.parent.mkdir(parents=True)
-    source_path.write_text(json.dumps(source) + "\n", encoding="utf-8")
+    issue = live_issue(root, env)
+    source.update({
+        "title": issue["title"],
+        "body": issue["body"],
+        "updated_at": issue["updatedAt"],
+    })
+    readiness_source_path = chain_root / "inputs/readiness-change-request.json"
+    readiness_source_path.parent.mkdir(parents=True)
+    readiness_source_path.write_text(
+        json.dumps(source, ensure_ascii=False, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    wording_source_path = chain_root / "inputs/wording-change-request.json"
+    wording_source_path.write_text(
+        json.dumps(wording_change_request_source(issue)) + "\n",
+        encoding="utf-8",
+    )
     wording_owner, wording_checked = wording_owner_for_issue(
-        root, env, source_path
+        root, env, wording_source_path
     )
     wording_envelope = {
         "schema_version": "1.0",
@@ -1788,12 +2042,18 @@ def six_step_transcript(
         root,
         env,
         source,
-        source_path,
+        readiness_source_path,
+        wording_source_path,
+        clarity_owner,
+        wording_owner,
         context["transition"],
         wording["transition"],
     )
 
-    readiness_owner = readiness_owner_for_issue(root, env, wording["transition"])
+    readiness_owner, readiness_checked = checked_readiness_owner_for_issue(
+        root, env, wording["transition"], readiness_source_path,
+        clarity_owner, wording_owner,
+    )
     readiness_envelope = {
         "schema_version": "1.0",
         "public_input": {
@@ -1848,7 +2108,10 @@ def six_step_transcript(
         "plan": workspace_plan,
         "transition": readiness["transition"],
     }
-    workspace_package = root / ".agents/skills/guru-create-task-workspace/scripts"
+    workspace_package = (
+        root
+        / ".trellis/guru-team/skills/packages/guru-create-task-workspace/scripts"
+    )
     result = json_stdout(
         run(
             [workspace_package / "create-task-workspace.sh", "--invocation", "-"],
@@ -2005,17 +2268,21 @@ def refresh_provenance_transcripts(
         refresh_owner, refresh_checked = clarification_owner_for_issue(
             root, env, context["transition"], "refresh_context"
         )
+        refresh_envelope = {
+            "schema_version": "1.0",
+            "public_input": clarification_input,
+            "transition": context["transition"],
+            "owner_context": {},
+            "owner_result": refresh_owner,
+        }
+        refresh_envelope["typed_output"] = clarification_typed_output(
+            refresh_owner, clarification_input, context["transition"]
+        )
         refresh, refresh_row = invoke_public(
             root,
             env,
             "guru-clarify-requirements",
-            {
-                "schema_version": "1.0",
-                "public_input": clarification_input,
-                "transition": context["transition"],
-                "owner_context": {},
-                "owner_result": refresh_owner,
-            },
+            refresh_envelope,
             "refresh_context",
         )
         projected_sync_input, refresh_projection = project_installed_output(

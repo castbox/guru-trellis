@@ -7,8 +7,11 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr
+from io import StringIO
 from pathlib import Path
 from unittest import mock
 
@@ -53,15 +56,7 @@ def package_repo_root() -> Path:
 
 
 def load_runtime():
-    candidates: list[Path] = []
-    for parent in PACKAGE.parents:
-        candidates.extend([
-            parent / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
-            parent / ".trellis/guru-team/scripts/python/guru_team_trellis.py",
-        ])
-    runtime_path = next((path for path in candidates if path.is_file()), None)
-    if runtime_path is None:
-            raise RuntimeError("Current Guru Team runtime not found for package tests.")
+    runtime_path = PACKAGE / "runtime/owner.py"
     spec = importlib.util.spec_from_file_location(
         "task_publication_package_runtime",
         runtime_path,
@@ -77,6 +72,55 @@ GTT = load_runtime()
 
 
 class TaskPublicationContractTest(unittest.TestCase):
+    def test_package_local_runtime_has_no_retired_verifier_or_monolith_route(self) -> None:
+        runtime_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted((PACKAGE / "runtime").glob("*.py"))
+        )
+        for retired in ("guru_team_trellis.py", "verification_required", "not_required", "finalization_verification"):
+            self.assertNotIn(retired, runtime_text)
+        commands = json.loads((PACKAGE / "commands.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            {(item["validator_id"], item["id"]) for item in commands["commands"]},
+            {(item["id"], item["runtime_command"]) for item in self.interface["validators"]},
+        )
+        for validator in self.interface["validators"]:
+            self.assertIn("runtime/launch.sh", (PACKAGE / validator["command"]).read_text(encoding="utf-8"))
+
+    def test_package_entrypoints_map_owner_failures_to_declared_error(self) -> None:
+        sys.path.insert(0, str(PACKAGE.parents[1]))
+        from runtime.io import CommandError
+
+        class FakeOwner:
+            class WorkflowError(RuntimeError):
+                pass
+
+            def fail(self, *_args):
+                raise self.WorkflowError("expected fail-closed result")
+
+        common_path = PACKAGE / "runtime/common.py"
+        spec = importlib.util.spec_from_file_location(
+            "task_publication_runtime_common",
+            common_path,
+        )
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader if spec else None)
+        common = importlib.util.module_from_spec(spec)
+        assert spec and spec.loader
+        spec.loader.exec_module(common)
+
+        with self.assertRaises(CommandError) as raised:
+            common.call_owner(FakeOwner, FakeOwner().fail)
+        self.assertEqual(raised.exception.code, "publication_stale")
+        self.assertEqual(raised.exception.field_path, "publication")
+
+        parser = __import__("argparse").ArgumentParser(add_help=False)
+        parser.add_argument("--required", required=True)
+        with redirect_stderr(StringIO()):
+            with self.assertRaises(CommandError) as invalid:
+                common.parse_arguments(parser, [])
+        self.assertEqual(invalid.exception.code, "invalid_arguments")
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.interface = json.loads((PACKAGE / "interface.json").read_text(encoding="utf-8"))
@@ -737,6 +781,14 @@ class TaskPublicationContractTest(unittest.TestCase):
             package_root = repo_root / relative
             if not package_root.is_dir():
                 continue
+            if layout not in {"canonical", "installed-shared"}:
+                with self.subTest(layout=layout, projection="public-only"):
+                    self.assertTrue(os.access(package_root / "scripts/invoke.sh", os.X_OK))
+                    for validator_id in validator_ids:
+                        self.assertFalse(
+                            (package_root / validators[validator_id]["command"]).exists()
+                        )
+                continue
             for validator_id in validator_ids:
                 validator = validators[validator_id]
                 command = package_root / validator["command"]
@@ -750,17 +802,14 @@ class TaskPublicationContractTest(unittest.TestCase):
                         stderr=subprocess.PIPE,
                         check=False,
                     )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertIn(
+                        f"usage: {validator['runtime_command']}",
+                        result.stdout,
+                    )
                     if layout == "canonical":
-                        self.assertEqual(result.returncode, 2, result.stderr)
                         self.assertIn(
-                            "not an audited installed or discovery layout",
-                            result.stderr,
-                        )
-                    else:
-                        self.assertEqual(result.returncode, 0, result.stderr)
-                        self.assertIn(
-                            "usage: guru_team_trellis.py "
-                            f"{validator['runtime_command']}",
+                            "owner: guru-review-task-publication",
                             result.stdout,
                         )
 

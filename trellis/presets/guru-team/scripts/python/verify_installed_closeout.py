@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import os
 import shutil
@@ -39,18 +38,9 @@ def write_executable(path: Path, content: str) -> None:
     path.chmod(path.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
 
-def load_installed_companion(root: Path) -> Any:
-    path = root / ".trellis/guru-team/scripts/python/guru_team_trellis.py"
-    spec = importlib.util.spec_from_file_location("installed_guru_team_trellis", path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"could not load installed companion: {path}")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
 def load_installed_eval_adapter(root: Path) -> Any:
+    import importlib.util
+
     path = root / ".trellis/guru-team/skills/adapters/eval/native_adapter.py"
     spec = importlib.util.spec_from_file_location(
         "installed_guru_team_eval_adapter",
@@ -62,6 +52,166 @@ def load_installed_eval_adapter(root: Path) -> Any:
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+class InstalledPackageClient:
+    """Test authoring facade whose production operations use installed wrappers."""
+
+    INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+    TASK_PUBLICATION_DIMENSIONS = (
+        "diff_outcome_consistency",
+        "issue_scope_closure",
+        "pr_body_quality",
+        "validation_claims",
+        "branch_review_summary",
+        "docs_ssot_reconciliation",
+        "safety_deployment_impact",
+        "finish_summary_semantics",
+        "metadata_tail_integrity",
+        "artifact_binding_freshness",
+    )
+
+    def __init__(self, root: Path, skill_id: str) -> None:
+        self.root = root
+        self.skill_id = skill_id
+        self.package = root / ".trellis/guru-team/skills/packages" / skill_id
+        self._last_review_gate: str | None = None
+
+    @staticmethod
+    def read_json(path: Path) -> dict[str, Any]:
+        return read_json(path)
+
+    @staticmethod
+    def write_json(path: Path, payload: dict[str, Any]) -> None:
+        write_json(path, payload)
+
+    @staticmethod
+    def current_head(root: Path) -> str:
+        return run(["git", "rev-parse", "HEAD"], root).stdout.strip()
+
+    @staticmethod
+    def diff_base_ref(root: Path, base_branch: str) -> str:
+        remote = f"origin/{base_branch}"
+        probe = subprocess.run(
+            ["git", "rev-parse", "--verify", remote],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        return remote if probe.returncode == 0 else base_branch
+
+    @staticmethod
+    def changed_files(root: Path, diff_range: str) -> list[str]:
+        output = run(["git", "diff", "--name-only", diff_range], root).stdout
+        return [line for line in output.splitlines() if line]
+
+    @staticmethod
+    def git_status_paths(root: Path) -> list[str]:
+        output = run(
+            ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+            root,
+        ).stdout
+        return sorted(
+            field[3:].split(" -> ")[-1]
+            for field in output.split("\0")
+            if field
+        )
+
+    def _call(self, script: str, *arguments: str) -> dict[str, Any]:
+        wrapper = self.package / "scripts" / script
+        if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
+            raise RuntimeError(f"installed package wrapper is unavailable: {wrapper}")
+        return json.loads(run([str(wrapper), *arguments], self.root).stdout)
+
+    def cmd_record_planning_approval(self, args: argparse.Namespace) -> dict[str, Any]:
+        values = ["--root", args.root, "--task", args.task, "--input", args.input]
+        if args.dry_run:
+            values.append("--dry-run")
+        return self._call("record-planning-approval.sh", *values)
+
+    def cmd_check_planning_approval(self, args: argparse.Namespace) -> dict[str, Any]:
+        values = ["--root", args.root, "--task", args.task]
+        if args.require_exit:
+            values.extend(("--require-exit", args.require_exit))
+        return self._call("check-planning-approval.sh", *values)
+
+    def cmd_record_phase2_check(self, args: argparse.Namespace) -> dict[str, Any]:
+        values = ["--root", args.root, "--task", args.task, "--input", args.input]
+        if args.dry_run:
+            values.append("--dry-run")
+        return self._call("record-phase2-check.sh", *values)
+
+    def cmd_check_phase2_check(self, args: argparse.Namespace) -> dict[str, Any]:
+        return self._call(
+            "check-phase2-check.sh", "--root", args.root, "--task", args.task
+        )
+
+    def build_task_commit_candidate(
+        self,
+        root: Path,
+        task: Path,
+        public_input: dict[str, Any],
+        authoring: dict[str, Any],
+    ) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+        staging = root / ".trellis/.runtime/guru-team/installed-closeout"
+        public_path = staging / "task-commit-input.json"
+        authoring_path = staging / "task-commit-authoring.json"
+        write_json(public_path, public_input)
+        write_json(authoring_path, authoring)
+        prepared = self._call(
+            "prepare-task-commit.sh",
+            "--root", str(root),
+            "--input", public_path.relative_to(root).as_posix(),
+            "--candidate-json", authoring_path.relative_to(root).as_posix(),
+        )
+        candidate_path = root / prepared["candidate_artifact"]
+        candidate = read_json(candidate_path)
+        return candidate_path, candidate, candidate
+
+    def execute_task_commit_candidate(
+        self, root: Path, candidate: dict[str, Any], task: Path
+    ) -> dict[str, Any]:
+        del candidate
+        candidates = sorted(
+            (root / ".trellis/.runtime/guru-team/task-commit-plans" / task.name).glob("*.json")
+        )
+        if len(candidates) != 1:
+            raise RuntimeError("installed task commit candidate is ambiguous")
+        executed = self._call(
+            "create-task-commit.sh",
+            "--root", str(root),
+            "--task", task.relative_to(root).as_posix(),
+            "--candidate-artifact", candidates[0].relative_to(root).as_posix(),
+        )
+        run(["git", "reset", "--mixed", "HEAD"], root)
+        return executed
+
+    def cmd_review_branch(self, args: argparse.Namespace) -> dict[str, Any]:
+        result = self._call(
+            "review-branch.sh",
+            "--root", args.root,
+            "--task", args.task,
+            "--skill-input", args.skill_input,
+            "--semantic-review-file", args.semantic_review_file,
+            "--typed-exit", args.typed_exit,
+        )
+        gate = self.root / ".trellis/.runtime/guru-team/installed-closeout/review-gate.json"
+        write_json(gate, result)
+        self._last_review_gate = gate.relative_to(self.root).as_posix()
+        return result
+
+    def cmd_check_review_gate(self, args: argparse.Namespace) -> dict[str, Any]:
+        if not self._last_review_gate:
+            raise RuntimeError("installed branch review gate was not recorded")
+        values = [
+            "--root", args.root,
+            "--task", args.task,
+            "--input", self._last_review_gate,
+        ]
+        if args.expected_exit:
+            values.extend(("--expected-exit", args.expected_exit))
+        return self._call("check-review-gate.sh", *values)
 
 
 def ensure_baseline(root: Path, real_git: str, remote: Path, after_update: bool) -> str:
@@ -126,7 +276,40 @@ def valid_pr_body(issue: int) -> str:
 """
 
 
-def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: int) -> tuple[Path, str, str]:
+def write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"expected JSON object: {path}")
+    return payload
+
+
+def write_fixture_runtime_mappings(root: Path, task_slug: str, task_dir: Path, branch: str) -> None:
+    updated_at = datetime.now().astimezone().isoformat(timespec="seconds")
+    runtime = root / ".trellis/.runtime/guru-team"
+    write_json(runtime / "workspaces" / f"{task_slug}.json", {
+        "schema_version": "1.0",
+        "workspace_slug": task_slug,
+        "workspace_path": str(root),
+        "source_checkout": str(root),
+        "branch_name": branch,
+        "updated_at": updated_at,
+    })
+    write_json(runtime / "tasks" / f"{task_slug}.json", {
+        "schema_version": "1.0",
+        "task_slug": task_slug,
+        "workspace_slug": task_slug,
+        "workspace_path": str(root),
+        "task_artifact_dir": task_dir.relative_to(root).as_posix(),
+        "updated_at": updated_at,
+    })
+
+
+def write_fixture(root: Path, owners: dict[str, Any], real_git: str, case_name: str, issue: int) -> tuple[Path, str, str]:
     branch = f"fix/{issue}-installed-closeout-{case_name}"
     git(root, real_git, "switch", "-C", branch, BASE_BRANCH)
     smoke_path = root / f"installed-closeout-{case_name}.txt"
@@ -157,19 +340,9 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "related_issues": [],
         "followup_issues": [],
     }
-    gtt.write_json(task_dir / "task.json", task)
-    gtt.write_json(task_dir / "issue-scope-ledger.json", ledger)
-    gtt.write_runtime_mappings(
-        root,
-        gtt.load_config(root),
-        {
-            "workspace_slug": task_slug,
-            "task_slug": task_slug,
-            "task_dir": task_dir.relative_to(root).as_posix(),
-            "branch_name": branch,
-        },
-        root,
-    )
+    write_json(task_dir / "task.json", task)
+    write_json(task_dir / "issue-scope-ledger.json", ledger)
+    write_fixture_runtime_mappings(root, task_slug, task_dir, branch)
     for name, content in (
         (
             "prd.md",
@@ -194,25 +367,27 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "Strategy: ssot_first. Durable requirements own the closeout contract.\n",
         encoding="utf-8",
     )
-    task_payload = gtt.read_json(task_dir / "task.json")
+    task_payload = read_json(task_dir / "task.json")
     task_payload.update({"status": "planning", "branch": branch})
-    gtt.write_json(task_dir / "task.json", task_payload)
+    write_json(task_dir / "task.json", task_payload)
     adapter.production_record_planning(
-        gtt,
+        owners["guru-approve-task-plan"],
         root,
         task_dir,
         "approved",
     )
     task_payload["status"] = "in_progress"
-    gtt.write_json(task_dir / "task.json", task_payload)
+    write_json(task_dir / "task.json", task_payload)
     checked = adapter.production_record_phase2(
-        gtt,
+        owners["guru-check-task"],
         root,
         task_dir,
         root / ".trellis/guru-team/skills/packages/guru-check-task",
         "passed",
     )
-    adapter.production_commit_for_review(gtt, root, task_dir, checked)
+    adapter.production_commit_for_review(
+        owners["guru-create-task-commit"], root, task_dir, checked
+    )
     branch_input = {
         "profile": "branch_review",
         "mode": "workflow",
@@ -222,7 +397,7 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "review_intent": "initial_review",
     }
     branch_check = adapter.production_record_review(
-        gtt,
+        owners["guru-review-branch"],
         root,
         task_dir,
         branch_input,
@@ -236,18 +411,18 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "review_intent": "initial_review",
     }
     authoring_path = adapter.production_publication_authoring(
-        gtt,
+        owners["guru-review-task-publication"],
         root,
         task_dir,
         publication_input,
         "publication-ready",
     )
-    authoring = gtt.read_json(authoring_path)
+    authoring = read_json(authoring_path)
     authoring["pr_payload"] = {
         "title": f"完成：#{issue} 验证安装后 closeout",
         "body": valid_pr_body(issue),
     }
-    gtt.write_json(authoring_path, authoring)
+    write_json(authoring_path, authoring)
     original_remote_url = git(root, real_git, "remote", "get-url", "origin")
     git(
         root,
@@ -257,20 +432,40 @@ def write_fixture(root: Path, gtt: Any, real_git: str, case_name: str, issue: in
         "origin",
         f"https://github.com/{REMOTE_REPO}.git",
     )
+    publication_package = (
+        root
+        / ".trellis/guru-team/skills/packages/guru-review-task-publication"
+    )
+    record_publication = publication_package / "scripts/record-task-publication-review.sh"
+    check_publication = publication_package / "scripts/check-task-publication-review.sh"
     try:
-        gtt.cmd_record_task_publication_review(argparse.Namespace(
-            root=str(root),
-            task=task_dir.relative_to(root).as_posix(),
-            input=authoring_path.relative_to(root).as_posix(),
-            branch_review_commit=publication_input["branch_review_commit"],
-            dry_run=False,
-        ))
-        checked_publication = gtt.cmd_check_task_publication_review(
-            argparse.Namespace(
-                root=str(root),
-                task=task_dir.relative_to(root).as_posix(),
-                expected_exit="ready",
-            )
+        run(
+            [
+                str(record_publication),
+                "--root",
+                str(root),
+                "--task",
+                task_dir.relative_to(root).as_posix(),
+                "--input",
+                authoring_path.relative_to(root).as_posix(),
+                "--branch-review-commit",
+                publication_input["branch_review_commit"],
+            ],
+            root,
+        )
+        checked_publication = json.loads(
+            run(
+                [
+                    str(check_publication),
+                    "--root",
+                    str(root),
+                    "--task",
+                    task_dir.relative_to(root).as_posix(),
+                    "--expected-exit",
+                    "ready",
+                ],
+                root,
+            ).stdout
         )
     finally:
         git(root, real_git, "remote", "set-url", "origin", original_remote_url)
@@ -344,7 +539,8 @@ if len(args) >= 3 and args[:2] == ["issue", "view"]:
         raise SystemExit(2)
     print(json.dumps({
         "number": issue_number,
-        "state": "OPEN",
+        "state": "CLOSED" if (load() or {}).get("state") == "MERGED" else "OPEN",
+        "closedAt": "2026-08-12T10:00:01Z" if (load() or {}).get("state") == "MERGED" else None,
         "url": f"https://github.com/microsoft/powertoys/issues/{issue_number}",
     }))
     raise SystemExit(0)
@@ -382,6 +578,48 @@ if args[:2] == ["pr", "ready"]:
     payload["headRefOid"] = remote_head()
     save(payload)
     raise SystemExit(0)
+if len(args) >= 3 and args[:2] == ["pr", "view"]:
+    if int(args[2]) != number:
+        raise SystemExit(2)
+    payload = load()
+    if not payload:
+        raise SystemExit(2)
+    payload["headRefOid"] = remote_head()
+    payload.update({
+        "baseRefName": "main",
+        "headRefName": branch,
+        "mergeable": "MERGEABLE",
+        "mergeStateStatus": "CLEAN",
+        "reviewDecision": "APPROVED",
+        "statusCheckRollup": [{"name": "required-ci", "conclusion": "SUCCESS"}],
+        "mergedAt": payload.get("mergedAt"),
+        "mergeCommit": payload.get("mergeCommit"),
+    })
+    save(payload)
+    print(json.dumps(payload, ensure_ascii=False))
+    raise SystemExit(0)
+if args[:2] == ["api", "repos/microsoft/powertoys"]:
+    print(json.dumps({
+        "full_name": "microsoft/PowerToys",
+        "allow_merge_commit": True,
+        "allow_squash_merge": False,
+        "allow_rebase_merge": False,
+    }))
+    raise SystemExit(0)
+if len(args) >= 3 and args[:2] == ["pr", "merge"]:
+    payload = load()
+    if not payload or int(args[2]) != number:
+        raise SystemExit(2)
+    expected_head = value("--match-head-commit")
+    if expected_head != remote_head() or "--merge" not in args:
+        raise SystemExit(2)
+    payload.update({
+        "state": "MERGED",
+        "mergedAt": "2026-08-12T10:00:00Z",
+        "mergeCommit": {"oid": expected_head},
+    })
+    save(payload)
+    raise SystemExit(0)
 print("unsupported fake gh command: " + " ".join(args), file=sys.stderr)
 raise SystemExit(2)
 """,
@@ -397,7 +635,9 @@ def run_closeout(
     real_git: str,
     remote: Path,
 ) -> dict[str, Any]:
-    package = root / ".agents/skills/guru-finalize-task"
+    package = (
+        root / ".trellis/guru-team/skills/packages/guru-finalize-task"
+    )
     wrappers = {
         name: package / "scripts" / f"{name}.sh"
         for name in (
@@ -721,6 +961,124 @@ def run_closeout(
         raise RuntimeError("installed Finalizer public wrapper returned an invalid ready_for_merge DTO")
     if gate_path.exists():
         raise RuntimeError("installed Finalizer public wrapper retained its private gate")
+    merge_package = (
+        root / ".trellis/guru-team/skills/packages/guru-merge-task-pr"
+    )
+    merge_wrappers = {
+        name: merge_package / "scripts" / f"{name}.sh"
+        for name in (
+            "preview-task-pr-merge",
+            "record-task-pr-merge",
+            "check-task-pr-merge",
+            "execute-task-pr-merge",
+            "invoke",
+        )
+    }
+    for name, wrapper in merge_wrappers.items():
+        if not wrapper.is_file() or not os.access(wrapper, os.X_OK):
+            raise RuntimeError(
+                f"installed guru-merge-task-pr {name} wrapper is missing or not executable: {wrapper}"
+            )
+    merge_input = runtime_dir / f"{issue}-ready-for-merge.json"
+    merge_input.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "profile": "ready_for_merge",
+                "mode": "workflow",
+                **{key: value for key, value in ready_payload.items() if key != "exit_id"},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    merge_review = runtime_dir / f"{issue}-merge-semantic-review.json"
+    merge_review.write_text(
+        json.dumps(
+            {
+                "semantic_review": {
+                    "dimensions": [
+                        {
+                            "id": identifier,
+                            "status": "passed",
+                            "summary": "Installed live merge evidence satisfies this dimension.",
+                        }
+                        for identifier in (
+                            "pr_ready",
+                            "repository_and_head",
+                            "checks_and_reviews",
+                            "mergeability",
+                            "repository_policy",
+                            "close_scope",
+                        )
+                    ]
+                },
+                "route": {"typed_exit": "merged", "merge_method": "merge"},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    merge_input_rel = merge_input.relative_to(root).as_posix()
+    merge_review_rel = merge_review.relative_to(root).as_posix()
+    merge_common = ["--root", str(root), "--input", merge_input_rel]
+    merge_preview = json.loads(
+        run([str(merge_wrappers["preview-task-pr-merge"]), *merge_common], root, env=env).stdout
+    )
+    if merge_preview.get("objective_blockers") != []:
+        raise RuntimeError("installed Merge preview did not accept Finalizer expected-head authority")
+    merge_record = json.loads(
+        run(
+            [
+                str(merge_wrappers["record-task-pr-merge"]),
+                *merge_common,
+                "--review-input",
+                merge_review_rel,
+            ],
+            root,
+            env=env,
+        ).stdout
+    )
+    merge_gate_rel = merge_record["gate"]
+    merge_gate = root / merge_gate_rel
+    merge_checked = json.loads(
+        run(
+            [str(merge_wrappers["check-task-pr-merge"]), *merge_common, "--gate", merge_gate_rel],
+            root,
+            env=env,
+        ).stdout
+    )
+    if merge_checked.get("typed_exit") != "ready_to_merge":
+        raise RuntimeError("installed Merge checker did not bind the expected-head merge")
+    merge_executed = json.loads(
+        run(
+            [str(merge_wrappers["execute-task-pr-merge"]), *merge_common, "--gate", merge_gate_rel],
+            root,
+            env=env,
+        ).stdout
+    )
+    if merge_executed.get("typed_exit") != "merged":
+        raise RuntimeError("installed Merge executor did not complete the expected-head merge")
+    merged_payload = json.loads(
+        run(
+            [str(merge_wrappers["invoke"]), "--input", merge_input_rel, "--gate", merge_gate_rel],
+            root,
+            env=env,
+        ).stdout
+    )
+    if (
+        merged_payload.get("exit_id") != "merged"
+        or merged_payload.get("repo_ref") != REPO
+        or merged_payload.get("pr_number") != issue
+        or merged_payload.get("merge_commit_sha") != local_head
+    ):
+        raise RuntimeError("installed Merge public wrapper returned an invalid merged DTO")
+    if merge_gate.exists():
+        raise RuntimeError("installed Merge public wrapper retained its private gate")
     recovered_remote_pr = json.loads(store.read_text(encoding="utf-8"))
     forbidden_terminal = [
         archived / "closeout-plan.json",
@@ -731,6 +1089,17 @@ def run_closeout(
         raise RuntimeError("installed Finalizer retained a terminal transaction artifact")
     if recovered_remote_pr.get("number") != issue or recovered_remote_pr.get("url") != expected_url:
         raise RuntimeError("installed fresh archived recovery changed the remote PR identity")
+    verifier_artifacts = [
+        path
+        for state_root in (
+            root / ".trellis/tasks",
+            root / ".trellis/.runtime/guru-team",
+        )
+        if state_root.is_dir()
+        for path in state_root.rglob("marketplace-verification.json")
+    ]
+    if verifier_artifacts:
+        raise RuntimeError("installed business closeout wrote a marketplace verification artifact")
     return {
         "status": "ok",
         "issue": issue,
@@ -743,6 +1112,9 @@ def run_closeout(
         "pr_url": pr["url"],
         "pr_ready": not pr["isDraft"],
         "public_exit": ready_payload["exit_id"],
+        "merge_exit": merged_payload["exit_id"],
+        "merge_commit": merged_payload["merge_commit_sha"],
+        "verifier_artifacts": 0,
         "terminal_transaction_artifacts": 0,
         "private_owner_checkpoints_consumed": True,
         "fresh_archived_pr_binding": recovered_remote_pr.get("headRefOid") == local_head,
@@ -763,7 +1135,16 @@ def main() -> int:
     remote = root.parent / "installed-closeout-remote.git"
     after_update = args.case == "after-update"
     ensure_baseline(root, real_git, remote, after_update)
-    gtt = load_installed_companion(root)
+    owners = {
+        skill_id: InstalledPackageClient(root, skill_id)
+        for skill_id in (
+            "guru-approve-task-plan",
+            "guru-check-task",
+            "guru-create-task-commit",
+            "guru-review-branch",
+            "guru-review-task-publication",
+        )
+    }
     issue = 106 if after_update else 105
     branch = f"fix/{issue}-installed-closeout-{args.case}"
     fake_bin = root.parent / f"fake-closeout-bin-{issue}"
@@ -779,7 +1160,7 @@ def main() -> int:
         "INSTALLED_CLOSEOUT_PR_STORE": str(store),
     })
     task_dir, branch, branch_review_commit = write_fixture(
-        root, gtt, real_git, args.case, issue
+        root, owners, real_git, args.case, issue
     )
     payload = run_closeout(
         root,

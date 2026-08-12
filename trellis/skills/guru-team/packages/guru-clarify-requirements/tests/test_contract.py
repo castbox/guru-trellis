@@ -93,7 +93,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotIn("context_before_task_update_sha256", contract)
         self.assertNotIn("preserve the decision trail", contract)
 
-    def test_wrappers_are_dispatcher_only_executable_and_have_no_mutation(self) -> None:
+    def test_wrappers_are_package_local_launcher_only_and_have_no_mutation(self) -> None:
         wrappers = {
             "record-requirements-clarification.sh": "clarification_recorder",
             "check-requirements-clarification.sh": "clarification_checker",
@@ -102,8 +102,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             path = self.package / "scripts" / name
             content = path.read_text(encoding="utf-8")
             self.assertTrue(path.stat().st_mode & 0o100)
-            self.assertIn("run-skill-command.sh", content)
-            self.assertIn(f"--validator {validator}", content)
+            self.assertIn("runtime/launch.sh", content)
             self.assertNotIn("guru_team_trellis.py", content)
             self.assertNotIn("gh issue", content)
             self.assertNotIn("issue create", content)
@@ -259,6 +258,42 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                         list(validator.iter_errors(action_payload(kind, markdown + control))),
                         [],
                     )
+
+    def test_package_local_record_check_and_closed_json_error(self) -> None:
+        source = self.package / "examples/requirements-clarification.json"
+        record = subprocess.run(
+            [str(self.package / "scripts/record-requirements-clarification.sh"), "--json", "--mode", "standalone", "--input", str(source)],
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(record.returncode, 0, record)
+        owner = json.loads(record.stdout)
+        check = subprocess.run(
+            [str(self.package / "scripts/check-requirements-clarification.sh"), "--json", "--input", "-", "--expected-result-sha256", owner["content_identity"]["result_sha256"]],
+            input=record.stdout, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(check.returncode, 0, check)
+        self.assertEqual(json.loads(check.stdout)["typed_exit"], owner["typed_exit"])
+        self.assertNotIn("guru_team_trellis", record.stdout + record.stderr + check.stdout + check.stderr)
+
+        invalid = subprocess.run(
+            [str(self.package / "scripts/check-requirements-clarification.sh"), "--json", "--input", "{"],
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertNotEqual(invalid.returncode, 0)
+        self.assertEqual(json.loads(invalid.stdout)["code"], "invalid_json")
+        self.assertNotIn("Traceback", invalid.stdout + invalid.stderr)
+
+    def test_public_invoke_validates_checked_semantic_owner_output(self) -> None:
+        owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
+        typed = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())
+        invocation = {"owner_result": owner, "typed_output": typed}
+        result = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
+            input=json.dumps(invocation), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result)
+        self.assertEqual(json.loads(result.stdout), typed)
+        self.assertNotIn("Traceback", result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

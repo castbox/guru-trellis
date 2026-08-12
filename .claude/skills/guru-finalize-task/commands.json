@@ -1,0 +1,191 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-finalize-task",
+  "commands": [
+    {
+      "id": "preview-finalization",
+      "validator_id": "finalization_previewer",
+      "owner": "guru-finalize-task",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Publication-ready input."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "finalization_stale",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-publication-ready-input.schema.json"
+      ]
+    },
+    {
+      "id": "record-finalization-gate",
+      "validator_id": "finalization_gate_recorder",
+      "owner": "guru-finalize-task",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Publication-ready input."
+        },
+        {
+          "flag": "--review-input",
+          "required": true,
+          "kind": "json",
+          "description": "Semantic review."
+        },
+        {
+          "flag": "--dry-run",
+          "required": false,
+          "kind": "boolean",
+          "description": "Do not write."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "finalization_stale",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/task-finalization-gate.schema.json"
+      ]
+    },
+    {
+      "id": "check-finalization-gate",
+      "validator_id": "finalization_gate_checker",
+      "owner": "guru-finalize-task",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Publication-ready input."
+        },
+        {
+          "flag": "--gate",
+          "required": false,
+          "kind": "string",
+          "description": "Private gate path."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "finalization_stale",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/task-finalization-gate.schema.json"
+      ]
+    },
+    {
+      "id": "execute-finalization-transition",
+      "validator_id": "finalization_transition_executor",
+      "owner": "guru-finalize-task",
+      "entrypoint": "runtime/execute.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Publication-ready input."
+        },
+        {
+          "flag": "--gate",
+          "required": false,
+          "kind": "string",
+          "description": "Private gate path."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "finalization_stale",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/task-finalization-transaction.schema.json"
+      ]
+    },
+    {
+      "id": "invoke-stage0-skill",
+      "validator_id": "public_invocation",
+      "owner": "guru-finalize-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Publication-ready input."
+        },
+        {
+          "flag": "--owner-result",
+          "required": true,
+          "kind": "json",
+          "description": "Owner result."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "finalization_stale",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ]
+    }
+  ]
+}

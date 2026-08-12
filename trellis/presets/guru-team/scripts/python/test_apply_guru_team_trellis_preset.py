@@ -168,6 +168,163 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
                 target.write_text("{}\n", encoding="utf-8")
             self.verifier.assert_forbidden_runtime_absent(root)
 
+    def test_finalizes_clarification_owner_identity_before_recording(self) -> None:
+        owner = {
+            "review_target": {"kind": "issue", "url": "https://example.invalid/145"},
+            "target_disposition": {"disposition": "keep_current_open_issue"},
+            "context_evidence": {"status": "current"},
+            "confirmed_facts": [],
+            "repository_answerable_questions": [],
+            "clarification_rounds": [],
+            "open_questions": [],
+            "scope_proposals": [],
+            "source_actions": [{
+                "action_id": "no_source_change",
+                "kind": "none",
+                "target": None,
+                "payload": None,
+                "preimage_sha256": None,
+                "payload_sha256": "0" * 64,
+                "action_digest": "0" * 64,
+            }],
+            "affected_contracts": ["requirements"],
+            "reason": "Current evidence is sufficient.",
+            "content_identity": {},
+        }
+
+        finalized = self.verifier.finalize_clarification_owner(owner)
+        unsigned = copy.deepcopy(finalized)
+        unsigned.pop("content_identity")
+        action = finalized["source_actions"][0]
+        action_projection = {
+            key: action[key]
+            for key in (
+                "action_id", "kind", "target", "payload", "preimage_sha256",
+                "payload_sha256",
+            )
+        }
+
+        self.assertIsNone(action["payload_sha256"])
+        self.assertEqual(
+            action["action_digest"], self.verifier.digest(action_projection)
+        )
+        self.assertEqual(
+            finalized["content_identity"]["result_sha256"],
+            self.verifier.digest(unsigned),
+        )
+
+    def test_projects_clarification_semantic_typed_outputs(self) -> None:
+        identity = {
+            key: value * 64
+            for key, value in (
+                ("result_sha256", "1"),
+                ("target_sha256", "2"),
+                ("disposition_sha256", "3"),
+                ("content_sha256", "4"),
+                ("scope_sha256", "5"),
+            )
+        }
+        owner = {
+            "typed_exit": "clear",
+            "invocation_context": {"resume_target": "guru-review-contract-wording"},
+            "content_identity": identity,
+            "target_disposition": {
+                "disposition_digest": "6" * 64,
+                "duplicate_facts_sha256": "7" * 64,
+            },
+        }
+        public_input = {"mode": "workflow", "continuation_id": "stage0-current"}
+        transition = {
+            "schema_version": "1.0",
+            "transition_id": "context_current:old",
+            "stage": "context_current",
+            "mode": "workflow",
+            "repo_locator": ".",
+            "base": {
+                "selected_base": "main",
+                "post_sync_resolution_sha256": "8" * 64,
+            },
+            "target_locator": "https://github.com/example/repo/issues/145",
+            "continuation_id": "stage0-current",
+            "context_result_sha256": "9" * 64,
+            "authority_content_sha256": "a" * 64,
+        }
+
+        clear = self.verifier.clarification_typed_output(
+            owner, public_input, transition
+        )
+        needs = self.verifier.clarification_typed_output(
+            {**owner, "typed_exit": "needs_context"}, public_input, transition
+        )
+
+        self.assertEqual(clear["exit_id"], "clear")
+        self.assertEqual(clear["transition"]["stage"], "clarity_current")
+        self.assertNotIn("authority_content_sha256", clear["transition"])
+        self.assertEqual(needs["exit_id"], "needs_context")
+        self.assertEqual(needs["transition"]["stage"], "base_current")
+        refresh = self.verifier.clarification_typed_output(
+            {**owner, "typed_exit": "refresh_context"}, public_input, transition
+        )
+        self.assertNotIn("handoff_base_branch", refresh)
+        transition["base"]["source"] = "explicit"
+        explicit_refresh = self.verifier.clarification_typed_output(
+            {**owner, "typed_exit": "refresh_context"}, public_input, transition
+        )
+        self.assertEqual(explicit_refresh["handoff_base_branch"], "main")
+
+    def test_projects_live_issue_for_wording_recorder(self) -> None:
+        source = self.verifier.wording_change_request_source({
+            "number": 145,
+            "url": "https://github.com/example/repo/issues/145",
+            "state": "OPEN",
+            "title": "Current title",
+            "body": "Current body",
+            "updatedAt": "2026-08-12T00:00:00Z",
+        })
+
+        self.assertEqual(source, {
+            "source_kind": "issue",
+            "identity": "https://github.com/example/repo/issues/145",
+            "title": "Current title",
+            "body": "Current body",
+            "updated_at": "2026-08-12T00:00:00Z",
+        })
+
+    def test_projects_readiness_reentry_to_required_owner_stage(self) -> None:
+        wording = {
+            "transition_id": "wording_current:old",
+            "stage": "wording_current",
+            "context_result_sha256": "1" * 64,
+            "clarity_result_sha256": "2" * 64,
+            "target_content_sha256": "3" * 64,
+            "clarity": {"facts_sha256": "2" * 64},
+            "target_disposition": {"disposition_sha256": "4" * 64},
+            "wording_facts_sha256": "5" * 64,
+            "wording": {"facts_sha256": "5" * 64},
+        }
+
+        clarity = self.verifier.readiness_reentry_transition(
+            wording, "review_wording"
+        )
+
+        self.assertEqual(clarity["stage"], "clarity_current")
+        self.assertIn("clarity", clarity)
+        self.assertNotIn("wording", clarity)
+
+    def test_failed_transcript_command_reports_json_stdout(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            script = Path(raw) / "fail.py"
+            script.write_text(
+                "#!/usr/bin/env python3\n"
+                "print('{\"code\":\"schema_mismatch\"}')\n"
+                "raise SystemExit(2)\n",
+                encoding="utf-8",
+            )
+            script.chmod(0o755)
+
+            with self.assertRaisesRegex(RuntimeError, "schema_mismatch"):
+                self.verifier.run([script], cwd=Path(raw))
+
 
 class CodexDispatchModeInstallerTest(unittest.TestCase):
     def setUp(self) -> None:
@@ -510,6 +667,62 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
+    def test_legacy_runtime_absence_is_a_clean_initial_install(self) -> None:
+        removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
+            self.repo, self.install_dst
+        )
+
+        self.assertEqual(removals, [])
+        self.assertEqual(conflicts, [])
+        self.assertEqual(sidecars, [])
+
+    def test_known_dot_five_legacy_runtime_is_removed(self) -> None:
+        target = self.install_dst / "scripts/python/guru_team_trellis.py"
+        target.parent.mkdir(parents=True)
+        legacy = subprocess.run(
+            [
+                "git",
+                "show",
+                "v0.6.5-guru.5:trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+            ],
+            cwd=self.guru_root,
+            check=True,
+            stdout=subprocess.PIPE,
+        ).stdout
+        target.write_bytes(legacy)
+
+        removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
+            self.repo, self.install_dst
+        )
+
+        self.assertFalse(target.exists())
+        self.assertEqual(conflicts, [])
+        self.assertEqual(sidecars, [])
+        self.assertEqual(removals, [{
+            "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+            "action": "removed_managed",
+            "previous_managed_sha256": hashlib.sha256(legacy).hexdigest(),
+        }])
+
+    def test_unknown_legacy_runtime_is_preserved_and_blocks_with_sidecar(self) -> None:
+        target = self.install_dst / "scripts/python/guru_team_trellis.py"
+        target.parent.mkdir(parents=True)
+        target.write_text("local runtime edit\n", encoding="utf-8")
+
+        removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
+            self.repo, self.install_dst
+        )
+
+        sidecar = target.with_name("guru_team_trellis.py.new")
+        self.assertEqual(removals, [])
+        self.assertEqual(target.read_text(encoding="utf-8"), "local runtime edit\n")
+        self.assertTrue(sidecar.is_file())
+        self.assertEqual(sidecars, [
+            ".trellis/guru-team/scripts/python/guru_team_trellis.py.new"
+        ])
+        self.assertEqual(conflicts[0]["reason"], "legacy_unknown_local_edit")
+        self.assertIn("package-local", sidecar.read_text(encoding="utf-8"))
+
     def test_skill_manifest_file_order_is_stable_across_hash_seeds_and_reapply(self) -> None:
         module_path = Path(preset.__file__).resolve()
         guru_root = preset.guru_root_from_script()
@@ -578,6 +791,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             group = next(
                 label
                 for prefix, label in (
+                    (".trellis/guru-team/runtime/", "installed"),
                     (".trellis/guru-team/skills/", "installed"),
                     (".agents/skills/", "shared"),
                     (".codex/skills/", "codex"),
@@ -1023,6 +1237,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         retired_private_schema = current_private_schema.replace("5.0", "4.0")
         self.assertIn(current_private_schema, verifier)
         self.assertNotIn(retired_private_schema, verifier)
+        self.assertNotIn("test_issue_174_controlled_replay_is_one_chained_session", verifier)
+        self.assertNotIn("GURU_ISSUE_174_REPLAY_REPORT", verifier)
 
         preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
         preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)
@@ -1073,16 +1289,22 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             '"exit":"clear","consumer":{"kind":"workflow","id":"guru-review-contract-wording"}',
             verifier,
         )
-        self.assertIn('"resume_target": "guru-review-contract-wording"', verifier)
+        self.assertIn('verify_requirements_clarification_exits "initial"', verifier)
+        self.assertIn('verify_requirements_clarification_exits "after-update"', verifier)
+        self.assertIn('--mode installed', verifier)
+        self.assertIn('--skill guru-clarify-requirements', verifier)
+        self.assertIn('"clear", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"', verifier)
+        self.assertNotIn("derive_requirements_clarification_result", verifier)
         self.assertIn('verify_contract_wording_standalone_profiles "initial"', verifier)
         self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
         self.assertIn('verify_change_request_review_package "initial"', verifier)
         self.assertIn('verify_change_request_review_package "after-update"', verifier)
         self.assertIn('"planned_skill_ids"] == []', verifier)
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"', verifier)
-        self.assertIn('test -x "$TARGET/.agents/skills/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
-        self.assertIn('test -x "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
-        self.assertIn('test -x "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"', verifier)
+        self.assertIn('test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
+        self.assertIn('test ! -e "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
+        self.assertIn('test ! -e "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
+        self.assertIn('test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"', verifier)
         self.assertIn('fail_if_python_cache "throwaway target" "$TARGET"', verifier)
         self.assertIn('record_planning_contract_wording "$TASK_REL"', verifier)
         self.assertIn('record_and_check_planning_approval "$TASK_REL" "initial"', verifier)
@@ -1097,7 +1319,27 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("verify_installed_closeout.py", verifier)
         self.assertIn("--case initial", verifier)
         self.assertIn("--case after-update", verifier)
+        self.assertIn('verify_closeout_package_boundaries "fresh-install"', verifier)
+        self.assertIn(
+            'verify_closeout_package_boundaries "after-update-reapply"', verifier
+        )
+        for skill_id in (
+            "guru-review-task-publication",
+            "guru-verify-extension-installation",
+            "guru-finalize-task",
+            "guru-merge-task-pr",
+        ):
+            self.assertIn(f'    "{skill_id}",', verifier)
+        self.assertIn('private_dirs = [projection / name for name in ("runtime", "tests", "errors")]', verifier)
+        self.assertIn('if path.name != "invoke.sh"', verifier)
+        self.assertIn(
+            'for artifact in interface["public_contracts"]["private_artifacts"]',
+            verifier,
+        )
         self.assertIn('payload["after_archive_hook_preflight"] is True', verifier)
+        self.assertIn('payload["merge_exit"] == "merged"', verifier)
+        self.assertIn('payload["pr_head"] == payload["merge_commit"]', verifier)
+        self.assertIn('payload["verifier_artifacts"] == 0', verifier)
         self.assertIn("verify_installed_task_workspace.py", verifier)
         self.assertIn("installed-task-workspace-initial", verifier)
         self.assertIn("installed-task-workspace-after-update", verifier)
@@ -1174,7 +1416,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 f'test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/{adapter_id}.sh"',
                 verifier,
             )
-        self.assertIn("EvalRunnerTests.test_four_adapters_execute_same_corpus_and_expected_non_success_exits", verifier)
+        self.assertIn("SkillPackageIntegrationTests", verifier)
         self.assertNotIn('trellis init -y -u', verifier)
         self.assertIn('DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256', verifier)
         self.assertIn('assert_official_state_absent "$ABSENCE_TARGET" "initial preset apply"', verifier)
@@ -1185,9 +1427,11 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py"
         ).read_text(encoding="utf-8")
-        self.assertIn("runtime.cmd_create_task_workspace", installed_workspace)
-        self.assertIn("runtime.cmd_check_task_workspace_result", installed_workspace)
-        self.assertIn("TASK_WORKSPACE_ARTIFACT_NAMES", installed_workspace)
+        self.assertNotIn("importlib", installed_workspace)
+        self.assertNotIn("guru_team_trellis.py", installed_workspace)
+        self.assertIn('wrappers / "create-task-workspace.sh"', installed_workspace)
+        self.assertIn('wrappers / "check-task-workspace-result.sh"', installed_workspace)
+        self.assertIn('wrappers / "invoke.sh"', installed_workspace)
         self.assertIn("--existing-developer-identity", installed_workspace)
         self.assertIn('task_data.get("creator") != "fixture-maintainer"', installed_workspace)
         installed_phase0 = (
@@ -1205,6 +1449,28 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('"gh",', installed_phase0)
         self.assertIn('issue["facts_sha256"] = context_digest(issue)', installed_phase0)
         self.assertIn('"history_preview": preview', installed_phase0)
+        wording_owner_source = installed_phase0[
+            installed_phase0.index("def wording_owner_for_issue("):
+            installed_phase0.index("def readiness_owner_for_issue(")
+        ]
+        self.assertNotIn('"semantic_review": {', wording_owner_source)
+        self.assertIn("def checked_readiness_owner_for_issue(", installed_phase0)
+        self.assertIn("readiness-change-request.json", installed_phase0)
+        self.assertIn("wording-change-request.json", installed_phase0)
+        self.assertIn('"--query-json",', installed_phase0)
+        self.assertIn(
+            "json.dumps(change_input, ensure_ascii=False, sort_keys=True)",
+            installed_phase0,
+        )
+        for retired_flag in (
+            '"--issue-ref",',
+            '"--path",',
+            '"--command",',
+            '"--term",',
+            '"--query",',
+            '"--symbol",',
+        ):
+            self.assertNotIn(retired_flag, installed_phase0)
         self.assertNotIn("owner_eval_payload", installed_phase0)
         self.assertNotIn("cleanup_seed_workspace", installed_phase0)
         self.assertNotIn("bind_workspace_plan_to_transition", installed_phase0)
@@ -1226,7 +1492,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             self.guru_root
             / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py"
         ).read_text(encoding="utf-8")
-        self.assertIn('root / ".agents/skills/guru-finalize-task"', installed_closeout)
+        self.assertIn(
+            'root / ".trellis/guru-team/skills/packages/guru-finalize-task"',
+            installed_closeout,
+        )
         self.assertNotIn("rules/" + "branches/", installed_closeout)
         for wrapper_name in (
             "preview-finalization",
@@ -1236,18 +1505,59 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             "invoke",
         ):
             self.assertIn(f'"{wrapper_name}"', installed_closeout)
+        for wrapper_name in (
+            "preview-task-pr-merge",
+            "record-task-pr-merge",
+            "check-task-pr-merge",
+            "execute-task-pr-merge",
+        ):
+            self.assertIn(f'"{wrapper_name}"', installed_closeout)
         self.assertNotIn(
             '.trellis/guru-team/scripts/bash/finish-work.sh', installed_closeout
         )
-        self.assertIn('.trellis/guru-team/scripts/python/guru_team_trellis.py', installed_closeout)
+        self.assertNotIn("guru_team_trellis.py", installed_closeout)
+        self.assertNotIn("class InstalledRuntimeFacade", installed_closeout)
+        self.assertNotIn("load_installed_package_runtime", installed_closeout)
+        self.assertNotIn('"runtime/owner.py"', installed_closeout)
+        self.assertIn("class InstalledPackageClient", installed_closeout)
+        self.assertIn('["git", "reset", "--mixed", "HEAD"]', installed_closeout)
+        for wrapper_name in (
+            "record-planning-approval.sh",
+            "check-planning-approval.sh",
+            "record-phase2-check.sh",
+            "check-phase2-check.sh",
+            "prepare-task-commit.sh",
+            "create-task-commit.sh",
+            "review-branch.sh",
+            "check-review-gate.sh",
+        ):
+            self.assertIn(f'"{wrapper_name}"', installed_closeout)
+        self.assertIn('owners["guru-approve-task-plan"]', installed_closeout)
+        self.assertIn('owners["guru-check-task"]', installed_closeout)
+        self.assertIn('owners["guru-create-task-commit"]', installed_closeout)
+        self.assertIn('owners["guru-review-branch"]', installed_closeout)
+        self.assertIn('owners["guru-review-task-publication"]', installed_closeout)
+        self.assertNotIn(
+            'list(root.rglob("marketplace-verification.json"))',
+            installed_closeout,
+        )
+        self.assertIn('root / ".trellis/tasks"', installed_closeout)
+        self.assertIn('root / ".trellis/.runtime/guru-team"', installed_closeout)
+        self.assertIn(
+            '".trellis/guru-team/skills/packages/guru-review-task-publication"',
+            installed_closeout,
+        )
         self.assertIn('args[:2] == ["remote", "get-url"]', installed_closeout)
         self.assertIn('args[:2] == ["pr", "ready"]', installed_closeout)
+        self.assertIn('value("--match-head-commit")', installed_closeout)
+        self.assertIn('merged_payload.get("exit_id") != "merged"', installed_closeout)
         self.assertIn('after_archive:', installed_closeout)
         self.assertIn('after-archive-hook-preflight', installed_closeout)
         self.assertIn('hook_executed', installed_closeout)
         self.assertIn('installed-after-archive-hook-', installed_closeout)
         self.assertIn('"schema_version": "2.0"', installed_closeout)
         self.assertNotIn("verification_required", installed_closeout)
+        self.assertIn('root.rglob("marketplace-verification.json")', installed_closeout)
         self.assertNotIn("copytree", installed_closeout)
         self.assertIn(
             '"branch_review_commit": branch_check["review_commit"]',
@@ -1412,6 +1722,21 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertTrue(
             (self.install_dst / "skills/schemas/skill-interface-1.5.schema.json").is_file()
         )
+
+    def test_installs_only_declared_runtime_kernel_files(self) -> None:
+        completed = self.install_current()
+
+        self.assertEqual(completed["skill_packages"]["status"], "ok")
+        runtime_root = self.install_dst / "runtime"
+        installed = {
+            path.relative_to(runtime_root)
+            for path in runtime_root.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(installed, set(preset.SKILL_RUNTIME_KERNEL_PATHS))
+        self.assertFalse((runtime_root / "tests").exists())
+        self.assertFalse((runtime_root / "__pycache__").exists())
+        self.assertFalse(any(path.suffix in {".pyc", ".pyo"} for path in installed))
         self.assertTrue(
             (self.install_dst / "skills/schemas/skill-registry-1.4.schema.json").is_file()
         )
@@ -1679,32 +2004,34 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "external_quotes_are_labeled_non_contract",
             },
         )
+        installed_wording = self.repo / ".trellis/guru-team/skills/packages/guru-review-contract-wording"
+        self.assertEqual(
+            (installed_wording / schema_relative).read_bytes(),
+            canonical_schema_bytes,
+        )
         for package_root in (
-            self.repo / ".trellis/guru-team/skills/packages/guru-review-contract-wording",
             self.repo / ".agents/skills/guru-review-contract-wording",
             self.repo / ".codex/skills/guru-review-contract-wording",
             self.repo / ".cursor/skills/guru-review-contract-wording",
         ):
-            self.assertEqual(
-                (package_root / schema_relative).read_bytes(),
-                canonical_schema_bytes,
-            )
+            self.assertFalse((package_root / schema_relative).exists())
         readiness_schema_relative = Path("schemas/change-request-review.schema.json")
         readiness_canonical_root = (
             self.guru_root
             / "trellis/skills/guru-team/packages/guru-review-change-request"
         )
         readiness_schema_bytes = (readiness_canonical_root / readiness_schema_relative).read_bytes()
+        installed_readiness = self.repo / ".trellis/guru-team/skills/packages/guru-review-change-request"
+        self.assertEqual(
+            (installed_readiness / readiness_schema_relative).read_bytes(),
+            readiness_schema_bytes,
+        )
         for package_root in (
-            self.repo / ".trellis/guru-team/skills/packages/guru-review-change-request",
             self.repo / ".agents/skills/guru-review-change-request",
             self.repo / ".codex/skills/guru-review-change-request",
             self.repo / ".cursor/skills/guru-review-change-request",
         ):
-            self.assertEqual(
-                (package_root / readiness_schema_relative).read_bytes(),
-                readiness_schema_bytes,
-            )
+            self.assertFalse((package_root / readiness_schema_relative).exists())
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.4")
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])

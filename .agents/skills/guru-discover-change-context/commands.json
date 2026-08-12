@@ -1,0 +1,204 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-discover-change-context",
+  "commands": [
+    {
+      "id": "preview-change-context-history",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--query-json",
+          "required": false,
+          "kind": "json",
+          "description": "Canonical context query JSON."
+        },
+        {
+          "flag": "--limit",
+          "required": false,
+          "kind": "string",
+          "description": "Maximum result count."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "history_previewer"
+    },
+    {
+      "id": "record-context-discovery",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--mode",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "workflow",
+            "standalone"
+          ],
+          "description": "Invocation mode."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "Owner result JSON locator."
+        },
+        {
+          "flag": "--expected-result-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Expected result digest."
+        },
+        {
+          "flag": "--active-task",
+          "required": false,
+          "kind": "string",
+          "description": "Ephemeral active task locator for workflow mode."
+        },
+        {
+          "flag": "--recovery-continuation-id",
+          "required": false,
+          "kind": "string",
+          "description": "Explicit same-owner recovery continuation identity."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "owner_result_recorder"
+    },
+    {
+      "id": "check-context-discovery",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "Owner result JSON locator."
+        },
+        {
+          "flag": "--expected-result-sha256",
+          "required": false,
+          "kind": "string",
+          "description": "Expected result digest."
+        },
+        {
+          "flag": "--active-task",
+          "required": false,
+          "kind": "string",
+          "description": "Ephemeral active task locator for workflow mode."
+        },
+        {
+          "flag": "--recovery-continuation-id",
+          "required": false,
+          "kind": "string",
+          "description": "Explicit same-owner recovery continuation identity."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "owner_result_validator"
+    },
+    {
+      "id": "invoke-stage0-skill",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Public input JSON locator."
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "string",
+          "description": "Completed owner result JSON locator."
+        },
+        {
+          "flag": "--active-task",
+          "required": false,
+          "kind": "string",
+          "description": "Ephemeral active task locator for workflow mode."
+        },
+        {
+          "flag": "--recovery-continuation-id",
+          "required": false,
+          "kind": "string",
+          "description": "Explicit same-owner recovery continuation identity."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

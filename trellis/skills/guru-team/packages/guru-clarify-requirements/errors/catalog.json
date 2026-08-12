@@ -1,0 +1,11 @@
+{"schema_version":"1.0","package_id":"guru-clarify-requirements","errors":[
+{"code":"invalid_arguments","trigger":"Missing, repeated, conflicting, or unsupported arguments.","exit_status":2,"locator":"field_path","remediation":"Use the exact command help contract."},
+{"code":"invalid_json","trigger":"A JSON argument or stdin is not one object.","exit_status":2,"locator":"field_path","remediation":"Provide one valid JSON object."},
+{"code":"schema_mismatch","trigger":"Input or output does not match its bound schema.","exit_status":2,"locator":"field_path","remediation":"Repair the value to match the declared schema."},
+{"code":"semantic_result_invalid","trigger":"The AI-owned result violates objective typed-exit invariants.","exit_status":3,"locator":"field_path","remediation":"Return to the semantic review and repair its owner result."},
+{"code":"stale_identity","trigger":"The expected result identity no longer matches.","exit_status":3,"locator":"field_path","remediation":"Reread current authority and repeat the semantic round."},
+{"code":"missing_contract","trigger":"A declared package contract file is absent.","exit_status":2,"locator":"path","remediation":"Restore the compatible package installation."},
+{"code":"runtime_dependency_missing","trigger":"A required runtime dependency is unavailable.","exit_status":2,"locator":"path","remediation":"Install the complete compatible preset runtime."},
+{"code":"missing_entrypoint","trigger":"The declared package entrypoint is absent or unsafe.","exit_status":2,"locator":"path","remediation":"Restore the package-local runtime entrypoint."},
+{"code":"internal_error","trigger":"An unexpected package runtime failure occurred.","exit_status":70,"locator":"path","remediation":"Inspect the package runtime and retry."}
+]}

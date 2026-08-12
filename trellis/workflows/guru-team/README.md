@@ -191,8 +191,9 @@ guru-sync-base -> base_current -> guru-discover-change-context
 Semantic wrapper 通过 `--invocation -` 的 versioned call-local envelope 分开接收 public
 input、当前 transition 和本 Skill owner result；owner result 经当前 recorder/checker 复验后消费，不进入下一
 stage。正常 pre-task 只使用 stdin/stdout 或 caller memory，在 workspace/task creation 前不写
-owner-result、prerequisite、transition、task、workspace 或 ignored-runtime repo 文件，也不读取或
-import `guru_team_trellis.py` 来组装输入。
+owner-result、prerequisite、transition、task、workspace 或 ignored-runtime repo 文件。Agent
+不读取或 import package-private runtime 来组装输入；它只使用 public projection、command
+discovery 与准确 `--help`。
 
 `guru-sync-base` public wrapper 是唯一 authoritative sync。Workflow、platform entry 和 Skill
 Markdown 不先执行低层 resolve/execute/check；refresh 丢弃 stale transition 后重新调用一次完整

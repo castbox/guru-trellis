@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-merge-task-pr",
+  "commands": [
+    {
+      "id": "preview-task-pr-merge",
+      "owner": "guru-merge-task-pr",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Ready-for-merge input."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "merge_precondition_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-ready-for-merge-input.schema.json"
+      ],
+      "validator_id": "merge_previewer"
+    },
+    {
+      "id": "record-task-pr-merge",
+      "owner": "guru-merge-task-pr",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Ready-for-merge input."
+        },
+        {
+          "flag": "--review-input",
+          "required": true,
+          "kind": "json",
+          "description": "Semantic review."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "merge_precondition_failed",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/public-ready-for-merge-input.schema.json",
+        "schemas/task-pr-merge-gate.schema.json"
+      ],
+      "validator_id": "merge_recorder"
+    },
+    {
+      "id": "check-task-pr-merge",
+      "owner": "guru-merge-task-pr",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Ready-for-merge input."
+        },
+        {
+          "flag": "--gate",
+          "required": false,
+          "kind": "string",
+          "description": "Private gate path."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "merge_precondition_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/task-pr-merge-gate.schema.json"
+      ],
+      "validator_id": "merge_checker"
+    },
+    {
+      "id": "execute-task-pr-merge",
+      "owner": "guru-merge-task-pr",
+      "entrypoint": "runtime/execute.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Ready-for-merge input."
+        },
+        {
+          "flag": "--gate",
+          "required": false,
+          "kind": "string",
+          "description": "Private gate path."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "merge_precondition_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/task-pr-merge-gate.schema.json"
+      ],
+      "validator_id": "merge_executor"
+    },
+    {
+      "id": "invoke-task-pr-merge",
+      "owner": "guru-merge-task-pr",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Ready-for-merge input."
+        },
+        {
+          "flag": "--gate",
+          "required": false,
+          "kind": "string",
+          "description": "Private gate path."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "merge_precondition_failed",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

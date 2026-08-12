@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-check-task",
+  "commands": [
+    {
+      "id": "record-phase2-check",
+      "owner": "guru-check-task",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "AI check JSON locator."
+        },
+        {
+          "flag": "--dry-run",
+          "required": false,
+          "kind": "boolean",
+          "description": "Validate without persistence."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "phase2_check_recorder"
+    },
+    {
+      "id": "check-phase2-check",
+      "owner": "guru-check-task",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "phase2_check_checker"
+    },
+    {
+      "id": "invoke-stage0-skill",
+      "owner": "guru-check-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Public input JSON locator."
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "string",
+          "description": "Completed owner result JSON locator."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

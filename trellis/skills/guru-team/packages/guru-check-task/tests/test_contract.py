@@ -54,7 +54,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         interface_schema = json.loads(
-            (self.package.parents[1] / "schemas/skill-interface-1.3.schema.json").read_text(encoding="utf-8")
+            (self.package.parents[1] / self.interface["$schema"].removeprefix("../../")).read_text(encoding="utf-8")
         )
         Draft202012Validator(interface_schema).validate(self.interface)
         Draft202012Validator.check_schema(self.schema)
@@ -157,8 +157,9 @@ class CheckTaskPackageContractTests(unittest.TestCase):
             path = self.package / "scripts" / name
             self.assertTrue(path.stat().st_mode & 0o111)
             wrapper = path.read_text(encoding="utf-8")
-            self.assertIn("run-skill-command.sh", wrapper)
-            self.assertIn(f"--validator {validator}", wrapper)
+            self.assertIn("runtime/launch.sh", wrapper)
+            runtime_command = next(item["runtime_command"] for item in self.interface["validators"] if item["id"] == validator)
+            self.assertIn(f'source "$LAUNCHER" {runtime_command}', wrapper)
             self.assertNotIn("guru_team_trellis.py", wrapper)
 
         with tempfile.TemporaryDirectory() as temp:

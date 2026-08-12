@@ -2,7 +2,8 @@
 
 ## GitHub CLI Adapter
 
-The shared runtime is the only deterministic GitHub platform adapter. It
+Each owning Skill package contains its deterministic GitHub adapter. Package
+runtime code
 normalizes `owner/repository`, rejects high-level commands without `--repo`,
 rejects incomplete REST repository endpoints, performs CLI/auth/repository
 access preflight, decodes complete JSON, and checks operation-specific required
@@ -67,18 +68,21 @@ worktree sharing, or other-task ownership as operation eligibility. A current
 exact request remains dialogue-local and no confirmation parameter or persisted
 authorization exists.
 
-Bash files under `trellis/workflows/guru-team/scripts/bash/` are thin wrappers.
-They should use `set -euo pipefail`, resolve their own `SCRIPT_DIR`, and delegate
-behavior to the Python companion:
+Bash files under each `trellis/skills/guru-team/packages/<skill-id>/scripts/`
+directory are thin launchers. They use `set -euo pipefail`, resolve the package
+and installed kernel roots, and delegate one fixed command id to the
+metadata-driven launcher. They contain no Skill-specific rules.
 
 ```bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" <subcommand> "$@"
+PACKAGE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+exec "$KERNEL_ROOT/launch.sh" "$PACKAGE_ROOT" <command-id> "$@"
 ```
 
-Keep argument parsing and workflow logic in
-`trellis/workflows/guru-team/scripts/python/guru_team_trellis.py` unless there
-is a shell-specific reason to handle it in Bash. Existing examples:
+Keep deterministic argument parsing and command behavior in the owning
+package's `runtime/` modules. Semantic workflow logic remains in `SKILL.md` and
+`references/contract.md`. Shared kernel modules may contain only primitives
+with at least two identical consumers and never branch on Skill/profile/exit.
 
 - `trellis/workflows/guru-team/scripts/bash/prepare-task.sh`
 - `trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh`
@@ -87,7 +91,8 @@ is a shell-specific reason to handle it in Bash. Existing examples:
 
 ## Python Runtime Constraints
 
-The companion script is installed into target repositories. Keep it portable:
+Package-local runtimes and the minimal kernel are installed into target
+repositories. Keep them portable:
 
 - Use the Python standard library only.
 - Shell out to `git` and `gh` through helper functions such as `run()` and
@@ -98,21 +103,17 @@ The companion script is installed into target repositories. Keep it portable:
 - Keep typed helpers and constants near the top of the file when they define
   reusable contracts.
 
-Reference files:
+Reference roots:
 
-- `trellis/workflows/guru-team/scripts/python/guru_team_trellis.py`
+- `trellis/skills/guru-team/runtime/`
+- `trellis/skills/guru-team/packages/<skill-id>/runtime/`
 - `trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py`
 
 ## Error Handling
 
-Use `WorkflowError` for expected workflow failures in
-`guru_team_trellis.py`. Include `exit_code=2` for user-actionable blocked states
-such as duplicate issue confirmation, missing review-gate evidence, dirty
-non-metadata paths, or incomplete Issue Scope Ledger.
-
-The `main()` function prints a JSON error payload to stderr when `--json` is
-used. Do not scatter `sys.exit()` calls through helper functions in the workflow
-companion.
+Use the shared `CommandError` only for deterministic failures declared in the
+owning package's `errors/catalog.json`. Public JSON mode emits exactly one error
+object; diagnostics use stderr and tracebacks are never public output.
 
 The preset installer currently uses `SystemExit` for missing `.trellis/` or
 missing source directory because it is a small installer script. If adding more
@@ -121,22 +122,17 @@ printing secrets or local-only data.
 
 ## Shared Skill Runtime Dispatcher
 
-`scripts/bash/run-skill-command.sh` is the only public dispatcher for active
-Guru Team Skill package validators. The Bash file remains a thin wrapper around
-the Python `run-skill-command` subcommand. Package wrappers pass only
-`--package-root`, one fixed `--validator` id, and the original arguments after
-`--`; they never select a runtime path or call a companion command directly.
+`scripts/bash/run-skill-command.sh` is the public compatibility name for the
+metadata-driven dispatcher. It loads `commands.json`, verifies the package
+owner and stable command id, then invokes the declared package-local
+entrypoint. Package wrappers bind one fixed command id; callers cannot select a
+different owner or runtime path.
 
-Before the target companion command runs, the Python dispatcher must derive the
-repository root from its audited installed location and component-wise `lstat`
-the dispatcher, package root, package interface, installed extension manifest,
-installed package inventory, and selected discovery copy. It must then validate
-current Interface 1.4, its exact `semantic` or `deterministic` stage profile,
-`runtime_dependency`, extension/runtime API identity,
-dispatcher identity, distribution/portability, installed package drift, the
-fixed validator id, and its declared `runtime_command`. The command must be a
-published extension `companion_scripts` id and map to the managed executable
-`.trellis/guru-team/scripts/bash/<runtime-command>.sh`.
+Before execution, source/installed validation checks all 15 `commands.json` and
+error catalogs, exact `command.id == interface.validator.runtime_command`,
+explicit `validator_id`, unique qualified owner, entrypoint/wrapper existence,
+catalog closure and absence of monolith dependencies. The dispatcher validates
+the same selected package command at invocation time.
 
 Any missing manifest/dispatcher/package, incompatible API, dependency or
 command mismatch, unmanaged discovery copy, sidecar, or drift exits 2 before
@@ -1191,7 +1187,8 @@ For any script change, run:
 
 ```bash
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
-python3 -m py_compile trellis/workflows/guru-team/scripts/python/guru_team_trellis.py trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
+find trellis/skills/guru-team/runtime trellis/skills/guru-team/packages -name '*.py' -type f -print0 | xargs -0 python3 -m py_compile
+python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 ```
 
 When changing `review-branch` or `finish-work`, also run dry-run

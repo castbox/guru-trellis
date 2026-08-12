@@ -22,7 +22,7 @@ reconstructs a route from package implementation, runtime state, or package
 artifacts.
 
 The workflow marketplace installs only .trellis/workflow.md. The Guru Team
-preset installs the compatible active packages and shared runtime. Frontmatter
+preset installs the compatible active packages and minimal shared kernel. Frontmatter
 discovery is optional convenience; it never replaces a mandatory marker.
 
 ## Guru Team Gate

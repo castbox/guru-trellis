@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" record-task-workspace-plan "$@"
+exec "$SCRIPT_DIR/run-package-command.sh" "guru-create-task-workspace" "scripts/record-task-workspace-plan.sh" "$@"

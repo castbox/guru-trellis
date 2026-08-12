@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-verify-extension-installation",
+  "commands": [
+    {
+      "id": "execute-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/execute.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Standalone input."
+        },
+        {
+          "flag": "--capability",
+          "required": true,
+          "kind": "enum",
+          "values": [
+            "initial_install",
+            "workflow_marketplace",
+            "preset_overlay",
+            "upgrade_update",
+            "platform_projection"
+          ],
+          "description": "Capability."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/public-source-repository-verification-input.schema.json"
+      ],
+      "validator_id": "verification_executor"
+    },
+    {
+      "id": "record-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Standalone input."
+        },
+        {
+          "flag": "--execution-input",
+          "required": true,
+          "kind": "json",
+          "description": "Execution facts."
+        },
+        {
+          "flag": "--review-input",
+          "required": true,
+          "kind": "json",
+          "description": "Semantic review."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/verification-result-5.0.schema.json"
+      ],
+      "validator_id": "verification_recorder"
+    },
+    {
+      "id": "check-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Owner result."
+        },
+        {
+          "flag": "--public-input",
+          "required": false,
+          "kind": "json",
+          "description": "Public input."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/verification-result-5.0.schema.json"
+      ],
+      "validator_id": "verification_checker"
+    },
+    {
+      "id": "invoke-extension-verification",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Source root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Standalone input."
+        },
+        {
+          "flag": "--owner-result",
+          "required": true,
+          "kind": "json",
+          "description": "Owner result."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "source_verification_failed",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

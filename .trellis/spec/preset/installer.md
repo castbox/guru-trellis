@@ -489,12 +489,13 @@ or disposable copy and verify:
 ## Skill Evaluation Assets
 
 Canonical eval schemas, adapter descriptors/wrappers, public command wrappers,
-and shared runtime live under `trellis/`. The preset installs them below
-`.trellis/guru-team/`, preserving executable mode for wrappers. Package-local
-`evals/` directories are part of the package tree inventory and therefore copy
-byte-for-byte to the installed package and each selected shared/Codex/Claude/
-Cursor discovery root. Test-only representative packages remain outside the
-production registry and production platform installation.
+and the package-local kernel live under `trellis/`. The preset installs the
+complete active package tree below `.trellis/guru-team/skills/packages/` and
+the shared kernel below `.trellis/guru-team/runtime/`. Shared/Codex/Claude/
+Cursor discovery roots receive only the public projection: `SKILL.md`,
+interface, references, public schemas/examples/evals and the public invocation
+wrapper. They never receive package `runtime/`, `tests/`, `errors/`, private
+artifact schemas/examples, or recorder/checker/execute wrappers.
 
 Every installed adapter descriptor names an executable in the same
 `adapters/eval/` directory. Apply and installed validation require that file to

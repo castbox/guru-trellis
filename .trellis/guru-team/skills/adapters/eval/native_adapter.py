@@ -104,6 +104,7 @@ def main() -> int:
     read_parser.add_argument("--path", required=True)
     invoke_parser = subparsers.add_parser("invoke")
     invoke_parser.add_argument("--wrapper", required=True)
+    invoke_parser.add_argument("--execution-wrapper", required=True)
     invoke_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     trace_path = Path(args.trace).resolve()
@@ -119,8 +120,9 @@ def main() -> int:
     forwarded = list(args.arguments)
     if forwarded and forwarded[0] == "--":
         forwarded = forwarded[1:]
+    execution_wrapper = Path(args.execution_wrapper).resolve()
     process = subprocess.run(
-        [str(wrapper), *forwarded], text=True, stdout=subprocess.PIPE,
+        [str(execution_wrapper), "--package-root", args.projection_root, *forwarded], text=True, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, check=False,
     )
     append_event(trace_path, args.request_sha256, args.projection_root, args.skill_sha256, args.wrapper_sha256, {
@@ -261,19 +263,301 @@ def public_runtime_target(request: dict[str, Any]) -> Path:
     return resolved
 
 
-def load_owner_runtime(runtime_target: Path) -> Any:
-    runtime_path = runtime_target.parent.parent / "python" / "guru_team_trellis.py"
-    if runtime_path.is_symlink() or not runtime_path.is_file():
-        raise ValueError("owner staging runtime is unavailable")
-    spec = importlib.util.spec_from_file_location("guru_team_eval_owner_runtime", runtime_path)
+def load_package_owner_runtime(runtime_target: Path, skill_id: str) -> Any:
+    runtime_path = (
+        runtime_target.parent.parent.parent
+        / "skills/packages"
+        / skill_id
+        / "runtime/owner.py"
+    )
+    if not runtime_path.is_file():
+        module = load_package_runtime_module(runtime_target, skill_id, "common")
+        if skill_id == "guru-clarify-requirements":
+            module.context_digest = module.digest
+            module.derive_requirements_clarification_result = (
+                lambda payload: derive_clarification_eval_result(module, payload)
+            )
+        elif skill_id == "guru-review-change-request":
+            compose_change_request_eval_runtime(runtime_target, module)
+        elif skill_id == "guru-create-task-workspace":
+            compose_task_workspace_eval_runtime(runtime_target, module)
+        return module
+    if runtime_path.is_symlink():
+        raise ValueError("package owner staging runtime is unavailable")
+    spec = importlib.util.spec_from_file_location(
+        f"guru_team_eval_{skill_id.replace('-', '_')}_owner", runtime_path
+    )
     if spec is None or spec.loader is None:
-        raise ValueError("owner staging runtime cannot be loaded")
+        raise ValueError("package owner staging runtime cannot be loaded")
     module = importlib.util.module_from_spec(spec)
     previous = sys.dont_write_bytecode
     sys.dont_write_bytecode = True
     try:
         spec.loader.exec_module(module)
     finally:
+        sys.dont_write_bytecode = previous
+    return module
+
+
+def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> None:
+    review = load_package_runtime_module(
+        runtime_target, "guru-review-change-request", "common"
+    )
+    clarity = load_package_runtime_module(
+        runtime_target, "guru-clarify-requirements", "common"
+    )
+    wording = load_package_runtime_module(
+        runtime_target, "guru-review-contract-wording", "common"
+    )
+    module.context_digest = review.digest
+    module.CHANGE_REQUEST_REVIEW_DIMENSIONS = review.DIMENSIONS
+    module.CHANGE_REQUEST_REVIEW_CONSUMERS = review.CONSUMERS
+    module.CHANGE_REQUEST_REVIEW_GATE_BY_EXIT = review.GATES
+    module.CONTRACT_WORDING_REVIEW_DIMENSIONS = wording.CONTRACT_WORDING_REVIEW_DIMENSIONS
+    module.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS = (
+        wording.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
+    )
+    module.derive_requirements_clarification_result = (
+        lambda payload: derive_clarification_eval_result(clarity, payload)
+    )
+    module.contract_wording_build_scope = wording.contract_wording_build_scope
+    module.scan_contract_wording = wording.scan_contract_wording
+    module.contract_wording_derive_result = wording.contract_wording_derive_result
+
+    def issue_view(repo: str, number: int, root: Path) -> dict[str, Any]:
+        process = subprocess.run(
+            ["gh", "issue", "view", str(number), "--repo", repo, "--json",
+             "number,url,state,title,body,updatedAt"],
+            cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            check=False,
+        )
+        if process.returncode != 0:
+            raise ValueError("change-request eval issue authority is unavailable")
+        value = json.loads(process.stdout)
+        if not isinstance(value, dict):
+            raise ValueError("change-request eval issue authority is invalid")
+        return value
+
+    def scope_hashes(scope: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
+        values = {
+            item.get("field"): item.get("content_sha256")
+            for item in scope.get("items", []) if isinstance(item, dict)
+        }
+        title, body = values.get("title"), values.get("body")
+        return title, body, review.digest({"title_sha256": title, "body_sha256": body}) if title and body else None
+
+    def authority_projection(repo: Any, source: Any, body_sha256: Any) -> dict[str, Any] | None:
+        if not isinstance(repo, str) or not isinstance(source, dict) or source.get("kind") != "draft":
+            return None
+        return {"kind": "draft", "repo": repo, "issue_number": None, "url": None,
+                "state": "draft", "updated_at": None, "body_sha256": body_sha256}
+
+    def normalize_target(root: Path, raw: Any, source_path: str, mode: str):
+        source = review.load(root, root, source_path, "change_request")
+        if source.get("kind") == "issue":
+            live = issue_view(
+                str(source.get("repo") or ""), int(source.get("number") or 0), root
+            )
+            source = {
+                **source,
+                "title": live.get("title"),
+                "body": live.get("body"),
+                "updated_at": live.get("updatedAt"),
+            }
+        scope, contents = wording.contract_wording_build_scope(
+            root, "change_request", mode, change_request_input=source_path
+        )
+        return review.normalize_target(source, raw), scope, contents
+
+    def prerequisite_projections(root: Path, payloads: Any, target: dict[str, Any], scope: dict[str, Any], contents: dict[str, str]):
+        clarity_payload = payloads.get("clarity") if isinstance(payloads, dict) else None
+        wording_payload = payloads.get("wording") if isinstance(payloads, dict) else None
+        identity = clarity_payload.get("content_identity", {}) if isinstance(clarity_payload, dict) else {}
+        wording_scope = wording_payload.get("scope", {}) if isinstance(wording_payload, dict) else {}
+        wording_scan = wording_payload.get("scan", {}) if isinstance(wording_payload, dict) else {}
+        result = {
+            "clarity": {"status": "current", "schema_id": "guru-requirements-clarification-2.0", "typed_exit": "clear", "payload_sha256": review.digest(clarity_payload), "facts_sha256": identity.get("result_sha256"), "target_sha256": identity.get("target_sha256"), "disposition_sha256": identity.get("disposition_sha256"), "content_sha256": target["content_sha256"], "scope_sha256": identity.get("scope_sha256"), "error_codes": []},
+            "wording": {"status": "current", "schema_id": "guru-contract-wording-review-1.0", "profile": "change_request", "typed_exit": "pass", "payload_sha256": review.digest(wording_payload), "facts_sha256": wording_payload.get("facts_sha256"), "scope_sha256": wording_scope.get("scope_sha256"), "scan_sha256": wording_scan.get("scan_sha256"), "target_content_sha256": target["content_sha256"], "error_codes": []},
+        }
+        return review.normalize_prerequisites(result, target)
+
+    module.issue_view = issue_view
+    module.change_request_review_scope_hashes = scope_hashes
+    module.change_request_review_request_authority_projection = authority_projection
+    module.change_request_review_normalize_target = normalize_target
+    module.change_request_review_prerequisite_projections = prerequisite_projections
+    module.change_request_review_linkage = review.linkage
+    module.change_request_review_derive_result = (
+        lambda target, prerequisites, linked, authored: review.build_result(
+            authored, target, prerequisites
+        )
+    )
+
+
+def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> None:
+    compose_change_request_eval_runtime(runtime_target, module)
+    record = load_package_runtime_module(
+        runtime_target, "guru-create-task-workspace", "record"
+    )
+    execute = load_package_runtime_module(
+        runtime_target, "guru-create-task-workspace", "execute"
+    )
+    check = load_package_runtime_module(
+        runtime_target, "guru-create-task-workspace", "check"
+    )
+    package_root = (
+        runtime_target.parent.parent.parent
+        / "skills/packages/guru-create-task-workspace"
+    )
+    module.context_digest = module.digest
+    module.TASK_WORKSPACE_ARTIFACT_NAMES = ("issue-scope-ledger.json",)
+    module.task_workspace_reviewable_projection = module.reviewable
+    module.task_workspace_plan_digest = module.plan_digest
+
+    def scope_digest(value: dict[str, Any]) -> str:
+        projection = copy.deepcopy(value)
+        projection.pop("scope_sha256", None)
+        return module.digest(projection)
+
+    def prerequisite_projection(
+        key: str, artifact: str, payload: dict[str, Any], payload_sha256: str
+    ) -> dict[str, Any]:
+        identities = {
+            "base": ("guru-sync-base", "guru-base-sync-result-1.0", "synced"),
+            "clarity": ("guru-clarify-requirements", "guru-requirements-clarification-2.0", "clear"),
+            "wording": ("guru-review-contract-wording", "guru-contract-wording-review-1.0", "pass"),
+            "readiness": ("guru-review-change-request", "guru-change-request-review-1.0", "ready"),
+        }
+        skill_id, schema_id, typed_exit = identities[key]
+        if key == "base":
+            facts, content, linkage = payload.get("facts_sha256"), None, None
+        elif key == "clarity":
+            identity = payload.get("content_identity", {})
+            facts, content, linkage = identity.get("result_sha256"), identity.get("content_sha256"), identity.get("context_sha256")
+        elif key == "wording":
+            facts = payload.get("facts_sha256")
+            content = payload.get("scope", {}).get("scope_sha256")
+            linkage = payload.get("scan", {}).get("scan_sha256")
+        else:
+            facts = payload.get("facts_sha256")
+            content = payload.get("target", {}).get("content_sha256")
+            linkage = payload.get("evidence_linkage", {}).get("linkage_sha256")
+        return {"skill_id": skill_id, "schema_id": schema_id, "typed_exit": typed_exit,
+                "artifact": artifact, "payload_sha256": payload_sha256,
+                "facts_sha256": facts, "content_sha256": content,
+                "linkage_sha256": linkage}
+
+    def invoke(component: Any, args: argparse.Namespace) -> dict[str, Any]:
+        argv = ["--root", str(args.root), "--invocation", "-"]
+        return component.run(package_root, {}, argv)
+
+    module.task_workspace_scope_digest = scope_digest
+    module.task_workspace_prerequisite_projection = prerequisite_projection
+    module.stage0_clarity_projection = lambda payload: {
+        key: payload.get("content_identity", {}).get(key.replace("facts_sha256", "result_sha256"))
+        for key in ("facts_sha256", "target_sha256", "disposition_sha256", "content_sha256", "scope_sha256")
+    }
+    module.stage0_wording_projection = lambda payload: {
+        "facts_sha256": payload.get("facts_sha256"),
+        "scope_sha256": payload.get("scope", {}).get("scope_sha256"),
+        "scan_sha256": payload.get("scan", {}).get("scan_sha256"),
+        "target_content_sha256": module.change_request_review_scope_hashes(
+            payload.get("scope", {})
+        )[2],
+    }
+    module.stage0_target_disposition_projection = lambda payload: {
+        "disposition_sha256": payload.get("target_disposition", {}).get("disposition_digest"),
+        "duplicate_facts_sha256": payload.get("target_disposition", {}).get("duplicate_facts_sha256"),
+    }
+    def readiness_target(target: dict[str, Any]) -> dict[str, Any]:
+        common = {key: target.get(key) for key in (
+            "kind", "repo", "title_sha256", "body_sha256",
+            "identity_sha256", "content_sha256",
+        )}
+        if target.get("kind") == "existing_issue":
+            return {**common, **{key: target.get(key) for key in ("issue_number", "url", "updated_at")}}
+        if target.get("kind") == "proposed_draft":
+            return {**common, **{key: target.get(key) for key in ("draft_id", "source_request_sha256")}}
+        return {**common, **{key: target.get(key) for key in ("caller_locator", "request_id", "source_request_sha256")}}
+    module.stage0_readiness_target_projection = readiness_target
+    module.cmd_record_task_workspace_plan = lambda args: invoke(record, args)
+    module.cmd_create_task_workspace = lambda args: invoke(execute, args)
+    module.cmd_check_task_workspace_result = lambda args: invoke(check, args)
+
+
+def derive_clarification_eval_result(runtime: Any, payload: dict[str, Any]) -> dict[str, Any]:
+    result = copy.deepcopy(payload)
+    result["schema_version"] = "2.0"
+    result["skill_id"] = "guru-clarify-requirements"
+    actions = result.get("source_actions")
+    actions = actions if isinstance(actions, list) else []
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        action["payload_sha256"] = (
+            runtime.digest(action["payload"])
+            if isinstance(action.get("payload"), dict)
+            else None
+        )
+        action["action_digest"] = runtime.digest({
+            key: copy.deepcopy(action.get(key))
+            for key in (
+                "action_id", "kind", "target", "payload", "preimage_sha256",
+                "payload_sha256",
+            )
+        })
+    unsigned = copy.deepcopy(result)
+    unsigned.pop("content_identity", None)
+    content = {
+        "confirmed_facts": result.get("confirmed_facts"),
+        "repository_answerable_questions": result.get("repository_answerable_questions"),
+        "clarification_rounds": result.get("clarification_rounds"),
+        "open_questions": result.get("open_questions"),
+        "affected_contracts": result.get("affected_contracts"),
+        "reason": result.get("reason"),
+    }
+    result["content_identity"] = {
+        "target_sha256": runtime.digest(result.get("review_target")),
+        "disposition_sha256": runtime.digest(result.get("target_disposition")),
+        "content_sha256": runtime.digest(content),
+        "context_sha256": runtime.digest(result.get("context_evidence")),
+        "scope_sha256": runtime.digest(result.get("scope_proposals")),
+        "action_sha256": runtime.digest(actions),
+        "payload_sha256": runtime.digest([
+            action.get("payload") if isinstance(action, dict) else None
+            for action in actions
+        ]),
+        "result_sha256": runtime.digest(unsigned),
+    }
+    return result
+
+
+def load_package_runtime_module(
+    runtime_target: Path, skill_id: str, module_name: str,
+) -> Any:
+    runtime_path = (
+        runtime_target.parent.parent.parent
+        / "skills/packages"
+        / skill_id
+        / "runtime"
+        / f"{module_name}.py"
+    )
+    if runtime_path.is_symlink() or not runtime_path.is_file():
+        raise ValueError(f"package {module_name} runtime is unavailable")
+    spec = importlib.util.spec_from_file_location(
+        f"guru_team_eval_{skill_id.replace('-', '_')}_{module_name}", runtime_path
+    )
+    if spec is None or spec.loader is None:
+        raise ValueError(f"package {module_name} runtime cannot be loaded")
+    module = importlib.util.module_from_spec(spec)
+    previous_path = list(sys.path)
+    previous = sys.dont_write_bytecode
+    sys.path.insert(0, str(runtime_path.parent))
+    sys.dont_write_bytecode = True
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.path[:] = previous_path
         sys.dont_write_bytecode = previous
     return module
 
@@ -364,12 +648,11 @@ def stage0_eval_hash(label: str, *values: Any) -> str:
 
 def stage0_eval_base(fixture: Path) -> dict[str, Any]:
     head = run_git(fixture, "rev-parse", "HEAD")
-    runtime = load_owner_runtime(
-        fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+    runtime = load_package_owner_runtime(
+        fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+        "guru-sync-base",
     )
-    resolution = runtime.resolve_base_selection(
-        fixture, runtime.load_config(fixture), "main", "origin"
-    )
+    resolution = runtime.resolution(fixture, "main", "origin")
     return {
         "source": "explicit",
         "selected_base": "main",
@@ -398,7 +681,18 @@ def stage0_eval_transition(
     mode = str(public_input.get("mode") or owner_result.get("mode") or "workflow")
     continuation = str(public_input.get("continuation_id") or "stage0-current")
     target = str(public_input.get("target_locator") or "")
-    base = stage0_eval_base(fixture)
+    base = stage0_eval_base(fixture) if skill_id != "guru-discover-change-context" else {
+        "source": "explicit",
+        "selected_base": "main",
+        "remote": "origin",
+        "ordered_candidates": ["main"],
+        "decision_head": run_git(fixture, "rev-parse", "HEAD"),
+        "local_base_head": run_git(fixture, "rev-parse", "HEAD"),
+        "remote_base_head": run_git(fixture, "rev-parse", "HEAD"),
+        "post_sync_resolution_sha256": str(
+            (owner_result.get("base_evidence") or {}).get("post_sync_resolution_sha256") or ""
+        ),
+    }
     common = {
         "schema_version": "1.0",
         "mode": mode,
@@ -417,6 +711,11 @@ def stage0_eval_transition(
         "guru-create-task-workspace": "readiness_current",
     }
     stage = stage_by_skill.get(skill_id)
+    if skill_id == "guru-review-change-request":
+        stage = {
+            "clarify_requirements": "context_current",
+            "review_wording": "clarity_current",
+        }.get(str(owner_result.get("typed_exit") or ""), "wording_current")
     if stage is None:
         raise ValueError(f"call-local transition is not declared for {skill_id}")
     transition = {
@@ -485,8 +784,9 @@ def stage0_eval_transition(
         readiness = prerequisites.get("readiness") if isinstance(prerequisites.get("readiness"), dict) else {}
         clarity_digest = str(clarity.get("facts_sha256") or clarity_digest)
         wording_digest = str(wording.get("facts_sha256") or wording_digest)
-        runtime = load_owner_runtime(
-            fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        runtime = load_package_owner_runtime(
+            fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+            "guru-create-task-workspace",
         )
         content_digest = runtime.context_digest({
             "title_sha256": plan_target.get("title_sha256"),
@@ -578,8 +878,9 @@ def stage0_eval_transition(
         clarity_payload = clarity_payload if isinstance(clarity_payload, dict) else {}
         wording_payload = prerequisite_payloads.get("wording")
         wording_payload = wording_payload if isinstance(wording_payload, dict) else {}
-        runtime = load_owner_runtime(
-            fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        runtime = load_package_owner_runtime(
+            fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh",
+            "guru-create-task-workspace",
         )
         readiness_target = readiness_payload.get("target")
         readiness_target = readiness_target if isinstance(readiness_target, dict) else {}
@@ -678,6 +979,62 @@ def bind_stage0_call_local_invocation(
     )
     if transition is not None:
         envelope["transition"] = transition
+    exit_id = str(owner_result.get("typed_exit") or "")
+    if skill_id == "guru-clarify-requirements":
+        example = next(
+            (fixture / ".trellis/guru-team/skills/packages" / skill_id / "examples").glob(
+                f"public-{exit_id.replace('_', '-')}-output*.json"
+            )
+        )
+        typed_output = json.loads(example.read_text(encoding="utf-8"))
+        if exit_id == "clear":
+            typed_output["resume_target"] = str(
+                (owner_result.get("invocation_context") or {}).get("resume_target")
+                or typed_output["resume_target"]
+            )
+            typed_output["continuation_id"] = public_input["continuation_id"]
+            identity = owner_result["content_identity"]
+            disposition = owner_result.get("target_disposition") or {}
+            typed_output["transition"] = {
+                **transition,
+                "stage": "clarity_current",
+                "clarity_result_sha256": identity["result_sha256"],
+                "target_content_sha256": identity["content_sha256"],
+                "clarity": {
+                    "facts_sha256": identity["result_sha256"],
+                    "target_sha256": identity["target_sha256"],
+                    "disposition_sha256": identity["disposition_sha256"],
+                    "content_sha256": identity["content_sha256"],
+                    "scope_sha256": identity["scope_sha256"],
+                },
+                "target_disposition": {
+                    "disposition_sha256": disposition.get("disposition_digest"),
+                    "duplicate_facts_sha256": disposition.get("duplicate_facts_sha256"),
+                },
+            }
+            typed_output["transition"]["transition_id"] = (
+                f"clarity_current:{identity['result_sha256'][:24]}"
+            )
+            typed_output["transition"].pop("authority_content_sha256", None)
+        elif exit_id == "needs_context":
+            typed_output["handoff_mode"] = public_input["mode"]
+            typed_output["handoff_repo_locator"] = "."
+            typed_output["handoff_continuation_id"] = public_input["continuation_id"]
+            typed_output["transition"] = {
+                "schema_version": "1.0",
+                "transition_id": f"base_current:{transition['base']['post_sync_resolution_sha256'][:24]}",
+                "stage": "base_current",
+                "mode": public_input["mode"],
+                "repo_locator": ".",
+                "base": transition["base"],
+            }
+        elif exit_id in {"refresh_context", "retarget_context"}:
+            typed_output["handoff_mode"] = public_input["mode"]
+            typed_output["handoff_repo_root"] = "."
+        elif exit_id == "new_task":
+            typed_output["target_locator"] = public_input["target_locator"]
+            typed_output["continuation_id"] = public_input["continuation_id"]
+        envelope["typed_output"] = typed_output
     invocation_path = fixture / OWNER_INVOCATION
     invocation_path.write_text(json.dumps(envelope) + "\n", encoding="utf-8")
 
@@ -1242,11 +1599,17 @@ def build_workflow_mode_owner(
 
 
 def context_sync_result(runtime: Any, head: str) -> dict[str, Any]:
-    identity = runtime.resolution_identity(
-        source="explicit", selected_base="main", remote="origin", candidates=["main"],
-        decision_branch="main", decision_head=head, decision_clean=True,
-    )
-    resolution_sha256 = runtime.canonical_json_sha256(identity)
+    identity = {
+        "schema_version": "1.0",
+        "skill_id": "guru-sync-base",
+        "status": "resolved",
+        "source": "explicit",
+        "selected_base": "main",
+        "remote": "origin",
+        "candidates": ["main"],
+        "decision_checkout": {"branch": "main", "head": head, "clean": True},
+    }
+    resolution_sha256 = runtime.digest(identity)
     result = {
         "schema_version": "1.0", "skill_id": "guru-sync-base", "status": "synced",
         "resolution": {
@@ -1266,7 +1629,7 @@ def context_sync_result(runtime: Any, head: str) -> dict[str, Any]:
         },
         "fresh": True,
     }
-    result["facts_sha256"] = runtime.canonical_json_sha256(result)
+    result["facts_sha256"] = runtime.digest(result)
     return result
 
 
@@ -1299,7 +1662,7 @@ def build_context_owner(
         "updated_at": "2026-01-01T00:00:00Z", "body_sha256": body_sha256,
     }
     payload["live_change"] = {
-        **live_unsigned, "facts_sha256": runtime.context_digest(live_unsigned), "issue_binding": None,
+        **live_unsigned, "facts_sha256": runtime.digest(live_unsigned), "issue_binding": None,
     }
     evidence_paths = {
         "docs": "docs/requirements.md",
@@ -1310,16 +1673,16 @@ def build_context_owner(
         rows = payload["current_state"][group]
         rows[0]["path"] = path
         rows[0]["blob_or_content_sha256"] = run_git(fixture, "rev-parse", f"HEAD:{path}")
-    query = runtime.canonicalize_context_query(fixture, payload["change_input"])
+    query = runtime.canonical_query(payload["change_input"])
     payload["canonical_query"] = query
-    payload["history_preview"] = runtime.build_context_history_preview(fixture, query)
+    payload["history_preview"] = runtime.preview(fixture, payload["change_input"], 20)
     payload["history_review"] = {
         "selected_candidates": [], "excluded_candidates": [], "deep_reads": [],
     }
     payload["error"] = None
     payload["typed_exit"] = "context_ready"
     payload["ai_review_gate"]["status"] = "passed"
-    payload["result_identity"] = runtime.context_result_identity(payload)
+    payload["result_identity"] = runtime.identity(payload)
     if recipe == "context-ready":
         return payload
     if recipe == "context-blocked":
@@ -1329,12 +1692,12 @@ def build_context_owner(
             "codes": ["semantic_review_blocked"],
             "summary": "A named load-bearing repository source could not be reviewed.",
         }
-        payload["result_identity"] = runtime.context_result_identity(payload)
+        payload["result_identity"] = runtime.identity(payload)
         return payload
     if recipe == "context-refresh-base":
         run_git(fixture, "commit", "--allow-empty", "-q", "-m", "advance context fixture")
         payload["typed_exit"] = "refresh_base"
-        payload["result_identity"] = runtime.context_result_identity(payload)
+        payload["result_identity"] = runtime.identity(payload)
         return payload
     raise ValueError(f"unsupported context owner staging recipe: {recipe}")
 
@@ -1871,9 +2234,9 @@ def build_workspace_owner(
     )
     if not isinstance(transition, dict):
         raise ValueError("workspace readiness transition is unavailable")
-    transition_payloads = runtime.task_workspace_transition_payloads(
-        fixture, transition
-    )
+    if transition.get("stage") != "readiness_current":
+        raise ValueError("workspace readiness transition stage is invalid")
+    transition_payloads = prerequisites
     plan["prerequisites"] = {
         key: runtime.task_workspace_prerequisite_projection(
             key,
@@ -2361,20 +2724,54 @@ def production_record_review(
     introduced_head = (
         run_git(fixture, "rev-parse", f"{head}^") if resolved else None
     )
+    candidates = production_review_candidate(
+        exit_id,
+        head,
+        resolved=resolved,
+        introduced_head=introduced_head,
+    )
     semantic = {
-        "candidates": production_review_candidate(
-            exit_id,
-            head,
-            resolved=resolved,
-            introduced_head=introduced_head,
-        ),
+        "qualified_findings": [
+            item for item in candidates
+            if item["disposition"] == "qualified_finding"
+        ],
+        "scope_proposals": [
+            item for item in candidates
+            if item["disposition"] == "scope_proposal"
+        ],
+        "observations": [
+            item for item in candidates
+            if item["disposition"] == "observation"
+        ],
+        "followup_candidates": [
+            item for item in candidates
+            if item["disposition"] == "followup_candidate"
+        ],
+        "rejected_candidates": [
+            item for item in candidates
+            if item["disposition"] == "rejected_candidate"
+        ],
         "ai_review_gate": {
             "status": exit_id,
             "summary": "The production Branch Review semantic Gate selected the actual route.",
         },
     }
     semantic_path = fixture / ".trellis/.runtime/guru-team/evals/review-owner-input.json"
-    runtime.write_json(semantic_path, semantic)
+    runtime.write_json(semantic_path, {
+        "semantic_review": semantic,
+        "verification_evidence": {
+            "reviewer": reviewer,
+            "review_source": runtime.INDEPENDENT_REVIEW_SOURCE,
+            "evidence": (
+                [
+                    f"{closure_reviewer} completed transient finding closure on the fix commit.",
+                    "fresh-final-reviewer independently reviewed the complete current range.",
+                ]
+                if resolved
+                else ["Reviewed the complete current range and deployment impact."]
+            ),
+        },
+    })
     public_input.update({
         "task_ref": task.relative_to(fixture).as_posix(),
         "base_ref": runtime.diff_base_ref(fixture, "main"),
@@ -3125,7 +3522,7 @@ def stage_production_owner_execution(
     fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
-    runtime = load_owner_runtime(fixture_runtime_target)
+    runtime = load_package_owner_runtime(fixture_runtime_target, skill_id)
     if skill_id == "guru-finalize-task":
         return stage_finalization_owner_execution(
             runtime,
@@ -3460,18 +3857,23 @@ def stage_owner_execution(
     head = run_git(fixture, "rev-parse", "HEAD")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
-    runtime = load_owner_runtime(fixture_runtime_target)
-    runtime.write_runtime_mappings(
-        fixture,
-        runtime.load_config(fixture),
-        {
-            "workspace_slug": "current",
-            "task_slug": "current",
-            "task_dir": ".trellis/tasks/current",
-            "branch_name": "main",
-        },
-        fixture,
+    runtime = (
+        load_package_runtime_module(fixture_runtime_target, skill_id, "common")
+        if skill_id == "guru-discover-change-context"
+        else load_package_owner_runtime(fixture_runtime_target, skill_id)
     )
+    if hasattr(runtime, "write_runtime_mappings"):
+        runtime.write_runtime_mappings(
+            fixture,
+            runtime.load_config(fixture),
+            {
+                "workspace_slug": "current",
+                "task_slug": "current",
+                "task_dir": ".trellis/tasks/current",
+                "branch_name": "main",
+            },
+            fixture,
+        )
     public_payload = json.loads(public_input.read_text(encoding="utf-8"))
     public_mode = str(public_payload.get("mode") or "")
     fake_bin = write_fake_gh(execution_root, recipe)
@@ -3564,7 +3966,15 @@ def start_public_runtime_boundary(
                     raise ValueError("invalid public invocation arguments")
                 if arguments[:2] != ["--package-root", str(projection_root)]:
                     raise ValueError("public invocation package projection binding is invalid")
-                arguments = ["--package-root", str(package_root), *arguments[2:]]
+                projection_wrapper = Path(str(request.get("wrapper_path") or ""))
+                try:
+                    wrapper_relative = projection_wrapper.relative_to(projection_root)
+                except ValueError as exc:
+                    raise ValueError("public invocation wrapper binding is invalid") from exc
+                installed_wrapper = package_root / wrapper_relative
+                if installed_wrapper.is_symlink() or not os.access(installed_wrapper, os.X_OK):
+                    raise ValueError("installed public invocation wrapper is unavailable")
+                arguments = arguments[2:]
                 stdin_text = None
                 if "--invocation" in arguments:
                     invocation_index = arguments.index("--invocation")
@@ -3587,7 +3997,7 @@ def start_public_runtime_boundary(
                             raise ValueError("stdin owner result is unavailable or unsafe")
                         stdin_text = owner_path.read_text(encoding="utf-8")
                 process = subprocess.run(
-                    [str(target), *arguments],
+                    [str(installed_wrapper), *arguments],
                     cwd=target.parents[4],
                     text=True,
                     input=stdin_text,
@@ -3627,7 +4037,7 @@ def start_public_runtime_boundary(
         "import json,sys,time\n"
         "from pathlib import Path\n"
         f"request_path=Path({str(request_path)!r}); response_path=Path({str(response_path)!r})\n"
-        "request_path.write_text(json.dumps({'arguments':sys.argv[1:]},separators=(',',':')),encoding='utf-8')\n"
+        f"request_path.write_text(json.dumps({{'arguments':sys.argv[1:],'wrapper_path':{str(projection_root / 'scripts/invoke.sh')!r}}},separators=(',',':')),encoding='utf-8')\n"
         "for _ in range(3000):\n"
         " if response_path.is_file(): break\n"
         " time.sleep(0.01)\n"
@@ -3650,6 +4060,13 @@ def build_context(
     runtime_target = public_runtime_target(request)
     runtime_package_root, execution_runtime_target, runtime_environment = stage_owner_execution(
         request, execution_root, runtime_target
+    )
+    boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
+        execution_root,
+        execution_runtime_target,
+        runtime_package_root,
+        projection_root,
+        runtime_environment,
     )
     trace_path = execution_root / "native-trace.json"
     helper_path = execution_root / "native-trace-helper.py"
@@ -3704,7 +4121,7 @@ def build_context(
     context = context.replace(
         "First read the exact Skill contract with the helper's read operation, then invoke the exact public wrapper with its invoke operation.",
         f"First read the exact Skill contract with: {helper_path} {helper_arguments} read --kind skill_contract --path {skill_path}\n"
-        f"Then invoke the exact public wrapper with: {helper_path} {helper_arguments} invoke --wrapper {wrapper_path} -- <declared wrapper arguments>",
+        f"Then invoke the exact public wrapper with: {helper_path} {helper_arguments} invoke --wrapper {wrapper_path} --execution-wrapper {boundary_path} -- <declared wrapper arguments>",
     )
     context_path = execution_root / "native-context.txt"
     context_path.write_text(context, encoding="utf-8")
@@ -3713,13 +4130,10 @@ def build_context(
         "schema_version": "1.0", "native_request_path": str(native_request_path),
         "request_sha256": request_sha256, "helper_path": str(helper_path),
         "trace_path": str(trace_path), "skill_path": str(skill_path),
-        "wrapper_path": str(wrapper_path), "projection_root": str(projection_root),
+        "wrapper_path": str(wrapper_path), "execution_wrapper_path": str(boundary_path),
+        "projection_root": str(projection_root),
         "skill_sha256": skill_sha256, "wrapper_sha256": wrapper_sha256,
     }, separators=(",", ":")), encoding="utf-8")
-    boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
-        execution_root, execution_runtime_target, runtime_package_root, projection_root,
-        runtime_environment,
-    )
     return (
         context, context_path, wrapper_path, trace_path, protocol_path,
         native_request_path, request_sha256, boundary_path, boundary_thread,

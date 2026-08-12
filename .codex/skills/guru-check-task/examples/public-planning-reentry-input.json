@@ -1,7 +1,0 @@
-{
-  "profile": "planning_reentry",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/07-26-example",
-  "source_exit": "planning_stale",
-  "rerun_reason": "planning_refreshed"
-}

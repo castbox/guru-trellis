@@ -107,8 +107,8 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             path = self.package / "scripts" / name
             wrapper = path.read_text(encoding="utf-8")
             self.assertTrue(path.stat().st_mode & 0o100)
-            self.assertIn("run-skill-command.sh", wrapper)
-            self.assertIn(f"--validator {validator}", wrapper)
+            self.assertIn("runtime/launch.sh", wrapper)
+            self.assertIn(f'source "$LAUNCHER" {self.interface["validators"][[x["id"] for x in self.interface["validators"]].index(validator)]["runtime_command"]}', wrapper)
             self.assertNotIn("guru_team_trellis.py", wrapper)
             self.assertNotIn(".trellis/tasks/archive", wrapper)
 

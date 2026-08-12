@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-review-task-publication",
+  "commands": [
+    {
+      "id": "record-task-publication-review",
+      "owner": "guru-review-task-publication",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Semantic review."
+        },
+        {
+          "flag": "--branch-review-commit",
+          "required": true,
+          "kind": "string",
+          "description": "Reviewed commit."
+        },
+        {
+          "flag": "--dry-run",
+          "required": false,
+          "kind": "boolean",
+          "description": "Do not write."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "publication_stale",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/pr-readiness.schema.json"
+      ],
+      "validator_id": "publication_review_recorder"
+    },
+    {
+      "id": "check-task-publication-review",
+      "owner": "guru-review-task-publication",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator."
+        },
+        {
+          "flag": "--expected-exit",
+          "required": false,
+          "kind": "string",
+          "description": "Expected exit."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "publication_stale",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/pr-readiness.schema.json"
+      ],
+      "validator_id": "publication_review_checker"
+    },
+    {
+      "id": "invoke-stage0-skill",
+      "owner": "guru-review-task-publication",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Public input."
+        },
+        {
+          "flag": "--owner-result",
+          "required": true,
+          "kind": "json",
+          "description": "Owner result."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "publication_stale",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

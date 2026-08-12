@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-create-task-workspace",
+  "commands": [
+    {
+      "id": "record-task-workspace-plan",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Reviewed plan JSON locator."
+        },
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local plan envelope."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "task_workspace_plan_recorder"
+    },
+    {
+      "id": "create-task-workspace",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/execute.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Reviewed plan JSON locator."
+        },
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local execution envelope."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [],
+      "validator_id": "task_workspace_exact_executor"
+    },
+    {
+      "id": "check-task-workspace-result",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Executor result JSON locator."
+        },
+        {
+          "flag": "--plan-input",
+          "required": false,
+          "kind": "string",
+          "description": "Reviewed plan JSON locator."
+        },
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local checker envelope."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "task_workspace_result_checker"
+    },
+    {
+      "id": "invoke-stage0-skill",
+      "owner": "guru-create-task-workspace",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Public input JSON locator."
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "string",
+          "description": "Completed owner result JSON locator."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

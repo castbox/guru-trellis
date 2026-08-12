@@ -34,4 +34,13 @@ if [[ -z "$ROOT" ]]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-python3 "$SCRIPT_DIR/../python/guru_team_trellis.py" version --root "$ROOT" "${JSON_ARGS[@]}"
+if [[ -f "$SCRIPT_DIR/../../../../skills/guru-team/runtime/utility.py" ]]; then
+  RUNTIME_PARENT="$(cd "$SCRIPT_DIR/../../../../skills/guru-team" && pwd)"
+elif [[ -f "$SCRIPT_DIR/../../runtime/utility.py" ]]; then
+  RUNTIME_PARENT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+else
+  echo "Guru Team shared runtime is missing: runtime/utility.py" >&2
+  exit 2
+fi
+export PYTHONPATH="$RUNTIME_PARENT${PYTHONPATH:+:$PYTHONPATH}"
+python3 -m runtime.utility version --root "$ROOT" "${JSON_ARGS[@]}"

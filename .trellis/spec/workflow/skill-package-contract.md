@@ -755,7 +755,7 @@ approval. Its interface uses `judgment_mode=semantic`, declares the same eight
 ordered entry preconditions in workflow and standalone modes
 (`runtime_dependency`, `task_workspace`, `current_authority`,
 `planning_documents`, `docs_ssot`, `wording_result`, `issue_scope`, and
-`invocation_freshness`), and depends on the shared runtime commands
+`invocation_freshness`), and owns the package-local runtime commands
 `record-planning-approval` and `check-planning-approval`.
 
 The owner directly rereads live authority and current files, reviews requirement

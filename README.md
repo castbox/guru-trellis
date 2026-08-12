@@ -79,7 +79,7 @@ Guru Team preset 提供面向规划、实现检查、任务提交、分支审查
 
 安装和升级时，AI 会区分官方 Trellis、Guru Team 和业务仓库各自拥有的内容。已知版本可以平滑迁移，无法确认来源的本地修改会被保留并交给用户判断，而不是被静默删除。
 
-Phase 0 六包、transition schemas、invocation envelopes、shared runtime 和 manifest 作为一个
+Phase 0 六包、transition schemas、invocation envelopes、package runtime、minimal shared kernel 和 manifest 作为一个
 版本单元安装。Clean install、existing-project update/reapply、dogfood 与平台副本验证必须同时
 通过，任何 mixed graph 或未处理的 `.new` / `.bak` 都会阻止激活。
 

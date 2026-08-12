@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-approve-task-plan",
+  "commands": [
+    {
+      "id": "record-planning-approval",
+      "owner": "guru-approve-task-plan",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator."
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "AI review JSON locator."
+        },
+        {
+          "flag": "--dry-run",
+          "required": false,
+          "kind": "boolean",
+          "description": "Validate without persistence."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "planning_approval_recorder"
+    },
+    {
+      "id": "check-planning-approval",
+      "owner": "guru-approve-task-plan",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root."
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator."
+        },
+        {
+          "flag": "--require-exit",
+          "required": false,
+          "kind": "enum",
+          "values": [
+            "approved",
+            "revision_required",
+            "clarify_scope",
+            "blocked"
+          ],
+          "description": "Required typed exit."
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "planning_approval_checker"
+    },
+    {
+      "id": "invoke-stage0-skill",
+      "owner": "guru-approve-task-plan",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Public input JSON locator."
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "string",
+          "description": "Completed owner result JSON locator."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

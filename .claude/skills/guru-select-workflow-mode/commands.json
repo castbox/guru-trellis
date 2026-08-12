@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-select-workflow-mode",
+  "commands": [
+    {
+      "id": "invoke-stage0-skill",
+      "owner": "guru-select-workflow-mode",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Call-local invocation envelope or dash for stdin."
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Public input JSON locator."
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "string",
+          "description": "Completed owner result JSON locator."
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [],
+      "validator_id": "public_invocation"
+    }
+  ]
+}

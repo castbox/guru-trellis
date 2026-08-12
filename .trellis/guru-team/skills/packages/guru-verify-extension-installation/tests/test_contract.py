@@ -15,8 +15,8 @@ import jsonschema
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
-REPO = next(parent for parent in PACKAGE.parents if (parent / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py").is_file())
-RUNTIME_PATH = REPO / "trellis/workflows/guru-team/scripts/python/guru_team_trellis.py"
+REPO = PACKAGE.parents[4]
+RUNTIME_PATH = PACKAGE / "runtime/owner.py"
 
 
 def load(relative: str):
@@ -24,7 +24,7 @@ def load(relative: str):
 
 
 def load_runtime():
-    spec = importlib.util.spec_from_file_location("guru_team_trellis_issue205", RUNTIME_PATH)
+    spec = importlib.util.spec_from_file_location("guru_verify_extension_installation_runtime", RUNTIME_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -32,6 +32,27 @@ def load_runtime():
 
 
 class ExtensionVerificationContractTests(unittest.TestCase):
+    def test_active_runtime_is_source_only_and_monolith_independent(self) -> None:
+        runtime_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted((PACKAGE / "runtime").glob("*.py"))
+        )
+        for retired in (
+            "guru_team_trellis.py",
+            "verification_required",
+            "not_required",
+            "finalization_verification",
+            "task_ref",
+            "task-bearing",
+            "guru-finalize-task",
+        ):
+            self.assertNotIn(retired, runtime_text)
+        commands = load("commands.json")
+        self.assertEqual(
+            {item["id"] for item in commands["commands"]},
+            {item["runtime_command"] for item in load("interface.json")["validators"]},
+        )
+
     def test_interface_is_source_owned_standalone_only(self) -> None:
         interface = load("interface.json")
         self.assertEqual(interface["schema_version"], "1.5")

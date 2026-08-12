@@ -7,7 +7,7 @@ contract. `.trellis/workflow.md` is the dogfood installation copy and must be
 byte-identical after every canonical workflow change.
 
 The workflow marketplace installs only `.trellis/workflow.md`. The complete
-Guru Team extension, public Skill packages, shared runtime, schemas, platform
+Guru Team extension, public Skill projections, package runtimes, minimal shared kernel, schemas, platform
 discovery copies, and Guru-owned explicit entries are installed by the preset.
 
 ## SSOT Boundary
