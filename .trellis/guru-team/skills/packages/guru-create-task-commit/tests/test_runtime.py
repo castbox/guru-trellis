@@ -28,13 +28,14 @@ class PackageLocalRuntimeTest(unittest.TestCase):
   self.git(repo,"init","-q","-b","feature/hooks")
   self.git(repo,"config","user.name","Task Commit Test")
   self.git(repo,"config","user.email","task-commit@example.test")
-  (repo/"exact.txt").write_text("before\n");(repo/"unrelated.txt").write_text("base\n")
-  self.git(repo,"add","exact.txt","unrelated.txt");self.git(repo,"commit","-q","-m","base")
+  (repo/"exact.txt").write_text("before\n");(repo/"unrelated.txt").write_text("base\n");(repo/"unstaged.txt").write_text("base\n")
+  self.git(repo,"add","exact.txt","unrelated.txt","unstaged.txt");self.git(repo,"commit","-q","-m","base")
   parent=self.git(repo,"rev-parse","HEAD").stdout.strip()
-  (repo/"exact.txt").write_text("reviewed\n");(repo/"unrelated.txt").write_text("preserved\n")
+  (repo/"exact.txt").write_text("reviewed\n");(repo/"unrelated.txt").write_text("preserved\n");(repo/"unstaged.txt").write_text("unstaged\n");(repo/"untracked.txt").write_text("untracked\n")
   self.git(repo,"add","unrelated.txt")
   message=canonical_message({"type":"fix","scope":"hooks","summary":"验证钩子失败边界","background":"真实钩子可能拒绝提交。","changes":"记录稳定失败证据。","boundaries":"不发布真实分支。","validations":"验证恢复输入保持。"},211)
-  candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":"001","task":{"id":"08-12-hooks","path":".trellis/tasks/08-12-hooks","status":"in_progress","branch":"feature/hooks"},"git":{"base_branch":"main","base_ref":"main","pre_commit_head":parent,"phase2_commit_anchor":parent},"dirty_snapshot":capture_snapshot(repo),"path_classifications":[{"path":"exact.txt","category":"task-reviewed","reason":"requested","coverage_source":"phase2"},{"path":"unrelated.txt","category":"unrelated-preserved","reason":"parallel state","coverage_source":"live snapshot"}],"exact_stage_paths":["exact.txt"],"message":message,"ai_review":{"status":"passed","summary":"reviewed","evidence":["phase2"]}}
+  snapshot=capture_snapshot(repo);classifications=[{"path":row["path"],"category":"task-reviewed" if row["path"]=="exact.txt" else "unrelated-preserved","reason":"requested" if row["path"]=="exact.txt" else "parallel state","coverage_source":"phase2" if row["path"]=="exact.txt" else "live snapshot"} for row in snapshot["entries"]]
+  candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":"001","task":{"id":"08-12-hooks","path":".trellis/tasks/08-12-hooks","status":"in_progress","branch":"feature/hooks"},"git":{"base_branch":"main","base_ref":"main","pre_commit_head":parent,"phase2_commit_anchor":parent},"dirty_snapshot":snapshot,"path_classifications":classifications,"exact_stage_paths":["exact.txt"],"message":message,"ai_review":{"status":"passed","summary":"reviewed","evidence":["phase2"]}}
   candidate_path=repo/"candidate.json";candidate_path.write_text(json.dumps(candidate,ensure_ascii=False))
   phase2=repo/".trellis/.runtime/guru-team/owner-checkpoints/08-12-hooks/phase2-check.json";phase2.parent.mkdir(parents=True);phase2.write_text("{}\n")
   hook=repo/".git/hooks"/hook_name;hook.write_text("#!/bin/sh\nset -eu\n"+hook_body+"\n");hook.chmod(hook.stat().st_mode|stat.S_IXUSR)
@@ -66,6 +67,23 @@ class PackageLocalRuntimeTest(unittest.TestCase):
   self.assertEqual("reviewed",self.git(repo,"show",f"{created}:exact.txt").stdout.strip())
   self.assertEqual(parent,self.git(repo,"rev-parse","HEAD").stdout.strip())
   self.assertEqual(index_before,self.git(repo,"ls-files","--stage","-z").stdout)
+  self.assertTrue(candidate_path.is_file());self.assertTrue(phase2.is_file())
+
+ def test_commit_msg_rejection_preserves_live_ref_index_unrelated_state_and_recovery_inputs(self):
+  repo,parent,candidate_path,phase2=self.hook_case("commit-msg","exit 37")
+  live_ref=self.git(repo,"symbolic-ref","HEAD").stdout.strip()
+  index_before=index_entries(repo)
+  unrelated_before=capture_snapshot(repo,{"candidate.json","exact.txt"})
+  with self.assertRaises(CommandError) as raised:
+   execute_commit(PACKAGE,{},["--root",str(repo),"--candidate-artifact",str(candidate_path)])
+  evidence=raised.exception.response
+  self.assertEqual("pre_commit",evidence["transaction_stage"])
+  self.assertIn({"name":"commit-msg","exit_code":37},evidence["hook_results"])
+  self.assertNotIn("created_commit_sha",evidence)
+  self.assertEqual(parent,self.git(repo,"rev-parse","HEAD").stdout.strip())
+  self.assertEqual(parent,self.git(repo,"rev-parse",live_ref).stdout.strip())
+  self.assertEqual(index_before,index_entries(repo))
+  self.assertEqual(unrelated_before,capture_snapshot(repo,{"candidate.json","exact.txt"}))
   self.assertTrue(candidate_path.is_file());self.assertTrue(phase2.is_file())
 
  def test_hook_mutation_and_message_rewrite_fail_before_live_ref_publication(self):
