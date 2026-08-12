@@ -3,6 +3,21 @@
   "package_id": "guru-verify-extension-installation",
   "commands": [
     {
+      "id": "show-extension-version",
+      "owner": "guru-verify-extension-installation",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root or a path below it.", "repeatable": false, "conflicts": []}
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments", "conflicting_arguments", "internal_error"],
+      "side_effect": "repo_read",
+      "schema_bindings": [],
+      "validator_id": "extension_version_projection",
+      "runtime_role": "check"
+    },
+    {
       "id": "execute-extension-verification",
       "owner": "guru-verify-extension-installation",
       "entrypoint": "runtime/execute.py",

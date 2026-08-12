@@ -542,6 +542,13 @@ guru-create-task-workspace`。环境检查可独立运行：
 .trellis/guru-team/scripts/bash/check-env.sh --json
 ```
 
+该兼容入口由 `guru-select-workflow-mode` 的 package-local
+`check-workflow-environment` command 独占；extension version/provenance 由
+`guru-verify-extension-installation` 的 `show-extension-version` command 独占，
+Planning 三文档定位由 `guru-approve-task-plan` 的
+`resolve-planning-artifacts` command 独占。三个顶层 wrapper 只转发到对应
+package validator，不在 shared kernel 注册业务命令。
+
 Compatibility `prepare-task.sh --json` 只执行显式 local query，不是 workflow hop，也不创建 GitHub
 issue、worktree、branch 或 Trellis task。它的确定性实现由
 `guru-create-task-workspace/runtime/prepare.py` 独占，不属于 shared kernel。

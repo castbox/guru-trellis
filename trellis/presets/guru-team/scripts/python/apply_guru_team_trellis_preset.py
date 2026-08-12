@@ -87,7 +87,6 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("io.py"),
     Path("launch.sh"),
     Path("schema.py"),
-    Path("utility.py"),
     Path("validate.py"),
 )
 ALWAYS_OVERLAY_PREFIXES = (Path(".agents"), Path(".trellis/agents"))
@@ -755,6 +754,7 @@ def skill_registry_entries(skills_root: Path) -> tuple[dict[str, Any], list[dict
 
 SKILL_MANAGED_ROOTS = (
     Path(".trellis/guru-team/skills"),
+    Path(".trellis/guru-team/runtime"),
     Path(".agents/skills"),
     Path(".codex/skills"),
     Path(".cursor/skills"),

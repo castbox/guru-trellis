@@ -3,6 +3,22 @@
   "package_id": "guru-approve-task-plan",
   "commands": [
     {
+      "id": "resolve-planning-artifacts",
+      "owner": "guru-approve-task-plan",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root or a path below it.", "repeatable": false, "conflicts": []},
+        {"flag": "--task", "required": false, "kind": "string", "description": "Task directory, task-relative path, or task slug.", "repeatable": false, "conflicts": []}
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments", "conflicting_arguments", "unsafe_path", "internal_error"],
+      "side_effect": "repo_read",
+      "schema_bindings": [],
+      "validator_id": "planning_artifact_resolver",
+      "runtime_role": "check"
+    },
+    {
       "id": "record-planning-approval",
       "owner": "guru-approve-task-plan",
       "entrypoint": "runtime/record.py",

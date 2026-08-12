@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -10,6 +11,20 @@ from typing import Any
 from .io import CommandError, fail, read_json_file, write_json
 from .installed import validate_skill_installed
 from .schema import validate_json
+
+
+APPROVED_KERNEL_FILES = {
+    "__init__.py",
+    "command.py",
+    "compat.py",
+    "discovery.py",
+    "eval_runner.py",
+    "installed.py",
+    "io.py",
+    "launch.sh",
+    "schema.py",
+    "validate.py",
+}
 
 
 def _fold_string(node: ast.AST) -> str | None:
@@ -123,6 +138,18 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
                 raise CommandError("unknown_error", f"{package_id}.{command_id}.errors", "Declare every referenced error in the package catalog.")
             if "guru_team_trellis.py" in wrapper_source or "guru_team_trellis.py" in entrypoint.read_text(encoding="utf-8"):
                 raise CommandError("legacy_dependency", f"{package_id}.{command_id}", "Remove the shared monolith dependency.")
+    actual_kernel_files = {
+        path.name for path in kernel.iterdir()
+        if path.is_file() and not path.is_symlink()
+    }
+    if actual_kernel_files != APPROVED_KERNEL_FILES:
+        unexpected = sorted(actual_kernel_files - APPROVED_KERNEL_FILES)
+        missing = sorted(APPROVED_KERNEL_FILES - actual_kernel_files)
+        raise CommandError(
+            "kernel_branching",
+            str(kernel),
+            f"Restore the closed neutral kernel inventory; unexpected={unexpected}, missing={missing}.",
+        )
     forbidden_kernel_values = {
         "guru-sync-base", "guru-clarify-requirements", "typed_exit", "profile"
     }
@@ -143,6 +170,31 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
         }
         if forbidden_kernel_values & folded_values or forbidden_kernel_functions & function_names:
             raise CommandError("kernel_branching", str(path), "Keep Skill, profile and typed-exit behavior package-local.")
+
+    if mode == "source":
+        compatibility_root = root / "trellis/workflows/guru-team/scripts/bash"
+        declared_wrappers = {
+            (package_id, Path(item["command"]).name)
+            for package_id, interface in (
+                (row["id"], read_json_file(packages / row["id"] / "interface.json", f"{row['id']}.interface"))
+                for row in active
+            )
+            for item in interface["validators"]
+        }
+        for wrapper in compatibility_root.glob("*.sh"):
+            source = wrapper.read_text(encoding="utf-8")
+            matches = set(
+                re.findall(
+                    r"(?:skills/guru-team|skills)/packages/(guru-[a-z0-9-]+)/scripts/([a-z0-9-]+\.sh)",
+                    source,
+                )
+            )
+            if matches and not matches.issubset(declared_wrappers):
+                raise CommandError(
+                    "owner_mismatch",
+                    str(wrapper),
+                    "Route every package compatibility wrapper to a declared active validator wrapper.",
+                )
     return {"status": "passed", "mode": mode, "active_packages": len(active), "complete_package_commands": complete, "public_projections": public_only, "commands": len(commands_seen)}
 
 

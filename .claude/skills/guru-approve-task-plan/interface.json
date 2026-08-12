@@ -125,6 +125,12 @@
   ],
   "validators": [
     {
+      "id": "planning_artifact_resolver",
+      "command": "scripts/resolve-human-artifacts.sh",
+      "runtime_command": "resolve-planning-artifacts",
+      "objective_scope": "resolve the current or explicitly selected Trellis task and report its three human planning documents without judging plan adequacy"
+    },
+    {
       "id": "planning_approval_recorder",
       "command": "scripts/record-planning-approval.sh",
       "runtime_command": "record-planning-approval",

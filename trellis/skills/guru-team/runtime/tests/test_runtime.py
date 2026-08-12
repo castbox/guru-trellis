@@ -68,73 +68,12 @@ class SharedRuntimeTests(unittest.TestCase):
             {"status": "error", "stage": "archive-path-preflight"},
         )
 
-    def test_version_utility_preserves_manifest_contract(self) -> None:
-        from runtime.utility import extension_payload, version
+    def test_kernel_inventory_is_closed_and_contains_no_business_cli(self) -> None:
+        from runtime.validate import APPROVED_KERNEL_FILES
 
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp)
-            (repo / ".trellis/guru-team").mkdir(parents=True)
-            missing = version(repo)
-            self.assertEqual(missing["guru_team_extension"], {
-                "status": "missing",
-                "path": ".trellis/guru-team/extension.json",
-            })
-
-            manifest = {
-                "schema_version": "1.0",
-                "extension": {
-                    "extension_id": "guru-team",
-                    "version": "0.6.5-guru.3",
-                    "workflow_template_id": "guru-team",
-                    "target_trellis_cli": "0.6.5",
-                    "tested": {"trellis_cli": ["0.6.5"]},
-                },
-                "installed_at": "2026-08-12T00:00:00Z",
-                "source": {
-                    "repo": "castbox/guru-trellis",
-                    "ref": "main",
-                    "commit": "abc123",
-                    "tree_state": "clean",
-                    "is_mutable_ref": True,
-                },
-                "install": {"selected_platforms": ["codex", "cursor"], "all_platforms": False},
-            }
-            path = repo / ".trellis/guru-team/extension.json"
-            path.write_text(json.dumps(manifest), encoding="utf-8")
-            current = version(repo)
-            self.assertEqual(current["guru_team_extension"]["version"], "0.6.5-guru.3")
-            self.assertEqual(current["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
-            self.assertEqual(current["guru_team_extension"]["selected_platforms"], ["codex", "cursor"])
-            self.assertIs(current["guru_team_extension"]["all_platforms"], False)
-
-            path.write_text("{", encoding="utf-8")
-            invalid = extension_payload(repo)
-            self.assertEqual(invalid["status"], "invalid")
-            self.assertIn("invalid", invalid["error"])
-
-    def test_version_wrapper_supports_source_and_installed_layouts(self) -> None:
-        source_wrapper = Path(__file__).resolve().parents[4] / "workflows/guru-team/scripts/bash/version.sh"
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp)
-            (repo / ".trellis/guru-team/scripts/bash").mkdir(parents=True)
-            (repo / ".trellis/guru-team/runtime").mkdir(parents=True)
-            installed_wrapper = repo / ".trellis/guru-team/scripts/bash/version.sh"
-            shutil.copy2(source_wrapper, installed_wrapper)
-            for name in ("__init__.py", "utility.py"):
-                shutil.copy2(ROOT / name, repo / ".trellis/guru-team/runtime" / name)
-
-            for wrapper, root in ((source_wrapper, Path(__file__).resolve().parents[5]), (installed_wrapper, repo)):
-                result = subprocess.run(
-                    [str(wrapper), "--root", str(root), "--json"],
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                )
-                self.assertEqual(result.returncode, 0, result)
-                payload = json.loads(result.stdout)
-                self.assertEqual(payload["status"], "ok")
-                self.assertEqual(payload["repo_root"], str(root.resolve()))
+        actual = {path.name for path in ROOT.iterdir() if path.is_file()}
+        self.assertEqual(actual, APPROVED_KERNEL_FILES)
+        self.assertNotIn("utility.py", actual)
 
     def test_contract_discovery_projects_every_active_public_contract(self) -> None:
         from runtime.discovery import discover

@@ -31,7 +31,7 @@ Before editing workflow behavior:
 - `.trellis/workflow.md` is this repository's dogfooded active copy and must stay synchronized when runtime parsing or local validation depends on the updated workflow.
 - `trellis/workflows/guru-team/config-template.yml` defines default Guru Team behavior.
 - `trellis/workflows/guru-team/scripts/bash/*.sh` are thin executable wrappers.
-- `trellis/skills/guru-team/packages/*/runtime/` owns Skill-specific deterministic behavior; `trellis/skills/guru-team/runtime/` contains only shared command, schema, discovery, installation, eval, and utility primitives.
+- `trellis/skills/guru-team/packages/*/runtime/` owns Skill-specific deterministic behavior; `trellis/skills/guru-team/runtime/` is a closed inventory containing only shared command dispatch, schema, discovery, installation validation, eval, and I/O primitives.
 - Phase 0 base selection/sync is owned by the active `guru-sync-base` package plus
   shared `sync-base` / `check-base-sync` runtime commands; `prepare-task` reuses
   that core and does not define a second resolver.

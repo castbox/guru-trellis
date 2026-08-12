@@ -112,7 +112,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             )
             self.assertEqual(installed["status"], "passed")
             self.assertEqual(len(installed["facts"]["active_ids"]), 15)
-            self.assertEqual(installed["facts"]["command_count"], 51)
+            self.assertEqual(installed["facts"]["command_count"], 54)
             self.assertFalse((target / ".trellis/guru-team/scripts/python/guru_team_trellis.py").exists())
             for projection in (target / ".agents/skills", target / ".codex/skills", target / ".cursor/skills"):
                 for path in projection.rglob("*"):

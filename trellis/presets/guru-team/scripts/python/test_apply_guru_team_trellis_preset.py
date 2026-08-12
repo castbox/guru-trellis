@@ -676,6 +676,46 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(conflicts, [])
         self.assertEqual(sidecars, [])
 
+    def test_stale_managed_kernel_file_is_removed_by_previous_hash(self) -> None:
+        target = self.install_dst / "runtime/retired.py"
+        target.parent.mkdir(parents=True)
+        target.write_text("retired kernel\n", encoding="utf-8")
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+
+        removal, conflict, sidecar = preset.remove_stale_skill_path(
+            self.repo,
+            ".trellis/guru-team/runtime/retired.py",
+            {".trellis/guru-team/runtime/retired.py": digest},
+            True,
+        )
+
+        self.assertEqual(removal, {
+            "path": ".trellis/guru-team/runtime/retired.py",
+            "action": "removed_managed",
+            "previous_managed_sha256": digest,
+        })
+        self.assertIsNone(conflict)
+        self.assertIsNone(sidecar)
+        self.assertFalse(target.exists())
+
+    def test_stale_edited_kernel_file_is_preserved_and_blocks(self) -> None:
+        target = self.install_dst / "runtime/retired.py"
+        target.parent.mkdir(parents=True)
+        target.write_text("local edit\n", encoding="utf-8")
+
+        removal, conflict, sidecar = preset.remove_stale_skill_path(
+            self.repo,
+            ".trellis/guru-team/runtime/retired.py",
+            {".trellis/guru-team/runtime/retired.py": "0" * 64},
+            True,
+        )
+
+        self.assertIsNone(removal)
+        self.assertEqual(conflict["reason"], "stale_unknown_local_edit")
+        self.assertEqual(sidecar, ".trellis/guru-team/runtime/retired.py.new")
+        self.assertEqual(target.read_text(encoding="utf-8"), "local edit\n")
+        self.assertTrue(target.with_name("retired.py.new").is_file())
+
     def test_known_dot_five_legacy_runtime_is_removed(self) -> None:
         target = self.install_dst / "scripts/python/guru_team_trellis.py"
         target.parent.mkdir(parents=True)

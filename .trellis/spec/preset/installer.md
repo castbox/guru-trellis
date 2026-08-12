@@ -89,6 +89,11 @@ deterministic `.new` remediation sidecar when its parent is safe, is recorded in
 successfully managed files, and installed validation derives the complete
 expected inventory independently.
 
+The same previous-manifest hash rule applies when the closed shared-kernel
+inventory retires a file below `.trellis/guru-team/runtime/`. An exact managed
+copy is removed and recorded; an unknown local edit is preserved with a `.new`
+remediation sidecar and blocks activation.
+
 Overlay conflicts participate in the same staged activation gate as package and
 current ownership conflicts. Missing selected entries install, canonical-equal
 entries remain unchanged, and only an exact previous managed hash may be
@@ -496,6 +501,13 @@ Cursor discovery roots receive only the public projection: `SKILL.md`,
 interface, references, public schemas/examples/evals and the public invocation
 wrapper. They never receive package `runtime/`, `tests/`, `errors/`, private
 artifact schemas/examples, or recorder/checker/execute wrappers.
+
+The shared kernel installation inventory is closed. Compatibility facts for
+extension version/provenance, workflow environment, and planning-document
+resolution install through their owning active packages and declared validator
+wrappers; they are not shared-kernel commands. Source validation rejects a
+workflow compatibility wrapper that points to an undeclared package wrapper,
+and installer tests reject any extra kernel file.
 
 Every installed adapter descriptor names an executable in the same
 `adapters/eval/` directory. Apply and installed validation require that file to

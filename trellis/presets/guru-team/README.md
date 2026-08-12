@@ -471,6 +471,14 @@ platform selection:
 - `.trellis/guru-team/skills/packages/<skill-id>/errors/catalog.json`
 - `.trellis/guru-team/skills/packages/<skill-id>/runtime/`
 
+The shared kernel file inventory is closed to command dispatch, discovery,
+evaluation, installed/source validation, schema and JSON I/O primitives. The
+compatibility commands `show-extension-version`, `check-workflow-environment`,
+and `resolve-planning-artifacts` are owned respectively by
+`guru-verify-extension-installation`, `guru-select-workflow-mode`, and
+`guru-approve-task-plan`; their top-level wrappers only forward to declared
+package validators.
+
 Production skill registry 包含 active `guru-create-task-workspace`、`guru-sync-base`、
 `guru-discover-change-context`、`guru-clarify-requirements`、
 `guru-review-contract-wording`、`guru-review-change-request`、

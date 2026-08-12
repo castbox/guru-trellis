@@ -21,6 +21,56 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
     def read(self, relative: str) -> dict:
         return json.loads((self.package / relative).read_text(encoding="utf-8"))
 
+    def test_planning_artifact_resolution_is_package_owned_and_compatible(self) -> None:
+        command = next(
+            item for item in self.read("commands.json")["commands"]
+            if item["id"] == "resolve-planning-artifacts"
+        )
+        self.assertEqual(command["entrypoint"], "runtime/check.py")
+        self.assertEqual(command["runtime_role"], "check")
+        self.assertEqual(command["side_effect"], "repo_read")
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            task = root / ".trellis/tasks/08-12-example"
+            task.mkdir(parents=True)
+            (task / "prd.md").write_text("# PRD\n", encoding="utf-8")
+            wrapper = self.package / "scripts/resolve-human-artifacts.sh"
+            result = subprocess.run(
+                [str(wrapper), "--root", str(root), "--task", str(task), "--json"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["task_dir_relative"], ".trellis/tasks/08-12-example")
+            self.assertEqual(
+                [item["exists"] for item in payload["markdown_artifacts"]],
+                [True, False, False],
+            )
+            self.assertEqual(payload["markdown_artifacts"][0]["status"], "已生成")
+
+    def test_artifact_help_and_compatibility_wrapper_route_to_package(self) -> None:
+        root = self.package.parents[4]
+        wrapper = (
+            root / "trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh"
+            if (root / "trellis/skills/guru-team").is_dir()
+            else root / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh"
+        )
+        for target in (self.package / "scripts/resolve-human-artifacts.sh", wrapper):
+            result = subprocess.run(
+                [str(target), "--help"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            self.assertIn("usage: resolve-planning-artifacts", result.stdout)
+            self.assertIn("owner: guru-approve-task-plan", result.stdout)
+
+
     def test_interface_declares_compact_private_owner_contract(self) -> None:
         self.assertEqual(self.interface["id"], "guru-approve-task-plan")
         self.assertEqual(self.interface["schema_version"], "1.4")

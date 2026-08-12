@@ -86,8 +86,22 @@ with at least two identical consumers and never branch on Skill/profile/exit.
 Compatibility `prepare-task.sh` is owned by
 `guru-create-task-workspace/runtime/prepare.py`; it must not place reviewed-base,
 issue, task, or workspace proposal behavior in the shared kernel. Kernel boundary
-validation folds constant string expressions and checks forbidden business entry
-points so split literals cannot hide Skill-specific ownership.
+validation requires the exact approved neutral module inventory, folds constant
+string expressions, and checks forbidden business entry points so split literals
+cannot hide Skill-specific ownership. Workflow compatibility wrappers that route
+to package scripts must resolve to an active package validator declared by
+`interface.json`; an unregistered business entrypoint fails source validation.
+
+Compatibility fact commands remain package-owned:
+
+- `version.sh` / `show-extension-version` belongs to
+  `guru-verify-extension-installation` and projects the installed extension manifest.
+- `check-env.sh` / `check-workflow-environment` belongs to
+  `guru-select-workflow-mode` and reads repository, Git, GitHub CLI, base and
+  worktree facts before Intake routing.
+- `resolve-human-artifacts.sh` / `resolve-planning-artifacts` belongs to
+  `guru-approve-task-plan` and locates the three planning documents without
+  deciding their adequacy.
 
 - `trellis/workflows/guru-team/scripts/bash/prepare-task.sh`
 - `trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh`
@@ -137,8 +151,9 @@ Before execution, source/installed validation checks all 15 `commands.json` and
 error catalogs, exact `command.id == interface.validator.runtime_command`,
 explicit `validator_id`, globally unique command id and owner, runtime role,
 argument repeatability/conflict metadata, side-effect classification,
-entrypoint/wrapper existence, catalog closure and absence of monolith
-dependencies. The installed validator independently rebuilds the same global
+entrypoint/wrapper existence, catalog closure, the closed neutral kernel file
+inventory, compatibility-wrapper ownership and absence of monolith dependencies.
+The installed validator independently rebuilds the same global
 command map. The dispatcher validates the same selected package command at
 invocation time and rejects repeated scalar flags or declared conflict sets
 before loading the entrypoint.
