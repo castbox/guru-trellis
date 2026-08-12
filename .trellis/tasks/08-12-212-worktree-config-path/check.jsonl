@@ -1,6 +1,0 @@
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"复核 AI/脚本 ownership、workspace 与 task mutation 边界。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"复核 runtime 只执行确定性配置解析和事实校验。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核本机路径只进入 ignored runtime mapping。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"复核完整质量门禁和 anti-pattern。"}
-{"file":".trellis/spec/preset/installer.md","reason":"复核 clean install、reapply、update 与 sidecar 行为。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"复核 canonical/installed/platform parity。"}

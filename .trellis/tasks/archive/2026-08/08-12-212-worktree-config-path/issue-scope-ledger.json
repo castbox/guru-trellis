@@ -11,7 +11,7 @@
       "number": 212,
       "url": "https://github.com/castbox/guru-trellis/issues/212",
       "title": "修复 package-local task workspace 忽略 worktree 配置的路径回归",
-      "reason": "本任务完整覆盖 Issue #212 的验收标准。"
+      "reason": "本任务完整实现并验证 Issue #212 的现有 workspace 配置语义恢复。"
     }
   ],
   "related_issues": [

@@ -1,6 +1,0 @@
-{"file":".trellis/spec/workflow/index.md","reason":"定位 workflow package 与配置合同的规范入口。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 deterministic executor/validator、错误处理与副作用边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"约束 config、runtime mapping、tracked artifact 与 public DTO 数据边界。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"执行 package、投影、安装与漂移验证要求。"}
-{"file":".trellis/spec/preset/installer.md","reason":"按 canonical source 与 preset apply 同步 installed copy。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"保持 shared/Codex/Claude/Cursor 投影一致。"}
