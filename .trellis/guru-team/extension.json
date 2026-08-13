@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-13T10:04:40Z",
+  "installed_at": "2026-08-13T10:44:25Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "f29bb13e98312e6cc35a7d5eff1cada46f592332",
-    "commit": "f29bb13e98312e6cc35a7d5eff1cada46f592332",
+    "ref": "e738278194a0c6abc07edbdf9bc305401ebcc383",
+    "commit": "e738278194a0c6abc07edbdf9bc305401ebcc383",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -503,7 +503,7 @@
       {
         "id": "guru-review-task-publication",
         "interface_sha256": "8180d3c58ea0673cfea15f7ed3db44043ca297384527e6c6b72a3a09967a76b8",
-        "tree_sha256": "ad370340dc685d5db4b0f481393832d942b597116c055c49a49af1b74383e229"
+        "tree_sha256": "a5c763ed2a4884bedf8db7169d6d11dd1c465989b8b920cb1cb6ea7628699243"
       },
       {
         "id": "guru-select-workflow-mode",
@@ -4404,7 +4404,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/invoke.py",
-        "sha256": "d820f74329ab47b714b68652526e4c695f7cc92168ed40b6acb83627d5d1bafe",
+        "sha256": "b33dd74d8891df195583946b016981dd04abf0e457b2fdc015b8cf27123eaad1",
         "executable": false,
         "action": "unchanged"
       },
@@ -4509,7 +4509,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
-        "sha256": "16d5ca0c0b0d6672c7cee0e5c1c0913ca5019e7387a4fe10cd54463837452b83",
+        "sha256": "0b5def35299e7ab7985e1823930e5390a2e340376cf0852d6614a8031cb16bc5",
         "executable": false,
         "action": "unchanged"
       },
