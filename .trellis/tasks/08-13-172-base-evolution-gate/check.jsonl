@@ -1,4 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查完整 semantic review、验证充分性、分发与安装门禁。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查 mandatory invocation、route 与唯一 consumer graph。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 pair/private checkpoint/public DTO 与迁移数据合同。"}
-{"file":".trellis/spec/preset/installer.md","reason":"检查 canonical、installed、platform、reapply 与 update/upgrade。"}
