@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-13T05:57:39Z",
+  "installed_at": "2026-08-13T06:31:27Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "91cc8356039b89b0a19654c7671984cb1d4d05e5",
-    "commit": "91cc8356039b89b0a19654c7671984cb1d4d05e5",
+    "ref": "0813d9c66d014bb2abe9dc91e571c609dca3cb1d",
+    "commit": "0813d9c66d014bb2abe9dc91e571c609dca3cb1d",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -483,7 +483,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "bf049f7759309f0dffa48ae241b77029d036e56b3d9f462c9f278135d06476d3",
-        "tree_sha256": "2369d1b678bd3969e220d40ef2028cc7b56488afe52f53f85e59ba3cac1d122e"
+        "tree_sha256": "a54036b3b02d7adbaa15e982c968a5849929b973f7d8a784319d4804d50d1aaf"
       },
       {
         "id": "guru-review-contract-wording",
@@ -821,6 +821,34 @@
         "path": ".trellis/guru-team/skills/consumers/workflow/production/approve-task-plan-clarify-scope.schema.json",
         "source": "trellis/skills/guru-team/consumers/workflow/production/approve-task-plan-clarify-scope.schema.json",
         "sha256": "5b4b52f9a33b3564fc0e6507226d38cfdaade10cd6f24bd26181a76c43816302",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/base-reconciliation-implementation.schema.json",
+        "source": "trellis/skills/guru-team/consumers/workflow/production/base-reconciliation-implementation.schema.json",
+        "sha256": "60ba2a5be6a965997865c74f2586a77c63a436ae5589ea4bd3d1f711d8b24a98",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/base-reconciliation-planning.schema.json",
+        "source": "trellis/skills/guru-team/consumers/workflow/production/base-reconciliation-planning.schema.json",
+        "sha256": "bc59059fec644ee4b06ee0b9dc95e74e7cd6beae9e051b0c3d2ae2c2946f8b99",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/base-reconciliation-router.schema.json",
+        "source": "trellis/skills/guru-team/consumers/workflow/production/base-reconciliation-router.schema.json",
+        "sha256": "002b1ceb891dbbfc17521a778e62540612be73e5e50beb167b50c48fe267b208",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/consumers/workflow/production/base-reconciliation-scope.schema.json",
+        "source": "trellis/skills/guru-team/consumers/workflow/production/base-reconciliation-scope.schema.json",
+        "sha256": "c028bb8e5942dc76d3b3dc29f44d01798968196a99c51b27cdacbee697a02aa0",
         "executable": false,
         "action": "unchanged"
       },
@@ -2899,7 +2927,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/invoke.py",
-        "sha256": "560b7b6343beb418bd519194dd1f070962d3ac092fc08007ff83c450f2837cfa",
+        "sha256": "843e9e39faacbb149f00fca37a0e4b5ed662d7337f8171b3bd0a4abb1202739b",
         "executable": false,
         "action": "unchanged"
       },
@@ -2913,7 +2941,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/schemas/base-reconciliation.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/schemas/base-reconciliation.schema.json",
-        "sha256": "556088951b4776eaafe2483483c088ff0c92b4170384fb5654da215fc84f5684",
+        "sha256": "e73b68328e916910be9c16a5d10a29c1904f8e054fa2a1bbd9ed7d74b2e72eee",
         "executable": false,
         "action": "unchanged"
       },
@@ -3088,14 +3116,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_contract.py",
-        "sha256": "67d4bec2f339c6fa53f37e0aaf8ec5d8862c62d333d61f0fe2812957b138ac4c",
+        "sha256": "be65e73c2aec6c9dd2e1b56e9356320b6850b4c38ff71959fbb10584d405aac2",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/tests/test_runtime.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py",
-        "sha256": "c3b96f9cde1f33ea87e9f07f59d42f3565a881bf74f1b376a7479d6ba1961aec",
+        "sha256": "b8892c47bcf928f6b82d6d9d1802222193849215eb6dc008ad357d07a457c892",
         "executable": false,
         "action": "unchanged"
       },

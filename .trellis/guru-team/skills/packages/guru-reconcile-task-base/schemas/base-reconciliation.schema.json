@@ -8,7 +8,30 @@
     "typed_output":{"oneOf":[{"$ref":"public-reconciled-output.schema.json"},{"$ref":"public-review-continuity-required-output.schema.json"},{"$ref":"public-implementation-required-output.schema.json"},{"$ref":"public-planning-stale-output.schema.json"},{"$ref":"public-scope-confirmation-required-output.schema.json"},{"$ref":"public-blocked-output.schema.json"}]},"facts_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}
   },
   "allOf":[
-    {"if":{"properties":{"semantic_gate":{"properties":{"typed_exit":{"const":"reconciled"}}}}},"then":{"properties":{"semantic_gate":{"properties":{"route_payload":{"maxProperties":0}}}}}},
+    {
+      "if": {
+        "properties": {
+          "semantic_gate": {
+            "properties": {"typed_exit": {"const": "reconciled"}},
+            "required": ["typed_exit"]
+          }
+        },
+        "required": ["semantic_gate"]
+      },
+      "then": {
+        "properties": {
+          "semantic_gate": {
+            "properties": {
+              "authority_impact": {"const": "unchanged"},
+              "task_content_impact": {"const": "unchanged"},
+              "integration_impact": {"const": "compatible"},
+              "unverified_boundaries": {"maxItems": 0},
+              "route_payload": {"maxProperties": 0}
+            }
+          }
+        }
+      }
+    },
     {"if":{"properties":{"semantic_gate":{"properties":{"typed_exit":{"const":"review_continuity_required"}}}}},"then":{"properties":{"semantic_gate":{"properties":{"route_payload":{"required":["candidate_tree_sha256","relevant_paths"]}}}}}},
     {"if":{"properties":{"semantic_gate":{"properties":{"typed_exit":{"const":"implementation_required"}}}}},"then":{"properties":{"semantic_gate":{"properties":{"route_payload":{"required":["finding_refs"]}}}}}},
     {"if":{"properties":{"semantic_gate":{"properties":{"typed_exit":{"const":"planning_stale"}}}}},"then":{"properties":{"semantic_gate":{"properties":{"route_payload":{"required":["reason_refs"]}}}}}},

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-base-reconciliation-router-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_ref", "task_head", "new_base_head", "resume_target"],
+  "properties": {
+    "exit_id": {"const": "reconciled"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "new_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "resume_target": {"enum": ["task_activation", "task_commit", "branch_review", "publication_review", "task_finalization", "finalization_resume"]}
+  }
+}

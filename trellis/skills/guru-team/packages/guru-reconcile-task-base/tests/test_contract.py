@@ -36,6 +36,20 @@ class ContractTest(unittest.TestCase):
         self.assertEqual([],validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
         post_commit['branch_review_commit']=post_commit['task_head']
         self.assertTrue(validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
+    def test_workflow_consumer_locators_exist_and_accept_exact_projection(self):
+        interface=json.loads((PACKAGE/'interface.json').read_text())
+        outputs={item['exit_id']:json.loads((PACKAGE/item['example']['path']).read_text()) for item in interface['public_contracts']['outputs']}
+        inputs={item['id']:item for item in interface['public_contracts']['consumer_inputs']}
+        for projection in interface['public_contracts']['projections']:
+            consumer=inputs[projection['consumer_input_id']]
+            if consumer['consumer']['kind']!='workflow': continue
+            locator=SKILLS/consumer['contract']['path']
+            self.assertTrue(locator.is_file(),locator)
+            self.assertFalse(locator.is_symlink(),locator)
+            payload=outputs[projection['exit_id']]
+            if projection['operation']=='select':
+                payload={item['target']:payload[item['source']] for item in projection['mappings']}
+            self.assertEqual([],validate(locator,payload),locator)
     def test_launchers_and_runtime_are_package_local(self):
         interface=json.loads((PACKAGE/'interface.json').read_text())
         for validator in interface['validators']:

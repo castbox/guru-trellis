@@ -37,6 +37,18 @@ class RuntimeTest(unittest.TestCase):
         request=self.write('request.json',{'task_head':self.head,'new_base_head':self.new,'validation_commands':[['git','status','--short']]}); result=execute.candidate(PACKAGE,['--root',str(self.repo),'--request',str(request)]); self.assertEqual('clean',result['merge_status']); self.assertRegex(result['candidate_tree_sha256'],r'^[0-9a-f]{64}$'); self.assertEqual([],result['conflict_paths']); self.assertNotIn('guru-base-candidate-',self.git('worktree','list'))
     def test_record_invoke_consumes_checkpoint_once(self):
         public=self.public(); pi=self.write('public.json',public); gate=self.write('gate.json',self.gate()); result=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gate),'--typed-exit','reconciled']); envelope=self.write('envelope.json',{'public_input':public,'owner_result':result}); output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)]); self.assertEqual('reconciled',output['exit_id']); checkpoint=self.repo/'.trellis/.runtime/guru-team/owner-checkpoints/current/guru-reconcile-task-base/base-reconciliation.json'; self.assertFalse(checkpoint.exists())
+        with self.assertRaises(CommandError) as raised:
+            invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)])
+        self.assertEqual('stale_identity',raised.exception.code)
+    def test_reconciled_requires_complete_compatible_evidence(self):
+        public=self.public(); pi=self.write('reconciled-public.json',public)
+        mutations=(('authority_impact','insufficient_evidence'),('task_content_impact','insufficient_evidence'),('integration_impact','insufficient_evidence'),('unverified_boundaries',['live validation unavailable']))
+        for field,value in mutations:
+            with self.subTest(field=field):
+                gate=self.gate(); gate[field]=value; gate_path=self.write('invalid-'+field+'.json',gate)
+                with self.assertRaises(CommandError) as raised:
+                    record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gate_path),'--typed-exit','reconciled'])
+                self.assertEqual('schema_mismatch',raised.exception.code)
     def test_current_pair_preserves_each_semantic_exit_and_retires_once(self):
         cases={
             'reconciled':('post_check',{}),
