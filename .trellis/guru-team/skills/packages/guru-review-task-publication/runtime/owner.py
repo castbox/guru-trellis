@@ -98,6 +98,8 @@ PROVENANCE_TAIL_MANIFEST_PATH = ".trellis/guru-team/extension.json"
 
 PROVENANCE_TAIL_ALLOWED_FIELDS = frozenset({
     "installed_at",
+    "install.managed_asset_hashes",
+    "install.managed_asset_hashes..trellis/spec/workflow/semantic-retrieval.md",
     "source.ref",
     "source.commit",
     "source.tree_state",
