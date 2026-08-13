@@ -1,26 +1,19 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "5.0",
   "skill_id": "guru-finalize-task",
   "identity": {
     "task_ref": ".trellis/tasks/07-26-example",
-    "plan_ref": "closeout-plan:current",
+    "plan_ref": "finalization:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "plan_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   },
   "review": {
     "status": "passed",
-    "summary": "The reviewed plan is sufficient for the verification boundary."
+    "summary": "The reviewed current plan has reached the exact Ready pull request terminal state."
   },
   "route": {
-    "typed_exit": "verification_required",
-    "consumer": {"kind": "skill", "id": "guru-verify-extension-installation"},
-    "output": {
-      "exit_id": "verification_required",
-      "task_ref": ".trellis/tasks/07-26-example",
-      "plan_ref": "closeout-plan:current",
-      "repo_ref": "castbox/guru-trellis",
-      "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "verification_target": "extension-installation"
-    }
+    "typed_exit": "ready_for_merge",
+    "consumer": {"kind": "skill", "id": "guru-merge-task-pr"},
+    "output": {"materialization": "executor"}
   }
 }

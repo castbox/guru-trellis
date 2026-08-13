@@ -56,10 +56,11 @@
     {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
   ],
   "schemas": [
-    {"id": "legacy_gate_schema_4_0", "path": "schemas/task-finalization-gate.schema.json"},
+    {"id": "gate_schema", "path": "schemas/task-finalization-gate.schema.json"},
     {"id": "gate_schema", "path": "schemas/task-finalization-gate-5.0.schema.json"},
-    {"id": "legacy_semantic_review_input_2_0", "path": "schemas/semantic-review-input.schema.json"},
-    {"id": "semantic_review_input", "path": "schemas/semantic-review-input-3.0.schema.json"},
+    {"id": "legacy_gate_schema_4_0", "path": "schemas/task-finalization-gate-4.0.schema.json"},
+    {"id": "semantic_review_input", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "legacy_semantic_review_input_2_0", "path": "schemas/semantic-review-input-2.0.schema.json"},
     {"id": "legacy_publication_ready_input_3_0", "path": "schemas/public-publication-ready-input.schema.json"},
     {"id": "publication_ready_input", "path": "schemas/public-publication-ready-input-4.0.schema.json"},
     {"id": "legacy_verification_verified_input_3_0", "path": "schemas/public-verification-verified-input.schema.json"},

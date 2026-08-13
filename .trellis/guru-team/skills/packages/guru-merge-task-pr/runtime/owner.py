@@ -836,9 +836,8 @@ def check_task_pr_merge_result(
     route = gate.get("route") if isinstance(gate.get("route"), dict) else {}
     terminal = gate.get("terminal_output")
     if terminal is not None:
-        if not isinstance(terminal, dict) or terminal.get("exit_id") not in {"merged", "closure_mismatch"}:
-            raise WorkflowError("Task PR merge terminal output is invalid.", exit_code=2)
-        return {"status": "passed", "typed_exit": terminal["exit_id"], "output": terminal}
+        output = task_pr_merge_revalidate_terminal_output(public_input, facts, terminal)
+        return {"status": "passed", "typed_exit": output["exit_id"], "output": output}
     if gate.get("facts_sha256") != facts["facts_sha256"]:
         raise WorkflowError("Task PR merge gate is stale against live GitHub facts.", exit_code=2)
     blockers = task_pr_merge_preflight_errors(public_input, facts)
@@ -857,6 +856,65 @@ def check_task_pr_merge_result(
         raise WorkflowError("Task PR merge gate no longer permits execution.", exit_code=2, payload={"blockers": blockers})
     return {"status": "passed", "typed_exit": "ready_to_merge", "merge_method": method, "facts": facts}
 
+def task_pr_merge_terminal_output(
+    public_input: dict[str, Any], facts: dict[str, Any]
+) -> dict[str, Any]:
+    pr = facts["pr"]
+    if (
+        pr["number"] != public_input["pr_number"]
+        or pr["url"] != public_input["pr_url"]
+        or pr["state"] != "MERGED"
+        or not pr.get("merged_at")
+        or pr["head_sha"] != public_input["expected_head_sha"]
+        or pr["base_branch"] != public_input["expected_base_branch"]
+        or pr["head_branch"] != public_input["expected_head_branch"]
+        or facts["close_issues"] != public_input["expected_close_issues"]
+    ):
+        raise WorkflowError(
+            "Task PR merge terminal facts no longer match the exact reviewed merge.",
+            exit_code=2,
+        )
+    merge_commit = pr.get("merge_commit")
+    merge_oid = merge_commit.get("oid") if isinstance(merge_commit, dict) else None
+    if not isinstance(merge_oid, str) or re.fullmatch(r"[0-9a-f]{40}", merge_oid) is None:
+        raise WorkflowError("Merged PR lacks a complete merge commit identity.", exit_code=2)
+    merged_at = parse_iso_datetime(pr["merged_at"], "pull request merged_at")
+    mismatches: list[dict[str, Any]] = []
+    for issue in facts["issues"]:
+        closed_at = issue.get("closed_at")
+        reason = None
+        if issue["state"] not in {"CLOSED", "COMPLETED"}:
+            reason = "not_closed_by_merge"
+        elif not closed_at:
+            reason = "missing_closed_at"
+        elif parse_iso_datetime(closed_at, f"issue #{issue['number']} closed_at") < merged_at:
+            reason = "closed_before_merge"
+        if reason:
+            mismatches.append({"issue_number": issue["number"], "reason_code": reason})
+    output = {
+        "exit_id": "closure_mismatch" if mismatches else "merged",
+        "repo_ref": public_input["repo_ref"],
+        "pr_number": public_input["pr_number"],
+        "pr_url": public_input["pr_url"],
+        "merge_commit_sha": merge_oid,
+    }
+    if mismatches:
+        output["mismatches"] = mismatches
+    return output
+
+def task_pr_merge_revalidate_terminal_output(
+    public_input: dict[str, Any], facts: dict[str, Any], terminal: Any
+) -> dict[str, Any]:
+    if not isinstance(terminal, dict) or terminal.get("exit_id") not in {"merged", "closure_mismatch"}:
+        raise WorkflowError("Task PR merge terminal output is invalid.", exit_code=2)
+    current = task_pr_merge_terminal_output(public_input, facts)
+    if terminal != current:
+        raise WorkflowError(
+            "Task PR merge terminal output is stale against live merged facts.",
+            exit_code=2,
+        )
+    return current
+
 def cmd_check_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or "."))
     public_input = task_pr_merge_json_input(root, args.input)
@@ -868,6 +926,12 @@ def cmd_execute_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     public_input = task_pr_merge_json_input(root, args.input)
     gate_path, gate = task_pr_merge_gate(root, public_input, args.gate)
     checked = check_task_pr_merge_result(root, public_input, gate)
+    if checked.get("typed_exit") in {"merged", "closure_mismatch"}:
+        return {
+            "status": "recovered",
+            "typed_exit": checked["typed_exit"],
+            "output": checked["output"],
+        }
     if checked.get("typed_exit") != "ready_to_merge":
         raise WorkflowError("Task PR merge executor requires one checked merge route.", exit_code=2)
     repo = public_input["repo_ref"]
@@ -884,43 +948,7 @@ def cmd_execute_task_pr_merge(args: argparse.Namespace) -> dict[str, Any]:
     if proc.returncode != 0:
         raise github_error_from_process(proc, operation="expected_head_merge", repo=repo)
     post = task_pr_merge_live_facts(root, public_input)
-    pr = post["pr"]
-    if pr["state"] != "MERGED" or not pr.get("merged_at"):
-        raise WorkflowError("Task PR merge mutation did not produce a merged PR.", exit_code=2)
-    merge_commit = pr.get("merge_commit")
-    merge_oid = merge_commit.get("oid") if isinstance(merge_commit, dict) else None
-    if not isinstance(merge_oid, str) or re.fullmatch(r"[0-9a-f]{40}", merge_oid) is None:
-        raise WorkflowError("Merged PR lacks a complete merge commit identity.", exit_code=2)
-    merged_at = parse_iso_datetime(pr["merged_at"], "pull request merged_at")
-    mismatches: list[dict[str, Any]] = []
-    for issue in post["issues"]:
-        closed_at = issue.get("closed_at")
-        reason = None
-        if issue["state"] not in {"CLOSED", "COMPLETED"}:
-            reason = "not_closed_by_merge"
-        elif not closed_at:
-            reason = "missing_closed_at"
-        elif parse_iso_datetime(closed_at, f"issue #{issue['number']} closed_at") < merged_at:
-            reason = "closed_before_merge"
-        if reason:
-            mismatches.append({"issue_number": issue["number"], "reason_code": reason})
-    if mismatches:
-        output = {
-            "exit_id": "closure_mismatch",
-            "repo_ref": repo,
-            "pr_number": public_input["pr_number"],
-            "pr_url": public_input["pr_url"],
-            "merge_commit_sha": merge_oid,
-            "mismatches": mismatches,
-        }
-    else:
-        output = {
-            "exit_id": "merged",
-            "repo_ref": repo,
-            "pr_number": public_input["pr_number"],
-            "pr_url": public_input["pr_url"],
-            "merge_commit_sha": merge_oid,
-        }
+    output = task_pr_merge_terminal_output(public_input, post)
     gate["terminal_output"] = output
     write_json(gate_path, gate)
     return {"status": "executed", "typed_exit": output["exit_id"], "output": output}

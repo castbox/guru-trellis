@@ -1,0 +1,11 @@
+{
+  "id": "218-finalizer-merge-terminal-output-recovery",
+  "name": "218-finalizer-merge-terminal-output-recovery",
+  "title": "#218 修复 Finalizer/Merge 终态输出与幂等恢复合同",
+  "status": "in_progress",
+  "branch": "fix/218-finalizer-merge-terminal-output-recovery",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/218"
+}

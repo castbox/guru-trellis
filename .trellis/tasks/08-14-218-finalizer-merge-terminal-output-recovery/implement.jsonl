@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"确定性 Finalizer/Merge command、dispatcher single-JSON、terminal state 与 GitHub adapter边界。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"公共 DTO、owner-private terminal checkpoint、typed exit consumer与legacy/current identity合同。"}
+{"file":".trellis/spec/preset/installer.md","reason":"canonical/installed/四平台投影、apply/reapply、managed inventory与sidecar同步要求。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"追踪 mutation owner、terminal persistence、dispatcher stdout与workflow consumer的跨层数据流。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"复用现有 terminal materializer与shared dispatcher，避免在两个wrapper重复补丁。"}

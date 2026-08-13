@@ -19,3 +19,6 @@ side-effect confirmation when required, gate record/check, deterministic
 transition, and exactly one typed exit. Unknown, multiple, retired, stale, or
 unmapped inputs and exits fail closed. Retired verification re-entry input
 requires a fresh current Publication result and full Finalizer reprepare.
+An already Ready same-plan transaction is a terminal read-only recovery: live
+facts are revalidated and the current Merge DTO is materialized without
+repeating any Git or GitHub mutation.

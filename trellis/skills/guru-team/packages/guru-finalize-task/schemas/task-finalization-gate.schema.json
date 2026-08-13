@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-4.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "skill_id", "identity", "review", "route"],
   "properties": {
-    "schema_version": {"const": "4.0"},
+    "schema_version": {"const": "5.0"},
     "skill_id": {"const": "guru-finalize-task"},
     "identity": {
       "type": "object",
@@ -32,7 +32,7 @@
       "additionalProperties": false,
       "required": ["typed_exit", "consumer", "output"],
       "properties": {
-        "typed_exit": {"enum": ["publication_review_stale", "resume_finalization", "reprepare_required", "ready_for_merge", "blocked"]},
+        "typed_exit": {"enum": ["base_reconciliation_required", "publication_review_stale", "resume_finalization", "reprepare_required", "ready_for_merge", "blocked"]},
         "consumer": {
           "type": "object",
           "additionalProperties": false,

@@ -1,0 +1,51 @@
+{
+  "close_issues": [
+    {
+      "number": 218,
+      "reason": "Fully covered by this task and its acceptance matrix.",
+      "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/218"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 208,
+      "reason": "Existing Ready PR adoption remains a separate successor.",
+      "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/208"
+    },
+    {
+      "number": 222,
+      "reason": "Cumulative release verification remains the sole release gate.",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    },
+    {
+      "number": 223,
+      "reason": "Draft CI timing and automatic merge policy remain separate.",
+      "title": "配置驱动的 Draft CI 门禁、Ready 时序与 Agent 自动合并",
+      "url": "https://github.com/castbox/guru-trellis/issues/223"
+    }
+  ],
+  "primary_issue": {
+    "number": 218,
+    "reason": "Primary independently deliverable correctness change.",
+    "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
+    "url": "https://github.com/castbox/guru-trellis/issues/218"
+  },
+  "related_issues": [
+    {
+      "number": 219,
+      "reason": "Merged prerequisite providing the managed Python runtime.",
+      "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+      "url": "https://github.com/castbox/guru-trellis/issues/219"
+    },
+    {
+      "number": 217,
+      "reason": "Merged prerequisite providing the corrected review-gate lifecycle.",
+      "title": "修复 guru-review-branch recorder 未持久化 review gate",
+      "url": "https://github.com/castbox/guru-trellis/issues/217"
+    }
+  ],
+  "schema_version": "2.0"
+}

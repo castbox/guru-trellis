@@ -15,6 +15,13 @@ close Issue `CLOSED`/`COMPLETED`, and `closed_at >= merged_at`.
 `closure_mismatch` reports exact mismatches without closing anything.
 `merge_blocked` represents a pre-merge gate failure and performs no mutation.
 
+After post-merge verification, the executor persists the minimal terminal
+output before returning it to the dispatcher. If stdout is lost, the same gate
+must reread the exact PR, expected head and branches, merge commit, close
+keywords, and Issue closure facts. Only an exact terminal match is returned;
+the executor performs zero repeated GitHub mutation, and a persisted
+`closure_mismatch` remains that exit until consumed.
+
 `expected_close_issues` is an ordered unique exact set with zero allowed
 cardinality. For `[]`, parsed PR close keywords must also be `[]`; after a
 successful merge, closure is vacuously complete and the executor performs no

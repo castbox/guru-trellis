@@ -1895,6 +1895,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("load_installed_package_runtime", installed_closeout)
         self.assertNotIn('"runtime/owner.py"', installed_closeout)
         self.assertIn("class InstalledPackageClient", installed_closeout)
+        self.assertIn('process_env["PYTHONDONTWRITEBYTECODE"] = "1"', installed_closeout)
         self.assertIn('["git", "reset", "--mixed", "HEAD"]', installed_closeout)
         for wrapper_name in (
             "record-planning-approval.sh",
@@ -1925,7 +1926,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('args[:2] == ["remote", "get-url"]', installed_closeout)
         self.assertIn('args[:2] == ["pr", "ready"]', installed_closeout)
         self.assertIn('value("--match-head-commit")', installed_closeout)
-        self.assertIn('merged_payload.get("exit_id") != "merged"', installed_closeout)
+        self.assertIn('merged_payload.get("exit_id") != expected_merge_exit', installed_closeout)
+        self.assertIn('expected_merge_exit = "closure_mismatch" if closure_mismatch else "merged"', installed_closeout)
+        self.assertIn("installed Merge terminal recovery repeated the merge mutation", installed_closeout)
+        self.assertIn("installed Finalizer terminal recovery repeated a GitHub mutation", installed_closeout)
         self.assertIn('after_archive:', installed_closeout)
         self.assertIn('after-archive-hook-preflight', installed_closeout)
         self.assertIn('hook_executed', installed_closeout)
