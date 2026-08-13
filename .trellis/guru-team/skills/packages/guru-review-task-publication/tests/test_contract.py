@@ -71,7 +71,249 @@ def load_runtime():
 GTT = load_runtime()
 
 
+def load_public_wrapper():
+    sys.path.insert(0, str(PACKAGE.parents[1]))
+    sys.path.insert(0, str(PACKAGE / "runtime"))
+    runtime_path = PACKAGE / "runtime/invoke.py"
+    spec = importlib.util.spec_from_file_location(
+        "task_publication_public_wrapper",
+        runtime_path,
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Current Publication public wrapper could not be loaded.")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+PUBLIC_WRAPPER = load_public_wrapper()
+
+
 class TaskPublicationContractTest(unittest.TestCase):
+    class WrapperOwner:
+        class WorkflowError(RuntimeError):
+            def __init__(self, message: str, **_kwargs) -> None:
+                super().__init__(message)
+
+        def __init__(
+            self,
+            root: Path,
+            owner_result: dict,
+            checkpoint: Path,
+            *,
+            checker_error: bool = False,
+        ) -> None:
+            self.root = root
+            self.owner_result = owner_result
+            self.checkpoint = checkpoint
+            self.checker_error = checker_error
+            self.check_calls = 0
+
+        def repo_root(self, _path: Path) -> Path:
+            return self.root
+
+        @staticmethod
+        def read_json(path: Path) -> dict:
+            return json.loads(path.read_text(encoding="utf-8"))
+
+        @staticmethod
+        def skill_json_loads(value: str, _label: str) -> dict:
+            return json.loads(value)
+
+        def resolve_task_dir(self, root: Path, task_ref: str) -> Path:
+            return root / task_ref
+
+        def cmd_check_task_publication_review(self, args) -> dict:
+            self.check_calls += 1
+            if self.checker_error:
+                raise self.WorkflowError("checker rejected the owner result")
+            return {"owner_result": copy.deepcopy(self.owner_result)}
+
+        def task_publication_path(self, _root: Path, _task: Path) -> Path:
+            return self.checkpoint
+
+    def run_public_wrapper(
+        self,
+        owner_result: dict,
+        *,
+        public_input: dict | None = None,
+        supplied_owner_result: dict | None = None,
+        checker_error: bool = False,
+    ) -> tuple[dict, Path, "TaskPublicationContractTest.WrapperOwner"]:
+        public_input = public_input or {
+            "profile": "publication_review",
+            "mode": "workflow",
+            "task_ref": owner_result["task_ref"],
+            "branch_review_commit": owner_result["branch_review_commit"],
+            "review_intent": "initial_review",
+        }
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        root = Path(temp.name)
+        checkpoint = root / ".trellis/.runtime/guru-team/owner-checkpoints/task/pr-readiness.json"
+        checkpoint.parent.mkdir(parents=True)
+        checkpoint.write_text(json.dumps(owner_result), encoding="utf-8")
+        self.last_wrapper_checkpoint = checkpoint
+        input_path = root / "public-input.json"
+        input_path.write_text(json.dumps(public_input), encoding="utf-8")
+        owner_path = root / "owner-result.json"
+        owner_path.write_text(
+            json.dumps(supplied_owner_result or owner_result),
+            encoding="utf-8",
+        )
+        fake_owner = self.WrapperOwner(
+            root,
+            owner_result,
+            checkpoint,
+            checker_error=checker_error,
+        )
+        self.last_wrapper_owner = fake_owner
+        with mock.patch.object(PUBLIC_WRAPPER, "_owner", return_value=fake_owner):
+            output = PUBLIC_WRAPPER.run(
+                PACKAGE,
+                {},
+                [
+                    "--root",
+                    str(root),
+                    "--input",
+                    str(input_path),
+                    "--owner-result",
+                    str(owner_path),
+                ],
+            )
+        return output, checkpoint, fake_owner
+
+    def test_public_wrapper_projects_all_three_exits_and_retires_checkpoint(
+        self,
+    ) -> None:
+        cases = (
+            (
+                "ready",
+                copy.deepcopy(self.readiness_example),
+                {
+                    "exit_id": "ready",
+                    "task_ref": self.readiness_example["task_ref"],
+                    "branch_review_commit": self.readiness_example[
+                        "branch_review_commit"
+                    ],
+                    "pr_title": self.readiness_example["pr_payload"]["title"],
+                    "pr_body": self.readiness_example["pr_payload"]["body"],
+                },
+            ),
+            (
+                "return_to_task_work",
+                self.return_payload(),
+                {
+                    "exit_id": "return_to_task_work",
+                    "task_ref": self.readiness_example["task_ref"],
+                    "finding_refs": ["PUB-WORK-001"],
+                    "resume_target": "phase-2",
+                },
+            ),
+            (
+                "blocked",
+                self.blocked_payload(),
+                {
+                    "exit_id": "blocked",
+                    "reason_code": "external-publication-dependency",
+                    "remediation": "Restore the external dependency and re-enter.",
+                },
+            ),
+        )
+        for name, owner_result, expected in cases:
+            with self.subTest(exit=name):
+                output, checkpoint, fake_owner = self.run_public_wrapper(owner_result)
+                self.assertEqual(output, expected)
+                self.assertEqual(fake_owner.check_calls, 1)
+                self.assertFalse(checkpoint.exists())
+                self.assertFalse(checkpoint.parent.exists())
+
+    def test_public_wrapper_validates_input_before_checker_and_keeps_checkpoint(
+        self,
+    ) -> None:
+        from runtime.io import CommandError
+
+        invalid_input = {
+            "profile": "publication_review",
+            "mode": "workflow",
+            "task_ref": self.readiness_example["task_ref"],
+            "branch_review_commit": self.readiness_example["branch_review_commit"],
+            "review_intent": "initial_review",
+            "unknown": True,
+        }
+        with self.assertRaises(CommandError) as raised:
+            self.run_public_wrapper(
+                copy.deepcopy(self.readiness_example),
+                public_input=invalid_input,
+            )
+        self.assertEqual(raised.exception.code, "schema_mismatch")
+        self.assertEqual(self.last_wrapper_owner.check_calls, 0)
+        self.assertTrue(self.last_wrapper_checkpoint.is_file())
+
+    def test_public_wrapper_keeps_checkpoint_when_checker_or_projection_fails(
+        self,
+    ) -> None:
+        from runtime.io import CommandError
+
+        owner_result = copy.deepcopy(self.readiness_example)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            checkpoint = root / "owner/pr-readiness.json"
+            checkpoint.parent.mkdir(parents=True)
+            checkpoint.write_text("{}", encoding="utf-8")
+            public_input = {
+                "profile": "publication_review",
+                "mode": "workflow",
+                "task_ref": owner_result["task_ref"],
+                "branch_review_commit": owner_result["branch_review_commit"],
+                "review_intent": "initial_review",
+            }
+            input_path = root / "input.json"
+            input_path.write_text(json.dumps(public_input), encoding="utf-8")
+            owner_path = root / "owner.json"
+            owner_path.write_text(json.dumps(owner_result), encoding="utf-8")
+            fake_owner = self.WrapperOwner(
+                root,
+                owner_result,
+                checkpoint,
+                checker_error=True,
+            )
+            with mock.patch.object(PUBLIC_WRAPPER, "_owner", return_value=fake_owner):
+                with self.assertRaises(CommandError):
+                    PUBLIC_WRAPPER.run(
+                        PACKAGE,
+                        {},
+                        [
+                            "--root",
+                            str(root),
+                            "--input",
+                            str(input_path),
+                            "--owner-result",
+                            str(owner_path),
+                        ],
+                    )
+            self.assertTrue(checkpoint.is_file())
+
+        invalid_output = copy.deepcopy(self.readiness_example)
+        invalid_output["pr_payload"]["title"] = ""
+        with self.assertRaises(CommandError) as raised:
+            self.run_public_wrapper(invalid_output)
+        self.assertEqual(raised.exception.code, "schema_mismatch")
+        self.assertTrue(self.last_wrapper_checkpoint.is_file())
+
+    def test_public_wrapper_requires_exact_checker_passed_owner_result(self) -> None:
+        from runtime.io import CommandError
+
+        supplied = copy.deepcopy(self.readiness_example)
+        supplied["pr_payload"]["title"] = "stale title"
+        with self.assertRaises(CommandError) as raised:
+            self.run_public_wrapper(
+                copy.deepcopy(self.readiness_example),
+                supplied_owner_result=supplied,
+            )
+        self.assertEqual(raised.exception.code, "publication_stale")
+        self.assertTrue(self.last_wrapper_checkpoint.is_file())
+
     def test_provenance_tail_accepts_only_semantic_spec_managed_hash(self) -> None:
         head = "a" * 40
         before = {

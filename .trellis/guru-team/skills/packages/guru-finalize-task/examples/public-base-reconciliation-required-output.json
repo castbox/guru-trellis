@@ -1,0 +1,11 @@
+{
+  "exit_id": "base_reconciliation_required",
+  "task_ref": ".trellis/tasks/08-13-example",
+  "task_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "publication_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "selected_base_ref": "origin/main",
+  "old_base_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "new_base_head": "cccccccccccccccccccccccccccccccccccccccc",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "resume_target": "finalization_resume"
+}

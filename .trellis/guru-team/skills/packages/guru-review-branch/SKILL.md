@@ -1,6 +1,6 @@
 ---
 name: guru-review-branch
-description: Review a committed task branch through independent review, an internal closure-then-fresh-final loop, and four typed exits.
+description: Review a committed task branch or bounded base delta through independent semantic review and five typed exits.
 ---
 
 # Guru Review Branch
@@ -37,16 +37,20 @@ exists, the recorder may write the compact `review-gate.json`; it does not
 create assignment, liveness, rollup, or raw per-round reports. Only after
 `check-review-gate` passes
 may the public wrapper emit exactly one of `passed`,
-`implementation_required`, `scope_confirmation_required`, or `blocked`.
+`continuity_passed`, `implementation_required`,
+`scope_confirmation_required`, or `blocked`.
 `passed` targets the active `guru-review-task-publication` Skill through its
 target-owned authoring seed. The workflow caller performs the publication
 content authoring preparation required by the global Phase 3.6 order before
 invoking that active owner.
 This package is not self-contained or portable.
 
-Public input schema 2.0 accepts only `initial_review` and
-`fresh_final_review`. The owner-private gate is current-only schema 3.0 and
-records `review_commit` plus `reviewed_content_sha256`. Any other gate shape or
-input field fails closed through the normal invalid-input path. The commit is
-used for range and finding ancestry; the reviewed-content identity alone owns
-content freshness.
+Aggregate public input schema 3.0 dispatches two profiles: `branch_review`
+schema 2.0 accepts only `initial_review` and `fresh_final_review`, while
+`base_continuity` schema 1.0 accepts only `base_continuity`. The owner-private
+gate is current-only schema 4.0 and records profile-specific identity plus
+`review_commit` and `reviewed_content_sha256`. Aggregate input schema 2.0 and
+gate schema 3.0 remain legacy compatibility inventory, not current runtime
+authority. Any other current gate shape or input field fails closed through
+the normal invalid-input path. The commit is used for range and finding
+ancestry; the reviewed-content identity alone owns content freshness.

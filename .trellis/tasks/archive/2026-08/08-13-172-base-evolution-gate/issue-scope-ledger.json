@@ -1,0 +1,86 @@
+{
+  "close_issues": [
+    {
+      "number": 172,
+      "reason": "The current readiness review identifies #172 as the single delivery authority.",
+      "title": "改进：建立在途 Trellis task 的 Base Evolution Gate 与集成就绪合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/172"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 172,
+    "reason": "The current readiness review identifies #172 as the single delivery authority.",
+    "title": "改进：建立在途 Trellis task 的 Base Evolution Gate 与集成就绪合同",
+    "url": "https://github.com/castbox/guru-trellis/issues/172"
+  },
+  "related_issues": [
+    {
+      "number": 53,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "并行 task tracked metadata 历史背景",
+      "url": "https://github.com/castbox/guru-trellis/issues/53"
+    },
+    {
+      "number": 98,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "Phase 0 并行安全 umbrella",
+      "url": "https://github.com/castbox/guru-trellis/issues/98"
+    },
+    {
+      "number": 106,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "未来 Merge Executor",
+      "url": "https://github.com/castbox/guru-trellis/issues/106"
+    },
+    {
+      "number": 132,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "历史 integration fixture",
+      "url": "https://github.com/castbox/guru-trellis/issues/132"
+    },
+    {
+      "number": 156,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "Phase 0 transition",
+      "url": "https://github.com/castbox/guru-trellis/issues/156"
+    },
+    {
+      "number": 157,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "Phase 0 单快照",
+      "url": "https://github.com/castbox/guru-trellis/issues/157"
+    },
+    {
+      "number": 161,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "AI-first workflow contracts",
+      "url": "https://github.com/castbox/guru-trellis/issues/161"
+    },
+    {
+      "number": 164,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "风险分级",
+      "url": "https://github.com/castbox/guru-trellis/issues/164"
+    },
+    {
+      "number": 169,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "语义检索 SSOT",
+      "url": "https://github.com/castbox/guru-trellis/issues/169"
+    },
+    {
+      "number": 179,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "Publication/Finalizer handoff 兼容",
+      "url": "https://github.com/castbox/guru-trellis/issues/179"
+    },
+    {
+      "number": 180,
+      "reason": "Related dependency, owner, or historical constraint; not closed by #172.",
+      "title": "Finalizer replay 兼容",
+      "url": "https://github.com/castbox/guru-trellis/issues/180"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -5,6 +5,7 @@ PACKAGE=Path(__file__).resolve().parents[1];SKILLS=PACKAGE.parents[1];LOCAL=PACK
 for p in (SKILLS,LOCAL):
  if str(p) not in sys.path:sys.path.insert(0,str(p))
 from runtime.io import CommandError
+from runtime.schema import validate_json
 import check,invoke,record
 class BranchReviewTest(unittest.TestCase):
  def setUp(self):
@@ -20,12 +21,45 @@ class BranchReviewTest(unittest.TestCase):
   with self.assertRaises(CommandError):check.run(PACKAGE,{},["--root",str(self.repo),"--input",str(gp)])
  def test_open_finding_projects_exact_reference(self):
   auth=self.auth("implementation_required");common={"candidate_ref":"candidate-1","disposition":"qualified_finding","scenario_class":"normal_required_behavior","affected_behavior":"Required behavior is missing.","path":"app.txt","evidence_refs":["diff:app.txt"],"requirement_refs":["PRD R1"],"scope_basis":"Current task scope.","qualification_reason":"Reproduces normally.","finding_ref":"finding-1","severity":"P1","introduced_head":self.head,"fix_head":None,"closure_head":None,"status":"open","closure_evidence":[]};auth["semantic_review"]["qualified_findings"]=[common];pi=self.write("public.json",self.public("initial_review"));ai=self.write("auth.json",auth);gate=record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","implementation_required"]);env=self.write("invoke.json",{"owner_result":gate});self.assertEqual(["finding-1"],invoke.run(PACKAGE,{},["--root",str(self.repo),"--invocation",str(env)])["finding_refs"])
+ def test_base_continuity_preserves_task_review_and_projects_pair(self):
+  self.git("switch","main");(self.repo/"base.txt").write_text("advance\n");self.git("add","base.txt");self.git("commit","-qm","advance base");new_base=self.git("rev-parse","HEAD");self.git("switch","feat/test")
+  public={"profile":"base_continuity","mode":"workflow","task_ref":".trellis/tasks/08-12-test","task_head":self.head,"branch_review_commit":self.head,"old_base_head":self.base,"new_base_head":new_base,"candidate_tree_sha256":"d"*64,"relevant_paths":["base.txt"],"resume_target":"publication_review","review_intent":"base_continuity"}
+  auth=self.auth("continuity_passed");pi=self.write("continuity.json",public);ai=self.write("continuity-auth.json",auth);gate=record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","continuity_passed"]);env=self.write("continuity-invoke.json",{"owner_result":gate});out=invoke.run(PACKAGE,{},["--root",str(self.repo),"--invocation",str(env)])
+  self.assertEqual("continuity_passed",out["exit_id"]);self.assertEqual(self.head,out["branch_review_commit"]);self.assertEqual(new_base,out["new_base_head"]);self.assertNotIn("relevant_paths",out)
  def test_dirty_overlay_and_non_ancestor_base_are_rejected(self):
   (self.repo/"overlay.txt").write_text("unreviewed\n");pi=self.write("public.json",self.public());ai=self.write("auth.json",self.auth())
   with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
   (self.repo/"overlay.txt").unlink();public=self.public();public["base_ref"]="f"*40;pi=self.write("bad-base.json",public)
   with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
+ def test_gate_4_rejects_malformed_semantic_and_verification_evidence(self):
+  pi=self.write("public.json",self.public())
+  malformed=self.auth();malformed["verification_evidence"]={"reviewer":None,"review_source":"wrong","evidence":[]};ai=self.write("bad-evidence.json",malformed)
+  with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
+  malformed=self.auth();malformed["semantic_review"]["observations"]=[{"candidate_ref":"candidate-1"}];ai=self.write("bad-semantic.json",malformed)
+  with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
  def test_runtime_has_no_example_projection_or_monolith(self):
   for p in LOCAL.glob("*.py"):
    t=p.read_text();self.assertNotIn("guru_team_trellis.py",t);self.assertNotIn("typed_output(package_root",t)
+ def test_current_interface_wording_matches_profiles_gate_and_exits(self):
+  interface=json.loads((PACKAGE/"interface.json").read_text())
+  public=interface["public_contracts"]
+  self.assertEqual("guru-production-review-branch-input-aggregate-3.0",public["input"]["aggregate_schema"]["schema_id"])
+  self.assertEqual(["branch_review","base_continuity"],[p["id"] for p in public["input"]["profiles"]])
+  self.assertEqual("https://github.com/castbox/guru-trellis/schemas/guru-review-gate-4.0.json",public["private_artifacts"][0]["schema"]["schema_id"])
+  self.assertEqual(["passed","continuity_passed","implementation_required","scope_confirmation_required","blocked"],[o["exit_id"] for o in public["outputs"]])
+  repo=PACKAGE.parents[4]
+  skill_docs=[PACKAGE/"SKILL.md",PACKAGE/"references/contract.md"]
+  durable_docs=[repo/"trellis/presets/guru-team/spec/workflow/companion-scripts.md",repo/"trellis/presets/guru-team/spec/workflow/data-contracts.md",repo/"trellis/presets/guru-team/spec/workflow/skill-package-contract.md"]
+  for path in skill_docs+durable_docs:
+   text=path.read_text()
+   with self.subTest(current_contract=path):
+    self.assertIn("base_continuity",text);self.assertIn("schema 3.0",text);self.assertIn("schema 4.0",text)
+  for path in skill_docs+[durable_docs[-1]]:
+   with self.subTest(exits=path):self.assertIn("continuity_passed",path.read_text())
+  workflow=(repo/"trellis/presets/guru-team/spec/workflow/workflow-contract.md").read_text()
+  self.assertIn("`continuity_passed -> guru-base-continuity-passed-router`",workflow)
+  skill=(PACKAGE/"SKILL.md").read_text();contract=(PACKAGE/"references/contract.md").read_text();spec=(repo/"trellis/presets/guru-team/spec/workflow/skill-package-contract.md").read_text()
+  self.assertNotIn("Public input schema 2.0 accepts only",skill)
+  self.assertNotIn("The gate uses only schema 3.0",contract)
+  self.assertNotIn("The four outputs are independent minimal DTOs",spec)
 if __name__=="__main__":unittest.main()

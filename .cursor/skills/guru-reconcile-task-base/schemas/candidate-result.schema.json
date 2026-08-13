@@ -1,0 +1,5 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reconcile-task-base-candidate-result-1.0",
+  "type":"object","additionalProperties":false,"required":["status","task_head","new_base_head","merge_status","conflict_paths","candidate_tree_sha256","validations"],
+  "properties":{"status":{"const":"ok"},"task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"new_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"merge_status":{"enum":["clean","conflicted"]},"conflict_paths":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},"candidate_tree_sha256":{"type":["string","null"],"pattern":"^[0-9a-f]{64}$"},"validations":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["argv","exit_code"],"properties":{"argv":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"exit_code":{"type":"integer"}}}}}
+}

@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-review-branch",
   "name": "guru-review-branch",
-  "description": "Review a committed task branch through independent review, an internal closure-then-fresh-final loop, and four typed exits.",
+  "description": "Review a committed task branch or bounded base delta through independent semantic review and five typed exits.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -62,19 +62,26 @@
   "artifacts": [
     {"id": "review_gate_example", "path": "examples/review-gate.json"},
     {"id": "public_input_example", "path": "examples/public-branch-review-input.json"},
+    {"id": "public_base_continuity_input_example", "path": "examples/public-base-continuity-input.json"},
+    {"id": "public_base_continuity_authoring_example", "path": "examples/public-base-continuity-authoring.json"},
     {"id": "public_input_authoring_example", "path": "examples/public-branch-review-authoring.json"},
     {"id": "public_invocation_error_example", "path": "examples/public-invocation-error.json"},
     {"id": "public_output_passed_example", "path": "examples/public-passed-output.json"},
+    {"id": "public_output_continuity_passed_example", "path": "examples/public-continuity-passed-output.json"},
     {"id": "public_output_implementation_required_example", "path": "examples/public-implementation-required-output.json"},
     {"id": "public_output_scope_confirmation_required_example", "path": "examples/public-scope-confirmation-required-output.json"},
     {"id": "public_output_blocked_example", "path": "examples/public-blocked-output.json"}
   ],
   "schemas": [
-    {"id": "review_gate_schema", "path": "schemas/review-gate.schema.json"},
+    {"id": "legacy_review_gate_schema_3_0", "path": "schemas/review-gate.schema.json"},
+    {"id": "review_gate_schema", "path": "schemas/review-gate-4.0.schema.json"},
     {"id": "public_input_branch_review", "path": "schemas/public-branch-review-input.schema.json"},
-    {"id": "public_input_aggregate", "path": "schemas/public-input.schema.json"},
+    {"id": "public_input_base_continuity", "path": "schemas/public-base-continuity-input.schema.json"},
+    {"id": "legacy_public_input_aggregate_2_0", "path": "schemas/public-input.schema.json"},
+    {"id": "public_input_aggregate", "path": "schemas/public-input-3.0.schema.json"},
     {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
     {"id": "public_output_passed", "path": "schemas/public-passed-output.schema.json"},
+    {"id": "public_output_continuity_passed", "path": "schemas/public-continuity-passed-output.schema.json"},
     {"id": "public_output_implementation_required", "path": "schemas/public-implementation-required-output.schema.json"},
     {"id": "public_output_scope_confirmation_required", "path": "schemas/public-scope-confirmation-required-output.schema.json"},
     {"id": "public_output_blocked", "path": "schemas/public-blocked-output.schema.json"}
@@ -86,6 +93,7 @@
   ],
   "external_exits": [
     {"id": "passed", "evidence": "all qualified findings closed and a fresh final reviewer passed the complete current range", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}},
+    {"id": "continuity_passed", "evidence": "the bounded base delta is compatible with the unchanged task-content review and exact candidate pair", "consumer": {"kind": "workflow", "id": "guru-base-continuity-passed-router"}},
     {"id": "implementation_required", "evidence": "one or more qualified current-scope findings remain open", "consumer": {"kind": "workflow", "id": "guru-branch-review-implementation-router"}},
     {"id": "scope_confirmation_required", "evidence": "one or more unconfirmed nonstandard proposals require dedicated clarification", "consumer": {"kind": "workflow", "id": "guru-branch-review-scope-router"}},
     {"id": "blocked", "evidence": "required evidence, lifecycle, dependency or objective freshness is unavailable", "consumer": {"kind": "stop", "id": "branch-review-blocked"}}
@@ -100,13 +108,19 @@
   "public_contracts": {
     "input": {
       "kind": "structured_json",
-      "aggregate_schema": {"schema_id": "guru-production-review-branch-input-aggregate-2.0", "path": "schemas/public-input.schema.json"},
+      "aggregate_schema": {"schema_id": "guru-production-review-branch-input-aggregate-3.0", "path": "schemas/public-input-3.0.schema.json"},
       "profiles": [
         {
           "id": "branch_review",
           "schema": {"schema_id": "guru-production-review-branch-input-branch-review-2.0", "path": "schemas/public-branch-review-input.schema.json"},
           "example": {"id": "branch_review_input", "path": "examples/public-branch-review-input.json"},
           "discriminator": {"field": "profile", "value": "branch_review"}
+        },
+        {
+          "id": "base_continuity",
+          "schema": {"schema_id": "guru-production-review-branch-input-base-continuity-1.0", "path": "schemas/public-base-continuity-input.schema.json"},
+          "example": {"id": "base_continuity_input", "path": "examples/public-base-continuity-input.json"},
+          "discriminator": {"field": "profile", "value": "base_continuity"}
         }
       ]
     },
@@ -121,6 +135,7 @@
     },
     "outputs": [
       {"exit_id": "passed", "schema": {"schema_id": "guru-production-review-branch-output-passed-3.0", "path": "schemas/public-passed-output.schema.json"}, "example": {"id": "passed_output", "path": "examples/public-passed-output.json"}, "consumer_use_ids": ["project_passed"]},
+      {"exit_id": "continuity_passed", "schema": {"schema_id": "guru-production-review-branch-output-continuity-passed-1.0", "path": "schemas/public-continuity-passed-output.schema.json"}, "example": {"id": "continuity_passed_output", "path": "examples/public-continuity-passed-output.json"}, "consumer_use_ids": ["project_continuity_passed"]},
       {"exit_id": "implementation_required", "schema": {"schema_id": "guru-production-review-branch-output-implementation-required-3.0", "path": "schemas/public-implementation-required-output.schema.json"}, "example": {"id": "implementation_required_output", "path": "examples/public-implementation-required-output.json"}, "consumer_use_ids": ["project_implementation_required"]},
       {"exit_id": "scope_confirmation_required", "schema": {"schema_id": "guru-production-review-branch-output-scope-confirmation-required-1.0", "path": "schemas/public-scope-confirmation-required-output.schema.json"}, "example": {"id": "scope_confirmation_required_output", "path": "examples/public-scope-confirmation-required-output.json"}, "consumer_use_ids": ["project_scope_confirmation_required"]},
       {"exit_id": "blocked", "schema": {"schema_id": "guru-production-review-branch-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
@@ -150,6 +165,12 @@
         "contract": {"kind": "json_schema", "schema_id": "guru-production-review-branch-workflow-implementation-required-input-3.0", "path": "consumers/workflow/production/review-branch-implementation-required.schema.json"}
       },
       {
+        "id": "continuity_passed_workflow_input",
+        "consumer": {"kind": "workflow", "id": "guru-base-continuity-passed-router"},
+        "payload_kind": "structured_json",
+        "contract": {"kind": "json_schema", "schema_id": "guru-production-review-branch-workflow-continuity-passed-input-1.0", "path": "consumers/workflow/production/review-branch-continuity-passed.schema.json"}
+      },
+      {
         "id": "scope_confirmation_workflow_input",
         "consumer": {"kind": "workflow", "id": "guru-branch-review-scope-router"},
         "payload_kind": "structured_json",
@@ -173,6 +194,7 @@
         ]
       },
       {"id": "project_implementation_required", "exit_id": "implementation_required", "consumer_input_id": "implementation_required_workflow_input", "operation": "direct"},
+      {"id": "project_continuity_passed", "exit_id": "continuity_passed", "consumer_input_id": "continuity_passed_workflow_input", "operation": "direct"},
       {"id": "project_scope_confirmation_required", "exit_id": "scope_confirmation_required", "consumer_input_id": "scope_confirmation_workflow_input", "operation": "direct"},
       {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "select", "mappings": []}
     ],
@@ -180,7 +202,7 @@
       {
         "id": "review_gate",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json", "path": "schemas/review-gate.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-4.0.json", "path": "schemas/review-gate-4.0.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]

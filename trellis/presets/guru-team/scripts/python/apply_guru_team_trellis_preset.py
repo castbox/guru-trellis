@@ -107,6 +107,26 @@ MANAGED_SPEC_PATHS = (
         Path("trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"),
         Path(".trellis/spec/workflow/semantic-retrieval.md"),
     ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/workflow-contract.md"),
+        Path(".trellis/spec/workflow/workflow-contract.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/skill-package-contract.md"),
+        Path(".trellis/spec/workflow/skill-package-contract.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/data-contracts.md"),
+        Path(".trellis/spec/workflow/data-contracts.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/companion-scripts.md"),
+        Path(".trellis/spec/workflow/companion-scripts.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/quality-guidelines.md"),
+        Path(".trellis/spec/workflow/quality-guidelines.md"),
+    ),
 )
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),

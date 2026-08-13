@@ -43,14 +43,21 @@
           "required": true,
           "kind": "enum",
           "values": [
-            "initial_install",
-            "workflow_marketplace",
-            "preset_overlay",
-            "upgrade_update",
-            "platform_projection"
+            "marketplace_index",
+            "new_repo_init",
+            "existing_repo_preview_switch",
+            "preset_initial_apply",
+            "preset_reapply",
+            "trellis_update_reapply",
+            "managed_conflict_sidecars",
+            "skill_contract_discovery",
+            "platform_equality",
+            "ownership_inventory",
+            "readme_commands",
+            "redaction"
           ],
           "description": "Capability.",
-          "repeatable": false,
+          "repeatable": true,
           "conflicts": []
         }
       ],

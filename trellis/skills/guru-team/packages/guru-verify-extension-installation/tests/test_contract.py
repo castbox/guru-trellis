@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -32,6 +33,190 @@ def load_runtime():
 
 
 class ExtensionVerificationContractTests(unittest.TestCase):
+    def test_dispatcher_accepts_every_repeated_capability_and_runs_entrypoint(self) -> None:
+        runtime = load_runtime()
+        capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
+        command = next(
+            item for item in load("commands.json")["commands"]
+            if item["validator_id"] == "verification_executor"
+        )
+        capability_argument = next(
+            item for item in command["arguments"]
+            if item["flag"] == "--capability"
+        )
+        self.assertTrue(capability_argument["repeatable"])
+        self.assertEqual(capability_argument["values"], capabilities)
+        dispatcher = (
+            REPO / "trellis/workflows/guru-team/scripts/bash/run-skill-command.sh"
+            if PACKAGE
+            == REPO / "trellis/skills/guru-team/packages/guru-verify-extension-installation"
+            else REPO / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            package = Path(temp) / "guru-verify-extension-installation"
+            shutil.copytree(PACKAGE, package)
+            (package / "runtime/owner.py").write_text(
+                "def cmd_execute_extension_verification(args):\n"
+                "    return {'status': 'executed', 'capabilities': args.capability}\n",
+                encoding="utf-8",
+            )
+            argv = [
+                str(dispatcher),
+                "--package-root",
+                str(package),
+                "--validator",
+                "verification_executor",
+                "--",
+                "--root",
+                str(REPO),
+                "--input",
+                "unused-by-dispatch-regression.json",
+            ]
+            for capability in capabilities:
+                argv.extend(["--capability", capability])
+            result = subprocess.run(
+                argv,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result)
+        self.assertEqual(
+            json.loads(result.stdout),
+            {"status": "executed", "capabilities": capabilities},
+        )
+        self.assertEqual(result.stderr, "")
+
+    def test_target_exact_oid_resolution_uses_isolated_origin_fetch(self) -> None:
+        runtime = load_runtime()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            remote = root / "remote.git"
+            source = root / "source"
+            caller = root / "caller"
+            subprocess.run(["git", "init", "--bare", "--quiet", str(remote)], check=True)
+            subprocess.run(["git", "init", "--quiet", str(source)], check=True)
+            subprocess.run(["git", "init", "--quiet", str(caller)], check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=source, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=source, check=True)
+            (source / "README.md").write_text("test\n", encoding="utf-8")
+            subprocess.run(["git", "add", "README.md"], cwd=source, check=True)
+            subprocess.run(["git", "commit", "--quiet", "-m", "test"], cwd=source, check=True)
+            subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=source, check=True)
+            subprocess.run(["git", "push", "--quiet", "origin", "HEAD:refs/heads/main"], cwd=source, check=True)
+            commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=source, text=True,
+                stdout=subprocess.PIPE, check=True,
+            ).stdout.strip()
+            before = subprocess.run(
+                ["git", "status", "--porcelain=v2", "--branch"], cwd=caller,
+                text=True, stdout=subprocess.PIPE, check=True,
+            ).stdout
+            command, result = runtime.extension_verification_target_ref_process(
+                caller, "origin", commit, str(remote)
+            )
+            after = subprocess.run(
+                ["git", "status", "--porcelain=v2", "--branch"], cwd=caller,
+                text=True, stdout=subprocess.PIPE, check=True,
+            ).stdout
+        self.assertEqual(command, ["git", "fetch", "--depth=1", "origin", commit])
+        self.assertEqual(result.returncode, 0, result)
+        self.assertEqual(before, after)
+        self.assertEqual(runtime.extension_verification_resolved_remote_head(result, commit), commit)
+        self.assertIsNone(runtime.extension_verification_resolved_remote_head(
+            subprocess.CompletedProcess([], 1, "", "not found"), commit
+        ))
+        self.assertEqual(
+            runtime.extension_verification_remote_ref_command(
+                "origin", "refs/heads/main"
+            ),
+            [
+                "git",
+                "ls-remote",
+                "origin",
+                "refs/heads/main",
+                "refs/heads/main^{}",
+            ],
+        )
+
+    def test_standalone_source_identity_uses_public_exact_oid_not_manifest_generation_head(self) -> None:
+        runtime = load_runtime()
+        requested = "b" * 40
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp)
+            manifest = target / runtime.GURU_TEAM_EXTENSION_MANIFEST
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(json.dumps({
+                "source": {
+                    "repo": "https://github.com/castbox/guru-trellis.git",
+                    "ref": "a" * 40,
+                    "commit": "a" * 40,
+                    "tree_state": "dirty",
+                    "is_mutable_ref": False,
+                }
+            }), encoding="utf-8")
+            selected = runtime.extension_verification_standalone_source(
+                target,
+                {"repo_ref": "castbox/guru-trellis", "ref": requested},
+            )
+        self.assertEqual(selected["selection"], "standalone_fallback")
+        self.assertEqual(selected["manifest_provenance"], "available")
+        self.assertEqual(selected["requested_ref"], requested)
+        self.assertIsNone(selected["manifest_commit"])
+        self.assertEqual(selected["tree_state"], "clean")
+
+    def test_platform_inventory_follows_manifest_public_projection(self) -> None:
+        runtime = load_runtime()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "source"
+            installed = root / "installed"
+            package = source / "trellis/skills/guru-team/packages/guru-verify-extension-installation"
+            (package / "runtime").mkdir(parents=True)
+            (package / "SKILL.md").write_text("public\n", encoding="utf-8")
+            (package / "runtime/owner.py").write_text("private\n", encoding="utf-8")
+            workflow = source / "trellis/workflows/guru-team"
+            (workflow / "scripts/bash").mkdir(parents=True)
+            (workflow / "workflow.md").write_text("workflow\n", encoding="utf-8")
+            (workflow / "config-template.yml").write_text("config\n", encoding="utf-8")
+            for name in (
+                "execute-extension-verification.sh", "record-extension-verification.sh",
+                "check-extension-verification.sh", "invoke-extension-verification.sh",
+            ):
+                (workflow / "scripts/bash" / name).write_text(name + "\n", encoding="utf-8")
+            public_target = installed / ".agents/skills/guru-verify-extension-installation/SKILL.md"
+            private_target = installed / ".trellis/guru-team/skills/packages/guru-verify-extension-installation/runtime/owner.py"
+            canonical_target = installed / ".trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md"
+            for target, origin in (
+                (public_target, package / "SKILL.md"),
+                (private_target, package / "runtime/owner.py"),
+                (canonical_target, package / "SKILL.md"),
+            ):
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(origin.read_bytes())
+            manifest = installed / ".trellis/guru-team/extension.json"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            files = []
+            for target, origin in (
+                (public_target, package / "SKILL.md"),
+                (private_target, package / "runtime/owner.py"),
+                (canonical_target, package / "SKILL.md"),
+            ):
+                files.append({
+                    "path": target.relative_to(installed).as_posix(),
+                    "source": origin.relative_to(source).as_posix(),
+                    "sha256": hashlib.sha256(origin.read_bytes()).hexdigest(),
+                })
+            manifest.write_text(json.dumps({
+                "install": {"managed_assets": [], "selected_platforms": []},
+                "skill_packages": {"files": files},
+            }), encoding="utf-8")
+            expectations, _, _ = runtime.extension_verification_installed_asset_facts(source, installed)
+        paths = {item["path"] for item in expectations}
+        self.assertIn(".agents/skills/guru-verify-extension-installation/SKILL.md", paths)
+        self.assertNotIn(".agents/skills/guru-verify-extension-installation/runtime/owner.py", paths)
+
     def test_version_projection_is_package_owned_and_manifest_compatible(self) -> None:
         command = next(
             item for item in load("commands.json")["commands"]
@@ -171,6 +356,38 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         self.assertEqual(
             schema["properties"]["semantic_review"]["allOf"][1]["properties"]["conclusion"],
             {"enum": ["verified", "blocked"]},
+        )
+
+    def test_current_executor_facts_are_accepted_by_recorder_schema(self) -> None:
+        runtime = load_runtime()
+        schema = runtime.extension_verification_recorder_input_schema(
+            REPO,
+            "execution-facts.schema.json",
+            "extension verification execution facts",
+        )
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION,
+        )
+        facts = load("examples/execution-facts.json")
+        self.assertEqual(
+            facts["schema_version"],
+            runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION,
+        )
+        self.assertEqual(
+            runtime.skill_json_schema_validation_errors(
+                facts,
+                schema,
+                "extension verification execution facts",
+            ),
+            [],
+        )
+        adapter_text = (
+            REPO / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            '"schema_version": runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION',
+            adapter_text,
         )
 
     def test_non_source_rejected_before_executor(self) -> None:

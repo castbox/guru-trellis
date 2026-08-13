@@ -1160,82 +1160,6 @@ def extension_verification_installed_asset_facts(
             source_path,
             "managed_manifest",
         )
-    schema_root = source_checkout / "trellis/workflows/guru-team/schemas"
-    schema_sources = sorted(
-        path
-        for path in schema_root.rglob("*.json")
-        if path.is_file() and not path.is_symlink()
-    ) if schema_root.is_dir() and not schema_root.is_symlink() else []
-    if not schema_sources:
-        relation_errors.append("schema:missing_canonical_set")
-    for source in schema_sources:
-        relative = source.relative_to(schema_root).as_posix()
-        add_expectation(
-            "schema",
-            f".trellis/guru-team/schemas/{relative}",
-            source.relative_to(source_checkout).as_posix(),
-            "managed_manifest",
-        )
-    package_source_root = (
-        source_checkout
-        / "trellis/skills/guru-team/packages/"
-        "guru-verify-extension-installation"
-    )
-    package_sources = sorted(
-        path
-        for path in package_source_root.rglob("*")
-        if path.is_file()
-        and not path.is_symlink()
-        and "__pycache__" not in path.parts
-        and path.suffix not in {".pyc", ".pyo"}
-    ) if package_source_root.is_dir() and not package_source_root.is_symlink() else []
-    if not package_sources:
-        relation_errors.append("skill:missing_canonical_set")
-    destination_roots = (
-        (
-            "skill",
-            None,
-            ".trellis/guru-team/skills/packages/"
-            "guru-verify-extension-installation",
-            "skill_manifest",
-        ),
-        (
-            "platform",
-            "shared",
-            ".agents/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-        (
-            "platform",
-            "codex",
-            ".codex/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-        (
-            "platform",
-            "claude",
-            ".claude/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-        (
-            "platform",
-            "cursor",
-            ".cursor/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-    )
-    for source in package_sources:
-        package_relative = source.relative_to(package_source_root).as_posix()
-        source_path = source.relative_to(source_checkout).as_posix()
-        for category, platform, destination, relation in destination_roots:
-            add_expectation(
-                category,
-                f"{destination}/{package_relative}",
-                source_path,
-                relation,
-                platform=platform,
-            )
-
     manifest_path = installed_root / ".trellis/guru-team/extension.json"
     try:
         manifest = read_json(manifest_path)
@@ -1265,6 +1189,75 @@ def extension_verification_installed_asset_facts(
         if isinstance(install.get("selected_platforms"), list)
         else []
     )
+    schema_prefix = ".trellis/guru-team/schemas/"
+    for installed_path in sorted(
+        path for path in managed_assets
+        if isinstance(path, str) and path.startswith(schema_prefix)
+    ):
+        relative = installed_path.removeprefix(schema_prefix)
+        add_expectation(
+            "schema",
+            installed_path,
+            f"trellis/workflows/guru-team/schemas/{relative}",
+            "managed_manifest",
+        )
+    package_source_root = (
+        source_checkout
+        / "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation"
+    )
+    package_sources = sorted(
+        path
+        for path in package_source_root.rglob("*")
+        if path.is_file()
+        and not path.is_symlink()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
+    ) if package_source_root.is_dir() and not package_source_root.is_symlink() else []
+    if not package_sources:
+        relation_errors.append("skill:missing_canonical_set")
+    canonical_destination = (
+        ".trellis/guru-team/skills/packages/"
+        "guru-verify-extension-installation"
+    )
+    for source in package_sources:
+        package_relative = source.relative_to(package_source_root).as_posix()
+        source_path = source.relative_to(source_checkout).as_posix()
+        add_expectation(
+            "skill",
+            f"{canonical_destination}/{package_relative}",
+            source_path,
+            "skill_manifest",
+        )
+    platform_roots = {
+        "shared": ".agents/skills/guru-verify-extension-installation/",
+        "codex": ".codex/skills/guru-verify-extension-installation/",
+        "claude": ".claude/skills/guru-verify-extension-installation/",
+        "cursor": ".cursor/skills/guru-verify-extension-installation/",
+    }
+    source_prefix = (
+        "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation/"
+    )
+    for item in manifest_files:
+        if not isinstance(item, dict):
+            continue
+        installed_path = item.get("path")
+        source_path = item.get("source")
+        if not isinstance(installed_path, str) or not isinstance(source_path, str):
+            continue
+        if not source_path.startswith(source_prefix):
+            continue
+        for platform, prefix in platform_roots.items():
+            if installed_path.startswith(prefix):
+                add_expectation(
+                    "platform",
+                    installed_path,
+                    source_path,
+                    "platform_manifest",
+                    platform=platform,
+                )
+                break
     for expectation in expectations:
         installed_path = str(expectation["path"])
         relation = expectation["relation"]
@@ -1678,11 +1671,59 @@ def extension_verification_manifest_source(
         "is_mutable_ref": is_mutable_ref,
     }
 
+def extension_verification_standalone_source(
+    target_checkout: Path,
+    public_input: dict[str, Any],
+) -> dict[str, Any]:
+    manifest_path = target_checkout / GURU_TEAM_EXTENSION_MANIFEST
+    _, error = read_optional_json(manifest_path)
+    if error not in {None, "missing"}:
+        raise WorkflowError(
+            "Installed extension manifest is malformed.",
+            exit_code=2,
+        )
+    repo_ref = normalize_github_repository(public_input.get("repo_ref"))
+    requested_ref = str(public_input.get("ref") or "")
+    return {
+        "selection": "standalone_fallback",
+        "manifest_provenance": "not_available" if error == "missing" else "available",
+        "repo": repo_ref,
+        "locator": extension_verification_canonical_github_locator(repo_ref),
+        "requested_ref": requested_ref,
+        "manifest_commit": None,
+        "tree_state": "clean",
+        "is_mutable_ref": requested_ref.startswith("refs/heads/"),
+    }
+
 def extension_verification_remote_ref_command(
     remote: str,
     ref: str,
 ) -> list[str]:
     return ["git", "ls-remote", remote, ref, f"{ref}^{{}}"]
+
+def extension_verification_target_ref_process(
+    root: Path,
+    remote: str,
+    ref: str,
+    locator: str,
+) -> tuple[list[str], subprocess.CompletedProcess[str]]:
+    if re.fullmatch(r"[0-9a-f]{40}", ref) is None:
+        command = extension_verification_remote_ref_command(remote, ref)
+        return command, run(command, cwd=root, check=False)
+    command = ["git", "fetch", "--depth=1", "origin", ref]
+    with tempfile.TemporaryDirectory(prefix="guru-target-ref-") as tmp:
+        target = Path(tmp) / "repo.git"
+        init_proc = run(["git", "init", "--bare", "--quiet", str(target)], check=False)
+        if init_proc.returncode != 0:
+            return command, subprocess.CompletedProcess(command, init_proc.returncode, "", init_proc.stderr)
+        remote_proc = run(
+            ["git", "remote", "add", "origin", locator],
+            cwd=target,
+            check=False,
+        )
+        if remote_proc.returncode != 0:
+            return command, subprocess.CompletedProcess(command, remote_proc.returncode, "", remote_proc.stderr)
+        return command, run(command, cwd=target, check=False)
 
 def extension_verification_source_ref_command(
     locator: str,
@@ -1853,6 +1894,8 @@ def extension_verification_resolved_remote_head(
 ) -> str | None:
     if remote_proc.returncode != 0:
         return None
+    if re.fullmatch(r"[0-9a-f]{40}", ref) is not None:
+        return ref
     direct_ref = ref
     peeled_ref = f"{ref}^{{}}"
     rows: dict[str, str] = {}
@@ -1954,8 +1997,33 @@ def extension_verification_execute_facts(
     )
     required_commit = publication_head or expected_branch_review_commit or branch_review_commit
     commands: list[dict[str, Any]] = []
-    target_command = extension_verification_remote_ref_command(remote, ref)
-    target_proc = run(target_command, cwd=root, check=False)
+    remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
+    commands.append(
+        extension_verification_command_evidence(
+            "resolve_target_locator",
+            EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
+            ["git", "remote", "get-url", remote],
+            remote_url_proc,
+        )
+    )
+    target_locator = ""
+    if remote_url_proc.returncode == 0:
+        try:
+            target_locator = extension_verification_validate_remote_locator(
+                remote_url_proc.stdout.strip(),
+                repo_ref,
+            )
+        except WorkflowError:
+            target_locator = ""
+    target_command, target_proc = extension_verification_target_ref_process(
+        root,
+        remote,
+        ref,
+        target_locator,
+    ) if target_locator else (
+        extension_verification_remote_ref_command(remote, ref),
+        subprocess.CompletedProcess([], 1, "", "target locator unavailable"),
+    )
     commands.append(
         extension_verification_command_evidence(
             "resolve_target_ref",
@@ -1997,27 +2065,7 @@ def extension_verification_execute_facts(
         "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
         "paths": [],
     }
-    target_locator = ""
-    if target_head is not None:
-        remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
-        commands.append(
-            extension_verification_command_evidence(
-                "resolve_target_locator",
-                EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
-                ["git", "remote", "get-url", remote],
-                remote_url_proc,
-            )
-        )
-        candidate_url = remote_url_proc.stdout.strip()
-        if remote_url_proc.returncode == 0:
-            try:
-                target_locator = extension_verification_validate_remote_locator(
-                    candidate_url,
-                    repo_ref,
-                )
-            except WorkflowError:
-                target_locator = ""
-    if target_locator:
+    if target_head is not None and target_locator:
         with tempfile.TemporaryDirectory(prefix="guru-extension-verification-") as tmp:
             temp_root = Path(tmp)
             target_checkout = temp_root / "target-checkout"
@@ -2114,10 +2162,9 @@ def extension_verification_execute_facts(
             }
             source_checkout_prepared = False
             if target_checkout_matches and target_content_matches:
-                selected_source = extension_verification_manifest_source(
+                selected_source = extension_verification_standalone_source(
                     target_checkout,
                     public_input,
-                    task_bearing=False,
                 )
                 source_resolution = extension_verification_resolve_source_reference(
                     selected_source["locator"],

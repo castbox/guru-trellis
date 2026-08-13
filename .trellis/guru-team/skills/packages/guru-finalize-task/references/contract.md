@@ -3,10 +3,10 @@
 ## Current Boundary
 
 `guru-finalize-task` is the semantic owner of business-task closeout. Its
-current aggregate input is 6.0, gate is 4.0, and ignored transaction is 2.0.
+current aggregate input is 6.0, gate is 5.0, and ignored transaction is 2.0.
 The four inputs are `publication_ready`, `same_plan_resume`,
-`reprepare_preview`, and `standalone_finalization`. The five exits are
-`publication_review_stale`, `resume_finalization`, `reprepare_required`,
+`reprepare_preview`, and `standalone_finalization`. The six exits are
+`base_reconciliation_required`, `publication_review_stale`, `resume_finalization`, `reprepare_required`,
 `ready_for_merge`, and `blocked`.
 
 Extension installation verification is unreachable from this package. Changed
@@ -27,14 +27,19 @@ recovery checks retain their existing ownership.
 ## Migration
 
 The 5.0 aggregate, verification re-entry schemas, verification-required output,
-3.0 gate, and 1.0 transaction are immutable legacy assets. They are not current
-profiles, outputs, projections, or private artifacts. A retired task-bearing
-verification input or `next_transition=verify` fails closed with remediation to
-rerun current Publication and rebuild Finalizer state. No automatic projection
-or dual route is supported.
+3.0 and 4.0 gates, and 1.0 transaction are immutable legacy assets. They are not
+current profiles, outputs, projections, or private artifacts. A retired
+task-bearing verification input or `next_transition=verify` fails closed with
+remediation to rerun current Publication and rebuild Finalizer state. No
+automatic projection or dual route is supported.
 
 ## Typed Exits
 
 Every current exit has exactly one Interface-declared consumer. Unknown,
 multiple, retired, or unmapped exits stop fail closed. Only
 `ready_for_merge` enters `guru-merge-task-pr`; it is not completion.
+Before the first publication side effect, a selected-base HEAD that differs
+from the task's base anchor returns `base_reconciliation_required` with the
+exact pair and `finalization_resume`. This route is distinct from
+`publication_review_stale`, which is reserved for Publication content or
+metadata evidence. Finalizer does not interpret the base delta.

@@ -1,0 +1,1 @@
+{"scenario":"Candidate evidence exposes a supported current-scope implementation defect.","owner_staging":{"recipe":"base-implementation-required"},"public_invocation":{"arguments":["--invocation","-"]}}

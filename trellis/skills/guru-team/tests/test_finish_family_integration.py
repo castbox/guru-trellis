@@ -36,6 +36,7 @@ FINISH_EXITS = {
     "guru-review-task-publication": {"ready", "return_to_task_work", "blocked"},
     "guru-verify-extension-installation": {"verified", "blocked"},
     "guru-finalize-task": {
+        "base_reconciliation_required",
         "publication_review_stale",
         "resume_finalization",
         "reprepare_required",
@@ -61,6 +62,10 @@ EXPECTED_CONSUMERS = {
     ("guru-verify-extension-installation", "blocked"): (
         "stop",
         "extension-installation-verification-blocked",
+    ),
+    ("guru-finalize-task", "base_reconciliation_required"): (
+        "skill",
+        "guru-reconcile-task-base",
     ),
     ("guru-finalize-task", "publication_review_stale"): (
         "skill",
@@ -179,9 +184,9 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         invokes = markers("skill-invoke")
         exits = markers("skill-exit")
         targets = markers("(?:workflow|stop)-target")
-        self.assertEqual(len(invokes), 14)
-        self.assertEqual(len(exits), 52)
-        self.assertEqual(len(targets), 31)
+        self.assertEqual(len(invokes), 15)
+        self.assertEqual(len(exits), 60)
+        self.assertEqual(len(targets), 36)
         routed = {
             (item["skill"], item["exit"]): (
                 item["consumer"]["kind"],

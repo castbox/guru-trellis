@@ -612,8 +612,8 @@ Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation contributes to the current package closure of fifteen active
-Skills and 54 external exits.
+The activation contributes to the current package closure of sixteen active
+Skills and 62 external exits.
 `production-current-v2` remains exactly three Skills and 11 exits; #116 is an
 additional complete active Interface 1.4 row. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
@@ -654,16 +654,16 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-wrapper executable modes, the fifteen-Skill/54-exit package closure, the
-integrated business closure of 14 invokes, 52 exits, and 31 targets, and current
+wrapper executable modes, the sixteen-Skill/62-exit package closure, the
+integrated business closure of 15 invokes, 60 exits, and 36 targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
 ## Task Finalization Package Activation
 
 `guru-finalize-task` is installed as an additive active Interface 1.4 package
-with four current public input profiles, five output contracts, current gate
-4.0, transaction 2.0, real-wrapper eval corpus, and deterministic runtime
+with four current public input profiles, six output contracts, current gate
+5.0, transaction 2.0, real-wrapper eval corpus, and deterministic runtime
 wrappers. Canonical, installed shared, Codex, Cursor, and Claude package/corpus
 bytes remain identical and wrappers retain executable mode. Legacy aggregate,
 gate, transaction, verification re-entry, and closeout-plan assets remain
@@ -675,9 +675,9 @@ verification re-entry, read owner state, or archive a task-local verifier result
 The current archive contains exactly six durable files. Publication retains its
 own `return_to_task_work` route for actual content drift.
 
-The complete source/installed package graph contains fifteen active Skills and
-54 exits. The global business workflow projection is 14 invokes, 52 exits, and
-31 targets. The preset additionally installs the three Guru-owned
+The complete source/installed package graph contains sixteen active Skills and
+62 exits. The global business workflow projection is 15 invokes, 60 exits, and
+36 targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets
 remain under official Trellis ownership.

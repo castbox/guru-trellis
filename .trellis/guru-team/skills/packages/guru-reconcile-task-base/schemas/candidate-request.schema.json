@@ -1,0 +1,5 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reconcile-task-base-candidate-request-1.0",
+  "type":"object","additionalProperties":false,"required":["task_head","new_base_head","validation_commands"],
+  "properties":{"task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"new_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"validation_commands":{"type":"array","maxItems":20,"items":{"type":"array","minItems":1,"maxItems":64,"items":{"type":"string","minLength":1,"maxLength":4096}}}}
+}

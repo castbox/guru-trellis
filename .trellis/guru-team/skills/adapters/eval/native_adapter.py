@@ -30,6 +30,7 @@ PRODUCTION_SKILLS = {
     "guru-create-task-commit",
     "guru-finalize-task",
     "guru-merge-task-pr",
+    "guru-reconcile-task-base",
     "guru-review-branch",
     "guru-review-task-publication",
     "guru-verify-extension-installation",
@@ -3041,7 +3042,7 @@ def extension_verification_execution(
         asset_digests = []
         asset_inventory = runtime.extension_verification_asset_inventory_summary([], [])
     return {
-        "schema_version": "3.0",
+        "schema_version": runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION,
         "target_repository": {
             "repo_ref": public_input["repo_ref"],
             "remote": public_input["remote"],
@@ -3481,7 +3482,7 @@ def stage_finalization_owner_execution(
             },
         }
         gate = {
-            "schema_version": "4.0",
+            "schema_version": "5.0",
             "skill_id": "guru-finalize-task",
             "identity": {
                 "task_ref": public_input["task_ref"],
@@ -3537,6 +3538,167 @@ def stage_finalization_owner_execution(
     }
 
 
+def stage_base_reconciliation_owner_execution(
+    request: dict[str, Any],
+    fixture: Path,
+    fixture_runtime_target: Path,
+    request_package: Path,
+    recipe: str,
+    public_input_path: Path,
+) -> tuple[Path, Path, dict[str, str]]:
+    exits = {
+        "base-reconciled": "reconciled",
+        "base-review-continuity": "review_continuity_required",
+        "base-implementation-required": "implementation_required",
+        "base-planning-stale": "planning_stale",
+        "base-scope-confirmation": "scope_confirmation_required",
+        "base-blocked": "blocked",
+    }
+    exit_id = exits.get(recipe)
+    if exit_id is None:
+        raise ValueError(f"unsupported base reconciliation owner staging recipe: {recipe}")
+    package = fixture / ".trellis/guru-team/skills/packages/guru-reconcile-task-base"
+    if (
+        hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+        or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+        != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+    ):
+        raise ValueError("base reconciliation owner staging package does not match the evaluated contract")
+
+    run_git(fixture, "add", ".")
+    run_git(fixture, "commit", "-q", "-m", "stage base reconciliation eval")
+    old_base = run_git(fixture, "rev-parse", "HEAD")
+    (fixture / "base-evolution.txt").write_text("new base\n", encoding="utf-8")
+    run_git(fixture, "add", "base-evolution.txt")
+    run_git(fixture, "commit", "-q", "-m", "advance eval base")
+    new_base = run_git(fixture, "rev-parse", "HEAD")
+    run_git(fixture, "update-ref", "refs/remotes/origin/main", new_base)
+    run_git(fixture, "checkout", "-q", "-b", "eval/base-reconciliation", old_base)
+    (fixture / "task-evolution.txt").write_text("task content\n", encoding="utf-8")
+    run_git(fixture, "add", "task-evolution.txt")
+    run_git(fixture, "commit", "-q", "-m", "stage eval task content")
+    task_head = run_git(fixture, "rev-parse", "HEAD")
+
+    public_input = json.loads(public_input_path.read_text(encoding="utf-8"))
+    public_input.update({
+        "task_ref": ".trellis/tasks/current",
+        "task_head": task_head,
+        "selected_base_ref": "origin/main",
+        "old_base_head": old_base,
+        "new_base_head": new_base,
+    })
+    if "branch_review_commit" in public_input:
+        public_input["branch_review_commit"] = task_head
+    task_ref = public_input["task_ref"]
+    task_id = "current"
+    workspace_slug = "current"
+    task_dir = fixture / task_ref
+    task_dir.mkdir(parents=True, exist_ok=True)
+    (task_dir / "task.json").write_text(json.dumps({
+        "id": task_id,
+        "name": task_id,
+        "title": "Base reconciliation eval",
+        "status": "planning" if public_input["profile"] == "post_plan" else "in_progress",
+        "branch": "eval/base-reconciliation",
+        "base_branch": "main",
+    }) + "\n", encoding="utf-8")
+    mappings_root = fixture / ".trellis/.runtime/guru-team"
+    task_mappings = mappings_root / "tasks"
+    workspace_mappings = mappings_root / "workspaces"
+    task_mappings.mkdir(parents=True, exist_ok=True)
+    workspace_mappings.mkdir(parents=True, exist_ok=True)
+    (task_mappings / f"{task_id}.json").write_text(json.dumps({
+        "schema_version": "1.0",
+        "task_slug": task_id,
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(fixture.resolve()),
+        "task_artifact_dir": task_ref,
+    }) + "\n", encoding="utf-8")
+    (workspace_mappings / f"{workspace_slug}.json").write_text(json.dumps({
+        "schema_version": "1.0",
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(fixture.resolve()),
+        "branch_name": "eval/base-reconciliation",
+    }) + "\n", encoding="utf-8")
+    runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    runtime_input = fixture / OWNER_INPUT
+    runtime_input.write_text(json.dumps(public_input) + "\n", encoding="utf-8")
+
+    route_payloads = {
+        "reconciled": {},
+        "review_continuity_required": {
+            "candidate_tree_sha256": "c" * 64,
+            "relevant_paths": ["base-evolution.txt"],
+        },
+        "implementation_required": {"finding_refs": ["base-finding-001"]},
+        "planning_stale": {"reason_refs": ["authority-assumption-changed"]},
+        "scope_confirmation_required": {"proposal_refs": ["scope-proposal-001"]},
+        "blocked": {},
+    }
+    impacts = {
+        "reconciled": ("unchanged", "unchanged", "compatible"),
+        "review_continuity_required": ("unchanged", "unchanged", "continuity_review_required"),
+        "implementation_required": ("unchanged", "implementation_required", "validation_failed"),
+        "planning_stale": ("changed", "planning_stale", "insufficient_evidence"),
+        "scope_confirmation_required": ("changed", "planning_stale", "insufficient_evidence"),
+        "blocked": ("insufficient_evidence", "insufficient_evidence", "insufficient_evidence"),
+    }
+    authority, task_content, integration = impacts[exit_id]
+    gate = {
+        "authority_impact": authority,
+        "task_content_impact": task_content,
+        "integration_impact": integration,
+        "reviewed_scope": ["live authority", "approved planning", "cumulative base delta", "candidate evidence"],
+        "key_delta_refs": [f"{old_base}...{new_base}"],
+        "validation_evidence": ["isolated candidate evidence reviewed for the exact pair"],
+        "unverified_boundaries": (["applicable evidence does not support one unique route"] if exit_id == "blocked" else []),
+        "summary": f"The semantic owner selected {exit_id} for the exact evolved-base pair.",
+        "typed_exit": exit_id,
+        "route_payload": route_payloads[exit_id],
+    }
+    gate_path = runtime_dir / "base-semantic-review.json"
+    gate_path.write_text(json.dumps(gate) + "\n", encoding="utf-8")
+    recorded = subprocess.run(
+        [
+            str(package / "scripts/record-base-reconciliation.sh"),
+            "--root", str(fixture), "--skill-input", OWNER_INPUT,
+            "--semantic-review-file", gate_path.relative_to(fixture).as_posix(),
+            "--typed-exit", exit_id,
+        ],
+        cwd=fixture, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=False,
+    )
+    if recorded.returncode != 0:
+        raise ValueError(f"base reconciliation recorder staging failed: {recorded.stderr.strip()}")
+    owner_result = json.loads(recorded.stdout)
+    checkpoint_namespace = (
+        f"{task_id}-{hashlib.sha256(task_ref.encode()).hexdigest()[:12]}"
+    )
+    checkpoint = (
+        fixture / ".trellis/.runtime/guru-team/owner-checkpoints"
+        / checkpoint_namespace / "guru-reconcile-task-base/base-reconciliation.json"
+    )
+    checked = subprocess.run(
+        [
+            str(package / "scripts/check-base-reconciliation.sh"),
+            "--root", str(fixture), "--input", checkpoint.relative_to(fixture).as_posix(),
+            "--expected-exit", exit_id,
+        ],
+        cwd=fixture, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=False,
+    )
+    if checked.returncode != 0:
+        raise ValueError(f"base reconciliation checker staging failed: {checked.stderr.strip()}")
+    invocation_path = fixture / OWNER_INVOCATION
+    invocation_path.write_text(
+        json.dumps({"public_input": public_input, "owner_result": owner_result}) + "\n",
+        encoding="utf-8",
+    )
+    return package, fixture_runtime_target, {"GURU_TEAM_EVAL_STAGING": "1"}
+
+
 def stage_production_owner_execution(
     request: dict[str, Any],
     fixture: Path,
@@ -3550,6 +3712,15 @@ def stage_production_owner_execution(
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
     runtime = load_package_owner_runtime(fixture_runtime_target, skill_id)
+    if skill_id == "guru-reconcile-task-base":
+        return stage_base_reconciliation_owner_execution(
+            request,
+            fixture,
+            fixture_runtime_target,
+            request_package,
+            recipe,
+            public_input_path,
+        )
     if skill_id == "guru-finalize-task":
         return stage_finalization_owner_execution(
             runtime,

@@ -424,7 +424,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe fifteen active Skills and 54 external exits, identify
+Public READMEs describe sixteen active Skills and 62 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -467,8 +467,8 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are fifteen active Skills and 54 external exits;
-business workflow markers remain 14 invokes, 52 exits, and 31 targets.
+README package closure numbers are sixteen active Skills and 62 external exits;
+business workflow markers remain 15 invokes, 60 exits, and 36 targets.
 `production-current-v2` owns the current planning/check/commit contract; the
 live Intake contract remains six Skills/23 exits.
 
@@ -500,15 +500,15 @@ responsibility to a business repository.
 ## Task Finalization Documentation
 
 All three public README files name active Interface 1.4 semantic
-`guru-finalize-task`, its four current public input profiles, five outputs,
-current gate 4.0, transaction 2.0, owner-private recovery, dialogue-local
+`guru-finalize-task`, its four current public input profiles, six outputs,
+current gate 5.0, transaction 2.0, owner-private recovery, dialogue-local
 side-effect confirmation, and deterministic executor. Scripts execute, validate,
 and record facts after semantic review; they do not choose plan, scope,
 readiness, recovery route, or semantic pass.
 
-The READMEs describe the current package graph as fifteen active Skills and 54
+The READMEs describe the current package graph as sixteen active Skills and 62
 external exits with nine target-owned authoring handoffs. The integrated business
-workflow is 14 invokes, 52 exits, and 31 targets. The three `guru-finish-work`
+workflow is 15 invokes, 60 exits, and 36 targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication
 `return_to_task_work` remains available for real content drift.
 

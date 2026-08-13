@@ -74,6 +74,7 @@
         "guru-production-create-task-commit-input-recovery-resume-3.0",
         "guru-production-create-task-commit-input-revision-reentry-3.0",
         "guru-production-review-branch-input-branch-review-2.0",
+        "guru-production-review-branch-input-base-continuity-1.0",
         "guru-production-review-task-publication-input-publication-review-3.0",
         "guru-production-review-task-publication-input-publication-review-stale-3.0",
         "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
@@ -86,13 +87,20 @@
         "guru-stage0-review-change-request-input-standalone-request-1.0",
         "guru-stage0-review-contract-wording-input-change-request-1.0",
         "guru-stage0-review-contract-wording-input-explicit-paths-1.0",
-        "guru-stage0-review-contract-wording-input-planning-artifacts-1.0"
+        "guru-stage0-review-contract-wording-input-planning-artifacts-1.0",
+        "guru-reconcile-task-base-input-finalizer-base-mismatch-1.0",
+        "guru-reconcile-task-base-input-post-branch-review-1.0",
+        "guru-reconcile-task-base-input-post-check-1.0",
+        "guru-reconcile-task-base-input-post-commit-1.0",
+        "guru-reconcile-task-base-input-post-plan-1.0",
+        "guru-reconcile-task-base-input-post-publication-1.0"
         ,"guru-workflow-mode-input-initial-1.0"
       ],
       "typed_output_schema_ids": [
         "guru-extension-verify-installation-output-blocked-2.0",
         "guru-extension-verify-installation-output-verified-4.0",
         "guru-finalize-task-output-blocked-1.0",
+        "guru-finalize-task-output-base-reconciliation-required-1.0",
         "guru-finalize-task-output-publication-review-stale-3.0",
         "guru-finalize-task-output-ready-for-merge-1.0",
         "guru-finalize-task-output-reprepare-required-2.0",
@@ -112,6 +120,7 @@
         "guru-production-create-task-commit-output-committed-2.0",
         "guru-production-create-task-commit-output-revision-required-1.0",
         "guru-production-review-branch-output-blocked-1.0",
+        "guru-production-review-branch-output-continuity-passed-1.0",
         "guru-production-review-branch-output-implementation-required-3.0",
         "guru-production-review-branch-output-passed-3.0",
         "guru-production-review-branch-output-scope-confirmation-required-1.0",
@@ -140,7 +149,13 @@
         "guru-stage0-review-contract-wording-output-pass-2.0",
         "guru-stage0-sync-base-output-blocked-1.0",
         "guru-stage0-sync-base-output-skipped-1.0",
-        "guru-stage0-sync-base-output-synced-2.0"
+        "guru-stage0-sync-base-output-synced-2.0",
+        "guru-reconcile-task-base-output-blocked-1.0",
+        "guru-reconcile-task-base-output-implementation-required-1.0",
+        "guru-reconcile-task-base-output-planning-stale-1.0",
+        "guru-reconcile-task-base-output-reconciled-1.0",
+        "guru-reconcile-task-base-output-review-continuity-required-1.0",
+        "guru-reconcile-task-base-output-scope-confirmation-required-1.0"
         ,"guru-workflow-mode-output-blocked-1.0"
         ,"guru-workflow-mode-output-standard-intake-1.0"
         ,"guru-workflow-mode-output-task-free-1.0"
@@ -155,6 +170,7 @@
       "private_artifact_schema_ids": [
         "guru-extension-installation-verification-result-5.0",
         "guru-finalization-transaction-2.0",
+        "guru-reconcile-task-base-private-result-1.0",
         "guru-task-pr-merge-gate-1.0",
         "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-2.0.json",
@@ -164,9 +180,9 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-3.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-3.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-4.0.json",
+        "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-2.0.json"
@@ -196,6 +212,7 @@
         "guru-discover-change-context",
         "guru-finalize-task",
         "guru-merge-task-pr",
+        "guru-reconcile-task-base",
         "guru-review-branch",
         "guru-review-change-request",
         "guru-review-contract-wording",
@@ -299,6 +316,11 @@
       "check-task-pr-merge",
       "execute-task-pr-merge",
       "invoke-task-pr-merge",
+      "guard-task-base-pair",
+      "execute-base-candidate",
+      "record-base-reconciliation",
+      "check-base-reconciliation",
+      "invoke-guru-reconcile-task-base",
       "finish-work"
     ]
   },

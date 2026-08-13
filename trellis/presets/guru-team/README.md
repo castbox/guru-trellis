@@ -48,6 +48,24 @@ The normal path creates no `implementation-handoff.md`, no
 Implementation terminal output remains ephemeral input to the semantic check
 owner; only its compact final schema 4.0 result is recorded in ignored runtime.
 
+The preset manages the six canonical workflow specifications from
+`trellis/presets/guru-team/spec/workflow/` into `.trellis/spec/workflow/`:
+`workflow-contract.md`, `skill-package-contract.md`, `data-contracts.md`,
+`companion-scripts.md`, `quality-guidelines.md`, and
+`semantic-retrieval.md`. The canonical preset files are the distribution
+source; installed/dogfood copies are projections. Exact previously managed
+bytes upgrade with an adjacent `.bak`, unknown local edits are preserved with
+an adjacent `.new`, and either unresolved sidecar blocks activation.
+
+The active-task base evolution capability is installed as the
+`guru-reconcile-task-base` package plus its declared package-local commands,
+schemas, tests, examples, and selected-platform public projections. The
+installer derives that inventory from the active registry and package tree; it
+does not reconstruct semantic routes or maintain a second command list. The
+marketplace workflow supplies the guarded boundaries and single router, while
+the preset supplies the complete runtime needed by Shared, Codex, Claude, and
+Cursor discovery.
+
 The preset also maintains one bounded AI-first principles block in the target
 root `AGENTS.md`. Missing files are created, existing user content outside the
 stable markers is preserved byte-for-byte, a single older block is refreshed,
@@ -252,6 +270,12 @@ reapply before final drift/sidecar checks. The installer itself repeats the
 pre-mutation gate for both apply operations. The expected clean result
 is a current ownership pass, complete installed-manifest provenance, zero
 conflicts, and zero sidecars.
+The verifier also proves all six managed workflow specifications exist after
+initial install and after update/reapply. Base-evolution distribution checks
+must additionally discover the installed reconciliation package and commands,
+exercise an unchanged pair without semantic or external reads, exercise one
+new-pair route through its real wrapper, and verify the bounded Branch Review
+and Finalizer base-only routes remain present after update/reapply.
 A controlled bare remote and fake GitHub adapter drive the already-installed
 `finish-work.sh` through dry-run digest, formal draft binding, official archive,
 three-way HEAD equality, ready transition, and clean-tree assertions once after
@@ -313,7 +337,7 @@ active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude root
 Test fixtures 永不安装，未选择的平台 root 不因 skill 分发
 而创建。
 
-Preset 安装 current Interface 1.4/1.5 schemas 与 registry 1.4。十四个 integrated
+Preset 安装 current Interface 1.4/1.5 schemas 与 registry 1.4。十五个 integrated
 active rows 选择 `guru-team-skill-interface-1.4`，standalone verifier 选择
 `guru-team-skill-interface-1.5`。Live Intake 合同为
 六包/23 exits；current registry、discovery DTO、invocation 与安装 provenance 不接受
@@ -321,9 +345,9 @@ active rows 选择 `guru-team-skill-interface-1.4`，standalone verifier 选择
 planning/check/commit 唯一 current manifest，精确绑定
 三包、十 profiles、11 exits、current output schemas、四条 authoring-seed edges、private
 artifact ids、examples 与 eval cases；不存在 alternate production projector 或 fixture。
-当前 active closure 为 15/54，live Intake 合同为 6/23。Preset 在一次 staging
+当前 active closure 为 16/62，live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
-Interface 1.4/1.5、production-current manifest/schema、十五包 public
+Interface 1.4/1.5、production-current manifest/schema、十六包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Representative fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -356,11 +380,11 @@ semantic 结论。
 `source_repository_verification` standalone input、`verified|blocked` 两个 per-exit
 contracts、source-session private result schema、两例 production corpus 与 thin wrappers。
 它不修改 live Intake 6/23 或 production 3/11 合同。Active
-`guru-finalize-task` 另行安装四个 distinct profiles、五个 `exit_id` outputs、
+`guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
 `guru-merge-task-pr` 再安装两种 inputs、三个
-exits 与五个 merge runtime wrappers。Source/installed package closure 为 15 Skills /
-54 exits；business global workflow marker closure 为 14 invokes / 52 exits / 31 targets。
+exits 与五个 merge runtime wrappers。Source/installed package closure 为 16 Skills /
+62 exits；business global workflow marker closure 为 15 invokes / 60 exits / 36 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -490,11 +514,11 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
 `guru-finalize-task`、`guru-merge-task-pr`、`guru-review-branch`、
 `guru-review-task-publication`、`guru-select-workflow-mode`、
-`guru-verify-extension-installation`。十四个 integrated business packages 加一个
-standalone-only verifier 共声明 54 个 external exits。
+`guru-reconcile-task-base`、`guru-verify-extension-installation`。十五个 integrated
+business packages 加一个 standalone-only verifier 共声明 62 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与五个 exit marker。当前 canonical extension version
+invoke 与六个 exit marker。当前 canonical extension version
 `0.6.5-guru.27` 对应 stable source `v0.6.5-guru.5`，并以官方 Trellis CLI `0.6.5`
 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
 由 immutable Git facts、GitHub Release notes 与 release evidence 精确记录。Repo release
