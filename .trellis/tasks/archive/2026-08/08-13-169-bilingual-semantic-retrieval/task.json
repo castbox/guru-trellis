@@ -2,10 +2,11 @@
   "id": "169-bilingual-semantic-retrieval",
   "name": "169-bilingual-semantic-retrieval",
   "title": "#169 中英文概念族语义检索合同",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "feat/169-bilingual-semantic-retrieval",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/169"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/169",
+  "completedAt": "2026-08-13"
 }
