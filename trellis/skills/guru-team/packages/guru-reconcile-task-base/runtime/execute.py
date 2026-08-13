@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse, hashlib, os, subprocess, tempfile
 from pathlib import Path
-from common import checkpoint_path, is_ancestor, parse, read_json, repo_root, resolve_commit, validate_json, validate_public, validate_result
+from common import checkpoint_path, is_ancestor, parse, read_json, repo_root, resolve_commit, task_identity, validate_json, validate_public, validate_result
 
 def _tree_digest(root: Path) -> str:
     rows=[]
@@ -11,7 +11,7 @@ def _tree_digest(root: Path) -> str:
 
 def guard(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
-    args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public)
+    args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); task_identity(repo,public["task_ref"])
     task=resolve_commit(repo,public["task_head"],"task_head"); old=resolve_commit(repo,public["old_base_head"],"old_base_head"); new=resolve_commit(repo,public["selected_base_ref"],"selected_base_ref")
     status="unchanged" if new==old else "new_pair"
     if task != public["task_head"] or new != public["new_base_head"] or resolve_commit(repo,"HEAD","HEAD") != task or not is_ancestor(repo,old,new): status="blocked"
