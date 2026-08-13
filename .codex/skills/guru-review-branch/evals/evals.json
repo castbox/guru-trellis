@@ -73,7 +73,7 @@
     },
     {
       "id": "blocked-stale",
-      "prompt": "Complete a Branch Review owner round that detects stale required evidence and invoke the public wrapper after recording the blocked Gate.",
+      "prompt": "Complete a Branch Review owner round that selects the blocked stop route and invoke the public wrapper after recording the blocked Gate.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO contains only the blocked routing identity.",
       "input_profile_id": "branch_review",

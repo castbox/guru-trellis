@@ -1363,18 +1363,23 @@ input, and missing Cursor authentication returns deterministic `unsupported`.
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, issue-ledger,
 commit-evidence, Docs SSOT, working-tree, hash, schema and freshness facts, then
-write compact schema 3.0 `review-gate.json` under owner-private ignored runtime.
+write compact schema 4.0 `review-gate.json` at the exact task-owned
+owner-private ignored-runtime checkpoint and return only a minimal receipt.
 It must not decide
 scope, scenario class, qualification, severity, reviewer sufficiency, route, or
 pass.
 
 `check-review-gate` revalidates the same objective facts, finding lifecycle,
 `introduced_head`/`fix_head`/`closure_head`, final-review freshness and the selected
-typed exit. Only schema 3.0 is accepted; other gate shapes fail closed without
-projection. The public package wrapper accepts a closed public input
-and repo-local owner-result locator, reruns the checker, reads the actual exit,
-and emits exactly one declared DTO. `expected_exit` is never a wrapper input,
-owner-result field, or route selector.
+typed exit. Only schema 4.0 is accepted; other gate shapes fail closed without
+projection. The checker resolves the exact checkpoint from task identity. The
+public package wrapper accepts only closed public input, reruns the checker,
+reads the actual exit, and emits exactly one declared DTO. It never accepts a
+caller-authored gate or checker result. Successful `passed`,
+`continuity_passed`, and zero-payload stop `blocked` projection retires the
+checkpoint; active re-entry routes retain that one checkpoint for deterministic
+same-owner re-entry.
+`expected_exit` is never a wrapper input, owner-result field, or route selector.
 
 ## Task Publication Recorder, Checker, And Invocation
 

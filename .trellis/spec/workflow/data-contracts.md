@@ -1108,8 +1108,9 @@ body-only close semantics controlled by Issue Scope Ledger.
 
 ## Review Gate Artifact
 
-`review-branch.sh` writes compact schema 3.0 `review-gate.json` in ignored
-owner-private runtime after the independent semantic judgment exists. The gate
+`review-branch.sh` writes compact schema 4.0 `review-gate.json` at the exact
+task-owned ignored-runtime checkpoint after the independent semantic judgment
+exists. The gate
 contains only schema/skill identity, task/mode/review intent, typed exit,
 `review_commit`, `reviewed_content_sha256`, `base_ref`, normalized semantic
 candidates/findings, minimum independent reviewer/evidence facts, and
@@ -1131,7 +1132,15 @@ may change without changing that identity. `review_commit` remains the Git
 anchor for review range and finding ancestry. `review_source` must be
 `independent-agent`; main-session/self-review identities are rejected. Any
 non-current gate shape fails closed. Enforcement lives in
-`validate_review_gate()` and `review_branch_content_continuity_errors()`.
+the package-local recorder, checker, and public wrapper.
+
+The recorder returns only a minimal receipt. The checker resolves the exact
+checkpoint from task identity, and the public wrapper accepts only current
+public input before rerunning that checker. Successful `passed`,
+`continuity_passed`, and zero-payload stop `blocked` projection retires the
+checkpoint; active re-entry routes retain the same checkpoint for deterministic
+same-owner re-entry. No public DTO
+or caller-authored invocation contains the private gate.
 
 Before `task.py archive`, `prepare_closeout()` fixes both the active and future
 archive locators. The active task remains the task-local boundary until the

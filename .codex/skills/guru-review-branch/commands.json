@@ -93,14 +93,6 @@
           "conflicts": []
         },
         {
-          "flag": "--input",
-          "required": true,
-          "kind": "string",
-          "description": "Recorded review gate JSON locator.",
-          "repeatable": false,
-          "conflicts": []
-        },
-        {
           "flag": "--expected-exit",
           "required": false,
           "kind": "enum",
@@ -138,12 +130,36 @@
       "entrypoint": "runtime/invoke.py",
       "arguments": [
         {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--task",
+          "required": false,
+          "kind": "string",
+          "description": "Task locator.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local invocation envelope or dash for stdin.",
+          "description": "Public-input-only invocation envelope or dash for stdin.",
           "repeatable": false,
-          "conflicts": []
+          "conflicts": ["--input"]
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Public Branch Review input JSON locator.",
+          "repeatable": false,
+          "conflicts": ["--invocation"]
         }
       ],
       "stdin": "optional_json",
