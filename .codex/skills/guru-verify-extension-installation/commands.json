@@ -50,7 +50,7 @@
             "platform_projection"
           ],
           "description": "Capability.",
-          "repeatable": false,
+          "repeatable": true,
           "conflicts": []
         }
       ],

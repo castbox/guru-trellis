@@ -5,6 +5,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -32,6 +33,56 @@ def load_runtime():
 
 
 class ExtensionVerificationContractTests(unittest.TestCase):
+    def test_dispatcher_accepts_every_repeated_capability_and_runs_entrypoint(self) -> None:
+        capabilities = [
+            "initial_install",
+            "workflow_marketplace",
+            "preset_overlay",
+            "upgrade_update",
+            "platform_projection",
+        ]
+        dispatcher = (
+            REPO / "trellis/workflows/guru-team/scripts/bash/run-skill-command.sh"
+            if PACKAGE
+            == REPO / "trellis/skills/guru-team/packages/guru-verify-extension-installation"
+            else REPO / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            package = Path(temp) / "guru-verify-extension-installation"
+            shutil.copytree(PACKAGE, package)
+            (package / "runtime/owner.py").write_text(
+                "def cmd_execute_extension_verification(args):\n"
+                "    return {'status': 'executed', 'capabilities': args.capability}\n",
+                encoding="utf-8",
+            )
+            argv = [
+                str(dispatcher),
+                "--package-root",
+                str(package),
+                "--validator",
+                "verification_executor",
+                "--",
+                "--root",
+                str(REPO),
+                "--input",
+                "unused-by-dispatch-regression.json",
+            ]
+            for capability in capabilities:
+                argv.extend(["--capability", capability])
+            result = subprocess.run(
+                argv,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result)
+        self.assertEqual(
+            json.loads(result.stdout),
+            {"status": "executed", "capabilities": capabilities},
+        )
+        self.assertEqual(result.stderr, "")
+
     def test_version_projection_is_package_owned_and_manifest_compatible(self) -> None:
         command = next(
             item for item in load("commands.json")["commands"]
