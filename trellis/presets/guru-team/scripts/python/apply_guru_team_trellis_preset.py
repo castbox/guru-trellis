@@ -352,6 +352,7 @@ def build_installed_extension_manifest(
             "selected_platforms": result["platforms"],
             "all_platforms": result["all_platforms"],
             "managed_assets": managed_assets,
+            "managed_asset_hashes": result["managed_asset_hashes"],
             "new_copies": result["new_copies"],
             "managed_backups": result["managed_backups"],
             "workflow_marketplace": WORKFLOW_MARKETPLACE,
@@ -1332,14 +1333,16 @@ def copy_managed_spec(
     previous_manifest: dict[str, Any] | None,
 ) -> dict[str, str]:
     relative = target.relative_to(repo).as_posix()
-    previous_assets = (
-        previous_manifest.get("install", {}).get("managed_assets", [])
-        if isinstance(previous_manifest, dict)
-        else []
-    )
+    previous_hashes = {}
+    if isinstance(previous_manifest, dict):
+        install = previous_manifest.get("install")
+        if isinstance(install, dict) and isinstance(install.get("managed_asset_hashes"), dict):
+            previous_hashes = install["managed_asset_hashes"]
     if not target.exists() or filecmp.cmp(source, target, shallow=False):
         return copy_managed(source, target)
-    if relative in previous_assets:
+    previous_hash = previous_hashes.get(relative)
+    current_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+    if isinstance(previous_hash, str) and re_full_hex_digest(previous_hash) and current_hash == previous_hash:
         return copy_managed(source, target)
     sidecar = target.with_name(f"{target.name}.new")
     sidecar.parent.mkdir(parents=True, exist_ok=True)
@@ -1844,6 +1847,7 @@ def _install_assets_in_place(
     managed_backups: list[str] = []
     managed_spec_conflicts: list[dict[str, str]] = []
     managed_spec_sidecars: list[str] = []
+    managed_asset_hashes: dict[str, str] = {}
     for source_relative, target_relative in MANAGED_SPEC_PATHS:
         result = copy_managed_spec(
             guru_root / source_relative,
@@ -1854,10 +1858,13 @@ def _install_assets_in_place(
         rel_path = Path(result["path"]).relative_to(repo).as_posix()
         if result["action"] == "installed":
             installed.append(rel_path)
+            managed_asset_hashes[rel_path] = hashlib.sha256((repo / target_relative).read_bytes()).hexdigest()
         elif result["action"] == "unchanged":
             unchanged.append(rel_path)
+            managed_asset_hashes[rel_path] = hashlib.sha256((repo / target_relative).read_bytes()).hexdigest()
         elif result["action"] == "updated_managed":
             updated_managed.append(rel_path)
+            managed_asset_hashes[rel_path] = hashlib.sha256((repo / target_relative).read_bytes()).hexdigest()
             backup = result.get("backup")
             if backup:
                 managed_backups.append(Path(backup).relative_to(repo).as_posix())
@@ -1977,6 +1984,7 @@ def _install_assets_in_place(
         "replaced_overlays": replaced_overlays,
         "updated_managed": updated_managed,
         "managed_backups": managed_backups,
+        "managed_asset_hashes": managed_asset_hashes,
         "agents_principles": agents_principles,
         "codex_dispatch": codex_dispatch,
         "session_auto_commit": session_auto_commit,

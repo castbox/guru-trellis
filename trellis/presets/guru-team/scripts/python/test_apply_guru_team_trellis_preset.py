@@ -690,7 +690,14 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         target.parent.mkdir(parents=True, exist_ok=True)
         old = b"# Prior managed semantic contract\n"
         target.write_bytes(old)
-        previous = {"install": {"managed_assets": [target_relative.as_posix()]}}
+        previous = {
+            "install": {
+                "managed_assets": [target_relative.as_posix()],
+                "managed_asset_hashes": {
+                    target_relative.as_posix(): hashlib.sha256(old).hexdigest(),
+                },
+            }
+        }
 
         result = preset.copy_managed_spec(
             self.guru_root / source_relative, target, self.repo, previous
@@ -699,6 +706,66 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
         self.assertEqual(result["action"], "updated_managed")
         self.assertEqual(target.read_bytes(), (self.guru_root / source_relative).read_bytes())
         self.assertEqual(target.with_name(f"{target.name}.bak").read_bytes(), old)
+
+    def test_semantic_spec_user_edit_is_preserved_on_reapply(self) -> None:
+        first = self.install({"codex", "cursor"})
+        self.assertEqual(first["skill_packages"]["status"], "ok")
+        _, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        local = target.read_bytes() + b"\n# Local semantic extension\n"
+        target.write_bytes(local)
+        manifest_before = (self.install_dst / "extension.json").read_bytes()
+
+        second = self.install({"codex", "cursor"})
+
+        sidecar = target.with_name(f"{target.name}.new")
+        self.assertEqual(second["skill_packages"]["status"], "conflict")
+        self.assertEqual(target.read_bytes(), local)
+        self.assertEqual(
+            sidecar.read_bytes(),
+            (self.guru_root / preset.MANAGED_SPEC_PATHS[0][0]).read_bytes(),
+        )
+        self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
+        self.assertEqual(
+            [item["reason"] for item in second["skill_packages"]["conflicts"]],
+            ["unknown_local_spec_edit"],
+        )
+
+    def test_semantic_spec_equal_legacy_manifest_reapply_backfills_hash(self) -> None:
+        first = self.install({"codex", "cursor"})
+        self.assertEqual(first["skill_packages"]["status"], "ok")
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        canonical = (self.guru_root / source_relative).read_bytes()
+        self.assertEqual(target.read_bytes(), canonical)
+        manifest_path = self.install_dst / "extension.json"
+        legacy = json.loads(manifest_path.read_text(encoding="utf-8"))
+        legacy["install"].pop("managed_asset_hashes")
+        manifest_path.write_text(
+            json.dumps(legacy, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        second = self.install({"codex", "cursor"})
+
+        self.assertEqual(second["skill_packages"]["status"], "ok")
+        self.assertEqual(second["skill_installed_validation"]["status"], "passed")
+        self.assertIn(target_relative.as_posix(), second["unchanged"])
+        installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            installed["install"]["managed_asset_hashes"],
+            {
+                target_relative.as_posix(): hashlib.sha256(canonical).hexdigest(),
+            },
+        )
+        self.assertEqual(
+            sorted(
+                path.relative_to(self.repo).as_posix()
+                for path in self.repo.rglob("*")
+                if path.is_file() and path.suffix in {".new", ".bak"}
+            ),
+            [],
+        )
 
     def test_legacy_runtime_absence_is_a_clean_initial_install(self) -> None:
         removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
@@ -2207,6 +2274,15 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
+        semantic_source, semantic_target = preset.MANAGED_SPEC_PATHS[0]
+        self.assertEqual(
+            installed["install"]["managed_asset_hashes"],
+            {
+                semantic_target.as_posix(): hashlib.sha256(
+                    (self.guru_root / semantic_source).read_bytes()
+                ).hexdigest(),
+            },
+        )
         self.assertIn("observed at apply time", installed["notes"])
         self.assertIn("not a claim", installed["notes"])
         self.assertEqual(payload["extension_manifest"], ".trellis/guru-team/extension.json")
