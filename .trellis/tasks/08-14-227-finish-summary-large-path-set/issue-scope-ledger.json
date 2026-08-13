@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "primary_issue": {
+    "number": 227,
+    "url": "https://github.com/castbox/guru-trellis/issues/227",
+    "title": "移除 finish-summary 变更路径数量的任意上限",
+    "reason": "当前独立交付单元及唯一 live authority。",
+    "acceptance_evidence": []
+  },
+  "close_issues": [
+    {
+      "number": 227,
+      "url": "https://github.com/castbox/guru-trellis/issues/227",
+      "title": "移除 finish-summary 变更路径数量的任意上限",
+      "reason": "Primary issue；只有完整大路径集回归与安装验证通过后才允许关闭。",
+      "acceptance_evidence": []
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [],
+  "rules": [
+    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
+    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
+    "followup_issues 表示新范围或后续任务，不能自动关闭。"
+  ]
+}
