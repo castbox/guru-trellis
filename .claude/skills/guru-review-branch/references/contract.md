@@ -6,11 +6,12 @@ remain evidence for, not substitutes for, this Skill's semantic judgment.
 
 ## Entry
 
-The public `branch_review` input contains only profile, mode, task/base refs,
-`branch_review_commit` and review intent. Public input schema 2.0 allows only
-`initial_review` and `fresh_final_review`. `guru-create-task-commit:committed`
-supplies the task and commit identity; Branch Review verifies parent, paths and
-tree from live Git. Commit message format is not downstream freshness authority.
+Aggregate public input schema 3.0 dispatches two independent profiles. The
+public `branch_review` schema 2.0 input contains only profile, mode, task/base
+refs, `branch_review_commit` and one of `initial_review|fresh_final_review`.
+`guru-create-task-commit:committed` supplies the task and commit identity;
+Branch Review verifies parent, paths and tree from live Git. Commit message
+format is not downstream freshness authority.
 
 Workflow and standalone mode use the same eight preconditions: runtime,
 workspace, task identity, the committed DTO plus live Git, the current Issue
@@ -18,7 +19,7 @@ Scope Ledger, complete review range, working tree, and invocation freshness.
 The Skill reads no Planning or Phase 2 checkpoint or Task Commit candidate.
 Input that does not satisfy the current public schema fails closed.
 
-The independent `base_continuity` profile is entered only from
+The independent `base_continuity` schema 1.0 profile is entered only from
 `guru-reconcile-task-base:review_continuity_required`. It binds the unchanged
 task HEAD and prior passing `branch_review_commit` to one exact
 `old_base_head...new_base_head` delta, temporary candidate tree, relevant paths,
@@ -76,9 +77,11 @@ deletes its own checkpoint. Publication receives only the minimal typed DTO and
 live Git facts; it never reads or deletes Branch Review private state. A failed
 checker or invalid projection retains the checkpoint for same-owner repair.
 
-The gate uses only schema 3.0 with `review_commit` and
-`reviewed_content_sha256`. Any schema mismatch is invalid input and fails
-closed before owner evaluation.
+The current gate uses only schema 4.0 with profile-specific identity,
+`review_commit` and `reviewed_content_sha256`. Aggregate input schema 2.0 and
+gate schema 3.0 remain legacy compatibility inventory, not current runtime
+authority. Any current schema mismatch is invalid input and fails closed before
+owner evaluation.
 
 Return exactly one of:
 

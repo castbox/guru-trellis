@@ -33,4 +33,26 @@ class BranchReviewTest(unittest.TestCase):
  def test_runtime_has_no_example_projection_or_monolith(self):
   for p in LOCAL.glob("*.py"):
    t=p.read_text();self.assertNotIn("guru_team_trellis.py",t);self.assertNotIn("typed_output(package_root",t)
+ def test_current_interface_wording_matches_profiles_gate_and_exits(self):
+  interface=json.loads((PACKAGE/"interface.json").read_text())
+  public=interface["public_contracts"]
+  self.assertEqual("guru-production-review-branch-input-aggregate-3.0",public["input"]["aggregate_schema"]["schema_id"])
+  self.assertEqual(["branch_review","base_continuity"],[p["id"] for p in public["input"]["profiles"]])
+  self.assertEqual("https://github.com/castbox/guru-trellis/schemas/guru-review-gate-4.0.json",public["private_artifacts"][0]["schema"]["schema_id"])
+  self.assertEqual(["passed","continuity_passed","implementation_required","scope_confirmation_required","blocked"],[o["exit_id"] for o in public["outputs"]])
+  repo=PACKAGE.parents[4]
+  skill_docs=[PACKAGE/"SKILL.md",PACKAGE/"references/contract.md"]
+  durable_docs=[repo/"trellis/presets/guru-team/spec/workflow/companion-scripts.md",repo/"trellis/presets/guru-team/spec/workflow/data-contracts.md",repo/"trellis/presets/guru-team/spec/workflow/skill-package-contract.md"]
+  for path in skill_docs+durable_docs:
+   text=path.read_text()
+   with self.subTest(current_contract=path):
+    self.assertIn("base_continuity",text);self.assertIn("schema 3.0",text);self.assertIn("schema 4.0",text)
+  for path in skill_docs+[durable_docs[-1]]:
+   with self.subTest(exits=path):self.assertIn("continuity_passed",path.read_text())
+  workflow=(repo/"trellis/presets/guru-team/spec/workflow/workflow-contract.md").read_text()
+  self.assertIn("`continuity_passed -> guru-base-continuity-passed-router`",workflow)
+  skill=(PACKAGE/"SKILL.md").read_text();contract=(PACKAGE/"references/contract.md").read_text();spec=(repo/"trellis/presets/guru-team/spec/workflow/skill-package-contract.md").read_text()
+  self.assertNotIn("Public input schema 2.0 accepts only",skill)
+  self.assertNotIn("The gate uses only schema 3.0",contract)
+  self.assertNotIn("The four outputs are independent minimal DTOs",spec)
 if __name__=="__main__":unittest.main()

@@ -672,9 +672,11 @@ Check emits `passed(exit_id, task_ref, phase2_commit_anchor)`,
 branch_review_commit)`, `revision-required(exit_id, task_ref)`, or blocked
 `exit_id` only. Active `guru-review-branch` consumes exactly `task_ref`,
 `base_ref`, and `branch_review_commit`; the caller authors only `profile`, `mode`, and
-`review_intent`. Branch Review emits `passed(exit_id, task_ref,
-branch_review_commit)`, `implementation_required(exit_id, task_ref,
-branch_review_commit, finding_refs)`,
+`review_intent` for the selected aggregate schema 3.0 profile. Branch Review
+emits `passed(exit_id, task_ref, branch_review_commit)`,
+`continuity_passed(exit_id, task_ref, branch_review_commit, task_head,
+old_base_head, new_base_head, candidate_tree_sha256, resume_target)`,
+`implementation_required(exit_id, task_ref, branch_review_commit, finding_refs)`,
 `scope_confirmation_required(exit_id, task_ref, proposal_refs)`, or blocked
 `exit_id` only.
 
@@ -1420,20 +1422,28 @@ complete current activation unit.
 
 ## Branch Review Owner And Active Publication Bridge
 
-`guru-review-branch` is the semantic owner of the post-commit full-range review.
-Its single `branch_review` input profile requires exactly `profile`, `mode`,
-`task_ref`, `base_ref`, `branch_review_commit`, and `review_intent`. The committed
-producer supplies the three identity fields; the caller AI freshly authors
-`profile`, `mode`, and `review_intent`. The consumer does not reopen the Phase 2
-private checkpoint. It rebuilds the complete base-to-content range from the
-committed DTO and live Git, while current issue scope, findings, range, and
-freshness remain owner-private evidence. The current-only compact schema 3.0
-gate is ignored runtime state and stores `review_commit` plus
-`reviewed_content_sha256`; any other shape fails closed.
+`guru-review-branch` is the semantic owner of the post-commit full-range review
+and bounded base-continuity review. Aggregate public input schema 3.0 dispatches
+two profiles. The `branch_review` schema 2.0 profile requires exactly `profile`,
+`mode`, `task_ref`, `base_ref`, `branch_review_commit`, and `review_intent`; the
+committed producer supplies the three identity fields and the caller AI freshly
+authors `profile`, `mode`, and `review_intent`. The `base_continuity` schema 1.0
+profile consumes the exact old/new base candidate and unchanged task review
+from `guru-reconcile-task-base:review_continuity_required`. Neither profile
+reopens the Phase 2 private checkpoint. Current issue scope, findings, range,
+candidate identity, and freshness remain owner-private evidence. The
+current-only compact gate schema 4.0 is ignored runtime state and stores
+profile-specific identity plus `review_commit` and
+`reviewed_content_sha256`. Aggregate input schema 2.0 and gate schema 3.0 remain
+legacy compatibility inventory, not current runtime authority; any other
+current shape fails closed.
 
-The four outputs are independent minimal DTOs:
+The five outputs are independent minimal DTOs:
 
 - `passed`: `exit_id`, `task_ref`, `branch_review_commit`;
+- `continuity_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
+  `task_head`, `old_base_head`, `new_base_head`, `candidate_tree_sha256`, and
+  `resume_target`;
 - `implementation_required`: `exit_id`, `task_ref`, `branch_review_commit`,
   `finding_refs`;
 - `scope_confirmation_required`: `exit_id`, `task_ref`, `proposal_refs`;

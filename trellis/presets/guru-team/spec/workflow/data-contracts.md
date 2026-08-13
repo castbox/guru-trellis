@@ -1582,18 +1582,22 @@ expected-versus-actual assertion.
 
 ## Branch Review Data Boundary
 
-The Branch Review public input contains only the `branch_review` profile,
-workflow/standalone mode, task/base/`branch_review_commit` identity, and one of
-`initial_review|fresh_final_review`. Its public outputs are
-the four minimal DTOs defined by the Skill package contract. `review_ref`,
-finding refs, and proposal refs are opaque consumer identities, not embedded
+Branch Review aggregate public input schema 3.0 dispatches two independent
+profiles. The `branch_review` schema 2.0 profile contains workflow/standalone
+mode, task/base/`branch_review_commit` identity, and one of
+`initial_review|fresh_final_review`. The `base_continuity` schema 1.0 profile
+binds the unchanged task review to one bounded old-base/new-base candidate and
+the `base_continuity` intent. Its public outputs are the five minimal DTOs
+defined by the Skill package contract. `review_ref`, finding refs, proposal
+refs, and continuity identity are opaque consumer identities, not embedded
 artifact bodies.
 
 After a fix commit, finding closure is an internal transient AI judgment by the
 finding owner or a real unfinished-agent replacement. It has no public exit or
-artifact and automatically dispatches a distinct fresh reviewer. Current public
-input and gate schema 3.0 accept only `initial_review` or
-`fresh_final_review`; any other value fails closed.
+artifact and automatically dispatches a distinct fresh reviewer. Current gate
+schema 4.0 accepts the intent allowed by the selected current profile.
+Aggregate input schema 2.0 and gate schema 3.0 remain legacy compatibility
+inventory, not current runtime authority; any other current value fails closed.
 
 Only `review-gate.json` is written for a new review. A reviewed candidate has
 exactly one of `qualified_finding`, `scope_proposal`,

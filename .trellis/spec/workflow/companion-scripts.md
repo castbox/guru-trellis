@@ -1168,9 +1168,12 @@ facts for only `prd.md`, `design.md`, and `implement.md`. It must
 not read planning/check/review gate JSON artifacts, must
 not decide phase sufficiency, and must not create links for missing files.
 
-`review-branch.sh` records only schema 3.0 after an independent AI semantic
-review exists. It requires the six-field public input, one semantic review
-payload, the selected typed exit, reviewer identity/source, and concise evidence.
+`review-branch.sh` records only current gate schema 4.0 after an independent AI
+semantic review exists. Aggregate public input schema 3.0 dispatches the
+six-field `branch_review` schema 2.0 profile or the bounded `base_continuity`
+schema 1.0 profile. The recorder requires one selected public profile, one
+semantic review payload, the selected typed exit, reviewer identity/source,
+and concise evidence.
 It writes one compact owner-private `review-gate.json` checkpoint under ignored
 runtime; no `review.md`, `reviews/*.md`, assignment ledger, report digest,
 rollup, command argv, changed-file copy, or deployment projection is generated.
@@ -1189,12 +1192,15 @@ undeclared current non-metadata dirty path blocks the gate; allowed downstream
 workflow metadata is validated by its owning gate rather than projected back
 into Phase 2.
 
-For finding closure, schema 3.0 retains the original `introduced_head`, binds
-the fixing commit as `fix_head`, binds the later transient judgment as
-`closure_head`, and uses `review_commit` for the distinct fresh-final range.
+For finding closure, current gate schema 4.0 retains the original
+`introduced_head`, binds the fixing commit as `fix_head`, binds the later
+transient judgment as `closure_head`, and uses `review_commit` for the distinct
+fresh-final range.
 The semantic normalizer and lifecycle validator both accept this normal
-finding -> fix -> closure path. Non-3.0 gates and tracked assignment/report
-files are invalid current inputs and fail closed without projection or re-entry.
+finding -> fix -> closure path. Aggregate input schema 2.0 and gate schema 3.0
+remain legacy compatibility inventory, not current runtime authority. Non-4.0
+current gates and tracked assignment/report files are invalid current inputs
+and fail closed without projection or re-entry.
 
 Independent review agents do not run Guru Team recorder/validator extension
 scripts as part of their review. They may inspect docs, code, tests, diffs, and
