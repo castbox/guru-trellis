@@ -33,9 +33,10 @@ current `origin/<base>...HEAD` range.
 
 Closure emits no public exit and writes no artifact. Only the distinct
 `fresh_final_review` may reach the recorder and pass. After its AI Review Gate
-exists, the recorder may write the compact `review-gate.json`; it does not
-create assignment, liveness, rollup, or raw per-round reports. Only after
-`check-review-gate` passes
+exists, the recorder writes the compact `review-gate.json` to the exact
+task-owned ignored-runtime checkpoint and returns only a minimal receipt; it
+does not create assignment, liveness, rollup, or raw per-round reports. Only
+after `check-review-gate` resolves and validates that exact checkpoint
 may the public wrapper emit exactly one of `passed`,
 `continuity_passed`, `implementation_required`,
 `scope_confirmation_required`, or `blocked`.
@@ -44,6 +45,16 @@ target-owned authoring seed. The workflow caller performs the publication
 content authoring preparation required by the global Phase 3.6 order before
 invoking that active owner.
 This package is not self-contained or portable.
+
+The public wrapper accepts only current public input, reruns the objective
+checker internally, and never accepts caller-authored gate or checker output.
+Successful `passed`, `continuity_passed`, and zero-payload stop `blocked`
+projection retires the checkpoint. The two active re-entry routes retain the
+one checkpoint for deterministic
+same-owner re-entry; a repeated invocation returns the same DTO without writing
+another checkpoint. Failed check or projection preserves the current regular
+checkpoint. A retired, mismatched, stale, unsafe, or symlink-backed checkpoint
+fails closed.
 
 Aggregate public input schema 3.0 dispatches two profiles: `branch_review`
 schema 2.0 accepts only `initial_review` and `fresh_final_review`, while

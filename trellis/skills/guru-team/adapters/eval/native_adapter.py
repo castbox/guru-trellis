@@ -282,6 +282,8 @@ def load_package_owner_runtime(runtime_target: Path, skill_id: str) -> Any:
             compose_change_request_eval_runtime(runtime_target, module)
         elif skill_id == "guru-create-task-workspace":
             compose_task_workspace_eval_runtime(runtime_target, module)
+        elif skill_id == "guru-review-branch":
+            compose_review_branch_eval_runtime(runtime_target, module)
         return module
     if runtime_path.is_symlink():
         raise ValueError("package owner staging runtime is unavailable")
@@ -392,6 +394,105 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
         lambda target, prerequisites, linked, authored: review.build_result(
             authored, target, prerequisites
         )
+    )
+
+
+def compose_review_branch_eval_runtime(runtime_target: Path, module: Any) -> None:
+    publication = load_package_owner_runtime(
+        runtime_target, "guru-review-task-publication"
+    )
+    package_root = runtime_target.parent.parent.parent / "skills/packages"
+    module.load_config = publication.load_config
+    module.WorkflowError = publication.WorkflowError
+    module.read_json = publication.read_json
+    module.write_json = publication.write_json
+    module.write_runtime_mappings = publication.write_runtime_mappings
+    module.current_head = publication.current_head
+    module.git_status_paths = publication.git_status_paths
+    module.diff_base_ref = publication.diff_base_ref
+    module.INDEPENDENT_REVIEW_SOURCE = "independent-agent"
+
+    def changed_files(root: Path, diff_range: str) -> list[str]:
+        output = subprocess.run(
+            ["git", "diff", "--name-only", "-z", diff_range],
+            cwd=root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        ).stdout.decode("utf-8")
+        return [path for path in output.split("\0") if path]
+
+    module.changed_files = changed_files
+
+    def commit_review_fixture(
+        fixture: Path, task: Path, checked: dict[str, Any]
+    ) -> tuple[str, str]:
+        del checked
+        run_git(fixture, "add", "-A")
+        run_git(fixture, "commit", "-q", "-m", "commit reviewed production fixture")
+        phase2 = (
+            fixture
+            / ".trellis/.runtime/guru-team/owner-checkpoints"
+            / task.name
+            / "phase2-check.json"
+        )
+        phase2.unlink(missing_ok=True)
+        return run_git(fixture, "rev-parse", "HEAD"), "origin/main"
+
+    module.commit_review_fixture = commit_review_fixture
+
+    def run_component(skill_id: str, script: str, argv: list[str]) -> dict[str, Any]:
+        process = subprocess.run(
+            [str(package_root / skill_id / "scripts" / script), *argv, "--json"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if process.returncode != 0:
+            raise ValueError(process.stderr.strip() or process.stdout.strip())
+        value = json.loads(process.stdout)
+        if not isinstance(value, dict):
+            raise ValueError("package wrapper did not return one JSON object")
+        return value
+
+    module.cmd_record_planning_approval = lambda args: run_component(
+        "guru-approve-task-plan",
+        "record-planning-approval.sh",
+        ["--root", str(args.root), "--task", str(args.task), "--input", str(args.input)],
+    )
+    module.cmd_check_planning_approval = lambda args: run_component(
+        "guru-approve-task-plan",
+        "check-planning-approval.sh",
+        ["--root", str(args.root), "--task", str(args.task)],
+    )
+    module.cmd_record_phase2_check = lambda args: run_component(
+        "guru-check-task",
+        "record-phase2-check.sh",
+        ["--root", str(args.root), "--task", str(args.task), "--input", str(args.input)],
+    )
+    module.cmd_check_phase2_check = lambda args: run_component(
+        "guru-check-task",
+        "check-phase2-check.sh",
+        ["--root", str(args.root), "--task", str(args.task)],
+    )
+    module.cmd_review_branch = lambda args: run_component(
+        "guru-review-branch",
+        "review-branch.sh",
+        [
+            "--root", str(args.root), "--task", str(args.task),
+            "--skill-input", str(args.skill_input),
+            "--semantic-review-file", str(args.semantic_review_file),
+            "--typed-exit", str(args.typed_exit),
+        ],
+    )
+    module.cmd_check_review_gate = lambda args: run_component(
+        "guru-review-branch",
+        "check-review-gate.sh",
+        [
+            "--root", str(args.root), "--task", str(args.task),
+            "--expected-exit", str(args.expected_exit),
+        ],
     )
 
 
@@ -2630,6 +2731,8 @@ def production_commit_for_review(
     task: Path,
     checked: dict[str, Any],
 ) -> tuple[str, str]:
+    if hasattr(runtime, "commit_review_fixture"):
+        return runtime.commit_review_fixture(fixture, task, checked)
     public_input = {
         "profile": "initial_commit",
         "mode": "workflow",
@@ -2785,7 +2888,7 @@ def production_record_review(
         },
     }
     semantic_path = fixture / ".trellis/.runtime/guru-team/evals/review-owner-input.json"
-    runtime.write_json(semantic_path, {
+    semantic_path.write_text(json.dumps({
         "semantic_review": semantic,
         "verification_evidence": {
             "reviewer": reviewer,
@@ -2799,7 +2902,7 @@ def production_record_review(
                 else ["Reviewed the complete current range and deployment impact."]
             ),
         },
-    })
+    }) + "\n", encoding="utf-8")
     public_input.update({
         "task_ref": task.relative_to(fixture).as_posix(),
         "base_ref": runtime.diff_base_ref(fixture, "main"),
@@ -2811,7 +2914,7 @@ def production_record_review(
         ),
     })
     runtime_input = fixture / OWNER_INPUT
-    runtime.write_json(runtime_input, public_input)
+    runtime_input.write_text(json.dumps(public_input) + "\n", encoding="utf-8")
     runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
     direct_recorder_inputs = {runtime_input, semantic_path}
     for runtime_artifact in runtime_dir.rglob("*"):
@@ -3789,7 +3892,9 @@ def stage_production_owner_execution(
         production_record_planning(runtime, fixture, task, "approved")
         task_payload = json.loads((task / "task.json").read_text(encoding="utf-8"))
         task_payload["status"] = "in_progress"
-        runtime.write_json(task / "task.json", task_payload)
+        (task / "task.json").write_text(
+            json.dumps(task_payload) + "\n", encoding="utf-8"
+        )
         run_git(fixture, "add", task.relative_to(fixture).as_posix())
         run_git(fixture, "commit", "-q", "-m", "activate production eval task")
         (fixture / "src/production-eval.txt").write_text(
@@ -3861,30 +3966,13 @@ def stage_production_owner_execution(
             production_commit_for_review(
                 runtime, fixture, task, checked
             )
-            branch_owner = production_record_review(
+            production_record_review(
                 runtime,
                 fixture,
                 task,
                 public_input,
-                (
-                    "review-finding-fix-passed"
-                    if recipe == "review-blocked"
-                    else recipe
-                ),
+                recipe,
             )
-            owner_result_path = Path(branch_owner["artifact_path"])
-            if recipe == "review-blocked":
-                (fixture / "src/production-eval.txt").write_text(
-                    "review-blocked-stale-head\n", encoding="utf-8"
-                )
-                run_git(fixture, "add", "src/production-eval.txt")
-                run_git(
-                    fixture,
-                    "commit",
-                    "-q",
-                    "-m",
-                    "advance normal branch state after review gate",
-                )
             runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
             for runtime_artifact in runtime_dir.rglob("*"):
                 if (
@@ -3967,7 +4055,8 @@ def stage_production_owner_execution(
                     runtime_artifact.unlink()
     runtime_input = fixture / OWNER_INPUT
     runtime.write_json(runtime_input, public_input)
-    bind_owner_result_argument(request, fixture, owner_result_path)
+    if skill_id != "guru-review-branch":
+        bind_owner_result_argument(request, fixture, owner_result_path)
     return package, fixture_runtime_target, production_environment
 
 
@@ -4132,7 +4221,7 @@ def stage_owner_execution(
             owner,
             owner_context,
         )
-    else:
+    elif skill_id != "guru-review-branch":
         bind_owner_result_argument(request, fixture, owner_path)
     return package, fixture_runtime_target, environment
 

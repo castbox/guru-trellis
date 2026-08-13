@@ -64,7 +64,11 @@ scope/authority decisions or a separately displayed Git/GitHub side effect.
 ## Gate And Exits
 
 After the AI gate exists, `review-branch` writes one compact owner-private
-`review-gate.json` under ignored runtime; `check-review-gate` validates
+`review-gate.json` at
+`.trellis/.runtime/guru-team/owner-checkpoints/<task-key>/review-gate.json` and
+returns only a minimal task/exit/checkpoint receipt. The task owner and package
+resolver determine the path; callers cannot choose a gate locator.
+`check-review-gate` resolves that exact checkpoint and validates
 objective structure, task/base/reviewed-content identity, complete range, finding
 lifecycle, fresh-final intent, facts digest and exact consumer. It never
 decides review sufficiency, severity or route. The checker recalculates
@@ -72,10 +76,19 @@ decides review sufficiency, severity or route. The checker recalculates
 staling the gate, while any reviewed-content change makes it stale. Git commit
 anchors remain responsible only for review range and finding ancestry.
 
-The Branch Review public wrapper validates the selected output schema and then
-deletes its own checkpoint. Publication receives only the minimal typed DTO and
-live Git facts; it never reads or deletes Branch Review private state. A failed
-checker or invalid projection retains the checkpoint for same-owner repair.
+The Branch Review public wrapper accepts current public input only, internally
+reruns `check-review-gate`, validates the selected output schema and never
+accepts caller-authored gate or checker output. Successful `passed`,
+`continuity_passed`, and zero-payload stop `blocked` projection deletes the
+checkpoint and empty owner directory. `implementation_required` and
+`scope_confirmation_required` retain the same checkpoint for their mapped
+same-owner re-entry; a
+duplicate invocation deterministically returns the same DTO and creates no
+second state. Publication receives only the minimal typed DTO and live Git
+facts; it never reads or deletes Branch Review private state. A failed checker
+or invalid projection retains the checkpoint for same-owner repair. Missing
+after retirement, wrong-task/base/HEAD/content, unsafe components, and symlink
+ancestors or gate files fail closed.
 
 The current gate uses only schema 4.0 with profile-specific identity,
 `review_commit` and `reviewed_content_sha256`. Aggregate input schema 2.0 and

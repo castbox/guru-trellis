@@ -1,1 +1,15 @@
-{"scenario":"The internal closure-then-fresh-final loop completes, then reviewed content changes before public invocation and makes the one compact final gate stale.","owner_evidence":{"semantic_gate":"passed","checker_required":true,"post_recording_change":"reviewed_content_changed_after_compact_gate"},"owner_staging":{"recipe":"review-blocked"},"public_invocation":{"expected_entry_route":"blocked","arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/owner-checkpoints/current/review-gate.json"]}}
+{
+  "scenario": "The semantic review cannot establish a safe continuation, so the owner records the blocked stop route while reviewed content remains current.",
+  "owner_evidence": {
+    "semantic_gate": "blocked",
+    "checker_required": true,
+    "checkpoint_lifecycle": "retire_after_successful_blocked_projection"
+  },
+  "owner_staging": {
+    "recipe": "review-blocked"
+  },
+  "public_invocation": {
+    "expected_entry_route": "blocked",
+    "arguments": ["--input", ".trellis/.runtime/guru-team/evals/public-input.json"]
+  }
+}
