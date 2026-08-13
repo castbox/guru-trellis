@@ -1160,82 +1160,6 @@ def extension_verification_installed_asset_facts(
             source_path,
             "managed_manifest",
         )
-    schema_root = source_checkout / "trellis/workflows/guru-team/schemas"
-    schema_sources = sorted(
-        path
-        for path in schema_root.rglob("*.json")
-        if path.is_file() and not path.is_symlink()
-    ) if schema_root.is_dir() and not schema_root.is_symlink() else []
-    if not schema_sources:
-        relation_errors.append("schema:missing_canonical_set")
-    for source in schema_sources:
-        relative = source.relative_to(schema_root).as_posix()
-        add_expectation(
-            "schema",
-            f".trellis/guru-team/schemas/{relative}",
-            source.relative_to(source_checkout).as_posix(),
-            "managed_manifest",
-        )
-    package_source_root = (
-        source_checkout
-        / "trellis/skills/guru-team/packages/"
-        "guru-verify-extension-installation"
-    )
-    package_sources = sorted(
-        path
-        for path in package_source_root.rglob("*")
-        if path.is_file()
-        and not path.is_symlink()
-        and "__pycache__" not in path.parts
-        and path.suffix not in {".pyc", ".pyo"}
-    ) if package_source_root.is_dir() and not package_source_root.is_symlink() else []
-    if not package_sources:
-        relation_errors.append("skill:missing_canonical_set")
-    destination_roots = (
-        (
-            "skill",
-            None,
-            ".trellis/guru-team/skills/packages/"
-            "guru-verify-extension-installation",
-            "skill_manifest",
-        ),
-        (
-            "platform",
-            "shared",
-            ".agents/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-        (
-            "platform",
-            "codex",
-            ".codex/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-        (
-            "platform",
-            "claude",
-            ".claude/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-        (
-            "platform",
-            "cursor",
-            ".cursor/skills/guru-verify-extension-installation",
-            "platform_manifest",
-        ),
-    )
-    for source in package_sources:
-        package_relative = source.relative_to(package_source_root).as_posix()
-        source_path = source.relative_to(source_checkout).as_posix()
-        for category, platform, destination, relation in destination_roots:
-            add_expectation(
-                category,
-                f"{destination}/{package_relative}",
-                source_path,
-                relation,
-                platform=platform,
-            )
-
     manifest_path = installed_root / ".trellis/guru-team/extension.json"
     try:
         manifest = read_json(manifest_path)
@@ -1265,6 +1189,75 @@ def extension_verification_installed_asset_facts(
         if isinstance(install.get("selected_platforms"), list)
         else []
     )
+    schema_prefix = ".trellis/guru-team/schemas/"
+    for installed_path in sorted(
+        path for path in managed_assets
+        if isinstance(path, str) and path.startswith(schema_prefix)
+    ):
+        relative = installed_path.removeprefix(schema_prefix)
+        add_expectation(
+            "schema",
+            installed_path,
+            f"trellis/workflows/guru-team/schemas/{relative}",
+            "managed_manifest",
+        )
+    package_source_root = (
+        source_checkout
+        / "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation"
+    )
+    package_sources = sorted(
+        path
+        for path in package_source_root.rglob("*")
+        if path.is_file()
+        and not path.is_symlink()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
+    ) if package_source_root.is_dir() and not package_source_root.is_symlink() else []
+    if not package_sources:
+        relation_errors.append("skill:missing_canonical_set")
+    canonical_destination = (
+        ".trellis/guru-team/skills/packages/"
+        "guru-verify-extension-installation"
+    )
+    for source in package_sources:
+        package_relative = source.relative_to(package_source_root).as_posix()
+        source_path = source.relative_to(source_checkout).as_posix()
+        add_expectation(
+            "skill",
+            f"{canonical_destination}/{package_relative}",
+            source_path,
+            "skill_manifest",
+        )
+    platform_roots = {
+        "shared": ".agents/skills/guru-verify-extension-installation/",
+        "codex": ".codex/skills/guru-verify-extension-installation/",
+        "claude": ".claude/skills/guru-verify-extension-installation/",
+        "cursor": ".cursor/skills/guru-verify-extension-installation/",
+    }
+    source_prefix = (
+        "trellis/skills/guru-team/packages/"
+        "guru-verify-extension-installation/"
+    )
+    for item in manifest_files:
+        if not isinstance(item, dict):
+            continue
+        installed_path = item.get("path")
+        source_path = item.get("source")
+        if not isinstance(installed_path, str) or not isinstance(source_path, str):
+            continue
+        if not source_path.startswith(source_prefix):
+            continue
+        for platform, prefix in platform_roots.items():
+            if installed_path.startswith(prefix):
+                add_expectation(
+                    "platform",
+                    installed_path,
+                    source_path,
+                    "platform_manifest",
+                    platform=platform,
+                )
+                break
     for expectation in expectations:
         installed_path = str(expectation["path"])
         relation = expectation["relation"]

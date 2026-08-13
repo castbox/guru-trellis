@@ -166,6 +166,57 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         self.assertIsNone(selected["manifest_commit"])
         self.assertEqual(selected["tree_state"], "clean")
 
+    def test_platform_inventory_follows_manifest_public_projection(self) -> None:
+        runtime = load_runtime()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / "source"
+            installed = root / "installed"
+            package = source / "trellis/skills/guru-team/packages/guru-verify-extension-installation"
+            (package / "runtime").mkdir(parents=True)
+            (package / "SKILL.md").write_text("public\n", encoding="utf-8")
+            (package / "runtime/owner.py").write_text("private\n", encoding="utf-8")
+            workflow = source / "trellis/workflows/guru-team"
+            (workflow / "scripts/bash").mkdir(parents=True)
+            (workflow / "workflow.md").write_text("workflow\n", encoding="utf-8")
+            (workflow / "config-template.yml").write_text("config\n", encoding="utf-8")
+            for name in (
+                "execute-extension-verification.sh", "record-extension-verification.sh",
+                "check-extension-verification.sh", "invoke-extension-verification.sh",
+            ):
+                (workflow / "scripts/bash" / name).write_text(name + "\n", encoding="utf-8")
+            public_target = installed / ".agents/skills/guru-verify-extension-installation/SKILL.md"
+            private_target = installed / ".trellis/guru-team/skills/packages/guru-verify-extension-installation/runtime/owner.py"
+            canonical_target = installed / ".trellis/guru-team/skills/packages/guru-verify-extension-installation/SKILL.md"
+            for target, origin in (
+                (public_target, package / "SKILL.md"),
+                (private_target, package / "runtime/owner.py"),
+                (canonical_target, package / "SKILL.md"),
+            ):
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(origin.read_bytes())
+            manifest = installed / ".trellis/guru-team/extension.json"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            files = []
+            for target, origin in (
+                (public_target, package / "SKILL.md"),
+                (private_target, package / "runtime/owner.py"),
+                (canonical_target, package / "SKILL.md"),
+            ):
+                files.append({
+                    "path": target.relative_to(installed).as_posix(),
+                    "source": origin.relative_to(source).as_posix(),
+                    "sha256": hashlib.sha256(origin.read_bytes()).hexdigest(),
+                })
+            manifest.write_text(json.dumps({
+                "install": {"managed_assets": [], "selected_platforms": []},
+                "skill_packages": {"files": files},
+            }), encoding="utf-8")
+            expectations, _, _ = runtime.extension_verification_installed_asset_facts(source, installed)
+        paths = {item["path"] for item in expectations}
+        self.assertIn(".agents/skills/guru-verify-extension-installation/SKILL.md", paths)
+        self.assertNotIn(".agents/skills/guru-verify-extension-installation/runtime/owner.py", paths)
+
     def test_version_projection_is_package_owned_and_manifest_compatible(self) -> None:
         command = next(
             item for item in load("commands.json")["commands"]
