@@ -390,7 +390,9 @@ returns only objective unchanged/current/new/blocked pair state. Unchanged or
 already-current pairs require no new semantic invocation, GitHub/Docs/history
 reads, or interaction. `unchanged` resumes the closed `resume_target` directly;
 `current_pair` consumes and routes the recorded exact typed output, then deletes
-its one-use checkpoint. Only a new pair invokes guru-reconcile-task-base.
+its one-use checkpoint. It must never resume from the guard's `resume_target`
+alone because that would discard a previously recorded non-`reconciled` exit.
+Only a new pair invokes guru-reconcile-task-base.
 
 The semantic owner reads live authority and current task/base facts, follows
 the installed semantic-retrieval SSOT, and returns exactly one declared exit.

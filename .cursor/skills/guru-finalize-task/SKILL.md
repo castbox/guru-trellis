@@ -1,6 +1,6 @@
 ---
 name: guru-finalize-task
-description: Finalize a reviewed Trellis task through one semantic closeout loop, one deterministic transaction engine, and five typed exits.
+description: Finalize a reviewed Trellis task through one semantic closeout loop, one deterministic transaction engine, and six typed exits.
 ---
 
 # Guru Finalize Task

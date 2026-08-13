@@ -33,16 +33,21 @@ GTT = load_runtime()
 
 class FinalizeTaskContractTests(unittest.TestCase):
     def test_step_local_contract_matches_current_gate_and_exit_graph(self) -> None:
+        skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
         interface = load("interface.json")
         gate = load("schemas/task-finalization-gate-5.0.schema.json")
         exits = [item["id"] for item in interface["external_exits"]]
+        output_exits = [item["exit_id"] for item in interface["public_contracts"]["outputs"]]
 
+        self.assertIn("and six typed exits.", skill)
+        self.assertIn("and six typed exits.", interface["description"])
         self.assertIn("current aggregate input is 6.0, gate is 5.0, and ignored transaction is 2.0", contract)
         self.assertIn("The four inputs are", contract)
         self.assertIn("The six exits are", contract)
         self.assertIn("3.0 and 4.0 gates", contract)
         self.assertEqual(6, len(exits))
+        self.assertEqual(exits, output_exits)
         self.assertEqual(
             exits,
             gate["properties"]["route"]["properties"]["typed_exit"]["enum"],

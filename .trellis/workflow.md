@@ -387,9 +387,12 @@ At plan approval, Phase 2 pass, task commit, Branch Review pass, Publication
 ready, and Finalizer base-only mismatch, invoke the package-local deterministic
 pair guard before continuing. The guard observes the selected base ref once and
 returns only objective unchanged/current/new/blocked pair state. Unchanged or
-already-current pairs resume the closed `resume_target` without semantic
-invocation, GitHub/Docs/history reads, artifact writes, or interaction. Only a
-new pair invokes guru-reconcile-task-base.
+already-current pairs require no new semantic invocation, GitHub/Docs/history
+reads, or interaction. `unchanged` resumes the closed `resume_target` directly;
+`current_pair` consumes and routes the recorded exact typed output, then deletes
+its one-use checkpoint. It must never resume from the guard's `resume_target`
+alone because that would discard a previously recorded non-`reconciled` exit.
+Only a new pair invokes guru-reconcile-task-base.
 
 The semantic owner reads live authority and current task/base facts, follows
 the installed semantic-retrieval SSOT, and returns exactly one declared exit.

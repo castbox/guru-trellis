@@ -80,6 +80,49 @@ def install_canonical_workflow(repo: Path) -> None:
     target.write_bytes(source.read_bytes())
 
 
+class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
+    def test_current_pair_consumes_recorded_output_before_checkpoint_retirement(self) -> None:
+        source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
+        text = source.read_text(encoding="utf-8")
+        self.assertIn(
+            "`current_pair` consumes and routes the recorded exact typed output, then deletes\n"
+            "its one-use checkpoint.",
+            text,
+        )
+        self.assertIn(
+            "It must never resume from the guard's `resume_target`\n"
+            "alone because that would discard a previously recorded non-`reconciled` exit.",
+            text,
+        )
+        self.assertNotIn(
+            "Unchanged or\nalready-current pairs resume the closed `resume_target`",
+            text,
+        )
+
+    def test_installed_workflow_is_exact_canonical_projection(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            repo = Path(raw)
+            (repo / ".trellis").mkdir()
+            install_canonical_workflow(repo)
+            source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
+            self.assertEqual(source.read_bytes(), (repo / ".trellis/workflow.md").read_bytes())
+
+    def test_dogfood_spec_matches_finalizer_six_exit_contract(self) -> None:
+        root = preset.guru_root_from_script()
+        spec = (root / ".trellis/spec/workflow/index.md").read_text(encoding="utf-8")
+        interface = json.loads(
+            (root / "trellis/skills/guru-team/packages/guru-finalize-task/interface.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertEqual(6, len(interface["external_exits"]))
+        self.assertIn("six public exits", spec)
+        self.assertIn("six external\nexits", spec)
+        self.assertNotIn("five public exits", spec)
+        self.assertNotIn("five external\nsix exits", spec)
+
+
 class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

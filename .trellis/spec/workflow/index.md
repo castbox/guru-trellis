@@ -93,7 +93,7 @@ Before editing workflow behavior:
   unreachable from business tasks, Publication, Finalizer, and finish-work.
 - `guru-finalize-task` is the active semantic owner of the exact closeout plan
   review, current-conversation Finalizer confirmation, four distinct input profiles,
-  five public exits, and the owner-private transaction/recovery loop. Current
+  six public exits, and the owner-private transaction/recovery loop. Current
   re-entry uses ignored `finalization-transaction.json`; current preparation and
   archives never select `closeout-plan.json`. Package discovery, global invocation
   after publication `ready`, three Guru-owned daily entries, and automatic machine
@@ -172,8 +172,8 @@ Finalizer do not consume this Skill.
 The durable contracts for active `guru-finalize-task` are split across
 `skill-package-contract.md`, `workflow-contract.md`, `companion-scripts.md`,
 `quality-guidelines.md`, `preset/installer.md`, `preset/upstream-ownership.md`,
-and `docs/public-docs.md`. Together they own its four profiles, five external
-six exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
+and `docs/public-docs.md`. Together they own its four profiles, six external
+exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
 six-core archive, real-wrapper eval, and additive distribution.
 
 The current package graph contains sixteen active Skills and 62 external exits

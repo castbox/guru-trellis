@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-finalize-task",
   "name": "guru-finalize-task",
-  "description": "Finalize a reviewed Trellis task through one semantic closeout loop, one deterministic transaction engine, and five typed exits.",
+  "description": "Finalize a reviewed Trellis task through one semantic closeout loop, one deterministic transaction engine, and six typed exits.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
