@@ -370,7 +370,10 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION,
         )
         facts = load("examples/execution-facts.json")
-        facts["schema_version"] = runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION
+        self.assertEqual(
+            facts["schema_version"],
+            runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION,
+        )
         self.assertEqual(
             runtime.skill_json_schema_validation_errors(
                 facts,
@@ -378,6 +381,13 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                 "extension verification execution facts",
             ),
             [],
+        )
+        adapter_text = (
+            REPO / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            '"schema_version": runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION',
+            adapter_text,
         )
 
     def test_non_source_rejected_before_executor(self) -> None:

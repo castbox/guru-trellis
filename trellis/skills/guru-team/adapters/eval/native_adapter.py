@@ -3042,7 +3042,7 @@ def extension_verification_execution(
         asset_digests = []
         asset_inventory = runtime.extension_verification_asset_inventory_summary([], [])
     return {
-        "schema_version": "3.0",
+        "schema_version": runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION,
         "target_repository": {
             "repo_ref": public_input["repo_ref"],
             "remote": public_input["remote"],

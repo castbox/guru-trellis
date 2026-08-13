@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-13T13:39:17Z",
+  "installed_at": "2026-08-13T13:56:56Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "beeea935baa30a6fed95834d0b8cdb846b48c3ff",
-    "commit": "beeea935baa30a6fed95834d0b8cdb846b48c3ff",
+    "ref": "11051f152fe62fd9a155435488e9a7debad539bd",
+    "commit": "11051f152fe62fd9a155435488e9a7debad539bd",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -513,7 +513,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "fa09c23c594dd8bf7fd114c3cdf561fe1db647859a97c6e0321c1eceabe1df01",
-        "tree_sha256": "049ce44f47eabae3f80105227ae6062a24a2ee86e6aa64dbc076bea0bd896c97"
+        "tree_sha256": "494d38459e7257b1933ff62510527af0149fb6e3c4833d9efe0cb45f8156f367"
       },
       {
         "id": "guru-finalize-task",
@@ -729,7 +729,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "2c8dca275f61c5f668c37c5ff71555041dead48617d72711c53a5ed9bc9d81d2",
+        "sha256": "022c4f978d69a00089e5115c244b8400c6f7c79888a9506020f049f83de26bf0",
         "executable": false,
         "action": "unchanged"
       },
@@ -4803,7 +4803,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
-        "sha256": "d81744fef7c542b9a6135fe9a90237cfddc827cf3506ce4402ef8f2345b305ac",
+        "sha256": "54f5cd90d72720dd7a99f23ae5c7816ff5e8449127586e9edd1d7c63fadd2d97",
         "executable": false,
         "action": "unchanged"
       },
@@ -5132,7 +5132,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "eb7b663e05451b736cfcedb95fe36d2745cf61fef75191b95c37d375d2a0288c",
+        "sha256": "b60a0185795313ad98325302af60adea1ad12e2d2724b89d5473a51a84ea6950",
         "executable": false,
         "action": "unchanged"
       },
