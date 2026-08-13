@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import shutil
 import subprocess
@@ -141,11 +140,10 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         example = json.loads(
             (self.package / "examples/base-sync-result.json").read_text(encoding="utf-8")
         )
-        if importlib.util.find_spec("jsonschema") is not None:
-            from jsonschema import Draft202012Validator
+        from jsonschema import Draft202012Validator
 
-            Draft202012Validator.check_schema(schema)
-            self.assertEqual(list(Draft202012Validator(schema).iter_errors(example)), [])
+        Draft202012Validator.check_schema(schema)
+        self.assertEqual(list(Draft202012Validator(schema).iter_errors(example)), [])
         self.assertEqual(
             schema["$defs"]["resolution"]["properties"]["source"]["enum"],
             ["explicit", "config", "config-candidate", "remote-default"],
@@ -289,10 +287,9 @@ class BaseSyncPackageContractTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result)
         payload = json.loads(result.stdout)
         self.assertEqual(payload, {"exit_id": "skipped", "continuation_id": "start-original-request"})
-        if importlib.util.find_spec("jsonschema") is not None:
-            from jsonschema import Draft202012Validator
-            schema = json.loads((self.package / "schemas/public-skipped-output.schema.json").read_text())
-            self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+        from jsonschema import Draft202012Validator
+        schema = json.loads((self.package / "schemas/public-skipped-output.schema.json").read_text())
+        self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
 
     def test_public_invoke_synced_is_schema_valid(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -316,9 +313,8 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result)
             payload = json.loads(result.stdout)
             schema = json.loads((self.package / "schemas/public-synced-output-2.0.schema.json").read_text())
-            if importlib.util.find_spec("jsonschema") is not None:
-                from jsonschema import Draft202012Validator
-                self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+            from jsonschema import Draft202012Validator
+            self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
             transition = payload["transition"]
             self.assertEqual(transition["stage"], "base_current")
             self.assertEqual(transition["mode"], "workflow")
@@ -342,10 +338,9 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result)
             payload = json.loads(result.stdout)
             self.assertEqual(payload, {"exit_id": "blocked"})
-            if importlib.util.find_spec("jsonschema") is not None:
-                from jsonschema import Draft202012Validator
-                schema = json.loads((self.package / "schemas/public-blocked-output.schema.json").read_text())
-                self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
+            from jsonschema import Draft202012Validator
+            schema = json.loads((self.package / "schemas/public-blocked-output.schema.json").read_text())
+            self.assertEqual(list(Draft202012Validator(schema).iter_errors(payload)), [])
 
     def test_public_invoke_does_not_hide_invalid_public_input_as_blocked(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

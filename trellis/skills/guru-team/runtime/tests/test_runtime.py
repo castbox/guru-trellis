@@ -154,6 +154,27 @@ class SharedRuntimeTests(unittest.TestCase):
             self.assertEqual((runtime_root / "active.json").read_bytes(), before)
             self.assertEqual(list(runtime_root.glob(".*.candidate-*")), [])
 
+    def test_prepared_new_identity_preserves_active_until_explicit_activation(self) -> None:
+        from runtime import bootstrap as managed
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            assets = Path(tmp) / "assets"
+            repo.mkdir()
+            shutil.copytree(ROOT, assets)
+            first = managed.bootstrap(repo, assets, Path(sys.executable))
+            active_path = repo / ".trellis/.runtime/guru-team/python/active.json"
+            before = active_path.read_bytes()
+            with (assets / "requirements.lock").open("a", encoding="utf-8") as handle:
+                handle.write("\n# staged identity change\n")
+            prepared = managed.bootstrap(repo, assets, Path(sys.executable), activate=False)
+            self.assertNotEqual(prepared["runtime_identity"], first["runtime_identity"])
+            self.assertEqual(active_path.read_bytes(), before)
+            activated = managed.bootstrap(repo, assets, Path(sys.executable), activate=True)
+            self.assertEqual(activated["action"], "reused")
+            self.assertEqual(activated["runtime_identity"], prepared["runtime_identity"])
+            self.assertNotEqual(active_path.read_bytes(), before)
+
     def test_bootstrap_failure_reports_computed_runtime_identity(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

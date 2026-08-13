@@ -295,13 +295,17 @@ def run_upstream_ownership_validator(guru_root: Path) -> dict[str, Any]:
     return payload
 
 
-def ensure_managed_python_runtime(repo: Path, guru_root: Path) -> dict[str, Any]:
+def ensure_managed_python_runtime(
+    repo: Path,
+    guru_root: Path,
+    *,
+    activate: bool = False,
+) -> dict[str, Any]:
     runtime_assets = guru_root / "trellis/skills/guru-team/runtime"
     bootstrap = runtime_assets / "bootstrap.py"
     if not bootstrap.is_file() or bootstrap.is_symlink():
         raise_managed_runtime_error()
-    proc = subprocess.run(
-        [
+    command = [
             sys.executable,
             str(bootstrap),
             "--repo",
@@ -311,7 +315,11 @@ def ensure_managed_python_runtime(repo: Path, guru_root: Path) -> dict[str, Any]
             "--python",
             sys.executable,
             "--json",
-        ],
+        ]
+    if not activate:
+        command.append("--no-activate")
+    proc = subprocess.run(
+        command,
         cwd=repo,
         text=True,
         stdout=subprocess.PIPE,
@@ -367,6 +375,14 @@ def managed_python_interpreter(repo: Path, runtime_identity: str) -> Path:
     if interpreter not in expected:
         raise_managed_runtime_error(runtime_identity)
     path = repo / ".trellis/.runtime/guru-team/python" / str(interpreter)
+    if not path.is_file() or not os.access(path, os.X_OK):
+        raise_managed_runtime_error(runtime_identity)
+    return path
+
+
+def prepared_python_interpreter(repo: Path, runtime_identity: str) -> Path:
+    relative = Path(runtime_identity) / "venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    path = repo / ".trellis/.runtime/guru-team/python" / relative
     if not path.is_file() or not os.access(path, os.X_OK):
         raise_managed_runtime_error(runtime_identity)
     return path
@@ -1883,8 +1899,8 @@ def install_assets(
     guru_root = guru_root_from_script()
     upstream_ownership_validation = run_upstream_ownership_validator(guru_root)
     repo = Path(os.path.abspath(repo))
-    python_runtime = ensure_managed_python_runtime(repo, guru_root)
-    managed_python = managed_python_interpreter(repo, str(python_runtime["runtime_identity"]))
+    python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False)
+    managed_python = prepared_python_interpreter(repo, str(python_runtime["runtime_identity"]))
     source_validation = run_skill_package_validator(guru_root, guru_root, "source", managed_python)
     if source_validation.get("returncode") != 0:
         raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")
@@ -1928,6 +1944,9 @@ def install_assets(
         )
         if activation_ready or recoverable_activation_ready:
             activate_staged_repository(staging_repo, repo)
+            activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True)
+            if activated_runtime.get("runtime_identity") != python_runtime.get("runtime_identity"):
+                raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
         else:
             materialize_staged_conflict_sidecars(staging_repo, repo, result)
         return result

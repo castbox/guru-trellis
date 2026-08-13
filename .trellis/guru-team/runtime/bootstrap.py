@@ -117,7 +117,7 @@ def validate_active(repo: Path, assets: Path, python: Path, runtime_id: str) -> 
     return {"status": "ok", "runtime_identity": runtime_id}
 
 
-def bootstrap(repo: Path, assets: Path, python: Path) -> dict[str, Any]:
+def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> dict[str, Any]:
     runtime_root = repo / ".trellis/.runtime/guru-team/python"
     runtime_root.mkdir(parents=True, exist_ok=True)
     runtime_id, identity = runtime_identity(assets, python)
@@ -128,7 +128,8 @@ def bootstrap(repo: Path, assets: Path, python: Path) -> dict[str, Any]:
         if state == "unknown":
             raise BootstrapError("target runtime identity exists without valid managed provenance")
         if state == "reusable":
-            write_active(runtime_root, runtime_id)
+            if activate:
+                write_active(runtime_root, runtime_id)
             return {"status": "ok", "action": "reused", "runtime_identity": runtime_id}
         repair_target = True
 
@@ -174,7 +175,8 @@ def bootstrap(repo: Path, assets: Path, python: Path) -> dict[str, Any]:
             shutil.rmtree(backup)
         else:
             candidate.replace(target)
-        write_active(runtime_root, runtime_id)
+        if activate:
+            write_active(runtime_root, runtime_id)
         return {"status": "ok", "action": "repaired" if repair_target else "installed", "runtime_identity": runtime_id}
     except Exception:
         if candidate.is_dir():
@@ -189,6 +191,7 @@ def main() -> int:
     parser.add_argument("--python", type=Path, default=Path(sys.executable))
     parser.add_argument("--print-identity", action="store_true")
     parser.add_argument("--validate-active")
+    parser.add_argument("--no-activate", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     runtime_id: str | None = None
@@ -206,7 +209,12 @@ def main() -> int:
             )
         else:
             runtime_id, _ = runtime_identity(args.runtime_assets.resolve(), args.python.resolve())
-            result = bootstrap(args.repo.resolve(), args.runtime_assets.resolve(), args.python.resolve())
+            result = bootstrap(
+                args.repo.resolve(),
+                args.runtime_assets.resolve(),
+                args.python.resolve(),
+                activate=not args.no_activate,
+            )
     except Exception:
         payload = {"code": "runtime_dependency_missing", "field_path": "runtime", "dependency": "jsonschema", "runtime_identity": runtime_id, "remediation": REPAIR_COMMAND}
         print(json.dumps(payload, sort_keys=True))

@@ -49,6 +49,11 @@ def setUpModule() -> None:
             "managed_python_interpreter",
             return_value=Path(sys.executable),
         ),
+        mock.patch.object(
+            preset,
+            "prepared_python_interpreter",
+            return_value=Path(sys.executable),
+        ),
     ])
     for patcher in _runtime_patchers:
         patcher.start()
@@ -2087,9 +2092,18 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertEqual(developer_identity.read_bytes(), identity_bytes)
 
     def test_current_reapply_remains_valid(self) -> None:
-        completed = self.install_current()
+        with mock.patch.object(
+            preset,
+            "ensure_managed_python_runtime",
+            return_value=_RUNTIME_RESULT,
+        ) as runtime:
+            completed = self.install_current()
 
         self.assertEqual(completed["skill_packages"]["status"], "ok")
+        self.assertEqual(
+            [call.kwargs["activate"] for call in runtime.call_args_list],
+            [False, True],
+        )
         self.assertEqual(completed["skill_packages"]["sidecars"], [])
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
         self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
@@ -2136,9 +2150,18 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         before = self.managed_graph_snapshot()
         extension_before = (self.install_dst / "extension.json").read_bytes()
 
-        result = self.install_current()
+        with mock.patch.object(
+            preset,
+            "ensure_managed_python_runtime",
+            return_value=_RUNTIME_RESULT,
+        ) as runtime:
+            result = self.install_current()
 
         self.assertEqual(result["skill_packages"]["status"], "conflict")
+        self.assertEqual(
+            [call.kwargs["activate"] for call in runtime.call_args_list],
+            [False],
+        )
         self.assertNotEqual(result["skill_installed_validation"]["returncode"], 0)
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assertEqual((self.install_dst / "extension.json").read_bytes(), extension_before)
@@ -2184,9 +2207,18 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             }
 
         with mock.patch.object(preset, "run_skill_package_validator", side_effect=forced_validation):
-            result = self.install_current()
+            with mock.patch.object(
+                preset,
+                "ensure_managed_python_runtime",
+                return_value=_RUNTIME_RESULT,
+            ) as runtime:
+                result = self.install_current()
 
         self.assertEqual(result["skill_installed_validation"]["errors"], ["forced installed validation failure"])
+        self.assertEqual(
+            [call.kwargs["activate"] for call in runtime.call_args_list],
+            [False],
+        )
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
 

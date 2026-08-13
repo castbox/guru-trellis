@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import importlib.util
 import copy
 import hashlib
-import importlib.util
 import json
 import os
 import shutil
@@ -506,7 +506,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             schema = json.loads((PACKAGE / output["schema"]["path"]).read_text(encoding="utf-8"))
             self.assertFalse(forbidden & set(schema["properties"]))
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_ready_schema_migration_preserves_legacy_and_projects_current(self) -> None:
         import jsonschema
 
@@ -598,7 +597,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             "ignored_runtime",
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_readiness_example_is_schema_and_runtime_semantic_valid(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -615,7 +613,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             [],
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_schema_valid_runtime_invalid_duplicate_finding_refs_fail_closed(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -644,7 +641,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             ),
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_empty_closed_finding_evidence_fails_schema_and_runtime(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -671,7 +667,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             ),
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_gate_schema_rejects_removed_process_and_binding_fields(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -755,7 +750,6 @@ class TaskPublicationContractTest(unittest.TestCase):
         payload["conclusions"]["safety_deployment"]["status"] = "blocked"
         return payload
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_ready_rejects_nonpassed_conclusion_in_schema_and_runtime(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -769,7 +763,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             self.semantic_errors(invalid),
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_return_rejects_all_passed_dimensions_in_schema_and_runtime(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -788,7 +781,6 @@ class TaskPublicationContractTest(unittest.TestCase):
             errors,
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_blocked_rejects_reason_only_semantics_in_schema_and_runtime(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -806,7 +798,6 @@ class TaskPublicationContractTest(unittest.TestCase):
         self.assertIn("blocked requires an open external_blocker finding", errors)
         self.assertIn("blocked requires a blocked publication conclusion", errors)
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_valid_ready_return_and_blocked_unions_pass_both_layers(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -820,7 +811,6 @@ class TaskPublicationContractTest(unittest.TestCase):
                 self.assertEqual(list(validator.iter_errors(payload)), [])
                 self.assertEqual(self.semantic_errors(payload), [])
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_runtime_binds_open_findings_to_matching_nonpassed_dimensions(self) -> None:
         from jsonschema import Draft202012Validator
 

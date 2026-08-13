@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import importlib.util
 import json
 import shutil
 import subprocess
@@ -100,7 +99,6 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             self.schema["properties"]["reviewed_content_sha256"]["description"],
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_interface_gate_inputs_outputs_and_consumer_examples_validate(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -127,7 +125,6 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             self.read("examples/public-approved-output.json")
         )
 
-    @unittest.skipUnless(importlib.util.find_spec("jsonschema"), "jsonschema is optional")
     def test_compact_gate_has_four_closed_semantic_routes(self) -> None:
         from jsonschema import Draft202012Validator
 
