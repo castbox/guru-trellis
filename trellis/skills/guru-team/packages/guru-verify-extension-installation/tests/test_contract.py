@@ -358,6 +358,28 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             {"enum": ["verified", "blocked"]},
         )
 
+    def test_current_executor_facts_are_accepted_by_recorder_schema(self) -> None:
+        runtime = load_runtime()
+        schema = runtime.extension_verification_recorder_input_schema(
+            REPO,
+            "execution-facts.schema.json",
+            "extension verification execution facts",
+        )
+        self.assertEqual(
+            schema["properties"]["schema_version"]["const"],
+            runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION,
+        )
+        facts = load("examples/execution-facts.json")
+        facts["schema_version"] = runtime.EXTENSION_VERIFICATION_SCHEMA_VERSION
+        self.assertEqual(
+            runtime.skill_json_schema_validation_errors(
+                facts,
+                schema,
+                "extension verification execution facts",
+            ),
+            [],
+        )
+
     def test_non_source_rejected_before_executor(self) -> None:
         runtime = load_runtime()
         with tempfile.TemporaryDirectory() as temp:
