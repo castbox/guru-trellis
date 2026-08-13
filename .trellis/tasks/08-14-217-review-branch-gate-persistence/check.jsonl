@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Package/runtime、wrapper lifecycle、equality、drift与targeted发布边界验证口径。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查private checkpoint不泄露到public DTO，retire/retain存在直接consumer。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查recorder先于checker、invoke复检、unsafe/symlink与stale fail-closed。"}
-{"file":".trellis/spec/preset/installer.md","reason":"检查canonical/installed及四平台projection equality、managed inventory和零未知sidecar。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"确认五个Branch Review exits与consumer mapping未被当前修复改变。"}

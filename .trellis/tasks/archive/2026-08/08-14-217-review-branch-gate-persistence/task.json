@@ -2,10 +2,11 @@
   "id": "08-14-217-review-branch-gate-persistence",
   "name": "08-14-217-review-branch-gate-persistence",
   "title": "#217 修复 Branch Review gate 持久化生命周期",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "fix/217-review-branch-gate-persistence",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/217"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/217",
+  "completedAt": "2026-08-14"
 }

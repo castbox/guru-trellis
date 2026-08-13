@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Public Skill I/O、owner-private checkpoint、recorder/checker与typed output生命周期合同。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"确定性recorder/checker/invoke边界、路径安全与runtime side effect规则。"}
-{"file":".trellis/spec/workflow/semantic-retrieval.md","reason":"Branch Review检索与candidate qualification语义边界，防止实现改变semantic ownership。"}
-{"file":".trellis/spec/preset/installer.md","reason":"Canonical/installed/platform projection、managed provenance、apply/reapply与sidecar合同。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"Shared/Codex/Claude/Cursor public projection一致性与dogfood同步规则。"}
