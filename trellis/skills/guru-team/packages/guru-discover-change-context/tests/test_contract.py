@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import copy
 import json
 import shutil
@@ -151,107 +150,106 @@ class ChangeContextPackageContractTests(unittest.TestCase):
         self.assertNotIn(retired_superseded_digest, schema["properties"])
         self.assertNotIn("refresh_history", schema["properties"])
         self.assertEqual(example["skill_id"], "guru-discover-change-context")
-        if importlib.util.find_spec("jsonschema") is not None:
-            from jsonschema import Draft202012Validator
+        from jsonschema import Draft202012Validator
 
-            Draft202012Validator.check_schema(schema)
-            Draft202012Validator.check_schema(recovery_schema)
-            validator = Draft202012Validator(schema)
-            self.assertEqual(list(validator.iter_errors(example)), [])
-            invalid_mem = copy.deepcopy(example)
-            invalid_mem["mem_review"].update({
-                "status": "used",
-                "load_bearing_question": "Which source owns this?",
-                "exhausted_sources": {
-                    "task_artifacts": True,
-                    "current_docs_code_tests": True,
-                    "github": True,
-                    "git_history": True,
-                },
-                "summary": "",
-            })
-            self.assertNotEqual(list(validator.iter_errors(invalid_mem)), [])
-            for field in ("reviewed_scope", "load_bearing_conclusions"):
-                invalid_gate = copy.deepcopy(example)
-                invalid_gate["ai_review_gate"][field] = []
-                self.assertNotEqual(list(validator.iter_errors(invalid_gate)), [])
-            blocked_with_passed_gate = copy.deepcopy(example)
-            blocked_with_passed_gate["typed_exit"] = "blocked"
-            blocked_with_passed_gate["error"] = {
-                "codes": ["semantic_review_blocked"],
-                "summary": "The semantic review could not form safe evidence.",
-            }
-            self.assertNotEqual(
-                list(validator.iter_errors(blocked_with_passed_gate)), []
+        Draft202012Validator.check_schema(schema)
+        Draft202012Validator.check_schema(recovery_schema)
+        validator = Draft202012Validator(schema)
+        self.assertEqual(list(validator.iter_errors(example)), [])
+        invalid_mem = copy.deepcopy(example)
+        invalid_mem["mem_review"].update({
+            "status": "used",
+            "load_bearing_question": "Which source owns this?",
+            "exhausted_sources": {
+                "task_artifacts": True,
+                "current_docs_code_tests": True,
+                "github": True,
+                "git_history": True,
+            },
+            "summary": "",
+        })
+        self.assertNotEqual(list(validator.iter_errors(invalid_mem)), [])
+        for field in ("reviewed_scope", "load_bearing_conclusions"):
+            invalid_gate = copy.deepcopy(example)
+            invalid_gate["ai_review_gate"][field] = []
+            self.assertNotEqual(list(validator.iter_errors(invalid_gate)), [])
+        blocked_with_passed_gate = copy.deepcopy(example)
+        blocked_with_passed_gate["typed_exit"] = "blocked"
+        blocked_with_passed_gate["error"] = {
+            "codes": ["semantic_review_blocked"],
+            "summary": "The semantic review could not form safe evidence.",
+        }
+        self.assertNotEqual(
+            list(validator.iter_errors(blocked_with_passed_gate)), []
+        )
+        blocked_gate_with_ready_exit = copy.deepcopy(example)
+        blocked_gate_with_ready_exit["ai_review_gate"]["status"] = "blocked"
+        self.assertNotEqual(
+            list(validator.iter_errors(blocked_gate_with_ready_exit)), []
+        )
+        valid_blocked = copy.deepcopy(blocked_with_passed_gate)
+        valid_blocked["ai_review_gate"]["status"] = "blocked"
+        self.assertEqual(list(validator.iter_errors(valid_blocked)), [])
+        missing_base_result = copy.deepcopy(example)
+        del missing_base_result["base_evidence"]["sync_result"]
+        self.assertNotEqual(list(validator.iter_errors(missing_base_result)), [])
+        missing_issue_binding = copy.deepcopy(example)
+        missing_issue_binding["live_change"]["issue_binding"] = None
+        self.assertNotEqual(list(validator.iter_errors(missing_issue_binding)), [])
+        closed_source = copy.deepcopy(example)
+        closed_source["live_change"] = {
+            "kind": "issue",
+            "identity": "https://github.com/example/guru-extension/issues/123",
+            "state": "closed",
+            "updated_at": "2026-01-01T00:00:00Z",
+            "body_sha256": "3" * 64,
+            "facts_sha256": "4" * 64,
+            "issue_binding": None,
+        }
+        self.assertEqual(list(validator.iter_errors(closed_source)), [])
+        closed_duplicate = copy.deepcopy(closed_source)
+        closed_duplicate["duplicate_search"]["candidates"] = [{
+            "repo": "example/guru-extension",
+            "number": 99,
+            "identity": "#99",
+            "url": "https://github.com/example/guru-extension/issues/99",
+            "state": "closed",
+            "updated_at": "2026-01-01T00:00:00Z",
+            "facts_sha256": "a" * 64,
+            "reason": "Possible duplicate.",
+            "observation": "Must remain open to be a duplicate candidate.",
+        }]
+        self.assertNotEqual(list(validator.iter_errors(closed_duplicate)), [])
+        empty_change = copy.deepcopy(example)
+        empty_change["change_input"] = {
+            kind: [] for kind in (
+                "issue_refs", "pr_refs", "branches", "paths", "commands",
+                "config_keys", "schema_fields", "symbols", "terms", "queries",
             )
-            blocked_gate_with_ready_exit = copy.deepcopy(example)
-            blocked_gate_with_ready_exit["ai_review_gate"]["status"] = "blocked"
-            self.assertNotEqual(
-                list(validator.iter_errors(blocked_gate_with_ready_exit)), []
-            )
-            valid_blocked = copy.deepcopy(blocked_with_passed_gate)
-            valid_blocked["ai_review_gate"]["status"] = "blocked"
-            self.assertEqual(list(validator.iter_errors(valid_blocked)), [])
-            missing_base_result = copy.deepcopy(example)
-            del missing_base_result["base_evidence"]["sync_result"]
-            self.assertNotEqual(list(validator.iter_errors(missing_base_result)), [])
-            missing_issue_binding = copy.deepcopy(example)
-            missing_issue_binding["live_change"]["issue_binding"] = None
-            self.assertNotEqual(list(validator.iter_errors(missing_issue_binding)), [])
-            closed_source = copy.deepcopy(example)
-            closed_source["live_change"] = {
-                "kind": "issue",
-                "identity": "https://github.com/example/guru-extension/issues/123",
-                "state": "closed",
-                "updated_at": "2026-01-01T00:00:00Z",
-                "body_sha256": "3" * 64,
-                "facts_sha256": "4" * 64,
-                "issue_binding": None,
+        }
+        self.assertNotEqual(list(validator.iter_errors(empty_change)), [])
+        clue_values = {
+            "issue_refs": "#123",
+            "pr_refs": "PR #123",
+            "branches": "feat/context",
+            "paths": "docs/context.md",
+            "commands": "/trellis:continue",
+            "config_keys": "context.mode",
+            "schema_fields": "result_identity",
+            "symbols": "ContextDiscovery",
+            "terms": "change context",
+            "queries": "discover context",
+        }
+        for kind, value in clue_values.items():
+            single = copy.deepcopy(example)
+            single["change_input"] = {
+                clue_kind: [value] if clue_kind == kind else []
+                for clue_kind in clue_values
             }
-            self.assertEqual(list(validator.iter_errors(closed_source)), [])
-            closed_duplicate = copy.deepcopy(closed_source)
-            closed_duplicate["duplicate_search"]["candidates"] = [{
-                "repo": "example/guru-extension",
-                "number": 99,
-                "identity": "#99",
-                "url": "https://github.com/example/guru-extension/issues/99",
-                "state": "closed",
-                "updated_at": "2026-01-01T00:00:00Z",
-                "facts_sha256": "a" * 64,
-                "reason": "Possible duplicate.",
-                "observation": "Must remain open to be a duplicate candidate.",
-            }]
-            self.assertNotEqual(list(validator.iter_errors(closed_duplicate)), [])
-            empty_change = copy.deepcopy(example)
-            empty_change["change_input"] = {
-                kind: [] for kind in (
-                    "issue_refs", "pr_refs", "branches", "paths", "commands",
-                    "config_keys", "schema_fields", "symbols", "terms", "queries",
-                )
-            }
-            self.assertNotEqual(list(validator.iter_errors(empty_change)), [])
-            clue_values = {
-                "issue_refs": "#123",
-                "pr_refs": "PR #123",
-                "branches": "feat/context",
-                "paths": "docs/context.md",
-                "commands": "/trellis:continue",
-                "config_keys": "context.mode",
-                "schema_fields": "result_identity",
-                "symbols": "ContextDiscovery",
-                "terms": "change context",
-                "queries": "discover context",
-            }
-            for kind, value in clue_values.items():
-                single = copy.deepcopy(example)
-                single["change_input"] = {
-                    clue_kind: [value] if clue_kind == kind else []
-                    for clue_kind in clue_values
-                }
-                if kind != "issue_refs":
-                    single["live_change"]["issue_binding"] = None
-                with self.subTest(single_clue=kind):
-                    self.assertEqual(list(validator.iter_errors(single)), [])
+            if kind != "issue_refs":
+                single["live_change"]["issue_binding"] = None
+            with self.subTest(single_clue=kind):
+                self.assertEqual(list(validator.iter_errors(single)), [])
         serialized = json.dumps(example, ensure_ascii=False)
         self.assertNotIn("/Users/", serialized)
         self.assertNotIn(".trellis/workspace/", serialized)

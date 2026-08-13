@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import shutil
 import subprocess
@@ -164,8 +163,6 @@ class UpstreamOwnershipTest(unittest.TestCase):
         )
 
     def test_schema_is_valid_draft_2020_12_and_accepts_inventory(self) -> None:
-        if importlib.util.find_spec("jsonschema") is None:
-            self.skipTest("optional jsonschema dependency is not installed")
         from jsonschema import Draft202012Validator
 
         schema = json.loads((self.repo / ownership.SCHEMA_RELATIVE).read_text(encoding="utf-8"))

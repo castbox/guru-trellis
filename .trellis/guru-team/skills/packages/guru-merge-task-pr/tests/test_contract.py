@@ -88,10 +88,7 @@ class MergeTaskPrContractTest(unittest.TestCase):
             self.assertFalse(forbidden & set(schema["properties"]))
 
     def test_examples_validate_against_independent_schemas(self) -> None:
-        try:
-            import jsonschema
-        except ImportError:
-            self.skipTest("jsonschema is optional")
+        import jsonschema
         for profile in self.interface["public_contracts"]["input"]["profiles"]:
             schema = json.loads((PACKAGE / profile["schema"]["path"]).read_text(encoding="utf-8"))
             example = json.loads((PACKAGE / profile["example"]["path"]).read_text(encoding="utf-8"))

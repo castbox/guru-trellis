@@ -1,0 +1,39 @@
+{
+  "close_issues": [
+    {
+      "number": 219,
+      "reason": "本任务完整实现并验收受管 Python runtime 合同。",
+      "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+      "url": "https://github.com/castbox/guru-trellis/issues/219"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 222,
+      "reason": "累计 release gate，承接完整发布验证。",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    }
+  ],
+  "primary_issue": {
+    "number": 219,
+    "reason": "本任务完整实现并验收受管 Python runtime 合同。",
+    "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+    "url": "https://github.com/castbox/guru-trellis/issues/219"
+  },
+  "related_issues": [
+    {
+      "number": 217,
+      "reason": "固定后续顺序项，本任务不实现。",
+      "title": "修复 guru-review-branch recorder 未持久化 review gate",
+      "url": "https://github.com/castbox/guru-trellis/issues/217"
+    },
+    {
+      "number": 218,
+      "reason": "固定后续顺序项，本任务不实现。",
+      "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/218"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -830,3 +830,22 @@ update and supported version upgrade, managed-hash replacement, unknown-edit
 README commands. Graph cardinalities are derived from the current registry,
 interfaces, and workflow markers; documentation and tests must not preserve
 stale hard-coded counts after package activation.
+
+## Managed Python Runtime Gate
+
+Runtime changes require package/runtime unit tests for stable identity, same-id
+reuse, lock drift, damaged managed runtime repair, candidate failure preserving
+the active pointer, resolver failure JSON, pinned dependency versions, and real
+Draft 2020-12 behavior. Preset tests must prove the runtime contract files are
+in the managed inventory with canonical bytes and executable modes.
+
+At least one focused clean install must use a PATH Python that can create a venv
+but cannot import `jsonschema`, apply the real preset, and execute a real public
+schema-bound wrapper through the installed managed interpreter. The focused
+gate also includes targeted reapply, canonical/installed equality, dogfood drift,
+and a recursive zero-unknown-sidecar check.
+
+This focused gate does not replace the complete extension release verification:
+the full capability suite, marketplace matrix, official Trellis update, complete
+platform throwaway matrix, and business-repository upgrade smoke remain separate
+cumulative release evidence.

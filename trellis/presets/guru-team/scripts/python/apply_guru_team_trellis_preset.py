@@ -79,6 +79,7 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
 })
 SKILL_RUNTIME_KERNEL_PATHS = (
     Path("__init__.py"),
+    Path("bootstrap.py"),
     Path("command.py"),
     Path("compat.py"),
     Path("discovery.py"),
@@ -86,6 +87,10 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("installed.py"),
     Path("io.py"),
     Path("launch.sh"),
+    Path("probe.py"),
+    Path("python-runtime.json"),
+    Path("requirements.lock"),
+    Path("resolve-python.sh"),
     Path("schema.py"),
     Path("validate.py"),
 )
@@ -288,6 +293,99 @@ def run_upstream_ownership_validator(guru_root: Path) -> dict[str, Any]:
             f"{code} {path}"
         )
     return payload
+
+
+def ensure_managed_python_runtime(
+    repo: Path,
+    guru_root: Path,
+    *,
+    activate: bool = False,
+) -> dict[str, Any]:
+    runtime_assets = guru_root / "trellis/skills/guru-team/runtime"
+    bootstrap = runtime_assets / "bootstrap.py"
+    if not bootstrap.is_file() or bootstrap.is_symlink():
+        raise_managed_runtime_error()
+    command = [
+            sys.executable,
+            str(bootstrap),
+            "--repo",
+            str(repo),
+            "--runtime-assets",
+            str(runtime_assets),
+            "--python",
+            sys.executable,
+            "--json",
+        ]
+    if not activate:
+        command.append("--no-activate")
+    proc = subprocess.run(
+        command,
+        cwd=repo,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    raw = proc.stdout.strip() or proc.stderr.strip()
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        payload = {
+            "code": "runtime_dependency_missing",
+            "field_path": "runtime",
+            "dependency": "python-runtime",
+            "runtime_identity": None,
+            "remediation": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
+        }
+        raise SystemExit(json.dumps(payload, sort_keys=True)) from None
+    if proc.returncode != 0 or payload.get("status") != "ok":
+        error = {
+            "code": str(payload.get("code") or "runtime_dependency_missing"),
+            "field_path": str(payload.get("field_path") or "runtime"),
+            "dependency": str(payload.get("dependency") or "python-runtime"),
+            "runtime_identity": payload.get("runtime_identity"),
+            "remediation": str(payload.get("remediation") or "trellis/presets/guru-team/scripts/bash/apply.sh --repo ."),
+        }
+        raise SystemExit(json.dumps(error, sort_keys=True))
+    return payload
+
+
+def raise_managed_runtime_error(runtime_identity: str | None = None) -> None:
+    payload = {
+        "code": "runtime_dependency_missing",
+        "field_path": "runtime",
+        "dependency": "python-runtime",
+        "runtime_identity": runtime_identity,
+        "remediation": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
+    }
+    raise SystemExit(json.dumps(payload, sort_keys=True))
+
+
+def managed_python_interpreter(repo: Path, runtime_identity: str) -> Path:
+    active_path = repo / ".trellis/.runtime/guru-team/python/active.json"
+    try:
+        active = json.loads(active_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        raise_managed_runtime_error(runtime_identity)
+    interpreter = active.get("interpreter") if isinstance(active, dict) else None
+    expected = {
+        f"{runtime_identity}/venv/bin/python",
+        f"{runtime_identity}/venv/Scripts/python.exe",
+    }
+    if interpreter not in expected:
+        raise_managed_runtime_error(runtime_identity)
+    path = repo / ".trellis/.runtime/guru-team/python" / str(interpreter)
+    if not path.is_file() or not os.access(path, os.X_OK):
+        raise_managed_runtime_error(runtime_identity)
+    return path
+
+
+def prepared_python_interpreter(repo: Path, runtime_identity: str) -> Path:
+    relative = Path(runtime_identity) / "venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    path = repo / ".trellis/.runtime/guru-team/python" / relative
+    if not path.is_file() or not os.access(path, os.X_OK):
+        raise_managed_runtime_error(runtime_identity)
+    return path
 
 
 def is_mutable_ref(ref: str | None, exact_tag: str | None) -> bool | None:
@@ -861,6 +959,7 @@ def run_skill_package_validator(
     repo: Path,
     guru_root: Path,
     mode: str,
+    python: Path | None = None,
 ) -> dict[str, Any]:
     runtime_root = (
         guru_root / "trellis/skills/guru-team"
@@ -874,7 +973,7 @@ def run_skill_package_validator(
         else ""
     )
     proc = subprocess.run(
-        [sys.executable, "-m", "runtime.validate", "--json", "--mode", mode, "--root", str(repo)],
+        [str(python or sys.executable), "-m", "runtime.validate", "--json", "--mode", mode, "--root", str(repo)],
         cwd=repo,
         env=environment,
         text=True,
@@ -1736,6 +1835,7 @@ def validate_staged_graph_without_recovery_backups(
     staging_repo: Path,
     guru_root: Path,
     result: dict[str, Any],
+    python: Path,
 ) -> dict[str, Any]:
     if not managed_backup_recovery_candidate(result):
         return result["skill_installed_validation"]
@@ -1778,7 +1878,7 @@ def validate_staged_graph_without_recovery_backups(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
-        return run_skill_package_validator(staging_repo, guru_root, "installed")
+        return run_skill_package_validator(staging_repo, guru_root, "installed", python)
     finally:
         manifest_path.write_bytes(original_manifest)
         for parked, sidecar in reversed(moved):
@@ -1798,11 +1898,12 @@ def install_assets(
 
     guru_root = guru_root_from_script()
     upstream_ownership_validation = run_upstream_ownership_validator(guru_root)
-    source_validation = run_skill_package_validator(guru_root, guru_root, "source")
+    repo = Path(os.path.abspath(repo))
+    python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False)
+    managed_python = prepared_python_interpreter(repo, str(python_runtime["runtime_identity"]))
+    source_validation = run_skill_package_validator(guru_root, guru_root, "source", managed_python)
     if source_validation.get("returncode") != 0:
         raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")
-
-    repo = Path(os.path.abspath(repo))
     dst_relative = lexical_repo_relative(repo, dst)
     with tempfile.TemporaryDirectory(prefix="guru-team-preset-stage-") as temporary:
         staging_repo = Path(temporary) / "repo"
@@ -1815,7 +1916,9 @@ def install_assets(
             all_platforms=all_platforms,
             source_validation=source_validation,
             upstream_ownership_validation=upstream_ownership_validation,
+            managed_python=managed_python,
         )
+        result["python_runtime"] = python_runtime
         skill_packages = result["skill_packages"]
         overlays = result["overlays"]
         installed_validation = result["skill_installed_validation"]
@@ -1827,7 +1930,12 @@ def install_assets(
         activation_validation = (
             installed_validation
             if activation_ready
-            else validate_staged_graph_without_recovery_backups(staging_repo, guru_root, result)
+            else validate_staged_graph_without_recovery_backups(
+                staging_repo,
+                guru_root,
+                result,
+                managed_python,
+            )
         )
         result["skill_activation_validation"] = activation_validation
         recoverable_activation_ready = (
@@ -1836,6 +1944,9 @@ def install_assets(
         )
         if activation_ready or recoverable_activation_ready:
             activate_staged_repository(staging_repo, repo)
+            activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True)
+            if activated_runtime.get("runtime_identity") != python_runtime.get("runtime_identity"):
+                raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
         else:
             materialize_staged_conflict_sidecars(staging_repo, repo, result)
         return result
@@ -1850,6 +1961,7 @@ def _install_assets_in_place(
     *,
     source_validation: dict[str, Any],
     upstream_ownership_validation: dict[str, Any],
+    managed_python: Path,
 ) -> dict[str, Any]:
     guru_root = guru_root_from_script()
     previous_manifest = load_previous_installed_manifest(dst)
@@ -2025,7 +2137,12 @@ def _install_assets_in_place(
     rel_extension = (dst / "extension.json").relative_to(repo).as_posix()
     result["extension_manifest"] = rel_extension
     result["guru_team_extension"] = extension_summary(manifest, source)
-    result["skill_installed_validation"] = run_skill_package_validator(repo, guru_root, "installed")
+    result["skill_installed_validation"] = run_skill_package_validator(
+        repo,
+        guru_root,
+        "installed",
+        managed_python,
+    )
     return result
 
 
@@ -2251,6 +2368,7 @@ def main() -> int:
         "skill_source_validation": result["skill_source_validation"],
         "upstream_ownership_validation": result["upstream_ownership_validation"],
         "skill_installed_validation": result["skill_installed_validation"],
+        "python_runtime": result["python_runtime"],
         "config": ".trellis/guru-team/config.yml",
         "workflow_marketplace": WORKFLOW_MARKETPLACE,
         "public_workflow_marketplace": WORKFLOW_MARKETPLACE,

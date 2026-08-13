@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import importlib.util
 import json
 import shutil
 import subprocess
@@ -126,7 +125,6 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                 self.assertIn("not self-contained or portable", result.stderr)
                 self.assertIn("Install or upgrade the complete Guru Team preset", result.stderr)
 
-    @unittest.skipIf(importlib.util.find_spec("jsonschema") is None, "jsonschema unavailable")
     def test_closed_schema_and_core_invariants(self) -> None:
         from jsonschema import Draft202012Validator
 
@@ -215,7 +213,6 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotIn(".trellis/workspace/", serialized)
         self.assertNotIn(".trellis/.runtime/", serialized)
 
-    @unittest.skipIf(importlib.util.find_spec("jsonschema") is None, "jsonschema unavailable")
     def test_action_bodies_allow_multiline_markdown_and_reject_controls(self) -> None:
         from jsonschema import Draft202012Validator
 

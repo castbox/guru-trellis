@@ -1,0 +1,12 @@
+{
+  "id": "219-managed-python-runtime",
+  "name": "219-managed-python-runtime",
+  "title": "#219 为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+  "status": "completed",
+  "branch": "feat/219-managed-python-runtime",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/219",
+  "completedAt": "2026-08-14"
+}

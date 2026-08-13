@@ -27,6 +27,99 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 
 
+_RUNTIME_RESULT = {
+    "status": "ok",
+    "action": "reused",
+    "runtime_identity": "0123456789abcdef01234567",
+}
+_ensure_managed_python_runtime = preset.ensure_managed_python_runtime
+_managed_python_interpreter = preset.managed_python_interpreter
+_runtime_patchers: list[mock._patch] = []
+
+
+def setUpModule() -> None:
+    _runtime_patchers.extend([
+        mock.patch.object(
+            preset,
+            "ensure_managed_python_runtime",
+            return_value=_RUNTIME_RESULT,
+        ),
+        mock.patch.object(
+            preset,
+            "managed_python_interpreter",
+            return_value=Path(sys.executable),
+        ),
+        mock.patch.object(
+            preset,
+            "prepared_python_interpreter",
+            return_value=Path(sys.executable),
+        ),
+    ])
+    for patcher in _runtime_patchers:
+        patcher.start()
+
+
+def tearDownModule() -> None:
+    for patcher in reversed(_runtime_patchers):
+        patcher.stop()
+
+
+class ManagedPythonBootstrapBoundaryTest(unittest.TestCase):
+    def test_helper_returns_success_payload(self) -> None:
+        completed = subprocess.CompletedProcess(
+            ["bootstrap"],
+            0,
+            json.dumps(_RUNTIME_RESULT),
+            "",
+        )
+        with mock.patch.object(preset.subprocess, "run", return_value=completed):
+            with tempfile.TemporaryDirectory() as tmp:
+                result = _ensure_managed_python_runtime(
+                    Path(tmp),
+                    preset.guru_root_from_script(),
+                )
+        self.assertEqual(result, _RUNTIME_RESULT)
+
+    def test_helper_preserves_stable_failure_json_without_traceback(self) -> None:
+        failure = {
+            "code": "runtime_dependency_missing",
+            "field_path": "runtime",
+            "dependency": "jsonschema",
+            "runtime_identity": "0123456789abcdef01234567",
+            "remediation": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
+            "detail": "network unavailable",
+        }
+        completed = subprocess.CompletedProcess(
+            ["bootstrap"],
+            2,
+            json.dumps(failure),
+            "",
+        )
+        with mock.patch.object(preset.subprocess, "run", return_value=completed):
+            with tempfile.TemporaryDirectory() as tmp:
+                with self.assertRaises(SystemExit) as raised:
+                    _ensure_managed_python_runtime(
+                        Path(tmp),
+                        preset.guru_root_from_script(),
+                    )
+        payload = json.loads(str(raised.exception))
+        self.assertEqual(set(payload), {"code", "field_path", "dependency", "runtime_identity", "remediation"})
+        self.assertEqual(payload["runtime_identity"], failure["runtime_identity"])
+        self.assertNotIn("detail", payload)
+
+    def test_active_pointer_failure_uses_stable_runtime_json(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(SystemExit) as raised:
+                _managed_python_interpreter(
+                    Path(tmp),
+                    "0123456789abcdef01234567",
+                )
+        payload = json.loads(str(raised.exception))
+        self.assertEqual(set(payload), {"code", "field_path", "dependency", "runtime_identity", "remediation"})
+        self.assertEqual(payload["code"], "runtime_dependency_missing")
+        self.assertEqual(payload["runtime_identity"], "0123456789abcdef01234567")
+
+
 STAGE0_SKILL_IDS = (
     "guru-sync-base",
     "guru-discover-change-context",
@@ -1999,9 +2092,18 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertEqual(developer_identity.read_bytes(), identity_bytes)
 
     def test_current_reapply_remains_valid(self) -> None:
-        completed = self.install_current()
+        with mock.patch.object(
+            preset,
+            "ensure_managed_python_runtime",
+            return_value=_RUNTIME_RESULT,
+        ) as runtime:
+            completed = self.install_current()
 
         self.assertEqual(completed["skill_packages"]["status"], "ok")
+        self.assertEqual(
+            [call.kwargs["activate"] for call in runtime.call_args_list],
+            [False, True],
+        )
         self.assertEqual(completed["skill_packages"]["sidecars"], [])
         self.assertEqual(completed["skill_installed_validation"]["returncode"], 0)
         self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
@@ -2020,6 +2122,11 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             if path.is_file()
         }
         self.assertEqual(installed, set(preset.SKILL_RUNTIME_KERNEL_PATHS))
+        for relative in preset.SKILL_RUNTIME_KERNEL_PATHS:
+            source = self.guru_root / "trellis/skills/guru-team/runtime" / relative
+            target = runtime_root / relative
+            self.assertEqual(target.read_bytes(), source.read_bytes())
+            self.assertEqual(bool(target.stat().st_mode & 0o100), bool(source.stat().st_mode & 0o100))
         self.assertFalse((runtime_root / "tests").exists())
         self.assertFalse((runtime_root / "__pycache__").exists())
         self.assertFalse(any(path.suffix in {".pyc", ".pyo"} for path in installed))
@@ -2043,9 +2150,18 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         before = self.managed_graph_snapshot()
         extension_before = (self.install_dst / "extension.json").read_bytes()
 
-        result = self.install_current()
+        with mock.patch.object(
+            preset,
+            "ensure_managed_python_runtime",
+            return_value=_RUNTIME_RESULT,
+        ) as runtime:
+            result = self.install_current()
 
         self.assertEqual(result["skill_packages"]["status"], "conflict")
+        self.assertEqual(
+            [call.kwargs["activate"] for call in runtime.call_args_list],
+            [False],
+        )
         self.assertNotEqual(result["skill_installed_validation"]["returncode"], 0)
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assertEqual((self.install_dst / "extension.json").read_bytes(), extension_before)
@@ -2074,9 +2190,14 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         before = self.managed_graph_snapshot()
         original_validator = preset.run_skill_package_validator
 
-        def forced_validation(repo: Path, guru_root: Path, mode: str) -> dict[str, object]:
+        def forced_validation(
+            repo: Path,
+            guru_root: Path,
+            mode: str,
+            python: Path | None = None,
+        ) -> dict[str, object]:
             if mode == "source":
-                return original_validator(repo, guru_root, mode)
+                return original_validator(repo, guru_root, mode, python)
             return {
                 "status": "failed",
                 "mode": "installed",
@@ -2086,9 +2207,18 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             }
 
         with mock.patch.object(preset, "run_skill_package_validator", side_effect=forced_validation):
-            result = self.install_current()
+            with mock.patch.object(
+                preset,
+                "ensure_managed_python_runtime",
+                return_value=_RUNTIME_RESULT,
+            ) as runtime:
+                result = self.install_current()
 
         self.assertEqual(result["skill_installed_validation"]["errors"], ["forced installed validation failure"])
+        self.assertEqual(
+            [call.kwargs["activate"] for call in runtime.call_args_list],
+            [False],
+        )
         self.assertEqual(self.managed_graph_snapshot(), before)
         self.assert_stage0_contract_state("guru-team-skill-interface-1.4", "1.4")
 
