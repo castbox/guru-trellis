@@ -1332,6 +1332,26 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'assert (target / ".trellis/spec/workflow/semantic-retrieval.md").is_file()',
             verifier,
         )
+        grading_path = (
+            self.guru_root
+            / "trellis/presets/guru-team/tests/semantic-retrieval-grading.json"
+        )
+        grading = json.loads(grading_path.read_text(encoding="utf-8"))
+        self.assertEqual(grading["schema_version"], "1.0")
+        self.assertEqual(
+            {(item["case_id"], item["assertion_id"]) for item in grading["results"]},
+            {
+                ("clear-route", "bilingual-history-decision"),
+                ("clear-route", "single-language-negative-blocked"),
+                ("context-ready-route", "bilingual-current-evidence"),
+                ("context-ready-route", "exact-literal-preserved"),
+            },
+        )
+        self.assertTrue(all(item["passed"] for item in grading["results"]))
+        self.assertEqual(
+            verifier.count('--semantic-grading "$SEMANTIC_RETRIEVAL_GRADING"'),
+            2,
+        )
 
         preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
         preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)

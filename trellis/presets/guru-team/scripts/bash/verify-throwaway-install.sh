@@ -8,6 +8,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+SEMANTIC_RETRIEVAL_GRADING="$REPO_ROOT/trellis/presets/guru-team/tests/semantic-retrieval-grading.json"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 
 if [[ -z "$WORK_DIR" ]]; then
@@ -304,6 +305,7 @@ verify_requirements_clarification_exits() {
       --skill guru-clarify-requirements \
       --adapter shared \
       --run-root "$WORK_DIR/requirements-clarification-$label" \
+      --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING" \
       --json
   )"
   python3 -c '
@@ -327,6 +329,7 @@ verify_context_discovery_exits() {
       --skill guru-discover-change-context \
       --adapter shared \
       --run-root "$WORK_DIR/context-discovery-$label" \
+      --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING" \
       --json
   )"
   python3 -c '

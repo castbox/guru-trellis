@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "results": [
+    {
+      "case_id": "clear-route",
+      "comparison_side": "current",
+      "assertion_id": "bilingual-history-decision",
+      "passed": true,
+      "summary": "The fixture relates English stale context authority to Chinese 上下文过期 history evidence before deciding that the prior decision exists."
+    },
+    {
+      "case_id": "clear-route",
+      "comparison_side": "current",
+      "assertion_id": "single-language-negative-blocked",
+      "passed": true,
+      "summary": "The fixture explicitly rejects the English-only zero-result conclusion as insufficient evidence."
+    },
+    {
+      "case_id": "context-ready-route",
+      "comparison_side": "current",
+      "assertion_id": "bilingual-current-evidence",
+      "passed": true,
+      "summary": "The fixture relates Chinese 发布门禁 Docs evidence to the English release_gate implementation."
+    },
+    {
+      "case_id": "context-ready-route",
+      "comparison_side": "current",
+      "assertion_id": "exact-literal-preserved",
+      "passed": true,
+      "summary": "The fixture preserves OBJECT_ACCESS_DENIED as an exact literal lookup without translation."
+    }
+  ]
+}
