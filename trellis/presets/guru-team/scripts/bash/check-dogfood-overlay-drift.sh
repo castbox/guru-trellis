@@ -11,7 +11,8 @@ Usage: check-dogfood-overlay-drift.sh [--repo <path>]
 
 Validate the current Guru-owned claims and managed asset/package closure, then
 compare the three canonical Guru Team finish overlays
-with installed dogfood copies in this repository. These digests provide normal
+with installed dogfood copies in this repository, and verify the managed
+semantic retrieval spec exists. These checks provide normal
 version/drift binding, not an authenticity boundary. The command is read-only
 and exits non-zero on ownership failure or when any finish overlay copy is
 missing or different.
@@ -72,6 +73,16 @@ while IFS= read -r source; do
     changed=$((changed + 1))
   fi
 done < <(find "$OVERLAY_ROOT" -type f ! -path '*/__pycache__/*' ! -name '*.pyc' | sort)
+
+semantic_spec_source="$REPO_ROOT/trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"
+semantic_spec="$REPO_ROOT/.trellis/spec/workflow/semantic-retrieval.md"
+if [[ ! -f "$semantic_spec_source" || ! -f "$semantic_spec" ]]; then
+  printf 'MISSING %s\n' ".trellis/spec/workflow/semantic-retrieval.md"
+  missing=$((missing + 1))
+elif ! cmp -s "$semantic_spec_source" "$semantic_spec"; then
+  printf 'CHANGED %s\n' ".trellis/spec/workflow/semantic-retrieval.md"
+  changed=$((changed + 1))
+fi
 
 if [[ "$missing" -gt 0 || "$changed" -gt 0 ]]; then
   printf 'Dogfood overlay drift detected: %s missing, %s changed\n' "$missing" "$changed" >&2

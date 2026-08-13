@@ -13,6 +13,11 @@ Load [references/contract.md](references/contract.md). Execute its semantic
 closed loop in the declared order, complete the AI Review Gate before any
 recorder/validator, then return exactly one declared typed exit.
 
+Before current-state, duplicate, or history retrieval, read
+`.trellis/spec/workflow/semantic-retrieval.md` and apply that shared contract in
+this Skill's semantic evidence gate. A one-language zero result cannot establish
+that a mechanism, duplicate, or historical decision is absent.
+
 Use the dispatcher-only wrappers for history preview, owner-result recording,
 and owner-result checking. Normal recording/checking is stdin/stdout-only and
 does not create a repository artifact. A caller-authored `refresh_base` result

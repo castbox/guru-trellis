@@ -23,6 +23,9 @@ Before editing workflow behavior:
 4. Read [skill-package-contract.md](./skill-package-contract.md) when changing public workflow skills, registry/interface schemas, workflow markers, installation, or typed exits.
 5. Read [quality-guidelines.md](./quality-guidelines.md) before validation or commit.
 6. Read shared guides under `.trellis/spec/guides/` when the change touches multiple generated surfaces or payload contracts.
+7. Read [semantic-retrieval.md](./semantic-retrieval.md) before an owner searches
+   Docs, code, tests, history, duplicate candidates, or consumers and may form a
+   negative existence conclusion.
 
 ## Local Architecture
 

@@ -23,6 +23,10 @@ Conversations get compacted; files don't. Every research output MUST end up as a
 3. **Persist** — write each research topic to `{TASK_DIR}/research/<topic>.md`
 4. **Report** — return file paths + one-line summaries to the main agent (not full content)
 
+Before searching, read `.trellis/spec/workflow/semantic-retrieval.md` and apply
+its concept-family and negative-conclusion contract. Persist research findings,
+not raw query transcripts or search-process metadata.
+
 ---
 
 ## Workflow

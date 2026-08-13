@@ -34,6 +34,18 @@
             "kind": "trace",
             "invariant": "private_runtime_not_read_by_agent"
           }
+        ],
+        "semantic": [
+          {
+            "id": "legacy-alias-consumer-coverage",
+            "criterion": "The semantic round treats workspace mapping, legacy handoff map, and exact workspace_ref as one concept family when checking consumers.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "exact-symbol-preserved",
+            "criterion": "Exact symbol reviewed_content_sha256 is searched unchanged and is not translated or paraphrased for exact lookup.",
+            "evidence_selector": "transcript"
+          }
         ]
       },
       "files": ["evals/files/passed-initial-input.json", "evals/files/passed-initial-facts.json"]

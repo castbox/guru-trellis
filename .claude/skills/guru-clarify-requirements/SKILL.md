@@ -13,6 +13,11 @@ For active-task scope change, the canonical workflow mandatory invokes this
 same Skill with an exact caller-aware `resume_target`; no caller may duplicate
 classification, ledger, or planning-update semantics.
 
+Before answering repository-searchable questions or evaluating duplicate and
+prior-decision evidence, read `.trellis/spec/workflow/semantic-retrieval.md` and
+apply it in this Skill's semantic gate. Do not infer absence from a
+single-language zero result or expose the query process through the public DTO.
+
 Load [references/contract.md](references/contract.md) and
 `trellis-brainstorm`. Execute the semantic closed loop in its declared order,
 ask at most one highest-value question per round, complete the AI Review Gate

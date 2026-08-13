@@ -1,0 +1,32 @@
+{
+  "close_issues": [
+    {
+      "number": 169,
+      "reason": "The current readiness scope identifies this delivery authority.",
+      "title": "改进：统一 Guru Team 中英文概念族语义检索合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/169"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 169,
+    "reason": "The current readiness scope identifies this delivery authority.",
+    "title": "改进：统一 Guru Team 中英文概念族语义检索合同",
+    "url": "https://github.com/castbox/guru-trellis/issues/169"
+  },
+  "related_issues": [
+    {
+      "number": 108,
+      "reason": "Related independent scope; this task does not close or modify it.",
+      "title": "Phase 2 代码与 Docs SSOT 减法审计",
+      "url": "https://github.com/castbox/guru-trellis/issues/108"
+    },
+    {
+      "number": 164,
+      "reason": "Related independent scope; this task does not close or modify it.",
+      "title": "流程风险分级",
+      "url": "https://github.com/castbox/guru-trellis/issues/164"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -7,6 +7,10 @@ description: "Comprehensive quality verification: spec compliance, lint, type-ch
 
 Comprehensive quality verification for recently written code. Combines spec compliance, cross-layer safety, and pre-commit checks.
 
+Before searching Docs, code, tests, fixtures, history, or consumers, read
+`.trellis/spec/workflow/semantic-retrieval.md` and apply it when judging
+coverage or any negative existence conclusion. Keep query process transient.
+
 ---
 
 ## Step 1: Identify What Changed

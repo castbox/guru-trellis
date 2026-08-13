@@ -667,6 +667,106 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
+    def test_semantic_spec_unknown_collision_is_preserved_with_new_sidecar(self) -> None:
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("# Local semantic contract\n", encoding="utf-8")
+
+        result = preset.copy_managed_spec(
+            self.guru_root / source_relative, target, self.repo, None
+        )
+
+        self.assertEqual(result["action"], "conflict")
+        self.assertEqual(target.read_text(encoding="utf-8"), "# Local semantic contract\n")
+        self.assertEqual(
+            target.with_name(f"{target.name}.new").read_bytes(),
+            (self.guru_root / source_relative).read_bytes(),
+        )
+
+    def test_semantic_spec_declared_managed_upgrade_uses_backup(self) -> None:
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        old = b"# Prior managed semantic contract\n"
+        target.write_bytes(old)
+        previous = {
+            "install": {
+                "managed_assets": [target_relative.as_posix()],
+                "managed_asset_hashes": {
+                    target_relative.as_posix(): hashlib.sha256(old).hexdigest(),
+                },
+            }
+        }
+
+        result = preset.copy_managed_spec(
+            self.guru_root / source_relative, target, self.repo, previous
+        )
+
+        self.assertEqual(result["action"], "updated_managed")
+        self.assertEqual(target.read_bytes(), (self.guru_root / source_relative).read_bytes())
+        self.assertEqual(target.with_name(f"{target.name}.bak").read_bytes(), old)
+
+    def test_semantic_spec_user_edit_is_preserved_on_reapply(self) -> None:
+        first = self.install({"codex", "cursor"})
+        self.assertEqual(first["skill_packages"]["status"], "ok")
+        _, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        local = target.read_bytes() + b"\n# Local semantic extension\n"
+        target.write_bytes(local)
+        manifest_before = (self.install_dst / "extension.json").read_bytes()
+
+        second = self.install({"codex", "cursor"})
+
+        sidecar = target.with_name(f"{target.name}.new")
+        self.assertEqual(second["skill_packages"]["status"], "conflict")
+        self.assertEqual(target.read_bytes(), local)
+        self.assertEqual(
+            sidecar.read_bytes(),
+            (self.guru_root / preset.MANAGED_SPEC_PATHS[0][0]).read_bytes(),
+        )
+        self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
+        self.assertEqual(
+            [item["reason"] for item in second["skill_packages"]["conflicts"]],
+            ["unknown_local_spec_edit"],
+        )
+
+    def test_semantic_spec_equal_legacy_manifest_reapply_backfills_hash(self) -> None:
+        first = self.install({"codex", "cursor"})
+        self.assertEqual(first["skill_packages"]["status"], "ok")
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        canonical = (self.guru_root / source_relative).read_bytes()
+        self.assertEqual(target.read_bytes(), canonical)
+        manifest_path = self.install_dst / "extension.json"
+        legacy = json.loads(manifest_path.read_text(encoding="utf-8"))
+        legacy["install"].pop("managed_asset_hashes")
+        manifest_path.write_text(
+            json.dumps(legacy, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        second = self.install({"codex", "cursor"})
+
+        self.assertEqual(second["skill_packages"]["status"], "ok")
+        self.assertEqual(second["skill_installed_validation"]["status"], "passed")
+        self.assertIn(target_relative.as_posix(), second["unchanged"])
+        installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            installed["install"]["managed_asset_hashes"],
+            {
+                target_relative.as_posix(): hashlib.sha256(canonical).hexdigest(),
+            },
+        )
+        self.assertEqual(
+            sorted(
+                path.relative_to(self.repo).as_posix()
+                for path in self.repo.rglob("*")
+                if path.is_file() and path.suffix in {".new", ".bak"}
+            ),
+            [],
+        )
+
     def test_legacy_runtime_absence_is_a_clean_initial_install(self) -> None:
         removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
             self.repo, self.install_dst
@@ -1115,13 +1215,25 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(installed_manifest["install"]["all_platforms"])
         self.assertEqual(
             len(managed_assets),
-            len(preset.MANAGED_ASSET_PATHS) + len(GURU_FINISH_ENTRIES) + 1,
+            len(preset.MANAGED_ASSET_PATHS)
+            + len(preset.MANAGED_SPEC_PATHS)
+            + len(GURU_FINISH_ENTRIES)
+            + 1,
         )
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertNotIn(installed_integration_path, managed_assets)
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
             [],
+        )
+        semantic_spec = ".trellis/spec/workflow/semantic-retrieval.md"
+        self.assertIn(semantic_spec, managed_assets)
+        self.assertEqual(
+            (self.repo / semantic_spec).read_bytes(),
+            (
+                self.guru_root
+                / "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"
+            ).read_bytes(),
         )
         integration_records = [
             record
@@ -1279,6 +1391,34 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn(retired_private_schema, verifier)
         self.assertNotIn("test_issue_174_controlled_replay_is_one_chained_session", verifier)
         self.assertNotIn("GURU_ISSUE_174_REPLAY_REPORT", verifier)
+        self.assertIn(
+            'assert (root / ".trellis/spec/workflow/semantic-retrieval.md").is_file()',
+            verifier,
+        )
+        self.assertNotIn(
+            'assert (target / ".trellis/spec/workflow/semantic-retrieval.md").is_file()',
+            verifier,
+        )
+        grading_path = (
+            self.guru_root
+            / "trellis/presets/guru-team/tests/semantic-retrieval-grading.json"
+        )
+        grading = json.loads(grading_path.read_text(encoding="utf-8"))
+        self.assertEqual(grading["schema_version"], "1.0")
+        self.assertEqual(
+            {(item["case_id"], item["assertion_id"]) for item in grading["results"]},
+            {
+                ("clear-route", "bilingual-history-decision"),
+                ("clear-route", "single-language-negative-blocked"),
+                ("context-ready-route", "bilingual-current-evidence"),
+                ("context-ready-route", "exact-literal-preserved"),
+            },
+        )
+        self.assertTrue(all(item["passed"] for item in grading["results"]))
+        self.assertEqual(
+            verifier.count('--semantic-grading "$SEMANTIC_RETRIEVAL_GRADING"'),
+            4,
+        )
 
         preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
         preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)
@@ -1387,6 +1527,27 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('payload["developer_identity_preserved"] is True', verifier)
         self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
         self.assertEqual(verifier.count("verify_installed_phase0_transcript.py"), 2)
+        self.assertEqual(
+            verifier.count(
+                'verify_installed_phase0_transcript.py" --installed-repo "$TARGET" '
+                '--work-root "$WORK_DIR/installed-phase0-transcript-'
+            ),
+            2,
+        )
+        self.assertEqual(
+            verifier.count(
+                '--checkpoint initial-install --semantic-grading '
+                '"$SEMANTIC_RETRIEVAL_GRADING"'
+            ),
+            1,
+        )
+        self.assertEqual(
+            verifier.count(
+                '--checkpoint update-reapply --semantic-grading '
+                '"$SEMANTIC_RETRIEVAL_GRADING"'
+            ),
+            1,
+        )
         self.assertIn("installed-phase0-transcript-initial", verifier)
         self.assertIn("installed-phase0-transcript-after-update", verifier)
         self.assertIn('payload["exit_family_count"] == 23', verifier)
@@ -1417,7 +1578,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn(
-            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
+            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(preset.MANAGED_SPEC_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
             verifier,
         )
         self.assertIn('ownership["schema_version"] == "3.0"', verifier)
@@ -1482,6 +1643,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("guru_team_trellis.py", installed_phase0)
         self.assertIn('"--invocation",', installed_phase0)
         self.assertIn('"-",', installed_phase0)
+        self.assertIn('parser.add_argument("--semantic-grading", required=True)', installed_phase0)
+        self.assertIn('"--semantic-grading",\n                    semantic_grading,', installed_phase0)
+        self.assertNotIn('"passed": True', installed_phase0)
         self.assertIn("actual_exit != expected_exit", installed_phase0)
         self.assertIn('len(actual_pairs) != 23', installed_phase0)
         self.assertIn("create-task-workspace.sh", installed_phase0)
@@ -2110,6 +2274,15 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
         self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
+        semantic_source, semantic_target = preset.MANAGED_SPEC_PATHS[0]
+        self.assertEqual(
+            installed["install"]["managed_asset_hashes"],
+            {
+                semantic_target.as_posix(): hashlib.sha256(
+                    (self.guru_root / semantic_source).read_bytes()
+                ).hexdigest(),
+            },
+        )
         self.assertIn("observed at apply time", installed["notes"])
         self.assertIn("not a claim", installed["notes"])
         self.assertEqual(payload["extension_manifest"], ".trellis/guru-team/extension.json")

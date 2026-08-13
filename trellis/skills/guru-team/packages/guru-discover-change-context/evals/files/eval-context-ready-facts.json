@@ -5,6 +5,16 @@
     "checker_required": true,
     "missing_evidence": []
   },
+  "semantic_retrieval_fixture": {
+    "concept_family": ["发布门禁", "release gate", "release_gate", "OBJECT_ACCESS_DENIED"],
+    "evidence": [
+      "Docs define 发布门禁 as the required pre-publication check.",
+      "The implementation exposes the same mechanism as release_gate.",
+      "The production failure retains the exact error text OBJECT_ACCESS_DENIED."
+    ],
+    "rejected_conclusion": "No release gate exists because a Chinese-only code search returned zero results.",
+    "expected_disposition": "Relate 发布门禁 to release_gate and preserve OBJECT_ACCESS_DENIED as an exact lookup before concluding coverage."
+  },
   "owner_staging": {
     "recipe": "context-ready"
   },

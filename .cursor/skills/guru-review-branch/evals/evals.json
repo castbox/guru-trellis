@@ -16,6 +16,18 @@
           {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
           {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
           {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ],
+        "semantic": [
+          {
+            "id": "bilingual-impact-coverage",
+            "criterion": "The complete-range review relates Chinese Docs and English implementation terminology before concluding that an implementation, test, or consumer is absent.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "query-count-not-gate",
+            "criterion": "Review sufficiency is based on applicable concept and evidence coverage, not counts of rg, GitHub search, or trellis mem calls.",
+            "evidence_selector": "transcript"
+          }
         ]
       },
       "files": ["evals/files/workflow-passed-input.json", "evals/files/workflow-passed-facts.json"]

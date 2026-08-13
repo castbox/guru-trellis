@@ -19,7 +19,54 @@ def load(relative: str):
     return json.loads((PACKAGE / relative).read_text(encoding="utf-8"))
 
 
+def load_runtime():
+    runtime_path = PACKAGE / "runtime/owner.py"
+    spec = importlib.util.spec_from_file_location("finalize_task_package_runtime", runtime_path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+GTT = load_runtime()
+
+
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_provenance_tail_accepts_only_semantic_spec_managed_hash(self) -> None:
+        head = "a" * 40
+        before = {
+            "installed_at": "before",
+            "source": {"ref": "before", "commit": "before", "tree_state": "dirty", "is_mutable_ref": True},
+            "install": {"managed_assets": [".trellis/spec/workflow/semantic-retrieval.md"]},
+        }
+        after = {
+            "installed_at": "after",
+            "source": {"ref": head, "commit": head, "tree_state": "clean", "is_mutable_ref": False},
+            "install": {
+                "managed_assets": [".trellis/spec/workflow/semantic-retrieval.md"],
+                "managed_asset_hashes": {
+                    ".trellis/spec/workflow/semantic-retrieval.md": "b" * 64,
+                },
+            },
+        }
+
+        self.assertEqual(GTT.provenance_tail_manifest_errors(before, after, head), [])
+
+        for field, value in (
+            ("unexpected_install_field", True),
+            ("managed_asset_hashes", {".trellis/spec/workflow/other.md": "c" * 64}),
+        ):
+            with self.subTest(field=field):
+                invalid = json.loads(json.dumps(after))
+                if field == "managed_asset_hashes":
+                    invalid["install"][field].update(value)
+                else:
+                    invalid["install"][field] = value
+                self.assertIn(
+                    "provenance_tail_manifest_fields_outside_allowlist",
+                    GTT.provenance_tail_manifest_errors(before, invalid, head),
+                )
+
     def test_invoke_unwraps_public_input_locator_before_gate_check(self) -> None:
         sys.path.insert(0, str(PACKAGE.parents[1]))
         sys.path.insert(0, str(PACKAGE / "runtime"))

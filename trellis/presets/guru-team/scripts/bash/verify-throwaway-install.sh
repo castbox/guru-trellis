@@ -8,6 +8,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
 OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+SEMANTIC_RETRIEVAL_GRADING="$REPO_ROOT/trellis/presets/guru-team/tests/semantic-retrieval-grading.json"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 
 if [[ -z "$WORK_DIR" ]]; then
@@ -304,6 +305,7 @@ verify_requirements_clarification_exits() {
       --skill guru-clarify-requirements \
       --adapter shared \
       --run-root "$WORK_DIR/requirements-clarification-$label" \
+      --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING" \
       --json
   )"
   python3 -c '
@@ -327,6 +329,7 @@ verify_context_discovery_exits() {
       --skill guru-discover-change-context \
       --adapter shared \
       --run-root "$WORK_DIR/context-discovery-$label" \
+      --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING" \
       --json
   )"
   python3 -c '
@@ -974,7 +977,9 @@ assert extension["extension_id"] == "guru-team"
 assert extension["version"] == "0.6.5-guru.27"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 62
+assert len(assets) == 63
+assert ".trellis/spec/workflow/semantic-retrieval.md" in assets
+assert (root / ".trellis/spec/workflow/semantic-retrieval.md").is_file()
 assert all((root / path).is_file() for path in assets)
 skills_root = root / ".trellis/guru-team/skills"
 assert {
@@ -2293,7 +2298,7 @@ python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["st
 INITIAL_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-initial")"
 printf '%s\n' "$INITIAL_TASK_WORKSPACE_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is False; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$INITIAL_TASK_WORKSPACE_JSON"
-INITIAL_PHASE0_TRANSCRIPT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-initial" --checkpoint initial-install)"
+INITIAL_PHASE0_TRANSCRIPT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-initial" --checkpoint initial-install --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING")"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["checkpoint"] == "initial-install"; assert payload["exit_family_count"] == 23; assert len(payload["six_step_transcript"]) == 6; assert [row["edge_id"] for row in payload["reentry_transcripts"]] == ["needs_context", "clarify_requirements", "review_wording"]; assert [row["source"] for row in payload["refresh_provenance_transcripts"]] == ["explicit", "config-candidate", "remote-default"]; assert payload["workspace"]["actual_exit"] == "created"; assert payload["workspace"]["checker_status"] == "passed"' <<<"$INITIAL_PHASE0_TRANSCRIPT_JSON"
 
 rm -f "$TARGET/.trellis/workflow.md.new"
@@ -2566,7 +2571,7 @@ python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["st
 UPDATED_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-after-update" --existing-developer-identity)"
 printf '%s\n' "$UPDATED_TASK_WORKSPACE_JSON"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is True; assert payload["source_developer_identity"] is True; assert payload["target_developer_identity"] is False; assert not any(payload[key] for key in ("source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
-UPDATED_PHASE0_TRANSCRIPT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-after-update" --checkpoint update-reapply)"
+UPDATED_PHASE0_TRANSCRIPT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-after-update" --checkpoint update-reapply --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING")"
 python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["checkpoint"] == "update-reapply"; assert payload["exit_family_count"] == 23; assert len(payload["six_step_transcript"]) == 6; assert [row["edge_id"] for row in payload["reentry_transcripts"]] == ["needs_context", "clarify_requirements", "review_wording"]; assert [row["source"] for row in payload["refresh_provenance_transcripts"]] == ["explicit", "config-candidate", "remote-default"]; assert payload["workspace"]["actual_exit"] == "created"; assert payload["workspace"]["checker_status"] == "passed"' <<<"$UPDATED_PHASE0_TRANSCRIPT_JSON"
 
 ABSENCE_TARGET="$WORK_DIR/no-developer-project"

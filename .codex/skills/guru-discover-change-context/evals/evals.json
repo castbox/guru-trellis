@@ -33,6 +33,18 @@
             "kind": "trace",
             "invariant": "private_runtime_not_read_by_agent"
           }
+        ],
+        "semantic": [
+          {
+            "id": "bilingual-current-evidence",
+            "criterion": "The owner relates Chinese Docs term 发布门禁 to English code symbol release_gate and does not claim either mechanism absent after a one-language zero result.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "exact-literal-preserved",
+            "criterion": "Exact error OBJECT_ACCESS_DENIED remains an original literal lookup and is not mechanically translated.",
+            "evidence_selector": "transcript"
+          }
         ]
       },
       "files": ["evals/files/eval-context-ready-input.json", "evals/files/eval-context-ready-facts.json"],

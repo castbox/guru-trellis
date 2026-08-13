@@ -8,6 +8,11 @@ description: Review a committed task branch through independent review, an inter
 Use this Skill after `guru-create-task-commit:committed` and before publication.
 Read [references/contract.md](references/contract.md) completely before acting.
 
+Before searching the range, Docs, tests, fixtures, consumers, or relevant
+history, read `.trellis/spec/workflow/semantic-retrieval.md` and apply it in
+candidate qualification. A negative finding or impact conclusion cannot rely
+on a single-language zero result, and no query process enters the gate or DTO.
+
 Validate all eight entry preconditions in workflow or standalone mode. Perform one
 independent semantic review of the complete current range and qualify every
 candidate before assigning severity.

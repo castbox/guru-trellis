@@ -19,6 +19,9 @@ through the chat reply is a failure.
 2. Run `mkdir -p <TASK_DIR>/research` to ensure the directory exists.
 3. Read `.trellis/workflow.md`, relevant `.trellis/spec/` files, and
    target code before forming an opinion.
+   Before retrieval, read `.trellis/spec/workflow/semantic-retrieval.md` and
+   apply its concept-family and negative-conclusion contract. Persist findings,
+   not raw query transcripts or search-process metadata.
 4. For each research topic, write `<TASK_DIR>/research/<slug>.md` with:
    - Query, scope, date
    - Files found (path + one-line description)
