@@ -1,0 +1,1 @@
+{"scenario":"Live authority invalidates one approved planning assumption.","owner_staging":{"recipe":"base-planning-stale"},"public_invocation":{"arguments":["--invocation","-"]}}

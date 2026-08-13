@@ -6,7 +6,7 @@
 current aggregate input is 6.0, gate is 4.0, and ignored transaction is 2.0.
 The four inputs are `publication_ready`, `same_plan_resume`,
 `reprepare_preview`, and `standalone_finalization`. The five exits are
-`publication_review_stale`, `resume_finalization`, `reprepare_required`,
+`base_reconciliation_required`, `publication_review_stale`, `resume_finalization`, `reprepare_required`,
 `ready_for_merge`, and `blocked`.
 
 Extension installation verification is unreachable from this package. Changed
@@ -38,3 +38,8 @@ or dual route is supported.
 Every current exit has exactly one Interface-declared consumer. Unknown,
 multiple, retired, or unmapped exits stop fail closed. Only
 `ready_for_merge` enters `guru-merge-task-pr`; it is not completion.
+Before the first publication side effect, a selected-base HEAD that differs
+from the task's base anchor returns `base_reconciliation_required` with the
+exact pair and `finalization_resume`. This route is distinct from
+`publication_review_stale`, which is reserved for Publication content or
+metadata evidence. Finalizer does not interpret the base delta.

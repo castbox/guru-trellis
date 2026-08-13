@@ -690,7 +690,7 @@ def run_closeout(
     semantic_review.write_text(
         json.dumps(
             {
-                "schema_version": "2.0",
+                "schema_version": "3.0",
                 "skill_id": "guru-finalize-task",
                 "review": {
                     "status": "passed",

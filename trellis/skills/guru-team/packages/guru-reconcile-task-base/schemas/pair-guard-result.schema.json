@@ -1,0 +1,5 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reconcile-task-base-pair-guard-result-1.0",
+  "type":"object","additionalProperties":false,"required":["status","task_ref","task_head","old_base_head","new_base_head","resume_target"],
+  "properties":{"status":{"enum":["unchanged","current_pair","new_pair","blocked"]},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},"task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"old_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"new_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"resume_target":{"enum":["task_activation","task_commit","branch_review","publication_review","task_finalization","finalization_resume"]}}
+}

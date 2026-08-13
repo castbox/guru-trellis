@@ -45,6 +45,7 @@
           "kind": "enum",
           "values": [
             "passed",
+            "continuity_passed",
             "implementation_required",
             "scope_confirmation_required",
             "blocked"
@@ -105,6 +106,7 @@
           "kind": "enum",
           "values": [
             "passed",
+            "continuity_passed",
             "implementation_required",
             "scope_confirmation_required",
             "blocked"

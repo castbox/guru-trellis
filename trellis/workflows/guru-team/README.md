@@ -65,8 +65,8 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 15 Skills / 54 package exits；其中业务 global workflow closure
-为 14/52/31（14 invokes / 52 exits / 31 targets）。下列 14 个业务 active ids 参与
+当前 registry 激活 16 Skills / 62 package exits；其中业务 global workflow closure
+为 15 个 invokes / 60 个 exits / 36 个 targets。下列 15 个业务 active ids 参与
 global workflow：
 
 - guru-select-workflow-mode
@@ -77,6 +77,7 @@ global workflow：
 - guru-review-change-request
 - guru-create-task-workspace
 - guru-approve-task-plan
+- guru-reconcile-task-base
 - guru-check-task
 - guru-create-task-commit
 - guru-review-branch
@@ -84,7 +85,7 @@ global workflow：
 - guru-finalize-task
 - guru-merge-task-pr
 
-`guru-verify-extension-installation` 是第 15 个 active package，但不拥有 global
+`guru-verify-extension-installation` 是第 16 个 active package，但不拥有 global
 workflow marker。它只接受 clean `castbox/guru-trellis` source checkout 中显式发起的
 `source_repository_verification` standalone 调用，并只返回 `verified|blocked`。
 
@@ -93,6 +94,21 @@ consumer/stop 与全局边界。每个 package interface.json 独占 public inpu
 output、consumer input、thin projection、target-owned authoring partition 与 package
 内部行为；workflow、README 和平台入口不得从 runtime implementation 或 package
 artifact 重建路由。
+
+Active task 的 base 演进统一由 `guru-reconcile-task-base` package 与
+`guru-base-reconciliation-router` 承接。Planning approval、Phase 2 pass、Task Commit、
+Branch Review pass、Publication ready 与 Finalizer base-only mismatch 六类稳定边界先执行
+同一 deterministic pair guard：unchanged pair 直接恢复原 `resume_target`；new pair 才调用
+semantic owner。六个 Gate exits 分别恢复原 route、进入 bounded Branch Review continuity、
+返回 implementation、返回 Planning、进入 requirement clarification 或 fail closed。Base SHA
+变化本身不使 authority、task-content review 或 Publication metadata stale；Finalizer 的
+`base_reconciliation_required` 与 `publication_review_stale` 是两个独立合同。
+
+新 Skill 必须引用 installed `.trellis/spec/workflow/semantic-retrieval.md`，不得在 workflow、
+README、平台 entry 或 package 中复制中英文概念族。完整 runtime、schema、commands、tests 与
+Shared/Codex/Claude/Cursor discovery copies 由 preset 根据 current registry 原子安装。升级顺序
+仍是 official update/upgrade、workflow re-selection、same-ref preset reapply、sidecar 处理和
+完整 source/installed/platform/drift 验证。
 
 guru-review-branch 是 sole Phase 3.5 semantic owner。Branch Review passed 后，
 workflow mandatory invoke guru-review-task-publication；Publication owner 直接从 live
@@ -126,7 +142,7 @@ dispatcher；缺 runtime、版本漂移或未解决 sidecar 时必须在业务�
 
 当前 canonical extension version `0.6.5-guru.27` 对应上文 pin 的 stable release tag
 `v0.6.5-guru.5`。Source/installed package validation 必须同时验证
-registry、14/52/31 business marker graph、15-package/54-exit closure、consumer
+registry、15/60/36 business marker graph、16-package/62-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
@@ -134,7 +150,7 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、14 mandatory Skill markers、52 exits、31 workflow/stop targets、
+current-task router、15 mandatory Skill markers、60 exits、36 workflow/stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -935,7 +951,7 @@ Current semantic input 固定 `applicability.status=required`，private result �
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十五个 packages 已维护 canonical corpora 并覆盖全部 54 package exits/profile；六个 Intake
+中的十六个 packages 已维护 canonical corpora 并覆盖全部 62 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

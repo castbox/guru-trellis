@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-reconcile-task-base",
+  "errors": [
+    {"code":"invalid_arguments","trigger":"Arguments are missing, repeated or unsupported.","exit_status":2,"locator":"field_path","remediation":"Use the exact command help contract."},
+    {"code":"conflicting_arguments","trigger":"Declared argument conflicts are present.","exit_status":2,"locator":"field_path","remediation":"Remove conflicting arguments."},
+    {"code":"invalid_json","trigger":"A JSON input is not one object.","exit_status":2,"locator":"field_path","remediation":"Provide one JSON object."},
+    {"code":"schema_mismatch","trigger":"A value violates its closed schema.","exit_status":2,"locator":"field_path","remediation":"Match the declared closed schema."},
+    {"code":"unsafe_path","trigger":"A locator is missing, unsafe or symlink-backed.","exit_status":2,"locator":"path","remediation":"Use a regular file below the repository or package."},
+    {"code":"stale_identity","trigger":"Task, base, candidate or checkpoint identity is no longer current.","exit_status":3,"locator":"field_path","remediation":"Rebuild the pair from current live Git facts."},
+    {"code":"candidate_failed","trigger":"The controlled candidate cannot be created or validated.","exit_status":3,"locator":"field_path","remediation":"Review objective candidate evidence and select a semantic route."},
+    {"code":"runtime_dependency_missing","trigger":"A required package runtime dependency is unavailable.","exit_status":2,"locator":"path","remediation":"Install the complete Guru Team preset dependencies."},
+    {"code":"internal_error","trigger":"An unexpected package-local runtime failure occurred.","exit_status":70,"locator":"path","remediation":"Inspect the package-local runtime and retry."}
+  ]
+}

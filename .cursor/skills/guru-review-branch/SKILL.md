@@ -1,6 +1,6 @@
 ---
 name: guru-review-branch
-description: Review a committed task branch through independent review, an internal closure-then-fresh-final loop, and four typed exits.
+description: Review a committed task branch or bounded base delta through independent semantic review and five typed exits.
 ---
 
 # Guru Review Branch

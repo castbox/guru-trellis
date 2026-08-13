@@ -1,0 +1,4 @@
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Public Skill package、I/O、private state 与 typed-exit SSOT。"}
+{"file":".trellis/spec/workflow/semantic-retrieval.md","reason":"Semantic owner 必须复用的中英文概念族检索 SSOT。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"Guard、executor、recorder、checker 的 deterministic 边界。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Stateful wrapper projection 与 cross-owner transaction 验证。"}

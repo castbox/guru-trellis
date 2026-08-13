@@ -22,7 +22,7 @@ reconstructs a route from package implementation, runtime state, or package
 artifacts.
 
 The workflow marketplace installs only .trellis/workflow.md. The Guru Team
-preset installs the compatible active packages and shared runtime. Frontmatter
+preset installs the compatible active packages and minimal shared kernel. Frontmatter
 discovery is optional convenience; it never replaces a mandatory marker.
 
 ## Guru Team Gate
@@ -46,7 +46,7 @@ unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
 invalid interface projections stop fail closed.
 
 ## Integrated Public Graph
-The business-task graph is exactly 14 mandatory Skills and 52 external exits.
+The business-task graph is exactly 15 mandatory Skills and 60 external exits.
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
@@ -87,6 +87,14 @@ The business-task graph is exactly 14 mandatory Skills and 52 external exits.
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"revision_required","consumer":{"kind":"skill","id":"guru-approve-task-plan"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"workflow","id":"guru-task-plan-clarify-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"blocked","consumer":{"kind":"stop","id":"task-plan-approval-blocked"}} -->
+### Active-task base evolution owner
+<!-- guru-skill-invoke: {"skill":"guru-reconcile-task-base","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"reconciled","consumer":{"kind":"workflow","id":"guru-base-reconciliation-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"review_continuity_required","consumer":{"kind":"skill","id":"guru-review-branch"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"planning_stale","consumer":{"kind":"workflow","id":"guru-task-base-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-task-base-scope-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"blocked","consumer":{"kind":"stop","id":"task-base-reconciliation-blocked"}} -->
 ### Phase 2 owner
 <!-- guru-skill-invoke: {"skill":"guru-check-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"passed","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
@@ -100,6 +108,7 @@ The business-task graph is exactly 14 mandatory Skills and 52 external exits.
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"blocked","consumer":{"kind":"stop","id":"task-commit-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-branch","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"continuity_passed","consumer":{"kind":"workflow","id":"guru-base-continuity-passed-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-branch-review-implementation-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-branch-review-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"blocked","consumer":{"kind":"stop","id":"branch-review-blocked"}} -->
@@ -108,6 +117,7 @@ The business-task graph is exactly 14 mandatory Skills and 52 external exits.
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-task-publication-work-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"blocked","consumer":{"kind":"stop","id":"task-publication-review-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-finalize-task","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"base_reconciliation_required","consumer":{"kind":"skill","id":"guru-reconcile-task-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"publication_review_stale","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"resume_finalization","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
 <!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"reprepare_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
@@ -118,7 +128,7 @@ The business-task graph is exactly 14 mandatory Skills and 52 external exits.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
 ## Workflow And Stop Targets
-The graph contains exactly 16 workflow targets and 15 stop targets.
+The graph contains exactly 20 workflow targets and 16 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-current-checkout"} -->
@@ -129,7 +139,11 @@ The graph contains exactly 16 workflow targets and 15 stop targets.
 <!-- guru-workflow-target: {"id":"guru-task-workspace-created"} -->
 <!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->
 <!-- guru-workflow-target: {"id":"phase-1-task-activation"} -->
+<!-- guru-workflow-target: {"id":"guru-base-reconciliation-router"} -->
+<!-- guru-workflow-target: {"id":"guru-base-continuity-passed-router"} -->
 <!-- guru-workflow-target: {"id":"guru-resume-implementation"} -->
+<!-- guru-workflow-target: {"id":"guru-task-base-planning-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-base-scope-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-check-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-branch-review-implementation-router"} -->
 <!-- guru-workflow-target: {"id":"guru-branch-review-scope-router"} -->
@@ -143,6 +157,7 @@ The graph contains exactly 16 workflow targets and 15 stop targets.
 <!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
 <!-- guru-stop-target: {"id":"task-workspace-blocked"} -->
 <!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
+<!-- guru-stop-target: {"id":"task-base-reconciliation-blocked"} -->
 <!-- guru-stop-target: {"id":"task-check-blocked"} -->
 <!-- guru-stop-target: {"id":"task-commit-blocked"} -->
 <!-- guru-stop-target: {"id":"branch-review-blocked"} -->
@@ -161,7 +176,11 @@ The graph contains exactly 16 workflow targets and 15 stop targets.
 | guru-task-workspace-created | Resolve the created task worktree and enter Phase 1. |
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
 | phase-1-task-activation | Validate the approved DTO and run the official task start transition. |
+| guru-base-reconciliation-router | Consume the checked current pair and resume its closed `resume_target`. |
+| guru-base-continuity-passed-router | Consume bounded continuity for the exact pair and resume its closed `resume_target`. |
 | guru-resume-implementation | Resume Phase 2 implementation. |
+| guru-task-base-planning-router | Return the exact planning impact to the Planning owner. |
+| guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
 | guru-task-check-planning-router | Route the declared planning action to plan approval or requirements clarification. |
 | guru-branch-review-implementation-router | Resume Phase 2, then repeat the downstream graph. |
 | guru-branch-review-scope-router | Enter the Scope Change Gate, then repeat affected phases. |
@@ -276,8 +295,11 @@ Invoke guru-approve-task-plan and consume only its declared exit.
 
 #### 1.5 Task activation
 
-Only approved reaches phase-1-task-activation. Resolve the selected task
-worktree, require workspace-boundary success, validate the public DTO, and run:
+Only approved reaches the active-task pair guard with
+`resume_target=task_activation`. An unchanged/current pair resumes activation;
+a new pair invokes guru-reconcile-task-base and follows only its declared exit.
+After the checked pair route resolves, require workspace-boundary success,
+validate the approved DTO, and run:
 
     python3 ./.trellis/scripts/task.py start <task-path>
 
@@ -299,8 +321,10 @@ and implement the current scope.
 
 #### 2.2 Task check
 
-Invoke guru-check-task. Only passed continues to guru-create-task-commit. Task
-or planning findings return through their declared workflow targets.
+Invoke guru-check-task. Its passed exit first enters the active-task pair guard
+with `resume_target=task_commit`; only the checked resumed route continues to
+guru-create-task-commit. Task or planning findings return through their
+declared workflow targets.
 
 ## Phase 3: Finish
 
@@ -310,24 +334,36 @@ Reconcile durable specs and the approved Docs SSOT Plan.
 
 #### 3.4 Task commit
 
-Invoke guru-create-task-commit and consume only its declared exit.
+Invoke guru-create-task-commit and consume only its declared exit. Committed
+enters the active-task pair guard with `resume_target=branch_review` before
+Branch Review.
 
 #### 3.5 Branch review
 
 Invoke guru-review-branch over the complete committed base-to-HEAD range.
+Normal passed enters the pair guard with `resume_target=publication_review`.
+The `base_continuity` profile reviews only the reconciliation-selected delta,
+candidate, and affected validation; its distinct continuity_passed exit resumes
+the original closed target without replacing the task-content review.
 
 #### 3.6 Publication review
 
 After branch review passes, invoke guru-review-task-publication. Its semantic owner authors and reviews the exact Chinese PR title/body from live authority.
 The checked ready DTO carries that payload directly to Finalizer without a task-local publication handoff file.
-`ready` has exactly one consumer: Finalizer; the caller must not push the reviewed/publication HEAD or create a PR first.
+`ready` enters the pair guard with `resume_target=task_finalization`; the caller
+must not push the reviewed/publication HEAD or create a PR first. Only the
+checked resumed route enters Finalizer.
 
 #### 3.7 Finalization
 
 Invoke guru-finalize-task and consume its declared exit; `ready_for_merge` immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish response after a separate expected-head confirmation, without base sync or direct Issue closure.
 
 Only publication ready enters finalization. Finalizer alone may display and execute the bounded push, PR, archive, and Ready side-effect set.
-Verification, stale publication, resume, and reprepare exits are automatically consumed by their declared Skills; the workflow never calls closeout executors directly.
+Verification, stale publication, base reconciliation, resume, and reprepare
+exits are automatically consumed by their declared Skills; the workflow never
+calls closeout executors directly. A Finalizer base-only mismatch returns
+`base_reconciliation_required` with `resume_target=finalization_resume`;
+publication_review_stale remains limited to Publication content or metadata.
 
 Before its first remote mutation, Finalizer requires no Open PR and only an absent remote branch or strict historical ancestor of the reviewed commit; recovery accepts only transaction-bound remote/PR identity.
 Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. `close_issues=[]` is refs-only: close keywords stay empty and merge closure is vacuously complete without Issue effects.
@@ -344,6 +380,23 @@ Reprepare keeps title/body in Finalizer owner-private state while its public DTO
 - Task activation consumes only guru-approve-task-plan:approved.
 - Downstream phases consume public DTOs and live facts, never an upstream
   package artifact.
+
+### Active-task base evolution
+
+At plan approval, Phase 2 pass, task commit, Branch Review pass, Publication
+ready, and Finalizer base-only mismatch, invoke the package-local deterministic
+pair guard before continuing. The guard observes the selected base ref once and
+returns only objective unchanged/current/new/blocked pair state. Unchanged or
+already-current pairs resume the closed `resume_target` without semantic
+invocation, GitHub/Docs/history reads, artifact writes, or interaction. Only a
+new pair invokes guru-reconcile-task-base.
+
+The semantic owner reads live authority and current task/base facts, follows
+the installed semantic-retrieval SSOT, and returns exactly one declared exit.
+The workflow routers validate only the minimal pair/route DTO and never repeat
+impact classification, candidate construction, validation selection, or review.
+Mapped implementation, planning, scope, bounded-continuity, resume, and blocked
+routes remain automatic and owner-specific.
 
 ### Docs SSOT
 

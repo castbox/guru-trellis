@@ -18,6 +18,13 @@ Scope Ledger, complete review range, working tree, and invocation freshness.
 The Skill reads no Planning or Phase 2 checkpoint or Task Commit candidate.
 Input that does not satisfy the current public schema fails closed.
 
+The independent `base_continuity` profile is entered only from
+`guru-reconcile-task-base:review_continuity_required`. It binds the unchanged
+task HEAD and prior passing `branch_review_commit` to one exact
+`old_base_head...new_base_head` delta, temporary candidate tree, relevant paths,
+and original resume target. It reviews only that bounded integration surface;
+it does not rewrite or replay the task-content review.
+
 ## Semantic Review
 
 Before full-range Docs, code, test, fixture, consumer, or history retrieval,
@@ -77,6 +84,8 @@ Return exactly one of:
 
 - `passed`: minimal `task_ref`, `branch_review_commit` seed for
   `guru-review-task-publication`;
+- `continuity_passed`: exact pair and candidate identity to the workflow-owned
+  `guru-base-continuity-passed-router`, which resumes the original target;
 - `implementation_required`: `branch_review_commit` and current finding refs;
 - `scope_confirmation_required`: exact proposal refs;
 - `blocked`: stable reason/remediation only.

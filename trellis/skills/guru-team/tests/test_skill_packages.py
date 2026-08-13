@@ -49,8 +49,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "--root", str(REPO), "--mode", "source", "--json",
         )
         self.assertEqual(payload["status"], "passed")
-        self.assertEqual(payload["active_packages"], 15)
-        self.assertEqual(payload["complete_package_commands"], 15)
+        self.assertEqual(payload["active_packages"], 16)
+        self.assertEqual(payload["complete_package_commands"], 16)
         self.assertGreater(payload["commands"], 0)
 
     def test_source_validator_rejects_duplicate_command_owner(self) -> None:
@@ -111,8 +111,12 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 cwd=target,
             )
             self.assertEqual(installed["status"], "passed")
-            self.assertEqual(len(installed["facts"]["active_ids"]), 15)
-            self.assertEqual(installed["facts"]["command_count"], 54)
+            self.assertEqual(len(installed["facts"]["active_ids"]), 16)
+            source_commands = sum(
+                len(json.loads(path.read_text(encoding="utf-8"))["commands"])
+                for path in (SKILLS / "packages").glob("guru-*/commands.json")
+            )
+            self.assertEqual(installed["facts"]["command_count"], source_commands)
             self.assertFalse((target / ".trellis/guru-team/scripts/python/guru_team_trellis.py").exists())
             for projection in (target / ".agents/skills", target / ".codex/skills", target / ".cursor/skills"):
                 for path in projection.rglob("*"):

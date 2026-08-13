@@ -35,8 +35,7 @@ def dirty_paths(repo,task_ref):
   if path.startswith(task_ref+"/") and Path(path).name in {"review.md","review-gate.json"}:continue
   rows.append(path)
  return rows
-def content_identity(repo,base,commit,task_ref):
- base_commit=git(repo,"rev-parse",base)
+def content_identity(repo,base_commit,commit,task_ref):
  rows=[]
  for line in git(repo,"ls-tree","-rz",commit).split("\0"):
   if not line:continue
@@ -45,14 +44,18 @@ def content_identity(repo,base,commit,task_ref):
   rows.append({"path":path,"mode":mode,"kind":kind,"oid":oid})
  return digest({"algorithm":"guru-reviewed-content-1.0","base_commit":base_commit,"entries":sorted(rows,key=lambda x:x["path"].encode())})
 def validate_gate(package_root,repo,v,expected_exit=None):
- validate_json(v,package_root/"schemas/review-gate.schema.json","gate");unsigned={k:copy.deepcopy(x) for k,x in v.items() if k not in {"generated_at","facts_sha256"}}
+ validate_json(v,package_root/"schemas/review-gate-4.0.schema.json","gate");unsigned={k:copy.deepcopy(x) for k,x in v.items() if k not in {"generated_at","facts_sha256"}}
  if v["facts_sha256"]!=digest(unsigned):raise CommandError("stale_identity","facts_sha256","Rerecord current review facts.",3)
  if expected_exit and v["typed_exit"]!=expected_exit:raise CommandError("stale_identity","typed_exit","Use current typed exit.",3)
  current=git(repo,"rev-parse","HEAD")
- if not ancestor(repo,v["base_ref"],v["review_commit"]):raise CommandError("stale_identity","base_ref","Review the complete current base...HEAD range.",3)
+ if not ancestor(repo,v["base_head"],v["review_commit"]):raise CommandError("stale_identity","base_head","Recorded base must precede reviewed task content.",3)
+ pair=v.get("integration_pair")
+ if pair is not None:
+  if not ancestor(repo,pair["old_base_head"],pair["new_base_head"]):raise CommandError("stale_identity","integration_pair","Base continuity requires an ancestor delta.",3)
+  if pair["task_head"]!=v["review_commit"]:raise CommandError("stale_identity","integration_pair.task_head","Bind continuity to reviewed task content.",3)
  if dirty_paths(repo,v["task_dir"]):raise CommandError("stale_identity","worktree","Commit or remove all non-review overlays before branch review.",3)
  if not ancestor(repo,v["review_commit"],current):raise CommandError("stale_identity","review_commit","Review commit is not current history.",3)
- if content_identity(repo,v["base_ref"],current,v["task_dir"])!=v["reviewed_content_sha256"]:raise CommandError("stale_identity","reviewed_content_sha256","Run a fresh review for current content.",3)
+ if content_identity(repo,v["base_head"],current,v["task_dir"])!=v["reviewed_content_sha256"]:raise CommandError("stale_identity","reviewed_content_sha256","Run a fresh review for current task content.",3)
  for finding in v["semantic_review"]["qualified_findings"]:
   if not ancestor(repo,finding["introduced_head"],v["review_commit"]):raise CommandError("schema_mismatch","qualified_findings","Finding introduction must precede reviewed content.")
   if finding["status"]=="resolved" and (not ancestor(repo,finding["introduced_head"],finding["fix_head"]) or not ancestor(repo,finding["fix_head"],finding["closure_head"]) or not ancestor(repo,finding["closure_head"],v["review_commit"])):raise CommandError("schema_mismatch","qualified_findings","Bind introduced, fix, closure, and review ancestry.")

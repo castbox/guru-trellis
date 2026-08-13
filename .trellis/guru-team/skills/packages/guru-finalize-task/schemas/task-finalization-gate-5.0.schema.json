@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "identity", "review", "route"],
+  "properties": {
+    "schema_version": {"const": "5.0"},
+    "skill_id": {"const": "guru-finalize-task"},
+    "identity": {"type": "object", "additionalProperties": false, "required": ["task_ref", "plan_ref", "plan_digest", "branch_review_commit"], "properties": {
+      "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"}, "plan_ref": {"type": ["string", "null"], "minLength": 1}, "plan_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}, "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}
+    }},
+    "review": {"type": "object", "additionalProperties": false, "required": ["status", "summary"], "properties": {"status": {"enum": ["passed", "reroute", "blocked"]}, "summary": {"type": "string", "minLength": 1}}},
+    "route": {"type": "object", "additionalProperties": false, "required": ["typed_exit", "consumer", "output"], "properties": {
+      "typed_exit": {"enum": ["base_reconciliation_required", "publication_review_stale", "resume_finalization", "reprepare_required", "ready_for_merge", "blocked"]},
+      "consumer": {"type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": {"kind": {"enum": ["skill", "workflow", "stop"]}, "id": {"type": "string", "minLength": 1}}},
+      "output": {"oneOf": [{"type": "object", "additionalProperties": false, "required": ["materialization"], "properties": {"materialization": {"const": "executor"}}}, {"type": "object", "minProperties": 1, "not": {"required": ["materialization"]}}]}
+    }}
+  }
+}

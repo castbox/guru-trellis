@@ -9670,6 +9670,10 @@ def cmd_finish_work(args: argparse.Namespace) -> dict[str, Any]:
     return _cmd_finish_work_impl(args)
 
 FINALIZATION_CONSUMERS = {
+    "base_reconciliation_required": {
+        "kind": "skill",
+        "id": "guru-reconcile-task-base",
+    },
     "publication_review_stale": {
         "kind": "skill",
         "id": TASK_PUBLICATION_SKILL_ID,
@@ -9694,7 +9698,7 @@ FINALIZATION_CONSUMERS = {
 
 FINALIZATION_EXECUTOR_OUTPUT_MARKER = {"materialization": "executor"}
 
-FINALIZATION_GATE_SCHEMA_VERSION = "4.0"
+FINALIZATION_GATE_SCHEMA_VERSION = "5.0"
 
 FINALIZATION_REPREPARE_ARCHIVE_MONTH = "archive_month_changed"
 
@@ -9832,7 +9836,7 @@ def finalization_semantic_review_input(
     package = finalization_package_root(root)
     errors: list[str] = []
     schema = skill_read_schema(
-        package / "schemas/semantic-review-input.schema.json",
+        package / "schemas/semantic-review-input-3.0.schema.json",
         "task finalization semantic review input schema",
         errors,
     )
@@ -10158,6 +10162,26 @@ def finalization_publication_owner_result(
                 exit_code=2,
                 payload={"unexpected_dirty_paths": unexpected},
             )
+        task_context = load_task_runtime_identity(task_dir, load_config(root))
+        old_base_head = str(task_context.get("base_head_sha") or "")
+        base_branch = str(task_context.get("base_branch") or task.get("base_branch") or "")
+        selected_base_ref = diff_base_ref(root, base_branch)
+        new_base_head = run(["git", "rev-parse", selected_base_ref], cwd=root).stdout.strip()
+        if old_base_head != new_base_head:
+            task_head = current_head(root)
+            if not is_ancestor(root, old_base_head, new_base_head):
+                raise WorkflowError("Finalizer base evolution is not an ancestor delta.", exit_code=2)
+            return {
+                "owner_status": "base_reconciliation_required",
+                "task_ref": task_ref,
+                "task_head": task_head,
+                "publication_head": task_head,
+                "selected_base_ref": selected_base_ref,
+                "old_base_head": old_base_head,
+                "new_base_head": new_base_head,
+                "branch_review_commit": branch_review_commit,
+                "resume_target": "finalization_resume",
+            }
     elif profile == "reprepare_preview":
         publication_head = str(public_input.get("publication_head") or "")
         reason_code = str(public_input.get("reason_code") or "")
@@ -10864,6 +10888,21 @@ def finalization_preview_context(
             public_input,
             verification,
         )
+        if publication.get("owner_status") == "base_reconciliation_required":
+            return {
+                "task_dir": task_dir,
+                "task_context": None,
+                "prepared": None,
+                "plan": None,
+                "plan_ref": None,
+                "transaction_state": "base_reconciliation_required",
+                "publication": publication,
+                "publication_status": "current",
+                "publication_stale_reason": None,
+                "publication_branch_review_commit": publication["branch_review_commit"],
+                "base_reconciliation": publication,
+                "verification": None,
+            }
         if publication.get("owner_status") == "stale":
             return {
                 "task_dir": task_dir,
@@ -11217,6 +11256,13 @@ def finalization_validate_route(
                     exit_code=2,
                 )
     publication_status = context.get("publication_status", "current")
+    if exit_id == "base_reconciliation_required":
+        facts = context.get("base_reconciliation")
+        if not isinstance(facts, dict) or output != {"exit_id": exit_id, **{key: facts[key] for key in ("task_ref", "task_head", "publication_head", "selected_base_ref", "old_base_head", "new_base_head", "branch_review_commit", "resume_target")}}:
+            raise WorkflowError("base_reconciliation_required does not match the current base pair.", exit_code=2)
+        return
+    if context.get("transaction_state") == "base_reconciliation_required" and exit_id != "blocked":
+        raise WorkflowError("Current base evolution requires reconciliation or a blocked route.", exit_code=2)
     if exit_id == "publication_review_stale":
         if (
             publication_status != "stale"
@@ -11283,7 +11329,7 @@ def finalization_validate_route(
 def finalization_gate_schema(root: Path) -> dict[str, Any]:
     errors: list[str] = []
     schema = skill_read_schema(
-        finalization_package_root(root) / "schemas/task-finalization-gate.schema.json",
+        finalization_package_root(root) / "schemas/task-finalization-gate-5.0.schema.json",
         "task finalization gate schema",
         errors,
     )

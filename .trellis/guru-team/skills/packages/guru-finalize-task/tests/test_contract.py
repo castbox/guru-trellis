@@ -70,12 +70,18 @@ class FinalizeTaskContractTests(unittest.TestCase):
     def test_invoke_unwraps_public_input_locator_before_gate_check(self) -> None:
         sys.path.insert(0, str(PACKAGE.parents[1]))
         sys.path.insert(0, str(PACKAGE / "runtime"))
-        spec = importlib.util.spec_from_file_location(
-            "finalize_invoke_test", PACKAGE / "runtime/invoke.py"
-        )
-        assert spec and spec.loader
-        invoke = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(invoke)
+        previous_common = sys.modules.pop("common", None)
+        try:
+            spec = importlib.util.spec_from_file_location(
+                "finalize_invoke_test", PACKAGE / "runtime/invoke.py"
+            )
+            assert spec and spec.loader
+            invoke = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(invoke)
+        finally:
+            sys.modules.pop("common", None)
+            if previous_common is not None:
+                sys.modules["common"] = previous_common
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             public = {"profile": "publication_ready"}
@@ -179,7 +185,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [item["exit_id"] for item in contracts["outputs"]],
-            ["publication_review_stale", "resume_finalization", "reprepare_required", "ready_for_merge", "blocked"],
+            ["base_reconciliation_required", "publication_review_stale", "resume_finalization", "reprepare_required", "ready_for_merge", "blocked"],
         )
         serialized = json.dumps(contracts, sort_keys=True)
         for retired in (
@@ -191,11 +197,12 @@ class FinalizeTaskContractTests(unittest.TestCase):
             self.assertNotIn(retired, serialized)
 
     def test_current_gate_and_transaction_remove_verify(self) -> None:
-        gate = load("schemas/task-finalization-gate.schema.json")
+        gate = load("schemas/task-finalization-gate-5.0.schema.json")
         transaction = load("schemas/finalization-transaction.schema.json")
-        self.assertEqual(gate["properties"]["schema_version"]["const"], "4.0")
+        self.assertEqual(gate["properties"]["schema_version"]["const"], "5.0")
         exits = gate["properties"]["route"]["properties"]["typed_exit"]["enum"]
         self.assertNotIn("verification_required", exits)
+        self.assertIn("base_reconciliation_required", exits)
         self.assertEqual(transaction["properties"]["schema_version"]["const"], "2.0")
         self.assertNotIn("verify", transaction["properties"]["next_transition"]["enum"])
         self.assertNotIn("verification_ref", transaction["properties"])
@@ -206,6 +213,14 @@ class FinalizeTaskContractTests(unittest.TestCase):
             schema = load(profile["schema"]["path"])
             example = load(profile["example"]["path"])
             jsonschema.Draft202012Validator(schema).validate(example)
+
+    def test_base_reconciliation_output_is_distinct_from_publication_stale(self) -> None:
+        output = load("examples/public-base-reconciliation-required-output.json")
+        jsonschema.Draft202012Validator(load("schemas/public-base-reconciliation-required-output.schema.json")).validate(output)
+        self.assertEqual(output["task_head"], output["publication_head"])
+        self.assertEqual(output["resume_target"], "finalization_resume")
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.Draft202012Validator(load("schemas/public-publication-review-stale-output.schema.json")).validate(output)
 
 
 if __name__ == "__main__":

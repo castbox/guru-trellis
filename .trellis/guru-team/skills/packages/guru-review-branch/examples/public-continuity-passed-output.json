@@ -1,0 +1,10 @@
+{
+  "exit_id": "continuity_passed",
+  "task_ref": ".trellis/tasks/08-13-example",
+  "task_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "old_base_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "new_base_head": "cccccccccccccccccccccccccccccccccccccccc",
+  "candidate_tree_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "resume_target": "publication_review"
+}

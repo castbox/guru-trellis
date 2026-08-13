@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-4.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "generated_at", "task_dir", "mode", "profile", "review_intent", "typed_exit", "review_commit", "reviewed_content_sha256", "base_ref", "base_head", "integration_pair", "semantic_review", "verification_evidence", "facts_sha256"],
+  "properties": {
+    "schema_version": {"const": "4.0"},
+    "skill_id": {"const": "guru-review-branch"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "profile": {"enum": ["branch_review", "base_continuity"]},
+    "review_intent": {"enum": ["initial_review", "fresh_final_review", "base_continuity"]},
+    "typed_exit": {"enum": ["passed", "continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]},
+    "review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "reviewed_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "base_ref": {"type": "string", "minLength": 1},
+    "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "integration_pair": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["task_head", "old_base_head", "new_base_head", "candidate_tree_sha256", "relevant_paths", "resume_target"],
+          "properties": {
+            "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "old_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "new_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "candidate_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "relevant_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "resume_target": {"enum": ["task_activation", "task_commit", "branch_review", "publication_review", "task_finalization", "finalization_resume"]}
+          }
+        }
+      ]
+    },
+    "semantic_review": {"type": "object", "required": ["qualified_findings", "scope_proposals", "observations", "followup_candidates", "rejected_candidates", "ai_review_gate"]},
+    "verification_evidence": {"type": "object", "required": ["reviewer", "review_source", "evidence"]},
+    "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "allOf": [
+    {"if": {"properties": {"profile": {"const": "branch_review"}}}, "then": {"properties": {"integration_pair": {"type": "null"}, "typed_exit": {"enum": ["passed", "implementation_required", "scope_confirmation_required", "blocked"]}}}},
+    {"if": {"properties": {"profile": {"const": "base_continuity"}}}, "then": {"properties": {"review_intent": {"const": "base_continuity"}, "integration_pair": {"type": "object"}, "typed_exit": {"enum": ["continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]}}}}
+  ]
+}

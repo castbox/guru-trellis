@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reconcile-task-base-invocation-envelope-1.0","type":"object","additionalProperties":false,"required":["public_input","owner_result"],"properties":{"public_input":{"$ref":"public-input.schema.json"},"owner_result":{"$ref":"base-reconciliation.schema.json"}}}

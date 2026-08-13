@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"guru-reconcile-task-base-input-aggregate-1.0",
+  "oneOf":[
+    {"$ref":"public-post-plan-input.schema.json"},
+    {"$ref":"public-post-check-input.schema.json"},
+    {"$ref":"public-post-commit-input.schema.json"},
+    {"$ref":"public-post-branch-review-input.schema.json"},
+    {"$ref":"public-post-publication-input.schema.json"},
+    {"$ref":"public-finalizer-base-mismatch-input.schema.json"}
+  ]
+}
