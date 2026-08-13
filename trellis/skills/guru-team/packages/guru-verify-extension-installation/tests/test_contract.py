@@ -34,13 +34,18 @@ def load_runtime():
 
 class ExtensionVerificationContractTests(unittest.TestCase):
     def test_dispatcher_accepts_every_repeated_capability_and_runs_entrypoint(self) -> None:
-        capabilities = [
-            "initial_install",
-            "workflow_marketplace",
-            "preset_overlay",
-            "upgrade_update",
-            "platform_projection",
-        ]
+        runtime = load_runtime()
+        capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)
+        command = next(
+            item for item in load("commands.json")["commands"]
+            if item["validator_id"] == "verification_executor"
+        )
+        capability_argument = next(
+            item for item in command["arguments"]
+            if item["flag"] == "--capability"
+        )
+        self.assertTrue(capability_argument["repeatable"])
+        self.assertEqual(capability_argument["values"], capabilities)
         dispatcher = (
             REPO / "trellis/workflows/guru-team/scripts/bash/run-skill-command.sh"
             if PACKAGE
