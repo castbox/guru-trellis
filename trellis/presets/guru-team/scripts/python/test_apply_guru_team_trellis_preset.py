@@ -113,6 +113,20 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
             source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
             self.assertEqual(source.read_bytes(), (repo / ".trellis/workflow.md").read_bytes())
 
+    def test_base_reconciliation_eval_staging_uses_current_task_identity(self) -> None:
+        adapter = (
+            preset.guru_root_from_script()
+            / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('"task_artifact_dir": task_ref', adapter)
+        self.assertIn('"workspace_path": str(fixture.resolve())', adapter)
+        self.assertIn('"branch_name": "eval/base-reconciliation"', adapter)
+        self.assertIn('hashlib.sha256(task_ref.encode()).hexdigest()[:12]', adapter)
+        self.assertNotIn(
+            'owner-checkpoints/current"\n        / "guru-reconcile-task-base',
+            adapter,
+        )
+
     def test_dogfood_spec_matches_finalizer_six_exit_contract(self) -> None:
         root = preset.guru_root_from_script()
         spec = (root / ".trellis/spec/workflow/index.md").read_text(encoding="utf-8")

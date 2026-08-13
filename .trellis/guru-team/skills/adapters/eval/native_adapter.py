@@ -3590,6 +3590,37 @@ def stage_base_reconciliation_owner_execution(
     })
     if "branch_review_commit" in public_input:
         public_input["branch_review_commit"] = task_head
+    task_ref = public_input["task_ref"]
+    task_id = "current"
+    workspace_slug = "current"
+    task_dir = fixture / task_ref
+    task_dir.mkdir(parents=True, exist_ok=True)
+    (task_dir / "task.json").write_text(json.dumps({
+        "id": task_id,
+        "name": task_id,
+        "title": "Base reconciliation eval",
+        "status": "planning" if public_input["profile"] == "post_plan" else "in_progress",
+        "branch": "eval/base-reconciliation",
+        "base_branch": "main",
+    }) + "\n", encoding="utf-8")
+    mappings_root = fixture / ".trellis/.runtime/guru-team"
+    task_mappings = mappings_root / "tasks"
+    workspace_mappings = mappings_root / "workspaces"
+    task_mappings.mkdir(parents=True, exist_ok=True)
+    workspace_mappings.mkdir(parents=True, exist_ok=True)
+    (task_mappings / f"{task_id}.json").write_text(json.dumps({
+        "schema_version": "1.0",
+        "task_slug": task_id,
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(fixture.resolve()),
+        "task_artifact_dir": task_ref,
+    }) + "\n", encoding="utf-8")
+    (workspace_mappings / f"{workspace_slug}.json").write_text(json.dumps({
+        "schema_version": "1.0",
+        "workspace_slug": workspace_slug,
+        "workspace_path": str(fixture.resolve()),
+        "branch_name": "eval/base-reconciliation",
+    }) + "\n", encoding="utf-8")
     runtime_dir = fixture / ".trellis/.runtime/guru-team/evals"
     runtime_dir.mkdir(parents=True, exist_ok=True)
     runtime_input = fixture / OWNER_INPUT
@@ -3642,9 +3673,12 @@ def stage_base_reconciliation_owner_execution(
     if recorded.returncode != 0:
         raise ValueError(f"base reconciliation recorder staging failed: {recorded.stderr.strip()}")
     owner_result = json.loads(recorded.stdout)
+    checkpoint_namespace = (
+        f"{task_id}-{hashlib.sha256(task_ref.encode()).hexdigest()[:12]}"
+    )
     checkpoint = (
-        fixture / ".trellis/.runtime/guru-team/owner-checkpoints/current"
-        / "guru-reconcile-task-base/base-reconciliation.json"
+        fixture / ".trellis/.runtime/guru-team/owner-checkpoints"
+        / checkpoint_namespace / "guru-reconcile-task-base/base-reconciliation.json"
     )
     checked = subprocess.run(
         [
