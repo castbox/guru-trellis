@@ -976,7 +976,7 @@ assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
 assert len(assets) == 63
 assert ".trellis/spec/workflow/semantic-retrieval.md" in assets
-assert (target / ".trellis/spec/workflow/semantic-retrieval.md").is_file()
+assert (root / ".trellis/spec/workflow/semantic-retrieval.md").is_file()
 assert all((root / path).is_file() for path in assets)
 skills_root = root / ".trellis/guru-team/skills"
 assert {

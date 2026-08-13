@@ -1324,6 +1324,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn(retired_private_schema, verifier)
         self.assertNotIn("test_issue_174_controlled_replay_is_one_chained_session", verifier)
         self.assertNotIn("GURU_ISSUE_174_REPLAY_REPORT", verifier)
+        self.assertIn(
+            'assert (root / ".trellis/spec/workflow/semantic-retrieval.md").is_file()',
+            verifier,
+        )
+        self.assertNotIn(
+            'assert (target / ".trellis/spec/workflow/semantic-retrieval.md").is_file()',
+            verifier,
+        )
 
         preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
         preview_remove = verifier.index('rm -f "$TARGET/.trellis/workflow.md.new"', preview_assert)
