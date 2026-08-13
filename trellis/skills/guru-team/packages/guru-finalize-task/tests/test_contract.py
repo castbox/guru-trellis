@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 import importlib.util
+import hashlib
+import json
 import sys
 import tempfile
 import unittest
@@ -32,6 +33,35 @@ GTT = load_runtime()
 
 
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_execute_ready_recovery_materializes_without_finish_work(self) -> None:
+        public_input = {"task_ref": ".trellis/tasks/archive/2026-08/example"}
+        gate = {"route": {"typed_exit": "ready_for_merge", "output": {"materialization": "executor"}}}
+        task_dir = Path("/repo/.trellis/tasks/archive/2026-08/example")
+        context = {
+            "transaction_state": "ready",
+            "task_dir": task_dir,
+            "plan": {"plan_digest": "a" * 64},
+            "published_pr": {"number": 218},
+        }
+        output = {"exit_id": "ready_for_merge", "pr_number": 218}
+        args = SimpleNamespace(root="/repo", input="input.json", gate=None)
+        with (
+            mock.patch.object(GTT, "repo_root", return_value=Path("/repo")),
+            mock.patch.object(GTT, "finalization_public_input", return_value=(public_input, Path("/repo/input.json"))),
+            mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, Path("/repo/gate.json"))),
+            mock.patch.object(GTT, "check_finalization_gate_result", return_value=(gate, context)),
+            mock.patch.object(GTT, "finalization_gate_with_ready_for_merge_output", return_value={"route": {"output": output}}) as materialize,
+            mock.patch.object(GTT, "cmd_finish_work") as finish_work,
+        ):
+            result = GTT.cmd_execute_finalization_transition(args)
+
+        self.assertEqual(result["stage"], "ready_recovered")
+        self.assertEqual(result["output"], output)
+        finish_work.assert_not_called()
+        materialize.assert_called_once_with(
+            Path("/repo"), task_dir, gate, context["plan"], context["published_pr"]
+        )
+
     def test_step_local_contract_matches_current_gate_and_exit_graph(self) -> None:
         skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
@@ -220,14 +250,128 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
     def test_current_gate_and_transaction_remove_verify(self) -> None:
         gate = load("schemas/task-finalization-gate-5.0.schema.json")
+        current_gate_alias = load("schemas/task-finalization-gate.schema.json")
+        current_review_alias = load("schemas/semantic-review-input.schema.json")
         transaction = load("schemas/finalization-transaction.schema.json")
         self.assertEqual(gate["properties"]["schema_version"]["const"], "5.0")
+        self.assertEqual(current_gate_alias["$id"], gate["$id"])
+        self.assertEqual(current_gate_alias["properties"]["schema_version"], gate["properties"]["schema_version"])
+        explicit_review = load("schemas/semantic-review-input-3.0.schema.json")
+        self.assertEqual(current_review_alias["$id"], explicit_review["$id"])
+        self.assertEqual(current_review_alias["properties"]["schema_version"], explicit_review["properties"]["schema_version"])
         exits = gate["properties"]["route"]["properties"]["typed_exit"]["enum"]
         self.assertNotIn("verification_required", exits)
+        self.assertNotIn("verification_required", current_review_alias["properties"]["route"]["properties"]["typed_exit"]["enum"])
         self.assertIn("base_reconciliation_required", exits)
         self.assertEqual(transaction["properties"]["schema_version"]["const"], "2.0")
         self.assertNotIn("verify", transaction["properties"]["next_transition"]["enum"])
         self.assertNotIn("verification_ref", transaction["properties"])
+
+    def test_current_schema_aliases_match_explicit_acceptance_domains(self) -> None:
+        pairs = (
+            (
+                "schemas/semantic-review-input.schema.json",
+                "schemas/semantic-review-input-3.0.schema.json",
+                load("examples/semantic-review-input.json"),
+            ),
+            (
+                "schemas/task-finalization-gate.schema.json",
+                "schemas/task-finalization-gate-5.0.schema.json",
+                load("examples/task-finalization-gate.json"),
+            ),
+        )
+        for alias_path, explicit_path, positive in pairs:
+            with self.subTest(alias=alias_path):
+                alias_bytes = (PACKAGE / alias_path).read_bytes()
+                explicit_bytes = (PACKAGE / explicit_path).read_bytes()
+                self.assertEqual(alias_bytes, explicit_bytes)
+                alias = jsonschema.Draft202012Validator(load(alias_path))
+                explicit = jsonschema.Draft202012Validator(load(explicit_path))
+                negative = json.loads(json.dumps(positive))
+                negative["route"]["typed_exit"] = "verification_required"
+                extra_property = json.loads(json.dumps(positive))
+                extra_property["unexpected"] = True
+                for instance, expected in (
+                    (positive, True),
+                    (negative, False),
+                    (extra_property, False),
+                ):
+                    self.assertEqual(alias.is_valid(instance), expected)
+                    self.assertEqual(explicit.is_valid(instance), expected)
+
+    def test_interface_inventories_current_and_legacy_contract_assets(self) -> None:
+        interface = load("interface.json")
+        schemas = {item["id"]: item["path"] for item in interface["schemas"]}
+        artifacts = {item["id"]: item["path"] for item in interface["artifacts"]}
+        self.assertEqual(len(schemas), len(interface["schemas"]))
+        self.assertEqual(len(artifacts), len(interface["artifacts"]))
+        self.assertEqual(
+            {
+                "current_gate_schema_alias": "schemas/task-finalization-gate.schema.json",
+                "current_gate_schema_5_0": "schemas/task-finalization-gate-5.0.schema.json",
+                "current_semantic_review_input_alias": "schemas/semantic-review-input.schema.json",
+                "current_semantic_review_input_3_0": "schemas/semantic-review-input-3.0.schema.json",
+                "legacy_gate_schema_4_0": "schemas/task-finalization-gate-4.0.schema.json",
+                "legacy_semantic_review_input_2_0": "schemas/semantic-review-input-2.0.schema.json",
+            },
+            {key: schemas[key] for key in (
+                "current_gate_schema_alias",
+                "current_gate_schema_5_0",
+                "current_semantic_review_input_alias",
+                "current_semantic_review_input_3_0",
+                "legacy_gate_schema_4_0",
+                "legacy_semantic_review_input_2_0",
+            )},
+        )
+        self.assertEqual(
+            artifacts["legacy_gate_example_3_0"],
+            "examples/task-finalization-gate-3.0.json",
+        )
+        self.assertEqual(
+            artifacts["legacy_semantic_review_input_2_0"],
+            "examples/semantic-review-input-2.0.json",
+        )
+
+    def test_unversioned_examples_are_current_and_legacy_is_explicit(self) -> None:
+        gate = load("examples/task-finalization-gate.json")
+        review = load("examples/semantic-review-input.json")
+        self.assertEqual(gate["schema_version"], "5.0")
+        self.assertEqual(review["schema_version"], "3.0")
+        for value in (gate, review):
+            self.assertEqual(value["route"]["typed_exit"], "ready_for_merge")
+            self.assertEqual(value["route"]["consumer"], {"kind": "skill", "id": "guru-merge-task-pr"})
+            self.assertNotIn("verification_required", json.dumps(value, sort_keys=True))
+        jsonschema.Draft202012Validator(load("schemas/task-finalization-gate.schema.json")).validate(gate)
+        jsonschema.Draft202012Validator(load("schemas/semantic-review-input.schema.json")).validate(review)
+        self.assertEqual(load("schemas/task-finalization-gate-4.0.schema.json")["properties"]["schema_version"]["const"], "4.0")
+        self.assertEqual(load("schemas/semantic-review-input-2.0.schema.json")["properties"]["schema_version"]["const"], "2.0")
+        self.assertEqual(
+            hashlib.sha256((PACKAGE / "schemas/task-finalization-gate-4.0.schema.json").read_bytes()).hexdigest(),
+            "eede98f83ece710b08e4288e6fa59ec10bdb8234d1557c66679a91539fe7c798",
+        )
+        self.assertEqual(
+            hashlib.sha256((PACKAGE / "schemas/semantic-review-input-2.0.schema.json").read_bytes()).hexdigest(),
+            "486d28daa78526176ecd11cbba9c1dbd2a7b46fa07b2b8fc3ef0963e62e52ffb",
+        )
+        legacy_examples = (
+            (
+                "examples/task-finalization-gate-3.0.json",
+                "schemas/task-finalization-gate-3.0.schema.json",
+                "8881ed49b300d25af183da1bdf454c9e2be2f48cc765447d0638b228a15be066",
+            ),
+            (
+                "examples/semantic-review-input-2.0.json",
+                "schemas/semantic-review-input-2.0.schema.json",
+                "705620063f725147eef49fb48673bce2b5fbe882d15bd15a9af82c58fbc56492",
+            ),
+        )
+        for example_path, schema_path, expected_sha256 in legacy_examples:
+            with self.subTest(example=example_path):
+                self.assertEqual(
+                    hashlib.sha256((PACKAGE / example_path).read_bytes()).hexdigest(),
+                    expected_sha256,
+                )
+                jsonschema.Draft202012Validator(load(schema_path)).validate(load(example_path))
 
     def test_current_input_examples_validate(self) -> None:
         interface = load("interface.json")

@@ -14,6 +14,9 @@ Read [references/contract.md](references/contract.md), run the preview, perform
 the semantic gate, and ask once for the exact merge action. After confirmation,
 record/check the gate, execute with the expected head, and return exactly one of
 `merged`, `merge_blocked`, or `closure_mismatch`.
+An already persisted terminal output is recovered only after read-only live
+revalidation of the exact merge and closure facts; recovery never repeats the
+merge mutation.
 
 Fail closed on stale head, base/head branch drift, PR-body close-scope drift,
 Draft/Open/readiness drift, unknown policy, incomplete GitHub response, or

@@ -11858,6 +11858,26 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
             "output": output,
         }
     if exit_id == "ready_for_merge":
+        if context["transaction_state"] == "ready":
+            pr = context.get("published_pr")
+            if not isinstance(pr, dict):
+                raise WorkflowError(
+                    "Task finalization Ready recovery is missing the bound pull request.",
+                    exit_code=2,
+                )
+            materialized_gate = finalization_gate_with_ready_for_merge_output(
+                root,
+                task_dir,
+                gate,
+                context["plan"],
+                pr,
+            )
+            return {
+                "status": "ok",
+                "stage": "ready_recovered",
+                "typed_exit": exit_id,
+                "output": materialized_gate["route"]["output"],
+            }
         finish_args = copy.copy(args)
         finish_args.task = public_input["task_ref"]
         finish_args.from_guru_finalizer = True

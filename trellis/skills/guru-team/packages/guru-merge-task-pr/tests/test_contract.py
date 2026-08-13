@@ -26,6 +26,79 @@ GTT = load_runtime()
 
 
 class MergeTaskPrContractTest(unittest.TestCase):
+    def terminal_fixture(self, *, closed: bool = True) -> tuple[dict, dict, dict]:
+        public_input = {
+            "repo_ref": "castbox/guru-trellis",
+            "pr_number": 218,
+            "pr_url": "https://github.com/castbox/guru-trellis/pull/218",
+            "expected_head_sha": "1" * 40,
+            "expected_base_branch": "main",
+            "expected_head_branch": "fix/218-terminal-output",
+            "expected_close_issues": [218],
+        }
+        facts = {
+            "pr": {
+                "number": 218,
+                "url": public_input["pr_url"],
+                "state": "MERGED",
+                "head_sha": public_input["expected_head_sha"],
+                "base_branch": "main",
+                "head_branch": "fix/218-terminal-output",
+                "merged_at": "2026-08-14T10:00:00Z",
+                "merge_commit": {"oid": "2" * 40},
+            },
+            "close_issues": [218],
+            "issues": [{
+                "number": 218,
+                "state": "CLOSED" if closed else "OPEN",
+                "closed_at": "2026-08-14T10:00:01Z" if closed else None,
+            }],
+        }
+        output = GTT.task_pr_merge_terminal_output(public_input, facts)
+        return public_input, facts, output
+
+    def test_terminal_recovery_revalidates_and_skips_merge_mutation(self) -> None:
+        public_input, facts, output = self.terminal_fixture()
+        gate = {"terminal_output": output}
+        args = Namespace(root="/repo", input="input.json", gate="gate.json")
+        with (
+            mock.patch.object(GTT, "repo_root", return_value=Path("/repo")),
+            mock.patch.object(GTT, "task_pr_merge_json_input", return_value=public_input),
+            mock.patch.object(GTT, "task_pr_merge_gate", return_value=(Path("/repo/gate.json"), gate)),
+            mock.patch.object(GTT, "task_pr_merge_live_facts", return_value=facts),
+            mock.patch.object(GTT, "run") as mutation,
+            mock.patch.object(GTT, "require_gh_auth") as auth,
+        ):
+            result = GTT.cmd_execute_task_pr_merge(args)
+
+        self.assertEqual(result, {"status": "recovered", "typed_exit": "merged", "output": output})
+        mutation.assert_not_called()
+        auth.assert_not_called()
+
+    def test_terminal_recovery_preserves_closure_mismatch(self) -> None:
+        public_input, facts, output = self.terminal_fixture(closed=False)
+        self.assertEqual(output["exit_id"], "closure_mismatch")
+        checked = GTT.check_task_pr_merge_result
+        with mock.patch.object(GTT, "task_pr_merge_live_facts", return_value=facts):
+            result = checked(Path("/repo"), public_input, {"terminal_output": output})
+        self.assertEqual(result["typed_exit"], "closure_mismatch")
+        self.assertEqual(result["output"], output)
+
+    def test_terminal_recovery_rejects_head_or_commit_drift(self) -> None:
+        public_input, facts, output = self.terminal_fixture()
+        for field, changed in (
+            ("head_sha", "3" * 40),
+            ("merge_commit", {"oid": "4" * 40}),
+        ):
+            with self.subTest(field=field):
+                stale = json.loads(json.dumps(facts))
+                stale["pr"][field] = changed
+                with mock.patch.object(GTT, "task_pr_merge_live_facts", return_value=stale):
+                    with self.assertRaises(GTT.WorkflowError):
+                        GTT.check_task_pr_merge_result(
+                            Path("/repo"), public_input, {"terminal_output": output}
+                        )
+
     def test_package_local_runtime_is_monolith_independent(self) -> None:
         runtime_text = "\n".join(
             path.read_text(encoding="utf-8")

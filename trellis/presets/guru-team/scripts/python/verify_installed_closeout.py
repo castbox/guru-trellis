@@ -21,12 +21,26 @@ BASE_BRANCH = "main"
 
 
 def run(command: list[str], cwd: Path, *, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(command, cwd=cwd, env=env, text=True, capture_output=True, check=False)
+    process_env = dict(os.environ if env is None else env)
+    process_env["PYTHONDONTWRITEBYTECODE"] = "1"
+    result = subprocess.run(command, cwd=cwd, env=process_env, text=True, capture_output=True, check=False)
     if result.returncode != 0:
         raise RuntimeError(
             f"command failed ({result.returncode}): {' '.join(command)}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
         )
     return result
+
+
+def single_json_stdout(result: subprocess.CompletedProcess[str], label: str) -> dict[str, Any]:
+    if not result.stdout.endswith("\n") or result.stdout.count("\n") != 1:
+        raise RuntimeError(f"{label} did not emit exactly one JSON line")
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"{label} stdout is not one complete JSON object") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"{label} stdout is not a JSON object")
+    return payload
 
 
 def git(root: Path, real_git: str, *args: str) -> str:
@@ -207,7 +221,6 @@ class InstalledPackageClient:
         values = [
             "--root", args.root,
             "--task", args.task,
-            "--input", self._last_review_gate,
         ]
         if args.expected_exit:
             values.extend(("--expected-exit", args.expected_exit))
@@ -511,6 +524,11 @@ real_git = os.environ["INSTALLED_CLOSEOUT_REAL_GIT"]
 remote = os.environ["INSTALLED_CLOSEOUT_REMOTE"]
 branch = os.environ["INSTALLED_CLOSEOUT_BRANCH"]
 number = int(os.environ["INSTALLED_CLOSEOUT_PR_NUMBER"])
+mutation_path = Path(os.environ["INSTALLED_CLOSEOUT_MUTATION_STORE"])
+
+def mutate(operation):
+    rows = mutation_path.read_text(encoding="utf-8").splitlines() if mutation_path.exists() else []
+    mutation_path.write_text("\\n".join([*rows, operation]) + "\\n", encoding="utf-8")
 
 def value(flag):
     return args[args.index(flag) + 1]
@@ -539,8 +557,8 @@ if len(args) >= 3 and args[:2] == ["issue", "view"]:
         raise SystemExit(2)
     print(json.dumps({
         "number": issue_number,
-        "state": "CLOSED" if (load() or {}).get("state") == "MERGED" else "OPEN",
-        "closedAt": "2026-08-12T10:00:01Z" if (load() or {}).get("state") == "MERGED" else None,
+        "state": "CLOSED" if (load() or {}).get("state") == "MERGED" and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1" else "OPEN",
+        "closedAt": "2026-08-12T10:00:01Z" if (load() or {}).get("state") == "MERGED" and os.environ.get("INSTALLED_CLOSEOUT_CLOSURE_MISMATCH") != "1" else None,
         "url": f"https://github.com/microsoft/powertoys/issues/{issue_number}",
     }))
     raise SystemExit(0)
@@ -554,6 +572,7 @@ if args[:2] == ["pr", "list"]:
         print("[]")
     raise SystemExit(0)
 if args[:2] == ["pr", "create"]:
+    mutate("pr_create")
     body = Path(value("--body-file")).read_text(encoding="utf-8")
     payload = {
         "number": number,
@@ -571,6 +590,7 @@ if args[:2] == ["pr", "create"]:
     print(payload["url"])
     raise SystemExit(0)
 if args[:2] == ["pr", "ready"]:
+    mutate("pr_ready")
     payload = load()
     if not payload:
         raise SystemExit(2)
@@ -607,6 +627,7 @@ if args[:2] == ["api", "repos/microsoft/powertoys"]:
     }))
     raise SystemExit(0)
 if len(args) >= 3 and args[:2] == ["pr", "merge"]:
+    mutate("pr_merge")
     payload = load()
     if not payload or int(args[2]) != number:
         raise SystemExit(2)
@@ -634,6 +655,9 @@ def run_closeout(
     branch_review_commit: str,
     real_git: str,
     remote: Path,
+    *,
+    terminal_recovery_only: bool = False,
+    closure_mismatch: bool = False,
 ) -> dict[str, Any]:
     package = (
         root / ".trellis/guru-team/skills/packages/guru-finalize-task"
@@ -656,7 +680,9 @@ def run_closeout(
     fake_bin = root.parent / f"fake-closeout-bin-{issue}"
     install_fake_commands(fake_bin)
     store = root.parent / f"installed-closeout-pr-{issue}.json"
+    mutations = root.parent / f"installed-closeout-mutations-{issue}.txt"
     store.unlink(missing_ok=True)
+    mutations.unlink(missing_ok=True)
     env = dict(os.environ)
     env.update({
         "PATH": f"{fake_bin}{os.pathsep}{env.get('PATH', '')}",
@@ -665,6 +691,8 @@ def run_closeout(
         "INSTALLED_CLOSEOUT_BRANCH": branch,
         "INSTALLED_CLOSEOUT_PR_NUMBER": str(issue),
         "INSTALLED_CLOSEOUT_PR_STORE": str(store),
+        "INSTALLED_CLOSEOUT_MUTATION_STORE": str(mutations),
+        "INSTALLED_CLOSEOUT_CLOSURE_MISMATCH": "1" if closure_mismatch else "0",
     })
     task_rel = task_dir.relative_to(root).as_posix()
     runtime_dir = root / ".trellis/.runtime/guru-team/installed-closeout"
@@ -843,11 +871,14 @@ def run_closeout(
                 archive_root.rmdir()
             shutil.rmtree(target, ignore_errors=True)
 
-    for archive_component in ("archive-root", "archive-month"):
-        for scope in ("inside", "outside"):
-            verify_archive_path_symlink_case(archive_component, scope)
+    if not terminal_recovery_only:
+        for archive_component in ("archive-root", "archive-month"):
+            for scope in ("inside", "outside"):
+                verify_archive_path_symlink_case(archive_component, scope)
 
     try:
+        if terminal_recovery_only:
+            raise StopIteration
         existing = original_config.decode("utf-8") if original_config is not None else ""
         if existing and not existing.endswith("\n"):
             existing += "\n"
@@ -901,13 +932,15 @@ def run_closeout(
             raise RuntimeError("installed hook preflight pushed the closeout branch")
         if store.exists():
             raise RuntimeError("installed hook preflight created or queried a persisted PR")
+    except StopIteration:
+        pass
     finally:
         if original_config is None:
             config_path.unlink(missing_ok=True)
         else:
             config_path.write_bytes(original_config)
 
-    payload = json.loads(run(execute_command, root, env=env).stdout)
+    payload = single_json_stdout(run(execute_command, root, env=env), "installed Finalizer fresh executor")
     if (
         payload.get("typed_exit") != "ready_for_merge"
         or payload.get("closeout_plan_digest") != digest
@@ -920,6 +953,15 @@ def run_closeout(
         or checked_after_execute.get("transaction_state") != "ready"
     ):
         raise RuntimeError("installed Finalizer checker did not validate the terminal ready marker")
+    mutations_after_finalizer = mutations.read_bytes()
+    recovered_finalizer = single_json_stdout(
+        run(execute_command, root, env=env),
+        "installed Finalizer terminal recovery",
+    )
+    if recovered_finalizer.get("output") != payload.get("output"):
+        raise RuntimeError("installed Finalizer terminal recovery changed its ready_for_merge DTO")
+    if mutations.read_bytes() != mutations_after_finalizer:
+        raise RuntimeError("installed Finalizer terminal recovery repeated a GitHub mutation")
 
     archived = Path(payload["archived_task_dir"])
     if not archived.is_dir() or task_dir.exists():
@@ -1054,15 +1096,30 @@ def run_closeout(
     )
     if merge_checked.get("typed_exit") != "ready_to_merge":
         raise RuntimeError("installed Merge checker did not bind the expected-head merge")
-    merge_executed = json.loads(
+    merge_executed = single_json_stdout(
         run(
             [str(merge_wrappers["execute-task-pr-merge"]), *merge_common, "--gate", merge_gate_rel],
             root,
             env=env,
-        ).stdout
+        ),
+        "installed Merge fresh executor",
     )
-    if merge_executed.get("typed_exit") != "merged":
+    expected_merge_exit = "closure_mismatch" if closure_mismatch else "merged"
+    if merge_executed.get("typed_exit") != expected_merge_exit:
         raise RuntimeError("installed Merge executor did not complete the expected-head merge")
+    mutations_after_merge = mutations.read_bytes()
+    recovered_merge = single_json_stdout(
+        run(
+            [str(merge_wrappers["execute-task-pr-merge"]), *merge_common, "--gate", merge_gate_rel],
+            root,
+            env=env,
+        ),
+        "installed Merge terminal recovery",
+    )
+    if recovered_merge.get("output") != merge_executed.get("output"):
+        raise RuntimeError("installed Merge terminal recovery changed its terminal DTO")
+    if mutations.read_bytes() != mutations_after_merge:
+        raise RuntimeError("installed Merge terminal recovery repeated the merge mutation")
     merged_payload = json.loads(
         run(
             [str(merge_wrappers["invoke"]), "--input", merge_input_rel, "--gate", merge_gate_rel],
@@ -1071,7 +1128,7 @@ def run_closeout(
         ).stdout
     )
     if (
-        merged_payload.get("exit_id") != "merged"
+        merged_payload.get("exit_id") != expected_merge_exit
         or merged_payload.get("repo_ref") != REPO
         or merged_payload.get("pr_number") != issue
         or merged_payload.get("merge_commit_sha") != local_head
@@ -1118,8 +1175,8 @@ def run_closeout(
         "terminal_transaction_artifacts": 0,
         "private_owner_checkpoints_consumed": True,
         "fresh_archived_pr_binding": recovered_remote_pr.get("headRefOid") == local_head,
-        "after_archive_hook_preflight": True,
-        "archive_path_symlink_preflight": True,
+        "after_archive_hook_preflight": not terminal_recovery_only,
+        "archive_path_symlink_preflight": not terminal_recovery_only,
     }
 
 
@@ -1127,6 +1184,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
     parser.add_argument("--case", choices=["initial", "after-update"], required=True)
+    parser.add_argument("--terminal-recovery-only", action="store_true")
+    parser.add_argument("--closure-mismatch", action="store_true")
     args = parser.parse_args()
     root = Path(args.repo).resolve()
     real_git = shutil.which("git")
@@ -1170,6 +1229,8 @@ def main() -> int:
         branch_review_commit,
         real_git,
         remote,
+        terminal_recovery_only=args.terminal_recovery_only,
+        closure_mismatch=args.closure_mismatch,
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0

@@ -24,10 +24,18 @@ the existing archive/Ready sequence. Publication freshness, repository/ref/HEAD
 identity, PR uniqueness, Issue scope, archive projection, confirmation, and
 recovery checks retain their existing ownership.
 
+Once the transaction has reached `ready`, execute performs only terminal live
+revalidation and materializes the current `ready_for_merge` DTO. It does not
+call the Draft-only finish path or repeat push, PR, archive, commit, or Ready
+mutations. The public invocation retires owner-private state only after
+consuming that validated terminal DTO.
+
 ## Migration
 
 The 5.0 aggregate, verification re-entry schemas, verification-required output,
-3.0 and 4.0 gates, and 1.0 transaction are immutable legacy assets. They are not
+3.0 and 4.0 gates, 2.0 semantic-review input, and 1.0 transaction are immutable
+legacy assets with explicit versioned filenames. Unversioned gate and semantic
+review schemas/examples are current 5.0/3.0 assets and route to Merge. They are not
 current profiles, outputs, projections, or private artifacts. A retired
 task-bearing verification input or `next_transition=verify` fails closed with
 remediation to rerun current Publication and rebuild Finalizer state. No
