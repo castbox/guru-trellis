@@ -55,6 +55,13 @@ def package_repo_root() -> Path:
     raise RuntimeError(f"Unsupported publication package test layout: {PACKAGE}")
 
 
+def finish_summary_schema_path() -> Path:
+    repo = package_repo_root()
+    if "trellis/skills/guru-team/packages" in PACKAGE.as_posix():
+        return repo / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+    return repo / ".trellis/guru-team/schemas/finish-summary.schema.json"
+
+
 def load_runtime():
     runtime_path = PACKAGE / "runtime/owner.py"
     spec = importlib.util.spec_from_file_location(
@@ -154,10 +161,8 @@ class TaskPublicationContractTest(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         payload = large_finish_summary()
-        repo = package_repo_root()
         schema = json.loads(
-            (repo / "trellis/workflows/guru-team/schemas/finish-summary.schema.json")
-            .read_text(encoding="utf-8")
+            finish_summary_schema_path().read_text(encoding="utf-8")
         )
         self.assertEqual(
             list(Draft202012Validator(schema).iter_errors(payload)),
