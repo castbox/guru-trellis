@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -10,6 +11,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 import sys
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from runtime.validate import _package_paths
@@ -17,9 +19,236 @@ from runtime.validate import _package_paths
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT.parent
+REPO = ROOT.parents[3]
+
+
+def bootstrap_runtime(repo: Path, runtime_assets: Path = ROOT) -> dict[str, object]:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(runtime_assets / "bootstrap.py"),
+            "--repo",
+            str(repo),
+            "--runtime-assets",
+            str(runtime_assets),
+            "--python",
+            sys.executable,
+            "--json",
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result)
+    return json.loads(result.stdout)
+
+
+def copy_active_runtime(repo: Path) -> None:
+    source = REPO / ".trellis/.runtime/guru-team/python"
+    if not source.is_dir():
+        bootstrap_runtime(REPO)
+    shutil.copytree(source, repo / ".trellis/.runtime/guru-team/python")
 
 
 class SharedRuntimeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.runtime_result = bootstrap_runtime(REPO)
+
+    def test_managed_runtime_reuses_same_identity_and_probes_draft_2020_12(self) -> None:
+        self.assertEqual(self.runtime_result["status"], "ok")
+        self.assertIn(self.runtime_result["action"], {"installed", "reused", "repaired"})
+        second = bootstrap_runtime(REPO)
+        self.assertEqual(second["action"], "reused")
+        self.assertEqual(second["runtime_identity"], self.runtime_result["runtime_identity"])
+
+        active = json.loads((REPO / ".trellis/.runtime/guru-team/python/active.json").read_text())
+        managed_python = REPO / ".trellis/.runtime/guru-team/python" / active["interpreter"]
+        probe = subprocess.run(
+            [str(managed_python), str(ROOT / "probe.py"), "--manifest", str(ROOT / "python-runtime.json"), "--json"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(probe.returncode, 0, probe)
+        self.assertEqual(json.loads(probe.stdout)["draft"], "2020-12")
+
+    def test_lock_change_changes_runtime_identity(self) -> None:
+        from runtime.bootstrap import runtime_identity
+
+        with tempfile.TemporaryDirectory() as tmp:
+            assets = Path(tmp)
+            shutil.copy2(ROOT / "python-runtime.json", assets / "python-runtime.json")
+            shutil.copy2(ROOT / "requirements.lock", assets / "requirements.lock")
+            original, _ = runtime_identity(assets, Path(sys.executable))
+            with (assets / "requirements.lock").open("a", encoding="utf-8") as handle:
+                handle.write("\n# identity drift\n")
+            changed, _ = runtime_identity(assets, Path(sys.executable))
+        self.assertNotEqual(original, changed)
+
+    def test_damaged_managed_runtime_is_repaired(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            copy_active_runtime(repo)
+            active = json.loads((repo / ".trellis/.runtime/guru-team/python/active.json").read_text())
+            damaged_python = repo / ".trellis/.runtime/guru-team/python" / active["interpreter"]
+            damaged_python.unlink()
+            repaired = bootstrap_runtime(repo)
+            self.assertEqual(repaired["action"], "repaired")
+            self.assertEqual(repaired["runtime_identity"], active["runtime_id"])
+            self.assertTrue(damaged_python.is_file())
+
+    def test_failed_candidate_preserves_active_runtime(self) -> None:
+        from runtime import bootstrap as managed
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            runtime_root = repo / ".trellis/.runtime/guru-team/python"
+            runtime_root.mkdir(parents=True)
+            (runtime_root / "active.json").write_text('{"runtime_id":"prior","interpreter":"prior/venv/bin/python"}\n')
+            before = (runtime_root / "active.json").read_bytes()
+            real_run = managed.subprocess.run
+
+            def fail_venv(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+                if argv[1:3] == ["-m", "venv"]:
+                    return subprocess.CompletedProcess(argv, 1, "", "failed")
+                return real_run(argv, **kwargs)
+
+            with mock.patch.object(managed.subprocess, "run", side_effect=fail_venv):
+                with self.assertRaises(managed.BootstrapError):
+                    managed.bootstrap(repo, ROOT, Path(sys.executable))
+            self.assertEqual((runtime_root / "active.json").read_bytes(), before)
+            self.assertEqual(list(runtime_root.glob(".*.candidate-*")), [])
+
+    def test_failed_hash_locked_install_preserves_active_runtime(self) -> None:
+        from runtime import bootstrap as managed
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            runtime_root = repo / ".trellis/.runtime/guru-team/python"
+            runtime_root.mkdir(parents=True)
+            (runtime_root / "active.json").write_text('{"runtime_id":"prior","interpreter":"prior/venv/bin/python"}\n')
+            before = (runtime_root / "active.json").read_bytes()
+            real_run = managed.subprocess.run
+
+            def fail_install(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+                if argv[1:3] == ["-m", "venv"]:
+                    venv_dir = Path(argv[3])
+                    python = managed.venv_python(venv_dir)
+                    python.parent.mkdir(parents=True)
+                    shutil.copy2(sys.executable, python)
+                    python.chmod(0o755)
+                    return subprocess.CompletedProcess(argv, 0, "", "")
+                if argv[1:4] == ["-m", "pip", "--version"]:
+                    return subprocess.CompletedProcess(argv, 0, "pip test", "")
+                if argv[1:3] == ["-m", "pip"] and "install" in argv:
+                    return subprocess.CompletedProcess(argv, 1, "", "network unavailable")
+                return real_run(argv, **kwargs)
+
+            with mock.patch.object(managed.subprocess, "run", side_effect=fail_install):
+                with self.assertRaisesRegex(managed.BootstrapError, "hash-locked"):
+                    managed.bootstrap(repo, ROOT, Path(sys.executable))
+            self.assertEqual((runtime_root / "active.json").read_bytes(), before)
+            self.assertEqual(list(runtime_root.glob(".*.candidate-*")), [])
+
+    def test_bootstrap_failure_reports_computed_runtime_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shim = root / "python"
+            shim.write_text(
+                "#!/bin/sh\n"
+                "if [ \"$1\" = \"-c\" ]; then\n"
+                "  echo '{\"implementation\":\"CPython\",\"major\":3,\"minor\":12}'\n"
+                "  exit 0\n"
+                "fi\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            shim.chmod(0o755)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "bootstrap.py"),
+                    "--repo",
+                    str(root),
+                    "--runtime-assets",
+                    str(ROOT),
+                    "--python",
+                    str(shim),
+                    "--json",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stdout)
+        self.assertRegex(payload["runtime_identity"], r"^[0-9a-f]{24}$")
+
+    def test_resolver_failure_is_stable_json_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        payload = json.loads(result.stderr)
+        self.assertEqual(
+            set(payload),
+            {"code", "field_path", "dependency", "runtime_identity", "remediation"},
+        )
+        self.assertEqual(payload["code"], "runtime_dependency_missing")
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_public_wrapper_uses_managed_runtime_when_path_python_has_no_jsonschema(self) -> None:
+        no_site_packages = subprocess.run(
+            [sys.executable, "-S", "-c", "import importlib.util; assert importlib.util.find_spec('jsonschema') is None"],
+            check=False,
+        )
+        self.assertEqual(no_site_packages.returncode, 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            installed_root = repo / ".trellis/guru-team"
+            copy_active_runtime(repo)
+            shutil.copytree(ROOT, installed_root / "runtime")
+            package = SKILLS / "packages/guru-select-workflow-mode"
+            shutil.copytree(package, installed_root / "skills/packages/guru-select-workflow-mode")
+            projected = repo / ".agents/skills/guru-select-workflow-mode"
+            shutil.copytree(package, projected)
+            shim_dir = repo / "path-bin"
+            shim_dir.mkdir()
+            shim = shim_dir / "python3"
+            shim.write_text(f"#!/bin/sh\nexec {sys.executable} -S \"$@\"\n", encoding="utf-8")
+            shim.chmod(0o755)
+            result = subprocess.run(
+                [
+                    str(projected / "scripts/invoke.sh"),
+                    "--input",
+                    str(projected / "examples/public-input.json"),
+                    "--owner-result",
+                    str(projected / "examples/workflow-mode-selection.json"),
+                    "--json",
+                ],
+                cwd=repo,
+                env={**os.environ, "PATH": f"{shim_dir}:/usr/bin:/bin"},
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload, {"exit_id": "task_free"})
+
     def test_command_runtime_consumes_one_global_json_flag(self) -> None:
         from runtime.command import _consume_global_json_flag, _validate_argument_cardinality
         from runtime.io import CommandError
@@ -146,6 +375,7 @@ class SharedRuntimeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
             installed_root = repo / ".trellis/guru-team"
+            copy_active_runtime(repo)
             shutil.copytree(ROOT, installed_root / "runtime")
             shutil.copytree(
                 SKILLS / "packages" / skill_id,
@@ -180,7 +410,9 @@ class SharedRuntimeTests(unittest.TestCase):
                 ["git", "init", "-q", "-b", "feat/context", str(repo)],
                 check=True,
             )
+            (repo / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
             installed_root = repo / ".trellis/guru-team"
+            copy_active_runtime(repo)
             shutil.copytree(ROOT, installed_root / "runtime")
             shutil.copytree(
                 SKILLS / "packages" / skill_id,

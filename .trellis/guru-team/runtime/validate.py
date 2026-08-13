@@ -16,12 +16,17 @@ from .schema import validate_json
 APPROVED_KERNEL_FILES = {
     "__init__.py",
     "command.py",
+    "bootstrap.py",
     "compat.py",
     "discovery.py",
     "eval_runner.py",
     "installed.py",
     "io.py",
     "launch.sh",
+    "probe.py",
+    "python-runtime.json",
+    "requirements.lock",
+    "resolve-python.sh",
     "schema.py",
     "validate.py",
 }

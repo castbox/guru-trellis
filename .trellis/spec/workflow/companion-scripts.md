@@ -113,7 +113,20 @@ Compatibility fact commands remain package-owned:
 Package-local runtimes and the minimal kernel are installed into target
 repositories. Keep them portable:
 
-- Use the Python standard library only.
+- Bootstrap, resolver validation, ownership validation, and the preset installer
+  use only the Python standard library so they can run before managed dependencies
+  exist.
+- Public Guru Team commands run only through the repository-local managed Python
+  selected by `runtime/resolve-python.sh`. The dependency set and hashes are
+  canonical in `runtime/python-runtime.json` and `runtime/requirements.lock`.
+- PATH Python, active virtual environments, global packages, user site-packages,
+  and `PYTHONPATH` are not command-runtime fallback sources.
+- Runtime identity binds the runtime API, lock digest, Python implementation and
+  minor version, and venv layout. A matching identity is reused only after
+  metadata and Draft 2020-12 capability validation.
+- Candidate construction and dependency installation finish before active
+  pointer replacement. Failure preserves the prior active runtime; unknown
+  provenance at an identity path fails closed.
 - Shell out to `git` and `gh` through helper functions such as `run()` and
   `run_stdout()`.
 - Use `pathlib.Path` for filesystem paths.
@@ -133,6 +146,11 @@ Reference roots:
 Use the shared `CommandError` only for deterministic failures declared in the
 owning package's `errors/catalog.json`. Public JSON mode emits exactly one error
 object; diagnostics use stderr and tracebacks are never public output.
+
+Managed runtime resolution failures emit one stderr JSON object with
+`code=runtime_dependency_missing`, `field_path`, `dependency`, nullable
+`runtime_identity`, and a preset-reapply `remediation`; they exit 2 without a
+traceback or fallback execution.
 
 The preset installer currently uses `SystemExit` for missing `.trellis/` or
 missing source directory because it is a small installer script. If adding more

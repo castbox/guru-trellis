@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-13T13:56:56Z",
+  "installed_at": "2026-08-13T15:58:03Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "11051f152fe62fd9a155435488e9a7debad539bd",
-    "commit": "11051f152fe62fd9a155435488e9a7debad539bd",
+    "ref": "3504ecad9ada04493b21f426ff8b8718ad83f969",
+    "commit": "3504ecad9ada04493b21f426ff8b8718ad83f969",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -418,8 +418,8 @@
       ".trellis/spec/workflow/workflow-contract.md": "34e0207f10f0a1a24a7fd6e297d121f22515029a81e3ba1219d053d4968785cc",
       ".trellis/spec/workflow/skill-package-contract.md": "3e320d8d49ab02114fac1d5c3c12e35bd2306a2624a46eb22ff50566cb462fd8",
       ".trellis/spec/workflow/data-contracts.md": "44aaeb6fdb6180c0393bc5a3a9c5828e6f3696db5502cce29cb79e1ec9072ebd",
-      ".trellis/spec/workflow/companion-scripts.md": "7b83592aee7ec9003175d48e9a072db05c2091d1dc1720ae908d287795147b14",
-      ".trellis/spec/workflow/quality-guidelines.md": "f928a0971c08888c0fce9e2b7009902133b054de8650209cea0fa019456df20a"
+      ".trellis/spec/workflow/companion-scripts.md": "0aa8a20dfbc3d1e4972e40e4c73597d8eb7562cc60e3f21cfea2f2dd391e4173",
+      ".trellis/spec/workflow/quality-guidelines.md": "8fe0da49d71e76ef0e0470bbe954c893d0c7bc682b2e70595d1511b702cbf543"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -6586,6 +6586,13 @@
         "action": "unchanged"
       },
       {
+        "path": ".trellis/guru-team/runtime/bootstrap.py",
+        "source": "trellis/skills/guru-team/runtime/bootstrap.py",
+        "sha256": "9a34110d7a21758ffd8328542d8b35148208cc621fb577158f7794beb0d41b5d",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
         "path": ".trellis/guru-team/runtime/command.py",
         "source": "trellis/skills/guru-team/runtime/command.py",
         "sha256": "ebc613ed194be6d6fb865ccb96d1a93ac817577987f6ce1ca0fb97af42573488",
@@ -6630,7 +6637,35 @@
       {
         "path": ".trellis/guru-team/runtime/launch.sh",
         "source": "trellis/skills/guru-team/runtime/launch.sh",
-        "sha256": "da34682f40705067bd799a6b1901b6920d296c22df2e72d5e5dee4438707bd38",
+        "sha256": "5e4df5812a4b6f6b4d7cd7ff8b9f0253dfc29ebd89a8e1cf972f8f06908568d1",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/runtime/probe.py",
+        "source": "trellis/skills/guru-team/runtime/probe.py",
+        "sha256": "54850786024ae432b0b890bf2ae1913c613d3423307c8ff05fdbf0bb0be7b44b",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/runtime/python-runtime.json",
+        "source": "trellis/skills/guru-team/runtime/python-runtime.json",
+        "sha256": "d53f0e81159ad4efd292487a7d6dbb9a2edddd16b4ad58bf59e5d7ed8933ce13",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/runtime/requirements.lock",
+        "source": "trellis/skills/guru-team/runtime/requirements.lock",
+        "sha256": "53fcf8fb29e2b4dd2add49a8fa42e541518b2f0410d47b9383ec413bc56731db",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/runtime/resolve-python.sh",
+        "source": "trellis/skills/guru-team/runtime/resolve-python.sh",
+        "sha256": "2b303eb47820a0f6c4202efcce434e053402803e4d85c26db316f88b1c9cad24",
         "executable": true,
         "action": "unchanged"
       },
@@ -6644,7 +6679,7 @@
       {
         "path": ".trellis/guru-team/runtime/validate.py",
         "source": "trellis/skills/guru-team/runtime/validate.py",
-        "sha256": "3f98bbe41922c8e951b9b5c352b743fff21e8e372d8a582e8a7068a2ff74b404",
+        "sha256": "4a8690be0cd7dc876b5109feb1fcd938511466b7e29e3329d3b1006b7211e630",
         "executable": false,
         "action": "unchanged"
       },

@@ -43,10 +43,10 @@ case "$PACKAGE_ROOT" in
     exit 2
     ;;
 esac
-if [[ ! -f "$SKILLS_ROOT/runtime/command.py" ]]; then
-  echo '{"code":"runtime_dependency_missing","field_path":"runtime","remediation":"Install the complete compatible Guru Team preset runtime."}'
+if [[ ! -f "$SKILLS_ROOT/runtime/command.py" || ! -x "$SKILLS_ROOT/runtime/resolve-python.sh" ]]; then
+  echo '{"code":"runtime_dependency_missing","field_path":"runtime","dependency":"python-runtime","runtime_identity":null,"remediation":"trellis/presets/guru-team/scripts/bash/apply.sh --repo ."}' >&2
   exit 2
 fi
-export PYTHONPATH="$SKILLS_ROOT${PYTHONPATH:+:$PYTHONPATH}"
+export PYTHONPATH="$SKILLS_ROOT"
 cd "$REPO_ROOT"
-exec python3 -m runtime.command "$PACKAGE_ROOT" "$COMMAND_ID" "$@"
+exec "$SKILLS_ROOT/runtime/resolve-python.sh" "$REPO_ROOT" "$SKILLS_ROOT/runtime" -m runtime.command "$PACKAGE_ROOT" "$COMMAND_ID" "$@"

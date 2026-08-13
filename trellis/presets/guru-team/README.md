@@ -231,6 +231,44 @@ Examples:
   --all-platforms
 ```
 
+### Managed Python runtime
+
+Preset apply uses the selected PATH Python only to bootstrap a repository-local
+runtime under `.trellis/.runtime/guru-team/python/`. The current runtime contract
+supports CPython 3.12 and 3.14. It installs the complete dependency set from the
+hash-locked `.trellis/guru-team/runtime/requirements.lock`, validates the pinned
+versions and Draft 2020-12 behavior, and only then activates that runtime.
+
+All public Guru Team wrappers execute with the active managed interpreter. They
+do not fall back to PATH Python, an active virtual environment, user
+site-packages, or global packages. Runtime identity binds the runtime API, lock
+digest, Python implementation and minor version, and venv layout. Reapplying the
+preset reuses a healthy matching identity or rebuilds a known managed but damaged
+identity. A failed candidate install preserves the previously active runtime.
+
+Bootstrap or resolver failure returns `runtime_dependency_missing` with the
+runtime identity when known and this remediation command:
+
+```bash
+trellis/presets/guru-team/scripts/bash/apply.sh --repo .
+```
+
+The managed runtime is gitignored and is not part of the installed extension
+manifest. The manifest does include the canonical runtime contract, lock,
+bootstrap, probe, resolver, and launcher bytes used to reproduce it.
+
+Maintainers can run the focused #219 boundary without the complete extension
+verification matrix:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-managed-python-runtime.sh
+```
+
+This source-only runner performs one real preset apply with a PATH Python that
+has neither pip nor `jsonschema`, then executes the installed public contract
+discovery wrapper. It does not run marketplace, official update, platform
+matrix, business-repository upgrade, or the full capability verifier.
+
 ## Throwaway Install Verification
 
 Maintainers can verify the current extension's non-interactive install path with:
