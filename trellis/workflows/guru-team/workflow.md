@@ -296,8 +296,9 @@ Invoke guru-approve-task-plan and consume only its declared exit.
 #### 1.5 Task activation
 
 Only approved reaches the active-task pair guard with
-`resume_target=task_activation`. An unchanged/current pair resumes activation;
-a new pair invokes guru-reconcile-task-base and follows only its declared exit.
+`resume_target=task_activation`. An unchanged pair resumes activation; a
+current pair consumes and routes its recorded exact typed output; a new pair
+invokes guru-reconcile-task-base and follows only its declared exit.
 After the checked pair route resolves, require workspace-boundary success,
 validate the approved DTO, and run:
 

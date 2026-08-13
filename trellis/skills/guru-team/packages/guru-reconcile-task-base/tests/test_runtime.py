@@ -34,6 +34,23 @@ class RuntimeTest(unittest.TestCase):
             result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write(profile+'.json',public))])
             self.assertEqual('unchanged',result['status'],profile)
         self.assertNotIn('branch_review_commit',self.public('post_commit'))
+    def test_post_plan_accepts_planning_before_activation_but_later_boundaries_do_not(self):
+        self.write_identity(status='planning')
+        post_plan=self.public('post_plan'); post_plan['old_base_head']=self.new
+        self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-plan.json',post_plan))])['status'])
+        post_plan['old_base_head']=self.old
+        public_path=self.write('planning-new-pair.json',post_plan); gate_path=self.write('planning-gate.json',self.gate())
+        owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','reconciled'])
+        output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('planning-envelope.json',{'public_input':post_plan,'owner_result':owner}))])
+        self.assertEqual('task_activation',output['resume_target'])
+        owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','reconciled'])
+        guarded=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(public_path)])
+        self.assertEqual('current_pair',guarded['status'])
+        self.assertEqual(owner['typed_output'],guarded['typed_output'])
+        post_check=self.public('post_check'); post_check['old_base_head']=self.new
+        with self.assertRaises(CommandError) as raised:
+            execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-check.json',post_check))])
+        self.assertEqual('stale_identity',raised.exception.code)
     def test_multiple_base_commits_form_one_cumulative_pair(self):
         self.git('switch','main'); (self.repo/'second.txt').write_text('second\n'); self.git('add','second.txt'); self.git('commit','-qm','second base advance'); newest=self.git('rev-parse','HEAD'); self.git('switch','feature')
         public=self.public(); public['selected_base_ref']=newest; public['new_base_head']=newest

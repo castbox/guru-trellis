@@ -116,7 +116,7 @@ def _current_worktree_branch(repo: Path) -> str:
     return matches[0]["branch"].removeprefix("refs/heads/")
 
 
-def task_identity(repo: Path, task_ref: str) -> dict[str, str]:
+def task_identity(repo: Path, task_ref: str, *, allow_planning: bool = False) -> dict[str, str]:
     tasks_root = (repo / ".trellis/tasks").resolve()
     task_dir = (repo / task_ref).resolve()
     if not task_ref.startswith(".trellis/tasks/") or task_dir == tasks_root or not task_dir.is_relative_to(tasks_root) or not task_dir.is_dir() or task_dir.is_symlink():
@@ -124,8 +124,10 @@ def task_identity(repo: Path, task_ref: str) -> dict[str, str]:
     task = _identity_json(task_dir / "task.json", "task.json")
     task_id = task.get("id")
     branch = task.get("branch")
-    if not isinstance(task_id, str) or not task_id or not isinstance(branch, str) or not branch or task.get("status") != "in_progress":
-        raise CommandError("stale_identity", "task.json", "Use the current in-progress task identity.", 3)
+    allowed_statuses = {"in_progress", "planning"} if allow_planning else {"in_progress"}
+    if not isinstance(task_id, str) or not task_id or not isinstance(branch, str) or not branch or task.get("status") not in allowed_statuses:
+        expected = "planning or in-progress" if allow_planning else "in-progress"
+        raise CommandError("stale_identity", "task.json", f"Use the current {expected} task identity.", 3)
     live_branch = git(repo, "branch", "--show-current")
     if branch != live_branch or branch != _current_worktree_branch(repo):
         raise CommandError("stale_identity", "task.json.branch", "Use the task branch checked out in this exact worktree.", 3)
@@ -167,7 +169,7 @@ def validate_public(package: Path, value: dict[str, Any]) -> None:
 
 
 def objective_identity(repo: Path, public: dict[str, Any]) -> None:
-    task_identity(repo, public["task_ref"])
+    task_identity(repo, public["task_ref"], allow_planning=public["profile"] == "post_plan")
     task_head = resolve_commit(repo, public["task_head"], "task_head")
     old_base = resolve_commit(repo, public["old_base_head"], "old_base_head")
     new_base = resolve_commit(repo, public["new_base_head"], "new_base_head")
@@ -185,8 +187,8 @@ def objective_identity(repo: Path, public: dict[str, Any]) -> None:
         raise CommandError("stale_identity", "branch_review_commit", "Use the exact existing review commit.", 3)
 
 
-def checkpoint_path(repo: Path, task_ref: str) -> Path:
-    identity = task_identity(repo, task_ref)
+def checkpoint_path(repo: Path, task_ref: str, *, allow_planning: bool = False) -> Path:
+    identity = task_identity(repo, task_ref, allow_planning=allow_planning)
     namespace = f"{identity['task_id']}-{hashlib.sha256(identity['task_ref'].encode()).hexdigest()[:12]}"
     return repo / ".trellis/.runtime/guru-team/owner-checkpoints" / namespace / "guru-reconcile-task-base" / "base-reconciliation.json"
 

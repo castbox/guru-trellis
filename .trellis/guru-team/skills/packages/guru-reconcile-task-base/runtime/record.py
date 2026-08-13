@@ -11,5 +11,5 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     output=output_for(public,gate,exit_id); validate_json(output,package_root/f"schemas/public-{exit_id.replace('_','-')}-output.schema.json","typed_output")
     result={"schema_version":"1.0","skill_id":"guru-reconcile-task-base",**{k:copy.deepcopy(v) for k,v in public.items()},"semantic_gate":gate,"typed_output":output}
     result["facts_sha256"]=digest(result); validate_result(package_root,repo,result,public)
-    target=checkpoint_path(repo,public["task_ref"]); target.parent.mkdir(parents=True,exist_ok=True); target.write_text(__import__('json').dumps(result,ensure_ascii=False,indent=2)+"\n")
+    target=checkpoint_path(repo,public["task_ref"],allow_planning=public["profile"]=="post_plan"); target.parent.mkdir(parents=True,exist_ok=True); target.write_text(__import__('json').dumps(result,ensure_ascii=False,indent=2)+"\n")
     return result

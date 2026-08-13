@@ -98,6 +98,12 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
             "Unchanged or\nalready-current pairs resume the closed `resume_target`",
             text,
         )
+        self.assertNotIn("An unchanged/current pair resumes activation", text)
+        self.assertIn(
+            "An unchanged pair resumes activation; a\n"
+            "current pair consumes and routes its recorded exact typed output",
+            text,
+        )
 
     def test_installed_workflow_is_exact_canonical_projection(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

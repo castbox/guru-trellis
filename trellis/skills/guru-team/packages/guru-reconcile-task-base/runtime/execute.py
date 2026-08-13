@@ -11,11 +11,11 @@ def _tree_digest(root: Path) -> str:
 
 def guard(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
-    args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); task_identity(repo,public["task_ref"])
+    args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); allow_planning=public["profile"]=="post_plan"; task_identity(repo,public["task_ref"],allow_planning=allow_planning)
     task=resolve_commit(repo,public["task_head"],"task_head"); old=resolve_commit(repo,public["old_base_head"],"old_base_head"); new=resolve_commit(repo,public["selected_base_ref"],"selected_base_ref")
     status="unchanged" if new==old else "new_pair"
     if task != public["task_head"] or new != public["new_base_head"] or resolve_commit(repo,"HEAD","HEAD") != task or not is_ancestor(repo,old,new): status="blocked"
-    cp=checkpoint_path(repo,public["task_ref"])
+    cp=checkpoint_path(repo,public["task_ref"],allow_planning=allow_planning)
     typed_output=None
     if status=="new_pair" and cp.is_file():
         try:
