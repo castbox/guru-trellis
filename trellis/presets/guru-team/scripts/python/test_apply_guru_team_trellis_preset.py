@@ -667,6 +667,39 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
+    def test_semantic_spec_unknown_collision_is_preserved_with_new_sidecar(self) -> None:
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("# Local semantic contract\n", encoding="utf-8")
+
+        result = preset.copy_managed_spec(
+            self.guru_root / source_relative, target, self.repo, None
+        )
+
+        self.assertEqual(result["action"], "conflict")
+        self.assertEqual(target.read_text(encoding="utf-8"), "# Local semantic contract\n")
+        self.assertEqual(
+            target.with_name(f"{target.name}.new").read_bytes(),
+            (self.guru_root / source_relative).read_bytes(),
+        )
+
+    def test_semantic_spec_declared_managed_upgrade_uses_backup(self) -> None:
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        old = b"# Prior managed semantic contract\n"
+        target.write_bytes(old)
+        previous = {"install": {"managed_assets": [target_relative.as_posix()]}}
+
+        result = preset.copy_managed_spec(
+            self.guru_root / source_relative, target, self.repo, previous
+        )
+
+        self.assertEqual(result["action"], "updated_managed")
+        self.assertEqual(target.read_bytes(), (self.guru_root / source_relative).read_bytes())
+        self.assertEqual(target.with_name(f"{target.name}.bak").read_bytes(), old)
+
     def test_legacy_runtime_absence_is_a_clean_initial_install(self) -> None:
         removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
             self.repo, self.install_dst
@@ -1115,13 +1148,25 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(installed_manifest["install"]["all_platforms"])
         self.assertEqual(
             len(managed_assets),
-            len(preset.MANAGED_ASSET_PATHS) + len(GURU_FINISH_ENTRIES) + 1,
+            len(preset.MANAGED_ASSET_PATHS)
+            + len(preset.MANAGED_SPEC_PATHS)
+            + len(GURU_FINISH_ENTRIES)
+            + 1,
         )
         self.assertEqual(managed_assets, sorted(set(managed_assets)))
         self.assertNotIn(installed_integration_path, managed_assets)
         self.assertEqual(
             [path for path in managed_assets if not (self.repo / path).is_file()],
             [],
+        )
+        semantic_spec = ".trellis/spec/workflow/semantic-retrieval.md"
+        self.assertIn(semantic_spec, managed_assets)
+        self.assertEqual(
+            (self.repo / semantic_spec).read_bytes(),
+            (
+                self.guru_root
+                / "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"
+            ).read_bytes(),
         )
         integration_records = [
             record
@@ -1417,7 +1462,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn(
-            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
+            f"assert len(assets) == {len(preset.MANAGED_ASSET_PATHS) + len(preset.MANAGED_SPEC_PATHS) + len(GURU_FINISH_ENTRIES) + 1}",
             verifier,
         )
         self.assertIn('ownership["schema_version"] == "3.0"', verifier)

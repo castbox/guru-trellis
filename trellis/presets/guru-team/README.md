@@ -300,6 +300,11 @@ Gate.
 
 ## Installed Files
 
+Preset 还安装唯一的版本化语义检索合同
+`.trellis/spec/workflow/semantic-retrieval.md`。它不声明或替换其余
+`.trellis/spec/**`；semantic owners 只引用这一份 SSOT，不在 workflow 或平台
+entry 复制中英文概念族规则。
+
 Preset 是完整 Guru Team extension configurator。除 companion assets、
 Guru Skill packages 和三个 additive finish entries 外，它验证
 `trellis/skills/guru-team/registry.json`，将

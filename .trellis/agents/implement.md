@@ -20,6 +20,10 @@ Before implementing, read in this order:
 4. `<task-path>/implement.md` if present — execution plan
 5. `.trellis/spec/` — project-wide guidelines (load only what is relevant to the diff you are about to write)
 
+Before searching for reusable mechanisms, tests, fixtures, history, or
+consumers, read `.trellis/spec/workflow/semantic-retrieval.md` and apply it to
+coverage and negative conclusions. Do not persist the query process.
+
 ## Core Responsibilities
 
 1. **Understand specs** — read relevant spec files in `.trellis/spec/`

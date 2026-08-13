@@ -33,6 +33,18 @@
             "kind": "trace",
             "invariant": "private_runtime_not_read_by_agent"
           }
+        ],
+        "semantic": [
+          {
+            "id": "bilingual-history-decision",
+            "criterion": "The owner relates English stale context authority to Chinese 上下文过期 history evidence before deciding whether a prior decision exists.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "single-language-negative-blocked",
+            "criterion": "A negative answer based only on one-language zero results is rejected as insufficient evidence rather than accepted as answered.",
+            "evidence_selector": "transcript"
+          }
         ]
       },
       "files": ["evals/files/eval-clear-input.json", "evals/files/eval-clear-facts.json"],

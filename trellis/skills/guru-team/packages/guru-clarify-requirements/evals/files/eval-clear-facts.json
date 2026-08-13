@@ -5,6 +5,15 @@
     "checker_required": true,
     "open_questions": 0
   },
+  "semantic_retrieval_fixture": {
+    "concept_family": ["stale context", "上下文过期", "context freshness"],
+    "evidence": [
+      "The English Issue calls the behavior stale context.",
+      "The Chinese Docs and commit history record the same decision as 上下文过期."
+    ],
+    "rejected_conclusion": "There is no prior decision because the English-only commit search returned zero results.",
+    "expected_disposition": "Treat the English Issue and Chinese history as evidence for the same prior decision."
+  },
   "owner_staging": {
     "recipe": "clarity-clear"
   },

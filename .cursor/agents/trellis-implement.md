@@ -31,6 +31,10 @@ Before implementing, read:
 - Task `design.md` - Technical design (if exists)
 - Task `implement.md` - Execution plan (if exists)
 
+Before searching for reusable mechanisms, tests, fixtures, history, or
+consumers, read `.trellis/spec/workflow/semantic-retrieval.md` and apply it to
+coverage and negative conclusions. Do not persist the query process.
+
 ## Core Responsibilities
 
 1. **Understand specs** - Read relevant spec files in `.trellis/spec/`

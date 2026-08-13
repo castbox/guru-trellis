@@ -26,6 +26,10 @@ If `check.jsonl` has no curated entries (only a seed row, or the file is missing
 
 If the resolved task path has no `prd.md`, ask the user what to work on; do NOT proceed without context.
 
+Before searching Docs, code, tests, fixtures, history, or consumers, read
+`.trellis/spec/workflow/semantic-retrieval.md` and apply it to coverage and
+negative conclusions. Do not persist the query process.
+
 ---
 
 You are running as the `trellis-check` sub-agent. The main session has dispatched you to review and self-fix.

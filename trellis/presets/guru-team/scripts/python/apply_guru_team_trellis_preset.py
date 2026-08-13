@@ -102,6 +102,12 @@ CODEX_DISPATCH_HEADER = """#----------------------------------------------------
 # edits and checks directly.
 """
 MANAGED_CONFIG = Path("config-template.yml")
+MANAGED_SPEC_PATHS = (
+    (
+        Path("trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"),
+        Path(".trellis/spec/workflow/semantic-retrieval.md"),
+    ),
+)
 MANAGED_ASSET_PATHS = [
     Path("config-template.yml"),
     Path("schemas/closeout-plan.schema.json"),
@@ -1319,6 +1325,28 @@ def copy_managed(source: Path, target: Path) -> dict[str, str]:
     return {"path": str(target), "action": "updated_managed", "backup": str(backup)}
 
 
+def copy_managed_spec(
+    source: Path,
+    target: Path,
+    repo: Path,
+    previous_manifest: dict[str, Any] | None,
+) -> dict[str, str]:
+    relative = target.relative_to(repo).as_posix()
+    previous_assets = (
+        previous_manifest.get("install", {}).get("managed_assets", [])
+        if isinstance(previous_manifest, dict)
+        else []
+    )
+    if not target.exists() or filecmp.cmp(source, target, shallow=False):
+        return copy_managed(source, target)
+    if relative in previous_assets:
+        return copy_managed(source, target)
+    sidecar = target.with_name(f"{target.name}.new")
+    sidecar.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, sidecar)
+    return {"path": str(target), "action": "conflict", "sidecar": str(sidecar)}
+
+
 def remove_legacy_managed_assets(
     repo: Path,
     dst: Path,
@@ -1814,6 +1842,34 @@ def _install_assets_in_place(
     replaced_overlays: list[str] = []
     updated_managed: list[str] = []
     managed_backups: list[str] = []
+    managed_spec_conflicts: list[dict[str, str]] = []
+    managed_spec_sidecars: list[str] = []
+    for source_relative, target_relative in MANAGED_SPEC_PATHS:
+        result = copy_managed_spec(
+            guru_root / source_relative,
+            repo / target_relative,
+            repo,
+            previous_manifest,
+        )
+        rel_path = Path(result["path"]).relative_to(repo).as_posix()
+        if result["action"] == "installed":
+            installed.append(rel_path)
+        elif result["action"] == "unchanged":
+            unchanged.append(rel_path)
+        elif result["action"] == "updated_managed":
+            updated_managed.append(rel_path)
+            backup = result.get("backup")
+            if backup:
+                managed_backups.append(Path(backup).relative_to(repo).as_posix())
+        elif result["action"] == "conflict":
+            sidecar = Path(result["sidecar"]).relative_to(repo).as_posix()
+            new_copies.append(sidecar)
+            managed_spec_sidecars.append(sidecar)
+            managed_spec_conflicts.append({
+                "path": rel_path,
+                "reason": "unknown_local_spec_edit",
+                "sidecar": sidecar,
+            })
     for relative in MANAGED_ASSET_PATHS:
         result = copy_managed(src / relative, dst / relative)
         rel_path = Path(result["path"]).relative_to(repo).as_posix()
@@ -1893,6 +1949,8 @@ def _install_assets_in_place(
 
     selected = platforms or set(DEFAULT_PLATFORMS)
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)
+    skill_packages["conflicts"].extend(managed_spec_conflicts)
+    skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + managed_spec_sidecars))
     skill_packages["removals"].extend(legacy_removals)
     skill_packages["conflicts"].extend(legacy_conflicts)
     skill_packages["sidecars"] = sorted(set(skill_packages["sidecars"] + legacy_sidecars))

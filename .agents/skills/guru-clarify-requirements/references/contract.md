@@ -20,6 +20,13 @@ questioning method, while this Skill retains every semantic decision.
 
 ## Forward Behavior
 
+For repository-answerable questions, duplicate evidence, and recalled
+decisions, first read `.trellis/spec/workflow/semantic-retrieval.md`. The AI
+constructs the minimal applicable concept family and assesses coverage inside
+the existing clarification gate; the recorder and public outputs receive no
+query transcript, keyword list, or search-process field. Negative conclusions
+must meet the shared contract's multilingual, literal, and legacy-alias bar.
+
 Execute in this order:
 
 1. validate invocation, review target, current context and authority;

@@ -8,6 +8,11 @@ description: Check the complete current task through one AI-owned semantic round
 Use this Skill after implementation reaches a reviewable state and before task
 commit. Load [references/contract.md](references/contract.md) before acting.
 
+Before searching Docs, code, tests, fixtures, consumers, or history, read
+`.trellis/spec/workflow/semantic-retrieval.md` and apply it in the complete
+nine-dimension semantic round. A negative coverage conclusion cannot rest on a
+single-language zero result, and the search process is not gate artifact data.
+
 Read the approved planning, live diff and dirty paths, implementation, tests,
 Docs SSOT, issue scope, and applicable repository validation directly. Classify
 every candidate on a supported normal path before assigning P0-P3 severity, then

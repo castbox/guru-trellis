@@ -1,1 +1,28 @@
-{"scenario":"The workflow owner records a clean current review, preserves all three current-scope no-defect candidates as rejected_candidate without finding fields, and the wrapper derives the route.","owner_evidence":{"semantic_gate":"passed","checker_required":true},"owner_staging":{"recipe":"review-passed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/owner-checkpoints/current/review-gate.json"]}}
+{
+  "scenario": "The workflow owner records a clean current review, preserves all three current-scope no-defect candidates as rejected_candidate without finding fields, and the wrapper derives the route.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true
+  },
+  "semantic_retrieval_fixture": {
+    "concept_family": ["发布门禁", "release gate", "release_gate", "release candidate"],
+    "evidence": [
+      "Chinese Docs define the 发布门禁 contract.",
+      "The diff implements release_gate and its English tests.",
+      "Historical Issue text calls the same downstream state a release candidate."
+    ],
+    "rejected_conclusion": "The branch has no release-gate implementation because a Chinese-only symbol search returned zero results.",
+    "expected_disposition": "Judge the complete cross-language evidence and behavior, not the number of search commands."
+  },
+  "owner_staging": {
+    "recipe": "review-passed"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json",
+      "--owner-result",
+      ".trellis/.runtime/guru-team/owner-checkpoints/current/review-gate.json"
+    ]
+  }
+}

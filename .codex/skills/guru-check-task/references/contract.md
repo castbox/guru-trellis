@@ -25,6 +25,12 @@ public input and assert the actual exit only after the owner result returns.
 
 ## Semantic Loop
 
+Before repository, Docs, test, fixture, consumer, or history retrieval, read
+`.trellis/spec/workflow/semantic-retrieval.md`. Apply its concept-family and
+negative-conclusion requirements while judging the existing nine dimensions.
+Do not persist raw searches, query lists, or search-process fields in the
+private result or public DTO.
+
 1. Reread the current task, approved plan, live authority, issue scope, diff,
    dirty paths, code, tests, docs, and applicable validation commands.
 2. Perform early candidate hygiene over the committed task-base diff, staged,

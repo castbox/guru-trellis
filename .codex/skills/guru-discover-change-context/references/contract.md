@@ -20,6 +20,12 @@ clue arrays and at least one array must be non-empty.
 
 ## Forward Behavior
 
+Before the current-state, duplicate, and history searches below, read
+`.trellis/spec/workflow/semantic-retrieval.md`, derive the minimal applicable
+concept family, and judge combined evidence coverage. This owner does not
+persist that query family or add it to public output. Any negative existence
+conclusion must satisfy the shared contract.
+
 Execute in this exact order:
 
 1. validate fresh base evidence;

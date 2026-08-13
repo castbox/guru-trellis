@@ -20,6 +20,12 @@ Input that does not satisfy the current public schema fails closed.
 
 ## Semantic Review
 
+Before full-range Docs, code, test, fixture, consumer, or history retrieval,
+read `.trellis/spec/workflow/semantic-retrieval.md`. Use its minimal concept
+family and evidence-coverage bar during candidate qualification, including
+before any negative existence or impact conclusion. Search transcripts and
+query metadata remain transient and never enter the gate or public handoff.
+
 Perform one independent semantic review of the complete current
 `origin/<base>...HEAD` range. Qualify every candidate before assigning
 severity. Bind affected behavior, evidence, requirement/scope basis and one

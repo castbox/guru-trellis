@@ -1,1 +1,29 @@
-{"scenario":"The complete Phase 2 owner round passes against the current dirty snapshot.","owner_evidence":{"semantic_gate":"passed","checker_required":true},"owner_staging":{"recipe":"check-passed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}
+{
+  "scenario": "The complete Phase 2 owner round passes against the current dirty snapshot.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true
+  },
+  "semantic_retrieval_fixture": {
+    "concept_family": ["workspace mapping", "handoff map", "workspace_ref", "reviewed_content_sha256"],
+    "evidence": [
+      "Current code names the mechanism workspace mapping.",
+      "Historical fixtures use the legacy alias handoff map.",
+      "The schema consumer reads the exact field workspace_ref.",
+      "Freshness checks retain the exact symbol reviewed_content_sha256."
+    ],
+    "rejected_conclusion": "No existing consumer exists because a current-name-only search returned zero results.",
+    "expected_disposition": "Cover the current name, legacy alias, and exact fields before judging consumer coverage."
+  },
+  "owner_staging": {
+    "recipe": "check-passed"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json",
+      "--owner-result",
+      ".trellis/.runtime/guru-team/evals/owner-result.json"
+    ]
+  }
+}
