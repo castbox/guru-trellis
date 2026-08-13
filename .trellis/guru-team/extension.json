@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-13T12:37:59Z",
+  "installed_at": "2026-08-13T12:55:47Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "4f99aaf9dcb4da8c560847c0579238e6ba3c8aed",
-    "commit": "4f99aaf9dcb4da8c560847c0579238e6ba3c8aed",
+    "ref": "0b7d4d6584dd5f1fa07c1b633e97704c3d6e4a89",
+    "commit": "0b7d4d6584dd5f1fa07c1b633e97704c3d6e4a89",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -513,7 +513,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "fa09c23c594dd8bf7fd114c3cdf561fe1db647859a97c6e0321c1eceabe1df01",
-        "tree_sha256": "d06a73cace2a19bcac5159b63bc4f530dc62402e9a9c2ccdee4601de3cf9e615"
+        "tree_sha256": "993bac244bf26e1b31ae32ece398ea1f5c8ec8bbf70899e69a862c4294d8d17c"
       },
       {
         "id": "guru-finalize-task",
@@ -4929,7 +4929,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/runtime/owner.py",
-        "sha256": "5176fe48f697bc91f169ffa834a10b4e905854a33c929579db0aeb9c24887196",
+        "sha256": "e6ae90c470bb270d52fbd3abebe54ae6b42921a5edcfa1592248ab39663a9afa",
         "executable": false,
         "action": "unchanged"
       },
@@ -5132,7 +5132,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "c5be23c5a2aa047aface371d67966bf17dae13473136a9236619ab59dd60a8b2",
+        "sha256": "7f98cf1fed23faa76bfe433dbf65e368a0d677f21bdd8043f7b622efbb63561c",
         "executable": false,
         "action": "unchanged"
       },

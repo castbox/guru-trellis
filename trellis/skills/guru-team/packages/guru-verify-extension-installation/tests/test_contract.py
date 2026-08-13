@@ -88,6 +88,84 @@ class ExtensionVerificationContractTests(unittest.TestCase):
         )
         self.assertEqual(result.stderr, "")
 
+    def test_target_exact_oid_resolution_uses_isolated_origin_fetch(self) -> None:
+        runtime = load_runtime()
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            remote = root / "remote.git"
+            source = root / "source"
+            caller = root / "caller"
+            subprocess.run(["git", "init", "--bare", "--quiet", str(remote)], check=True)
+            subprocess.run(["git", "init", "--quiet", str(source)], check=True)
+            subprocess.run(["git", "init", "--quiet", str(caller)], check=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=source, check=True)
+            subprocess.run(["git", "config", "user.name", "Test"], cwd=source, check=True)
+            (source / "README.md").write_text("test\n", encoding="utf-8")
+            subprocess.run(["git", "add", "README.md"], cwd=source, check=True)
+            subprocess.run(["git", "commit", "--quiet", "-m", "test"], cwd=source, check=True)
+            subprocess.run(["git", "remote", "add", "origin", str(remote)], cwd=source, check=True)
+            subprocess.run(["git", "push", "--quiet", "origin", "HEAD:refs/heads/main"], cwd=source, check=True)
+            commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=source, text=True,
+                stdout=subprocess.PIPE, check=True,
+            ).stdout.strip()
+            before = subprocess.run(
+                ["git", "status", "--porcelain=v2", "--branch"], cwd=caller,
+                text=True, stdout=subprocess.PIPE, check=True,
+            ).stdout
+            command, result = runtime.extension_verification_target_ref_process(
+                caller, "origin", commit, str(remote)
+            )
+            after = subprocess.run(
+                ["git", "status", "--porcelain=v2", "--branch"], cwd=caller,
+                text=True, stdout=subprocess.PIPE, check=True,
+            ).stdout
+        self.assertEqual(command, ["git", "fetch", "--depth=1", "origin", commit])
+        self.assertEqual(result.returncode, 0, result)
+        self.assertEqual(before, after)
+        self.assertEqual(runtime.extension_verification_resolved_remote_head(result, commit), commit)
+        self.assertIsNone(runtime.extension_verification_resolved_remote_head(
+            subprocess.CompletedProcess([], 1, "", "not found"), commit
+        ))
+        self.assertEqual(
+            runtime.extension_verification_remote_ref_command(
+                "origin", "refs/heads/main"
+            ),
+            [
+                "git",
+                "ls-remote",
+                "origin",
+                "refs/heads/main",
+                "refs/heads/main^{}",
+            ],
+        )
+
+    def test_standalone_source_identity_uses_public_exact_oid_not_manifest_generation_head(self) -> None:
+        runtime = load_runtime()
+        requested = "b" * 40
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp)
+            manifest = target / runtime.GURU_TEAM_EXTENSION_MANIFEST
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(json.dumps({
+                "source": {
+                    "repo": "https://github.com/castbox/guru-trellis.git",
+                    "ref": "a" * 40,
+                    "commit": "a" * 40,
+                    "tree_state": "dirty",
+                    "is_mutable_ref": False,
+                }
+            }), encoding="utf-8")
+            selected = runtime.extension_verification_standalone_source(
+                target,
+                {"repo_ref": "castbox/guru-trellis", "ref": requested},
+            )
+        self.assertEqual(selected["selection"], "standalone_fallback")
+        self.assertEqual(selected["manifest_provenance"], "available")
+        self.assertEqual(selected["requested_ref"], requested)
+        self.assertIsNone(selected["manifest_commit"])
+        self.assertEqual(selected["tree_state"], "clean")
+
     def test_version_projection_is_package_owned_and_manifest_compatible(self) -> None:
         command = next(
             item for item in load("commands.json")["commands"]

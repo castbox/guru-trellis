@@ -1678,11 +1678,59 @@ def extension_verification_manifest_source(
         "is_mutable_ref": is_mutable_ref,
     }
 
+def extension_verification_standalone_source(
+    target_checkout: Path,
+    public_input: dict[str, Any],
+) -> dict[str, Any]:
+    manifest_path = target_checkout / GURU_TEAM_EXTENSION_MANIFEST
+    _, error = read_optional_json(manifest_path)
+    if error not in {None, "missing"}:
+        raise WorkflowError(
+            "Installed extension manifest is malformed.",
+            exit_code=2,
+        )
+    repo_ref = normalize_github_repository(public_input.get("repo_ref"))
+    requested_ref = str(public_input.get("ref") or "")
+    return {
+        "selection": "standalone_fallback",
+        "manifest_provenance": "not_available" if error == "missing" else "available",
+        "repo": repo_ref,
+        "locator": extension_verification_canonical_github_locator(repo_ref),
+        "requested_ref": requested_ref,
+        "manifest_commit": None,
+        "tree_state": "clean",
+        "is_mutable_ref": requested_ref.startswith("refs/heads/"),
+    }
+
 def extension_verification_remote_ref_command(
     remote: str,
     ref: str,
 ) -> list[str]:
     return ["git", "ls-remote", remote, ref, f"{ref}^{{}}"]
+
+def extension_verification_target_ref_process(
+    root: Path,
+    remote: str,
+    ref: str,
+    locator: str,
+) -> tuple[list[str], subprocess.CompletedProcess[str]]:
+    if re.fullmatch(r"[0-9a-f]{40}", ref) is None:
+        command = extension_verification_remote_ref_command(remote, ref)
+        return command, run(command, cwd=root, check=False)
+    command = ["git", "fetch", "--depth=1", "origin", ref]
+    with tempfile.TemporaryDirectory(prefix="guru-target-ref-") as tmp:
+        target = Path(tmp) / "repo.git"
+        init_proc = run(["git", "init", "--bare", "--quiet", str(target)], check=False)
+        if init_proc.returncode != 0:
+            return command, subprocess.CompletedProcess(command, init_proc.returncode, "", init_proc.stderr)
+        remote_proc = run(
+            ["git", "remote", "add", "origin", locator],
+            cwd=target,
+            check=False,
+        )
+        if remote_proc.returncode != 0:
+            return command, subprocess.CompletedProcess(command, remote_proc.returncode, "", remote_proc.stderr)
+        return command, run(command, cwd=target, check=False)
 
 def extension_verification_source_ref_command(
     locator: str,
@@ -1853,6 +1901,8 @@ def extension_verification_resolved_remote_head(
 ) -> str | None:
     if remote_proc.returncode != 0:
         return None
+    if re.fullmatch(r"[0-9a-f]{40}", ref) is not None:
+        return ref
     direct_ref = ref
     peeled_ref = f"{ref}^{{}}"
     rows: dict[str, str] = {}
@@ -1954,8 +2004,33 @@ def extension_verification_execute_facts(
     )
     required_commit = publication_head or expected_branch_review_commit or branch_review_commit
     commands: list[dict[str, Any]] = []
-    target_command = extension_verification_remote_ref_command(remote, ref)
-    target_proc = run(target_command, cwd=root, check=False)
+    remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
+    commands.append(
+        extension_verification_command_evidence(
+            "resolve_target_locator",
+            EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
+            ["git", "remote", "get-url", remote],
+            remote_url_proc,
+        )
+    )
+    target_locator = ""
+    if remote_url_proc.returncode == 0:
+        try:
+            target_locator = extension_verification_validate_remote_locator(
+                remote_url_proc.stdout.strip(),
+                repo_ref,
+            )
+        except WorkflowError:
+            target_locator = ""
+    target_command, target_proc = extension_verification_target_ref_process(
+        root,
+        remote,
+        ref,
+        target_locator,
+    ) if target_locator else (
+        extension_verification_remote_ref_command(remote, ref),
+        subprocess.CompletedProcess([], 1, "", "target locator unavailable"),
+    )
     commands.append(
         extension_verification_command_evidence(
             "resolve_target_ref",
@@ -1997,27 +2072,7 @@ def extension_verification_execute_facts(
         "checkout_owner": EXTENSION_VERIFICATION_SOURCE_CHECKOUT_OWNER,
         "paths": [],
     }
-    target_locator = ""
-    if target_head is not None:
-        remote_url_proc = run(["git", "remote", "get-url", remote], cwd=root, check=False)
-        commands.append(
-            extension_verification_command_evidence(
-                "resolve_target_locator",
-                EXTENSION_VERIFICATION_TARGET_CHECKOUT_OWNER,
-                ["git", "remote", "get-url", remote],
-                remote_url_proc,
-            )
-        )
-        candidate_url = remote_url_proc.stdout.strip()
-        if remote_url_proc.returncode == 0:
-            try:
-                target_locator = extension_verification_validate_remote_locator(
-                    candidate_url,
-                    repo_ref,
-                )
-            except WorkflowError:
-                target_locator = ""
-    if target_locator:
+    if target_head is not None and target_locator:
         with tempfile.TemporaryDirectory(prefix="guru-extension-verification-") as tmp:
             temp_root = Path(tmp)
             target_checkout = temp_root / "target-checkout"
@@ -2114,10 +2169,9 @@ def extension_verification_execute_facts(
             }
             source_checkout_prepared = False
             if target_checkout_matches and target_content_matches:
-                selected_source = extension_verification_manifest_source(
+                selected_source = extension_verification_standalone_source(
                     target_checkout,
                     public_input,
-                    task_bearing=False,
                 )
                 source_resolution = extension_verification_resolve_source_reference(
                     selected_source["locator"],
