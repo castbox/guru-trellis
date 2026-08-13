@@ -1350,7 +1350,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue(all(item["passed"] for item in grading["results"]))
         self.assertEqual(
             verifier.count('--semantic-grading "$SEMANTIC_RETRIEVAL_GRADING"'),
-            2,
+            4,
         )
 
         preview_assert = verifier.index('test -f "$TARGET/.trellis/workflow.md.new"')
@@ -1460,6 +1460,27 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('payload["developer_identity_preserved"] is True', verifier)
         self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
         self.assertEqual(verifier.count("verify_installed_phase0_transcript.py"), 2)
+        self.assertEqual(
+            verifier.count(
+                'verify_installed_phase0_transcript.py" --installed-repo "$TARGET" '
+                '--work-root "$WORK_DIR/installed-phase0-transcript-'
+            ),
+            2,
+        )
+        self.assertEqual(
+            verifier.count(
+                '--checkpoint initial-install --semantic-grading '
+                '"$SEMANTIC_RETRIEVAL_GRADING"'
+            ),
+            1,
+        )
+        self.assertEqual(
+            verifier.count(
+                '--checkpoint update-reapply --semantic-grading '
+                '"$SEMANTIC_RETRIEVAL_GRADING"'
+            ),
+            1,
+        )
         self.assertIn("installed-phase0-transcript-initial", verifier)
         self.assertIn("installed-phase0-transcript-after-update", verifier)
         self.assertIn('payload["exit_family_count"] == 23', verifier)
@@ -1555,6 +1576,9 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertNotIn("guru_team_trellis.py", installed_phase0)
         self.assertIn('"--invocation",', installed_phase0)
         self.assertIn('"-",', installed_phase0)
+        self.assertIn('parser.add_argument("--semantic-grading", required=True)', installed_phase0)
+        self.assertIn('"--semantic-grading",\n                    semantic_grading,', installed_phase0)
+        self.assertNotIn('"passed": True', installed_phase0)
         self.assertIn("actual_exit != expected_exit", installed_phase0)
         self.assertIn('len(actual_pairs) != 23', installed_phase0)
         self.assertIn("create-task-workspace.sh", installed_phase0)

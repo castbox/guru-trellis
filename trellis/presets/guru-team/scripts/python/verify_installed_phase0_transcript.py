@@ -491,7 +491,7 @@ def stage_transcript_owner_repo(
 
 
 def installed_eval_runs(
-    installed_repo: Path, work_root: Path
+    installed_repo: Path, work_root: Path, semantic_grading: Path
 ) -> tuple[dict[tuple[str, str], dict[str, Any]], list[dict[str, Any]]]:
     runner = installed_repo / ".trellis/guru-team/scripts/bash/run-skill-evals.sh"
     records: dict[tuple[str, str], dict[str, Any]] = {}
@@ -512,6 +512,8 @@ def installed_eval_runs(
                     "shared",
                     "--run-root",
                     run_root,
+                    "--semantic-grading",
+                    semantic_grading,
                     "--json",
                 ],
                 cwd=installed_repo,
@@ -2475,6 +2477,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--installed-repo", required=True)
     parser.add_argument("--work-root", required=True)
     parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--semantic-grading", required=True)
     return parser.parse_args()
 
 
@@ -2482,6 +2485,12 @@ def main() -> int:
     args = parse_args()
     installed_repo = Path(args.installed_repo).resolve()
     work_root = Path(args.work_root).resolve()
+    semantic_grading_input = Path(args.semantic_grading)
+    if semantic_grading_input.is_symlink():
+        raise RuntimeError("semantic-grading must be a regular file, not a symlink")
+    semantic_grading = semantic_grading_input.resolve()
+    if not semantic_grading.is_file():
+        raise RuntimeError("semantic-grading must be a regular file")
     if (
         work_root == installed_repo
         or installed_repo in work_root.parents
@@ -2492,7 +2501,9 @@ def main() -> int:
     if work_root.exists():
         shutil.rmtree(work_root)
     work_root.mkdir(parents=True)
-    records, exit_rows = installed_eval_runs(installed_repo, work_root)
+    records, exit_rows = installed_eval_runs(
+        installed_repo, work_root, semantic_grading
+    )
     expected_pairs = {
         (skill_id, exit_row["id"])
         for skill_id in SKILLS
