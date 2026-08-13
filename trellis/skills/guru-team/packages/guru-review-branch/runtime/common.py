@@ -298,6 +298,12 @@ def validate_gate(package_root, repo, value, expected_exit=None):
             "stale_identity", "typed_exit", "Use current typed exit.", 3
         )
     current = git(repo, "rev-parse", "HEAD")
+    if value["profile"] == "branch_review" and (
+        git(repo, "rev-parse", value["base_ref"]) != value["base_head"]
+    ):
+        raise CommandError(
+            "stale_identity", "base_ref", "Run a fresh review for the current base.", 3
+        )
     if not ancestor(repo, value["base_head"], value["review_commit"]):
         raise CommandError(
             "stale_identity",

@@ -243,6 +243,39 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertEqual("stale_identity", stale["code"])
         self.assertTrue(gate.is_file())
 
+    def test_advanced_base_ref_fails_check_and_invoke_without_retirement(self):
+        self.git("update-ref", "refs/remotes/origin/main", self.base)
+        public = self.public()
+        public["base_ref"] = "origin/main"
+        self.record(public)
+        gate = self.checkpoint()
+
+        base_tree = self.git("rev-parse", f"{self.base}^{{tree}}")
+        advanced_base = self.git(
+            "commit-tree", base_tree, "-p", self.base, "-m", "advance base ref"
+        )
+        self.git("update-ref", "refs/remotes/origin/main", advanced_base)
+        self.assertEqual(self.head, self.git("rev-parse", "HEAD"))
+
+        checked = self.run_wrapper(
+            "check-review-gate.sh", "--task", TASK_REF, ok=False
+        )
+        self.assertEqual("stale_identity", checked["code"])
+        self.assertEqual("base_ref", checked["field_path"])
+        self.assertTrue(gate.is_file())
+
+        invoked = self.run_wrapper(
+            "invoke.sh",
+            "--task",
+            TASK_REF,
+            "--input",
+            self.inputs / "public.json",
+            ok=False,
+        )
+        self.assertEqual("stale_identity", invoked["code"])
+        self.assertEqual("base_ref", invoked["field_path"])
+        self.assertTrue(gate.is_file())
+
     def test_symlink_checkpoint_and_ancestor_fail_closed(self):
         public = self.public()
         self.record(public)
