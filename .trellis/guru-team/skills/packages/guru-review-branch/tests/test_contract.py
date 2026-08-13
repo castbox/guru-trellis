@@ -5,6 +5,7 @@ PACKAGE=Path(__file__).resolve().parents[1];SKILLS=PACKAGE.parents[1];LOCAL=PACK
 for p in (SKILLS,LOCAL):
  if str(p) not in sys.path:sys.path.insert(0,str(p))
 from runtime.io import CommandError
+from runtime.schema import validate_json
 import check,invoke,record
 class BranchReviewTest(unittest.TestCase):
  def setUp(self):
@@ -29,6 +30,12 @@ class BranchReviewTest(unittest.TestCase):
   (self.repo/"overlay.txt").write_text("unreviewed\n");pi=self.write("public.json",self.public());ai=self.write("auth.json",self.auth())
   with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
   (self.repo/"overlay.txt").unlink();public=self.public();public["base_ref"]="f"*40;pi=self.write("bad-base.json",public)
+  with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
+ def test_gate_4_rejects_malformed_semantic_and_verification_evidence(self):
+  pi=self.write("public.json",self.public())
+  malformed=self.auth();malformed["verification_evidence"]={"reviewer":None,"review_source":"wrong","evidence":[]};ai=self.write("bad-evidence.json",malformed)
+  with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
+  malformed=self.auth();malformed["semantic_review"]["observations"]=[{"candidate_ref":"candidate-1"}];ai=self.write("bad-semantic.json",malformed)
   with self.assertRaises(CommandError):record.run(PACKAGE,{},["--root",str(self.repo),"--skill-input",str(pi),"--semantic-review-file",str(ai),"--typed-exit","passed"])
  def test_runtime_has_no_example_projection_or_monolith(self):
   for p in LOCAL.glob("*.py"):

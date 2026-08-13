@@ -16,11 +16,15 @@ def guard(package_root: Path, argv: list[str]) -> dict:
     status="unchanged" if new==old else "new_pair"
     if task != public["task_head"] or new != public["new_base_head"] or resolve_commit(repo,"HEAD","HEAD") != task or not is_ancestor(repo,old,new): status="blocked"
     cp=checkpoint_path(repo,public["task_ref"])
+    typed_output=None
     if status=="new_pair" and cp.is_file():
         try:
-            result=read_json(repo,package_root,str(cp),"checkpoint"); validate_result(package_root,repo,result,public); status="current_pair"
+            checkpoint=read_json(repo,package_root,str(cp),"checkpoint"); validate_result(package_root,repo,checkpoint,public)
+            typed_output=checkpoint["typed_output"]; status="current_pair"; cp.unlink()
+            try: cp.parent.rmdir()
+            except OSError: pass
         except Exception: status="blocked"
-    result={"status":status,"task_ref":public["task_ref"],"task_head":public["task_head"],"old_base_head":public["old_base_head"],"new_base_head":new,"resume_target":public["resume_target"]}; validate_json(result,package_root/"schemas/pair-guard-result.schema.json","result"); return result
+    result={"status":status,"task_ref":public["task_ref"],"task_head":public["task_head"],"old_base_head":public["old_base_head"],"new_base_head":new,"resume_target":public["resume_target"],"typed_output":typed_output}; validate_json(result,package_root/"schemas/pair-guard-result.schema.json","result"); return result
 
 def candidate(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--request",required=True)

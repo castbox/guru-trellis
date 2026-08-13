@@ -34,12 +34,108 @@
         }
       ]
     },
-    "semantic_review": {"type": "object", "required": ["qualified_findings", "scope_proposals", "observations", "followup_candidates", "rejected_candidates", "ai_review_gate"]},
-    "verification_evidence": {"type": "object", "required": ["reviewer", "review_source", "evidence"]},
+    "semantic_review": {
+      "type": "object", "additionalProperties": false,
+      "required": ["qualified_findings", "scope_proposals", "observations", "followup_candidates", "rejected_candidates", "ai_review_gate"],
+      "properties": {
+        "qualified_findings": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/qualifiedFinding"}},
+        "scope_proposals": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/scopeProposal"}},
+        "observations": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "followup_candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "rejected_candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "ai_review_gate": {
+          "type": "object", "additionalProperties": false, "required": ["status", "summary"],
+          "properties": {"status": {"enum": ["passed", "continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]}, "summary": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "verification_evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reviewer", "review_source", "evidence"],
+      "properties": {
+        "reviewer": {"type": "string", "minLength": 1},
+        "review_source": {"const": "independent-agent"},
+        "evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
     "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
   },
   "allOf": [
+    {"if": {"properties": {"typed_exit": {"const": "passed"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"maxItems": 0}, "ai_review_gate": {"properties": {"status": {"const": "passed"}}}}}}}},
+    {"if": {"properties": {"typed_exit": {"const": "implementation_required"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}, "ai_review_gate": {"properties": {"status": {"const": "implementation_required"}}}}}}}},
+    {"if": {"properties": {"typed_exit": {"const": "scope_confirmation_required"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"minItems": 1}, "ai_review_gate": {"properties": {"status": {"const": "scope_confirmation_required"}}}}}}}},
+    {"if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"maxItems": 0}, "ai_review_gate": {"properties": {"status": {"const": "blocked"}}}}}}}},
     {"if": {"properties": {"profile": {"const": "branch_review"}}}, "then": {"properties": {"integration_pair": {"type": "null"}, "typed_exit": {"enum": ["passed", "implementation_required", "scope_confirmation_required", "blocked"]}}}},
-    {"if": {"properties": {"profile": {"const": "base_continuity"}}}, "then": {"properties": {"review_intent": {"const": "base_continuity"}, "integration_pair": {"type": "object"}, "typed_exit": {"enum": ["continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]}}}}
-  ]
+    {"if": {"properties": {"profile": {"const": "base_continuity"}}}, "then": {"properties": {"review_intent": {"const": "base_continuity"}, "integration_pair": {"type": "object"}, "typed_exit": {"enum": ["continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]}}}},
+    {"if": {"properties": {"typed_exit": {"const": "continuity_passed"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"maxItems": 0}, "ai_review_gate": {"properties": {"status": {"const": "continuity_passed"}}}}}}}}
+  ],
+  "$defs": {
+    "scenario": {"enum": ["normal_required_behavior", "explicit_nonstandard_requirement", "approved_nonstandard_expansion", "unconfirmed_nonstandard_proposal", "out_of_scope"]},
+    "qualifiedFinding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason", "finding_ref", "severity", "introduced_head", "fix_head", "closure_head", "status", "closure_evidence"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"const": "qualified_finding"},
+        "scenario_class": {"enum": ["normal_required_behavior", "explicit_nonstandard_requirement", "approved_nonstandard_expansion"]},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"$ref": "#/$defs/nonEmptyStringList"},
+        "requirement_refs": {"$ref": "#/$defs/nonEmptyStringList"},
+        "scope_basis": {"type": "string", "minLength": 1},
+        "qualification_reason": {"type": "string", "minLength": 1},
+        "finding_ref": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2", "P3"]},
+        "introduced_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "fix_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "closure_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "status": {"enum": ["open", "resolved"]},
+        "closure_evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "open"}}, "required": ["status"]}, "then": {"properties": {"fix_head": {"const": null}, "closure_head": {"const": null}, "closure_evidence": {"maxItems": 0}}}},
+        {"if": {"properties": {"status": {"const": "resolved"}}, "required": ["status"]}, "then": {"properties": {"fix_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "closure_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "closure_evidence": {"minItems": 1}}}}
+      ]
+    },
+    "scopeProposal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason", "proposal_ref", "proposal", "trigger_evidence", "clarification_route"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"const": "scope_proposal"},
+        "scenario_class": {"const": "unconfirmed_nonstandard_proposal"},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"$ref": "#/$defs/nonEmptyStringList"},
+        "requirement_refs": {"$ref": "#/$defs/stringList"},
+        "scope_basis": {"type": "string", "minLength": 1},
+        "qualification_reason": {"type": "string", "minLength": 1},
+        "proposal_ref": {"type": "string", "minLength": 1},
+        "proposal": {"type": "string", "minLength": 1},
+        "trigger_evidence": {"$ref": "#/$defs/nonEmptyStringList"},
+        "clarification_route": {"const": "guru-clarify-requirements"}
+      }
+    },
+    "nonFinding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "scenario_class", "affected_behavior", "path", "evidence_refs", "requirement_refs", "scope_basis", "qualification_reason"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"enum": ["observation", "followup_candidate", "rejected_candidate"]},
+        "scenario_class": {"$ref": "#/$defs/scenario"},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"$ref": "#/$defs/nonEmptyStringList"},
+        "requirement_refs": {"$ref": "#/$defs/stringList"},
+        "scope_basis": {"type": "string", "minLength": 1},
+        "qualification_reason": {"type": "string", "minLength": 1}
+      },
+      "oneOf": [
+        {"properties": {"disposition": {"enum": ["observation", "followup_candidate"]}, "scenario_class": {"enum": ["unconfirmed_nonstandard_proposal", "out_of_scope"]}}},
+        {"properties": {"disposition": {"const": "rejected_candidate"}, "scenario_class": {"$ref": "#/$defs/scenario"}}}
+      ]
+    },
+    "stringList": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "nonEmptyStringList": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
 }

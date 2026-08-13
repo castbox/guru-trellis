@@ -15,8 +15,10 @@ of the selected base ref. It returns only `unchanged`, `current_pair`,
 `new_pair`, or `blocked`. It checks identity and ancestry, but never judges
 authority, task-content impact, integration impact, relevant paths, validation
 sufficiency, findings, or route. `unchanged` creates no checkpoint. A matching
-owner-private result is consumable once and is then deleted by this package's
-public wrapper.
+owner-private result makes `current_pair` return its already validated exact
+typed output and delete the checkpoint as the deterministic one-use consumer.
+It never replaces that output with an unconditional `resume_target`; only
+`unchanged` resumes the caller target directly.
 
 ## Semantic Owner
 

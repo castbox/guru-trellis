@@ -37,11 +37,22 @@ class RuntimeTest(unittest.TestCase):
         request=self.write('request.json',{'task_head':self.head,'new_base_head':self.new,'validation_commands':[['git','status','--short']]}); result=execute.candidate(PACKAGE,['--root',str(self.repo),'--request',str(request)]); self.assertEqual('clean',result['merge_status']); self.assertRegex(result['candidate_tree_sha256'],r'^[0-9a-f]{64}$'); self.assertEqual([],result['conflict_paths']); self.assertNotIn('guru-base-candidate-',self.git('worktree','list'))
     def test_record_invoke_consumes_checkpoint_once(self):
         public=self.public(); pi=self.write('public.json',public); gate=self.write('gate.json',self.gate()); result=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gate),'--typed-exit','reconciled']); envelope=self.write('envelope.json',{'public_input':public,'owner_result':result}); output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)]); self.assertEqual('reconciled',output['exit_id']); checkpoint=self.repo/'.trellis/.runtime/guru-team/owner-checkpoints/current/guru-reconcile-task-base/base-reconciliation.json'; self.assertFalse(checkpoint.exists())
-    def test_current_pair_is_reused_once_then_retires(self):
-        public=self.public(); pi=self.write('reuse-public.json',public); gate=self.write('reuse-gate.json',self.gate()); result=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gate),'--typed-exit','reconciled'])
-        self.assertEqual('current_pair',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(pi)])['status'])
-        envelope=self.write('reuse-envelope.json',{'public_input':public,'owner_result':result}); self.assertEqual('task_commit',invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)])['resume_target'])
-        self.assertEqual('new_pair',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(pi)])['status'])
+    def test_current_pair_preserves_each_semantic_exit_and_retires_once(self):
+        cases={
+            'reconciled':('post_check',{}),
+            'review_continuity_required':('post_branch_review',{'candidate_tree_sha256':'d'*64,'relevant_paths':['base.txt']}),
+            'implementation_required':('post_check',{'finding_refs':['finding-1']}),
+            'planning_stale':('post_check',{'reason_refs':['planning-1']}),
+            'scope_confirmation_required':('post_check',{'proposal_refs':['proposal-1']}),
+            'blocked':('post_check',{}),
+        }
+        for exit_id,(profile,payload) in cases.items():
+            with self.subTest(exit_id=exit_id):
+                public=self.public(profile); pi=self.write(exit_id+'-public.json',public); gate=self.gate(); gate.update({'typed_exit':exit_id,'route_payload':payload}); gp=self.write(exit_id+'-gate.json',gate)
+                owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gp),'--typed-exit',exit_id])
+                guarded=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(pi)])
+                self.assertEqual('current_pair',guarded['status']); self.assertEqual(owner['typed_output'],guarded['typed_output'])
+                self.assertEqual('new_pair',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(pi)])['status'])
     def test_132_161_replay_preserves_review_head_and_resumes_finalizer(self):
         public=self.public('finalizer_base_mismatch'); pi=self.write('historical-finalizer.json',public); gate=self.gate(); gate['reviewed_scope'].append('historical #132/#161 base-only stale route'); gp=self.write('historical-gate.json',gate)
         result=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gp),'--typed-exit','reconciled']); envelope=self.write('historical-envelope.json',{'public_input':public,'owner_result':result}); output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)])
