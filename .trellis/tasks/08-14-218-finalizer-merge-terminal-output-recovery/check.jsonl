@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"package/runtime/integration、equality、drift、sidecar与targeted快速发布验证口径。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"检查wrapper成功stdout恰好单JSON、diagnostics stderr、expected-head与closure验证。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查terminal output最小化、直接consumer、current/legacy隔离及退休生命周期。"}
-{"file":".trellis/spec/preset/installer.md","reason":"检查canonical/installed/Shared/Codex/Claude/Cursor equality、inventory、reapply与零未知sidecar。"}
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查GitHub I/O、确认边界、typed exit唯一consumer与不恢复verification_required。"}

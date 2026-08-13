@@ -29,7 +29,7 @@
   ],
   "primary_issue": {
     "number": 218,
-    "reason": "Primary independently deliverable correctness change.",
+    "reason": "Fully covered by this task and its acceptance matrix.",
     "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
     "url": "https://github.com/castbox/guru-trellis/issues/218"
   },
