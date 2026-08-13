@@ -36,7 +36,9 @@
   "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
   "artifacts": [
     {"id": "gate_example", "path": "examples/task-finalization-gate.json"},
+    {"id": "legacy_gate_example_3_0", "path": "examples/task-finalization-gate-3.0.json"},
     {"id": "semantic_review_input", "path": "examples/semantic-review-input.json"},
+    {"id": "legacy_semantic_review_input_2_0", "path": "examples/semantic-review-input-2.0.json"},
     {"id": "publication_ready_input", "path": "examples/public-publication-ready-input.json"},
     {"id": "publication_ready_authoring", "path": "examples/public-publication-ready-authoring.json"},
     {"id": "same_plan_resume_input", "path": "examples/public-same-plan-resume-input.json"},
@@ -56,10 +58,11 @@
     {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
   ],
   "schemas": [
-    {"id": "gate_schema", "path": "schemas/task-finalization-gate.schema.json"},
-    {"id": "gate_schema", "path": "schemas/task-finalization-gate-5.0.schema.json"},
+    {"id": "current_gate_schema_alias", "path": "schemas/task-finalization-gate.schema.json"},
+    {"id": "current_gate_schema_5_0", "path": "schemas/task-finalization-gate-5.0.schema.json"},
     {"id": "legacy_gate_schema_4_0", "path": "schemas/task-finalization-gate-4.0.schema.json"},
-    {"id": "semantic_review_input", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "current_semantic_review_input_alias", "path": "schemas/semantic-review-input.schema.json"},
+    {"id": "current_semantic_review_input_3_0", "path": "schemas/semantic-review-input-3.0.schema.json"},
     {"id": "legacy_semantic_review_input_2_0", "path": "schemas/semantic-review-input-2.0.schema.json"},
     {"id": "legacy_publication_ready_input_3_0", "path": "schemas/public-publication-ready-input.schema.json"},
     {"id": "publication_ready_input", "path": "schemas/public-publication-ready-input-4.0.schema.json"},
