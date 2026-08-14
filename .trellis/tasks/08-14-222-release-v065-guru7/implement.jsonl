@@ -1,7 +1,0 @@
-{"file":".trellis/spec/docs/public-docs.md","reason":"实现三份公开 README 的稳定版本映射、安装升级命令、发布说明与去敏边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"实现 canonical/installed manifest、repo tag、extension revision 与 exact source identity 合同。"}
-{"file":".trellis/spec/preset/installer.md","reason":"实现 all-platform preset apply、用户级 managed runtime、upgrade/reapply、inventory 与 sidecar 行为。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现完整 throwaway、Branch Review、Finalizer/Merge、业务 upgrade 与 tag-pinned 发布门禁。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"同步 canonical、dogfood 与 Claude/Codex/Cursor projections 并阻止平台自动检测造成受管删除。"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"保持 Guru-owned extension 面，不修改 Trellis upstream 或系统/global runtime。"}
-{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 tag/source/manifest/README/verifier/preset 跨层字符串和 bytes 一致性。"}
