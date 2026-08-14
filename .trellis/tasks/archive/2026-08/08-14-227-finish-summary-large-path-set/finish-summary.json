@@ -1,0 +1,195 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-14T00:29:36Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-14-227-finish-summary-large-path-set",
+    "title": "#227 移除 finish-summary 变更路径数量的任意上限",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-14-227-finish-summary-large-path-set",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/227-finish-summary-large-path-set",
+    "commits": [
+      "3d64857b7d8bc611d86ef61dfac1ab9674f190d4",
+      "b573a99cbec8b3ca5f903fd7cf1442231195b376",
+      "73cd9aa65b438f16af049e03edf0488b2b734bf4",
+      "ccb6ec6661557e0c499e32ba403554c0e177fede",
+      "85370c68ae6b7e3a22a5b103e58b1c5b4c1afb3c"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/finish-summary.schema.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+      ".trellis/tasks/08-14-227-finish-summary-large-path-set/check.jsonl",
+      ".trellis/tasks/08-14-227-finish-summary-large-path-set/design.md",
+      ".trellis/tasks/08-14-227-finish-summary-large-path-set/implement.jsonl",
+      ".trellis/tasks/08-14-227-finish-summary-large-path-set/implement.md",
+      ".trellis/tasks/08-14-227-finish-summary-large-path-set/issue-scope-ledger.json",
+      ".trellis/tasks/08-14-227-finish-summary-large-path-set/prd.md",
+      ".trellis/tasks/08-14-227-finish-summary-large-path-set/task.json",
+      ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/design.md",
+      ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/implement.md",
+      ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/prd.md",
+      ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/task.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+      "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      227
+    ],
+    "close_issues": [
+      227
+    ],
+    "related_issues": [],
+    "followup_issues": [
+      222
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/228"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#227 移除 finish-summary 变更路径数量的任意上限",
+    "outcome": "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。",
+    "changed_behavior": [
+      "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。",
+      "移除 Publication Review 与 Finalizer runtime 对超过 2000 个路径的拒绝。",
+      "保持 changed paths 完整、安全、唯一、排序一致，且两处集合完全相等。",
+      "增加 2001 个路径的 schema、Publication Review 与 Finalizer 正向回归，并保留非法、重复、未排序及集合不一致的 fail-closed 回归。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/tasks/08-14-227-finish-summary-large-path-set/design.md",
+          ".trellis/tasks/08-14-227-finish-summary-large-path-set/implement.md",
+          ".trellis/tasks/08-14-227-finish-summary-large-path-set/prd.md",
+          ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/design.md",
+          ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/implement.md",
+          ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/prd.md"
+        ],
+        "change": "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          ".trellis/guru-team/schemas/finish-summary.schema.json"
+        ],
+        "change": "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py"
+        ],
+        "change": "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-14-227-finish-summary-large-path-set/check.jsonl",
+          ".trellis/tasks/08-14-227-finish-summary-large-path-set/implement.jsonl",
+          ".trellis/tasks/08-14-227-finish-summary-large-path-set/issue-scope-ledger.json",
+          ".trellis/tasks/08-14-227-finish-summary-large-path-set/task.json",
+          ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/task.json"
+        ],
+        "change": "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+        ],
+        "change": "移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#222",
+        "#227"
+      ],
+      "pr_refs": [
+        "PR #228"
+      ],
+      "branches": [
+        "fix/227-finish-summary-large-path-set"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/schemas/finish-summary.schema.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
+        ".trellis/tasks/08-14-227-finish-summary-large-path-set/check.jsonl",
+        ".trellis/tasks/08-14-227-finish-summary-large-path-set/design.md",
+        ".trellis/tasks/08-14-227-finish-summary-large-path-set/implement.jsonl",
+        ".trellis/tasks/08-14-227-finish-summary-large-path-set/implement.md",
+        ".trellis/tasks/08-14-227-finish-summary-large-path-set/issue-scope-ledger.json",
+        ".trellis/tasks/08-14-227-finish-summary-large-path-set/prd.md",
+        ".trellis/tasks/08-14-227-finish-summary-large-path-set/task.json",
+        ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/design.md",
+        ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/implement.md",
+        ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/prd.md",
+        ".trellis/tasks/archive/2026-08/08-14-227-finish-summary-large-path-set/task.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
+        "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#227 移除 finish-summary 变更路径数量的任意上限",
+        "移除 finish-summary 中 `git.changed_paths` 与 `index.search_term",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#227 移除 finish-summary 变更路径数量的任意上限\n移除 finish-summary 中 `git.changed_paths` 与 `index.search_terms.paths` 的 `maxItems: 2000`。\n移除 Publication Review 与 Finalizer runtime 对超过 2000 个路径的拒绝。\n保持 changed paths 完整、安全、唯一、排序一致，且两处集合完全相等。\n增加 2001 个路径的 schema、Publication Review 与 Finalizer 正向回归，并保留非法、重复、未排序及集合不一致的 fail-closed 回归。\n移除 finish-summary 中 `git.changed_paths` 与 `index.search_term\n完成 extension.json 相关变更"
+  }
+}

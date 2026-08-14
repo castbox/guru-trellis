@@ -1,3 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 验证、分发一致性与回归覆盖门禁。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"检查受管 projection 没有手工漂移。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"复核大型路径集仍满足完整性与一致性合同。"}

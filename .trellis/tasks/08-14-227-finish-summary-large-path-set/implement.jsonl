@@ -1,3 +1,0 @@
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"finish-summary schema 与 owner validator 数据合同。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"Publication/Finalizer package-local runtime 与投影边界。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"canonical、installed/dogfood 与平台受管投影的静态一致性和 sidecar 边界。"}
