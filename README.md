@@ -18,7 +18,7 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 | 组件 | 固定版本 |
 | --- | --- |
 | Guru Trellis repo tag | `v0.6.5-guru.7` |
-| Guru Team extension revision | `0.6.5-guru.32` |
+| Guru Team extension revision | `0.6.5-guru.31` |
 | 官方 `@mindfoldhq/trellis` CLI | `0.6.5` |
 
 repo tag 与 extension revision 是两个独立版本轴。稳定 workflow 与 preset 必须来自同一个

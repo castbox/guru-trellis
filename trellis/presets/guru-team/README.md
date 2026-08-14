@@ -127,7 +127,7 @@ Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
 example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.7`. The stable source for
 this release is annotated tag `v0.6.5-guru.7`, extension revision
-`0.6.5-guru.32`, and official `@mindfoldhq/trellis` `0.6.5`. The tag is created
+`0.6.5-guru.31`, and official `@mindfoldhq/trellis` `0.6.5`. The tag is created
 only after the preparation PR merges and the exact remote candidate passes the
 pre-tag gate. Its peeled commit must equal that final candidate and is recorded
 by immutable Git facts, GitHub Release notes, and release evidence rather than
@@ -583,9 +583,9 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 business packages 加一个 standalone-only verifier 共声明 62 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前 canonical extension version
-`0.6.5-guru.32` 对应 stable source `v0.6.5-guru.7`，并以官方 Trellis CLI `0.6.5`
-为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
+invoke 与六个 exit marker。当前未发布的 canonical extension version 为
+`0.6.5-guru.32`；最新 stable source `v0.6.5-guru.7` 对应 extension revision
+`0.6.5-guru.31`，并以官方 Trellis CLI `0.6.5` 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
 由 immutable Git facts、GitHub Release notes 与 release evidence 精确记录。Repo release
 tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
 Preset 将 active package
