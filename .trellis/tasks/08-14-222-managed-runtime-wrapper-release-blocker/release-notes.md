@@ -1,6 +1,6 @@
 # v0.6.5-guru.6 发布说明（候选草稿）
 
-本版本将 Guru Team extension revision 更新为 `0.6.5-guru.29`，目标官方
+本版本将 Guru Team extension revision 更新为 `0.6.5-guru.30`，目标官方
 `@mindfoldhq/trellis` CLI 仍为 `0.6.5`。稳定 workflow 与 preset source 均固定到
 尚未创建的 annotated repo tag `v0.6.5-guru.6`。
 
@@ -12,7 +12,7 @@
 | 项目 | 值 |
 | --- | --- |
 | Repo tag | `v0.6.5-guru.6`（尚未创建） |
-| Extension revision | `0.6.5-guru.29` |
+| Extension revision | `0.6.5-guru.30` |
 | Official Trellis CLI | `0.6.5` |
 | Peeled candidate commit | 待 tag 前 exact candidate 冻结 |
 | Candidate tree | 待 tag 前 exact candidate 冻结 |
@@ -27,6 +27,9 @@
   eval execution 与 compatibility wrapper 仍直接调用 PATH Python 的遗漏。Source 与
   installed wrapper 现在分别使用自身 checkout 的受管 runtime；PATH Python 缺少
   `jsonschema` 时不再错误失败或回退外部环境。
+- #222 Branch Review finding：修复 shared、Codex、Claude、Cursor eval adapter 的
+  `native_adapter.py` 第二跳 PATH fallback，并让 fresh source fixture 使用真实 commit
+  identity；PATH 完全没有 `python3` 时，source/installed adapter 仍绑定各自受管 runtime。
 - #217：恢复 `guru-review-branch` owner-private gate 的真实 record/check 生命周期。
 - #218：Finalizer 与 Merge 成功路径保持 single-JSON 与幂等恢复合同。
 - #227：移除 finish summary 大路径集合的固定上限，同时保留路径安全和集合一致性校验。

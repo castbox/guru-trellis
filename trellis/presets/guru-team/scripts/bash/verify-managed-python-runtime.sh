@@ -13,9 +13,10 @@ trap cleanup EXIT
 
 PATH_VENV="$TEMP_ROOT/path-python"
 PATH_BIN="$TEMP_ROOT/bin"
+NO_PYTHON_BIN="$TEMP_ROOT/no-python-bin"
 TARGET="$TEMP_ROOT/repo"
 SOURCE="$TEMP_ROOT/source"
-mkdir -p "$PATH_BIN" "$TARGET/.trellis" "$SOURCE/.trellis"
+mkdir -p "$PATH_BIN" "$NO_PYTHON_BIN" "$TARGET/.trellis" "$SOURCE/.trellis"
 "$BOOTSTRAP_PYTHON" -m venv --without-pip "$PATH_VENV"
 cat > "$PATH_BIN/python3" <<EOF
 #!/usr/bin/env bash
@@ -31,11 +32,22 @@ if "$PATH_BIN/python3" -m pip --version >/dev/null 2>&1; then
   echo "focused runtime precondition failed: PATH Python has pip" >&2
   exit 2
 fi
+for command_name in bash dirname sed tr; do
+  ln -s "$(command -v "$command_name")" "$NO_PYTHON_BIN/$command_name"
+done
+if PATH="$NO_PYTHON_BIN" command -v python3 >/dev/null 2>&1; then
+  echo "focused runtime precondition failed: no-Python PATH resolves python3" >&2
+  exit 2
+fi
 
 cp -R "$GURU_ROOT/trellis" "$SOURCE/trellis"
 cp -R "$GURU_ROOT/.trellis/scripts" "$SOURCE/.trellis/scripts"
 cp "$SOURCE/trellis/workflows/guru-team/workflow.md" "$SOURCE/.trellis/workflow.md"
 git init -q -b main "$SOURCE"
+git -C "$SOURCE" config user.email "managed-runtime@example.invalid"
+git -C "$SOURCE" config user.name "Managed Runtime Fixture"
+git -C "$SOURCE" add .
+git -C "$SOURCE" commit -q -m "stage focused source checkout"
 cp -R "$GURU_ROOT/.trellis/scripts" "$TARGET/.trellis/scripts"
 cp "$GURU_ROOT/trellis/workflows/guru-team/workflow.md" "$TARGET/.trellis/workflow.md"
 git init -q -b main "$TARGET"
@@ -94,13 +106,38 @@ PATH="$FOCUSED_PATH" \
   --semantic-grading "$SOURCE/trellis/presets/guru-team/tests/semantic-retrieval-grading.json" \
   --json > "$TEMP_ROOT/installed-eval-run.json"
 
-"$BOOTSTRAP_PYTHON" - "$TEMP_ROOT" "$TARGET" <<'PY'
+printf '{' > "$TEMP_ROOT/invalid-adapter-request.json"
+mv "$TARGET/.trellis/.runtime/guru-team/python/active.json" \
+  "$TARGET/.trellis/.runtime/guru-team/python/active.saved"
+for adapter_id in shared codex claude cursor; do
+  PATH="$NO_PYTHON_BIN" \
+    "$SOURCE/trellis/skills/guru-team/adapters/eval/$adapter_id.sh" \
+    --native-command unused \
+    --request "$TEMP_ROOT/invalid-adapter-request.json" \
+    > "$TEMP_ROOT/source-$adapter_id-no-path-python.json"
+done
+mv "$TARGET/.trellis/.runtime/guru-team/python/active.saved" \
+  "$TARGET/.trellis/.runtime/guru-team/python/active.json"
+mv "$SOURCE/.trellis/.runtime/guru-team/python/active.json" \
+  "$SOURCE/.trellis/.runtime/guru-team/python/active.saved"
+for adapter_id in shared codex claude cursor; do
+  PATH="$NO_PYTHON_BIN" \
+    "$TARGET/.trellis/guru-team/skills/adapters/eval/$adapter_id.sh" \
+    --native-command unused \
+    --request "$TEMP_ROOT/invalid-adapter-request.json" \
+    > "$TEMP_ROOT/installed-$adapter_id-no-path-python.json"
+done
+mv "$SOURCE/.trellis/.runtime/guru-team/python/active.saved" \
+  "$SOURCE/.trellis/.runtime/guru-team/python/active.json"
+
+"$BOOTSTRAP_PYTHON" - "$TEMP_ROOT" "$SOURCE" "$TARGET" <<'PY'
 import json
 import pathlib
 import sys
 
 root = pathlib.Path(sys.argv[1])
-repo = pathlib.Path(sys.argv[2])
+source_repo = pathlib.Path(sys.argv[2])
+repo = pathlib.Path(sys.argv[3])
 
 def load(name):
     return json.loads((root / name).read_text(encoding="utf-8"))
@@ -129,6 +166,14 @@ source_compat = load("source-compat.json")
 installed_compat = load("installed-compat.json")
 source_eval_run = load("source-eval-run.json")
 installed_eval_run = load("installed-eval-run.json")
+adapter_probes = {
+    f"{mode}-{adapter}": load(f"{mode}-{adapter}-no-path-python.json")
+    for mode in ("source", "installed")
+    for adapter in ("shared", "codex", "claude", "cursor")
+}
+source_active = json.loads(
+    (source_repo / ".trellis/.runtime/guru-team/python/active.json").read_text()
+)
 active = json.loads((repo / ".trellis/.runtime/guru-team/python/active.json").read_text())
 managed_python = repo / ".trellis/.runtime/guru-team/python" / active["interpreter"]
 
@@ -147,22 +192,31 @@ assert source_eval_run["status"] == installed_eval_run["status"] == "passed", (
     first_transcript(source_eval_run),
     first_transcript(installed_eval_run),
 )
+assert all(
+    payload["capability_status"] == "execution_error"
+    and payload["public_stderr"] == "adapter request/context invalid"
+    for payload in adapter_probes.values()
+), adapter_probes
 assert source_compat["guru_team_extension"]["version"] == installed_compat["guru_team_extension"]["version"]
 assert managed_python.is_file()
 result = {
     "status": "ok",
     "path_python_jsonschema": False,
     "path_python_pip": False,
+    "path_without_python3": True,
     "preset_apply": apply["status"],
     "runtime_action": apply["python_runtime"]["action"],
     "runtime_identity": apply["python_runtime"]["runtime_identity"],
+    "source_runtime_identity": source_active["runtime_id"],
     "managed_python_exists": managed_python.is_file(),
     "source_validation": source_validation["status"],
     "target_wrapper_source_validation": target_wrapper_source_validation["status"],
     "installed_validation": installed_validation["status"],
     "contract_discovery": source_contract["skill_id"],
     "eval_discovery": source_eval_discovery["skill_id"],
-    "eval_execution": source_eval_run["status"],
+    "source_eval_execution": source_eval_run["status"],
+    "installed_eval_execution": installed_eval_run["status"],
+    "adapter_no_path_python_probes": sorted(adapter_probes),
     "compat_extension_version": source_compat["guru_team_extension"]["version"],
 }
 print(json.dumps(result, sort_keys=True))

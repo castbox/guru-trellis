@@ -8,6 +8,9 @@
 - [x] 将 extension revision 从 `.28` 更新为 `.29`，同步 README、fixtures 和 release notes。
 - [x] 运行 targeted tests、managed runtime、preset tests、projection equality、ownership、
   drift、JSON/schema/compile/diff 与零 sidecar检查。
+- [x] 修复 BR-222-001：四个平台 eval adapter 通过 checkout-local resolver 执行。
+- [x] 修复 BR-222-002：fresh source 建立 commit identity且 source/installed eval实际通过。
+- [x] 将 finding-fix candidate revision 前进到 `.30`并重跑 focused/projection/drift 门禁。
 - [ ] 由独立 Trellis check agent 审查完整 task scope并调用 `guru-check-task`。
 - [ ] commit/push/PR/merge 前分别展示精确副作用；merge 后重新冻结 exact candidate。
 - [ ] 在新 candidate 上重新执行完整正式 verifier、剩余 pre-tag matrix与隔离业务仓 smoke。

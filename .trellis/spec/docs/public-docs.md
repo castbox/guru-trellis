@@ -37,7 +37,7 @@ opt-in user choice, not as the team default or automated validation path.
 Stable install and upgrade docs must list the complete current release mapping:
 repo release tag, peeled source commit, extension revision, and target official
 Trellis CLI. The current mapping is annotated tag `v0.6.5-guru.6`, extension
-revision `0.6.5-guru.29`, and target CLI `0.6.5`. The tag is created only after
+revision `0.6.5-guru.30`, and target CLI `0.6.5`. The tag is created only after
 the preparation PR merges and the exact remote candidate passes the pre-tag
 gate. Its peeled commit must equal that candidate and is recorded through
 immutable Git facts, GitHub Release notes, and release evidence; pre-candidate

@@ -220,6 +220,19 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
             adapter,
         )
 
+    def test_eval_adapters_use_checkout_local_managed_python(self) -> None:
+        root = preset.guru_root_from_script()
+        for adapter_id in ("shared", "codex", "claude", "cursor"):
+            with self.subTest(adapter=adapter_id):
+                adapter = (
+                    root / f"trellis/skills/guru-team/adapters/eval/{adapter_id}.sh"
+                ).read_text(encoding="utf-8")
+                self.assertIn('REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"', adapter)
+                self.assertIn('$SCRIPT_DIR/../../runtime/resolve-python.sh', adapter)
+                self.assertIn('$SCRIPT_DIR/../../../runtime/resolve-python.sh', adapter)
+                self.assertIn('exec "$RUNTIME_ASSETS/resolve-python.sh"', adapter)
+                self.assertNotIn("exec python3", adapter)
+
     def test_dogfood_spec_matches_finalizer_six_exit_contract(self) -> None:
         root = preset.guru_root_from_script()
         spec = (root / ".trellis/spec/workflow/index.md").read_text(encoding="utf-8")
@@ -2250,7 +2263,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.29")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.30")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
