@@ -7,6 +7,7 @@ import json
 import sys
 import tempfile
 import unittest
+from contextlib import ExitStack
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -466,6 +467,382 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 raised.exception.payload["reason_code"],
                 "existing_pr_head_not_ancestor",
             )
+
+    def test_existing_ready_pr_recovery_runs_real_topology_exactly_once(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary_root = Path(temporary)
+            root = temporary_root / "repo"
+            remote = temporary_root / "remote.git"
+            root.mkdir()
+            GTT.run_stdout(["git", "init", "-q"], cwd=root)
+            GTT.run_stdout(["git", "init", "-q", "--bare", str(remote)])
+            GTT.run_stdout(["git", "config", "user.name", "Guru Test"], cwd=root)
+            GTT.run_stdout(
+                ["git", "config", "user.email", "guru@example.invalid"], cwd=root
+            )
+            GTT.run_stdout(["git", "remote", "add", "origin", str(remote)], cwd=root)
+
+            old_task = root / ".trellis/tasks/archive/2026-08/old-ready-task"
+            old_task.mkdir(parents=True)
+            (old_task / "task.json").write_text(
+                json.dumps({"slug": "old-ready-task", "status": "completed"}) + "\n",
+                encoding="utf-8",
+            )
+            marker = root / "reviewed.txt"
+            marker.write_text("old ready PR\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "old ready task"], cwd=root)
+            old_head = GTT.current_head(root)
+            GTT.run_stdout(
+                ["git", "push", "-q", "origin", f"{old_head}:refs/heads/feat/208"],
+                cwd=root,
+            )
+
+            active_locator = ".trellis/tasks/repair-ready-task"
+            archive_locator = ".trellis/tasks/archive/2026-08/repair-ready-task"
+            active_task = root / active_locator
+            active_task.mkdir(parents=True)
+            (active_task / "task.json").write_text(
+                json.dumps({"slug": "repair-ready-task", "status": "active"}) + "\n",
+                encoding="utf-8",
+            )
+            marker.write_text("reviewed repair\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "reviewed repair"], cwd=root)
+            publication_head = GTT.current_head(root)
+            self.assertTrue(GTT.is_ancestor(root, old_head, publication_head))
+            self.assertNotEqual(old_head, publication_head)
+
+            plan = {
+                "plan_digest": "d" * 64,
+                "task": {
+                    "active_locator": active_locator,
+                    "archive_locator": archive_locator,
+                    "source_issue": 208,
+                },
+                "git": {
+                    "repo": "castbox/guru-trellis",
+                    "remote": "origin",
+                    "head_branch": "feat/208",
+                    "base_branch": "main",
+                    "branch_review_commit": publication_head,
+                    "reviewed_content_head": publication_head,
+                    "publication_head": publication_head,
+                },
+                "publish": {
+                    "title": "修复 Finalizer 既有 PR 恢复",
+                    "body": "修复恢复链路。\n\nCloses #208",
+                },
+                "review": {"close_issues_reviewed": [208]},
+            }
+            public_input = {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": active_locator,
+                "branch_review_commit": publication_head,
+                "pr_title": plan["publish"]["title"],
+                "pr_body": plan["publish"]["body"],
+            }
+            pr = {
+                "number": 59,
+                "url": "https://github.com/castbox/guru-trellis/pull/59",
+                "state": "OPEN",
+                "headRefName": "feat/208",
+                "baseRefName": "main",
+                "headRefOid": old_head,
+                "headRepository": {"nameWithOwner": "castbox/guru-trellis"},
+                "headRepositoryOwner": {"login": "castbox"},
+                "isCrossRepository": False,
+                "isDraft": False,
+                "title": "旧标题",
+                "body": "旧正文\n\nCloses #208",
+            }
+            mutations = {
+                "content_push": 0,
+                "metadata_edit": 0,
+                "pr_create": 0,
+                "archive": 0,
+                "archive_push": 0,
+                "ready": 0,
+            }
+            archive_attempts = 0
+            transaction = None
+            original_run_stdout = GTT.run_stdout
+
+            def remote_head(*_args, **_kwargs):
+                output = original_run_stdout(
+                    ["git", "ls-remote", "origin", "refs/heads/feat/208"], cwd=root
+                )
+                return output.split()[0] if output else ""
+
+            def resolve_pr(*_args, **_kwargs):
+                return copy.deepcopy(pr)
+
+            def write_transaction(_root, _task_dir, value):
+                nonlocal transaction
+                transaction = copy.deepcopy(value)
+
+            def read_transaction(_root, _task_dir):
+                return copy.deepcopy(transaction)
+
+            def recording_run_stdout(command, **kwargs):
+                result = original_run_stdout(command, **kwargs)
+                if command[:3] == ["git", "push", "-u"]:
+                    mutations["content_push"] += 1
+                    pr["headRefOid"] = remote_head()
+                return result
+
+            def edit_pr(_root, _repo, number, title, body):
+                self.assertEqual(number, pr["number"])
+                mutations["metadata_edit"] += 1
+                pr["title"] = title
+                pr["body"] = body
+
+            def create_pr(*_args, **_kwargs):
+                mutations["pr_create"] += 1
+                raise AssertionError("existing PR recovery must not create a PR")
+
+            def ready_pr(*_args, **_kwargs):
+                mutations["ready"] += 1
+                raise AssertionError("an initially Ready PR must remain Ready")
+
+            def build_projection(_root, task_dir, _prepared, _pr, **_kwargs):
+                path = task_dir / GTT.FINISH_SUMMARY_ARTIFACT
+                path.write_text("{}\n", encoding="utf-8")
+                return path, {}
+
+            def archive_transaction(_root, task_dir, _plan, **_kwargs):
+                nonlocal archive_attempts
+                archive_attempts += 1
+                if archive_attempts == 1:
+                    raise GTT.WorkflowError("simulated interruption before archive mutation")
+                archived = root / archive_locator
+                archived.parent.mkdir(parents=True, exist_ok=True)
+                task_dir.rename(archived)
+                original_run_stdout(["git", "add", "-A"], cwd=root)
+                original_run_stdout(
+                    ["git", "commit", "-q", "-m", "archive repair task"], cwd=root
+                )
+                archive_head = GTT.current_head(root)
+                original_run_stdout(
+                    [
+                        "git",
+                        "push",
+                        "-q",
+                        "origin",
+                        f"{archive_head}:refs/heads/feat/208",
+                    ],
+                    cwd=root,
+                )
+                mutations["archive"] += 1
+                mutations["archive_push"] += 1
+                pr["headRefOid"] = archive_head
+                return archived, {"commit": archive_head}
+
+            def pre_draft_state(*_args, **_kwargs):
+                return (
+                    "prepared"
+                    if remote_head() == old_head
+                    else "content_pushed"
+                )
+
+            def preview_context(_root, _args, _public_input):
+                task_dir = (
+                    root / archive_locator
+                    if (root / archive_locator).is_dir()
+                    else root / active_locator
+                )
+                if transaction is not None and transaction["next_transition"] == "mark_ready":
+                    state = "ready"
+                    recovery = None
+                    published_pr = copy.deepcopy(pr)
+                else:
+                    state = pre_draft_state()
+                    state, recovery = GTT.finalization_existing_pr_recovery_context(
+                        root, plan, transaction, state
+                    )
+                    published_pr = None
+                return {
+                    "task_dir": task_dir,
+                    "task_context": {"slug": "repair-ready-task"},
+                    "prepared": {"plan": plan, "task": {}, "body": plan["publish"]["body"], "ledger": {}},
+                    "plan": plan,
+                    "plan_ref": f"finalization:{plan['plan_digest']}",
+                    "transaction_state": state,
+                    "published_transition_complete": state == "ready",
+                    "published_pr": published_pr,
+                    "publication": {"owner_status": "current"},
+                    "publication_status": "current",
+                    "publication_stale_reason": None,
+                    "publication_branch_review_commit": publication_head,
+                    "reprepare_reason_code": None,
+                    "verification": None,
+                    "publication_mode": (
+                        "existing_pr_recovery" if recovery is not None else "ordinary_publication"
+                    ),
+                    "existing_pr_recovery": recovery,
+                }
+
+            gate = {
+                "route": {
+                    "typed_exit": "ready_for_merge",
+                    "output": copy.deepcopy(GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
+                }
+            }
+            args = SimpleNamespace(root=str(root), input="input.json", gate="gate.json")
+            no_op = mock.Mock()
+            patches = (
+                mock.patch.object(GTT, "finalization_public_input", return_value=(public_input, "input.json")),
+                mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, root / "gate.json")),
+                mock.patch.object(GTT, "finalization_preview_context", side_effect=preview_context),
+                mock.patch.object(
+                    GTT,
+                    "check_finalization_gate_result",
+                    side_effect=lambda *_args, **_kwargs: (gate, preview_context(None, None, None)),
+                ),
+                mock.patch.object(GTT, "resolve_finish_work_task_dir", side_effect=lambda *_: root / active_locator),
+                mock.patch.object(GTT, "validate_finish_work_invocation", no_op),
+                mock.patch.object(GTT, "load_config", return_value={}),
+                mock.patch.object(GTT, "load_task_runtime_identity", return_value={"slug": "repair-ready-task"}),
+                mock.patch.object(GTT, "assert_workspace_boundary", no_op),
+                mock.patch.object(
+                    GTT,
+                    "prepare_closeout",
+                    return_value={"plan": plan, "task": {}, "body": plan["publish"]["body"], "ledger": {}},
+                ),
+                mock.patch.object(GTT, "assert_closeout_archive_month_current", no_op),
+                mock.patch.object(GTT, "require_gh_auth", no_op),
+                mock.patch.object(GTT, "finalization_read_transaction", side_effect=read_transaction),
+                mock.patch.object(GTT, "finalization_write_transaction", side_effect=write_transaction),
+                mock.patch.object(GTT, "resolve_closeout_pull_request", side_effect=resolve_pr),
+                mock.patch.object(GTT, "closeout_remote_branch_head", side_effect=remote_head),
+                mock.patch.object(GTT, "run_stdout", side_effect=recording_run_stdout),
+                mock.patch.object(GTT, "update_pull_request_metadata", side_effect=edit_pr),
+                mock.patch.object(GTT, "create_pull_request", side_effect=create_pr),
+                mock.patch.object(GTT, "run_gh_command", side_effect=ready_pr),
+                mock.patch.object(GTT, "load_issue_scope_ledger", return_value={}),
+                mock.patch.object(GTT, "resolve_closeout_pre_draft_state", side_effect=pre_draft_state),
+                mock.patch.object(GTT, "validate_closeout_reviewed_content", no_op),
+                mock.patch.object(GTT, "validate_publish_identity_and_remote_head", no_op),
+                mock.patch.object(GTT, "validate_closeout_active_projection", no_op),
+                mock.patch.object(GTT, "validate_closeout_pull_request_identity", no_op),
+                mock.patch.object(GTT, "build_final_archive_projection", side_effect=build_projection),
+                mock.patch.object(GTT, "execute_archive_metadata_transaction", side_effect=archive_transaction),
+                mock.patch.object(GTT, "finalization_live_open_close_issues", return_value=[]),
+                mock.patch.object(
+                    GTT,
+                    "finalization_output_contract",
+                    return_value=load("schemas/public-ready-for-merge-output.schema.json"),
+                ),
+            )
+            with ExitStack() as stack:
+                for patcher in patches:
+                    stack.enter_context(patcher)
+                preview = GTT.cmd_preview_finalization(args)
+                self.assertFalse(preview["side_effects"])
+                self.assertEqual(preview["publication_mode"], "existing_pr_recovery")
+                self.assertEqual(preview["existing_pr_recovery"]["ancestry"], "strict_ancestor")
+                self.assertEqual(preview["existing_pr_recovery"]["initial_state"], "ready")
+                self.assertEqual(
+                    preview["expected_actions"],
+                    [
+                        "bind_existing_pr_transaction",
+                        "push_exact_publication_head",
+                        "converge_pr_metadata",
+                        "archive",
+                        "push_archive",
+                        "preserve_ready",
+                        "verify_three_way_head",
+                    ],
+                )
+                self.assertEqual(set(mutations.values()), {0})
+
+                with self.assertRaisesRegex(
+                    GTT.WorkflowError, "simulated interruption before archive mutation"
+                ):
+                    GTT.cmd_execute_finalization_transition(args)
+                self.assertEqual(transaction["mode"], "existing_pr_recovery")
+                self.assertEqual(transaction["next_transition"], "archive")
+                self.assertEqual(transaction["adopted_pr"]["pre_push_remote_head"], old_head)
+                self.assertEqual(
+                    mutations,
+                    {
+                        "content_push": 1,
+                        "metadata_edit": 1,
+                        "pr_create": 0,
+                        "archive": 0,
+                        "archive_push": 0,
+                        "ready": 0,
+                    },
+                )
+
+                mutation_snapshot = copy.deepcopy(mutations)
+                tree = original_run_stdout(["git", "rev-parse", f"{old_head}^{{tree}}"], cwd=root)
+                sibling = original_run_stdout(
+                    ["git", "commit-tree", tree, "-p", old_head, "-m", "force-push sibling"],
+                    cwd=root,
+                )
+                original_run_stdout(
+                    ["git", "push", "-q", "--force", "origin", f"{sibling}:refs/heads/feat/208"],
+                    cwd=root,
+                )
+                pr["headRefOid"] = sibling
+                with self.assertRaises(GTT.WorkflowError) as force_push_error:
+                    GTT.cmd_preview_finalization(args)
+                self.assertEqual(
+                    force_push_error.exception.payload["reason_code"],
+                    "finalizer_remote_head_drift",
+                )
+                self.assertEqual(mutations, mutation_snapshot)
+                original_run_stdout(
+                    ["git", "push", "-q", "--force", "origin", f"{publication_head}:refs/heads/feat/208"],
+                    cwd=root,
+                )
+                pr["headRefOid"] = publication_head
+
+                current_body = pr["body"]
+                pr["body"] = "drifted scope\n\nCloses #207"
+                with self.assertRaises(GTT.WorkflowError) as scope_error:
+                    GTT.cmd_preview_finalization(args)
+                self.assertEqual(
+                    scope_error.exception.payload["reason_code"],
+                    "existing_pr_scope_drift",
+                )
+                self.assertEqual(mutations, mutation_snapshot)
+                pr["body"] = current_body
+
+                reentry_preview = GTT.cmd_preview_finalization(args)
+                self.assertFalse(reentry_preview["existing_pr_recovery"]["push_required"])
+                self.assertFalse(
+                    reentry_preview["existing_pr_recovery"]["metadata_update_required"]
+                )
+                completed = GTT.cmd_execute_finalization_transition(args)
+                self.assertEqual(completed["stage"], "ready")
+                self.assertEqual(completed["typed_exit"], "ready_for_merge")
+                self.assertEqual(transaction["next_transition"], "mark_ready")
+                archive_head = GTT.current_head(root)
+                self.assertEqual(remote_head(), archive_head)
+                self.assertEqual(pr["headRefOid"], archive_head)
+                self.assertTrue((root / archive_locator).is_dir())
+                self.assertFalse((root / active_locator).exists())
+                self.assertTrue(old_task.is_dir())
+                self.assertEqual(
+                    mutations,
+                    {
+                        "content_push": 1,
+                        "metadata_edit": 1,
+                        "pr_create": 0,
+                        "archive": 1,
+                        "archive_push": 1,
+                        "ready": 0,
+                    },
+                )
+
+                terminal_snapshot = copy.deepcopy(mutations)
+                terminal = GTT.cmd_execute_finalization_transition(args)
+                self.assertEqual(terminal["stage"], "ready_recovered")
+                self.assertEqual(terminal["output"], completed["output"])
+                self.assertEqual(mutations, terminal_snapshot)
 
     def test_existing_pr_recovery_rejects_scope_and_remote_head_drift(self) -> None:
         plan = {
