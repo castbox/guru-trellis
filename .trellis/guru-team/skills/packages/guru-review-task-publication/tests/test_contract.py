@@ -55,6 +55,13 @@ def package_repo_root() -> Path:
     raise RuntimeError(f"Unsupported publication package test layout: {PACKAGE}")
 
 
+def finish_summary_schema_path() -> Path:
+    repo = package_repo_root()
+    if "trellis/skills/guru-team/packages" in PACKAGE.as_posix():
+        return repo / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+    return repo / ".trellis/guru-team/schemas/finish-summary.schema.json"
+
+
 def load_runtime():
     runtime_path = PACKAGE / "runtime/owner.py"
     spec = importlib.util.spec_from_file_location(
@@ -154,10 +161,8 @@ class TaskPublicationContractTest(unittest.TestCase):
         from jsonschema import Draft202012Validator
 
         payload = large_finish_summary()
-        repo = package_repo_root()
         schema = json.loads(
-            (repo / "trellis/workflows/guru-team/schemas/finish-summary.schema.json")
-            .read_text(encoding="utf-8")
+            finish_summary_schema_path().read_text(encoding="utf-8")
         )
         self.assertEqual(
             list(Draft202012Validator(schema).iter_errors(payload)),
@@ -168,26 +173,38 @@ class TaskPublicationContractTest(unittest.TestCase):
         cases = {}
         mismatch = copy.deepcopy(payload)
         mismatch["index"]["search_terms"]["paths"] = payload["git"]["changed_paths"][:-1]
-        cases["mismatch"] = mismatch
+        cases["mismatch"] = (
+            mismatch,
+            "index.search_terms.paths must equal sorted git.changed_paths.",
+        )
         unsorted = copy.deepcopy(payload)
         unsorted_paths = list(reversed(payload["git"]["changed_paths"]))
         unsorted["git"]["changed_paths"] = unsorted_paths
         unsorted["index"]["search_terms"]["paths"] = unsorted_paths
-        cases["unsorted"] = unsorted
+        cases["unsorted"] = (
+            unsorted,
+            "git.changed_paths must be sorted and unique.",
+        )
         duplicate = copy.deepcopy(payload)
         duplicate_paths = payload["git"]["changed_paths"] + [payload["git"]["changed_paths"][-1]]
         duplicate["git"]["changed_paths"] = duplicate_paths
         duplicate["index"]["search_terms"]["paths"] = duplicate_paths
-        cases["duplicate"] = duplicate
+        cases["duplicate"] = (
+            duplicate,
+            "git.changed_paths must be sorted and unique.",
+        )
         unsafe = copy.deepcopy(payload)
         unsafe_paths = payload["git"]["changed_paths"][:-1] + ["../unsafe.txt"]
         unsafe["git"]["changed_paths"] = unsafe_paths
         unsafe["index"]["search_terms"]["paths"] = unsafe_paths
-        cases["unsafe"] = unsafe
+        cases["unsafe"] = (
+            unsafe,
+            "git.changed_paths[] must not contain empty, dot, or parent segments.",
+        )
 
-        for name, invalid in cases.items():
+        for name, (invalid, expected_error) in cases.items():
             with self.subTest(case=name):
-                self.assertTrue(GTT.finish_summary_errors(invalid))
+                self.assertIn(expected_error, GTT.finish_summary_errors(invalid))
 
     class WrapperOwner:
         class WorkflowError(RuntimeError):

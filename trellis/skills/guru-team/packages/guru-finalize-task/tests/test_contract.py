@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import hashlib
 import json
@@ -97,12 +98,41 @@ class FinalizeTaskContractTests(unittest.TestCase):
         payload = large_finish_summary()
         self.assertEqual(GTT.finish_summary_errors(payload), [])
 
-        mismatch = json.loads(json.dumps(payload))
+        cases = {}
+        mismatch = copy.deepcopy(payload)
         mismatch["index"]["search_terms"]["paths"] = payload["git"]["changed_paths"][:-1]
-        self.assertIn(
+        cases["mismatch"] = (
+            mismatch,
             "index.search_terms.paths must equal sorted git.changed_paths.",
-            GTT.finish_summary_errors(mismatch),
         )
+        unsorted = copy.deepcopy(payload)
+        unsorted_paths = list(reversed(payload["git"]["changed_paths"]))
+        unsorted["git"]["changed_paths"] = unsorted_paths
+        unsorted["index"]["search_terms"]["paths"] = unsorted_paths
+        cases["unsorted"] = (
+            unsorted,
+            "git.changed_paths must be sorted and unique.",
+        )
+        duplicate = copy.deepcopy(payload)
+        duplicate_paths = payload["git"]["changed_paths"] + [payload["git"]["changed_paths"][-1]]
+        duplicate["git"]["changed_paths"] = duplicate_paths
+        duplicate["index"]["search_terms"]["paths"] = duplicate_paths
+        cases["duplicate"] = (
+            duplicate,
+            "git.changed_paths must be sorted and unique.",
+        )
+        unsafe = copy.deepcopy(payload)
+        unsafe_paths = payload["git"]["changed_paths"][:-1] + ["../unsafe.txt"]
+        unsafe["git"]["changed_paths"] = unsafe_paths
+        unsafe["index"]["search_terms"]["paths"] = unsafe_paths
+        cases["unsafe"] = (
+            unsafe,
+            "git.changed_paths[] must not contain empty, dot, or parent segments.",
+        )
+
+        for name, (invalid, expected_error) in cases.items():
+            with self.subTest(case=name):
+                self.assertIn(expected_error, GTT.finish_summary_errors(invalid))
 
     def test_execute_ready_recovery_materializes_without_finish_work(self) -> None:
         public_input = {"task_ref": ".trellis/tasks/archive/2026-08/example"}

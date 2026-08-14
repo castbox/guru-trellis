@@ -2,24 +2,25 @@
 
 ## 现状
 
-同一任意限制存在于 canonical `finish-summary.schema.json` 的两个数组，以及 Publication Review、Finalizer 两份 package-local owner runtime。Preset 将 canonical 内容投影到 dogfood installed tree；只改单一副本会造成 drift。
+固定限制存在于 canonical `finish-summary.schema.json` 的两个数组，以及 Publication Review、Finalizer 两份 package-local owner runtime。受管 installed/dogfood 与 Shared/Codex/Claude/Cursor 投影必须与 canonical 保持字节一致，但本 Issue 禁止通过 preset apply/reapply 生成这些副本。
 
 ## 方案
 
 1. 从 canonical schema 的 `git.changed_paths` 与 `index.search_terms.paths` 删除 `maxItems: 2000`，保留 `type`、`uniqueItems` 与安全路径定义。
-2. 将两个 owner runtime 的校验改为只要求 list，再逐项校验路径并验证 `sorted(set(paths))`，保留 search terms 与 changed paths 完全相等检查。
-3. 在两个 owner package 的合同测试中构造 2001 个确定性安全路径，直接验证各自 `finish_summary_errors` 返回空结果。
-4. 在 schema 回归中用同一有效 payload 验证 canonical schema 接受 2001 路径，并增加不一致/重复或乱序的负例，避免放宽非数量合同。
-5. 通过 preset 官方 apply 同步受管 projection，再运行 source/installed、dogfood 与安装验证。
+2. 在两个 owner runtime 中仅移除固定数量拒绝；继续逐项检查安全路径、唯一性、排序，并验证 `index.search_terms.paths` 与 `git.changed_paths` 完全相等。
+3. 在 schema、Publication Review 和 Finalizer 直接测试中构造至少 2001 个确定性安全路径，验证完整集合通过。
+4. 对非法、重复、未排序和集合不一致分别保留或补齐负例，证明放宽仅影响容量。
+5. 使用精确文件编辑同步 canonical 与仓库中已存在的 installed/dogfood、Shared/Codex/Claude/Cursor 受管投影源；通过静态 byte equality、manifest 和 drift checker 验证，不运行 installer 或 apply。
 
 ## 兼容性
 
-- Schema 仍为当前版本 2；这是放宽任意容量限制，不改变字段形状或 consumer 行为。
-- 历史 schema version 1 由同一 validator 接受更大完整路径集，不需要迁移已有摘要。
-- 内存与摘要体积随真实 diff 线性增长，这是“完整 changed paths”既有合同的直接成本；本任务不引入静默截断。
+- Schema 版本、字段形状、公开 DTO、typed exits、错误分类和 workflow route 均不变。
+- 历史合法摘要不需要迁移；大型摘要由固定拒绝变为接受。
+- 内存与摘要体积随真实 diff 线性增长，这是完整 changed paths 既有合同的直接成本，不引入截断或摘要替代。
 
 ## 风险与控制
 
-- 风险：只修一份 owner 导致 Publication 与 Finalizer 行为分裂。控制：两包使用对称回归测试。
-- 风险：手改 installed tree 形成不可复现差异。控制：canonical 修改后运行官方 preset apply 与 drift 校验。
-- 风险：误删其它界限。控制：精确断言 commits 等现有上限仍存在，diff 仅覆盖路径数量限制。
+- 只修一个 owner 会造成 Publication 与 Finalizer 行为分裂：以对称 runtime 正向与负向测试约束。
+- 容量放宽可能误伤路径约束：用非法、重复、未排序和集合不一致回归隔离行为边界。
+- 手动同步可能产生受管漂移：逐一执行 byte equality、manifest 声明一致性、dogfood drift 和零 sidecar 检查。
+- 安装态与原业务阻断不在本任务证明范围：PR 明确交由 #222 在 #227 合并后验证。

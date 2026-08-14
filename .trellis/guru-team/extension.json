@@ -4509,7 +4509,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-publication/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
-        "sha256": "c21cfae5546e21079dfb10dbc7868e3588d85c48eba6eae18e31fb881302b530",
+        "sha256": "389aadfff20e440a9015dfb2775bec3ffb7e03af7a5ec8b7fd4c2a01b5a0eb93",
         "executable": false,
         "action": "unchanged"
       },
@@ -5769,7 +5769,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "330f71a2875366bb8cb023b8d4ca249cb98bb6c2af83c61c069bb7080214915f",
+        "sha256": "d5f559ce6cc02783ddd253046b2ce0425c07c7122120b761c2bc26cdac6064b4",
         "executable": false,
         "action": "unchanged"
       },
