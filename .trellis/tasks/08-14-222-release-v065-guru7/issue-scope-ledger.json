@@ -1,0 +1,75 @@
+{
+  "close_issues": [
+    {
+      "number": 222,
+      "reason": "仅在 tag、Release、tag-pinned 复核和累计证据全部完成后关闭。",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227、#231 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 223,
+      "reason": "明确排除，保留为独立后续范围。",
+      "title": "配置驱动的 Draft CI 门禁、Ready 时序与 Agent 自动合并",
+      "url": "https://github.com/castbox/guru-trellis/issues/223"
+    },
+    {
+      "number": 208,
+      "reason": "明确排除，保留为独立后续范围。",
+      "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/208"
+    },
+    {
+      "number": 164,
+      "reason": "明确排除，保留为独立后续范围。",
+      "title": "智能选择 task-free 或标准 Guru Team Intake",
+      "url": "https://github.com/castbox/guru-trellis/issues/164"
+    },
+    {
+      "number": 220,
+      "reason": "明确排除，保留为独立后续范围。",
+      "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
+      "url": "https://github.com/castbox/guru-trellis/issues/220"
+    }
+  ],
+  "primary_issue": {
+    "number": 222,
+    "reason": "本任务唯一关闭对象，拥有累计发布门禁与 Release 关闭条件。",
+    "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227、#231 合并后的业务仓库安装基线",
+    "url": "https://github.com/castbox/guru-trellis/issues/222"
+  },
+  "related_issues": [
+    {
+      "number": 219,
+      "reason": "已合并关闭的受管 Python runtime prerequisite。",
+      "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+      "url": "https://github.com/castbox/guru-trellis/issues/219"
+    },
+    {
+      "number": 217,
+      "reason": "已合并关闭的 Branch Review 生命周期 prerequisite。",
+      "title": "修复 guru-review-branch recorder 未持久化 review gate",
+      "url": "https://github.com/castbox/guru-trellis/issues/217"
+    },
+    {
+      "number": 218,
+      "reason": "已合并关闭的 Finalizer/Merge correctness prerequisite。",
+      "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/218"
+    },
+    {
+      "number": 227,
+      "reason": "已合并关闭的 2130 路径 preflight prerequisite。",
+      "title": "移除 finish-summary 变更路径数量的任意上限",
+      "url": "https://github.com/castbox/guru-trellis/issues/227"
+    },
+    {
+      "number": 231,
+      "reason": "已合并关闭的用户级 runtime cache prerequisite。",
+      "title": "将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析",
+      "url": "https://github.com/castbox/guru-trellis/issues/231"
+    }
+  ],
+  "schema_version": "2.0"
+}

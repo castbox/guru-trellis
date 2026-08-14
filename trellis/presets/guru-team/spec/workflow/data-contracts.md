@@ -491,7 +491,7 @@ error rather than a traceback.
 
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
-such as `v0.6.5-guru.6`, not namespaced tags such as
+such as `v0.6.5-guru.7`, not namespaced tags such as
 `guru-team/v0.6.5`. The tag must correspond to
 the exact `trellis/guru-team-extension.json.version` present in the tagged commit,
 and the manifest must expose `target_trellis_cli` so users can see which official
@@ -499,7 +499,7 @@ and the manifest must expose `target_trellis_cli` so users can see which officia
 tag and extension revision are independent version axes: release metadata binds
 one immutable tag to one exact tagged manifest version rather than assuming their
 Guru suffixes are equal. Stable workflow marketplace examples should use
-`gh:castbox/guru-trellis/trellis#v0.6.5-guru.6`; unpinned
+`gh:castbox/guru-trellis/trellis#v0.6.5-guru.7`; unpinned
 `gh:castbox/guru-trellis/trellis` means latest/canary and must be reported as a
 mutable source in install or upgrade evidence.
 An unreleased branch may carry the next canonical extension version while

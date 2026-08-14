@@ -1,0 +1,7 @@
+{"file":".trellis/spec/docs/public-docs.md","reason":"审核 public README、安装升级命令、中文 Release notes 和实际稳定映射一致。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核 `.7`、`.31`、candidate/tag tree、installed provenance 与 exact source 一致。"}
+{"file":".trellis/spec/preset/installer.md","reason":"审核 clean install、official update、preset reapply、用户级 runtime cache 和 managed inventory。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核完整 verifier、公开 wrapper 生命周期、2130 路径业务 smoke 与 fail-closed 发布规则。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"审核 source/installed/platform equality、dogfood drift、managed removal 与零 sidecar。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"审核没有覆盖 upstream-owned 文件，也没有修改全局 npm、系统 Python 或真实业务仓。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"审核 manifest、README、fixtures/tests、tag 和 Release notes 的跨层闭环。"}
