@@ -1369,6 +1369,31 @@ def stage_clean_installed_owner_repo(
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
+        runtime_assets = fixture / ".trellis/guru-team/runtime"
+        bootstrap = runtime_assets / "bootstrap.py"
+        if bootstrap.is_symlink() or not bootstrap.is_file():
+            raise ValueError("installed managed runtime bootstrap is unavailable")
+        runtime = subprocess.run(
+            [
+                sys.executable,
+                str(bootstrap),
+                "--repo",
+                str(fixture),
+                "--runtime-assets",
+                str(runtime_assets),
+                "--python",
+                sys.executable,
+                "--json",
+            ],
+            cwd=fixture,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+        )
+        if runtime.returncode != 0:
+            raise ValueError("installed managed runtime bootstrap failed during owner staging")
     return fixture, source_repo
 
 

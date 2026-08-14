@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.28",
+    "version": "0.6.5-guru.30",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-14T03:23:09Z",
+  "installed_at": "2026-08-14T06:09:04Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "efb7a7eb859f59b345350cf30e1c4b581b70765e",
-    "commit": "efb7a7eb859f59b345350cf30e1c4b581b70765e",
+    "ref": "8b712de12cc309833b5d4497f69ba0000d6b0020",
+    "commit": "8b712de12cc309833b5d4497f69ba0000d6b0020",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -513,7 +513,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "fa09c23c594dd8bf7fd114c3cdf561fe1db647859a97c6e0321c1eceabe1df01",
-        "tree_sha256": "8b5264b500283f0c8e6d0ac07763970a08bf4c173a4373f84f50023f6f9b9c8d"
+        "tree_sha256": "aa84c2dd90f497358a1838b8518a8d509dc3d1bdc9f4836cf2b0fb92b7952b1d"
       },
       {
         "id": "guru-finalize-task",
@@ -687,7 +687,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/claude.sh",
         "source": "trellis/skills/guru-team/adapters/eval/claude.sh",
-        "sha256": "c4f45d79e25ae55c9084fefb32a13e38704a7200dc303ac3f4794ecdad1cbfa6",
+        "sha256": "a3b2df514a9002d6e7f04ff1bc063c0bbd876668bb05f41a0b34b34801609131",
         "executable": true,
         "action": "unchanged"
       },
@@ -701,7 +701,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/codex.sh",
         "source": "trellis/skills/guru-team/adapters/eval/codex.sh",
-        "sha256": "440a203888d6542b3acc752f778fb2dc57a60fb087ee996f80ad6d2ba3dd06c6",
+        "sha256": "616d4b6503fc11936be6209759929548f830904182242d7b88bdcc265b7fd5b9",
         "executable": true,
         "action": "unchanged"
       },
@@ -715,7 +715,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/cursor.sh",
         "source": "trellis/skills/guru-team/adapters/eval/cursor.sh",
-        "sha256": "424428c223e32ebea89faa8cb2eabbd1199df28b705817e34f1338303d3b7d40",
+        "sha256": "0d4ff15c3a9080a677dc08f8c0d0f8ce378045f74f2e7162f1ee40de61fc1d95",
         "executable": true,
         "action": "unchanged"
       },
@@ -729,7 +729,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "576ef9834ca39f9b0a33d2c860d9a7ef3060402f142cf3c1a29036370b64d308",
+        "sha256": "14070c95520718700ba2411a00f02d119ebe77960d41727409f38e0ad9c31cbd",
         "executable": false,
         "action": "unchanged"
       },
@@ -743,7 +743,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/shared.sh",
         "source": "trellis/skills/guru-team/adapters/eval/shared.sh",
-        "sha256": "d00535428f03eee19788c08c8de6dba18a1fa6b1158d1e4c2458d451f0211c6e",
+        "sha256": "2339aba945a8d666e24a2c1fb3e6199ae15bd40a31df5ae82b4a0a34a6b59a27",
         "executable": true,
         "action": "unchanged"
       },
@@ -5132,7 +5132,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "a189937baeb7236b625576c8eb7f30a1490fe97009f50a97c2024d92e0b697ea",
+        "sha256": "ef8860939feac64310ce08030ca1fa78751b7932cf72326400cc11fb7e65cb0f",
         "executable": false,
         "action": "unchanged"
       },

@@ -3,13 +3,16 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAYOUT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
-if [[ -d "$LAYOUT_ROOT/skills/guru-team/runtime" ]]; then
+if [[ -x "$LAYOUT_ROOT/skills/guru-team/runtime/resolve-python.sh" ]]; then
+  REPO_ROOT="$(cd "$LAYOUT_ROOT/.." && pwd)"
   RUNTIME_ROOT="$LAYOUT_ROOT/skills/guru-team"
-elif [[ -d "$LAYOUT_ROOT/.trellis/guru-team/runtime" ]]; then
+elif [[ -x "$LAYOUT_ROOT/.trellis/guru-team/runtime/resolve-python.sh" ]]; then
+  REPO_ROOT="$LAYOUT_ROOT"
   RUNTIME_ROOT="$LAYOUT_ROOT/.trellis/guru-team"
 else
-  echo '{"code":"runtime_dependency_missing","field_path":"runtime","remediation":"Install the complete compatible Guru Team preset runtime."}' >&2
+  echo '{"code":"runtime_dependency_missing","field_path":"runtime","dependency":"python-runtime","runtime_identity":null,"remediation":"trellis/presets/guru-team/scripts/bash/apply.sh --repo ."}' >&2
   exit 2
 fi
-export PYTHONPATH="$RUNTIME_ROOT${PYTHONPATH:+:$PYTHONPATH}"
-exec python3 -m runtime.compat "$@"
+export PYTHONPATH="$RUNTIME_ROOT"
+cd "$REPO_ROOT"
+exec "$RUNTIME_ROOT/runtime/resolve-python.sh" "$REPO_ROOT" "$RUNTIME_ROOT/runtime" -m runtime.compat "$@"
