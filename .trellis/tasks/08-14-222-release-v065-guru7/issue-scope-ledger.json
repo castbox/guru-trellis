@@ -1,12 +1,5 @@
 {
-  "close_issues": [
-    {
-      "number": 222,
-      "reason": "仅在 tag、Release、tag-pinned 复核和累计证据全部完成后关闭。",
-      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227、#231 合并后的业务仓库安装基线",
-      "url": "https://github.com/castbox/guru-trellis/issues/222"
-    }
-  ],
+  "close_issues": [],
   "followup_issues": [
     {
       "number": 223,
@@ -35,11 +28,17 @@
   ],
   "primary_issue": {
     "number": 222,
-    "reason": "本任务唯一关闭对象，拥有累计发布门禁与 Release 关闭条件。",
+    "reason": "本 preparation PR 只准备 release-owned bytes；#222 保持 Open 并继续持有 post-merge Release Gate。",
     "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227、#231 合并后的业务仓库安装基线",
     "url": "https://github.com/castbox/guru-trellis/issues/222"
   },
   "related_issues": [
+    {
+      "number": 222,
+      "reason": "本 preparation PR 只准备 release-owned bytes；#222 保持 Open 并继续持有 post-merge Release Gate。",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227、#231 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    },
     {
       "number": 219,
       "reason": "已合并关闭的受管 Python runtime prerequisite。",
