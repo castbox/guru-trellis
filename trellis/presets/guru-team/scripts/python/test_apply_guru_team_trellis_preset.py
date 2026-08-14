@@ -31,9 +31,9 @@ _RUNTIME_RESULT = {
     "status": "ok",
     "action": "reused",
     "runtime_identity": "0123456789abcdef01234567",
+    "interpreter": sys.executable,
 }
 _ensure_managed_python_runtime = preset.ensure_managed_python_runtime
-_managed_python_interpreter = preset.managed_python_interpreter
 _runtime_patchers: list[mock._patch] = []
 
 
@@ -43,16 +43,6 @@ def setUpModule() -> None:
             preset,
             "ensure_managed_python_runtime",
             return_value=_RUNTIME_RESULT,
-        ),
-        mock.patch.object(
-            preset,
-            "managed_python_interpreter",
-            return_value=Path(sys.executable),
-        ),
-        mock.patch.object(
-            preset,
-            "prepared_python_interpreter",
-            return_value=Path(sys.executable),
         ),
     ])
     for patcher in _runtime_patchers:
@@ -106,19 +96,6 @@ class ManagedPythonBootstrapBoundaryTest(unittest.TestCase):
         self.assertEqual(set(payload), {"code", "field_path", "dependency", "runtime_identity", "remediation"})
         self.assertEqual(payload["runtime_identity"], failure["runtime_identity"])
         self.assertNotIn("detail", payload)
-
-    def test_active_pointer_failure_uses_stable_runtime_json(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            with self.assertRaises(SystemExit) as raised:
-                _managed_python_interpreter(
-                    Path(tmp),
-                    "0123456789abcdef01234567",
-                )
-        payload = json.loads(str(raised.exception))
-        self.assertEqual(set(payload), {"code", "field_path", "dependency", "runtime_identity", "remediation"})
-        self.assertEqual(payload["code"], "runtime_dependency_missing")
-        self.assertEqual(payload["runtime_identity"], "0123456789abcdef01234567")
-
 
 STAGE0_SKILL_IDS = (
     "guru-sync-base",

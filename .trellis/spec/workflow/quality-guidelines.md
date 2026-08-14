@@ -836,14 +836,28 @@ stale hard-coded counts after package activation.
 Runtime changes require package/runtime unit tests for stable identity, same-id
 reuse, lock drift, damaged managed runtime repair, candidate failure preserving
 the active pointer, resolver failure JSON, pinned dependency versions, and real
-Draft 2020-12 behavior. Preset tests must prove the runtime contract files are
+Draft 2020-12 behavior. Identity coverage includes OS, architecture, Python ABI
+and platform tag. Locator tests cover macOS, Linux/XDG and Windows user-cache
+roots plus an isolated override. A real Git main-checkout -> linked-worktree
+lifecycle must prove a new linked checkout inherits the Git-common-dir default
+and shared runtime without copying a venv. A two-checkout, two-identity case
+must also prove each checkout retains its exact runtime selection after
+sequential apply. Preset tests must prove the runtime contract files are
 in the managed inventory with canonical bytes and executable modes.
+
+Runtime test harnesses must bootstrap against an isolated temporary repository,
+not the source checkout under test. Subprocesses that intentionally exercise the
+source checkout wrappers must not inherit a test-only cache-root override. The
+suite must prove the source checkout's active pointer bytes are unchanged before
+and after execution so test cleanup cannot leave a stale interpreter path.
 
 At least one focused clean install must use a PATH Python that can create a venv
 but cannot import `jsonschema`, apply the real preset, and execute a real public
 schema-bound wrapper through the installed managed interpreter. The focused
 gate also includes targeted reapply, canonical/installed equality, dogfood drift,
-and a recursive zero-unknown-sidecar check.
+and a recursive zero-unknown-sidecar check. Missing pointer,
+missing/stale cache entry and failed dependency probe must remain distinct stable
+errors.
 
 This focused gate does not replace the complete extension release verification:
 the full capability suite, marketplace matrix, official Trellis update, complete

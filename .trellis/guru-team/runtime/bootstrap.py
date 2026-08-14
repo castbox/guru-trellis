@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and activate the repository-local Guru Team Python runtime."""
+"""Build and resolve the user-scoped Guru Team Python runtime cache."""
 
 from __future__ import annotations
 
@@ -18,7 +18,18 @@ REPAIR_COMMAND = "trellis/presets/guru-team/scripts/bash/apply.sh --repo ."
 
 
 class BootstrapError(RuntimeError):
-    pass
+    def __init__(
+        self,
+        message: str,
+        *,
+        code: str = "runtime_dependency_missing",
+        dependency: str = "python-runtime",
+        runtime_identity: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.dependency = dependency
+        self.runtime_identity = runtime_identity
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -39,7 +50,18 @@ def runtime_identity(assets: Path, python: Path) -> tuple[str, dict[str, Any]]:
     manifest = read_json(assets / "python-runtime.json")
     lock_digest = hashlib.sha256((assets / str(manifest["lock_file"])).read_bytes()).hexdigest()
     proc = subprocess.run(
-        [str(python), "-c", "import json,platform,sys;print(json.dumps({'implementation':platform.python_implementation(),'major':sys.version_info[0],'minor':sys.version_info[1]}))"],
+        [
+            str(python),
+            "-c",
+            (
+                "import json,platform,sys,sysconfig;"
+                "print(json.dumps({'implementation':platform.python_implementation(),"
+                "'major':sys.version_info[0],'minor':sys.version_info[1],"
+                "'os_name':platform.system() or sys.platform,'machine':platform.machine(),"
+                "'abi_tag':sys.implementation.cache_tag or '',"
+                "'platform_tag':sysconfig.get_platform()}))"
+            ),
+        ],
         text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     if proc.returncode != 0:
@@ -58,6 +80,10 @@ def runtime_identity(assets: Path, python: Path) -> tuple[str, dict[str, Any]]:
         "python_implementation": python_info["implementation"],
         "python_major": python_info["major"],
         "python_minor": python_info["minor"],
+        "os_name": python_info["os_name"],
+        "machine": python_info["machine"],
+        "python_abi_tag": python_info["abi_tag"],
+        "python_platform_tag": python_info["platform_tag"],
     }
     runtime_id = hashlib.sha256(canonical_json(identity)).hexdigest()[:24]
     return runtime_id, identity
@@ -67,16 +93,99 @@ def venv_python(environment: Path) -> Path:
     return environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
 
 
+def user_cache_root(
+    environment: dict[str, str] | None = None,
+    *,
+    system_name: str | None = None,
+    home: Path | None = None,
+) -> Path:
+    values = os.environ if environment is None else environment
+    override = values.get("GURU_TEAM_PYTHON_CACHE_ROOT", "").strip()
+    if override:
+        return Path(override).expanduser().resolve()
+    system = system_name or platform.system()
+    user_home = home or Path.home()
+    if system == "Darwin":
+        return user_home / "Library/Caches/guru-team/python"
+    if system == "Windows":
+        local = values.get("LOCALAPPDATA", "").strip()
+        return (Path(local) if local else user_home / "AppData/Local") / "GuruTeam/python"
+    xdg = values.get("XDG_CACHE_HOME", "").strip()
+    return (Path(xdg).expanduser() if xdg else user_home / ".cache") / "guru-team/python"
+
+
+def repository_git_dirs(repo: Path) -> tuple[Path | None, Path | None]:
+    git_marker = repo / ".git"
+    git_dir: Path | None = None
+    common_dir: Path | None = None
+    if git_marker.is_dir():
+        git_dir = git_marker.resolve()
+        common_dir = git_dir
+    elif git_marker.is_file() and not git_marker.is_symlink():
+        try:
+            marker = git_marker.read_text(encoding="utf-8").strip()
+        except OSError:
+            marker = ""
+        if marker.startswith("gitdir: "):
+            git_dir = Path(marker.removeprefix("gitdir: ").strip())
+            if not git_dir.is_absolute():
+                git_dir = repo / git_dir
+            git_dir = git_dir.resolve()
+            if git_dir.is_dir():
+                common_dir = git_dir
+                commondir = git_dir / "commondir"
+                if commondir.is_file() and not commondir.is_symlink():
+                    try:
+                        common_value = commondir.read_text(encoding="utf-8").strip()
+                    except OSError:
+                        common_value = ""
+                    if common_value:
+                        common_candidate = Path(common_value)
+                        if not common_candidate.is_absolute():
+                            common_candidate = git_dir / common_candidate
+                        common_candidate = common_candidate.resolve()
+                        if common_candidate.is_dir():
+                            common_dir = common_candidate
+    return git_dir, common_dir
+
+
+def repository_state_root(repo: Path, *, for_write: bool = False) -> Path:
+    git_dir, common_dir = repository_git_dirs(repo)
+    if git_dir is not None and common_dir is not None:
+        common_root = common_dir / "guru-team/python"
+        if git_dir != common_dir:
+            worktree_root = git_dir / "guru-team/python"
+            if for_write or (worktree_root / "active.json").is_file():
+                return worktree_root
+        return common_root
+    # Git-less archive fixtures retain a private checkout-local pointer.
+    return repo / ".trellis/.runtime/guru-team/python"
+
+
+def runtime_target(runtime_id: str) -> Path:
+    return user_cache_root() / runtime_id
+
+
+def active_pointer_path(repo: Path, *, for_write: bool = False) -> Path:
+    return repository_state_root(repo, for_write=for_write) / "active.json"
+
+
 def run_probe(python: Path, assets: Path) -> dict[str, Any]:
     proc = subprocess.run(
         [str(python), str(assets / "probe.py"), "--manifest", str(assets / "python-runtime.json"), "--json"],
         text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     if proc.returncode != 0:
-        raise BootstrapError("managed dependency capability probe failed")
+        raise BootstrapError(
+            "managed dependency capability probe failed",
+            dependency="jsonschema",
+        )
     payload = json.loads(proc.stdout)
     if payload.get("status") != "ok":
-        raise BootstrapError("managed dependency capability probe failed")
+        raise BootstrapError(
+            "managed dependency capability probe failed",
+            dependency="jsonschema",
+        )
     return payload
 
 
@@ -100,25 +209,80 @@ def existing_state(target: Path, runtime_id: str, identity: dict[str, Any], asse
     return "reusable"
 
 
-def write_active(runtime_root: Path, runtime_id: str) -> None:
-    pointer = {"runtime_id": runtime_id, "interpreter": f"{runtime_id}/venv/{'Scripts/python.exe' if os.name == 'nt' else 'bin/python'}"}
+def write_active(repo: Path, runtime_id: str) -> None:
+    runtime_root = repository_state_root(repo, for_write=True)
+    runtime_root.mkdir(parents=True, exist_ok=True)
+    pointer = {
+        "schema_version": "2.0",
+        "cache_scope": "user",
+        "runtime_id": runtime_id,
+        "interpreter": venv_python(runtime_target(runtime_id) / "venv").as_posix(),
+    }
     temporary = runtime_root / "active.json.tmp"
     temporary.write_bytes(canonical_json(pointer) + b"\n")
     temporary.replace(runtime_root / "active.json")
 
 
-def validate_active(repo: Path, assets: Path, python: Path, runtime_id: str) -> dict[str, Any]:
+def resolve_runtime(assets: Path, runtime_id: str) -> dict[str, Any]:
+    target = runtime_target(runtime_id)
+    python = venv_python(target / "venv")
+    if not target.is_dir() or not python.is_file() or not os.access(python, os.X_OK):
+        raise BootstrapError(
+            "managed runtime cache entry is missing",
+            code="managed_runtime_missing",
+            runtime_identity=runtime_id,
+        )
     expected_id, identity = runtime_identity(assets, python)
     if expected_id != runtime_id:
-        raise BootstrapError("active runtime identity is stale")
-    target = repo / ".trellis/.runtime/guru-team/python" / runtime_id
+        raise BootstrapError(
+            "managed runtime identity is stale",
+            code="managed_runtime_missing",
+            runtime_identity=runtime_id,
+        )
     if existing_state(target, runtime_id, identity, assets) != "reusable":
-        raise BootstrapError("active runtime metadata or capability probe is invalid")
-    return {"status": "ok", "runtime_identity": runtime_id}
+        raise BootstrapError(
+            "managed runtime metadata or capability probe is invalid",
+            dependency="jsonschema",
+            runtime_identity=runtime_id,
+        )
+    return {"status": "ok", "runtime_identity": runtime_id, "interpreter": str(python)}
+
+
+def validate_active(repo: Path, assets: Path, runtime_id: str | None = None) -> dict[str, Any]:
+    pointer_path = active_pointer_path(repo)
+    if not pointer_path.is_file() or pointer_path.is_symlink():
+        raise BootstrapError(
+            "managed runtime is not bootstrapped for this repository",
+            code="runtime_not_bootstrapped",
+        )
+    try:
+        pointer = read_json(pointer_path)
+    except BootstrapError as exc:
+        raise BootstrapError(
+            "managed runtime pointer is invalid",
+            code="managed_runtime_missing",
+            runtime_identity=runtime_id,
+        ) from exc
+    active_id = pointer.get("runtime_id")
+    expected_interpreter = venv_python(runtime_target(str(active_id)) / "venv").as_posix()
+    if (
+        pointer.get("schema_version") != "2.0"
+        or pointer.get("cache_scope") != "user"
+        or not isinstance(active_id, str)
+        or len(active_id) != 24
+        or pointer.get("interpreter") != expected_interpreter
+        or (runtime_id is not None and active_id != runtime_id)
+    ):
+        raise BootstrapError(
+            "managed runtime pointer is stale",
+            code="managed_runtime_missing",
+            runtime_identity=runtime_id if runtime_id is not None else (active_id if isinstance(active_id, str) else None),
+        )
+    return resolve_runtime(assets, active_id)
 
 
 def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> dict[str, Any]:
-    runtime_root = repo / ".trellis/.runtime/guru-team/python"
+    runtime_root = user_cache_root()
     runtime_root.mkdir(parents=True, exist_ok=True)
     runtime_id, identity = runtime_identity(assets, python)
     target = runtime_root / runtime_id
@@ -129,8 +293,13 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
             raise BootstrapError("target runtime identity exists without valid managed provenance")
         if state == "reusable":
             if activate:
-                write_active(runtime_root, runtime_id)
-            return {"status": "ok", "action": "reused", "runtime_identity": runtime_id}
+                write_active(repo, runtime_id)
+            return {
+                "status": "ok",
+                "action": "reused",
+                "runtime_identity": runtime_id,
+                "interpreter": str(venv_python(target / "venv")),
+            }
         repair_target = True
 
     candidate = runtime_root / f".{runtime_id}.candidate-{os.getpid()}"
@@ -176,8 +345,13 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
         else:
             candidate.replace(target)
         if activate:
-            write_active(runtime_root, runtime_id)
-        return {"status": "ok", "action": "repaired" if repair_target else "installed", "runtime_identity": runtime_id}
+            write_active(repo, runtime_id)
+        return {
+            "status": "ok",
+            "action": "repaired" if repair_target else "installed",
+            "runtime_identity": runtime_id,
+            "interpreter": str(venv_python(target / "venv")),
+        }
     except Exception:
         if candidate.is_dir():
             shutil.rmtree(candidate)
@@ -191,22 +365,52 @@ def main() -> int:
     parser.add_argument("--python", type=Path, default=Path(sys.executable))
     parser.add_argument("--print-identity", action="store_true")
     parser.add_argument("--validate-active")
+    parser.add_argument("--resolve-active", action="store_true")
+    parser.add_argument("--resolve-runtime")
+    parser.add_argument("--exec-active", action="store_true")
+    parser.add_argument("--print-active-pointer", action="store_true")
     parser.add_argument("--no-activate", action="store_true")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     runtime_id: str | None = None
     try:
+        modes = sum(bool(value) for value in (
+            args.print_identity,
+            args.validate_active,
+            args.resolve_active,
+            args.resolve_runtime,
+            args.exec_active,
+            args.print_active_pointer,
+        ))
+        if modes > 1:
+            raise BootstrapError("select exactly one runtime operation")
         if args.print_identity:
             print(runtime_identity(args.runtime_assets.resolve(), args.python.resolve())[0])
+            return 0
+        if args.print_active_pointer:
+            print(active_pointer_path(args.repo.resolve()))
             return 0
         if args.validate_active:
             runtime_id = args.validate_active
             result = validate_active(
                 args.repo.resolve(),
                 args.runtime_assets.resolve(),
-                args.python.resolve(),
                 args.validate_active,
             )
+        elif args.resolve_runtime:
+            runtime_id = args.resolve_runtime
+            result = resolve_runtime(args.runtime_assets.resolve(), runtime_id)
+        elif args.resolve_active or args.exec_active:
+            result = validate_active(args.repo.resolve(), args.runtime_assets.resolve())
+            runtime_id = str(result["runtime_identity"])
+            if args.exec_active:
+                command = list(args.command)
+                if command[:1] == ["--"]:
+                    command = command[1:]
+                if not command:
+                    raise BootstrapError("managed runtime command is missing")
+                os.execv(result["interpreter"], [result["interpreter"], *command])
         else:
             runtime_id, _ = runtime_identity(args.runtime_assets.resolve(), args.python.resolve())
             result = bootstrap(
@@ -215,9 +419,18 @@ def main() -> int:
                 args.python.resolve(),
                 activate=not args.no_activate,
             )
-    except Exception:
-        payload = {"code": "runtime_dependency_missing", "field_path": "runtime", "dependency": "jsonschema", "runtime_identity": runtime_id, "remediation": REPAIR_COMMAND}
-        print(json.dumps(payload, sort_keys=True))
+    except Exception as exc:
+        payload = {
+            "code": exc.code if isinstance(exc, BootstrapError) else "runtime_dependency_missing",
+            "field_path": "runtime",
+            "dependency": exc.dependency if isinstance(exc, BootstrapError) else "python-runtime",
+            "runtime_identity": exc.runtime_identity if isinstance(exc, BootstrapError) and exc.runtime_identity is not None else runtime_id,
+            "remediation": REPAIR_COMMAND,
+        }
+        print(
+            json.dumps(payload, sort_keys=True),
+            file=sys.stderr if args.resolve_active or args.exec_active or args.resolve_runtime or args.validate_active else sys.stdout,
+        )
         return 2
     print(json.dumps(result, sort_keys=True) if args.json else result["runtime_identity"])
     return 0

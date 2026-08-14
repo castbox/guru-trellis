@@ -1,0 +1,21 @@
+{
+  "id": "231-user-runtime-cache",
+  "name": "231-user-runtime-cache",
+  "title": "#231 将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析",
+  "description": "将受管 Python runtime 改为操作系统用户级 immutable identity cache，并通过 Git common-dir pointer 支持 linked worktree。",
+  "status": "completed",
+  "dev_type": "fix",
+  "priority": "P1",
+  "branch": "codex/231-user-runtime-cache",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/231",
+  "relatedFiles": [
+    "trellis/skills/guru-team/runtime/",
+    "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+    "trellis/presets/guru-team/README.md",
+    ".trellis/spec/workflow/"
+  ],
+  "completedAt": "2026-08-14"
+}

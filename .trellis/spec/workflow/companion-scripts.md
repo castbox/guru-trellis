@@ -116,13 +116,18 @@ repositories. Keep them portable:
 - Bootstrap, resolver validation, ownership validation, and the preset installer
   use only the Python standard library so they can run before managed dependencies
   exist.
-- Public Guru Team commands run only through the repository-local managed Python
-  selected by `runtime/resolve-python.sh`. The dependency set and hashes are
+- Public Guru Team commands run only through the OS-user-scoped immutable managed
+  Python cache selected by `runtime/resolve-python.sh`. A repository-private
+  default pointer lives below Git common-dir; a linked checkout may own a
+  worktree-gitdir override so different runtime contracts select their exact
+  coexisting identities without creating per-checkout venvs.
+  The dependency set and hashes are
   canonical in `runtime/python-runtime.json` and `runtime/requirements.lock`.
 - PATH Python, active virtual environments, global packages, user site-packages,
   and `PYTHONPATH` are not command-runtime fallback sources.
 - Runtime identity binds the runtime API, lock digest, Python implementation and
-  minor version, and venv layout. A matching identity is reused only after
+  minor version, OS, architecture, Python ABI/platform tag, and venv layout. A
+  matching identity is reused only after
   metadata and Draft 2020-12 capability validation.
 - Candidate construction and dependency installation finish before active
   pointer replacement. Failure preserves the prior active runtime; unknown
@@ -148,9 +153,10 @@ owning package's `errors/catalog.json`. Public JSON mode emits exactly one error
 object; diagnostics use stderr and tracebacks are never public output.
 
 Managed runtime resolution failures emit one stderr JSON object with
-`code=runtime_dependency_missing`, `field_path`, `dependency`, nullable
-`runtime_identity`, and a preset-reapply `remediation`; they exit 2 without a
-traceback or fallback execution.
+`field_path`, `dependency`, nullable `runtime_identity`, and preset-reapply
+`remediation`. Missing activation uses `runtime_not_bootstrapped`, missing or
+stale cache state uses `managed_runtime_missing`, and a failed dependency probe
+uses `runtime_dependency_missing`. All exit 2 without traceback or fallback.
 
 The preset installer currently uses `SystemExit` for missing `.trellis/` or
 missing source directory because it is a small installer script. If adding more
