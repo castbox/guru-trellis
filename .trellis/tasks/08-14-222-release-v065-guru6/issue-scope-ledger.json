@@ -1,19 +1,68 @@
 {
-  "close_issues": [
+  "close_issues": [],
+  "followup_issues": [
     {
-      "number": 222,
-      "reason": "Fully covered after release publication and post-tag gates.",
-      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
-      "url": "https://github.com/castbox/guru-trellis/issues/222"
+      "number": 223,
+      "reason": "#223 是本次发布明确排除的后续独立工作；本 task 不实现、不启动且不关闭它。",
+      "title": "配置驱动的 Draft CI 门禁、Ready 时序与 Agent 自动合并",
+      "url": "https://github.com/castbox/guru-trellis/issues/223"
+    },
+    {
+      "number": 208,
+      "reason": "#208 是本次发布明确排除的后续独立工作；本 task 不实现、不启动且不关闭它。",
+      "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/208"
+    },
+    {
+      "number": 164,
+      "reason": "#164 是本次发布明确排除的后续独立工作；本 task 不实现、不启动且不关闭它。",
+      "title": "智能选择 task-free 或标准 Guru Team Intake",
+      "url": "https://github.com/castbox/guru-trellis/issues/164"
+    },
+    {
+      "number": 220,
+      "reason": "#220 是本次发布明确排除的后续独立工作；本 task 不实现、不启动且不关闭它。",
+      "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
+      "url": "https://github.com/castbox/guru-trellis/issues/220"
     }
   ],
-  "followup_issues": [],
   "primary_issue": {
     "number": 222,
-    "reason": "Primary cumulative release gate.",
+    "reason": "Preparation PR 只能 Refs #222；#222 在 post-tag 门禁、GitHub Release 与 evidence comment 完成并取得单独确认后显式关闭。",
     "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
     "url": "https://github.com/castbox/guru-trellis/issues/222"
   },
-  "related_issues": [],
+  "related_issues": [
+    {
+      "number": 222,
+      "reason": "Preparation PR 只能 Refs #222；#222 在 post-tag 门禁、GitHub Release 与 evidence comment 完成并取得单独确认后显式关闭。",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    },
+    {
+      "number": 219,
+      "reason": "#219 是本次累计发布的已关闭硬前置，其完整 merge result 由 #222 验证消费，但不会由本 task 再关闭。",
+      "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+      "url": "https://github.com/castbox/guru-trellis/issues/219"
+    },
+    {
+      "number": 217,
+      "reason": "#217 是本次累计发布的已关闭硬前置，其完整 merge result 由 #222 验证消费，但不会由本 task 再关闭。",
+      "title": "修复 guru-review-branch recorder 未持久化 review gate",
+      "url": "https://github.com/castbox/guru-trellis/issues/217"
+    },
+    {
+      "number": 218,
+      "reason": "#218 是本次累计发布的已关闭硬前置，其完整 merge result 由 #222 验证消费，但不会由本 task 再关闭。",
+      "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
+      "url": "https://github.com/castbox/guru-trellis/issues/218"
+    },
+    {
+      "number": 227,
+      "reason": "#227 是本次累计发布的已关闭硬前置，其完整 merge result 由 #222 验证消费，但不会由本 task 再关闭。",
+      "title": "移除 finish-summary 变更路径数量的任意上限",
+      "url": "https://github.com/castbox/guru-trellis/issues/227"
+    }
+  ],
   "schema_version": "2.0"
 }
