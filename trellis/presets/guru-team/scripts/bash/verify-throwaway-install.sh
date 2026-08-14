@@ -1052,7 +1052,7 @@ assert ownership["overlay_root"] == "trellis/presets/guru-team/overlays"
 assert len(ownership["guru_owned_rules"]) == 11
 assert len(ownership["managed_path_claims"]) == 9
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.31"
+assert extension["version"] == "0.6.5-guru.32"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
 assert len(assets) == 68

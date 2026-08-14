@@ -1453,10 +1453,15 @@ Finalizer exits: `publication_review_stale`, `resume_finalization`,
 `reprepare_required`, `ready_for_merge`, and `blocked`. Public invocation reruns
 strict route validation and never calls the transition executor implicitly.
 
-Current Finalizer uses `guru-finalization-transaction-2.0` for its complete
+Current Finalizer uses `guru-finalization-transaction-3.0` for its complete
 remote mutation interval. Preview and execute rebuild live Git/GitHub/Trellis
-facts, bind exact Publication input, and proceed from content push directly to
-Draft PR, archive, and Ready. Finalizer never calls extension verification,
+facts and bind exact Publication input. Ordinary publication still requires no
+Open PR. `existing_pr_recovery` separately binds the unique same-repository PR,
+remote/PR pre-push HEAD, fresh strict-ancestor relation, transaction-bound
+post-push equality, original Draft/Ready
+state, and current close scope before mutation. The executor pushes only the
+exact publication commit by non-force fast-forward, converges reviewed metadata,
+archives, then preserves Ready or performs Draft-to-Ready. Finalizer never calls extension verification,
 reads verifier owner state, accepts a verification re-entry profile, or retains
 a verification artifact. Business changed paths and the installed extension
 manifest have no verifier applicability semantics. Archive preparation permits
@@ -1480,6 +1485,8 @@ paths. They are not current Interface, registry, manifest, eval, preparation,
 recovery, archive, or workflow authority. Current runtime must reject them; it
 must not infer missing fields, adapt them into current inputs, or inspect their
 artifacts to continue a business closeout.
+Finalizer transaction 2.0 is likewise an explicit immutable legacy asset;
+current recovery and Interface inventory use only 3.0.
 
 ## Task Base Reconciliation Commands
 

@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.6.5-guru.31",
+  "version": "0.6.5-guru.32",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
   "target_trellis_cli": "0.6.5",
@@ -169,7 +169,7 @@
       ],
       "private_artifact_schema_ids": [
         "guru-extension-installation-verification-result-5.0",
-        "guru-finalization-transaction-2.0",
+        "guru-finalization-transaction-3.0",
         "guru-reconcile-task-base-private-result-1.0",
         "guru-task-pr-merge-gate-1.0",
         "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",

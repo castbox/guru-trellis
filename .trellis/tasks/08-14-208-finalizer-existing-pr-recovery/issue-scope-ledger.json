@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 208,
+    "url": "https://github.com/castbox/guru-trellis/issues/208",
+    "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+    "reason": "当前任务完整实现并验收 Issue #208。"
+  },
+  "close_issues": [
+    {
+      "number": 208,
+      "url": "https://github.com/castbox/guru-trellis/issues/208",
+      "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+      "reason": "当前任务完整实现并验收 Issue #208。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 205,
+      "url": "https://github.com/castbox/guru-trellis/issues/205",
+      "title": "禁止业务仓库触发 guru-verify-extension-installation",
+      "reason": "当前任务继承 #205 的业务 Finalizer verifier 不可达合同。"
+    },
+    {
+      "number": 218,
+      "url": "https://github.com/castbox/guru-trellis/issues/218",
+      "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
+      "reason": "当前任务基于 #218 已合并的终态与同计划恢复合同实现跨 task existing-PR recovery。"
+    }
+  ],
+  "followup_issues": []
+}

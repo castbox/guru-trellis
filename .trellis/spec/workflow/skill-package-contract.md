@@ -1613,9 +1613,12 @@ each current input schema exactly.
 
 The five-stage semantic profile is preview/current-state discovery, AI review,
 confirmation of one displayed side-effect plan when required, ignored-runtime
-gate recorder/checker, and one typed exit. Current gate 5.0 and transaction 2.0
-bind exact Publication input and Finalizer-owned recovery state. Content push
-continues directly to Draft PR, archive, Ready, and Merge handoff. Finalizer does
+gate recorder/checker, and one typed exit. Current gate 5.0 and transaction 3.0
+bind exact Publication input and Finalizer-owned recovery state. Ordinary mode
+continues to a new Draft PR. The private `existing_pr_recovery` mode binds a
+unique same-repository PR, pre-push HEAD, original Draft/Ready state and scope,
+then converges metadata, archives, and preserves Ready or marks Draft Ready.
+Both modes produce the same minimal Merge handoff. Finalizer does
 not invoke verifier, emit `verification_required`, accept verification re-entry,
 read verifier owner state, or archive a verifier artifact.
 
@@ -1627,6 +1630,8 @@ next Finalizer invocation. `ready_for_merge` carries the canonical PR and
 expected-head/branch/close-Issue authority needed by `guru-merge-task-pr`.
 Internal transaction state, semantic review, authorization, live facts, paths,
 and digests remain private.
+Transaction 2.0 remains an explicit legacy schema and is not current Interface
+authority.
 
 Current archive contains exactly six durable core files: `task.json`, `prd.md`,
 `design.md`, `implement.md`, `issue-scope-ledger.json`, and

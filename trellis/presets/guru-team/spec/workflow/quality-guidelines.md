@@ -722,6 +722,15 @@ prove it retires its transaction, gate, and request only after the
 `ready_for_merge` DTO validates. The closeout transaction must leave Issue Scope
 Ledger bytes unchanged and must not invoke, read, archive, or retain extension
 verification state.
+Recovery tests build a real commit topology where an existing PR/remote HEAD is
+a strict ancestor of the current publication HEAD. They prove exact
+fast-forward push, metadata convergence, Ready preservation, Draft-to-Ready,
+archive/three-way HEAD completion and idempotent resume without duplicate push,
+edit, PR creation, archive, or Ready mutation. Negative coverage includes
+multiple/fork/closed identity, repo/head/base mismatch, unknown or non-ancestor
+HEAD, force-push drift, scope/payload/Publication drift, archive conflict and
+unknown transaction state. Ordinary first publication continues to reject any
+Open PR without an explicitly previewed recovery binding.
 Finish-family integration additionally proves current finish-summary schema 2
 is derived once from the reviewed payload and live facts, historical schema 1
 remains discoverable, and the current runtime/inventories contain no retired
@@ -767,7 +776,7 @@ Gate/confirmation ordering, and the owner-private recovery loop. Together with
 the five prior handoffs, the active package graph contains nine target-owned
 `skill_input_authoring_seed` handoffs.
 
-Current gate 5.0 and transaction 2.0 regressions prove Publication input, exact
+Current gate 5.0 and transaction 3.0 regressions prove Publication input, exact
 pre-push authority, Draft/Ready identity, archive recovery, and terminal cleanup.
 Current interfaces, manifests, runtime preparation and archives do not select,
 create, read, move, or retain `closeout-plan.json` or a verifier result; legacy

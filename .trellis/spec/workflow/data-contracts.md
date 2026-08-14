@@ -1161,7 +1161,7 @@ children remain valid historical references.
 
 ## Current Finalizer Transaction
 
-Current Finalizer transaction schema `guru-finalization-transaction-2.0` is an
+Current Finalizer transaction schema `guru-finalization-transaction-3.0` is an
 owner-private, task-scoped ignored-runtime contract named
 `finalization-transaction.json`. It is persisted before the first remote
 mutation so the same owner can distinguish its own pushed state from an
@@ -1169,18 +1169,30 @@ out-of-order caller mutation, including after an interrupted process.
 
 The closed transaction contains only:
 
-- schema/skill identity and task/repository/base/branch identity;
+- schema/skill identity, `ordinary_publication|existing_pr_recovery` mode, and
+  task/repository/base/branch identity;
 - `branch_review_commit`, `publication_head`, exact PR title/body, and the next
   deterministic transition;
 - exact `pre_push_remote_head` while `next_transition=push_content`, using an
   empty string for an absent ref and a full commit OID for a historical baseline;
-- optional canonical PR number/URL after Draft creation.
+- optional canonical PR number/URL after ordinary Draft creation;
+- recovery-only canonical adopted PR number/URL, original Draft/Ready state,
+  and exact pre-push remote HEAD, retained through every transition.
 
 It never stores live Git/GitHub/Trellis snapshots, reviewed path inventories,
 archive projections, finish-summary templates, semantic review history,
 authorization, command argv/output, retry history, timestamps, or digest
 bundles. Preview and executor reread live authority and compare it with these
 minimal immutable inputs immediately before mutation.
+
+Recovery requires one unique non-fork Open PR on the exact repository/head/base.
+The PR and remote HEAD must agree. Fresh adoption requires a strict Git ancestor
+of `publication_head`; equality is valid only after the exact pre-push HEAD and
+publication HEAD are bound by the same recovery transaction. The current Ledger close scope must equal the PR close
+scope before metadata mutation. Current Publication title/body is the only
+convergence authority. Any identity, scope, payload, original state, ancestry,
+archive, or transaction drift fails closed. Schema 2.0 remains immutable at its
+explicit versioned path and cannot adopt an existing PR.
 
 `ready_for_merge` deletes the transaction, Finalizer gate/request and every
 superseded Finalizer-owned file. A

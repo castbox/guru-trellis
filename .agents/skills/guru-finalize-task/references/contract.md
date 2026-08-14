@@ -3,7 +3,7 @@
 ## Current Boundary
 
 `guru-finalize-task` is the semantic owner of business-task closeout. Its
-current aggregate input is 6.0, gate is 5.0, and ignored transaction is 2.0.
+current aggregate input is 6.0, gate is 5.0, and ignored transaction is 3.0.
 The four inputs are `publication_ready`, `same_plan_resume`,
 `reprepare_preview`, and `standalone_finalization`. The six exits are
 `base_reconciliation_required`, `publication_review_stale`, `resume_finalization`, `reprepare_required`,
@@ -17,12 +17,16 @@ verification refs, or verifier recovery state.
 
 ## Transaction
 
-The deterministic transaction states are `push_content`, `bind_draft`,
-`archive`, `push_archive`, and `mark_ready`. There is no `verify` state. After
-content push, the transaction continues directly to the unique Draft PR and
-the existing archive/Ready sequence. Publication freshness, repository/ref/HEAD
-identity, PR uniqueness, Issue scope, archive projection, confirmation, and
-recovery checks retain their existing ownership.
+The deterministic transaction states are `push_content`, `bind_pr`, `archive`,
+`push_archive`, and `mark_ready`. There is no `verify` state. Transaction mode
+is exactly `ordinary_publication` or `existing_pr_recovery`. Ordinary mode still
+requires no Open PR before its first mutation. Recovery mode binds the unique
+same-repository PR, its initial Draft/Ready state, exact pre-push remote HEAD,
+publication HEAD and reviewed scope before mutation. Fresh adoption requires a
+strict-ancestor HEAD; equality is accepted only by the same bound recovery
+transaction after its exact push. It pushes only the exact publication commit by fast-forward,
+converges title/body from current Publication, preserves Ready, or applies the
+existing Draft-to-Ready transition.
 
 Once the transaction has reached `ready`, execute performs only terminal live
 revalidation and materializes the current `ready_for_merge` DTO. It does not
@@ -33,13 +37,18 @@ consuming that validated terminal DTO.
 ## Migration
 
 The 5.0 aggregate, verification re-entry schemas, verification-required output,
-3.0 and 4.0 gates, 2.0 semantic-review input, and 1.0 transaction are immutable
+3.0 and 4.0 gates, 2.0 semantic-review input, and 1.0/2.0 transactions are immutable
 legacy assets with explicit versioned filenames. Unversioned gate and semantic
 review schemas/examples are current 5.0/3.0 assets and route to Merge. They are not
 current profiles, outputs, projections, or private artifacts. A retired
 task-bearing verification input or `next_transition=verify` fails closed with
 remediation to rerun current Publication and rebuild Finalizer state. No
 automatic projection or dual route is supported.
+
+Recovery never treats an arbitrary prior push as authority. PR/remote identity,
+pre-push HEAD, Publication payload, Issue close scope, original Draft/Ready
+state, archive transaction, or three-way HEAD drift fails closed. The final
+public output remains only `ready_for_merge`; recovery facts stay owner-private.
 
 ## Typed Exits
 

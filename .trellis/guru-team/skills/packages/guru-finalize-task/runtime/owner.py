@@ -7550,12 +7550,157 @@ def resolve_closeout_pull_request(
         )
     return exact[0] if exact else None
 
+def closeout_pull_request_close_issues(body: str) -> list[int]:
+    if not isinstance(body, str):
+        raise WorkflowError("Closeout pull request body identity is invalid.", exit_code=2)
+    return sorted({int(match.group(2)) for match in close_keyword_pattern().finditer(body)})
+
+def classify_existing_pr_recovery(
+    root: Path,
+    plan: dict[str, Any],
+    existing_pr: dict[str, Any] | None = None,
+    remote_head: str | None = None,
+    *,
+    allow_equal: bool = False,
+) -> dict[str, Any] | None:
+    """Build the exact side-effect-free adoption facts for one current PR."""
+    git = plan["git"]
+    pr = existing_pr if existing_pr is not None else resolve_closeout_pull_request(
+        root,
+        git["repo"],
+        git["head_branch"],
+        git["base_branch"],
+        git["remote"],
+    )
+    if pr is None:
+        return None
+    remote = remote_head if remote_head is not None else closeout_remote_branch_head(root, plan)
+    pr_head = str(pr.get("headRefOid") or "")
+    publication_head = str(git.get("publication_head") or git.get("branch_review_commit") or "")
+    if remote != pr_head:
+        raise WorkflowError(
+            "Existing PR recovery requires identical remote branch and PR HEADs.",
+            exit_code=2,
+            payload={
+                "reason_code": "existing_pr_remote_head_mismatch",
+                "remote_head": remote,
+                "pr_head": pr_head,
+            },
+        )
+    if remote == publication_head:
+        if not allow_equal:
+            raise WorkflowError(
+                "Fresh existing PR recovery cannot adopt an already-pushed publication HEAD without an owner transaction.",
+                exit_code=2,
+                payload={
+                    "reason_code": "existing_pr_unbound_equal_head",
+                    "remote_head": remote,
+                    "publication_head": publication_head,
+                },
+            )
+        ancestry = "equal"
+    elif remote and is_ancestor(root, remote, publication_head):
+        ancestry = "strict_ancestor"
+    else:
+        raise WorkflowError(
+            "Fresh existing PR recovery requires a strict publication HEAD ancestor; equality is valid only for a transaction-bound resume.",
+            exit_code=2,
+            payload={
+                "reason_code": "existing_pr_head_not_ancestor",
+                "remote_head": remote,
+                "publication_head": publication_head,
+            },
+        )
+    reviewed_scope = sorted(set(plan["review"]["close_issues_reviewed"]))
+    live_scope = closeout_pull_request_close_issues(str(pr.get("body") or ""))
+    if live_scope != reviewed_scope:
+        raise WorkflowError(
+            "Existing PR recovery close scope differs from the current reviewed Issue Scope Ledger.",
+            exit_code=2,
+            payload={
+                "reason_code": "existing_pr_scope_drift",
+                "live_close_issues": live_scope,
+                "reviewed_close_issues": reviewed_scope,
+            },
+        )
+    return {
+        "mode": "existing_pr_recovery",
+        "pr": {"number": pr["number"], "url": pr["url"]},
+        "initial_state": "draft" if pr["isDraft"] else "ready",
+        "initial_is_draft": bool(pr["isDraft"]),
+        "pre_push_remote_head": remote,
+        "publication_head": publication_head,
+        "ancestry": ancestry,
+        "push_required": ancestry == "strict_ancestor",
+        "metadata_update_required": (
+            pr.get("title") != plan["publish"]["title"]
+            or pr.get("body") != plan["publish"]["body"]
+        ),
+        "ready_action": "mark_ready" if pr["isDraft"] else "preserve_ready",
+    }
+
+def finalization_existing_pr_recovery_context(
+    root: Path,
+    plan: dict[str, Any],
+    current_transaction: dict[str, Any] | None,
+    state: str,
+) -> tuple[str, dict[str, Any] | None]:
+    """Classify recovery without overriding an owning reprepare decision."""
+    if state == "reprepare_required":
+        return state, None
+    if current_transaction is None:
+        candidate = resolve_closeout_pull_request(
+            root,
+            plan["git"]["repo"],
+            plan["git"]["head_branch"],
+            plan["git"]["base_branch"],
+            plan["git"]["remote"],
+        )
+        if candidate is None:
+            return state, None
+        return "existing_pr_recovery", classify_existing_pr_recovery(
+            root, plan, candidate
+        )
+    if current_transaction.get("mode") != "existing_pr_recovery":
+        return state, None
+    candidate, remote_head = finalization_pre_mutation_remote_preflight(
+        root, plan, current_transaction
+    )
+    if candidate is None:
+        raise WorkflowError(
+            "Existing PR recovery transaction lost its bound PR.", exit_code=2
+        )
+    recovery = current_transaction["adopted_pr"]
+    publication_head = str(current_transaction["publication_head"])
+    return state, {
+        "mode": "existing_pr_recovery",
+        "pr": {"number": candidate["number"], "url": candidate["url"]},
+        "initial_state": "draft" if recovery["initial_is_draft"] else "ready",
+        "initial_is_draft": bool(recovery["initial_is_draft"]),
+        "pre_push_remote_head": recovery["pre_push_remote_head"],
+        "publication_head": publication_head,
+        "ancestry": (
+            "equal"
+            if recovery["pre_push_remote_head"] == publication_head
+            else "strict_ancestor"
+        ),
+        "push_required": remote_head != publication_head,
+        "metadata_update_required": (
+            candidate.get("title") != plan["publish"]["title"]
+            or candidate.get("body") != plan["publish"]["body"]
+        ),
+        "ready_action": (
+            "mark_ready" if recovery["initial_is_draft"] else "preserve_ready"
+        ),
+    }
+
 def finalization_pre_mutation_remote_preflight(
     root: Path,
     plan: dict[str, Any],
     transaction: dict[str, Any] | None,
     *,
     allow_legacy_plan_recovery: bool = False,
+    existing_pr_recovery: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any] | None, str]:
     """Require an unowned remote or the exact Finalizer-owned recovery state."""
     git = plan["git"]
@@ -7568,6 +7713,17 @@ def finalization_pre_mutation_remote_preflight(
     )
     remote_head = closeout_remote_branch_head(root, plan)
     if transaction is None:
+        if existing_pr_recovery is not None:
+            current_recovery = classify_existing_pr_recovery(
+                root, plan, existing_pr, remote_head
+            )
+            if current_recovery is None or current_recovery != existing_pr_recovery:
+                raise WorkflowError(
+                    "Existing PR recovery facts changed after semantic preview.",
+                    exit_code=2,
+                    payload={"reason_code": "existing_pr_recovery_drift"},
+                )
+            return existing_pr, remote_head
         if allow_legacy_plan_recovery and existing_pr is not None:
             local_head = current_head(root)
             if remote_head != local_head:
@@ -7617,6 +7773,11 @@ def finalization_pre_mutation_remote_preflight(
                 transaction.get("branch_review_commit")
                 == git.get("branch_review_commit"),
             ),
+            (
+                "publication_head",
+                transaction.get("publication_head")
+                == (git.get("publication_head") or git.get("branch_review_commit")),
+            ),
         )
         if not matches
     ]
@@ -7647,6 +7808,7 @@ def finalization_pre_mutation_remote_preflight(
             },
         )
     bound_pr = transaction.get("pr")
+    recovery = transaction.get("adopted_pr")
     if existing_pr is None:
         if bound_pr is not None:
             raise WorkflowError(
@@ -7664,13 +7826,53 @@ def finalization_pre_mutation_remote_preflight(
                 "pull_request": existing_pr.get("number"),
             },
         )
-    validate_closeout_remote_pull_request_identity(
-        plan,
-        existing_pr,
-        expected_draft=True,
-        expected_head=remote_head,
-        bound_pr=bound_pr,
-    )
+    if transaction.get("mode") == "existing_pr_recovery":
+        if not isinstance(recovery, dict) or (
+            recovery.get("number") != bound_pr.get("number")
+            or recovery.get("url") != bound_pr.get("url")
+        ):
+            raise WorkflowError(
+                "Existing PR recovery transaction identity is incomplete.",
+                exit_code=2,
+                payload={"reason_code": "existing_pr_transaction_drift"},
+            )
+        if remote_head != existing_pr.get("headRefOid"):
+            raise WorkflowError(
+                "Existing PR recovery remote and PR HEADs diverged.",
+                exit_code=2,
+                payload={"reason_code": "existing_pr_remote_head_mismatch"},
+            )
+        validate_closeout_remote_pull_request_binding(
+            plan,
+            existing_pr,
+            expected_draft=bool(recovery["initial_is_draft"]),
+            expected_head=remote_head,
+            bound_pr=bound_pr,
+        )
+        if closeout_pull_request_close_issues(str(existing_pr.get("body") or "")) != sorted(
+            set(transaction["close_issues"])
+        ):
+            raise WorkflowError(
+                "Existing PR recovery close scope drifted after transaction binding.",
+                exit_code=2,
+                payload={"reason_code": "existing_pr_scope_drift"},
+            )
+        if transaction.get("next_transition") not in {"push_content", "bind_pr"}:
+            validate_closeout_remote_pull_request_identity(
+                plan,
+                existing_pr,
+                expected_draft=bool(recovery["initial_is_draft"]),
+                expected_head=remote_head,
+                bound_pr=bound_pr,
+            )
+    else:
+        validate_closeout_remote_pull_request_identity(
+            plan,
+            existing_pr,
+            expected_draft=True,
+            expected_head=remote_head,
+            bound_pr=bound_pr,
+        )
     return existing_pr, remote_head
 
 def closeout_task_dir_from_plan(root: Path, plan: dict[str, Any]) -> Path:
@@ -7874,11 +8076,72 @@ def ensure_closeout_draft_pr(root: Path, plan: dict[str, Any], body: str) -> dic
     )
     return created
 
+def ensure_closeout_bound_pr(
+    root: Path,
+    plan: dict[str, Any],
+    body: str,
+    transaction: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if not isinstance(transaction, dict) or transaction.get("mode") != "existing_pr_recovery":
+        return ensure_closeout_draft_pr(root, plan, body)
+    recovery = transaction.get("adopted_pr")
+    bound_pr = transaction.get("pr")
+    if not isinstance(recovery, dict) or not isinstance(bound_pr, dict):
+        raise WorkflowError("Existing PR recovery transaction is incomplete.", exit_code=2)
+    git = plan["git"]
+    existing = resolve_closeout_pull_request(
+        root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
+    )
+    if existing is None:
+        raise WorkflowError(
+            "Existing PR recovery candidate is no longer Open.",
+            exit_code=2,
+            payload={"reason_code": "finalizer_bound_pr_missing"},
+        )
+    expected_head = current_head(root)
+    validate_closeout_remote_pull_request_binding(
+        plan,
+        existing,
+        expected_draft=bool(recovery["initial_is_draft"]),
+        expected_head=expected_head,
+        bound_pr=bound_pr,
+    )
+    if (
+        existing.get("title") != plan["publish"]["title"]
+        or existing.get("body") != body
+    ):
+        update_pull_request_metadata(
+            root,
+            git["repo"],
+            existing["number"],
+            plan["publish"]["title"],
+            body,
+        )
+        rebound = resolve_closeout_pull_request(
+            root, git["repo"], git["head_branch"], git["base_branch"], git["remote"]
+        )
+        if rebound is None:
+            raise WorkflowError("Updated recovery PR could not be rebound.", exit_code=2)
+        existing = rebound
+    validate_closeout_pull_request_identity(
+        root,
+        closeout_task_dir_from_plan(root, plan),
+        plan,
+        existing,
+        expected_draft=bool(recovery["initial_is_draft"]),
+        require_summary=False,
+        expected_head=expected_head,
+        bound_pr=bound_pr,
+    )
+    return existing
+
 def build_final_archive_projection(
     root: Path,
     task_dir: Path,
     prepared: dict[str, Any],
     pr: dict[str, Any],
+    *,
+    expected_draft: bool = True,
 ) -> tuple[Path, dict[str, Any]]:
     plan = prepared["plan"]
     ledger = load_issue_scope_ledger(task_dir, prepared["task_context"])
@@ -7909,7 +8172,7 @@ def build_final_archive_projection(
         task_dir,
         plan,
         pr,
-        expected_draft=True,
+        expected_draft=expected_draft,
         require_summary=False,
         expected_head=current_head(root),
     )
@@ -9128,6 +9391,7 @@ def resume_archived_closeout(
     *,
     committed_plan: dict[str, Any] | None = None,
     committed_archive: dict[str, Any] | None = None,
+    finalization_transaction: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     plan = committed_plan or validate_closeout_plan_for_migration(
         read_json(closeout_plan_path(task_dir))
@@ -9168,10 +9432,26 @@ def resume_archived_closeout(
     )
     if pr is None:
         raise WorkflowError("Archived closeout recovery requires the bound pull request.", exit_code=2)
+    expected_draft = True if finalizer_recovery else bool(pr["isDraft"])
+    if (
+        finalizer_recovery
+        and isinstance(finalization_transaction, dict)
+        and finalization_transaction.get("mode") == "existing_pr_recovery"
+    ):
+        adopted_pr = finalization_transaction.get("adopted_pr")
+        if not isinstance(adopted_pr, dict) or not isinstance(
+            adopted_pr.get("initial_is_draft"), bool
+        ):
+            raise WorkflowError(
+                "Archived existing PR recovery transaction is incomplete.",
+                exit_code=2,
+                payload={"reason_code": "existing_pr_transaction_drift"},
+            )
+        expected_draft = bool(adopted_pr["initial_is_draft"])
     validate_closeout_remote_pull_request_identity(
         plan,
         pr,
-        expected_draft=True if finalizer_recovery else bool(pr["isDraft"]),
+        expected_draft=expected_draft,
         bound_pr=bound_pr,
     )
     if archive_commit is None:
@@ -9313,8 +9593,22 @@ def execute_closeout_content_push(
         current_head(root),
         include_worktree=True,
     )
+    publication_head = str(
+        plan["git"].get("publication_head") or plan["git"]["branch_review_commit"]
+    )
+    if current_head(root) != publication_head:
+        raise WorkflowError(
+            "Closeout exact publication push requires local HEAD at publication_head.",
+            exit_code=2,
+        )
     run_stdout(
-        ["git", "push", "-u", plan["git"]["remote"], plan["git"]["head_branch"]],
+        [
+            "git",
+            "push",
+            "-u",
+            plan["git"]["remote"],
+            f"{publication_head}:refs/heads/{plan['git']['head_branch']}",
+        ],
         cwd=root,
     )
     validate_publish_identity_and_remote_head(
@@ -9378,6 +9672,7 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
                 task_dir,
                 committed_plan=boundary["plan"],
                 committed_archive=boundary["archive_commit"],
+                finalization_transaction=transaction,
             )
             result["retired_owner_state"] = finalization_retire_current_state(
                 root,
@@ -9454,24 +9749,49 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             )
             == legacy_plan.get("plan_digest")
         )
+        recovery_preview = getattr(args, "existing_pr_recovery", None)
         recovered_legacy_pr, pre_push_remote_head = finalization_pre_mutation_remote_preflight(
             root,
             plan,
             prior_transaction,
             allow_legacy_plan_recovery=legacy_plan_recovery,
+            existing_pr_recovery=(
+                recovery_preview if isinstance(recovery_preview, dict) else None
+            ),
         )
         if transaction is None:
-            transaction = finalization_transaction_from_plan(
-                plan,
-                next_transition=(
-                    "bind_draft" if recovered_legacy_pr
-                    else "push_content"
-                ),
-                pr=recovered_legacy_pr,
-                pre_push_remote_head=(
-                    None if recovered_legacy_pr is not None else pre_push_remote_head
-                ),
-            )
+            if isinstance(recovery_preview, dict):
+                if recovered_legacy_pr is None:
+                    raise WorkflowError(
+                        "Existing PR recovery preview lost its bound PR.", exit_code=2
+                    )
+                adopted_pr = {
+                    "number": recovered_legacy_pr["number"],
+                    "url": recovered_legacy_pr["url"],
+                    "initial_is_draft": bool(recovery_preview["initial_is_draft"]),
+                    "pre_push_remote_head": pre_push_remote_head,
+                }
+                needs_push = pre_push_remote_head != str(
+                    plan["git"].get("publication_head")
+                    or plan["git"]["branch_review_commit"]
+                )
+                transaction = finalization_transaction_from_plan(
+                    plan,
+                    next_transition="push_content" if needs_push else "bind_pr",
+                    pr=recovered_legacy_pr,
+                    pre_push_remote_head=pre_push_remote_head if needs_push else None,
+                    mode="existing_pr_recovery",
+                    adopted_pr=adopted_pr,
+                )
+            else:
+                transaction = finalization_transaction_from_plan(
+                    plan,
+                    next_transition=("bind_pr" if recovered_legacy_pr else "push_content"),
+                    pr=recovered_legacy_pr,
+                    pre_push_remote_head=(
+                        None if recovered_legacy_pr is not None else pre_push_remote_head
+                    ),
+                )
             finalization_write_transaction(root, task_dir, transaction)
         else:
             if transaction.get("plan_digest") != plan["plan_digest"]:
@@ -9487,6 +9807,12 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
                         str(transaction["pre_push_remote_head"])
                         if transaction.get("next_transition") == "push_content"
                         and isinstance(transaction.get("pre_push_remote_head"), str)
+                        else None
+                    ),
+                    mode=str(transaction.get("mode") or "ordinary_publication"),
+                    adopted_pr=(
+                        transaction.get("adopted_pr")
+                        if isinstance(transaction.get("adopted_pr"), dict)
                         else None
                     ),
                 )
@@ -9545,7 +9871,7 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             ledger,
             require_plan_artifact=not current_finalizer,
         )
-        if recovered_legacy_pr is not None and entry_state == "prepared":
+        if legacy_plan_recovery and recovered_legacy_pr is not None and entry_state == "prepared":
             entry_state = "content_pushed"
         if not current_finalizer and state_plan is not plan:
             write_json(closeout_plan_path(task_dir), plan)
@@ -9570,9 +9896,10 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
         )
         entry_state = "content_pushed"
         if current_finalizer:
-            transaction = finalization_transaction_from_plan(
+            transaction = finalization_advance_transaction(
                 plan,
-                next_transition="bind_draft",
+                transaction,
+                next_transition="bind_pr",
             )
             finalization_write_transaction(root, task_dir, transaction)
 
@@ -9595,10 +9922,11 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             plan,
             transaction,
         )
-    pr = ensure_closeout_draft_pr(root, plan, prepared["body"])
+    pr = ensure_closeout_bound_pr(root, plan, prepared["body"], transaction if current_finalizer else None)
     if current_finalizer:
-        transaction = finalization_transaction_from_plan(
+        transaction = finalization_advance_transaction(
             plan,
+            transaction,
             next_transition="archive",
             pr=pr,
         )
@@ -9625,6 +9953,12 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             prepared,
             pr,
+            expected_draft=(
+                bool(transaction["adopted_pr"]["initial_is_draft"])
+                if current_finalizer
+                and transaction.get("mode") == "existing_pr_recovery"
+                else True
+            ),
         )
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
@@ -9649,8 +9983,9 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
         finalization_write_transaction(
             root,
             archived_task_dir,
-            finalization_transaction_from_plan(
+            finalization_advance_transaction(
                 plan,
+                transaction,
                 next_transition="mark_ready",
                 pr=publish_payload["pr"],
             ),
@@ -9919,10 +10254,13 @@ def finalization_transaction_from_plan(
     next_transition: str,
     pr: dict[str, Any] | None = None,
     pre_push_remote_head: str | None = None,
+    mode: str = "ordinary_publication",
+    adopted_pr: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
-        "schema_version": "2.0",
+        "schema_version": "3.0",
         "skill_id": FINALIZE_TASK_SKILL_ID,
+        "mode": mode,
         "task_ref": plan["task"]["active_locator"],
         "repo_ref": plan["git"]["repo"],
         "base_branch": plan["git"]["base_branch"],
@@ -9947,7 +10285,30 @@ def finalization_transaction_from_plan(
         }
     if pre_push_remote_head is not None:
         payload["pre_push_remote_head"] = pre_push_remote_head
+    if adopted_pr is not None:
+        payload["adopted_pr"] = copy.deepcopy(adopted_pr)
     return payload
+
+def finalization_advance_transaction(
+    plan: dict[str, Any],
+    transaction: dict[str, Any],
+    *,
+    next_transition: str,
+    pr: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    return finalization_transaction_from_plan(
+        plan,
+        next_transition=next_transition,
+        pr=pr if pr is not None else (
+            transaction.get("pr") if isinstance(transaction.get("pr"), dict) else None
+        ),
+        mode=str(transaction.get("mode") or "ordinary_publication"),
+        adopted_pr=(
+            transaction.get("adopted_pr")
+            if isinstance(transaction.get("adopted_pr"), dict)
+            else None
+        ),
+    )
 
 def finalization_validate_transaction_plan(
     transaction: dict[str, Any],
@@ -9961,6 +10322,12 @@ def finalization_validate_transaction_plan(
             str(transaction["pre_push_remote_head"])
             if transaction.get("next_transition") == "push_content"
             and isinstance(transaction.get("pre_push_remote_head"), str)
+            else None
+        ),
+        mode=str(transaction.get("mode") or "ordinary_publication"),
+        adopted_pr=(
+            transaction.get("adopted_pr")
+            if isinstance(transaction.get("adopted_pr"), dict)
             else None
         ),
     )
@@ -11029,6 +11396,11 @@ def finalization_preview_context(
                 ):
                     state = "reprepare_required"
                     reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL
+    existing_pr_recovery: dict[str, Any] | None = None
+    if not archived and isinstance(plan, dict):
+        state, existing_pr_recovery = finalization_existing_pr_recovery_context(
+            root, plan, current_transaction, state
+        )
     plan_ref = (
         f"closeout-plan:{plan['plan_digest']}"
         if archived
@@ -11069,6 +11441,12 @@ def finalization_preview_context(
         "publication_branch_review_commit": plan["git"]["branch_review_commit"],
         "reprepare_reason_code": reprepare_reason_code,
         "verification": verification,
+        "publication_mode": (
+            "existing_pr_recovery"
+            if existing_pr_recovery is not None
+            else "ordinary_publication"
+        ),
+        "existing_pr_recovery": existing_pr_recovery,
     }
 
 def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
@@ -11095,6 +11473,8 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
             "publication_status": context["publication_status"],
             "publication_stale_reason": context["publication_stale_reason"],
             "expected_actions": [],
+            "publication_mode": "ordinary_publication",
+            "existing_pr_recovery": None,
         }
     return {
         "status": "ok",
@@ -11111,7 +11491,25 @@ def cmd_preview_finalization(args: argparse.Namespace) -> dict[str, Any]:
         "closeout_plan_digest": plan["plan_digest"],
         "branch_review_commit": plan["git"]["branch_review_commit"],
         "transaction_state": context["transaction_state"],
-        "expected_actions": list(CLOSEOUT_TRANSITIONS[1:]),
+        "publication_mode": context.get("publication_mode", "ordinary_publication"),
+        "existing_pr_recovery": copy.deepcopy(context.get("existing_pr_recovery")),
+        "expected_actions": (
+            [
+                "bind_existing_pr_transaction",
+                "push_exact_publication_head"
+                if context.get("existing_pr_recovery", {}).get("push_required")
+                else "preserve_existing_remote_head",
+                "converge_pr_metadata"
+                if context.get("existing_pr_recovery", {}).get("metadata_update_required")
+                else "preserve_current_pr_metadata",
+                "archive",
+                "push_archive",
+                context.get("existing_pr_recovery", {}).get("ready_action"),
+                "verify_three_way_head",
+            ]
+            if context.get("existing_pr_recovery") is not None
+            else list(CLOSEOUT_TRANSITIONS[1:])
+        ),
     }
 
 def finalization_output_contract(
@@ -11886,6 +12284,9 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
         finish_args.expected_plan_digest = context["plan"]["plan_digest"]
         finish_args.dry_run = False
         finish_args.finalization_gate = gate
+        finish_args.existing_pr_recovery = copy.deepcopy(
+            context.get("existing_pr_recovery")
+        )
         finish_args.publication_ready = finalization_prepare_publication_ready(
             public_input,
             transaction=finalization_read_transaction(root, task_dir),
