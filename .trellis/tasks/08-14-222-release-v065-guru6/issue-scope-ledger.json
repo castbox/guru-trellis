@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 222,
+      "reason": "Fully covered after release publication and post-tag gates.",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 222,
+    "reason": "Primary cumulative release gate.",
+    "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
+    "url": "https://github.com/castbox/guru-trellis/issues/222"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}
