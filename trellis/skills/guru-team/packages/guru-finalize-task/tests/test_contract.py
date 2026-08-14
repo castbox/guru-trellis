@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import hashlib
 import json
@@ -32,7 +33,107 @@ def load_runtime():
 GTT = load_runtime()
 
 
+def large_finish_summary() -> dict:
+    paths = [f"changes/path-{index:04d}.txt" for index in range(2001)]
+    title = "Large finish summary"
+    index = {
+        "problem": "Large diffs were rejected by an arbitrary path limit.",
+        "outcome": "Complete large path sets are accepted.",
+        "changed_behavior": ["Removed the arbitrary changed-path count limit."],
+        "affected_surfaces": [{
+            "kind": "schema",
+            "name": "finish-summary",
+            "paths": ["trellis/workflows/guru-team/schemas/finish-summary.schema.json"],
+            "change": "Accept complete large path sets.",
+        }],
+        "contract_changes": [],
+        "search_terms": {
+            "issue_refs": ["#227"],
+            "pr_refs": [],
+            "branches": ["fix/227-finish-summary-large-path-set"],
+            "paths": paths,
+            "commands": [],
+            "config_keys": [],
+            "schema_fields": ["git.changed_paths", "index.search_terms.paths"],
+            "symbols": ["finish_summary_errors"],
+            "phrases": [
+                "大型 diff 路径上限阻断",
+                "finish_summary_errors 支持完整路径集",
+                "已移除 finish summary limit",
+            ],
+        },
+    }
+    index["retrieval_text"] = GTT.current_finish_summary_retrieval_text(title, index)
+    return {
+        "schema_version": 2,
+        "generated_at": "2026-08-14T00:00:00Z",
+        "generator": "guru-team.finalize-task",
+        "task": {
+            "slug": "227-finish-summary-large-path-set",
+            "title": title,
+            "status": "completed",
+            "artifact_dir": ".trellis/tasks/227-finish-summary-large-path-set",
+            "archive_dir": ".trellis/tasks/archive/2026-08/227-finish-summary-large-path-set",
+        },
+        "git": {
+            "base_branch": "main",
+            "branch": "fix/227-finish-summary-large-path-set",
+            "commits": ["a" * 40],
+            "changed_paths": paths,
+        },
+        "github": {
+            "source_issues": [227],
+            "close_issues": [227],
+            "related_issues": [],
+            "followup_issues": [],
+            "pr_url": "",
+        },
+        "artifacts": {},
+        "index": index,
+    }
+
+
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_large_finish_summary_preserves_complete_path_contract(self) -> None:
+        payload = large_finish_summary()
+        self.assertEqual(GTT.finish_summary_errors(payload), [])
+
+        cases = {}
+        mismatch = copy.deepcopy(payload)
+        mismatch["index"]["search_terms"]["paths"] = payload["git"]["changed_paths"][:-1]
+        cases["mismatch"] = (
+            mismatch,
+            "index.search_terms.paths must equal sorted git.changed_paths.",
+        )
+        unsorted = copy.deepcopy(payload)
+        unsorted_paths = list(reversed(payload["git"]["changed_paths"]))
+        unsorted["git"]["changed_paths"] = unsorted_paths
+        unsorted["index"]["search_terms"]["paths"] = unsorted_paths
+        cases["unsorted"] = (
+            unsorted,
+            "git.changed_paths must be sorted and unique.",
+        )
+        duplicate = copy.deepcopy(payload)
+        duplicate_paths = payload["git"]["changed_paths"] + [payload["git"]["changed_paths"][-1]]
+        duplicate["git"]["changed_paths"] = duplicate_paths
+        duplicate["index"]["search_terms"]["paths"] = duplicate_paths
+        cases["duplicate"] = (
+            duplicate,
+            "git.changed_paths must be sorted and unique.",
+        )
+        unsafe = copy.deepcopy(payload)
+        unsafe_paths = payload["git"]["changed_paths"][:-1] + ["../unsafe.txt"]
+        unsafe["git"]["changed_paths"] = unsafe_paths
+        unsafe["index"]["search_terms"]["paths"] = unsafe_paths
+        cases["unsafe"] = (
+            unsafe,
+            "git.changed_paths[] must not contain empty, dot, or parent segments.",
+        )
+
+        for name, (invalid, expected_error) in cases.items():
+            with self.subTest(case=name):
+                self.assertIn(expected_error, GTT.finish_summary_errors(invalid))
+
     def test_execute_ready_recovery_materializes_without_finish_work(self) -> None:
         public_input = {"task_ref": ".trellis/tasks/archive/2026-08/example"}
         gate = {"route": {"typed_exit": "ready_for_merge", "output": {"materialization": "executor"}}}

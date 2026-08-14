@@ -1,0 +1,26 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 227,
+    "url": "https://github.com/castbox/guru-trellis/issues/227",
+    "title": "移除 finish-summary 变更路径数量的任意上限",
+    "reason": "当前独立交付单元及唯一 live authority。"
+  },
+  "close_issues": [
+    {
+      "number": 227,
+      "url": "https://github.com/castbox/guru-trellis/issues/227",
+      "title": "移除 finish-summary 变更路径数量的任意上限",
+      "reason": "当前独立交付单元及唯一 live authority。"
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": [
+    {
+      "number": 222,
+      "url": "https://github.com/castbox/guru-trellis/issues/222",
+      "title": "执行 Guru Team 扩展累计发布门禁并发布新版本",
+      "reason": "在 #227 合并后的唯一 exact candidate 上承担 installer、throwaway、update/reapply、业务仓 upgrade、tag-pinned 及原 2130 路径 Publication/Finalizer preflight 验证。"
+    }
+  ]
+}

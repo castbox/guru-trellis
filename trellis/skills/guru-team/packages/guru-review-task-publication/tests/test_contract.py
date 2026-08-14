@@ -55,6 +55,13 @@ def package_repo_root() -> Path:
     raise RuntimeError(f"Unsupported publication package test layout: {PACKAGE}")
 
 
+def finish_summary_schema_path() -> Path:
+    repo = package_repo_root()
+    if "trellis/skills/guru-team/packages" in PACKAGE.as_posix():
+        return repo / "trellis/workflows/guru-team/schemas/finish-summary.schema.json"
+    return repo / ".trellis/guru-team/schemas/finish-summary.schema.json"
+
+
 def load_runtime():
     runtime_path = PACKAGE / "runtime/owner.py"
     spec = importlib.util.spec_from_file_location(
@@ -69,6 +76,66 @@ def load_runtime():
 
 
 GTT = load_runtime()
+
+
+def large_finish_summary() -> dict:
+    paths = [f"changes/path-{index:04d}.txt" for index in range(2001)]
+    title = "Large finish summary"
+    index = {
+        "problem": "Large diffs were rejected by an arbitrary path limit.",
+        "outcome": "Complete large path sets are accepted.",
+        "changed_behavior": ["Removed the arbitrary changed-path count limit."],
+        "affected_surfaces": [{
+            "kind": "schema",
+            "name": "finish-summary",
+            "paths": ["trellis/workflows/guru-team/schemas/finish-summary.schema.json"],
+            "change": "Accept complete large path sets.",
+        }],
+        "contract_changes": [],
+        "search_terms": {
+            "issue_refs": ["#227"],
+            "pr_refs": [],
+            "branches": ["fix/227-finish-summary-large-path-set"],
+            "paths": paths,
+            "commands": [],
+            "config_keys": [],
+            "schema_fields": ["git.changed_paths", "index.search_terms.paths"],
+            "symbols": ["finish_summary_errors"],
+            "phrases": [
+                "大型 diff 路径上限阻断",
+                "finish_summary_errors 支持完整路径集",
+                "已移除 finish summary limit",
+            ],
+        },
+    }
+    index["retrieval_text"] = GTT.current_finish_summary_retrieval_text(title, index)
+    return {
+        "schema_version": 2,
+        "generated_at": "2026-08-14T00:00:00Z",
+        "generator": "guru-team.finalize-task",
+        "task": {
+            "slug": "227-finish-summary-large-path-set",
+            "title": title,
+            "status": "completed",
+            "artifact_dir": ".trellis/tasks/227-finish-summary-large-path-set",
+            "archive_dir": ".trellis/tasks/archive/2026-08/227-finish-summary-large-path-set",
+        },
+        "git": {
+            "base_branch": "main",
+            "branch": "fix/227-finish-summary-large-path-set",
+            "commits": ["a" * 40],
+            "changed_paths": paths,
+        },
+        "github": {
+            "source_issues": [227],
+            "close_issues": [227],
+            "related_issues": [],
+            "followup_issues": [],
+            "pr_url": "",
+        },
+        "artifacts": {},
+        "index": index,
+    }
 
 
 def load_public_wrapper():
@@ -90,6 +157,55 @@ PUBLIC_WRAPPER = load_public_wrapper()
 
 
 class TaskPublicationContractTest(unittest.TestCase):
+    def test_large_finish_summary_preserves_complete_path_contract(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        payload = large_finish_summary()
+        schema = json.loads(
+            finish_summary_schema_path().read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            list(Draft202012Validator(schema).iter_errors(payload)),
+            [],
+        )
+        self.assertEqual(GTT.finish_summary_errors(payload), [])
+
+        cases = {}
+        mismatch = copy.deepcopy(payload)
+        mismatch["index"]["search_terms"]["paths"] = payload["git"]["changed_paths"][:-1]
+        cases["mismatch"] = (
+            mismatch,
+            "index.search_terms.paths must equal sorted git.changed_paths.",
+        )
+        unsorted = copy.deepcopy(payload)
+        unsorted_paths = list(reversed(payload["git"]["changed_paths"]))
+        unsorted["git"]["changed_paths"] = unsorted_paths
+        unsorted["index"]["search_terms"]["paths"] = unsorted_paths
+        cases["unsorted"] = (
+            unsorted,
+            "git.changed_paths must be sorted and unique.",
+        )
+        duplicate = copy.deepcopy(payload)
+        duplicate_paths = payload["git"]["changed_paths"] + [payload["git"]["changed_paths"][-1]]
+        duplicate["git"]["changed_paths"] = duplicate_paths
+        duplicate["index"]["search_terms"]["paths"] = duplicate_paths
+        cases["duplicate"] = (
+            duplicate,
+            "git.changed_paths must be sorted and unique.",
+        )
+        unsafe = copy.deepcopy(payload)
+        unsafe_paths = payload["git"]["changed_paths"][:-1] + ["../unsafe.txt"]
+        unsafe["git"]["changed_paths"] = unsafe_paths
+        unsafe["index"]["search_terms"]["paths"] = unsafe_paths
+        cases["unsafe"] = (
+            unsafe,
+            "git.changed_paths[] must not contain empty, dot, or parent segments.",
+        )
+
+        for name, (invalid, expected_error) in cases.items():
+            with self.subTest(case=name):
+                self.assertIn(expected_error, GTT.finish_summary_errors(invalid))
+
     class WrapperOwner:
         class WorkflowError(RuntimeError):
             def __init__(self, message: str, **_kwargs) -> None:

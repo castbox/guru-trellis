@@ -429,7 +429,7 @@ def finish_summary_string_array_errors(
     label: str,
     *,
     minimum_items: int = 0,
-    maximum_items: int = 100,
+    maximum_items: int | None = 100,
     minimum_length: int = 1,
     maximum_length: int = 500,
     exact_identity: bool = False,
@@ -437,7 +437,9 @@ def finish_summary_string_array_errors(
     if not isinstance(values, list):
         return [f"{label} must be an array."]
     errors: list[str] = []
-    if not (minimum_items <= len(values) <= maximum_items):
+    if len(values) < minimum_items or (
+        maximum_items is not None and len(values) > maximum_items
+    ):
         errors.append(f"{label} item count must be between {minimum_items} and {maximum_items}.")
     for index, value in enumerate(values):
         errors.extend(finish_summary_text_errors(value, f"{label}[{index}]", minimum_length, maximum_length))
@@ -560,7 +562,7 @@ def finish_summary_index_errors(index: Any, *, artifacts: dict[str, Any] | None 
             errors.append(f"index.search_terms keys must equal {sorted(expected_search_keys)}.")
         limits = {
             "issue_refs": (0, 100, 1, 30), "pr_refs": (0, 1, 1, 30),
-            "branches": (0, 1, 1, 300), "paths": (0, 2000, 1, 500),
+            "branches": (0, 1, 1, 300), "paths": (0, None, 1, 500),
             "commands": (0, 100, 1, 200), "config_keys": (0, 100, 1, 200),
             "schema_fields": (0, 100, 1, 300), "symbols": (0, 100, 1, 300),
             "phrases": (3, 40, 2, 60),
@@ -899,8 +901,8 @@ def finish_summary_errors(payload: Any, *, task_dir: Path | None = None) -> list
             if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
                 errors.append("git.commits entries must be lowercase 40-character SHAs.")
     changed_paths = git.get("changed_paths")
-    if not isinstance(changed_paths, list) or len(changed_paths) > 2000:
-        errors.append("git.changed_paths must be an array with at most 2000 items.")
+    if not isinstance(changed_paths, list):
+        errors.append("git.changed_paths must be an array.")
         changed_paths = []
     else:
         for path in changed_paths:

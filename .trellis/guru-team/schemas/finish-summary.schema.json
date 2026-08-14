@@ -38,7 +38,7 @@
         "base_branch": {"type": "string", "minLength": 1, "maxLength": 300},
         "branch": {"type": "string", "minLength": 1, "maxLength": 300},
         "commits": {"type": "array", "maxItems": 500, "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9a-f]{40}$"}},
-        "changed_paths": {"type": "array", "maxItems": 2000, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}}
+        "changed_paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}}
       }
     },
     "github": {
@@ -121,7 +121,7 @@
         "issue_refs": {"$ref": "#/$defs/searchStringArray"},
         "pr_refs": {"type": "array", "maxItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^PR #[1-9][0-9]*$"}},
         "branches": {"type": "array", "maxItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 300}},
-        "paths": {"type": "array", "maxItems": 2000, "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
+        "paths": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/safePath"}},
         "commands": {"$ref": "#/$defs/searchStringArray"},
         "config_keys": {"$ref": "#/$defs/searchStringArray"},
         "schema_fields": {"$ref": "#/$defs/searchStringArray"},
