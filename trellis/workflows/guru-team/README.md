@@ -29,20 +29,20 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 ```bash
 trellis init -y --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.6
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.7
 ```
 
 `-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
 throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
-稳定安装 source 使用 repo release tag `#v0.6.5-guru.6`，并要求官方 Trellis CLI 安装到
+稳定安装 source 使用 repo release tag `#v0.6.5-guru.7`，并要求官方 Trellis CLI 安装到
 `0.6.5`。维护者刻意跟随最新 `main` / canary 时可以去掉 `#ref` 或改用其它 branch/tag ref，
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
-source 是 annotated tag `v0.6.5-guru.6`，canonical extension version 为
-`0.6.5-guru.30`。该 tag 只会在 preparation PR 合并且 exact remote candidate 验证通过后创建；
+source 是 annotated tag `v0.6.5-guru.7`，canonical extension version 为
+`0.6.5-guru.31`。该 tag 只会在 preparation PR 合并且 exact remote candidate 验证通过后创建；
 peeled source commit 必须等于最终 candidate，并由 immutable Git ref、GitHub Release notes 与
 release evidence 记录，不在 candidate 尚未产生的 README 中预填。Repo release tag 与 extension
 revision 是独立版本轴；workflow marketplace 与 preset 必须来自同一个 immutable tag。
@@ -51,7 +51,7 @@ revision 是独立版本轴；workflow marketplace 与 preset 必须来自同一
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.6 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.7 \
   --template guru-team
 ```
 
@@ -143,8 +143,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 canonical extension version `0.6.5-guru.30` 对应上文 pin 的 stable release tag
-`v0.6.5-guru.6`。Source/installed package validation 必须同时验证
+当前 canonical extension version `0.6.5-guru.31` 对应上文 pin 的 stable release tag
+`v0.6.5-guru.7`。Source/installed package validation 必须同时验证
 registry、15/60/36 business marker graph、16-package/62-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
