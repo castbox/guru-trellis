@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-finalization-transaction-2.0",
+  "$id": "guru-finalization-transaction-3.0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "skill_id", "task_ref", "repo_ref", "base_branch", "branch", "branch_review_commit", "publication_head", "plan_digest", "publication", "close_issues", "next_transition"],
+  "required": ["schema_version", "skill_id", "mode", "task_ref", "repo_ref", "base_branch", "branch", "branch_review_commit", "publication_head", "plan_digest", "publication", "close_issues", "next_transition"],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"const": "3.0"},
     "skill_id": {"const": "guru-finalize-task"},
+    "mode": {"enum": ["ordinary_publication", "existing_pr_recovery"]},
     "task_ref": {"type": "string", "minLength": 1},
     "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
     "base_branch": {"type": "string", "minLength": 1},
@@ -23,12 +24,22 @@
       "type": "array", "uniqueItems": true,
       "items": {"type": "integer", "minimum": 1}
     },
-    "next_transition": {"enum": ["push_content", "bind_draft", "archive", "push_archive", "mark_ready"]},
+    "next_transition": {"enum": ["push_content", "bind_pr", "archive", "push_archive", "mark_ready"]},
     "pre_push_remote_head": {"type": "string", "pattern": "^(?:|[0-9a-f]{40})$"},
     "pr": {
       "type": "object", "additionalProperties": false,
       "required": ["number", "url"],
       "properties": {"number": {"type": "integer", "minimum": 1}, "url": {"type": "string", "minLength": 1}}
+    },
+    "adopted_pr": {
+      "type": "object", "additionalProperties": false,
+      "required": ["number", "url", "initial_is_draft", "pre_push_remote_head"],
+      "properties": {
+        "number": {"type": "integer", "minimum": 1},
+        "url": {"type": "string", "minLength": 1},
+        "initial_is_draft": {"type": "boolean"},
+        "pre_push_remote_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
     }
   },
   "allOf": [
@@ -39,6 +50,16 @@
       },
       "then": {"required": ["pre_push_remote_head"]},
       "else": {"not": {"required": ["pre_push_remote_head"]}}
+    },
+    {
+      "if": {
+        "properties": {"mode": {"const": "existing_pr_recovery"}},
+        "required": ["mode"]
+      },
+      "then": {"required": ["adopted_pr", "pr"]},
+      "else": {
+        "not": {"anyOf": [{"required": ["adopted_pr"]}]}
+      }
     }
   ]
 }

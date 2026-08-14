@@ -83,6 +83,7 @@
     {"id": "ready_for_merge_output", "path": "schemas/public-ready-for-merge-output.schema.json"},
     {"id": "legacy_finalization_gate_3_0", "path": "schemas/task-finalization-gate-3.0.schema.json"},
     {"id": "legacy_finalization_transaction_1_0", "path": "schemas/finalization-transaction-1.0.schema.json"},
+    {"id": "legacy_finalization_transaction_2_0", "path": "schemas/finalization-transaction-2.0.schema.json"},
     {"id": "finalization_transaction", "path": "schemas/finalization-transaction.schema.json"},
     {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
     {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"}
@@ -101,7 +102,7 @@
       "consumer": {"kind": "skill", "id": "guru-reconcile-task-base"}
     },
     {"id": "publication_review_stale", "evidence": "publication evidence is missing, stale or bound to a different branch_review_commit", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}},
-    {"id": "resume_finalization", "evidence": "the same plan and unique draft or archive transaction can continue after a normal transient interruption", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
+    {"id": "resume_finalization", "evidence": "the same plan and unique bound PR or archive transaction can continue after a normal transient interruption", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
     {"id": "reprepare_required", "evidence": "the live archive month changed or the pre-PR provenance tail requires a rebuilt ignored transaction and fresh confirmation", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},
     {"id": "ready_for_merge", "evidence": "the unique PR is Ready at the expected head and every close Issue remains Open before merge", "consumer": {"kind": "skill", "id": "guru-merge-task-pr"}},
     {"id": "blocked", "evidence": "a prerequisite, private state, path, HEAD, draft identity or external dependency prevents a unique safe continuation", "consumer": {"kind": "stop", "id": "task-finalization-blocked"}}
@@ -190,7 +191,7 @@
     ],
     "private_artifacts": [
       {"id": "finalization_gate", "kind": "gate_evidence", "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-finalization-gate-5.0.json", "path": "schemas/task-finalization-gate-5.0.schema.json"}, "persistence": "ignored_runtime"},
-      {"id": "finalization_transaction", "kind": "runtime_checkpoint", "schema": {"schema_id": "guru-finalization-transaction-2.0", "path": "schemas/finalization-transaction.schema.json"}, "persistence": "ignored_runtime"}
+      {"id": "finalization_transaction", "kind": "runtime_checkpoint", "schema": {"schema_id": "guru-finalization-transaction-3.0", "path": "schemas/finalization-transaction.schema.json"}, "persistence": "ignored_runtime"}
     ]
   }
 }

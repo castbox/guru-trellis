@@ -583,9 +583,9 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 business packages 加一个 standalone-only verifier 共声明 62 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前 canonical extension version
-`0.6.5-guru.31` 对应 stable source `v0.6.5-guru.7`，并以官方 Trellis CLI `0.6.5`
-为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
+invoke 与六个 exit marker。当前未发布的 canonical extension version 为
+`0.6.5-guru.32`；最新 stable source `v0.6.5-guru.7` 对应 extension revision
+`0.6.5-guru.31`，并以官方 Trellis CLI `0.6.5` 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
 由 immutable Git facts、GitHub Release notes 与 release evidence 精确记录。Repo release
 tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
 Preset 将 active package
@@ -1147,6 +1147,16 @@ migration. After the official move but before the exact archive commit exists,
 current recovery first completes idempotent compact-archive pruning, then
 requires the exact retained working-tree layout, dirty/staged paths, blob
 continuity, and official `task.json` delta.
+
+The current Finalizer transaction is 3.0. Its explicit
+`existing_pr_recovery` mode may reuse only the unique non-fork Open PR on the
+exact repository/head/base when PR and remote HEAD agree and are a strict
+ancestor of the reviewed publication HEAD. Equality is accepted only after the
+same recovery transaction binds and pushes that exact pre-push HEAD. It binds original
+Draft/Ready state and pre-push HEAD before mutation, performs only an exact
+fast-forward push, converges current reviewed title/body, and preserves Ready
+or follows Draft-to-Ready. Legacy transaction 2.0 remains installed under its
+versioned filename but cannot authorize PR adoption.
 
 The current retained set contains exactly 6 durable files: `task.json`,
 `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, and

@@ -143,8 +143,9 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 canonical extension version `0.6.5-guru.31` 对应上文 pin 的 stable release tag
-`v0.6.5-guru.7`。Source/installed package validation 必须同时验证
+当前未发布的 canonical extension version 为 `0.6.5-guru.32`；上文 pin 的 stable
+release tag `v0.6.5-guru.7` 对应 extension revision `0.6.5-guru.31`。
+Source/installed package validation 必须同时验证
 registry、15/60/36 business marker graph、16-package/62-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
