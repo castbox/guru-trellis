@@ -65,4 +65,3 @@ tag-pinned、GitHub Release 与 Issue closure 门禁。
    已知限制、安全与部署影响。
 8. Release、证据评论、Issue closure 各自取得当前确认并 live 复核；#222 之外
    没有 Issue 被关闭。
-

@@ -82,4 +82,3 @@ GitHub Release、#222 evidence comment、#222 close 是三个独立 mutation。R
   revision/tag。
 - Release 后、close 前：保留 Release 与 Issue open 状态，补充真实限制或 successor。
 - 任一环境限制、skip 或未执行项均按缺失证据处理，不转换为 PASS。
-
