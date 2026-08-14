@@ -1,19 +1,17 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "primary_issue": {
     "number": 227,
     "url": "https://github.com/castbox/guru-trellis/issues/227",
     "title": "移除 finish-summary 变更路径数量的任意上限",
-    "reason": "当前独立交付单元及唯一 live authority。",
-    "acceptance_evidence": []
+    "reason": "当前独立交付单元及唯一 live authority。"
   },
   "close_issues": [
     {
       "number": 227,
       "url": "https://github.com/castbox/guru-trellis/issues/227",
       "title": "移除 finish-summary 变更路径数量的任意上限",
-      "reason": "Primary issue；只有完整大路径集直接合同回归与静态受管一致性检查通过后才允许关闭。",
-      "acceptance_evidence": []
+      "reason": "Primary issue；只有完整大路径集直接合同回归与静态受管一致性检查通过后才允许关闭。"
     }
   ],
   "related_issues": [],
@@ -22,13 +20,7 @@
       "number": 222,
       "url": "https://github.com/castbox/guru-trellis/issues/222",
       "title": "执行 Guru Team 扩展累计发布门禁并发布新版本",
-      "reason": "在 #227 合并后的唯一 exact candidate 上承担 installer、throwaway、update/reapply、业务仓 upgrade、tag-pinned 及原 2130 路径 Publication/Finalizer preflight 验证。",
-      "acceptance_evidence": []
+      "reason": "在 #227 合并后的唯一 exact candidate 上承担 installer、throwaway、update/reapply、业务仓 upgrade、tag-pinned 及原 2130 路径 Publication/Finalizer preflight 验证。"
     }
-  ],
-  "rules": [
-    "close_issues 只放当前 task 明确承诺完整解决且 review gate 已验证的 issue。",
-    "related_issues 只能生成 Refs/Related 语义，不能自动关闭。",
-    "followup_issues 表示新范围或后续任务，不能自动关闭。"
   ]
 }
