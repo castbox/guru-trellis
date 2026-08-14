@@ -1,0 +1,197 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-14T09:58:11Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-14-231-user-runtime-cache",
+    "title": "#231 将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-14-231-user-runtime-cache",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/231-user-runtime-cache",
+    "commits": [
+      "a108759e308dd7a431da20714a68539b1ae5277b",
+      "011371cadca1956ff0ec19f338c924c3df1b703c",
+      "a0aecd669ae87970370efc023e490e19762511cb"
+    ],
+    "changed_paths": [
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/runtime/bootstrap.py",
+      ".trellis/guru-team/runtime/resolve-python.sh",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/tasks/08-14-231-user-runtime-cache/design.md",
+      ".trellis/tasks/08-14-231-user-runtime-cache/implement.md",
+      ".trellis/tasks/08-14-231-user-runtime-cache/issue-scope-ledger.json",
+      ".trellis/tasks/08-14-231-user-runtime-cache/prd.md",
+      ".trellis/tasks/08-14-231-user-runtime-cache/task.json",
+      ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/design.md",
+      ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/implement.md",
+      ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/prd.md",
+      ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/task.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-managed-python-runtime.sh",
+      "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/skills/guru-team/runtime/bootstrap.py",
+      "trellis/skills/guru-team/runtime/resolve-python.sh",
+      "trellis/skills/guru-team/runtime/tests/test_runtime.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      231
+    ],
+    "close_issues": [
+      231
+    ],
+    "related_issues": [
+      219
+    ],
+    "followup_issues": [
+      222
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/232"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#231 将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析",
+    "outcome": "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。",
+    "changed_behavior": [
+      "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。",
+      "使用 Git common-dir default pointer 与 linked-worktree override，使新 worktree 可继承相同 runtime，不同 contract 的 checkout 仍选择各自 identity。",
+      "保留 managed runtime 的准确错误分类，并隔离 runtime 测试 cache，避免测试污染真实 checkout pointer。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/08-14-231-user-runtime-cache/design.md",
+          ".trellis/tasks/08-14-231-user-runtime-cache/implement.md",
+          ".trellis/tasks/08-14-231-user-runtime-cache/prd.md",
+          ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/design.md",
+          ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/implement.md",
+          ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/prd.md"
+        ],
+        "change": "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md"
+        ],
+        "change": "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/runtime/bootstrap.py",
+          ".trellis/guru-team/runtime/resolve-python.sh",
+          "trellis/presets/guru-team/scripts/bash/verify-managed-python-runtime.sh",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+          "trellis/skills/guru-team/runtime/bootstrap.py",
+          "trellis/skills/guru-team/runtime/resolve-python.sh",
+          "trellis/skills/guru-team/runtime/tests/test_runtime.py"
+        ],
+        "change": "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-14-231-user-runtime-cache/issue-scope-ledger.json",
+          ".trellis/tasks/08-14-231-user-runtime-cache/task.json",
+          ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/task.json"
+        ],
+        "change": "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#219",
+        "#222",
+        "#231"
+      ],
+      "pr_refs": [
+        "PR #232"
+      ],
+      "branches": [
+        "codex/231-user-runtime-cache"
+      ],
+      "paths": [
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/runtime/bootstrap.py",
+        ".trellis/guru-team/runtime/resolve-python.sh",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/tasks/08-14-231-user-runtime-cache/design.md",
+        ".trellis/tasks/08-14-231-user-runtime-cache/implement.md",
+        ".trellis/tasks/08-14-231-user-runtime-cache/issue-scope-ledger.json",
+        ".trellis/tasks/08-14-231-user-runtime-cache/prd.md",
+        ".trellis/tasks/08-14-231-user-runtime-cache/task.json",
+        ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/design.md",
+        ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/implement.md",
+        ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/prd.md",
+        ".trellis/tasks/archive/2026-08/08-14-231-user-runtime-cache/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-managed-python-runtime.sh",
+        "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/skills/guru-team/runtime/bootstrap.py",
+        "trellis/skills/guru-team/runtime/resolve-python.sh",
+        "trellis/skills/guru-team/runtime/tests/test_runtime.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#231 将 Guru Team Python runtime 改为用户级共享 identity cache并修复 wo",
+        "将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户",
+        "完成 extension.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#231 将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析\n将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户级、按完整 identity 隔离的 immutable cache。\n使用 Git common-dir default pointer 与 linked-worktree override，使新 worktree 可继承相同 runtime，不同 contract 的 checkout 仍选择各自 identity。\n保留 managed runtime 的准确错误分类，并隔离 runtime 测试 cache，避免测试污染真实 checkout pointer。\n#231 将 Guru Team Python runtime 改为用户级共享 identity cache并修复 wo\n将 Guru Team 受管 Python runtime 从 checkout-local venv 改为操作系统用户\n完成 extension.json 相关变更"
+  }
+}
