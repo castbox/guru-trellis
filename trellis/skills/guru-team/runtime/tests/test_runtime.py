@@ -46,16 +46,24 @@ def bootstrap_runtime(repo: Path, runtime_assets: Path = ROOT) -> dict[str, obje
 
 
 def copy_active_runtime(repo: Path) -> None:
-    source = REPO / ".trellis/.runtime/guru-team/python"
-    if not source.is_dir():
-        bootstrap_runtime(REPO)
-    shutil.copytree(source, repo / ".trellis/.runtime/guru-team/python")
+    bootstrap_runtime(repo)
 
 
 class SharedRuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        cls.cache = tempfile.TemporaryDirectory()
+        cls.cache_environment = mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": cls.cache.name},
+        )
+        cls.cache_environment.start()
         cls.runtime_result = bootstrap_runtime(REPO)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.cache_environment.stop()
+        cls.cache.cleanup()
 
     def test_managed_runtime_reuses_same_identity_and_probes_draft_2020_12(self) -> None:
         self.assertEqual(self.runtime_result["status"], "ok")
@@ -64,8 +72,12 @@ class SharedRuntimeTests(unittest.TestCase):
         self.assertEqual(second["action"], "reused")
         self.assertEqual(second["runtime_identity"], self.runtime_result["runtime_identity"])
 
-        active = json.loads((REPO / ".trellis/.runtime/guru-team/python/active.json").read_text())
-        managed_python = REPO / ".trellis/.runtime/guru-team/python" / active["interpreter"]
+        from runtime.bootstrap import active_pointer_path
+
+        active = json.loads(active_pointer_path(REPO).read_text())
+        managed_python = Path(str(self.runtime_result["interpreter"]))
+        self.assertEqual(active["cache_scope"], "user")
+        self.assertEqual(active["runtime_id"], self.runtime_result["runtime_identity"])
         probe = subprocess.run(
             [str(managed_python), str(ROOT / "probe.py"), "--manifest", str(ROOT / "python-runtime.json"), "--json"],
             text=True,
@@ -89,27 +101,88 @@ class SharedRuntimeTests(unittest.TestCase):
             changed, _ = runtime_identity(assets, Path(sys.executable))
         self.assertNotEqual(original, changed)
 
-    def test_damaged_managed_runtime_is_repaired(self) -> None:
+    def test_runtime_identity_binds_platform_architecture_and_abi(self) -> None:
+        from runtime.bootstrap import runtime_identity
+
+        _, identity = runtime_identity(ROOT, Path(sys.executable))
+        self.assertEqual(
+            {
+                "os_name",
+                "machine",
+                "python_abi_tag",
+                "python_platform_tag",
+            },
+            set(identity) & {
+                "os_name",
+                "machine",
+                "python_abi_tag",
+                "python_platform_tag",
+            },
+        )
+        self.assertTrue(all(identity[key] for key in ("os_name", "machine", "python_abi_tag", "python_platform_tag")))
+
+    def test_user_cache_root_follows_supported_os_conventions(self) -> None:
+        from runtime.bootstrap import user_cache_root
+
+        home = Path("/Users/example")
+        self.assertEqual(
+            user_cache_root({}, system_name="Darwin", home=home),
+            home / "Library/Caches/guru-team/python",
+        )
+        self.assertEqual(
+            user_cache_root({}, system_name="Linux", home=Path("/home/example")),
+            Path("/home/example/.cache/guru-team/python"),
+        )
+        self.assertEqual(
+            user_cache_root({"XDG_CACHE_HOME": "/cache"}, system_name="Linux", home=Path("/home/example")),
+            Path("/cache/guru-team/python"),
+        )
+        self.assertEqual(
+            user_cache_root({"LOCALAPPDATA": "C:/Local"}, system_name="Windows", home=Path("C:/Users/example")),
+            Path("C:/Local/GuruTeam/python"),
+        )
+
+    def test_different_repositories_reuse_same_immutable_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp)
-            copy_active_runtime(repo)
-            active = json.loads((repo / ".trellis/.runtime/guru-team/python/active.json").read_text())
-            damaged_python = repo / ".trellis/.runtime/guru-team/python" / active["interpreter"]
+            first_repo = Path(tmp) / "first"
+            second_repo = Path(tmp) / "second"
+            first_repo.mkdir()
+            second_repo.mkdir()
+            first = bootstrap_runtime(first_repo)
+            second = bootstrap_runtime(second_repo)
+            self.assertEqual(first["runtime_identity"], second["runtime_identity"])
+            self.assertEqual(first["interpreter"], second["interpreter"])
+            self.assertEqual(second["action"], "reused")
+
+    def test_damaged_managed_runtime_is_repaired(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            installed = bootstrap_runtime(repo)
+            damaged_python = Path(str(installed["interpreter"]))
             damaged_python.unlink()
             repaired = bootstrap_runtime(repo)
             self.assertEqual(repaired["action"], "repaired")
-            self.assertEqual(repaired["runtime_identity"], active["runtime_id"])
+            self.assertEqual(repaired["runtime_identity"], installed["runtime_identity"])
             self.assertTrue(damaged_python.is_file())
 
     def test_failed_candidate_preserves_active_runtime(self) -> None:
         from runtime import bootstrap as managed
 
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp)
-            runtime_root = repo / ".trellis/.runtime/guru-team/python"
-            runtime_root.mkdir(parents=True)
-            (runtime_root / "active.json").write_text('{"runtime_id":"prior","interpreter":"prior/venv/bin/python"}\n')
-            before = (runtime_root / "active.json").read_bytes()
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            pointer = managed.active_pointer_path(repo)
+            pointer.parent.mkdir(parents=True)
+            pointer.write_text("prior\n")
+            before = pointer.read_bytes()
+            runtime_root = managed.user_cache_root()
             real_run = managed.subprocess.run
 
             def fail_venv(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
@@ -120,18 +193,23 @@ class SharedRuntimeTests(unittest.TestCase):
             with mock.patch.object(managed.subprocess, "run", side_effect=fail_venv):
                 with self.assertRaises(managed.BootstrapError):
                     managed.bootstrap(repo, ROOT, Path(sys.executable))
-            self.assertEqual((runtime_root / "active.json").read_bytes(), before)
+            self.assertEqual(pointer.read_bytes(), before)
             self.assertEqual(list(runtime_root.glob(".*.candidate-*")), [])
 
     def test_failed_hash_locked_install_preserves_active_runtime(self) -> None:
         from runtime import bootstrap as managed
 
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp)
-            runtime_root = repo / ".trellis/.runtime/guru-team/python"
-            runtime_root.mkdir(parents=True)
-            (runtime_root / "active.json").write_text('{"runtime_id":"prior","interpreter":"prior/venv/bin/python"}\n')
-            before = (runtime_root / "active.json").read_bytes()
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            pointer = managed.active_pointer_path(repo)
+            pointer.parent.mkdir(parents=True)
+            pointer.write_text("prior\n")
+            before = pointer.read_bytes()
+            runtime_root = managed.user_cache_root()
             real_run = managed.subprocess.run
 
             def fail_install(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
@@ -151,19 +229,22 @@ class SharedRuntimeTests(unittest.TestCase):
             with mock.patch.object(managed.subprocess, "run", side_effect=fail_install):
                 with self.assertRaisesRegex(managed.BootstrapError, "hash-locked"):
                     managed.bootstrap(repo, ROOT, Path(sys.executable))
-            self.assertEqual((runtime_root / "active.json").read_bytes(), before)
+            self.assertEqual(pointer.read_bytes(), before)
             self.assertEqual(list(runtime_root.glob(".*.candidate-*")), [])
 
     def test_prepared_new_identity_preserves_active_until_explicit_activation(self) -> None:
         from runtime import bootstrap as managed
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
             repo = Path(tmp) / "repo"
             assets = Path(tmp) / "assets"
             repo.mkdir()
             shutil.copytree(ROOT, assets)
             first = managed.bootstrap(repo, assets, Path(sys.executable))
-            active_path = repo / ".trellis/.runtime/guru-team/python/active.json"
+            active_path = managed.active_pointer_path(repo)
             before = active_path.read_bytes()
             with (assets / "requirements.lock").open("a", encoding="utf-8") as handle:
                 handle.write("\n# staged identity change\n")
@@ -182,7 +263,7 @@ class SharedRuntimeTests(unittest.TestCase):
             shim.write_text(
                 "#!/bin/sh\n"
                 "if [ \"$1\" = \"-c\" ]; then\n"
-                "  echo '{\"implementation\":\"CPython\",\"major\":3,\"minor\":12}'\n"
+                "  echo '{\"implementation\":\"CPython\",\"major\":3,\"minor\":12,\"os_name\":\"TestOS\",\"machine\":\"test-arch\",\"abi_tag\":\"cpython-312\",\"platform_tag\":\"test-platform\"}'\n"
                 "  exit 0\n"
                 "fi\n"
                 "exit 1\n",
@@ -227,8 +308,122 @@ class SharedRuntimeTests(unittest.TestCase):
             set(payload),
             {"code", "field_path", "dependency", "runtime_identity", "remediation"},
         )
-        self.assertEqual(payload["code"], "runtime_dependency_missing")
+        self.assertEqual(payload["code"], "runtime_not_bootstrapped")
         self.assertNotIn("Traceback", result.stderr)
+
+    def test_resolver_distinguishes_missing_shared_cache_entry(self) -> None:
+        from runtime.bootstrap import active_pointer_path, canonical_json
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            pointer = active_pointer_path(repo)
+            pointer.parent.mkdir(parents=True)
+            pointer.write_bytes(canonical_json({
+                "schema_version": "2.0",
+                "cache_scope": "user",
+                "runtime_id": "0" * 24,
+                "interpreter": "venv/bin/python",
+            }) + b"\n")
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["code"], "managed_runtime_missing")
+        self.assertEqual(payload["runtime_identity"], "0" * 24)
+
+    def test_linked_worktree_uses_git_common_pointer_and_shared_runtime(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            worktree = Path(tmp) / "worktree"
+            repo.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.name", "Runtime Test"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.email", "runtime@example.invalid"], cwd=repo, check=True)
+            (repo / "README.md").write_text("runtime test\n")
+            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
+            installed = bootstrap_runtime(repo)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/worktree", str(worktree)], cwd=repo, check=True)
+            self.assertEqual(active_pointer_path(repo), active_pointer_path(worktree))
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(worktree), str(ROOT), "-c", "import jsonschema;print(jsonschema.__version__)"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            self.assertTrue(result.stdout.strip())
+            self.assertEqual(installed["runtime_identity"], json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+
+    def test_linked_worktree_resolves_common_pointer_without_git_on_path(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            worktree = Path(tmp) / "worktree"
+            command_bin = Path(tmp) / "commands"
+            repo.mkdir()
+            command_bin.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.name", "Runtime Test"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.email", "runtime@example.invalid"], cwd=repo, check=True)
+            (repo / "README.md").write_text("runtime test\n")
+            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
+            installed = bootstrap_runtime(repo)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/no-git-path", str(worktree)], cwd=repo, check=True)
+            for command in ("bash", "sed", "tr"):
+                command_path = shutil.which(command)
+                self.assertIsNotNone(command_path)
+                (command_bin / command).symlink_to(str(command_path))
+            environment = os.environ.copy()
+            environment["PATH"] = str(command_bin)
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(worktree), str(ROOT), "-c", "import jsonschema;print('ok')"],
+                env=environment,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            self.assertEqual(result.stdout.strip(), "ok")
+            self.assertEqual(active_pointer_path(repo), active_pointer_path(worktree))
+            self.assertEqual(installed["runtime_identity"], json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+
+    def test_resolver_preserves_validator_error_classification(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            bootstrap_runtime(repo)
+            pointer_path = active_pointer_path(repo)
+            pointer = json.loads(pointer_path.read_text())
+            pointer["cache_scope"] = "checkout"
+            pointer_path.write_text(json.dumps(pointer, sort_keys=True, separators=(",", ":")) + "\n")
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["code"], "managed_runtime_missing")
+        self.assertEqual(payload["dependency"], "python-runtime")
 
     def test_public_wrapper_uses_managed_runtime_when_path_python_has_no_jsonschema(self) -> None:
         no_site_packages = subprocess.run(

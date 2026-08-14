@@ -233,28 +233,46 @@ Examples:
 
 ### Managed Python runtime
 
-Preset apply uses the selected PATH Python only to bootstrap a repository-local
-runtime under `.trellis/.runtime/guru-team/python/`. The current runtime contract
-supports CPython 3.12 and 3.14. It installs the complete dependency set from the
+Preset apply uses the selected PATH Python only to bootstrap an OS-user-scoped
+immutable runtime cache. The default roots are
+`~/Library/Caches/guru-team/python/` on macOS,
+`${XDG_CACHE_HOME:-~/.cache}/guru-team/python/` on Linux, and
+`%LOCALAPPDATA%\GuruTeam\python\` on Windows. Tests and isolated automation may
+set `GURU_TEAM_PYTHON_CACHE_ROOT`; normal users do not need to configure it.
+The current runtime contract supports CPython 3.12 and 3.14. It installs the
+complete dependency set from the
 hash-locked `.trellis/guru-team/runtime/requirements.lock`, validates the pinned
 versions and Draft 2020-12 behavior, and only then activates that runtime.
+
+Each Git repository stores only its active pointer under the Git common-dir at
+`<git-common-dir>/guru-team/python/active.json`. Main checkouts and linked
+worktrees therefore resolve the same user-cache entry without copying a venv or
+requiring per-worktree bootstrap. Git-less archive fixtures retain a private
+checkout-local pointer fallback.
 
 All public Guru Team wrappers execute with the active managed interpreter. They
 do not fall back to PATH Python, an active virtual environment, user
 site-packages, or global packages. Runtime identity binds the runtime API, lock
-digest, Python implementation and minor version, and venv layout. Reapplying the
+digest, Python implementation and minor version, OS, architecture, Python ABI,
+platform tag, and venv layout. Reapplying the
 preset reuses a healthy matching identity or rebuilds a known managed but damaged
-identity. A failed candidate install preserves the previously active runtime.
+identity. Different identities coexist. A failed candidate install preserves the
+previously active pointer and runtime. Older checkout-local runtime directories
+are not deleted and cease to be authority only after the shared cache activates.
 
-Bootstrap or resolver failure returns `runtime_dependency_missing` with the
-runtime identity when known and this remediation command:
+Bootstrap or resolver failure returns one stable JSON object. A missing pointer
+uses `runtime_not_bootstrapped`, a missing/stale cache entry uses
+`managed_runtime_missing`, and a failed dependency capability probe uses
+`runtime_dependency_missing`. Each includes the runtime identity when known and
+this remediation command:
 
 ```bash
 trellis/presets/guru-team/scripts/bash/apply.sh --repo .
 ```
 
-The managed runtime is gitignored and is not part of the installed extension
-manifest. The manifest does include the canonical runtime contract, lock,
+The user cache and Git common-dir pointer are untracked private state and are not
+part of the installed extension manifest. The manifest does include the
+canonical runtime contract, lock,
 bootstrap, probe, resolver, and launcher bytes used to reproduce it.
 
 Maintainers can run the focused #219 boundary without the complete extension

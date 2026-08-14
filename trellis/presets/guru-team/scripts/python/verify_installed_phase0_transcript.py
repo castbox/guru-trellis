@@ -9,6 +9,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -399,6 +400,30 @@ def stage_transcript_owner_repo(
         ["git", "remote", "add", "origin", "https://github.com/example/guru-extension.git"],
         cwd=root,
     )
+
+    runtime_assets = root / ".trellis/guru-team/runtime"
+    bootstrap = runtime_assets / "bootstrap.py"
+    if not bootstrap.is_file():
+        raise RuntimeError("installed managed Python bootstrap is unavailable")
+    runtime = json_stdout(
+        run(
+            [
+                sys.executable,
+                bootstrap,
+                "--repo",
+                root,
+                "--runtime-assets",
+                runtime_assets,
+                "--python",
+                sys.executable,
+                "--json",
+            ],
+            cwd=root,
+        ),
+        "transcript owner managed runtime bootstrap",
+    )
+    if runtime.get("status") != "ok" or not runtime.get("runtime_identity"):
+        raise RuntimeError("transcript owner managed runtime bootstrap failed")
 
     fake_bin = chain_root / "fake-bin"
     fake_bin.mkdir()

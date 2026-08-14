@@ -361,33 +361,6 @@ def raise_managed_runtime_error(runtime_identity: str | None = None) -> None:
     raise SystemExit(json.dumps(payload, sort_keys=True))
 
 
-def managed_python_interpreter(repo: Path, runtime_identity: str) -> Path:
-    active_path = repo / ".trellis/.runtime/guru-team/python/active.json"
-    try:
-        active = json.loads(active_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        raise_managed_runtime_error(runtime_identity)
-    interpreter = active.get("interpreter") if isinstance(active, dict) else None
-    expected = {
-        f"{runtime_identity}/venv/bin/python",
-        f"{runtime_identity}/venv/Scripts/python.exe",
-    }
-    if interpreter not in expected:
-        raise_managed_runtime_error(runtime_identity)
-    path = repo / ".trellis/.runtime/guru-team/python" / str(interpreter)
-    if not path.is_file() or not os.access(path, os.X_OK):
-        raise_managed_runtime_error(runtime_identity)
-    return path
-
-
-def prepared_python_interpreter(repo: Path, runtime_identity: str) -> Path:
-    relative = Path(runtime_identity) / "venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-    path = repo / ".trellis/.runtime/guru-team/python" / relative
-    if not path.is_file() or not os.access(path, os.X_OK):
-        raise_managed_runtime_error(runtime_identity)
-    return path
-
-
 def is_mutable_ref(ref: str | None, exact_tag: str | None) -> bool | None:
     if not ref:
         return None
@@ -1900,7 +1873,9 @@ def install_assets(
     upstream_ownership_validation = run_upstream_ownership_validator(guru_root)
     repo = Path(os.path.abspath(repo))
     python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False)
-    managed_python = prepared_python_interpreter(repo, str(python_runtime["runtime_identity"]))
+    managed_python = Path(str(python_runtime.get("interpreter") or ""))
+    if not managed_python.is_file() or not os.access(managed_python, os.X_OK):
+        raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
     source_validation = run_skill_package_validator(guru_root, guru_root, "source", managed_python)
     if source_validation.get("returncode") != 0:
         raise SystemExit("Canonical Guru Team skill package validation failed before preset mutation.")

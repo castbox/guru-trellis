@@ -1,0 +1,33 @@
+{
+  "close_issues": [
+    {
+      "number": 231,
+      "reason": "当前独立交付单元及唯一 live authority。",
+      "title": "将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析",
+      "url": "https://github.com/castbox/guru-trellis/issues/231"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 222,
+      "reason": "#231 合并后从新 origin/main 冻结全新 candidate 并重跑累计 Release Gate。",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    }
+  ],
+  "primary_issue": {
+    "number": 231,
+    "reason": "当前独立交付单元及唯一 live authority。",
+    "title": "将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析",
+    "url": "https://github.com/castbox/guru-trellis/issues/231"
+  },
+  "related_issues": [
+    {
+      "number": 219,
+      "reason": "本任务是 #219 checkout-local runtime ownership 的 corrective successor。",
+      "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+      "url": "https://github.com/castbox/guru-trellis/issues/219"
+    }
+  ],
+  "schema_version": "2.0"
+}

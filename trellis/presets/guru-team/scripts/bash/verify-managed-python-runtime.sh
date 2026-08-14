@@ -58,16 +58,26 @@ PATH="$PATH_BIN:/usr/bin:/bin:/usr/sbin:/sbin" \
   "$SCRIPT_DIR/apply.sh" --repo "$TARGET" --platform codex > "$TEMP_ROOT/apply.json"
 
 FOCUSED_PATH="$PATH_BIN:/usr/bin:/bin:/usr/sbin:/sbin"
+SOURCE_POINTER="$(
+  "$BOOTSTRAP_PYTHON" "$SOURCE/trellis/skills/guru-team/runtime/bootstrap.py" \
+    --repo "$SOURCE" \
+    --runtime-assets "$SOURCE/trellis/skills/guru-team/runtime" \
+    --print-active-pointer
+)"
+TARGET_POINTER="$(
+  "$BOOTSTRAP_PYTHON" "$TARGET/.trellis/guru-team/runtime/bootstrap.py" \
+    --repo "$TARGET" \
+    --runtime-assets "$TARGET/.trellis/guru-team/runtime" \
+    --print-active-pointer
+)"
 PATH="$FOCUSED_PATH" \
   "$SOURCE/trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh" \
   --root "$SOURCE" --mode source --json > "$TEMP_ROOT/source-validation.json"
-mv "$SOURCE/.trellis/.runtime/guru-team/python/active.json" \
-  "$SOURCE/.trellis/.runtime/guru-team/python/active.saved"
+mv "$SOURCE_POINTER" "$SOURCE_POINTER.saved"
 PATH="$FOCUSED_PATH" \
   "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" \
   --root "$SOURCE" --mode source --json > "$TEMP_ROOT/target-wrapper-source-validation.json"
-mv "$SOURCE/.trellis/.runtime/guru-team/python/active.saved" \
-  "$SOURCE/.trellis/.runtime/guru-team/python/active.json"
+mv "$SOURCE_POINTER.saved" "$SOURCE_POINTER"
 PATH="$FOCUSED_PATH" \
   "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" \
   --root "$TARGET" --mode installed --json > "$TEMP_ROOT/installed-validation.json"
@@ -107,8 +117,7 @@ PATH="$FOCUSED_PATH" \
   --json > "$TEMP_ROOT/installed-eval-run.json"
 
 printf '{' > "$TEMP_ROOT/invalid-adapter-request.json"
-mv "$TARGET/.trellis/.runtime/guru-team/python/active.json" \
-  "$TARGET/.trellis/.runtime/guru-team/python/active.saved"
+mv "$TARGET_POINTER" "$TARGET_POINTER.saved"
 for adapter_id in shared codex claude cursor; do
   PATH="$NO_PYTHON_BIN" \
     "$SOURCE/trellis/skills/guru-team/adapters/eval/$adapter_id.sh" \
@@ -116,10 +125,8 @@ for adapter_id in shared codex claude cursor; do
     --request "$TEMP_ROOT/invalid-adapter-request.json" \
     > "$TEMP_ROOT/source-$adapter_id-no-path-python.json"
 done
-mv "$TARGET/.trellis/.runtime/guru-team/python/active.saved" \
-  "$TARGET/.trellis/.runtime/guru-team/python/active.json"
-mv "$SOURCE/.trellis/.runtime/guru-team/python/active.json" \
-  "$SOURCE/.trellis/.runtime/guru-team/python/active.saved"
+mv "$TARGET_POINTER.saved" "$TARGET_POINTER"
+mv "$SOURCE_POINTER" "$SOURCE_POINTER.saved"
 for adapter_id in shared codex claude cursor; do
   PATH="$NO_PYTHON_BIN" \
     "$TARGET/.trellis/guru-team/skills/adapters/eval/$adapter_id.sh" \
@@ -127,10 +134,9 @@ for adapter_id in shared codex claude cursor; do
     --request "$TEMP_ROOT/invalid-adapter-request.json" \
     > "$TEMP_ROOT/installed-$adapter_id-no-path-python.json"
 done
-mv "$SOURCE/.trellis/.runtime/guru-team/python/active.saved" \
-  "$SOURCE/.trellis/.runtime/guru-team/python/active.json"
+mv "$SOURCE_POINTER.saved" "$SOURCE_POINTER"
 
-"$BOOTSTRAP_PYTHON" - "$TEMP_ROOT" "$SOURCE" "$TARGET" <<'PY'
+"$BOOTSTRAP_PYTHON" - "$TEMP_ROOT" "$SOURCE" "$TARGET" "$SOURCE_POINTER" "$TARGET_POINTER" <<'PY'
 import json
 import pathlib
 import sys
@@ -138,6 +144,8 @@ import sys
 root = pathlib.Path(sys.argv[1])
 source_repo = pathlib.Path(sys.argv[2])
 repo = pathlib.Path(sys.argv[3])
+source_pointer = pathlib.Path(sys.argv[4])
+target_pointer = pathlib.Path(sys.argv[5])
 
 def load(name):
     return json.loads((root / name).read_text(encoding="utf-8"))
@@ -171,11 +179,9 @@ adapter_probes = {
     for mode in ("source", "installed")
     for adapter in ("shared", "codex", "claude", "cursor")
 }
-source_active = json.loads(
-    (source_repo / ".trellis/.runtime/guru-team/python/active.json").read_text()
-)
-active = json.loads((repo / ".trellis/.runtime/guru-team/python/active.json").read_text())
-managed_python = repo / ".trellis/.runtime/guru-team/python" / active["interpreter"]
+source_active = json.loads(source_pointer.read_text())
+active = json.loads(target_pointer.read_text())
+managed_python = pathlib.Path(apply["python_runtime"]["interpreter"])
 
 assert apply["status"] == "ok"
 assert source_apply["status"] == "ok"

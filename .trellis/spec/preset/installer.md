@@ -37,6 +37,16 @@ before installer staging. A non-current ownership contract fails closed.
 
 ## Managed Assets
 
+Before staging managed assets, preset apply prepares an immutable Python runtime
+under the current OS user's Guru Team cache. It activates only after staged
+source/installed validation succeeds. Activation writes a repository-private
+pointer below Git common-dir, not a checkout-local venv; linked worktrees consume
+the same pointer and cache entry. Runtime identity includes dependency-lock,
+Python implementation/minor, OS, architecture, ABI/platform tag, runtime API and
+layout. Existing checkout-local runtimes are preserved during migration and are
+never deleted by normal apply/reapply. A failed cache candidate or staged
+activation leaves the previous pointer unchanged.
+
 The preset also maintains one bounded AI-first principles block in the target
 root `AGENTS.md`, delimited by stable start/end markers. Missing `AGENTS.md` is
 created; an existing file keeps every byte outside the block; repeated apply is
