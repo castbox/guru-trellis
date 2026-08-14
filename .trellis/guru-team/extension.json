@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.28",
+    "version": "0.6.5-guru.29",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-14T03:23:09Z",
+  "installed_at": "2026-08-14T05:30:33Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "efb7a7eb859f59b345350cf30e1c4b581b70765e",
-    "commit": "efb7a7eb859f59b345350cf30e1c4b581b70765e",
+    "ref": "4b22ae588f5906aa4059bed2d177a28a5c9d9223",
+    "commit": "4b22ae588f5906aa4059bed2d177a28a5c9d9223",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -513,7 +513,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "fa09c23c594dd8bf7fd114c3cdf561fe1db647859a97c6e0321c1eceabe1df01",
-        "tree_sha256": "8b5264b500283f0c8e6d0ac07763970a08bf4c173a4373f84f50023f6f9b9c8d"
+        "tree_sha256": "dd03746f9ebdb7d8ab6f600da850f338d08ae95ce3c09327500e336dbdb57e54"
       },
       {
         "id": "guru-finalize-task",
@@ -729,7 +729,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "576ef9834ca39f9b0a33d2c860d9a7ef3060402f142cf3c1a29036370b64d308",
+        "sha256": "14070c95520718700ba2411a00f02d119ebe77960d41727409f38e0ad9c31cbd",
         "executable": false,
         "action": "unchanged"
       },
@@ -5132,7 +5132,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "a189937baeb7236b625576c8eb7f30a1490fe97009f50a97c2024d92e0b697ea",
+        "sha256": "8080376756a3f36a311ae111d4ebced4718efc0f12db1dfa47de3174b9abca64",
         "executable": false,
         "action": "unchanged"
       },

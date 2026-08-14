@@ -234,7 +234,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                 "installed_at": "2026-08-12T00:00:00Z",
                 "extension": {
                     "extension_id": "guru-team",
-                    "version": "0.6.5-guru.28",
+                    "version": "0.6.5-guru.29",
                     "workflow_template_id": "guru-team",
                     "target_trellis_cli": "0.6.5",
                     "tested": {"trellis_cli": ["0.6.5"]},
@@ -257,7 +257,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result)
             payload = json.loads(result.stdout)
-            self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.28")
+            self.assertEqual(payload["guru_team_extension"]["version"], "0.6.5-guru.29")
             self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
             self.assertEqual(result.stderr, "")
 

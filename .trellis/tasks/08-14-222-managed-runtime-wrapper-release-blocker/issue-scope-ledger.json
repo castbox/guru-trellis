@@ -1,0 +1,68 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 222,
+    "url": "https://github.com/castbox/guru-trellis/issues/222",
+    "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
+    "reason": "本续作修复 #222 pre-tag verifier 暴露的受管 Python wrapper 发布阻塞；#222 仍只在 tag、Release 和 evidence comment 完成后显式关闭。"
+  },
+  "close_issues": [],
+  "related_issues": [
+    {
+      "number": 222,
+      "url": "https://github.com/castbox/guru-trellis/issues/222",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227 合并后的业务仓库安装基线",
+      "reason": "本续作修复 #222 pre-tag verifier 暴露的受管 Python wrapper 发布阻塞；#222 仍只在 tag、Release 和 evidence comment 完成后显式关闭。"
+    },
+    {
+      "number": 219,
+      "url": "https://github.com/castbox/guru-trellis/issues/219",
+      "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+      "reason": "本修复补齐 #219 merge result 未覆盖的 shared wrapper 消费路径，不重新关闭 #219。"
+    },
+    {
+      "number": 217,
+      "url": "https://github.com/castbox/guru-trellis/issues/217",
+      "title": "修复 guru-review-branch recorder 未持久化 review gate",
+      "reason": "#217 仍是累计发布的已关闭前置。"
+    },
+    {
+      "number": 218,
+      "url": "https://github.com/castbox/guru-trellis/issues/218",
+      "title": "修复 Finalizer/Merge 终态输出与幂等恢复合同",
+      "reason": "#218 仍是累计发布的已关闭前置。"
+    },
+    {
+      "number": 227,
+      "url": "https://github.com/castbox/guru-trellis/issues/227",
+      "title": "移除 finish-summary 变更路径数量的任意上限",
+      "reason": "#227 仍是累计发布的已关闭前置。"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 223,
+      "url": "https://github.com/castbox/guru-trellis/issues/223",
+      "title": "配置驱动的 Draft CI 门禁、Ready 时序与 Agent 自动合并",
+      "reason": "本次发布明确排除。"
+    },
+    {
+      "number": 208,
+      "url": "https://github.com/castbox/guru-trellis/issues/208",
+      "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+      "reason": "本次发布明确排除。"
+    },
+    {
+      "number": 164,
+      "url": "https://github.com/castbox/guru-trellis/issues/164",
+      "title": "智能选择 task-free 或标准 Guru Team Intake",
+      "reason": "本次发布明确排除。"
+    },
+    {
+      "number": 220,
+      "url": "https://github.com/castbox/guru-trellis/issues/220",
+      "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
+      "reason": "本次发布明确排除。"
+    }
+  ]
+}

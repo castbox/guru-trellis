@@ -42,7 +42,7 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
 source 是 annotated tag `v0.6.5-guru.6`，canonical extension version 为
-`0.6.5-guru.28`。该 tag 只会在 preparation PR 合并且 exact remote candidate 验证通过后创建；
+`0.6.5-guru.29`。该 tag 只会在 preparation PR 合并且 exact remote candidate 验证通过后创建；
 peeled source commit 必须等于最终 candidate，并由 immutable Git ref、GitHub Release notes 与
 release evidence 记录，不在 candidate 尚未产生的 README 中预填。Repo release tag 与 extension
 revision 是独立版本轴；workflow marketplace 与 preset 必须来自同一个 immutable tag。
@@ -138,9 +138,12 @@ workflow mode 表示 mandatory global route；standalone 表示平台直接发�
 依赖完整、current Guru Team preset，单独复制 Skill 目录不是
 self-contained/portable 安装。公共 wrapper 通过 installed executable
 .trellis/guru-team/scripts/bash/run-skill-command.sh 调用 shared run-skill-command
-dispatcher；缺 runtime、版本漂移或未解决 sidecar 时必须在业务副作用前 fail closed。
+dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source checkout 的
+`trellis/skills/guru-team/runtime/resolve-python.sh`，installed wrapper 使用目标 checkout 的
+`.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
+业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 canonical extension version `0.6.5-guru.28` 对应上文 pin 的 stable release tag
+当前 canonical extension version `0.6.5-guru.29` 对应上文 pin 的 stable release tag
 `v0.6.5-guru.6`。Source/installed package validation 必须同时验证
 registry、15/60/36 business marker graph、16-package/62-exit closure、consumer
 uniqueness、projection、selected-platform

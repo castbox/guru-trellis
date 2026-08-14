@@ -33,6 +33,12 @@ command -v git >/dev/null 2>&1 || {
   exit 127
 }
 
+python3 "$REPO_ROOT/trellis/skills/guru-team/runtime/bootstrap.py" \
+  --repo "$REPO_ROOT" \
+  --runtime-assets "$REPO_ROOT/trellis/skills/guru-team/runtime" \
+  --python "$(command -v python3)" \
+  --json > "$WORK_DIR/source-managed-runtime.json"
+
 ownership_checkpoint() {
   local checkpoint="$1"
   printf 'Current Guru ownership checkpoint: %s\n' "$checkpoint"
@@ -1046,7 +1052,7 @@ assert ownership["overlay_root"] == "trellis/presets/guru-team/overlays"
 assert len(ownership["guru_owned_rules"]) == 11
 assert len(ownership["managed_path_claims"]) == 9
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.28"
+assert extension["version"] == "0.6.5-guru.29"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
 assert len(assets) == 68
@@ -1202,9 +1208,10 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/shared.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/codex.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/claude.sh"
 test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
-SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
+TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
+SOURCE_SKILL_VALIDATION_JSON="$("$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; source = json.loads(sys.argv[1]); installed = json.load(sys.stdin); assert source["status"] == installed["status"] == "passed"; assert (source["active_packages"], source["commands"], source["complete_package_commands"]) == (16, 59, 16); assert len(installed["facts"]["active_ids"]) == source["active_packages"]; assert installed["facts"]["command_count"] == source["commands"]; assert installed["facts"]["planned_ids"] == []' "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+python3 -c 'import json, sys; target_source = json.loads(sys.argv[1]); source = json.loads(sys.argv[2]); installed = json.load(sys.stdin); assert target_source == source; assert source["status"] == installed["status"] == "passed"; assert (source["active_packages"], source["commands"], source["complete_package_commands"]) == (16, 59, 16); assert len(installed["facts"]["active_ids"]) == source["active_packages"]; assert installed["facts"]["command_count"] == source["commands"]; assert installed["facts"]["planned_ids"] == []' "$TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON" "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 python3 -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.4"' <<<"$MINIMAL_CONTRACT_JSON"
 MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
@@ -2525,6 +2532,7 @@ test ! -e "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task
 test ! -e "$TARGET/.codex/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"
 test ! -e "$TARGET/.cursor/skills/guru-create-task-workspace/scripts/check-task-workspace-result.sh"
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
+"$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source >/dev/null
 "$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed >/dev/null
 verify_package_projections "after-update-reapply"
 verify_base_reconciliation_distribution "after-update-reapply"
