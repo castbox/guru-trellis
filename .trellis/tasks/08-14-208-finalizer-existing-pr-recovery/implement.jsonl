@@ -1,8 +1,0 @@
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"确认 Finalizer stable Skill id、typed exits 与 ready_for_merge consumer 全局路由保持不变。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"实现 recovery transaction、PR identity、HEAD ancestry、scope 与 publication payload 绑定。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 preview/record/check/execute 的确定性边界与 mutation 顺序。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"约束 Interface、schema version、public/private I/O 与 canonical/platform 投影。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"确定真实拓扑、幂等恢复、负向矩阵、安装/update 与 drift 验收。"}
-{"file":".trellis/spec/preset/installer.md","reason":"同步 canonical、installed、managed inventory、extension version 与 apply/reapply要求。"}
-{"file":".trellis/tasks/archive/2026-08/08-14-218-finalizer-merge-terminal-output-recovery/design.md","reason":"复用 #218 terminal DTO 与同计划幂等恢复设计，同时保持其跨 task adoption边界。"}
-{"file":".trellis/tasks/archive/2026-08/08-12-205-prohibit-business-extension-verification/prd.md","reason":"继承业务 Finalizer verifier不可达合同。"}

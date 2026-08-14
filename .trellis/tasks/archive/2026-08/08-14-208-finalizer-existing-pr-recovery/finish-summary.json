@@ -1,0 +1,315 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-14T17:59:27Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-14-208-finalizer-existing-pr-recovery",
+    "title": "#208 Finalizer existing PR recovery",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "feat/208-finalizer-existing-pr-recovery",
+    "commits": [
+      "4293686990d4b6f7647fe4d85a2e996e0d7deb23",
+      "e3b2c9b4cec3ef2df9b6b5d2a6510d39163f4844",
+      "05b4d19a09642f068dc6cc4ef590e4aec53b5574",
+      "11183eda36ca4227e99c50f9580d01609574d8ba",
+      "7927af6bf1aacdb5b747505b6ba5811aa6539ed5"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/SKILL.md",
+      ".agents/skills/guru-finalize-task/interface.json",
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".agents/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+      ".claude/skills/guru-finalize-task/SKILL.md",
+      ".claude/skills/guru-finalize-task/interface.json",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+      ".codex/skills/guru-finalize-task/SKILL.md",
+      ".codex/skills/guru-finalize-task/interface.json",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+      ".cursor/skills/guru-finalize-task/SKILL.md",
+      ".cursor/skills/guru-finalize-task/interface.json",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/check.jsonl",
+      ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/design.md",
+      ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/implement.jsonl",
+      ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/implement.md",
+      ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/prd.md",
+      ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/task.json",
+      ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/design.md",
+      ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/implement.md",
+      ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/prd.md",
+      ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/task.json",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      208
+    ],
+    "close_issues": [
+      208
+    ],
+    "related_issues": [
+      205,
+      218
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/234"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#208 Finalizer existing PR recovery",
+    "outcome": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。",
+    "changed_behavior": [
+      "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。",
+      "在首次 mutation 前绑定 PR identity、pre-push remote HEAD、reviewed/publication HEAD 与 transaction，按严格祖先关系执行 fast-forward，并支持中断后的幂等恢复。",
+      "补齐真实 Git topology fixture、完整归档链路和 multiple/fork/repo-head-base mismatch、unknown ancestry、stale Publication、archive conflict、unknown transaction 等负向矩阵。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/design.md",
+          ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/implement.md",
+          ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/prd.md",
+          ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/design.md",
+          ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/implement.md",
+          ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/prd.md"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/presets/guru-team/spec/workflow/skill-package-contract.md"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          ".agents/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+          ".claude/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+          ".codex/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+          ".cursor/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction.schema.json"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/SKILL.md",
+          ".agents/skills/guru-finalize-task/interface.json",
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/SKILL.md",
+          ".claude/skills/guru-finalize-task/interface.json",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/SKILL.md",
+          ".codex/skills/guru-finalize-task/interface.json",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/SKILL.md",
+          ".cursor/skills/guru-finalize-task/interface.json",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/check.jsonl",
+          ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/implement.jsonl",
+          ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/task.json",
+          ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/task.json"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#205",
+        "#208",
+        "#218"
+      ],
+      "pr_refs": [
+        "PR #234"
+      ],
+      "branches": [
+        "feat/208-finalizer-existing-pr-recovery"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/SKILL.md",
+        ".agents/skills/guru-finalize-task/interface.json",
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".agents/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+        ".claude/skills/guru-finalize-task/SKILL.md",
+        ".claude/skills/guru-finalize-task/interface.json",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+        ".codex/skills/guru-finalize-task/SKILL.md",
+        ".codex/skills/guru-finalize-task/interface.json",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+        ".cursor/skills/guru-finalize-task/SKILL.md",
+        ".cursor/skills/guru-finalize-task/interface.json",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/interface.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/skill-package-contract.md",
+        ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/check.jsonl",
+        ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/design.md",
+        ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/implement.jsonl",
+        ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/implement.md",
+        ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/prd.md",
+        ".trellis/tasks/08-14-208-finalizer-existing-pr-recovery/task.json",
+        ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/design.md",
+        ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/implement.md",
+        ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/prd.md",
+        ".trellis/tasks/archive/2026-08/08-14-208-finalizer-existing-pr-recovery/task.json",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/interface.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction-2.0.schema.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/schemas/finalization-transaction.schema.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#208 Finalizer existing PR recovery",
+        "为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#208 Finalizer existing PR recovery\n为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、同一 head/base 的后续修复任务可复用唯一 Open PR，并在 Ready 状态下保持 Ready。\n在首次 mutation 前绑定 PR identity、pre-push remote HEAD、reviewed/publication HEAD 与 transaction，按严格祖先关系执行 fast-forward，并支持中断后的幂等恢复。\n补齐真实 Git topology fixture、完整归档链路和 multiple/fork/repo-head-base mismatch、unknown ancestry、stale Publication、archive conflict、unknown transaction 等负向矩阵。\n为 `guru-finalize-task` 增加受控的 existing-PR recovery，使同一 Issue、\n完成 SKILL.md 相关变更"
+  }
+}
