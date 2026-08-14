@@ -19,9 +19,6 @@ from runtime.validate import _package_paths
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT.parent
-REPO = ROOT.parents[3]
-
-
 def bootstrap_runtime(repo: Path, runtime_assets: Path = ROOT) -> dict[str, object]:
     result = subprocess.run(
         [
@@ -53,28 +50,32 @@ class SharedRuntimeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.cache = tempfile.TemporaryDirectory()
+        cls.repo_directory = tempfile.TemporaryDirectory()
+        cls.repo = Path(cls.repo_directory.name) / "repo"
+        cls.repo.mkdir()
         cls.cache_environment = mock.patch.dict(
             os.environ,
             {"GURU_TEAM_PYTHON_CACHE_ROOT": cls.cache.name},
         )
         cls.cache_environment.start()
-        cls.runtime_result = bootstrap_runtime(REPO)
+        cls.runtime_result = bootstrap_runtime(cls.repo)
 
     @classmethod
     def tearDownClass(cls) -> None:
         cls.cache_environment.stop()
+        cls.repo_directory.cleanup()
         cls.cache.cleanup()
 
     def test_managed_runtime_reuses_same_identity_and_probes_draft_2020_12(self) -> None:
         self.assertEqual(self.runtime_result["status"], "ok")
         self.assertIn(self.runtime_result["action"], {"installed", "reused", "repaired"})
-        second = bootstrap_runtime(REPO)
+        second = bootstrap_runtime(self.repo)
         self.assertEqual(second["action"], "reused")
         self.assertEqual(second["runtime_identity"], self.runtime_result["runtime_identity"])
 
         from runtime.bootstrap import active_pointer_path
 
-        active = json.loads(active_pointer_path(REPO).read_text())
+        active = json.loads(active_pointer_path(self.repo).read_text())
         managed_python = Path(str(self.runtime_result["interpreter"]))
         self.assertEqual(active["cache_scope"], "user")
         self.assertEqual(active["runtime_id"], self.runtime_result["runtime_identity"])
@@ -592,14 +593,18 @@ class SharedRuntimeTests(unittest.TestCase):
     def test_contract_discovery_wrapper_and_unknown_skill_error(self) -> None:
         wrapper = Path(__file__).resolve().parents[4] / "workflows/guru-team/scripts/bash/discover-skill-contract.sh"
         root = Path(__file__).resolve().parents[5]
+        current_checkout_environment = os.environ.copy()
+        current_checkout_environment.pop("GURU_TEAM_PYTHON_CACHE_ROOT", None)
         success = subprocess.run(
             [str(wrapper), "--root", str(root), "--mode", "source", "--skill", "guru-sync-base", "--json"],
+            env=current_checkout_environment,
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(success.returncode, 0, success)
         self.assertEqual(json.loads(success.stdout)["skill_id"], "guru-sync-base")
         failure = subprocess.run(
             [str(wrapper), "--root", str(root), "--mode", "source", "--skill", "guru-missing-skill", "--json"],
+            env=current_checkout_environment,
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(failure.returncode, 2, failure)
@@ -609,8 +614,11 @@ class SharedRuntimeTests(unittest.TestCase):
     def test_launcher_direct_contract_and_missing_arguments(self) -> None:
         launcher = ROOT / "launch.sh"
         package = SKILLS / "packages/guru-sync-base"
+        current_checkout_environment = os.environ.copy()
+        current_checkout_environment.pop("GURU_TEAM_PYTHON_CACHE_ROOT", None)
         direct = subprocess.run(
             [str(launcher), str(package), "sync-base", "--help"],
+            env=current_checkout_environment,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

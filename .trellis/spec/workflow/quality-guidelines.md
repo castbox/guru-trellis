@@ -845,6 +845,12 @@ must also prove each checkout retains its exact runtime selection after
 sequential apply. Preset tests must prove the runtime contract files are
 in the managed inventory with canonical bytes and executable modes.
 
+Runtime test harnesses must bootstrap against an isolated temporary repository,
+not the source checkout under test. Subprocesses that intentionally exercise the
+source checkout wrappers must not inherit a test-only cache-root override. The
+suite must prove the source checkout's active pointer bytes are unchanged before
+and after execution so test cleanup cannot leave a stale interpreter path.
+
 At least one focused clean install must use a PATH Python that can create a venv
 but cannot import `jsonschema`, apply the real preset, and execute a real public
 schema-bound wrapper through the installed managed interpreter. The focused

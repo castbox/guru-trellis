@@ -54,6 +54,11 @@ shell resolver先以POSIX基础工具解析pointer和interpreter，再通过boot
 验证器创建新的Git owner-repo fixture时，必须通过已安装bootstrap为该repository激活同一
 user-cache runtime并写common-dir pointer；不得复制venv或依赖其它checkout的私有pointer。
 
+Runtime unit test harness必须在独立临时repository中执行bootstrap，不能在测试专用cache
+override生效时改写被测source checkout的pointer。只有明确测试source checkout wrapper的
+subprocess移除该override并使用真实已激活user cache；suite验收同时比较caller pointer执行
+前后bytes相等，避免临时cache清理后留下stale interpreter。
+
 ## 同步面
 
 canonical runtime、workflow managed copy、dogfood installed copy和installer调用必须同步。
