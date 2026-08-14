@@ -7550,6 +7550,62 @@ def resolve_closeout_pull_request(
         )
     return exact[0] if exact else None
 
+
+def resolve_closeout_terminal_pull_requests(
+    root: Path, repo: str, branch: str, base_branch: str, remote: str = "origin"
+) -> list[dict[str, Any]]:
+    """Return exact same-repository Closed or Merged PRs for the target branch."""
+    expected_repo = validate_github_remote_repository(root, remote, repo)
+    values = gh_json(
+        [
+            "pr", "list", "--repo", repo, "--head", branch,
+            "--base", base_branch, "--state", "closed", "--limit", "100",
+            "--json", (
+                "number,url,state,headRefName,baseRefName,headRepository,"
+                "headRepositoryOwner,isCrossRepository"
+            ),
+        ],
+        cwd=root,
+        required_fields=(
+            "number", "url", "state", "headRefName", "baseRefName",
+            "headRepository", "headRepositoryOwner", "isCrossRepository",
+        ),
+        operation="pull_request_read",
+    )
+    if not isinstance(values, list):
+        raise github_response_incomplete(
+            operation="pull_request_read",
+            repo=repo,
+            detail="Terminal pull request list is not an array.",
+        )
+    exact: list[dict[str, Any]] = []
+    for item in values:
+        if not isinstance(item, dict):
+            raise WorkflowError("Terminal closeout pull request identity is invalid.", exit_code=2)
+        number = item.get("number")
+        state = item.get("state")
+        if (
+            not isinstance(number, int)
+            or state not in {"CLOSED", "MERGED"}
+            or item.get("headRefName") != branch
+            or item.get("baseRefName") != base_branch
+        ):
+            raise WorkflowError(
+                "Terminal closeout pull request repo/head/base/state identity is invalid.",
+                exit_code=2,
+            )
+        _actual_repo, is_target = closeout_pull_request_head_repository(item, expected_repo)
+        if not is_target:
+            continue
+        exact.append(
+            {
+                "number": number,
+                "url": canonical_pull_request_url(expected_repo, number, item.get("url")),
+                "state": state,
+            }
+        )
+    return exact
+
 def closeout_pull_request_close_issues(body: str) -> list[int]:
     if not isinstance(body, str):
         raise WorkflowError("Closeout pull request body identity is invalid.", exit_code=2)
@@ -7758,6 +7814,22 @@ def finalization_pre_mutation_remote_preflight(
                     "pull_request": (
                         existing_pr.get("number") if existing_pr is not None else None
                     ),
+                },
+            )
+        terminal_prs = resolve_closeout_terminal_pull_requests(
+            root,
+            git["repo"],
+            git["head_branch"],
+            git["base_branch"],
+            git["remote"],
+        )
+        if terminal_prs:
+            raise WorkflowError(
+                "Task finalization found a Closed or Merged pull request for the immutable head/base before its first remote mutation.",
+                exit_code=2,
+                payload={
+                    "reason_code": "pre_finalizer_terminal_pr_exists",
+                    "pull_requests": terminal_prs,
                 },
             )
         return None, remote_head
@@ -8134,6 +8206,29 @@ def ensure_closeout_bound_pr(
         bound_pr=bound_pr,
     )
     return existing
+
+
+def finalization_expected_pr_draft_state(
+    transaction: dict[str, Any] | None,
+    *,
+    current_finalizer: bool,
+) -> bool:
+    if (
+        current_finalizer
+        and isinstance(transaction, dict)
+        and transaction.get("mode") == "existing_pr_recovery"
+    ):
+        recovery = transaction.get("adopted_pr")
+        if not isinstance(recovery, dict) or not isinstance(
+            recovery.get("initial_is_draft"), bool
+        ):
+            raise WorkflowError(
+                "Existing PR recovery transaction is missing its initial Draft/Ready state.",
+                exit_code=2,
+            )
+        return bool(recovery["initial_is_draft"])
+    return True
+
 
 def build_final_archive_projection(
     root: Path,
@@ -9932,6 +10027,10 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
         )
         finalization_write_transaction(root, task_dir, transaction)
     finish_summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    expected_draft = finalization_expected_pr_draft_state(
+        transaction,
+        current_finalizer=current_finalizer,
+    )
     if finish_summary_path.is_file():
         validate_closeout_active_projection(
             root,
@@ -9943,7 +10042,7 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             plan,
             pr,
-            expected_draft=True,
+            expected_draft=expected_draft,
             require_summary=True,
             expected_head=current_head(root),
         )
@@ -9953,12 +10052,7 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
             task_dir,
             prepared,
             pr,
-            expected_draft=(
-                bool(transaction["adopted_pr"]["initial_is_draft"])
-                if current_finalizer
-                and transaction.get("mode") == "existing_pr_recovery"
-                else True
-            ),
+            expected_draft=expected_draft,
         )
     finalization_gate = getattr(args, "finalization_gate", None)
     if isinstance(finalization_gate, dict):
@@ -10308,6 +10402,38 @@ def finalization_advance_transaction(
             if isinstance(transaction.get("adopted_pr"), dict)
             else None
         ),
+    )
+
+
+def finalization_reprepared_transaction(
+    plan: dict[str, Any],
+    previous_transaction: dict[str, Any] | None,
+    *,
+    pre_push_remote_head: str,
+) -> dict[str, Any]:
+    if (
+        isinstance(previous_transaction, dict)
+        and previous_transaction.get("mode") == "existing_pr_recovery"
+    ):
+        adopted_pr = previous_transaction.get("adopted_pr")
+        pr = previous_transaction.get("pr")
+        if not isinstance(adopted_pr, dict) or not isinstance(pr, dict):
+            raise WorkflowError(
+                "Existing PR recovery transaction is incomplete during reprepare.",
+                exit_code=2,
+            )
+        return finalization_transaction_from_plan(
+            plan,
+            next_transition="push_content",
+            pr=pr,
+            pre_push_remote_head=pre_push_remote_head,
+            mode="existing_pr_recovery",
+            adopted_pr=adopted_pr,
+        )
+    return finalization_transaction_from_plan(
+        plan,
+        next_transition="push_content",
+        pre_push_remote_head=pre_push_remote_head,
     )
 
 def finalization_validate_transaction_plan(
@@ -12172,6 +12298,7 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 "Finalizer reprepare reason is unsupported.",
                 exit_code=2,
             )
+        previous_owner_transaction = finalization_read_transaction(root, task_dir)
         retired = finalizer_supersede_pre_pr_state(root, task_dir)
         replacement_transaction: dict[str, Any] | None = None
         base_evolution = (
@@ -12212,29 +12339,41 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 current_finalizer=True,
             )
             if reprepare_facts is None:
-                _existing_pr, pre_push_remote_head = (
-                    finalization_pre_mutation_remote_preflight(
-                        root,
-                        replacement["plan"],
-                        None,
-                    )
+                previous_recovery = (
+                    previous_owner_transaction.get("adopted_pr")
+                    if isinstance(previous_owner_transaction, dict)
+                    and previous_owner_transaction.get("mode")
+                    == "existing_pr_recovery"
+                    else None
                 )
-                replacement_transaction = finalization_transaction_from_plan(
+                if isinstance(previous_recovery, dict):
+                    pre_push_remote_head = str(
+                        previous_recovery.get("pre_push_remote_head") or ""
+                    )
+                else:
+                    _existing_pr, pre_push_remote_head = (
+                        finalization_pre_mutation_remote_preflight(
+                            root,
+                            replacement["plan"],
+                            None,
+                        )
+                    )
+                replacement_transaction = finalization_reprepared_transaction(
                     replacement["plan"],
-                    next_transition="push_content",
+                    previous_owner_transaction,
                     pre_push_remote_head=pre_push_remote_head,
                 )
             else:
-                replacement_transaction = finalization_transaction_from_plan(
+                replacement_transaction = finalization_reprepared_transaction(
                     replacement["plan"],
-                    next_transition="push_content",
+                    previous_owner_transaction,
                     pre_push_remote_head=str(reprepare_facts["remote_head"]),
                 )
-                finalization_pre_mutation_remote_preflight(
-                    root,
-                    replacement["plan"],
-                    replacement_transaction,
-                )
+            finalization_pre_mutation_remote_preflight(
+                root,
+                replacement["plan"],
+                replacement_transaction,
+            )
             finalization_write_transaction(
                 root,
                 task_dir,

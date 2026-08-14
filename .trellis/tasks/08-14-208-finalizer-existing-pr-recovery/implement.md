@@ -53,4 +53,3 @@ git diff --check
 - 普通首次发布与recovery必须有独立测试，防止已有Open PR被静默接管。
 - 每个外部mutation后立即验证live facts；测试必须证明恢复不重复mutation。
 - 回滚通过恢复canonical package/spec并重新apply preset完成，不直接编辑或单独回退installed/platform副本。
-
