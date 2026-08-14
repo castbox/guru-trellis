@@ -114,11 +114,13 @@ def user_cache_root(
     return (Path(xdg).expanduser() if xdg else user_home / ".cache") / "guru-team/python"
 
 
-def repository_state_root(repo: Path) -> Path:
+def repository_git_dirs(repo: Path) -> tuple[Path | None, Path | None]:
     git_marker = repo / ".git"
-    common: Path | None = None
+    git_dir: Path | None = None
+    common_dir: Path | None = None
     if git_marker.is_dir():
-        common = git_marker.resolve()
+        git_dir = git_marker.resolve()
+        common_dir = git_dir
     elif git_marker.is_file() and not git_marker.is_symlink():
         try:
             marker = git_marker.read_text(encoding="utf-8").strip()
@@ -130,7 +132,7 @@ def repository_state_root(repo: Path) -> Path:
                 git_dir = repo / git_dir
             git_dir = git_dir.resolve()
             if git_dir.is_dir():
-                common = git_dir
+                common_dir = git_dir
                 commondir = git_dir / "commondir"
                 if commondir.is_file() and not commondir.is_symlink():
                     try:
@@ -143,9 +145,19 @@ def repository_state_root(repo: Path) -> Path:
                             common_candidate = git_dir / common_candidate
                         common_candidate = common_candidate.resolve()
                         if common_candidate.is_dir():
-                            common = common_candidate
-    if common is not None:
-        return common / "guru-team/python"
+                            common_dir = common_candidate
+    return git_dir, common_dir
+
+
+def repository_state_root(repo: Path, *, for_write: bool = False) -> Path:
+    git_dir, common_dir = repository_git_dirs(repo)
+    if git_dir is not None and common_dir is not None:
+        common_root = common_dir / "guru-team/python"
+        if git_dir != common_dir:
+            worktree_root = git_dir / "guru-team/python"
+            if for_write or (worktree_root / "active.json").is_file():
+                return worktree_root
+        return common_root
     # Git-less archive fixtures retain a private checkout-local pointer.
     return repo / ".trellis/.runtime/guru-team/python"
 
@@ -154,8 +166,8 @@ def runtime_target(runtime_id: str) -> Path:
     return user_cache_root() / runtime_id
 
 
-def active_pointer_path(repo: Path) -> Path:
-    return repository_state_root(repo) / "active.json"
+def active_pointer_path(repo: Path, *, for_write: bool = False) -> Path:
+    return repository_state_root(repo, for_write=for_write) / "active.json"
 
 
 def run_probe(python: Path, assets: Path) -> dict[str, Any]:
@@ -198,7 +210,7 @@ def existing_state(target: Path, runtime_id: str, identity: dict[str, Any], asse
 
 
 def write_active(repo: Path, runtime_id: str) -> None:
-    runtime_root = repository_state_root(repo)
+    runtime_root = repository_state_root(repo, for_write=True)
     runtime_root.mkdir(parents=True, exist_ok=True)
     pointer = {
         "schema_version": "2.0",

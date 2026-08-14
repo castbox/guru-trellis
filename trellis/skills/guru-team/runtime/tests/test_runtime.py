@@ -399,6 +399,52 @@ class SharedRuntimeTests(unittest.TestCase):
             self.assertEqual(active_pointer_path(repo), active_pointer_path(worktree))
             self.assertEqual(installed["runtime_identity"], json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
 
+    def test_linked_worktrees_with_different_contracts_keep_independent_runtime_selection(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = root / "repo"
+            first_worktree = root / "worktree-a"
+            second_worktree = root / "worktree-b"
+            first_assets = root / "assets-a"
+            second_assets = root / "assets-b"
+            repo.mkdir()
+            shutil.copytree(ROOT, first_assets)
+            shutil.copytree(ROOT, second_assets)
+            with (second_assets / "requirements.lock").open("a", encoding="utf-8") as handle:
+                handle.write("\n# second checkout identity\n")
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.name", "Runtime Test"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.email", "runtime@example.invalid"], cwd=repo, check=True)
+            (repo / "README.md").write_text("runtime test\n")
+            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/runtime-a", str(first_worktree)], cwd=repo, check=True)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/runtime-b", str(second_worktree)], cwd=repo, check=True)
+
+            first = bootstrap_runtime(first_worktree, first_assets)
+            second = bootstrap_runtime(second_worktree, second_assets)
+
+            self.assertNotEqual(first["runtime_identity"], second["runtime_identity"])
+            self.assertNotEqual(active_pointer_path(first_worktree), active_pointer_path(second_worktree))
+            self.assertEqual(first["runtime_identity"], json.loads(active_pointer_path(first_worktree).read_text())["runtime_id"])
+            self.assertEqual(second["runtime_identity"], json.loads(active_pointer_path(second_worktree).read_text())["runtime_id"])
+            for worktree, assets, expected in (
+                (first_worktree, first_assets, first["runtime_identity"]),
+                (second_worktree, second_assets, second["runtime_identity"]),
+            ):
+                result = subprocess.run(
+                    [str(assets / "resolve-python.sh"), str(worktree), str(assets), "-c", "import jsonschema;print('ok')"],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result)
+                self.assertEqual(result.stdout.strip(), "ok")
+                self.assertEqual(expected, json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+
     def test_resolver_preserves_validator_error_classification(self) -> None:
         from runtime.bootstrap import active_pointer_path
 

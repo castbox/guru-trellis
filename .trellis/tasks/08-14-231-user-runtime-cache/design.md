@@ -8,13 +8,17 @@
   `~/Library/Caches/guru-team/python`、`${XDG_CACHE_HOME:-~/.cache}/guru-team/python`
   或 `%LOCALAPPDATA%/GuruTeam/python`。
 - repository state root：直接只读解析 checkout 的 `.git` directory，或 linked
-  worktree `.git` 文件指向的 gitdir 及其 `commondir`；不依赖 PATH 中存在 `git`，
-  pointer 位于 `<common-dir>/guru-team/python/active.json`。
+  worktree `.git` 文件指向的 gitdir 及其 `commondir`；不依赖 PATH 中存在 `git`。
+  主 checkout 在 `<common-dir>/guru-team/python/active.json` 写默认 pointer；新
+  linked checkout 在未 apply 时继承该默认值，apply 后在自身 worktree gitdir
+  下写 override pointer，解析时优先使用 override。
 - runtime root：`<user-cache>/<runtime-id>/`，包含 `venv/` 与 `metadata.json`。
 
-pointer记录runtime identity和本机managed interpreter绝对路径；pointer位于Git私有状态，
-不得进入tracked manifest或公共DTO。shell resolver在PATH没有Python或git时直接解析同一
-Git metadata并执行该interpreter，再由bootstrap以相同的无git locator完成identity/probe复核。
+pointer记录runtime identity和本机managed interpreter绝对路径；default与override均位于
+Git common-dir管理的私有状态树，不得进入tracked manifest或公共DTO。shell resolver在PATH
+没有Python或git时直接解析同一Git metadata，按当前checkout选择override或default并执行该
+interpreter，再由bootstrap以相同的无git locator完成identity/probe复核。venv仍然只按
+OS用户与完整identity创建，pointer隔离不会创建per-checkout venv。
 
 ## Identity
 

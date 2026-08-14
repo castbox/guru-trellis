@@ -839,9 +839,10 @@ the active pointer, resolver failure JSON, pinned dependency versions, and real
 Draft 2020-12 behavior. Identity coverage includes OS, architecture, Python ABI
 and platform tag. Locator tests cover macOS, Linux/XDG and Windows user-cache
 roots plus an isolated override. A real Git main-checkout -> linked-worktree
-lifecycle must prove both checkouts resolve one Git-common-dir pointer and one
-shared runtime without copying a venv. Preset tests must prove the runtime
-contract files are
+lifecycle must prove a new linked checkout inherits the Git-common-dir default
+and shared runtime without copying a venv. A two-checkout, two-identity case
+must also prove each checkout retains its exact runtime selection after
+sequential apply. Preset tests must prove the runtime contract files are
 in the managed inventory with canonical bytes and executable modes.
 
 At least one focused clean install must use a PATH Python that can create a venv

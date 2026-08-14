@@ -21,7 +21,9 @@ runtime_error() {
 
 STATE_ROOT="$REPO_ROOT/.trellis/.runtime/guru-team/python"
 if [[ -d "$REPO_ROOT/.git" ]]; then
-  STATE_ROOT="$(cd "$REPO_ROOT/.git" && pwd -P)/guru-team/python"
+  GIT_DIR="$(cd "$REPO_ROOT/.git" && pwd -P)"
+  COMMON_DIR="$GIT_DIR"
+  STATE_ROOT="$COMMON_DIR/guru-team/python"
 elif [[ -f "$REPO_ROOT/.git" && ! -L "$REPO_ROOT/.git" ]]; then
   GIT_DIR_RAW="$(sed -n 's/^gitdir: //p' "$REPO_ROOT/.git")"
   case "$GIT_DIR_RAW" in
@@ -38,7 +40,13 @@ elif [[ -f "$REPO_ROOT/.git" && ! -L "$REPO_ROOT/.git" ]]; then
     esac
     COMMON_DIR="$(cd "$COMMON_DIR" && pwd -P)"
   fi
-  STATE_ROOT="$COMMON_DIR/guru-team/python"
+  COMMON_STATE_ROOT="$COMMON_DIR/guru-team/python"
+  WORKTREE_STATE_ROOT="$GIT_DIR/guru-team/python"
+  if [[ -f "$WORKTREE_STATE_ROOT/active.json" && ! -L "$WORKTREE_STATE_ROOT/active.json" ]]; then
+    STATE_ROOT="$WORKTREE_STATE_ROOT"
+  else
+    STATE_ROOT="$COMMON_STATE_ROOT"
+  fi
 fi
 
 ACTIVE="$STATE_ROOT/active.json"

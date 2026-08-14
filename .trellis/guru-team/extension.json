@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-14T08:32:42Z",
+  "installed_at": "2026-08-14T09:12:44Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "0fa4b3251614d1a413e70ad1a00e264c857c80e4",
-    "commit": "0fa4b3251614d1a413e70ad1a00e264c857c80e4",
+    "ref": "a108759e308dd7a431da20714a68539b1ae5277b",
+    "commit": "a108759e308dd7a431da20714a68539b1ae5277b",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -418,8 +418,8 @@
       ".trellis/spec/workflow/workflow-contract.md": "34e0207f10f0a1a24a7fd6e297d121f22515029a81e3ba1219d053d4968785cc",
       ".trellis/spec/workflow/skill-package-contract.md": "3e320d8d49ab02114fac1d5c3c12e35bd2306a2624a46eb22ff50566cb462fd8",
       ".trellis/spec/workflow/data-contracts.md": "9b28feeb023ada528fbbbdcb301335de4442de6292beae95b0efc5bdb6d4feea",
-      ".trellis/spec/workflow/companion-scripts.md": "d153fb3dfe22eaa2186a24084508ef6c1e04dd3215cd56a05a84a5658a4c2db4",
-      ".trellis/spec/workflow/quality-guidelines.md": "0de0f918744974cd7ac2635ecaf57267d5fcff1deb6abec1bc1cd4e43ffddcf4"
+      ".trellis/spec/workflow/companion-scripts.md": "af7587288f2b1a58d5d41fa214cde006249da870c166fabad23af47ea2abb35c",
+      ".trellis/spec/workflow/quality-guidelines.md": "3f8940065172721189f3cae6b2c2d0570137d7721ad8858e9c60be85a9e77563"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -6616,7 +6616,7 @@
       {
         "path": ".trellis/guru-team/runtime/bootstrap.py",
         "source": "trellis/skills/guru-team/runtime/bootstrap.py",
-        "sha256": "3df6296f97decb1e08f5e2a86e3f93196ea3da4b823bb4aa42b6ce1b6683232a",
+        "sha256": "2277426e48a10f3df478b3c79104782ecfa2ef05fbd1af21dc0d7b928edddd89",
         "executable": true,
         "action": "unchanged"
       },
@@ -6693,7 +6693,7 @@
       {
         "path": ".trellis/guru-team/runtime/resolve-python.sh",
         "source": "trellis/skills/guru-team/runtime/resolve-python.sh",
-        "sha256": "f72605e72280ba1ec23016fe5f50dc4b257adde6ec9ff97c5f80c2591925a013",
+        "sha256": "6707fc835276ad714399ac4d8c45ca3ca0c5a585770205f2bfb3618739372607",
         "executable": true,
         "action": "unchanged"
       },

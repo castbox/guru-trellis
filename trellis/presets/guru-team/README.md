@@ -244,11 +244,15 @@ complete dependency set from the
 hash-locked `.trellis/guru-team/runtime/requirements.lock`, validates the pinned
 versions and Draft 2020-12 behavior, and only then activates that runtime.
 
-Each Git repository stores only its active pointer under the Git common-dir at
-`<git-common-dir>/guru-team/python/active.json`. Main checkouts and linked
-worktrees therefore resolve the same user-cache entry without copying a venv or
-requiring per-worktree bootstrap. Git-less archive fixtures retain a private
-checkout-local pointer fallback.
+Each Git repository stores its default active pointer under the Git common-dir at
+`<git-common-dir>/guru-team/python/active.json`. A new linked worktree inherits
+that default without copying a venv or requiring per-worktree bootstrap. When a
+linked checkout applies a different runtime contract, it writes a small override
+below its Git worktree metadata and resolves that override before the common
+default. The pointers remain inside the repository's private Git metadata while
+different checkout identities can coexist without changing the user-cache
+ownership model. Git-less archive fixtures retain a private checkout-local
+pointer fallback.
 
 All public Guru Team wrappers execute with the active managed interpreter. They
 do not fall back to PATH Python, an active virtual environment, user
@@ -256,8 +260,9 @@ site-packages, or global packages. Runtime identity binds the runtime API, lock
 digest, Python implementation and minor version, OS, architecture, Python ABI,
 platform tag, and venv layout. Reapplying the
 preset reuses a healthy matching identity or rebuilds a known managed but damaged
-identity. Different identities coexist. A failed candidate install preserves the
-previously active pointer and runtime. Older checkout-local runtime directories
+identity. Different identities coexist, and each checkout keeps selecting the
+identity activated for its own contract. A failed candidate install preserves
+the previously active pointer and runtime. Older checkout-local runtime directories
 are not deleted and cease to be authority only after the shared cache activates.
 
 Bootstrap or resolver failure returns one stable JSON object. A missing pointer
@@ -270,7 +275,7 @@ this remediation command:
 trellis/presets/guru-team/scripts/bash/apply.sh --repo .
 ```
 
-The user cache and Git common-dir pointer are untracked private state and are not
+The user cache and Git pointer state are untracked private state and are not
 part of the installed extension manifest. The manifest does include the
 canonical runtime contract, lock,
 bootstrap, probe, resolver, and launcher bytes used to reproduce it.

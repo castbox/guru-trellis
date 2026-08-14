@@ -118,7 +118,9 @@ repositories. Keep them portable:
   exist.
 - Public Guru Team commands run only through the OS-user-scoped immutable managed
   Python cache selected by `runtime/resolve-python.sh`. A repository-private
-  active pointer lives below Git common-dir so all linked worktrees share it.
+  default pointer lives below Git common-dir; a linked checkout may own a
+  worktree-gitdir override so different runtime contracts select their exact
+  coexisting identities without creating per-checkout venvs.
   The dependency set and hashes are
   canonical in `runtime/python-runtime.json` and `runtime/requirements.lock`.
 - PATH Python, active virtual environments, global packages, user site-packages,
