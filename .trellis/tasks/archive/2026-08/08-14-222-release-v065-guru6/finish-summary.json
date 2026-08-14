@@ -1,0 +1,240 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-14T03:53:07Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-14-222-release-v065-guru6",
+    "title": "#222 完成 v0.6.5-guru.6 累计发布门禁",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-14-222-release-v065-guru6",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/222-release-v065-guru6",
+    "commits": [
+      "85ebc19b3846566ef3b1675715c958e61829404b",
+      "ba3e1a1a1eb2c939a1c35a0eb5bb6d95371d7efe",
+      "29c2677d85ba6a7707a1dc1e6c99b6bff2bdcc0b"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/08-14-222-release-v065-guru6/design.md",
+      ".trellis/tasks/08-14-222-release-v065-guru6/implement.md",
+      ".trellis/tasks/08-14-222-release-v065-guru6/issue-scope-ledger.json",
+      ".trellis/tasks/08-14-222-release-v065-guru6/prd.md",
+      ".trellis/tasks/08-14-222-release-v065-guru6/release-notes.md",
+      ".trellis/tasks/08-14-222-release-v065-guru6/task.json",
+      ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/design.md",
+      ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/implement.md",
+      ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/prd.md",
+      ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/task.json",
+      "README.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      222
+    ],
+    "close_issues": [],
+    "related_issues": [
+      217,
+      218,
+      219,
+      222,
+      227
+    ],
+    "followup_issues": [
+      164,
+      208,
+      220,
+      223
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/229"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#222 完成 v0.6.5-guru.6 累计发布门禁",
+    "outcome": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。",
+    "changed_behavior": [
+      "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。",
+      "同步 canonical/dogfood manifest、public/workflow/preset README、安装升级命令、稳定 source 映射、verifier release-identity fixtures/tests 与中文 Release notes 草稿。",
+      "这是 refs-only release preparation；合并后才从 fresh `origin/main` 冻结 exact candidate 并执行完整 pre-tag gate。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/tasks/08-14-222-release-v065-guru6/design.md",
+          ".trellis/tasks/08-14-222-release-v065-guru6/implement.md",
+          ".trellis/tasks/08-14-222-release-v065-guru6/prd.md",
+          ".trellis/tasks/08-14-222-release-v065-guru6/release-notes.md",
+          ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/design.md",
+          ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/implement.md",
+          ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/prd.md",
+          "README.md"
+        ],
+        "change": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md"
+        ],
+        "change": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "change": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json"
+        ],
+        "change": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-14-222-release-v065-guru6/issue-scope-ledger.json",
+          ".trellis/tasks/08-14-222-release-v065-guru6/task.json",
+          ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/task.json"
+        ],
+        "change": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#164",
+        "#208",
+        "#217",
+        "#218",
+        "#219",
+        "#220",
+        "#222",
+        "#223",
+        "#227"
+      ],
+      "pr_refs": [
+        "PR #229"
+      ],
+      "branches": [
+        "codex/222-release-v065-guru6"
+      ],
+      "paths": [
+        ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/08-14-222-release-v065-guru6/design.md",
+        ".trellis/tasks/08-14-222-release-v065-guru6/implement.md",
+        ".trellis/tasks/08-14-222-release-v065-guru6/issue-scope-ledger.json",
+        ".trellis/tasks/08-14-222-release-v065-guru6/prd.md",
+        ".trellis/tasks/08-14-222-release-v065-guru6/release-notes.md",
+        ".trellis/tasks/08-14-222-release-v065-guru6/task.json",
+        ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/design.md",
+        ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/implement.md",
+        ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/prd.md",
+        ".trellis/tasks/archive/2026-08/08-14-222-release-v065-guru6/task.json",
+        "README.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#222 完成 v0.6.5-guru.6 累计发布门禁",
+        "将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team exten",
+        "完成 marketplace-verification.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#222 完成 v0.6.5-guru.6 累计发布门禁\n将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team extension revision 更新为 `0.6.5-guru.28`，目标官方 Trellis CLI 保持 `0.6.5`。\n同步 canonical/dogfood manifest、public/workflow/preset README、安装升级命令、稳定 source 映射、verifier release-identity fixtures/tests 与中文 Release notes 草稿。\n这是 refs-only release preparation；合并后才从 fresh `origin/main` 冻结 exact candidate 并执行完整 pre-tag gate。\n将 stable repo tag/source 更新为 `v0.6.5-guru.6`，Guru Team exten\n完成 marketplace-verification.json 相关变更"
+  }
+}

@@ -9,9 +9,56 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 
 它建立在官方 Trellis 之上，为团队补充一套开箱即用、AI-first 的研发协作方式，让不同 AI 工具能够按照一致的流程理解需求、规划实现、检查变更、审查分支并完成交付。
 
-如果你只是想在业务仓库中使用 Guru Team Trellis，不需要理解本仓库的内部实现，也不需要手工复制命令或文件。把本仓库地址交给业务仓库中的 AI，让它完成安装或升级即可：
+如果你只是想在业务仓库中使用 Guru Team Trellis，不需要理解本仓库的内部实现。可以把本仓库地址交给业务仓库中的 AI，让它完成安装或升级，也可以使用下方固定版本命令：
 
 [https://github.com/castbox/guru-trellis](https://github.com/castbox/guru-trellis)
+
+## 当前稳定版本
+
+| 组件 | 固定版本 |
+| --- | --- |
+| Guru Trellis repo tag | `v0.6.5-guru.6` |
+| Guru Team extension revision | `0.6.5-guru.28` |
+| 官方 `@mindfoldhq/trellis` CLI | `0.6.5` |
+
+repo tag 与 extension revision 是两个独立版本轴。稳定 workflow 与 preset 必须来自同一个
+immutable tag `v0.6.5-guru.6`；tag 的 peeled commit 在 preparation 合并并通过 exact
+candidate 门禁后，以 Git ref、GitHub Release notes 和 release evidence 记录，不在合并前猜测。
+
+新仓库的非交互安装入口：
+
+```bash
+npm install --global @mindfoldhq/trellis@0.6.5
+trellis init -y --codex --cursor \
+  --workflow guru-team \
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.6
+guru_trellis_source="$(mktemp -d)"
+git clone --depth 1 --branch v0.6.5-guru.6 \
+  https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
+"$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo . --all-platforms
+```
+
+已有仓库的固定版本升级入口：
+
+```bash
+npm install --global @mindfoldhq/trellis@0.6.5
+trellis update
+trellis workflow \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.6 \
+  --template guru-team --create-new
+trellis workflow \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.6 \
+  --template guru-team
+guru_trellis_source="$(mktemp -d)"
+git clone --depth 1 --branch v0.6.5-guru.6 \
+  https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
+"$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
+  --repo . --all-platforms
+```
+
+升级完成后必须处理全部 `.new` / `.bak`，再验证 source/installed/platform equality、
+managed inventory、受管 Python runtime、dogfood drift 和递归零 sidecar，才能声明升级成功。
 
 ## 它解决什么问题
 
