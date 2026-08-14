@@ -5,4 +5,3 @@
 {"file":".trellis/spec/preset/overlay-guidelines.md","reason":"同步 canonical、dogfood 与 Claude/Codex/Cursor projections 并阻止平台自动检测造成受管删除。"}
 {"file":".trellis/spec/preset/upstream-ownership.md","reason":"保持 Guru-owned extension 面，不修改 Trellis upstream 或系统/global runtime。"}
 {"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 tag/source/manifest/README/verifier/preset 跨层字符串和 bytes 一致性。"}
-
