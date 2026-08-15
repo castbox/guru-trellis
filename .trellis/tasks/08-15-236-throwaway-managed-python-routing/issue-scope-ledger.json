@@ -1,0 +1,44 @@
+{
+  "close_issues": [
+    {
+      "number": 236,
+      "reason": "本 task 完整实现并验收 Issue #236 的 throwaway verifier 受管 Python 解释器路由合同。",
+      "title": "修复 throwaway verifier 未使用受管 Python 导致无 jsonschema 环境失败",
+      "url": "https://github.com/castbox/guru-trellis/issues/236"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 236,
+    "reason": "本 task 完整实现并验收 Issue #236 的 throwaway verifier 受管 Python 解释器路由合同。",
+    "title": "修复 throwaway verifier 未使用受管 Python 导致无 jsonschema 环境失败",
+    "url": "https://github.com/castbox/guru-trellis/issues/236"
+  },
+  "related_issues": [
+    {
+      "number": 219,
+      "reason": "既有 managed Python runtime 安装与依赖锁合同。",
+      "title": "为 Guru Team runtime 提供受管隔离 Python 依赖环境",
+      "url": "https://github.com/castbox/guru-trellis/issues/219"
+    },
+    {
+      "number": 231,
+      "reason": "既有用户级 identity cache 与 linked-worktree 解析合同。",
+      "title": "将 Guru Team Python runtime 改为用户级共享 identity cache并修复 worktree解析",
+      "url": "https://github.com/castbox/guru-trellis/issues/231"
+    },
+    {
+      "number": 127,
+      "reason": "后续独立 fresh reconciliation；本 task 不实现或关闭。",
+      "title": "按 Skill-first 收敛 Guru Team 流程判断与 Trellis upstream 覆盖",
+      "url": "https://github.com/castbox/guru-trellis/issues/127"
+    },
+    {
+      "number": 220,
+      "reason": "暂停中的后续工作；本 task 不修改、恢复或关闭。",
+      "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
+      "url": "https://github.com/castbox/guru-trellis/issues/220"
+    }
+  ],
+  "schema_version": "2.0"
+}

@@ -2,9 +2,15 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py" ]]; then
-  PREPARE="$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py"
+if [[ -x "$SCRIPT_DIR/../../../../skills/guru-team/runtime/resolve-python.sh" ]]; then
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+  RUNTIME_ASSETS="$REPO_ROOT/trellis/skills/guru-team/runtime"
+  PREPARE="$REPO_ROOT/trellis/skills/guru-team/packages/guru-create-task-workspace/runtime/prepare.py"
 else
-  PREPARE="$SCRIPT_DIR/../../skills/packages/guru-create-task-workspace/runtime/prepare.py"
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+  RUNTIME_ASSETS="$REPO_ROOT/.trellis/guru-team/runtime"
+  PREPARE="$REPO_ROOT/.trellis/guru-team/skills/packages/guru-create-task-workspace/runtime/prepare.py"
 fi
-python3 "$PREPARE" "$@"
+exec "$RUNTIME_ASSETS/resolve-python.sh" \
+  "$REPO_ROOT" "$RUNTIME_ASSETS" \
+  "$PREPARE" "$@"

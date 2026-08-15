@@ -1,0 +1,11 @@
+{
+  "id": "236-throwaway-managed-python-routing",
+  "name": "236-throwaway-managed-python-routing",
+  "title": "#236 修复 throwaway verifier 受管 Python 路由",
+  "status": "in_progress",
+  "branch": "fix/236-throwaway-managed-python-routing",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/236"
+}

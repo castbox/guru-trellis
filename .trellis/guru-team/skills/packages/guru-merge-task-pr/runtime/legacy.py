@@ -14,7 +14,7 @@ def _task_dir(root: Path, value: str | None) -> Path:
         raw = Path(value)
         candidates = (raw, root / raw, root / ".trellis/tasks" / raw)
     else:
-        process = owner.run(["python3", "./.trellis/scripts/task.py", "current"], cwd=root, check=False)
+        process = owner.run([sys.executable, "./.trellis/scripts/task.py", "current"], cwd=root, check=False)
         candidates = (root / process.stdout.strip(),) if process.returncode == 0 and process.stdout.strip() else ()
     for candidate in candidates:
         resolved = candidate if candidate.is_absolute() else root / candidate

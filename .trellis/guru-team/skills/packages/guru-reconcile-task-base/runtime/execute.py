@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse, hashlib, os, subprocess, tempfile
+import argparse, hashlib, os, subprocess, sys, tempfile
 from pathlib import Path
 from common import checkpoint_path, is_ancestor, parse, read_json, repo_root, resolve_commit, task_identity, validate_json, validate_public, validate_result
 
@@ -8,6 +8,12 @@ def _tree_digest(root: Path) -> str:
     for path in sorted((p for p in root.rglob('*') if '.git' not in p.parts and p.is_file()),key=lambda p:p.relative_to(root).as_posix().encode()):
         rel=path.relative_to(root).as_posix(); rows.append(rel.encode()+b'\0'+hashlib.sha256(path.read_bytes()).hexdigest().encode()+b'\0')
     return hashlib.sha256(b''.join(rows)).hexdigest()
+
+def _managed_validation_command(command: list[str]) -> list[str]:
+    launcher = Path(command[0]).name.casefold()
+    if launcher in {"python", "python3", "python.exe", "python3.exe"} or launcher.startswith("python3."):
+        return [sys.executable, *command[1:]]
+    return command
 
 def guard(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
@@ -41,7 +47,8 @@ def candidate(package_root: Path, argv: list[str]) -> dict:
             else:
                 tree=_tree_digest(worktree)
                 for command in request["validation_commands"]:
-                    proc=subprocess.run(command,cwd=worktree,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env={**os.environ,"GIT_TERMINAL_PROMPT":"0"}); validations.append({"argv":command,"exit_code":proc.returncode})
+                    executed_command=_managed_validation_command(command)
+                    proc=subprocess.run(executed_command,cwd=worktree,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env={**os.environ,"GIT_TERMINAL_PROMPT":"0"}); validations.append({"argv":executed_command,"exit_code":proc.returncode})
         finally:
             if added: subprocess.run(["git","worktree","remove","--force",str(worktree)],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     result={"status":"ok","task_head":task,"new_base_head":base,"merge_status":"conflicted" if merge_failed else "clean","conflict_paths":conflicts,"candidate_tree_sha256":tree,"validations":validations}; validate_json(result,package_root/"schemas/candidate-result.schema.json","result"); return result

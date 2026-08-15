@@ -125,6 +125,57 @@ repositories. Keep them portable:
   canonical in `runtime/python-runtime.json` and `runtime/requirements.lock`.
 - PATH Python, active virtual environments, global packages, user site-packages,
   and `PYTHONPATH` are not command-runtime fallback sources.
+- In `verify-throwaway-install.sh`, the canonical bootstrap seed is the only
+  direct PATH Python entry. After its JSON result exists, `source_python` must
+  route source-owned checks through canonical `runtime/resolve-python.sh`, and
+  `installed_python <repo>` must route target, linked-worktree, closeout,
+  update/reapply, and no-developer checks through that repository's installed
+  resolver. Resolver/pointer/cache/interpreter/identity/lock mismatch fails
+  closed without falling back to PATH or another runner.
+- After the verifier's managed bootstrap and poison activation, it must prepend
+  a temporary `python3` PATH bridge before any `trellis` subprocess. The bridge
+  must directly exec canonical source `runtime/resolve-python.sh` with the
+  source repo and runtime assets, so Trellis's version probe and
+  `init_developer.py` subprocess use the source managed interpreter without
+  changing the platform-default command name. The verifier must pin
+  `TRELLIS_PYTHON_CMD=python3` after bridge activation so inherited overrides
+  cannot bypass the bridge. Static routing validation owns bridge contents,
+  activation order, override binding, and caller inventory classification.
+- The source-owned `verify_throwaway_python_routing.py` owns deterministic
+  `checkpoint` and `check-inventory` operations. Checkpoints compare resolved
+  `sys.executable`, active pointer, cache metadata runtime identity, and the
+  dependency-lock digest. The inventory is bidirectional: every verifier
+  inline, module, test, helper, resolver-wrapper, Python subprocess second hop,
+  and generated Python shebang has one stable classification and expected
+  launcher; missing, stale, duplicate, or newly discovered entries fail.
+- The same inventory scans the complete canonical
+  `packages/*/runtime/**/*.py` closure installed into a target. Package-local
+  `subprocess`, delegated `run`, and Python `exec`/`spawn` second hops must use
+  the managed process's `sys.executable`, must have no PATH Python shebang, and
+  must appear in the registered secondary-caller set. A newly added runtime
+  file is covered by the closure glob without a manual allowlist update.
+- Inventory discovery starts from every canonical workflow or preset shell wrapper that
+  the verifier directly invokes, even when the wrapper does not currently enter
+  Python. Any referenced wrapper that does enter Python must be registered and
+  `exec` its source- or installed-layout `resolve-python.sh`. In particular,
+  installed `finish-work.sh` and compatibility `prepare-task.sh` may not reopen
+  PATH Python before their package-local runtime entry. Discovery recursively
+  follows the preset dogfood-drift wrapper through the ownership wrapper to its
+  source resolver.
+- Python helpers launched by the installed runner use `sys.executable` for a
+  Python subprocess second hop and a resolved `sys.executable` shebang for
+  executable fixtures. `/usr/bin/env python3`, literal `python3` subprocesses,
+  and unregistered variable-built Python launchers are forbidden even when the
+  invoked code uses only the standard library.
+- The eval adapter transitive graph is explicit: an adapter shell resolves
+  managed Python, that interpreter starts `native_adapter.py`, and the native
+  adapter starts `guru-team-shared-eval` as
+  `sys.executable guru-team-shared-eval ...`. The shared evaluator remains a
+  regular executable package asset for descriptor/install mode validation, but
+  contains no shebang and must never be launched directly by the operating
+  system. Source owner staging invokes
+  `apply_guru_team_trellis_preset.py` with `sys.executable`; routing through
+  `apply.sh` would create an unowned PATH-Python second hop and is forbidden.
 - Runtime identity binds the runtime API, lock digest, Python implementation and
   minor version, OS, architecture, Python ABI/platform tag, and venv layout. A
   matching identity is reused only after

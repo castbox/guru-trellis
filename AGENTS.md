@@ -43,6 +43,8 @@ Python / shell 代码只负责确定性动作：
 
 ## 2.1 正常运行与诚实协作假设
 
+**我们永远处在一个诚实互信的 Agent 人机协作环境里；只解决 Happy Path，并确保所有合法场景下的 Happy Path 通过。** 不得通过枚举攻击手段、对抗性语法或故意绕过来扩张需求、实现、测试或 review 范围。
+
 本仓库改进的是由 AI 控制、由用户与 AI 诚实协作执行的 Trellis 流程。用户、调用方、AI Agent 和正常 workflow step 均视为 honest-but-fallible：可能产生普通错误、遗漏、过期状态或不一致，但不会故意伪造、篡改、欺骗、攻击或绕过流程。内部 workflow artifact 不视为来自攻击者的不可信输入。
 
 - 必须处理正文明确要求的正常路径、常见操作失误、正常外部状态变化、stale/mismatch、实现缺陷和常见 correctness/compatibility 边界。

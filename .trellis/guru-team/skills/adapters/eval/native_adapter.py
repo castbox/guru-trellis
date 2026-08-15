@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -36,8 +35,9 @@ PRODUCTION_SKILLS = {
     "guru-verify-extension-installation",
 }
 
-TRACE_HELPER = r'''#!/usr/bin/env python3
-from __future__ import annotations
+MANAGED_PYTHON_SHEBANG = f"#!{Path(sys.executable).resolve()}\n"
+
+TRACE_HELPER = MANAGED_PYTHON_SHEBANG + r'''from __future__ import annotations
 
 import argparse
 import hashlib
@@ -1274,7 +1274,7 @@ def stage_clean_installed_owner_repo(
     source_repo = runtime_target.parents[4]
     source_scripts = source_repo / ".trellis/scripts"
     source_workflow = source_repo / ".trellis/workflow.md"
-    apply_script = source_repo / "trellis/presets/guru-team/scripts/bash/apply.sh"
+    apply_script = source_repo / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
     if (
         source_scripts.is_symlink() or not source_scripts.is_dir()
         or source_workflow.is_symlink() or not source_workflow.is_file()
@@ -1300,14 +1300,14 @@ def stage_clean_installed_owner_repo(
     except ValueError:
         source_mode = False
     if source_mode:
-        if apply_script.is_symlink() or not os.access(apply_script, os.X_OK):
+        if apply_script.is_symlink() or not apply_script.is_file():
             raise ValueError("canonical preset inputs are unavailable for owner staging")
         canonical_workflow = source_repo / "trellis/workflows/guru-team/workflow.md"
         if canonical_workflow.is_symlink() or not canonical_workflow.is_file():
             raise ValueError("canonical workflow input is unavailable for owner staging")
         shutil.copy2(canonical_workflow, fixture / ".trellis/workflow.md")
         applied = subprocess.run(
-            [str(apply_script), "--repo", str(fixture), "--all-platforms"],
+            [sys.executable, str(apply_script), "--repo", str(fixture), "--all-platforms"],
             cwd=source_repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             check=False, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
@@ -1413,7 +1413,8 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
     )
     issue_assignees = [{"login": "stage0-eval"}] if workspace_recipe else []
     target.write_text(
-        "#!/usr/bin/env python3\n"
+        MANAGED_PYTHON_SHEBANG
+        +
         "import json,sys\n"
         f"states={{145:{issue_145_state!r},146:'OPEN'}}\n"
         f"titles={{145:{issue_title!r},146:'Issue 146 owner staging'}}\n"
@@ -1440,7 +1441,8 @@ def write_fake_gh(execution_root: Path, recipe: str) -> Path:
         raise ValueError("git is unavailable for owner staging")
     git_target = binary / "git"
     git_target.write_text(
-        "#!/usr/bin/env python3\n"
+        MANAGED_PYTHON_SHEBANG
+        +
         "import os,subprocess,sys\n"
         f"real_git={real_git!r}\n"
         f"workspace_recipe={workspace_recipe!r}\n"
@@ -1539,7 +1541,8 @@ def write_fake_merge_gh(
     )
     target = binary / "gh"
     target.write_text(
-        "#!/usr/bin/env python3\n"
+        MANAGED_PYTHON_SHEBANG
+        +
         "import json,sys\n"
         f"state_path={str(state_path)!r}\n"
         f"config={configuration!r}\n"
@@ -4472,7 +4475,8 @@ def start_public_runtime_boundary(
     thread.start()
     boundary = execution_root / "public-invocation-boundary.sh"
     boundary.write_text(
-        "#!/usr/bin/env python3\n"
+        MANAGED_PYTHON_SHEBANG
+        +
         "import json,sys,time\n"
         "from pathlib import Path\n"
         f"request_path=Path({str(request_path)!r}); response_path=Path({str(response_path)!r})\n"
@@ -4667,7 +4671,7 @@ def native_argv(
 ) -> tuple[list[str], Path | None]:
     workdir = str(Path(request["workdir"]).resolve())
     if adapter == "shared":
-        return [command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
+        return [sys.executable, command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
     if adapter == "codex":
         output_path = native_request_path.with_name("native-last-message.txt")
         trusted_root = str(Path(request["runtime_target"]).resolve().parents[4])

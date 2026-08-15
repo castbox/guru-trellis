@@ -2,9 +2,15 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-finalize-task/runtime/legacy.py" ]]; then
-  RUNTIME="$SCRIPT_DIR/../../../../skills/guru-team/packages/guru-finalize-task/runtime"
+if [[ -x "$SCRIPT_DIR/../../../../skills/guru-team/runtime/resolve-python.sh" ]]; then
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+  RUNTIME_ASSETS="$REPO_ROOT/trellis/skills/guru-team/runtime"
+  RUNTIME="$REPO_ROOT/trellis/skills/guru-team/packages/guru-finalize-task/runtime"
 else
-  RUNTIME="$SCRIPT_DIR/../../skills/packages/guru-finalize-task/runtime"
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+  RUNTIME_ASSETS="$REPO_ROOT/.trellis/guru-team/runtime"
+  RUNTIME="$REPO_ROOT/.trellis/guru-team/skills/packages/guru-finalize-task/runtime"
 fi
-PYTHONPATH="$RUNTIME${PYTHONPATH:+:$PYTHONPATH}" python3 "$RUNTIME/legacy.py" finish-work "$@"
+exec "$RUNTIME_ASSETS/resolve-python.sh" \
+  "$REPO_ROOT" "$RUNTIME_ASSETS" \
+  "$RUNTIME/legacy.py" finish-work "$@"

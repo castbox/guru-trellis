@@ -49,6 +49,38 @@ layout. Existing checkout-local runtimes are preserved during migration and are
 never deleted by normal apply/reapply. A failed cache candidate or staged
 activation leaves the previous pointer unchanged.
 
+The complete throwaway verifier has one narrower interpreter-routing contract.
+Its canonical `bootstrap.py` invocation is the only shell-level call that may
+resolve and execute PATH Python. The returned `source-managed-runtime.json` is
+immediately consumed through the canonical source `resolve-python.sh`. Every
+later Python subprocess uses either that source runner or the target checkout's
+installed `.trellis/guru-team/runtime/resolve-python.sh`; target, linked-worktree,
+closeout, update/reapply, and no-developer evidence must never use the source
+interpreter as a substitute. Each checkpoint binds resolved `sys.executable`,
+the active pointer/runtime metadata identity, and the SHA-256 of the selected
+runtime's dependency lock.
+
+The eval adapter graph is part of that same routing boundary. Its shell adapter
+enters `native_adapter.py` through the checkout-local resolver;
+`native_adapter.py` then starts `guru-team-shared-eval` with the current managed
+`sys.executable`, never by executable shebang dispatch. The shared evaluator has
+no PATH shebang. Source owner staging likewise invokes the canonical Python
+preset installer with that same `sys.executable`; it must not execute `apply.sh`
+and reopen a PATH-Python second hop.
+
+Verifier-referenced workflow shell wrappers are part of the caller inventory
+before the checker decides whether they currently enter Python. A wrapper that
+does enter Python must `exec` the resolver matching its source or installed
+layout. Installed `finish-work.sh` and compatibility `prepare-task.sh` therefore
+cannot invoke PATH Python before their package-local entry.
+
+The inventory also scans every canonical
+`trellis/skills/guru-team/packages/*/runtime/**/*.py` file as the installed
+package-runtime closure. A package runtime may start another Python process
+only with its current managed `sys.executable`; literal or variable-built PATH
+Python, Python `exec`/`spawn`, and PATH Python shebangs fail closed. Every
+accepted package-runtime second hop remains an explicit inventory row.
+
 The preset also maintains one bounded AI-first principles block in the target
 root `AGENTS.md`, delimited by stable start/end markers. Missing `AGENTS.md` is
 created; an existing file keeps every byte outside the block; repeated apply is

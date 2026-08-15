@@ -665,7 +665,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
             def interrupt_first_archive(command, **kwargs):
                 nonlocal archive_attempts
-                if command[:3] == ["python3", "./.trellis/scripts/task.py", "archive"]:
+                if command[:3] == [sys.executable, "./.trellis/scripts/task.py", "archive"]:
                     archive_attempts += 1
                     if archive_attempts == 1:
                         return SimpleNamespace(

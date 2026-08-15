@@ -886,6 +886,57 @@ and a recursive zero-unknown-sidecar check. Missing pointer,
 missing/stale cache entry and failed dependency probe must remain distinct stable
 errors.
 
+The complete throwaway verifier additionally runs the README's raw command in
+two reproducible PATH environments. One temporary Python has neither pip nor
+`jsonschema`. The other can import `jsonschema`, but its PATH shim becomes a
+poisoned failure immediately after the bootstrap seed returns. Both runs must
+execute this command directly and complete the full matrix:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
+```
+
+After that seed, static validation must require a temporary `python3` PATH
+bridge before every upstream Trellis invocation. The bridge must directly exec
+the canonical source resolver, so the CLI's `python3 --version` probe and
+`init_developer.py` subprocess remain source-managed. It is valid only after
+the managed runtime exists, must pin `TRELLIS_PYTHON_CMD=python3`, and must
+precede bootstrap-result consumption while leaving poisoned caller PATH
+`python3` and inherited-override `python` shims behind it as negative sentinels.
+
+Static caller inventory must pass before and after the matrix. Dynamic evidence
+must assert exact executable, runtime id, and dependency-lock identity for the
+source bootstrap, initial install, initial and after-update
+`guru-review-change-request` smoke, update/reapply, linked worktree, closeout
+initial/after-update, Phase 0 initial/update, task-workspace initial/update, and
+no-developer fixture. Exit zero without those identities is insufficient.
+The static pass includes every canonical package runtime Python file and rejects
+any PATH shebang or Python child launcher that does not use and register the
+current managed `sys.executable`; checking only verifier-owned helpers is not
+complete caller-graph evidence.
+
+Independent Branch Review of verifier routing must inspect the complete caller
+graph and answer all five negative guarantees explicitly:
+
+1. the source bootstrap JSON is actually consumed by the source managed runner;
+2. no bare Python or PATH Python shebang remains after bootstrap;
+3. no source/installed runner is substituted at a target checkpoint;
+4. a dependency already present in PATH Python cannot mask routing drift;
+5. a new Python subprocess or generated shebang is rejected unless registered
+   with its exact managed launcher.
+
+That graph review includes eval execution and source owner staging. It must
+prove `native_adapter.py` launches the shebang-free `guru-team-shared-eval`
+through its current `sys.executable`, and prove source staging invokes the
+canonical Python preset installer through the same managed interpreter rather
+than executing `apply.sh`. It must also inspect every verifier-referenced
+workflow shell wrapper and prove Python-entering wrappers, including installed
+`finish-work.sh` and compatibility `prepare-task.sh`, reach their package
+runtime only through the checkout-local resolver.
+It must additionally inspect the package-runtime closure and confirm every
+Python subprocess, delegated runner, or Python `exec`/`spawn` second hop remains
+bound to that resolver-selected `sys.executable`.
+
 This focused gate does not replace the complete extension release verification:
 the full capability suite, marketplace matrix, official Trellis update, complete
 platform throwaway matrix, and business-repository upgrade smoke remain separate
