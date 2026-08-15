@@ -139,9 +139,9 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["overlay_count"], 3)
         self.assertEqual(first["managed_claim_count"], 9)
         self.assertEqual(first["classified_managed_claim_count"], 9)
-        self.assertEqual(first["active_skill_count"], 16)
+        self.assertEqual(first["active_skill_count"], 17)
         self.assertEqual(first["planned_skill_count"], 0)
-        self.assertEqual(first["canonical_package_count"], 16)
+        self.assertEqual(first["canonical_package_count"], 17)
         for field in (
             "schema_sha256",
             "inventory_sha256",

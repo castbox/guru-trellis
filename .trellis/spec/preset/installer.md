@@ -120,11 +120,11 @@ and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
 The atomic current package inventory includes the Interface 1.4 additive
-`skill_input_authoring_seed` schema shape, nine target-owned authoring
+`skill_input_authoring_seed` schema shape, thirteen target-owned authoring
 examples, the production manifest bindings, the four finalization-family
 bindings, and their validator/probe tests. Canonical, installed, shared, Codex,
 Cursor, and Claude copies must carry byte-identical contracts; a graph that has
-only part of those nine handoffs is a mixed package activation and must fail
+only part of those thirteen handoffs is a mixed package activation and must fail
 before target mutation.
 
 Installed package validation parses the installed workflow target declarations
@@ -624,8 +624,8 @@ Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation contributes to the current package closure of sixteen active
-Skills and 62 external exits.
+The activation contributes to the current package closure of seventeen active
+Skills and 69 external exits.
 `production-current-v2` remains exactly three Skills and 11 exits; #116 is an
 additional complete active Interface 1.4 row. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
@@ -648,8 +648,8 @@ prove legacy 3.0 DTOs fail closed rather than being silently upgraded.
 
 ## Extension Installation Verification Package Activation
 
-`guru-verify-extension-installation` is installed as the fifteenth additive
-active package with Interface 1.5 and
+`guru-verify-extension-installation` remains the standalone-only active
+package with Interface 1.5 and
 `workflow_integration_state=standalone_only`. Its current inventory contains one
 `source_repository_verification` input, `verified|blocked` outputs, ignored
 source-session private state, a two-case corpus, thin wrappers, runtime commands,
@@ -666,8 +666,8 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-wrapper executable modes, the sixteen-Skill/62-exit package closure, the
-integrated business closure of 15 invokes, 60 exits, and 36 targets, and current
+wrapper executable modes, the seventeen-Skill/69-exit package closure, the
+integrated business closure of 16 invokes, 67 exits, and 39 targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
@@ -687,9 +687,9 @@ verification re-entry, read owner state, or archive a task-local verifier result
 The current archive contains exactly six durable files. Publication retains its
 own `return_to_task_work` route for actual content drift.
 
-The complete source/installed package graph contains sixteen active Skills and
-62 exits. The global business workflow projection is 15 invokes, 60 exits, and
-36 targets. The preset additionally installs the three Guru-owned
+The complete source/installed package graph contains seventeen active Skills and
+69 exits. The global business workflow projection is 16 invokes, 67 exits, and
+39 targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets
 remain under official Trellis ownership.

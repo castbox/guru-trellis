@@ -1,0 +1,1 @@
+{"scenario":"The request may expand the active task, so writes stop and the existing scope-change route is selected.","owner_staging":{"recipe":"task-free-scope-change"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

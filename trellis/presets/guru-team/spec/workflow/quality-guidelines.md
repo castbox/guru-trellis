@@ -49,9 +49,26 @@ surfaces that expose it:
 
 For `no_task` file-changing behavior, the canonical workflow must invoke
 `guru-select-workflow-mode` before normal Intake. Explicit task-free intent
-selects the bounded current-checkout route directly; implicit intent may ask
-once, refusal or uncertainty selects standard Intake, and same-scope recovery
-reuses the selection. Scripts must not classify intent.
+selects the bounded current-checkout route directly. Without explicit intent,
+the AI automatically selects high-confidence bounded low-risk work, asks once
+only when evidence is insufficient, and selects standard Intake for clearly
+complex or high-risk work. Issue presence, file count, paths, and keywords are
+not independent classifiers. Same-scope recovery reuses the selection. Scripts
+must not classify intent.
+
+Selector `task_free` must invoke semantic `guru-execute-task-free-change`
+without adding checkout facts to the selector output. Contract and real-wrapper
+evals cover suitable default/non-default checkout, same-scope active task,
+scope expansion, unrelated worktree, dirty overlap, insufficient position,
+automatic re-selection, explicit-choice re-entry, and blocked handling.
+`completed` is valid only when the AI-authored current result includes write-before
+suitability, actual edited paths, at least one passed targeted check with no
+failed check, and passed post-write scope/risk review. Deterministic runtime may
+validate this evidence but may not create it or decide completion. Its public
+workflow result contains only edited paths, concise validation results, and
+unverified boundaries. Automatic and explicit post-write expansion routes must
+prove a real partial edit, the newly discovered scope/risk fact, immediate stop,
+remaining target writes not performed, and applicable targeted checks.
 
 When standard Intake is selected, the deterministic base and workspace helpers
 remain:
@@ -138,8 +155,8 @@ manifest: exactly three packages, ten profiles, 11 exits, current output schema
 ids, four authoring-seed edges, private artifact ids, examples, and eval case
 bindings. No alternate production manifest, input projector, or fixture may be
 present. Then validate the current package closure
-at sixteen active Skills and 62 external exits, while the integrated business
-workflow projection is 15 invokes, 60 exits, and 36 targets. Negative tests cover missing, extra,
+at seventeen active Skills and 69 external exits, while the integrated business
+workflow projection is 16 invokes, 67 exits, and 39 targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -155,7 +172,7 @@ closed loop. Existing
 commit transaction tests remain mandatory because the new candidate builder is
 not authorization to replace or weaken the executor.
 
-The package graph contains nine target-owned `skill_input_authoring_seed`
+The package graph contains thirteen target-owned `skill_input_authoring_seed`
 handoffs. These edges have positive partition/projection probes and negative
 overlap, overwrite, missing, extra, unknown, private-lookup,
 runtime-semantic-reconstruction, and unsupported fifth-operation fixtures. Each positive
@@ -613,8 +630,9 @@ Python or shell.
   Treat those as AI runtime/tool capabilities and express the decision in
   workflow or prompt text.
 - Relying on chat memory for issue close scope, base branch, or `branch_review_commit`.
-- Treating "small fix" as task-free intent without an explicit or once-confirmed
-  semantic selection from `guru-select-workflow-mode`.
+- Treating one phrase, Issue presence, file count, or path as an independent
+  task-free classifier instead of applying the complete semantic decision in
+  `guru-select-workflow-mode`.
 - Writing task review artifacts into the source checkout because a manual edit
   used a relative path while the active task lives in a separate worktree.
 - Leaving `.new` or `.bak` installer outputs unresolved in committed changes.
@@ -669,9 +687,9 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  sixteen-Skill/62-exit current package closure while the production activation
+  seventeen-Skill/69-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
-  15 invokes, 60 exits, and 36 targets. Update and preset reapply must reproduce
+  16 invokes, 67 exits, and 39 targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
 
 ## Task Publication Review Quality
@@ -741,9 +759,9 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert sixteen active Skills and 62
+Source/installed/platform/throwaway checks assert seventeen active Skills and 69
 package exits, exactly one `production-current-v2` three-Skill/11-exit current
-manifest, and business workflow markers of 15 invokes, 60 exits, and 36 targets.
+manifest, and business workflow markers of 16 invokes, 67 exits, and 39 targets.
 
 ## Extension Installation Verification Quality
 
@@ -773,7 +791,7 @@ independent evidence surfaces.
 `guru-finalize-task` quality coverage exercises four current public input
 profiles, six outputs, the four finalization-family authoring handoffs, semantic
 Gate/confirmation ordering, and the owner-private recovery loop. Together with
-the five prior handoffs, the active package graph contains nine target-owned
+the five prior and four task-free execution handoffs, the active package graph contains thirteen target-owned
 `skill_input_authoring_seed` handoffs.
 
 Current gate 5.0 and transaction 3.0 regressions prove Publication input, exact
@@ -800,8 +818,8 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is sixteen active Skills and 62 exits; business global markers remain 15
-invokes, 60 exits, and 36 targets. Upstream Finish assets remain unchanged.
+closure is seventeen active Skills and 69 exits; business global markers remain 16
+invokes, 67 exits, and 39 targets. Upstream Finish assets remain unchanged.
 
 ## Base Evolution Gate Quality
 

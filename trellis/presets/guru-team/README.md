@@ -448,8 +448,8 @@ contracts、source-session private result schema、两例 production corpus 与 
 `guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
 `guru-merge-task-pr` 再安装两种 inputs、三个
-exits 与五个 merge runtime wrappers。Source/installed package closure 为 16 Skills /
-62 exits；business global workflow marker closure 为 15 invokes / 60 exits / 36 targets。
+exits 与五个 merge runtime wrappers。Source/installed package closure 为 17 Skills /
+69 exits；business global workflow marker closure 为 16 invokes / 67 exits / 39 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -960,9 +960,18 @@ Discovery. The preset installs no alternate summary command.
 
 ## Workflow Guardrails
 
-For `no_task` issue-backed, task-like, or file-changing requests in a Guru Team
-project, tool-free classification is followed by mandatory `guru-sync-base`, not
-bare `task.py create`. The Skill resolves explicit `--base`, scalar
+For every file-changing request that has not already entered an active-task
+route, tool-free classification first mandatory invokes semantic
+`guru-select-workflow-mode`, whether or not an Issue exists or task-free was
+mentioned. The shortest explicit expression is `这次走 task-free`. Without
+explicit intent, high-confidence bounded, reversible, low-risk work selects
+`task_free` automatically; likely but insufficient evidence opens one mode
+question; clearly complex or high-risk work selects `standard_intake`.
+Issue presence, file count, paths, and keywords do not independently classify
+the mode.
+
+Only `standard_intake` is followed by mandatory `guru-sync-base`, not bare
+`task.py create`. The Skill resolves explicit `--base`, scalar
 `base_branch`, the first existing branch in configured `base_branch_candidates`
 order (default `dev`, `develop`, `main`, `master`), then remote default when no
 candidate exists; the current branch is never an implicit base. Multiple existing
@@ -1196,12 +1205,29 @@ resolution. Only the verified Darwin `/var` -> `/private/var` system mapping
 may re-anchor an outer path; arbitrary `samefile` and user aliases are never
 trusted.
 
-Current-checkout direct edits while `no_task` is active are allowed only as an
-explicit user override. The user approval must say this turn should skip
-creating or reusing a GitHub issue, Trellis task, worktree, and branch. Before
-editing, the AI must summarize skipped artifacts, current checkout, current
-branch, dirty state, side effects, changed-file scope, and the separate
-commit/push/PR approval boundary.
+The selector's minimal `task_free` DTO invokes semantic
+`guru-execute-task-free-change` through a target-owned authoring seed; checkout
+facts never expand the selector output. The execution Skill owns local
+checkout suitability, bounded editing, risk-matched targeted checks, and
+post-write scope/risk review. Its `completed` result requires AI-authored
+pre-write suitability, actual edited paths, at least one passed targeted check
+with no failed check, and passed post-write review; deterministic runtime only
+validates that evidence. The workflow completion DTO reports only actual edited
+paths, concise check results, and unverified boundaries. Scope/risk expansion
+after a real partial edit records the expanded fact, stopped remaining writes,
+and applicable targeted checks. Automatically selected task-free is
+re-evaluated, while explicit task-free waits for the user to narrow scope or
+choose `standard_intake`. It never authorizes
+Issue/task/worktree/branch creation, commit, push, PR, merge, tag, release,
+installation, cleanup, or Issue closure; those remain independent later
+side-effect boundaries.
+
+The installed `guru-execute-task-free-change` package exposes
+`selected_route|interaction_resume`, seven exits
+`completed|resume_active_task|scope_change|location_required|reselect_mode|explicit_choice_required|blocked`,
+and runtime commands `record-task-free-change`, `check-task-free-change`, and
+`invoke-guru-execute-task-free-change`. It requires the complete preset and is
+not a portable standalone directory.
 
 The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
 when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`

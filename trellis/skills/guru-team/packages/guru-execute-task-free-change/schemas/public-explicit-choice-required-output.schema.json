@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-task-free-change-output-explicit-choice-required-1.0","type":"object","additionalProperties":false,"required":["exit_id","continuation_id","selection_origin"],"properties":{"exit_id":{"const":"explicit_choice_required"},"continuation_id":{"type":"string","minLength":1},"selection_origin":{"const":"explicit"}}}

@@ -367,6 +367,19 @@ Git root, Claude uses safe non-interactive input, and unauthenticated Cursor is
 
 ## Current Intake Contract Documentation
 
+All three public README files name active semantic
+`guru-execute-task-free-change`, its `selected_route` and `interaction_resume`
+profiles, commands `record-task-free-change` / `check-task-free-change` /
+`invoke-guru-execute-task-free-change`, and seven typed exits. They state that
+selector `task_free` remains the one-field DTO and reaches the execution Skill
+through a target-owned authoring seed; checkout facts never enter the selector.
+They also state that `completed` requires AI-authored pre-write suitability,
+actual edited paths, a passed targeted check with no failed check, and passed
+post-write scope/risk review. Runtime validation cannot create or semantically
+approve that evidence. Location and explicit-choice exits self-reenter;
+automatic expansion returns to the selector; lifecycle/publication effects stay
+unauthorized.
+
 All three public README files describe the live six-package/23-exit Intake
 contract, including the dialogue-local pre-recorder stop and optional
 `guru-sync-base.repo_root` / `route` scalar arguments. They state that only the
@@ -407,8 +420,9 @@ approval/check/commit/review artifact bodies or present eval `expected_exit` as
 a production input.
 
 The docs also name target-owned `skill_input_authoring_seed` for the complete
-set of nine semantic handoffs: the five production/review/publication edges
-and the four finalization-family edges. They
+set of thirteen semantic handoffs: the five production/review/publication
+edges, the four finalization-family edges, and the four task-free execution
+edges. They
 explain that producer projection supplies only minimal seed fields, the caller
 AI authors every remaining required semantic field, validation proves a
 disjoint exact required-field partition and a no-overwrite full-schema merge,
@@ -424,7 +438,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe sixteen active Skills and 62 external exits, identify
+Public READMEs describe seventeen active Skills and 69 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -467,8 +481,8 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are sixteen active Skills and 62 external exits;
-business workflow markers remain 15 invokes, 60 exits, and 36 targets.
+README package closure numbers are seventeen active Skills and 69 external exits;
+business workflow markers remain 16 invokes, 67 exits, and 39 targets.
 `production-current-v2` owns the current planning/check/commit contract; the
 live Intake contract remains six Skills/23 exits.
 
@@ -506,9 +520,9 @@ side-effect confirmation, and deterministic executor. Scripts execute, validate,
 and record facts after semantic review; they do not choose plan, scope,
 readiness, recovery route, or semantic pass.
 
-The READMEs describe the current package graph as sixteen active Skills and 62
-external exits with nine target-owned authoring handoffs. The integrated business
-workflow is 15 invokes, 60 exits, and 36 targets. The three `guru-finish-work`
+The READMEs describe the current package graph as seventeen active Skills and 69
+external exits with thirteen target-owned authoring handoffs. The integrated business
+workflow is 16 invokes, 67 exits, and 39 targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication
 `return_to_task_work` remains available for real content drift.
 

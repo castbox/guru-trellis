@@ -6,73 +6,282 @@
   "evals": [
     {
       "id": "explicit-task-free",
-      "prompt": "Review the staged request that explicitly asks to skip the development process and edit only the bounded current checkout. Complete the semantic owner result and invoke the public wrapper without another confirmation.",
+      "prompt": "The user says `这次走 task-free`. Select the mode directly without another mode question.",
       "expected_exit": "task_free",
-      "expected_output": "The public DTO selects the bounded current-checkout route.",
+      "expected_output": "The bounded current-checkout route is selected.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-explicit-task-free-facts.json"],
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-explicit-task-free-facts.json"
+      ],
       "assertions": {
         "deterministic": [
-          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"},
-          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
-          {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
-          {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
         ]
       }
     },
     {
-      "id": "implicit-confirmed",
-      "prompt": "Review the staged request with implicit process-skipping intent and one affirmative answer to the single clarification. Complete the semantic owner result and invoke the public wrapper.",
+      "id": "automatic-high-confidence",
+      "prompt": "A no-Issue request identifies one reversible Markdown typo with no runtime or public-contract effect. Select without asking.",
       "expected_exit": "task_free",
-      "expected_output": "The public DTO selects the bounded current-checkout route after one confirmation.",
+      "expected_output": "High-confidence bounded low-risk work automatically selects task-free.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-implicit-confirmed-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-automatic-high-confidence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
-      "id": "implicit-refused",
-      "prompt": "Review the staged request with implicit process-skipping intent whose single clarification was refused. Complete the semantic owner result and invoke the public wrapper without asking again.",
-      "expected_exit": "standard_intake",
-      "expected_output": "The public DTO selects normal Intake after refusal.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-implicit-refused-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "standard_intake"}]}
-    },
-    {
-      "id": "ordinary-issue-request",
-      "prompt": "Review the staged ordinary issue-backed file-changing request with no process-skipping intent. Complete the semantic owner result and invoke the public wrapper conservatively.",
-      "expected_exit": "standard_intake",
-      "expected_output": "The public DTO selects normal Intake.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-ordinary-request-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "standard_intake"}]}
-    },
-    {
-      "id": "unrelated-dirty-preserved",
-      "prompt": "Review the staged bounded current-checkout request with an unrelated dirty file. Complete the semantic owner result, invoke the public wrapper, and preserve the unrelated file unchanged.",
+      "id": "insufficient-confirmed",
+      "prompt": "Task-free is likely but scope evidence was insufficient. The single mode question was answered affirmatively; do not ask again.",
       "expected_exit": "task_free",
-      "expected_output": "The public DTO selects the bounded route without changing unrelated work.",
+      "expected_output": "One affirmative clarification selects task-free.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-unrelated-dirty-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-insufficient-confirmed-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
+    },
+    {
+      "id": "insufficient-refused",
+      "prompt": "Task-free is likely but evidence was insufficient. The user refused the single mode question; do not ask again.",
+      "expected_exit": "standard_intake",
+      "expected_output": "One refusal selects standard Intake.",
+      "input_profile_id": "initial_request",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-insufficient-refused-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
+    },
+    {
+      "id": "complex-request",
+      "prompt": "A no-Issue request changes authentication, a public API schema, CI, and deployment behavior. Select without asking a task-free question.",
+      "expected_exit": "standard_intake",
+      "expected_output": "Clearly complex high-risk work automatically selects standard Intake.",
+      "input_profile_id": "initial_request",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-complex-request-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
+    },
+    {
+      "id": "simple-issue",
+      "prompt": "An Issue precisely limits the change to one documentation label with no runtime effect. Issue presence must not force Intake.",
+      "expected_exit": "task_free",
+      "expected_output": "A simple Issue-backed change can automatically select task-free.",
+      "input_profile_id": "initial_request",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-simple-issue-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
+    },
+    {
+      "id": "insufficient-issue-confirmed",
+      "prompt": "An Issue sounds local but does not show whether a public contract changes. The one mode question was answered affirmatively.",
+      "expected_exit": "task_free",
+      "expected_output": "Insufficient Issue evidence uses one question and then task-free.",
+      "input_profile_id": "initial_request",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-insufficient-issue-confirmed-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
+    },
+    {
+      "id": "complex-issue",
+      "prompt": "An Issue changes install/update compatibility and a public workflow contract. Its content requires standard Intake.",
+      "expected_exit": "standard_intake",
+      "expected_output": "A complex Issue-backed change selects standard Intake.",
+      "input_profile_id": "initial_request",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-complex-issue-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
+    },
+    {
+      "id": "same-file-count-low-risk",
+      "prompt": "Exactly two Markdown files need one reversible spelling correction. Select by semantic risk, not file count.",
+      "expected_exit": "task_free",
+      "expected_output": "Two low-risk files can select task-free.",
+      "input_profile_id": "initial_request",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-same-file-count-low-risk-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
+    },
+    {
+      "id": "same-file-count-high-risk",
+      "prompt": "Exactly two files change a public schema and production migration behavior. Select by semantic risk, not file count.",
+      "expected_exit": "standard_intake",
+      "expected_output": "Two high-risk files select standard Intake.",
+      "input_profile_id": "initial_request",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-same-file-count-high-risk-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
     },
     {
       "id": "same-scope-retry",
-      "prompt": "Review the staged same-scope retry carrying the current continuation identity and an already selected bounded route. Reuse the selection, complete the owner result, and invoke the public wrapper without another question.",
+      "prompt": "A same-scope retry carries the unchanged continuation identity and prior bounded selection. Reuse it without another question.",
       "expected_exit": "task_free",
-      "expected_output": "The public DTO reuses the existing bounded route.",
+      "expected_output": "The existing bounded route is reused.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-repeated-turn-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-repeated-turn-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
       "id": "selection-unavailable",
-      "prompt": "Review the staged invocation whose current semantic selection result is unavailable. Complete the owner result and invoke the public wrapper through its declared fail-closed stop.",
+      "prompt": "The semantic selection result is unavailable. Use the fail-closed stop without inventing a mode.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO stops without inventing a selected mode.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-blocked-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-blocked-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      }
     }
   ]
 }

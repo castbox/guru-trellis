@@ -48,8 +48,8 @@ Before editing workflow behavior:
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Registry 1.4 accepts integrated, deferred, and standalone-only active rows.
   Integrated packages select Interface 1.4 and the source-only verifier selects
-  Interface 1.5. The registry contains sixteen active packages and 62 exits;
-  global business workflow markers are 15 invokes, 60 exits, and 36 targets. Registry,
+  Interface 1.5. The registry contains seventeen active packages and 69 exits;
+  global business workflow markers are 16 invokes, 67 exits, and 39 targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit closure is defined only by
   `contracts/production-current.json` with contract id
@@ -153,8 +153,8 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-sixteen-Skill/62-exit package closure, and install/update checks. The global
-business workflow projection is 15 invokes, 60 exits, and 36 targets.
+seventeen-Skill/69-exit package closure, and install/update checks. The global
+business workflow projection is 16 invokes, 67 exits, and 39 targets.
 
 ## Extension Installation Verification Closed-Loop Owner
 
@@ -176,9 +176,9 @@ and `docs/public-docs.md`. Together they own its four profiles, six external
 exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
 six-core archive, real-wrapper eval, and additive distribution.
 
-The current package graph contains sixteen active Skills and 62 external exits
-with nine target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 15 invokes, 60 exits, and 36 targets. Issue #119 combined acceptance
+The current package graph contains seventeen active Skills and 69 external exits
+with thirteen target-owned `skill_input_authoring_seed` handoffs. Global workflow
+markers are 16 invokes, 67 exits, and 39 targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, terminal
 `ready_for_merge` and Merge evals, current ownership
 validation, and installed integration coverage.

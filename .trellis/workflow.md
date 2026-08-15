@@ -32,26 +32,40 @@ Classify the initial request before repository or network semantic reads:
 - simple conversation or a non-file-changing request: answer directly without
   creating a GitHub Issue or Trellis task and without asking whether one should
   be created;
-- repo-changing, issue-backed, task-like, or file-changing work first invokes
-  `guru-select-workflow-mode`; `standard_intake` enters guru-sync-base and the
-  existing mapped graph, while `task_free` enters only the bounded current-
-  checkout edit route;
+- a file-changing request that is not already inside an active-task route first
+  invokes `guru-select-workflow-mode`, whether or not an Issue exists or the
+  user mentioned task-free. Issue-backed or task-like requests that only ask
+  for information remain non-file-changing and are answered directly;
+- `standard_intake` enters guru-sync-base and the existing mapped graph, while
+  `task_free` invokes `guru-execute-task-free-change`;
 - only guru-create-task-workspace:created enters task planning;
-- `guru-select-workflow-mode` owns the semantic choice. Explicit task-free
-  intent routes directly; implicit intent gets at most one confirmation,
-  refusal routes to standard Intake, and uncertainty never bypasses Intake.
+- `guru-select-workflow-mode` owns the semantic choice. The shortest explicit
+  request is `这次走 task-free` and routes directly. Without explicit intent,
+  high-confidence bounded, reversible, low-risk work routes automatically to
+  task-free; evidence that is probably suitable but insufficient opens one
+  concise mode question; clearly complex or high-risk work routes automatically
+  to standard Intake. Issue presence, file count, path, or keywords never decide
+  the mode by themselves.
 
 Missing packages or markers, duplicate markers, unknown or multiple exits,
 unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
 invalid interface projections stop fail closed.
 
 ## Integrated Public Graph
-The business-task graph is exactly 15 mandatory Skills and 60 external exits.
+The business-task graph is exactly 16 mandatory Skills and 67 external exits.
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"task_free","consumer":{"kind":"workflow","id":"guru-task-free-current-checkout"}} -->
+<!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"task_free","consumer":{"kind":"skill","id":"guru-execute-task-free-change"}} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"blocked","consumer":{"kind":"stop","id":"workflow-mode-selection-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-execute-task-free-change","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"completed","consumer":{"kind":"workflow","id":"guru-task-free-completed"}} -->
+<!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"resume_active_task","consumer":{"kind":"workflow","id":"guru-task-free-resume-active-task-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"scope_change","consumer":{"kind":"workflow","id":"guru-task-free-scope-change-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"location_required","consumer":{"kind":"skill","id":"guru-execute-task-free-change"}} -->
+<!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"reselect_mode","consumer":{"kind":"skill","id":"guru-select-workflow-mode"}} -->
+<!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"explicit_choice_required","consumer":{"kind":"skill","id":"guru-execute-task-free-change"}} -->
+<!-- guru-skill-exit: {"skill":"guru-execute-task-free-change","exit":"blocked","consumer":{"kind":"stop","id":"task-free-change-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-sync-base","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"synced","consumer":{"kind":"skill","id":"guru-discover-change-context"}} -->
 <!-- guru-skill-exit: {"skill":"guru-sync-base","exit":"skipped","consumer":{"kind":"workflow","id":"original-request-route"}} -->
@@ -128,10 +142,12 @@ The business-task graph is exactly 15 mandatory Skills and 60 external exits.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
 ## Workflow And Stop Targets
-The graph contains exactly 20 workflow targets and 16 stop targets.
+The graph contains exactly 22 workflow targets and 17 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
-<!-- guru-workflow-target: {"id":"guru-task-free-current-checkout"} -->
+<!-- guru-workflow-target: {"id":"guru-task-free-completed"} -->
+<!-- guru-workflow-target: {"id":"guru-task-free-resume-active-task-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-free-scope-change-router"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-clear-router"} -->
 <!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
 <!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
@@ -150,6 +166,7 @@ The graph contains exactly 20 workflow targets and 16 stop targets.
 <!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
+<!-- guru-stop-target: {"id":"task-free-change-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->
 <!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
@@ -169,6 +186,10 @@ The graph contains exactly 20 workflow targets and 16 stop targets.
 | Target | Global behavior |
 | --- | --- |
 | original-request-route | Return to the original non-repository request. |
+| guru-workflow-standard-intake-router | Enter the existing mandatory `guru-sync-base` route without requiring a pre-existing Issue. |
+| guru-task-free-completed | Report the checked bounded-change edited paths, concise validation results, and explicit unverified boundaries without creating lifecycle or publication resources. |
+| guru-task-free-resume-active-task-router | Resume the exact active task from its current status route. |
+| guru-task-free-scope-change-router | Enter the existing Scope Change Gate through `guru-clarify-requirements`. |
 | guru-requirements-clear-router | Resume the caller declared by the clarification contract: initial Intake, active-task planning, an interrupted phase, or standalone caller. |
 | guru-full-task-intake-chain | Start a separately reviewed task intake from the returned draft. |
 | guru-contract-wording-pass-router | Route the checked profile to change-request review, planning approval, or the standalone caller. |
@@ -216,10 +237,12 @@ Phase 3: Finish  -> docs reconciliation, commit, branch review, publication, fin
 | completed | Enter Phase 3 through the canonical guru-finish-work route. |
 
 [workflow-state:no_task]
-`guru-select-workflow-mode` precedes Intake. Task-free is direct; implicit gets
-one confirmation; refusal/uncertainty -> `standard_intake` -> `guru-sync-base`.
-Mapped exits and same-scope retries do not ask again. Task-free preserves
-unrelated dirty/untracked and authorizes current-checkout edits.
+Every file-changing request first invokes `guru-select-workflow-mode`, including
+requests without an Issue or task-free wording. `这次走 task-free` is direct.
+Otherwise: high-confidence bounded low-risk -> `task_free`; insufficient
+evidence -> one question; complex/high-risk -> `standard_intake`. Mapped exits
+and same-scope retries do not ask again. Task-free still requires checkout
+suitability before bounded writes and never authorizes Git/GitHub publication.
 [/workflow-state:no_task]
 
 [workflow-state:planning]

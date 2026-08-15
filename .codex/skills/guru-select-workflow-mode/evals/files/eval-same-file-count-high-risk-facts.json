@@ -1,0 +1,1 @@
+{"scenario":"Two files change a public schema and production migration behavior.","owner_staging":{"recipe":"workflow-mode-same-file-count-high-risk"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

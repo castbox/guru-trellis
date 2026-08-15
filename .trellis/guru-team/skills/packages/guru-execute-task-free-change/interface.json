@@ -1,0 +1,104 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-execute-task-free-change",
+  "name": "guru-execute-task-free-change",
+  "description": "Execute one bounded task-free change through AI-owned checkout suitability, editing, targeted validation, and risk-evolution review.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["selected_task_free_route", "local_checkout_facts", "bounded_request", "execution_freshness"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["selected_task_free_route", "local_checkout_facts", "bounded_request", "execution_freshness"]}
+  },
+  "entry_preconditions": [
+    {"id": "selected_task_free_route", "evidence": "current selector task_free exit or same-owner interaction re-entry", "binding": "one current bounded request", "freshness": "invalidated by a new selection or interaction scope"},
+    {"id": "local_checkout_facts", "evidence": "repository, branch/worktree, active task, dirty/untracked, and target-overlap facts", "binding": "the current local checkout only", "freshness": "reread before every write"},
+    {"id": "bounded_request", "evidence": "caller-authored request summary and explicit target paths", "binding": "the selected continuation", "freshness": "invalidated by target or scope change"},
+    {"id": "execution_freshness", "evidence": "actual edit, targeted checks, and post-write scope/risk review", "binding": "completed exit only", "freshness": "reviewed after the final write"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "ai_review_gate", "conditional_human_confirmation", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "owner_result_example", "path": "examples/task-free-change-review.json"},
+    {"id": "selected_route_input_example", "path": "examples/public-selected-route-input.json"},
+    {"id": "interaction_resume_input_example", "path": "examples/public-interaction-resume-input.json"},
+    {"id": "public_invocation_error_example", "path": "examples/public-invocation-error.json"},
+    {"id": "completed_output_example", "path": "examples/public-completed-output.json"},
+    {"id": "resume_active_task_output_example", "path": "examples/public-resume-active-task-output.json"},
+    {"id": "scope_change_output_example", "path": "examples/public-scope-change-output.json"},
+    {"id": "location_required_output_example", "path": "examples/public-location-required-output.json"},
+    {"id": "reselect_mode_output_example", "path": "examples/public-reselect-mode-output.json"},
+    {"id": "explicit_choice_required_output_example", "path": "examples/public-explicit-choice-required-output.json"},
+    {"id": "blocked_output_example", "path": "examples/public-blocked-output.json"}
+  ],
+  "schemas": [
+    {"id": "task_free_change_review", "path": "schemas/task-free-change-review.schema.json"},
+    {"id": "public_input", "path": "schemas/public-input.schema.json"},
+    {"id": "public_selected_route_input", "path": "schemas/public-selected-route-input.schema.json"},
+    {"id": "public_interaction_resume_input", "path": "schemas/public-interaction-resume-input.schema.json"},
+    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
+    {"id": "public_completed_output", "path": "schemas/public-completed-output.schema.json"},
+    {"id": "public_resume_active_task_output", "path": "schemas/public-resume-active-task-output.schema.json"},
+    {"id": "public_scope_change_output", "path": "schemas/public-scope-change-output.schema.json"},
+    {"id": "public_location_required_output", "path": "schemas/public-location-required-output.schema.json"},
+    {"id": "public_reselect_mode_output", "path": "schemas/public-reselect-mode-output.schema.json"},
+    {"id": "public_explicit_choice_required_output", "path": "schemas/public-explicit-choice-required-output.schema.json"},
+    {"id": "public_blocked_output", "path": "schemas/public-blocked-output.schema.json"}
+  ],
+  "validators": [
+    {"id": "task_free_change_recorder", "command": "scripts/record-task-free-change.sh", "runtime_command": "record-task-free-change", "objective_scope": "Validate caller and AI-authored execution identities, typed route, bounded completed or partial-write evidence shape, targeted-check result shape, and Gate/exit consistency without making semantic judgments."},
+    {"id": "task_free_change_checker", "command": "scripts/check-task-free-change.sh", "runtime_command": "check-task-free-change", "objective_scope": "Revalidate current input/result identity and completed or post-write-expansion structural evidence without deciding suitability, expansion significance, risk, or check adequacy."},
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-execute-task-free-change", "objective_scope": "Serialize one checked current typed exit and reject missing, stale, unknown, multiple, or unmapped results."}
+  ],
+  "external_exits": [
+    {"id": "completed", "evidence": "AI reviewed suitable checkout, actual bounded edit, targeted checks, and passed post-write scope/risk evolution", "consumer": {"kind": "workflow", "id": "guru-task-free-completed"}},
+    {"id": "resume_active_task", "evidence": "AI found an active task with the same request scope", "consumer": {"kind": "workflow", "id": "guru-task-free-resume-active-task-router"}},
+    {"id": "scope_change", "evidence": "AI found a potential expansion of the current active task", "consumer": {"kind": "workflow", "id": "guru-task-free-scope-change-router"}},
+    {"id": "location_required", "evidence": "AI needs one execution-location choice before writing", "consumer": {"kind": "skill", "id": "guru-execute-task-free-change"}},
+    {"id": "reselect_mode", "evidence": "An automatically selected task-free execution expanded in scope or risk", "consumer": {"kind": "skill", "id": "guru-select-workflow-mode"}},
+    {"id": "explicit_choice_required", "evidence": "An explicitly selected task-free execution expanded and needs a narrow-or-Intake choice", "consumer": {"kind": "skill", "id": "guru-execute-task-free-change"}},
+    {"id": "blocked", "evidence": "Required local evidence or semantic execution result is unavailable, stale, ambiguous, unknown, or unmapped", "consumer": {"kind": "stop", "id": "task-free-change-blocked"}}
+  ],
+  "reentry": {"identity": "current continuation, selection origin, bounded request, and target paths", "freshness": "location and explicit-choice re-entry reuse only unchanged identity; material request change starts a new selection", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py", "tests/test_runtime.py"],
+  "platform_destinations": ["shared", "codex", "cursor", "claude"],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {"schema_id": "guru-task-free-change-input-aggregate-1.0", "path": "schemas/public-input.schema.json"},
+      "profiles": [
+        {"id": "selected_route", "schema": {"schema_id": "guru-task-free-change-input-selected-route-1.0", "path": "schemas/public-selected-route-input.schema.json"}, "example": {"id": "selected_route_input", "path": "examples/public-selected-route-input.json"}, "discriminator": {"field": "profile", "value": "selected_route"}},
+        {"id": "interaction_resume", "schema": {"schema_id": "guru-task-free-change-input-interaction-resume-1.0", "path": "schemas/public-interaction-resume-input.schema.json"}, "example": {"id": "interaction_resume_input", "path": "examples/public-interaction-resume-input.json"}, "discriminator": {"field": "profile", "value": "interaction_resume"}}
+      ]
+    },
+    "invocation": {"command_id": "run-skill-command", "wrapper": "scripts/invoke.sh", "input_binding": {"kind": "structured_json", "profile_id": "selected_route"}, "stdout_contract": "single_typed_exit", "error_schema": {"schema_id": "guru-task-free-change-invocation-error-1.0", "path": "schemas/public-invocation-error.schema.json"}, "error_example": {"id": "invalid_public_input", "path": "examples/public-invocation-error.json"}, "example_argv": ["--input", "examples/public-selected-route-input.json", "--owner-result", "examples/task-free-change-review.json"]},
+    "outputs": [
+      {"exit_id": "completed", "schema": {"schema_id": "guru-task-free-change-output-completed-1.0", "path": "schemas/public-completed-output.schema.json"}, "example": {"id": "completed_output", "path": "examples/public-completed-output.json"}, "consumer_use_ids": ["project_completed"]},
+      {"exit_id": "resume_active_task", "schema": {"schema_id": "guru-task-free-change-output-resume-active-task-1.0", "path": "schemas/public-resume-active-task-output.schema.json"}, "example": {"id": "resume_active_task_output", "path": "examples/public-resume-active-task-output.json"}, "consumer_use_ids": ["project_resume_active_task"]},
+      {"exit_id": "scope_change", "schema": {"schema_id": "guru-task-free-change-output-scope-change-1.0", "path": "schemas/public-scope-change-output.schema.json"}, "example": {"id": "scope_change_output", "path": "examples/public-scope-change-output.json"}, "consumer_use_ids": ["project_scope_change"]},
+      {"exit_id": "location_required", "schema": {"schema_id": "guru-task-free-change-output-location-required-1.0", "path": "schemas/public-location-required-output.schema.json"}, "example": {"id": "location_required_output", "path": "examples/public-location-required-output.json"}, "consumer_use_ids": ["project_location_required"]},
+      {"exit_id": "reselect_mode", "schema": {"schema_id": "guru-task-free-change-output-reselect-mode-1.0", "path": "schemas/public-reselect-mode-output.schema.json"}, "example": {"id": "reselect_mode_output", "path": "examples/public-reselect-mode-output.json"}, "consumer_use_ids": ["project_reselect_mode"]},
+      {"exit_id": "explicit_choice_required", "schema": {"schema_id": "guru-task-free-change-output-explicit-choice-required-1.0", "path": "schemas/public-explicit-choice-required-output.schema.json"}, "example": {"id": "explicit_choice_required_output", "path": "examples/public-explicit-choice-required-output.json"}, "consumer_use_ids": ["project_explicit_choice_required"]},
+      {"exit_id": "blocked", "schema": {"schema_id": "guru-task-free-change-output-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["project_blocked"]}
+    ],
+    "consumer_inputs": [
+      {"id": "completed_workflow_input", "consumer": {"kind": "workflow", "id": "guru-task-free-completed"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-task-free-completed-input-1.0", "path": "consumers/workflow/stage0/task-free-completed.schema.json"}},
+      {"id": "resume_active_task_workflow_input", "consumer": {"kind": "workflow", "id": "guru-task-free-resume-active-task-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-task-free-resume-active-task-input-1.0", "path": "consumers/workflow/stage0/task-free-resume-active-task.schema.json"}},
+      {"id": "scope_change_workflow_input", "consumer": {"kind": "workflow", "id": "guru-task-free-scope-change-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-task-free-scope-change-input-1.0", "path": "consumers/workflow/stage0/task-free-scope-change.schema.json"}},
+      {"id": "location_reentry_input", "consumer": {"kind": "skill", "id": "guru-execute-task-free-change"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-execute-task-free-change/interface.json", "input_kind": "structured_json", "profile_id": "interaction_resume", "seed_fields": ["continuation_id", "selection_origin"], "authoring_fields": ["profile", "mode", "interaction_kind", "request_summary", "target_paths"], "authoring_example": {"id": "interaction_location_authoring", "path": "examples/interaction-location-authoring.json"}}},
+      {"id": "selector_reentry_input", "consumer": {"kind": "skill", "id": "guru-select-workflow-mode"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-select-workflow-mode/interface.json", "input_kind": "structured_json", "profile_id": "initial_request", "seed_fields": ["continuation_id"], "authoring_fields": ["profile", "mode"], "authoring_example": {"id": "selector_reentry_authoring", "path": "examples/selector-reentry-authoring.json"}}},
+      {"id": "explicit_choice_reentry_input", "consumer": {"kind": "skill", "id": "guru-execute-task-free-change"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-execute-task-free-change/interface.json", "input_kind": "structured_json", "profile_id": "interaction_resume", "seed_fields": ["continuation_id", "selection_origin"], "authoring_fields": ["profile", "mode", "interaction_kind", "request_summary", "target_paths"], "authoring_example": {"id": "interaction_choice_authoring", "path": "examples/interaction-choice-authoring.json"}}},
+      {"id": "blocked_stop_input", "consumer": {"kind": "stop", "id": "task-free-change-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-stop-task-free-change-blocked-input-1.0", "path": "consumers/stop/stage0/task-free-change-blocked.schema.json"}}
+    ],
+    "projections": [
+      {"id": "project_completed", "exit_id": "completed", "consumer_input_id": "completed_workflow_input", "operation": "direct"},
+      {"id": "project_resume_active_task", "exit_id": "resume_active_task", "consumer_input_id": "resume_active_task_workflow_input", "operation": "direct"},
+      {"id": "project_scope_change", "exit_id": "scope_change", "consumer_input_id": "scope_change_workflow_input", "operation": "direct"},
+      {"id": "project_location_required", "exit_id": "location_required", "consumer_input_id": "location_reentry_input", "operation": "select", "mappings": [{"source": "continuation_id", "target": "continuation_id"}, {"source": "selection_origin", "target": "selection_origin"}]},
+      {"id": "project_reselect_mode", "exit_id": "reselect_mode", "consumer_input_id": "selector_reentry_input", "operation": "select", "mappings": [{"source": "continuation_id", "target": "continuation_id"}]},
+      {"id": "project_explicit_choice_required", "exit_id": "explicit_choice_required", "consumer_input_id": "explicit_choice_reentry_input", "operation": "select", "mappings": [{"source": "continuation_id", "target": "continuation_id"}, {"source": "selection_origin", "target": "selection_origin"}]},
+      {"id": "project_blocked", "exit_id": "blocked", "consumer_input_id": "blocked_stop_input", "operation": "direct"}
+    ],
+    "private_artifacts": []
+  }
+}

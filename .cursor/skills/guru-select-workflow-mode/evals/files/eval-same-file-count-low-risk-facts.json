@@ -1,0 +1,1 @@
+{"scenario":"Two Markdown files receive the same reversible spelling correction and no runtime contract changes.","owner_staging":{"recipe":"workflow-mode-same-file-count-low-risk"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

@@ -61,15 +61,16 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current package registry contains exactly 16 active Skill ids and 62
-external exits. Fifteen Skills participate in the business-task workflow,
-whose global graph contains 15 mandatory invokes, 60 mapped exits, and 36
+The current package registry contains exactly 17 active Skill ids and 69
+external exits. Sixteen Skills participate in the business-task workflow,
+whose global graph contains 16 mandatory invokes, 67 mapped exits, and 39
 workflow/stop targets. `guru-verify-extension-installation` is the remaining
 standalone-only source-repository Skill; its two exits return directly to its
 caller-owned stop targets and never appear in the business workflow.
 
 | Skill | Typed exit -> unique consumer |
 | --- | --- |
+| `guru-execute-task-free-change` | `completed -> guru-task-free-completed`; `resume_active_task -> guru-task-free-resume-active-task-router`; `scope_change -> guru-task-free-scope-change-router`; `location_required -> guru-execute-task-free-change`; `reselect_mode -> guru-select-workflow-mode`; `explicit_choice_required -> guru-execute-task-free-change`; `blocked -> task-free-change-blocked` |
 | `guru-sync-base` | `synced -> guru-discover-change-context`; `skipped -> original-request-route`; `blocked -> base-sync-blocked` |
 | `guru-discover-change-context` | `context_ready -> guru-clarify-requirements`; `refresh_base -> guru-sync-base`; `blocked -> change-context-blocked` |
 | `guru-clarify-requirements` | `clear -> guru-requirements-clear-router`; `needs_context -> guru-discover-change-context`; `refresh_context -> guru-sync-base`; `retarget_context -> guru-sync-base`; `new_task -> guru-full-task-intake-chain`; `blocked -> requirements-clarification-blocked` |
@@ -94,13 +95,15 @@ never substitutes for a mandatory workflow invocation marker.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 
-Classify the user request before repository/network semantic reads. A
-repo-changing, issue-backed, task-like, or file-changing route first invokes
-`guru-select-workflow-mode`. Its `standard_intake` exit enters `guru-sync-base`,
-then automatically follows the public graph through current context discovery,
-requirements clarification, wording review, change-request review, and
-`guru-create-task-workspace`. Its `task_free` exit enters only the bounded
-current-checkout edit target.
+Classify the user request before repository/network semantic reads. Only a
+file-changing request that has not already entered an active-task route invokes
+`guru-select-workflow-mode`. An Issue-backed or task-like request that only asks
+for information, such as checking an Issue's current status, remains a
+non-file-changing direct answer. The selector's `standard_intake` exit enters
+`guru-sync-base`, then automatically follows the public graph through current
+context discovery, requirements clarification, wording review, change-request
+review, and `guru-create-task-workspace`. Its `task_free` exit enters only the
+bounded current-checkout edit target.
 
 `guru-sync-base` public invocation is the only authoritative synchronization
 entry. The workflow, platform launchers, prompts, and Skill Markdown do not
@@ -134,11 +137,25 @@ create an issue, branch, worktree, or task directly and does not copy the
 workspace owner's target selection, recovery, confirmation, executor, or
 checker behavior.
 
+Every file-changing request not already routed through an active task invokes
+the selector, including requests without an Issue or task-free wording.
 Explicit task-free intent selects that route without another confirmation.
-Implicit intent may trigger one confirmation; refusal selects standard Intake.
-Uncertainty selects standard Intake, and mapped exits, ordinary recovery, and
-same-scope retries reuse the current selection. A failure to bootstrap the
-normal workflow is not permission to switch to task-free.
+Without explicit intent, high-confidence bounded, reversible, low-risk work
+automatically selects task-free; likely suitability with insufficient scope or
+risk evidence asks once; clearly complex or high-risk work selects standard
+Intake. Issue presence, file count, path, or keywords do not independently
+decide the mode. Mapped exits, ordinary recovery, and same-scope retries reuse
+the current selection. A failure to bootstrap the normal workflow is not
+permission to switch to task-free.
+
+Selector `task_free` invokes semantic `guru-execute-task-free-change` through a
+target-owned authoring seed without expanding the selector DTO. The execution
+Skill owns checkout suitability, bounded edit, targeted checks, post-write
+scope/risk review, interaction re-entry, and its seven typed exits. Post-write
+expansion routes bind real partial-edit and stopped-remaining-write evidence.
+The `completed` workflow handoff reports only actual edited paths, concise
+validation results, and unverified boundaries. The global workflow owns only
+their unique consumers and fail-closed routing.
 
 ### Phase 1 — Planning
 

@@ -97,7 +97,7 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains sixteen active packages and 62 package exits while
+Registry 1.4 graph contains seventeen active packages and 69 package exits while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
 `merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
@@ -134,7 +134,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all sixteen active packages and their 62 external exits. The
+for all seventeen active packages and their 69 external exits. The
 `production-current-v2` manifest remains exactly three packages and 11 exits;
 additive activation of later packages, including `guru-finalize-task`, does not
 rewrite that membership.
@@ -693,7 +693,7 @@ executor consumes only that private candidate.
 Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
 absolute paths, and runtime snapshots are not public input.
 
-Exactly nine semantic handoffs use target-owned authoring seeds. The first
+Exactly thirteen semantic handoffs use target-owned authoring seeds. The first
 five are
 `guru-approve-task-plan:revision_required -> revision_reentry`,
 `guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
@@ -703,7 +703,11 @@ five are
 The finalization family adds
 `guru-review-task-publication:ready -> guru-finalize-task:publication_ready`,
 and the finalizer's `publication_review_stale`, `same_plan_resume`, and
-`reprepare_preview` targets. Their projected seed fields are respectively `source_exit/task_ref`,
+`reprepare_preview` targets. Task-free execution adds
+`guru-select-workflow-mode:task_free -> guru-execute-task-free-change:selected_route`,
+the execution Skill's `location_required` and `explicit_choice_required`
+self-reentries, and `reselect_mode -> guru-select-workflow-mode:initial_request`.
+Their projected seed fields are respectively `source_exit/task_ref`,
 `source_exit/task_ref/phase2_commit_anchor`, `source_exit/task_ref`,
 `task_ref/base_ref/branch_review_commit`, and
 `task_ref/branch_review_commit`. Publication `ready` seeds Finalizer with
@@ -719,9 +723,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is sixteen active Skills and 62
-exits. The integrated business workflow projection contains 15 invoke markers,
-60 exit markers, and 36 target markers. Missing,
+The current package cardinality assertion is seventeen active Skills and 69
+exits. The integrated business workflow projection contains 16 invoke markers,
+67 exit markers, and 39 target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -745,9 +749,10 @@ mandatory invocation markers.
 `guru-select-workflow-mode` is the semantic owner before normal Intake. Its
 owner-private result binds `mode` and `continuation_id`; selected results carry
 exactly one matching `selection`, while `blocked` carries no invented mode.
-The public DTO contains only `exit_id`. A current seven-case semantic corpus
-covers explicit and implicit task-free intent, one refused confirmation,
-ordinary issue-backed work, unrelated dirty preservation, same-scope reuse, and
+The public DTO contains only `exit_id`. The semantic corpus covers explicit
+intent, automatic/one-question/standard selection, simple/insufficient/complex
+Issue evidence, equal file-count with different risk, checkout suitability,
+same-scope reuse, automatic and explicit risk expansion, and
 selection-unavailable blocking. Wrapper regressions independently reject
 missing, unknown, multiple, unmapped, or stale-continuation owner results and
 missing package/marker state.
@@ -1564,8 +1569,8 @@ aggregate input schema `guru-finalize-task-input-aggregate-6.0`. Aggregate
 fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
-The current additive activation set contributes to the live closure of sixteen
-active Skills and 62 exits. The production current manifest remains exactly
+The current additive activation set contributes to the live closure of seventeen
+active Skills and 69 exits. The production current manifest remains exactly
 three Skills and 11 exits.
 
 ## Extension Installation Verification Owner
@@ -1577,10 +1582,16 @@ business workflow graph. Its only current structured input is
 `source_repository_verification`, fixed to standalone mode and explicit caller
 intent from a clean `castbox/guru-trellis` source checkout.
 
-`guru-reconcile-task-base` is the sixteenth active package and the fifteenth
-integrated business-workflow owner. Its six exits and the additive Branch
-Review and Finalizer exits produce the current 62-package-exit and
-60-workflow-exit closure.
+`guru-execute-task-free-change` is the seventeenth active package and the
+sixteenth integrated business-workflow owner. Its seven exits produce the
+current 69-package-exit and 67-workflow-exit closure without changing the
+three-package production-current manifest. Its two post-write expansion exits
+require owner-private evidence for a real partial edit, the discovered
+scope/risk expansion, immediate stop, remaining target writes not performed,
+and applicable targeted checks. Its `completed` DTO and workflow consumer carry
+only `exit_id`, actual edited paths, concise validation results, and unverified
+boundaries; commands, complete execution evidence, and review narrative remain
+private.
 
 Source preflight validates canonical source assets, credential-free canonical
 `origin`, `repo_ref`, requested ref resolution, current HEAD, and clean tree

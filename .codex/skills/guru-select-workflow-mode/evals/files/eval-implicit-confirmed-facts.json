@@ -1,1 +1,0 @@
-{"scenario":"The user expressed implicit process-skipping intent and affirmed the single clarification.","owner_staging":{"recipe":"workflow-mode-implicit-confirmed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}
