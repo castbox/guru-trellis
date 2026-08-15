@@ -1,4 +1,0 @@
-{"file": ".trellis/tasks/08-15-236-throwaway-managed-python-routing/prd.md", "reason": "Issue #236 acceptance authority"}
-{"file": ".trellis/tasks/08-15-236-throwaway-managed-python-routing/design.md", "reason": "Runner, inventory and checkpoint design"}
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validation and Branch Review quality gate"}
-{"file": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh", "reason": "Complete caller graph and full matrix"}

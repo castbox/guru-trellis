@@ -1,5 +1,0 @@
-{"file": ".trellis/spec/preset/installer.md", "reason": "Durable preset install/runtime contract"}
-{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Managed runner and companion-script boundary"}
-{"file": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh", "reason": "Primary verifier caller graph"}
-{"file": "trellis/skills/guru-team/runtime/resolve-python.sh", "reason": "Existing managed interpreter resolver"}
-{"file": "trellis/skills/guru-team/runtime/bootstrap.py", "reason": "Existing runtime identity and bootstrap output"}
