@@ -36,6 +36,7 @@
 ### R3. 完整 caller inventory
 
 - 盘点 verifier shell、内联 Python、直接 source helper、shell wrapper 第二跳、Python `subprocess` 第二跳和生成的 Python shebang。
+- 从 verifier 实际调用点发现 package/platform shell wrapper，并将 invocation path、canonical package wrapper、`commands.json` command id、installed `runtime/launch.sh` 与 `resolve-python.sh` 登记为完整第二跳。
 - 每个 Python 入口只能分类为 `bootstrap_seed`、`source_managed` 或 `installed_managed`。
 - 增加 source-owned、机器可执行的静态门禁；新增裸 `python3`、`#!/usr/bin/env python3`、未登记 Python subprocess 或未通过 `source_python`、`installed_python`、`sys.executable` 的入口时立即失败。
 - “仅使用标准库”不是保留裸解释器的理由。

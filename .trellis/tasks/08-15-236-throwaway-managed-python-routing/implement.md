@@ -19,6 +19,7 @@
 
 - [x] 新增 `throwaway-python-callers.json`，登记 verifier、内联 Python、直接 helper、wrapper 第二跳、Python subprocess 与生成 shebang。
 - [x] 实现 `check-inventory` 双向静态检查，强制唯一 `bootstrap_seed` 与 source/installed 分类。
+- [x] 将 verifier 实际执行的 package/platform wrapper 绑定到 canonical wrapper、`commands.json` command id 与 installed `runtime/launch.sh -> resolve-python.sh` 第二跳。
 - [x] 在 verifier 业务矩阵前后运行 inventory gate。
 - [x] 增加 inventory 正负单元测试，证明新增裸调用、PATH shebang、未登记第二跳都会失败。
 

@@ -59,6 +59,7 @@ preset apply(target)
 - `bootstrap_seed` 数量不是 1：失败；
 - bootstrap 后 shell 裸 `python3` 或 PATH shebang：失败；
 - helper 第二跳启动 Python 时未使用 `sys.executable` 或 installed resolver：失败。
+- verifier 实际执行的 package/platform wrapper 未登记、固定 command id 与 `commands.json` 不一致，或未沿 canonical wrapper 进入 installed `runtime/launch.sh -> resolve-python.sh`：失败。
 
 行号不作为长期 identity；使用 owner path、AST/语法上下文与稳定 call id，避免普通编辑造成无意义 churn。
 

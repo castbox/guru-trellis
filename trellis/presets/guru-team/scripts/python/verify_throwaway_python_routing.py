@@ -448,6 +448,225 @@ def discover_shell_python_helpers(
     return [discovered[key] for key in sorted(discovered)]
 
 
+PACKAGE_WRAPPER_PATH = re.compile(
+    r"(?P<root>\.trellis/guru-team/skills/packages|"
+    r"\.(?:agents|codex|cursor|claude)/skills)/"
+    r"(?P<package>guru-[A-Za-z0-9-]+)/scripts/"
+    r"(?P<wrapper>[A-Za-z0-9-]+\.sh)"
+)
+
+
+def package_wrapper_path(value: str) -> str | None:
+    match = PACKAGE_WRAPPER_PATH.search(value)
+    return match.group(0) if match is not None else None
+
+
+def inline_wrapper_names(source: str, owner: str) -> dict[str, str]:
+    tree = ast.parse(source, filename=owner)
+    names: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        value = node.value
+        if value is None:
+            continue
+        wrapper = next(
+            (
+                package_wrapper_path(child.value)
+                for child in ast.walk(value)
+                if isinstance(child, ast.Constant)
+                and isinstance(child.value, str)
+                and package_wrapper_path(child.value) is not None
+            ),
+            None,
+        )
+        if wrapper is None:
+            continue
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        for target in targets:
+            if isinstance(target, ast.Name):
+                names[target.id] = wrapper
+    return names
+
+
+def inline_executed_package_wrappers(source: str, owner: str) -> set[str]:
+    tree = ast.parse(source, filename=owner)
+    names = inline_wrapper_names(source, owner)
+    wrappers: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        command = process_command_node(node)
+        if not isinstance(command, (ast.List, ast.Tuple)) or not command.elts:
+            continue
+        first = command.elts[0]
+        if not (
+            isinstance(first, ast.Call)
+            and isinstance(first.func, ast.Name)
+            and first.func.id == "str"
+            and len(first.args) == 1
+            and isinstance(first.args[0], ast.Name)
+        ):
+            continue
+        wrapper = names.get(first.args[0].id)
+        if wrapper is not None:
+            wrappers.add(wrapper)
+    return wrappers
+
+
+def shell_executed_package_wrappers(verifier_text: str) -> set[str]:
+    lines = verifier_text.splitlines()
+    inline_body_lines = heredoc_body_lines(verifier_text, "throwaway verifier")
+    variable_wrappers: dict[str, str] = {}
+    wrappers: set[str] = set()
+    assignment_pattern = re.compile(
+        r'^([A-Z][A-Z0-9_]*)="\$TARGET/(?P<path>[^"\n]+\.sh)"$'
+    )
+    variable_call_pattern = re.compile(
+        r'(?:^|[|;&(]\s*)"\$(?P<name>[A-Z][A-Z0-9_]*)"(?:\s|\\|$)'
+    )
+    assigned_variable_call_pattern = re.compile(
+        r'^(?:[A-Z][A-Z0-9_]*="?[^"\s]*"?\s+)+'
+        r'"\$(?P<name>[A-Z][A-Z0-9_]*)"(?:\s|\\|$)'
+    )
+    literal_call_pattern = re.compile(
+        r'(?:^|[|;&(]\s*)'
+        r'(?:[A-Z][A-Z0-9_]*="?[^"\s]*"?\s+)*'
+        r'"?(?:\$TARGET/|\./)'
+        r'(?P<path>\.(?:trellis/guru-team/skills/packages|'
+        r'(?:agents|codex|cursor|claude)/skills)/'
+        r'guru-[A-Za-z0-9-]+/scripts/[A-Za-z0-9-]+\.sh)"?'
+        r'(?:\s|\\|$)'
+    )
+    for number, line in enumerate(lines, start=1):
+        if number in inline_body_lines or line.lstrip().startswith("#"):
+            continue
+        stripped = line.strip()
+        assignment = assignment_pattern.fullmatch(stripped)
+        if assignment is not None:
+            wrapper = package_wrapper_path(assignment.group("path"))
+            if wrapper is not None:
+                variable_wrappers[assignment.group(1)] = wrapper
+            continue
+        for match in variable_call_pattern.finditer(stripped):
+            wrapper = variable_wrappers.get(match.group("name"))
+            if wrapper is not None:
+                wrappers.add(wrapper)
+        assigned_variable_call = assigned_variable_call_pattern.match(stripped)
+        if assigned_variable_call is not None:
+            wrapper = variable_wrappers.get(assigned_variable_call.group("name"))
+            if wrapper is not None:
+                wrappers.add(wrapper)
+        for match in literal_call_pattern.finditer(stripped):
+            wrapper = package_wrapper_path(match.group("path"))
+            if wrapper is not None:
+                wrappers.add(wrapper)
+    return wrappers
+
+
+def parse_package_wrapper_command(source: str, owner: str) -> tuple[str, list[str]]:
+    if any(shell_line_invokes_unmanaged_python(line) for line in source.splitlines()):
+        raise RoutingError(f"bare PATH Python in package/platform wrapper: {owner}")
+    launcher_assignments = re.findall(
+        r'^\s*LAUNCHER="([^"]+)"$', source, re.MULTILINE
+    )
+    if not launcher_assignments or any(
+        not value.endswith("/runtime/launch.sh") for value in launcher_assignments
+    ):
+        raise RoutingError(f"package/platform wrapper launcher drift: {owner}")
+    commands = re.findall(
+        r'^source "\$LAUNCHER" ([A-Za-z0-9-]+) "\$@"$', source, re.MULTILINE
+    )
+    if len(commands) != 1:
+        raise RoutingError(f"package/platform wrapper command drift: {owner}")
+    return commands[0], launcher_assignments
+
+
+def discover_package_platform_wrappers(
+    repo_root: Path, verifier_text: str
+) -> list[dict[str, Any]]:
+    executed = shell_executed_package_wrappers(verifier_text)
+    verifier_owner = "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+    for block in discover_inline_python_blocks(verifier_text, verifier_owner):
+        if block["classification"] == "installed_managed":
+            executed.update(inline_executed_package_wrappers(block["body"], verifier_owner))
+
+    launcher = "trellis/skills/guru-team/runtime/launch.sh"
+    resolver = "trellis/skills/guru-team/runtime/resolve-python.sh"
+    launcher_source = (repo_root / launcher).read_text(encoding="utf-8")
+    launcher_route = re.findall(
+        r'^exec "\$SKILLS_ROOT/runtime/resolve-python\.sh" '
+        r'"\$REPO_ROOT" "\$SKILLS_ROOT/runtime" -m runtime\.command '
+        r'"\$PACKAGE_ROOT" "\$COMMAND_ID" "\$@"$',
+        launcher_source,
+        re.MULTILINE,
+    )
+    if len(launcher_route) != 1:
+        raise RoutingError(f"managed runtime launcher drift: {launcher}")
+
+    rows: list[dict[str, Any]] = []
+    for invocation_path in sorted(executed):
+        match = PACKAGE_WRAPPER_PATH.fullmatch(invocation_path)
+        if match is None:
+            raise RoutingError(f"invalid package/platform wrapper path: {invocation_path}")
+        package_id = match.group("package")
+        wrapper_name = match.group("wrapper")
+        canonical_wrapper = (
+            f"trellis/skills/guru-team/packages/{package_id}/scripts/{wrapper_name}"
+        )
+        commands_path = f"trellis/skills/guru-team/packages/{package_id}/commands.json"
+        command, launcher_assignments = parse_package_wrapper_command(
+            (repo_root / canonical_wrapper).read_text(encoding="utf-8"),
+            canonical_wrapper,
+        )
+        required_launcher = (
+            "$PACKAGE_SCRIPT_DIR/../../../../.trellis/guru-team/runtime/launch.sh"
+            if match.group("root") != ".trellis/guru-team/skills/packages"
+            else "$PACKAGE_SCRIPT_DIR/../../../runtime/launch.sh"
+        )
+        if required_launcher not in launcher_assignments:
+            raise RoutingError(
+                f"package/platform wrapper does not select the installed launcher: "
+                f"{canonical_wrapper}"
+            )
+        command_index = load_json(repo_root / commands_path)
+        declared = {
+            row.get("id")
+            for row in command_index.get("commands", [])
+            if isinstance(row, dict)
+        }
+        if command_index.get("package_id") != package_id or command not in declared:
+            raise RoutingError(
+                f"package/platform wrapper command is not declared: "
+                f"{canonical_wrapper} -> {command}"
+            )
+        digest = hashlib.sha256(invocation_path.encode()).hexdigest()
+        rows.append(
+            {
+                "id": f"package-wrapper-{digest[:12]}",
+                "owner": canonical_wrapper,
+                "kind": (
+                    "platform_shell_wrapper_second_hop"
+                    if match.group("root") != ".trellis/guru-team/skills/packages"
+                    else "package_shell_wrapper_second_hop"
+                ),
+                "classification": "installed_managed",
+                "expected_launcher": "installed runtime/launch.sh",
+                "invocation_path": invocation_path,
+                "package_id": package_id,
+                "runtime_command": command,
+                "commands": commands_path,
+                "route": [
+                    invocation_path,
+                    canonical_wrapper,
+                    launcher,
+                    resolver,
+                ],
+            }
+        )
+    return rows
+
+
 def expression_uses_name(node: ast.AST, name: str) -> bool:
     return any(isinstance(child, ast.Name) and child.id == name for child in ast.walk(node))
 
@@ -852,6 +1071,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
     helpers = inventory.get("python_helpers")
     transitive_helpers = inventory.get("transitive_python_helpers")
     registered_shell_helpers = inventory.get("shell_python_helpers")
+    registered_package_wrappers = inventory.get("package_platform_wrappers")
     registered_callers = inventory.get("callers")
     registered_secondary = inventory.get("secondary_callers")
     if (
@@ -862,6 +1082,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         or not isinstance(helpers, list)
         or not isinstance(transitive_helpers, list)
         or not isinstance(registered_shell_helpers, list)
+        or not isinstance(registered_package_wrappers, list)
         or not isinstance(registered_callers, list)
         or not isinstance(registered_secondary, list)
     ):
@@ -975,6 +1196,18 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         discovered_ids = {row["id"] for row in discovered_shell_helpers}
         raise RoutingError(
             "shell helper inventory drift: "
+            f"missing={sorted(discovered_ids - registered_ids)} "
+            f"stale={sorted(registered_ids - discovered_ids)}"
+        )
+
+    discovered_package_wrappers = discover_package_platform_wrappers(repo_root, text)
+    if discovered_package_wrappers != registered_package_wrappers:
+        registered_ids = {
+            row.get("id") for row in registered_package_wrappers if isinstance(row, dict)
+        }
+        discovered_ids = {row["id"] for row in discovered_package_wrappers}
+        raise RoutingError(
+            "package/platform wrapper inventory drift: "
             f"missing={sorted(discovered_ids - registered_ids)} "
             f"stale={sorted(registered_ids - discovered_ids)}"
         )
@@ -1129,6 +1362,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         "installed_managed_calls": installed_calls,
         "python_helpers": helper_facts,
         "shell_python_helpers": discovered_shell_helpers,
+        "package_platform_wrappers": discovered_package_wrappers,
         "package_runtime_closure": package_runtime_closure,
         "nested_verifier_entries": nested_verifier_entries,
         "direct_test_modules": discovered_direct_tests,

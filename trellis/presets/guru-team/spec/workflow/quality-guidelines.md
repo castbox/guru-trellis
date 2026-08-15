@@ -929,10 +929,14 @@ That graph review includes eval execution and source owner staging. It must
 prove `native_adapter.py` launches the shebang-free `guru-team-shared-eval`
 through its current `sys.executable`, and prove source staging invokes the
 canonical Python preset installer through the same managed interpreter rather
-than executing `apply.sh`. It must also inspect every verifier-referenced
-workflow shell wrapper and prove Python-entering wrappers, including installed
-`finish-work.sh` and compatibility `prepare-task.sh`, reach their package
-runtime only through the checkout-local resolver.
+than executing `apply.sh`. It must also inspect every verifier-executed
+workflow, preset, package, and platform shell wrapper. For package and platform
+callers it must prove the actual invocation path maps to the canonical
+wrapper's fixed `commands.json` command and reaches the installed
+`runtime/launch.sh -> resolve-python.sh` chain. Python-entering wrappers,
+including installed `finish-work.sh`, compatibility `prepare-task.sh`, package
+validators, and platform `invoke.sh`, must reach their package runtime only
+through the checkout-local resolver.
 It must additionally inspect the package-runtime closure and confirm every
 registered Python second hop in the real `run`, `run_stdout`, `subprocess.run`,
 and `owner.run` call shapes, plus the current dynamic validation helper, remains

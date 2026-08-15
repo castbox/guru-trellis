@@ -41,6 +41,16 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             for row in inventory["shell_python_helpers"]
             for path in row.get("route", [])
         )
+        self.package_wrapper_rows = tuple(inventory["package_platform_wrappers"])
+        self.package_wrapper_paths = tuple(
+            Path(path)
+            for row in self.package_wrapper_rows
+            for path in (
+                row["owner"],
+                row["commands"],
+                *row["route"][2:],
+            )
+        )
         self.direct_test_rows = tuple(inventory["direct_test_modules"])
         self.direct_test_paths = tuple(
             Path(row["owner"]) for row in self.direct_test_rows
@@ -67,6 +77,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
                 *self.transitive_paths,
                 *self.shell_paths,
                 *self.shell_route_paths,
+                *self.package_wrapper_paths,
                 *referenced_shell_paths,
                 *launch_owners,
                 *self.package_runtime_paths,
@@ -615,6 +626,44 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
                 "trellis/skills/guru-team/runtime/resolve-python.sh",
             ],
         )
+
+    def test_actual_package_and_platform_wrappers_are_registered(self) -> None:
+        rows = self.check()["package_platform_wrappers"]
+        by_path = {row["invocation_path"]: row for row in rows}
+        package_path = (
+            ".trellis/guru-team/skills/packages/"
+            "guru-sync-base/scripts/sync-base.sh"
+        )
+        platform_path = ".agents/skills/guru-sync-base/scripts/invoke.sh"
+        self.assertIn(package_path, by_path)
+        self.assertIn(platform_path, by_path)
+        self.assertEqual(by_path[package_path]["runtime_command"], "sync-base")
+        self.assertEqual(
+            by_path[platform_path]["route"][-2:],
+            [
+                "trellis/skills/guru-team/runtime/launch.sh",
+                "trellis/skills/guru-team/runtime/resolve-python.sh",
+            ],
+        )
+
+    def test_actual_package_wrapper_path_python_drift_fails(self) -> None:
+        # R2/R3 and AC1/AC6/AC8: this is a current README verifier caller.
+        relative = Path(
+            "trellis/skills/guru-team/packages/guru-sync-base/scripts/sync-base.sh"
+        )
+        path = self.root / relative
+        path.write_text(
+            path.read_text(encoding="utf-8").replace(
+                'source "$LAUNCHER" sync-base "$@"',
+                'python3 "$PACKAGE_SCRIPT_DIR/../runtime/sync.py" "$@"',
+                1,
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(
+            ROUTING.RoutingError, "bare PATH Python in package/platform wrapper"
+        ):
+            self.check()
 
     def test_package_route_workflow_wrapper_drift_fails(self) -> None:
         for relative in (

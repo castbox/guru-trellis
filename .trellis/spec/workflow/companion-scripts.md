@@ -158,14 +158,17 @@ repositories. Keep them portable:
   set. The current dynamic validation helper is also registered explicitly. A
   newly added runtime file is covered by the closure glob so ordinary package
   maintenance cannot silently omit a real caller from review.
-- Inventory discovery starts from every canonical workflow or preset shell wrapper that
-  the verifier directly invokes, even when the wrapper does not currently enter
-  Python. Any referenced wrapper that does enter Python must be registered and
-  `exec` its source- or installed-layout `resolve-python.sh`. In particular,
-  installed `finish-work.sh` and compatibility `prepare-task.sh` may not reopen
-  PATH Python before their package-local runtime entry. Discovery recursively
-  follows the preset dogfood-drift wrapper through the ownership wrapper to its
-  source resolver.
+- Inventory discovery starts from every workflow, preset, package, or platform
+  shell wrapper that the verifier actually invokes, even when the wrapper does
+  not currently enter Python. Package and platform rows bind the invocation
+  path to the canonical package wrapper, its fixed `commands.json` command,
+  installed `runtime/launch.sh`, and that launcher's exact
+  `resolve-python.sh` hop. Any referenced wrapper that does enter Python must be
+  registered and use its source- or installed-layout resolver. In particular,
+  installed `finish-work.sh`, compatibility `prepare-task.sh`, package
+  validators, and platform `invoke.sh` entries may not reopen PATH Python before
+  their package-local runtime entry. Discovery recursively follows the preset
+  dogfood-drift wrapper through the ownership wrapper to its source resolver.
 - Python helpers launched by the installed runner use `sys.executable` for a
   Python subprocess second hop and the raw managed `sys.executable` launch path
   for executable fixture shebangs, preserving the final `venv/bin/python`

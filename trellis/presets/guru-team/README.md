@@ -335,13 +335,15 @@ validation helper is registered explicitly, and a newly added runtime file is
 scanned automatically so ordinary maintenance cannot silently omit a real
 caller from review.
 
-The inventory begins with every workflow or preset shell wrapper directly referenced by
-the verifier, then classifies each wrapper that enters Python. Those wrappers
-must `exec` the resolver for their source or installed layout; installed
-`finish-work.sh` and compatibility `prepare-task.sh` therefore cannot reopen
-PATH Python before entering their package runtime. The source
-`check-dogfood-overlay-drift.sh` to `check-upstream-ownership.sh` route is also
-followed recursively to its source resolver.
+The inventory begins with every workflow, preset, package, or platform shell
+wrapper actually executed by the verifier, then classifies each wrapper that
+enters Python. Package and platform entries bind the real invocation path to the
+canonical package wrapper, its fixed `commands.json` command, the installed
+`runtime/launch.sh`, and `resolve-python.sh`. Installed `finish-work.sh`,
+compatibility `prepare-task.sh`, package validators, and platform `invoke.sh`
+therefore cannot reopen PATH Python before entering their package runtime. The
+source `check-dogfood-overlay-drift.sh` to `check-upstream-ownership.sh` route
+is also followed recursively to its source resolver.
 
 The inventory also follows eval execution transitively. Adapter shells enter
 `native_adapter.py` through the checkout-local resolver; that adapter starts the

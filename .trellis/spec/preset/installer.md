@@ -70,11 +70,15 @@ no PATH shebang. Source owner staging likewise invokes the canonical Python
 preset installer with that same `sys.executable`; it must not execute `apply.sh`
 and reopen a PATH-Python second hop.
 
-Verifier-referenced workflow shell wrappers are part of the caller inventory
-before the checker decides whether they currently enter Python. A wrapper that
-does enter Python must `exec` the resolver matching its source or installed
-layout. Installed `finish-work.sh` and compatibility `prepare-task.sh` therefore
-cannot invoke PATH Python before their package-local entry.
+Verifier-executed workflow, preset, package, and platform shell wrappers are
+part of the caller inventory before the checker decides whether they currently
+enter Python. Package and platform rows bind the actual invocation path to the
+canonical package wrapper, its fixed command in `commands.json`, the installed
+`runtime/launch.sh`, and that launcher's exact `resolve-python.sh` hop. A wrapper
+that enters Python must use the resolver matching its source or installed
+layout. Installed `finish-work.sh`, compatibility `prepare-task.sh`, package
+validators, and platform `invoke.sh` entries therefore cannot invoke PATH
+Python before their package-local entry.
 
 The inventory also scans every canonical
 `trellis/skills/guru-team/packages/*/runtime/**/*.py` file as the installed
