@@ -30,6 +30,29 @@
       ]
     }
   ],
+  "direct_test_modules": [
+    {
+      "id": "direct-test-installed-dc28520fb270",
+      "owner": "trellis/skills/guru-team/packages/guru-review-change-request/tests/test_contract.py",
+      "kind": "direct_test_module",
+      "classification": "installed_managed",
+      "expected_launcher": "installed_python"
+    },
+    {
+      "id": "direct-test-installed-227984d79896",
+      "owner": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
+      "kind": "direct_test_module",
+      "classification": "installed_managed",
+      "expected_launcher": "installed_python"
+    },
+    {
+      "id": "direct-test-source-d5b9bca95046",
+      "owner": "trellis/skills/guru-team/tests/test_skill_packages.py",
+      "kind": "direct_test_module",
+      "classification": "source_managed",
+      "expected_launcher": "source_python -m unittest"
+    }
+  ],
   "python_helpers": [
     {
       "id": "installed-closeout-helper",
@@ -1110,7 +1133,7 @@
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "da71f59de8d15f7a9fad65a7cf961eaadec0d089b340fd2abdd58c626ecc3e25",
       "ordinal": 1
     },
@@ -1119,7 +1142,7 @@
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "d9874b724b1e74d5b2bf3923529d45387a3761a23689dbb0689212c5789703f1",
       "ordinal": 1
     },
@@ -1128,7 +1151,7 @@
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "626801ca995e67d6c50860fc434b5a311cfb2c09c34b50fdc26a17a4f8566b4a",
       "ordinal": 1
     },
@@ -1137,7 +1160,7 @@
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "6f7a9b16545b069012716a0689531ec6927fed2dce95a1b815e9ce9caa07213a",
       "ordinal": 1
     },
@@ -1146,7 +1169,7 @@
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "fdeb7020948671263f7635456491b5cc52a40cf3285763ced1bcd562da4cfa27",
       "ordinal": 1
     },
@@ -1164,7 +1187,7 @@
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "a9bda1e179d16a526dc38760d047bccb5f8f11cc540d3ea2251df2b0bd57715f",
       "ordinal": 1
     },
@@ -1173,7 +1196,7 @@
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "9b8bcb82bee7546db3351624c9c2f47470724ef2b6c21f4889715e8709ba3dd3",
       "ordinal": 1
     },
@@ -1182,7 +1205,7 @@
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "61b8960b5f2d3af143f613a2c7cc02cc75a4958016824a01a2e0066ee6ff86a1",
       "ordinal": 1
     },
@@ -1191,7 +1214,7 @@
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "5fe8e4950c41ba59b582e17bff16f2d0032faa55e7721f9e5ab43a31d51465ff",
       "ordinal": 1
     },
@@ -1200,7 +1223,7 @@
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
-      "expected_launcher": "sys.executable resolved shebang",
+      "expected_launcher": "raw sys.executable shebang",
       "anchor_sha256": "bf791ac6d26c7b1d481999a9a5f7d8bd69eecad6c67bd4d8c977457a64749534",
       "ordinal": 1
     },

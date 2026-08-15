@@ -32,7 +32,7 @@ preset apply(target)
 
 ### Source runner
 
-`source_python()` 固定调用 canonical `trellis/skills/guru-team/runtime/resolve-python.sh`，参数绑定 source repository 与 canonical runtime assets。bootstrap seed 返回后立即使用该 runner 读取 `source-managed-runtime.json`，并验证 resolver 的实际 `sys.executable` 与 bootstrap interpreter/identity/lock 完全一致。
+`source_python()` 固定调用 canonical `trellis/skills/guru-team/runtime/resolve-python.sh`，参数绑定 source repository 与 canonical runtime assets。bootstrap seed 返回后立即使用该 runner 读取 `source-managed-runtime.json`，并验证 resolver 的实际 `sys.executable` 与 bootstrap interpreter 的规范化启动路径、物理解析 identity、runtime identity 和 lock identity 完全一致。启动路径规范化只解析父目录 alias，保留最终 `venv/bin/python` symlink。
 
 ### Installed runner
 
@@ -42,7 +42,7 @@ preset apply(target)
 
 新增 `trellis/presets/guru-team/scripts/python/verify_throwaway_python_routing.py`，由 source 或 installed runner 执行，提供两个确定性子命令：
 
-- `checkpoint`：读取 bootstrap/resolver/pointer/cache metadata/lock，断言实际 `sys.executable`、runtime identity、dependency-lock identity，并输出最小 JSON evidence。
+- `checkpoint`：读取 bootstrap/resolver/pointer/cache metadata/lock，分别断言实际 `sys.executable` 的 managed 启动路径与物理解析 identity，再断言 runtime identity、dependency-lock identity，并输出最小 JSON evidence。
 - `check-inventory`：读取显式 inventory，扫描 verifier、直接 helper 和第二跳 Python 入口，拒绝未分类裸解释器、PATH shebang、非 `sys.executable` Python subprocess 与 inventory drift。
 
 该 helper 是 verifier source asset，不加入 public Skill DTO，不承担 semantic pass。
@@ -73,7 +73,7 @@ preset apply(target)
 
 - 无依赖环境使用当前不含 `jsonschema` 的 PATH Python，直接运行 README 命令。
 - 有依赖环境创建临时 `python3` shim，转发到可导入 `jsonschema` 的解释器。seed 完成后 verifier 通过测试专用 sentinel 激活 poison；若任何 bootstrap 后路径再次调用 PATH `python3`，shim 立即失败并记录调用。
-- checkpoint 同时证明 managed `sys.executable` 与 PATH shim/underlying PATH interpreter 不同。
+- checkpoint 同时证明 managed `sys.executable` 的启动路径不是 PATH shim/underlying PATH interpreter，并证明其物理解析 identity 与 managed interpreter 一致。
 
 测试专用 sentinel 只控制 fixture 观测，不参与生产路由或 runtime authority。
 

@@ -83,6 +83,7 @@ assert payload["repo"] == str(Path(sys.argv[4]).resolve())
 assert payload["bootstrap_consumed"] is (sys.argv[3] == "true")
 assert re.fullmatch(r"[0-9a-f]{24}", payload["runtime_id"])
 assert re.fullmatch(r"[0-9a-f]{64}", payload["dependency_lock_sha256"])
+assert payload["sys_executable_launch_path"] == payload["interpreter_launch_path"]
 assert Path(payload["sys_executable"]).resolve() == Path(payload["interpreter"]).resolve()
 assert payload["sys_executable_resolved"] == payload["interpreter_resolved"]
 ' "$checkpoint_json" "$checkpoint_label" "$bootstrap_consumed" "$REPO_ROOT"
@@ -102,6 +103,7 @@ assert payload["repo"] == str(Path(sys.argv[3]).resolve())
 assert payload["bootstrap_consumed"] is False
 assert re.fullmatch(r"[0-9a-f]{24}", payload["runtime_id"])
 assert re.fullmatch(r"[0-9a-f]{64}", payload["dependency_lock_sha256"])
+assert payload["sys_executable_launch_path"] == payload["interpreter_launch_path"]
 assert Path(payload["sys_executable"]).resolve() == Path(payload["interpreter"]).resolve()
 assert payload["sys_executable_resolved"] == payload["interpreter_resolved"]
 ' "$checkpoint_json" "$checkpoint_label" "$checkpoint_repo"
@@ -119,7 +121,8 @@ embedded=json.loads(sys.argv[2])["runtime_checkpoint"]
 assert embedded["status"] == "ok"
 assert embedded["checkpoint"] == sys.argv[3]
 for key in (
-    "runtime_id", "sys_executable", "sys_executable_resolved", "interpreter",
+    "runtime_id", "sys_executable", "sys_executable_launch_path",
+    "sys_executable_resolved", "interpreter", "interpreter_launch_path",
     "interpreter_resolved", "dependency_lock_sha256",
 ):
     assert embedded[key] == outer[key], (key, embedded[key], outer[key])

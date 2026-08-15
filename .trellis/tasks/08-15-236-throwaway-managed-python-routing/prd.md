@@ -43,7 +43,8 @@
 ### R4. 精确运行时证据
 
 - source/installed runner 执行 checkpoint probe 时必须断言：
-  - `Path(sys.executable).resolve()` 必须与 resolver/bootstrap 返回的 interpreter 完全一致；
+  - `sys.executable` 的规范化启动路径必须与 resolver/bootstrap 返回的 managed interpreter 启动路径一致；规范化只解析父目录 alias，必须保留最终 `venv/bin/python` symlink；
+  - 两侧启动路径各自解析后的物理 interpreter identity 必须一致，不能只比较路径文本或只比较物理文件；
   - runtime id 必须与 active pointer、cache metadata 与 bootstrap/resolver 结果完全一致；
   - dependency lock SHA-256 必须与 runtime metadata identity 中的 lock digest 完全一致；
   - interpreter 是该 runtime identity 下的可执行 regular file。
@@ -71,7 +72,7 @@
 
 - AC1: 静态 inventory 门禁证明 verifier caller graph 只有一个 `bootstrap_seed`，其余入口全部有且只有一个 managed 分类。
 - AC2: source bootstrap JSON 被消费，source runner 的 executable/runtime/lock 三项完全匹配。
-- AC3: initial 与 after-update target、两次 change-request smoke、linked-worktree、closeout 和 no-developer checkpoint 的三项身份完全匹配对应 installed runner。
+- AC3: initial 与 after-update target、两次 change-request smoke、linked-worktree、closeout 和 no-developer checkpoint 的启动路径、物理 interpreter、runtime 与 lock identity 完全匹配对应 installed runner。
 - AC4: PATH Python 无 `jsonschema` 的环境直接运行 README 原始命令，完整矩阵 exit 0。
 - AC5: PATH Python 有 `jsonschema` 的 poisoned fixture 证明 bootstrap 后 PATH Python 未再执行，原始命令完整 exit 0。
 - AC6: source/installed runner 不混用；损坏或 mismatch 路径 fail closed，无 PATH fallback。

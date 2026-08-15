@@ -305,7 +305,7 @@ def main() -> int:
     fake_bin = work_root / "installed-task-workspace-bin"
     fake_bin.mkdir()
     fake_gh = fake_bin / "gh"
-    managed_shebang = f"#!{Path(sys.executable).resolve()}\n"
+    managed_shebang = f"#!{sys.executable}\n"
     fake_gh.write_text(
         managed_shebang
         +

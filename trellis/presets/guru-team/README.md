@@ -307,13 +307,14 @@ Maintainers can verify the current extension's non-interactive install path with
 That command has exactly one direct PATH Python bootstrap seed. It consumes the
 seed result through the canonical source managed runner, then routes every
 source or installed Python subprocess through the corresponding
-`resolve-python.sh`. Runtime checkpoints verify resolved `sys.executable`, the
-active runtime/cache identity, and the dependency-lock SHA-256 at initial,
-update/reapply, change-request, linked-worktree, closeout, Phase 0,
-task-workspace, and no-developer boundaries. A source-owned bidirectional caller
-inventory rejects new bare `python3`, PATH Python shebangs, unmanaged Python
-subprocesses, and source/installed helper routing drift before and after the
-business matrix.
+`resolve-python.sh`. Runtime checkpoints verify the normalized managed launch
+path while preserving the final `venv/bin/python` symlink, its separately
+resolved physical interpreter identity, the active runtime/cache identity, and
+the dependency-lock SHA-256 at initial, update/reapply, change-request,
+linked-worktree, closeout, Phase 0, task-workspace, and no-developer boundaries.
+A source-owned bidirectional caller inventory rejects new bare `python3`, PATH
+Python shebangs, unmanaged Python subprocesses in the current caller shapes, and
+source/installed helper routing drift before and after the business matrix.
 
 After the managed bootstrap succeeds, the verifier creates a temporary
 `python3` PATH bridge ahead of the caller's PATH. The bridge directly execs the
@@ -327,9 +328,12 @@ consumption or any Trellis call, and rejects bridge resolver or activation
 drift.
 
 That inventory also scans every canonical `packages/*/runtime/**/*.py` file.
-Package-local Python subprocesses, delegated runners, and Python `exec`/`spawn`
-second hops must use the resolver-selected `sys.executable` and remain explicit
-inventory entries; a newly added runtime file is scanned automatically.
+Package-local Python second hops in the real `run`, `run_stdout`,
+`subprocess.run`, and `owner.run` call shapes must use the resolver-selected
+`sys.executable` and remain explicit inventory entries. The current dynamic
+validation helper is registered explicitly, and a newly added runtime file is
+scanned automatically so ordinary maintenance cannot silently omit a real
+caller from review.
 
 The inventory begins with every workflow or preset shell wrapper directly referenced by
 the verifier, then classifies each wrapper that enters Python. Those wrappers

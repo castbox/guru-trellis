@@ -479,7 +479,7 @@ def write_fixture(root: Path, owners: dict[str, Any], real_git: str, case_name: 
 
 def install_fake_commands(fake_bin: Path) -> None:
     fake_bin.mkdir(parents=True, exist_ok=True)
-    managed_shebang = f"#!{Path(sys.executable).resolve()}\n"
+    managed_shebang = f"#!{sys.executable}\n"
     write_executable(
         fake_bin / "git",
         managed_shebang + """

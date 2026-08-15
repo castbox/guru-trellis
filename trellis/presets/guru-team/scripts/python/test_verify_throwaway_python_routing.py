@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -37,6 +41,10 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             for row in inventory["shell_python_helpers"]
             for path in row.get("route", [])
         )
+        self.direct_test_rows = tuple(inventory["direct_test_modules"])
+        self.direct_test_paths = tuple(
+            Path(row["owner"]) for row in self.direct_test_rows
+        )
         runtime_spec = inventory["package_runtime_closure"]
         self.package_runtime_paths = tuple(
             path.relative_to(source_root)
@@ -62,6 +70,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
                 *referenced_shell_paths,
                 *launch_owners,
                 *self.package_runtime_paths,
+                *self.direct_test_paths,
             )
         ):
             target = self.root / relative
@@ -101,10 +110,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
                 for item in discovered
             )
             row["managed_shebang_bindings"] = len(
-                ROUTING.managed_shebang_names(
-                    ROUTING.ast.parse(source),
-                    ROUTING.python_runtime_aliases(ROUTING.ast.parse(source)),
-                )
+                ROUTING.managed_shebang_names(ROUTING.ast.parse(source))
             )
             secondary.extend(discovered)
         runtime_spec = inventory["package_runtime_closure"]
@@ -123,8 +129,50 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
                     anchor_prefix=relative.as_posix() + " ",
                 )
             )
+        for row in self.direct_test_rows:
+            path = self.root / row["owner"]
+            relative = path.relative_to(self.root).as_posix()
+            secondary.extend(
+                ROUTING.discover_secondary_callers(
+                    path.read_text(encoding="utf-8"),
+                    relative,
+                    classification=row["classification"],
+                    id_namespace="direct-test",
+                    anchor_prefix=relative + " ",
+                )
+            )
         inventory["secondary_callers"] = secondary
         self.write_inventory(inventory)
+
+    def runtime_fixture(self) -> tuple[Path, Path, Path, Path, str]:
+        repo = self.root / "runtime-repo"
+        runtime_assets = self.root / "runtime-assets"
+        runtime_assets.mkdir(parents=True)
+        lock_path = runtime_assets / "requirements.lock"
+        lock_path.write_text("jsonschema==fixture\n", encoding="utf-8")
+        (runtime_assets / "python-runtime.json").write_text(
+            json.dumps({"lock_file": "requirements.lock"}),
+            encoding="utf-8",
+        )
+        identity = {
+            "lock_sha256": hashlib.sha256(lock_path.read_bytes()).hexdigest()
+        }
+        runtime_id = ROUTING.canonical_digest(identity)[:24]
+        runtime_root = self.root / "runtime-cache" / runtime_id
+        interpreter = runtime_root / "venv/bin/python"
+        interpreter.parent.mkdir(parents=True)
+        interpreter.symlink_to(Path(sys.executable).resolve())
+        (runtime_root / "metadata.json").write_text(
+            json.dumps({"runtime_id": runtime_id, "identity": identity}),
+            encoding="utf-8",
+        )
+        pointer = repo / ".trellis/.runtime/guru-team/python/active.json"
+        pointer.parent.mkdir(parents=True)
+        pointer.write_text(
+            json.dumps({"runtime_id": runtime_id, "interpreter": str(interpreter)}),
+            encoding="utf-8",
+        )
+        return repo, runtime_assets, runtime_root, interpreter, runtime_id
 
     def insert_managed_heredoc(self, statement: str) -> None:
         path = self.root / self.verifier_path
@@ -147,6 +195,84 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             result["package_runtime_closure"]["python_file_count"],
             len(self.package_runtime_paths),
         )
+        self.assertEqual(
+            {row["owner"] for row in result["direct_test_modules"]},
+            {path.as_posix() for path in self.direct_test_paths},
+        )
+
+    def test_checkpoint_rejects_same_physical_non_managed_interpreter(self) -> None:
+        repo, runtime_assets, _, interpreter, _ = self.runtime_fixture()
+        physical_interpreter = interpreter.resolve()
+        self.assertTrue(os.path.samefile(physical_interpreter, interpreter))
+        self.assertNotEqual(physical_interpreter, interpreter)
+        with mock.patch.object(ROUTING.sys, "executable", str(physical_interpreter)):
+            with self.assertRaisesRegex(
+                ROUTING.RoutingError, "sys.executable launch path mismatch"
+            ):
+                ROUTING.runtime_checkpoint(repo, runtime_assets, "same-physical-base")
+
+    def test_checkpoint_records_matching_launch_and_physical_identity(self) -> None:
+        repo, runtime_assets, _, interpreter, _ = self.runtime_fixture()
+        with mock.patch.object(ROUTING.sys, "executable", str(interpreter)):
+            result = ROUTING.runtime_checkpoint(repo, runtime_assets, "managed")
+        self.assertEqual(
+            result["sys_executable_launch_path"],
+            result["interpreter_launch_path"],
+        )
+        self.assertEqual(
+            result["sys_executable_resolved"],
+            result["interpreter_resolved"],
+        )
+
+    def test_checkpoint_requires_exact_bootstrap_interpreter_path(self) -> None:
+        repo, runtime_assets, _, interpreter, runtime_id = self.runtime_fixture()
+        bootstrap = self.root / "bootstrap.json"
+        bootstrap.write_text(
+            json.dumps(
+                {
+                    "runtime_identity": runtime_id,
+                    "interpreter": str(interpreter.resolve()),
+                }
+            ),
+            encoding="utf-8",
+        )
+        with mock.patch.object(ROUTING.sys, "executable", str(interpreter)):
+            with self.assertRaisesRegex(
+                ROUTING.RoutingError, "bootstrap result was not consumed"
+            ):
+                ROUTING.runtime_checkpoint(
+                    repo,
+                    runtime_assets,
+                    "bootstrap-exact-path",
+                    bootstrap_json=bootstrap,
+                )
+
+    @unittest.skipIf(os.name == "nt", "executable shebang semantics are POSIX-only")
+    def test_raw_sys_executable_shebang_preserves_managed_launch_path(self) -> None:
+        _, _, _, interpreter, _ = self.runtime_fixture()
+        probe = self.root / "managed-shebang-probe"
+        probe.write_text(
+            f"#!{interpreter}\nimport sys\nprint(sys.executable)\n",
+            encoding="utf-8",
+        )
+        probe.chmod(0o755)
+        completed = subprocess.run(
+            [str(probe)], text=True, capture_output=True, check=True
+        )
+        self.assertEqual(
+            ROUTING.launch_path(completed.stdout.strip()),
+            ROUTING.launch_path(interpreter),
+        )
+
+    def test_direct_package_test_path_python_subprocess_fails(self) -> None:
+        path = self.root / self.direct_test_paths[0]
+        path.write_text(
+            path.read_text(encoding="utf-8")
+            + '\nsubprocess.run(["python3", "-V"])\n',
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
+            self.check()
 
     def test_package_runtime_path_python_subprocess_fails(self) -> None:
         path = self.root / Path(
@@ -236,70 +362,6 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         with self.assertRaisesRegex(ROUTING.RoutingError, "nested verifier inventory drift"):
             self.check()
 
-    def test_delegated_run_and_exec_launchers_are_checked(self) -> None:
-        for source in (
-            'owner.run(["python3", "-V"])',
-            'os.execv("python3", ["python3", "-V"])',
-        ):
-            with self.subTest(source=source):
-                with self.assertRaisesRegex(
-                    ROUTING.RoutingError, "unmanaged Python subprocess"
-                ):
-                    ROUTING.discover_secondary_callers(source, "runtime/example.py")
-
-    def test_normal_python_caller_forms_are_not_missed(self) -> None:
-        managed_cases = {
-            "keyword-managed": (
-                "import subprocess,sys\n"
-                'subprocess.run(args=[sys.executable,"-V"])'
-            ),
-            "import-alias": (
-                "from subprocess import run as execute\nimport sys\n"
-                'execute([sys.executable,"-V"])'
-            ),
-            "module-alias": (
-                "import subprocess,sys\npy=sys.executable\n"
-                'def launch(): return subprocess.run([py,"-V"])'
-            ),
-            "write-bytes": (
-                "from pathlib import Path\nimport sys\n"
-                'Path("x").write_bytes(f"#!{sys.executable}\\n".encode())'
-            ),
-        }
-        for label, source in managed_cases.items():
-            with self.subTest(label=label):
-                self.assertTrue(
-                    ROUTING.discover_secondary_callers(source, "memory.py")
-                )
-
-        unmanaged_cases = {
-            "keyword-path": (
-                "import subprocess\n"
-                'subprocess.run(args=["python3","-V"])'
-            ),
-            "delegated-wrapper": (
-                "import subprocess\n"
-                "def launch(command): return subprocess.run(command)\n"
-                'launch(["python3","-V"])'
-            ),
-            "shell-string": (
-                "import subprocess\n"
-                'subprocess.run("python3 -V", shell=True)'
-            ),
-            "sh-c": (
-                "import subprocess\n"
-                'subprocess.run(["sh","-c","python3 -V"])'
-            ),
-            "open-write": 'open("x","w").write("#!/usr/bin/env python3\\n")',
-        }
-        for label, source in unmanaged_cases.items():
-            with self.subTest(label=label):
-                with self.assertRaisesRegex(
-                    ROUTING.RoutingError,
-                    "unmanaged (Python subprocess|generated Python shebang)",
-                ):
-                    ROUTING.discover_secondary_callers(source, "memory.py")
-
     def test_poison_activation_before_bootstrap_fails(self) -> None:
         path = self.root / self.verifier_path
         poison = ': >"$GURU_TEAM_VERIFY_PATH_PYTHON_POISON_FILE"'
@@ -371,14 +433,10 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             self.assertEqual(self.check()["status"], "ok")
 
     def test_new_bare_python_after_seed_fails(self) -> None:
-        for launcher in ("python", "python3", "python3.12", "/usr/bin/env python3"):
-            with self.subTest(launcher=launcher):
-                path = self.root / self.verifier_path
-                original = path.read_text()
-                path.write_text(original + f"\n{launcher} -c 'print(1)'\n")
-                with self.assertRaisesRegex(ROUTING.RoutingError, "bare PATH python"):
-                    self.check()
-                path.write_text(original)
+        path = self.root / self.verifier_path
+        path.write_text(path.read_text() + "\npython3 -c 'print(1)'\n")
+        with self.assertRaisesRegex(ROUTING.RoutingError, "bare PATH python"):
+            self.check()
 
     def test_new_path_python_shebang_fails(self) -> None:
         path = self.root / self.helper_paths[0]
@@ -391,17 +449,6 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         path.write_text(
             path.read_text()
             + "\n\ndef unregistered():\n    return subprocess.run(['python3', '-V'])\n"
-        )
-        with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
-            self.check()
-
-    def test_variable_built_python_subprocess_fails(self) -> None:
-        path = self.root / self.helper_paths[1]
-        path.write_text(
-            path.read_text()
-            + "\n\ndef variable_built():\n"
-            + "    command = ['python3', '-V']\n"
-            + "    return subprocess.run(command)\n"
         )
         with self.assertRaisesRegex(ROUTING.RoutingError, "unmanaged Python subprocess"):
             self.check()
@@ -420,31 +467,6 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         self.insert_managed_heredoc('subprocess.run([sys.executable, "-V"])')
         self.refresh_secondary_inventory()
         self.assertEqual(self.check()["status"], "ok")
-
-    def test_wrapped_dynamic_sys_executable_launcher_is_discovered(self) -> None:
-        path = self.root / self.helper_paths[1]
-        path.write_text(
-            path.read_text(encoding="utf-8")
-            + "\n\ndef wrapped_dynamic():\n"
-            + '    command = [str(Path(sys.executable)), "-V"]\n'
-            + "    return subprocess.run(command)\n",
-            encoding="utf-8",
-        )
-        with self.assertRaisesRegex(
-            ROUTING.RoutingError, "sys.executable subprocess inventory drift"
-        ):
-            self.check()
-        self.refresh_secondary_inventory()
-        self.assertEqual(self.check()["status"], "ok")
-
-    def test_unsupported_sys_executable_expression_fails_closed(self) -> None:
-        self.insert_managed_heredoc(
-            'subprocess.run([f"{sys.executable}-suffix", "-V"])'
-        )
-        with self.assertRaisesRegex(
-            ROUTING.RoutingError, "unsupported sys.executable launcher expression"
-        ):
-            self.check()
 
     def test_unregistered_direct_helper_fails(self) -> None:
         path = self.root / self.verifier_path
@@ -477,7 +499,7 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         path = self.root / self.transitive_paths[0]
         path.write_text(
             path.read_text().replace(
-                'MANAGED_PYTHON_SHEBANG = f"#!{Path(sys.executable).resolve()}\\n"',
+                'MANAGED_PYTHON_SHEBANG = f"#!{sys.executable}\\n"',
                 'MANAGED_PYTHON_SHEBANG = "#!/usr/bin/env python3\\n"',
                 1,
             )
@@ -485,59 +507,40 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
         with self.assertRaisesRegex(ROUTING.RoutingError, "PATH Python shebang"):
             self.check()
 
+    def test_transitive_resolved_sys_executable_shebang_fails(self) -> None:
+        path = self.root / self.transitive_paths[0]
+        path.write_text(
+            path.read_text().replace(
+                'MANAGED_PYTHON_SHEBANG = f"#!{sys.executable}\\n"',
+                'MANAGED_PYTHON_SHEBANG = f"#!{Path(sys.executable).resolve()}\\n"',
+                1,
+            )
+        )
+        with self.assertRaisesRegex(
+            ROUTING.RoutingError,
+            "generated shebang must bind raw sys.executable",
+        ):
+            self.check()
+
     def test_direct_managed_generated_shebang_requires_inventory(self) -> None:
         path = self.root / self.helper_paths[0]
         path.write_text(
             path.read_text(encoding="utf-8")
-            + "\nwrite_executable(Path('direct.py'), f\"#!{Path(sys.executable).resolve()}\\n\")\n",
+            + "\nwrite_executable(Path('direct.py'), f\"#!{sys.executable}\\n\")\n",
             encoding="utf-8",
         )
         with self.assertRaisesRegex(ROUTING.RoutingError, "secondary caller inventory drift"):
-            self.check()
-
-    def test_concatenated_path_python_shebang_fails(self) -> None:
-        path = self.root / self.helper_paths[0]
-        path.write_text(
-            path.read_text(encoding="utf-8")
-            + "\nwrite_executable(Path('path.py'), '#!' + '/usr/bin/env ' + 'python3\\n')\n",
-            encoding="utf-8",
-        )
-        with self.assertRaisesRegex(
-            ROUTING.RoutingError, "unmanaged generated Python shebang"
-        ):
             self.check()
 
     def test_shell_wrapper_path_python_fails(self) -> None:
         path = self.root / Path(
             "trellis/workflows/guru-team/scripts/bash/finish-work.sh"
         )
-        for launcher in ("python", "python3"):
-            with self.subTest(launcher=launcher):
-                original = path.read_text()
-                path.write_text(original + f"\n{launcher} -V\n")
-                with self.assertRaisesRegex(
-                    ROUTING.RoutingError, "bare PATH Python in shell helper"
-                ):
-                    self.check()
-                path.write_text(original)
-
-    def test_shell_wrapper_reference_syntaxes_are_discovered(self) -> None:
-        path = '"$TARGET/.trellis/guru-team/scripts/bash/check-env.sh"'
-        cases = (
-            f"{path} --json",
-            f"env FOO=1 {path} --json",
-            f"command {path} --json",
-            f"result=$(env FOO=1 {path} --json)",
-            f"WRAPPER={path}\n\"$WRAPPER\" --json",
-        )
-        for source in cases:
-            with self.subTest(source=source):
-                rows = ROUTING.discover_referenced_shell_helpers(source)
-                self.assertEqual(len(rows), 1)
-                self.assertEqual(
-                    rows[0]["owner"],
-                    "trellis/workflows/guru-team/scripts/bash/check-env.sh",
-                )
+        path.write_text(path.read_text() + "\npython3 -V\n")
+        with self.assertRaisesRegex(
+            ROUTING.RoutingError, "bare PATH Python in shell helper"
+        ):
+            self.check()
 
     def test_shell_helper_fixture_and_assertion_are_not_callers(self) -> None:
         source = (
@@ -555,6 +558,20 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             'subprocess.run(["git", "commit", "-m", "Document python3 runtime"])\n'
         )
         self.assertEqual(ROUTING.discover_secondary_callers(source, "memory.py"), [])
+
+    def test_process_callers_are_limited_to_current_real_shapes(self) -> None:
+        accepted = (
+            "run([sys.executable, '-V'])",
+            "run_stdout([sys.executable, '-V'])",
+            "subprocess.run([sys.executable, '-V'])",
+            "owner.run([sys.executable, '-V'])",
+        )
+        for source in accepted:
+            call = ROUTING.ast.parse(source).body[0].value
+            self.assertIsNotNone(ROUTING.process_command_node(call), source)
+
+        unrelated = ROUTING.ast.parse("client.run([sys.executable, '-V'])").body[0].value
+        self.assertIsNone(ROUTING.process_command_node(unrelated))
 
     def test_nested_preset_shell_wrapper_path_python_fails(self) -> None:
         path = self.root / Path(

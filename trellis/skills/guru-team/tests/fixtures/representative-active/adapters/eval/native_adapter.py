@@ -15,7 +15,7 @@ from typing import Any
 
 ADAPTERS = ("shared", "codex", "claude", "cursor")
 
-MANAGED_PYTHON_SHEBANG = f"#!{Path(sys.executable).resolve()}\n"
+MANAGED_PYTHON_SHEBANG = f"#!{sys.executable}\n"
 
 TRACE_HELPER = MANAGED_PYTHON_SHEBANG + r'''from __future__ import annotations
 

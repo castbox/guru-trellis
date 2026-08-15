@@ -428,7 +428,7 @@ def stage_transcript_owner_repo(
 
     fake_bin = chain_root / "fake-bin"
     fake_bin.mkdir()
-    managed_shebang = f"#!{Path(sys.executable).resolve()}\n"
+    managed_shebang = f"#!{sys.executable}\n"
     operation_log = chain_root / "operation-counts.jsonl"
     issue_body = chain_root / "issue-body.txt"
     issue_body.write_text(

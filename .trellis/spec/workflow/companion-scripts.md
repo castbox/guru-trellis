@@ -142,18 +142,22 @@ repositories. Keep them portable:
   cannot bypass the bridge. Static routing validation owns bridge contents,
   activation order, override binding, and caller inventory classification.
 - The source-owned `verify_throwaway_python_routing.py` owns deterministic
-  `checkpoint` and `check-inventory` operations. Checkpoints compare resolved
-  `sys.executable`, active pointer, cache metadata runtime identity, and the
+  `checkpoint` and `check-inventory` operations. Checkpoints compare the
+  normalized managed launch path while preserving the final `venv/bin/python`
+  symlink, compare its separately resolved physical interpreter identity, and
+  then compare the active pointer, cache metadata runtime identity, and
   dependency-lock digest. The inventory is bidirectional: every verifier
   inline, module, test, helper, resolver-wrapper, Python subprocess second hop,
   and generated Python shebang has one stable classification and expected
   launcher; missing, stale, duplicate, or newly discovered entries fail.
 - The same inventory scans the complete canonical
   `packages/*/runtime/**/*.py` closure installed into a target. Package-local
-  `subprocess`, delegated `run`, and Python `exec`/`spawn` second hops must use
-  the managed process's `sys.executable`, must have no PATH Python shebang, and
-  must appear in the registered secondary-caller set. A newly added runtime
-  file is covered by the closure glob without a manual allowlist update.
+  Python second hops in the real `run`, `run_stdout`, `subprocess.run`, and
+  `owner.run` call shapes must use the managed process's `sys.executable`, must
+  have no PATH Python shebang, and must appear in the registered secondary-caller
+  set. The current dynamic validation helper is also registered explicitly. A
+  newly added runtime file is covered by the closure glob so ordinary package
+  maintenance cannot silently omit a real caller from review.
 - Inventory discovery starts from every canonical workflow or preset shell wrapper that
   the verifier directly invokes, even when the wrapper does not currently enter
   Python. Any referenced wrapper that does enter Python must be registered and
@@ -163,10 +167,12 @@ repositories. Keep them portable:
   follows the preset dogfood-drift wrapper through the ownership wrapper to its
   source resolver.
 - Python helpers launched by the installed runner use `sys.executable` for a
-  Python subprocess second hop and a resolved `sys.executable` shebang for
-  executable fixtures. `/usr/bin/env python3`, literal `python3` subprocesses,
-  and unregistered variable-built Python launchers are forbidden even when the
-  invoked code uses only the standard library.
+  Python subprocess second hop and the raw managed `sys.executable` launch path
+  for executable fixture shebangs, preserving the final `venv/bin/python`
+  symlink. The inventory covers the real `write_text` and `write_executable`
+  shebang paths. `/usr/bin/env python3`, literal `python3` subprocesses, and
+  unregistered callers in these supported maintenance shapes are forbidden even
+  when the invoked code uses only the standard library.
 - The eval adapter transitive graph is explicit: an adapter shell resolves
   managed Python, that interpreter starts `native_adapter.py`, and the native
   adapter starts `guru-team-shared-eval` as

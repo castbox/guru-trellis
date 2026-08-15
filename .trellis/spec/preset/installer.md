@@ -56,9 +56,11 @@ immediately consumed through the canonical source `resolve-python.sh`. Every
 later Python subprocess uses either that source runner or the target checkout's
 installed `.trellis/guru-team/runtime/resolve-python.sh`; target, linked-worktree,
 closeout, update/reapply, and no-developer evidence must never use the source
-interpreter as a substitute. Each checkpoint binds resolved `sys.executable`,
-the active pointer/runtime metadata identity, and the SHA-256 of the selected
-runtime's dependency lock.
+interpreter as a substitute. Each checkpoint binds the normalized managed
+`sys.executable` launch path while preserving the final `venv/bin/python`
+symlink, its separately resolved physical interpreter identity, the active
+pointer/runtime metadata identity, and the SHA-256 of the selected runtime's
+dependency lock.
 
 The eval adapter graph is part of that same routing boundary. Its shell adapter
 enters `native_adapter.py` through the checkout-local resolver;
@@ -77,9 +79,11 @@ cannot invoke PATH Python before their package-local entry.
 The inventory also scans every canonical
 `trellis/skills/guru-team/packages/*/runtime/**/*.py` file as the installed
 package-runtime closure. A package runtime may start another Python process
-only with its current managed `sys.executable`; literal or variable-built PATH
-Python, Python `exec`/`spawn`, and PATH Python shebangs fail closed. Every
-accepted package-runtime second hop remains an explicit inventory row.
+only with its current managed `sys.executable`. The checker recognizes the real
+`run`, `run_stdout`, `subprocess.run`, and `owner.run` call shapes and explicitly
+registers the current dynamic validation helper. Literal PATH Python and PATH
+Python shebangs in those supported maintenance paths fail closed. Every accepted
+package-runtime second hop remains an explicit inventory row.
 
 The preset also maintains one bounded AI-first principles block in the target
 root `AGENTS.md`, delimited by stable start/end markers. Missing `AGENTS.md` is

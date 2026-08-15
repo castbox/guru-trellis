@@ -33,6 +33,12 @@ def canonical_digest(payload: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def launch_path(path: str | Path) -> Path:
+    """Normalize parent aliases without resolving the interpreter symlink itself."""
+    absolute = Path(os.path.abspath(os.fspath(path)))
+    return absolute.parent.resolve() / absolute.name
+
+
 def repository_state_root(repo: Path) -> Path:
     marker = repo / ".git"
     if marker.is_dir():
@@ -93,11 +99,20 @@ def runtime_checkpoint(
         raise RoutingError(f"{label}: managed interpreter is not an executable regular file")
 
     actual_executable = Path(sys.executable)
+    actual_launch_path = launch_path(actual_executable)
+    expected_launch_path = launch_path(interpreter)
     actual_resolved = actual_executable.resolve()
     expected_resolved = interpreter.resolve()
+    if actual_launch_path != expected_launch_path:
+        raise RoutingError(
+            f"{label}: sys.executable launch path mismatch: "
+            f"{actual_launch_path} != {expected_launch_path} "
+            f"(resolved: {actual_resolved} != {expected_resolved})"
+        )
     if actual_resolved != expected_resolved:
         raise RoutingError(
-            f"{label}: sys.executable mismatch: {actual_resolved} != {expected_resolved}"
+            f"{label}: sys.executable physical identity mismatch: "
+            f"{actual_resolved} != {expected_resolved}"
         )
 
     runtime_root = interpreter.parent.parent.parent
@@ -127,7 +142,7 @@ def runtime_checkpoint(
         if (
             bootstrap_identity.get("runtime_identity") != runtime_id
             or not isinstance(bootstrap_interpreter, str)
-            or Path(bootstrap_interpreter).resolve() != expected_resolved
+            or launch_path(bootstrap_interpreter) != expected_launch_path
         ):
             raise RoutingError(f"{label}: bootstrap result was not consumed by this runner")
 
@@ -137,8 +152,10 @@ def runtime_checkpoint(
         "repo": str(repo),
         "runtime_id": runtime_id,
         "sys_executable": str(actual_executable),
+        "sys_executable_launch_path": str(actual_launch_path),
         "sys_executable_resolved": str(actual_resolved),
         "interpreter": str(interpreter),
+        "interpreter_launch_path": str(expected_launch_path),
         "interpreter_resolved": str(expected_resolved),
         "pointer": str(pointer_path),
         "metadata": str(runtime_root / "metadata.json"),
@@ -148,431 +165,59 @@ def runtime_checkpoint(
     }
 
 
-def parent_map(tree: ast.AST) -> dict[ast.AST, ast.AST]:
-    return {
-        child: node
-        for node in ast.walk(tree)
-        for child in ast.iter_child_nodes(node)
-    }
-
-
-def lexical_scope(
-    node: ast.AST, parents: dict[ast.AST, ast.AST]
-) -> ast.Module | ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | ast.ClassDef:
-    current = node
-    while current in parents:
-        current = parents[current]
-        if isinstance(
-            current,
-            (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef),
-        ):
-            return current
-    if isinstance(current, ast.Module):
-        return current
-    raise RoutingError("Python caller has no lexical scope")
-
-
-def lexical_scope_chain(node: ast.AST, parents: dict[ast.AST, ast.AST]) -> list[ast.AST]:
-    scopes: list[ast.AST] = []
-    current = node
-    if isinstance(current, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)):
-        scopes.append(current)
-    while current in parents:
-        current = parents[current]
-        if isinstance(
-            current,
-            (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef),
-        ):
-            scopes.append(current)
-    scopes.reverse()
-    return scopes
-
-
-def lexical_bindings(
-    tree: ast.AST,
-    node: ast.AST,
-    parents: dict[ast.AST, ast.AST] | None = None,
-    assignment_index: dict[
-        ast.AST, list[tuple[tuple[int, int], str, ast.AST]]
-    ]
-    | None = None,
-) -> dict[str, ast.AST]:
-    known_parents = parent_map(tree) if parents is None else parents
-    scopes = lexical_scope_chain(node, known_parents)
-    position = (
-        getattr(node, "lineno", sys.maxsize),
-        getattr(node, "col_offset", sys.maxsize),
-    )
-    if assignment_index is None:
-        assignment_index = lexical_assignment_index(tree, known_parents)
-    bindings: dict[str, ast.AST] = {}
-    for scope in scopes:
-        for candidate_position, name, value in assignment_index.get(scope, []):
-            if candidate_position >= position:
-                break
-            bindings[name] = value
-    return bindings
-
-
-def lexical_assignment_index(
-    tree: ast.AST, parents: dict[ast.AST, ast.AST] | None = None
-) -> dict[ast.AST, list[tuple[tuple[int, int], str, ast.AST]]]:
-    known_parents = parent_map(tree) if parents is None else parents
-    assignments: dict[
-        ast.AST, list[tuple[tuple[int, int], str, ast.AST]]
-    ] = {}
-    for candidate in ast.walk(tree):
-        if not isinstance(candidate, (ast.Assign, ast.AnnAssign)):
-            continue
-        if candidate.value is None:
-            continue
-        scope = lexical_scope(candidate, known_parents)
-        candidate_position = (
-            getattr(candidate, "lineno", sys.maxsize),
-            getattr(candidate, "col_offset", sys.maxsize),
-        )
-        targets = (
-            candidate.targets
-            if isinstance(candidate, ast.Assign)
-            else [candidate.target]
-        )
-        for target in targets:
-            if isinstance(target, ast.Name):
-                assignments.setdefault(scope, []).append(
-                    (candidate_position, target.id, candidate.value)
-                )
-    for rows in assignments.values():
-        rows.sort(key=lambda row: (row[0], row[1]))
-    return assignments
-
-
-def python_runtime_aliases(tree: ast.AST) -> dict[str, set[str]]:
-    aliases = {"modules": {"sys"}, "executables": set()}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for name in node.names:
-                if name.name == "sys":
-                    aliases["modules"].add(name.asname or name.name)
-        elif isinstance(node, ast.ImportFrom) and node.module == "sys":
-            for name in node.names:
-                if name.name == "executable":
-                    aliases["executables"].add(name.asname or name.name)
-    return aliases
-
-
 def is_sys_executable(
-    node: ast.AST, aliases: dict[str, set[str]] | None = None
+    node: ast.AST,
 ) -> bool:
-    known = {"modules": {"sys"}, "executables": set()} if aliases is None else aliases
     return (
         isinstance(node, ast.Attribute)
         and isinstance(node.value, ast.Name)
-        and node.value.id in known["modules"]
+        and node.value.id == "sys"
         and node.attr == "executable"
-    ) or (isinstance(node, ast.Name) and node.id in known["executables"])
+    )
 
 
 def expression_contains_sys_executable(
-    node: ast.AST, aliases: dict[str, set[str]] | None = None
-) -> bool:
-    return any(is_sys_executable(child, aliases) for child in ast.walk(node))
-
-
-def managed_python_expression(
     node: ast.AST,
-    bindings: dict[str, ast.AST],
-    resolving: frozenset[str] = frozenset(),
-    aliases: dict[str, set[str]] | None = None,
 ) -> bool:
-    if is_sys_executable(node, aliases):
-        return True
-    if isinstance(node, ast.Name) and node.id in bindings:
-        if node.id in resolving:
-            raise RoutingError(f"cyclic Python launcher binding: {node.id}")
-        return managed_python_expression(
-            bindings[node.id], bindings, resolving | {node.id}, aliases
-        )
-    if isinstance(node, ast.Call) and len(node.args) == 1 and not node.keywords:
-        if isinstance(node.func, ast.Name) and node.func.id in {"str", "Path"}:
-            return managed_python_expression(node.args[0], bindings, resolving, aliases)
-        if (
-            isinstance(node.func, ast.Attribute)
-            and isinstance(node.func.value, ast.Name)
-            and node.func.value.id == "os"
-            and node.func.attr == "fspath"
-        ):
-            return managed_python_expression(node.args[0], bindings, resolving, aliases)
-    if (
-        isinstance(node, ast.Call)
-        and not node.args
-        and not node.keywords
-        and isinstance(node.func, ast.Attribute)
-        and node.func.attr in {"absolute", "resolve"}
-    ):
-        return managed_python_expression(node.func.value, bindings, resolving, aliases)
-    if expression_contains_sys_executable(node, aliases):
-        raise RoutingError(
-            "unsupported sys.executable launcher expression: "
-            + ast.unparse(node)
-        )
-    return False
+    return any(is_sys_executable(child) for child in ast.walk(node))
 
 
 def literal_python_launcher(
     node: ast.AST,
-    bindings: dict[str, ast.AST],
-    resolving: frozenset[str] = frozenset(),
 ) -> str | None:
-    if isinstance(node, ast.Name) and node.id in bindings:
-        if node.id in resolving:
-            raise RoutingError(f"cyclic Python launcher binding: {node.id}")
-        return literal_python_launcher(
-            bindings[node.id], bindings, resolving | {node.id}
-        )
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         name = Path(node.value).name.lower()
         if name in {"python", "python3", "python.exe", "python3.exe"} or name.startswith("python3."):
             return node.value
-        if re.search(
-            r"(?:^|[\s;&|()])(?:[^\s;&|()]*/)?python(?:3(?:\.\d+)?)?(?:\.exe)?(?:\s|$)",
-            node.value,
-            re.IGNORECASE,
-        ):
-            return node.value
-    if isinstance(node, ast.Call) and node.args:
-        is_path_wrapper = isinstance(node.func, ast.Name) and node.func.id == "Path"
-        is_which_wrapper = (
-            isinstance(node.func, ast.Attribute) and node.func.attr == "which"
-        )
-        if is_path_wrapper or is_which_wrapper:
-            return literal_python_launcher(node.args[0], bindings, resolving)
-    static_value = static_string_expression(node, bindings)
-    if static_value is not None and static_value != getattr(node, "value", None):
-        return literal_python_launcher(ast.Constant(value=static_value), {}, resolving)
-    for child in ast.walk(node):
-        if child is node:
-            continue
-        if isinstance(child, ast.Constant) and isinstance(child.value, str):
-            embedded = literal_python_launcher(child, {}, resolving)
-            if embedded is not None:
-                return embedded
     return None
-
-
-def scalar_python_launcher(
-    node: ast.AST,
-    bindings: dict[str, ast.AST] | None = None,
-    runtime_aliases: dict[str, set[str]] | None = None,
-) -> str | None:
-    known = {} if bindings is None else bindings
-    if managed_python_expression(node, known, aliases=runtime_aliases):
-        return "sys.executable"
-    return literal_python_launcher(node, known)
 
 
 def sequence_python_launcher(
     node: ast.AST | None,
-    bindings: dict[str, ast.AST] | None = None,
-    resolving: frozenset[str] = frozenset(),
-    runtime_aliases: dict[str, set[str]] | None = None,
 ) -> str | None:
-    if node is None:
-        return None
-    known = {} if bindings is None else bindings
-    if isinstance(node, ast.Name) and node.id in known:
-        if node.id in resolving:
-            raise RoutingError(f"cyclic Python command binding: {node.id}")
-        return sequence_python_launcher(
-            known[node.id], known, resolving | {node.id}, runtime_aliases
-        )
-    if (
-        isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Name)
-        and node.func.id == "_managed_validation_command"
-        and len(node.args) == 1
-        and not node.keywords
-    ):
-        return "managed dynamic sys.executable"
     if not isinstance(node, (ast.List, ast.Tuple)) or not node.elts:
-        if expression_contains_sys_executable(node, runtime_aliases):
-            raise RoutingError(
-                "unsupported sys.executable command expression: "
-                + ast.unparse(node)
-            )
         return None
-    launcher = scalar_python_launcher(node.elts[0], known, runtime_aliases)
-    if launcher is not None:
-        return launcher
-    first = static_string_expression(node.elts[0], known)
-    if first is not None and Path(first).name in {"sh", "bash"}:
-        for index, element in enumerate(node.elts[1:], start=1):
-            if static_string_expression(element, known) == "-c" and index + 1 < len(node.elts):
-                return scalar_python_launcher(
-                    node.elts[index + 1], known, runtime_aliases
-                )
-    return None
+    if is_sys_executable(node.elts[0]):
+        return "sys.executable"
+    return literal_python_launcher(node.elts[0])
 
 
-def process_aliases(tree: ast.AST) -> dict[str, set[str]]:
-    aliases = {
-        "subprocess_modules": {"subprocess"},
-        "subprocess_functions": set(),
-        "os_modules": {"os"},
-        "os_functions": set(),
-        "asyncio_modules": {"asyncio"},
-        "asyncio_functions": set(),
-    }
-    subprocess_names = {
-        "run", "Popen", "call", "check_call", "check_output",
-        "getoutput", "getstatusoutput",
-    }
-    os_names = {"system", "popen"}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for name in node.names:
-                if name.name == "subprocess":
-                    aliases["subprocess_modules"].add(name.asname or name.name)
-                elif name.name == "os":
-                    aliases["os_modules"].add(name.asname or name.name)
-                elif name.name == "asyncio":
-                    aliases["asyncio_modules"].add(name.asname or name.name)
-        elif isinstance(node, ast.ImportFrom) and node.module == "subprocess":
-            for name in node.names:
-                if name.name in subprocess_names:
-                    aliases["subprocess_functions"].add(name.asname or name.name)
-        elif isinstance(node, ast.ImportFrom) and node.module == "os":
-            for name in node.names:
-                if name.name.startswith(("exec", "spawn")) or name.name in os_names:
-                    aliases["os_functions"].add(name.asname or name.name)
-        elif isinstance(node, ast.ImportFrom) and node.module == "asyncio":
-            for name in node.names:
-                if name.name.startswith("create_subprocess_"):
-                    aliases["asyncio_functions"].add(name.asname or name.name)
-    changed = True
-    while changed:
-        changed = False
-        for node in ast.walk(tree):
-            if not isinstance(node, (ast.Assign, ast.AnnAssign)) or node.value is None:
-                continue
-            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-            source_name = None
-            if isinstance(node.value, ast.Attribute) and isinstance(node.value.value, ast.Name):
-                if (
-                    node.value.value.id in aliases["subprocess_modules"]
-                    and node.value.attr in subprocess_names
-                ):
-                    source_name = "subprocess_functions"
-                elif (
-                    node.value.value.id in aliases["os_modules"]
-                    and (
-                        node.value.attr.startswith(("exec", "spawn"))
-                        or node.value.attr in os_names
-                    )
-                ):
-                    source_name = "os_functions"
-                elif (
-                    node.value.value.id in aliases["asyncio_modules"]
-                    and node.value.attr.startswith("create_subprocess_")
-                ):
-                    source_name = "asyncio_functions"
-            elif isinstance(node.value, ast.Name):
-                for family in (
-                    "subprocess_functions", "os_functions", "asyncio_functions"
-                ):
-                    if node.value.id in aliases[family]:
-                        source_name = family
-                        break
-            if source_name is None:
-                continue
-            for target in targets:
-                if isinstance(target, ast.Name) and target.id not in aliases[source_name]:
-                    aliases[source_name].add(target.id)
-                    changed = True
-    return aliases
-
-
-def process_command_node(
-    call: ast.Call, aliases: dict[str, set[str]]
-) -> tuple[bool, ast.AST | None]:
-    subprocess_call = (
+def process_command_node(call: ast.Call) -> ast.AST | None:
+    is_local_run = (
+        isinstance(call.func, ast.Name)
+        and call.func.id in {"run", "run_stdout"}
+    )
+    is_current_attribute_run = (
         isinstance(call.func, ast.Attribute)
         and isinstance(call.func.value, ast.Name)
-        and call.func.value.id in aliases["subprocess_modules"]
-        and call.func.attr in {"run", "Popen", "call", "check_call", "check_output"}
-    )
-    imported_subprocess_call = (
-        isinstance(call.func, ast.Name)
-        and call.func.id in aliases["subprocess_functions"]
-    )
-    asyncio_call = (
-        (
-            isinstance(call.func, ast.Attribute)
-            and isinstance(call.func.value, ast.Name)
-            and call.func.value.id in aliases["asyncio_modules"]
-            and call.func.attr.startswith("create_subprocess_")
-        )
-        or (
-            isinstance(call.func, ast.Name)
-            and call.func.id in aliases["asyncio_functions"]
+        and (
+            (call.func.value.id == "subprocess" and call.func.attr == "run")
+            or (call.func.value.id == "owner" and call.func.attr == "run")
         )
     )
-    local_run_call = (
-        isinstance(call.func, ast.Name) and call.func.id in {"run", "run_stdout"}
-    )
-    delegated_run_call = (
-        isinstance(call.func, ast.Attribute)
-        and call.func.attr in {"run", "run_stdout"}
-    )
-    os_process_call = (
-        (
-            isinstance(call.func, ast.Attribute)
-            and isinstance(call.func.value, ast.Name)
-            and call.func.value.id in aliases["os_modules"]
-            and (
-                call.func.attr.startswith(("exec", "spawn"))
-                or call.func.attr in {"system", "popen"}
-            )
-        )
-        or (
-            isinstance(call.func, ast.Name)
-            and call.func.id in aliases["os_functions"]
-        )
-    )
-    if os_process_call:
-        name = call.func.attr if isinstance(call.func, ast.Attribute) else call.func.id
-        launcher_index = 1 if name.startswith("spawn") else 0
-        return True, call.args[launcher_index] if len(call.args) > launcher_index else None
-    if not (
-        subprocess_call
-        or imported_subprocess_call
-        or asyncio_call
-        or local_run_call
-        or delegated_run_call
-    ):
-        return False, None
-    if call.args:
-        return True, call.args[0]
-    for keyword in call.keywords:
-        if keyword.arg in {"args", "command", "executed_command"}:
-            return True, keyword.value
-    return True, None
-
-
-def subprocess_python_launcher(
-    call: ast.Call,
-    bindings: dict[str, ast.AST] | None = None,
-    aliases: dict[str, set[str]] | None = None,
-    runtime_aliases: dict[str, set[str]] | None = None,
-) -> str | None:
-    known_aliases = process_aliases(ast.Module(body=[], type_ignores=[])) if aliases is None else aliases
-    is_process, command = process_command_node(call, known_aliases)
-    if not is_process or command is None:
+    if not (is_local_run or is_current_attribute_run) or not call.args:
         return None
-    if isinstance(command, (ast.List, ast.Tuple, ast.Name, ast.Call)):
-        return sequence_python_launcher(
-            command, bindings, runtime_aliases=runtime_aliases
-        )
-    return scalar_python_launcher(command, bindings, runtime_aliases)
+    return call.args[0]
 
 
 def normalized_shell_anchor(lines: list[str], index: int) -> str:
@@ -590,8 +235,7 @@ def shell_line_invokes_unmanaged_python(line: str) -> bool:
         return False
     return re.search(
         r'(?:^|[;&|()]\s*)'
-        r'(?:(?:exec|command)\s+|(?:[^\s;&|()]*/)?env(?:\s+[A-Za-z_][A-Za-z0-9_]*=[^\s]+)*\s+)?'
-        r'(?:[^\s;&|()]*/)?python(?:3(?:\.\d+)?)?(?:\.exe)?(?:\s|$)',
+        r'(?:[^\s;&|()]*/)?python3(?:\.\d+)?(?:\s|$)',
         stripped,
         re.IGNORECASE,
     ) is not None
@@ -808,9 +452,7 @@ def expression_uses_name(node: ast.AST, name: str) -> bool:
     return any(isinstance(child, ast.Name) and child.id == name for child in ast.walk(node))
 
 
-def managed_shebang_names(
-    tree: ast.AST, aliases: dict[str, set[str]] | None = None
-) -> set[str]:
+def managed_shebang_names(tree: ast.AST) -> set[str]:
     names: set[str] = set()
     assignments: list[tuple[list[ast.expr], ast.AST]] = []
     for node in ast.walk(tree):
@@ -822,15 +464,9 @@ def managed_shebang_names(
     while changed:
         changed = False
         for targets, value in assignments:
-            binds_sys_executable = (
-                any(
-                    isinstance(child, ast.Constant)
-                    and isinstance(child.value, str)
-                    and "#!" in child.value
-                    for child in ast.walk(value)
-                )
-                and expression_contains_sys_executable(value, aliases)
-            )
+            if literal_generated_python_shebang(value):
+                raise RoutingError("unmanaged generated Python shebang")
+            binds_sys_executable = managed_shebang_expression(value)
             derives_managed_shebang = binds_sys_executable or any(
                 expression_uses_name(value, name) for name in names
             )
@@ -843,49 +479,6 @@ def managed_shebang_names(
     return names
 
 
-def static_string_expression(
-    node: ast.AST,
-    bindings: dict[str, ast.AST],
-    resolving: frozenset[str] = frozenset(),
-) -> str | None:
-    if isinstance(node, ast.Name) and node.id in bindings:
-        if node.id in resolving:
-            raise RoutingError(f"cyclic generated-file binding: {node.id}")
-        return static_string_expression(
-            bindings[node.id], bindings, resolving | {node.id}
-        )
-    if isinstance(node, ast.Constant) and isinstance(node.value, str):
-        return node.value
-    if isinstance(node, ast.Constant) and isinstance(node.value, bytes):
-        try:
-            return node.value.decode("utf-8")
-        except UnicodeDecodeError:
-            return None
-    if (
-        isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and node.func.attr == "encode"
-        and not node.args
-        and not node.keywords
-    ):
-        return static_string_expression(node.func.value, bindings, resolving)
-    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
-        left = static_string_expression(node.left, bindings, resolving)
-        right = static_string_expression(node.right, bindings, resolving)
-        if left is not None and right is not None:
-            return left + right
-    if isinstance(node, (ast.List, ast.Tuple)):
-        values = [static_string_expression(value, bindings, resolving) for value in node.elts]
-        if all(value is not None for value in values):
-            return "".join(value for value in values if value is not None)
-    if isinstance(node, ast.JoinedStr) and all(
-        isinstance(value, ast.Constant) and isinstance(value.value, str)
-        for value in node.values
-    ):
-        return "".join(value.value for value in node.values)
-    return None
-
-
 def expression_contains_shebang_marker(node: ast.AST) -> bool:
     return any(
         isinstance(child, ast.Constant)
@@ -895,58 +488,34 @@ def expression_contains_shebang_marker(node: ast.AST) -> bool:
     )
 
 
-def process_wrapper_parameters(
-    tree: ast.AST, aliases: dict[str, set[str]]
-) -> dict[str, tuple[int, str, ast.AST | None]]:
-    wrappers: dict[str, tuple[int, str, ast.AST | None]] = {}
-    for function in ast.walk(tree):
-        if not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            continue
-        positional = [*function.args.posonlyargs, *function.args.args]
-        parameters = [*positional, *function.args.kwonlyargs]
-        parameter_index = {parameter.arg: index for index, parameter in enumerate(parameters)}
-        defaults: dict[str, ast.AST | None] = {
-            parameter.arg: None for parameter in parameters
-        }
-        for parameter, default in zip(
-            positional[-len(function.args.defaults):] if function.args.defaults else [],
-            function.args.defaults,
+def literal_generated_python_shebang(node: ast.AST) -> bool:
+    return (
+        isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and re.search(
+            r"(?m)^#![^\n]*\bpython(?:3(?:\.\d+)?)?\b", node.value
+        )
+        is not None
+    )
+
+
+def managed_shebang_expression(node: ast.AST) -> bool:
+    if not (
+        expression_contains_shebang_marker(node)
+        and expression_contains_sys_executable(node)
+    ):
+        return False
+    for child in ast.walk(node):
+        if (
+            isinstance(child, ast.Call)
+            and isinstance(child.func, ast.Attribute)
+            and child.func.attr in {"absolute", "resolve"}
+            and expression_contains_sys_executable(child)
         ):
-            defaults[parameter.arg] = default
-        for parameter, default in zip(function.args.kwonlyargs, function.args.kw_defaults):
-            defaults[parameter.arg] = default
-        matches: set[tuple[int, str]] = set()
-        for node in ast.walk(function):
-            if not isinstance(node, ast.Call):
-                continue
-            is_process, command = process_command_node(node, aliases)
-            if is_process and isinstance(command, ast.Name) and command.id in parameter_index:
-                matches.add((parameter_index[command.id], command.id))
-        if len(matches) == 1:
-            index, name = next(iter(matches))
-            wrappers[function.name] = (index, name, defaults[name])
-    return wrappers
-
-
-def wrapper_command_node(
-    call: ast.Call, wrappers: dict[str, tuple[int, str, ast.AST | None]]
-) -> ast.AST | None:
-    if isinstance(call.func, ast.Name):
-        wrapper_name = call.func.id
-    elif isinstance(call.func, ast.Attribute):
-        wrapper_name = call.func.attr
-    else:
-        return None
-    if wrapper_name not in wrappers:
-        return None
-    index, name, default = wrappers[wrapper_name]
-    call_index = index - 1 if isinstance(call.func, ast.Attribute) and index > 0 else index
-    if len(call.args) > call_index:
-        return call.args[call_index]
-    for keyword in call.keywords:
-        if keyword.arg == name:
-            return keyword.value
-    return default
+            raise RoutingError(
+                "generated shebang must bind raw sys.executable without path resolution"
+            )
+    return True
 
 
 def normalized_python_anchor(source: str, node: ast.AST) -> str:
@@ -965,31 +534,30 @@ def discover_secondary_callers(
     anchor_prefix: str = "",
 ) -> list[dict[str, Any]]:
     tree = ast.parse(source, filename=owner)
-    parents = parent_map(tree)
-    assignments = lexical_assignment_index(tree, parents)
-    aliases = process_aliases(tree)
-    runtime_aliases = python_runtime_aliases(tree)
-    wrappers = process_wrapper_parameters(tree, aliases)
-    shebang_names = managed_shebang_names(tree, runtime_aliases)
+    shebang_names = managed_shebang_names(tree)
+    managed_dynamic_names = {
+        target.id
+        for assignment in ast.walk(tree)
+        if isinstance(assignment, ast.Assign)
+        and isinstance(assignment.value, ast.Call)
+        and isinstance(assignment.value.func, ast.Name)
+        and assignment.value.func.id == "_managed_validation_command"
+        for target in assignment.targets
+        if isinstance(target, ast.Name)
+    }
     discovered: list[tuple[str, str, str, str]] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Return):
-            bindings = lexical_bindings(tree, node, parents, assignments)
             returned = node.value
-            returned_process_call = (
-                isinstance(returned, ast.Call)
-                and process_command_node(returned, aliases)[0]
+            returned_process_call = isinstance(returned, ast.Call) and (
+                process_command_node(returned) is not None
             )
             if returned_process_call:
                 launcher = None
             elif isinstance(returned, ast.Tuple) and returned.elts:
-                launcher = sequence_python_launcher(
-                    returned.elts[0], bindings, runtime_aliases=runtime_aliases
-                )
+                launcher = sequence_python_launcher(returned.elts[0])
             else:
-                launcher = sequence_python_launcher(
-                    returned, bindings, runtime_aliases=runtime_aliases
-                )
+                launcher = sequence_python_launcher(returned)
             if launcher == "sys.executable":
                 anchor = anchor_prefix + normalized_python_anchor(source, node)
                 discovered.append(
@@ -998,15 +566,11 @@ def discover_secondary_callers(
                 continue
         if not isinstance(node, ast.Call):
             continue
-        bindings = lexical_bindings(tree, node, parents, assignments)
-        launcher = subprocess_python_launcher(
-            node, bindings, aliases, runtime_aliases
-        )
-        wrapper_command = wrapper_command_node(node, wrappers)
-        if launcher is None and wrapper_command is not None:
-            launcher = sequence_python_launcher(
-                wrapper_command, bindings, runtime_aliases=runtime_aliases
-            )
+        command = process_command_node(node)
+        if isinstance(command, ast.Name) and command.id in managed_dynamic_names:
+            launcher = "managed dynamic sys.executable"
+        else:
+            launcher = sequence_python_launcher(command)
         if launcher in {"sys.executable", "managed dynamic sys.executable"}:
             anchor = anchor_prefix + normalized_python_anchor(source, node)
             discovered.append(
@@ -1023,53 +587,20 @@ def discover_secondary_callers(
             raise RoutingError(f"unmanaged Python subprocess in {owner}: {launcher}")
         if isinstance(node.func, ast.Name) and node.func.id == "write_executable":
             content = node.args[1] if len(node.args) > 1 else None
-        elif (
-            isinstance(node.func, ast.Attribute)
-            and isinstance(node.func.value, ast.Name)
-            and node.func.value.id in aliases["os_modules"]
-            and node.func.attr == "write"
-        ):
-            content = node.args[1] if len(node.args) > 1 else None
-        elif isinstance(node.func, ast.Attribute) and node.func.attr in {
-            "write_text",
-            "write_bytes",
-            "write",
-            "writelines",
-        }:
-            content = node.args[0] if node.args else next(
-                (
-                    keyword.value
-                    for keyword in node.keywords
-                    if keyword.arg in {"data", "s", "text", "content"}
-                ),
-                None,
-            )
-        elif (
-            isinstance(node.func, ast.Name)
-            and node.func.id == "print"
-            and any(keyword.arg == "file" for keyword in node.keywords)
-        ):
-            content = ast.List(elts=list(node.args), ctx=ast.Load())
+        elif isinstance(node.func, ast.Attribute) and node.func.attr == "write_text":
+            content = node.args[0] if node.args else None
         else:
             content = None
-        static_content = (
-            static_string_expression(content, bindings) if content is not None else None
-        )
-        if static_content is not None and re.search(
-            r"(?m)^#![^\n]*\bpython(?:3(?:\.\d+)?)?\b", static_content
-        ):
+        if content is not None and literal_generated_python_shebang(content):
             raise RoutingError(f"unmanaged generated Python shebang in {owner}")
         managed_shebang = content is not None and (
-            (
-                expression_contains_shebang_marker(content)
-                and expression_contains_sys_executable(content, runtime_aliases)
-            )
+            managed_shebang_expression(content)
             or any(expression_uses_name(content, name) for name in shebang_names)
         )
         if managed_shebang:
             anchor = anchor_prefix + normalized_python_anchor(source, node)
             discovered.append(
-                ("generated_shebang", classification, "sys.executable resolved shebang", anchor)
+                ("generated_shebang", classification, "raw sys.executable shebang", anchor)
             )
 
     rows = []
@@ -1159,8 +690,19 @@ def discover_nested_verifier_entries(
     owner: str,
 ) -> list[dict[str, Any]]:
     tree = ast.parse(source, filename=owner)
-    parents = parent_map(tree)
-    assignments = lexical_assignment_index(tree, parents)
+    verifier_names = {
+        target.id
+        for assignment in ast.walk(tree)
+        if isinstance(assignment, ast.Assign)
+        and any(
+            isinstance(child, ast.Constant)
+            and child.value
+            == "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+            for child in ast.walk(assignment.value)
+        )
+        for target in assignment.targets
+        if isinstance(target, ast.Name)
+    }
     rows: list[dict[str, Any]] = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call) or not node.args:
@@ -1181,13 +723,7 @@ def discover_nested_verifier_entries(
             and isinstance(first.args[0], ast.Name)
         ):
             continue
-        bindings = lexical_bindings(tree, node, parents, assignments)
-        binding = bindings.get(first.args[0].id)
-        if binding is None or not any(
-            isinstance(child, ast.Constant)
-            and child.value == "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
-            for child in ast.walk(binding)
-        ):
+        if first.args[0].id not in verifier_names:
             continue
         anchor = owner + " " + normalized_python_anchor(source, node)
         digest = hashlib.sha256(anchor.encode()).hexdigest()
@@ -1267,6 +803,43 @@ def discover_package_runtime_closure(
     )
 
 
+def discover_direct_test_modules(verifier_text: str) -> list[dict[str, Any]]:
+    normalized = re.sub(r"\\\n\s*", " ", verifier_text)
+    discovered: dict[tuple[str, str], dict[str, Any]] = {}
+
+    installed_pattern = re.compile(
+        r'installed_python "\$TARGET" '
+        r'"\$TARGET/\.trellis/guru-team/skills/'
+        r'((?:[^"\s]+/)?tests/[^"\s]+\.py)"'
+    )
+    for match in installed_pattern.finditer(normalized):
+        owner = "trellis/skills/guru-team/" + match.group(1)
+        discovered[("installed_managed", owner)] = {
+            "id": "direct-test-installed-" + hashlib.sha256(owner.encode()).hexdigest()[:12],
+            "owner": owner,
+            "kind": "direct_test_module",
+            "classification": "installed_managed",
+            "expected_launcher": "installed_python",
+        }
+
+    source_pattern = re.compile(
+        r"source_python -m unittest\s+"
+        r"(trellis\.skills\.guru-team\.(?:packages\.[^.]+\.tests|tests)\.[A-Za-z0-9_]+)"
+    )
+    for match in source_pattern.finditer(normalized):
+        module = match.group(1)
+        owner = module.replace(".", "/") + ".py"
+        discovered[("source_managed", owner)] = {
+            "id": "direct-test-source-" + hashlib.sha256(owner.encode()).hexdigest()[:12],
+            "owner": owner,
+            "kind": "direct_test_module",
+            "classification": "source_managed",
+            "expected_launcher": "source_python -m unittest",
+        }
+
+    return [discovered[key] for key in sorted(discovered)]
+
+
 def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     inventory = load_json(inventory_path)
@@ -1275,6 +848,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
     verifier_spec = inventory.get("verifier")
     package_runtime_spec = inventory.get("package_runtime_closure")
     registered_nested_verifiers = inventory.get("nested_verifier_entries")
+    registered_direct_tests = inventory.get("direct_test_modules")
     helpers = inventory.get("python_helpers")
     transitive_helpers = inventory.get("transitive_python_helpers")
     registered_shell_helpers = inventory.get("shell_python_helpers")
@@ -1284,6 +858,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         not isinstance(verifier_spec, dict)
         or not isinstance(package_runtime_spec, dict)
         or not isinstance(registered_nested_verifiers, list)
+        or not isinstance(registered_direct_tests, list)
         or not isinstance(helpers, list)
         or not isinstance(transitive_helpers, list)
         or not isinstance(registered_shell_helpers, list)
@@ -1454,9 +1029,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
                 f"{sys_executable_calls} != {expected_sys_calls}"
             )
         expected_bindings = row.get("managed_shebang_bindings")
-        actual_bindings = len(
-            managed_shebang_names(tree, python_runtime_aliases(tree))
-        )
+        actual_bindings = len(managed_shebang_names(tree))
         if actual_bindings != expected_bindings:
             raise RoutingError(
                 f"managed shebang inventory drift in {path_text}: "
@@ -1487,6 +1060,32 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
             "nested verifier inventory drift: "
             f"missing={sorted(discovered_ids - registered_ids)} "
             f"stale={sorted(registered_ids - discovered_ids)}"
+        )
+
+    discovered_direct_tests = discover_direct_test_modules(text)
+    if discovered_direct_tests != registered_direct_tests:
+        registered_ids = {
+            row.get("id") for row in registered_direct_tests if isinstance(row, dict)
+        }
+        discovered_ids = {row["id"] for row in discovered_direct_tests}
+        raise RoutingError(
+            "direct test module inventory drift: "
+            f"missing={sorted(discovered_ids - registered_ids)} "
+            f"stale={sorted(registered_ids - discovered_ids)}"
+        )
+    for row in discovered_direct_tests:
+        owner = row["owner"]
+        source_path = repo_root / owner
+        if source_path.is_symlink() or not source_path.is_file():
+            raise RoutingError(f"direct test module is unavailable: {owner}")
+        discovered_secondary.extend(
+            discover_secondary_callers(
+                source_path.read_text(encoding="utf-8"),
+                owner,
+                classification=row["classification"],
+                id_namespace="direct-test",
+                anchor_prefix=owner + " ",
+            )
         )
 
     if discovered_secondary != registered_secondary:
@@ -1532,6 +1131,7 @@ def check_inventory(repo_root: Path, inventory_path: Path) -> dict[str, Any]:
         "shell_python_helpers": discovered_shell_helpers,
         "package_runtime_closure": package_runtime_closure,
         "nested_verifier_entries": nested_verifier_entries,
+        "direct_test_modules": discovered_direct_tests,
         "secondary_callers": discovered_secondary,
     }
 

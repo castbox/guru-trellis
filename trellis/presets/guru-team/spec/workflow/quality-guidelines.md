@@ -934,8 +934,11 @@ workflow shell wrapper and prove Python-entering wrappers, including installed
 `finish-work.sh` and compatibility `prepare-task.sh`, reach their package
 runtime only through the checkout-local resolver.
 It must additionally inspect the package-runtime closure and confirm every
-Python subprocess, delegated runner, or Python `exec`/`spawn` second hop remains
-bound to that resolver-selected `sys.executable`.
+registered Python second hop in the real `run`, `run_stdout`, `subprocess.run`,
+and `owner.run` call shapes, plus the current dynamic validation helper, remains
+bound to that resolver-selected `sys.executable`. This is a review of the real
+caller graph and ordinary maintenance paths, not a search for hypothetical
+syntax bypasses.
 
 This focused gate does not replace the complete extension release verification:
 the full capability suite, marketplace matrix, official Trellis update, complete

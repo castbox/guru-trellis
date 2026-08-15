@@ -12,7 +12,7 @@
 
 - [x] 在 verifier 中保留唯一 bootstrap seed。
 - [x] 新增 `source_python` 与 `installed_python` shell runner，替换全部 bootstrap 后裸 `python3`。
-- [x] 新增 source-owned `verify_throwaway_python_routing.py checkpoint`，验证 executable/runtime/lock identity。
+- [x] 新增 source-owned `verify_throwaway_python_routing.py checkpoint`，分别验证 managed launch path、physical interpreter、runtime 与 lock identity。
 - [x] 在 source-bootstrap、initial、after-update、两次 change-request smoke 与 no-developer shell checkpoint 接入精确断言。
 
 ## 3. 完整 caller inventory
@@ -61,7 +61,7 @@ PATH=<jsonschema-path-python-poison-fixture>:$PATH \
 
 ## 8. 收口
 
-- [ ] 运行 `guru-check-task`，完整检查需求、设计、实现、测试与 Docs SSOT。
+- [x] 运行 `guru-check-task`，完整检查需求、设计、实现、测试与 Docs SSOT。
 - [ ] 在 commit 前展示精确 staged files/命令并取得用户确认。
 - [ ] commit 后执行独立 `guru-review-branch`，覆盖 `origin/main...HEAD` 全 diff 与五项负向保证。
 - [ ] publication/finalization 前分别展示 push/PR 与 merge 副作用并取得用户确认。
