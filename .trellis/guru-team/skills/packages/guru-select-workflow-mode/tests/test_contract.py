@@ -153,6 +153,25 @@ class WorkflowModeContractTest(unittest.TestCase):
         self.assertIn("automatically selected route is re-evaluated", workflow)
         self.assertIn("explicitly selected route reports the new facts", workflow)
 
+    def test_initial_gate_routes_only_file_changes_to_selector(self) -> None:
+        workflow = (ROOT / "trellis/workflows/guru-team/workflow.md").read_text()
+        gate = workflow.split("## Guru Team Gate", 1)[1].split(
+            "## Integrated Public Graph", 1
+        )[0]
+        self.assertIn(
+            "a file-changing request that is not already inside an active-task route",
+            gate,
+        )
+        self.assertIn(
+            "Issue-backed or task-like requests that only ask\n"
+            "  for information remain non-file-changing and are answered directly",
+            gate,
+        )
+        self.assertNotIn(
+            "repo-changing, issue-backed, task-like, or file-changing work",
+            gate,
+        )
+
     def test_task_free_public_dto_and_projection_remain_minimal(self) -> None:
         expected = {
             "$schema": "https://json-schema.org/draft/2020-12/schema",

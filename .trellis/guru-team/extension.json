@@ -328,11 +328,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-15T01:40:01Z",
+  "installed_at": "2026-08-15T02:46:34Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "5c70adc5320dae8af2e45ea3807fbd42461128c0",
-    "commit": "5c70adc5320dae8af2e45ea3807fbd42461128c0",
+    "ref": "f9a73d04387c912f3ca1594d119bd813e27cc93b",
+    "commit": "f9a73d04387c912f3ca1594d119bd813e27cc93b",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -415,7 +415,7 @@
     ],
     "managed_asset_hashes": {
       ".trellis/spec/workflow/semantic-retrieval.md": "2c9a3097949979e84d42e15811278df1b047ec4c2101f3019e887e7799aef483",
-      ".trellis/spec/workflow/workflow-contract.md": "c8345c6dbbd5617b5bb8434ad325f6272d0f8e7cf411f47f144049ae7a4bdafc",
+      ".trellis/spec/workflow/workflow-contract.md": "aca939fd28525d563bb6b770bd12c7ad5e76e232b2b470a8ff7e655422b61244",
       ".trellis/spec/workflow/skill-package-contract.md": "f7b2077fe5e44c40421b52043f49f2c8f38f0ffbdea48db168ae27e4999fa669",
       ".trellis/spec/workflow/data-contracts.md": "aa9c3307cb8fb2588fb9d113629987f626a0daaedde471a9d26876b5baec463a",
       ".trellis/spec/workflow/companion-scripts.md": "b21f329e8d51739a0d4b42b2fae170f4936faf57aa783541ab425afa09e67cfd",
@@ -508,7 +508,7 @@
       {
         "id": "guru-select-workflow-mode",
         "interface_sha256": "d0e6b1a8b634917772a2d179349f66e75b130b038d6af3242b2108e07f13666a",
-        "tree_sha256": "bf1dae1865453e7f5410519bba68fa943e19bb003588b304fdd5ddf9d48cdae1"
+        "tree_sha256": "667e039f7677472246c8bb0877c6028ce08c7e5b1b66ae46019c42a7c3cfc36d"
       },
       {
         "id": "guru-verify-extension-installation",
@@ -4838,7 +4838,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-select-workflow-mode/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-select-workflow-mode/tests/test_contract.py",
-        "sha256": "6f8ebe4d09b0b081eee9f17c2c5d36f317c27b9d4840d0b9f11a8f3f52673ca1",
+        "sha256": "2fdce519c34b21a9a505d8ac86012d808e727a618e46a3b4b6bab01706448d56",
         "executable": false,
         "action": "unchanged"
       },

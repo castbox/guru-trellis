@@ -32,9 +32,10 @@ Classify the initial request before repository or network semantic reads:
 - simple conversation or a non-file-changing request: answer directly without
   creating a GitHub Issue or Trellis task and without asking whether one should
   be created;
-- repo-changing, issue-backed, task-like, or file-changing work that is not
-  already inside an active-task route first invokes `guru-select-workflow-mode`,
-  whether or not an Issue exists or the user mentioned task-free;
+- a file-changing request that is not already inside an active-task route first
+  invokes `guru-select-workflow-mode`, whether or not an Issue exists or the
+  user mentioned task-free. Issue-backed or task-like requests that only ask
+  for information remain non-file-changing and are answered directly;
 - `standard_intake` enters guru-sync-base and the existing mapped graph, while
   `task_free` enters only the bounded current-checkout edit route;
 - only guru-create-task-workspace:created enters task planning;

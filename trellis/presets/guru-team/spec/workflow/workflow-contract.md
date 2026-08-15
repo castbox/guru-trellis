@@ -94,13 +94,15 @@ never substitutes for a mandatory workflow invocation marker.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 
-Classify the user request before repository/network semantic reads. A
-repo-changing, issue-backed, task-like, or file-changing route first invokes
-`guru-select-workflow-mode`. Its `standard_intake` exit enters `guru-sync-base`,
-then automatically follows the public graph through current context discovery,
-requirements clarification, wording review, change-request review, and
-`guru-create-task-workspace`. Its `task_free` exit enters only the bounded
-current-checkout edit target.
+Classify the user request before repository/network semantic reads. Only a
+file-changing request that has not already entered an active-task route invokes
+`guru-select-workflow-mode`. An Issue-backed or task-like request that only asks
+for information, such as checking an Issue's current status, remains a
+non-file-changing direct answer. The selector's `standard_intake` exit enters
+`guru-sync-base`, then automatically follows the public graph through current
+context discovery, requirements clarification, wording review, change-request
+review, and `guru-create-task-workspace`. Its `task_free` exit enters only the
+bounded current-checkout edit target.
 
 `guru-sync-base` public invocation is the only authoritative synchronization
 entry. The workflow, platform launchers, prompts, and Skill Markdown do not
