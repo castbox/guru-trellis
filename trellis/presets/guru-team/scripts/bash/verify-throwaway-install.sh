@@ -7,8 +7,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 WORKFLOW_SOURCE="${TRELLIS_WORKFLOW_SOURCE:-gh:castbox/guru-trellis/trellis#main}"
 ALLOW_PUBLIC_SAMPLE="${TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE:-0}"
-OWNERSHIP_CHECK="$REPO_ROOT/trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
 SEMANTIC_RETRIEVAL_GRADING="$REPO_ROOT/trellis/presets/guru-team/tests/semantic-retrieval-grading.json"
+SOURCE_RUNTIME_ASSETS="$REPO_ROOT/trellis/skills/guru-team/runtime"
+SOURCE_RUNTIME_RESOLVER="$SOURCE_RUNTIME_ASSETS/resolve-python.sh"
+PYTHON_ROUTING_HELPER="$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_throwaway_python_routing.py"
+PYTHON_CALLER_INVENTORY="$REPO_ROOT/trellis/presets/guru-team/tests/throwaway-python-callers.json"
 ENGLISH_LANGUAGE_RULE_PATTERN='All documentation (must|should) be written in .*English'
 
 if [[ -z "$WORK_DIR" ]]; then
@@ -38,11 +41,127 @@ python3 "$REPO_ROOT/trellis/skills/guru-team/runtime/bootstrap.py" \
   --runtime-assets "$REPO_ROOT/trellis/skills/guru-team/runtime" \
   --python "$(command -v python3)" \
   --json > "$WORK_DIR/source-managed-runtime.json"
+if [[ -n "${GURU_TEAM_VERIFY_PATH_PYTHON_POISON_FILE:-}" ]]; then
+  : >"$GURU_TEAM_VERIFY_PATH_PYTHON_POISON_FILE"
+fi
+
+PYTHON_BRIDGE_DIR="$WORK_DIR/source-managed-python-path"
+mkdir -p "$PYTHON_BRIDGE_DIR"
+cat >"$PYTHON_BRIDGE_DIR/python3" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+exec "$SOURCE_RUNTIME_RESOLVER" "$REPO_ROOT" "$SOURCE_RUNTIME_ASSETS" "\$@"
+EOF
+chmod +x "$PYTHON_BRIDGE_DIR/python3"
+export PATH="$PYTHON_BRIDGE_DIR:$PATH"
+export TRELLIS_PYTHON_CMD=python3
+
+source_python() {
+  "$SOURCE_RUNTIME_RESOLVER" "$REPO_ROOT" "$SOURCE_RUNTIME_ASSETS" "$@"
+}
+
+installed_python() {
+  local installed_repo="$1"
+  shift
+  "$installed_repo/.trellis/guru-team/runtime/resolve-python.sh" \
+    "$installed_repo" \
+    "$installed_repo/.trellis/guru-team/runtime" \
+    "$@"
+}
+
+assert_source_runtime_checkpoint() {
+  local checkpoint_json="$1"
+  local checkpoint_label="$2"
+  local bootstrap_consumed="$3"
+  source_python -c '
+import json,re,sys
+from pathlib import Path
+payload=json.loads(sys.argv[1])
+assert payload["status"] == "ok"
+assert payload["checkpoint"] == sys.argv[2]
+assert payload["repo"] == str(Path(sys.argv[4]).resolve())
+assert payload["bootstrap_consumed"] is (sys.argv[3] == "true")
+assert re.fullmatch(r"[0-9a-f]{24}", payload["runtime_id"])
+assert re.fullmatch(r"[0-9a-f]{64}", payload["dependency_lock_sha256"])
+assert payload["sys_executable_launch_path"] == payload["interpreter_launch_path"]
+assert Path(payload["sys_executable"]).resolve() == Path(payload["interpreter"]).resolve()
+assert payload["sys_executable_resolved"] == payload["interpreter_resolved"]
+' "$checkpoint_json" "$checkpoint_label" "$bootstrap_consumed" "$REPO_ROOT"
+}
+
+assert_installed_runtime_checkpoint() {
+  local checkpoint_repo="$1"
+  local checkpoint_json="$2"
+  local checkpoint_label="$3"
+  installed_python "$checkpoint_repo" -c '
+import json,re,sys
+from pathlib import Path
+payload=json.loads(sys.argv[1])
+assert payload["status"] == "ok"
+assert payload["checkpoint"] == sys.argv[2]
+assert payload["repo"] == str(Path(sys.argv[3]).resolve())
+assert payload["bootstrap_consumed"] is False
+assert re.fullmatch(r"[0-9a-f]{24}", payload["runtime_id"])
+assert re.fullmatch(r"[0-9a-f]{64}", payload["dependency_lock_sha256"])
+assert payload["sys_executable_launch_path"] == payload["interpreter_launch_path"]
+assert Path(payload["sys_executable"]).resolve() == Path(payload["interpreter"]).resolve()
+assert payload["sys_executable_resolved"] == payload["interpreter_resolved"]
+' "$checkpoint_json" "$checkpoint_label" "$checkpoint_repo"
+}
+
+assert_embedded_runtime_checkpoint() {
+  local checkpoint_repo="$1"
+  local outer_json="$2"
+  local payload_json="$3"
+  local embedded_label="$4"
+  installed_python "$checkpoint_repo" -c '
+import json,sys
+outer=json.loads(sys.argv[1])
+embedded=json.loads(sys.argv[2])["runtime_checkpoint"]
+assert embedded["status"] == "ok"
+assert embedded["checkpoint"] == sys.argv[3]
+for key in (
+    "runtime_id", "sys_executable", "sys_executable_launch_path",
+    "sys_executable_resolved", "interpreter", "interpreter_launch_path",
+    "interpreter_resolved", "dependency_lock_sha256",
+):
+    assert embedded[key] == outer[key], (key, embedded[key], outer[key])
+' "$outer_json" "$payload_json" "$embedded_label"
+}
+
+SOURCE_RUNTIME_CHECKPOINT="$(
+  source_python "$PYTHON_ROUTING_HELPER" checkpoint \
+    --repo "$REPO_ROOT" \
+    --runtime-assets "$SOURCE_RUNTIME_ASSETS" \
+    --label source-bootstrap \
+    --bootstrap-json "$WORK_DIR/source-managed-runtime.json" \
+    --json
+)"
+printf '%s\n' "$SOURCE_RUNTIME_CHECKPOINT"
+assert_source_runtime_checkpoint \
+  "$SOURCE_RUNTIME_CHECKPOINT" source-bootstrap true
+
+source_python "$PYTHON_ROUTING_HELPER" check-inventory \
+  --repo-root "$REPO_ROOT" \
+  --inventory "$PYTHON_CALLER_INVENTORY" \
+  --json
+
+installed_runtime_checkpoint() {
+  local checkpoint_repo="$1"
+  local checkpoint_label="$2"
+  installed_python "$checkpoint_repo" "$PYTHON_ROUTING_HELPER" checkpoint \
+    --repo "$checkpoint_repo" \
+    --runtime-assets "$checkpoint_repo/.trellis/guru-team/runtime" \
+    --label "$checkpoint_label" \
+    --json
+}
 
 ownership_checkpoint() {
   local checkpoint="$1"
   printf 'Current Guru ownership checkpoint: %s\n' "$checkpoint"
-  "$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json
+  source_python \
+    "$REPO_ROOT/trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py" \
+    --repo "$REPO_ROOT" --json
 }
 
 fail_if_english_language_rule() {
@@ -61,7 +180,7 @@ fail_if_english_language_rule() {
 }
 
 workspace_tree_digest() {
-  python3 - "$1" <<'PY'
+  source_python - "$1" <<'PY'
 import hashlib
 import sys
 from pathlib import Path
@@ -79,7 +198,7 @@ PY
 }
 
 file_sha256() {
-  python3 - "$1" <<'PY'
+  source_python - "$1" <<'PY'
 import hashlib
 import sys
 from pathlib import Path
@@ -102,14 +221,21 @@ assert_official_state_absent() {
 
 verify_change_request_review_package() {
   local label="$1"
+  local runtime_checkpoint_json
   printf 'Change request review package smoke: %s\n' "$label"
+  runtime_checkpoint_json="$(
+    installed_runtime_checkpoint "$TARGET" "guru-review-change-request-$label"
+  )"
+  printf '%s\n' "$runtime_checkpoint_json"
+  assert_installed_runtime_checkpoint \
+    "$TARGET" "$runtime_checkpoint_json" "guru-review-change-request-$label"
   PYTHONPATH="$TARGET/.trellis/guru-team" \
-    python3 "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py" -q
+    installed_python "$TARGET" "$TARGET/.trellis/guru-team/skills/packages/guru-review-change-request/tests/test_contract.py" -q
 }
 
 verify_package_projections() {
   local label="$1"
-  python3 - "$TARGET" "$label" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$label" <<'PY'
 import json
 import os
 import subprocess
@@ -165,7 +291,7 @@ PY
 
 verify_base_reconciliation_distribution() {
   local label="$1"
-  python3 - "$TARGET" "$label" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$label" <<'PY'
 import json
 import os
 import subprocess
@@ -238,7 +364,7 @@ PY
 verify_task_publication_validator_wrappers() {
   local label="$1"
   printf 'Task publication validator wrapper smoke: %s\n' "$label"
-  python3 - "$TARGET" "$label" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$label" <<'PY'
 import json
 import os
 import subprocess
@@ -304,7 +430,7 @@ PY
 
 verify_closeout_package_boundaries() {
   local label="$1"
-  python3 - "$TARGET" "$label" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$label" <<'PY'
 import json
 import os
 import sys
@@ -358,7 +484,7 @@ verify_finish_family_integration() {
   GURU_FINISH_INTEGRATION_MODE=installed \
     GURU_FINISH_INTEGRATION_ROOT="$TARGET" \
     GURU_FINISH_INTEGRATION_SOURCE_ROOT="$REPO_ROOT" \
-    python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q
+    installed_python "$TARGET" "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q
 }
 
 fail_if_python_cache() {
@@ -386,7 +512,7 @@ verify_requirements_clarification_exits() {
       --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING" \
       --json
   )"
-  python3 -c '
+  installed_python "$TARGET" -c '
 import json, sys
 payload = json.load(sys.stdin)
 assert payload["status"] == "passed"
@@ -410,7 +536,7 @@ verify_context_discovery_exits() {
       --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING" \
       --json
   )"
-  python3 -c '
+  installed_python "$TARGET" -c '
 import json, sys
 payload = json.load(sys.stdin)
 assert payload["status"] == "passed"
@@ -437,7 +563,7 @@ verify_contract_wording_standalone_profiles() {
   "selected_comments": []
 }
 JSON
-  python3 - "$TARGET" "$probe_dir" "$explicit_rel" "$draft_rel" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$probe_dir" "$explicit_rel" "$draft_rel" <<'PY'
 import json
 import subprocess
 import sys
@@ -506,7 +632,7 @@ PY
       "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
         --root "$TARGET" --json --mode standalone --profile "$profile" \
         --path "$explicit_rel" --input "$input" >"$result"
-      facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
+      facts="$(installed_python "$TARGET" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
       "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
         --root "$TARGET" --json --input "$result" --path "$explicit_rel" \
         --expected-facts-sha256 "$facts" >/dev/null
@@ -514,12 +640,12 @@ PY
       "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/record-contract-wording-review.sh" \
         --root "$TARGET" --json --mode standalone --profile "$profile" \
         --change-request-input "$draft_rel" --input "$input" >"$result"
-      facts="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
+      facts="$(installed_python "$TARGET" -c 'import json,sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["facts_sha256"])' "$result")"
       "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
         --root "$TARGET" --json --input "$result" --change-request-input "$draft_rel" \
         --expected-facts-sha256 "$facts" >/dev/null
     fi
-    python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["profile"] == sys.argv[2]; assert payload["typed_exit"] == "pass"; assert "planning_checked_dimensions" not in payload["semantic_review"]["ai_review_gate"]' "$result" "$profile"
+    installed_python "$TARGET" -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["profile"] == sys.argv[2]; assert payload["typed_exit"] == "pass"; assert "planning_checked_dimensions" not in payload["semantic_review"]["ai_review_gate"]' "$result" "$profile"
   done
 }
 
@@ -532,7 +658,7 @@ record_planning_contract_wording() {
   local pass_result="$probe_dir/planning_artifacts.pass.result.json"
   local bytes_before="$probe_dir/planning_artifacts.bytes.json"
   mkdir -p "$probe_dir"
-  python3 - "$TARGET" "$task_rel" "$input" "$changed_input" "$bytes_before" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$task_rel" "$input" "$changed_input" "$bytes_before" <<'PY'
 import json
 import subprocess
 import sys
@@ -636,7 +762,7 @@ PY
   "$TARGET/.trellis/guru-team/skills/packages/guru-review-contract-wording/scripts/check-contract-wording-review.sh" \
     --root "$TARGET" --json --task "$task_rel" --input "$pass_result" >/dev/null
   test ! -e "$TARGET/$task_rel/contract-wording-review.json"
-  python3 - "$pass_result" "$changed_result" "$TARGET" "$task_rel" "$bytes_before" <<'PY'
+  installed_python "$TARGET" - "$pass_result" "$changed_result" "$TARGET" "$task_rel" "$bytes_before" <<'PY'
 import json
 import sys
 
@@ -674,7 +800,7 @@ record_and_check_planning_approval() {
   local public_input="$TARGET/.trellis/.runtime/guru-team/throwaway-inputs/planning-approval-$phase.json"
   local owner_result
   local public_output
-  python3 - "$TARGET" "$task_rel" "$input" "$phase" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$task_rel" "$input" "$phase" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -725,10 +851,10 @@ PY
     --root "$TARGET" --json --task "$task_rel" --input "$input" >"$result"
   "$TARGET/.trellis/guru-team/skills/packages/guru-approve-task-plan/scripts/check-planning-approval.sh" \
     --root "$TARGET" --json --task "$task_rel" --require-exit approved >/dev/null
-  python3 -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["schema_version"] == "3.0"; assert payload["skill_id"] == "guru-approve-task-plan"; assert payload["typed_exit"] == "approved"' "$result"
-  owner_result="$(python3 -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.load(open(sys.argv[2], encoding="utf-8"))["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$result")"
+  installed_python "$TARGET" -c 'import json,sys; payload=json.load(open(sys.argv[1], encoding="utf-8")); assert payload["schema_version"] == "3.0"; assert payload["skill_id"] == "guru-approve-task-plan"; assert payload["typed_exit"] == "approved"' "$result"
+  owner_result="$(installed_python "$TARGET" -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.load(open(sys.argv[2], encoding="utf-8"))["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$result")"
   mkdir -p "$(dirname "$public_input")"
-  python3 - "$task_rel" "$public_input" <<'PY'
+  installed_python "$TARGET" - "$task_rel" "$public_input" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -754,7 +880,7 @@ PY
       --owner-result "$owner_result"
   )"
   rm -f "$public_input"
-  python3 -c 'import json,pathlib,sys; payload=json.load(sys.stdin); assert payload == {"exit_id":"approved","task_ref":sys.argv[1]}; assert not (pathlib.Path(sys.argv[2]) / sys.argv[3]).exists()' "$task_rel" "$TARGET" "$owner_result" <<<"$public_output"
+  installed_python "$TARGET" -c 'import json,pathlib,sys; payload=json.load(sys.stdin); assert payload == {"exit_id":"approved","task_ref":sys.argv[1]}; assert not (pathlib.Path(sys.argv[2]) / sys.argv[3]).exists()' "$task_rel" "$TARGET" "$owner_result" <<<"$public_output"
   printf '%s\n' "$public_output"
 }
 
@@ -766,7 +892,7 @@ prepare_task_commit_candidate() {
   local authoring_json
   local prepared_json
   input_path="$(mktemp "${TMPDIR:-/tmp}/guru-task-commit-input.XXXXXX")"
-  authoring_json="$(python3 - "$TARGET" "$TASK_REL" "$profile" "$subject" "$input_path" "$passed_dto" <<'PY'
+  authoring_json="$(installed_python "$TARGET" - "$TARGET" "$TASK_REL" "$profile" "$subject" "$input_path" "$passed_dto" <<'PY'
 import json
 import re
 import subprocess
@@ -854,7 +980,7 @@ PY
       --candidate-json "$authoring_json"
   )"
   rm -f "$input_path"
-  python3 -c 'import json,sys; payload=json.load(sys.stdin); assert payload["status"] == "prepared"; assert payload["typed_exit"] == "committed"; assert payload["message"]["subject"] == sys.argv[1]; print(payload["candidate_artifact"])' "$subject" <<<"$prepared_json"
+  installed_python "$TARGET" -c 'import json,sys; payload=json.load(sys.stdin); assert payload["status"] == "prepared"; assert payload["typed_exit"] == "committed"; assert payload["message"]["subject"] == sys.argv[1]; print(payload["candidate_artifact"])' "$subject" <<<"$prepared_json"
 }
 
 CURRENT_BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
@@ -862,7 +988,7 @@ CURRENT_DIRTY="$(git -C "$REPO_ROOT" status --short -- trellis/index.json trelli
 USE_LOCAL_WORKFLOW_SAMPLE=0
 if [[ ( "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis || "$WORKFLOW_SOURCE" == gh:castbox/guru-trellis/trellis#main ) && ( "$CURRENT_BRANCH" != "main" || -n "$CURRENT_DIRTY" ) ]]; then
   if [[ "$ALLOW_PUBLIC_SAMPLE" != "1" ]]; then
-    python3 - <<PY
+    source_python - <<PY
 import json
 payload = {
   "status": "error",
@@ -920,11 +1046,16 @@ printf '%s\n' 'SHARED_START_SECRET_JOURNAL_CONTENT' >"$WORKSPACE_SENTINEL"
 WORKSPACE_TREE_DIGEST_BEFORE="$(workspace_tree_digest "$TARGET/.trellis/workspace")"
 DEVELOPER_IDENTITY_DIGEST_BEFORE="$(file_sha256 "$TARGET/.trellis/.developer")"
 
-"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py" \
   --repo "$TARGET" \
   --platform claude \
   --platform codex \
   --platform cursor
+
+INITIAL_RUNTIME_CHECKPOINT="$(installed_runtime_checkpoint "$TARGET" initial-install)"
+printf '%s\n' "$INITIAL_RUNTIME_CHECKPOINT"
+assert_installed_runtime_checkpoint \
+  "$TARGET" "$INITIAL_RUNTIME_CHECKPOINT" initial-install
 
 test -f "$TARGET/.trellis/workflow.md"
 grep -q "Guru Team Development Workflow" "$TARGET/.trellis/workflow.md"
@@ -1024,7 +1155,7 @@ test -x "$TARGET/.trellis/guru-team/scripts/bash/check-commit-messages.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/create-task-commit.sh"
 test -x "$TARGET/.trellis/guru-team/scripts/bash/format-merge-commit.sh"
 test -f "$TARGET/.trellis/guru-team/extension.json"
-python3 - \
+installed_python "$TARGET" - \
   "$TARGET/.trellis/guru-team/extension.json" \
   "$TARGET" \
   "$REPO_ROOT/trellis/presets/guru-team/ownership/upstream-ownership.json" <<'PY'
@@ -1211,16 +1342,16 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 SOURCE_SKILL_VALIDATION_JSON="$("$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-python3 -c 'import json, sys; target_source = json.loads(sys.argv[1]); source = json.loads(sys.argv[2]); installed = json.load(sys.stdin); assert target_source == source; assert source["status"] == installed["status"] == "passed"; assert (source["active_packages"], source["commands"], source["complete_package_commands"]) == (17, 62, 17); assert len(installed["facts"]["active_ids"]) == source["active_packages"]; assert installed["facts"]["command_count"] == source["commands"]; assert installed["facts"]["planned_ids"] == []' "$TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON" "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+installed_python "$TARGET" -c 'import json, sys; target_source = json.loads(sys.argv[1]); source = json.loads(sys.argv[2]); installed = json.load(sys.stdin); assert target_source == source; assert source["status"] == installed["status"] == "passed"; assert (source["active_packages"], source["commands"], source["complete_package_commands"]) == (17, 62, 17); assert len(installed["facts"]["active_ids"]) == source["active_packages"]; assert installed["facts"]["command_count"] == source["commands"]; assert installed["facts"]["planned_ids"] == []' "$TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON" "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.4"' <<<"$MINIMAL_CONTRACT_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.4"' <<<"$MINIMAL_CONTRACT_JSON"
 MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["corpus_schema_id"] == "guru-team-skill-evals-1.0"; assert payload["case_ids"] == ["synced-route", "skipped-route", "blocked-route"]' <<<"$MINIMAL_EVAL_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert payload["corpus_schema_id"] == "guru-team-skill-evals-1.0"; assert payload["case_ids"] == ["synced-route", "skipped-route", "blocked-route"]' <<<"$MINIMAL_EVAL_JSON"
 while IFS='|' read -r skill_id expected_case_ids; do
   PRODUCTION_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill "$skill_id" --json)"
-  python3 -c 'import json, sys; payload=json.load(sys.stdin); expected = "guru-team-skill-interface-1.5" if sys.argv[1] == "guru-verify-extension-installation" else "guru-team-skill-interface-1.4"; assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == expected' "$skill_id" <<<"$PRODUCTION_CONTRACT_JSON"
+  installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); expected = "guru-team-skill-interface-1.5" if sys.argv[1] == "guru-verify-extension-installation" else "guru-team-skill-interface-1.4"; assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == expected' "$skill_id" <<<"$PRODUCTION_CONTRACT_JSON"
   PRODUCTION_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill "$skill_id" --json)"
-  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["corpus_schema_id"] == "guru-team-skill-evals-1.0"; assert payload["case_ids"] == json.loads(sys.argv[1])' "$expected_case_ids" <<<"$PRODUCTION_EVAL_JSON"
+  installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert payload["corpus_schema_id"] == "guru-team-skill-evals-1.0"; assert payload["case_ids"] == json.loads(sys.argv[1])' "$expected_case_ids" <<<"$PRODUCTION_EVAL_JSON"
 done <<'EOF'
 guru-approve-task-plan|["approved-initial","revision-required","clarify-scope","blocked-initial"]
 guru-check-task|["passed-initial","implementation-required","planning-stale","blocked-initial"]
@@ -1336,11 +1467,11 @@ test ! -e "$TARGET/.agents/skills/guru-example-action"
 test ! -e "$TARGET/.codex/skills/guru-example-action"
 test ! -e "$TARGET/.cursor/skills/guru-example-action"
 test ! -e "$TARGET/.claude/skills/guru-example-action"
-(cd "$REPO_ROOT" && python3 -m unittest \
+(cd "$REPO_ROOT" && source_python -m unittest \
   trellis.skills.guru-team.tests.test_skill_packages.SkillPackageIntegrationTests)
 verify_finish_family_integration "initial"
 test -f "$TARGET/.trellis/guru-team/schemas/closeout-plan.schema.json"
-python3 - "$TARGET" <<'PY'
+installed_python "$TARGET" - "$TARGET" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -1418,10 +1549,10 @@ done
 test -z "$(find "$TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print -quit)"
 CHECK_ENV_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-env.sh" --root "$TARGET" --json)"
 printf '%s\n' "$CHECK_ENV_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$CHECK_ENV_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["github_repo"] == "castbox/guru-trellis-throwaway"; assert payload["status"] == "ok"; assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$CHECK_ENV_JSON"
 VERSION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/version.sh" --root "$TARGET" --json)"
 printf '%s\n' "$VERSION_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$VERSION_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["guru_team_extension"]["status"] == "ok"; assert payload["guru_team_extension"]["version"]; assert payload["guru_team_extension"]["target_trellis_cli"] == "0.6.5"' <<<"$VERSION_JSON"
 
 set +e
 FINISH_ERROR_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/finish-work.sh" --root "$TARGET" --json --dry-run 2>&1)"
@@ -1432,7 +1563,7 @@ if [[ "$FINISH_STATUS" -eq 0 ]]; then
   exit 2
 fi
 printf '%s\n' "$FINISH_ERROR_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "finish-work"; assert payload["required_entrypoint"] == "guru-finish-work"; assert "intent_flag" not in payload; assert "guru-finalize-task" in payload["error"]' <<<"$FINISH_ERROR_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "error"; assert payload["blocked_step"] == "finish-work"; assert payload["required_entrypoint"] == "guru-finish-work"; assert "intent_flag" not in payload; assert "guru-finalize-task" in payload["error"]' <<<"$FINISH_ERROR_JSON"
 
 git -C "$TARGET" config user.name "Installed Task Commit Smoke"
 git -C "$TARGET" config user.email "installed-task-commit@example.invalid"
@@ -1445,7 +1576,7 @@ git -C "$SYNC_REMOTE" symbolic-ref HEAD refs/heads/main
 git -C "$TARGET" remote set-url origin "$SYNC_REMOTE"
 SYNC_CONFIG_BACKUP="$WORK_DIR/base-sync-config.yml"
 cp "$TARGET/.trellis/guru-team/config.yml" "$SYNC_CONFIG_BACKUP"
-python3 - "$TARGET/.trellis/guru-team/config.yml" <<'PY'
+installed_python "$TARGET" - "$TARGET/.trellis/guru-team/config.yml" <<'PY'
 import sys
 from pathlib import Path
 
@@ -1472,7 +1603,7 @@ SYNC_RESOLUTION_JSON="$(
     --base main \
     --remote origin
 )"
-SYNC_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$SYNC_RESOLUTION_JSON")"
+SYNC_RESOLUTION_DIGEST="$(installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$SYNC_RESOLUTION_JSON")"
 SYNC_RESULT_JSON="$(
   "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/sync-base.sh" \
     --root "$TARGET" \
@@ -1482,7 +1613,7 @@ SYNC_RESULT_JSON="$(
     --base main \
     --remote origin
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is False; assert payload["resolution"]["resolution_sha256"] == payload["post_sync_resolution_sha256"]; assert payload["decision_checkout"]["head_after"] == payload["git"]["local_head_after"] == payload["git"]["remote_head_after"]' <<<"$SYNC_RESULT_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is False; assert payload["resolution"]["resolution_sha256"] == payload["post_sync_resolution_sha256"]; assert payload["decision_checkout"]["head_after"] == payload["git"]["local_head_after"] == payload["git"]["remote_head_after"]' <<<"$SYNC_RESULT_JSON"
 SYNC_VALIDATION_JSON="$(
   "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh" \
     --root "$TARGET" \
@@ -1490,7 +1621,7 @@ SYNC_VALIDATION_JSON="$(
     --result-json "$SYNC_RESULT_JSON" \
     --expected-resolution-sha256 "$SYNC_RESOLUTION_DIGEST"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["selected_base"] == "main"; assert payload["post_sync_resolution_sha256"] == sys.argv[1]' "$SYNC_RESOLUTION_DIGEST" <<<"$SYNC_VALIDATION_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["selected_base"] == "main"; assert payload["post_sync_resolution_sha256"] == sys.argv[1]' "$SYNC_RESOLUTION_DIGEST" <<<"$SYNC_VALIDATION_JSON"
 
 DISCOVERY_STANDALONE_BASE_JSON="$(
   cd "$TARGET"
@@ -1502,11 +1633,11 @@ DISCOVERY_WORKFLOW_BASE_JSON="$(
   printf '%s\n' '{"schema_version":"1.0","public_input":{"source_exit":"start","mode":"workflow","repo_root":".","base_branch":"main","route":"repo_change"}}' | \
     ./.agents/skills/guru-sync-base/scripts/invoke.sh --invocation -
 )"
-python3 -c 'import json, sys; standalone=json.loads(sys.argv[1]); workflow=json.load(sys.stdin); assert standalone["exit_id"] == workflow["exit_id"] == "synced"; assert standalone["transition"]["stage"] == workflow["transition"]["stage"] == "base_current"; assert standalone["transition"]["mode"] == "standalone"; assert workflow["transition"]["mode"] == "workflow"' \
+installed_python "$TARGET" -c 'import json, sys; standalone=json.loads(sys.argv[1]); workflow=json.load(sys.stdin); assert standalone["exit_id"] == workflow["exit_id"] == "synced"; assert standalone["transition"]["stage"] == workflow["transition"]["stage"] == "base_current"; assert standalone["transition"]["mode"] == "standalone"; assert workflow["transition"]["mode"] == "workflow"' \
   "$DISCOVERY_STANDALONE_BASE_JSON" <<<"$DISCOVERY_WORKFLOW_BASE_JSON"
 
 build_discovery_invocation() {
-  python3 - "$1" "$2" "$3" "$4" <<'PY'
+  installed_python "$TARGET" - "$1" "$2" "$3" "$4" <<'PY'
 import json
 import sys
 
@@ -1540,19 +1671,19 @@ DISCOVERY_ZERO_JSON="$(
     --json \
     --query-json '{"terms":["quasar nebula xyzzy"]}'
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert payload["candidates"] == []; assert payload["invalid"] == []' <<<"$DISCOVERY_ZERO_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert payload["candidates"] == []; assert payload["invalid"] == []' <<<"$DISCOVERY_ZERO_JSON"
 DISCOVERY_CANDIDATE_JSON="$(
   "$DISCOVERY_PREVIEW" \
     --root "$TARGET" \
     --json \
     --query-json '{"issue_refs":["#111"],"paths":["docs/context-discovery-smoke.md"],"commands":["preview-change-context-history"],"schema_fields":["snapshot_sha256"],"terms":["context discovery"],"queries":["current evidence before archived history"]}'
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert len(payload["candidates"]) == 1; candidate = payload["candidates"][0]; assert candidate["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json"); assert candidate["score"]["total"] > 0; assert payload["preview_sha256"]' <<<"$DISCOVERY_CANDIDATE_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert len(payload["candidates"]) == 1; candidate = payload["candidates"][0]; assert candidate["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json"); assert candidate["score"]["total"] > 0; assert payload["preview_sha256"]' <<<"$DISCOVERY_CANDIDATE_JSON"
 
 DISCOVERY_INPUT="$WORK_DIR/change-context-owner-result.json"
 DISCOVERY_ZERO_INPUT="$WORK_DIR/change-context-zero-owner-result.json"
 DISCOVERY_RECOVERY_INPUT="$WORK_DIR/change-context-recovery-owner-result.json"
-python3 - \
+installed_python "$TARGET" - \
   "$TARGET" \
   "$SYNC_RESULT_JSON" \
   "$DISCOVERY_CANDIDATE_JSON" \
@@ -1893,11 +2024,11 @@ if [[ "$DISCOVERY_STATUS_AFTER" != "$DISCOVERY_STATUS_BEFORE" ]]; then
   exit 2
 fi
 DISCOVERY_RESULT_SHA256="$(
-  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["schema_version"] == "2.0"; assert payload["typed_exit"] == "context_ready"; print(payload["result_identity"]["result_sha256"])' \
+  installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert payload["schema_version"] == "2.0"; assert payload["typed_exit"] == "context_ready"; print(payload["result_identity"]["result_sha256"])' \
     <<<"$DISCOVERY_PRETASK_JSON"
 )"
 DISCOVERY_ZERO_RESULT_SHA256="$(
-  python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["history_preview"]["candidates"] == []; assert payload["history_review"] == {"selected_candidates": [], "excluded_candidates": [], "deep_reads": []}; assert payload["mem_review"]["status"] == "not_needed"; print(payload["result_identity"]["result_sha256"])' \
+  installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert payload["history_preview"]["candidates"] == []; assert payload["history_review"] == {"selected_candidates": [], "excluded_candidates": [], "deep_reads": []}; assert payload["mem_review"]["status"] == "not_needed"; print(payload["result_identity"]["result_sha256"])' \
     <<<"$DISCOVERY_ZERO_PRETASK_JSON"
 )"
 DISCOVERY_CHECK_JSON="$(
@@ -1918,7 +2049,7 @@ DISCOVERY_ZERO_CHECK_JSON="$(
       --input - \
       --expected-result-sha256 "$DISCOVERY_ZERO_RESULT_SHA256"
 )"
-python3 -c 'import json, sys; checked=json.loads(sys.argv[1]); zero=json.load(sys.stdin); assert checked["status"] == zero["status"] == "passed"; assert checked["typed_exit"] == zero["typed_exit"] == "context_ready"; assert checked["result_sha256"] == sys.argv[2]; assert zero["result_sha256"] == sys.argv[3]' \
+installed_python "$TARGET" -c 'import json, sys; checked=json.loads(sys.argv[1]); zero=json.load(sys.stdin); assert checked["status"] == zero["status"] == "passed"; assert checked["typed_exit"] == zero["typed_exit"] == "context_ready"; assert checked["result_sha256"] == sys.argv[2]; assert zero["result_sha256"] == sys.argv[3]' \
   "$DISCOVERY_CHECK_JSON" \
   "$DISCOVERY_RESULT_SHA256" \
   "$DISCOVERY_ZERO_RESULT_SHA256" \
@@ -1934,7 +2065,7 @@ DISCOVERY_PUBLIC_JSON="$(
     "$TARGET/.agents/skills/guru-discover-change-context/scripts/invoke.sh" \
       --invocation -
 )"
-python3 -c 'import hashlib, json, sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id", "handoff_profile", "handoff_mode", "handoff_target_locator", "handoff_continuation_id", "duplicate_snapshot", "transition"}; assert payload["exit_id"] == "context_ready"; assert payload["handoff_profile"] == "initial_change_request"; assert payload["handoff_mode"] == "standalone"; assert payload["handoff_continuation_id"] == "throwaway-ephemeral-context"; assert payload["transition"]["stage"] == "context_current"; snapshot=payload["duplicate_snapshot"]; unsigned={key:snapshot[key] for key in ("query", "checked_at", "target_locator", "authority_content_sha256", "candidates")}; assert snapshot["target_locator"] == payload["transition"]["target_locator"]; assert snapshot["authority_content_sha256"] == payload["transition"]["authority_content_sha256"]; assert snapshot["facts_sha256"] == hashlib.sha256(json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()' \
+installed_python "$TARGET" -c 'import hashlib, json, sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id", "handoff_profile", "handoff_mode", "handoff_target_locator", "handoff_continuation_id", "duplicate_snapshot", "transition"}; assert payload["exit_id"] == "context_ready"; assert payload["handoff_profile"] == "initial_change_request"; assert payload["handoff_mode"] == "standalone"; assert payload["handoff_continuation_id"] == "throwaway-ephemeral-context"; assert payload["transition"]["stage"] == "context_current"; snapshot=payload["duplicate_snapshot"]; unsigned={key:snapshot[key] for key in ("query", "checked_at", "target_locator", "authority_content_sha256", "candidates")}; assert snapshot["target_locator"] == payload["transition"]["target_locator"]; assert snapshot["authority_content_sha256"] == payload["transition"]["authority_content_sha256"]; assert snapshot["facts_sha256"] == hashlib.sha256(json.dumps(unsigned, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()' \
   <<<"$DISCOVERY_PUBLIC_JSON"
 DISCOVERY_STATUS_NORMAL_FINAL="$(git -C "$TARGET" status --porcelain=v1)"
 if [[ "$DISCOVERY_STATUS_NORMAL_FINAL" != "$DISCOVERY_STATUS_BEFORE" ]]; then
@@ -1961,7 +2092,7 @@ DISCOVERY_ACTIVE_JSON="$(
     --active-task "$DISCOVERY_RECOVERY_TASK_REL"
 )"
 DISCOVERY_ACTIVE_SHA256="$(
-  python3 -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
+  installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
     <<<"$DISCOVERY_ACTIVE_JSON"
 )"
 printf '%s' "$DISCOVERY_ACTIVE_JSON" | \
@@ -1983,7 +2114,7 @@ DISCOVERY_ACTIVE_PUBLIC_JSON="$(
       --invocation - \
       --active-task "$DISCOVERY_RECOVERY_TASK_REL"
 )"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_continuation_id"] == sys.argv[1]; assert payload["transition"]["stage"] == "context_current"' \
+installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_continuation_id"] == sys.argv[1]; assert payload["transition"]["stage"] == "context_current"' \
   "$DISCOVERY_RECOVERY_CONTINUATION" \
   <<<"$DISCOVERY_ACTIVE_PUBLIC_JSON"
 DISCOVERY_OWNER_ROOT="$TARGET/.trellis/.runtime/guru-team/owner-checkpoints"
@@ -2004,7 +2135,7 @@ DISCOVERY_RECOVERY_JSON="$(
     --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
 )"
 DISCOVERY_RECOVERY_SHA256="$(
-  python3 -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
+  installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["result_identity"]["result_sha256"])' \
     <<<"$DISCOVERY_RECOVERY_JSON"
 )"
 printf '%s' "$DISCOVERY_RECOVERY_JSON" | \
@@ -2028,7 +2159,7 @@ DISCOVERY_RECOVERY_PUBLIC_JSON="$(
       --active-task "$DISCOVERY_RECOVERY_TASK_REL" \
       --recovery-continuation-id "$DISCOVERY_RECOVERY_CONTINUATION"
 )"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_continuation_id"] == sys.argv[1]; assert payload["transition"]["stage"] == "context_current"' \
+installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert payload["exit_id"] == "context_ready"; assert payload["handoff_continuation_id"] == sys.argv[1]; assert payload["transition"]["stage"] == "context_current"' \
   "$DISCOVERY_RECOVERY_CONTINUATION" \
   <<<"$DISCOVERY_RECOVERY_PUBLIC_JSON"
 rm "$DISCOVERY_ACTIVE_EDIT"
@@ -2069,7 +2200,7 @@ PHASE0_RESOLUTION_JSON="$(
     --base main \
     --remote origin
 )"
-PHASE0_RESOLUTION_DIGEST="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$PHASE0_RESOLUTION_JSON")"
+PHASE0_RESOLUTION_DIGEST="$(installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["resolution_sha256"])' <<<"$PHASE0_RESOLUTION_JSON")"
 SYNC_UPSTREAM="$WORK_DIR/base-sync-upstream"
 git clone -q "$SYNC_REMOTE" "$SYNC_UPSTREAM"
 git -C "$SYNC_UPSTREAM" config user.name "Throwaway Base Upstream"
@@ -2087,7 +2218,7 @@ PHASE0_RESULT_JSON="$(
     --base main \
     --remote origin
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is True; assert payload["resolution"]["resolution_sha256"] == sys.argv[1]; assert payload["post_sync_resolution_sha256"] != sys.argv[1]' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_RESULT_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "synced"; assert payload["fresh"] is True; assert payload["git"]["fast_forwarded"] is True; assert payload["resolution"]["resolution_sha256"] == sys.argv[1]; assert payload["post_sync_resolution_sha256"] != sys.argv[1]' "$PHASE0_RESOLUTION_DIGEST" <<<"$PHASE0_RESULT_JSON"
 PHASE0_VALIDATION_JSON="$(
   "$TARGET/.trellis/guru-team/skills/packages/guru-sync-base/scripts/check-base-sync.sh" \
     --root "$TARGET" \
@@ -2095,13 +2226,13 @@ PHASE0_VALIDATION_JSON="$(
     --result-json "$PHASE0_RESULT_JSON" \
     --expected-resolution-sha256 "$PHASE0_RESOLUTION_DIGEST"
 )"
-PHASE0_POST_DIGEST="$(python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["mode"] == "workflow"; print(payload["post_sync_resolution_sha256"])' <<<"$PHASE0_VALIDATION_JSON")"
+PHASE0_POST_DIGEST="$(installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "validated"; assert payload["mode"] == "workflow"; print(payload["post_sync_resolution_sha256"])' <<<"$PHASE0_VALIDATION_JSON")"
 if [[ "$PHASE0_POST_DIGEST" == "$PHASE0_RESOLUTION_DIGEST" ]]; then
   echo "Fast-forwarded workflow validation did not return a new post-sync digest" >&2
   exit 2
 fi
 PHASE0_REVIEWED_BASE_PROVENANCE="$(
-  python3 -c 'import json, sys; result=json.load(sys.stdin); resolution=result["post_sync_resolution"]; print(json.dumps({"source":resolution["source"],"selected_base":resolution["selected_base"],"remote":resolution["remote"],"ordered_candidates":resolution["candidates"],"decision_head":result["decision_checkout"]["head_after"],"local_base_head":result["git"]["local_head_after"],"remote_base_head":result["git"]["remote_head_after"],"post_sync_resolution_sha256":result["post_sync_resolution_sha256"]}, separators=(",", ":")))' \
+  installed_python "$TARGET" -c 'import json, sys; result=json.load(sys.stdin); resolution=result["post_sync_resolution"]; print(json.dumps({"source":resolution["source"],"selected_base":resolution["selected_base"],"remote":resolution["remote"],"ordered_candidates":resolution["candidates"],"decision_head":result["decision_checkout"]["head_after"],"local_base_head":result["git"]["local_head_after"],"remote_base_head":result["git"]["remote_head_after"],"post_sync_resolution_sha256":result["post_sync_resolution_sha256"]}, separators=(",", ":")))' \
     <<<"$PHASE0_RESULT_JSON"
 )"
 
@@ -2121,7 +2252,7 @@ PHASE0_PLANNER_JSON="$(
     --assignee throwaway \
     "$PHASE0_ISSUE_URL"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert "preflight" not in payload; assert "workspace_ready" not in payload; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True; assert freshness["post_sync_resolution_sha256"]' "$PHASE0_POST_DIGEST" <<<"$PHASE0_PLANNER_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); freshness = payload["base_freshness"]; assert payload["source_issue"]["number"] == 110; assert "preflight" not in payload; assert "workspace_ready" not in payload; assert freshness["reviewed_resolution_sha256"] == sys.argv[1]; assert freshness["three_way_equal"] is True; assert freshness["post_sync_resolution_sha256"]' "$PHASE0_POST_DIGEST" <<<"$PHASE0_PLANNER_JSON"
 
 cp "$SYNC_CONFIG_BACKUP" "$TARGET/.trellis/guru-team/config.yml"
 git -C "$TARGET" add .trellis/guru-team/config.yml
@@ -2134,8 +2265,12 @@ INSTALL_TARGET="$TARGET"
 TASK_COMMIT_TARGET="$WORK_DIR/installed-task-commit-worktree"
 git -C "$INSTALL_TARGET" worktree add -q -b "$TASK_BRANCH" "$TASK_COMMIT_TARGET" main
 TARGET="$TASK_COMMIT_TARGET"
+LINKED_WORKTREE_RUNTIME_CHECKPOINT="$(installed_runtime_checkpoint "$TARGET" linked-worktree)"
+printf '%s\n' "$LINKED_WORKTREE_RUNTIME_CHECKPOINT"
+assert_installed_runtime_checkpoint \
+  "$TARGET" "$LINKED_WORKTREE_RUNTIME_CHECKPOINT" linked-worktree
 
-python3 - "$TARGET" "$TASK_REL" "$TASK_BRANCH" <<'PY'
+installed_python "$TARGET" - "$TARGET" "$TASK_REL" "$TASK_BRANCH" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -2215,7 +2350,7 @@ PY
 
 record_planning_contract_wording "$TASK_REL"
 PLANNING_DTO="$(record_and_check_planning_approval "$TASK_REL" "initial")"
-python3 -c 'import json,sys; assert json.load(sys.stdin) == {"exit_id":"approved","task_ref":sys.argv[1]}' "$TASK_REL" <<<"$PLANNING_DTO"
+installed_python "$TARGET" -c 'import json,sys; assert json.load(sys.stdin) == {"exit_id":"approved","task_ref":sys.argv[1]}' "$TASK_REL" <<<"$PLANNING_DTO"
 
 record_throwaway_phase2() {
   local summary="$1"
@@ -2227,7 +2362,7 @@ record_throwaway_phase2() {
   local owner_result
   local public_output
   input_path="$(mktemp "${TMPDIR:-/tmp}/guru-phase2-input.XXXXXX")"
-  python3 - "$TARGET" "$TASK_REL" "$summary" "$input_path" <<'PY'
+  installed_python "$TARGET" - "$TARGET" "$TASK_REL" "$summary" "$input_path" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -2282,11 +2417,11 @@ PY
     --task "$TASK_REL" \
     --json)"
   rm -f "$input_path"
-  python3 -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "4.0"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
-  owner_result="$(python3 -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.loads(sys.argv[2])["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$record_json")"
+  installed_python "$TARGET" -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "4.0"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
+  owner_result="$(installed_python "$TARGET" -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.loads(sys.argv[2])["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$record_json")"
   mkdir -p "$TARGET/.trellis/.runtime/guru-team/throwaway-inputs"
   public_input="$(mktemp "$TARGET/.trellis/.runtime/guru-team/throwaway-inputs/phase2.XXXXXX")"
-  python3 - "$TASK_REL" "$profile" "$public_input" <<'PY'
+  installed_python "$TARGET" - "$TASK_REL" "$profile" "$public_input" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -2321,7 +2456,7 @@ PY
       --owner-result "$owner_result"
   )"
   rm -f "$public_input"
-  python3 -c 'import json,pathlib,re,sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id","task_ref","phase2_commit_anchor"}; assert payload["exit_id"] == "passed"; assert payload["task_ref"] == sys.argv[1]; assert re.fullmatch(r"[0-9a-f]{40}", payload["phase2_commit_anchor"]); assert (pathlib.Path(sys.argv[2]) / sys.argv[3]).is_file()' "$TASK_REL" "$TARGET" "$owner_result" <<<"$public_output"
+  installed_python "$TARGET" -c 'import json,pathlib,re,sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id","task_ref","phase2_commit_anchor"}; assert payload["exit_id"] == "passed"; assert payload["task_ref"] == sys.argv[1]; assert re.fullmatch(r"[0-9a-f]{40}", payload["phase2_commit_anchor"]); assert (pathlib.Path(sys.argv[2]) / sys.argv[3]).is_file()' "$TASK_REL" "$TARGET" "$owner_result" <<<"$public_output"
   printf '%s\n' "$public_output"
 }
 
@@ -2334,7 +2469,7 @@ INITIAL_CANDIDATE_JSON="$(
     --json \
     --candidate-artifact "$INITIAL_PLAN"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["mode"] == "candidate"; assert payload["checked_commits"] == []; assert payload["candidate_validation"]["sequence"] == "001"' <<<"$INITIAL_CANDIDATE_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["mode"] == "candidate"; assert payload["checked_commits"] == []; assert payload["candidate_validation"]["sequence"] == "001"' <<<"$INITIAL_CANDIDATE_JSON"
 INITIAL_COMMIT_JSON="$(
   "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh" \
     --root "$TARGET" \
@@ -2342,8 +2477,8 @@ INITIAL_COMMIT_JSON="$(
     --json \
     --candidate-artifact "$INITIAL_PLAN"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert set(payload) == {"status", "exit", "pre_commit_head", "commit_sha"}; assert payload["status"] == payload["exit"] == "committed"' <<<"$INITIAL_COMMIT_JSON"
-INITIAL_COMMIT="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["commit_sha"])' <<<"$INITIAL_COMMIT_JSON")"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert set(payload) == {"status", "exit", "pre_commit_head", "commit_sha"}; assert payload["status"] == payload["exit"] == "committed"' <<<"$INITIAL_COMMIT_JSON"
+INITIAL_COMMIT="$(installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["commit_sha"])' <<<"$INITIAL_COMMIT_JSON")"
 test "$(git -C "$TARGET" show -s --format=%P "$INITIAL_COMMIT")" = "$BASELINE_HEAD"
 test "$(git -C "$TARGET" show -s --format=%s "$INITIAL_COMMIT")" = "feat(trellis): #122 验证安装后任务提交"
 test ! -e "$TARGET/$INITIAL_PLAN"
@@ -2361,7 +2496,7 @@ REVISION_CANDIDATE_JSON="$(
     --json \
     --candidate-artifact "$REVISION_PLAN"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["candidate_validation"]["sequence"] == "001"; assert payload["candidate_validation"]["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_CANDIDATE_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["candidate_validation"]["sequence"] == "001"; assert payload["candidate_validation"]["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_CANDIDATE_JSON"
 REVISION_COMMIT_JSON="$(
   "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/create-task-commit.sh" \
     --root "$TARGET" \
@@ -2369,8 +2504,8 @@ REVISION_COMMIT_JSON="$(
     --json \
     --candidate-artifact "$REVISION_PLAN"
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert set(payload) == {"status", "exit", "pre_commit_head", "commit_sha"}; assert payload["status"] == payload["exit"] == "committed"; assert payload["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_COMMIT_JSON"
-REVISION_COMMIT="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["commit_sha"])' <<<"$REVISION_COMMIT_JSON")"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert set(payload) == {"status", "exit", "pre_commit_head", "commit_sha"}; assert payload["status"] == payload["exit"] == "committed"; assert payload["pre_commit_head"] == sys.argv[1]' "$INITIAL_COMMIT" <<<"$REVISION_COMMIT_JSON"
+REVISION_COMMIT="$(installed_python "$TARGET" -c 'import json, sys; print(json.load(sys.stdin)["commit_sha"])' <<<"$REVISION_COMMIT_JSON")"
 test "$(git -C "$TARGET" show -s --format=%P "$REVISION_COMMIT")" = "$INITIAL_COMMIT"
 test "$(git -C "$TARGET" show -s --format=%s "$REVISION_COMMIT")" = "fix(trellis): #122 验证 finding 修订提交"
 test "$(git -C "$TARGET" rev-list --count main..HEAD)" = "2"
@@ -2385,14 +2520,20 @@ fi
 
 TARGET="$INSTALL_TARGET"
 
-INITIAL_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
+INITIAL_CLOSEOUT_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case initial)"
 printf '%s\n' "$INITIAL_CLOSEOUT_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
-INITIAL_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-initial")"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 105; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$INITIAL_CLOSEOUT_JSON"
+assert_embedded_runtime_checkpoint \
+  "$TARGET" "$INITIAL_RUNTIME_CHECKPOINT" "$INITIAL_CLOSEOUT_JSON" closeout-initial
+INITIAL_TASK_WORKSPACE_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-initial" --checkpoint initial)"
 printf '%s\n' "$INITIAL_TASK_WORKSPACE_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is False; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$INITIAL_TASK_WORKSPACE_JSON"
-INITIAL_PHASE0_TRANSCRIPT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-initial" --checkpoint initial-install --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING")"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["checkpoint"] == "initial-install"; assert payload["exit_family_count"] == 23; assert len(payload["six_step_transcript"]) == 6; assert [row["edge_id"] for row in payload["reentry_transcripts"]] == ["needs_context", "clarify_requirements", "review_wording"]; assert [row["source"] for row in payload["refresh_provenance_transcripts"]] == ["explicit", "config-candidate", "remote-default"]; assert payload["workspace"]["actual_exit"] == "created"; assert payload["workspace"]["checker_status"] == "passed"' <<<"$INITIAL_PHASE0_TRANSCRIPT_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is False; assert not any(payload[key] for key in ("source_developer_identity", "target_developer_identity", "source_workspace_journal", "target_workspace_journal"))' <<<"$INITIAL_TASK_WORKSPACE_JSON"
+assert_embedded_runtime_checkpoint \
+  "$TARGET" "$INITIAL_RUNTIME_CHECKPOINT" "$INITIAL_TASK_WORKSPACE_JSON" task-workspace-initial
+INITIAL_PHASE0_TRANSCRIPT_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-initial" --checkpoint initial-install --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING")"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["checkpoint"] == "initial-install"; assert payload["exit_family_count"] == 23; assert len(payload["six_step_transcript"]) == 6; assert [row["edge_id"] for row in payload["reentry_transcripts"]] == ["needs_context", "clarify_requirements", "review_wording"]; assert [row["source"] for row in payload["refresh_provenance_transcripts"]] == ["explicit", "config-candidate", "remote-default"]; assert payload["workspace"]["actual_exit"] == "created"; assert payload["workspace"]["checker_status"] == "passed"' <<<"$INITIAL_PHASE0_TRANSCRIPT_JSON"
+assert_embedded_runtime_checkpoint \
+  "$TARGET" "$INITIAL_RUNTIME_CHECKPOINT" "$INITIAL_PHASE0_TRANSCRIPT_JSON" phase0-initial-install
 
 rm -f "$TARGET/.trellis/workflow.md.new"
 (
@@ -2427,11 +2568,15 @@ ownership_checkpoint "post-update-before-workflow-and-preset-reapply"
   trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force
 )
 apply_local_workflow_sample
-"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py" \
   --repo "$TARGET" \
   --platform claude \
   --platform codex \
   --platform cursor
+AFTER_UPDATE_RUNTIME_CHECKPOINT="$(installed_runtime_checkpoint "$TARGET" after-update-reapply)"
+printf '%s\n' "$AFTER_UPDATE_RUNTIME_CHECKPOINT"
+assert_installed_runtime_checkpoint \
+  "$TARGET" "$AFTER_UPDATE_RUNTIME_CHECKPOINT" after-update-reapply
 ownership_checkpoint "post-preset-reapply-before-final-checks"
 verify_task_publication_validator_wrappers "after-preset-reapply"
 
@@ -2546,7 +2691,7 @@ EXTENSION_CONTRACT_AFTER_UPDATE_JSON="$(
     --skill guru-verify-extension-installation \
     --json
 )"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.5"' <<<"$EXTENSION_CONTRACT_AFTER_UPDATE_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.5"' <<<"$EXTENSION_CONTRACT_AFTER_UPDATE_JSON"
 verify_closeout_package_boundaries "after-update-reapply"
 for root in .agents .claude .codex .cursor; do
   test -x "$TARGET/$root/skills/guru-verify-extension-installation/scripts/invoke.sh"
@@ -2563,21 +2708,21 @@ EXTENSION_EVAL_AFTER_UPDATE_JSON="$(
     --run-root "$WORK_DIR/extension-verification-after-update-eval" \
     --json
 )"
-python3 -c 'import json, sys; payload=json.load(sys.stdin); assert payload["status"] == "passed"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.5"; assert [case["actual_exit"] for case in payload["cases"]] == ["verified", "blocked"]; assert all(case["status"] == "passed" for case in payload["cases"])' <<<"$EXTENSION_EVAL_AFTER_UPDATE_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert payload["status"] == "passed"; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.5"; assert [case["actual_exit"] for case in payload["cases"]] == ["verified", "blocked"]; assert all(case["status"] == "passed" for case in payload["cases"])' <<<"$EXTENSION_EVAL_AFTER_UPDATE_JSON"
 DISCOVERY_AFTER_UPDATE_JSON="$(
   "$TARGET/.trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh" \
     --root "$TARGET" \
     --json \
     --query-json '{"issue_refs":["#111"],"commands":["preview-change-context-history"]}'
 )"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert any(row["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json") for row in payload["candidates"])' <<<"$DISCOVERY_AFTER_UPDATE_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["algorithm_id"] == "guru-context-history-score-1.0"; assert any(row["finish_summary_path"].endswith("context-discovery-fixture/finish-summary.json") for row in payload["candidates"])' <<<"$DISCOVERY_AFTER_UPDATE_JSON"
 verify_requirements_clarification_exits "after-update"
 verify_context_discovery_exits "after-update"
 verify_contract_wording_standalone_profiles "after-update"
 verify_change_request_review_package "after-update"
 POST_UPDATE_TASK_REL=".trellis/tasks/07-17-114-contract-wording-after-update"
 POST_UPDATE_BRANCH="$(git -C "$TARGET" branch --show-current)"
-python3 - "$TARGET" "$POST_UPDATE_TASK_REL" "$POST_UPDATE_BRANCH" <<'PY'
+installed_python "$TARGET" - "$TARGET" "$POST_UPDATE_TASK_REL" "$POST_UPDATE_BRANCH" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -2660,14 +2805,20 @@ record_and_check_planning_approval "$POST_UPDATE_TASK_REL" "after-update"
 grep -q '^session_auto_commit: false$' "$TARGET/.trellis/config.yaml"
 grep -q '^\.trellis/workspace/$' "$TARGET/.gitignore"
 
-UPDATED_CLOSEOUT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
+UPDATED_CLOSEOUT_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_closeout.py" --repo "$TARGET" --case after-update)"
 printf '%s\n' "$UPDATED_CLOSEOUT_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
-UPDATED_TASK_WORKSPACE_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-after-update" --existing-developer-identity)"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["issue"] == 106; assert payload["local_head"] == payload["remote_head"] == payload["pr_head"] == payload["merge_commit"]; assert payload["pr_ready"] is True; assert payload["public_exit"] == "ready_for_merge"; assert payload["merge_exit"] == "merged"; assert payload["verifier_artifacts"] == 0; assert payload["after_archive_hook_preflight"] is True' <<<"$UPDATED_CLOSEOUT_JSON"
+assert_embedded_runtime_checkpoint \
+  "$TARGET" "$AFTER_UPDATE_RUNTIME_CHECKPOINT" "$UPDATED_CLOSEOUT_JSON" closeout-after-update
+UPDATED_TASK_WORKSPACE_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-task-workspace-after-update" --checkpoint after-update --existing-developer-identity)"
 printf '%s\n' "$UPDATED_TASK_WORKSPACE_JSON"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is True; assert payload["source_developer_identity"] is True; assert payload["target_developer_identity"] is False; assert not any(payload[key] for key in ("source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
-UPDATED_PHASE0_TRANSCRIPT_JSON="$(python3 "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-after-update" --checkpoint update-reapply --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING")"
-python3 -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["checkpoint"] == "update-reapply"; assert payload["exit_family_count"] == 23; assert len(payload["six_step_transcript"]) == 6; assert [row["edge_id"] for row in payload["reentry_transcripts"]] == ["needs_context", "clarify_requirements", "review_wording"]; assert [row["source"] for row in payload["refresh_provenance_transcripts"]] == ["explicit", "config-candidate", "remote-default"]; assert payload["workspace"]["actual_exit"] == "created"; assert payload["workspace"]["checker_status"] == "passed"' <<<"$UPDATED_PHASE0_TRANSCRIPT_JSON"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["typed_exit"] == "created"; assert payload["checker_status"] == "passed"; assert payload["artifact_names"] == ["issue-scope-ledger.json"]; assert payload["task_creator"] == "fixture-maintainer"; assert payload["developer_identity_preserved"] is True; assert payload["source_developer_identity"] is True; assert payload["target_developer_identity"] is False; assert not any(payload[key] for key in ("source_workspace_journal", "target_workspace_journal"))' <<<"$UPDATED_TASK_WORKSPACE_JSON"
+assert_embedded_runtime_checkpoint \
+  "$TARGET" "$AFTER_UPDATE_RUNTIME_CHECKPOINT" "$UPDATED_TASK_WORKSPACE_JSON" task-workspace-after-update
+UPDATED_PHASE0_TRANSCRIPT_JSON="$(installed_python "$TARGET" "$REPO_ROOT/trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py" --installed-repo "$TARGET" --work-root "$WORK_DIR/installed-phase0-transcript-after-update" --checkpoint update-reapply --semantic-grading "$SEMANTIC_RETRIEVAL_GRADING")"
+installed_python "$TARGET" -c 'import json, sys; payload = json.load(sys.stdin); assert payload["status"] == "ok"; assert payload["checkpoint"] == "update-reapply"; assert payload["exit_family_count"] == 23; assert len(payload["six_step_transcript"]) == 6; assert [row["edge_id"] for row in payload["reentry_transcripts"]] == ["needs_context", "clarify_requirements", "review_wording"]; assert [row["source"] for row in payload["refresh_provenance_transcripts"]] == ["explicit", "config-candidate", "remote-default"]; assert payload["workspace"]["actual_exit"] == "created"; assert payload["workspace"]["checker_status"] == "passed"' <<<"$UPDATED_PHASE0_TRANSCRIPT_JSON"
+assert_embedded_runtime_checkpoint \
+  "$TARGET" "$AFTER_UPDATE_RUNTIME_CHECKPOINT" "$UPDATED_PHASE0_TRANSCRIPT_JSON" phase0-update-reapply
 
 ABSENCE_TARGET="$WORK_DIR/no-developer-project"
 mkdir "$ABSENCE_TARGET"
@@ -2690,7 +2841,7 @@ test -f "$ABSENCE_TARGET/.trellis/.developer"
 test -d "$ABSENCE_TARGET/.trellis/workspace"
 rm -rf "$ABSENCE_TARGET/.trellis/.developer" "$ABSENCE_TARGET/.trellis/workspace"
 assert_official_state_absent "$ABSENCE_TARGET" "no-developer fixture setup"
-"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py" \
   --repo "$ABSENCE_TARGET" \
   --platform claude \
   --platform codex \
@@ -2707,11 +2858,15 @@ assert_official_state_absent "$ABSENCE_TARGET" "trellis update"
 )
 apply_local_workflow_sample "$ABSENCE_TARGET"
 assert_official_state_absent "$ABSENCE_TARGET" "workflow reapply"
-"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh" \
+source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py" \
   --repo "$ABSENCE_TARGET" \
   --platform claude \
   --platform codex \
   --platform cursor
+NO_DEVELOPER_RUNTIME_CHECKPOINT="$(installed_runtime_checkpoint "$ABSENCE_TARGET" no-developer)"
+printf '%s\n' "$NO_DEVELOPER_RUNTIME_CHECKPOINT"
+assert_installed_runtime_checkpoint \
+  "$ABSENCE_TARGET" "$NO_DEVELOPER_RUNTIME_CHECKPOINT" no-developer
 assert_official_state_absent "$ABSENCE_TARGET" "preset reapply"
 "$ABSENCE_TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$ABSENCE_TARGET" --json --mode installed >/dev/null
 ABSENCE_SIDECARS="$(find "$ABSENCE_TARGET" -type f \( -name '*.new' -o -name '*.bak' \) -print)"
@@ -2728,6 +2883,11 @@ if [[ -n "$FINAL_SIDECARS" ]]; then
   printf '%s\n' "$FINAL_SIDECARS" >&2
   exit 2
 fi
+
+source_python "$PYTHON_ROUTING_HELPER" check-inventory \
+  --repo-root "$REPO_ROOT" \
+  --inventory "$PYTHON_CALLER_INVENTORY" \
+  --json
 
 if [[ "$USE_LOCAL_WORKFLOW_SAMPLE" == "1" ]]; then
   echo "Verified public marketplace discovery plus local unpublished workflow sample at $TARGET"

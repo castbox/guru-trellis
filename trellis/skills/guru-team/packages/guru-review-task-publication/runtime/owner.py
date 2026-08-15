@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Package-local deterministic runtime extracted from the frozen owner implementation."""
 
 from __future__ import annotations
@@ -2251,7 +2250,7 @@ def current_task_dir(root: Path) -> Path | None:
     task_script = root / ".trellis/scripts/task.py"
     if not task_script.exists():
         return None
-    proc = run(["python3", "./.trellis/scripts/task.py", "current"], cwd=root, check=False)
+    proc = run([sys.executable, "./.trellis/scripts/task.py", "current"], cwd=root, check=False)
     value = proc.stdout.strip()
     if proc.returncode == 0 and value:
         return resolve_existing_task_dir(root, value)
@@ -5770,7 +5769,7 @@ def official_after_archive_hook_state(root: Path) -> dict[str, Any]:
         "print(json.dumps(parse_simple_yaml(open(sys.argv[1], encoding='utf-8').read())))"
     )
     proc = run(
-        ["python3", "-c", parser, str(config_path)],
+        [sys.executable, "-c", parser, str(config_path)],
         cwd=root / ".trellis/scripts",
         check=False,
     )

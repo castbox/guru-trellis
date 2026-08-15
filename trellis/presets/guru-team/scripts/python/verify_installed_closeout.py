@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run a complete closeout transaction through an installed Guru Team preset."""
 
 from __future__ import annotations
@@ -13,6 +12,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+from verify_throwaway_python_routing import runtime_checkpoint
 
 
 REPO = "microsoft/powertoys"
@@ -436,60 +437,52 @@ def write_fixture(root: Path, owners: dict[str, Any], real_git: str, case_name: 
         "body": valid_pr_body(issue),
     }
     write_json(authoring_path, authoring)
-    original_remote_url = git(root, real_git, "remote", "get-url", "origin")
-    git(
-        root,
-        real_git,
-        "remote",
-        "set-url",
-        "origin",
-        f"https://github.com/{REMOTE_REPO}.git",
-    )
+    fixture_remote_url = git(root, real_git, "remote", "get-url", "origin")
     publication_package = (
         root
         / ".trellis/guru-team/skills/packages/guru-review-task-publication"
     )
     record_publication = publication_package / "scripts/record-task-publication-review.sh"
     check_publication = publication_package / "scripts/check-task-publication-review.sh"
-    try:
+    run(
+        [
+            str(record_publication),
+            "--root",
+            str(root),
+            "--task",
+            task_dir.relative_to(root).as_posix(),
+            "--input",
+            authoring_path.relative_to(root).as_posix(),
+            "--branch-review-commit",
+            publication_input["branch_review_commit"],
+        ],
+        root,
+    )
+    checked_publication = json.loads(
         run(
             [
-                str(record_publication),
+                str(check_publication),
                 "--root",
                 str(root),
                 "--task",
                 task_dir.relative_to(root).as_posix(),
-                "--input",
-                authoring_path.relative_to(root).as_posix(),
-                "--branch-review-commit",
-                publication_input["branch_review_commit"],
+                "--expected-exit",
+                "ready",
             ],
             root,
-        )
-        checked_publication = json.loads(
-            run(
-                [
-                    str(check_publication),
-                    "--root",
-                    str(root),
-                    "--task",
-                    task_dir.relative_to(root).as_posix(),
-                    "--expected-exit",
-                    "ready",
-                ],
-                root,
-            ).stdout
-        )
-    finally:
-        git(root, real_git, "remote", "set-url", "origin", original_remote_url)
+        ).stdout
+    )
+    if git(root, real_git, "remote", "get-url", "origin") != fixture_remote_url:
+        raise RuntimeError("publication fixture changed the real origin remote")
     return task_dir, branch, str(checked_publication["branch_review_commit"])
 
 
 def install_fake_commands(fake_bin: Path) -> None:
     fake_bin.mkdir(parents=True, exist_ok=True)
+    managed_shebang = f"#!{sys.executable}\n"
     write_executable(
         fake_bin / "git",
-        """#!/usr/bin/env python3
+        managed_shebang + """
 import os
 import sys
 
@@ -511,7 +504,7 @@ os.execv(real_git, [real_git, *args])
     )
     write_executable(
         fake_bin / "gh",
-        """#!/usr/bin/env python3
+        managed_shebang + """
 import json
 import os
 import subprocess
@@ -1231,6 +1224,11 @@ def main() -> int:
         remote,
         terminal_recovery_only=args.terminal_recovery_only,
         closure_mismatch=args.closure_mismatch,
+    )
+    payload["runtime_checkpoint"] = runtime_checkpoint(
+        root,
+        root / ".trellis/guru-team/runtime",
+        f"closeout-{args.case}",
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0

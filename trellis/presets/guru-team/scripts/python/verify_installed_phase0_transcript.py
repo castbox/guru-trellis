@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -12,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from verify_throwaway_python_routing import runtime_checkpoint
 
 
 SKILLS = (
@@ -427,6 +428,7 @@ def stage_transcript_owner_repo(
 
     fake_bin = chain_root / "fake-bin"
     fake_bin.mkdir()
+    managed_shebang = f"#!{sys.executable}\n"
     operation_log = chain_root / "operation-counts.jsonl"
     issue_body = chain_root / "issue-body.txt"
     issue_body.write_text(
@@ -435,7 +437,8 @@ def stage_transcript_owner_repo(
     )
     fake_gh = fake_bin / "gh"
     fake_gh.write_text(
-        "#!/usr/bin/env python3\n"
+        managed_shebang
+        +
         "import json,sys\n"
         "from pathlib import Path\n"
         f"issue_body_path={str(issue_body)!r}\n"
@@ -474,7 +477,8 @@ def stage_transcript_owner_repo(
         raise RuntimeError("git is unavailable for the transcript owner")
     fake_git = fake_bin / "git"
     fake_git.write_text(
-        "#!/usr/bin/env python3\n"
+        managed_shebang
+        +
         "import json,os,subprocess,sys\n"
         "from pathlib import Path\n"
         f"real_git={real_git!r}\n"
@@ -2564,6 +2568,11 @@ def main() -> int:
         "reentry_transcripts": reentry,
         "refresh_provenance_transcripts": refresh_provenance,
         "workspace": workspace,
+        "runtime_checkpoint": runtime_checkpoint(
+            installed_repo,
+            installed_repo / ".trellis/guru-team/runtime",
+            f"phase0-{args.checkpoint}",
+        ),
     }
     print(json.dumps(output, ensure_ascii=False, sort_keys=True))
     return 0

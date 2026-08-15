@@ -49,6 +49,46 @@ layout. Existing checkout-local runtimes are preserved during migration and are
 never deleted by normal apply/reapply. A failed cache candidate or staged
 activation leaves the previous pointer unchanged.
 
+The complete throwaway verifier has one narrower interpreter-routing contract.
+Its canonical `bootstrap.py` invocation is the only shell-level call that may
+resolve and execute PATH Python. The returned `source-managed-runtime.json` is
+immediately consumed through the canonical source `resolve-python.sh`. Every
+later Python subprocess uses either that source runner or the target checkout's
+installed `.trellis/guru-team/runtime/resolve-python.sh`; target, linked-worktree,
+closeout, update/reapply, and no-developer evidence must never use the source
+interpreter as a substitute. Each checkpoint binds the normalized managed
+`sys.executable` launch path while preserving the final `venv/bin/python`
+symlink, its separately resolved physical interpreter identity, the active
+pointer/runtime metadata identity, and the SHA-256 of the selected runtime's
+dependency lock.
+
+The eval adapter graph is part of that same routing boundary. Its shell adapter
+enters `native_adapter.py` through the checkout-local resolver;
+`native_adapter.py` then starts `guru-team-shared-eval` with the current managed
+`sys.executable`, never by executable shebang dispatch. The shared evaluator has
+no PATH shebang. Source owner staging likewise invokes the canonical Python
+preset installer with that same `sys.executable`; it must not execute `apply.sh`
+and reopen a PATH-Python second hop.
+
+Verifier-executed workflow, preset, package, and platform shell wrappers are
+part of the caller inventory before the checker decides whether they currently
+enter Python. Package and platform rows bind the actual invocation path to the
+canonical package wrapper, its fixed command in `commands.json`, the installed
+`runtime/launch.sh`, and that launcher's exact `resolve-python.sh` hop. A wrapper
+that enters Python must use the resolver matching its source or installed
+layout. Installed `finish-work.sh`, compatibility `prepare-task.sh`, package
+validators, and platform `invoke.sh` entries therefore cannot invoke PATH
+Python before their package-local entry.
+
+The inventory also scans every canonical
+`trellis/skills/guru-team/packages/*/runtime/**/*.py` file as the installed
+package-runtime closure. A package runtime may start another Python process
+only with its current managed `sys.executable`. The checker recognizes the real
+`run`, `run_stdout`, `subprocess.run`, and `owner.run` call shapes and explicitly
+registers the current dynamic validation helper. Literal PATH Python and PATH
+Python shebangs in those supported maintenance paths fail closed. Every accepted
+package-runtime second hop remains an explicit inventory row.
+
 The preset also maintains one bounded AI-first principles block in the target
 root `AGENTS.md`, delimited by stable start/end markers. Missing `AGENTS.md` is
 created; an existing file keeps every byte outside the block; repeated apply is

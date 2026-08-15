@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -43,7 +44,7 @@ def _task_dir(root: Path, value: str | None) -> Path:
         candidates = (supplied, root / supplied, root / ".trellis/tasks" / supplied)
     else:
         process = subprocess.run(
-            ["python3", "./.trellis/scripts/task.py", "current"],
+            [sys.executable, "./.trellis/scripts/task.py", "current"],
             cwd=root,
             text=True,
             stdout=subprocess.PIPE,

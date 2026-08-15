@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Package-local deterministic runtime extracted from the frozen owner implementation."""
 
 from __future__ import annotations

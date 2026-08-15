@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -16,8 +15,9 @@ from typing import Any
 
 ADAPTERS = ("shared", "codex", "claude", "cursor")
 
-TRACE_HELPER = r'''#!/usr/bin/env python3
-from __future__ import annotations
+MANAGED_PYTHON_SHEBANG = f"#!{sys.executable}\n"
+
+TRACE_HELPER = MANAGED_PYTHON_SHEBANG + r'''from __future__ import annotations
 
 import argparse
 import hashlib
@@ -303,7 +303,8 @@ def start_public_runtime_boundary(
     thread.start()
     boundary = execution_root / "public-invocation-boundary.sh"
     boundary.write_text(
-        "#!/usr/bin/env python3\n"
+        MANAGED_PYTHON_SHEBANG
+        +
         "import json,sys,time\n"
         "from pathlib import Path\n"
         f"request_path=Path({str(request_path)!r}); response_path=Path({str(response_path)!r})\n"
@@ -499,7 +500,7 @@ def native_argv(
 ) -> tuple[list[str], Path | None]:
     workdir = str(Path(request["workdir"]).resolve())
     if adapter == "shared":
-        return [command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
+        return [sys.executable, command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
     if adapter == "codex":
         output_path = native_request_path.with_name("native-last-message.txt")
         trusted_root = str(Path(request["runtime_target"]).resolve().parents[4])

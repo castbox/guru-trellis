@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Package-local deterministic runtime extracted from the frozen owner implementation."""
 
 from __future__ import annotations
@@ -2522,7 +2521,7 @@ def current_task_dir(root: Path) -> Path | None:
     task_script = root / ".trellis/scripts/task.py"
     if not task_script.exists():
         return None
-    proc = run(["python3", "./.trellis/scripts/task.py", "current"], cwd=root, check=False)
+    proc = run([sys.executable, "./.trellis/scripts/task.py", "current"], cwd=root, check=False)
     value = proc.stdout.strip()
     if proc.returncode == 0 and value:
         return resolve_existing_task_dir(root, value)
@@ -3822,14 +3821,24 @@ def prepare_provenance_metadata_tail(
                     exit_code=2,
                     payload={"errors": pre_errors},
                 )
-            apply_script = source / "trellis/presets/guru-team/scripts/bash/apply.sh"
-            if not apply_script.is_file() or not os.access(apply_script, os.X_OK):
+            apply_script = (
+                source
+                / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+            )
+            if not apply_script.is_file() or apply_script.is_symlink():
                 raise WorkflowError(
                     "Canonical preset apply entry is unavailable for provenance preparation.",
                     exit_code=2,
                 )
             run_stdout(
-                [str(apply_script), "--repo", str(source), "--all-platforms", "--json"],
+                [
+                    sys.executable,
+                    str(apply_script),
+                    "--repo",
+                    str(source),
+                    "--all-platforms",
+                    "--json",
+                ],
                 cwd=source,
             )
             dirty = provenance_tail_git_status_paths(source)
@@ -6115,7 +6124,7 @@ def official_after_archive_hook_state(root: Path) -> dict[str, Any]:
         "print(json.dumps(parse_simple_yaml(open(sys.argv[1], encoding='utf-8').read())))"
     )
     proc = run(
-        ["python3", "-c", parser, str(config_path)],
+        [sys.executable, "-c", parser, str(config_path)],
         cwd=root / ".trellis/scripts",
         check=False,
     )
@@ -9242,7 +9251,7 @@ def execute_archive_metadata_transaction(
         expected_summary_pr=bound_pr,
     )
     proc = run(
-        ["python3", "./.trellis/scripts/task.py", "archive", task_dir.name, "--no-commit"],
+        [sys.executable, "./.trellis/scripts/task.py", "archive", task_dir.name, "--no-commit"],
         cwd=root,
         check=False,
     )

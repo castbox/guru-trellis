@@ -304,6 +304,71 @@ Maintainers can verify the current extension's non-interactive install path with
 ./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
 ```
 
+That command has exactly one direct PATH Python bootstrap seed. It consumes the
+seed result through the canonical source managed runner, then routes every
+source or installed Python subprocess through the corresponding
+`resolve-python.sh`. Runtime checkpoints verify the normalized managed launch
+path while preserving the final `venv/bin/python` symlink, its separately
+resolved physical interpreter identity, the active runtime/cache identity, and
+the dependency-lock SHA-256 at initial, update/reapply, change-request,
+linked-worktree, closeout, Phase 0, task-workspace, and no-developer boundaries.
+A source-owned bidirectional caller inventory rejects new bare `python3`, PATH
+Python shebangs, unmanaged Python subprocesses in the current caller shapes, and
+source/installed helper routing drift before and after the business matrix.
+
+After the managed bootstrap succeeds, the verifier creates a temporary
+`python3` PATH bridge ahead of the caller's PATH. The bridge directly execs the
+canonical source `resolve-python.sh`, so Trellis's own version probe and
+`init_developer.py` subprocess use the source managed interpreter while the
+platform-default `python3` command name remains unchanged. The verifier pins
+`TRELLIS_PYTHON_CMD=python3` after activating the bridge, so an inherited
+override cannot bypass it. Static validation
+requires the bridge after poison activation and before managed bootstrap-result
+consumption or any Trellis call, and rejects bridge resolver or activation
+drift.
+
+That inventory also scans every canonical `packages/*/runtime/**/*.py` file.
+Package-local Python second hops in the real `run`, `run_stdout`,
+`subprocess.run`, and `owner.run` call shapes must use the resolver-selected
+`sys.executable` and remain explicit inventory entries. The current dynamic
+validation helper is registered explicitly, and a newly added runtime file is
+scanned automatically so ordinary maintenance cannot silently omit a real
+caller from review.
+
+The inventory begins with every workflow, preset, package, or platform shell
+wrapper actually executed by the verifier, then classifies each wrapper that
+enters Python. Package and platform entries bind the real invocation path to the
+canonical package wrapper, its fixed `commands.json` command, the installed
+`runtime/launch.sh`, and `resolve-python.sh`. Installed `finish-work.sh`,
+compatibility `prepare-task.sh`, package validators, and platform `invoke.sh`
+therefore cannot reopen PATH Python before entering their package runtime. The
+source `check-dogfood-overlay-drift.sh` to `check-upstream-ownership.sh` route
+is also followed recursively to its source resolver.
+
+The inventory also follows eval execution transitively. Adapter shells enter
+`native_adapter.py` through the checkout-local resolver; that adapter starts the
+shebang-free `guru-team-shared-eval` with its current managed `sys.executable`.
+When source eval fixtures stage a clean owner repository, the adapter invokes
+the canonical Python preset installer with the same interpreter instead of
+executing `apply.sh` and reopening PATH Python.
+
+Maintainers can run the same raw README command in both required PATH Python
+environments with the non-invasive temporary harness:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/test-verify-throwaway-python-routing-matrix.sh
+```
+
+The harness first supplies a temporary Python with neither pip nor
+`jsonschema`. It then supplies a Python that imports `jsonschema`, activates a
+poison sentinel after the seed, and fails if PATH Python is invoked again. In
+both cases the harness changes only environment variables and temporary files;
+the command executed from the repository root remains exactly:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
+```
+
 The script creates a temporary Git repo, runs `trellis init -y` with the
 `guru-team` marketplace workflow, applies the preset with
 `--platform claude --platform codex --platform cursor`, checks that `.trellis/workflow.md`

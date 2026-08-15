@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -8,9 +7,12 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+from verify_throwaway_python_routing import runtime_checkpoint
 
 
 def run(*args: str, cwd: Path) -> str:
@@ -272,6 +274,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--installed-repo", required=True)
     parser.add_argument("--work-root", required=True)
+    parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--existing-developer-identity", action="store_true")
     args = parser.parse_args()
     installed_repo = Path(args.installed_repo).resolve()
@@ -302,8 +305,10 @@ def main() -> int:
     fake_bin = work_root / "installed-task-workspace-bin"
     fake_bin.mkdir()
     fake_gh = fake_bin / "gh"
+    managed_shebang = f"#!{sys.executable}\n"
     fake_gh.write_text(
-        "#!/usr/bin/env python3\n"
+        managed_shebang
+        +
         "import json,sys\n"
         "args=sys.argv[1:]\n"
         "if args[:2]==['issue','view']:\n"
@@ -386,6 +391,11 @@ def main() -> int:
                 "task_creator": task_data.get("creator"),
                 "source_workspace_journal": False,
                 "target_workspace_journal": False,
+                "runtime_checkpoint": runtime_checkpoint(
+                    installed_repo,
+                    installed_repo / ".trellis/guru-team/runtime",
+                    f"task-workspace-{args.checkpoint}",
+                ),
             },
             ensure_ascii=False,
             indent=2,

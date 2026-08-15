@@ -210,6 +210,54 @@ class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
                 self.assertIn('exec "$RUNTIME_ASSETS/resolve-python.sh"', adapter)
                 self.assertNotIn("exec python3", adapter)
 
+        native_adapter_path = (
+            root / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+        )
+        native_adapter = native_adapter_path.read_text(encoding="utf-8")
+        shared_eval_path = (
+            root / "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval"
+        )
+        shared_eval = shared_eval_path.read_text(encoding="utf-8")
+
+        self.assertFalse(native_adapter.startswith("#!"))
+        self.assertFalse(shared_eval.startswith("#!"))
+        self.assertTrue(os.access(shared_eval_path, os.X_OK))
+        self.assertIn(
+            'return [sys.executable, command, "--request"',
+            native_adapter,
+        )
+        self.assertIn(
+            'source_repo / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"',
+            native_adapter,
+        )
+        self.assertIn(
+            '[sys.executable, str(apply_script), "--repo", str(fixture), "--all-platforms"]',
+            native_adapter,
+        )
+        self.assertNotIn(
+            '[str(apply_script), "--repo", str(fixture), "--all-platforms"]',
+            native_adapter,
+        )
+
+    def test_verifier_shell_second_hops_use_checkout_local_managed_python(self) -> None:
+        root = preset.guru_root_from_script()
+        for script_name in ("finish-work.sh", "prepare-task.sh"):
+            with self.subTest(script=script_name):
+                script = (
+                    root
+                    / f"trellis/workflows/guru-team/scripts/bash/{script_name}"
+                ).read_text(encoding="utf-8")
+                self.assertIn(
+                    '$SCRIPT_DIR/../../../../skills/guru-team/runtime/resolve-python.sh',
+                    script,
+                )
+                self.assertIn(
+                    '$REPO_ROOT/.trellis/guru-team/runtime',
+                    script,
+                )
+                self.assertIn('exec "$RUNTIME_ASSETS/resolve-python.sh"', script)
+                self.assertNotIn("python3", script)
+
     def test_dogfood_spec_matches_finalizer_six_exit_contract(self) -> None:
         root = preset.guru_root_from_script()
         spec = (root / ".trellis/spec/workflow/index.md").read_text(encoding="utf-8")
@@ -1593,13 +1641,13 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             update,
         )
         preset_reapply = verifier.index(
-            '"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh"',
+            'source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"',
             workflow_reapply,
         )
         final_scan = verifier.index('FINAL_SIDECARS="$(find "$TARGET"', preset_reapply)
         initial_ownership = verifier.index('ownership_checkpoint "initial-init-before-preset-apply"')
         initial_apply = verifier.index(
-            '"$REPO_ROOT/trellis/presets/guru-team/scripts/bash/apply.sh"',
+            'source_python "$REPO_ROOT/trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"',
             initial_ownership,
         )
         post_update_ownership = verifier.index(
@@ -1684,6 +1732,8 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn("verify_installed_task_workspace.py", verifier)
         self.assertIn("installed-task-workspace-initial", verifier)
         self.assertIn("installed-task-workspace-after-update", verifier)
+        self.assertIn("--checkpoint initial", verifier)
+        self.assertIn("--checkpoint after-update", verifier)
         self.assertIn("--existing-developer-identity", verifier)
         self.assertIn('payload["developer_identity_preserved"] is True', verifier)
         self.assertIn('payload["task_creator"] == "fixture-maintainer"', verifier)
@@ -1747,7 +1797,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('test -f "$TARGET/.claude/commands/guru/finish-work.md"', verifier)
         self.assertIn('test -f "$TARGET/.cursor/commands/guru-finish-work.md"', verifier)
         self.assertIn(
-            'python3 "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q',
+            'installed_python "$TARGET" "$TARGET/.trellis/guru-team/skills/tests/test_finish_family_integration.py" -q',
             verifier,
         )
         self.assertIn('verify_finish_family_integration "initial"', verifier)
