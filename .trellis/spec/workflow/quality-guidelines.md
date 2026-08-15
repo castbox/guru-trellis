@@ -49,9 +49,12 @@ surfaces that expose it:
 
 For `no_task` file-changing behavior, the canonical workflow must invoke
 `guru-select-workflow-mode` before normal Intake. Explicit task-free intent
-selects the bounded current-checkout route directly; implicit intent may ask
-once, refusal or uncertainty selects standard Intake, and same-scope recovery
-reuses the selection. Scripts must not classify intent.
+selects the bounded current-checkout route directly. Without explicit intent,
+the AI automatically selects high-confidence bounded low-risk work, asks once
+only when evidence is insufficient, and selects standard Intake for clearly
+complex or high-risk work. Issue presence, file count, paths, and keywords are
+not independent classifiers. Same-scope recovery reuses the selection. Scripts
+must not classify intent.
 
 When standard Intake is selected, the deterministic base and workspace helpers
 remain:
@@ -613,8 +616,9 @@ Python or shell.
   Treat those as AI runtime/tool capabilities and express the decision in
   workflow or prompt text.
 - Relying on chat memory for issue close scope, base branch, or `branch_review_commit`.
-- Treating "small fix" as task-free intent without an explicit or once-confirmed
-  semantic selection from `guru-select-workflow-mode`.
+- Treating one phrase, Issue presence, file count, or path as an independent
+  task-free classifier instead of applying the complete semantic decision in
+  `guru-select-workflow-mode`.
 - Writing task review artifacts into the source checkout because a manual edit
   used a relative path while the active task lives in a separate worktree.
 - Leaving `.new` or `.bak` installer outputs unresolved in committed changes.

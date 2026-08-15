@@ -960,9 +960,18 @@ Discovery. The preset installs no alternate summary command.
 
 ## Workflow Guardrails
 
-For `no_task` issue-backed, task-like, or file-changing requests in a Guru Team
-project, tool-free classification is followed by mandatory `guru-sync-base`, not
-bare `task.py create`. The Skill resolves explicit `--base`, scalar
+For every file-changing request that has not already entered an active-task
+route, tool-free classification first mandatory invokes semantic
+`guru-select-workflow-mode`, whether or not an Issue exists or task-free was
+mentioned. The shortest explicit expression is `这次走 task-free`. Without
+explicit intent, high-confidence bounded, reversible, low-risk work selects
+`task_free` automatically; likely but insufficient evidence opens one mode
+question; clearly complex or high-risk work selects `standard_intake`.
+Issue presence, file count, paths, and keywords do not independently classify
+the mode.
+
+Only `standard_intake` is followed by mandatory `guru-sync-base`, not bare
+`task.py create`. The Skill resolves explicit `--base`, scalar
 `base_branch`, the first existing branch in configured `base_branch_candidates`
 order (default `dev`, `develop`, `main`, `master`), then remote default when no
 candidate exists; the current branch is never an implicit base. Multiple existing
@@ -1196,12 +1205,24 @@ resolution. Only the verified Darwin `/var` -> `/private/var` system mapping
 may re-anchor an outer path; arbitrary `samefile` and user aliases are never
 trusted.
 
-Current-checkout direct edits while `no_task` is active are allowed only as an
-explicit user override. The user approval must say this turn should skip
-creating or reusing a GitHub issue, Trellis task, worktree, and branch. Before
-editing, the AI must summarize skipped artifacts, current checkout, current
-branch, dirty state, side effects, changed-file scope, and the separate
-commit/push/PR approval boundary.
+Current-checkout direct edits while `no_task` is active are owned only by
+`guru-select-workflow-mode:task_free`; they may be explicitly selected with
+`这次走 task-free` or automatically selected for high-confidence bounded
+low-risk work. Before writes, `guru-task-free-current-checkout` reads only local
+repository, branch/worktree, active-task scope, and dirty/untracked overlap
+facts. Default and non-default branches are both acceptable without a real
+scope or file conflict, and branch protection is never queried. Same-scope
+active-task work returns to that task, scope expansion uses the existing
+scope-change route, unrelated worktrees ask for the target checkout, and target
+overlap or insufficient position evidence asks only where to edit.
+
+Task-free performs only the bounded edit and risk-matched targeted checks while
+preserving unrelated work. Scope/risk expansion stops further writes;
+automatically selected task-free is re-evaluated, while explicit task-free waits
+for the user to narrow scope or choose `standard_intake`. It never authorizes
+Issue/task/worktree/branch creation, commit, push, PR, merge, tag, release,
+installation, cleanup, or Issue closure; those remain independent later
+side-effect boundaries.
 
 The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
 when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`

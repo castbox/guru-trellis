@@ -1731,11 +1731,25 @@ def build_workflow_mode_owner(
 ) -> dict[str, Any]:
     exits = {
         "workflow-mode-explicit-task-free": "task_free",
-        "workflow-mode-implicit-confirmed": "task_free",
-        "workflow-mode-implicit-refused": "standard_intake",
-        "workflow-mode-ordinary-request": "standard_intake",
+        "workflow-mode-automatic-high-confidence": "task_free",
+        "workflow-mode-insufficient-confirmed": "task_free",
+        "workflow-mode-insufficient-refused": "standard_intake",
+        "workflow-mode-complex-request": "standard_intake",
+        "workflow-mode-simple-issue": "task_free",
+        "workflow-mode-insufficient-issue-confirmed": "task_free",
+        "workflow-mode-complex-issue": "standard_intake",
+        "workflow-mode-same-file-count-low-risk": "task_free",
+        "workflow-mode-same-file-count-high-risk": "standard_intake",
+        "workflow-mode-non-default-checkout": "task_free",
+        "workflow-mode-active-task-same-scope": "task_free",
+        "workflow-mode-active-task-scope-expansion": "task_free",
+        "workflow-mode-unrelated-worktree": "task_free",
+        "workflow-mode-dirty-overlap": "task_free",
+        "workflow-mode-position-evidence-insufficient": "task_free",
         "workflow-mode-unrelated-dirty": "task_free",
         "workflow-mode-repeated-turn": "task_free",
+        "workflow-mode-automatic-risk-expansion": "standard_intake",
+        "workflow-mode-explicit-risk-expansion": "task_free",
         "workflow-mode-blocked": "blocked",
     }
     typed_exit = exits.get(recipe)
@@ -4169,11 +4183,14 @@ def stage_owner_execution(
     head = run_git(fixture, "rev-parse", "HEAD")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
-    runtime = (
-        load_package_runtime_module(fixture_runtime_target, skill_id, "common")
-        if skill_id == "guru-discover-change-context"
-        else load_package_owner_runtime(fixture_runtime_target, skill_id)
-    )
+    if skill_id == "guru-select-workflow-mode":
+        runtime = None
+    elif skill_id == "guru-discover-change-context":
+        runtime = load_package_runtime_module(
+            fixture_runtime_target, skill_id, "common"
+        )
+    else:
+        runtime = load_package_owner_runtime(fixture_runtime_target, skill_id)
     if hasattr(runtime, "write_runtime_mappings"):
         runtime.write_runtime_mappings(
             fixture,
@@ -4196,7 +4213,7 @@ def stage_owner_execution(
     try:
         if skill_id == "guru-select-workflow-mode":
             owner = build_workflow_mode_owner(public_payload, recipe)
-            if recipe == "workflow-mode-unrelated-dirty":
+            if recipe in {"workflow-mode-unrelated-dirty", "workflow-mode-dirty-overlap"}:
                 (fixture / "unrelated-user-note.txt").write_text(
                     "preserve this unrelated dirty file\n", encoding="utf-8"
                 )

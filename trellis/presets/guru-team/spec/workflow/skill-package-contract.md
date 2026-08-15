@@ -745,9 +745,10 @@ mandatory invocation markers.
 `guru-select-workflow-mode` is the semantic owner before normal Intake. Its
 owner-private result binds `mode` and `continuation_id`; selected results carry
 exactly one matching `selection`, while `blocked` carries no invented mode.
-The public DTO contains only `exit_id`. A current seven-case semantic corpus
-covers explicit and implicit task-free intent, one refused confirmation,
-ordinary issue-backed work, unrelated dirty preservation, same-scope reuse, and
+The public DTO contains only `exit_id`. The semantic corpus covers explicit
+intent, automatic/one-question/standard selection, simple/insufficient/complex
+Issue evidence, equal file-count with different risk, checkout suitability,
+same-scope reuse, automatic and explicit risk expansion, and
 selection-unavailable blocking. Wrapper regressions independently reject
 missing, unknown, multiple, unmapped, or stale-continuation owner results and
 missing package/marker state.

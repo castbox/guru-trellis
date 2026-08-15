@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"审核 semantic gate、回归覆盖与完整验证边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核 selector result、typed DTO 与 consumer contract 未产生漂移。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"审核官方 Trellis 与 Guru canonical/overlay ownership 边界。"}
+{"file":".trellis/spec/preset/installer.md","reason":"审核 fresh install、update/reapply、平台投影和 sidecar 证据。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"审核 README、入口提示与现行合同一致。"}

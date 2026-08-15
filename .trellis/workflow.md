@@ -32,14 +32,19 @@ Classify the initial request before repository or network semantic reads:
 - simple conversation or a non-file-changing request: answer directly without
   creating a GitHub Issue or Trellis task and without asking whether one should
   be created;
-- repo-changing, issue-backed, task-like, or file-changing work first invokes
-  `guru-select-workflow-mode`; `standard_intake` enters guru-sync-base and the
-  existing mapped graph, while `task_free` enters only the bounded current-
-  checkout edit route;
+- repo-changing, issue-backed, task-like, or file-changing work that is not
+  already inside an active-task route first invokes `guru-select-workflow-mode`,
+  whether or not an Issue exists or the user mentioned task-free;
+- `standard_intake` enters guru-sync-base and the existing mapped graph, while
+  `task_free` enters only the bounded current-checkout edit route;
 - only guru-create-task-workspace:created enters task planning;
-- `guru-select-workflow-mode` owns the semantic choice. Explicit task-free
-  intent routes directly; implicit intent gets at most one confirmation,
-  refusal routes to standard Intake, and uncertainty never bypasses Intake.
+- `guru-select-workflow-mode` owns the semantic choice. The shortest explicit
+  request is `这次走 task-free` and routes directly. Without explicit intent,
+  high-confidence bounded, reversible, low-risk work routes automatically to
+  task-free; evidence that is probably suitable but insufficient opens one
+  concise mode question; clearly complex or high-risk work routes automatically
+  to standard Intake. Issue presence, file count, path, or keywords never decide
+  the mode by themselves.
 
 Missing packages or markers, duplicate markers, unknown or multiple exits,
 unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
@@ -169,6 +174,8 @@ The graph contains exactly 20 workflow targets and 16 stop targets.
 | Target | Global behavior |
 | --- | --- |
 | original-request-route | Return to the original non-repository request. |
+| guru-workflow-standard-intake-router | Enter the existing mandatory `guru-sync-base` route without requiring a pre-existing Issue. |
+| guru-task-free-current-checkout | Before any write, use local read-only facts to identify the repository, branch/worktree, active task and its scope, and dirty/untracked overlap with target files. A default or non-default branch is suitable when no real scope or file conflict exists. An active task with the same scope returns to that task route; possible scope expansion enters the existing scope-change route; an unrelated task/worktree asks for the target checkout; dirty overlap or insufficient position evidence asks only where to edit. Never read branch protection. Then perform only the bounded edit and risk-matched targeted checks, preserving unrelated work and keeping lifecycle/publication side effects separate. If scope or risk expands, stop further writes: an automatically selected route is re-evaluated by the selector, while an explicitly selected route reports the new facts and waits for the user to narrow scope or choose standard Intake. |
 | guru-requirements-clear-router | Resume the caller declared by the clarification contract: initial Intake, active-task planning, an interrupted phase, or standalone caller. |
 | guru-full-task-intake-chain | Start a separately reviewed task intake from the returned draft. |
 | guru-contract-wording-pass-router | Route the checked profile to change-request review, planning approval, or the standalone caller. |
@@ -216,10 +223,12 @@ Phase 3: Finish  -> docs reconciliation, commit, branch review, publication, fin
 | completed | Enter Phase 3 through the canonical guru-finish-work route. |
 
 [workflow-state:no_task]
-`guru-select-workflow-mode` precedes Intake. Task-free is direct; implicit gets
-one confirmation; refusal/uncertainty -> `standard_intake` -> `guru-sync-base`.
-Mapped exits and same-scope retries do not ask again. Task-free preserves
-unrelated dirty/untracked and authorizes current-checkout edits.
+Every file-changing request first invokes `guru-select-workflow-mode`, including
+requests without an Issue or task-free wording. `这次走 task-free` is direct.
+Otherwise: high-confidence bounded low-risk -> `task_free`; insufficient
+evidence -> one question; complex/high-risk -> `standard_intake`. Mapped exits
+and same-scope retries do not ask again. Task-free still requires checkout
+suitability before bounded writes and never authorizes Git/GitHub publication.
 [/workflow-state:no_task]
 
 [workflow-state:planning]

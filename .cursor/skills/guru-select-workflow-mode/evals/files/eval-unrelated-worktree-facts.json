@@ -1,0 +1,1 @@
+{"scenario":"The checkout belongs to an unrelated task, so the consumer asks for the intended checkout without writing.","owner_staging":{"recipe":"workflow-mode-unrelated-worktree"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

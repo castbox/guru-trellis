@@ -554,12 +554,14 @@ GitHub keyword、外部 API 名称和代码符号等 literal token 可保留英�
 源码仓库自身是公共扩展仓库，它的 README、源码注释、脚本帮助和 marketplace metadata
 可按分发需要保留英文或双语。
 
-对 issue-backed、task-like 或需要文件修改的 `no_task` 请求，tool-free classification 后的
-第一跳是 semantic `guru-select-workflow-mode`。`standard_intake` 才进入 mandatory
-`guru-sync-base`；`task_free` 只进入当前 checkout 的限定编辑目标。明确 task-free 意图不再
-确认，隐含意图最多确认一次，拒绝自动回到 `standard_intake`，不确定时保守走标准 Intake；
-模式确定后 mapped exit、普通恢复和同范围重试不重复询问。只有 standard Intake 的
-typed exit `synced` 才进入：
+对尚未进入活动 task 路径的文件修改请求，tool-free classification 后的第一跳都是 semantic
+`guru-select-workflow-mode`，无论是否已有 Issue、是否出现 task-free 表达或当前是什么
+branch。最简显式表达 `这次走 task-free` 直接选择 `task_free`。没有明确表达时，AI 用完成
+判断所需的有限本地 repository facts 和 Issue 内容执行三分判断：高置信、边界清楚、局部、
+可逆且低风险时自动 `task_free`；大概率适合但 scope/risk 证据不足时只问一次；明显需要
+隔离、规划、完整评审或高风险验证时自动 `standard_intake`。Issue 存在、文件数量、路径或
+关键词都不能独立决定 mode。模式确定后 mapped exit、普通恢复和同范围重试不重复询问。
+只有 standard Intake 的 typed exit `synced` 才进入：
 
 `guru-discover-change-context -> guru-clarify-requirements ->
 guru-review-contract-wording -> guru-review-change-request ->
@@ -705,8 +707,16 @@ task-local archive/commit，再验证 A -> B、B -> A 两个本地 merge 顺序�
 conflict；不创建远程 PR或并发进程。
 
 `no_task` 下的 current-checkout direct edit 由 `guru-select-workflow-mode:task_free`
-唯一承接。它只覆盖当前 checkout 的明确限定编辑，保留无关 dirty/untracked 文件，不授权
-task/worktree/branch、commit、push、PR、merge、tag、release、installation 或 cleanup。
+唯一承接。写入前，`guru-task-free-current-checkout` 只读检查 repository、branch/worktree、
+活动 task scope，以及 dirty/untracked 与目标文件的重叠；默认或非默认 branch 本身不阻塞，
+也不读取远端 branch protection。同 scope 活动 task 回到当前 task，scope expansion 进入
+既有 scope-change，无关 worktree 询问目标 checkout，目标文件重叠或位置证据不足只询问
+在哪里修改。随后只执行明确限定编辑和风险匹配的 targeted checks，并保留无关改动。
+
+执行中 scope/risk 扩大必须停止后续写入。自动选择的 task-free 重新进入 selector；用户
+显式选择的 task-free 不静默升级，由用户选择缩小范围或进入 `standard_intake`。Task-free
+不授权 task/worktree/branch、commit、push、PR、merge、tag、release、installation、
+cleanup 或关闭 Issue；这些生命周期与发布动作继续独立检查和确认。
 
 Branch Review Gate、exceptional recovery 与 publish helper 是内部子命令。routine
 dispatch/wait/review 不调用 recovery recorder：

@@ -1,0 +1,50 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 164,
+    "url": "https://github.com/castbox/guru-trellis/issues/164",
+    "title": "智能选择 task-free 或标准 Guru Team Intake",
+    "reason": "当前任务完整实现并验收 Issue #164 的现行需求 SSOT。"
+  },
+  "close_issues": [
+    {
+      "number": 164,
+      "url": "https://github.com/castbox/guru-trellis/issues/164",
+      "title": "智能选择 task-free 或标准 Guru Team Intake",
+      "reason": "当前任务完整实现并验收 Issue #164 的现行需求 SSOT。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 157,
+      "url": "https://github.com/castbox/guru-trellis/issues/157",
+      "title": "收敛 Phase 0 重复校验与 GitHub I/O，建立单快照性能预算",
+      "reason": "#164 必须保持 Phase 0 单快照与低重复 I/O 的既有约束。"
+    },
+    {
+      "number": 156,
+      "url": "https://github.com/castbox/guru-trellis/issues/156",
+      "title": "修复 Phase 0 跨 Skill 编排闭环与 source-preserving freshness 传递",
+      "reason": "#164 复用 #156 建立的 typed transition 与跨 Skill 编排机制。"
+    },
+    {
+      "number": 108,
+      "url": "https://github.com/castbox/guru-trellis/issues/108",
+      "title": "Guru Team：在 Phase 2 引入代码与 Docs SSOT 减法审计门禁",
+      "reason": "#164 不裁剪或重定义 Phase 2 门禁，保留其独立相关边界。"
+    },
+    {
+      "number": 154,
+      "url": "https://github.com/castbox/guru-trellis/issues/154",
+      "title": "prd/design/implement 的 template 需要建设",
+      "reason": "#164 不修改 planning artifact 模板建设范围。"
+    },
+    {
+      "number": 152,
+      "url": "https://github.com/castbox/guru-trellis/issues/152",
+      "title": "支持 Unity 重型项目的可复用暖 Worktree 槽位池",
+      "reason": "#164 的 task-free checkout suitability 与 #152 的 worktree 成本问题相关但独立交付。"
+    }
+  ],
+  "followup_issues": []
+}

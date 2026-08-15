@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import tempfile
 import unittest
@@ -94,11 +95,25 @@ class WorkflowModeContractTest(unittest.TestCase):
             {case["id"] for case in corpus["evals"]},
             {
                 "explicit-task-free",
-                "implicit-confirmed",
-                "implicit-refused",
-                "ordinary-issue-request",
+                "automatic-high-confidence",
+                "insufficient-confirmed",
+                "insufficient-refused",
+                "complex-request",
+                "simple-issue",
+                "insufficient-issue-confirmed",
+                "complex-issue",
+                "same-file-count-low-risk",
+                "same-file-count-high-risk",
+                "non-default-checkout",
+                "active-task-same-scope",
+                "active-task-scope-expansion",
+                "unrelated-worktree",
+                "dirty-overlap",
+                "position-evidence-insufficient",
                 "unrelated-dirty-preserved",
                 "same-scope-retry",
+                "automatic-risk-expansion",
+                "explicit-risk-expansion",
                 "selection-unavailable",
             },
         )
@@ -126,6 +141,74 @@ class WorkflowModeContractTest(unittest.TestCase):
         text = (PACKAGE / "SKILL.md").read_text()
         for forbidden in ("commit", "push", "PR", "merge", "tag", "release", "installation", "cleanup"):
             self.assertIn(forbidden, text)
+
+    def test_semantic_owner_and_checkout_consumer_boundaries_are_explicit(self) -> None:
+        skill = (PACKAGE / "SKILL.md").read_text()
+        workflow = (ROOT / "trellis/workflows/guru-team/workflow.md").read_text()
+        self.assertIn("这次走 task-free", skill)
+        self.assertIn("File count, paths, and", skill)
+        self.assertIn("never reads remote branch protection", skill)
+        self.assertIn("active task with the same scope returns to that task route", workflow)
+        self.assertIn("Never read branch protection", workflow)
+        self.assertIn("automatically selected route is re-evaluated", workflow)
+        self.assertIn("explicitly selected route reports the new facts", workflow)
+
+    def test_task_free_public_dto_and_projection_remain_minimal(self) -> None:
+        expected = {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "guru-workflow-mode-output-task-free-1.0",
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["exit_id"],
+            "properties": {"exit_id": {"const": "task_free"}},
+        }
+        output_schema = json.loads(
+            (PACKAGE / "schemas/public-task-free-output.schema.json").read_text()
+        )
+        consumer_schema = json.loads(
+            (
+                ROOT
+                / "trellis/skills/guru-team/consumers/workflow/stage0/workflow-mode-task-free.schema.json"
+            ).read_text()
+        )
+        self.assertEqual(output_schema, expected)
+        self.assertEqual(
+            consumer_schema,
+            {**expected, "$id": "guru-workflow-task-free-input-1.0"},
+        )
+        interface = json.loads((PACKAGE / "interface.json").read_text())
+        projection = next(
+            item
+            for item in interface["public_contracts"]["projections"]
+            if item["exit_id"] == "task_free"
+        )
+        self.assertEqual(projection["operation"], "direct")
+
+    def test_task_free_contract_has_no_branch_protection_query_or_lifecycle_executor(self) -> None:
+        surfaces = [
+            ROOT / "trellis/workflows/guru-team/workflow.md",
+            ROOT / "README.md",
+            ROOT / "trellis/workflows/guru-team/README.md",
+            ROOT / "trellis/presets/guru-team/README.md",
+        ]
+        query_pattern = re.compile(
+            r"gh\s+api[^\n]*(?:branches/[^\s]+/protection|branch[- ]protection)",
+            re.IGNORECASE,
+        )
+        for path in surfaces:
+            text = path.read_text()
+            self.assertIn("这次走 task-free", text, path)
+            self.assertIsNone(query_pattern.search(text), path)
+        commands = json.loads((PACKAGE / "commands.json").read_text())
+        invocation = next(
+            item
+            for item in commands["commands"]
+            if item["id"] == "invoke-guru-select-workflow-mode"
+        )
+        self.assertEqual(invocation["side_effect"], "none")
+        runtime_text = (PACKAGE / "runtime/invoke.py").read_text()
+        for forbidden in ("subprocess", "git commit", "git push", "gh pr", "task.py"):
+            self.assertNotIn(forbidden, runtime_text)
 
     def test_public_outputs_have_only_typed_exit(self) -> None:
         for name, exit_id in (("public-standard-intake-output.json", "standard_intake"), ("public-task-free-output.json", "task_free"), ("public-blocked-output.json", "blocked")):

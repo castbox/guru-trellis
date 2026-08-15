@@ -1,0 +1,1 @@
+{"scenario":"The request may expand the active task scope, so the consumer pauses and enters the existing scope-change route.","owner_staging":{"recipe":"workflow-mode-active-task-scope-expansion"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

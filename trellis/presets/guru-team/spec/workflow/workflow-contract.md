@@ -134,11 +134,26 @@ create an issue, branch, worktree, or task directly and does not copy the
 workspace owner's target selection, recovery, confirmation, executor, or
 checker behavior.
 
+Every file-changing request not already routed through an active task invokes
+the selector, including requests without an Issue or task-free wording.
 Explicit task-free intent selects that route without another confirmation.
-Implicit intent may trigger one confirmation; refusal selects standard Intake.
-Uncertainty selects standard Intake, and mapped exits, ordinary recovery, and
-same-scope retries reuse the current selection. A failure to bootstrap the
-normal workflow is not permission to switch to task-free.
+Without explicit intent, high-confidence bounded, reversible, low-risk work
+automatically selects task-free; likely suitability with insufficient scope or
+risk evidence asks once; clearly complex or high-risk work selects standard
+Intake. Issue presence, file count, path, or keywords do not independently
+decide the mode. Mapped exits, ordinary recovery, and same-scope retries reuse
+the current selection. A failure to bootstrap the normal workflow is not
+permission to switch to task-free.
+
+The task-free consumer performs local read-only checkout suitability before
+writes: repository and branch/worktree identity, active task and scope, plus
+dirty/untracked overlap with target files. Default versus non-default branch is
+not itself a blocker, and branch protection is never read. Same-scope active
+task work returns to that task, scope expansion uses the existing scope-change
+route, an unrelated worktree asks for the target checkout, and overlap or
+insufficient position evidence asks only where to edit. Scope or risk expansion
+stops writes; automatic task-free is re-selected, while explicit task-free
+waits for the user's choice to narrow scope or enter standard Intake.
 
 ### Phase 1 — Planning
 

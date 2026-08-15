@@ -1,0 +1,1 @@
+{"scenario":"A live Issue sounds local but does not establish whether a public contract changes; the one question was affirmed.","owner_staging":{"recipe":"workflow-mode-insufficient-issue-confirmed"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

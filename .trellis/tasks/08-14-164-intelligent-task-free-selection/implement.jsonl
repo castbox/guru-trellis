@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"约束 global workflow、semantic owner、typed exits 与 AI/script 边界。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"约束 selector public I/O、consumer projection 与 platform package 同步。"}
+{"file":".trellis/spec/preset/installer.md","reason":"约束 canonical 到 installed/dogfood/platform 的安装和 update/reapply 行为。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束 overlay 同步、drift 检查和 sidecar 处理。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"约束三份公共 README 与真实 workflow 行为一致。"}
