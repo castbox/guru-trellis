@@ -93,8 +93,10 @@
         "guru-reconcile-task-base-input-post-check-1.0",
         "guru-reconcile-task-base-input-post-commit-1.0",
         "guru-reconcile-task-base-input-post-plan-1.0",
-        "guru-reconcile-task-base-input-post-publication-1.0"
-        ,"guru-workflow-mode-input-initial-1.0"
+        "guru-reconcile-task-base-input-post-publication-1.0",
+        "guru-task-free-change-input-interaction-resume-1.0",
+        "guru-task-free-change-input-selected-route-1.0",
+        "guru-workflow-mode-input-initial-1.0"
       ],
       "typed_output_schema_ids": [
         "guru-extension-verify-installation-output-blocked-2.0",
@@ -155,10 +157,17 @@
         "guru-reconcile-task-base-output-planning-stale-1.0",
         "guru-reconcile-task-base-output-reconciled-1.0",
         "guru-reconcile-task-base-output-review-continuity-required-1.0",
-        "guru-reconcile-task-base-output-scope-confirmation-required-1.0"
-        ,"guru-workflow-mode-output-blocked-1.0"
-        ,"guru-workflow-mode-output-standard-intake-1.0"
-        ,"guru-workflow-mode-output-task-free-1.0"
+        "guru-reconcile-task-base-output-scope-confirmation-required-1.0",
+        "guru-task-free-change-output-blocked-1.0",
+        "guru-task-free-change-output-completed-1.0",
+        "guru-task-free-change-output-explicit-choice-required-1.0",
+        "guru-task-free-change-output-location-required-1.0",
+        "guru-task-free-change-output-reselect-mode-1.0",
+        "guru-task-free-change-output-resume-active-task-1.0",
+        "guru-task-free-change-output-scope-change-1.0",
+        "guru-workflow-mode-output-blocked-1.0",
+        "guru-workflow-mode-output-standard-intake-1.0",
+        "guru-workflow-mode-output-task-free-1.0"
       ],
       "legacy_typed_output_schema_ids": [
         "guru-stage0-clarify-requirements-output-clear-1.0",
@@ -210,6 +219,7 @@
         "guru-create-task-commit",
         "guru-create-task-workspace",
         "guru-discover-change-context",
+        "guru-execute-task-free-change",
         "guru-finalize-task",
         "guru-merge-task-pr",
         "guru-reconcile-task-base",

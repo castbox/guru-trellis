@@ -113,16 +113,23 @@ pre-task 不需要在仓库保存 owner 或 prerequisite 文件。Base sync 只�
 一次；运行时影响明显或风险较高，或涉及跨层合同、public API、schema、CI、安装升级、
 发布部署、权限、安全或数据时自动走 `standard_intake`。
 
-`task_free` 写入前仍会用本地只读事实检查 branch/worktree、活动 task scope 以及
-dirty/untracked 与目标文件的重叠；默认或非默认 branch 本身都不是阻塞条件，也不会查询
-远端 branch protection。同 scope 的活动 task 回到当前 task 流程，scope expansion 使用
-既有澄清路径，无关 worktree 或目标文件冲突只询问执行位置。执行中范围或风险扩大时停止
-后续写入：自动选择的 task-free 重新判断 mode，显式 task-free 则由用户选择缩小范围或
-进入标准 Intake。
+Selector 的最小 `task_free` DTO 通过 target-owned authoring seed 调用 semantic
+`guru-execute-task-free-change`。该 Skill 在写入前只读检查本地 branch/worktree、活动 task
+scope、dirty/untracked 与目标文件重叠；默认或非默认 branch 本身都不阻塞，也不查询远端
+branch protection。它独占限定编辑、targeted checks 和写后 scope/risk 复核；`completed`
+必须同时有写前 suitability、实际 edited paths、通过的 targeted check 和写后复核，并向
+completion consumer 报告实际修改路径、精简检查结果和未验证边界。自动选择的 task-free
+在真实 partial edit 后发现风险扩大时立即停止剩余写入并重新判断 mode；显式 task-free 同样
+停止剩余写入，再由用户选择缩小范围或进入标准 Intake。
 
 Task-free 只授权限定编辑、保留无关改动和 targeted checks；Issue/task/worktree/branch
 创建以及 commit、push、PR、merge、tag、release、安装、清理和关闭 Issue 都是独立的后续
 副作用，不由 mode selection 自动授权。
+
+`guru-execute-task-free-change` 提供 `selected_route` / `interaction_resume` 两种 inputs，
+稳定 exits 为 `completed|resume_active_task|scope_change|location_required|reselect_mode|explicit_choice_required|blocked`；
+完整 preset 安装命令 `record-task-free-change`、`check-task-free-change` 与
+`invoke-guru-execute-task-free-change`。单独复制 Skill 目录不可运行。
 
 ### 更可靠的变更边界
 

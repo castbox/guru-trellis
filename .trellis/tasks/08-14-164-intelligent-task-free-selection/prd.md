@@ -104,8 +104,9 @@
 
 - Selector owner result 与 public DTO 保持现行 1.0 双 mode 结构；三分判断属于 semantic owner
   行为与 eval，不新增无人消费字段。
-- Checkout suitability 由 `guru-task-free-current-checkout` consumer 的 workflow/entry contract
-  承接；selector 只投影现有 `task_free` DTO。
+- Checkout suitability、bounded edit 与 scope/risk evolution 由独立 semantic Skill
+  `guru-execute-task-free-change` 承接；selector 仍只投影现有最小 `task_free` DTO，
+  checkout facts 不进入 selector。
 - Close scope 仅 #164。Issue #157、#156、#108、#154、#152 保持 scope ledger 中的
   Related 集合，不由本任务关闭。
 

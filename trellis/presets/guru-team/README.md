@@ -448,8 +448,8 @@ contracts、source-session private result schema、两例 production corpus 与 
 `guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
 `guru-merge-task-pr` 再安装两种 inputs、三个
-exits 与五个 merge runtime wrappers。Source/installed package closure 为 16 Skills /
-62 exits；business global workflow marker closure 为 15 invokes / 60 exits / 36 targets。
+exits 与五个 merge runtime wrappers。Source/installed package closure 为 17 Skills /
+69 exits；business global workflow marker closure 为 16 invokes / 67 exits / 39 targets。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -1205,24 +1205,29 @@ resolution. Only the verified Darwin `/var` -> `/private/var` system mapping
 may re-anchor an outer path; arbitrary `samefile` and user aliases are never
 trusted.
 
-Current-checkout direct edits while `no_task` is active are owned only by
-`guru-select-workflow-mode:task_free`; they may be explicitly selected with
-`这次走 task-free` or automatically selected for high-confidence bounded
-low-risk work. Before writes, `guru-task-free-current-checkout` reads only local
-repository, branch/worktree, active-task scope, and dirty/untracked overlap
-facts. Default and non-default branches are both acceptable without a real
-scope or file conflict, and branch protection is never queried. Same-scope
-active-task work returns to that task, scope expansion uses the existing
-scope-change route, unrelated worktrees ask for the target checkout, and target
-overlap or insufficient position evidence asks only where to edit.
-
-Task-free performs only the bounded edit and risk-matched targeted checks while
-preserving unrelated work. Scope/risk expansion stops further writes;
-automatically selected task-free is re-evaluated, while explicit task-free waits
-for the user to narrow scope or choose `standard_intake`. It never authorizes
+The selector's minimal `task_free` DTO invokes semantic
+`guru-execute-task-free-change` through a target-owned authoring seed; checkout
+facts never expand the selector output. The execution Skill owns local
+checkout suitability, bounded editing, risk-matched targeted checks, and
+post-write scope/risk review. Its `completed` result requires AI-authored
+pre-write suitability, actual edited paths, at least one passed targeted check
+with no failed check, and passed post-write review; deterministic runtime only
+validates that evidence. The workflow completion DTO reports only actual edited
+paths, concise check results, and unverified boundaries. Scope/risk expansion
+after a real partial edit records the expanded fact, stopped remaining writes,
+and applicable targeted checks. Automatically selected task-free is
+re-evaluated, while explicit task-free waits for the user to narrow scope or
+choose `standard_intake`. It never authorizes
 Issue/task/worktree/branch creation, commit, push, PR, merge, tag, release,
 installation, cleanup, or Issue closure; those remain independent later
 side-effect boundaries.
+
+The installed `guru-execute-task-free-change` package exposes
+`selected_route|interaction_resume`, seven exits
+`completed|resume_active_task|scope_change|location_required|reselect_mode|explicit_choice_required|blocked`,
+and runtime commands `record-task-free-change`, `check-task-free-change`, and
+`invoke-guru-execute-task-free-change`. It requires the complete preset and is
+not a portable standalone directory.
 
 The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
 when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`

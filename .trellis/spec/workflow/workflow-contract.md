@@ -61,15 +61,16 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current package registry contains exactly 16 active Skill ids and 62
-external exits. Fifteen Skills participate in the business-task workflow,
-whose global graph contains 15 mandatory invokes, 60 mapped exits, and 36
+The current package registry contains exactly 17 active Skill ids and 69
+external exits. Sixteen Skills participate in the business-task workflow,
+whose global graph contains 16 mandatory invokes, 67 mapped exits, and 39
 workflow/stop targets. `guru-verify-extension-installation` is the remaining
 standalone-only source-repository Skill; its two exits return directly to its
 caller-owned stop targets and never appear in the business workflow.
 
 | Skill | Typed exit -> unique consumer |
 | --- | --- |
+| `guru-execute-task-free-change` | `completed -> guru-task-free-completed`; `resume_active_task -> guru-task-free-resume-active-task-router`; `scope_change -> guru-task-free-scope-change-router`; `location_required -> guru-execute-task-free-change`; `reselect_mode -> guru-select-workflow-mode`; `explicit_choice_required -> guru-execute-task-free-change`; `blocked -> task-free-change-blocked` |
 | `guru-sync-base` | `synced -> guru-discover-change-context`; `skipped -> original-request-route`; `blocked -> base-sync-blocked` |
 | `guru-discover-change-context` | `context_ready -> guru-clarify-requirements`; `refresh_base -> guru-sync-base`; `blocked -> change-context-blocked` |
 | `guru-clarify-requirements` | `clear -> guru-requirements-clear-router`; `needs_context -> guru-discover-change-context`; `refresh_context -> guru-sync-base`; `retarget_context -> guru-sync-base`; `new_task -> guru-full-task-intake-chain`; `blocked -> requirements-clarification-blocked` |
@@ -147,15 +148,14 @@ decide the mode. Mapped exits, ordinary recovery, and same-scope retries reuse
 the current selection. A failure to bootstrap the normal workflow is not
 permission to switch to task-free.
 
-The task-free consumer performs local read-only checkout suitability before
-writes: repository and branch/worktree identity, active task and scope, plus
-dirty/untracked overlap with target files. Default versus non-default branch is
-not itself a blocker, and branch protection is never read. Same-scope active
-task work returns to that task, scope expansion uses the existing scope-change
-route, an unrelated worktree asks for the target checkout, and overlap or
-insufficient position evidence asks only where to edit. Scope or risk expansion
-stops writes; automatic task-free is re-selected, while explicit task-free
-waits for the user's choice to narrow scope or enter standard Intake.
+Selector `task_free` invokes semantic `guru-execute-task-free-change` through a
+target-owned authoring seed without expanding the selector DTO. The execution
+Skill owns checkout suitability, bounded edit, targeted checks, post-write
+scope/risk review, interaction re-entry, and its seven typed exits. Post-write
+expansion routes bind real partial-edit and stopped-remaining-write evidence.
+The `completed` workflow handoff reports only actual edited paths, concise
+validation results, and unverified boundaries. The global workflow owns only
+their unique consumers and fail-closed routing.
 
 ### Phase 1 — Planning
 

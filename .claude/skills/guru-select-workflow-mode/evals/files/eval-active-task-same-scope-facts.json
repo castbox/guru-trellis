@@ -1,1 +1,0 @@
-{"scenario":"Local facts show an active task whose scope matches the request, so the consumer returns to that task route.","owner_staging":{"recipe":"workflow-mode-active-task-same-scope"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

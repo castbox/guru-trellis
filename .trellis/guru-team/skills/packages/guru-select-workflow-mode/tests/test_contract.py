@@ -104,16 +104,7 @@ class WorkflowModeContractTest(unittest.TestCase):
                 "complex-issue",
                 "same-file-count-low-risk",
                 "same-file-count-high-risk",
-                "non-default-checkout",
-                "active-task-same-scope",
-                "active-task-scope-expansion",
-                "unrelated-worktree",
-                "dirty-overlap",
-                "position-evidence-insufficient",
-                "unrelated-dirty-preserved",
                 "same-scope-retry",
-                "automatic-risk-expansion",
-                "explicit-risk-expansion",
                 "selection-unavailable",
             },
         )
@@ -148,10 +139,9 @@ class WorkflowModeContractTest(unittest.TestCase):
         self.assertIn("这次走 task-free", skill)
         self.assertIn("File count, paths, and", skill)
         self.assertIn("never reads remote branch protection", skill)
-        self.assertIn("active task with the same scope returns to that task route", workflow)
-        self.assertIn("Never read branch protection", workflow)
-        self.assertIn("automatically selected route is re-evaluated", workflow)
-        self.assertIn("explicitly selected route reports the new facts", workflow)
+        self.assertIn('"skill":"guru-execute-task-free-change"', workflow)
+        execution = ROOT / "trellis/skills/guru-team/packages/guru-execute-task-free-change/SKILL.md"
+        self.assertIn("Never query branch protection", execution.read_text())
 
     def test_initial_gate_routes_only_file_changes_to_selector(self) -> None:
         workflow = (ROOT / "trellis/workflows/guru-team/workflow.md").read_text()
@@ -184,24 +174,22 @@ class WorkflowModeContractTest(unittest.TestCase):
         output_schema = json.loads(
             (PACKAGE / "schemas/public-task-free-output.schema.json").read_text()
         )
-        consumer_schema = json.loads(
-            (
-                ROOT
-                / "trellis/skills/guru-team/consumers/workflow/stage0/workflow-mode-task-free.schema.json"
-            ).read_text()
-        )
         self.assertEqual(output_schema, expected)
-        self.assertEqual(
-            consumer_schema,
-            {**expected, "$id": "guru-workflow-task-free-input-1.0"},
-        )
         interface = json.loads((PACKAGE / "interface.json").read_text())
+        consumer = next(
+            item for item in interface["public_contracts"]["consumer_inputs"]
+            if item["id"] == "task_free_input"
+        )
+        self.assertEqual(consumer["consumer"], {"kind": "skill", "id": "guru-execute-task-free-change"})
+        self.assertEqual(consumer["contract"]["kind"], "skill_input_authoring_seed")
+        self.assertEqual(consumer["contract"]["seed_fields"], ["selector_exit"])
         projection = next(
             item
             for item in interface["public_contracts"]["projections"]
             if item["exit_id"] == "task_free"
         )
-        self.assertEqual(projection["operation"], "direct")
+        self.assertEqual(projection["operation"], "rename")
+        self.assertEqual(projection["mappings"], [{"source": "exit_id", "target": "selector_exit"}])
 
     def test_task_free_contract_has_no_branch_protection_query_or_lifecycle_executor(self) -> None:
         surfaces = [

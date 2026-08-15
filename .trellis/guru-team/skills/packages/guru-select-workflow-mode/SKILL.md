@@ -38,16 +38,14 @@ decision.
 `task_free` is limited to the current checkout and the explicitly bounded
 files for this turn. It never authorizes task/worktree/branch creation,
 commit, push, PR, merge, tag, release, installation, or cleanup. Preserve all
-unrelated dirty and untracked files. Its workflow consumer separately checks
-checkout suitability using local branch/worktree, active-task scope, and dirty
-overlap facts; it never reads remote branch protection and does not add fields
+unrelated dirty and untracked files. `guru-execute-task-free-change` separately
+owns checkout suitability, bounded editing, targeted checks, and post-write
+risk evolution. It never reads remote branch protection and does not add fields
 to this Skill's public DTO.
 
-During execution, stop further writes when scope or risk expands. For an
-automatically selected task-free route, run this semantic selection again. For
-an explicitly selected route, report the new facts and let the user narrow the
-scope or choose `standard_intake`; do not silently upgrade. Commit, push, PR,
-merge, release, installation, cleanup, and Issue closure remain independent
-later authorizations.
+The execution Skill re-enters this selector only for automatic scope/risk
+expansion. Explicit expansion stays in that Skill's interaction re-entry.
+Commit, push, PR, merge, release, installation, cleanup, and Issue closure
+remain independent later authorizations.
 
 Return exactly one of `standard_intake`, `task_free`, or `blocked`.

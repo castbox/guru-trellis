@@ -1,1 +1,0 @@
-{"scenario":"A dirty change overlaps the target file, so the consumer pauses and asks only for the execution location.","owner_staging":{"recipe":"workflow-mode-dirty-overlap"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

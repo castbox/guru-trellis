@@ -1,1 +1,0 @@
-{"scenario":"Local facts cannot establish the intended checkout, so the consumer asks only where to edit.","owner_staging":{"recipe":"workflow-mode-position-evidence-insufficient"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

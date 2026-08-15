@@ -15,8 +15,8 @@ insufficient evidence opens one mode question; clearly complex or high-risk
 work selects `standard_intake`. Issue presence, file count, paths, and keywords
 cannot independently decide the outcome.
 
-Checkout suitability is owned by the `guru-task-free-current-checkout`
-consumer, not this DTO. It checks only local repository, branch/worktree,
+Checkout suitability is owned by `guru-execute-task-free-change`, not this DTO.
+That Skill checks only local repository, branch/worktree,
 active-task scope, and dirty overlap facts before writes and never queries
 branch protection. The dialogue-local origin of the selection distinguishes
 automatic re-selection from explicit-task-free scope narrowing without adding

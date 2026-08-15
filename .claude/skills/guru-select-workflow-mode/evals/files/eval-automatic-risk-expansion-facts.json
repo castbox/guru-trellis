@@ -1,1 +1,0 @@
-{"scenario":"Automatically selected task-free work reveals public-schema and install/update impact and is re-selected.","owner_staging":{"recipe":"workflow-mode-automatic-risk-expansion"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

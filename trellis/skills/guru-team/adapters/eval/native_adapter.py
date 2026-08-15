@@ -1766,6 +1766,83 @@ def build_workflow_mode_owner(
     return owner
 
 
+def build_task_free_change_owner(
+    public_input: dict[str, Any], recipe: str,
+) -> dict[str, Any]:
+    route = {
+        "task-free-completed": ("completed", "suitable"),
+        "task-free-non-default-completed": ("completed", "suitable"),
+        "task-free-resume-active-task": ("resume_active_task", "resume_active_task"),
+        "task-free-scope-change": ("scope_change", "scope_change"),
+        "task-free-location-unrelated-worktree": ("location_required", "location_required"),
+        "task-free-location-dirty-overlap": ("location_required", "location_required"),
+        "task-free-location-insufficient": ("location_required", "location_required"),
+        "task-free-automatic-risk-expansion": ("reselect_mode", "suitable"),
+        "task-free-explicit-risk-expansion": ("explicit_choice_required", "suitable"),
+        "task-free-blocked": ("blocked", "blocked"),
+    }.get(recipe)
+    if route is None:
+        raise ValueError(f"unsupported task-free owner staging recipe: {recipe}")
+    typed_exit, prewrite_status = route
+    owner: dict[str, Any] = {
+        "schema_version": "1.0",
+        "typed_exit": typed_exit,
+        "mode": public_input["mode"],
+        "continuation_id": public_input["continuation_id"],
+        "selection_origin": public_input["selection_origin"],
+        "request_summary": public_input["request_summary"],
+        "target_paths": public_input["target_paths"],
+        "pre_write_review": {
+            "status": prewrite_status,
+            "summary": "The semantic owner reviewed current local checkout, active-task, dirty, and target-overlap facts before writing.",
+        },
+        "ai_review_gate": {
+            "status": "blocked" if typed_exit == "blocked" else "passed",
+            "summary": "The AI reviewed checkout suitability and the selected execution route from current facts.",
+        },
+    }
+    if typed_exit == "completed":
+        owner["completion_evidence"] = {
+            "edited_paths": list(public_input["target_paths"]),
+            "targeted_checks": [{
+                "command": "git diff --check -- docs/guide.md",
+                "summary": "The bounded documentation diff has no whitespace errors.",
+                "status": "passed",
+            }],
+            "post_write_review": {
+                "status": "passed",
+                "summary": "The actual edit remained inside the selected paths and did not expand scope or risk.",
+            },
+            "unverified_boundaries": [
+                "No full repository test suite was run for this documentation-only change."
+            ],
+        }
+        owner["ai_review_gate"]["summary"] = "The AI reviewed pre-write suitability, the actual edit, targeted checks, and post-write scope/risk evolution."
+    if typed_exit in {"reselect_mode", "explicit_choice_required"}:
+        owner["evolution_evidence"] = {
+            "write_state": "partial_edit",
+            "edited_paths": [public_input["target_paths"][0]],
+            "expansion": {
+                "kind": "scope_and_risk",
+                "summary": "The first bounded edit revealed public installation and contract impact outside task-free risk.",
+            },
+            "stop_after_detection": True,
+            "remaining_writes_not_performed": [{
+                "target_path": path,
+                "summary": "The planned edit for this bounded target was not performed after expansion detection.",
+            } for path in public_input["target_paths"][1:]],
+            "targeted_checks": [{
+                "command": "git diff --check -- docs/guide.md",
+                "summary": "The partial bounded diff has no whitespace errors.",
+                "status": "passed",
+            }],
+        }
+        owner["ai_review_gate"]["summary"] = "The AI reviewed the actual partial edit, detected expanded scope and risk, and stopped all remaining writes."
+    if typed_exit in {"resume_active_task", "scope_change"}:
+        owner["task_ref"] = ".trellis/tasks/current"
+    return owner
+
+
 def context_sync_result(runtime: Any, head: str) -> dict[str, Any]:
     identity = {
         "schema_version": "1.0",
@@ -4143,6 +4220,8 @@ def stage_owner_execution(
         encoding="utf-8",
     )
     evidence_files = {
+        "docs/guide.md": "# Guide\n\nOriginal label.\n",
+        "docs/follow-up.md": "# Follow-up\n\nOriginal follow-up remains untouched.\n",
         "docs/requirements.md": "# Requirements\n\nCurrent Stage 0 context evidence.\n",
         "docs/requirements/requirement-main.md": "# Contract\n\n本合同必须保持完整的语义审查。\n",
         "trellis/runtime.py": "STAGE0_CONTEXT_OWNER = 'runtime'\n",
@@ -4153,17 +4232,21 @@ def stage_owner_execution(
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
     task = fixture / ".trellis/tasks/current"
-    task.mkdir(parents=True, exist_ok=True)
-    (task / "task.json").write_text(json.dumps({
-        "id": "current", "name": "current", "title": "Stage 0 wording fixture",
-        "status": "planning", "scope": "issue #145", "branch": "main", "base_branch": "main",
-    }) + "\n", encoding="utf-8")
-    for name, content in {
-        "prd.md": "# PRD\n\n## Requirement\n\nThe exact Stage 0 public contract is required.\n",
-        "design.md": "# Design\n\n## Docs SSOT Plan\n\nStrategy: ssot_first.\n",
-        "implement.md": "# Implement\n\nRun the production wrapper and owner checker.\n",
-    }.items():
-        (task / name).write_text(content, encoding="utf-8")
+    task_required = skill_id != "guru-execute-task-free-change" or recipe in {
+        "task-free-resume-active-task", "task-free-scope-change",
+    }
+    if task_required:
+        task.mkdir(parents=True, exist_ok=True)
+        (task / "task.json").write_text(json.dumps({
+            "id": "current", "name": "current", "title": "Stage 0 wording fixture",
+            "status": "planning", "scope": "issue #145", "branch": "main", "base_branch": "main",
+        }) + "\n", encoding="utf-8")
+        for name, content in {
+            "prd.md": "# PRD\n\n## Requirement\n\nThe exact Stage 0 public contract is required.\n",
+            "design.md": "# Design\n\n## Docs SSOT Plan\n\nStrategy: ssot_first.\n",
+            "implement.md": "# Implement\n\nRun the production wrapper and owner checker.\n",
+        }.items():
+            (task / name).write_text(content, encoding="utf-8")
     fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
@@ -4183,7 +4266,7 @@ def stage_owner_execution(
     head = run_git(fixture, "rev-parse", "HEAD")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
-    if skill_id == "guru-select-workflow-mode":
+    if skill_id in {"guru-select-workflow-mode", "guru-execute-task-free-change"}:
         runtime = None
     elif skill_id == "guru-discover-change-context":
         runtime = load_package_runtime_module(
@@ -4217,6 +4300,33 @@ def stage_owner_execution(
                 (fixture / "unrelated-user-note.txt").write_text(
                     "preserve this unrelated dirty file\n", encoding="utf-8"
                 )
+        elif skill_id == "guru-execute-task-free-change":
+            guide = fixture / "docs/guide.md"
+            if recipe in {"task-free-completed", "task-free-non-default-completed"}:
+                guide.write_text("# Guide\n\nCorrected label.\n", encoding="utf-8")
+                edited_paths = run_git(
+                    fixture, "diff", "--name-only", "--", *public_payload["target_paths"]
+                ).splitlines()
+                if edited_paths != public_payload["target_paths"]:
+                    raise ValueError("task-free completed staging lacks the exact bounded tracked edit")
+                run_git(fixture, "diff", "--check", "--", *edited_paths)
+            elif recipe in {
+                "task-free-automatic-risk-expansion",
+                "task-free-explicit-risk-expansion",
+            }:
+                guide.write_text("# Guide\n\nPartial correction revealed wider impact.\n", encoding="utf-8")
+                edited_paths = run_git(
+                    fixture, "diff", "--name-only", "--", *public_payload["target_paths"]
+                ).splitlines()
+                if edited_paths != [public_payload["target_paths"][0]]:
+                    raise ValueError("task-free expansion staging did not stop after the first tracked edit")
+                remaining = fixture / public_payload["target_paths"][1]
+                if remaining.read_text(encoding="utf-8") != evidence_files[public_payload["target_paths"][1]]:
+                    raise ValueError("task-free expansion staging performed a prohibited remaining write")
+                run_git(fixture, "diff", "--check", "--", *edited_paths)
+            elif recipe == "task-free-location-dirty-overlap":
+                guide.write_text("# Guide\n\nUser-owned overlapping edit.\n", encoding="utf-8")
+            owner = build_task_free_change_owner(public_payload, recipe)
         elif skill_id == "guru-clarify-requirements":
             owner = build_clarity_owner(runtime, package, recipe)
         elif skill_id == "guru-discover-change-context":

@@ -184,9 +184,9 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
         invokes = markers("skill-invoke")
         exits = markers("skill-exit")
         targets = markers("(?:workflow|stop)-target")
-        self.assertEqual(len(invokes), 15)
-        self.assertEqual(len(exits), 60)
-        self.assertEqual(len(targets), 36)
+        self.assertEqual(len(invokes), 16)
+        self.assertEqual(len(exits), 67)
+        self.assertEqual(len(targets), 39)
         routed = {
             (item["skill"], item["exit"]): (
                 item["consumer"]["kind"],

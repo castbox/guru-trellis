@@ -10,8 +10,36 @@
       "expected_exit": "task_free",
       "expected_output": "The bounded current-checkout route is selected.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-explicit-task-free-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}, {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"}, {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"}, {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-explicit-task-free-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      }
     },
     {
       "id": "automatic-high-confidence",
@@ -19,8 +47,21 @@
       "expected_exit": "task_free",
       "expected_output": "High-confidence bounded low-risk work automatically selects task-free.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-automatic-high-confidence-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-automatic-high-confidence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
       "id": "insufficient-confirmed",
@@ -28,8 +69,21 @@
       "expected_exit": "task_free",
       "expected_output": "One affirmative clarification selects task-free.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-insufficient-confirmed-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-insufficient-confirmed-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
       "id": "insufficient-refused",
@@ -37,8 +91,21 @@
       "expected_exit": "standard_intake",
       "expected_output": "One refusal selects standard Intake.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-insufficient-refused-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "standard_intake"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-insufficient-refused-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
     },
     {
       "id": "complex-request",
@@ -46,8 +113,21 @@
       "expected_exit": "standard_intake",
       "expected_output": "Clearly complex high-risk work automatically selects standard Intake.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-complex-request-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "standard_intake"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-complex-request-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
     },
     {
       "id": "simple-issue",
@@ -55,8 +135,21 @@
       "expected_exit": "task_free",
       "expected_output": "A simple Issue-backed change can automatically select task-free.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-simple-issue-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-simple-issue-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
       "id": "insufficient-issue-confirmed",
@@ -64,8 +157,21 @@
       "expected_exit": "task_free",
       "expected_output": "Insufficient Issue evidence uses one question and then task-free.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-insufficient-issue-confirmed-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-insufficient-issue-confirmed-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
       "id": "complex-issue",
@@ -73,8 +179,21 @@
       "expected_exit": "standard_intake",
       "expected_output": "A complex Issue-backed change selects standard Intake.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-complex-issue-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "standard_intake"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-complex-issue-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
     },
     {
       "id": "same-file-count-low-risk",
@@ -82,8 +201,21 @@
       "expected_exit": "task_free",
       "expected_output": "Two low-risk files can select task-free.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-same-file-count-low-risk-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-same-file-count-low-risk-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
       "id": "same-file-count-high-risk",
@@ -91,71 +223,21 @@
       "expected_exit": "standard_intake",
       "expected_output": "Two high-risk files select standard Intake.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-same-file-count-high-risk-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "standard_intake"}]}
-    },
-    {
-      "id": "non-default-checkout",
-      "prompt": "Task-free is selected on a non-default branch with no active-task, scope, or target-file conflict. Allow the bounded edit without branch-protection reads.",
-      "expected_exit": "task_free",
-      "expected_output": "Non-default branch identity alone does not block task-free.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-non-default-checkout-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
-    },
-    {
-      "id": "active-task-same-scope",
-      "prompt": "Task-free is selected, but local facts show an active task with the same scope. Return to that task route instead of bypassing it.",
-      "expected_exit": "task_free",
-      "expected_output": "The consumer returns same-scope work to the active task.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-active-task-same-scope-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
-    },
-    {
-      "id": "active-task-scope-expansion",
-      "prompt": "Task-free is selected, but the request may expand the active task scope. Pause writes and enter the existing scope-change route.",
-      "expected_exit": "task_free",
-      "expected_output": "Scope conflict stays in checkout suitability without expanding the selector DTO.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-active-task-scope-expansion-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
-    },
-    {
-      "id": "unrelated-worktree",
-      "prompt": "Task-free is selected, but the current worktree belongs to an unrelated task. Do not write; ask for the target checkout.",
-      "expected_exit": "task_free",
-      "expected_output": "An unrelated worktree pauses for execution-location selection.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-unrelated-worktree-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
-    },
-    {
-      "id": "dirty-overlap",
-      "prompt": "Task-free is selected, but an existing dirty change overlaps the target file. Do not write; ask only where to execute.",
-      "expected_exit": "task_free",
-      "expected_output": "Target-file overlap pauses writes without re-confirming the mode.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-dirty-overlap-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
-    },
-    {
-      "id": "position-evidence-insufficient",
-      "prompt": "Task-free is selected, but local facts cannot establish the intended checkout. Ask only for the execution location.",
-      "expected_exit": "task_free",
-      "expected_output": "Insufficient checkout evidence pauses writes without a second mode question.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-position-evidence-insufficient-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
-    },
-    {
-      "id": "unrelated-dirty-preserved",
-      "prompt": "Task-free is selected and an unrelated dirty file exists outside the bounded target. Preserve it unchanged.",
-      "expected_exit": "task_free",
-      "expected_output": "Unrelated dirty work is preserved.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-unrelated-dirty-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-same-file-count-high-risk-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "standard_intake"
+          }
+        ]
+      }
     },
     {
       "id": "same-scope-retry",
@@ -163,26 +245,21 @@
       "expected_exit": "task_free",
       "expected_output": "The existing bounded route is reused.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-repeated-turn-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
-    },
-    {
-      "id": "automatic-risk-expansion",
-      "prompt": "An automatically selected task-free edit reveals public-schema and install/update impact. Stop writes and re-select from the new facts.",
-      "expected_exit": "standard_intake",
-      "expected_output": "Automatic task-free can be re-selected into standard Intake.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-automatic-risk-expansion-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "standard_intake"}]}
-    },
-    {
-      "id": "explicit-risk-expansion",
-      "prompt": "The user explicitly selected task-free, but execution reveals material cross-layer expansion. Stop writes and wait for a scope choice; do not silently enter Intake.",
-      "expected_exit": "task_free",
-      "expected_output": "Explicit task-free stays selected while writes pause for the user's choice.",
-      "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-explicit-risk-expansion-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "task_free"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-repeated-turn-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "task_free"
+          }
+        ]
+      }
     },
     {
       "id": "selection-unavailable",
@@ -190,8 +267,21 @@
       "expected_exit": "blocked",
       "expected_output": "The public DTO stops without inventing a selected mode.",
       "input_profile_id": "initial_request",
-      "files": ["evals/files/eval-public-input.json", "evals/files/eval-blocked-facts.json"],
-      "assertions": {"deterministic": [{"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "blocked"}]}
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-blocked-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      }
     }
   ]
 }

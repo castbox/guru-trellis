@@ -32,7 +32,7 @@
   ],
   "external_exits": [
     {"id": "standard_intake", "evidence": "AI selected the normal Guru Team Intake route", "consumer": {"kind": "workflow", "id": "guru-workflow-standard-intake-router"}},
-    {"id": "task_free", "evidence": "AI selected the bounded current-checkout task-free route", "consumer": {"kind": "workflow", "id": "guru-task-free-current-checkout"}},
+    {"id": "task_free", "evidence": "AI selected the bounded current-checkout task-free route", "consumer": {"kind": "skill", "id": "guru-execute-task-free-change"}},
     {"id": "blocked", "evidence": "Selection result is missing, stale, ambiguous, unknown, or unmapped", "consumer": {"kind": "stop", "id": "workflow-mode-selection-blocked"}}
   ],
   "reentry": {"identity": "current request scope and continuation identity", "freshness": "mapped exits and same-scope retries reuse the selection; material scope or authority changes invalidate it", "stale_behavior": "fail_closed"},
@@ -48,10 +48,10 @@
     ],
     "consumer_inputs": [
       {"id": "standard_intake_input", "consumer": {"kind": "workflow", "id": "guru-workflow-standard-intake-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-standard-intake-input-1.0", "path": "consumers/workflow/stage0/workflow-mode-standard-intake.schema.json"}},
-      {"id": "task_free_input", "consumer": {"kind": "workflow", "id": "guru-task-free-current-checkout"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-task-free-input-1.0", "path": "consumers/workflow/stage0/workflow-mode-task-free.schema.json"}},
+      {"id": "task_free_input", "consumer": {"kind": "skill", "id": "guru-execute-task-free-change"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-execute-task-free-change/interface.json", "input_kind": "structured_json", "profile_id": "selected_route", "seed_fields": ["selector_exit"], "authoring_fields": ["profile", "mode", "continuation_id", "selection_origin", "request_summary", "target_paths"], "authoring_example": {"id": "task_free_change_authoring", "path": "examples/task-free-change-authoring.json"}}},
       {"id": "blocked_input", "consumer": {"kind": "stop", "id": "workflow-mode-selection-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-workflow-mode-blocked-input-1.0", "path": "consumers/stop/stage0/workflow-mode-selection-blocked.schema.json"}}
     ],
-    "projections": [{"id": "standard_intake_projection", "exit_id": "standard_intake", "consumer_input_id": "standard_intake_input", "operation": "direct"}, {"id": "task_free_projection", "exit_id": "task_free", "consumer_input_id": "task_free_input", "operation": "direct"}, {"id": "blocked_projection", "exit_id": "blocked", "consumer_input_id": "blocked_input", "operation": "direct"}],
+    "projections": [{"id": "standard_intake_projection", "exit_id": "standard_intake", "consumer_input_id": "standard_intake_input", "operation": "direct"}, {"id": "task_free_projection", "exit_id": "task_free", "consumer_input_id": "task_free_input", "operation": "rename", "mappings": [{"source": "exit_id", "target": "selector_exit"}]}, {"id": "blocked_projection", "exit_id": "blocked", "consumer_input_id": "blocked_input", "operation": "direct"}],
     "private_artifacts": []
   }
 }

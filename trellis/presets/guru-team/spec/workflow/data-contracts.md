@@ -430,12 +430,12 @@ projection, or manifest participates in current invocation.
 
 The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
-contracts, and package-local corpora. Fifteen integrated rows select Interface
+contracts, and package-local corpora. Sixteen integrated rows select Interface
 1.4; the standalone verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Sixteen Skills and 62 exits are the current package cardinality regression, not
+Seventeen Skills and 69 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 15 invokes, 60 exits, and 36 targets.
+asserts 16 invokes, 67 exits, and 39 targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
