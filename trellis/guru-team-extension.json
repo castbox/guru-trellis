@@ -53,7 +53,8 @@
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "interface_schema_ids": [
         "guru-team-skill-interface-1.4",
-        "guru-team-skill-interface-1.5"
+        "guru-team-skill-interface-1.5",
+        "guru-team-skill-interface-1.6"
       ],
       "public_input_schema_ids": [
         "guru-extension-verify-installation-input-source-repository-verification-4.0",
@@ -63,6 +64,17 @@
         "guru-finalize-task-input-standalone-finalization-2.0",
         "guru-merge-task-pr-input-ready-for-merge-1.0",
         "guru-merge-task-pr-input-standalone-merge-1.0",
+        "guru-normal-scenario-input-aggregate-1.0",
+        "guru-normal-scenario-input-base-impact-candidate-set-1.0",
+        "guru-normal-scenario-input-branch-review-candidate-set-1.0",
+        "guru-normal-scenario-input-change-request-candidate-set-1.0",
+        "guru-normal-scenario-input-implementation-discovery-1.0",
+        "guru-normal-scenario-input-phase2-candidate-set-1.0",
+        "guru-normal-scenario-input-planning-scenario-set-1.0",
+        "guru-normal-scenario-input-publication-candidate-set-1.0",
+        "guru-normal-scenario-input-requirements-scope-set-1.0",
+        "guru-normal-scenario-input-task-free-evolution-1.0",
+        "guru-normal-scenario-input-task-free-pre-write-1.0",
         "guru-production-approve-task-plan-input-clarification-reentry-2.0",
         "guru-production-approve-task-plan-input-initial-review-2.0",
         "guru-production-approve-task-plan-input-revision-reentry-2.0",
@@ -110,6 +122,10 @@
         "guru-merge-task-pr-output-closure-mismatch-1.0",
         "guru-merge-task-pr-output-merge-blocked-1.0",
         "guru-merge-task-pr-output-merged-1.0",
+        "guru-normal-scenario-output-blocked-1.0",
+        "guru-normal-scenario-output-classified-1.0",
+        "guru-normal-scenario-output-mechanism-revision-required-1.0",
+        "guru-normal-scenario-output-scope-confirmation-required-1.0",
         "guru-production-approve-task-plan-output-approved-2.0",
         "guru-production-approve-task-plan-output-blocked-1.0",
         "guru-production-approve-task-plan-output-clarify-scope-1.0",
@@ -222,6 +238,7 @@
         "guru-execute-task-free-change",
         "guru-finalize-task",
         "guru-merge-task-pr",
+        "guru-qualify-normal-scenario",
         "guru-reconcile-task-base",
         "guru-review-branch",
         "guru-review-change-request",
@@ -242,9 +259,9 @@
       ],
       "contract_manifests": [
         {
-          "id": "production-current-v2",
-          "schema_id": "guru-team-production-contract-manifest-2.0",
-          "path": "contracts/production-current-2.0.json"
+          "id": "production-current-v4",
+          "schema_id": "guru-team-production-contract-manifest-4.0",
+          "path": "contracts/production-current-4.0.json"
         }
       ]
     },
@@ -257,6 +274,30 @@
       "schema_id": "guru-team-skill-evals-1.0",
       "schema_version": "1.0",
       "schema_path": "schemas/skill-evals.schema.json",
+      "schema_ids": [
+        "guru-team-skill-evals-1.0",
+        "guru-team-skill-evals-2.0"
+      ],
+      "production_schema_id": "guru-team-skill-evals-2.0",
+      "production_schema_path": "schemas/skill-evals-2.0.schema.json",
+      "adapter_request_schema_ids": [
+        "guru-team-skill-eval-adapter-request-1.0",
+        "guru-team-skill-eval-adapter-request-2.0",
+        "guru-team-skill-eval-adapter-request-3.0"
+      ],
+      "adapter_response_schema_ids": [
+        "guru-team-skill-eval-adapter-response-1.0",
+        "guru-team-skill-eval-adapter-response-2.0",
+        "guru-team-skill-eval-adapter-response-3.0"
+      ],
+      "run_schema_ids": [
+        "guru-team-skill-eval-run-1.0",
+        "guru-team-skill-eval-run-2.0",
+        "guru-team-skill-eval-run-3.0",
+        "guru-team-skill-eval-run-4.0"
+      ],
+      "control_map_schema_id": "guru-team-skill-eval-control-map-1.0",
+      "control_map_schema_path": "schemas/skill-eval-control-map-1.0.schema.json",
       "native_trace_schema_id": "guru-team-skill-eval-native-trace-1.0",
       "native_trace_schema_path": "schemas/skill-eval-native-trace.schema.json",
       "adapter_root": "adapters/eval",

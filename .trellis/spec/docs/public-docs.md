@@ -294,7 +294,7 @@ When workflow behavior changes, update the docs that users actually read:
 
 Public docs describing Phase 2 must name active semantic Skill
 `guru-check-task`, its single `phase2-check.json` artifact, active
-`guru-phase2-check-4.0` current-only schema, shared
+`guru-phase2-check-5.0` current-only schema, legacy 4.0 compatibility inventory, shared
 `guru-reviewed-content-1.0` identity, `phase2_capture_commit`, public
 `phase2_commit_anchor`, scope-before-severity rule, full-rerun finding loop,
 four exits, and official unchanged `trellis-check` evidence-only role. They must
@@ -405,10 +405,11 @@ machine-local hidden state.
 
 All three public README files describe
 `trellis/skills/guru-team/contracts/production-current.json` with contract id
-`production-current-v2` as the sole current planning/check/commit manifest. It
-contains exactly the current three Skills, profiles, exits, output schemas,
-authoring-seed edges, private-artifact ids, examples, and eval bindings. The
-READMEs publish only this current manifest and its declared assets. Inputs
+`production-current-v4` as the sole current planning/check/commit/qualification
+manifest. It contains exactly the current four Skills, 20 profiles, 15 exits,
+output schemas, authoring-seed edges, private-artifact ids, examples, production
+control, and eval bindings. The READMEs publish only this current manifest and
+its declared assets; v2/v3 are immutable legacy assets. Inputs
 outside current package schemas fail closed and the owning Skill is rerun from
 its current public profile.
 
@@ -438,7 +439,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe seventeen active Skills and 69 external exits, identify
+Public READMEs describe eighteen active Skills and 73 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -450,8 +451,8 @@ They also state that Branch Review `passed` points to active
 Publication AI directly authors and reviews the exact Chinese PR title/body;
 its ready 4.0 output projects that payload to active `guru-finalize-task`
 through the integrated global invocation without a task-local body or summary
-index handoff. `production-current-v2` binds the current
-three-Skill/11-exit membership, and the current package graph contains nine
+index handoff. `production-current-v4` binds the current
+four-Skill/15-exit membership, and the current package graph contains thirteen
 target-owned `skill_input_authoring_seed` handoffs.
 
 ## Task Publication Review Documentation
@@ -466,7 +467,7 @@ minimal exits. They state that `ready` targets active, globally integrated
 `blocked` stops.
 
 Docs identify ignored-runtime `pr-readiness.json` as the sole semantic gate
-under schema `guru-task-publication-readiness-4.0`. It stores only the reviewed
+under schema `guru-task-publication-readiness-5.0`. It stores only the reviewed
 content identity, exact PR payload, ten semantic dimensions, findings,
 conclusions, and route; objective live bindings are rebuilt transiently.
 Inputs outside the current schemas fail closed. They do not expose the private
@@ -481,10 +482,11 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are seventeen active Skills and 69 external exits;
-business workflow markers remain 16 invokes, 67 exits, and 39 targets.
-`production-current-v2` owns the current planning/check/commit contract; the
-live Intake contract remains six Skills/23 exits.
+README package closure numbers are eighteen active Skills and 73 external exits;
+business workflow markers remain 17 invokes, 71 exits, 24 workflow targets, and
+18 stop targets.
+`production-current-v4` owns the current planning/check/commit/qualification
+contract; the live Intake contract remains six Skills/23 exits.
 
 ## Extension Installation Verification Documentation
 
@@ -520,9 +522,9 @@ side-effect confirmation, and deterministic executor. Scripts execute, validate,
 and record facts after semantic review; they do not choose plan, scope,
 readiness, recovery route, or semantic pass.
 
-The READMEs describe the current package graph as seventeen active Skills and 69
+The READMEs describe the current package graph as eighteen active Skills and 73
 external exits with thirteen target-owned authoring handoffs. The integrated business
-workflow is 16 invokes, 67 exits, and 39 targets. The three `guru-finish-work`
+workflow is 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication
 `return_to_task_work` remains available for real content drift.
 

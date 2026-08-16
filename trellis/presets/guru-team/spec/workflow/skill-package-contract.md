@@ -97,7 +97,7 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains seventeen active packages and 69 package exits while
+Registry 1.4 graph contains eighteen active packages and 73 package exits while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
 `merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
@@ -123,8 +123,9 @@ post-merge read-only validation. A terminal projection retires the merge gate.
 Neither Finalizer nor Merge calls Issue-close APIs, enters Phase 0, invokes base
 sync, updates the PR branch, synchronizes local `main`, or cleans resources.
 
-Fifteen integrated packages select Interface 1.4.
-`guru-verify-extension-installation` selects Interface 1.5 and
+Sixteen integrated packages select Interface 1.4.
+`guru-qualify-normal-scenario` selects Interface 1.6,
+`guru-verify-extension-installation` selects Interface 1.5, and the latter has
 `workflow_integration_state=standalone_only`. Registry schema
 `guru-team-skill-registry-1.4` is the exact current selector; planned rows remain
 lifecycle-only and carry no package or I/O fields. Any other row or schema
@@ -134,10 +135,11 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all seventeen active packages and their 69 external exits. The
-`production-current-v2` manifest remains exactly three packages and 11 exits;
-additive activation of later packages, including `guru-finalize-task`, does not
-rewrite that membership.
+for all eighteen active packages and their 73 external exits. The
+`production-current-v4` is the sole current manifest and contains exactly four
+packages and 15 exits, including `guru-qualify-normal-scenario`; additive
+activation of other packages, including `guru-finalize-task`, does not rewrite
+that membership. Versioned v2/v3 files remain immutable legacy assets.
 
 ### 1. Scope And Trigger
 
@@ -339,7 +341,7 @@ The consumer's independently owned input schema may accept that object directly
 or declare a deterministic projection to its own field names. The producer's
 audit evidence and private checkpoint remain outside this public DTO.
 
-### 8. Interface 1.3 Legacy Foundation And Interface 1.4 Current Contracts
+### 8. Versioned Interface Contracts
 
 Interface 1.3 keeps the closed-loop identity, modes, stages, validators,
 external exits, re-entry, tests, and platform destinations of 1.2 and adds one
@@ -373,6 +375,18 @@ Interface 1.4 retains those closed public sections and adds the versioned
 call-local invocation contract selected by the current activation. The legacy
 1.3 schema and examples remain byte-stable but are not selected by the current
 registry, extension inventory, production manifest, or installed package graph.
+
+Interface 1.5 remains the standalone extension-verification contract. Interface
+1.6 additively extends invocation input binding with a third mutually exclusive
+closed variant: `kind=structured_json` plus
+`profile_selector.source=aggregate_public_input` and a selector `field`. The
+selector declares only the public discriminator field and never contains the
+selected profile value. Fixed structured `profile_id` and scalar `argument_ids`
+remain unchanged for earlier consumers. Registry/interface validation requires
+unique profile ids and discriminator values, one shared selector field, exact
+profile-id/discriminator equality, the same `const` in every closed profile
+schema, and every example to validate against both its profile schema and the
+aggregate `oneOf`.
 
 All ids and locators are unique, package paths are regular non-symlink files,
 and public output schema ids and paths are each independently disjoint from
@@ -641,25 +655,27 @@ For `guru-clarify-requirements:clear`, a checker-passed
 scope. That one fixed profile projects to public `retained`; null disposition in
 initial or standalone profiles remains an invalid owner projection.
 
-### Production Planning, Check, And Commit Activation
+### Production Planning, Check, Commit, And Qualification Activation
 
-`trellis/skills/guru-team/contracts/production-current-2.0.json` with contract id
-`production-current-v2` is the sole current planning/check/commit manifest. It
-extends the live six-Skill/23-exit Intake contract. The production contract
-contains exactly:
+`trellis/skills/guru-team/contracts/production-current-4.0.json` with contract id
+`production-current-v4` is the sole current manifest. It extends the live
+six-Skill/23-exit Intake contract. The production contract contains exactly:
 
 - `guru-approve-task-plan`: `approved`, `revision_required`, `clarify_scope`,
   `blocked`;
 - `guru-check-task`: `passed`, `implementation_required`, `planning_stale`,
   `blocked`;
 - `guru-create-task-commit`: `committed`, `revision-required`, `blocked`.
+- `guru-qualify-normal-scenario`: `classified`,
+  `scope_confirmation_required`, `mechanism_revision_required`, `blocked`.
 
-The ten closed structured input profiles are `initial_review`,
+The 20 closed structured input profiles are `initial_review`,
 `revision_reentry`, `clarification_reentry`, `initial_check`,
 `finding_fix_rerun`, `planning_reentry`, `initial_commit`,
-`revision_reentry`, `finding_fix_commit`, and `recovery_resume`. Profile ids are
-package-local: the two `revision_reentry` profiles are intentionally owned by
-different Skills. Each profile has one executable example and at least one
+`revision_reentry`, `finding_fix_commit`, and `recovery_resume`, plus the ten
+normal-scenario qualification profiles declared by Interface 1.6. Profile ids
+are package-local: the two `revision_reentry` profiles are intentionally owned
+by different Skills. Each profile has one executable example and at least one
 current eval case binding.
 
 The public DTOs are exact. Planning emits `approved(exit_id, task_ref)`,
@@ -723,11 +739,59 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is seventeen active Skills and 69
-exits. The integrated business workflow projection contains 16 invoke markers,
-67 exit markers, and 39 target markers. Missing,
+The current package cardinality assertion is eighteen active Skills and 73
+exits. The integrated business workflow projection contains 17 invoke markers,
+71 exit markers, 24 workflow-target markers, and 18 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
+
+### Normal-scenario qualification public package
+
+`guru-qualify-normal-scenario` is a public Interface 1.6 semantic Skill and the
+only owner of normal-scenario qualification. It exposes ten independent closed
+input profiles: `task_free_pre_write`, `task_free_evolution`,
+`requirements_scope_set`, `change_request_candidate_set`,
+`planning_scenario_set`, `implementation_discovery`,
+`base_impact_candidate_set`, `phase2_candidate_set`,
+`branch_review_candidate_set`, and `publication_candidate_set`. The aggregate
+input is discriminator closure only; callers cannot send severity, a decision,
+an expected exit, authorization, a prior result, a result locator, a worker
+report, or a caller-authored normal-path conclusion.
+
+Its public invocation selects the closed profile only from the complete public
+stdin envelope's `profile` discriminator. The Interface binding carries no
+`profile_id`, `input_profile_id`, selected value, control-map value, or expected
+classification.
+
+Each invocation receives a non-empty unique candidate set and current live
+locators. It returns exactly one of `classified`,
+`scope_confirmation_required`, `mechanism_revision_required`, or `blocked`.
+The first and third exits project only to the profile's original owner through
+their fixed workflow routers. Scope confirmation projects to the closed
+`guru-clarify-requirements:normal_scenario_scope_confirmation` input, whose
+fields are `profile`, fixed `source_exit`, `mode`, `target_locator`,
+`resume_target`, `continuation_id`, and non-empty unique `candidate_refs`.
+Blocked has only the dedicated stop consumer.
+
+Semantic decisions, candidate mapping, and the typed result are
+invocation/process-local. Package recorder/checker commands, where used, accept
+stdin and return stdout only; they do not accept an output path, result locator,
+checkpoint locator, or authorization, and they do not write tracked files,
+ignored runtime state, cross-process temporary result files, or reusable
+qualification checkpoints. The consumer receives the current checked DTO
+directly and must rerun the Skill after any relevant authority, planning,
+candidate, caller graph, diff/range, base-pair, publication payload, scope
+choice, mechanism, or finding-fix change.
+
+Phase 2, Branch Review, and Publication remain the owners of their existing
+private gates. They may directly record only the terminal classification and
+minimal witness their own immediate consumer needs; they never reference a
+qualification artifact or retain qualifier stdout. Each Guru-owned worker
+dispatch authorizes approved-plan work only. The Guru caller projects any
+planning-external worker observation into candidate refs and locators, and no
+such observation may cause an edit, test, self-fix, qualification, severity,
+finding, route, or implementation decision before fresh qualification. Official
+`trellis-*` agent definitions remain upstream-owned and byte-unchanged.
 
 ## Workflow Markers And Typed Exits
 
@@ -1204,9 +1268,14 @@ identity, the AI Review Gate, re-entry, and exactly four exits:
 checker-validated `reapprove_plan` or `clarify_requirements` discriminator and
 maps it to one exact active Skill; it does not repeat semantic scope judgment.
 
-Official unchanged `trellis-check` workers provide review evidence only. They
-cannot own the Guru Gate, artifact, finding severity, or route. The package
-publishes current-only schema `guru-phase2-check-4.0`. Recorder/checker runtime
+Official unchanged `trellis-check` workers provide review evidence only. Every
+Guru-owned dispatch prompt authorizes approved-plan verification only and
+requires planning-external observations to return as candidate ref, observed
+behavior, locators, and a minimal reproduction hint without an edit, test,
+self-fix, severity, classification, or route. The Guru owner rereads and freshly
+qualifies that projection before any follow-up dispatch. Workers cannot own the
+Guru Gate, artifact, finding severity, or route. The package
+publishes current-only schema `guru-phase2-check-5.0`. Recorder/checker runtime
 commands accept AI-authored closed input and validate only objective schema,
 `phase2_capture_commit` ancestry, recomputed
 `guru-reviewed-content-1.0` identity, current dirty reviewed-path coverage,
@@ -1227,7 +1296,7 @@ findings, including tracked upstream-template migration deltas. Missing/invalid
 provenance, unknown paths, local edits, or hash mismatch remain ordinary
 candidates, while path, UTF-8, and JSON validation is never bypassed.
 
-The ignored-runtime schema 4.0 checkpoint contains only
+The ignored-runtime schema 5.0 checkpoint contains only
 `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths, validation
 evidence, final Docs SSOT result, semantic dimensions/findings, and typed route.
 The content identity serves only the local checker before Task Commit; a
@@ -1437,7 +1506,7 @@ profile consumes the exact old/new base candidate and unchanged task review
 from `guru-reconcile-task-base:review_continuity_required`. Neither profile
 reopens the Phase 2 private checkpoint. Current issue scope, findings, range,
 candidate identity, and freshness remain owner-private evidence. The
-current-only compact gate schema 4.0 is ignored runtime state and stores
+current-only compact gate schema 5.0 is ignored runtime state and stores
 profile-specific identity plus `review_commit` and
 `reviewed_content_sha256`. Aggregate input schema 2.0 and gate schema 3.0 remain
 legacy compatibility inventory, not current runtime authority; any other
@@ -1504,7 +1573,7 @@ an explicit stop. Review narrative, findings, artifact paths, live facts, and
 digest bundles remain private.
 
 The sole private gate is ignored-runtime `pr-readiness.json` under
-`guru-task-publication-readiness-4.0`. It contains only task,
+`guru-task-publication-readiness-5.0`. It contains only task,
 `branch_review_commit`, `reviewed_content_sha256`, the closed exact
 `pr_payload(title,body)`,
 the ten AI-reviewed dimensions, findings with closure evidence, three
@@ -1569,23 +1638,23 @@ aggregate input schema `guru-finalize-task-input-aggregate-6.0`. Aggregate
 fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
-The current additive activation set contributes to the live closure of seventeen
-active Skills and 69 exits. The production current manifest remains exactly
-three Skills and 11 exits.
+The current additive activation set contributes to the live closure of eighteen
+active Skills and 73 exits. The production current manifest contains exactly
+four Skills and 15 exits.
 
 ## Extension Installation Verification Owner
 
 `guru-verify-extension-installation` was the fifteenth active package and selects
 Interface 1.5 with `workflow_integration_state=standalone_only`. It is outside
-the three-Skill `production-current-v2` manifest and outside the mandatory
+the four-Skill `production-current-v4` manifest and outside the mandatory
 business workflow graph. Its only current structured input is
 `source_repository_verification`, fixed to standalone mode and explicit caller
 intent from a clean `castbox/guru-trellis` source checkout.
 
-`guru-execute-task-free-change` is the seventeenth active package and the
-sixteenth integrated business-workflow owner. Its seven exits produce the
-current 69-package-exit and 67-workflow-exit closure without changing the
-three-package production-current manifest. Its two post-write expansion exits
+`guru-execute-task-free-change` remains an active package and integrated
+business-workflow owner. Together with `guru-qualify-normal-scenario`, the
+current graph closes at 73 package exits and 71 workflow exits without changing
+the four-package production-current manifest. Its two post-write expansion exits
 require owner-private evidence for a real partial edit, the discovered
 scope/risk expansion, immediate stop, remaining target writes not performed,
 and applicable targeted checks. Its `completed` DTO and workflow consumer carry

@@ -94,6 +94,19 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
 
     def auth(self, exit_id="passed"):
         return {
+            "candidate_classifications": [{
+                "candidate_ref": "candidate-no-defect",
+                "decision": "rejected_not_reproduced",
+                "witness": {
+                    "requirement_refs": ["PRD R1"],
+                    "supported_entry_refs": ["entry:branch-review"],
+                    "existing_caller_refs": ["caller:guru-review-branch"],
+                    "honest_action_sequence": ["review the complete supported range"],
+                    "defect_observation": "Current evidence does not reproduce a defect.",
+                    "excluded_assumptions": [],
+                },
+                "consumer_use": "branch_review_route_checker",
+            }],
             "semantic_review": {
                 "qualified_findings": [],
                 "scope_proposals": [],
@@ -140,7 +153,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         )
         gate = self.checkpoint()
         self.assertTrue(gate.is_file())
-        self.assertEqual("4.0", json.loads(gate.read_text())["schema_version"])
+        self.assertEqual("5.0", json.loads(gate.read_text())["schema_version"])
         checked = self.run_wrapper(
             "check-review-gate.sh",
             "--task",
@@ -169,17 +182,26 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
 
     def test_nonterminal_record_and_invoke_are_idempotent_and_retain(self):
         auth = self.auth("implementation_required")
+        auth["candidate_classifications"] = [{
+            "candidate_ref": "candidate-1",
+            "decision": "qualified_current",
+            "witness": {
+                "requirement_refs": ["PRD R1"],
+                "supported_entry_refs": ["entry:branch-review"],
+                "existing_caller_refs": ["caller:guru-review-branch"],
+                "honest_action_sequence": ["run the supported task behavior"],
+                "defect_observation": "The required behavior is missing.",
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "branch_review_route_checker",
+        }]
         auth["semantic_review"]["qualified_findings"] = [
             {
                 "candidate_ref": "candidate-1",
                 "disposition": "qualified_finding",
-                "scenario_class": "normal_required_behavior",
                 "affected_behavior": "Required behavior is missing.",
                 "path": "app.txt",
                 "evidence_refs": ["diff:app.txt"],
-                "requirement_refs": ["PRD R1"],
-                "scope_basis": "Current task scope.",
-                "qualification_reason": "Reproduces normally.",
                 "finding_ref": "finding-1",
                 "severity": "P1",
                 "introduced_head": self.head,
@@ -355,6 +377,34 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
 
 
 class BranchReviewContractTest(unittest.TestCase):
+    def test_official_reviewer_dispatch_is_candidate_only_before_fresh_qualification(self):
+        repo = PACKAGE.parents[4]
+        sources = {
+            "workflow": repo / "trellis/workflows/guru-team/workflow.md",
+            "skill": PACKAGE / "SKILL.md",
+            "contract": PACKAGE / "references/contract.md",
+        }
+        candidate_fields = (
+            "candidate_ref",
+            "observed_behavior",
+            "locators",
+            "minimal_reproduction_hint",
+        )
+        for label, path in sources.items():
+            with self.subTest(source=label):
+                text = path.read_text(encoding="utf-8")
+                normalized = " ".join(text.split())
+                self.assertIn("approved-plan work only", normalized)
+                self.assertIn("fresh", normalized)
+                self.assertIn("qualification", normalized)
+                self.assertIn("self-fix", normalized)
+                for field in candidate_fields:
+                    self.assertIn(field, text)
+        self.assertIn(
+            "Upstream-owned `trellis-*` agent files stay",
+            sources["skill"].read_text(encoding="utf-8"),
+        )
+
     def test_current_interface_wording_matches_profiles_gate_and_exits(self):
         interface = json.loads((PACKAGE / "interface.json").read_text())
         public = interface["public_contracts"]
@@ -367,7 +417,7 @@ class BranchReviewContractTest(unittest.TestCase):
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
-            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-4.0.json",
+            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-5.0.json",
             public["private_artifacts"][0]["schema"]["schema_id"],
         )
         self.assertEqual(
@@ -392,7 +442,8 @@ class BranchReviewContractTest(unittest.TestCase):
             text = path.read_text()
             self.assertIn("base_continuity", text)
             self.assertIn("schema 3.0", text)
-            self.assertIn("schema 4.0", text)
+            self.assertIn("schema 5.0", text)
+            self.assertIn("schemas 3.0 and 4.0", text)
             self.assertIn("continuity_passed", text)
 
     def test_wrappers_are_executable(self):

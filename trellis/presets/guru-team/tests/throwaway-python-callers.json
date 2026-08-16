@@ -562,12 +562,12 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-33d620fa11d8",
+      "id": "verifier-installed_managed-516ce7ad88df",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "33d620fa11d84f3a2ff1419453f2f3bd75b333629e175d5ba55298cdcfb2b1de",
+      "anchor_sha256": "516ce7ad88df82529173ed338d4a88fc6ef1ae7a8a6fef057e07231db3e85037",
       "ordinal": 1
     },
     {
@@ -604,6 +604,24 @@
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
       "anchor_sha256": "adcb80edfc89503c882b353c3952fff7ff1da9f9a57b3a4e59a0e2035d80137f",
+      "ordinal": 1
+    },
+    {
+      "id": "verifier-installed_managed-c079713c3776",
+      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "kind": "inline_c",
+      "classification": "installed_managed",
+      "expected_launcher": "installed_python",
+      "anchor_sha256": "c079713c37761688b87e3136a9b1798b2d8541f262f0c5ef57a145fa783b6a05",
+      "ordinal": 1
+    },
+    {
+      "id": "verifier-installed_managed-6d2b13cbc737",
+      "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "kind": "inline_c",
+      "classification": "installed_managed",
+      "expected_launcher": "installed_python",
+      "anchor_sha256": "6d2b13cbc737a0d6c56d23dde5b80cad2a4d8f40ca2b5b76505888134f098bea",
       "ordinal": 1
     },
     {
@@ -877,21 +895,21 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-c8346b082266",
+      "id": "verifier-installed_managed-460c62921353",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "c8346b0822665e1f3d3cb06e1821c5ff1b5733e04178fdb844d76f8e980b3ab1",
+      "anchor_sha256": "460c629213532a36d9328da2964bd6100650669a350f7e647c06c52a2444fdd6",
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-98639c66eafc",
+      "id": "verifier-installed_managed-9e54177e24ab",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "98639c66eafcc261ecf7fe5dc5205793c60cc92dc4743b0386a45afaba9b9011",
+      "anchor_sha256": "9e54177e24ab57d34d5f9bba8574124455b296c40c7c836af50bd9db03773feb",
       "ordinal": 1
     },
     {
@@ -904,12 +922,12 @@
       "ordinal": 1
     },
     {
-      "id": "verifier-installed_managed-3844e46ca1a5",
+      "id": "verifier-installed_managed-0afcbe1b424b",
       "owner": "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
       "kind": "inline_c",
       "classification": "installed_managed",
       "expected_launcher": "installed_python",
-      "anchor_sha256": "3844e46ca1a571bace66e580a758b024111e1b87ba953ae3b2043cade0eed25a",
+      "anchor_sha256": "0afcbe1b424be697025895d426368368d3221cefbe67a3ab97efd9c590e7ff06",
       "ordinal": 1
     },
     {
@@ -1239,12 +1257,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-generated_shebang-bf791ac6d26c",
+      "id": "helper-generated_shebang-f59bb2867f9c",
       "owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "kind": "generated_shebang",
       "classification": "installed_managed",
       "expected_launcher": "raw sys.executable shebang",
-      "anchor_sha256": "bf791ac6d26c7b1d481999a9a5f7d8bd69eecad6c67bd4d8c977457a64749534",
+      "anchor_sha256": "f59bb2867f9cd02dd7d99393b9e4efe3b8048c0639f3c5e80b237f72f5f41437",
       "ordinal": 1
     },
     {
@@ -1383,7 +1401,7 @@
       "launch_owner": "trellis/skills/guru-team/adapters/eval/shared.sh",
       "launch_token": "exec \"$RUNTIME_ASSETS/resolve-python.sh\" \"$REPO_ROOT\" \"$RUNTIME_ASSETS\" \"$SCRIPT_DIR/native_adapter.py\" --adapter shared \"$@\"",
       "sys_executable_subprocesses": 2,
-      "managed_shebang_bindings": 2
+      "managed_shebang_bindings": 3
     },
     {
       "id": "managed-shared-eval-native",

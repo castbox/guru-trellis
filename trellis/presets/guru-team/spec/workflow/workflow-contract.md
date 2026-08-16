@@ -61,15 +61,16 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current package registry contains exactly 17 active Skill ids and 69
-external exits. Sixteen Skills participate in the business-task workflow,
-whose global graph contains 16 mandatory invokes, 67 mapped exits, and 39
-workflow/stop targets. `guru-verify-extension-installation` is the remaining
+The current package registry contains exactly 18 active Skill ids and 73
+external exits. Seventeen Skills participate in the business-task workflow,
+whose global graph contains 17 mandatory invokes, 71 mapped exits, 24 workflow
+targets, and 18 stop targets. `guru-verify-extension-installation` is the remaining
 standalone-only source-repository Skill; its two exits return directly to its
 caller-owned stop targets and never appear in the business workflow.
 
 | Skill | Typed exit -> unique consumer |
 | --- | --- |
+| `guru-qualify-normal-scenario` | `classified -> guru-normal-scenario-classified-router`; `scope_confirmation_required -> guru-clarify-requirements`; `mechanism_revision_required -> guru-normal-scenario-mechanism-router`; `blocked -> normal-scenario-qualification-blocked` |
 | `guru-execute-task-free-change` | `completed -> guru-task-free-completed`; `resume_active_task -> guru-task-free-resume-active-task-router`; `scope_change -> guru-task-free-scope-change-router`; `location_required -> guru-execute-task-free-change`; `reselect_mode -> guru-select-workflow-mode`; `explicit_choice_required -> guru-execute-task-free-change`; `blocked -> task-free-change-blocked` |
 | `guru-sync-base` | `synced -> guru-discover-change-context`; `skipped -> original-request-route`; `blocked -> base-sync-blocked` |
 | `guru-discover-change-context` | `context_ready -> guru-clarify-requirements`; `refresh_base -> guru-sync-base`; `blocked -> change-context-blocked` |
@@ -90,6 +91,33 @@ Missing Skill packages, missing or duplicate markers, unknown/multiple/unmapped
 exits, a consumer mismatch, a dangling target, a kind mismatch, or an invalid
 projection always fails closed. Frontmatter discovery is only a convenience and
 never substitutes for a mandatory workflow invocation marker.
+
+### Normal-scenario qualification invocation
+
+`guru-qualify-normal-scenario` is the only semantic owner for candidate
+qualification. The global workflow names the stable Skill id, the ten mandatory
+profiles, their exact pre-judgment trigger points, the four exits above, and the
+unique consumer of each exit. It does not restate scope-first reasoning,
+security-candidate evidence, severity quarantine, decision criteria, or
+mechanism revision semantics.
+
+The ten profiles are `task_free_pre_write`, `task_free_evolution`,
+`requirements_scope_set`, `change_request_candidate_set`,
+`planning_scenario_set`, `implementation_discovery`,
+`base_impact_candidate_set`, `phase2_candidate_set`,
+`branch_review_candidate_set`, and `publication_candidate_set`. Their
+classified and mechanism-revision returns go only to the original profile
+owner. Scope confirmation goes only to
+`guru-clarify-requirements:normal_scenario_scope_confirmation`; blocked stops at
+`normal-scenario-qualification-blocked`. Unknown, empty, multiple, stale, or
+mismatched profile/result routing fails closed.
+
+For Phase 2, `guru-phase2-implementation-coordinator` invokes
+`implementation_discovery` before any planning-external candidate can cause an
+edit or test. Its existing deterministic resume target remains
+`guru-resume-implementation`. Rejected candidates never enter clarification,
+acceptance, negative tests, implementation, P0-P3 findings, follow-up work, or
+publication blocking.
 
 ## Phase Route
 
@@ -177,6 +205,15 @@ relevant specs, implement the current scope, and use the configured Trellis
 implement/check agents. Their terminal results and live repository facts are
 ephemeral evidence for the mandatory `guru-check-task` semantic owner. Do not
 create an implementation handoff artifact.
+
+Every Guru-owned worker invocation prompt authorizes approved-plan work only.
+For any planning-external observation it requires only a candidate ref,
+observed behavior, locators, and a minimal reproduction hint; the worker must
+not edit, add a test, self-fix, assign severity or classification, or select a
+route for that observation. The main coordinator rereads those facts and runs
+`implementation_discovery` before any follow-up dispatch or change. Official
+`trellis-*` agent definitions remain upstream-owned and are not patched by the
+Guru preset.
 
 Only `guru-check-task:passed` reaches `guru-create-task-commit`. Finding and
 planning-stale exits return to their declared consumers automatically. The

@@ -256,6 +256,48 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                         [],
                     )
 
+    def test_normal_scenario_scope_confirmation_is_closed_candidate_only_input(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads(
+            (self.package / "schemas/public-normal-scenario-scope-confirmation-input.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        example = json.loads(
+            (self.package / "examples/public-normal-scenario-scope-confirmation-input.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        validator = Draft202012Validator(schema)
+        self.assertEqual(list(validator.iter_errors(example)), [])
+        profiles = {
+            item["id"]: item
+            for item in self.interface["public_contracts"]["input"]["profiles"]
+        }
+        self.assertIn("normal_scenario_scope_confirmation", profiles)
+        self.assertEqual(
+            profiles["normal_scenario_scope_confirmation"]["schema"]["path"],
+            "schemas/public-normal-scenario-scope-confirmation-input.schema.json",
+        )
+        for field, value in (
+            ("decisions", []),
+            ("reasons", ["caller-classified"]),
+            ("severity", "P0"),
+            ("authorization", "confirmed"),
+            ("result_locator", ".trellis/.runtime/qualification.json"),
+        ):
+            with self.subTest(field=field):
+                invalid = copy.deepcopy(example)
+                invalid[field] = value
+                self.assertNotEqual(list(validator.iter_errors(invalid)), [])
+        duplicate = copy.deepcopy(example)
+        duplicate["candidate_refs"].append(duplicate["candidate_refs"][0])
+        self.assertNotEqual(list(validator.iter_errors(duplicate)), [])
+        empty = copy.deepcopy(example)
+        empty["candidate_refs"] = []
+        self.assertNotEqual(list(validator.iter_errors(empty)), [])
+
     def test_package_local_record_check_and_closed_json_error(self) -> None:
         source = self.package / "examples/requirements-clarification.json"
         record = subprocess.run(

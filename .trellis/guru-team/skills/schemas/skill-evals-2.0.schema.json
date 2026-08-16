@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "$id", "schema_version", "skill_name", "production_gate", "evals"],
+  "properties": {
+    "$schema": {"const": "https://json-schema.org/draft/2020-12/schema"},
+    "$id": {"const": "guru-team-skill-evals-2.0"},
+    "schema_version": {"const": "2.0"},
+    "skill_name": {"const": "guru-qualify-normal-scenario"},
+    "production_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_id", "fresh_invocations_per_case", "required_passes_per_case"],
+      "properties": {
+        "model_id": {"const": "gpt-5.6-sol"},
+        "fresh_invocations_per_case": {"const": 5},
+        "required_passes_per_case": {"const": 5}
+      }
+    },
+    "evals": {
+      "type": "array",
+      "minItems": 160,
+      "maxItems": 160,
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "prompt", "input_profile_id", "scenario_id", "scenario_kind",
+        "pair_id", "pressure_framing", "expected_exit", "expected_decisions",
+        "expected_output"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "prompt": {"type": "string", "minLength": 1},
+        "input_profile_id": {
+          "enum": [
+            "task_free_pre_write", "task_free_evolution", "requirements_scope_set",
+            "change_request_candidate_set", "planning_scenario_set",
+            "implementation_discovery", "base_impact_candidate_set",
+            "phase2_candidate_set", "branch_review_candidate_set",
+            "publication_candidate_set"
+          ]
+        },
+        "scenario_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "scenario_kind": {"enum": ["rejected", "legitimate"]},
+        "pair_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "pressure_framing": {
+          "enum": [
+            "neutral", "attack_security", "severity", "independent_reviewer",
+            "already_implemented", "already_tested", "best_practice",
+            "theoretical_bypass"
+          ]
+        },
+        "expected_exit": {
+          "enum": [
+            "classified", "scope_confirmation_required",
+            "mechanism_revision_required", "blocked"
+          ]
+        },
+        "expected_decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["candidate_ref", "decision"],
+            "properties": {
+              "candidate_ref": {"type": "string", "minLength": 1},
+              "decision": {
+                "enum": [
+                  "qualified_current", "qualified_explicit_nonstandard",
+                  "qualified_approved_expansion", "scope_confirmation_required",
+                  "rejected_no_authority", "rejected_unsupported_entry",
+                  "rejected_not_reproduced", "rejected_out_of_scope",
+                  "mechanism_removed", "mechanism_replaced", "blocked"
+                ]
+              }
+            }
+          }
+        },
+        "expected_output": {"type": "string", "minLength": 1},
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^evals/files/[A-Za-z0-9._/-]+$"}
+        },
+        "assertions": {"$ref": "#/$defs/assertions"}
+      }
+    },
+    "assertions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "deterministic": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/deterministic"}},
+        "semantic": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/semantic"}}
+      }
+    },
+    "deterministic": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "pointer", "operation"],
+          "properties": {
+            "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+            "kind": {"const": "json_path"},
+            "pointer": {"type": "string", "pattern": "^(?:/(?:[^~/]|~0|~1)*)*$"},
+            "operation": {"enum": ["exists", "equals", "contains"]},
+            "expected": {"not": {"type": "null"}}
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "kind", "path", "operation"],
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+                "kind": {"const": "file"},
+                "path": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
+                "operation": {"const": "exists"}
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "kind", "path", "operation", "expected"],
+              "properties": {
+                "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+                "kind": {"const": "file"},
+                "path": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+$"},
+                "operation": {"enum": ["json_schema", "text_equals"]},
+                "expected": {"type": "string", "minLength": 1}
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "invariant"],
+          "properties": {
+            "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+            "kind": {"const": "trace"},
+            "invariant": {
+              "enum": [
+                "public_invocation_only", "evals_not_loaded_by_skill",
+                "private_runtime_not_read_by_agent"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "semantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "criterion", "evidence_selector"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "criterion": {"type": "string", "minLength": 1},
+        "evidence_selector": {"enum": ["output", "trace", "transcript", "files"]}
+      }
+    }
+  }
+}

@@ -18,6 +18,18 @@ Discovery cognition is not reopened through a private artifact. Issue #112's
 consumes the checked typed exit directly. It does not persist the private
 `issue-review.json`-shaped result under the task.
 
+Before any newly observed scenario participates in readiness, scope conclusion,
+finding, requested test, clarification, or blocking route, the owner forms a
+candidate-only set and invokes
+`guru-qualify-normal-scenario:change_request_candidate_set`. Candidate inputs
+contain no decision, scenario class, severity, route, or caller assertion of a
+normal path. `classified` returns to this owner;
+`scope_confirmation_required` routes to requirements clarification;
+`mechanism_revision_required` returns here for remove/replace and full fresh
+review; `blocked` stops. Rejected candidates do not become findings, tests,
+clarification, or follow-up work. This review stores no qualification artifact,
+checkpoint, result locator, or cross-round ledger.
+
 Workflow and standalone modes have identical entry preconditions. Both require
 the complete compatible Guru Team preset, extension manifest, dispatcher,
 runtime, installed inventory, and selected discovery copy. A copied package is

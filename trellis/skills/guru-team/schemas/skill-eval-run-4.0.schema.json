@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-run-4.0",
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "gitOid": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "assertionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "passed", "detail"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "passed": {"type": "boolean"},
+        "detail": {"type": "string"}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "decision"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "decision": {
+          "enum": [
+            "qualified_current",
+            "qualified_explicit_nonstandard",
+            "qualified_approved_expansion",
+            "scope_confirmation_required",
+            "rejected_no_authority",
+            "rejected_unsupported_entry",
+            "rejected_not_reproduced",
+            "rejected_out_of_scope",
+            "mechanism_removed",
+            "mechanism_replaced",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authority_repository",
+        "authority_issue",
+        "authority_state",
+        "authority_updated_at",
+        "authority_sha256",
+        "repository_authority_sha256",
+        "base_ref",
+        "base_head",
+        "checkout_head",
+        "repo_status_sha256",
+        "installed_extension_manifest_sha256",
+        "production_contract_manifest_sha256",
+        "runner_sha256",
+        "native_adapter_sha256",
+        "codex_adapter_descriptor_sha256",
+        "codex_adapter_wrapper_sha256",
+        "prompt_protocol",
+        "package_sha256",
+        "prompt_matrix_sha256",
+        "matrix_sha256",
+        "corpus_sha256",
+        "codex_cli_path",
+        "codex_cli_version",
+        "codex_package_version"
+      ],
+      "properties": {
+        "authority_repository": {"const": "castbox/guru-trellis"},
+        "authority_issue": {"const": 237},
+        "authority_state": {"enum": ["OPEN", "CLOSED"]},
+        "authority_updated_at": {"type": "string", "format": "date-time"},
+        "authority_sha256": {"$ref": "#/$defs/sha256"},
+        "repository_authority_sha256": {"$ref": "#/$defs/sha256"},
+        "base_ref": {"const": "origin/main"},
+        "base_head": {"$ref": "#/$defs/gitOid"},
+        "checkout_head": {"$ref": "#/$defs/gitOid"},
+        "repo_status_sha256": {"$ref": "#/$defs/sha256"},
+        "installed_extension_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "production_contract_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "runner_sha256": {"$ref": "#/$defs/sha256"},
+        "native_adapter_sha256": {"$ref": "#/$defs/sha256"},
+        "codex_adapter_descriptor_sha256": {"$ref": "#/$defs/sha256"},
+        "codex_adapter_wrapper_sha256": {"$ref": "#/$defs/sha256"},
+        "prompt_protocol": {"const": "guru-qualification-production-prompt-2.0"},
+        "package_sha256": {"$ref": "#/$defs/sha256"},
+        "prompt_matrix_sha256": {"$ref": "#/$defs/sha256"},
+        "matrix_sha256": {"$ref": "#/$defs/sha256"},
+        "corpus_sha256": {"$ref": "#/$defs/sha256"},
+        "codex_cli_path": {"type": "string", "pattern": "^/"},
+        "codex_cli_version": {"const": "codex-cli 0.147.0"},
+        "codex_package_version": {"const": "0.147.0"}
+      }
+    },
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opaque_invocation_id",
+        "sequence_index",
+        "invocation_index",
+        "started_at",
+        "completed_at",
+        "monotonic_started_ns",
+        "monotonic_completed_ns",
+        "status",
+        "prompt_sha256",
+        "actual_exit",
+        "actual_decisions",
+        "deterministic_results",
+        "semantic_results",
+        "transcript_locator",
+        "timing_ms"
+      ],
+      "properties": {
+        "opaque_invocation_id": {"type": "string", "pattern": "^i-[a-z2-7]{26}$"},
+        "sequence_index": {"type": "integer", "minimum": 1, "maximum": 800},
+        "invocation_index": {"type": "integer", "minimum": 1, "maximum": 5},
+        "started_at": {"$ref": "#/$defs/timestamp"},
+        "completed_at": {"$ref": "#/$defs/timestamp"},
+        "monotonic_started_ns": {"type": "integer", "minimum": 0},
+        "monotonic_completed_ns": {"type": "integer", "minimum": 0},
+        "status": {"enum": ["passed", "evaluation_failed", "execution_error", "unsupported"]},
+        "prompt_sha256": {"$ref": "#/$defs/sha256"},
+        "actual_exit": {"type": "string", "minLength": 1},
+        "actual_decisions": {"type": "array", "items": {"$ref": "#/$defs/decision"}},
+        "deterministic_results": {"type": "array", "items": {"$ref": "#/$defs/assertionResult"}},
+        "semantic_results": {"type": "array", "items": {"$ref": "#/$defs/assertionResult"}},
+        "transcript_locator": {"type": "string", "minLength": 1},
+        "timing_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "passed"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "passed_invocations": {"const": 5},
+              "invocations": {"minItems": 5, "maxItems": 5}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"status": {"const": "incomplete"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "passed_invocations": {"maximum": 4},
+              "invocations": {"minItems": 1, "maxItems": 4}
+            }
+          }
+        }
+      ],
+      "required": [
+        "case_id",
+        "input_profile_id",
+        "scenario_id",
+        "scenario_kind",
+        "pair_id",
+        "pressure_framing",
+        "status",
+        "passed_invocations",
+        "required_passes",
+        "invocations"
+      ],
+      "properties": {
+        "case_id": {"type": "string", "minLength": 1},
+        "input_profile_id": {
+          "enum": [
+            "task_free_pre_write",
+            "task_free_evolution",
+            "requirements_scope_set",
+            "change_request_candidate_set",
+            "planning_scenario_set",
+            "implementation_discovery",
+            "base_impact_candidate_set",
+            "phase2_candidate_set",
+            "branch_review_candidate_set",
+            "publication_candidate_set"
+          ]
+        },
+        "scenario_id": {"type": "string", "minLength": 1},
+        "scenario_kind": {"enum": ["rejected", "legitimate"]},
+        "pair_id": {"type": "string", "minLength": 1},
+        "pressure_framing": {
+          "enum": [
+            "neutral",
+            "attack_security",
+            "severity",
+            "independent_reviewer",
+            "already_implemented",
+            "already_tested",
+            "best_practice",
+            "theoretical_bypass"
+          ]
+        },
+        "status": {"enum": ["passed", "incomplete", "evaluation_failed", "execution_error", "unsupported"]},
+        "passed_invocations": {"type": "integer", "minimum": 0, "maximum": 5},
+        "required_passes": {"const": 5},
+        "invocations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 5,
+          "items": {"$ref": "#/$defs/invocation"}
+        }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "passed"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "attempted_invocations": {"const": 800},
+          "completed_invocations": {"const": 800},
+          "completeness_passed": {"const": true},
+          "execution_order": {"minItems": 800, "maxItems": 800},
+          "cases": {
+            "minItems": 160,
+            "maxItems": 160,
+            "items": {
+              "properties": {
+                "status": {"const": "passed"},
+                "passed_invocations": {"const": 5},
+                "invocations": {"minItems": 5, "maxItems": 5}
+              },
+              "required": ["status", "passed_invocations", "invocations"]
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {"completeness_passed": {"const": false}}
+      }
+    }
+  ],
+  "required": [
+    "schema_version",
+    "skill_id",
+    "interface_schema_id",
+    "corpus_schema_id",
+    "corpus_version",
+    "run_id",
+    "started_at",
+    "completed_at",
+    "monotonic_started_ns",
+    "monotonic_completed_ns",
+    "identity_start",
+    "identity_end",
+    "freshness_passed",
+    "timestamp_validation_passed",
+    "control_map",
+    "model_id",
+    "fresh_invocations_per_case",
+    "required_passes_per_case",
+    "adapter",
+    "platform",
+    "status",
+    "expected_invocations",
+    "attempted_invocations",
+    "completed_invocations",
+    "completeness_passed",
+    "execution_order",
+    "cases",
+    "evidence_path"
+  ],
+  "properties": {
+    "schema_version": {"const": "4.0"},
+    "skill_id": {"const": "guru-qualify-normal-scenario"},
+    "interface_schema_id": {
+      "enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6"]
+    },
+    "corpus_schema_id": {"const": "guru-team-skill-evals-2.0"},
+    "corpus_version": {"const": "2.0"},
+    "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "started_at": {"$ref": "#/$defs/timestamp"},
+    "completed_at": {"$ref": "#/$defs/timestamp"},
+    "monotonic_started_ns": {"type": "integer", "minimum": 0},
+    "monotonic_completed_ns": {"type": "integer", "minimum": 0},
+    "identity_start": {"$ref": "#/$defs/identity"},
+    "identity_end": {"$ref": "#/$defs/identity"},
+    "freshness_passed": {"type": "boolean"},
+    "timestamp_validation_passed": {"const": true},
+    "control_map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_id",
+        "path",
+        "sha256",
+        "control_root_mode",
+        "file_mode",
+        "entry_count",
+        "hmac_algorithm",
+        "opaque_id_format",
+        "run_nonce_sha256",
+        "matrix_sha256",
+        "entries_sha256"
+      ],
+      "properties": {
+        "schema_id": {"const": "guru-team-skill-eval-control-map-1.0"},
+        "path": {"type": "string", "pattern": "/control/case-map\\.json$"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "control_root_mode": {"const": "0700"},
+        "file_mode": {"const": "0600"},
+        "entry_count": {"const": 800},
+        "hmac_algorithm": {"const": "HMAC-SHA-256"},
+        "opaque_id_format": {"const": "i-base32-hmac-sha256-26"},
+        "run_nonce_sha256": {"$ref": "#/$defs/sha256"},
+        "matrix_sha256": {"$ref": "#/$defs/sha256"},
+        "entries_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "model_id": {"const": "gpt-5.6-sol"},
+    "fresh_invocations_per_case": {"const": 5},
+    "required_passes_per_case": {"const": 5},
+    "adapter": {"const": "codex"},
+    "platform": {"const": "codex"},
+    "status": {"enum": ["passed", "evaluation_failed", "execution_error", "unsupported"]},
+    "expected_invocations": {"const": 800},
+    "attempted_invocations": {"type": "integer", "minimum": 1, "maximum": 800},
+    "completed_invocations": {"type": "integer", "minimum": 1, "maximum": 800},
+    "completeness_passed": {"type": "boolean"},
+    "execution_order": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 800,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^i-[a-z2-7]{26}$"}
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 160,
+      "items": {"$ref": "#/$defs/case"}
+    },
+    "evidence_path": {"type": "string", "minLength": 1}
+  }
+}

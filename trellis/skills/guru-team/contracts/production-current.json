@@ -1,16 +1,54 @@
 {
-  "$schema": "../schemas/production-contract-manifest.schema.json",
-  "schema_id": "guru-team-production-contract-manifest-1.0",
-  "schema_version": "1.0",
-  "contract_id": "production-current-v1",
-  "interface_schema_id": "guru-team-skill-interface-1.3",
-  "registry_schema_id": "guru-team-skill-registry-1.2",
-  "eval_schema_id": "guru-team-skill-evals-1.0",
+  "$schema": "../schemas/production-contract-manifest-4.0.schema.json",
+  "schema_id": "guru-team-production-contract-manifest-4.0",
+  "schema_version": "4.0",
+  "contract_id": "production-current-v4",
+  "registry_schema_id": "guru-team-skill-registry-1.4",
   "activation_policy": "preset_transaction",
+  "production_eval_control": {
+    "adapter_request_schema_id": "guru-team-skill-eval-adapter-request-3.0",
+    "adapter_response_schema_id": "guru-team-skill-eval-adapter-response-3.0",
+    "run_schema_id": "guru-team-skill-eval-run-4.0",
+    "control_map_schema_id": "guru-team-skill-eval-control-map-1.0",
+    "model_id": "gpt-5.6-sol",
+    "case_count": 160,
+    "invocations_per_case": 5,
+    "total_invocations": 800,
+    "opaque_mapping_algorithm": "i-base32-HMAC-SHA-256-26",
+    "opaque_mapping_message": "matrix_sha256+NUL+case_id+NUL+decimal_slot",
+    "opaque_order_algorithm": "independent-HMAC-SHA-256-sort-key",
+    "control_map_path": "control/case-map.json",
+    "control_root_file_mode": "0700",
+    "control_map_file_mode": "0600",
+    "invocation_order": "randomized",
+    "grading_owner": "host_runner",
+    "identity_validation": "fresh-live-issue-origin-main-and-required-identities-at-run-start-and-end",
+    "timestamp_validation": "utc-schema-monotonic-nonfuture-observation-cross-midnight-allowed",
+    "forbidden_request_fields": [
+      "case_id",
+      "slot",
+      "input_profile_id",
+      "profile_id",
+      "pair_id",
+      "scenario_id",
+      "scenario_kind",
+      "pressure_framing",
+      "expected_exit",
+      "expected_decisions",
+      "invocation_index",
+      "fresh_invocations_per_case",
+      "corpus_path",
+      "corpus_sha256",
+      "matrix_sha256",
+      "control_map_path",
+      "hmac_key"
+    ]
+  },
   "skill_ids": [
     "guru-approve-task-plan",
     "guru-check-task",
-    "guru-create-task-commit"
+    "guru-create-task-commit",
+    "guru-qualify-normal-scenario"
   ],
   "authoring_seed_edges": [
     {
@@ -54,11 +92,31 @@
     {
       "id": "guru-approve-task-plan",
       "input_kind": "structured_json",
-      "input_profile_ids": ["initial_review", "revision_reentry", "clarification_reentry"],
+      "input_profile_ids": [
+        "initial_review",
+        "revision_reentry",
+        "clarification_reentry"
+      ],
       "profile_case_bindings": [
-        {"profile_id": "initial_review", "eval_case_ids": ["approved-initial", "blocked-initial"]},
-        {"profile_id": "revision_reentry", "eval_case_ids": ["revision-required"]},
-        {"profile_id": "clarification_reentry", "eval_case_ids": ["clarify-scope"]}
+        {
+          "profile_id": "initial_review",
+          "eval_case_ids": [
+            "approved-initial",
+            "blocked-initial"
+          ]
+        },
+        {
+          "profile_id": "revision_reentry",
+          "eval_case_ids": [
+            "revision-required"
+          ]
+        },
+        {
+          "profile_id": "clarification_reentry",
+          "eval_case_ids": [
+            "clarify-scope"
+          ]
+        }
       ],
       "exit_bindings": [
         {
@@ -67,7 +125,9 @@
           "output_example_id": "approved_output",
           "consumer_input_id": "approved_workflow_input",
           "projection_id": "project_approved",
-          "eval_case_ids": ["approved-initial"]
+          "eval_case_ids": [
+            "approved-initial"
+          ]
         },
         {
           "exit_id": "revision_required",
@@ -75,7 +135,9 @@
           "output_example_id": "revision_required_output",
           "consumer_input_id": "revision_reentry_seed_input",
           "projection_id": "project_revision_required",
-          "eval_case_ids": ["revision-required"]
+          "eval_case_ids": [
+            "revision-required"
+          ]
         },
         {
           "exit_id": "clarify_scope",
@@ -83,7 +145,9 @@
           "output_example_id": "clarify_scope_output",
           "consumer_input_id": "clarify_scope_workflow_input",
           "projection_id": "project_clarify_scope",
-          "eval_case_ids": ["clarify-scope"]
+          "eval_case_ids": [
+            "clarify-scope"
+          ]
         },
         {
           "exit_id": "blocked",
@@ -91,20 +155,48 @@
           "output_example_id": "blocked_output",
           "consumer_input_id": "blocked_stop_input",
           "projection_id": "project_blocked",
-          "eval_case_ids": ["blocked-initial"]
+          "eval_case_ids": [
+            "blocked-initial"
+          ]
         }
       ],
-      "private_artifact_ids": ["planning_approval"],
-      "eval_case_ids": ["approved-initial", "revision-required", "clarify-scope", "blocked-initial"]
+      "private_artifact_ids": [
+        "planning_approval"
+      ],
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "eval_schema_id": "guru-team-skill-evals-1.0",
+      "eval_case_selector": {
+        "expected_case_count": 4
+      }
     },
     {
       "id": "guru-check-task",
       "input_kind": "structured_json",
-      "input_profile_ids": ["initial_check", "finding_fix_rerun", "planning_reentry"],
+      "input_profile_ids": [
+        "initial_check",
+        "finding_fix_rerun",
+        "planning_reentry"
+      ],
       "profile_case_bindings": [
-        {"profile_id": "initial_check", "eval_case_ids": ["passed-initial", "blocked-initial"]},
-        {"profile_id": "finding_fix_rerun", "eval_case_ids": ["implementation-required"]},
-        {"profile_id": "planning_reentry", "eval_case_ids": ["planning-stale"]}
+        {
+          "profile_id": "initial_check",
+          "eval_case_ids": [
+            "passed-initial",
+            "blocked-initial"
+          ]
+        },
+        {
+          "profile_id": "finding_fix_rerun",
+          "eval_case_ids": [
+            "implementation-required"
+          ]
+        },
+        {
+          "profile_id": "planning_reentry",
+          "eval_case_ids": [
+            "planning-stale"
+          ]
+        }
       ],
       "exit_bindings": [
         {
@@ -113,7 +205,9 @@
           "output_example_id": "passed_output",
           "consumer_input_id": "initial_commit_seed_input",
           "projection_id": "project_passed",
-          "eval_case_ids": ["passed-initial"]
+          "eval_case_ids": [
+            "passed-initial"
+          ]
         },
         {
           "exit_id": "implementation_required",
@@ -121,7 +215,9 @@
           "output_example_id": "implementation_required_output",
           "consumer_input_id": "implementation_required_workflow_input",
           "projection_id": "project_implementation_required",
-          "eval_case_ids": ["implementation-required"]
+          "eval_case_ids": [
+            "implementation-required"
+          ]
         },
         {
           "exit_id": "planning_stale",
@@ -129,7 +225,9 @@
           "output_example_id": "planning_stale_output",
           "consumer_input_id": "planning_stale_workflow_input",
           "projection_id": "project_planning_stale",
-          "eval_case_ids": ["planning-stale"]
+          "eval_case_ids": [
+            "planning-stale"
+          ]
         },
         {
           "exit_id": "blocked",
@@ -137,21 +235,54 @@
           "output_example_id": "blocked_output",
           "consumer_input_id": "blocked_stop_input",
           "projection_id": "project_blocked",
-          "eval_case_ids": ["blocked-initial"]
+          "eval_case_ids": [
+            "blocked-initial"
+          ]
         }
       ],
-      "private_artifact_ids": ["phase2_check"],
-      "eval_case_ids": ["passed-initial", "implementation-required", "planning-stale", "blocked-initial"]
+      "private_artifact_ids": [
+        "phase2_check"
+      ],
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "eval_schema_id": "guru-team-skill-evals-1.0",
+      "eval_case_selector": {
+        "expected_case_count": 4
+      }
     },
     {
       "id": "guru-create-task-commit",
       "input_kind": "structured_json",
-      "input_profile_ids": ["initial_commit", "revision_reentry", "finding_fix_commit", "recovery_resume"],
+      "input_profile_ids": [
+        "initial_commit",
+        "revision_reentry",
+        "finding_fix_commit",
+        "recovery_resume"
+      ],
       "profile_case_bindings": [
-        {"profile_id": "initial_commit", "eval_case_ids": ["committed-initial"]},
-        {"profile_id": "revision_reentry", "eval_case_ids": ["revision-required"]},
-        {"profile_id": "finding_fix_commit", "eval_case_ids": ["committed-finding-fix"]},
-        {"profile_id": "recovery_resume", "eval_case_ids": ["blocked-recovery"]}
+        {
+          "profile_id": "initial_commit",
+          "eval_case_ids": [
+            "committed-initial"
+          ]
+        },
+        {
+          "profile_id": "revision_reentry",
+          "eval_case_ids": [
+            "revision-required"
+          ]
+        },
+        {
+          "profile_id": "finding_fix_commit",
+          "eval_case_ids": [
+            "committed-finding-fix"
+          ]
+        },
+        {
+          "profile_id": "recovery_resume",
+          "eval_case_ids": [
+            "blocked-recovery"
+          ]
+        }
       ],
       "exit_bindings": [
         {
@@ -160,7 +291,10 @@
           "output_example_id": "committed_output",
           "consumer_input_id": "branch_review_seed_input",
           "projection_id": "project_committed",
-          "eval_case_ids": ["committed-initial", "committed-finding-fix"]
+          "eval_case_ids": [
+            "committed-initial",
+            "committed-finding-fix"
+          ]
         },
         {
           "exit_id": "revision-required",
@@ -168,7 +302,9 @@
           "output_example_id": "revision_required_output",
           "consumer_input_id": "revision_reentry_seed_input",
           "projection_id": "project_revision_required",
-          "eval_case_ids": ["revision-required"]
+          "eval_case_ids": [
+            "revision-required"
+          ]
         },
         {
           "exit_id": "blocked",
@@ -176,11 +312,316 @@
           "output_example_id": "blocked_output",
           "consumer_input_id": "blocked_stop_input",
           "projection_id": "project_blocked",
-          "eval_case_ids": ["blocked-recovery"]
+          "eval_case_ids": [
+            "blocked-recovery"
+          ]
         }
       ],
-      "private_artifact_ids": ["task_commit_candidate"],
-      "eval_case_ids": ["committed-initial", "revision-required", "committed-finding-fix", "blocked-recovery"]
+      "private_artifact_ids": [
+        "task_commit_candidate"
+      ],
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "eval_schema_id": "guru-team-skill-evals-1.0",
+      "eval_case_selector": {
+        "expected_case_count": 4
+      }
+    },
+    {
+      "id": "guru-qualify-normal-scenario",
+      "interface_schema_id": "guru-team-skill-interface-1.6",
+      "eval_schema_id": "guru-team-skill-evals-2.0",
+      "input_kind": "structured_json",
+      "input_profile_ids": [
+        "task_free_pre_write",
+        "task_free_evolution",
+        "requirements_scope_set",
+        "change_request_candidate_set",
+        "planning_scenario_set",
+        "implementation_discovery",
+        "base_impact_candidate_set",
+        "phase2_candidate_set",
+        "branch_review_candidate_set",
+        "publication_candidate_set"
+      ],
+      "profile_case_bindings": [
+        {
+          "profile_id": "task_free_pre_write",
+          "eval_case_selector": {
+            "input_profile_id": "task_free_pre_write",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "task_free_evolution",
+          "eval_case_selector": {
+            "input_profile_id": "task_free_evolution",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "requirements_scope_set",
+          "eval_case_selector": {
+            "input_profile_id": "requirements_scope_set",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "change_request_candidate_set",
+          "eval_case_selector": {
+            "input_profile_id": "change_request_candidate_set",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "planning_scenario_set",
+          "eval_case_selector": {
+            "input_profile_id": "planning_scenario_set",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "implementation_discovery",
+          "eval_case_selector": {
+            "input_profile_id": "implementation_discovery",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "base_impact_candidate_set",
+          "eval_case_selector": {
+            "input_profile_id": "base_impact_candidate_set",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "phase2_candidate_set",
+          "eval_case_selector": {
+            "input_profile_id": "phase2_candidate_set",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "branch_review_candidate_set",
+          "eval_case_selector": {
+            "input_profile_id": "branch_review_candidate_set",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        },
+        {
+          "profile_id": "publication_candidate_set",
+          "eval_case_selector": {
+            "input_profile_id": "publication_candidate_set",
+            "scenario_kinds": [
+              "rejected",
+              "legitimate"
+            ],
+            "pressure_framings": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ],
+            "expected_case_count": 16
+          }
+        }
+      ],
+      "exit_bindings": [
+        {
+          "exit_id": "classified",
+          "output_schema_id": "guru-normal-scenario-output-classified-1.0",
+          "output_example_id": "classified_output",
+          "consumer_input_id": "classified_router_input",
+          "projection_id": "project_classified",
+          "eval_case_selector": {
+            "expected_exit": "classified",
+            "expected_case_count": 160
+          }
+        },
+        {
+          "exit_id": "scope_confirmation_required",
+          "output_schema_id": "guru-normal-scenario-output-scope-confirmation-required-1.0",
+          "output_example_id": "scope_confirmation_required_output",
+          "consumer_input_id": "scope_confirmation_requirements_input",
+          "projection_id": "project_scope_confirmation_required",
+          "eval_case_selector": {
+            "expected_exit": "scope_confirmation_required",
+            "expected_case_count": 0
+          }
+        },
+        {
+          "exit_id": "mechanism_revision_required",
+          "output_schema_id": "guru-normal-scenario-output-mechanism-revision-required-1.0",
+          "output_example_id": "mechanism_revision_required_output",
+          "consumer_input_id": "mechanism_router_input",
+          "projection_id": "project_mechanism_revision_required",
+          "eval_case_selector": {
+            "expected_exit": "mechanism_revision_required",
+            "expected_case_count": 0
+          }
+        },
+        {
+          "exit_id": "blocked",
+          "output_schema_id": "guru-normal-scenario-output-blocked-1.0",
+          "output_example_id": "blocked_output",
+          "consumer_input_id": "blocked_stop_input",
+          "projection_id": "project_blocked",
+          "eval_case_selector": {
+            "expected_exit": "blocked",
+            "expected_case_count": 0
+          }
+        }
+      ],
+      "private_artifact_ids": [],
+      "eval_case_selector": {
+        "scenario_kinds": [
+          "rejected",
+          "legitimate"
+        ],
+        "expected_case_count": 160
+      },
+      "production_gate": {
+        "model_id": "gpt-5.6-sol",
+        "fresh_invocations_per_case": 5,
+        "required_passes_per_case": 5
+      }
     }
+  ],
+  "interface_schema_ids": [
+    "guru-team-skill-interface-1.4",
+    "guru-team-skill-interface-1.6"
+  ],
+  "eval_schema_ids": [
+    "guru-team-skill-evals-1.0",
+    "guru-team-skill-evals-2.0"
   ]
 }

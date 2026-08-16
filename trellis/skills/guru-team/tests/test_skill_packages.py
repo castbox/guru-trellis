@@ -49,8 +49,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "--root", str(REPO), "--mode", "source", "--json",
         )
         self.assertEqual(payload["status"], "passed")
-        self.assertEqual(payload["active_packages"], 17)
-        self.assertEqual(payload["complete_package_commands"], 17)
+        self.assertEqual(payload["active_packages"], 18)
+        self.assertEqual(payload["complete_package_commands"], 18)
         self.assertGreater(payload["commands"], 0)
 
     def test_source_validator_rejects_duplicate_command_owner(self) -> None:
@@ -111,7 +111,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 cwd=target,
             )
             self.assertEqual(installed["status"], "passed")
-            self.assertEqual(len(installed["facts"]["active_ids"]), 17)
+            self.assertEqual(len(installed["facts"]["active_ids"]), 18)
             source_commands = sum(
                 len(json.loads(path.read_text(encoding="utf-8"))["commands"])
                 for path in (SKILLS / "packages").glob("guru-*/commands.json")
@@ -121,6 +121,149 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             for projection in (target / ".agents/skills", target / ".codex/skills", target / ".cursor/skills"):
                 for path in projection.rglob("*"):
                     self.assertNotIn(path.name, {"runtime", "tests", "errors"})
+
+    def test_production_eval_contract_registration_survives_installation(self) -> None:
+        canonical_manifest = json.loads(
+            (REPO / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+        )
+        public_api = canonical_manifest["public_api"]
+        self.assertEqual(
+            public_api["skill_contracts"]["contract_manifests"],
+            [
+                {
+                    "id": "production-current-v4",
+                    "schema_id": "guru-team-production-contract-manifest-4.0",
+                    "path": "contracts/production-current-4.0.json",
+                }
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["adapter_request_schema_ids"][-1],
+            "guru-team-skill-eval-adapter-request-3.0",
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["adapter_response_schema_ids"][-1],
+            "guru-team-skill-eval-adapter-response-3.0",
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["run_schema_ids"][-1],
+            "guru-team-skill-eval-run-4.0",
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["control_map_schema_id"],
+            "guru-team-skill-eval-control-map-1.0",
+        )
+        schema_ids = {
+            "schemas/skill-interface-1.6.schema.json": (
+                "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.6.json"
+            ),
+            "schemas/skill-eval-adapter-request-3.0.schema.json": (
+                "guru-team-skill-eval-adapter-request-3.0"
+            ),
+            "schemas/skill-eval-adapter-response-3.0.schema.json": (
+                "guru-team-skill-eval-adapter-response-3.0"
+            ),
+            "schemas/skill-eval-run-4.0.schema.json": "guru-team-skill-eval-run-4.0",
+            "schemas/skill-eval-control-map-1.0.schema.json": (
+                "guru-team-skill-eval-control-map-1.0"
+            ),
+            "schemas/production-contract-manifest-4.0.schema.json": (
+                "guru-team-production-contract-manifest-4.0"
+            ),
+        }
+        for relative, schema_id in schema_ids.items():
+            schema = json.loads((SKILLS / relative).read_text(encoding="utf-8"))
+            self.assertEqual(schema["$id"], schema_id)
+        production_contract = json.loads(
+            (SKILLS / "contracts/production-current-4.0.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(production_contract["contract_id"], "production-current-v4")
+        self.assertEqual(
+            production_contract["production_eval_control"],
+            {
+                "adapter_request_schema_id": "guru-team-skill-eval-adapter-request-3.0",
+                "adapter_response_schema_id": "guru-team-skill-eval-adapter-response-3.0",
+                "run_schema_id": "guru-team-skill-eval-run-4.0",
+                "control_map_schema_id": "guru-team-skill-eval-control-map-1.0",
+                "model_id": "gpt-5.6-sol",
+                "case_count": 160,
+                "invocations_per_case": 5,
+                "total_invocations": 800,
+                "opaque_mapping_algorithm": "i-base32-HMAC-SHA-256-26",
+                "opaque_mapping_message": "matrix_sha256+NUL+case_id+NUL+decimal_slot",
+                "opaque_order_algorithm": "independent-HMAC-SHA-256-sort-key",
+                "control_map_path": "control/case-map.json",
+                "control_root_file_mode": "0700",
+                "control_map_file_mode": "0600",
+                "invocation_order": "randomized",
+                "grading_owner": "host_runner",
+                "identity_validation": "fresh-live-issue-origin-main-and-required-identities-at-run-start-and-end",
+                "timestamp_validation": "utc-schema-monotonic-nonfuture-observation-cross-midnight-allowed",
+                "forbidden_request_fields": [
+                    "case_id",
+                    "slot",
+                    "input_profile_id",
+                    "profile_id",
+                    "pair_id",
+                    "scenario_id",
+                    "scenario_kind",
+                    "pressure_framing",
+                    "expected_exit",
+                    "expected_decisions",
+                    "invocation_index",
+                    "fresh_invocations_per_case",
+                    "corpus_path",
+                    "corpus_sha256",
+                    "matrix_sha256",
+                    "control_map_path",
+                    "hmac_key",
+                ],
+            },
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "repo"
+            (target / ".trellis").mkdir(parents=True)
+            (target / ".trellis/workflow.md").write_bytes(
+                (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
+            )
+            preset.install_assets(
+                REPO / "trellis/workflows/guru-team",
+                target / ".trellis/guru-team",
+                target,
+                {"codex", "cursor", "claude"},
+            )
+            installed_root = target / ".trellis/guru-team/skills"
+            for relative in (
+                "schemas/skill-eval-adapter-request-3.0.schema.json",
+                "schemas/skill-eval-adapter-response-3.0.schema.json",
+                "schemas/skill-eval-run-4.0.schema.json",
+                "schemas/skill-eval-control-map-1.0.schema.json",
+                "schemas/production-contract-manifest-4.0.schema.json",
+                "contracts/production-current-4.0.json",
+                "contracts/production-current.json",
+                "contracts/production-current-3.0.json",
+                "contracts/production-current-2.0.json",
+            ):
+                self.assertTrue((installed_root / relative).is_file(), relative)
+            for relative, schema_id in schema_ids.items():
+                installed_schema = json.loads(
+                    (installed_root / relative).read_text(encoding="utf-8")
+                )
+                self.assertEqual(installed_schema["$id"], schema_id)
+            self.assertEqual(
+                (installed_root / "contracts/production-current.json").read_bytes(),
+                (installed_root / "contracts/production-current-4.0.json").read_bytes(),
+            )
+            self.assertEqual(
+                (installed_root / "contracts/production-current-4.0.json").read_bytes(),
+                (SKILLS / "contracts/production-current-4.0.json").read_bytes(),
+            )
+            for legacy in ("production-current-2.0.json", "production-current-3.0.json"):
+                self.assertEqual(
+                    (installed_root / "contracts" / legacy).read_bytes(),
+                    (SKILLS / "contracts" / legacy).read_bytes(),
+                )
 
     def test_installed_validator_rebuilds_global_command_ownership(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

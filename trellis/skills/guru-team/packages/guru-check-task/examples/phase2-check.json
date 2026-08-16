@@ -1,5 +1,5 @@
 {
-  "schema_version": "4.0",
+  "schema_version": "5.0",
   "skill_id": "guru-check-task",
   "mode": "workflow",
   "task_ref": ".trellis/tasks/example-task",
@@ -19,6 +19,21 @@
     "durable_paths": ["docs/requirements/example.md"],
     "summary": "The durable requirement SSOT reflects the implementation."
   },
+  "candidate_classifications": [
+    {
+      "candidate_ref": "candidate:phase2:no-defect",
+      "decision": "rejected_not_reproduced",
+      "witness": {
+        "requirement_refs": ["prd:R1"],
+        "supported_entry_refs": ["entry:phase2-check"],
+        "existing_caller_refs": ["caller:guru-check-task"],
+        "honest_action_sequence": ["run the supported Phase 2 validation path"],
+        "defect_observation": "Current evidence does not reproduce a required-behavior defect.",
+        "excluded_assumptions": []
+      },
+      "consumer_use": "task_commit_preflight"
+    }
+  ],
   "semantic_review": {
     "status": "passed",
     "summary": "The complete current task scope passed Phase 2 semantic review.",

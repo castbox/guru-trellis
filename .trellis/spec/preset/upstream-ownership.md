@@ -107,7 +107,9 @@ closed before target mutation.
 
 For a current installation:
 
-1. run official `trellis update` or the selected Trellis version update;
+1. run the selected Trellis version update, then `trellis update --dry-run` and
+   exactly one preserve-mode live update: `trellis update --migrate --skip-all`
+   when migration is required or `trellis update --skip-all` otherwise;
 2. reselect the `guru-team` marketplace workflow;
 3. reapply the current Guru preset;
 4. resolve current managed-asset `.new`/`.bak` conflicts;

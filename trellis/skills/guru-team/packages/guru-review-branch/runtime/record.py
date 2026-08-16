@@ -154,7 +154,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         }
     )
     value = {
-        "schema_version": "4.0",
+        "schema_version": "5.0",
         "skill_id": "guru-review-branch",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "task_dir": task_ref,
@@ -167,6 +167,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         "base_ref": base_ref,
         "base_head": base_head,
         "integration_pair": pair,
+        "candidate_classifications": copy.deepcopy(auth.get("candidate_classifications")),
         "semantic_review": semantic,
         "verification_evidence": auth.get("verification_evidence"),
     }
