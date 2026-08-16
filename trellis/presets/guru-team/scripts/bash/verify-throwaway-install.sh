@@ -1319,15 +1319,15 @@ assert len(api["skill_contracts"]["legacy_typed_output_schema_ids"]) == 5
 assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 18
 assert api["skill_contracts"]["contract_manifests"] == [
     {
-        "id": "production-current-v3",
-        "schema_id": "guru-team-production-contract-manifest-3.0",
-        "path": "contracts/production-current-3.0.json",
+        "id": "production-current-v4",
+        "schema_id": "guru-team-production-contract-manifest-4.0",
+        "path": "contracts/production-current-4.0.json",
     },
 ]
 assert api["skill_evals"]["schema_id"] == "guru-team-skill-evals-1.0"
 assert api["skill_evals"]["schema_ids"] == ["guru-team-skill-evals-1.0", "guru-team-skill-evals-2.0"]
 assert api["skill_evals"]["production_schema_id"] == "guru-team-skill-evals-2.0"
-assert api["skill_evals"]["run_schema_ids"] == ["guru-team-skill-eval-run-1.0", "guru-team-skill-eval-run-2.0", "guru-team-skill-eval-run-3.0"]
+assert api["skill_evals"]["run_schema_ids"] == ["guru-team-skill-eval-run-1.0", "guru-team-skill-eval-run-2.0", "guru-team-skill-eval-run-3.0", "guru-team-skill-eval-run-4.0"]
 assert api["skill_evals"]["adapter_ids"] == ["shared", "codex", "claude", "cursor"]
 assert api["skill_runtime"] == {
     "api_version": "1.0",
@@ -1367,6 +1367,7 @@ test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-eval-run-3.0.schema.jso
 test -f "$TARGET/.trellis/guru-team/skills/contracts/production-current.json"
 test -f "$TARGET/.trellis/guru-team/skills/contracts/production-current-2.0.json"
 test -f "$TARGET/.trellis/guru-team/skills/contracts/production-current-3.0.json"
+test -f "$TARGET/.trellis/guru-team/skills/contracts/production-current-4.0.json"
 test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-eval-adapter-response.schema.json"
 test -f "$TARGET/.trellis/guru-team/skills/schemas/skill-eval-run.schema.json"
 test -f "$TARGET/.trellis/guru-team/skills/adapters/eval/shared.json"

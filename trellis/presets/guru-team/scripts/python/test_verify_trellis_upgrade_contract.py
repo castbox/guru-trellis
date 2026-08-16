@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import unittest
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[5]
 VERIFIER = REPO / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
 SCHEMAS = REPO / "trellis/skills/guru-team/schemas"
+EXTENSION = REPO / "trellis/guru-team-extension.json"
 
 
 class VerifyTrellisUpgradeContractTests(unittest.TestCase):
@@ -77,6 +79,36 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         canonical_inventory = {path.name for path in SCHEMAS.iterdir() if path.is_file()}
 
         self.assertEqual(embedded_inventory, canonical_inventory)
+
+    def test_embedded_installed_public_api_expectations_match_canonical_source(self) -> None:
+        contract_anchor = 'assert api["skill_contracts"]["contract_manifests"] == '
+        contract_start = self.text.index(contract_anchor) + len(contract_anchor)
+        contract_end = self.text.index(
+            '\nassert api["skill_evals"]["schema_id"]',
+            contract_start,
+        )
+        embedded_contracts = ast.literal_eval(self.text[contract_start:contract_end])
+
+        run_schemas_anchor = 'assert api["skill_evals"]["run_schema_ids"] == '
+        run_schemas_start = self.text.index(run_schemas_anchor) + len(run_schemas_anchor)
+        run_schemas_end = self.text.index("\n", run_schemas_start)
+        embedded_run_schemas = ast.literal_eval(
+            self.text[run_schemas_start:run_schemas_end]
+        )
+
+        public_api = json.loads(EXTENSION.read_text(encoding="utf-8"))["public_api"]
+        self.assertEqual(
+            embedded_contracts,
+            public_api["skill_contracts"]["contract_manifests"],
+        )
+        self.assertEqual(
+            embedded_run_schemas,
+            public_api["skill_evals"]["run_schema_ids"],
+        )
+        self.assertIn(
+            'test -f "$TARGET/.trellis/guru-team/skills/contracts/production-current-4.0.json"',
+            self.text,
+        )
 
 
 if __name__ == "__main__":
