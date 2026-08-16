@@ -48,8 +48,8 @@ def _active_rows(registry: dict[str, Any]) -> list[dict[str, Any]]:
     if not isinstance(rows, list):
         raise CommandError("schema_mismatch", "registry.skills", "Restore the current Skill registry.")
     active = [row for row in rows if isinstance(row, dict) and row.get("state") == "active"]
-    if len(active) != 17 or len({row.get("id") for row in active}) != 17:
-        raise CommandError("owner_mismatch", "registry.skills", "Restore exactly seventeen uniquely identified active packages.")
+    if len(active) != 18 or len({row.get("id") for row in active}) != 18:
+        raise CommandError("owner_mismatch", "registry.skills", "Restore exactly eighteen uniquely identified active packages.")
     return active
 
 
@@ -60,6 +60,141 @@ def _package_paths(root: Path, mode: str) -> tuple[Path, Path, Path, Path]:
     extension = root / ".trellis/guru-team"
     skills = extension / "skills"
     return skills, skills / "registry.json", skills / "packages", extension / "runtime"
+
+
+def validate_interface_contract(
+    skills: Path,
+    package: Path,
+    row: dict[str, Any],
+    interface: dict[str, Any],
+) -> None:
+    interface_schema_id = row.get("interface_schema_id")
+    prefix = "guru-team-skill-interface-"
+    if not isinstance(interface_schema_id, str) or not interface_schema_id.startswith(prefix):
+        raise CommandError(
+            "version_state_mismatch",
+            f"{row.get('id', 'unknown')}.interface_schema_id",
+            "Bind every active package to one published Interface schema id.",
+        )
+    version = interface_schema_id.removeprefix(prefix)
+    expected_ref = f"../../schemas/skill-interface-{version}.schema.json"
+    if (
+        interface.get("$schema") != expected_ref
+        or interface.get("schema_version") != version
+        or interface.get("id") != row.get("id")
+    ):
+        raise CommandError(
+            "version_state_mismatch",
+            f"{row.get('id', 'unknown')}.interface",
+            "Keep registry schema id, Interface schema reference, version and package id identical.",
+        )
+    schema_path = skills / f"schemas/skill-interface-{version}.schema.json"
+    validate_json(interface, schema_path, f"{row['id']}.interface")
+
+    public_contracts = interface.get("public_contracts")
+    invocation = public_contracts.get("invocation") if isinstance(public_contracts, dict) else None
+    input_contract = public_contracts.get("input") if isinstance(public_contracts, dict) else None
+    binding = invocation.get("input_binding") if isinstance(invocation, dict) else None
+    selector = binding.get("profile_selector") if isinstance(binding, dict) else None
+    if not isinstance(selector, dict):
+        return
+    if not isinstance(input_contract, dict) or input_contract.get("kind") != "structured_json":
+        raise CommandError(
+            "profile_binding_mismatch",
+            f"{row['id']}.public_contracts.input",
+            "Use aggregate public-input profile selection only with a structured input contract.",
+        )
+    selector_field = selector.get("field")
+    profiles = input_contract.get("profiles")
+    if not isinstance(selector_field, str) or not isinstance(profiles, list) or not profiles:
+        raise CommandError(
+            "profile_binding_mismatch",
+            f"{row['id']}.public_contracts.invocation.input_binding.profile_selector",
+            "Declare one selector field and at least one closed structured input profile.",
+        )
+    profile_ids = [profile.get("id") for profile in profiles if isinstance(profile, dict)]
+    discriminators = [profile.get("discriminator") for profile in profiles if isinstance(profile, dict)]
+    discriminator_fields = [item.get("field") for item in discriminators if isinstance(item, dict)]
+    discriminator_values = [item.get("value") for item in discriminators if isinstance(item, dict)]
+    if (
+        len(profile_ids) != len(profiles)
+        or len(discriminator_fields) != len(profiles)
+        or len(discriminator_values) != len(profiles)
+        or len(set(profile_ids)) != len(profiles)
+        or len(set(discriminator_values)) != len(profiles)
+        or set(discriminator_fields) != {selector_field}
+        or profile_ids != discriminator_values
+    ):
+        raise CommandError(
+            "profile_binding_mismatch",
+            f"{row['id']}.public_contracts.input.profiles",
+            "Keep profile ids and unique discriminator values identical under the declared selector field.",
+        )
+    aggregate_ref = input_contract.get("aggregate_schema")
+    if not isinstance(aggregate_ref, dict) or not isinstance(aggregate_ref.get("path"), str):
+        raise CommandError(
+            "profile_binding_mismatch",
+            f"{row['id']}.public_contracts.input.aggregate_schema",
+            "Declare the aggregate public-input schema used by selector binding.",
+        )
+    aggregate_schema = read_json_file(
+        package / aggregate_ref["path"], f"{row['id']}.aggregate_schema"
+    )
+    profile_schemas: list[dict[str, Any]] = []
+    profile_examples: list[dict[str, Any]] = []
+    expected_refs: list[dict[str, str]] = []
+    for profile in profiles:
+        profile_schema_ref = profile.get("schema")
+        example_ref = profile.get("example")
+        if (
+            not isinstance(profile_schema_ref, dict)
+            or not isinstance(profile_schema_ref.get("path"), str)
+            or not isinstance(example_ref, dict)
+            or not isinstance(example_ref.get("path"), str)
+        ):
+            raise CommandError(
+                "profile_binding_mismatch",
+                f"{row['id']}.public_contracts.input.profiles",
+                "Bind every selected profile to one closed schema and one public example.",
+            )
+        profile_schema_path = package / profile_schema_ref["path"]
+        profile_schema = read_json_file(profile_schema_path, f"{row['id']}.{profile['id']}.schema")
+        field_contract = profile_schema.get("properties", {}).get(selector_field)
+        if not isinstance(field_contract, dict) or field_contract.get("const") != profile["id"]:
+            raise CommandError(
+                "profile_binding_mismatch",
+                f"{row['id']}.public_contracts.input.profiles.{profile['id']}.discriminator",
+                "Keep the closed profile schema const identical to its public discriminator.",
+            )
+        example = read_json_file(package / example_ref["path"], f"{row['id']}.{profile['id']}.example")
+        validate_json(example, profile_schema_path, f"{row['id']}.{profile['id']}.example")
+        profile_schemas.append(profile_schema)
+        profile_examples.append(example)
+        expected_refs.append({"$ref": Path(profile_schema_ref["path"]).name})
+    if aggregate_schema.get("oneOf") != expected_refs:
+        raise CommandError(
+            "profile_binding_mismatch",
+            f"{row['id']}.public_contracts.input.aggregate_schema",
+            "Keep the aggregate oneOf in the exact declared profile order with package-local schema refs.",
+        )
+    resolved_aggregate = dict(aggregate_schema)
+    resolved_aggregate["oneOf"] = profile_schemas
+    try:
+        from jsonschema import Draft202012Validator
+    except ImportError as exc:
+        raise CommandError(
+            "runtime_dependency_missing",
+            f"{row['id']}.public_contracts.input.aggregate_schema",
+            "Install the Python jsonschema dependency.",
+        ) from exc
+    for profile, example in zip(profiles, profile_examples, strict=True):
+        errors = list(Draft202012Validator(resolved_aggregate).iter_errors(example))
+        if errors:
+            raise CommandError(
+                "schema_mismatch",
+                f"{row['id']}.{profile['id']}.aggregate_example",
+                "Repair the public example to match exactly one aggregate profile schema.",
+            )
 
 
 def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[str, Any]:
@@ -89,6 +224,7 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
         validate_json(catalog, error_schema, f"{package_id}.errors")
         codes = {item["code"] for item in catalog["errors"]}
         interface = read_json_file(package / "interface.json", f"{package_id}.interface")
+        validate_interface_contract(skills, package, row, interface)
         declared = {item["id"]: item["command"] for item in interface["validators"]}
         actual = {item["validator_id"] for item in metadata["commands"]}
         if set(declared) != actual:

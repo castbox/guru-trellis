@@ -19,6 +19,16 @@ Scope Ledger, complete review range, working tree, and invocation freshness.
 The Skill reads no Planning or Phase 2 checkpoint or Task Commit candidate.
 Input that does not satisfy the current public schema fails closed.
 
+Every official independent-review worker is invoked with a prompt that
+authorizes approved-plan work only. If it observes a planning-external
+candidate, it stops before any edit, added test, self-fix, severity,
+classification, or route and returns only the invocation-local
+`candidate_ref`, `observed_behavior`, `locators`, and
+`minimal_reproduction_hint`. The Guru owner rereads the live range and
+authority and completes fresh `branch_review_candidate_set` qualification
+before continuing or redispatching work for that candidate. Official
+`trellis-*` agent files remain unchanged and upstream-owned.
+
 The independent `base_continuity` schema 1.0 profile is entered only from
 `guru-reconcile-task-base:review_continuity_required`. It binds the unchanged
 task HEAD and prior passing `branch_review_commit` to one exact
@@ -35,11 +45,16 @@ before any negative existence or impact conclusion. Search transcripts and
 query metadata remain transient and never enter the gate or public handoff.
 
 Perform one independent semantic review of the complete current
-`origin/<base>...HEAD` range. Qualify every candidate before assigning
-severity. Bind affected behavior, evidence, requirement/scope basis and one
-scenario class. Only supported current-scope scenarios may become a P0-P3
-finding. Unconfirmed scope expansion returns `scope_confirmation_required`;
-out-of-scope or disproved candidates remain non-blocking observations,
+`origin/<base>...HEAD` range. Form a candidate-only set, then invoke
+`guru-qualify-normal-scenario:branch_review_candidate_set` before assigning
+severity. Candidate input carries no decision, scenario class, severity,
+expected route, or caller assertion of a normal path. Only candidates returned
+eligible through `classified` may become a P0-P3 finding.
+`scope_confirmation_required` enters requirements clarification;
+`mechanism_revision_required` returns to task work for remove/replace and a
+fresh complete review; `blocked` stops. Rejected or disproved candidates remain
+non-blocking observations and cannot become scope confirmation, negative tests,
+implementation, follow-up, or publication blockers,
 follow-ups or rejections.
 
 Return `implementation_required` for an open current-scope finding. After its
@@ -76,6 +91,14 @@ decides review sufficiency, severity or route. The checker recalculates
 staling the gate, while any reviewed-content change makes it stale. Git commit
 anchors remain responsible only for review range and finding ancestry.
 
+The current gate schema directly records this Branch Review owner's final
+candidate classifications and, for every candidate, the direct-consumer witness
+`requirement_refs`, `supported_entry_refs`, `existing_caller_refs`,
+`honest_action_sequence`, `defect_observation`, and `excluded_assumptions`.
+It never stores or points to qualification stdout, a result/report, a temporary
+locator, or a qualification checkpoint. Legacy gates are stale and require a
+fresh complete Branch Review.
+
 The Branch Review public wrapper accepts current public input only, internally
 reruns `check-review-gate`, validates the selected output schema and never
 accepts caller-authored gate or checker output. Successful `passed`,
@@ -90,11 +113,12 @@ or invalid projection retains the checkpoint for same-owner repair. Missing
 after retirement, wrong-task/base/HEAD/content, unsafe components, and symlink
 ancestors or gate files fail closed.
 
-The current gate uses only schema 4.0 with profile-specific identity,
-`review_commit` and `reviewed_content_sha256`. Aggregate input schema 2.0 and
-gate schema 3.0 remain legacy compatibility inventory, not current runtime
-authority. Any current schema mismatch is invalid input and fails closed before
-owner evaluation.
+The current gate uses only schema 5.0 with profile-specific identity,
+`review_commit`, `reviewed_content_sha256`, and the final terminal
+candidate-classification witness required by its direct consumer. Aggregate
+input schema 2.0 and gate schemas 3.0 and 4.0 remain legacy compatibility
+inventory, not current runtime authority. Any current schema mismatch is
+invalid input and fails closed before owner evaluation.
 
 Return exactly one of:
 

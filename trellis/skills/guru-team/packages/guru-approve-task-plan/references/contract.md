@@ -30,6 +30,18 @@ The caller does not author adequacy, provenance conclusions, findings,
 authorization, an AI gate, or an exit. Re-entry reasons select the owner entry;
 they do not decide the owner result.
 
+Before planning scenarios can influence acceptance, negative tests, findings,
+revision actions, scope proposals, or approval, the owner forms only candidate
+refs plus current authority/planning/caller/test locators and invokes
+`guru-qualify-normal-scenario:planning_scenario_set`. `classified` returns to
+this owner; `scope_confirmation_required` enters requirements clarification;
+`mechanism_revision_required` returns here to remove or replace a mechanism and
+then rerun the complete current plan review; `blocked` stops. Rejected
+candidates never become questions, acceptance, tests, implementation, or
+follow-up. The planning checkpoint stores only the Planning owner's final
+direct-consumer conclusions and never contains or references qualification
+stdout, a result/report, locator, or checkpoint.
+
 ## Semantic Review
 
 The owner rereads live authority and current files, then reviews these eight

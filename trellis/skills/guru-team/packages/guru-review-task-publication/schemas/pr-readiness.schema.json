@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-5.0.json",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,6 +10,7 @@
     "branch_review_commit",
     "reviewed_content_sha256",
     "pr_payload",
+    "candidate_classifications",
     "dimensions",
     "findings",
     "conclusions",
@@ -17,7 +18,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "4.0"
+      "const": "5.0"
     },
     "skill_id": {
       "const": "guru-review-task-publication"
@@ -43,6 +44,12 @@
         "title": {"type": "string", "minLength": 1},
         "body": {"type": "string", "minLength": 1}
       }
+    },
+    "candidate_classifications": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/candidateClassification"}
     },
     "dimensions": {
       "type": "array",
@@ -179,6 +186,53 @@
         "minLength": 1
       }
     },
+    "qualificationDecision": {
+      "enum": [
+        "qualified_current",
+        "qualified_explicit_nonstandard",
+        "qualified_approved_expansion",
+        "rejected_no_authority",
+        "rejected_unsupported_entry",
+        "rejected_not_reproduced",
+        "rejected_out_of_scope"
+      ]
+    },
+    "stringList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "normalScenarioWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_refs",
+        "supported_entry_refs",
+        "existing_caller_refs",
+        "honest_action_sequence",
+        "defect_observation",
+        "excluded_assumptions"
+      ],
+      "properties": {
+        "requirement_refs": {"$ref": "#/$defs/stringList"},
+        "supported_entry_refs": {"$ref": "#/$defs/stringList"},
+        "existing_caller_refs": {"$ref": "#/$defs/stringList"},
+        "honest_action_sequence": {"$ref": "#/$defs/non_empty_strings"},
+        "defect_observation": {"type": "string", "minLength": 1},
+        "excluded_assumptions": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "candidateClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "decision", "witness", "consumer_use"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "decision": {"$ref": "#/$defs/qualificationDecision"},
+        "witness": {"$ref": "#/$defs/normalScenarioWitness"},
+        "consumer_use": {"const": "publication_route_checker"}
+      }
+    },
     "dimension": {
       "type": "object",
       "additionalProperties": false,
@@ -275,6 +329,7 @@
       "additionalProperties": false,
       "required": [
         "finding_ref",
+        "candidate_ref",
         "dimension",
         "summary",
         "scope_basis",
@@ -286,6 +341,7 @@
       ],
       "properties": {
         "finding_ref": {"type": "string", "minLength": 1},
+        "candidate_ref": {"type": "string", "minLength": 1},
         "dimension": {
           "enum": [
             "diff_outcome_consistency",

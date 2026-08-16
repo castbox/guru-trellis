@@ -18,6 +18,25 @@ Standalone removes only global routing; it does not remove the complete Guru
 Team runtime or current-evidence requirement. Load `trellis-brainstorm` as the
 questioning method, while this Skill retains every semantic decision.
 
+Before a newly observed scenario can become a proposal, user question, scope
+decision, task update, or new-task draft, this owner supplies only candidate
+refs and live locators to
+`guru-qualify-normal-scenario:requirements_scope_set`. `classified` returns to
+this owner, `mechanism_revision_required` returns for remove/replace and fresh
+qualification, `scope_confirmation_required` re-enters through the closed
+`normal_scenario_scope_confirmation` profile, and `blocked` stops. Rejected
+candidates cannot be escalated into dialogue or authority mutation.
+
+`normal_scenario_scope_confirmation` is a target-owned consumer input, not a
+second qualification route. It accepts exactly `profile`, `source_exit`,
+`mode`, `target_locator`, `resume_target`, `continuation_id`, and a non-empty
+unique `candidate_refs` set. It accepts no classification decisions, reasons,
+severity, authorization, result/checkpoint locator, or worker report. The
+qualifier output is projected directly into these fields. After the real scope
+choice, this owner updates live authority through its existing rules and returns
+to the exact closed `resume_target`; changed authority or candidates require the
+original owner to run fresh qualification.
+
 ## Forward Behavior
 
 For repository-answerable questions, duplicate evidence, and recalled
@@ -242,7 +261,7 @@ target. Any kind/target mismatch fails closed.
 ## Interface 1.4 Public Handoff
 
 The public profiles are `initial_change_request`, `active_task_scope_change`,
-and `standalone_review`. After the owner loop,
+`standalone_review`, and `normal_scenario_scope_confirmation`. After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
 `context_current` transition, and current owner result, reruns the existing
 checker, derives the Agent-owned typed route from its checked result, and

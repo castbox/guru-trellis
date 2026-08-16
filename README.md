@@ -104,6 +104,31 @@ pre-task 不需要在仓库保存 owner 或 prerequisite 文件。Base sync 只�
 
 用户只需要在存在真实选择、范围变化或外部副作用时参与确认。
 
+### 正常场景资格
+
+公共 closed-loop Skill `guru-qualify-normal-scenario` 是新场景资格的唯一语义
+Owner。它覆盖 task-free 写前/演化、需求、变更请求、规划、实现发现、base impact、
+Phase 2、Branch Review 和 Publication 共十个 mandatory profiles；Guru caller 只把
+worker 的当前观察投影为 candidate refs 与 live locators。每次 worker dispatch 只授权
+approved-plan work；规划外候选资格完成前不 edit、不补负向测试、不 self-fix、不赋
+severity，也不形成 finding、实现或发布 blocker。官方 `trellis-*` agent bytes 保持
+upstream-owned，不由 Guru preset 修改。
+
+Skill 只返回 `classified`、`scope_confirmation_required`、
+`mechanism_revision_required`、`blocked` 四个 typed exits，并由 workflow 交给唯一
+consumer。资格 decision/result 只存在当前 invocation 的 memory/stdout，不生成 tracked
+或 ignored qualification report/checkpoint、共享 candidate ledger、handoff 或跨进程
+result locator。Phase 2、Branch Review、Publication 只在各自现有 owner-private gate 中
+直接记录本阶段 consumer 必需的最终 classification/witness。
+
+Production eval 资产通过 clean install 后的真实 public entry 覆盖全部十 profiles，将
+#113 F-001 与 #236 攻击式 scanner 变体同 paired legitimate cases 一起验证。当前
+deterministic release gate 验证 corpus、runner、真实 wrapper、sandbox 与 no-model/fake
+production path，但不执行 live GPT-5.6 Sol matrix。只有另行完成且绑定 exact
+model/prompt/package/matrix 的 live run 才能形成模型行为证据；没有该证据时 Issue、PR、
+README 与 release text 均不得声称 pressure matrix 或模型稳定性已经通过，本文也不承诺
+未来永不复发。
+
 ### 智能选择 task-free 或标准 Intake
 
 尚未进入活动 task 路径的文件修改请求都会先由 semantic
@@ -164,6 +189,16 @@ manifest 和 Skill package，也不会调用或路由到 `guru-verify-extension-
 origin、requested ref、resolved commit、HEAD 和 clean tree。验证目标由 source 流程创建
 clean throwaway repo，不绑定真实业务 task、branch、Finalizer plan 或 publication HEAD。
 任何携带 credential 的 locator 都会在外部动作和证据写入前被拒绝。
+
+源仓的完整 upgrade/update 验收使用隔离环境并严格按顺序执行：clean initial
+workflow/preset install；在 disposable npm prefix/container 中运行
+`trellis upgrade --tag latest` 并核验前后 CLI version；在 throwaway project 运行
+`trellis update --dry-run`，只在输出明确包含 `MIGRATION REQUIRED` 时运行
+`trellis update --migrate --skip-all`，否则运行 `trellis update --skip-all`；
+`--skip-all` 保留项目已有修改并以非交互方式继续。随后完成 marketplace
+`--create-new` preview、active switch 与 canonical preset reapply。最后验证 package、
+workflow、十 profiles、平台投影、ownership、dogfood drift 与递归零 `.new`/`.bak`。
+该门禁不修改开发机 global npm，也不升级真实业务仓。
 
 ## 适合哪些仓库
 

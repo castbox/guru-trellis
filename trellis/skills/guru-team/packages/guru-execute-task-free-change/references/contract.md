@@ -6,6 +6,18 @@ branch/worktree, active-task scope, dirty/untracked, and target-overlap facts.
 Default versus non-default branch identity is not a blocker. Branch protection
 and other remote publication policy are outside this local execution decision.
 
+The owner forms a candidate-only set before its pre-write decision and invokes
+`guru-qualify-normal-scenario:task_free_pre_write`. A candidate contains only a
+stable ref, observed behavior, current code/test locator, and the minimum live
+reread locator; it carries no scenario class, decision, severity, route, or
+authorization. Newly discovered behavior/scope/risk candidates use
+`task_free_evolution` before this owner decides whether bounded execution
+remains suitable. `classified` and `mechanism_revision_required` return to this
+owner, `scope_confirmation_required` routes to `guru-clarify-requirements`, and
+`blocked` stops. A rejected classification cannot cause a question, negative
+test, edit, or expansion route. This package writes and rereads no qualification
+result, report, locator, or checkpoint.
+
 The AI Review Gate must bind both sides of execution. `pre_write_review` records
 why the selected checkout is suitable or why another route is required.
 `completed` additionally requires `completion_evidence` containing the actual

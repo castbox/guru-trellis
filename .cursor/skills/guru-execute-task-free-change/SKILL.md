@@ -15,6 +15,17 @@ judge write suitability, perform only the bounded edit, run risk-matched targete
 checks, and review scope/risk again after writing. Scripts only validate the
 AI-authored result and serialize one typed exit. Never query branch protection.
 
+Before the pre-write suitability decision, form only current candidate refs and
+live locators, then invoke `guru-qualify-normal-scenario` with
+`task_free_pre_write`. If execution discovers a new behavior, scope, test, or
+risk candidate, stop further target writes and invoke it with
+`task_free_evolution` before deciding expansion significance or route. Consume
+only the current typed result: classified candidates return to this owner,
+scope-confirmation candidates go to requirements clarification, mechanism
+revision returns here for remove/replace and fresh qualification, and blocked
+stops. Rejected candidates never become a user question, test, implementation,
+or risk-expansion route. Qualification decisions remain invocation-local.
+
 `completed` requires current evidence for both the pre-write suitability review
 and the post-write scope/risk review, plus the actual edited paths and targeted
 checks. Its workflow output reports edited paths, concise validation results,

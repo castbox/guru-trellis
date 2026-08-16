@@ -404,7 +404,7 @@ The canonical and installed extension manifests publish one closed current
 contract under `public_api.skill_contracts`:
 
 - `interface_schema_id` is `guru-team-skill-interface-1.4`, with
-  `interface_schema_ids` publishing current 1.4 and 1.5 selectors;
+  `interface_schema_ids` publishing current 1.4, 1.5, and 1.6 selectors;
 - `registry_schema_id` is `guru-team-skill-registry-1.4`;
 - `public_input_schema_ids`, `typed_output_schema_ids`, and
   `private_artifact_schema_ids` are exact inventories from all active
@@ -418,24 +418,27 @@ and the current `guru-sync-base` scalar contract delegates omitted optional
 arguments to the formal resolver. Source validation, discovery, invocation, and
 install consume exactly this live closure.
 
-The sole current planning/check/commit manifest is
-`trellis/skills/guru-team/contracts/production-current-2.0.json`, with schema id
-`guru-team-production-contract-manifest-2.0` and contract id
-`production-current-v2`. It binds exactly the three planning/check/commit
-packages, ten structured profiles, 11 stable exits, current per-exit schema and
-example identities, consumer inputs, projections, private artifact ids,
-authoring-seed edges, and canonical eval cases. Inputs and owner artifacts must
-validate against the current package schemas; no alternate executor,
-projection, or manifest participates in current invocation.
+The sole current manifest is
+`trellis/skills/guru-team/contracts/production-current-4.0.json`, with schema id
+`guru-team-production-contract-manifest-4.0` and contract id
+`production-current-v4`. It binds exactly the three planning/check/commit
+packages plus `guru-qualify-normal-scenario`, 20 structured profiles, 15 stable
+exits, current per-exit schema and example identities, consumer inputs,
+projections, private artifact ids, four authoring-seed edges, the 160 x 5 host
+production control, and canonical eval cases. Inputs and owner artifacts must
+validate against the current package schemas; versioned v2/v3 files are
+immutable legacy assets and no alternate executor, projection, or manifest
+participates in current invocation.
 
 The source and installed closure algorithm reads the live registry, current
 package contracts, the production current manifest, Interface public
 contracts, and package-local corpora. Sixteen integrated rows select Interface
-1.4; the standalone verifier selects Interface 1.5. Exact profile, exit,
+1.4; normal-scenario qualification selects Interface 1.6; the standalone
+verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Seventeen Skills and 69 exits are the current package cardinality regression, not
+Eighteen Skills and 73 exits are the current package cardinality regression, not
 a hard-coded future registry allowlist; the business workflow independently
-asserts 16 invokes, 67 exits, and 39 targets.
+asserts 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets.
 
 The production manifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
@@ -453,8 +456,9 @@ selected by current registry, extension, installation, or invocation. Test
 fixture schema ids belong only to the fixture extension manifest and must
 not appear in production extension, installed production inventory, platform
 copies, or workflow mandatory routes. Registry schema 1.3 remains legacy-only;
-current registry 1.4 selects Interface 1.4 for integrated rows and Interface
-1.5 for the standalone verifier. Planned rows remain lifecycle-only.
+current registry 1.4 selects Interface 1.4 for existing integrated rows,
+Interface 1.6 for normal-scenario qualification, and Interface 1.5 for the
+standalone verifier. Planned rows remain lifecycle-only.
 
 `public_api.companion_scripts` includes stable id
 `discover-skill-contract`. Its success DTO exposes the current package-relative
@@ -828,14 +832,57 @@ recovered and live reread; multiple candidates block. A recovered issue emits
 the same checker-valid `created_issue` result and `refresh_review` route as a
 newly created issue.
 
+## Normal Scenario Qualification Invocation Data
+
+Qualification has no repository artifact contract. Each of the ten public
+input schemas is closed around one fixed `profile`, fixed caller identity,
+workflow or standalone mode, current target identity, a non-empty unique
+`candidate_refs` set, and only the locators needed for the semantic owner to
+reread live authority and repository evidence. The aggregate input is a
+`oneOf` discriminator and adds no fields.
+
+The qualification Interface 1.6 invocation binding declares only
+`profile_selector={source: aggregate_public_input, field: profile}`. The full
+public stdin envelope remains unchanged through the installed wrapper, whose
+aggregate and selected closed schemas remain authoritative. The owner-private
+adapter transcript may record only the observed public `profile`; host grading
+compares that receipt with its private control-map profile after model return.
+The receipt is excluded from the adapter request, native request, prompt, argv,
+model environment, public DTO, and shared artifacts. Missing, unknown,
+duplicate, mismatched, or multiple discriminator selection fails closed.
+
+Each candidate receives exactly one of
+`qualified_current`, `qualified_explicit_nonstandard`,
+`qualified_approved_expansion`, `scope_confirmation_required`,
+`rejected_no_authority`, `rejected_unsupported_entry`,
+`rejected_not_reproduced`, `rejected_out_of_scope`, `mechanism_removed`,
+`mechanism_replaced`, or `blocked`. The current invocation aggregates these
+into exactly one of `classified`, `scope_confirmation_required`,
+`mechanism_revision_required`, or `blocked`, with the fixed consumers declared
+by the workflow/interface graph. Unknown, missing, duplicate, multi-exit,
+profile/caller mismatch, stale identity, or consumer mismatch fails closed.
+
+No schema defines a qualification result/report/checkpoint locator. The checked
+result is process-local stdout and expires when the invocation ends. Phase 2,
+Branch Review, and Publication schema 5.0 gates independently record only
+terminal qualified/rejected classifications for their own direct consumers.
+Every row contains unique `candidate_ref`, one terminal decision, a six-field
+witness (`requirement_refs`, `supported_entry_refs`,
+`existing_caller_refs`, `honest_action_sequence`, `defect_observation`,
+`excluded_assumptions`), and the fixed `consumer_use`. Their semantic
+findings/dispositions bind a candidate in the same gate. Legacy schema 4.0
+checkpoints are stale and require a complete fresh owner round; no compatibility
+reader converts them to 5.0.
+
 ## Phase 2 Check Artifact
 
-New active evidence uses closed schema `guru-phase2-check-4.0` and
+New active evidence uses closed schema `guru-phase2-check-5.0` and
 `skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
 parallel pass artifact is allowed. The ignored owner checkpoint stores only
 mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
 executed validation evidence, the final Docs SSOT result, semantic
-adequacy/findings, and one typed exit/route/reason/consumer. The shared
+adequacy/findings, final candidate classifications with direct-consumer
+witness, and one typed exit/route/reason/consumer. The shared
 `guru-reviewed-content-1.0` identity has one local deterministic consumer: the
 checker invoked inside the Phase 2 public wrapper before typed-output
 projection. It detects reviewed-content drift and returns control to the AI
@@ -1108,7 +1155,7 @@ body-only close semantics controlled by Issue Scope Ledger.
 
 ## Review Gate Artifact
 
-`review-branch.sh` writes compact schema 4.0 `review-gate.json` at the exact
+`review-branch.sh` writes compact schema 5.0 `review-gate.json` at the exact
 task-owned ignored-runtime checkpoint after the independent semantic judgment
 exists. The gate
 contains only schema/skill identity, task/mode/review intent, typed exit,
@@ -1616,30 +1663,31 @@ artifact bodies.
 After a fix commit, finding closure is an internal transient AI judgment by the
 finding owner or a real unfinished-agent replacement. It has no public exit or
 artifact and automatically dispatches a distinct fresh reviewer. Current gate
-schema 4.0 accepts the intent allowed by the selected current profile.
-Aggregate input schema 2.0 and gate schema 3.0 remain legacy compatibility
+schema 5.0 accepts the intent allowed by the selected current profile.
+Aggregate input schema 2.0 and gate schemas 3.0 and 4.0 remain legacy compatibility
 inventory, not current runtime authority; any other current value fails closed.
 
-Only `review-gate.json` is written for a new review. A reviewed candidate has
+Only `review-gate.json` is written for a new review. It contains a non-empty
+terminal-only `candidate_classifications` set. Each row binds `candidate_ref`,
+one of the three qualified or four rejected terminal decisions, the six-part
+normal-scenario witness, and `consumer_use=branch_review_route_checker`.
+Duplicate refs, a scope-confirmation/mechanism/blocked decision, or any
+qualification result/checkpoint locator fail closed. A reviewed candidate has
 exactly one of `qualified_finding`, `scope_proposal`,
 `observation`, `followup_candidate`, or `rejected_candidate`.
-`qualified_finding` alone carries P0-P3 severity and must bind requirement
-references, scope basis, scenario class, qualification reason,
+`qualified_finding` alone carries P0-P3 severity and must bind the current
+`candidate_ref`,
 `introduced_head`, `fix_head`, `closure_head`, and closure evidence. `scope_proposal` uses
-`unconfirmed_nonstandard_proposal`, contains no severity, and never selects an
-implementation route.
-
-The five closed scenario classes are `normal_required_behavior`,
-`explicit_nonstandard_requirement`, `approved_nonstandard_expansion`,
-`unconfirmed_nonstandard_proposal`, and `out_of_scope`. Qualification always
-precedes severity. The last two cannot become current P0-P3 findings.
+no severity and never selects an implementation route. Every semantic
+disposition row binds one candidate from the same gate.
 
 ## Publication Readiness Gate
 
 Ignored-runtime `pr-readiness.json` is the only publication readiness gate.
-Current-only schema `guru-task-publication-readiness-4.0` stores only
+Current-only schema `guru-task-publication-readiness-5.0` stores only
 `schema_version`, `skill_id`, `task_ref`, `branch_review_commit`,
-`reviewed_content_sha256`, exact `pr_payload(title,body)`, all ten AI-reviewed dimensions, findings/closure,
+`reviewed_content_sha256`, exact `pr_payload(title,body)`, a non-empty
+terminal-only `candidate_classifications` set, all ten AI-reviewed dimensions, findings/closure,
 scope/Docs/safety conclusions, and the selected route. Finding summary, scope
 basis, evidence refs, affected artifacts, and closure evidence are non-empty.
 The eight objective entry

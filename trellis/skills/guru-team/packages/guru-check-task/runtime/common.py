@@ -63,7 +63,20 @@ def dirty_paths(repo):
   if status[0] in "RC":i+=1
   i+=1
  return sorted(set(out))
-def validate_owner(package_root,payload,name,field="input"):validate_json(payload,package_root/"schemas"/name,field);return payload
+def validate_candidate_classifications(payload):
+ rows=payload.get("candidate_classifications")
+ if not isinstance(rows,list) or not rows:raise CommandError("schema_mismatch","candidate_classifications","Record the complete non-empty current candidate set.")
+ refs=[row.get("candidate_ref") for row in rows if isinstance(row,dict)]
+ if len(refs)!=len(rows) or len(set(refs))!=len(refs):raise CommandError("schema_mismatch","candidate_classifications","Candidate refs must be unique and complete.")
+ known=set(refs)
+ semantic=payload.get("semantic_review") or {}
+ linked=[]
+ for key in ("scope_decisions","findings"):
+  for row in semantic.get(key,[]):
+   if isinstance(row,dict):linked.append(row.get("candidate_ref"))
+ if any(not ref or ref not in known for ref in linked):raise CommandError("schema_mismatch","candidate_classifications","Every scope decision and finding must bind one current candidate ref.")
+ return payload
+def validate_owner(package_root,payload,name,field="input"):validate_json(payload,package_root/"schemas"/name,field);return validate_candidate_classifications(payload)
 def typed_output(package_root,exit_id):
  interface=json.loads((package_root/"interface.json").read_text());rows=[x for x in interface["public_contracts"]["outputs"] if x["exit_id"]==exit_id]
  if len(rows)!=1:raise CommandError("schema_mismatch","typed_exit","Return one declared typed exit.")

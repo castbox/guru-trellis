@@ -33,6 +33,16 @@ Every finding records a stable ref, dimension, scope basis, evidence and
 affected artifacts, route, status, and closure evidence. The AI chooses
 `metadata_revision`, `task_work`, or `external_blocker`; scripts do not.
 
+Before any new scenario participates in those findings or routes, this owner
+forms a candidate-only set and invokes
+`guru-qualify-normal-scenario:publication_candidate_set`. Candidate input has no
+decision, severity, expected exit, route, or caller assertion of scope.
+`classified` returns to Publication; `scope_confirmation_required` enters
+requirements clarification; `mechanism_revision_required` returns to task work
+for remove/replace and a complete fresh downstream round; `blocked` stops.
+Rejected candidates cannot become clarification, task work, or publication
+blockers. Publication neither reads nor persists a qualifier artifact.
+
 The owner may revise only its in-memory PR title/body and contract-listed
 Issue-Scope-Ledger publication metadata. It never creates a task-local PR body
 or finish-summary index handoff. After revision, reread all eight objective
@@ -59,7 +69,13 @@ repository snapshot. Any dirty reviewed-content path makes
 ## Gate and exits
 
 After the AI Gate and required confirmation, record and check the one
-owner-private `pr-readiness.json` checkpoint. `ready` requires every dimension
+owner-private schema 5.0 `pr-readiness.json` checkpoint. It directly records
+this owner's final candidate classifications and the witness required by its
+current checker: `requirement_refs`, `supported_entry_refs`,
+`existing_caller_refs`, `honest_action_sequence`, `defect_observation`, and
+`excluded_assumptions`. These fields never import or reference qualification
+stdout, a result/report, temporary locator, or checkpoint. Older checkpoint
+versions are stale and require a fresh Publication round. `ready` requires every dimension
 passed and every current-scope finding closed with non-empty scope, evidence,
 affected artifacts, and closure evidence. All three scope/Docs/safety
 conclusions must pass.

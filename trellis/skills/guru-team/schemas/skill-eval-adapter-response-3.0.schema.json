@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-adapter-response-3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability_status",
+    "invocation_id",
+    "package_sha256",
+    "prompt_sha256",
+    "model_id",
+    "public_stdout",
+    "public_stderr",
+    "trace_events",
+    "transcript_locator",
+    "native_trace_locator",
+    "timing_ms"
+  ],
+  "properties": {
+    "schema_version": {"const": "3.0"},
+    "capability_status": {"enum": ["executed", "unsupported", "execution_error"]},
+    "invocation_id": {"type": "string", "pattern": "^i-[a-z2-7]{26}$"},
+    "package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "model_id": {"const": "gpt-5.6-sol"},
+    "public_stdout": {"type": "string"},
+    "public_stderr": {"type": "string"},
+    "trace_events": {
+      "type": "array",
+      "items": {
+        "enum": ["public_invocation", "evals_not_loaded", "private_runtime_not_read"]
+      }
+    },
+    "transcript_locator": {"type": "string", "minLength": 1},
+    "native_trace_locator": {"type": "string", "minLength": 1},
+    "timing_ms": {"type": "integer", "minimum": 0}
+  }
+}

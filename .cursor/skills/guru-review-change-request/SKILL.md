@@ -14,6 +14,15 @@ ten readiness dimensions, record findings and one scope conclusion, complete
 the AI Review Gate, and call the recorder and checker only after the semantic
 judgment exists. Return exactly one declared typed exit.
 
+Before a discovered behavior scenario can affect the delivery unit, readiness
+finding, requested test, clarification route, or blocker, form only current
+candidate refs and live locators and invoke `guru-qualify-normal-scenario` with
+`change_request_candidate_set`. Only the classified router may return eligible
+candidates to this review. Rejected candidates remain non-actionable and never
+become clarification. Mechanism revision returns here for remove/replace and
+fresh qualification; blocked stops. This package never persists or rereads a
+qualification result.
+
 The recorder and checker validate only closed JSON shape, hashes, linkage,
 freshness, fixed consumers, and objective exit invariants. They never generate
 findings, select a delivery unit, decide readiness, or choose a route. Pre-task

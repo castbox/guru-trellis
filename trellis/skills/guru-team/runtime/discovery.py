@@ -8,12 +8,13 @@ from typing import Any
 
 from .installed import validate_skill_installed
 from .io import CommandError, read_json_file, write_json
-from .validate import _package_paths, validate
+from .validate import _package_paths, validate, validate_interface_contract
 
 
 CURRENT_INTERFACE_SCHEMA_IDS = {
     "guru-team-skill-interface-1.4",
     "guru-team-skill-interface-1.5",
+    "guru-team-skill-interface-1.6",
 }
 
 
@@ -49,6 +50,7 @@ def discover(skills_root: Path, skill_id: str) -> dict[str, Any]:
         )
     interface_path = skills_root / _safe_relative(entry.get("interface"), f"skills.{skill_id}.interface")
     interface = read_json_file(interface_path, f"skills.{skill_id}.interface")
+    validate_interface_contract(skills_root, interface_path.parent, entry, interface)
     contracts = interface.get("public_contracts")
     if not isinstance(contracts, dict):
         raise CommandError(

@@ -404,8 +404,10 @@ Guru-owned paths.
 
 Do not overwrite unknown current Guru-owned edits. Throwaway verification must
 validate the expected workflow preview `.new`, perform the initial switch, run
-official `trellis update --force` or the selected version upgrade, reapply the
-marketplace workflow, then reapply the preset. Successful completion requires
+the selected version upgrade, run `trellis update --dry-run`, then execute
+exactly one preserve-mode live update: `trellis update --migrate --skip-all`
+when migration is required or `trellis update --skip-all` otherwise. It then
+reapplies the marketplace workflow and preset. Successful completion requires
 all current ownership conflicts and recursive `.new`/`.bak` sidecars to be
 resolved.
 
@@ -626,8 +628,8 @@ isolated package test or handwritten intermediate DTO does not prove activation.
 
 ## Production Skill Atomic Activation
 
-`production-current-v2` is the sole current planning/check/commit contract. The
-preset stages its schema, manifest, three complete package trees, consumer
+`production-current-v4` is the sole current planning/check/commit/qualification
+contract. The preset stages its schema, manifest, four complete package trees, consumer
 schemas, registry, extension inventory, installed provenance, and selected
 platform copies in one transaction. The transaction validates the complete
 current package graph before publishing any destination; only the current
@@ -641,8 +643,9 @@ executable modes without `.new` or `.bak` sidecars.
 `guru-review-branch` is an additive active package installed in the same preset
 transaction as registry, extension inventory, shared consumers, Interface
 schema, runtime, workflow and selected platform copies. It extends the active
-closure to ten Skills and 39 exits without changing the current production
-manifest's three-Skill/11-exit membership. That manifest includes the current
+closure to ten Skills and 39 exits without changing the then-current legacy
+production manifest's three-Skill/11-exit membership. The current v4 manifest
+includes qualification and the current
 committed consumer/projection binding and four authoring-seed edges.
 
 The current installation includes both active packages and routes Branch Review
@@ -664,10 +667,10 @@ Fresh install, update, and reapply require byte- and executable-mode identity
 for the package's Skill, Interface, references, schemas, examples, wrapper,
 tests, and canonical eval corpus.
 
-The activation contributes to the current package closure of seventeen active
-Skills and 69 external exits.
-`production-current-v2` remains exactly three Skills and 11 exits; #116 is an
-additional complete active Interface 1.4 row. The current Branch Review
+The activation contributes to the current package closure of eighteen active
+Skills and 73 external exits.
+`production-current-v4` remains exactly four Skills and 15 exits; #116 is an
+additional complete active Interface 1.4 row outside that manifest. The current Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
 
 The preset transaction does not install any `trellis-continue` payload. Initial
@@ -706,8 +709,9 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, Codex, Cursor, and Claude package/corpus byte identity,
-wrapper executable modes, the seventeen-Skill/69-exit package closure, the
-integrated business closure of 16 invokes, 67 exits, and 39 targets, and current
+wrapper executable modes, the eighteen-Skill/73-exit package closure, the
+integrated business closure of 17 invokes, 71 exits, 24 workflow targets, and
+18 stop targets, and current
 ownership schema 3.0 with 11 rules, nine managed claims, and three overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
@@ -727,9 +731,9 @@ verification re-entry, read owner state, or archive a task-local verifier result
 The current archive contains exactly six durable files. Publication retains its
 own `return_to_task_work` route for actual content drift.
 
-The complete source/installed package graph contains seventeen active Skills and
-69 exits. The global business workflow projection is 16 invokes, 67 exits, and
-39 targets. The preset additionally installs the three Guru-owned
+The complete source/installed package graph contains eighteen active Skills and
+73 exits. The global business workflow projection is 17 invokes, 71 exits,
+24 workflow targets, and 18 stop targets. The preset additionally installs the three Guru-owned
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets
 remain under official Trellis ownership.

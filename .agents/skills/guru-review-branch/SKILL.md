@@ -14,12 +14,26 @@ candidate qualification. A negative finding or impact conclusion cannot rely
 on a single-language zero result, and no query process enters the gate or DTO.
 
 Validate all eight entry preconditions in workflow or standalone mode. Perform one
-independent semantic review of the complete current range and qualify every
-candidate before assigning severity.
+independent semantic review of the complete current range. Form only candidate
+refs and live locators, then invoke `guru-qualify-normal-scenario` with
+`branch_review_candidate_set` before assigning severity.
 Scripts never decide scope, scenario class, qualification, severity,
 review sufficiency, pass, or route.
-When current-scope evidence disproves a candidate, preserve it as
-`rejected_candidate` without severity or finding-only fields.
+Rejected candidates remain `rejected_candidate` without severity or
+finding-only fields and cannot become scope confirmation, tests,
+implementation, follow-up, or publication blockers. Mechanism revision returns
+to task work for remove/replace and fresh qualification; blocked stops. The
+review gate records only this owner's final classifications and direct-consumer
+witness, never a qualification artifact.
+
+Every official independent-review worker invocation prompt authorizes
+approved-plan work only. A planning-external observation must stop before any
+edit, added test, self-fix, severity, classification, or route and return only
+`candidate_ref`, `observed_behavior`, `locators`, and
+`minimal_reproduction_hint`. This owner rereads the live range and authority
+and completes fresh qualification before continuing the review or dispatching
+another worker for that candidate. Upstream-owned `trellis-*` agent files stay
+unchanged.
 
 Current-scope qualified findings return `implementation_required`; fixes must
 pass the applicable checks, a fresh task commit, and this Skill again. An
@@ -59,9 +73,9 @@ fails closed.
 Aggregate public input schema 3.0 dispatches two profiles: `branch_review`
 schema 2.0 accepts only `initial_review` and `fresh_final_review`, while
 `base_continuity` schema 1.0 accepts only `base_continuity`. The owner-private
-gate is current-only schema 4.0 and records profile-specific identity plus
+gate is current-only schema 5.0 and records profile-specific identity plus
 `review_commit` and `reviewed_content_sha256`. Aggregate input schema 2.0 and
-gate schema 3.0 remain legacy compatibility inventory, not current runtime
+gate schemas 3.0 and 4.0 remain legacy compatibility inventory, not current runtime
 authority. Any other current gate shape or input field fails closed through
 the normal invalid-input path. The commit is used for range and finding
 ancestry; the reviewed-content identity alone owns content freshness.

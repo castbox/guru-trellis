@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, os, subprocess, sys, tempfile, unittest
+import copy, json, os, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from jsonschema import Draft202012Validator
 
@@ -83,5 +83,46 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    before=content_identity(repo)
    private.write_text("two\n")
    self.assertEqual(before,content_identity(repo))
+
+ def test_public_wrapper_retains_only_passed_checkpoint_and_projects_all_exits(self):
+  example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
+  with tempfile.TemporaryDirectory() as temporary:
+   repo=Path(temporary)
+   subprocess.run(["git","init","-q"],cwd=repo,check=True)
+   task_dir=repo/".trellis/tasks/test-task";task_dir.mkdir(parents=True)
+   checkpoint_path=repo/".trellis/.runtime/guru-team/owner-checkpoints/test-task/phase2-check.json"
+   checkpoint_path.parent.mkdir(parents=True)
+   public={"profile":"initial_check","mode":"workflow","task_ref":".trellis/tasks/test-task","source_exit":"implementation_complete"}
+
+   def owner(exit_id):
+    value=copy.deepcopy(example);value["task_ref"]=public["task_ref"]
+    if exit_id=="implementation_required":
+     value["typed_exit"]=exit_id;value["consumer"]={"kind":"workflow","id":"guru-resume-implementation"};value["semantic_review"]["status"]=exit_id;value["semantic_review"]["adequacy_dimensions"][2]["status"]="failed"
+     value["candidate_classifications"]=[{"candidate_ref":"candidate:phase2:defect","decision":"qualified_current","witness":{"requirement_refs":["prd:R1"],"supported_entry_refs":["entry:phase2"],"existing_caller_refs":["caller:guru-check-task"],"honest_action_sequence":["run the supported Phase 2 check"],"defect_observation":"The required behavior fails.","excluded_assumptions":[]},"consumer_use":"task_commit_preflight"}]
+     value["semantic_review"]["scope_decisions"]=[{"id":"C1","candidate_ref":"candidate:phase2:defect","disposition":"current_scope","summary":"A defect remains.","finding_id":"F1"}]
+     value["semantic_review"]["findings"]=[{"id":"F1","candidate_ref":"candidate:phase2:defect","severity":"P2","summary":"Open defect.","path":"src/example.py","status":"open"}]
+    elif exit_id=="planning_stale":
+     value["typed_exit"]=exit_id;value["route"]="reapprove_plan";value["consumer"]={"kind":"workflow","id":"guru-task-check-planning-router"};value["semantic_review"]["status"]=exit_id
+     value["candidate_classifications"]=[{"candidate_ref":"candidate:phase2:scope","decision":"qualified_approved_expansion","witness":{"requirement_refs":[],"supported_entry_refs":["entry:phase2"],"existing_caller_refs":["caller:guru-check-task"],"honest_action_sequence":["review the requested scope"],"defect_observation":"The request changes scope.","excluded_assumptions":[]},"consumer_use":"task_commit_preflight"}]
+     value["semantic_review"]["scope_decisions"]=[{"id":"scope-proposal:R13","candidate_ref":"candidate:phase2:scope","disposition":"scope_change_required","summary":"Current scope changed.","finding_id":None}]
+    elif exit_id=="blocked":
+     value["typed_exit"]=exit_id;value["consumer"]={"kind":"stop","id":"task-check-blocked"};value["semantic_review"]["status"]=exit_id;value["semantic_review"]["adequacy_dimensions"][-1]["status"]="blocked";value["validation"]["unverified_items"]=[{"id":"U1","summary":"Required evidence is unavailable.","blocking":True}]
+    return value
+
+   expected={
+    "passed":{"exit_id":"passed","task_ref":public["task_ref"],"phase2_commit_anchor":example["phase2_capture_commit"]},
+    "implementation_required":{"exit_id":"implementation_required","task_ref":public["task_ref"],"finding_refs":["F1"]},
+    "planning_stale":{"exit_id":"planning_stale","task_ref":public["task_ref"],"planning_route":"reapprove_plan","proposal_refs":["scope-proposal:R13"]},
+    "blocked":{"exit_id":"blocked"},
+   }
+   for exit_id in expected:
+    with self.subTest(exit_id=exit_id):
+     checkpoint_path.write_text("checkpoint\n")
+     envelope=json.dumps({"public_input":public,"owner_result":owner(exit_id)},separators=(",",":"))
+     environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
+     result=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False,env=environment)
+     self.assertEqual(0,result.returncode,result.stderr)
+     self.assertEqual(expected[exit_id],json.loads(result.stdout))
+     self.assertEqual(exit_id=="passed",checkpoint_path.exists())
 
 if __name__=="__main__": unittest.main()

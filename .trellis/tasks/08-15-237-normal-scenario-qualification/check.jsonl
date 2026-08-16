@@ -1,0 +1,8 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"审核十 profile invocation、四 exits、唯一 consumer、router 和 fail-closed workflow closure。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"审核 public I/O 最小性、closed schemas、consumer projections、registry/interface 与 private-state 边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"审核 witness 有直接 consumer、版本迁移明确且未扩张 public DTO。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"审核脚本未判断 scope、normal path、充分性、severity 或 route。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"执行完整 package/eval/install/update/dogfood/Phase 2/Branch Review 质量矩阵。"}
+{"file":".trellis/spec/preset/installer.md","reason":"审核 clean install、official update、workflow reselect、preset reapply 与平台投影。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"审核 ownership、managed inventory、drift 与 recursive zero .new/.bak。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"审核 Issue/PR 不声称永不复发并完整披露当前验证边界。"}

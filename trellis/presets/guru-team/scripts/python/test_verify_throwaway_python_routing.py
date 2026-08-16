@@ -259,20 +259,24 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
                 )
 
     @unittest.skipIf(os.name == "nt", "executable shebang semantics are POSIX-only")
-    def test_raw_sys_executable_shebang_preserves_managed_launch_path(self) -> None:
+    def test_raw_sys_executable_shebang_binds_managed_interpreter(self) -> None:
         _, _, _, interpreter, _ = self.runtime_fixture()
         probe = self.root / "managed-shebang-probe"
         probe.write_text(
             f"#!{interpreter}\nimport sys\nprint(sys.executable)\n",
             encoding="utf-8",
         )
+        self.assertEqual(
+            probe.read_text(encoding="utf-8").splitlines()[0],
+            f"#!{interpreter}",
+        )
         probe.chmod(0o755)
         completed = subprocess.run(
             [str(probe)], text=True, capture_output=True, check=True
         )
         self.assertEqual(
-            ROUTING.launch_path(completed.stdout.strip()),
-            ROUTING.launch_path(interpreter),
+            Path(completed.stdout.strip()).resolve(),
+            interpreter.resolve(),
         )
 
     def test_direct_package_test_path_python_subprocess_fails(self) -> None:

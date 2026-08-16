@@ -47,6 +47,7 @@
     {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"}
   ],
   "schemas": [
+    {"id": "legacy_readiness_schema_4_0", "path": "schemas/pr-readiness-4.0.schema.json"},
     {"id": "readiness_schema", "path": "schemas/pr-readiness.schema.json"},
     {"id": "public_input_publication_review", "path": "schemas/public-publication-review-input.schema.json"},
     {"id": "public_input_publication_review_stale", "path": "schemas/public-publication-review-stale-input.schema.json"},
@@ -158,7 +159,7 @@
       {
         "id": "publication_readiness",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-4.0.json", "path": "schemas/pr-readiness.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-publication-readiness-5.0.json", "path": "schemas/pr-readiness.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]

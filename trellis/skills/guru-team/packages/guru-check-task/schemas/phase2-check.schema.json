@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json",
-  "title": "Guru Phase 2 Check 4.0 Compact Semantic Projection",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-5.0.json",
+  "title": "Guru Phase 2 Check 5.0 Compact Semantic Projection",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,6 +14,7 @@
     "reviewed_content_sha256",
     "validation",
     "docs_ssot",
+    "candidate_classifications",
     "semantic_review",
     "typed_exit",
     "route",
@@ -21,7 +22,7 @@
     "consumer"
   ],
   "properties": {
-    "schema_version": {"const": "4.0"},
+    "schema_version": {"const": "5.0"},
     "skill_id": {"const": "guru-check-task"},
     "mode": {"enum": ["workflow", "standalone"]},
     "task_ref": {
@@ -46,6 +47,12 @@
     },
     "validation": {"$ref": "#/$defs/validation"},
     "docs_ssot": {"$ref": "#/$defs/docsSsot"},
+    "candidate_classifications": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/candidateClassification"}
+    },
     "semantic_review": {"$ref": "#/$defs/semanticReview"},
     "typed_exit": {
       "enum": ["passed", "implementation_required", "planning_stale", "blocked"]
@@ -178,24 +185,67 @@
         "summary": {"type": "string", "minLength": 1}
       }
     },
+    "qualificationDecision": {
+      "enum": [
+        "qualified_current",
+        "qualified_explicit_nonstandard",
+        "qualified_approved_expansion",
+        "rejected_no_authority",
+        "rejected_unsupported_entry",
+        "rejected_not_reproduced",
+        "rejected_out_of_scope"
+      ]
+    },
+    "normalScenarioWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_refs",
+        "supported_entry_refs",
+        "existing_caller_refs",
+        "honest_action_sequence",
+        "defect_observation",
+        "excluded_assumptions"
+      ],
+      "properties": {
+        "requirement_refs": {"$ref": "#/$defs/stringList"},
+        "supported_entry_refs": {"$ref": "#/$defs/stringList"},
+        "existing_caller_refs": {"$ref": "#/$defs/stringList"},
+        "honest_action_sequence": {"$ref": "#/$defs/nonEmptyStringList"},
+        "defect_observation": {"type": "string", "minLength": 1},
+        "excluded_assumptions": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "candidateClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "decision", "witness", "consumer_use"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "decision": {"$ref": "#/$defs/qualificationDecision"},
+        "witness": {"$ref": "#/$defs/normalScenarioWitness"},
+        "consumer_use": {"const": "task_commit_preflight"}
+      }
+    },
     "scopeDecision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "disposition", "summary", "normal_path_reproduction", "finding_id"],
+      "required": ["id", "candidate_ref", "disposition", "summary", "finding_id"],
       "properties": {
         "id": {"type": "string", "minLength": 1},
+        "candidate_ref": {"type": "string", "minLength": 1},
         "disposition": {"enum": ["current_scope", "out_of_scope", "scope_change_required"]},
         "summary": {"type": "string", "minLength": 1},
-        "normal_path_reproduction": {"type": "string", "minLength": 1},
         "finding_id": {"type": ["string", "null"], "minLength": 1}
       }
     },
     "finding": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "severity", "summary", "path", "status"],
+      "required": ["id", "candidate_ref", "severity", "summary", "path", "status"],
       "properties": {
         "id": {"type": "string", "minLength": 1},
+        "candidate_ref": {"type": "string", "minLength": 1},
         "severity": {"enum": ["P0", "P1", "P2", "P3"]},
         "summary": {"type": "string", "minLength": 1},
         "path": {"type": ["string", "null"]},
@@ -255,6 +305,12 @@
         "kind": {"enum": ["skill", "workflow", "stop"]},
         "id": {"type": "string", "minLength": 1}
       }
+    },
+    "nonEmptyStringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
     }
   }
 }

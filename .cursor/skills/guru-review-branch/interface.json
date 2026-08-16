@@ -74,7 +74,8 @@
   ],
   "schemas": [
     {"id": "legacy_review_gate_schema_3_0", "path": "schemas/review-gate.schema.json"},
-    {"id": "review_gate_schema", "path": "schemas/review-gate-4.0.schema.json"},
+    {"id": "legacy_review_gate_schema_4_0", "path": "schemas/review-gate-4.0.schema.json"},
+    {"id": "review_gate_schema", "path": "schemas/review-gate-5.0.schema.json"},
     {"id": "public_input_branch_review", "path": "schemas/public-branch-review-input.schema.json"},
     {"id": "public_input_base_continuity", "path": "schemas/public-base-continuity-input.schema.json"},
     {"id": "legacy_public_input_aggregate_2_0", "path": "schemas/public-input.schema.json"},
@@ -202,7 +203,7 @@
       {
         "id": "review_gate",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-4.0.json", "path": "schemas/review-gate-4.0.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-5.0.json", "path": "schemas/review-gate-5.0.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]
