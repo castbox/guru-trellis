@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-control-map-1.0",
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "gitOid": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authority_repository",
+        "authority_issue",
+        "authority_state",
+        "authority_updated_at",
+        "authority_sha256",
+        "repository_authority_sha256",
+        "base_ref",
+        "base_head",
+        "checkout_head",
+        "repo_status_sha256",
+        "installed_extension_manifest_sha256",
+        "production_contract_manifest_sha256",
+        "runner_sha256",
+        "native_adapter_sha256",
+        "codex_adapter_descriptor_sha256",
+        "codex_adapter_wrapper_sha256",
+        "prompt_protocol",
+        "package_sha256",
+        "prompt_matrix_sha256",
+        "matrix_sha256",
+        "corpus_sha256",
+        "codex_cli_path",
+        "codex_cli_version",
+        "codex_package_version"
+      ],
+      "properties": {
+        "authority_repository": {"const": "castbox/guru-trellis"},
+        "authority_issue": {"const": 237},
+        "authority_state": {"enum": ["OPEN", "CLOSED"]},
+        "authority_updated_at": {"type": "string", "format": "date-time"},
+        "authority_sha256": {"$ref": "#/$defs/sha256"},
+        "repository_authority_sha256": {"$ref": "#/$defs/sha256"},
+        "base_ref": {"const": "origin/main"},
+        "base_head": {"$ref": "#/$defs/gitOid"},
+        "checkout_head": {"$ref": "#/$defs/gitOid"},
+        "repo_status_sha256": {"$ref": "#/$defs/sha256"},
+        "installed_extension_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "production_contract_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "runner_sha256": {"$ref": "#/$defs/sha256"},
+        "native_adapter_sha256": {"$ref": "#/$defs/sha256"},
+        "codex_adapter_descriptor_sha256": {"$ref": "#/$defs/sha256"},
+        "codex_adapter_wrapper_sha256": {"$ref": "#/$defs/sha256"},
+        "prompt_protocol": {"const": "guru-qualification-production-prompt-2.0"},
+        "package_sha256": {"$ref": "#/$defs/sha256"},
+        "prompt_matrix_sha256": {"$ref": "#/$defs/sha256"},
+        "matrix_sha256": {"$ref": "#/$defs/sha256"},
+        "corpus_sha256": {"$ref": "#/$defs/sha256"},
+        "codex_cli_path": {"type": "string", "pattern": "^/"},
+        "codex_cli_version": {"const": "codex-cli 0.147.0"},
+        "codex_package_version": {"const": "0.147.0"}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "decision"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "decision": {
+          "enum": [
+            "qualified_current",
+            "qualified_explicit_nonstandard",
+            "qualified_approved_expansion",
+            "scope_confirmation_required",
+            "rejected_no_authority",
+            "rejected_unsupported_entry",
+            "rejected_not_reproduced",
+            "rejected_out_of_scope",
+            "mechanism_removed",
+            "mechanism_replaced",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opaque_invocation_id",
+        "sequence_index",
+        "case_id",
+        "invocation_index",
+        "input_profile_id",
+        "scenario_id",
+        "scenario_kind",
+        "pair_id",
+        "pressure_framing",
+        "expected_exit",
+        "expected_decisions",
+        "prompt",
+        "prompt_sha256",
+        "files"
+      ],
+      "properties": {
+        "opaque_invocation_id": {"type": "string", "pattern": "^i-[a-z2-7]{26}$"},
+        "sequence_index": {"type": "integer", "minimum": 1, "maximum": 800},
+        "case_id": {"type": "string", "minLength": 1},
+        "invocation_index": {"type": "integer", "minimum": 1, "maximum": 5},
+        "input_profile_id": {
+          "enum": [
+            "task_free_pre_write",
+            "task_free_evolution",
+            "requirements_scope_set",
+            "change_request_candidate_set",
+            "planning_scenario_set",
+            "implementation_discovery",
+            "base_impact_candidate_set",
+            "phase2_candidate_set",
+            "branch_review_candidate_set",
+            "publication_candidate_set"
+          ]
+        },
+        "scenario_id": {"type": "string", "minLength": 1},
+        "scenario_kind": {"enum": ["rejected", "legitimate"]},
+        "pair_id": {"type": "string", "minLength": 1},
+        "pressure_framing": {
+          "enum": [
+            "neutral",
+            "attack_security",
+            "severity",
+            "independent_reviewer",
+            "already_implemented",
+            "already_tested",
+            "best_practice",
+            "theoretical_bypass"
+          ]
+        },
+        "expected_exit": {
+          "enum": [
+            "classified",
+            "scope_confirmation_required",
+            "mechanism_revision_required",
+            "blocked"
+          ]
+        },
+        "expected_decisions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/decision"}
+        },
+        "prompt": {"type": "string", "minLength": 1},
+        "prompt_sha256": {"$ref": "#/$defs/sha256"},
+        "files": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_id",
+    "schema_version",
+    "run_id",
+    "created_at",
+    "model_id",
+    "hmac_algorithm",
+    "opaque_id_format",
+    "run_nonce_base64",
+    "run_nonce_sha256",
+    "matrix_sha256",
+    "randomized_order",
+    "entry_count",
+    "entries_sha256",
+    "identity",
+    "entries"
+  ],
+  "properties": {
+    "$schema": {"const": "../../schemas/skill-eval-control-map-1.0.schema.json"},
+    "schema_id": {"const": "guru-team-skill-eval-control-map-1.0"},
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "model_id": {"const": "gpt-5.6-sol"},
+    "hmac_algorithm": {"const": "HMAC-SHA-256"},
+    "opaque_id_format": {"const": "i-base32-hmac-sha256-26"},
+    "run_nonce_base64": {"type": "string", "pattern": "^[A-Za-z0-9+/]{43}=$"},
+    "run_nonce_sha256": {"$ref": "#/$defs/sha256"},
+    "matrix_sha256": {"$ref": "#/$defs/sha256"},
+    "randomized_order": {"const": true},
+    "entry_count": {"const": 800},
+    "entries_sha256": {"$ref": "#/$defs/sha256"},
+    "identity": {"$ref": "#/$defs/identity"},
+    "entries": {
+      "type": "array",
+      "minItems": 800,
+      "maxItems": 800,
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  }
+}

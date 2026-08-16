@@ -1384,7 +1384,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ownership_facts = payload["upstream_ownership_validation"]
         self.assertEqual(ownership_facts["schema_version"], "3.0")
         self.assertEqual(ownership_facts["overlay_count"], 3)
-        self.assertEqual(ownership_facts["active_skill_count"], 17)
+        self.assertEqual(ownership_facts["active_skill_count"], 18)
         self.assertEqual(ownership_facts["managed_claim_count"], 9)
         self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
@@ -1635,7 +1635,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
             preview_remove,
         )
-        update = verifier.index("trellis update --force", initial_switch)
+        update = verifier.index("trellis update --dry-run 2>&1", initial_switch)
         workflow_reapply = verifier.index(
             'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --force',
             update,
@@ -2154,6 +2154,9 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertTrue(
             (self.install_dst / "skills/schemas/skill-interface-1.5.schema.json").is_file()
         )
+        self.assertTrue(
+            (self.install_dst / "skills/schemas/skill-interface-1.6.schema.json").is_file()
+        )
 
     def test_installs_only_declared_runtime_kernel_files(self) -> None:
         completed = self.install_current()
@@ -2178,7 +2181,22 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             (self.install_dst / "skills/schemas/skill-registry-1.4.schema.json").is_file()
         )
         self.assertTrue((self.install_dst / "skills/contracts/production-current.json").is_file())
+        self.assertTrue((self.install_dst / "skills/contracts/production-current-2.0.json").is_file())
+        self.assertTrue((self.install_dst / "skills/contracts/production-current-3.0.json").is_file())
+        self.assertTrue((self.install_dst / "skills/contracts/production-current-4.0.json").is_file())
         self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest.schema.json").is_file())
+        self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest-2.0.schema.json").is_file())
+        self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest-3.0.schema.json").is_file())
+        self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest-4.0.schema.json").is_file())
+        self.assertEqual(
+            (self.install_dst / "skills/contracts/production-current.json").read_bytes(),
+            (self.install_dst / "skills/contracts/production-current-4.0.json").read_bytes(),
+        )
+        for legacy in ("production-current-2.0.json", "production-current-3.0.json"):
+            self.assertEqual(
+                (self.install_dst / "skills/contracts" / legacy).read_bytes(),
+                (self.guru_root / "trellis/skills/guru-team/contracts" / legacy).read_bytes(),
+            )
         self.assertEqual(
             {
                 path.name
@@ -2363,8 +2381,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 41),
-            ("typed_output_schema_ids", 69),
+            ("public_input_schema_ids", 52),
+            ("typed_output_schema_ids", 73),
             ("private_artifact_schema_ids", 18),
         ):
             self.assertEqual(
@@ -2373,6 +2391,11 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             )
             self.assertEqual(len(public_api["skill_contracts"][field]), expected_count)
         public_input_schema_ids = public_api["skill_contracts"]["public_input_schema_ids"]
+        self.assertIn("guru-normal-scenario-input-aggregate-1.0", public_input_schema_ids)
+        self.assertIn(
+            "guru-normal-scenario-input-implementation-discovery-1.0",
+            public_input_schema_ids,
+        )
         self.assertIn(
             "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
             public_input_schema_ids,
@@ -2382,6 +2405,11 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_input_schema_ids,
         )
         typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
+        self.assertIn("guru-normal-scenario-output-classified-1.0", typed_output_schema_ids)
+        self.assertIn(
+            "guru-normal-scenario-output-scope-confirmation-required-1.0",
+            typed_output_schema_ids,
+        )
         self.assertIn(
             "guru-stage0-discover-change-context-output-context-ready-3.0",
             typed_output_schema_ids,
@@ -2404,12 +2432,76 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "public_output_context_ready_example_3_0",
         )
         self.assertEqual(public_api["skill_evals"]["schema_id"], "guru-team-skill-evals-1.0")
+        self.assertEqual(
+            public_api["skill_evals"]["schema_ids"],
+            ["guru-team-skill-evals-1.0", "guru-team-skill-evals-2.0"],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["production_schema_id"],
+            "guru-team-skill-evals-2.0",
+        )
+        self.assertEqual(
+            public_api["skill_contracts"]["contract_manifests"],
+            [
+                {
+                    "id": "production-current-v4",
+                    "schema_id": "guru-team-production-contract-manifest-4.0",
+                    "path": "contracts/production-current-4.0.json",
+                }
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["adapter_request_schema_ids"],
+            [
+                "guru-team-skill-eval-adapter-request-1.0",
+                "guru-team-skill-eval-adapter-request-2.0",
+                "guru-team-skill-eval-adapter-request-3.0",
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["adapter_response_schema_ids"],
+            [
+                "guru-team-skill-eval-adapter-response-1.0",
+                "guru-team-skill-eval-adapter-response-2.0",
+                "guru-team-skill-eval-adapter-response-3.0",
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["run_schema_ids"],
+            [
+                "guru-team-skill-eval-run-1.0",
+                "guru-team-skill-eval-run-2.0",
+                "guru-team-skill-eval-run-3.0",
+                "guru-team-skill-eval-run-4.0",
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["control_map_schema_id"],
+            "guru-team-skill-eval-control-map-1.0",
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["control_map_schema_path"],
+            "schemas/skill-eval-control-map-1.0.schema.json",
+        )
         self.assertEqual(public_api["skill_evals"]["adapter_ids"], ["shared", "codex", "claude", "cursor"])
         for relative in (
+            "contracts/production-current.json",
+            "contracts/production-current-2.0.json",
+            "contracts/production-current-3.0.json",
+            "contracts/production-current-4.0.json",
+            "schemas/production-contract-manifest-4.0.schema.json",
+            "schemas/skill-evals-2.0.schema.json",
             "schemas/skill-evals.schema.json",
+            "schemas/skill-eval-adapter-request-3.0.schema.json",
+            "schemas/skill-eval-adapter-request-2.0.schema.json",
             "schemas/skill-eval-adapter-request.schema.json",
+            "schemas/skill-eval-adapter-response-3.0.schema.json",
+            "schemas/skill-eval-adapter-response-2.0.schema.json",
             "schemas/skill-eval-adapter-response.schema.json",
+            "schemas/skill-eval-control-map-1.0.schema.json",
             "schemas/skill-eval-native-trace.schema.json",
+            "schemas/skill-eval-run-4.0.schema.json",
+            "schemas/skill-eval-run-3.0.schema.json",
             "schemas/skill-eval-run.schema.json",
             "adapters/eval/shared.json",
             "adapters/eval/codex.json",
@@ -2417,6 +2509,11 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "adapters/eval/cursor.json",
         ):
             self.assertTrue((self.repo / ".trellis/guru-team/skills" / relative).is_file(), relative)
+        installed_contracts = self.repo / ".trellis/guru-team/skills/contracts"
+        self.assertEqual(
+            (installed_contracts / "production-current.json").read_bytes(),
+            (installed_contracts / "production-current-4.0.json").read_bytes(),
+        )
         self.assertIn("sync-base", public_api["companion_scripts"])
         self.assertIn("check-base-sync", public_api["companion_scripts"])
         self.assertIn("preview-change-context-history", public_api["companion_scripts"])
@@ -2449,6 +2546,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-execute-task-free-change",
                 "guru-finalize-task",
                 "guru-merge-task-pr",
+                "guru-qualify-normal-scenario",
                 "guru-reconcile-task-base",
                 "guru-review-branch",
                 "guru-review-change-request",
@@ -2534,6 +2632,14 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         ):
             self.assertFalse((package_root / readiness_schema_relative).exists())
         self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.4")
+        self.assertEqual(
+            public_api["skill_contracts"]["interface_schema_ids"],
+            [
+                "guru-team-skill-interface-1.4",
+                "guru-team-skill-interface-1.5",
+                "guru-team-skill-interface-1.6",
+            ],
+        )
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")

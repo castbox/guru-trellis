@@ -13,6 +13,17 @@ For active-task scope change, the canonical workflow mandatory invokes this
 same Skill with an exact caller-aware `resume_target`; no caller may duplicate
 classification, ledger, or planning-update semantics.
 
+Before this owner creates a scope proposal, asks a scope question, or assigns a
+terminal scope disposition to a newly observed scenario, form only candidate
+refs and live locators and invoke `guru-qualify-normal-scenario` with
+`requirements_scope_set`. Rejected candidates are final for the current
+invocation and must not become clarification questions. The
+`normal_scenario_scope_confirmation` public profile instead consumes only the
+qualifier's minimal `scope_confirmation_required` projection and asks the exact
+authority choice before returning to the declared original owner. It does not
+repeat or reinterpret qualification and accepts no decision, reason, severity,
+authorization, result locator, or qualification artifact.
+
 Before answering repository-searchable questions or evaluating duplicate and
 prior-decision evidence, read `.trellis/spec/workflow/semantic-retrieval.md` and
 apply it in this Skill's semantic gate. Do not infer absence from a

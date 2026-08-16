@@ -4,6 +4,7 @@ import ast
 import json
 import os
 import shutil
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -572,7 +573,7 @@ class SharedRuntimeTests(unittest.TestCase):
 
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
-        self.assertEqual(len(active), 17)
+        self.assertEqual(len(active), 18)
         for row in active:
             with self.subTest(skill=row["id"]):
                 payload = discover(SKILLS, row["id"])
@@ -820,6 +821,430 @@ class SharedRuntimeTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("usage: sync-base", result.stdout)
+
+
+class QualificationNativeIsolationTests(unittest.TestCase):
+    def test_model_request_uses_protocol_2_and_hides_control_identity(self) -> None:
+        from adapters.eval import native_adapter
+
+        request = {
+            "skill_id": native_adapter.QUALIFICATION_SKILL,
+            "case_id": "case-secret-identity",
+            "invocation_id": "1" * 64,
+            "invocation_index": 4,
+            "input_profile_id": "implementation_discovery",
+            "pair_id": "pair-secret-identity",
+            "pressure_framing": "severity",
+            "expected_exit": "classified",
+            "expected_decisions": [{"decision": "qualified_current"}],
+            "prompt": "Review one call-local candidate against current authority.",
+            "interface": {
+                "public_invocation": {
+                    "wrapper": "scripts/invoke.sh",
+                    "input_binding": {
+                        "kind": "structured_json",
+                        "profile_selector": {
+                            "source": "aggregate_public_input",
+                            "field": "profile",
+                        },
+                    },
+                    "example_argv": ["--invocation", "-"],
+                },
+            },
+        }
+        hashes = set()
+        for root_name in ("first-random-root", "second-random-root"):
+            with tempfile.TemporaryDirectory() as tmp:
+                model_root = Path(tmp) / root_name
+                projection = model_root / "public-package"
+                repository = model_root / "evidence/repository"
+                evidence = model_root / "evidence/case/evidence-01.json"
+                projection.mkdir(parents=True)
+                repository.mkdir(parents=True)
+                evidence.parent.mkdir(parents=True, exist_ok=True)
+                evidence.write_text("{}", encoding="utf-8")
+                payload = native_adapter.qualification_model_request(
+                    request,
+                    model_root=model_root,
+                    projection_root=projection,
+                    repository_root=repository,
+                    evidence_paths=[evidence],
+                )
+                encoded = json.dumps(payload, sort_keys=True)
+                self.assertEqual(payload["schema_version"], "3.0")
+                self.assertEqual(
+                    payload["protocol"],
+                    "guru-qualification-production-prompt-2.0",
+                )
+                self.assertEqual(payload["public_package_root"], "public-package")
+                self.assertEqual(
+                    payload["repository_evidence_root"],
+                    "evidence/repository",
+                )
+                self.assertEqual(
+                    payload["public_invocation"]["input_binding"]["profile_selector"],
+                    {"source": "aggregate_public_input", "field": "profile"},
+                )
+                for forbidden in (
+                    "case_id",
+                    "case-secret-identity",
+                    "invocation_id",
+                    "invocation_index",
+                    "input_profile_id",
+                    "pair_id",
+                    "pair-secret-identity",
+                    "pressure_framing",
+                    "expected_exit",
+                    "expected_decisions",
+                ):
+                    self.assertNotIn(forbidden, encoded)
+                hashes.add(
+                    native_adapter.qualification_prompt_sha256(
+                        payload,
+                        "2" * 64,
+                        "gpt-5.6-sol",
+                    )
+                )
+        self.assertEqual(len(hashes), 1)
+
+    def test_codex_argv_uses_one_neutral_root_without_add_dir(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as tmp:
+            model_root = Path(tmp) / "model-root"
+            model_root.mkdir()
+            request = {
+                "schema_version": "3.0",
+                "skill_id": native_adapter.QUALIFICATION_SKILL,
+                "model_id": "gpt-5.6-sol",
+                "workdir": str(Path(tmp) / "private-workdir"),
+                "_model_root": str(model_root),
+            }
+            argv, output = native_adapter.native_argv(
+                "codex",
+                "/usr/bin/codex",
+                request,
+                "model-visible-context",
+                model_root / "native-context.txt",
+                Path(tmp) / "private/native-request.json",
+                model_root / "public-package",
+            )
+        self.assertNotIn("--add-dir", argv)
+        self.assertNotIn("--ignore-user-config", argv)
+        self.assertIn("--strict-config", argv)
+        self.assertEqual(argv.count("--skip-git-repo-check"), 1)
+        self.assertEqual(
+            argv.index("--skip-git-repo-check"),
+            argv.index("--strict-config") + 1,
+        )
+        self.assertEqual(argv.index("--cd"), argv.index("--skip-git-repo-check") + 1)
+        self.assertEqual(argv[argv.index("--cd") + 1], str(model_root.resolve()))
+        self.assertEqual(argv[argv.index("--model") + 1], "gpt-5.6-sol")
+        self.assertEqual(output, (model_root / "output/native-last-message.txt").resolve())
+        request.pop("skill_id")
+        request["model_id"] = "gpt-5.6"
+        with self.assertRaisesRegex(ValueError, "model identity"):
+            native_adapter.native_argv(
+                "codex",
+                "/usr/bin/codex",
+                request,
+                "model-visible-context",
+                model_root / "native-context.txt",
+                Path(tmp) / "private/native-request.json",
+                model_root / "public-package",
+            )
+
+    def test_native_environment_is_explicit_and_secret_free(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            environment = native_adapter.minimal_native_environment(
+                {
+                    "PATH": "/usr/bin:/bin",
+                    "HOME": "/example/home",
+                    "LANG": "C.UTF-8",
+                    "GITHUB_PERSONAL_TOKEN": "must-not-leak",
+                    "OPENAI_API_KEY": "must-not-leak",
+                    "UNRELATED_PARENT_VALUE": "must-not-inherit",
+                },
+                cwd=root / "model",
+                codex_home=root / "private/codex-home",
+                control={"GURU_TEAM_NATIVE_REQUEST": str(root / "private/request.json")},
+            )
+        self.assertEqual(
+            set(environment),
+            {
+                "PATH",
+                "HOME",
+                "LANG",
+                "PWD",
+                "PYTHONDONTWRITEBYTECODE",
+                "CODEX_HOME",
+                "GURU_TEAM_NATIVE_REQUEST",
+            },
+        )
+        self.assertNotIn("must-not-leak", json.dumps(environment))
+        self.assertEqual(
+            native_adapter.recorded_native_environment(environment),
+            dict(sorted(environment.items())),
+        )
+
+    def test_external_codex_home_is_owner_private_and_outside_run_root(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_root = root / "run"
+            codex_home = root / "auth-home"
+            run_root.mkdir()
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}", encoding="utf-8")
+            auth.chmod(0o600)
+            selected = native_adapter.external_codex_home(
+                {"CODEX_HOME": str(codex_home)},
+                run_root,
+            )
+            self.assertEqual(selected, codex_home.resolve())
+            native_adapter.write_codex_permission_profile(
+                selected,
+                run_root / "model-root",
+                [selected, run_root],
+            )
+            self.assertEqual(stat.S_IMODE(selected.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE(auth.stat().st_mode), 0o600)
+            self.assertEqual(
+                stat.S_IMODE((selected / "config.toml").stat().st_mode),
+                0o600,
+            )
+            self.assertEqual(list(run_root.rglob("auth.json")), [])
+            with self.assertRaisesRegex(ValueError, "outside"):
+                native_adapter.external_codex_home(
+                    {"CODEX_HOME": str(run_root / "nested-home")},
+                    run_root,
+                )
+
+    def test_permission_profile_allows_model_root_and_denies_private_roots(self) -> None:
+        from adapters.eval import native_adapter
+
+        codex = shutil.which("codex")
+        if codex is None:
+            self.skipTest("Codex CLI is unavailable for the no-model sandbox probe")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model_root = root / "model-root"
+            private_root = root / "private-control"
+            real_worktree = root / "real-worktree"
+            corpus = root / "corpus.json"
+            auth = root / "auth.json"
+            for directory in (model_root, private_root, real_worktree):
+                directory.mkdir()
+            (private_root / "control.json").write_text("{}", encoding="utf-8")
+            (real_worktree / "README.md").write_text("private", encoding="utf-8")
+            corpus.write_text("{}", encoding="utf-8")
+            auth.write_text("{}", encoding="utf-8")
+            codex_home = private_root / "codex-home"
+            denied = [
+                private_root,
+                real_worktree,
+                corpus,
+                auth,
+                Path("/tmp"),
+                Path("/private/tmp"),
+            ]
+            native_adapter.write_codex_permission_profile(
+                codex_home,
+                model_root,
+                denied,
+            )
+            environment = native_adapter.minimal_native_environment(
+                dict(os.environ),
+                cwd=model_root,
+                codex_home=codex_home,
+            )
+            result = native_adapter.run_codex_permission_probe(
+                codex,
+                environment,
+                model_root,
+                native_adapter.canonical_permission_paths(denied),
+            )
+        self.assertEqual(result["returncode"], 0, result)
+        self.assertTrue(result["result"]["positive"])
+        self.assertEqual(
+            set(result["result"]["denied"]),
+            {str(path) for path in native_adapter.canonical_permission_paths(denied)},
+        )
+
+    def test_permission_probe_uses_resolved_base_interpreter(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            denied_root = root / "managed-cache"
+            managed_python = denied_root / "runtime/venv/bin/python"
+            base_interpreter = Path(str(sys._base_executable)).resolve()
+            with (
+                mock.patch.object(native_adapter.sys, "_base_executable", str(base_interpreter)),
+                mock.patch.object(native_adapter.sys, "executable", str(managed_python)),
+            ):
+                argv = native_adapter.permission_probe_argv(
+                    "/usr/bin/codex",
+                    root / "model-root",
+                    root / "model-root/permission-probe.py",
+                    [denied_root, Path("/tmp"), Path("/private/tmp")],
+                )
+        self.assertEqual(Path(argv[6]), base_interpreter)
+        self.assertNotEqual(argv[6], str(managed_python))
+
+    def test_permission_probe_rejects_invalid_base_interpreter(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with (
+                mock.patch.object(native_adapter.sys, "_base_executable", str(root / "missing-python")),
+                mock.patch.object(native_adapter.sys, "executable", str(root / "managed/venv/bin/python")),
+            ):
+                with self.assertRaisesRegex(ValueError, "base interpreter is unavailable"):
+                    native_adapter.permission_probe_argv(
+                        "/usr/bin/codex",
+                        root / "model-root",
+                        root / "model-root/permission-probe.py",
+                        [root / "managed", Path("/tmp"), Path("/private/tmp")],
+                    )
+
+    def test_permission_probe_rejects_base_interpreter_inside_denied_path(self) -> None:
+        from adapters.eval import native_adapter
+
+        base_interpreter = Path(str(sys._base_executable)).resolve()
+        self.assertTrue(base_interpreter.is_file())
+        self.assertTrue(os.access(base_interpreter, os.X_OK))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with (
+                mock.patch.object(
+                    native_adapter.sys,
+                    "_base_executable",
+                    str(base_interpreter),
+                ),
+                mock.patch.object(
+                    native_adapter.sys,
+                    "executable",
+                    str(root / "managed/venv/bin/python"),
+                ),
+            ):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "^permission probe base interpreter is inside a denied path$",
+                ):
+                    native_adapter.permission_probe_argv(
+                        "/usr/bin/codex",
+                        root / "model-root",
+                        root / "model-root/permission-probe.py",
+                        [base_interpreter, Path("/tmp"), Path("/private/tmp")],
+                    )
+
+    def test_permission_probe_from_tmp_managed_venv_denies_private_roots(self) -> None:
+        codex = shutil.which("codex")
+        if codex is None:
+            self.skipTest("Codex CLI is unavailable for the managed-venv no-model sandbox probe")
+        base_interpreter = Path(str(sys._base_executable)).resolve()
+        with tempfile.TemporaryDirectory(prefix="guru-permission-probe-", dir="/tmp") as tmp:
+            root = Path(tmp)
+            venv = root / "managed/venv"
+            created = subprocess.run(
+                [str(base_interpreter), "-m", "venv", "--without-pip", str(venv)],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(created.returncode, 0, created)
+            managed_python = venv / "bin/python"
+            child_code = """
+import importlib.util,json,os,sys
+from pathlib import Path
+adapter_path,codex,root_value=sys.argv[1:]
+root=Path(root_value)
+spec=importlib.util.spec_from_file_location("managed_venv_native_adapter",adapter_path)
+module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+model_root=root/"model-root";private_root=root/"private-control";worktree=root/"source-worktree"
+corpus=root/"corpus.json";auth=root/"auth.json";codex_home=private_root/"codex-home"
+for directory in (model_root,private_root,worktree): directory.mkdir(parents=True)
+(private_root/"control.json").write_text("{}",encoding="utf-8")
+(worktree/"README.md").write_text("private",encoding="utf-8")
+corpus.write_text("{}",encoding="utf-8");auth.write_text("{}",encoding="utf-8")
+denied=[private_root,worktree,corpus,auth,Path("/tmp"),Path("/private/tmp")]
+module.write_codex_permission_profile(codex_home,model_root,denied)
+environment=module.minimal_native_environment(dict(os.environ),cwd=model_root,codex_home=codex_home)
+canonical=module.canonical_permission_paths(denied)
+result=module.run_codex_permission_probe(codex,environment,model_root,canonical)
+payload={"sys_executable":sys.executable,"sys_base_executable":sys._base_executable,"selected_interpreter":result["argv"][6],"canonical_denied":[str(path) for path in canonical],"probe":result}
+print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returncode"]==0 else 1)
+"""
+            environment = os.environ.copy()
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+            result = subprocess.run(
+                [
+                    str(managed_python),
+                    "-c",
+                    child_code,
+                    str(SKILLS / "adapters/eval/native_adapter.py"),
+                    codex,
+                    str(root),
+                ],
+                env=environment,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+        self.assertEqual(
+            Path(payload["sys_executable"]),
+            root.resolve() / "managed/venv/bin/python",
+        )
+        self.assertEqual(Path(payload["sys_base_executable"]).resolve(), base_interpreter)
+        self.assertEqual(Path(payload["selected_interpreter"]), base_interpreter)
+        self.assertFalse(str(base_interpreter).startswith(("/tmp/", "/private/tmp/")))
+        self.assertTrue(payload["probe"]["result"]["positive"])
+        self.assertEqual(
+            set(payload["probe"]["result"]["denied"]),
+            set(payload["canonical_denied"]),
+        )
+
+    def test_repository_projection_omits_control_auth_corpus_and_runtime(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "owner"
+            destination = root / "projection"
+            (source / ".git").mkdir(parents=True)
+            (source / ".trellis/.runtime").mkdir(parents=True)
+            (source / ".trellis/guru-team/runtime").mkdir(parents=True)
+            (source / ".trellis/guru-team/skills/adapters/eval").mkdir(parents=True)
+            (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime").mkdir(parents=True)
+            (source / "package/evals").mkdir(parents=True)
+            (source / "package/tests").mkdir(parents=True)
+            (source / ".git/config").write_text("private", encoding="utf-8")
+            (source / ".trellis/.runtime/result.json").write_text("{}", encoding="utf-8")
+            (source / ".trellis/guru-team/runtime/private.py").write_text("pass\n", encoding="utf-8")
+            (source / ".trellis/guru-team/skills/adapters/eval/native.py").write_text("pass\n", encoding="utf-8")
+            (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime/private.py").write_text("pass\n", encoding="utf-8")
+            (source / "package/evals/evals.json").write_text("{}", encoding="utf-8")
+            (source / "package/tests/test_contract.py").write_text("pass\n", encoding="utf-8")
+            (source / "auth.json").write_text("{}", encoding="utf-8")
+            (source / ".env").write_text("SECRET=value", encoding="utf-8")
+            native_adapter.stage_repository_projection(source, destination)
+            files = {
+                path.relative_to(destination).as_posix()
+                for path in destination.rglob("*")
+                if path.is_file()
+            }
+        self.assertEqual(files, {"package/tests/test_contract.py"})
 
 
 if __name__ == "__main__":

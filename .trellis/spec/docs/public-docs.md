@@ -294,7 +294,7 @@ When workflow behavior changes, update the docs that users actually read:
 
 Public docs describing Phase 2 must name active semantic Skill
 `guru-check-task`, its single `phase2-check.json` artifact, active
-`guru-phase2-check-4.0` current-only schema, shared
+`guru-phase2-check-5.0` current-only schema, legacy 4.0 compatibility inventory, shared
 `guru-reviewed-content-1.0` identity, `phase2_capture_commit`, public
 `phase2_commit_anchor`, scope-before-severity rule, full-rerun finding loop,
 four exits, and official unchanged `trellis-check` evidence-only role. They must
@@ -438,7 +438,7 @@ serialization and terminal paths consume the owner material and remove empty
 owner directories. No Discovery artifact locator or supersession history is a
 public or durable contract.
 
-Public READMEs describe seventeen active Skills and 69 external exits, identify
+Public READMEs describe eighteen active Skills and 73 external exits, identify
 `guru-review-branch` as the Phase 3.5 semantic owner and
 `guru-review-task-publication` as the Phase 3.6 semantic owner, and show contract
 discovery, public wrapper, eval, fresh install, update and reapply commands.
@@ -481,8 +481,9 @@ owner-private transaction, derives current finish-summary schema 2 once, keeps
 schema 1 history readable, and rejects legacy Publication/Finalizer 3.0 shapes
 without fallback.
 
-README package closure numbers are seventeen active Skills and 69 external exits;
-business workflow markers remain 16 invokes, 67 exits, and 39 targets.
+README package closure numbers are eighteen active Skills and 73 external exits;
+business workflow markers remain 17 invokes, 71 exits, 24 workflow targets, and
+18 stop targets.
 `production-current-v2` owns the current planning/check/commit contract; the
 live Intake contract remains six Skills/23 exits.
 
@@ -520,9 +521,9 @@ side-effect confirmation, and deterministic executor. Scripts execute, validate,
 and record facts after semantic review; they do not choose plan, scope,
 readiness, recovery route, or semantic pass.
 
-The READMEs describe the current package graph as seventeen active Skills and 69
+The READMEs describe the current package graph as eighteen active Skills and 73
 external exits with thirteen target-owned authoring handoffs. The integrated business
-workflow is 16 invokes, 67 exits, and 39 targets. The three `guru-finish-work`
+workflow is 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. The three `guru-finish-work`
 entries route Publication -> Finalizer -> Merge only. Publication
 `return_to_task_work` remains available for real content drift.
 

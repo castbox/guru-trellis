@@ -52,7 +52,14 @@ unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
 invalid interface projections stop fail closed.
 
 ## Integrated Public Graph
-The business-task graph is exactly 16 mandatory Skills and 67 external exits.
+The installed graph is exactly 18 active Skills. The business-task workflow is
+exactly 17 mandatory invokes and 71 external exits.
+### Cross-phase normal-scenario qualification owner
+<!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"scope_confirmation_required","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"mechanism_revision_required","consumer":{"kind":"workflow","id":"guru-normal-scenario-mechanism-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"blocked","consumer":{"kind":"stop","id":"normal-scenario-qualification-blocked"}} -->
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
@@ -142,9 +149,11 @@ The business-task graph is exactly 16 mandatory Skills and 67 external exits.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
 ## Workflow And Stop Targets
-The graph contains exactly 22 workflow targets and 17 stop targets.
+The graph contains exactly 24 workflow targets and 18 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
+<!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
+<!-- guru-workflow-target: {"id":"guru-normal-scenario-mechanism-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-completed"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-resume-active-task-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-scope-change-router"} -->
@@ -166,6 +175,7 @@ The graph contains exactly 22 workflow targets and 17 stop targets.
 <!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
 <!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
+<!-- guru-stop-target: {"id":"normal-scenario-qualification-blocked"} -->
 <!-- guru-stop-target: {"id":"task-free-change-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->
@@ -187,6 +197,8 @@ The graph contains exactly 22 workflow targets and 17 stop targets.
 | --- | --- |
 | original-request-route | Return to the original non-repository request. |
 | guru-workflow-standard-intake-router | Enter the existing mandatory `guru-sync-base` route without requiring a pre-existing Issue. |
+| guru-normal-scenario-classified-router | Validate the profile binding and return the current invocation-local classifications to the exact original owner. |
+| guru-normal-scenario-mechanism-router | Validate the profile binding and return to the exact original owner for remove/replace, then require fresh qualification before further stage judgment. |
 | guru-task-free-completed | Report the checked bounded-change edited paths, concise validation results, and explicit unverified boundaries without creating lifecycle or publication resources. |
 | guru-task-free-resume-active-task-router | Resume the exact active task from its current status route. |
 | guru-task-free-scope-change-router | Enter the existing Scope Change Gate through `guru-clarify-requirements`. |
@@ -219,6 +231,35 @@ commit, Publication may return a checked task-work finding to the existing Phase
 Every stop target returns the owning Skill result and safe remediation, then
 waits for changed authority or external state. A stop never guesses another
 route or exposes package-private state.
+
+### Mandatory qualification profiles
+
+The workflow invokes the stable `guru-qualify-normal-scenario` id at these exact
+candidate boundaries. Each caller supplies only its profile-specific candidate
+set and live locators; the workflow consumes only the four declared exits.
+
+| Profile | Trigger before | Classified/mechanism return owner |
+| --- | --- | --- |
+| `task_free_pre_write` | task-free pre-write suitability or any target write | `guru-execute-task-free-change` |
+| `task_free_evolution` | post-write scope/risk evolution judgment or further target write | `guru-execute-task-free-change` |
+| `requirements_scope_set` | clarification scope proposal, scope question, or scope disposition | `guru-clarify-requirements` |
+| `change_request_candidate_set` | change-request readiness finding, requested test, or blocker | `guru-review-change-request` |
+| `planning_scenario_set` | planning acceptance, negative test, finding, or revision action | `guru-approve-task-plan` |
+| `implementation_discovery` | Phase 2 edits or tests for a planning-external discovered candidate | `guru-phase2-implementation-coordinator` |
+| `base_impact_candidate_set` | base-impact finding, validation obligation, or route | `guru-reconcile-task-base` |
+| `phase2_candidate_set` | Phase 2 severity, finding, planning-stale, or implementation route | `guru-check-task` |
+| `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
+| `publication_candidate_set` | Publication finding, task-work return, or blocker | `guru-review-task-publication` |
+
+`scope_confirmation_required` always invokes
+`guru-clarify-requirements:normal_scenario_scope_confirmation`. That target-owned
+profile returns a real authority choice to the closed original owner; a changed
+authority or candidate set starts fresh qualification. Already rejected
+candidates never enter clarification. Unknown, empty, multiple, mismatched, or
+unmapped results stop at `normal-scenario-qualification-blocked`.
+For `implementation_discovery`, the semantic owner remains
+`guru-phase2-implementation-coordinator`; its deterministic clarification resume
+target is the existing `guru-resume-implementation` workflow API.
 
 ## Phase Index
 
@@ -342,6 +383,25 @@ Read the planning artifacts, curated specs, and live diff from that worktree.
 Use the configured Trellis implement/check agents when available; their
 terminal results are ephemeral evidence. Execute the approved Docs SSOT Plan
 and implement the current scope.
+
+Every dispatch prompt for an official Trellis implement, check, research,
+channel-runtime, or independent-review worker authorizes approved-plan work
+only. If that worker observes anything outside the approved planning, it must
+stop before editing, adding a test, self-fixing, assigning severity,
+classifying, or choosing a route, and return only one invocation-local
+candidate shape: `candidate_ref`, `observed_behavior`, `locators`, and
+`minimal_reproduction_hint`. The Guru owner rereads the live authority, caller,
+diff, and tests and performs fresh qualification before it may continue that
+work or dispatch a worker again for it. Official `trellis-*` agent files remain
+unchanged upstream-owned inputs to this invocation contract.
+
+If implementation discovery produces any candidate not already closed by the
+approved planning, invoke
+`guru-qualify-normal-scenario:implementation_discovery` before adding an edit,
+test, finding, or route for that candidate. Rejected candidates are dropped;
+mechanism revision returns here for remove/replace and a fresh invocation;
+blocked stops. The coordinator consumes the result in-process and writes no
+qualification artifact or checkpoint.
 
 #### 2.2 Task check
 

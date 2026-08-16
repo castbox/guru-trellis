@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-adapter-request-3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "adapter_id",
+    "platform",
+    "skill_id",
+    "package_root",
+    "interface",
+    "invocation_id",
+    "prompt",
+    "files",
+    "workdir",
+    "package_sha256",
+    "model_id",
+    "runtime_target"
+  ],
+  "properties": {
+    "schema_version": {"const": "3.0"},
+    "adapter_id": {"const": "codex"},
+    "platform": {"const": "codex"},
+    "skill_id": {"const": "guru-qualify-normal-scenario"},
+    "package_root": {"type": "string", "minLength": 1},
+    "interface": {"type": "object"},
+    "invocation_id": {"type": "string", "pattern": "^i-[a-z2-7]{26}$"},
+    "prompt": {"type": "string", "minLength": 1},
+    "files": {"type": "array", "items": {"type": "string"}},
+    "workdir": {"type": "string", "minLength": 1},
+    "package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "model_id": {"const": "gpt-5.6-sol"},
+    "runtime_target": {"type": "string", "minLength": 1}
+  }
+}

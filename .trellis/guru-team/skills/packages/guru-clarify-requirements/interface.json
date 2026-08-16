@@ -93,6 +93,10 @@
       "path": "examples/public-standalone-review-input.json"
     },
     {
+      "id": "public_input_normal_scenario_scope_confirmation_example",
+      "path": "examples/public-normal-scenario-scope-confirmation-input.json"
+    },
+    {
       "id": "public_invocation_error_example",
       "path": "examples/public-invocation-error.json"
     },
@@ -141,6 +145,10 @@
     {
       "id": "public_input_standalone_review",
       "path": "schemas/public-standalone-review-input.schema.json"
+    },
+    {
+      "id": "public_input_normal_scenario_scope_confirmation",
+      "path": "schemas/public-normal-scenario-scope-confirmation-input.schema.json"
     },
     {
       "id": "public_input_aggregate",
@@ -267,7 +275,7 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-clarify-requirements-input-aggregate-1.0",
+        "schema_id": "guru-stage0-clarify-requirements-input-aggregate-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
@@ -314,6 +322,21 @@
           "discriminator": {
             "field": "profile",
             "value": "standalone_review"
+          }
+        },
+        {
+          "id": "normal_scenario_scope_confirmation",
+          "schema": {
+            "schema_id": "guru-stage0-clarify-requirements-input-normal-scenario-scope-confirmation-1.0",
+            "path": "schemas/public-normal-scenario-scope-confirmation-input.schema.json"
+          },
+          "example": {
+            "id": "normal_scenario_scope_confirmation_input",
+            "path": "examples/public-normal-scenario-scope-confirmation-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "normal_scenario_scope_confirmation"
           }
         }
       ]

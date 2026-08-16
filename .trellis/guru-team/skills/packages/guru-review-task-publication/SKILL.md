@@ -26,6 +26,16 @@ dimension may be carried forward only when its evidence references remain
 current and byte-identical; source, test, durable-doc, spec, workflow, schema,
 config, or deployment drift returns to task work.
 
+Before a publication observation can become a finding, task-work return, or
+publication blocker, form only candidate refs and live publication/diff/test
+locators and invoke `guru-qualify-normal-scenario` with
+`publication_candidate_set`. Do not assign severity or route before
+`classified`. Rejected candidates cannot become clarification, task work, or a
+blocker. Mechanism revision returns to task work for remove/replace and a fresh
+publication review; blocked stops. The Publication gate records only this
+owner's final direct-consumer classification/witness and never references
+qualification stdout, a result/report, locator, or checkpoint.
+
 Emit exactly one declared typed exit. Missing, stale, ambiguous, multiple,
 unmapped, or checker-failed evidence fails closed.
 

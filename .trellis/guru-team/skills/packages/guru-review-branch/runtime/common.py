@@ -283,7 +283,39 @@ def content_identity(repo, base_commit, commit, task_ref):
 
 
 def validate_gate(package_root, repo, value, expected_exit=None):
-    validate_json(value, package_root / "schemas/review-gate-4.0.schema.json", "gate")
+    validate_json(value, package_root / "schemas/review-gate-5.0.schema.json", "gate")
+    classifications = value.get("candidate_classifications")
+    refs = [
+        item.get("candidate_ref")
+        for item in classifications
+        if isinstance(item, dict)
+    ] if isinstance(classifications, list) else []
+    if not refs or len(refs) != len(classifications) or len(set(refs)) != len(refs):
+        raise CommandError(
+            "schema_mismatch",
+            "candidate_classifications",
+            "Record one complete non-empty classification for every unique current candidate.",
+        )
+    known = set(refs)
+    linked = []
+    for key in (
+        "qualified_findings",
+        "scope_proposals",
+        "observations",
+        "followup_candidates",
+        "rejected_candidates",
+    ):
+        linked.extend(
+            item.get("candidate_ref")
+            for item in value["semantic_review"].get(key, [])
+            if isinstance(item, dict)
+        )
+    if any(not ref or ref not in known for ref in linked):
+        raise CommandError(
+            "schema_mismatch",
+            "candidate_classifications",
+            "Every Branch Review candidate disposition must bind one current classified candidate.",
+        )
     unsigned = {
         key: copy.deepcopy(item)
         for key, item in value.items()

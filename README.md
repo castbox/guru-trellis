@@ -104,6 +104,28 @@ pre-task 不需要在仓库保存 owner 或 prerequisite 文件。Base sync 只�
 
 用户只需要在存在真实选择、范围变化或外部副作用时参与确认。
 
+### 正常场景资格
+
+公共 closed-loop Skill `guru-qualify-normal-scenario` 是新场景资格的唯一语义
+Owner。它覆盖 task-free 写前/演化、需求、变更请求、规划、实现发现、base impact、
+Phase 2、Branch Review 和 Publication 共十个 mandatory profiles；Guru caller 只把
+worker 的当前观察投影为 candidate refs 与 live locators。每次 worker dispatch 只授权
+approved-plan work；规划外候选资格完成前不 edit、不补负向测试、不 self-fix、不赋
+severity，也不形成 finding、实现或发布 blocker。官方 `trellis-*` agent bytes 保持
+upstream-owned，不由 Guru preset 修改。
+
+Skill 只返回 `classified`、`scope_confirmation_required`、
+`mechanism_revision_required`、`blocked` 四个 typed exits，并由 workflow 交给唯一
+consumer。资格 decision/result 只存在当前 invocation 的 memory/stdout，不生成 tracked
+或 ignored qualification report/checkpoint、共享 candidate ledger、handoff 或跨进程
+result locator。Phase 2、Branch Review、Publication 只在各自现有 owner-private gate 中
+直接记录本阶段 consumer 必需的最终 classification/witness。
+
+Production eval 通过 clean install 后的真实 public entry 覆盖全部十 profiles，将
+#113 F-001 与 #236 攻击式 scanner 变体同 paired legitimate cases 一起验证。当前门禁
+限定于 GPT-5.6 Sol、当前 prompt/package 与当前 matrix：每 case 五次 fresh invocation
+必须 5/5；模型或关键 prompt 变化后重新执行，本文不承诺未来永不复发。
+
 ### 智能选择 task-free 或标准 Intake
 
 尚未进入活动 task 路径的文件修改请求都会先由 semantic
@@ -164,6 +186,15 @@ manifest 和 Skill package，也不会调用或路由到 `guru-verify-extension-
 origin、requested ref、resolved commit、HEAD 和 clean tree。验证目标由 source 流程创建
 clean throwaway repo，不绑定真实业务 task、branch、Finalizer plan 或 publication HEAD。
 任何携带 credential 的 locator 都会在外部动作和证据写入前被拒绝。
+
+源仓的完整 upgrade/update 验收使用隔离环境并严格按顺序执行：clean initial
+workflow/preset install；在 disposable npm prefix/container 中运行
+`trellis upgrade --tag latest` 并核验前后 CLI version；在 throwaway project 运行
+`trellis update --dry-run`，只在输出明确包含 `MIGRATION REQUIRED` 时运行
+`trellis update --migrate`，否则运行普通 `trellis update`；再完成 marketplace
+`--create-new` preview、active switch 与 canonical preset reapply。最后验证 package、
+workflow、十 profiles、平台投影、ownership、dogfood drift 与递归零 `.new`/`.bak`。
+该门禁不修改开发机 global npm，也不升级真实业务仓。
 
 ## 适合哪些仓库
 

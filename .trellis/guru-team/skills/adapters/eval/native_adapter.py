@@ -7,9 +7,13 @@ import importlib.util
 import io
 import json
 import os
+import select
 import shutil
+import socket
+import stat
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -34,6 +38,35 @@ PRODUCTION_SKILLS = {
     "guru-review-task-publication",
     "guru-verify-extension-installation",
 }
+QUALIFICATION_SKILL = "guru-qualify-normal-scenario"
+QUALIFICATION_MODEL = "gpt-5.6-sol"
+QUALIFICATION_MODEL_REQUEST_SCHEMA = "3.0"
+QUALIFICATION_PROMPT_PROTOCOL = "guru-qualification-production-prompt-2.0"
+QUALIFICATION_PERMISSION_PROFILE = "guru-qualification-production"
+
+MINIMAL_NATIVE_ENVIRONMENT_KEYS = (
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "PATH",
+    "SSL_CERT_DIR",
+    "SSL_CERT_FILE",
+    "TERM",
+    "TMPDIR",
+)
+SECRET_ENVIRONMENT_MARKERS = (
+    "API_KEY",
+    "ACCESS_TOKEN",
+    "AUTH_TOKEN",
+    "BEARER",
+    "CREDENTIAL",
+    "DATABASE_URL",
+    "PASSWORD",
+    "PRIVATE_KEY",
+    "SECRET",
+    "SESSION_TOKEN",
+)
 
 MANAGED_PYTHON_SHEBANG = f"#!{sys.executable}\n"
 
@@ -101,11 +134,16 @@ def main() -> int:
     parser.add_argument("--wrapper-sha256", required=True)
     subparsers = parser.add_subparsers(dest="operation", required=True)
     read_parser = subparsers.add_parser("read")
-    read_parser.add_argument("--kind", required=True, choices=("skill_contract", "case_file"))
+    read_parser.add_argument(
+        "--kind",
+        required=True,
+        choices=("skill_contract", "case_file", "owner_file"),
+    )
     read_parser.add_argument("--path", required=True)
     invoke_parser = subparsers.add_parser("invoke")
     invoke_parser.add_argument("--wrapper", required=True)
     invoke_parser.add_argument("--execution-wrapper", required=True)
+    invoke_parser.add_argument("--stdin", action="store_true")
     invoke_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     trace_path = Path(args.trace).resolve()
@@ -124,7 +162,7 @@ def main() -> int:
     execution_wrapper = Path(args.execution_wrapper).resolve()
     process = subprocess.run(
         [str(execution_wrapper), "--package-root", args.projection_root, *forwarded], text=True, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, check=False,
+        stderr=subprocess.PIPE, check=False, input=sys.stdin.read() if args.stdin else None,
     )
     append_event(trace_path, args.request_sha256, args.projection_root, args.skill_sha256, args.wrapper_sha256, {
         "kind": "invoke", "wrapper_path": str(wrapper), "argv": [str(wrapper), *forwarded],
@@ -138,6 +176,147 @@ def main() -> int:
 
 if __name__ == "__main__":
     import sys
+    raise SystemExit(main())
+'''
+
+
+QUALIFICATION_TRACE_HELPER = MANAGED_PYTHON_SHEBANG + r'''from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+from pathlib import Path
+
+
+def digest(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def stdout_digest(value: str) -> str:
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError:
+        normalized = value.strip()
+    else:
+        normalized = json.dumps(payload, separators=(",", ":"))
+    return digest(normalized.encode("utf-8"))
+
+
+def append_event(
+    trace_path: Path,
+    request_sha256: str,
+    projection_root: str,
+    skill_sha256: str,
+    wrapper_sha256: str,
+    event: dict[str, object],
+) -> None:
+    if trace_path.exists():
+        payload = json.loads(trace_path.read_text(encoding="utf-8"))
+    else:
+        payload = {
+            "schema_version": "1.0",
+            "request_sha256": request_sha256,
+            "projection_root": projection_root,
+            "skill_sha256": skill_sha256,
+            "wrapper_sha256": wrapper_sha256,
+            "events": [],
+        }
+    if (
+        payload.get("request_sha256") != request_sha256
+        or payload.get("projection_root") != projection_root
+        or payload.get("skill_sha256") != skill_sha256
+        or payload.get("wrapper_sha256") != wrapper_sha256
+        or not isinstance(payload.get("events"), list)
+    ):
+        raise ValueError("native trace request binding mismatch")
+    event["request_sha256"] = request_sha256
+    payload["events"].append(event)
+    trace_path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+
+
+def inside(root: Path, target: Path) -> bool:
+    try:
+        target.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--trace", required=True)
+    parser.add_argument("--request-sha256", required=True)
+    parser.add_argument("--projection-root", required=True)
+    parser.add_argument("--repository-root", required=True)
+    parser.add_argument("--sandbox-root", required=True)
+    parser.add_argument("--request-fifo", required=True)
+    parser.add_argument("--response-fifo", required=True)
+    parser.add_argument("--skill-sha256", required=True)
+    parser.add_argument("--wrapper-sha256", required=True)
+    subparsers = parser.add_subparsers(dest="operation", required=True)
+    read_parser = subparsers.add_parser("read")
+    read_parser.add_argument(
+        "--kind",
+        required=True,
+        choices=("skill_contract", "case_file", "owner_file"),
+    )
+    read_parser.add_argument("--path", required=True)
+    invoke_parser = subparsers.add_parser("invoke")
+    invoke_parser.add_argument("--stdin", action="store_true")
+    args = parser.parse_args()
+    sandbox_root = Path(args.sandbox_root).resolve()
+    projection_root = Path(args.projection_root).resolve()
+    repository_root = Path(args.repository_root).resolve()
+    trace_path = Path(args.trace).resolve()
+    if not all(inside(sandbox_root, path) for path in (
+        projection_root,
+        repository_root,
+        trace_path,
+        Path(args.request_fifo).resolve(),
+        Path(args.response_fifo).resolve(),
+    )):
+        raise ValueError("qualification helper path escapes the model sandbox")
+    if args.operation == "read":
+        target = Path(args.path).resolve()
+        allowed_root = repository_root if args.kind == "owner_file" else sandbox_root
+        if not inside(allowed_root, target):
+            raise ValueError("qualification read target escapes its projected root")
+        if "evals" in target.parts or ".runtime" in target.parts:
+            raise ValueError("qualification read target is private")
+        content = target.read_bytes()
+        append_event(trace_path, args.request_sha256, str(projection_root), args.skill_sha256, args.wrapper_sha256, {
+            "kind": "read", "target_kind": args.kind, "path": str(target), "sha256": digest(content),
+        })
+        sys.stdout.buffer.write(content)
+        return 0
+    if not args.stdin:
+        raise ValueError("qualification invocation requires stdin")
+    request_fifo = Path(args.request_fifo)
+    response_fifo = Path(args.response_fifo)
+    request_payload = {
+        "arguments": ["--invocation", "-"],
+        "stdin": sys.stdin.read(),
+    }
+    with request_fifo.open("w", encoding="utf-8") as handle:
+        json.dump(request_payload, handle, separators=(",", ":"))
+    with response_fifo.open("r", encoding="utf-8") as handle:
+        response = json.load(handle)
+    if set(response) != {"returncode", "stdout", "stderr"}:
+        raise ValueError("qualification invocation response is invalid")
+    append_event(trace_path, args.request_sha256, str(projection_root), args.skill_sha256, args.wrapper_sha256, {
+        "kind": "invoke", "wrapper_path": str(projection_root / "scripts/invoke.sh"),
+        "argv": [str(projection_root / "scripts/invoke.sh"), "--invocation", "-"],
+        "returncode": response["returncode"], "stdout_sha256": stdout_digest(response["stdout"]),
+        "stderr_sha256": digest(response["stderr"].encode("utf-8")),
+    })
+    sys.stdout.write(response["stdout"])
+    sys.stderr.write(response["stderr"])
+    return int(response["returncode"])
+
+
+if __name__ == "__main__":
     raise SystemExit(main())
 '''
 
@@ -162,7 +341,7 @@ def response(
         corpus_sha256 = hashlib.sha256(Path(request["corpus_path"]).read_bytes()).hexdigest()
     except (KeyError, OSError, TypeError):
         corpus_sha256 = str(request.get("corpus_sha256") or "0" * 64)
-    return {
+    result = {
         "schema_version": "1.0",
         "capability_status": status,
         "corpus_sha256": corpus_sha256,
@@ -173,6 +352,346 @@ def response(
         "native_trace_locator": str(native_trace or transcript.with_name("native-trace.json")),
         "timing_ms": timing_ms,
     }
+    if request.get("schema_version") == "2.0":
+        result.update({
+            "schema_version": "2.0",
+            "matrix_sha256": str(request.get("matrix_sha256") or "0" * 64),
+            "package_sha256": str(request.get("package_sha256") or "0" * 64),
+            "prompt_sha256": str(request.get("prompt_sha256") or "0" * 64),
+            "model_id": str(request.get("model_id") or QUALIFICATION_MODEL),
+            "invocation_index": int(request.get("invocation_index") or 1),
+        })
+    elif request.get("schema_version") == "3.0":
+        result.pop("corpus_sha256", None)
+        result.update({
+            "schema_version": "3.0",
+            "invocation_id": str(request.get("invocation_id") or "0" * 64),
+            "package_sha256": str(request.get("package_sha256") or "0" * 64),
+            "prompt_sha256": str(request.get("prompt_sha256") or "0" * 64),
+            "model_id": str(request.get("model_id") or QUALIFICATION_MODEL),
+        })
+    return result
+
+
+def package_tree_sha256(root: Path) -> str:
+    digest = hashlib.sha256()
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        relative = path.relative_to(root)
+        if "__pycache__" in relative.parts or path.suffix in {".pyc", ".pyo"}:
+            continue
+        digest.update(relative.as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def repository_file_inventory(root: Path) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        relative = path.relative_to(root)
+        if relative.parts and relative.parts[0] == ".git":
+            continue
+        if "__pycache__" in relative.parts or path.suffix in {".pyc", ".pyo"}:
+            continue
+        result[relative.as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return result
+
+
+def secret_environment_key(name: str) -> bool:
+    upper = name.upper()
+    return any(marker in upper for marker in SECRET_ENVIRONMENT_MARKERS)
+
+
+def minimal_native_environment(
+    parent: dict[str, str],
+    *,
+    cwd: Path,
+    codex_home: Path | None = None,
+    control: dict[str, str] | None = None,
+) -> dict[str, str]:
+    environment = {
+        name: parent[name]
+        for name in MINIMAL_NATIVE_ENVIRONMENT_KEYS
+        if name in parent and parent[name] and not secret_environment_key(name)
+    }
+    environment["PATH"] = environment.get("PATH") or os.defpath
+    environment["PWD"] = str(cwd.resolve())
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    if codex_home is not None:
+        environment["CODEX_HOME"] = str(codex_home.resolve())
+    for name, value in (control or {}).items():
+        if secret_environment_key(name):
+            raise ValueError("native control environment contains a secret-like key")
+        environment[name] = value
+    return environment
+
+
+def recorded_native_environment(environment: dict[str, str]) -> dict[str, str]:
+    if any(secret_environment_key(name) for name in environment):
+        raise ValueError("native environment contains a secret-like key")
+    return dict(sorted(environment.items()))
+
+
+def canonical_permission_paths(paths: list[Path]) -> list[Path]:
+    result: set[Path] = set()
+    for path in paths:
+        resolved = path.expanduser().resolve()
+        result.add(resolved)
+        if str(resolved).startswith("/tmp/") or resolved == Path("/tmp"):
+            result.add(Path("/private") / resolved.relative_to("/"))
+        if str(resolved).startswith("/private/tmp/") or resolved == Path("/private/tmp"):
+            result.add(Path("/") / resolved.relative_to("/private"))
+    return sorted(result, key=lambda item: str(item))
+
+
+def toml_string(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False)
+
+
+def write_codex_permission_profile(
+    codex_home: Path,
+    model_root: Path,
+    denied_paths: list[Path],
+) -> Path:
+    codex_home.mkdir(parents=True, exist_ok=True)
+    os.chmod(codex_home, 0o700)
+    profile = QUALIFICATION_PERMISSION_PROFILE
+    lines = [
+        f"default_permissions = {toml_string(profile)}",
+        'approval_policy = "never"',
+        "project_root_markers = []",
+        "",
+        "[shell_environment_policy]",
+        'inherit = "none"',
+        "",
+        "[shell_environment_policy.set]",
+        f"PATH = {toml_string(os.defpath)}",
+        'PYTHONDONTWRITEBYTECODE = "1"',
+        f"PWD = {toml_string(str(model_root.resolve()))}",
+        "",
+        f"[permissions.{profile}]",
+        "",
+        f"[permissions.{profile}.filesystem]",
+        '":root" = "read"',
+    ]
+    for path in canonical_permission_paths(denied_paths):
+        lines.append(f"{toml_string(str(path))} = \"deny\"")
+    lines.extend([
+        "",
+        f"[permissions.{profile}.filesystem.\":workspace_roots\"]",
+        '"." = "write"',
+        "",
+        f"[permissions.{profile}.network]",
+        "enabled = false",
+        "",
+    ])
+    config = codex_home / "config.toml"
+    config.write_text("\n".join(lines), encoding="utf-8")
+    os.chmod(config, 0o600)
+    return config
+
+
+def external_codex_home(parent: dict[str, str], execution_root: Path) -> Path:
+    value = parent.get("CODEX_HOME")
+    if not value:
+        raise ValueError("qualification production requires one external isolated CODEX_HOME")
+    codex_home = Path(value).expanduser().resolve()
+    execution = execution_root.resolve()
+    try:
+        codex_home.relative_to(execution)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("qualification CODEX_HOME must remain outside the production RUN_ROOT")
+    auth = codex_home / "auth.json"
+    if (
+        not codex_home.is_dir()
+        or codex_home.is_symlink()
+        or stat.S_IMODE(codex_home.stat().st_mode) != 0o700
+        or not auth.is_file()
+        or auth.is_symlink()
+        or stat.S_IMODE(auth.stat().st_mode) != 0o600
+    ):
+        raise ValueError("qualification external CODEX_HOME/auth must be owner-private and complete")
+    return codex_home
+
+
+def permission_probe_interpreter(denied_paths: list[Path]) -> Path:
+    raw_interpreter = getattr(sys, "_base_executable", None)
+    if not isinstance(raw_interpreter, str) or not raw_interpreter.strip():
+        raise ValueError("permission probe base interpreter is unavailable")
+    try:
+        interpreter = Path(raw_interpreter).expanduser().resolve(strict=True)
+    except (OSError, RuntimeError):
+        raise ValueError("permission probe base interpreter is unavailable") from None
+    if not interpreter.is_file() or not os.access(interpreter, os.X_OK):
+        raise ValueError("permission probe base interpreter is not executable")
+    for denied_path in canonical_permission_paths(denied_paths):
+        try:
+            interpreter.relative_to(denied_path)
+        except ValueError:
+            continue
+        raise ValueError("permission probe base interpreter is inside a denied path")
+    return interpreter
+
+
+def permission_probe_argv(
+    codex_command: str,
+    model_root: Path,
+    probe_script: Path,
+    denied_paths: list[Path],
+) -> list[str]:
+    interpreter = permission_probe_interpreter(denied_paths)
+    return [
+        codex_command,
+        "sandbox",
+        "-P",
+        QUALIFICATION_PERMISSION_PROFILE,
+        "-C",
+        str(model_root.resolve()),
+        str(interpreter),
+        str(probe_script.resolve()),
+        str(model_root.resolve()),
+        *(str(path) for path in denied_paths),
+    ]
+
+
+def run_codex_permission_probe(
+    codex_command: str,
+    environment: dict[str, str],
+    model_root: Path,
+    denied_paths: list[Path],
+) -> dict[str, Any]:
+    probe_script = model_root / "permission-probe.py"
+    probe_script.write_text(
+        "from pathlib import Path\n"
+        "import json,sys\n"
+        "root=Path(sys.argv[1]); probe=root/'permission-positive.txt'\n"
+        "probe.write_text('ok',encoding='utf-8')\n"
+        "positive=probe.read_text(encoding='utf-8')=='ok'\n"
+        "denied=[]\n"
+        "for value in sys.argv[2:]:\n"
+        " path=Path(value)\n"
+        " try:\n"
+        "  path.stat()\n"
+        " except (OSError,PermissionError):\n"
+        "  denied.append(value)\n"
+        " else:\n"
+        "  try:\n"
+        "   if path.is_file(): path.read_bytes()\n"
+        "   else: list(path.iterdir())\n"
+        "  except (OSError,PermissionError): denied.append(value)\n"
+        "print(json.dumps({'positive':positive,'denied':denied},separators=(',',':')))\n"
+        "raise SystemExit(0 if positive and len(denied)==len(sys.argv[2:]) else 1)\n",
+        encoding="utf-8",
+    )
+    argv = permission_probe_argv(codex_command, model_root, probe_script, denied_paths)
+    process = subprocess.run(
+        argv,
+        cwd=model_root,
+        env=environment,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    try:
+        payload = json.loads(process.stdout)
+    except json.JSONDecodeError:
+        payload = {}
+    return {
+        "argv": argv,
+        "returncode": process.returncode,
+        "stdout": process.stdout,
+        "stderr": process.stderr,
+        "result": payload,
+    }
+
+
+def model_projection_copy(source: Path, destination: Path) -> None:
+    def copy_file(source_value: str, destination_value: str) -> str:
+        try:
+            os.link(source_value, destination_value)
+        except OSError:
+            return shutil.copy2(source_value, destination_value)
+        return destination_value
+
+    shutil.copytree(source, destination, copy_function=copy_file)
+
+
+def repository_projection_allowed(relative: Path) -> bool:
+    if any(part in {".git", ".runtime", "__pycache__", "evals", "node_modules"} for part in relative.parts):
+        return False
+    value = relative.as_posix()
+    private_prefixes = (
+        ".trellis/guru-team/runtime/",
+        ".trellis/guru-team/skills/adapters/",
+        "trellis/skills/guru-team/runtime/",
+        "trellis/skills/guru-team/adapters/",
+    )
+    if value.startswith(private_prefixes):
+        return False
+    if f"/packages/{QUALIFICATION_SKILL}/runtime/" in f"/{value}":
+        return False
+    if relative.name == "auth.json" or relative.name.startswith(".env"):
+        return False
+    return relative.suffix not in {".pyc", ".pyo"}
+
+
+def stage_repository_projection(source: Path, destination: Path) -> None:
+    destination.mkdir(parents=True, exist_ok=False)
+    for path in sorted(item for item in source.rglob("*") if item.is_file() and not item.is_symlink()):
+        relative = path.relative_to(source)
+        if not repository_projection_allowed(relative):
+            continue
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            os.link(path, target)
+        except OSError:
+            shutil.copy2(path, target)
+
+
+def qualification_model_request(
+    request: dict[str, Any],
+    *,
+    model_root: Path,
+    projection_root: Path,
+    repository_root: Path,
+    evidence_paths: list[Path],
+) -> dict[str, Any]:
+    return {
+        "schema_version": QUALIFICATION_MODEL_REQUEST_SCHEMA,
+        "protocol": QUALIFICATION_PROMPT_PROTOCOL,
+        "skill_id": QUALIFICATION_SKILL,
+        "prompt": request["prompt"],
+        "public_package_root": projection_root.relative_to(model_root).as_posix(),
+        "repository_evidence_root": repository_root.relative_to(model_root).as_posix(),
+        "evidence": [
+            {
+                "path": path.relative_to(model_root).as_posix(),
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+            for path in evidence_paths
+        ],
+        "public_invocation": request["interface"]["public_invocation"],
+    }
+
+
+def qualification_prompt_sha256(
+    model_request: dict[str, Any],
+    skill_sha256: str,
+    model_id: str,
+) -> str:
+    identity = {
+        "protocol": QUALIFICATION_PROMPT_PROTOCOL,
+        "model_request": model_request,
+        "skill_sha256": skill_sha256,
+        "model_id": model_id,
+    }
+    encoded = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def public_projection_assets(interface: dict[str, Any]) -> set[Path]:
@@ -4187,6 +4706,29 @@ def stage_owner_execution(
     fixture, _ = stage_clean_installed_owner_repo(
         execution_root, runtime_target, request_package,
     )
+    if skill_id == QUALIFICATION_SKILL:
+        package = fixture / ".trellis/guru-team/skills/packages" / skill_id
+        if (
+            hashlib.sha256((package / "interface.json").read_bytes()).hexdigest()
+            != hashlib.sha256((request_package / "interface.json").read_bytes()).hexdigest()
+            or hashlib.sha256((package / "evals/evals.json").read_bytes()).hexdigest()
+            != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
+            or package_tree_sha256(package) != request.get("package_sha256")
+        ):
+            raise ValueError("qualification installed package does not match the evaluated contract")
+        runtime_root = fixture / ".trellis/.runtime"
+        if runtime_root.exists():
+            residue = [path for path in runtime_root.rglob("*") if path.is_file()]
+            if residue:
+                raise ValueError("qualification fixture contains unexpected runtime residue")
+            shutil.rmtree(runtime_root)
+        run_git(fixture, "add", ".")
+        run_git(fixture, "commit", "-q", "-m", "stage qualification production fixture")
+        head = run_git(fixture, "rev-parse", "HEAD")
+        run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
+        run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
+        fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        return package, fixture_runtime_target, {}
     if skill_id == "guru-sync-base":
         package = fixture / ".trellis/guru-team/skills/packages" / skill_id
         if (
@@ -4494,9 +5036,111 @@ def start_public_runtime_boundary(
     return boundary, thread, stop
 
 
+def start_qualification_runtime_boundary(
+    request_fifo: Path,
+    response_fifo: Path,
+    stop: threading.Event,
+    owner_repository: Path,
+    package_root: Path,
+    runtime_environment: dict[str, str],
+    public_input_binding: dict[str, str],
+) -> threading.Thread:
+    installed_wrapper = package_root / "scripts/invoke.sh"
+    if installed_wrapper.is_symlink() or not os.access(installed_wrapper, os.X_OK):
+        raise ValueError("installed qualification public invocation wrapper is unavailable")
+    for fifo in (request_fifo, response_fifo):
+        if fifo.exists():
+            fifo.unlink()
+        os.mkfifo(fifo, mode=0o600)
+
+    def serve() -> None:
+        descriptor = os.open(request_fifo, os.O_RDONLY | os.O_NONBLOCK)
+        try:
+            chunks: list[bytes] = []
+            while not stop.is_set():
+                readable, _, _ = select.select([descriptor], [], [], 0.1)
+                if not readable:
+                    continue
+                chunk = os.read(descriptor, 65536)
+                if chunk:
+                    chunks.append(chunk)
+                    continue
+                if not chunks:
+                    continue
+                try:
+                    payload = json.loads(b"".join(chunks))
+                    if (
+                        not isinstance(payload, dict)
+                        or payload.get("arguments") != ["--invocation", "-"]
+                        or not isinstance(payload.get("stdin"), str)
+                    ):
+                        raise ValueError("qualification invocation request is invalid")
+                    try:
+                        envelope = json.loads(payload["stdin"])
+                    except json.JSONDecodeError:
+                        envelope = None
+                    semantic_result = envelope.get("semantic_result") if isinstance(envelope, dict) else None
+                    public_input = semantic_result.get("public_input") if isinstance(semantic_result, dict) else None
+                    observed_profile = public_input.get("profile") if isinstance(public_input, dict) else None
+                    if isinstance(observed_profile, str):
+                        public_input_binding["profile"] = observed_profile
+                    environment = minimal_native_environment(
+                        dict(os.environ),
+                        cwd=owner_repository,
+                        control=runtime_environment,
+                    )
+                    process = subprocess.run(
+                        [str(installed_wrapper), "--invocation", "-"],
+                        cwd=owner_repository,
+                        input=payload["stdin"],
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                        env=environment,
+                    )
+                    response = {
+                        "returncode": process.returncode,
+                        "stdout": process.stdout,
+                        "stderr": process.stderr,
+                    }
+                except Exception as exc:
+                    response = {
+                        "returncode": 2,
+                        "stdout": "",
+                        "stderr": f"qualification invocation boundary failed: {exc}",
+                    }
+                with response_fifo.open("w", encoding="utf-8") as handle:
+                    json.dump(response, handle, separators=(",", ":"))
+                return
+        finally:
+            os.close(descriptor)
+
+    thread = threading.Thread(
+        target=serve,
+        name="guru-qualification-public-invocation",
+        daemon=True,
+    )
+    thread.start()
+    return thread
+
+
 def build_context(
     request: dict[str, Any],
-) -> tuple[str, Path, Path, Path, Path, Path, str, Path, threading.Thread, threading.Event]:
+    adapter: str = "shared",
+) -> tuple[
+    str,
+    Path,
+    Path,
+    Path,
+    Path,
+    Path,
+    str,
+    Path,
+    threading.Thread | None,
+    threading.Event | None,
+    dict[str, str] | None,
+]:
     workdir = Path(request["workdir"]).resolve()
     execution_root = workdir.parent
     projection_root, skill_path, wrapper_path, skill_sha256, wrapper_sha256 = stage_public_projection(request, execution_root)
@@ -4504,33 +5148,98 @@ def build_context(
     runtime_package_root, execution_runtime_target, runtime_environment = stage_owner_execution(
         request, execution_root, runtime_target
     )
-    boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
-        execution_root,
-        execution_runtime_target,
-        runtime_package_root,
-        projection_root,
-        runtime_environment,
-    )
-    trace_path = execution_root / "native-trace.json"
-    helper_path = execution_root / "native-trace-helper.py"
-    helper_path.write_text(TRACE_HELPER, encoding="utf-8")
+    owner_repository = execution_runtime_target.parents[4]
+    qualification_codex = request["skill_id"] == QUALIFICATION_SKILL and adapter == "codex"
+    public_input_binding: dict[str, str] | None = None
+    if not qualification_codex:
+        boundary_path, boundary_thread, boundary_stop = start_public_runtime_boundary(
+            execution_root,
+            execution_runtime_target,
+            runtime_package_root,
+            projection_root,
+            runtime_environment,
+        )
+    if qualification_codex:
+        if request.get("schema_version") == "3.0":
+            model_root = (execution_root / "model-sandbox").resolve()
+            if model_root.exists():
+                raise ValueError("qualification model sandbox already exists")
+            model_root.mkdir(parents=True)
+        else:
+            model_root = Path(
+                tempfile.mkdtemp(prefix="guru-qualification-model-")
+            ).resolve()
+        model_projection_root = model_root / "public-package"
+        model_repository_root = model_root / "evidence/repository"
+        model_evidence_root = model_root / "evidence/case"
+        model_output_root = model_root / "output"
+        model_bin_root = model_root / "bin"
+        model_evidence_root.mkdir(parents=True)
+        model_output_root.mkdir()
+        model_bin_root.mkdir()
+        model_projection_copy(projection_root, model_projection_root)
+        stage_repository_projection(owner_repository, model_repository_root)
+        evidence_paths: list[Path] = []
+        for index, relative in enumerate(request["files"], 1):
+            staged = workdir / relative
+            if not staged.is_file():
+                raise ValueError("staged case file is unavailable")
+            suffix = staged.suffix if staged.suffix else ".data"
+            target = model_evidence_root / f"evidence-{index:02d}{suffix}"
+            shutil.copy2(staged, target)
+            evidence_paths.append(target)
+        trace_path = model_root / "native-trace.json"
+        helper_path = model_bin_root / "native-trace-helper.py"
+        request_fifo = model_root / ".invoke-request"
+        response_fifo = model_root / ".invoke-response"
+        boundary_stop = threading.Event()
+        public_input_binding = {}
+        boundary_thread = start_qualification_runtime_boundary(
+            request_fifo,
+            response_fifo,
+            boundary_stop,
+            owner_repository,
+            runtime_package_root,
+            runtime_environment,
+            public_input_binding,
+        )
+        boundary_path = request_fifo
+        projection_root = model_projection_root
+        skill_path = projection_root / "SKILL.md"
+        wrapper_path = projection_root / "scripts/invoke.sh"
+        workdir = model_evidence_root
+        helper_source = QUALIFICATION_TRACE_HELPER
+    else:
+        model_root = execution_root
+        model_repository_root = owner_repository
+        evidence_paths = [workdir / relative for relative in request["files"]]
+        trace_path = execution_root / "native-trace.json"
+        helper_path = execution_root / "native-trace-helper.py"
+        request_fifo = execution_root / ".unused-request"
+        response_fifo = execution_root / ".unused-response"
+        helper_source = TRACE_HELPER
+    helper_path.write_text(helper_source, encoding="utf-8")
     helper_path.chmod(0o755)
     file_sections: list[str] = []
-    for relative in request["files"]:
-        staged = workdir / relative
+    for index, relative in enumerate(request["files"]):
+        staged = evidence_paths[index] if qualification_codex else workdir / relative
         if not staged.is_file():
             raise ValueError("staged case file is unavailable")
-        try:
-            content = staged.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            content = f"<binary sha256={hashlib.sha256(staged.read_bytes()).hexdigest()}>"
-        file_sections.append(f"### {relative}\n{content}")
-    context = "\n".join([
+        if qualification_codex:
+            file_sections.append(f"### {relative}\n{staged}")
+        else:
+            try:
+                content = staged.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                content = f"<binary sha256={hashlib.sha256(staged.read_bytes()).hexdigest()}>"
+            file_sections.append(f"### {relative}\n{content}")
+    context_lines = [
         "Execute exactly one Guru Team Skill behavior eval.",
         f"Skill id: {request['skill_id']}",
         f"Exact public Skill projection: {projection_root}",
         f"Public wrapper: {wrapper_path}",
         f"Isolated workdir: {workdir}",
+        f"Repository evidence projection: {model_repository_root}",
         f"Native trace helper: {helper_path}",
         f"Native trace receipt: {trace_path}",
         "The projection is the complete execution-visible package. Paths absent from it are outside the native execution contract.",
@@ -4543,18 +5252,45 @@ def build_context(
         "The adapter has already completed any declared owner staging and checker validation in the installed fixture.",
         "Use the exact public_invocation.arguments from the staged case facts; do not recreate or rewrite public input, owner result, or owner plan files.",
         "For this post-owner invocation boundary, run only the exact Skill read command above and then the exact wrapper invocation command above. Do not read linked references, Interface assets, examples, wrapper source, or any other file.",
-    ])
-    native_request = {
-        "schema_version": "1.0",
-        "skill_id": request["skill_id"],
-        "case_id": request["case_id"],
-        "prompt": request["prompt"],
-        "files": request["files"],
-        "workdir": str(workdir),
-        "public_package_root": str(projection_root),
-        "public_invocation": request["interface"]["public_invocation"],
-    }
-    native_request_path = execution_root / "native-request.json"
+    ]
+    if qualification_codex:
+        context_lines[-2:] = [
+            "This Skill has no staged owner result. Directly review the case evidence and repository evidence projection under the Skill contract.",
+            "Author the complete invocation-local semantic_result yourself. Do not infer or search for an expected decision or expected exit.",
+            "Pass exactly one JSON envelope to the public wrapper through stdin. Do not write the envelope, decisions, typed result, or any qualification state to a file.",
+            "Re-read every staged case file through the trace helper before deciding. Use the helper's owner_file read operation for any necessary read-only inspection of the repository evidence projection; never read eval corpus files or .trellis/.runtime.",
+            "For this semantic invocation boundary, run only those traced reads and then the exact stdin public wrapper invocation command below.",
+        ]
+    context = "\n".join(context_lines)
+    if qualification_codex:
+        native_request = qualification_model_request(
+            request,
+            model_root=model_root,
+            projection_root=projection_root,
+            repository_root=model_repository_root,
+            evidence_paths=evidence_paths,
+        )
+    else:
+        native_request = {
+            "schema_version": "1.0",
+            "skill_id": request["skill_id"],
+            "case_id": request["case_id"],
+            "prompt": request["prompt"],
+            "files": request["files"],
+            "workdir": str(workdir),
+            "public_package_root": str(projection_root),
+            "public_invocation": request["interface"]["public_invocation"],
+        }
+    if request.get("schema_version") == "2.0" and not qualification_codex:
+        native_request.update({
+            "model_id": request["model_id"],
+            "invocation_index": request["invocation_index"],
+        })
+    native_request_path = (
+        execution_root / "native-request.json"
+        if qualification_codex
+        else model_root / "native-request.json"
+    )
     native_request_path.write_text(json.dumps(native_request, separators=(",", ":")), encoding="utf-8")
     request_sha256 = hashlib.sha256(native_request_path.read_bytes()).hexdigest()
     helper_arguments = (
@@ -4566,21 +5302,61 @@ def build_context(
         f"First read the exact Skill contract with: {helper_path} {helper_arguments} read --kind skill_contract --path {skill_path}\n"
         f"Then invoke the exact public wrapper with: {helper_path} {helper_arguments} invoke --wrapper {wrapper_path} --execution-wrapper {boundary_path} -- <declared wrapper arguments>",
     )
-    context_path = execution_root / "native-context.txt"
+    if qualification_codex:
+        case_read_commands = "\n".join(
+            f"{helper_path} {helper_arguments} --repository-root {model_repository_root} "
+            f"--sandbox-root {model_root} --request-fifo {request_fifo} --response-fifo {response_fifo} "
+            f"read --kind case_file --path {path}"
+            for path in evidence_paths
+        )
+        qualification_helper_arguments = (
+            f"{helper_arguments} --repository-root {model_repository_root} "
+            f"--sandbox-root {model_root} --request-fifo {request_fifo} --response-fifo {response_fifo}"
+        )
+        context = context.replace(
+            f"First read the exact Skill contract with: {helper_path} {helper_arguments} read --kind skill_contract --path {skill_path}",
+            f"First read the exact Skill contract with: {helper_path} {qualification_helper_arguments} read --kind skill_contract --path {skill_path}",
+        )
+        context = context.replace(
+            f"Then invoke the exact public wrapper with: {helper_path} {helper_arguments} invoke --wrapper {wrapper_path} --execution-wrapper {boundary_path} -- <declared wrapper arguments>",
+            (
+                "Then re-read every staged case file with these exact commands:\n"
+                f"{case_read_commands or '<no staged case files>'}\n"
+                "For additional installed-repository evidence, use the same helper read command with "
+                f"--kind owner_file --path <absolute-path-below-{model_repository_root}>.\n"
+                "Finally pipe the one-line invocation envelope to the exact public wrapper with: "
+                f"printf '%s' '<invocation-envelope-json>' | {helper_path} {qualification_helper_arguments} "
+                "invoke --stdin"
+            ),
+        )
+        request["prompt_sha256"] = qualification_prompt_sha256(
+            native_request,
+            skill_sha256,
+            request["model_id"],
+        )
+    context_path = model_root / "native-context.txt"
     context_path.write_text(context, encoding="utf-8")
-    protocol_path = execution_root / "native-protocol.json"
+    private_root = execution_root / "private-control"
+    private_root.mkdir(exist_ok=True)
+    protocol_path = private_root / "native-protocol.json"
     protocol_path.write_text(json.dumps({
         "schema_version": "1.0", "native_request_path": str(native_request_path),
         "request_sha256": request_sha256, "helper_path": str(helper_path),
         "trace_path": str(trace_path), "skill_path": str(skill_path),
         "wrapper_path": str(wrapper_path), "execution_wrapper_path": str(boundary_path),
+        "owner_repository": str(owner_repository),
+        "repository_projection_root": str(model_repository_root),
+        "model_root": str(model_root),
+        "request_fifo": str(request_fifo),
+        "response_fifo": str(response_fifo),
+        "private_root": str(private_root),
         "projection_root": str(projection_root),
         "skill_sha256": skill_sha256, "wrapper_sha256": wrapper_sha256,
     }, separators=(",", ":")), encoding="utf-8")
     return (
         context, context_path, wrapper_path, trace_path, protocol_path,
         native_request_path, request_sha256, boundary_path, boundary_thread,
-        boundary_stop,
+        boundary_stop, public_input_binding,
     )
 
 
@@ -4613,9 +5389,26 @@ def validate_native_trace(
         or any(path.name == "guru_team_trellis.py" for path in projection_root.rglob("*"))
     ):
         raise ValueError("native trace public projection binding is invalid")
-    workdir = Path(request["workdir"]).resolve()
-    allowed_reads = {skill_path, *(workdir / relative for relative in request["files"])}
+    qualification_codex = (
+        request.get("skill_id") == QUALIFICATION_SKILL
+        and protocol.get("model_root") != str(Path(request["workdir"]).resolve().parent)
+    )
+    if qualification_codex:
+        model_root = Path(protocol["model_root"]).resolve()
+        declared_case_reads = {
+            path.resolve()
+            for path in (model_root / "evidence/case").iterdir()
+            if path.is_file()
+        }
+    else:
+        workdir = Path(request["workdir"]).resolve()
+        declared_case_reads = {(workdir / relative).resolve() for relative in request["files"]}
+    allowed_reads = {skill_path, *declared_case_reads}
+    owner_repository = Path(
+        protocol.get("repository_projection_root") or protocol["owner_repository"]
+    ).resolve()
     skill_reads = []
+    case_reads: set[Path] = set()
     invocations = []
     for event in events:
         if not isinstance(event, dict) or event.get("request_sha256") != request_sha256:
@@ -4624,7 +5417,19 @@ def validate_native_trace(
             if set(event) != {"kind", "target_kind", "path", "sha256", "request_sha256"}:
                 raise ValueError("native read trace shape is invalid")
             target = Path(str(event.get("path"))).resolve()
-            if target not in allowed_reads:
+            owner_read = False
+            if qualification_codex and event.get("target_kind") == "owner_file":
+                try:
+                    owner_relative = target.relative_to(owner_repository)
+                except ValueError:
+                    pass
+                else:
+                    owner_read = (
+                        ".git" not in owner_relative.parts
+                        and ".runtime" not in owner_relative.parts
+                        and "evals" not in owner_relative.parts
+                    )
+            if target not in allowed_reads and not owner_read:
                 raise ValueError("native trace contains an undeclared file read")
             try:
                 expected_sha256 = hashlib.sha256(target.read_bytes()).hexdigest()
@@ -4634,6 +5439,8 @@ def validate_native_trace(
                 raise ValueError("native trace read digest mismatch")
             if target == skill_path and event.get("target_kind") == "skill_contract":
                 skill_reads.append(event)
+            if target in declared_case_reads and event.get("target_kind") == "case_file":
+                case_reads.add(target)
         elif event.get("kind") == "invoke":
             if set(event) != {"kind", "wrapper_path", "argv", "returncode", "stdout_sha256", "stderr_sha256", "request_sha256"}:
                 raise ValueError("native invocation trace shape is invalid")
@@ -4644,6 +5451,8 @@ def validate_native_trace(
         raise ValueError("native trace must begin with one exact Skill read")
     if len(invocations) != 1 or events.index(invocations[0]) != len(events) - 1:
         raise ValueError("native trace must end with one public wrapper invocation")
+    if qualification_codex and case_reads != declared_case_reads:
+        raise ValueError("qualification native trace must re-read every staged case file")
     invocation = invocations[0]
     argv = invocation.get("argv")
     if (
@@ -4657,6 +5466,10 @@ def validate_native_trace(
         or len(invocation["stderr_sha256"]) != 64
     ):
         raise ValueError("native public wrapper invocation receipt is invalid")
+    if qualification_codex and argv != [
+        str(wrapper_path.resolve()), "--invocation", "-",
+    ]:
+        raise ValueError("qualification public invocation arguments are invalid")
     return ["public_invocation", "evals_not_loaded", "private_runtime_not_read"]
 
 
@@ -4673,15 +5486,42 @@ def native_argv(
     if adapter == "shared":
         return [sys.executable, command, "--request", str(native_request_path), "--context", str(context_path), "--workdir", workdir], None
     if adapter == "codex":
-        output_path = native_request_path.with_name("native-last-message.txt")
+        qualification_request = (
+            request.get("skill_id") == QUALIFICATION_SKILL
+            or request.get("schema_version") in {"2.0", "3.0"}
+        )
+        model_root = Path(
+            request.get("_model_root") or native_request_path.resolve().parent
+        ).resolve()
+        output_path = model_root / "output/native-last-message.txt"
+        if qualification_request:
+            if request.get("model_id") != QUALIFICATION_MODEL:
+                raise ValueError("qualification production model identity is invalid")
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            argv = [
+                command,
+                "exec",
+                "--ephemeral",
+                "--strict-config",
+                "--skip-git-repo-check",
+                "--cd",
+                str(model_root),
+                "--model",
+                QUALIFICATION_MODEL,
+                "--output-last-message",
+                str(output_path),
+                context,
+            ]
+            return argv, output_path
         trusted_root = str(Path(request["runtime_target"]).resolve().parents[4])
         execution_root = str(native_request_path.resolve().parent)
-        return [
+        argv = [
             command, "exec", "--ephemeral", "--ignore-user-config", "--sandbox", "workspace-write",
             "--cd", trusted_root, "--add-dir", execution_root,
             "--add-dir", workdir, "--add-dir", str(projection_root),
-            "--output-last-message", str(output_path), context,
-        ], output_path
+        ]
+        argv.extend(["--output-last-message", str(output_path), context])
+        return argv, output_path
     if adapter == "claude":
         trace_helper = native_request_path.with_name("native-trace-helper.py")
         return [
@@ -4757,25 +5597,120 @@ def main() -> int:
         (
             context, context_path, wrapper_path, trace_path, protocol_path,
             native_request_path, request_sha256, boundary_path,
-            boundary_thread, boundary_stop,
-        ) = build_context(request)
+            boundary_thread, boundary_stop, public_input_binding,
+        ) = build_context(request, args.adapter)
     except Exception as exc:
         transcript.write_text(json.dumps({"adapter": args.adapter, "error": str(exc)}), encoding="utf-8")
         return emit(response(request, "execution_error", transcript, stderr="adapter request/context invalid"))
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
     projection_root = Path(protocol["projection_root"])
-    argv, output_path = native_argv(args.adapter, native, request, context, context_path, native_request_path, projection_root)
-    native_environment = dict(os.environ)
-    native_environment.pop("GURU_TEAM_FAKE_NATIVE_DISPATCHER", None)
-    native_environment.pop("OLDPWD", None)
-    native_environment["PWD"] = str(Path(request["workdir"]).resolve().parent)
-    native_environment["GURU_TEAM_DISPATCHER"] = str(boundary_path)
-    native_environment["GURU_TEAM_NATIVE_REQUEST"] = str(native_request_path)
-    native_environment["GURU_TEAM_NATIVE_PROTOCOL"] = str(protocol_path)
+    owner_repository = Path(protocol["owner_repository"])
+    model_root = Path(protocol["model_root"])
+    qualification_codex = request.get("skill_id") == QUALIFICATION_SKILL and args.adapter == "codex"
+    repository_before = (
+        repository_file_inventory(owner_repository)
+        if request.get("skill_id") == QUALIFICATION_SKILL
+        else None
+    )
+    codex_home = None
+    permission_probe: dict[str, Any] | None = None
+    denied_paths: list[Path] = []
+    if qualification_codex:
+        private_root = Path(protocol["private_root"])
+        codex_home = external_codex_home(dict(os.environ), request_path.parents[2])
+        control_root_value = os.environ.get("GURU_TEAM_QUALIFICATION_CONTROL_ROOT")
+        source_worktree_value = os.environ.get("GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE")
+        if not control_root_value or not source_worktree_value:
+            raise ValueError("qualification host-only deny roots are incomplete")
+        control_root = Path(control_root_value).expanduser().resolve()
+        source_worktree = Path(source_worktree_value).expanduser().resolve()
+        control_map = control_root / "case-map.json"
+        if (
+            not control_root.is_dir()
+            or control_root.is_symlink()
+            or stat.S_IMODE(control_root.stat().st_mode) != 0o700
+            or not control_map.is_file()
+            or control_map.is_symlink()
+            or stat.S_IMODE(control_map.stat().st_mode) != 0o600
+            or not source_worktree.is_dir()
+            or source_worktree.is_symlink()
+        ):
+            raise ValueError("qualification host-only deny roots are invalid")
+        denied_paths = [
+            codex_home,
+            control_root,
+            source_worktree,
+            private_root,
+            owner_repository,
+            Path(request["workdir"]),
+            Path(request["package_root"]),
+            Path("/tmp"),
+            Path("/private/tmp"),
+        ]
+        canonical_corpus = Path(request["package_root"]) / "evals/evals.json"
+        if canonical_corpus.exists():
+            denied_paths.append(canonical_corpus)
+        write_codex_permission_profile(codex_home, model_root, denied_paths)
+        request["_model_root"] = str(model_root)
+    argv, output_path = native_argv(
+        args.adapter,
+        native,
+        request,
+        context,
+        context_path,
+        native_request_path,
+        projection_root,
+    )
+    native_environment = minimal_native_environment(
+        dict(os.environ),
+        cwd=model_root,
+        codex_home=codex_home,
+        control={
+            "GURU_TEAM_DISPATCHER": str(boundary_path),
+            "GURU_TEAM_NATIVE_REQUEST": str(native_request_path),
+            "GURU_TEAM_NATIVE_PROTOCOL": str(protocol_path),
+        },
+    )
+    if qualification_codex:
+        permission_probe = run_codex_permission_probe(
+            native,
+            native_environment,
+            model_root,
+            canonical_permission_paths(denied_paths),
+        )
+        if permission_probe["returncode"] != 0:
+            if boundary_stop is not None:
+                boundary_stop.set()
+            transcript.write_text(json.dumps({
+                "adapter": args.adapter,
+                "native_command": args.native_command,
+                "environment": recorded_native_environment(native_environment),
+                "permission_probe": permission_probe,
+                "status": "execution_error",
+            }, indent=2), encoding="utf-8")
+            return emit(response(
+                request,
+                "execution_error",
+                transcript,
+                stderr="qualification Codex permission probe failed",
+                native_trace=trace_path,
+            ))
+    model_input_audit = {
+        "argv": argv,
+        "cwd": str(model_root.resolve()),
+        "context": context,
+        "context_path": str(context_path.resolve()),
+        "native_request": json.loads(native_request_path.read_text(encoding="utf-8")),
+        "native_request_path": str(native_request_path.resolve()),
+        "projection_root": str(projection_root.resolve()),
+        "repository_projection_root": str(Path(protocol["repository_projection_root"]).resolve()),
+        "wrapper_path": str(wrapper_path.resolve()),
+        "environment": recorded_native_environment(native_environment),
+    }
     started = time.monotonic_ns()
     process = subprocess.run(
         argv,
-        cwd=Path(request["workdir"]).resolve().parent,
+        cwd=model_root,
         input=context if args.adapter == "claude" else None,
         text=True,
         stdout=subprocess.PIPE,
@@ -4783,9 +5718,19 @@ def main() -> int:
         check=False,
         env=native_environment,
     )
-    boundary_stop.set()
-    boundary_thread.join(timeout=1)
+    if boundary_stop is not None:
+        boundary_stop.set()
+    if boundary_thread is not None:
+        boundary_thread.join(timeout=1)
     timing_ms = max(0, (time.monotonic_ns() - started) // 1_000_000)
+    residue_error = None
+    if repository_before is not None:
+        repository_after = repository_file_inventory(owner_repository)
+        if repository_after != repository_before:
+            residue_error = "qualification invocation changed repository file inventory"
+        runtime_root = owner_repository / ".trellis/.runtime"
+        if runtime_root.exists():
+            residue_error = "qualification invocation created ignored runtime residue"
     transcript.write_text(json.dumps({
         "adapter": args.adapter,
         "native_command": args.native_command,
@@ -4796,12 +5741,18 @@ def main() -> int:
         "native_request_path": str(native_request_path),
         "projection_root": str(projection_root),
         "wrapper_path": str(wrapper_path),
+        "environment": recorded_native_environment(native_environment),
+        "model_input_audit": model_input_audit,
+        "public_input_binding": public_input_binding,
+        "permission_probe": permission_probe,
         "returncode": process.returncode,
         "stdout": process.stdout,
         "stderr": process.stderr,
     }, indent=2), encoding="utf-8")
     if process.returncode != 0:
         return emit(response(request, "execution_error", transcript, stderr=process.stderr, timing_ms=timing_ms, native_trace=trace_path))
+    if residue_error is not None:
+        return emit(response(request, "execution_error", transcript, stderr=residue_error, timing_ms=timing_ms, native_trace=trace_path))
     try:
         public_stdout = unwrap_native_output(args.adapter, process.stdout, output_path)
         trace_events = validate_native_trace(trace_path, request_sha256, request, wrapper_path, public_stdout, protocol_path)

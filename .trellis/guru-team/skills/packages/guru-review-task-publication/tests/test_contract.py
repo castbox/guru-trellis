@@ -734,6 +734,7 @@ class TaskPublicationContractTest(unittest.TestCase):
 
         finding = {
             "finding_ref": "PUB-001",
+            "candidate_ref": "candidate:publication:no-defect",
             "dimension": "pr_body_quality",
             "summary": "The metadata fix was reviewed and closed.",
             "scope_basis": "The publication contract owns this metadata.",
@@ -763,6 +764,7 @@ class TaskPublicationContractTest(unittest.TestCase):
         invalid = copy.deepcopy(self.readiness_example)
         invalid["findings"] = [{
             "finding_ref": "PUB-EMPTY",
+            "candidate_ref": "candidate:publication:no-defect",
             "dimension": "pr_body_quality",
             "summary": "",
             "scope_basis": "",
@@ -824,6 +826,7 @@ class TaskPublicationContractTest(unittest.TestCase):
     ) -> dict:
         return {
             "finding_ref": finding_ref,
+            "candidate_ref": "candidate:publication:no-defect",
             "dimension": dimension,
             "summary": "The current publication review cannot complete.",
             "scope_basis": "The approved publication contract owns this route.",

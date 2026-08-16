@@ -442,6 +442,31 @@ schema/example, and installed drift. These are deterministic contract facts;
 the command never decides semantic pass, scope, route intent, or migration
 priority.
 
+### Normal-scenario qualification process-local runtime
+
+`record-normal-scenario-qualification`,
+`check-normal-scenario-qualification`, and
+`invoke-guru-qualify-normal-scenario` form one stdin/stdout pipeline for the
+current invocation. The recorder serializes an already completed AI judgment
+in memory; the checker validates only closed shape, invocation/target identity,
+freshness tokens, enums, candidate completeness, references, and declared
+consumer binding; the invoker projects exactly one checked typed exit.
+
+These commands accept no output path, result locator, checkpoint locator,
+approval, signoff, handoff, or prior qualification reference. They do not write
+repository tracked files, `.trellis/.runtime/**`, repo-local temporary files,
+candidate/rejection ledgers, reports, or cross-process checkpoints. A complete
+before/after repository inventory must therefore be identical for success,
+failure, re-entry, and all ten profiles.
+
+The runtime must not infer or validate requirement scope, normal-path
+reproduction, evidence sufficiency, security framing, severity, findings,
+mechanism removal/replacement intent, clarification need, or route semantics.
+No keyword list, scanner, pattern match, default decision, `--pass`, or script
+exit status may generate a qualification decision. Those judgments exist only
+in the semantic Skill invocation; scripts reject structural inconsistency and
+otherwise preserve the AI-authored result.
+
 ### Planning Approval Record And Check
 
 `record-planning-approval` and `check-planning-approval` are the shared
@@ -1126,7 +1151,7 @@ ledger, readiness, or marketplace artifact validators.
 Planning and Phase 2 helpers follow the same recorder / validator boundary:
 
 - `record-phase2-check` accepts one AI-authored closed input for new
-  `guru-phase2-check-4.0` records, materializes `phase2_capture_commit` and the
+  `guru-phase2-check-5.0` records, materializes `phase2_capture_commit` and the
   current reviewed-content identity, verifies that reviewed
   paths cover current dirty paths, writes one ignored-runtime owner checkpoint,
   and never infers scope, severity, adequacy, Docs SSOT consistency, semantic
@@ -1203,7 +1228,7 @@ Planning and Phase 2 helpers follow the same recorder / validator boundary:
   `guru-check-task` result, including unchanged official `trellis-check`
   evidence; it must not replace semantic judgment with worker output or command
   exit codes.
-- `check-phase2-check.sh` validates closed schema 4.0, the nine adequacy
+- `check-phase2-check.sh` validates closed schema 5.0, the nine adequacy
   dimensions, objective linkage, finding lifecycle, exit/consumer union,
   hashes, and stale state before commit. Routine assignment, handoff, liveness,
   raw worker payload, and review rounds are absent.
@@ -1252,7 +1277,7 @@ facts for only `prd.md`, `design.md`, and `implement.md`. It must
 not read planning/check/review gate JSON artifacts, must
 not decide phase sufficiency, and must not create links for missing files.
 
-`review-branch.sh` records only current gate schema 4.0 after an independent AI
+`review-branch.sh` records only current gate schema 5.0 after an independent AI
 semantic review exists. Aggregate public input schema 3.0 dispatches the
 six-field `branch_review` schema 2.0 profile or the bounded `base_continuity`
 schema 1.0 profile. The recorder requires one selected public profile, one
@@ -1276,13 +1301,13 @@ undeclared current non-metadata dirty path blocks the gate; allowed downstream
 workflow metadata is validated by its owning gate rather than projected back
 into Phase 2.
 
-For finding closure, current gate schema 4.0 retains the original
+For finding closure, current gate schema 5.0 retains the original
 `introduced_head`, binds the fixing commit as `fix_head`, binds the later
 transient judgment as `closure_head`, and uses `review_commit` for the distinct
 fresh-final range.
 The semantic normalizer and lifecycle validator both accept this normal
 finding -> fix -> closure path. Aggregate input schema 2.0 and gate schema 3.0
-remain legacy compatibility inventory, not current runtime authority. Non-4.0
+and 4.0 remain legacy compatibility inventory, not current runtime authority. Non-5.0
 current gates and tracked assignment/report files are invalid current inputs
 and fail closed without projection or re-entry.
 
@@ -1362,7 +1387,8 @@ Finalizer projection, or task-work route is permitted.
 
 `discover-skill-evals.sh` and `run-skill-evals.sh` are thin wrappers for the
 deterministic `discover-skill-evals` and `run-skill-evals` subcommands.
-Discovery validates source/installed registry and Interface 1.4 state before it
+Discovery validates source/installed registry and the row-selected Interface
+1.4, 1.5, or 1.6 state before it
 loads the fixed package-local corpus, then validates corpus identity, profile
 and exit references, fixtures, assertions, adapter inventory, and exact public
 invocation. A package without a declared current corpus returns a stable
@@ -1415,6 +1441,14 @@ Missing, incomplete, unbound, or output-mismatched receipts are
 fails closed. Trace invariants are never inferred from wrapper source text or
 the mere presence of a parseable native DTO.
 
+For normal-scenario qualification, the model-visible invocation binding is the
+Interface 1.6 aggregate public-input selector and contains no host control
+profile. The adapter forwards the authored stdin string unchanged to the
+installed wrapper and records only its observed public `profile` in the
+owner-private transcript. The host runner compares that receipt with its
+control-map profile after dispatch; mismatch is `evaluation_failed` and stops
+the production sequence under the existing fail-fast contract.
+
 Production Phase 0 semantic case staging supplies closed call-local invocation
 envelopes through stdin; other current packages use only their declared public
 transport. The private runtime boundary maps the repo-external public projection
@@ -1429,7 +1463,7 @@ input, and missing Cursor authentication returns deterministic `unsupported`.
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, issue-ledger,
 commit-evidence, Docs SSOT, working-tree, hash, schema and freshness facts, then
-write compact schema 4.0 `review-gate.json` at the exact task-owned
+write compact schema 5.0 `review-gate.json` at the exact task-owned
 owner-private ignored-runtime checkpoint and return only a minimal receipt.
 It must not decide
 scope, scenario class, qualification, severity, reviewer sufficiency, route, or
@@ -1437,7 +1471,7 @@ pass.
 
 `check-review-gate` revalidates the same objective facts, finding lifecycle,
 `introduced_head`/`fix_head`/`closure_head`, final-review freshness and the selected
-typed exit. Only schema 4.0 is accepted; other gate shapes fail closed without
+typed exit. Only schema 5.0 is accepted; older gate shapes fail closed without
 projection. The checker resolves the exact checkpoint from task identity. The
 public package wrapper accepts only closed public input, reruns the checker,
 reads the actual exit, and emits exactly one declared DTO. It never accepts a
@@ -1452,7 +1486,7 @@ same-owner re-entry.
 Stable commands are `record-task-publication-review` and
 `check-task-publication-review`. The recorder accepts only a caller-authored,
 already completed semantic review payload, rebuilds the eight objective entry
-preconditions transiently, and writes the single ignored-runtime schema 4.0
+preconditions transiently, and writes the single ignored-runtime schema 5.0
 `pr-readiness.json`. That checkpoint contains only task/content identity, the
 closed exact `pr_payload(title,body)`, all
 ten semantic dimensions, findings, conclusions, and the selected route. The

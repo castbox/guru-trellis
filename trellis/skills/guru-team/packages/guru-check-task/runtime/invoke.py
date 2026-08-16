@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from common import load,parse,root
+from common import checkpoint,load,parse,root,task
 from runtime.io import CommandError
 from runtime.schema import validate_json
 def run(package_root:Path,command:dict,argv:list[str])->dict:
@@ -17,7 +17,9 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if exit_id in {"passed","implementation_required","planning_stale"}:out["task_ref"]=owner["task_ref"]
  if exit_id=="passed":out["phase2_commit_anchor"]=owner["phase2_capture_commit"]
  elif exit_id=="implementation_required":out["finding_refs"]=[x["id"] for x in owner["semantic_review"]["findings"] if x.get("status")=="open"]
- elif exit_id=="planning_stale":out.update({"planning_route":owner["route"],"proposal_refs":[x["proposal_ref"] for x in owner["semantic_review"]["scope_decisions"] if x.get("disposition")=="scope_change_required"]})
+ elif exit_id=="planning_stale":out.update({"planning_route":owner["route"],"proposal_refs":[x["id"] for x in owner["semantic_review"]["scope_decisions"] if x.get("disposition")=="scope_change_required"]})
  names={"passed":"public-passed-output.schema.json","implementation_required":"public-implementation-required-output.schema.json","planning_stale":"public-planning-stale-output.schema.json","blocked":"public-blocked-output.schema.json"}
  if exit_id not in names:raise CommandError("schema_mismatch","typed_exit","Return one declared typed exit.")
- validate_json(out,package_root/"schemas"/names[exit_id],"stdout");return out
+ validate_json(out,package_root/"schemas"/names[exit_id],"stdout")
+ if exit_id!="passed":checkpoint(repo,task(repo,owner["task_ref"]),"phase2-check.json").unlink(missing_ok=True)
+ return out

@@ -3248,6 +3248,7 @@ def task_publication_semantic_errors(
             continue
         required = {
             "finding_ref",
+            "candidate_ref",
             "dimension",
             "summary",
             "scope_basis",
@@ -3453,6 +3454,26 @@ def task_publication_check_errors(
         errors.append("task publication task identity mismatch")
     route = payload.get("route") if isinstance(payload.get("route"), dict) else {}
     typed_exit = route.get("typed_exit")
+    classifications = payload.get("candidate_classifications")
+    classification_refs = [
+        item.get("candidate_ref")
+        for item in classifications
+        if isinstance(item, dict)
+    ] if isinstance(classifications, list) else []
+    if (
+        not classification_refs
+        or len(classification_refs) != len(classifications)
+        or len(set(classification_refs)) != len(classification_refs)
+    ):
+        errors.append("publication candidate classifications must be non-empty and unique")
+    known_candidates = set(classification_refs)
+    if any(
+        not item.get("candidate_ref")
+        or item.get("candidate_ref") not in known_candidates
+        for item in payload.get("findings", [])
+        if isinstance(item, dict)
+    ):
+        errors.append("publication findings must bind current classified candidates")
     branch_review_commit = str(payload.get("branch_review_commit") or "")
     reviewed_content_sha256 = str(payload.get("reviewed_content_sha256") or "")
     if not re.fullmatch(r"[0-9a-f]{40}", branch_review_commit):
@@ -3535,6 +3556,7 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         "mode",
         "review_intent",
         "pr_payload",
+        "candidate_classifications",
         "dimensions",
         "findings",
         "conclusions",
@@ -3606,12 +3628,13 @@ def cmd_record_task_publication_review(args: argparse.Namespace) -> dict[str, An
         )
     branch_review_commit = str(invocation["branch_review_commit"])
     payload: dict[str, Any] = {
-        "schema_version": "4.0",
+        "schema_version": "5.0",
         "skill_id": TASK_PUBLICATION_SKILL_ID,
         "task_ref": repo_relative(root, task_dir),
         "branch_review_commit": branch_review_commit,
         "reviewed_content_sha256": reviewed_content_identity(root)["sha256"],
         "pr_payload": copy.deepcopy(authored.get("pr_payload")),
+        "candidate_classifications": copy.deepcopy(authored.get("candidate_classifications")),
         "dimensions": copy.deepcopy(authored.get("dimensions")),
         "findings": copy.deepcopy(authored.get("findings")),
         "conclusions": copy.deepcopy(authored.get("conclusions")),

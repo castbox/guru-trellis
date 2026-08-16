@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-run-3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "skill_id", "interface_schema_id", "corpus_schema_id",
+    "corpus_version", "corpus_sha256", "matrix_sha256", "package_sha256",
+    "model_id", "fresh_invocations_per_case", "required_passes_per_case",
+    "adapter", "platform", "status", "cases", "evidence_path"
+  ],
+  "properties": {
+    "schema_version": {"const": "3.0"},
+    "skill_id": {"const": "guru-qualify-normal-scenario"},
+    "interface_schema_id": {"enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5"]},
+    "corpus_schema_id": {"const": "guru-team-skill-evals-2.0"},
+    "corpus_version": {"const": "2.0"},
+    "corpus_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "matrix_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "package_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "model_id": {"const": "gpt-5.6-sol"},
+    "fresh_invocations_per_case": {"const": 5},
+    "required_passes_per_case": {"const": 5},
+    "adapter": {"const": "codex"},
+    "platform": {"const": "codex"},
+    "status": {"enum": ["passed", "evaluation_failed", "execution_error", "unsupported"]},
+    "cases": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/case"}},
+    "evidence_path": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "assertionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "passed", "detail"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "passed": {"type": "boolean"},
+        "detail": {"type": "string", "minLength": 1}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "decision"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "decision": {"type": "string", "minLength": 1}
+      }
+    },
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "invocation_index", "status", "prompt_sha256", "actual_exit",
+        "actual_decisions", "deterministic_results", "semantic_results",
+        "transcript_locator", "timing_ms"
+      ],
+      "properties": {
+        "invocation_index": {"type": "integer", "minimum": 1, "maximum": 5},
+        "status": {"enum": ["passed", "evaluation_failed", "execution_error", "unsupported"]},
+        "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "actual_exit": {"type": "string", "minLength": 1},
+        "actual_decisions": {"type": "array", "items": {"$ref": "#/$defs/decision"}},
+        "deterministic_results": {"type": "array", "items": {"$ref": "#/$defs/assertionResult"}},
+        "semantic_results": {"type": "array", "items": {"$ref": "#/$defs/assertionResult"}},
+        "transcript_locator": {"type": "string", "minLength": 1},
+        "timing_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "case_id", "input_profile_id", "scenario_id", "scenario_kind", "pair_id",
+        "pressure_framing", "status", "passed_invocations", "required_passes",
+        "invocations"
+      ],
+      "properties": {
+        "case_id": {"type": "string", "minLength": 1},
+        "input_profile_id": {"type": "string", "minLength": 1},
+        "scenario_id": {"type": "string", "minLength": 1},
+        "scenario_kind": {"enum": ["rejected", "legitimate"]},
+        "pair_id": {"type": "string", "minLength": 1},
+        "pressure_framing": {"type": "string", "minLength": 1},
+        "status": {"enum": ["passed", "evaluation_failed", "execution_error", "unsupported"]},
+        "passed_invocations": {"type": "integer", "minimum": 0, "maximum": 5},
+        "required_passes": {"const": 5},
+        "invocations": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/invocation"}}
+      }
+    }
+  }
+}

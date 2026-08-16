@@ -41,7 +41,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         )
         private = self.interface["public_contracts"]["private_artifacts"]
         self.assertEqual(private[0]["persistence"], "ignored_runtime")
-        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-4.0.json"))
+        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-5.0.json"))
         self.assertRegex(self.example["reviewed_content_sha256"], r"^[0-9a-f]{64}$")
         self.assertIn(
             "guru-reviewed-content-1.0",
@@ -78,13 +78,27 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         implementation["semantic_review"]["status"] = "implementation_required"
         implementation["semantic_review"]["adequacy_dimensions"][2]["status"] = "failed"
         implementation["semantic_review"]["scope_decisions"] = [{
-            "id": "C1", "disposition": "current_scope",
+            "id": "C1", "candidate_ref": "candidate:phase2:defect",
+            "disposition": "current_scope",
             "summary": "A supported current-scope defect remains.",
-            "normal_path_reproduction": "The supported path reproduces the defect.",
             "finding_id": "F1",
         }]
+        implementation["candidate_classifications"] = [{
+            "candidate_ref": "candidate:phase2:defect",
+            "decision": "qualified_current",
+            "witness": {
+                "requirement_refs": ["prd:R1"],
+                "supported_entry_refs": ["entry:phase2"],
+                "existing_caller_refs": ["caller:guru-check-task"],
+                "honest_action_sequence": ["run the supported Phase 2 check"],
+                "defect_observation": "The required behavior fails on the supported path.",
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "task_commit_preflight",
+        }]
         implementation["semantic_review"]["findings"] = [{
-            "id": "F1", "severity": "P2", "summary": "Open defect.",
+            "id": "F1", "candidate_ref": "candidate:phase2:defect",
+            "severity": "P2", "summary": "Open defect.",
             "path": "src/example.py", "status": "open",
         }]
         validator.validate(implementation)
@@ -95,10 +109,23 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         planning["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
         planning["semantic_review"]["status"] = "planning_stale"
         planning["semantic_review"]["scope_decisions"] = [{
-            "id": "scope-proposal:R13", "disposition": "scope_change_required",
+            "id": "scope-proposal:R13", "candidate_ref": "candidate:phase2:scope",
+            "disposition": "scope_change_required",
             "summary": "The current authority changes scope.",
-            "normal_path_reproduction": "A supported path requires the scope change.",
             "finding_id": None,
+        }]
+        planning["candidate_classifications"] = [{
+            "candidate_ref": "candidate:phase2:scope",
+            "decision": "qualified_approved_expansion",
+            "witness": {
+                "requirement_refs": [],
+                "supported_entry_refs": ["entry:phase2"],
+                "existing_caller_refs": ["caller:guru-check-task"],
+                "honest_action_sequence": ["review the new requested behavior"],
+                "defect_observation": "The new behavior is not current approved scope.",
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "task_commit_preflight",
         }]
         validator.validate(planning)
 
@@ -117,6 +144,23 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         invalid_pass["semantic_review"]["findings"] = implementation["semantic_review"]["findings"]
         self.assertFalse(validator.is_valid(invalid_pass))
 
+        qualification_artifact = copy.deepcopy(self.example)
+        qualification_artifact["candidate_classifications"] = [{
+            "candidate_ref": "candidate:phase2:invalid",
+            "decision": "rejected_out_of_scope",
+            "witness": {
+                "requirement_refs": [],
+                "supported_entry_refs": [],
+                "existing_caller_refs": ["caller:guru-check-task"],
+                "honest_action_sequence": ["review current evidence"],
+                "defect_observation": "No supported defect was reproduced.",
+                "excluded_assumptions": ["deliberate forgery"],
+                "qualification_result_locator": ".trellis/.runtime/qualification.json",
+            },
+            "consumer_use": "task_commit_preflight",
+        }]
+        self.assertFalse(validator.is_valid(qualification_artifact))
+
     def test_public_inputs_only_route_owner_entry(self) -> None:
         forbidden = {
             "adequacy_review", "ai_review_gate", "evidence_locators",
@@ -127,6 +171,32 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         for path in sorted((self.package / "schemas").glob("public-*input.schema.json")):
             properties = self.read(path.relative_to(self.package).as_posix()).get("properties", {})
             self.assertTrue(forbidden.isdisjoint(properties), path)
+
+    def test_official_worker_dispatch_is_candidate_only_before_fresh_qualification(self) -> None:
+        repo = self.package.parents[4]
+        sources = {
+            "workflow": repo / "trellis/workflows/guru-team/workflow.md",
+            "skill": self.package / "SKILL.md",
+            "contract": self.package / "references/contract.md",
+        }
+        candidate_fields = (
+            "candidate_ref",
+            "observed_behavior",
+            "locators",
+            "minimal_reproduction_hint",
+        )
+        for label, path in sources.items():
+            with self.subTest(source=label):
+                text = path.read_text(encoding="utf-8")
+                normalized = " ".join(text.split())
+                self.assertIn("approved-plan work only", normalized)
+                self.assertIn("fresh", normalized)
+                self.assertIn("qualification", normalized)
+                self.assertIn("self-fix", normalized)
+                for field in candidate_fields:
+                    self.assertIn(field, text)
+        workflow = sources["workflow"].read_text(encoding="utf-8")
+        self.assertIn("Official `trellis-*` agent files remain", workflow)
 
     def test_package_json_has_no_authorization_or_routine_handoff_fields(self) -> None:
         forbidden = {
@@ -172,7 +242,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
     def test_example_is_deidentified_and_current(self) -> None:
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
-        self.assertEqual(self.example["schema_version"], "4.0")
+        self.assertEqual(self.example["schema_version"], "5.0")
         self.assertEqual(self.example["skill_id"], "guru-check-task")
 
 

@@ -1,0 +1,19 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-normal-scenario-semantic-result-1.0","type":"object","additionalProperties":false,
+  "required":["schema_version","skill_id","public_input","candidate_results","ai_review_gate","typed_exit","consumer"],
+  "properties":{
+    "schema_version":{"const":"1.0"},"skill_id":{"const":"guru-qualify-normal-scenario"},"public_input":{"type":"object"},
+    "candidate_results":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/candidateResult"}},
+    "ai_review_gate":{"type":"object","additionalProperties":false,"required":["status","reviewed_candidate_refs","summary"],"properties":{"status":{"const":"passed"},"reviewed_candidate_refs":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"summary":{"type":"string","minLength":1}}},
+    "typed_exit":{"enum":["classified","scope_confirmation_required","mechanism_revision_required","blocked"]},
+    "consumer":{"oneOf":[
+      {"type":"object","additionalProperties":false,"required":["kind","id"],"properties":{"kind":{"const":"workflow"},"id":{"const":"guru-normal-scenario-classified-router"}}},
+      {"type":"object","additionalProperties":false,"required":["kind","id"],"properties":{"kind":{"const":"skill"},"id":{"const":"guru-clarify-requirements"}}},
+      {"type":"object","additionalProperties":false,"required":["kind","id"],"properties":{"kind":{"const":"workflow"},"id":{"const":"guru-normal-scenario-mechanism-router"}}},
+      {"type":"object","additionalProperties":false,"required":["kind","id"],"properties":{"kind":{"const":"stop"},"id":{"const":"normal-scenario-qualification-blocked"}}}
+    ]}
+  },
+  "$defs":{
+    "candidateResult":{"type":"object","additionalProperties":false,"required":["candidate_ref","decision","reason","witness"],"properties":{"candidate_ref":{"type":"string","minLength":1},"decision":{"enum":["qualified_current","qualified_explicit_nonstandard","qualified_approved_expansion","scope_confirmation_required","rejected_no_authority","rejected_unsupported_entry","rejected_not_reproduced","rejected_out_of_scope","mechanism_removed","mechanism_replaced","blocked"]},"reason":{"type":"string","minLength":1},"witness":{"type":"object","additionalProperties":false,"required":["requirement_refs","supported_entry_refs","existing_caller_refs","honest_action_sequence","defect_observation","excluded_assumptions"],"properties":{"requirement_refs":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"supported_entry_refs":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"existing_caller_refs":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"honest_action_sequence":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},"defect_observation":{"type":"string","minLength":1},"excluded_assumptions":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}}}}}}
+  }
+}

@@ -47,9 +47,10 @@ Before editing workflow behavior:
   `prepare-task` is a local diagnostic, not a workflow hop.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - Registry 1.4 accepts integrated, deferred, and standalone-only active rows.
-  Integrated packages select Interface 1.4 and the source-only verifier selects
-  Interface 1.5. The registry contains seventeen active packages and 69 exits;
-  global business workflow markers are 16 invokes, 67 exits, and 39 targets. Registry,
+  Integrated packages select Interface 1.4, normal-scenario qualification selects
+  Interface 1.6, and the source-only verifier selects Interface 1.5. The registry
+  contains eighteen active packages and 73 exits; global business workflow markers
+  are 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit closure is defined only by
   `contracts/production-current.json` with contract id
@@ -72,7 +73,7 @@ Before editing workflow behavior:
   minimal typed exit and never parse `planning-approval.json`.
 - `guru-check-task` owns the complete Phase 2 semantic check, scope-before-
   severity classification, Docs SSOT review, finding full rerun, four typed
-  exits, and the ignored schema 4.0 `phase2-check.json` owner checkpoint;
+  exits, and the ignored current schema 5.0 `phase2-check.json` owner checkpoint;
   unchanged official `trellis-check` workers provide ephemeral evidence only.
 - `guru-review-branch` is the sole Phase 3.5 semantic owner. Global workflow
   and platform entries only invoke its six-field public input and consume its
@@ -153,8 +154,9 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-seventeen-Skill/69-exit package closure, and install/update checks. The global
-business workflow projection is 16 invokes, 67 exits, and 39 targets.
+eighteen-Skill/73-exit package closure, and install/update checks. The global
+business workflow projection is 17 invokes, 71 exits, 24 workflow targets, and
+18 stop targets.
 
 ## Extension Installation Verification Closed-Loop Owner
 
@@ -176,9 +178,9 @@ and `docs/public-docs.md`. Together they own its four profiles, six external
 exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
 six-core archive, real-wrapper eval, and additive distribution.
 
-The current package graph contains seventeen active Skills and 69 external exits
+The current package graph contains eighteen active Skills and 73 external exits
 with thirteen target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 16 invokes, 67 exits, and 39 targets. Issue #119 combined acceptance
+markers are 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, terminal
 `ready_for_merge` and Merge evals, current ownership
 validation, and installed integration coverage.

@@ -111,6 +111,7 @@
     {"id": "public_output_blocked_example", "path": "examples/public-blocked-output.json"}
   ],
   "schemas": [
+    {"id": "legacy_phase2_check_schema_4_0", "path": "schemas/phase2-check-4.0.schema.json"},
     {"id": "phase2_check_schema", "path": "schemas/phase2-check.schema.json"},
     {"id": "public_input_initial_check", "path": "schemas/public-initial-check-input.schema.json"},
     {"id": "public_input_finding_fix_rerun", "path": "schemas/public-finding-fix-rerun-input.schema.json"},
@@ -133,7 +134,7 @@
       "id": "phase2_check_checker",
       "command": "scripts/check-phase2-check.sh",
       "runtime_command": "check-phase2-check",
-      "objective_scope": "validate schema 4.0 closure, task and planning linkage, capture-commit ancestry, reviewed-content identity, dirty-path coverage, semantic union, typed exit, and unique consumer"
+      "objective_scope": "validate current schema 5.0 closure, task and planning linkage, capture-commit ancestry, reviewed-content identity, dirty-path coverage, semantic union, typed exit, and unique consumer"
     },
     {
       "id": "public_invocation",
@@ -287,7 +288,7 @@
       {
         "id": "phase2_check",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-4.0.json", "path": "schemas/phase2-check.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-5.0.json", "path": "schemas/phase2-check.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]

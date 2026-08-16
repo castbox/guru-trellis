@@ -46,7 +46,22 @@ closed unless explicit inline/self-exemption artifact evidence exists.
 The normal path creates no `implementation-handoff.md`, no
 `implementation_handoff` checkpoint field, and no periodic liveness journal.
 Implementation terminal output remains ephemeral input to the semantic check
-owner; only its compact final schema 4.0 result is recorded in ignored runtime.
+owner; only its compact final schema 5.0 result is recorded in ignored runtime.
+
+The preset installs the complete public
+`guru-qualify-normal-scenario` package and matching Shared/Codex/Claude/Cursor
+public projections. Its ten profile inputs and four typed exits are additive
+public API. Platform entries load the installed Skill and consume the declared
+workflow route; they do not copy qualification reasoning.
+
+Qualification decisions and the typed result remain current-process
+memory/stdout only. The installer must not create or claim a tracked, ignored,
+or temporary qualification result/report/checkpoint, candidate/rejection
+ledger, handoff, or cross-process result locator. Installed package tests scan
+the complete target inventory before and after all ten profiles and require
+zero qualification residue. The only persistent related data is the terminal
+classification/witness directly authored into the existing schema 5.0 Phase 2,
+Branch Review, or Publication owner gate for that gate's own consumer.
 
 The preset manages the six canonical workflow specifications from
 `trellis/presets/guru-team/spec/workflow/` into `.trellis/spec/workflow/`:
@@ -467,8 +482,9 @@ active package 分发到 shared root 与明确选择的 Codex/Cursor/Claude root
 Test fixtures 永不安装，未选择的平台 root 不因 skill 分发
 而创建。
 
-Preset 安装 current Interface 1.4/1.5 schemas 与 registry 1.4。十五个 integrated
-active rows 选择 `guru-team-skill-interface-1.4`，standalone verifier 选择
+Preset 安装 current Interface 1.4/1.5/1.6 schemas 与 registry 1.4。十六个
+integrated active rows 选择 `guru-team-skill-interface-1.4`，normal-scenario
+qualification 选择 `guru-team-skill-interface-1.6`，standalone verifier 选择
 `guru-team-skill-interface-1.5`。Live Intake 合同为
 六包/23 exits；current registry、discovery DTO、invocation 与安装 provenance 不接受
 历史 manifest、schema、example 或 eval。`production-current-v2` 是
@@ -477,7 +493,7 @@ planning/check/commit 唯一 current manifest，精确绑定
 artifact ids、examples 与 eval cases；不存在 alternate production projector 或 fixture。
 当前 active closure 为 16/62，live Intake 合同为 6/23。Preset 在一次 staging
 transaction 中安装 current registry、
-Interface 1.4/1.5、production-current manifest/schema、十六包 public
+Interface 1.4/1.5/1.6、production-current manifest/schema、十八包 public
 contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
 失败关闭。Representative fixture schema ids 和 fixture wrapper 不进入
 production registry、extension inventory、installed files 或 selected-platform copies。
@@ -513,8 +529,9 @@ contracts、source-session private result schema、两例 production corpus 与 
 `guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
 `guru-merge-task-pr` 再安装两种 inputs、三个
-exits 与五个 merge runtime wrappers。Source/installed package closure 为 17 Skills /
-69 exits；business global workflow marker closure 为 16 invokes / 67 exits / 39 targets。
+exits 与五个 merge runtime wrappers。Source/installed package closure 为 18 Skills /
+73 exits；business global workflow marker closure 为 17 invokes / 71 exits /
+42 combined targets（24 workflow + 18 stop）。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -917,7 +934,7 @@ Markdown links, and JSON gate/evidence is not part of the standard table.
 result before commit, including `phase2_capture_commit`,
 `reviewed_content_sha256`, and the pre-commit `dirty_paths`; validation
 commands are evidence inside that report, not a substitute for the semantic
-check. `phase2-check.json` is the single ignored-runtime `guru-phase2-check-4.0` artifact owned
+check. `phase2-check.json` is the single ignored-runtime `guru-phase2-check-5.0` artifact owned
 by active `guru-check-task`. Official unchanged `trellis-check` is evidence-only;
 the Skill owns scope-before-severity, adequacy, findings, full rerun, Docs SSOT
 review, its AI Gate, and four typed exits. Coverage flags, worker output, or
@@ -1013,7 +1030,7 @@ states the plan strategy, durable docs updates or no-update reason, task deltas
 merged back, task-history-only content, and any follow-up or current PR
 limitation. Low-information summaries such as
 `当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` are blocked for
-non-draft publish. Publication records schema 4.0 `pr-readiness.json` only as an
+non-draft publish. Publication records schema 5.0 `pr-readiness.json` only as an
 ignored-runtime owner checkpoint and deletes it after its public DTO validates.
 Finalizer neither reads nor deletes that checkpoint and no task-local body or
 index handoff is created. The current transaction binds the exact title/body.
@@ -1359,3 +1376,13 @@ schema、adapter response 与 shared runtime；native CLI 只有通过 repo 外 
 读取 public-only projection 的 exact Skill、调用 exact wrapper，且 receipt 绑定最小 request、
 projection、Skill/wrapper digest 与 output 时，trace assertion 才有效。Canonical corpus/private
 runtime 留在 native execution 外；四平台 projection 内对应 raw read 必须真实失败。
+
+完整门禁顺序固定为 clean initial workflow/preset install -> disposable npm prefix
+中的 `trellis upgrade --tag latest`（核验 upgrade 前后 CLI version）-> target
+throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
+`MIGRATION REQUIRED` 时执行 `trellis update --migrate`，否则执行普通
+`trellis update` -> marketplace `--create-new` preview/active switch -> canonical
+preset reapply。之后重新验证 18 Skills/73 package exits、17 invokes/71 workflow
+exits、24 workflow targets、18 stop targets、全部十 profile real installed entry、
+ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
+开发机 global npm，也不升级真实业务仓。

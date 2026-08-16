@@ -155,8 +155,8 @@ manifest: exactly three packages, ten profiles, 11 exits, current output schema
 ids, four authoring-seed edges, private artifact ids, examples, and eval case
 bindings. No alternate production manifest, input projector, or fixture may be
 present. Then validate the current package closure
-at seventeen active Skills and 69 external exits, while the integrated business
-workflow projection is 16 invokes, 67 exits, and 39 targets. Negative tests cover missing, extra,
+at eighteen active Skills and 73 external exits, while the integrated business
+workflow projection is 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -507,7 +507,7 @@ repository evidence, scope-before-severity, the four scope dispositions, all
 nine adequacy dimensions, blocking/non-blocking unverified items, four
 exit/consumer invariants, planning discriminator closure, finding-fix full
 rerun, exceptional unfinished/replacement recovery, dirty/reviewed-path and
-post-commit freshness, the current schema 4.0 checkpoint, and the single compact
+post-commit freshness, the current schema 5.0 checkpoint, and the single compact
 artifact owner. Routine implementation/check identity remains live semantic
 context and must not become persisted assignment or liveness evidence.
 Distribution validation must compare canonical/shared/Codex/Claude/Cursor
@@ -561,7 +561,7 @@ cannot pass the gate. Include:
   merge/repair/follow-up checkpoint when required
 - Phase 2 consumption of that plan: the implementation terminal result and live
   repository facts are ephemeral inputs to the `guru-check-task` semantic Gate;
-  its ignored-runtime schema 4.0 checkpoint stores only the final Docs SSOT
+  its ignored-runtime schema 5.0 checkpoint stores only the final Docs SSOT
   conclusion, adequacy dimensions, findings, verification evidence, and route,
   without an implementation handoff or raw worker transcript
 - Phase 3 verification of that plan: final review checks the current planning
@@ -687,10 +687,55 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  seventeen-Skill/69-exit current package closure while the production activation
+  eighteen-Skill/73-exit current package closure while the production activation
   unit remains three Skills/11 exits and business markers remain integrated at
-  16 invokes, 67 exits, and 39 targets. Update and preset reapply must reproduce
+  17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. Update and preset reapply must reproduce
   that closure with zero unresolved `.new` or `.bak`.
+
+## Normal Scenario Qualification Quality
+
+Package and route tests cover the real installed public entry in workflow and
+standalone mode for all ten mandatory profiles. Every invocation compares the
+complete repository inventory before and after execution. Success, rejection,
+scope confirmation, mechanism revision, blocked, stale re-entry, invalid input,
+and wrapper failure must all leave zero tracked or ignored qualification
+result/report/checkpoint, zero candidate/rejection ledger, zero cross-process
+result locator, and zero repository-local temporary residue.
+
+The production semantic corpus pairs the Issue #113 F-001 forgery-only family
+and the Issue #236 alias/wrapper/`shell=True`/`sh -c` scanner family with
+legitimate current-requirement cases. Pressure variants cover neutral wording,
+attack/security framing, P0/P1 labeling, independent-reviewer pressure,
+already-implemented, already-tested, best-practice/defense-in-depth, and
+theoretical-bypass claims. Rejected cases must never yield clarification,
+negative tests, implementation, findings, follow-up, or publication blocking;
+paired legitimate digest/payload, real-caller runtime, explicit redaction,
+permission/destructive-confirmation, normal stale/mismatch, executor-output,
+and maintenance defects must remain qualified.
+
+Every production case runs through the clean-installed public package and real
+wrapper on GPT-5.6 Sol in five independent fresh invocations. Decision and route
+must be correct 5/5 for every case; one error blocks the gate. The evidence is
+valid only for the exact current model, prompt/package, ten-profile matrix, and
+corpus identity. Model or key-prompt changes require a full rerun. Issue, PR,
+README, and release-facing text must not claim that recurrence is impossible.
+
+Installation validation uses this exact sequence: clean initial marketplace
+workflow and preset installation; isolated disposable npm prefix with
+`trellis upgrade --tag latest` and before/after CLI version checks; project
+`trellis update --dry-run`, followed by exactly one of `trellis update --migrate`
+when output says `MIGRATION REQUIRED` or ordinary `trellis update` otherwise;
+marketplace workflow `--create-new` preview and active switch; then canonical
+preset reapply. Source, installed, dogfood, and selected-platform package bytes
+and executable modes, ownership, all ten real-entry profiles, active graph, and
+recursive zero `.new`/`.bak` are checked after the sequence. Development-machine
+global npm, business repositories, and Trellis upstream are never mutated by
+this gate.
+
+A different Owner performs the final Branch Review over the complete current
+base-to-HEAD range and checks all ten profiles, production-entry authenticity,
+pressure coverage, absence of keyword classification, zero residue, and the
+bounded publication wording before readiness may pass.
 
 ## Task Publication Review Quality
 
@@ -759,9 +804,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert seventeen active Skills and 69
+Source/installed/platform/throwaway checks assert eighteen active Skills and 73
 package exits, exactly one `production-current-v2` three-Skill/11-exit current
-manifest, and business workflow markers of 16 invokes, 67 exits, and 39 targets.
+manifest, and business workflow markers of 17 invokes, 71 exits, 24 workflow
+targets, and 18 stop targets.
 
 ## Extension Installation Verification Quality
 
@@ -818,8 +864,9 @@ verifier hop and scans terminal task/runtime state for verifier residue.
 
 Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
 script modes match after fresh install, update, and preset reapply. Package
-closure is seventeen active Skills and 69 exits; business global markers remain 16
-invokes, 67 exits, and 39 targets. Upstream Finish assets remain unchanged.
+closure is eighteen active Skills and 73 exits; business global markers remain 17
+invokes, 71 exits, 24 workflow targets, and 18 stop targets. Upstream Finish
+assets remain unchanged.
 
 ## Base Evolution Gate Quality
 

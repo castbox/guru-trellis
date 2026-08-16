@@ -35,7 +35,7 @@
         "name": {"$ref": "#/$defs/skillId"},
         "package": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
         "interface": {"type": "string", "pattern": "^packages/guru-[a-z0-9]+(?:-[a-z0-9]+)+/interface\\.json$"},
-        "interface_schema_id": {"enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5"]},
+        "interface_schema_id": {"enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6"]},
         "workflow_integration_state": {"enum": ["integrated", "deferred", "standalone_only"]},
         "supported_platforms": {
           "type": "array",

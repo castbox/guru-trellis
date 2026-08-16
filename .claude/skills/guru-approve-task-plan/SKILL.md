@@ -15,6 +15,15 @@ authority, scope, design, implementation planning, acceptance verifiability,
 Docs SSOT, provenance, and supported unusual scenarios. The AI owns findings,
 revision actions, scope proposals, the final route, and delta classification.
 
+Before an acceptance scenario, negative test, behavior constraint, or planning
+finding participates in that review, form only the profile-specific candidate
+set and invoke `guru-qualify-normal-scenario` with `planning_scenario_set`.
+Assign no severity or revision action before `classified` returns. Rejected
+candidates cannot become scope clarification, acceptance, tests, or
+implementation work. Mechanism revision removes/replaces the task-introduced
+mechanism and reruns qualification; blocked stops. No qualification state is
+written to planning runtime or task files.
+
 The checked `approved` exit activates the task automatically; it is not a
 routine user-authorization stop. Interact only when unresolved scope, a
 material plan choice, or the next real external side effect requires current

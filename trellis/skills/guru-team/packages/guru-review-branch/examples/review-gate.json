@@ -1,14 +1,58 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "5.0",
   "skill_id": "guru-review-branch",
   "generated_at": "2026-07-30T00:00:00Z",
   "task_dir": ".trellis/tasks/example-task",
   "mode": "workflow",
+  "profile": "branch_review",
   "review_intent": "fresh_final_review",
   "typed_exit": "passed",
   "review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "reviewed_content_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "base_ref": "origin/main",
+  "base_head": "dddddddddddddddddddddddddddddddddddddddd",
+  "integration_pair": null,
+  "candidate_classifications": [
+    {
+      "candidate_ref": "candidate-normal-no-defect",
+      "decision": "rejected_not_reproduced",
+      "witness": {
+        "requirement_refs": ["PRD R5"],
+        "supported_entry_refs": ["entry:branch-review"],
+        "existing_caller_refs": ["caller:guru-review-branch"],
+        "honest_action_sequence": ["review the complete supported branch range"],
+        "defect_observation": "Current evidence does not reproduce the candidate defect.",
+        "excluded_assumptions": []
+      },
+      "consumer_use": "branch_review_route_checker"
+    },
+    {
+      "candidate_ref": "candidate-explicit-no-defect",
+      "decision": "rejected_not_reproduced",
+      "witness": {
+        "requirement_refs": ["PRD R5"],
+        "supported_entry_refs": ["entry:branch-review"],
+        "existing_caller_refs": ["caller:guru-review-branch"],
+        "honest_action_sequence": ["review the explicit supported requirement"],
+        "defect_observation": "Current evidence does not reproduce the candidate defect.",
+        "excluded_assumptions": []
+      },
+      "consumer_use": "branch_review_route_checker"
+    },
+    {
+      "candidate_ref": "candidate-expansion-no-defect",
+      "decision": "rejected_not_reproduced",
+      "witness": {
+        "requirement_refs": ["PRD R5"],
+        "supported_entry_refs": ["entry:branch-review"],
+        "existing_caller_refs": ["caller:guru-review-branch"],
+        "honest_action_sequence": ["review the approved supported expansion"],
+        "defect_observation": "Current evidence does not reproduce the candidate defect.",
+        "excluded_assumptions": []
+      },
+      "consumer_use": "branch_review_route_checker"
+    }
+  ],
   "semantic_review": {
     "qualified_findings": [],
     "scope_proposals": [],
@@ -18,35 +62,23 @@
       {
         "candidate_ref": "candidate-normal-no-defect",
         "disposition": "rejected_candidate",
-        "scenario_class": "normal_required_behavior",
         "affected_behavior": "The reviewer candidate was disproved against normal required behavior.",
         "path": "trellis/skills/guru-team/packages/guru-review-branch/runtime/record.py",
-        "evidence_refs": ["tests/normal-required-behavior.md"],
-        "requirement_refs": ["PRD R5"],
-        "scope_basis": "The current approved normal behavior was fully evaluated.",
-        "qualification_reason": "Current implementation evidence proves that the required behavior is not violated."
+        "evidence_refs": ["tests/normal-required-behavior.md"]
       },
       {
         "candidate_ref": "candidate-explicit-no-defect",
         "disposition": "rejected_candidate",
-        "scenario_class": "explicit_nonstandard_requirement",
         "affected_behavior": "The reviewer candidate was disproved against an explicit nonstandard requirement.",
         "path": "trellis/skills/guru-team/packages/guru-review-branch/runtime/check.py",
-        "evidence_refs": ["tests/explicit-nonstandard-requirement.md"],
-        "requirement_refs": ["PRD R5"],
-        "scope_basis": "The explicit nonstandard requirement is current approved scope.",
-        "qualification_reason": "Current implementation evidence proves that the explicit requirement is not violated."
+        "evidence_refs": ["tests/explicit-nonstandard-requirement.md"]
       },
       {
         "candidate_ref": "candidate-expansion-no-defect",
         "disposition": "rejected_candidate",
-        "scenario_class": "approved_nonstandard_expansion",
         "affected_behavior": "The reviewer candidate was disproved against an approved nonstandard expansion.",
         "path": "trellis/skills/guru-team/packages/guru-review-branch/runtime/invoke.py",
-        "evidence_refs": ["tests/approved-nonstandard-expansion.md"],
-        "requirement_refs": ["PRD R5"],
-        "scope_basis": "The nonstandard expansion has exact current approval.",
-        "qualification_reason": "Current implementation evidence proves that the approved expansion is not violated."
+        "evidence_refs": ["tests/approved-nonstandard-expansion.md"]
       }
     ],
     "ai_review_gate": {

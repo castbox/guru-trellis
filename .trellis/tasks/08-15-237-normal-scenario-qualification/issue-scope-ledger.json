@@ -1,0 +1,32 @@
+{
+  "close_issues": [
+    {
+      "number": 237,
+      "reason": "本 task 完整实施并验收 Issue #237 的 AI 驱动正常场景资格合同。",
+      "title": "建立 AI 驱动的正常场景资格合同，阻止攻击类范围重复进入实现",
+      "url": "https://github.com/castbox/guru-trellis/issues/237"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 237,
+    "reason": "本 task 完整实施并验收 Issue #237 的 AI 驱动正常场景资格合同。",
+    "title": "建立 AI 驱动的正常场景资格合同，阻止攻击类范围重复进入实现",
+    "url": "https://github.com/castbox/guru-trellis/issues/237"
+  },
+  "related_issues": [
+    {
+      "number": 113,
+      "reason": "提供 F-001 与 repository normal-operation boundary 的既有范围决策；本 task 不修改或关闭。",
+      "title": "按 Skill-first 重实现 #55：guru-clarify-requirements",
+      "url": "https://github.com/castbox/guru-trellis/issues/113"
+    },
+    {
+      "number": 236,
+      "reason": "提供攻击式 scanner 候选复发与真实正常 caller 的成对回归案例；本 task 不修改或关闭。",
+      "title": "修复 throwaway verifier 未使用受管 Python 导致无 jsonschema 环境失败",
+      "url": "https://github.com/castbox/guru-trellis/issues/236"
+    }
+  ],
+  "schema_version": "2.0"
+}

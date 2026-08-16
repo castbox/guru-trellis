@@ -39,6 +39,17 @@ block. Insufficient applicable evidence fails closed. A semantic conclusion is
 recorded only after the AI has bound the pair, reviewed scope, key delta,
 validation adequacy, findings, remaining boundaries, and exactly one exit.
 
+The AI first forms a candidate-only set from the exact base delta and invokes
+`guru-qualify-normal-scenario:base_impact_candidate_set`. Candidate inputs carry
+observation and live locators only, never impact classification, severity,
+route, or a caller-authored normal-path conclusion. `classified` returns to this
+owner before impact/severity/route work; `scope_confirmation_required` enters
+requirements clarification; `mechanism_revision_required` returns here for
+remove/replace and a fresh candidate round; `blocked` stops. Rejected candidates
+cannot become validation obligations, findings, implementation, planning stale,
+or clarification. The base checkpoint records only this owner's final
+direct-consumer result and never embeds or references qualification state.
+
 ## Candidate And Script Boundary
 
 `execute-base-candidate` creates a detached temporary worktree, merges the task

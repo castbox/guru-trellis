@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-production-contract-manifest-4.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_id",
+    "schema_version",
+    "contract_id",
+    "interface_schema_ids",
+    "registry_schema_id",
+    "eval_schema_ids",
+    "activation_policy",
+    "production_eval_control",
+    "skill_ids",
+    "authoring_seed_edges",
+    "skills"
+  ],
+  "properties": {
+    "$schema": {"const": "../schemas/production-contract-manifest-4.0.schema.json"},
+    "schema_id": {"const": "guru-team-production-contract-manifest-4.0"},
+    "schema_version": {"const": "4.0"},
+    "contract_id": {"const": "production-current-v4"},
+    "interface_schema_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6"]}
+    },
+    "registry_schema_id": {"const": "guru-team-skill-registry-1.4"},
+    "eval_schema_ids": {
+      "const": ["guru-team-skill-evals-1.0", "guru-team-skill-evals-2.0"]
+    },
+    "activation_policy": {"const": "preset_transaction"},
+    "production_eval_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter_request_schema_id",
+        "adapter_response_schema_id",
+        "run_schema_id",
+        "control_map_schema_id",
+        "model_id",
+        "case_count",
+        "invocations_per_case",
+        "total_invocations",
+        "opaque_mapping_algorithm",
+        "opaque_mapping_message",
+        "opaque_order_algorithm",
+        "control_map_path",
+        "control_root_file_mode",
+        "control_map_file_mode",
+        "invocation_order",
+        "grading_owner",
+        "identity_validation",
+        "timestamp_validation",
+        "forbidden_request_fields"
+      ],
+      "properties": {
+        "adapter_request_schema_id": {"const": "guru-team-skill-eval-adapter-request-3.0"},
+        "adapter_response_schema_id": {"const": "guru-team-skill-eval-adapter-response-3.0"},
+        "run_schema_id": {"const": "guru-team-skill-eval-run-4.0"},
+        "control_map_schema_id": {"const": "guru-team-skill-eval-control-map-1.0"},
+        "model_id": {"const": "gpt-5.6-sol"},
+        "case_count": {"const": 160},
+        "invocations_per_case": {"const": 5},
+        "total_invocations": {"const": 800},
+        "opaque_mapping_algorithm": {"const": "i-base32-HMAC-SHA-256-26"},
+        "opaque_mapping_message": {"const": "matrix_sha256+NUL+case_id+NUL+decimal_slot"},
+        "opaque_order_algorithm": {"const": "independent-HMAC-SHA-256-sort-key"},
+        "control_map_path": {"const": "control/case-map.json"},
+        "control_root_file_mode": {"const": "0700"},
+        "control_map_file_mode": {"const": "0600"},
+        "invocation_order": {"const": "randomized"},
+        "grading_owner": {"const": "host_runner"},
+        "identity_validation": {"const": "fresh-live-issue-origin-main-and-required-identities-at-run-start-and-end"},
+        "timestamp_validation": {"const": "utc-schema-monotonic-nonfuture-observation-cross-midnight-allowed"},
+        "forbidden_request_fields": {
+          "const": [
+            "case_id",
+            "slot",
+            "input_profile_id",
+            "profile_id",
+            "pair_id",
+            "scenario_id",
+            "scenario_kind",
+            "pressure_framing",
+            "expected_exit",
+            "expected_decisions",
+            "invocation_index",
+            "fresh_invocations_per_case",
+            "corpus_path",
+            "corpus_sha256",
+            "matrix_sha256",
+            "control_map_path",
+            "hmac_key"
+          ]
+        }
+      }
+    },
+    "skill_ids": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/skillId"}
+    },
+    "authoring_seed_edges": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/authoringSeedEdge"}
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/skill"}
+    }
+  },
+  "$defs": {
+    "localId": {"type": "string", "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"},
+    "skillId": {"type": "string", "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"},
+    "authoringSeedEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer_skill_id",
+        "exit_id",
+        "consumer_skill_id",
+        "profile_id",
+        "consumer_input_id",
+        "projection_id",
+        "authoring_example_id"
+      ],
+      "properties": {
+        "producer_skill_id": {"$ref": "#/$defs/skillId"},
+        "exit_id": {"$ref": "#/$defs/localId"},
+        "consumer_skill_id": {"$ref": "#/$defs/skillId"},
+        "profile_id": {"$ref": "#/$defs/localId"},
+        "consumer_input_id": {"$ref": "#/$defs/localId"},
+        "projection_id": {"$ref": "#/$defs/localId"},
+        "authoring_example_id": {"$ref": "#/$defs/localId"}
+      }
+    },
+    "evalCaseSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_case_count"],
+      "properties": {
+        "input_profile_id": {"$ref": "#/$defs/localId"},
+        "expected_exit": {"$ref": "#/$defs/localId"},
+        "scenario_kinds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["rejected", "legitimate"]}
+        },
+        "pressure_framings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "neutral",
+              "attack_security",
+              "severity",
+              "independent_reviewer",
+              "already_implemented",
+              "already_tested",
+              "best_practice",
+              "theoretical_bypass"
+            ]
+          }
+        },
+        "expected_case_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "exitBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "output_schema_id",
+        "output_example_id",
+        "consumer_input_id",
+        "projection_id"
+      ],
+      "properties": {
+        "exit_id": {"$ref": "#/$defs/localId"},
+        "output_schema_id": {"type": "string", "minLength": 1},
+        "output_example_id": {"$ref": "#/$defs/localId"},
+        "consumer_input_id": {"$ref": "#/$defs/localId"},
+        "projection_id": {"$ref": "#/$defs/localId"},
+        "eval_case_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/localId"}
+        },
+        "eval_case_selector": {"$ref": "#/$defs/evalCaseSelector"}
+      },
+      "oneOf": [
+        {"required": ["eval_case_ids"]},
+        {"required": ["eval_case_selector"]}
+      ]
+    },
+    "profileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_id"],
+      "properties": {
+        "profile_id": {"$ref": "#/$defs/localId"},
+        "eval_case_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/localId"}
+        },
+        "eval_case_selector": {"$ref": "#/$defs/evalCaseSelector"}
+      },
+      "oneOf": [
+        {"required": ["eval_case_ids"]},
+        {"required": ["eval_case_selector"]}
+      ]
+    },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "interface_schema_id",
+        "eval_schema_id",
+        "input_kind",
+        "input_profile_ids",
+        "profile_case_bindings",
+        "exit_bindings",
+        "private_artifact_ids",
+        "eval_case_selector"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/skillId"},
+        "interface_schema_id": {
+          "enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6"]
+        },
+        "eval_schema_id": {
+          "enum": ["guru-team-skill-evals-1.0", "guru-team-skill-evals-2.0"]
+        },
+        "input_kind": {"const": "structured_json"},
+        "input_profile_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/localId"}
+        },
+        "profile_case_bindings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/profileBinding"}
+        },
+        "exit_bindings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/exitBinding"}
+        },
+        "private_artifact_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/localId"}
+        },
+        "eval_case_selector": {"$ref": "#/$defs/evalCaseSelector"},
+        "production_gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model_id", "fresh_invocations_per_case", "required_passes_per_case"],
+          "properties": {
+            "model_id": {"const": "gpt-5.6-sol"},
+            "fresh_invocations_per_case": {"const": 5},
+            "required_passes_per_case": {"const": 5}
+          }
+        }
+      }
+    }
+  }
+}

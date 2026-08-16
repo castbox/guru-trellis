@@ -147,7 +147,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 当前未发布的 canonical extension version 为 `0.6.5-guru.32`；上文 pin 的 stable
 release tag `v0.6.5-guru.7` 对应 extension revision `0.6.5-guru.31`。
 Source/installed package validation 必须同时验证
-registry、16/67/39 business marker graph、17-package/69-exit closure、consumer
+registry、17 invokes / 71 exits / 42 combined targets（24 workflow + 18 stop）
+business marker graph、18-package/73-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
@@ -155,7 +156,8 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、16 mandatory Skill markers、67 exits、39 workflow/stop targets、
+current-task router、17 mandatory Skill markers、71 exits、24 workflow targets、
+18 stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。
@@ -179,13 +181,17 @@ commands。
 Current-only ownership schema 3.0 固定为 11 条 anchored Guru-owned rules、9 条
 managed claims 和上述 3 个 additive overlays，只记录 current Guru-owned assets；
 非 current ownership/installed manifest 在 mutation 前统一
-fail closed，不存在 projection 或迁移入口。当前更新顺序为：
+fail closed，不存在 projection 或迁移入口。当前完整升级/更新顺序为：
 
-1. official trellis update 或目标版本升级；
-2. 重新选择 guru-team marketplace workflow；
-3. reapply Guru preset；
-4. 处理所有 .new/.bak 与 local-edit conflict；
-5. 运行 source/installed package、ownership、platform identity、dogfood drift 与
+1. 在 disposable npm prefix/container 中执行 `trellis upgrade --tag latest`，核验
+   upgrade 前后 CLI version，绝不修改开发机 global npm；
+2. 在目标 throwaway project 执行 `trellis update --dry-run`；只有输出明确包含
+   `MIGRATION REQUIRED` 时执行 `trellis update --migrate`，否则执行普通
+   `trellis update`，两者不得同时试跑后挑选结果；
+3. 用 `--create-new` preview 并重新选择 guru-team marketplace workflow；
+4. reapply canonical Guru preset；
+5. 处理所有 .new/.bak 与 local-edit conflict；
+6. 运行 source/installed package、ownership、platform identity、dogfood drift 与
    recursive zero-sidecar checks。
 
 维护者在 preset mutation 和 combined acceptance 中运行：
@@ -194,6 +200,34 @@ fail closed，不存在 projection 或迁移入口。当前更新顺序为：
 
 该 validator 只检查客观 ownership facts，不进入 workflow route，也不替代 AI
 semantic judgment。
+
+## Normal Scenario Qualification
+
+Public closed-loop Skill `guru-qualify-normal-scenario` 是新场景资格的唯一语义
+Owner。Global workflow 只按 stable id 在
+`task_free_pre_write|task_free_evolution|requirements_scope_set|change_request_candidate_set|planning_scenario_set|implementation_discovery|base_impact_candidate_set|phase2_candidate_set|branch_review_candidate_set|publication_candidate_set`
+十个 profile 的精确边界 mandatory invoke，并消费四个 exits：
+
+- `classified` -> `guru-normal-scenario-classified-router` -> 原 profile Owner；
+- `scope_confirmation_required` ->
+  `guru-clarify-requirements:normal_scenario_scope_confirmation`；
+- `mechanism_revision_required` ->
+  `guru-normal-scenario-mechanism-router` -> 原 Owner remove/replace 后 fresh rerun；
+- `blocked` -> `normal-scenario-qualification-blocked`。
+
+Guru caller 只把 worker 结果投影为 invocation-local candidate refs、行为观察、locator
+与最小复现线索；每次 worker dispatch 只授权 approved-plan work，planning-external
+candidate 在资格完成前不 edit、不补 test、不 self-fix、不赋 severity，也不形成
+finding/route。官方 `trellis-*` agent bytes 保持 upstream-owned。Skill decision 与 typed
+result 只存在当前 process memory/stdout，不生成 tracked/ignored qualification
+result、report、checkpoint、candidate ledger、handoff 或跨进程 locator。Phase 2、Branch
+Review、Publication 只在各自既有 owner-private gate 中直接记录其 direct consumer 所需
+的最终 terminal classification/witness，不引用 Skill artifact。
+
+Production gate 通过 clean-installed public entry 执行全部十 profiles，并将 #113
+F-001 与 #236 攻击式 scanner 变体同 paired legitimate cases 一起覆盖。当前保证只绑定
+GPT-5.6 Sol、当前 prompt/package 与当前 eval matrix：每 case 五次 fresh invocation
+必须 5/5；模型或关键 prompt 变化后完整重跑，不承诺未来永不复发。
 
 ## Phase 0 Public Transition And Invocation
 
@@ -791,7 +825,7 @@ commit 前先由 unchanged official `trellis-check` 收集实际 terminal eviden
 mandatory invoke active semantic Skill `guru-check-task`。该 Skill 先做 scope
 qualification，再做 current-scope severity、complete adequacy、Docs SSOT review、
 finding/full-rerun loop 与最终 AI Gate；它独占 closed
-`guru-phase2-check-4.0` 的唯一 ignored-runtime `phase2-check.json` 和 `passed` /
+`guru-phase2-check-5.0` 的唯一 ignored-runtime `phase2-check.json` 和 `passed` /
 `implementation_required` / `planning_stale` / `blocked` 四出口。
 `record-phase2-check.sh` 与 `check-phase2-check.sh` 只处理 AI-authored result 的
 确定性 closed schema、`phase2_capture_commit`、`reviewed_content_sha256`、当前
@@ -934,7 +968,7 @@ draft-to-ready。archived recovery 在 GitHub/fast-path 前校验 Git toplevel�
 与 Git worktree facts 解析边界。错误 repo、transport、number、额外 URL path、query/fragment、
 缺失或替换 PR 均 fail closed。
 
-Publication owner 在 ignored runtime 记录 schema 4.0 `pr-readiness.json`，其 public
+Publication owner 在 ignored runtime 记录 schema 5.0 `pr-readiness.json`，其 public
 `ready` DTO 携带 task、`branch_review_commit` 与 exact `pr_title/pr_body`；Publication
 wrapper 校验 DTO 后删除自己的 checkpoint，Finalizer 不读取、删除或提交该 owner
 checkpoint。Finalizer transaction 直接绑定 title/body，且不创建独立 evidence commit。

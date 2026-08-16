@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-qualify-normal-scenario",
+  "commands": [
+    {
+      "id": "record-normal-scenario-qualification",
+      "owner": "guru-qualify-normal-scenario",
+      "entrypoint": "runtime/record.py",
+      "arguments": [{"flag":"--input","required":true,"kind":"json","description":"Dash; read the current AI semantic result from stdin.","repeatable":false,"conflicts":[]}],
+      "stdin": "required_json",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments","conflicting_arguments","invalid_json","schema_mismatch","stale_identity","unsafe_path","missing_contract","internal_error"],
+      "side_effect": "none",
+      "schema_bindings": [],
+      "validator_id": "normal_scenario_qualification_recorder",
+      "runtime_role": "record"
+    },
+    {
+      "id": "check-normal-scenario-qualification",
+      "owner": "guru-qualify-normal-scenario",
+      "entrypoint": "runtime/check.py",
+      "arguments": [{"flag":"--input","required":true,"kind":"json","description":"Dash; read the recorded process-local result from stdin.","repeatable":false,"conflicts":[]}],
+      "stdin": "required_json",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments","conflicting_arguments","invalid_json","schema_mismatch","stale_identity","unsafe_path","missing_contract","internal_error"],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "normal_scenario_qualification_checker",
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-qualify-normal-scenario",
+      "owner": "guru-qualify-normal-scenario",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [{"flag":"--invocation","required":true,"kind":"json","description":"Dash; read one complete call-local semantic invocation from stdin.","repeatable":false,"conflicts":[]}],
+      "stdin": "required_json",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments","conflicting_arguments","invalid_json","schema_mismatch","stale_identity","unsafe_path","missing_contract","internal_error"],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

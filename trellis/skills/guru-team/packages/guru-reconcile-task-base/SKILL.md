@@ -14,6 +14,14 @@ temporary candidate through the declared deterministic command. After the AI
 has separately judged authority, task-content, and integration impact, record
 and check that result, then return exactly one declared typed exit.
 
+Before a base-delta observation can become an impact, finding, validation
+obligation, scope question, implementation route, or stale-plan route, form its
+candidate-only set and invoke `guru-qualify-normal-scenario` with
+`base_impact_candidate_set`. Assign no severity or route before `classified`.
+Rejected candidates do not trigger clarification or task work. Mechanism
+revision returns here for remove/replace and fresh qualification; blocked
+stops. No qualification result is persisted in the base checkpoint.
+
 Mapped exits and stale re-entry are automatic. Ask the user only when the
 semantic result is `scope_confirmation_required`; never persist that
 confirmation. Missing, stale, ambiguous, non-ancestor, or unmapped evidence
