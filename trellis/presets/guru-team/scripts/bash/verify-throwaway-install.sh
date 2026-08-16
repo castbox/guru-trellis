@@ -2620,13 +2620,13 @@ printf '%s\n' "$UPDATE_DRY_RUN_OUTPUT" >"$WORK_DIR/trellis-update-dry-run.log"
 if grep -Fq "MIGRATION REQUIRED" <<<"$UPDATE_DRY_RUN_OUTPUT"; then
   (
     cd "$TARGET"
-    trellis update --migrate
+    trellis update --migrate --skip-all
   )
   printf '%s\n' "migrate" >"$WORK_DIR/trellis-update-mode.txt"
 else
   (
     cd "$TARGET"
-    trellis update
+    trellis update --skip-all
   )
   printf '%s\n' "update" >"$WORK_DIR/trellis-update-mode.txt"
 fi

@@ -42,8 +42,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         upgrade = self.text.index('trellis upgrade --tag "$TRELLIS_UPGRADE_TAG"')
         dry_run = self.text.index("trellis update --dry-run 2>&1", upgrade)
         migrate_branch = self.text.index('if grep -Fq "MIGRATION REQUIRED"', dry_run)
-        migrate = self.text.index("trellis update --migrate", migrate_branch)
-        normal_update = self.text.index("    trellis update\n", migrate)
+        migrate = self.text.index("trellis update --migrate --skip-all", migrate_branch)
+        normal_update = self.text.index("    trellis update --skip-all\n", migrate)
         preview = self.text.index(
             'trellis workflow --marketplace "$WORKFLOW_SOURCE" --template guru-team --create-new',
             normal_update,
@@ -66,6 +66,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         self.assertLess(switch, reapply)
         primary_update_segment = self.text[upgrade:reapply]
         self.assertNotIn("trellis update --force", primary_update_segment)
+        self.assertIn("trellis update --migrate --skip-all", primary_update_segment)
+        self.assertIn("trellis update --skip-all", primary_update_segment)
         self.assertIn('printf \'%s\\n\' "migrate" >"$WORK_DIR/trellis-update-mode.txt"', primary_update_segment)
         self.assertIn('printf \'%s\\n\' "update" >"$WORK_DIR/trellis-update-mode.txt"', primary_update_segment)
 
