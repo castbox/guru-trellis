@@ -3524,6 +3524,79 @@ def production_review_candidate(
     return current_scope_rejections
 
 
+def production_review_classification(candidate: dict[str, Any]) -> dict[str, Any]:
+    disposition = candidate["disposition"]
+    scenario = candidate["scenario_class"]
+    if disposition == "qualified_finding":
+        decision = {
+            "normal_required_behavior": "qualified_current",
+            "explicit_nonstandard_requirement": "qualified_explicit_nonstandard",
+            "approved_nonstandard_expansion": "qualified_approved_expansion",
+        }[scenario]
+        defect_observation = (
+            "The supported Branch Review path reproduced the current required-behavior defect."
+        )
+    elif disposition == "scope_proposal":
+        decision = "rejected_no_authority"
+        defect_observation = (
+            "Current authority does not authorize the optional expansion proposed by the reviewer."
+        )
+    else:
+        decision = "rejected_not_reproduced"
+        defect_observation = (
+            "The complete supported Branch Review range does not reproduce the candidate defect."
+        )
+    return {
+        "candidate_ref": candidate["candidate_ref"],
+        "decision": decision,
+        "witness": {
+            "requirement_refs": list(candidate["requirement_refs"]),
+            "supported_entry_refs": ["entry:guru-review-branch:branch-review"],
+            "existing_caller_refs": ["caller:production-branch-review-eval"],
+            "honest_action_sequence": [
+                "review the complete current base-to-HEAD range through the supported Branch Review entry",
+            ],
+            "defect_observation": defect_observation,
+            "excluded_assumptions": [],
+        },
+        "consumer_use": "branch_review_route_checker",
+    }
+
+
+def production_review_semantic_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
+    common = {
+        key: candidate[key]
+        for key in (
+            "candidate_ref",
+            "disposition",
+            "affected_behavior",
+            "path",
+            "evidence_refs",
+        )
+    }
+    if candidate["disposition"] == "qualified_finding":
+        keys = (
+            "finding_ref",
+            "severity",
+            "introduced_head",
+            "fix_head",
+            "closure_head",
+            "status",
+            "closure_evidence",
+        )
+    elif candidate["disposition"] == "scope_proposal":
+        keys = (
+            "proposal_ref",
+            "proposal",
+            "trigger_evidence",
+            "clarification_route",
+        )
+    else:
+        keys = ()
+    common.update({key: candidate[key] for key in keys})
+    return common
+
+
 def production_record_review(
     runtime: Any,
     fixture: Path,
@@ -3551,25 +3624,31 @@ def production_record_review(
         resolved=resolved,
         introduced_head=introduced_head,
     )
+    candidate_classifications = [
+        production_review_classification(item) for item in candidates
+    ]
+    semantic_candidates = [
+        production_review_semantic_candidate(item) for item in candidates
+    ]
     semantic = {
         "qualified_findings": [
-            item for item in candidates
+            item for item in semantic_candidates
             if item["disposition"] == "qualified_finding"
         ],
         "scope_proposals": [
-            item for item in candidates
+            item for item in semantic_candidates
             if item["disposition"] == "scope_proposal"
         ],
         "observations": [
-            item for item in candidates
+            item for item in semantic_candidates
             if item["disposition"] == "observation"
         ],
         "followup_candidates": [
-            item for item in candidates
+            item for item in semantic_candidates
             if item["disposition"] == "followup_candidate"
         ],
         "rejected_candidates": [
-            item for item in candidates
+            item for item in semantic_candidates
             if item["disposition"] == "rejected_candidate"
         ],
         "ai_review_gate": {
@@ -3579,6 +3658,7 @@ def production_record_review(
     }
     semantic_path = fixture / ".trellis/.runtime/guru-team/evals/review-owner-input.json"
     semantic_path.write_text(json.dumps({
+        "candidate_classifications": candidate_classifications,
         "semantic_review": semantic,
         "verification_evidence": {
             "reviewer": reviewer,

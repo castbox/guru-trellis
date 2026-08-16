@@ -902,6 +902,96 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     }
                     self.assertLessEqual(linked_refs, {candidate_ref})
 
+    def test_production_branch_review_inputs_close_schema_5_for_every_exit(self) -> None:
+        from adapters.eval import native_adapter
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads(
+            (
+                SKILLS
+                / "packages/guru-review-branch/schemas/review-gate-5.0.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        expected = {
+            "passed": ["rejected_not_reproduced"] * 3,
+            "implementation_required": ["qualified_current"],
+            "scope_confirmation_required": ["rejected_no_authority"],
+            "blocked": ["rejected_not_reproduced"] * 3,
+        }
+        for exit_id, decisions in expected.items():
+            with self.subTest(exit_id=exit_id):
+                candidates = native_adapter.production_review_candidate(
+                    exit_id,
+                    "1" * 40,
+                )
+                classifications = [
+                    native_adapter.production_review_classification(item)
+                    for item in candidates
+                ]
+                semantic_candidates = [
+                    native_adapter.production_review_semantic_candidate(item)
+                    for item in candidates
+                ]
+                semantic = {
+                    "qualified_findings": [
+                        item for item in semantic_candidates
+                        if item["disposition"] == "qualified_finding"
+                    ],
+                    "scope_proposals": [
+                        item for item in semantic_candidates
+                        if item["disposition"] == "scope_proposal"
+                    ],
+                    "observations": [],
+                    "followup_candidates": [],
+                    "rejected_candidates": [
+                        item for item in semantic_candidates
+                        if item["disposition"] == "rejected_candidate"
+                    ],
+                    "ai_review_gate": {
+                        "status": exit_id,
+                        "summary": "Reviewed the complete current range.",
+                    },
+                }
+                payload = {
+                    "schema_version": "5.0",
+                    "skill_id": "guru-review-branch",
+                    "generated_at": "2026-08-16T00:00:00Z",
+                    "task_dir": ".trellis/tasks/branch-review-eval",
+                    "mode": "workflow",
+                    "profile": "branch_review",
+                    "review_intent": "initial_review",
+                    "typed_exit": exit_id,
+                    "review_commit": "1" * 40,
+                    "reviewed_content_sha256": "2" * 64,
+                    "base_ref": "origin/main",
+                    "base_head": "3" * 40,
+                    "integration_pair": None,
+                    "candidate_classifications": classifications,
+                    "semantic_review": semantic,
+                    "verification_evidence": {
+                        "reviewer": "independent-reviewer",
+                        "review_source": "independent-agent",
+                        "evidence": ["Reviewed the complete current range."],
+                    },
+                    "facts_sha256": "4" * 64,
+                }
+                errors = list(Draft202012Validator(schema).iter_errors(payload))
+                self.assertEqual([], errors)
+                self.assertEqual(decisions, [row["decision"] for row in classifications])
+                classified_refs = {row["candidate_ref"] for row in classifications}
+                semantic_refs = {
+                    row["candidate_ref"]
+                    for key in (
+                        "qualified_findings",
+                        "scope_proposals",
+                        "observations",
+                        "followup_candidates",
+                        "rejected_candidates",
+                    )
+                    for row in semantic[key]
+                }
+                self.assertEqual(classified_refs, semantic_refs)
+
     def test_model_request_uses_protocol_2_and_hides_control_identity(self) -> None:
         from adapters.eval import native_adapter
 
