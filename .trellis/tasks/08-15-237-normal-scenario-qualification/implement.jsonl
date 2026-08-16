@@ -1,9 +1,0 @@
-{"file":".trellis/spec/workflow/workflow-contract.md","reason":"定义 global workflow、mandatory Skill invocation、typed exit consumer、Docs SSOT 与平台边界。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"定义 public Skill Interface 1.4、profile-specific I/O、projection、private state 与 package graph 合同。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"定义 Phase 2、Branch Review、Publication owner-private witness 与版本化 schema 边界。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 recorder/checker/invoker 只能执行确定性结构、identity、freshness 与 binding 校验。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"定义 package、real-wrapper eval、platform parity、clean install/update、Phase 2 与 Branch Review 验证门禁。"}
-{"file":".trellis/spec/preset/installer.md","reason":"定义 canonical package 到 installed/shared/Codex/Claude/Cursor 投影和 update/reapply 合同。"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"定义 managed/additive ownership inventory、drift 和零 sidecar 边界。"}
-{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"确认平台 overlay 不复制 normal-scenario 资格算法。"}
-{"file":".trellis/spec/docs/public-docs.md","reason":"约束 README 与 publication 只陈述当前模型、prompt、profiles 和 eval matrix 的真实保证。"}
