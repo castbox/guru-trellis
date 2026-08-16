@@ -3736,6 +3736,58 @@ def production_publication_authoring(
         if route == "blocked"
         else "ready"
     )
+    if route == "metadata-fix-ready":
+        candidate_ref = "candidate:publication:metadata-revision"
+        decision = "qualified_current"
+        defect_observation = (
+            "The owner-private PR payload required a current task-local metadata "
+            "revision before publication could be ready."
+        )
+    elif typed_exit == "return_to_task_work":
+        candidate_ref = "candidate:publication:task-work"
+        decision = "qualified_current"
+        defect_observation = (
+            "The current publication evidence contains a task-work defect that "
+            "must return to the task owner."
+        )
+    elif typed_exit == "blocked":
+        candidate_ref = "candidate:publication:external-blocker"
+        decision = "qualified_current"
+        defect_observation = (
+            "The supported publication entry is blocked by a current external "
+            "dependency that task work cannot repair."
+        )
+    else:
+        candidate_ref = "candidate:publication:no-defect"
+        decision = "rejected_not_reproduced"
+        defect_observation = (
+            "The complete current publication review reproduces no required-"
+            "behavior defect."
+        )
+    candidate_classifications = [{
+        "candidate_ref": candidate_ref,
+        "decision": decision,
+        "witness": {
+            "requirement_refs": ["issue-scope-ledger.json", "pr_payload"],
+            "supported_entry_refs": [
+                "guru-review-task-publication",
+                "git:branch_review_commit",
+            ],
+            "existing_caller_refs": [
+                "guru-review-task-publication",
+                "guru-finalize-task",
+            ],
+            "honest_action_sequence": [
+                "Review the current PR payload, Branch Review gate, task scope, "
+                "and publication evidence through the supported publication entry."
+            ],
+            "defect_observation": defect_observation,
+            "excluded_assumptions": [
+                "No hostile input, artifact tampering, or unsupported workflow bypass."
+            ],
+        },
+        "consumer_use": "publication_route_checker",
+    }]
     dimension_status = {
         item: "passed" for item in runtime.TASK_PUBLICATION_DIMENSIONS
     }
@@ -3783,6 +3835,7 @@ def production_publication_authoring(
                 if route == "metadata-durable-drift-return"
                 else "PUB-WORK-001"
             ),
+            "candidate_ref": candidate_ref,
             "dimension": dimension,
             "summary": "The current publication review requires a complete task-work rerun.",
             "scope_basis": "The approved production eval owns this current-scope behavior.",
@@ -3796,6 +3849,7 @@ def production_publication_authoring(
         dimension_status["artifact_binding_freshness"] = "blocked"
         findings.append({
             "finding_ref": "PUB-BLOCK-001",
+            "candidate_ref": candidate_ref,
             "dimension": "artifact_binding_freshness",
             "summary": "An external publication dependency is unavailable.",
             "scope_basis": "The dependency cannot be repaired by current task work.",
@@ -3808,6 +3862,7 @@ def production_publication_authoring(
     elif route == "metadata-fix-ready":
         findings.append({
             "finding_ref": "PUB-META-001",
+            "candidate_ref": candidate_ref,
             "dimension": "pr_body_quality",
             "summary": "The owner-private PR payload was revised and rereviewed.",
             "scope_basis": "The contract permits an internal payload metadata revision.",
@@ -3832,6 +3887,7 @@ def production_publication_authoring(
         "mode": public_input["mode"],
         "review_intent": public_input["review_intent"],
         "pr_payload": pr_payload,
+        "candidate_classifications": candidate_classifications,
         "dimensions": dimensions,
         "findings": findings,
         "conclusions": {

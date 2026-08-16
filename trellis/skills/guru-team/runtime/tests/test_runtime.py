@@ -992,6 +992,100 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 }
                 self.assertEqual(classified_refs, semantic_refs)
 
+    def test_production_publication_inputs_close_schema_5_for_every_exit(self) -> None:
+        from adapters.eval import native_adapter
+        from jsonschema import Draft202012Validator
+
+        class FixtureRuntime:
+            TASK_PUBLICATION_DIMENSIONS = (
+                "diff_outcome_consistency",
+                "issue_scope_closure",
+                "pr_body_quality",
+                "validation_claims",
+                "branch_review_summary",
+                "docs_ssot_reconciliation",
+                "safety_deployment_impact",
+                "finish_summary_semantics",
+                "metadata_tail_integrity",
+                "artifact_binding_freshness",
+            )
+
+            @staticmethod
+            def write_json(path: Path, payload: dict[str, object]) -> None:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(payload), encoding="utf-8")
+
+        schema = json.loads(
+            (
+                SKILLS
+                / "packages/guru-review-task-publication/schemas/pr-readiness.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        expected = {
+            "publication-ready": (
+                "candidate:publication:no-defect",
+                "rejected_not_reproduced",
+            ),
+            "publication-return": (
+                "candidate:publication:task-work",
+                "qualified_current",
+            ),
+            "publication-blocked": (
+                "candidate:publication:external-blocker",
+                "qualified_current",
+            ),
+            "publication-metadata-fix-ready": (
+                "candidate:publication:metadata-revision",
+                "qualified_current",
+            ),
+            "publication-metadata-durable-drift-return": (
+                "candidate:publication:task-work",
+                "qualified_current",
+            ),
+        }
+        public_input = {
+            "profile": "publication_review",
+            "mode": "workflow",
+            "review_intent": "initial_review",
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = Path(temporary)
+            task = fixture / ".trellis/tasks/publication-eval"
+            for recipe, (candidate_ref, decision) in expected.items():
+                with self.subTest(recipe=recipe):
+                    path = native_adapter.production_publication_authoring(
+                        FixtureRuntime(), fixture, task, public_input, recipe
+                    )
+                    authored = json.loads(path.read_text(encoding="utf-8"))
+                    owner_projection = {
+                        key: value
+                        for key, value in authored.items()
+                        if key not in {"profile", "mode", "review_intent"}
+                    }
+                    payload = {
+                        "schema_version": "5.0",
+                        "skill_id": "guru-review-task-publication",
+                        "task_ref": ".trellis/tasks/publication-eval",
+                        "branch_review_commit": "1" * 40,
+                        "reviewed_content_sha256": "2" * 64,
+                        **owner_projection,
+                    }
+                    errors = list(Draft202012Validator(schema).iter_errors(payload))
+                    self.assertEqual([], errors)
+                    self.assertEqual(
+                        [(candidate_ref, decision)],
+                        [
+                            (row["candidate_ref"], row["decision"])
+                            for row in authored["candidate_classifications"]
+                        ],
+                    )
+                    self.assertTrue(
+                        all(
+                            row["candidate_ref"] == candidate_ref
+                            for row in authored["findings"]
+                        )
+                    )
+
     def test_model_request_uses_protocol_2_and_hides_control_identity(self) -> None:
         from adapters.eval import native_adapter
 
