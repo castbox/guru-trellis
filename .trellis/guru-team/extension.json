@@ -379,7 +379,7 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-16T04:59:57Z",
+  "installed_at": "2026-08-16T06:21:08Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
     "ref": "60a2e962b68a02d08061795cfe9fafcdff206e80",
@@ -869,7 +869,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "a900cabb150f57d313a73fc58d6fba541a532aa02e4070ffb2fc118e911fedf8",
+        "sha256": "3bce84c0b6e87177f07e084c2ab9944dc68bb1b4105b25c923588594e66e2037",
         "executable": false,
         "action": "unchanged"
       },

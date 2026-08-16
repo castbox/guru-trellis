@@ -1702,7 +1702,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn('--task "$task_rel" --input "$input" >"$result"', verifier)
-        self.assertIn('recorded["schema_version"] == "4.0"', verifier)
+        self.assertIn('recorded["schema_version"] == "5.0"', verifier)
         self.assertNotIn("--ambiguity-reviewer", verifier)
         self.assertNotIn("--normative-hit", verifier)
         self.assertIn("verify_installed_closeout.py", verifier)

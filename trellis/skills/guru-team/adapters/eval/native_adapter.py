@@ -3233,6 +3233,23 @@ def production_phase2_input(
     scope_decisions: list[dict[str, Any]] = []
     findings: list[dict[str, Any]] = []
     unverified_items: list[dict[str, Any]] = []
+    candidate_classifications = [{
+        "candidate_ref": "candidate:phase2:no-defect",
+        "decision": "rejected_not_reproduced",
+        "witness": {
+            "requirement_refs": ["task:prd:R1"],
+            "supported_entry_refs": ["entry:guru-check-task:phase2"],
+            "existing_caller_refs": ["caller:production-phase2-eval"],
+            "honest_action_sequence": [
+                "run the installed Phase 2 owner through its supported entry",
+            ],
+            "defect_observation": (
+                "The supported production eval path does not reproduce a task defect."
+            ),
+            "excluded_assumptions": [],
+        },
+        "consumer_use": "task_commit_preflight",
+    }]
     route = None
     consumer = {
         "passed": {"kind": "skill", "id": "guru-create-task-commit"},
@@ -3241,26 +3258,60 @@ def production_phase2_input(
         "blocked": {"kind": "stop", "id": "task-check-blocked"},
     }[exit_id]
     if exit_id == "implementation_required":
+        candidate_classifications = [{
+            "candidate_ref": "candidate:phase2:defect",
+            "decision": "qualified_current",
+            "witness": {
+                "requirement_refs": ["task:prd:R1"],
+                "supported_entry_refs": ["entry:guru-check-task:phase2"],
+                "existing_caller_refs": ["caller:production-phase2-eval"],
+                "honest_action_sequence": [
+                    "run the supported production Phase 2 implementation check",
+                ],
+                "defect_observation": (
+                    "The current implementation defect is reproduced on the supported eval path."
+                ),
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "task_commit_preflight",
+        }]
         scope_decisions = [{
             "id": "C1",
+            "candidate_ref": "candidate:phase2:defect",
             "disposition": "current_scope",
             "summary": "A current-scope implementation defect remains.",
-            "normal_path_reproduction": "The supported eval path reproduces the defect.",
             "finding_id": "F1",
         }]
         findings = [{
-            "id": "F1", "severity": "P2",
+            "id": "F1", "candidate_ref": "candidate:phase2:defect", "severity": "P2",
             "summary": "The current implementation requires a fix.",
             "path": "src/production-eval.txt", "status": "open",
         }]
         next(item for item in dimensions if item["id"] == "implementation")["status"] = "failed"
     elif exit_id == "planning_stale":
         route = "reapprove_plan"
+        candidate_classifications = [{
+            "candidate_ref": "candidate:phase2:scope",
+            "decision": "qualified_approved_expansion",
+            "witness": {
+                "requirement_refs": ["task:scope-expansion:R13"],
+                "supported_entry_refs": ["entry:guru-check-task:phase2"],
+                "existing_caller_refs": ["caller:production-phase2-eval"],
+                "honest_action_sequence": [
+                    "review the approved expansion against the current task plan",
+                ],
+                "defect_observation": (
+                    "The approved expansion is not represented by the current task plan."
+                ),
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "task_commit_preflight",
+        }]
         scope_decisions = [{
             "id": "scope-proposal:R13",
+            "candidate_ref": "candidate:phase2:scope",
             "disposition": "scope_change_required",
             "summary": "The approved scope requires a current authority decision.",
-            "normal_path_reproduction": "The supported eval path requires a scope change.",
             "finding_id": None,
         }]
     elif exit_id == "blocked":
@@ -3291,6 +3342,7 @@ def production_phase2_input(
             "durable_paths": ["docs/requirements.md"],
             "summary": "The durable requirement was the implementation input.",
         },
+        "candidate_classifications": candidate_classifications,
         "semantic_review": {
             "status": exit_id,
             "summary": f"The production Phase 2 owner selected {exit_id}.",

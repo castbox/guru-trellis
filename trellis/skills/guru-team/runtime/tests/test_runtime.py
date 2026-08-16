@@ -824,6 +824,84 @@ class SharedRuntimeTests(unittest.TestCase):
 
 
 class QualificationNativeIsolationTests(unittest.TestCase):
+    def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
+        from adapters.eval import native_adapter
+        from jsonschema import Draft202012Validator
+
+        class FixtureRuntime:
+            @staticmethod
+            def read_json(_path: Path) -> dict[str, str]:
+                return {"base_branch": "main"}
+
+            @staticmethod
+            def diff_base_ref(_fixture: Path, _base: str) -> str:
+                return "origin/main"
+
+            @staticmethod
+            def changed_files(_fixture: Path, _range: str) -> list[str]:
+                return ["src/production-eval.txt"]
+
+            @staticmethod
+            def git_status_paths(_fixture: Path) -> list[str]:
+                return []
+
+            @staticmethod
+            def write_json(path: Path, payload: dict[str, object]) -> None:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(payload), encoding="utf-8")
+
+        schema = json.loads(
+            (
+                SKILLS
+                / "packages/guru-check-task/schemas/phase2-check.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        expected = {
+            "passed": ("candidate:phase2:no-defect", "rejected_not_reproduced"),
+            "implementation_required": (
+                "candidate:phase2:defect",
+                "qualified_current",
+            ),
+            "planning_stale": (
+                "candidate:phase2:scope",
+                "qualified_approved_expansion",
+            ),
+            "blocked": ("candidate:phase2:no-defect", "rejected_not_reproduced"),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = Path(temporary)
+            task = fixture / ".trellis/tasks/phase2-eval"
+            package = SKILLS / "packages/guru-check-task"
+            for exit_id, (candidate_ref, decision) in expected.items():
+                with self.subTest(exit_id=exit_id):
+                    path = native_adapter.production_phase2_input(
+                        FixtureRuntime(), fixture, task, package, exit_id
+                    )
+                    payload = json.loads(path.read_text(encoding="utf-8"))
+                    current = {
+                        "schema_version": "5.0",
+                        "skill_id": "guru-check-task",
+                        "task_ref": ".trellis/tasks/phase2-eval",
+                        "phase2_capture_commit": "1" * 40,
+                        "reviewed_content_sha256": "2" * 64,
+                        **payload,
+                    }
+                    errors = list(Draft202012Validator(schema).iter_errors(current))
+                    self.assertEqual([], errors)
+                    self.assertEqual(
+                        [(candidate_ref, decision)],
+                        [
+                            (row["candidate_ref"], row["decision"])
+                            for row in payload["candidate_classifications"]
+                        ],
+                    )
+                    linked_refs = {
+                        row["candidate_ref"]
+                        for key in ("scope_decisions", "findings")
+                        for row in payload["semantic_review"][key]
+                    }
+                    self.assertLessEqual(linked_refs, {candidate_ref})
+
     def test_model_request_uses_protocol_2_and_hides_control_identity(self) -> None:
         from adapters.eval import native_adapter
 
