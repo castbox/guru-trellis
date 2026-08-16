@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import ast
 import unittest
 from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[5]
 VERIFIER = REPO / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
+SCHEMAS = REPO / "trellis/skills/guru-team/schemas"
 
 
 class VerifyTrellisUpgradeContractTests(unittest.TestCase):
@@ -65,6 +67,16 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.text,
         )
         self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", self.text)
+
+    def test_embedded_installed_schema_inventory_matches_canonical_source(self) -> None:
+        inventory_anchor = 'skills_root = root / ".trellis/guru-team/skills"'
+        assertion_start = self.text.index("assert {", self.text.index(inventory_anchor))
+        literal_start = self.text.index("} == {", assertion_start) + len("} == ")
+        literal_end = self.text.index("\n}\nfor artifact", literal_start) + 2
+        embedded_inventory = ast.literal_eval(self.text[literal_start:literal_end])
+        canonical_inventory = {path.name for path in SCHEMAS.iterdir() if path.is_file()}
+
+        self.assertEqual(embedded_inventory, canonical_inventory)
 
 
 if __name__ == "__main__":

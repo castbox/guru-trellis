@@ -1217,17 +1217,22 @@ skills_root = root / ".trellis/guru-team/skills"
 assert {
     path.name for path in (skills_root / "schemas").iterdir() if path.is_file()
 } == {
+    "production-contract-manifest-4.0.schema.json",
     "production-contract-manifest-3.0.schema.json",
     "production-contract-manifest-2.0.schema.json",
     "production-contract-manifest.schema.json",
     "skill-commands.schema.json",
     "skill-error-catalog.schema.json",
+    "skill-eval-adapter-request-3.0.schema.json",
     "skill-eval-adapter-request-2.0.schema.json",
     "skill-eval-adapter-request.schema.json",
+    "skill-eval-adapter-response-3.0.schema.json",
     "skill-eval-adapter-response-2.0.schema.json",
     "skill-eval-adapter-response.schema.json",
+    "skill-eval-control-map-1.0.schema.json",
     "skill-eval-human-feedback.schema.json",
     "skill-eval-native-trace.schema.json",
+    "skill-eval-run-4.0.schema.json",
     "skill-eval-run-3.0.schema.json",
     "skill-eval-run-2.0.schema.json",
     "skill-eval-run.schema.json",
