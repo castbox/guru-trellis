@@ -2422,7 +2422,8 @@ payload = {
     key: payload[key]
     for key in (
         "mode", "reviewed_paths", "validation", "docs_ssot",
-        "semantic_review", "typed_exit", "route", "reason", "consumer",
+        "candidate_classifications", "semantic_review", "typed_exit", "route",
+        "reason", "consumer",
     )
 }
 payload["mode"] = "workflow"
@@ -2455,14 +2456,14 @@ PY
     --root "$TARGET" \
     --task "$TASK_REL" \
     --input "$input_path" \
-    --json)"
+    --json)" || { rm -f "$input_path"; return 1; }
   check_json="$("$TARGET/.trellis/guru-team/skills/packages/guru-check-task/scripts/check-phase2-check.sh" \
     --root "$TARGET" \
     --task "$TASK_REL" \
-    --json)"
+    --json)" || { rm -f "$input_path"; return 1; }
   rm -f "$input_path"
-  installed_python "$TARGET" -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "4.0"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json"
-  owner_result="$(installed_python "$TARGET" -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.loads(sys.argv[2])["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$record_json")"
+  installed_python "$TARGET" -c 'import json,sys; recorded=json.loads(sys.argv[1]); checked=json.load(sys.stdin); assert recorded["schema_version"] == "5.0"; assert recorded["skill_id"] == "guru-check-task"; assert recorded["typed_exit"] == checked["typed_exit"] == "passed"; assert checked["consumer"] == {"kind":"skill","id":"guru-create-task-commit"}' "$record_json" <<<"$check_json" || return 1
+  owner_result="$(installed_python "$TARGET" -c 'import json,pathlib,sys; root=pathlib.Path(sys.argv[1]).resolve(); path=pathlib.Path(json.loads(sys.argv[2])["artifact_path"]).resolve(); print(path.relative_to(root).as_posix())' "$TARGET" "$record_json")" || return 1
   mkdir -p "$TARGET/.trellis/.runtime/guru-team/throwaway-inputs"
   public_input="$(mktemp "$TARGET/.trellis/.runtime/guru-team/throwaway-inputs/phase2.XXXXXX")"
   installed_python "$TARGET" - "$TASK_REL" "$profile" "$public_input" <<'PY'
@@ -2498,9 +2499,9 @@ PY
     "$TARGET/.agents/skills/guru-check-task/scripts/invoke.sh" \
       --input "${public_input#"$TARGET/"}" \
       --owner-result "$owner_result"
-  )"
+  )" || { rm -f "$public_input"; return 1; }
   rm -f "$public_input"
-  installed_python "$TARGET" -c 'import json,pathlib,re,sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id","task_ref","phase2_commit_anchor"}; assert payload["exit_id"] == "passed"; assert payload["task_ref"] == sys.argv[1]; assert re.fullmatch(r"[0-9a-f]{40}", payload["phase2_commit_anchor"]); assert (pathlib.Path(sys.argv[2]) / sys.argv[3]).is_file()' "$TASK_REL" "$TARGET" "$owner_result" <<<"$public_output"
+  installed_python "$TARGET" -c 'import json,pathlib,re,sys; payload=json.load(sys.stdin); assert set(payload) == {"exit_id","task_ref","phase2_commit_anchor"}; assert payload["exit_id"] == "passed"; assert payload["task_ref"] == sys.argv[1]; assert re.fullmatch(r"[0-9a-f]{40}", payload["phase2_commit_anchor"]); assert (pathlib.Path(sys.argv[2]) / sys.argv[3]).is_file()' "$TASK_REL" "$TARGET" "$owner_result" <<<"$public_output" || return 1
   printf '%s\n' "$public_output"
 }
 

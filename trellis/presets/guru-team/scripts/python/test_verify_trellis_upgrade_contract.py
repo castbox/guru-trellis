@@ -10,6 +10,13 @@ REPO = Path(__file__).resolve().parents[5]
 VERIFIER = REPO / "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh"
 SCHEMAS = REPO / "trellis/skills/guru-team/schemas"
 EXTENSION = REPO / "trellis/guru-team-extension.json"
+PHASE2_EXAMPLE = (
+    REPO
+    / "trellis/skills/guru-team/packages/guru-check-task/examples/phase2-check.json"
+)
+PHASE2_RECORDER = (
+    REPO / "trellis/skills/guru-team/packages/guru-check-task/runtime/record.py"
+)
 
 
 class VerifyTrellisUpgradeContractTests(unittest.TestCase):
@@ -109,6 +116,45 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             'test -f "$TARGET/.trellis/guru-team/skills/contracts/production-current-4.0.json"',
             self.text,
         )
+
+    def test_phase2_smoke_matches_current_recorder_and_stops_on_command_error(self) -> None:
+        function_start = self.text.index("record_throwaway_phase2() {")
+        function_end = self.text.index("\n}\n\nPHASE2_DTO=", function_start) + 2
+        function = self.text[function_start:function_end]
+
+        projection_anchor = "    for key in "
+        projection_start = function.index(projection_anchor) + len(projection_anchor)
+        projection_end = function.index("\n}", projection_start)
+        projected_keys = set(
+            ast.literal_eval(function[projection_start:projection_end])
+        )
+
+        recorder_tree = ast.parse(PHASE2_RECORDER.read_text(encoding="utf-8"))
+        recorder_keys = next(
+            set(ast.literal_eval(node.value))
+            for node in ast.walk(recorder_tree)
+            if isinstance(node, ast.Assign)
+            and any(
+                isinstance(target, ast.Name) and target.id == "expected"
+                for target in node.targets
+            )
+        )
+        example = json.loads(PHASE2_EXAMPLE.read_text(encoding="utf-8"))
+
+        self.assertEqual(projected_keys, recorder_keys)
+        self.assertIn(
+            f'recorded["schema_version"] == "{example["schema_version"]}"',
+            function,
+        )
+        self.assertEqual(
+            function.count('|| { rm -f "$input_path"; return 1; }'),
+            2,
+        )
+        self.assertEqual(
+            function.count('|| { rm -f "$public_input"; return 1; }'),
+            1,
+        )
+        self.assertGreaterEqual(function.count("|| return 1"), 3)
 
 
 if __name__ == "__main__":
