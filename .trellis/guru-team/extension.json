@@ -379,11 +379,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-16T17:06:19Z",
+  "installed_at": "2026-08-16T17:32:25Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "60a2e962b68a02d08061795cfe9fafcdff206e80",
-    "commit": "60a2e962b68a02d08061795cfe9fafcdff206e80",
+    "ref": "73218a4342a862dd390fed0797aaa35f483d00d4",
+    "commit": "73218a4342a862dd390fed0797aaa35f483d00d4",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -596,7 +596,7 @@
       {
         "id": "guru-qualify-normal-scenario",
         "interface_sha256": "90c43f75f9f2a0c9abd07d4e7e0d769ab770510ce2d99f61fff33f49507c6e44",
-        "tree_sha256": "0a70e5576ae2911f255acee8a9cdd72036338dbddc4141844e6f8a85c5db3f88"
+        "tree_sha256": "8287910e0e7c16f3670890571eb5ec3ba7d198dd86679ef15dd4b4a0eb29329a"
       }
     ],
     "files": [
@@ -897,7 +897,7 @@
       {
         "path": ".trellis/guru-team/skills/contracts/production-current-3.0.json",
         "source": "trellis/skills/guru-team/contracts/production-current-3.0.json",
-        "sha256": "98f632f815351ae3f84af081613c1b4cde6eab7bc1341af00467755f2f4acacb",
+        "sha256": "cae56ac990a76561052a140e5df9dc9df0467b9489d52c24e8e4e29985f3fbec",
         "executable": false,
         "action": "unchanged"
       },
@@ -7309,7 +7309,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-qualify-normal-scenario/evals/evals.json",
-        "sha256": "155e91029ced0ea0c7f6b07f800eab4b2b156e76772aba0014f4af614bc4456e",
+        "sha256": "930db2120cebfbefe12e252e8e4509d7b8ac5a4c8d8d8af54b28adfe9ad97334",
         "executable": false,
         "action": "unchanged"
       },
@@ -23794,7 +23794,7 @@
       {
         "path": ".agents/skills/guru-qualify-normal-scenario/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-qualify-normal-scenario/evals/evals.json",
-        "sha256": "155e91029ced0ea0c7f6b07f800eab4b2b156e76772aba0014f4af614bc4456e",
+        "sha256": "930db2120cebfbefe12e252e8e4509d7b8ac5a4c8d8d8af54b28adfe9ad97334",
         "executable": false,
         "action": "unchanged"
       },
@@ -24074,7 +24074,7 @@
       {
         "path": ".codex/skills/guru-qualify-normal-scenario/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-qualify-normal-scenario/evals/evals.json",
-        "sha256": "155e91029ced0ea0c7f6b07f800eab4b2b156e76772aba0014f4af614bc4456e",
+        "sha256": "930db2120cebfbefe12e252e8e4509d7b8ac5a4c8d8d8af54b28adfe9ad97334",
         "executable": false,
         "action": "unchanged"
       },
@@ -24354,7 +24354,7 @@
       {
         "path": ".claude/skills/guru-qualify-normal-scenario/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-qualify-normal-scenario/evals/evals.json",
-        "sha256": "155e91029ced0ea0c7f6b07f800eab4b2b156e76772aba0014f4af614bc4456e",
+        "sha256": "930db2120cebfbefe12e252e8e4509d7b8ac5a4c8d8d8af54b28adfe9ad97334",
         "executable": false,
         "action": "unchanged"
       },
@@ -24634,7 +24634,7 @@
       {
         "path": ".cursor/skills/guru-qualify-normal-scenario/evals/evals.json",
         "source": "trellis/skills/guru-team/packages/guru-qualify-normal-scenario/evals/evals.json",
-        "sha256": "155e91029ced0ea0c7f6b07f800eab4b2b156e76772aba0014f4af614bc4456e",
+        "sha256": "930db2120cebfbefe12e252e8e4509d7b8ac5a4c8d8d8af54b28adfe9ad97334",
         "executable": false,
         "action": "unchanged"
       },
