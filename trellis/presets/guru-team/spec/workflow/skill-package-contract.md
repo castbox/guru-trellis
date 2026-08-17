@@ -1702,6 +1702,14 @@ Both modes produce the same minimal Merge handoff. Finalizer does
 not invoke verifier, emit `verification_required`, accept verification re-entry,
 read verifier owner state, or archive a verifier artifact.
 
+For a transaction-bound recovery whose next transition is `archive`,
+`push_archive`, or `mark_ready`, exact transaction validation precedes pre-PR
+provenance inference. That stage ownership does not relax PR, payload, scope,
+plan, or three-way HEAD drift checks. Current archive projection may also own
+the deletion of one historical tracked-but-absent `closeout-plan.json`; the path
+stays private, is excluded from move/retained/reviewed sets, and never enters a
+public input, output, or Merge DTO.
+
 `publication_review_stale` projects exactly
 `task_ref/branch_review_commit/stale_reason` to Publication. Publication itself
 retains `return_to_task_work` for real content drift. `reprepare_required`

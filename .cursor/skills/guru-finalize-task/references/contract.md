@@ -28,6 +28,31 @@ transaction after its exact push. It pushes only the exact publication commit by
 converges title/body from current Publication, preserves Ready, or applies the
 existing Draft-to-Ready transition.
 
+Once that exact transaction owns `archive`, `push_archive`, or `mark_ready`, its
+bound PR, payload, close scope, plan digest, and HEAD identities are validated
+before any pre-PR provenance inference. A matching post-bind recovery continues
+from its recorded transition; any mismatch fails closed instead of falling back
+to fresh PR adoption or provenance reprepare.
+
+If archive move, commit, and push complete before Draft-to-Ready succeeds, the
+archived task retains the exact `archive`/`push_archive` transaction stage. A
+same-plan retry validates the archived task, the bound PR's recorded initial
+Draft/Ready state, and three-way archive
+HEAD, performs only the remaining Ready transition, then persists `mark_ready`
+and retires owner state. It never reruns archive or creates a second PR.
+
+Current preparation retires a historically tracked but already deleted
+`closeout-plan.json` through the private archive projection. The path is absent
+from move, retained, required, and reviewed-binding sets, but remains an exact
+active-side deletion in the archive transaction with parent-blob continuity.
+It is never materialized or copied into the current archive.
+If a post-bind transaction still carries the predecessor projection digest,
+preview accepts the current digest only when that predecessor digest equals the
+deterministic reverse projection with `closeout-plan.json` restored to the
+tracked move set, every other transaction field is byte-for-byte identical,
+and this single retired path is present. Executor then persists that same
+minimal digest projection before continuing; any unrelated digest fails closed.
+
 Once the transaction has reached `ready`, execute performs only terminal live
 revalidation and materializes the current `ready_for_merge` DTO. It does not
 call the Draft-only finish path or repeat push, PR, archive, commit, or Ready

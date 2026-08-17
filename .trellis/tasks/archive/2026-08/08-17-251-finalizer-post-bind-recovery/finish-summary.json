@@ -1,0 +1,265 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-17T18:31:29Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-17-251-finalizer-post-bind-recovery",
+    "title": "#251 修复 Finalizer post-bind same-plan 恢复与 legacy closeout-plan 归档缺口",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-17-251-finalizer-post-bind-recovery",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/251-finalizer-post-bind-recovery",
+    "commits": [
+      "873283d8a38921e8b1423976a21d7aca5cb33a3c",
+      "6ff84c9effb213f5b74432d5e5d7c5dba4d0ccb9",
+      "0ca34f7aff5873735b7314f546ebc8cceaaf2f99",
+      "fb7d4aab8960e8a930f41630b06ceaaec47e9364",
+      "40e6d34d6a4804fafffe9ed7224a0d3f0aafcbc0",
+      "a40dea9f98f581f856c44b838af82042d9276e68",
+      "b13ff576163be584bffb1ea9b3be08f96e718efc"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/schemas/closeout-plan.schema.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/skill-package-contract.md",
+      ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/check.jsonl",
+      ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/design.md",
+      ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/implement.jsonl",
+      ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/implement.md",
+      ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/prd.md",
+      ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/task.json",
+      ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/design.md",
+      ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/implement.md",
+      ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/prd.md",
+      ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/task.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      251
+    ],
+    "close_issues": [
+      251
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/257"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#251 修复 Finalizer post-bind same-plan 恢复与 legacy closeout-plan 归档缺口",
+    "outcome": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。",
+    "changed_behavior": [
+      "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。",
+      "支持 archive/push_archive 阶段对初始 Draft/Ready PR 状态的正确恢复。",
+      "通过受控 projection 退休历史 tracked closeout-plan.json。",
+      "同步 current v4 schema、workflow/installed projections 与跨投影回归。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/design.md",
+          ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/implement.md",
+          ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/prd.md",
+          ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/design.md",
+          ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/implement.md",
+          ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/prd.md"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/presets/guru-team/spec/workflow/skill-package-contract.md"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      },
+      {
+        "kind": "schema",
+        "name": "schema",
+        "paths": [
+          ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+          ".trellis/guru-team/schemas/closeout-plan.schema.json",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+          "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/check.jsonl",
+          ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/implement.jsonl",
+          ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/task.json",
+          ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/task.json"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+        ],
+        "change": "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#251"
+      ],
+      "pr_refs": [
+        "PR #257"
+      ],
+      "branches": [
+        "fix/251-finalizer-post-bind-recovery"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".agents/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/schemas/closeout-plan.schema.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/schemas/closeout-plan.schema.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/skill-package-contract.md",
+        ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/check.jsonl",
+        ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/design.md",
+        ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/implement.jsonl",
+        ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/implement.md",
+        ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/prd.md",
+        ".trellis/tasks/08-17-251-finalizer-post-bind-recovery/task.json",
+        ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/design.md",
+        ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/implement.md",
+        ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/prd.md",
+        ".trellis/tasks/archive/2026-08/08-17-251-finalizer-post-bind-recovery/task.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/schemas/closeout-plan.schema.json",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/schemas/closeout-plan.schema.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#251 修复 Finalizer post-bind same-plan 恢复与 legacy closeout-pl",
+        "修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance repr",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#251 修复 Finalizer post-bind same-plan 恢复与 legacy closeout-plan 归档缺口\n修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance reprepare。\n支持 archive/push_archive 阶段对初始 Draft/Ready PR 状态的正确恢复。\n通过受控 projection 退休历史 tracked closeout-plan.json。\n同步 current v4 schema、workflow/installed projections 与跨投影回归。\n#251 修复 Finalizer post-bind same-plan 恢复与 legacy closeout-pl\n修复已绑定 PR 的 post-bind same-plan recovery，避免误入 provenance repr\n完成 contract.md 相关变更"
+  }
+}

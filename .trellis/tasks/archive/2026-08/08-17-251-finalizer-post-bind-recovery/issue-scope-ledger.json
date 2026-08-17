@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 251,
+      "reason": "本任务完整实现并验证 Issue #251 的 Finalizer post-bind same-plan recovery 与 legacy closeout-plan 迁移。",
+      "title": "修复 Finalizer post-bind same-plan 恢复误入 provenance reprepare 与 legacy closeout-plan 归档缺口",
+      "url": "https://github.com/castbox/guru-trellis/issues/251"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 251,
+    "reason": "本任务完整实现并验证 Issue #251 的 Finalizer post-bind same-plan recovery 与 legacy closeout-plan 迁移。",
+    "title": "修复 Finalizer post-bind same-plan 恢复误入 provenance reprepare 与 legacy closeout-plan 归档缺口",
+    "url": "https://github.com/castbox/guru-trellis/issues/251"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

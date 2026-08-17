@@ -1268,6 +1268,13 @@ fast-forward push, converges current reviewed title/body, and preserves Ready
 or follows Draft-to-Ready. Legacy transaction 2.0 remains installed under its
 versioned filename but cannot authorize PR adoption.
 
+At `archive`, `push_archive`, or `mark_ready`, that exact transaction is
+validated before any pre-PR provenance inference, so an external extension
+source commit need not equal the business reviewed-content commit. Historical
+index-tracked but working-tree-deleted `closeout-plan.json` is retired as one
+active-side archive deletion with parent-blob continuity; it is not restored,
+moved, or retained.
+
 The current retained set contains exactly 6 durable files: `task.json`,
 `prd.md`, `design.md`, `implement.md`, `issue-scope-ledger.json`, and
 `finish-summary.json`; there is no optional verifier artifact. Publication readiness,

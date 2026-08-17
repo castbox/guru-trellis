@@ -689,6 +689,13 @@ no extension-verification gate.
 Update/reapply tests also reject any retained retired publication asset and
 prove legacy 3.0 DTOs fail closed rather than being silently upgraded.
 
+Focused Finalizer recovery validation may project the current installed package
+into an isolated clean Git fixture without running the complete marketplace,
+official-update, preset-reapply, or tag-pinned release matrix. It must exercise
+the installed package bytes for post-bind recovery and historical tracked-plan
+retirement; it is scoped evidence and never substitutes for the cumulative
+release verifier.
+
 ## Extension Installation Verification Package Activation
 
 `guru-verify-extension-installation` remains the standalone-only active
