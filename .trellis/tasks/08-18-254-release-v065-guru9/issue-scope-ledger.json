@@ -1,0 +1,37 @@
+{
+  "close_issues": [],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 254,
+    "reason": "本任务拥有 v0.6.5-guru.9 release preparation、完整验证、tag、Release 与 live closure authority。",
+    "title": "发布 v0.6.5-guru.9：统一验证 #220、#251、#253 累计候选并完成 live 发布",
+    "url": "https://github.com/castbox/guru-trellis/issues/254"
+  },
+  "related_issues": [
+    {
+      "number": 254,
+      "reason": "本任务拥有 v0.6.5-guru.9 release preparation、完整验证、tag、Release 与 live closure authority。",
+      "title": "发布 v0.6.5-guru.9：统一验证 #220、#251、#253 累计候选并完成 live 发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/254"
+    },
+    {
+      "number": 220,
+      "reason": "本版本累计候选的已合并 payload；本 release task 只统一验证，不重新实现或关闭。",
+      "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
+      "url": "https://github.com/castbox/guru-trellis/issues/220"
+    },
+    {
+      "number": 251,
+      "reason": "本版本累计候选的已合并 payload；本 release task 只统一验证，不重新实现或关闭。",
+      "title": "修复 Finalizer post-bind same-plan 恢复误入 provenance reprepare 与 legacy closeout-plan 归档缺口",
+      "url": "https://github.com/castbox/guru-trellis/issues/251"
+    },
+    {
+      "number": 253,
+      "reason": "本版本累计候选的已合并 payload；本 release task 只统一验证，不重新实现或关闭。",
+      "title": "修复 Finalizer 无 closeout plan 时 publication_review_stale 路由被通用 commit 校验拒绝",
+      "url": "https://github.com/castbox/guru-trellis/issues/253"
+    }
+  ],
+  "schema_version": "2.0"
+}
