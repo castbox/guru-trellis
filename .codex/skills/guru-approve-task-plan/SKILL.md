@@ -24,12 +24,15 @@ implementation work. Mechanism revision removes/replaces the task-introduced
 mechanism and reruns qualification; blocked stops. No qualification state is
 written to planning runtime or task files.
 
-The checked `approved` exit activates the task automatically; it is not a
-routine user-authorization stop. Interact only when unresolved scope, a
-material plan choice, or the next real external side effect requires current
-authorization. Never write that authorization, its wording, a digest, or a
-reference into an input, checkpoint, gate, archive, or public DTO. Mapped exits
-and same-scope re-entry continue automatically.
+The checked `approved` exit establishes semantic adequacy only. Its stable
+consumer is the workflow target `phase-1-task-activation`, which separately
+presents the current plan and owns the dialogue-local review pause before task
+activation. This Skill neither satisfies, evaluates, records, nor persists that
+workflow-owned acceptance. Within this Skill, interact only when unresolved
+scope or a material plan choice requires current dialogue input. Never write
+authorization, its wording, time, source, reference, or digest into an input,
+checkpoint, gate, handoff, archive, schema, or public DTO. Mapped exits and
+same-scope re-entry continue automatically.
 
 After the semantic result exists, record and validate only the compact 3.0
 owner-private projection. Its one composite planning-content token serves only

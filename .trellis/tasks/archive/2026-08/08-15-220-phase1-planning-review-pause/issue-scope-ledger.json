@@ -1,0 +1,44 @@
+{
+  "close_issues": [
+    {
+      "number": 220,
+      "reason": "Issue #220 是当前纠正需求及唯一关闭对象。",
+      "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
+      "url": "https://github.com/castbox/guru-trellis/issues/220"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 220,
+    "reason": "Issue #220 是当前纠正需求及唯一关闭对象。",
+    "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
+    "url": "https://github.com/castbox/guru-trellis/issues/220"
+  },
+  "related_issues": [
+    {
+      "number": 52,
+      "reason": "保留历史 review pause 的用户价值，但不恢复授权 artifact。",
+      "title": "prd/design/implement 文档需要显式用户审核",
+      "url": "https://github.com/castbox/guru-trellis/issues/52"
+    },
+    {
+      "number": 129,
+      "reason": "保留现有 Phase 1 semantic planning owner。",
+      "title": "实现 guru-approve-task-plan 闭环 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/129"
+    },
+    {
+      "number": 161,
+      "reason": "保留 AI-first 最小持久化原则。",
+      "title": "整改：以 AI-first 原则收敛 Guru Team workflow 与 Skill 闭环",
+      "url": "https://github.com/castbox/guru-trellis/issues/161"
+    },
+    {
+      "number": 164,
+      "reason": "task_free 继续不进入 Phase 1 review pause。",
+      "title": "Intake 前智能选择 task_free 或 standard_intake 模式",
+      "url": "https://github.com/castbox/guru-trellis/issues/164"
+    }
+  ],
+  "schema_version": "2.0"
+}

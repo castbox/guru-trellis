@@ -21,11 +21,16 @@
 scope、authority，以及确有唯一事务 consumer 的局部 digest，但不得要求用户复述 SHA、digest、
 proposal 原文或固定句式，也不得把授权或授权过程写入任何 artifact、checkpoint 或 public DTO。
 
-Planning AI Gate 本身不是用户授权边界；其 checked `approved` exit 自动进入 task activation。
-只有 unresolved scope、material plan choice、commit、push、PR、merge、Issue mutation 和 cleanup
-等真实选择或副作用分别形成自己的 authority boundary。共享 prompt 不代表共享授权。只有
-target、HEAD、scope、authority、可选项或 side-effect plan 改变时才重新展示并确认。存在多项
-选择或歧义时必须提出真实问题，不能用通用确认替代。
+Planning AI Gate 与 Phase 1 plan review 是两个独立条件。Checked `approved` 只证明规划语义
+充分；workflow target `phase-1-task-activation` 必须展示三份 planning artifact 链接、AI 结论、
+关键选择、替代方案、取舍和未验证边界，并在当前对话等待对完整当前方案的清晰肯定，之后才
+执行 pair guard 与 task activation。提问、质疑、修订要求、局部选择或歧义回复均不接受完整
+方案；实质 planning 变化必须重跑 wording 与 semantic review 后重新展示，旧回复不能复用。
+
+Phase 0 确认不能替代 Phase 1 review。只有用户在当前请求中明确选择 autonomous execution，
+才省略未变化且已完整通过 semantic review 的普通 plan pause；scope、requirement authority、
+重大方案或风险变化仍暂停。Phase 1 回复不授权 commit、push、PR、merge、release 或 cleanup。
+这些真实选择或副作用分别保留自己的 authority boundary。共享 prompt 不代表共享授权。
 
 Mapped exits、stale、re-entry、reprepare、recorder/checker 和 same-plan recovery 由 AI workflow
 自动承接，不向用户暴露为 routine handoff 或“确认继续”。
@@ -59,8 +64,10 @@ closed 并进入唯一 refresh route。`prepare-task` 只允许作为 compatibil
 
 创建 Issue、worktree、branch 或 task 前必须展示真实目标和副作用。Planning 保留
 `prd.md`、`design.md`、`implement.md`、Docs SSOT decision 与独立 AI semantic plan gate，
-因为这些内容有直接实现消费者。Plan gate 的 mapped `approved` exit 不产生 routine 用户确认；
-最终 close/ref/follow-up 只由 `issue-scope-ledger.json` 持久化。
+因为这些内容有直接实现消费者。Plan gate 的 mapped `approved` exit 进入 workflow-owned
+Phase 1 presentation/review pause；用户回复只存在于当前对话，不进入 artifact、checkpoint、
+gate、handoff、archive、schema 或 public DTO。最终 close/ref/follow-up 只由
+`issue-scope-ledger.json` 持久化。
 
 ## 4. 实现、Phase 2 与恢复
 

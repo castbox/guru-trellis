@@ -6,9 +6,9 @@
   "evals": [
     {
       "id": "approved-initial",
-      "prompt": "Complete the initial_review semantic owner round and invoke guru-approve-task-plan through its public wrapper; return the checker-derived approved route.",
+      "prompt": "Complete the initial_review semantic owner round and invoke guru-approve-task-plan through its public wrapper; return the checker-derived approved route. Treat approved as semantic adequacy only. Before invocation, apply the staged workflow-consumer authority to every staged scenario: decide whether activation is allowed now, which pause or existing route applies, and which review and presentation preconditions remain. State one concise but complete eval-private transcript decision for every scenario id before invoking the wrapper. Use exactly nine separate lines, each beginning with the exact scenario id; explicitly state activation allowed or forbidden now, the applicable pause or route, and any review or presentation prerequisite. Do not group scenarios or use a bare route label. The staged scenarios contain facts only, not expected decisions. Keep workflow-consumer decisions outside the public DTO and do not use deterministic natural-language parsing.",
       "expected_exit": "approved",
-      "expected_output": "The public DTO is the declared approved route.",
+      "expected_output": "The public DTO is the declared approved route; it contains no user acceptance and does not bypass the workflow-owned plan review pause.",
       "input_profile_id": "initial_review",
       "assertions": {
         "deterministic": [
@@ -34,6 +34,17 @@
             "kind": "trace",
             "invariant": "private_runtime_not_read_by_agent"
           }
+        ],
+        "semantic": [
+          {"id": "clear-confirmation-activates", "criterion": "For clear-confirmation, the decision activates only because the clear whole-plan affirmative follows the current plan presentation.", "evidence_selector": "transcript"},
+          {"id": "equivalent-affirmative-activates", "criterion": "For equivalent-affirmative, the decision recognizes a semantically equivalent whole-plan affirmative and activates after the current presentation without requiring a fixed phrase.", "evidence_selector": "transcript"},
+          {"id": "question-remains-paused", "criterion": "For question-is-not-confirmation, the decision answers the question and remains at the same review pause when the plan is unchanged.", "evidence_selector": "transcript"},
+          {"id": "revision-rereviews-before-presentation", "criterion": "For revision-request, the decision revises the plan, reruns wording and planning semantic review, and presents the revised plan before any activation.", "evidence_selector": "transcript"},
+          {"id": "phase0-confirmation-not-reused", "criterion": "For phase0-confirmation-not-reusable, the decision does not reuse the earlier workspace confirmation and remains paused until a clear affirmative follows the current Phase 1 presentation.", "evidence_selector": "transcript"},
+          {"id": "changed-plan-invalidates-old-confirmation", "criterion": "For changed-plan-invalidates-old-confirmation, the decision invalidates the older dialogue acceptance, reruns the affected reviews, and presents the changed plan before activation.", "evidence_selector": "transcript"},
+          {"id": "open-finding-blocks-activatable-presentation", "criterion": "For open-ai-finding, the decision does not offer an activatable presentation while the planning semantic finding remains open.", "evidence_selector": "transcript"},
+          {"id": "explicit-autonomous-omits-only-routine-pause", "criterion": "For explicit-autonomous-execution, the decision omits only the ordinary unchanged-plan pause because autonomous execution was explicitly selected in the current request.", "evidence_selector": "transcript"},
+          {"id": "autonomous-scope-change-still-pauses", "criterion": "For autonomous-scope-change, the decision pauses and enters the existing scope or authority change route despite autonomous execution.", "evidence_selector": "transcript"}
         ]
       },
       "files": ["evals/files/approved-initial-input.json", "evals/files/approved-initial-facts.json"]

@@ -1171,7 +1171,6 @@ def compose_review_branch_eval_runtime(runtime_target: Path, module: Any) -> Non
     publication = load_package_owner_runtime(
         runtime_target, "guru-review-task-publication"
     )
-    package_root = runtime_target.parent.parent.parent / "skills/packages"
     module.load_config = publication.load_config
     module.WorkflowError = publication.WorkflowError
     module.read_json = publication.read_json
@@ -1210,6 +1209,13 @@ def compose_review_branch_eval_runtime(runtime_target: Path, module: Any) -> Non
         return run_git(fixture, "rev-parse", "HEAD"), "origin/main"
 
     module.commit_review_fixture = commit_review_fixture
+    compose_production_owner_command_runtime(runtime_target, module)
+
+
+def compose_production_owner_command_runtime(
+    runtime_target: Path, module: Any,
+) -> None:
+    package_root = runtime_target.parent.parent.parent / "skills/packages"
 
     def run_component(skill_id: str, script: str, argv: list[str]) -> dict[str, Any]:
         process = subprocess.run(
@@ -1226,44 +1232,61 @@ def compose_review_branch_eval_runtime(runtime_target: Path, module: Any) -> Non
             raise ValueError("package wrapper did not return one JSON object")
         return value
 
-    module.cmd_record_planning_approval = lambda args: run_component(
-        "guru-approve-task-plan",
-        "record-planning-approval.sh",
-        ["--root", str(args.root), "--task", str(args.task), "--input", str(args.input)],
+    bindings = {
+        "cmd_record_planning_approval": lambda args: run_component(
+            "guru-approve-task-plan",
+            "record-planning-approval.sh",
+            ["--root", str(args.root), "--task", str(args.task), "--input", str(args.input)],
+        ),
+        "cmd_check_planning_approval": lambda args: run_component(
+            "guru-approve-task-plan",
+            "check-planning-approval.sh",
+            ["--root", str(args.root), "--task", str(args.task)],
+        ),
+        "cmd_record_phase2_check": lambda args: run_component(
+            "guru-check-task",
+            "record-phase2-check.sh",
+            ["--root", str(args.root), "--task", str(args.task), "--input", str(args.input)],
+        ),
+        "cmd_check_phase2_check": lambda args: run_component(
+            "guru-check-task",
+            "check-phase2-check.sh",
+            ["--root", str(args.root), "--task", str(args.task)],
+        ),
+        "cmd_review_branch": lambda args: run_component(
+            "guru-review-branch",
+            "review-branch.sh",
+            [
+                "--root", str(args.root), "--task", str(args.task),
+                "--skill-input", str(args.skill_input),
+                "--semantic-review-file", str(args.semantic_review_file),
+                "--typed-exit", str(args.typed_exit),
+            ],
+        ),
+        "cmd_check_review_gate": lambda args: run_component(
+            "guru-review-branch",
+            "check-review-gate.sh",
+            [
+                "--root", str(args.root), "--task", str(args.task),
+                "--expected-exit", str(args.expected_exit),
+            ],
+        ),
+    }
+    for name, binding in bindings.items():
+        if not hasattr(module, name):
+            setattr(module, name, binding)
+
+
+def compose_production_fixture_runtime(runtime_target: Path, module: Any) -> None:
+    helper_names = ("load_config", "write_json", "write_runtime_mappings")
+    missing = [name for name in helper_names if not hasattr(module, name)]
+    if not missing:
+        return
+    publication = load_package_owner_runtime(
+        runtime_target, "guru-review-task-publication"
     )
-    module.cmd_check_planning_approval = lambda args: run_component(
-        "guru-approve-task-plan",
-        "check-planning-approval.sh",
-        ["--root", str(args.root), "--task", str(args.task)],
-    )
-    module.cmd_record_phase2_check = lambda args: run_component(
-        "guru-check-task",
-        "record-phase2-check.sh",
-        ["--root", str(args.root), "--task", str(args.task), "--input", str(args.input)],
-    )
-    module.cmd_check_phase2_check = lambda args: run_component(
-        "guru-check-task",
-        "check-phase2-check.sh",
-        ["--root", str(args.root), "--task", str(args.task)],
-    )
-    module.cmd_review_branch = lambda args: run_component(
-        "guru-review-branch",
-        "review-branch.sh",
-        [
-            "--root", str(args.root), "--task", str(args.task),
-            "--skill-input", str(args.skill_input),
-            "--semantic-review-file", str(args.semantic_review_file),
-            "--typed-exit", str(args.typed_exit),
-        ],
-    )
-    module.cmd_check_review_gate = lambda args: run_component(
-        "guru-review-branch",
-        "check-review-gate.sh",
-        [
-            "--root", str(args.root), "--task", str(args.task),
-            "--expected-exit", str(args.expected_exit),
-        ],
-    )
+    for name in missing:
+        setattr(module, name, getattr(publication, name))
 
 
 def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> None:
@@ -4963,6 +4986,8 @@ def stage_production_owner_execution(
             recipe,
             public_input_path,
         )
+    compose_production_fixture_runtime(fixture_runtime_target, runtime)
+    compose_production_owner_command_runtime(fixture_runtime_target, runtime)
     task, _ = production_task_fixture(runtime, fixture)
     production_environment: dict[str, str] = {}
     package = fixture / ".trellis/guru-team/skills/packages" / skill_id

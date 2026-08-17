@@ -208,7 +208,7 @@ The graph contains exactly 24 workflow targets and 18 stop targets.
 | guru-contract-wording-change-router | Re-enter the affected wording route and any required upstream refresh. |
 | guru-task-workspace-created | Resolve the created task worktree and enter Phase 1. |
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
-| phase-1-task-activation | Validate the approved DTO and run the official task start transition. |
+| phase-1-task-activation | Present the current approved plan, wait at the dialogue-local review boundary when required, then validate the approved DTO and run the official task start transition. |
 | guru-base-reconciliation-router | Consume the checked current pair and resume its closed `resume_target`. |
 | guru-base-continuity-passed-router | Consume bounded continuity for the exact pair and resume its closed `resume_target`. |
 | guru-resume-implementation | Resume Phase 2 implementation. |
@@ -265,7 +265,7 @@ target is the existing `guru-resume-implementation` workflow API.
 
 ```text
 Phase 0: Intake  -> issue-backed base sync, context, clarification, review, workspace
-Phase 1: Plan    -> planning artifacts, plan approval, task activation
+Phase 1: Plan    -> planning artifacts, plan approval, plan review pause, task activation
 Phase 2: Execute -> implementation, task check
 Phase 3: Finish  -> docs reconciliation, commit, branch review, publication, finalization
 ```
@@ -289,7 +289,8 @@ suitability before bounded writes and never authorizes Git/GitHub publication.
 [workflow-state:planning]
 Complete prd.md, design.md, implement.md, and the Docs SSOT Plan. Run the
 planning wording route and guru-approve-task-plan. Automatically consume mapped
-exits; ask only for unresolved scope or a material plan choice.
+non-approved exits. A checked approved exit enters the workflow-owned plan
+presentation and dialogue-local review pause before task activation.
 [/workflow-state:planning]
 
 [workflow-state:planning-inline]
@@ -359,7 +360,41 @@ Invoke guru-approve-task-plan and consume only its declared exit.
 
 #### 1.5 Task activation
 
-Only approved reaches the active-task pair guard with
+Only approved is eligible for plan presentation. Before the active-task pair
+guard or any task activation action, resolve the current human artifacts and
+show clickable links to `prd.md`, `design.md`, and `implement.md`, together with
+the AI semantic conclusion, key design choices, important alternatives and
+trade-offs, and remaining unverified boundaries. State that the task remains in
+Phase 1 and implementation starts only after the current plan is accepted.
+
+For normal `standard_intake`, stop at that presentation and wait for a clear
+affirmative reply made after it. `确认继续`, `可以，继续实现`, `方案没问题，开始做`, and
+semantic equivalents accept the complete displayed plan without requiring a
+task id, path, branch, SHA, digest, summary repetition, or prescribed wording.
+A question, challenge, revision request, partial choice, or ambiguous reply is
+not acceptance. Answer a question and keep the same pause when the plan is
+unchanged. If a planning artifact or the Docs SSOT Plan changes materially,
+repeat planning wording review and guru-approve-task-plan, then present the new
+plan; no reply about an older presentation may be reused. Scope or requirement
+authority change enters the existing clarification route and repeats the
+affected Phase 1 chain. An open AI finding, unresolved scope, or material plan
+gap never reaches a presentation that invites activation.
+
+A Phase 0 confirmation never accepts a Phase 1 plan. A current request may
+explicitly select autonomous execution and thereby omit only the ordinary plan
+pause for an unchanged, fully approved plan. Do not infer that selection or
+persist it. Scope, requirement authority, material design, or risk changes
+still pause and use their existing route even during autonomous execution.
+Neither ordinary nor autonomous Phase 1 progression authorizes task commit,
+push, PR, merge, release, or cleanup.
+
+The workflow judges the dialogue locally. It never records user confirmation,
+wording, time, source, reference, digest, or approval state in tracked files,
+ignored runtime, checkpoints, gates, handoffs, archives, schemas, or public
+DTOs, and no recorder or validator parses the reply.
+
+Only after the applicable dialogue boundary is satisfied does approved reach
+the active-task pair guard with
 `resume_target=task_activation`. An unchanged pair resumes activation; a
 current pair consumes and routes its recorded exact typed output; a new pair
 invokes guru-reconcile-task-base and follows only its declared exit.
@@ -525,6 +560,7 @@ reports, payloads, or digests as standard handoff artifacts.
 - No Skill pass creates permission for a later unrelated side effect.
 <!-- guru-confirmation-boundary: {"id":"issue_creation","profiles":["new_issue"]} -->
 <!-- guru-confirmation-boundary: {"id":"workspace_and_task","profiles":["open_issue","new_issue"]} -->
+<!-- guru-confirmation-boundary: {"id":"phase_1_plan_review","profiles":["open_issue","new_issue"]} -->
 <!-- guru-confirmation-boundary: {"id":"finalizer_side_effect_set","profiles":["open_issue","new_issue"]} -->
 <!-- guru-confirmation-boundary: {"id":"expected_head_merge","profiles":["open_issue","new_issue"]} -->
 

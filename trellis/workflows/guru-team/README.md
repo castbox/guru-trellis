@@ -454,7 +454,8 @@ invoke active semantic Skill `guru-approve-task-plan`。Workflow 与 standalone 
 八项 entry preconditions，并依赖完整 Guru Team preset、shared dispatcher 与 runtime。
 Canonical package 是 planning adequacy、provenance、supported unusual scenarios、AI Gate、
 真实选择或副作用的对话内交互必要性和 re-entry 的
-唯一 owner；workflow 只声明 invoke 与 typed routing。
+唯一 owner；workflow 只声明 invoke、typed routing，并在 checked `approved` 的 consumer target
+内拥有 plan presentation、对话停点与 activation transition。
 
 唯一 owner checkpoint 是 ignored-runtime `planning-approval.json`，schema id 为
 `guru-planning-approval-3.0`。Runtime commands `record-planning-approval` /
@@ -472,8 +473,12 @@ exit union，不生成 semantic pass 或 route。该 token 只由相邻 checker 
   caller AI 基于 fresh live context 编写；
 - `blocked` -> stop `task-plan-approval-blocked`。
 
-Task activation 或真实 scope choice 所需授权只存在于当前对话，不写入 owner checkpoint、
-public DTO 或 archive。Planning approval 只接受当前 schema 3.0；其它 schema 或字段直接
+Checked `approved` 只证明 planning semantic adequacy。`phase-1-task-activation` 先展示三份
+planning 链接、AI 结论、关键选择、替代/取舍和未验证边界，再等待展示后的清晰整体肯定。
+提问、修订或歧义回复保持暂停；实质 plan 变化重跑 wording/semantic review 并重新展示，
+Phase 0 确认和旧方案回复不能复用。明确 autonomous execution 只省略未变化方案的普通停点，
+scope、authority、重大方案或风险变化仍暂停。回复只存在于当前对话，不写入 owner checkpoint、
+public DTO、schema 或 archive，recorder/checker 不解析回复。Planning approval 只接受当前 schema 3.0；其它 schema 或字段直接
 fail closed，不执行升级、投影或兼容 re-entry。AI 对格式、拼写、链接、
 派生文本与 workflow metadata 做 semantic delta classification，只刷新真实依赖；authority、
 scope、design、acceptance、behavior 或 verification 变化才重入对应 semantic owner。
@@ -822,8 +827,9 @@ Planning start gate 和 Phase 2 check gate 都需要 current task facts 与 owne
 短生命周期 evidence。进入实现前主会话在三份 planning artifact 与 `Docs SSOT Plan`
 就绪后 mandatory invoke `guru-approve-task-plan`。该 Skill 负责全部 entry precondition、
 审查、必要 revision/clarification、仅服务真实选择或下一项副作用的当前对话交互、3.0
-recorder/checker 和四出口；checked `approved` 自动进入 `phase-1-task-activation`，不增加
-routine user stop。Phase 0 route DTO、非 3.0 planning input、缺失/过期/non-pass wording、
+recorder/checker 和四出口；checked `approved` 进入 workflow-owned
+`phase-1-task-activation` plan presentation/review pause，清晰肯定后才执行 pair guard 与
+`task.py start`。现有 Open Issue happy path 为四次确认，新建 Issue path 为五次。Phase 0 route DTO、非 3.0 planning input、缺失/过期/non-pass wording、
 真实 planning/authority 语义漂移或 exit/Gate/consumer 不一致均 fail closed；owner 只接受
 重新检查过的 current invocation。`task.py start` 只是状态写入，
 不代表规划已审查。

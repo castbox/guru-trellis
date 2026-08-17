@@ -49,7 +49,7 @@ resolver/executor/checker 不是第二条 workflow。Compatibility `prepare-task
 | Phase | 保留的语义 | 正常持久化 |
 | --- | --- | --- |
 | Intake | base freshness、change context、Intake clarity、scope、workspace authority | 直接 consumer 需要的 task planning / scope evidence |
-| Planning | requirement、design、implementation plan、Docs SSOT、AI semantic plan gate | `prd.md`、`design.md`、`implement.md`；owner checkpoint 仅在 ignored runtime |
+| Planning | requirement、design、implementation plan、Docs SSOT、AI semantic plan gate、对话内 plan review pause | `prd.md`、`design.md`、`implement.md`；owner checkpoint 仅在 ignored runtime，用户回复不持久化 |
 | Execute | implementation、Phase 2 adequacy、finding、真实 replacement recovery | Phase 2 与异常 recovery checkpoint 均仅在 ignored runtime |
 | Finish | exact commit、Branch Review、publication judgment、finalization | `closeout-plan.json`、`finish-summary.json` 与 compact archive |
 
@@ -80,6 +80,12 @@ input 只接受 `initial_review|fresh_final_review`；其它 profile 或 gate sh
 仍绑定 exact target、HEAD、scope、authority 与确有唯一 consumer 的局部事务 identity，但不记录
 用户授权。不同副作用目的不合并；只有信息变化或真实选择才再次询问。Mapped exit、stale、
 re-entry、reprepare 和 same-plan recovery 自动运行。
+
+Phase 1 的 checked `approved` 只证明规划语义充分。Workflow 随后展示当前三份 planning 链接、
+AI 结论、关键选择、替代/取舍和未验证边界并暂停；只有展示后的清晰整体肯定才进入 activation。
+提问或修订保持在 Phase 1，实质变化重跑 wording/semantic review 并重新展示。Phase 0 确认和
+旧方案回复不能复用。明确 autonomous execution 只省略未变化方案的普通停点；scope、authority、
+重大方案或风险变化仍暂停。现有 Open Issue happy path 为四次确认，新建 Issue path 为五次。
 
 ## 安装与漂移
 
