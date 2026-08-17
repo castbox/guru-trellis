@@ -379,11 +379,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-18T02:20:00Z",
+  "installed_at": "2026-08-17T18:30:15Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "fb7d4aab8960e8a930f41630b06ceaaec47e9364",
-    "commit": "fb7d4aab8960e8a930f41630b06ceaaec47e9364",
+    "ref": "a40dea9f98f581f856c44b838af82042d9276e68",
+    "commit": "a40dea9f98f581f856c44b838af82042d9276e68",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -571,7 +571,7 @@
       {
         "id": "guru-finalize-task",
         "interface_sha256": "47ee7c24eaad5bb3ded81d6853929315b29594f45f1f90ad47f4483e7d040863",
-        "tree_sha256": "31455957a85a0baf2a386b0e1959671136838777fc44257192dff00d3670487d"
+        "tree_sha256": "b016ea43219b650c4dea56655e6d9de6179cdba58cd6638ed5055c1ca257a3bd"
       },
       {
         "id": "guru-merge-task-pr",
@@ -6056,7 +6056,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
-        "sha256": "7dd35c001b9d21ef542fd4539e2d9efa417aa6bc9a4931a4945c51e2daa5d559",
+        "sha256": "a8fe300d2309e35958850bd657a2fcf1a0250d0d6419cd8b0fd111c648b00de3",
         "executable": false,
         "action": "unchanged"
       },

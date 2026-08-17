@@ -97,6 +97,12 @@
           "uniqueItems": true,
           "items": {"$ref": "#/$defs/safePath"}
         },
+        "retired_tracked_paths": {
+          "type": "array",
+          "maxItems": 1,
+          "uniqueItems": true,
+          "items": {"const": "closeout-plan.json"}
+        },
         "untracked_archive_outputs": {
           "type": "array",
           "minItems": 1,

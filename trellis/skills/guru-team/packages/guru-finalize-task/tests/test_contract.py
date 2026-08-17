@@ -2001,12 +2001,27 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
     def test_current_closeout_projection_requires_retired_paths_without_mutating_legacy(self) -> None:
         current = load("schemas/closeout-plan.schema.json")
+        repo_root = next(
+            parent for parent in (PACKAGE, *PACKAGE.parents) if (parent / ".git").exists()
+        )
+        workflow_current = json.loads(
+            (repo_root / "trellis/workflows/guru-team/schemas/closeout-plan.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        installed_current = json.loads(
+            (repo_root / ".trellis/guru-team/schemas/closeout-plan.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
         legacy_path = PACKAGE / "schemas/closeout-plan-3.0.schema.json"
         legacy = load("schemas/closeout-plan-3.0.schema.json")
 
         self.assertEqual(current["properties"]["schema_version"]["const"], "4.0")
-        self.assertIn("retired_tracked_paths", current["properties"]["projection"]["required"])
-        self.assertIn("retired_tracked_paths", current["properties"]["projection"]["properties"])
+        for schema in (current, workflow_current, installed_current):
+            projection = schema["properties"]["projection"]
+            self.assertIn("retired_tracked_paths", projection["required"])
+            self.assertIn("retired_tracked_paths", projection["properties"])
         self.assertEqual(legacy["properties"]["schema_version"]["const"], "3.0")
         self.assertNotIn("retired_tracked_paths", legacy["properties"]["projection"]["properties"])
         self.assertEqual(
