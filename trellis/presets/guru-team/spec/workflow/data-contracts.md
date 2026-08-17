@@ -1244,6 +1244,12 @@ convergence authority. Any identity, scope, payload, original state, ancestry,
 archive, or transaction drift fails closed. Schema 2.0 remains immutable at its
 explicit versioned path and cannot adopt an existing PR.
 
+After the exact recovery transaction binds its PR and advances to `archive`,
+`push_archive`, or `mark_ready`, it is the current stage authority. Preview
+validates its complete minimal identity before applying any pre-PR provenance
+inference; a matching transaction resumes its recorded transition, while a
+mismatch fails closed and cannot fall back to fresh adoption or reprepare.
+
 `ready_for_merge` deletes the transaction, Finalizer gate/request and every
 superseded Finalizer-owned file. A
 `blocked` route retains a transaction only when the declared same-owner recovery
@@ -1379,12 +1385,28 @@ the official archive command. On every prepare and same-plan recovery,
 `projection.tracked_move_paths` is rebuilt as the intersection of `move_paths`
 and the live Git index; each item requires an active deletion and archive
 addition in the one archive transaction. `projection.untracked_archive_outputs`
-is the exact complement. New plans classify both `closeout-plan.json` and
-`finish-summary.json` as untracked outputs. A migrated active task whose live
-index already tracks legacy `closeout-plan.json` keeps it in
-`tracked_move_paths`, while `finish-summary.json` remains a required untracked
-output. The normalized classes become immutable plan facts for the archive
-transaction and are not inferred from post-move status.
+is the exact complement, and `finish-summary.json` remains its required current
+member. Current preparation never adds `closeout-plan.json` to either class.
+
+When the live index still tracks a historical `closeout-plan.json` but the
+working-tree file is already deleted, the current private projection places
+only that path in `projection.retired_tracked_paths`. This closed set is
+disjoint from move, retained, required, untracked-output, and reviewed-binding
+sets. Its sole consumer is the archive transaction: the parent must contain one
+exact regular blob, the working tree and archive must omit it, and the archive
+commit must contain its active-side deletion. Re-materialization, replacement,
+missing parent continuity, archive retention, or any additional retired path
+fails closed. Historical schema files remain immutable compatibility assets;
+the retired file is never restored or copied into a current archive.
+An already post-bind transaction may replace its predecessor plan digest with
+the current retirement-projection digest only when the predecessor digest equals
+the deterministic reverse projection with `closeout-plan.json` restored to
+`move_paths` and `tracked_move_paths`, every non-digest transaction field is
+exactly equal, and `retired_tracked_paths` is exactly this singleton. Any other
+shape-valid digest mismatch fails closed.
+Preview performs the side-effect-free projection; executor persists it before
+the next mutation. Any payload, scope, PR, HEAD, stage, or additional path drift
+still fails closed.
 
 `projection.reviewed_tracked_bindings` is the sorted, unique, closed set of
 tracked move paths whose current regular-file bytes or mode differ from the
@@ -1392,9 +1414,10 @@ tracked move paths whose current regular-file bytes or mode differ from the
 `mode` (`100644` or `100755`), and content `sha256`. Duplicate, out-of-set,
 missing, stale, or unnecessary rows fail closed. A tracked legacy
 `closeout-plan.json` is the self-referential exception: its canonical schema and
-`plan_digest` bind its bytes instead of a recursive content row. The reviewed
-content tree plus exact pre-move index/status, bindings, and archive transaction
-tree prove the classification and continuity.
+`plan_digest` bind its bytes instead of a recursive content row on an explicit
+legacy route. Current retirement instead excludes it from reviewed bindings and
+proves its deletion through the parent blob plus exact archive transaction
+path/tree continuity.
 `projection.migration_predecessor_plan_digest` is either `null` or the exact
 digest of the one legacy schema 2.0 plan normalized into the current immutable
 plan under the Publication 4.0 match rules above. It is set only by that

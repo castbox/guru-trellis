@@ -6385,6 +6385,7 @@ def closeout_plan_errors(
         "reviewed_tracked_bindings", "migration_predecessor_plan_digest",
         "summary_placeholder",
         "summary_template_sha256", "summary_template", "runtime_fact_fields",
+        "retired_tracked_paths",
     }
     nested_keys = {
         "task": (task, {"id", "title", "source_issue", "active_locator", "archive_locator"}),
@@ -6405,7 +6406,12 @@ def closeout_plan_errors(
         ),
     }
     for label, (value, keys) in nested_keys.items():
-        if set(value) != keys:
+        legacy_projection_keys = (
+            label == "projection"
+            and allow_legacy_migration
+            and set(value) == keys - {"retired_tracked_paths"}
+        )
+        if set(value) != keys and not legacy_projection_keys:
             errors.append(f"closeout plan {label} keys are invalid.")
     git_keys = {
         "repo", "remote", "base_branch", "head_branch", "branch_review_commit",
@@ -6488,6 +6494,22 @@ def closeout_plan_errors(
     ):
         errors.append("closeout tracked move paths must be a sorted subset of move paths.")
         tracked_move_paths = []
+    retired_tracked_paths = projection.get("retired_tracked_paths", [])
+    if (
+        not isinstance(retired_tracked_paths, list)
+        or retired_tracked_paths != sorted(set(retired_tracked_paths))
+        or any(
+            not isinstance(path, str)
+            or bool(finish_summary_path_errors(path, "projection.retired_tracked_paths[]"))
+            for path in retired_tracked_paths
+        )
+        or set(retired_tracked_paths) - {CLOSEOUT_PLAN_ARTIFACT}
+        or set(retired_tracked_paths) & set(move_paths)
+    ):
+        errors.append(
+            "closeout retired tracked paths must be the disjoint historical closeout plan deletion set."
+        )
+        retired_tracked_paths = []
     untracked_archive_outputs = projection.get("untracked_archive_outputs")
     if (
         not isinstance(untracked_archive_outputs, list)
@@ -6787,6 +6809,30 @@ def build_closeout_plan(
         for path in git_status_paths(root)
         if path.startswith(active_prefix)
     )
+    retired_tracked_paths: list[str] = []
+    historical_plan_relative = f"{active_locator}/{CLOSEOUT_PLAN_ARTIFACT}"
+    if (
+        not include_closeout_plan
+        and CLOSEOUT_PLAN_ARTIFACT in observed_task_files
+    ):
+        if os.path.lexists(existing_plan_path):
+            raise WorkflowError(
+                "Current Finalizer requires the retired closeout plan to remain absent.",
+                exit_code=2,
+                payload={"path": historical_plan_relative},
+            )
+        if run(
+            ["git", "ls-files", "--error-unmatch", "--", historical_plan_relative],
+            cwd=root,
+            check=False,
+        ).returncode != 0:
+            raise WorkflowError(
+                "Current Finalizer found an unowned closeout plan status path.",
+                exit_code=2,
+                payload={"path": historical_plan_relative},
+            )
+        retired_tracked_paths = [CLOSEOUT_PLAN_ARTIFACT]
+        observed_task_files.remove(CLOSEOUT_PLAN_ARTIFACT)
     if existing_projection:
         task_files = set(existing_projection.get("move_paths", []))
         unexpected_task_files = sorted(observed_task_files - task_files)
@@ -6838,6 +6884,7 @@ def build_closeout_plan(
     retained_archive_paths = sorted(set(move_paths) & retained_names)
     transaction_paths = sorted(
         {f"{active_locator}/{name}" for name in tracked_move_paths}
+        | {f"{active_locator}/{name}" for name in retired_tracked_paths}
         | {f"{archive_locator}/{name}" for name in retained_archive_paths}
     )
     ledger_path = issue_scope_ledger_path(task_dir)
@@ -6943,6 +6990,7 @@ def build_closeout_plan(
             "finish_summary_locator": f"{archive_locator}/{FINISH_SUMMARY_ARTIFACT}",
             "move_paths": move_paths,
             "tracked_move_paths": tracked_move_paths,
+            "retired_tracked_paths": retired_tracked_paths,
             "untracked_archive_outputs": untracked_archive_outputs,
             "reviewed_tracked_bindings": reviewed_tracked_bindings,
             "migration_predecessor_plan_digest": migration_predecessor_plan_digest,
@@ -7759,6 +7807,106 @@ def finalization_existing_pr_recovery_context(
         ),
     }
 
+def finalization_post_bind_existing_pr_recovery(
+    transaction: dict[str, Any] | None,
+    plan: dict[str, Any],
+) -> bool:
+    """Return whether one exact transaction owns the post-bind recovery stage."""
+    if (
+        not isinstance(transaction, dict)
+        or transaction.get("mode") != "existing_pr_recovery"
+        or transaction.get("next_transition")
+        not in {"archive", "push_archive", "mark_ready"}
+    ):
+        return False
+    finalization_validate_transaction_plan(transaction, plan)
+    if not isinstance(transaction.get("pr"), dict) or not isinstance(
+        transaction.get("adopted_pr"), dict
+    ):
+        raise WorkflowError(
+            "Post-bind existing PR recovery transaction is incomplete.",
+            exit_code=2,
+        )
+    return True
+
+def finalization_retired_projection_predecessor_digest(
+    plan: dict[str, Any],
+) -> str:
+    """Rebuild the unique pre-retirement plan digest for one current projection."""
+    if plan.get("projection", {}).get("retired_tracked_paths") != [
+        CLOSEOUT_PLAN_ARTIFACT
+    ]:
+        raise WorkflowError(
+            "Current plan does not match the controlled retired-plan projection.",
+            exit_code=2,
+        )
+    predecessor_plan = copy.deepcopy(plan)
+    predecessor_projection = predecessor_plan["projection"]
+    predecessor_projection.pop("retired_tracked_paths", None)
+    predecessor_projection["move_paths"] = sorted(
+        set(predecessor_projection["move_paths"]) | {CLOSEOUT_PLAN_ARTIFACT}
+    )
+    predecessor_projection["tracked_move_paths"] = sorted(
+        set(predecessor_projection["tracked_move_paths"]) | {CLOSEOUT_PLAN_ARTIFACT}
+    )
+    predecessor_plan["plan_digest"] = ""
+    return closeout_plan_digest(predecessor_plan)
+
+def finalization_rebind_retired_projection_transaction(
+    transaction: dict[str, Any],
+    plan: dict[str, Any],
+) -> dict[str, Any]:
+    """Project one post-bind legacy-plan deletion onto the current plan digest."""
+    if (
+        transaction.get("mode") != "existing_pr_recovery"
+        or transaction.get("next_transition")
+        not in {"archive", "push_archive", "mark_ready"}
+    ):
+        raise WorkflowError(
+            "Post-bind transaction does not match the controlled retired-plan projection.",
+            exit_code=2,
+        )
+    if transaction.get("plan_digest") != (
+        finalization_retired_projection_predecessor_digest(plan)
+    ):
+        raise WorkflowError(
+            "Post-bind transaction does not bind the exact retired-plan predecessor digest.",
+            exit_code=2,
+        )
+    replacement = finalization_transaction_from_plan(
+        plan,
+        next_transition=str(transaction["next_transition"]),
+        pr=(transaction.get("pr") if isinstance(transaction.get("pr"), dict) else None),
+        mode="existing_pr_recovery",
+        adopted_pr=(
+            transaction.get("adopted_pr")
+            if isinstance(transaction.get("adopted_pr"), dict)
+            else None
+        ),
+    )
+    prior_identity = {
+        key: value for key, value in transaction.items() if key != "plan_digest"
+    }
+    replacement_identity = {
+        key: value for key, value in replacement.items() if key != "plan_digest"
+    }
+    if prior_identity != replacement_identity:
+        raise WorkflowError(
+            "Post-bind transaction cannot bind a changed retired-plan identity.",
+            exit_code=2,
+        )
+    return replacement
+
+def finalizer_pre_pr_provenance_tail_applies(
+    root: Path,
+    plan: dict[str, Any],
+    transaction: dict[str, Any] | None,
+) -> bool:
+    """Keep pre-PR provenance inference behind an exact post-bind transaction."""
+    if finalization_post_bind_existing_pr_recovery(transaction, plan):
+        return False
+    return finalizer_pre_pr_provenance_tail_required(root, plan)
+
 def finalization_pre_mutation_remote_preflight(
     root: Path,
     plan: dict[str, Any],
@@ -8311,6 +8459,7 @@ def closeout_archive_transaction_paths(plan: dict[str, Any]) -> set[str]:
     archived = plan["task"]["archive_locator"]
     return {
         *(f"{active}/{path}" for path in projection["tracked_move_paths"]),
+        *(f"{active}/{path}" for path in projection.get("retired_tracked_paths", [])),
         *(f"{archived}/{path}" for path in closeout_archive_retained_paths(plan)),
     }
 
@@ -8459,6 +8608,26 @@ def validate_closeout_pre_move_continuity(
                 payload={"path": relative, "stage": "pre-archive-continuity"},
             )
 
+    for relative in plan["projection"].get("retired_tracked_paths", []):
+        target = task_dir / relative
+        if os.path.lexists(target):
+            raise WorkflowError(
+                "Retired closeout artifact was re-materialized before archive.",
+                exit_code=2,
+                payload={"path": relative, "stage": "pre-archive-continuity"},
+            )
+        git_mode, object_type, _object_id = closeout_commit_tree_entry(
+            root,
+            transaction_parent,
+            f"{active_locator}/{relative}",
+        )
+        if object_type != "blob" or git_mode not in {"100644", "100755"}:
+            raise WorkflowError(
+                "Retired closeout artifact parent must be one exact regular Git blob.",
+                exit_code=2,
+                payload={"path": relative, "stage": "pre-archive-continuity"},
+            )
+
     closeout_summary_runtime_pr_facts_from_bytes(
         plan,
         (task_dir / FINISH_SUMMARY_ARTIFACT).read_bytes(),
@@ -8541,7 +8710,10 @@ def validate_closeout_pre_move_continuity(
     untracked = closeout_untracked_paths(root)
     allowed_dirty = {
         f"{active_locator}/{relative}"
-        for relative in plan["projection"]["move_paths"]
+        for relative in (
+            plan["projection"]["move_paths"]
+            + plan["projection"].get("retired_tracked_paths", [])
+        )
     }
     dirty_is_valid = dirty.issubset(allowed_dirty)
     if not dirty_is_valid or staged or untracked != expected_outputs:
@@ -8693,6 +8865,40 @@ def validate_closeout_archive_blob_continuity(
     active_locator = plan["task"]["active_locator"]
     archive_locator = plan["task"]["archive_locator"]
     retained_paths = set(closeout_archive_retained_paths(plan))
+    for relative in plan["projection"].get("retired_tracked_paths", []):
+        active_path = f"{active_locator}/{relative}"
+        parent_mode, parent_type, _parent_oid = closeout_commit_tree_entry(
+            root,
+            transaction_parent,
+            active_path,
+        )
+        if parent_type != "blob" or parent_mode not in {"100644", "100755"}:
+            raise WorkflowError(
+                "Retired closeout artifact parent is not a regular Git blob.",
+                exit_code=2,
+                payload={"path": relative},
+            )
+        if os.path.lexists(archived / relative):
+            raise WorkflowError(
+                "Retired closeout artifact remains in the compact archive.",
+                exit_code=2,
+                payload={"path": relative},
+            )
+        if archive_commit is not None and (
+            closeout_optional_commit_blob_bytes(
+                root,
+                archive_commit,
+                f"{archive_locator}/{relative}",
+            )
+            is not None
+            or closeout_optional_commit_blob_bytes(root, archive_commit, active_path)
+            is not None
+        ):
+            raise WorkflowError(
+                "Retired closeout artifact was not deleted by the archive commit.",
+                exit_code=2,
+                payload={"path": relative},
+            )
     for relative in plan["projection"]["tracked_move_paths"]:
         if relative not in retained_paths:
             if archive_commit is None:
@@ -9432,6 +9638,10 @@ def resume_archive_metadata_transaction(
             pathspecs = (
                 [f"{active}/{relative}" for relative in plan["projection"]["tracked_move_paths"]]
                 + [
+                    f"{active}/{relative}"
+                    for relative in plan["projection"].get("retired_tracked_paths", [])
+                ]
+                + [
                     f"{archived}/{relative}"
                     for relative in closeout_archive_retained_paths(plan)
                 ]
@@ -9836,6 +10046,20 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
     if current_finalizer:
         transaction = finalization_read_transaction(root, task_dir)
         prior_transaction = transaction
+        retired_projection_rebound = False
+        if (
+            isinstance(transaction, dict)
+            and transaction.get("plan_digest") != plan["plan_digest"]
+            and transaction.get("mode") == "existing_pr_recovery"
+            and transaction.get("next_transition")
+            in {"archive", "push_archive", "mark_ready"}
+        ):
+            transaction = finalization_rebind_retired_projection_transaction(
+                transaction,
+                plan,
+            )
+            prior_transaction = transaction
+            retired_projection_rebound = True
         migration = prepared.get("migration_normalization")
         legacy_plan = (
             migration.get("previous_plan")
@@ -9863,6 +10087,8 @@ def _cmd_finish_work_impl(args: argparse.Namespace) -> dict[str, Any]:
                 recovery_preview if isinstance(recovery_preview, dict) else None
             ),
         )
+        if retired_projection_rebound:
+            finalization_write_transaction(root, task_dir, transaction)
         if transaction is None:
             if isinstance(recovery_preview, dict):
                 if recovered_legacy_pr is None:
@@ -11462,24 +11688,36 @@ def finalization_preview_context(
                         plan,
                     )
                 except WorkflowError:
-                    base_evolution = (
-                        finalizer_current_transaction_base_evolution_supersession_preflight(
-                            root,
-                            task_dir,
-                            current_transaction,
-                            plan,
-                            allowed_gate=getattr(
-                                args,
-                                "_finalization_checked_gate",
-                                None,
-                            ),
+                    if (
+                        current_transaction.get("mode") == "existing_pr_recovery"
+                        and current_transaction.get("next_transition")
+                        in {"archive", "push_archive", "mark_ready"}
+                    ):
+                        current_transaction = (
+                            finalization_rebind_retired_projection_transaction(
+                                current_transaction,
+                                plan,
+                            )
                         )
-                    )
-                    prepared["pre_pr_reprepare"] = {
-                        "previous_transaction": copy.deepcopy(current_transaction),
-                        "prior_state": "content_pushed",
-                        "base_evolution": base_evolution,
-                    }
+                    else:
+                        base_evolution = (
+                            finalizer_current_transaction_base_evolution_supersession_preflight(
+                                root,
+                                task_dir,
+                                current_transaction,
+                                plan,
+                                allowed_gate=getattr(
+                                    args,
+                                    "_finalization_checked_gate",
+                                    None,
+                                ),
+                            )
+                        )
+                        prepared["pre_pr_reprepare"] = {
+                            "previous_transaction": copy.deepcopy(current_transaction),
+                            "prior_state": "content_pushed",
+                            "base_evolution": base_evolution,
+                        }
             if prepared.get("month_supersession") is not None:
                 state = "reprepare_required"
                 reprepare_reason_code = FINALIZATION_REPREPARE_ARCHIVE_MONTH
@@ -11527,7 +11765,11 @@ def finalization_preview_context(
                 if (
                     state == "content_pushed"
                     and prepared.get("metadata_tail") is None
-                    and finalizer_pre_pr_provenance_tail_required(root, plan)
+                    and finalizer_pre_pr_provenance_tail_applies(
+                        root,
+                        plan,
+                        current_transaction,
+                    )
                 ):
                     state = "reprepare_required"
                     reprepare_reason_code = FINALIZATION_REPREPARE_PROVENANCE_TAIL

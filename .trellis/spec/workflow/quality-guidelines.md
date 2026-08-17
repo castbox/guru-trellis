@@ -865,6 +865,14 @@ schemas/examples remain immutable and are tested only by explicit rejection or
 compatibility selectors. Archive projection contains exactly six durable core
 files.
 
+Focused recovery coverage includes a business reviewed HEAD that differs from
+the external extension source commit, a bound Draft or Ready PR at each
+post-bind transition, and a historical index-tracked `closeout-plan.json` whose
+working-tree file is already deleted. It proves post-bind recovery precedes
+pre-PR provenance inference, the legacy path is committed only as an exact
+active-side deletion, the six-file current archive omits it, and PR/remote/
+payload/scope/plan/HEAD drift remains fail closed.
+
 Representative business fixtures cover docs, code, config, `.trellis/**`,
 platform copies, and an installed extension manifest. Their complete
 Publication -> Finalizer -> Merge trace asserts zero verifier wrapper calls,

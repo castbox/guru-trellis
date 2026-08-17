@@ -552,12 +552,35 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 ("implement.md", "# 实施\n\n验证 preview、transaction、archive 与恢复。\n"),
             ):
                 (active_task / name).write_text(content, encoding="utf-8")
+            extension_manifest = root / ".trellis/guru-team/extension.json"
+            extension_manifest.parent.mkdir(parents=True, exist_ok=True)
+            extension_manifest.write_text(
+                json.dumps(
+                    {
+                        "source": {
+                            "ref": old_head,
+                            "commit": old_head,
+                            "tree_state": "clean",
+                            "is_mutable_ref": False,
+                        }
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            historical_plan = active_task / GTT.CLOSEOUT_PLAN_ARTIFACT
+            historical_plan.write_text(
+                json.dumps({"schema_version": "2.0", "historical": True}) + "\n",
+                encoding="utf-8",
+            )
             marker.write_text("reviewed repair\n", encoding="utf-8")
             GTT.run_stdout(["git", "add", "."], cwd=root)
             GTT.run_stdout(["git", "commit", "-q", "-m", "reviewed repair"], cwd=root)
             publication_head = GTT.current_head(root)
             self.assertTrue(GTT.is_ancestor(root, old_head, publication_head))
             self.assertNotEqual(old_head, publication_head)
+            historical_plan.unlink()
 
             pr_body = (
                 "## 变更摘要\n\n"
@@ -595,6 +618,14 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 allow_existing_summary=True,
             )
             archive_locator = plan["task"]["archive_locator"]
+            self.assertNotIn(
+                GTT.CLOSEOUT_PLAN_ARTIFACT,
+                plan["projection"]["move_paths"],
+            )
+            self.assertEqual(
+                plan["projection"]["retired_tracked_paths"],
+                [GTT.CLOSEOUT_PLAN_ARTIFACT],
+            )
             prepared = {
                 "plan": plan,
                 "plan_digest": plan["plan_digest"],
@@ -705,6 +736,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     else root / active_locator
                 )
                 transaction = GTT.finalization_read_transaction(root, task_dir)
+                if (
+                    transaction is not None
+                    and transaction["plan_digest"] != plan["plan_digest"]
+                    and transaction.get("next_transition")
+                    in {"archive", "push_archive", "mark_ready"}
+                ):
+                    transaction = GTT.finalization_rebind_retired_projection_transaction(
+                        transaction,
+                        plan,
+                    )
                 if transaction is not None and transaction["next_transition"] == "mark_ready":
                     state = "ready"
                     recovery = None
@@ -801,6 +842,15 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertEqual(transaction["mode"], "existing_pr_recovery")
                 self.assertEqual(transaction["next_transition"], "archive")
                 self.assertEqual(transaction["adopted_pr"]["pre_push_remote_head"], old_head)
+                predecessor_transaction = copy.deepcopy(transaction)
+                predecessor_transaction["plan_digest"] = (
+                    GTT.finalization_retired_projection_predecessor_digest(plan)
+                )
+                GTT.finalization_write_transaction(
+                    root,
+                    active_task,
+                    predecessor_transaction,
+                )
                 self.assertEqual(
                     mutations,
                     {
@@ -881,6 +931,13 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertEqual(archived_task["status"], "completed")
                 self.assertIn("completedAt", archived_task)
                 self.assertEqual(completed["archive_commit"]["parent"], publication_head)
+                self.assertIn(
+                    f"{active_locator}/{GTT.CLOSEOUT_PLAN_ARTIFACT}",
+                    completed["archive_commit"]["paths"],
+                )
+                self.assertFalse(
+                    (root / archive_locator / GTT.CLOSEOUT_PLAN_ARTIFACT).exists()
+                )
                 self.assertEqual(archive_attempts, 2)
                 self.assertEqual(
                     mutations,
@@ -899,6 +956,95 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertEqual(terminal["stage"], "ready_recovered")
                 self.assertEqual(terminal["output"], completed["output"])
                 self.assertEqual(mutations, terminal_snapshot)
+
+    def test_post_bind_recovery_precedes_pre_pr_provenance_inference(self) -> None:
+        plan = {
+            "plan_digest": "d" * 64,
+            "task": {"active_locator": ".trellis/tasks/251"},
+            "git": {
+                "repo": "castbox/business-repo",
+                "base_branch": "main",
+                "head_branch": "fix/251",
+                "branch_review_commit": "b" * 40,
+                "publication_head": "b" * 40,
+            },
+            "publish": {"title": "current", "body": "Closes #251"},
+            "review": {"close_issues_reviewed": [251]},
+        }
+        pr = {
+            "number": 59,
+            "url": "https://github.com/castbox/business-repo/pull/59",
+        }
+        transaction = GTT.finalization_transaction_from_plan(
+            plan,
+            next_transition="archive",
+            pr=pr,
+            mode="existing_pr_recovery",
+            adopted_pr={
+                **pr,
+                "initial_is_draft": True,
+                "pre_push_remote_head": "a" * 40,
+            },
+        )
+        with mock.patch.object(
+            GTT,
+            "finalizer_pre_pr_provenance_tail_required",
+            side_effect=AssertionError("post-bind recovery must not inspect provenance"),
+        ) as provenance:
+            self.assertFalse(
+                GTT.finalizer_pre_pr_provenance_tail_applies(
+                    Path("/repo"),
+                    plan,
+                    transaction,
+                )
+            )
+        provenance.assert_not_called()
+
+        drifted = copy.deepcopy(transaction)
+        drifted["publication"]["title"] = "drifted"
+        with self.assertRaises(GTT.WorkflowError):
+            GTT.finalizer_pre_pr_provenance_tail_applies(
+                Path("/repo"),
+                plan,
+                drifted,
+            )
+
+        retired_plan = copy.deepcopy(plan)
+        retired_plan["projection"] = {
+            "move_paths": ["task.json"],
+            "tracked_move_paths": ["task.json"],
+            "retired_tracked_paths": [GTT.CLOSEOUT_PLAN_ARTIFACT]
+        }
+        predecessor = copy.deepcopy(transaction)
+        predecessor["plan_digest"] = (
+            GTT.finalization_retired_projection_predecessor_digest(retired_plan)
+        )
+        rebound = GTT.finalization_rebind_retired_projection_transaction(
+            predecessor,
+            retired_plan,
+        )
+        self.assertEqual(rebound["plan_digest"], plan["plan_digest"])
+        self.assertEqual(rebound["next_transition"], "archive")
+        self.assertEqual(rebound["pr"], transaction["pr"])
+        self.assertEqual(rebound["adopted_pr"], transaction["adopted_pr"])
+
+        drifted_digest = copy.deepcopy(predecessor)
+        drifted_digest["plan_digest"] = "e" * 64
+        with self.assertRaisesRegex(
+            GTT.WorkflowError,
+            "exact retired-plan predecessor digest",
+        ):
+            GTT.finalization_rebind_retired_projection_transaction(
+                drifted_digest,
+                retired_plan,
+            )
+
+        predecessor["close_issues"] = [250]
+        with self.assertRaises(GTT.WorkflowError):
+            GTT.finalization_rebind_retired_projection_transaction(
+                predecessor,
+                retired_plan,
+            )
 
     def test_existing_pr_resolver_rejects_ambiguous_fork_and_identity_matrix(self) -> None:
         def candidate(number: int = 59) -> dict:

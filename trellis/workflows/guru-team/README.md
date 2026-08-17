@@ -925,6 +925,11 @@ official move 前重新核对实时 archive 月份、空 index、精确 untracke
 plan/readiness/evidence commit、不 rewrite history 或迁移目录。`closeout-plan.json` 的
 schema/example 仅是 immutable legacy compatibility assets；current Interface、registry、
 manifest、prepare、recovery 与 archive 均不选择、创建、读取、移动或保留它。
+若历史 Git index 仍跟踪该文件、但 working tree 已删除，current Finalizer 只把它作为
+archive transaction 的 active-side retired deletion，并校验 transaction parent blob 与
+commit path continuity；不会恢复或归档旧文件。已绑定 `existing_pr_recovery` 且进入
+`archive|push_archive|mark_ready` 时，先校验 exact transaction 再判断 pre-PR provenance，
+外部 extension source commit 与业务 reviewed-content commit 不同不会覆盖 post-bind stage。
 共享 prepare 从 archive root 到 month/final destination 逐层 `lstat` 既有组件，不读取或
 跟随 symlink target；任何 symlink（含 dangling、repo 内 target）都拒绝，且 final locator
 必须不存在。official move 前重复同一检查，阻止 prepare-to-move 漂移。缺失的

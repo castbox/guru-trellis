@@ -26,6 +26,14 @@ only the semantic gate; execute persists the minimal transaction only when it
 must return a same-owner recovery exit and retires it at `ready_for_merge`.
 Finalizer and `finish-work` never call an Issue-close command.
 
+An exact `existing_pr_recovery` transaction at `archive`, `push_archive`, or
+`mark_ready` owns the post-bind stage before pre-PR provenance inference. The
+executor still revalidates the bound PR, Publication payload, close scope,
+plan digest, local/remote/PR HEADs, and transition. A historical tracked but
+working-tree-deleted `closeout-plan.json` is a private retired path: archive
+path equality and parent-blob continuity require its active-side deletion, but
+the file is never restored, moved, or retained.
+
 Publication `ready` has exactly one side-effect owner: `guru-finalize-task`.
 Callers may project its reviewed title/body into Finalizer input, but must not
 push the reviewed/publication HEAD or create/reuse a PR themselves. Finalizer

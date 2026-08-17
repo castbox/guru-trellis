@@ -1,0 +1,11 @@
+{
+  "id": "08-17-251-finalizer-post-bind-recovery",
+  "name": "08-17-251-finalizer-post-bind-recovery",
+  "title": "#251 修复 Finalizer post-bind same-plan 恢复与 legacy closeout-plan 归档缺口",
+  "status": "in_progress",
+  "branch": "fix/251-finalizer-post-bind-recovery",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/251"
+}
