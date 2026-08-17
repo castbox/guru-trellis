@@ -2,7 +2,7 @@
 
 ## 身份与 candidate
 
-起点是 fresh `origin/main@f50975191b99caaee973c222974f4993dd466a18`，稳定 tag 为 `v0.6.5-guru.9`，目标 tag 为 `v0.6.5-guru.9`。preparation branch 不是 candidate；只有 preparation PR 合并后重新读取并三方核对的 clean `origin/main` commit/tree 才是 candidate。任何 candidate bytes 或 release-owned metadata 变化都会使绑定 evidence stale。
+起点是 fresh `origin/main@f50975191b99caaee973c222974f4993dd466a18`，起始稳定 tag 为 `v0.6.5-guru.8`，目标 tag 为 `v0.6.5-guru.9`。preparation branch 不是 candidate；只有 preparation PR 合并后重新读取并三方核对的 clean `origin/main` commit/tree 才是 candidate。任何 candidate bytes 或 release-owned metadata 变化都会使绑定 evidence stale。
 
 ## Source of truth 与投影
 
