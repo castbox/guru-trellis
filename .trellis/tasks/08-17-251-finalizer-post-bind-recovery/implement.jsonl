@@ -1,5 +1,0 @@
-{"file":".trellis/spec/workflow/index.md","reason":"实现前确认 Finalizer canonical package、公共合同、生成副本与必需验证边界。"}
-{"file":".trellis/spec/workflow/companion-scripts.md","reason":"修改 Finalizer deterministic transaction、archive projection 与 path validator 前读取脚本边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"确认 private plan/transaction、archive projection、terminal recovery 与 schema migration 合同。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"确认 package/runtime/integration、focused installed smoke、dogfood 与未验证边界。"}
-{"file":".trellis/spec/preset/installer.md","reason":"同步 canonical 到 installed/platform copies，并严格区分 focused smoke 与完整 throwaway installer。"}

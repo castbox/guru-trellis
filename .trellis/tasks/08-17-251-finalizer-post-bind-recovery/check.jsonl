@@ -1,3 +1,0 @@
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 独立检查完整 scope、current diff、回归、drift、sidecar 与证据边界。"}
-{"file":".trellis/spec/workflow/data-contracts.md","reason":"检查 post-bind identity、legacy retirement、archive/terminal recovery 与 fail-closed drift。"}
-{"file":".trellis/spec/preset/installer.md","reason":"检查 focused installed-package recovery、canonical/installed/platform parity，并确认完整 throwaway 由 #254 承担。"}
