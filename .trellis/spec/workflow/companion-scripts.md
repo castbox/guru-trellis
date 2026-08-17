@@ -1548,6 +1548,17 @@ Finalizer exits: `publication_review_stale`, `resume_finalization`,
 `reprepare_required`, `ready_for_merge`, and `blocked`. Public invocation reruns
 strict route validation and never calls the transition executor implicitly.
 
+Planless `publication_review_stale` preview, recorder, checker, and public
+invocation bind `task_ref`, `stale_reason`, and `branch_review_commit` to the
+exact current Publication owner facts. The commit authority is
+`publication_branch_review_commit`; it is never read from a nonexistent
+closeout plan or replaced with current HEAD. The route additionally requires
+`publication_status=stale` and
+`transaction_state=publication_review_stale`, creates no plan or transaction,
+and performs no Git/GitHub side effect. All adjacent plan-backed exits retain
+their immutable plan commit, publication HEAD, plan ref, state, and executor
+marker validation.
+
 Current Finalizer uses `guru-finalization-transaction-3.0` for its complete
 remote mutation interval. Preview and execute rebuild live Git/GitHub/Trellis
 facts and bind exact Publication input. Ordinary publication still requires no

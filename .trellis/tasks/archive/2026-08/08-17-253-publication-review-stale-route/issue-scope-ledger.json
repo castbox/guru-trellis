@@ -1,0 +1,33 @@
+{
+  "close_issues": [
+    {
+      "number": 253,
+      "reason": "本任务完整覆盖 Issue #253 的 route-validation acceptance。",
+      "title": "修复 Finalizer 无 closeout plan 时 publication_review_stale 路由被通用 commit 校验拒绝",
+      "url": "https://github.com/castbox/guru-trellis/issues/253"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 254,
+      "reason": "Issue #254 负责累计候选的完整 throwaway、升级、平台与 tag-pinned 发布门禁。",
+      "title": "发布 v0.6.5-guru.9：统一验证 #220、#251、#253 累计候选并完成 live 发布",
+      "url": "https://github.com/castbox/guru-trellis/issues/254"
+    }
+  ],
+  "primary_issue": {
+    "number": 253,
+    "reason": "本任务完整覆盖 Issue #253 的 route-validation acceptance。",
+    "title": "修复 Finalizer 无 closeout plan 时 publication_review_stale 路由被通用 commit 校验拒绝",
+    "url": "https://github.com/castbox/guru-trellis/issues/253"
+  },
+  "related_issues": [
+    {
+      "number": 251,
+      "reason": "Issue #251 属于相邻但独立的 post-bind recovery 生命周期，本任务不吸收。",
+      "title": "修复 Finalizer post-bind same-plan 恢复误入 provenance reprepare 与 legacy closeout-plan 归档缺口",
+      "url": "https://github.com/castbox/guru-trellis/issues/251"
+    }
+  ],
+  "schema_version": "2.0"
+}

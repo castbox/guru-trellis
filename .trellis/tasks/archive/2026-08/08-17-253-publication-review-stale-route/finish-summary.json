@@ -1,0 +1,193 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-17T15:29:13Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-17-253-publication-review-stale-route",
+    "title": "#253 修复 planless publication_review_stale 路由校验",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-17-253-publication-review-stale-route",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/253-publication-review-stale-route",
+    "commits": [
+      "d6aa93d0677e2a91161cedf1a1fb4b15544e80bd"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-finalize-task/references/contract.md",
+      ".claude/skills/guru-finalize-task/references/contract.md",
+      ".codex/skills/guru-finalize-task/references/contract.md",
+      ".cursor/skills/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+      ".trellis/spec/workflow/companion-scripts.md",
+      ".trellis/tasks/08-17-253-publication-review-stale-route/design.md",
+      ".trellis/tasks/08-17-253-publication-review-stale-route/implement.md",
+      ".trellis/tasks/08-17-253-publication-review-stale-route/issue-scope-ledger.json",
+      ".trellis/tasks/08-17-253-publication-review-stale-route/prd.md",
+      ".trellis/tasks/08-17-253-publication-review-stale-route/task.json",
+      ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/design.md",
+      ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/implement.md",
+      ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/prd.md",
+      ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/task.json",
+      "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+      "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      253
+    ],
+    "close_issues": [
+      253
+    ],
+    "related_issues": [
+      251
+    ],
+    "followup_issues": [
+      254
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/256"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#253 修复 planless publication_review_stale 路由校验",
+    "outcome": "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。",
+    "changed_behavior": [
+      "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。",
+      "将该路由的 `branch_review_commit` 精确绑定到 Publication owner 已验证的原 reviewed commit，并让 route validation、gate recorder 与 checker 使用同一 authority。",
+      "保留错误 task、commit、stale reason、Publication status 和 transaction state 的 fail-closed 校验，同时维持相邻 plan-backed exits 的既有 plan/HEAD/freshness 强度。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/tasks/08-17-253-publication-review-stale-route/design.md",
+          ".trellis/tasks/08-17-253-publication-review-stale-route/implement.md",
+          ".trellis/tasks/08-17-253-publication-review-stale-route/prd.md",
+          ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/design.md",
+          ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/implement.md",
+          ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/prd.md"
+        ],
+        "change": "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md"
+        ],
+        "change": "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+        ],
+        "change": "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-finalize-task/references/contract.md",
+          ".claude/skills/guru-finalize-task/references/contract.md",
+          ".codex/skills/guru-finalize-task/references/contract.md",
+          ".cursor/skills/guru-finalize-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md"
+        ],
+        "change": "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-17-253-publication-review-stale-route/issue-scope-ledger.json",
+          ".trellis/tasks/08-17-253-publication-review-stale-route/task.json",
+          ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/task.json"
+        ],
+        "change": "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#251",
+        "#253",
+        "#254"
+      ],
+      "pr_refs": [
+        "PR #256"
+      ],
+      "branches": [
+        "fix/253-publication-review-stale-route"
+      ],
+      "paths": [
+        ".agents/skills/guru-finalize-task/references/contract.md",
+        ".claude/skills/guru-finalize-task/references/contract.md",
+        ".codex/skills/guru-finalize-task/references/contract.md",
+        ".cursor/skills/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/runtime/owner.py",
+        ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py",
+        ".trellis/spec/workflow/companion-scripts.md",
+        ".trellis/tasks/08-17-253-publication-review-stale-route/design.md",
+        ".trellis/tasks/08-17-253-publication-review-stale-route/implement.md",
+        ".trellis/tasks/08-17-253-publication-review-stale-route/issue-scope-ledger.json",
+        ".trellis/tasks/08-17-253-publication-review-stale-route/prd.md",
+        ".trellis/tasks/08-17-253-publication-review-stale-route/task.json",
+        ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/design.md",
+        ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/implement.md",
+        ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/prd.md",
+        ".trellis/tasks/archive/2026-08/08-17-253-publication-review-stale-route/task.json",
+        "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-finalize-task/runtime/owner.py",
+        "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#253 修复 planless publication_review_stale 路由校验",
+        "修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_s",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#253 修复 planless publication_review_stale 路由校验\n修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_stale` 输出的问题。\n将该路由的 `branch_review_commit` 精确绑定到 Publication owner 已验证的原 reviewed commit，并让 route validation、gate recorder 与 checker 使用同一 authority。\n保留错误 task、commit、stale reason、Publication status 和 transaction state 的 fail-closed 校验，同时维持相邻 plan-backed exits 的既有 plan/HEAD/freshness 强度。\n修复 Finalizer 在尚无 closeout plan 时错误拒绝合法 `publication_review_s\n完成 contract.md 相关变更"
+  }
+}

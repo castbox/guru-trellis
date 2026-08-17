@@ -11689,6 +11689,18 @@ def finalization_reprepare_public_output(
         )
     return payload
 
+def finalization_route_branch_review_commit(
+    context: dict[str, Any],
+    exit_id: str,
+) -> str | None:
+    if exit_id == "publication_review_stale":
+        value = context.get("publication_branch_review_commit")
+        return str(value) if isinstance(value, str) else None
+    plan = context.get("plan")
+    if isinstance(plan, dict):
+        return str(plan["git"]["branch_review_commit"])
+    return None
+
 def finalization_validate_route(
     root: Path,
     public_input: dict[str, Any],
@@ -11773,7 +11785,7 @@ def finalization_validate_route(
             ("plan_ref", context.get("plan_ref")),
             (
                 "branch_review_commit",
-                plan["git"]["branch_review_commit"] if plan is not None else None,
+                finalization_route_branch_review_commit(context, exit_id),
             ),
             (
                 "publication_head",
@@ -11801,6 +11813,10 @@ def finalization_validate_route(
     if exit_id == "publication_review_stale":
         if (
             publication_status != "stale"
+            or state != "publication_review_stale"
+            or output.get("task_ref") != public_input.get("task_ref")
+            or output.get("branch_review_commit")
+            != context.get("publication_branch_review_commit")
             or output.get("stale_reason")
             != context.get("publication_stale_reason")
         ):
@@ -11918,8 +11934,9 @@ def cmd_record_finalization_gate(args: argparse.Namespace) -> dict[str, Any]:
             "task_ref": public_input["task_ref"],
             "plan_ref": context["plan_ref"] if plan is not None else None,
             "plan_digest": plan["plan_digest"] if plan is not None else None,
-            "branch_review_commit": (
-                plan["git"]["branch_review_commit"] if plan is not None else None
+            "branch_review_commit": finalization_route_branch_review_commit(
+                context,
+                str(reviewed["route"]["typed_exit"]),
             ),
         },
         "review": copy.deepcopy(reviewed["review"]),
@@ -12090,8 +12107,9 @@ def check_finalization_gate_result(
         ),
         "plan_ref": context["plan_ref"] if plan is not None else None,
         "plan_digest": plan["plan_digest"] if plan is not None else None,
-        "branch_review_commit": (
-            plan["git"]["branch_review_commit"] if plan is not None else None
+        "branch_review_commit": finalization_route_branch_review_commit(
+            context,
+            str((gate.get("route") or {}).get("typed_exit") or ""),
         ),
     }
     if gate.get("identity") != expected_identity:

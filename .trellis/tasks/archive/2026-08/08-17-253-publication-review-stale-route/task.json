@@ -1,0 +1,12 @@
+{
+  "id": "253-publication-review-stale-route",
+  "name": "253-publication-review-stale-route",
+  "title": "#253 修复 planless publication_review_stale 路由校验",
+  "status": "completed",
+  "branch": "fix/253-publication-review-stale-route",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/253",
+  "completedAt": "2026-08-17"
+}
