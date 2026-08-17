@@ -80,7 +80,7 @@
     "projection": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["active_locator", "archive_locator", "finish_summary_locator", "move_paths", "tracked_move_paths", "untracked_archive_outputs", "reviewed_tracked_bindings", "migration_predecessor_plan_digest", "summary_placeholder", "summary_template_sha256", "summary_template", "runtime_fact_fields"],
+      "required": ["active_locator", "archive_locator", "finish_summary_locator", "move_paths", "tracked_move_paths", "retired_tracked_paths", "untracked_archive_outputs", "reviewed_tracked_bindings", "migration_predecessor_plan_digest", "summary_placeholder", "summary_template_sha256", "summary_template", "runtime_fact_fields"],
       "properties": {
         "active_locator": {"$ref": "#/$defs/taskPath"},
         "archive_locator": {"$ref": "#/$defs/archivePath"},

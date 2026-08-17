@@ -12680,11 +12680,13 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 context["plan"],
                 pr,
             )
+            retired_owner_state = finalization_retire_current_state(root, task_dir)
             return {
                 "status": "ok",
                 "stage": "ready_recovered",
                 "typed_exit": exit_id,
                 "output": materialized_gate["route"]["output"],
+                "retired_owner_state": retired_owner_state,
             }
         finish_args = copy.copy(args)
         finish_args.task = public_input["task_ref"]

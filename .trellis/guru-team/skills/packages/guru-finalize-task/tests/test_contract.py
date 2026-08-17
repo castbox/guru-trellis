@@ -161,13 +161,16 @@ class FinalizeTaskContractTests(unittest.TestCase):
             mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, Path("/repo/gate.json"))),
             mock.patch.object(GTT, "check_finalization_gate_result", return_value=(gate, context)),
             mock.patch.object(GTT, "finalization_gate_with_ready_for_merge_output", return_value={"route": {"output": output}}) as materialize,
+            mock.patch.object(GTT, "finalization_retire_current_state", return_value=["transaction", "gate"]) as retire,
             mock.patch.object(GTT, "cmd_finish_work") as finish_work,
         ):
             result = GTT.cmd_execute_finalization_transition(args)
 
         self.assertEqual(result["stage"], "ready_recovered")
         self.assertEqual(result["output"], output)
+        self.assertEqual(result["retired_owner_state"], ["transaction", "gate"])
         finish_work.assert_not_called()
+        retire.assert_called_once_with(Path("/repo"), task_dir)
         materialize.assert_called_once_with(
             Path("/repo"), task_dir, gate, context["plan"], context["published_pr"]
         )
@@ -478,7 +481,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "existing_pr_head_not_ancestor",
             )
 
-    def test_existing_ready_pr_recovery_runs_real_topology_exactly_once(self) -> None:
+    def test_existing_draft_pr_recovery_runs_real_same_plan_topology_exactly_once(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             temporary_root = Path(temporary)
             root = temporary_root / "repo"
@@ -658,7 +661,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 "headRepository": {"nameWithOwner": "castbox/guru-trellis"},
                 "headRepositoryOwner": {"login": "castbox"},
                 "isCrossRepository": False,
-                "isDraft": False,
+                "isDraft": True,
                 "title": "旧标题",
                 "body": "旧正文\n\nCloses #208",
             }
@@ -673,6 +676,19 @@ class FinalizeTaskContractTests(unittest.TestCase):
             archive_attempts = 0
             original_run = GTT.run
             original_run_stdout = GTT.run_stdout
+            original_publication_owner_result = GTT.finalization_publication_owner_result
+
+            input_locator = ".trellis/.runtime/guru-team/issue-251/public-input.json"
+            input_path = root / input_locator
+            input_path.parent.mkdir(parents=True)
+
+            def write_public_input(payload):
+                input_path.write_text(
+                    json.dumps(payload, ensure_ascii=False) + "\n",
+                    encoding="utf-8",
+                )
+
+            write_public_input(public_input)
 
             def remote_head(*_args, **_kwargs):
                 output = original_run_stdout(
@@ -689,7 +705,6 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     mutations["content_push"] += 1
                     pr["headRefOid"] = remote_head()
                 elif command[:3] == ["git", "push", "origin"]:
-                    mutations["archive"] += 1
                     mutations["archive_push"] += 1
                     pr["headRefOid"] = remote_head()
                 return result
@@ -704,7 +719,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
                             stdout="",
                             stderr="simulated interruption before archive mutation",
                         )
-                return original_run(command, **kwargs)
+                result = original_run(command, **kwargs)
+                if command[:3] == [sys.executable, "./.trellis/scripts/task.py", "archive"]:
+                    mutations["archive"] += 1
+                return result
 
             def edit_pr(_root, _repo, number, title, body):
                 self.assertEqual(number, pr["number"])
@@ -718,7 +736,24 @@ class FinalizeTaskContractTests(unittest.TestCase):
 
             def ready_pr(*_args, **_kwargs):
                 mutations["ready"] += 1
-                raise AssertionError("an initially Ready PR must remain Ready")
+                self.assertTrue(pr["isDraft"])
+                pr["isDraft"] = False
+
+            def publication_owner(current_root, current_task_dir, current_input, verification=None):
+                if current_input.get("profile") == "publication_ready":
+                    return {
+                        "status": "ok",
+                        "owner_status": "current",
+                        "typed_exit": "ready",
+                        "task_ref": active_locator,
+                        "branch_review_commit": publication_head,
+                    }
+                return original_publication_owner_result(
+                    current_root,
+                    current_task_dir,
+                    current_input,
+                    verification,
+                )
 
             def pre_draft_state(*_args, **_kwargs):
                 return GTT.resolve_closeout_pre_draft_state(
@@ -729,78 +764,44 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     require_plan_artifact=False,
                 )
 
-            def preview_context(_root, _args, _public_input):
-                task_dir = (
-                    root / archive_locator
-                    if (root / archive_locator).is_dir()
-                    else root / active_locator
-                )
-                transaction = GTT.finalization_read_transaction(root, task_dir)
-                if (
-                    transaction is not None
-                    and transaction["plan_digest"] != plan["plan_digest"]
-                    and transaction.get("next_transition")
-                    in {"archive", "push_archive", "mark_ready"}
-                ):
-                    transaction = GTT.finalization_rebind_retired_projection_transaction(
-                        transaction,
-                        plan,
-                    )
-                if transaction is not None and transaction["next_transition"] == "mark_ready":
-                    state = "ready"
-                    recovery = None
-                    published_pr = copy.deepcopy(pr)
-                else:
-                    state = pre_draft_state()
-                    state, recovery = GTT.finalization_existing_pr_recovery_context(
-                        root, plan, transaction, state
-                    )
-                    published_pr = None
-                return {
-                    "task_dir": task_dir,
-                    "task_context": task_context,
-                    "prepared": prepared,
-                    "plan": plan,
-                    "plan_ref": f"finalization:{plan['plan_digest']}",
-                    "transaction_state": state,
-                    "published_transition_complete": state == "ready",
-                    "published_pr": published_pr,
-                    "publication": {"owner_status": "current"},
-                    "publication_status": "current",
-                    "publication_stale_reason": None,
-                    "publication_branch_review_commit": publication_head,
-                    "reprepare_reason_code": None,
-                    "verification": None,
-                    "publication_mode": (
-                        "existing_pr_recovery" if recovery is not None else "ordinary_publication"
-                    ),
-                    "existing_pr_recovery": recovery,
-                }
-
             gate = {
                 "route": {
                     "typed_exit": "ready_for_merge",
                     "output": copy.deepcopy(GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER),
                 }
             }
-            args = SimpleNamespace(root=str(root), input="input.json", gate="gate.json")
+            args = SimpleNamespace(root=str(root), input=input_locator, gate="gate.json")
             no_op = mock.Mock()
             patches = (
-                mock.patch.object(GTT, "finalization_public_input", return_value=(public_input, "input.json")),
                 mock.patch.object(GTT, "finalization_gate_input", return_value=(gate, root / "gate.json")),
-                mock.patch.object(GTT, "finalization_preview_context", side_effect=preview_context),
                 mock.patch.object(
                     GTT,
                     "check_finalization_gate_result",
-                    side_effect=lambda *_args, **_kwargs: (gate, preview_context(None, None, None)),
+                    side_effect=lambda current_root, current_args, current_input, *_args, **_kwargs: (
+                        gate,
+                        GTT.finalization_preview_context(
+                            current_root,
+                            current_args,
+                            current_input,
+                        ),
+                    ),
                 ),
-                mock.patch.object(GTT, "resolve_finish_work_task_dir", side_effect=lambda *_: root / active_locator),
                 mock.patch.object(GTT, "validate_finish_work_invocation", no_op),
                 mock.patch.object(GTT, "load_config", return_value={}),
                 mock.patch.object(GTT, "load_task_runtime_identity", return_value=task_context),
                 mock.patch.object(GTT, "assert_workspace_boundary", no_op),
                 mock.patch.object(GTT, "prepare_closeout", return_value=prepared),
+                mock.patch.object(
+                    GTT,
+                    "finalization_publication_owner_result",
+                    side_effect=publication_owner,
+                ),
                 mock.patch.object(GTT, "require_gh_auth", no_op),
+                mock.patch.object(
+                    GTT,
+                    "validate_github_remote_repository",
+                    return_value="castbox/guru-trellis",
+                ),
                 mock.patch.object(GTT, "resolve_closeout_pull_request", side_effect=resolve_pr),
                 mock.patch.object(GTT, "closeout_remote_branch_head", side_effect=remote_head),
                 mock.patch.object(GTT, "run", side_effect=interrupt_first_archive),
@@ -819,7 +820,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertFalse(preview["side_effects"])
                 self.assertEqual(preview["publication_mode"], "existing_pr_recovery")
                 self.assertEqual(preview["existing_pr_recovery"]["ancestry"], "strict_ancestor")
-                self.assertEqual(preview["existing_pr_recovery"]["initial_state"], "ready")
+                self.assertEqual(preview["existing_pr_recovery"]["initial_state"], "draft")
                 self.assertEqual(
                     preview["expected_actions"],
                     [
@@ -828,7 +829,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         "converge_pr_metadata",
                         "archive",
                         "push_archive",
-                        "preserve_ready",
+                        "mark_ready",
                         "verify_three_way_head",
                     ],
                 )
@@ -850,6 +851,14 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     root,
                     active_task,
                     predecessor_transaction,
+                )
+                write_public_input(
+                    {
+                        "profile": "same_plan_resume",
+                        "mode": "workflow",
+                        "task_ref": active_locator,
+                        "plan_ref": f"finalization:{plan['plan_digest']}",
+                    }
                 )
                 self.assertEqual(
                     mutations,
@@ -947,7 +956,7 @@ class FinalizeTaskContractTests(unittest.TestCase):
                         "pr_create": 0,
                         "archive": 1,
                         "archive_push": 1,
-                        "ready": 0,
+                        "ready": 1,
                     },
                 )
 
@@ -956,6 +965,10 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 self.assertEqual(terminal["stage"], "ready_recovered")
                 self.assertEqual(terminal["output"], completed["output"])
                 self.assertEqual(mutations, terminal_snapshot)
+                self.assertTrue(terminal["retired_owner_state"])
+                self.assertIsNone(
+                    GTT.finalization_find_transaction_by_task_ref(root, active_locator)
+                )
 
     def test_post_bind_recovery_precedes_pre_pr_provenance_inference(self) -> None:
         plan = {
@@ -1985,6 +1998,21 @@ class FinalizeTaskContractTests(unittest.TestCase):
                 ):
                     self.assertEqual(alias.is_valid(instance), expected)
                     self.assertEqual(explicit.is_valid(instance), expected)
+
+    def test_current_closeout_projection_requires_retired_paths_without_mutating_legacy(self) -> None:
+        current = load("schemas/closeout-plan.schema.json")
+        legacy_path = PACKAGE / "schemas/closeout-plan-3.0.schema.json"
+        legacy = load("schemas/closeout-plan-3.0.schema.json")
+
+        self.assertEqual(current["properties"]["schema_version"]["const"], "4.0")
+        self.assertIn("retired_tracked_paths", current["properties"]["projection"]["required"])
+        self.assertIn("retired_tracked_paths", current["properties"]["projection"]["properties"])
+        self.assertEqual(legacy["properties"]["schema_version"]["const"], "3.0")
+        self.assertNotIn("retired_tracked_paths", legacy["properties"]["projection"]["properties"])
+        self.assertEqual(
+            hashlib.sha256(legacy_path.read_bytes()).hexdigest(),
+            "4ac0576d0ac425dc9cd74b0390b63eb124d0ffc08e375d11857faba41153addc",
+        )
 
     def test_interface_inventories_current_and_legacy_contract_assets(self) -> None:
         interface = load("interface.json")
