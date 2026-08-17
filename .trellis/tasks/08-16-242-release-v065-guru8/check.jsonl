@@ -3,4 +3,3 @@
 {"file":".trellis/spec/preset/upstream-ownership.md","reason":"独立检查 generated projection、ownership、mode 和 overlay drift。"}
 {"file":".trellis/spec/workflow/quality-guidelines.md","reason":"独立检查 Phase 2、package/integration/eval、throwaway、Branch Review 与 freshness 覆盖。"}
 {"file":".trellis/spec/workflow/skill-package-contract.md","reason":"独立检查 #237 qualification 与公开 Skill package/typed exit 边界未被 release metadata 破坏。"}
-

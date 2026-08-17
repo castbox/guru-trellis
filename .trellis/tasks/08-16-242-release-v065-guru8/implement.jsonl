@@ -3,4 +3,3 @@
 {"file":".trellis/spec/preset/upstream-ownership.md","reason":"实现 canonical/dogfood/platform projection 时保持 ownership 和 upstream 边界。"}
 {"file":".trellis/spec/workflow/data-contracts.md","reason":"更新 release identity examples/tests 与 task/public payload 时保持当前数据合同。"}
 {"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现后选择 package、integration、eval、throwaway 与 upgrade/update 验证矩阵。"}
-
