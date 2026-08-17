@@ -36,7 +36,8 @@ to fresh PR adoption or provenance reprepare.
 
 If archive move, commit, and push complete before Draft-to-Ready succeeds, the
 archived task retains the exact `archive`/`push_archive` transaction stage. A
-same-plan retry validates the archived task, Draft PR, and three-way archive
+same-plan retry validates the archived task, the bound PR's recorded initial
+Draft/Ready state, and three-way archive
 HEAD, performs only the remaining Ready transition, then persists `mark_ready`
 and retires owner state. It never reruns archive or creates a second PR.
 

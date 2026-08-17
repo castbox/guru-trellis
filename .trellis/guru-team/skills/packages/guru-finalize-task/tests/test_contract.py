@@ -2074,6 +2074,101 @@ class FinalizeTaskContractTests(unittest.TestCase):
         self.assertEqual(context["plan"]["git"]["publication_head"], "d" * 40)
         shutil.rmtree(temp_root)
 
+    def test_archived_archive_stage_preserves_ready_pr_recovery(self) -> None:
+        temp_root = tempfile.mkdtemp(prefix="finalizer-archived-ready-recovery-")
+        root = Path(temp_root)
+        task_dir = root / ".trellis/tasks/archive/251"
+        task_dir.mkdir(parents=True)
+        task_ref = ".trellis/tasks/251"
+        transaction = {
+            "task_ref": task_ref, "next_transition": "archive",
+            "repo_ref": "castbox/guru-trellis", "base_branch": "main", "branch": "fix/251",
+            "remote": "origin", "branch_review_commit": "a" * 40, "publication_head": "b" * 40,
+            "plan_digest": "c" * 64, "publication": {"title": "title", "body": "body"},
+            "close_issues": [251], "mode": "existing_pr_recovery",
+            "pr": {"number": 59, "url": "https://github.com/castbox/guru-trellis/pull/59"},
+            "adopted_pr": {"initial_is_draft": False},
+        }
+        pr = {"number": 59, "url": transaction["pr"]["url"], "isDraft": False, "headRefOid": "d" * 40}
+        summary = {
+            "task": {"artifact_dir": task_ref, "archive_dir": ".trellis/tasks/archive/251"},
+            "github": {"pr_url": pr["url"]}, "index": {"search_terms": {"pr_refs": ["PR #59"]}},
+        }
+        (task_dir / GTT.FINISH_SUMMARY_ARTIFACT).write_text("{}\n", encoding="utf-8")
+        with (
+            mock.patch.object(GTT, "repo_relative", return_value=".trellis/tasks/archive/251"),
+            mock.patch.object(GTT, "task_json", return_value={"status": "completed"}),
+            mock.patch.object(GTT, "closeout_plan_path", return_value=Path("/missing-plan")),
+            mock.patch.object(GTT, "publish_config", return_value={"remote": "origin"}),
+            mock.patch.object(GTT, "load_config", return_value={}),
+            mock.patch.object(GTT, "validate_github_remote_repository", return_value="castbox/guru-trellis"),
+            mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+            mock.patch.object(GTT, "canonical_pull_request_url", return_value=pr["url"]),
+            mock.patch.object(GTT, "current_head", return_value="d" * 40),
+            mock.patch.object(GTT, "closeout_remote_branch_head", return_value="d" * 40),
+            mock.patch.object(GTT, "read_json", return_value=summary),
+            mock.patch.object(GTT, "validate_finish_summary"),
+        ):
+            context = GTT.finalization_current_archived_context(root, task_dir, {"task_ref": task_ref}, transaction)
+        self.assertEqual(context["transaction_state"], "archived")
+        self.assertFalse(context["published_transition_complete"])
+        shutil.rmtree(temp_root)
+
+    def test_archived_archive_stage_preserves_ready_pr_recovery(self) -> None:
+        temp_root = tempfile.mkdtemp(prefix="finalizer-archived-ready-recovery-")
+        root = Path(temp_root)
+        task_dir = root / ".trellis/tasks/archive/251"
+        task_dir.mkdir(parents=True)
+        task_ref = ".trellis/tasks/251"
+        transaction = {
+            "task_ref": task_ref,
+            "next_transition": "archive",
+            "repo_ref": "castbox/guru-trellis",
+            "base_branch": "main",
+            "branch": "fix/251",
+            "remote": "origin",
+            "branch_review_commit": "a" * 40,
+            "publication_head": "b" * 40,
+            "plan_digest": "c" * 64,
+            "publication": {"title": "title", "body": "body"},
+            "close_issues": [251],
+            "mode": "existing_pr_recovery",
+            "pr": {"number": 59, "url": "https://github.com/castbox/guru-trellis/pull/59"},
+            "adopted_pr": {"initial_is_draft": False},
+        }
+        pr = {
+            "number": 59,
+            "url": transaction["pr"]["url"],
+            "isDraft": False,
+            "headRefOid": "d" * 40,
+        }
+        summary = {
+            "task": {"artifact_dir": task_ref, "archive_dir": ".trellis/tasks/archive/251"},
+            "github": {"pr_url": pr["url"]},
+            "index": {"search_terms": {"pr_refs": ["PR #59"]}},
+        }
+        (task_dir / GTT.FINISH_SUMMARY_ARTIFACT).write_text("{}\n", encoding="utf-8")
+        with (
+            mock.patch.object(GTT, "repo_relative", return_value=".trellis/tasks/archive/251"),
+            mock.patch.object(GTT, "task_json", return_value={"status": "completed"}),
+            mock.patch.object(GTT, "closeout_plan_path", return_value=Path("/missing-plan")),
+            mock.patch.object(GTT, "publish_config", return_value={"remote": "origin"}),
+            mock.patch.object(GTT, "load_config", return_value={}),
+            mock.patch.object(GTT, "validate_github_remote_repository", return_value="castbox/guru-trellis"),
+            mock.patch.object(GTT, "resolve_closeout_pull_request", return_value=pr),
+            mock.patch.object(GTT, "canonical_pull_request_url", return_value=pr["url"]),
+            mock.patch.object(GTT, "current_head", return_value="d" * 40),
+            mock.patch.object(GTT, "closeout_remote_branch_head", return_value="d" * 40),
+            mock.patch.object(GTT, "read_json", return_value=summary),
+            mock.patch.object(GTT, "validate_finish_summary"),
+        ):
+            context = GTT.finalization_current_archived_context(
+                root, task_dir, {"task_ref": task_ref}, transaction
+            )
+        self.assertEqual(context["transaction_state"], "archived")
+        self.assertFalse(context["published_transition_complete"])
+        shutil.rmtree(temp_root)
+
     def test_interface_inventories_current_and_legacy_contract_assets(self) -> None:
         interface = load("interface.json")
         schemas = {item["id"]: item["path"] for item in interface["schemas"]}

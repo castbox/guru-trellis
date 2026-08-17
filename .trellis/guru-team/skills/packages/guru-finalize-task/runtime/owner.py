@@ -11339,12 +11339,18 @@ def finalization_current_archived_context(
         remote,
     )
     bound_pr = transaction["pr"]
+    adopted_pr = transaction.get("adopted_pr")
+    expected_draft = (
+        bool(adopted_pr.get("initial_is_draft"))
+        if next_transition != "mark_ready" and isinstance(adopted_pr, dict)
+        else False
+    )
     if (
         pr is None
         or pr.get("number") != bound_pr.get("number")
         or pr.get("url")
         != canonical_pull_request_url(repo, int(bound_pr["number"]), bound_pr.get("url"))
-        or pr.get("isDraft") is not (next_transition != "mark_ready")
+        or pr.get("isDraft") is not expected_draft
     ):
         raise WorkflowError(
             "Archived current Finalizer pull request is not the exact Ready transaction.",

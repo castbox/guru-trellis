@@ -1253,7 +1253,8 @@ mismatch fails closed and cannot fall back to fresh adoption or reprepare.
 Archive commit/push may complete before a Draft-to-Ready call returns. In that
 normal interruption window the archived task and owner transaction retain
 `archive` or `push_archive`; same-plan recovery validates the archived task,
-bound Draft PR, and local/remote/PR HEAD equality, performs only Ready, then
+bound PR's recorded initial Draft/Ready state, and local/remote/PR HEAD
+equality, performs only Ready, then
 persists `mark_ready` and retires owner state. It never repeats archive or PR
 creation.
 
