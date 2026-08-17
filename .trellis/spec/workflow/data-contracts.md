@@ -1250,6 +1250,13 @@ validates its complete minimal identity before applying any pre-PR provenance
 inference; a matching transaction resumes its recorded transition, while a
 mismatch fails closed and cannot fall back to fresh adoption or reprepare.
 
+Archive commit/push may complete before a Draft-to-Ready call returns. In that
+normal interruption window the archived task and owner transaction retain
+`archive` or `push_archive`; same-plan recovery validates the archived task,
+bound Draft PR, and local/remote/PR HEAD equality, performs only Ready, then
+persists `mark_ready` and retires owner state. It never repeats archive or PR
+creation.
+
 `ready_for_merge` deletes the transaction, Finalizer gate/request and every
 superseded Finalizer-owned file. A
 `blocked` route retains a transaction only when the declared same-owner recovery

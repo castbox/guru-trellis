@@ -11308,9 +11308,10 @@ def finalization_current_archived_context(
 ) -> dict[str, Any]:
     task_ref = str(public_input.get("task_ref") or "")
     archive_locator = repo_relative(root, task_dir)
+    next_transition = transaction.get("next_transition")
     if (
         transaction.get("task_ref") != task_ref
-        or transaction.get("next_transition") != "mark_ready"
+        or next_transition not in {"archive", "push_archive", "mark_ready"}
         or not isinstance(transaction.get("pr"), dict)
         or closeout_plan_path(task_dir).exists()
     ):
@@ -11343,7 +11344,7 @@ def finalization_current_archived_context(
         or pr.get("number") != bound_pr.get("number")
         or pr.get("url")
         != canonical_pull_request_url(repo, int(bound_pr["number"]), bound_pr.get("url"))
-        or pr.get("isDraft") is not False
+        or pr.get("isDraft") is not (next_transition != "mark_ready")
     ):
         raise WorkflowError(
             "Archived current Finalizer pull request is not the exact Ready transaction.",
@@ -11392,7 +11393,7 @@ def finalization_current_archived_context(
             "head_branch": transaction["branch"],
             "branch_review_commit": transaction["branch_review_commit"],
             "reviewed_content_head": transaction["branch_review_commit"],
-            "publication_head": ready_head,
+        "publication_head": local_head,
         },
         "marketplace": {"required": "verification_ref" in transaction},
         "publish": copy.deepcopy(transaction["publication"]),
@@ -11410,9 +11411,9 @@ def finalization_current_archived_context(
         "prepared": None,
         "plan": plan,
         "plan_ref": f"finalization:{transaction['plan_digest']}",
-        "transaction_state": "ready",
-        "published_transition_complete": True,
-        "published_pr": pr,
+        "transaction_state": "ready" if next_transition == "mark_ready" else "archived",
+        "published_transition_complete": next_transition == "mark_ready",
+        "published_pr": pr if next_transition == "mark_ready" else None,
         "publication": {"owner_status": "current"},
         "publication_status": "current",
         "publication_stale_reason": None,
@@ -12679,6 +12680,52 @@ def cmd_execute_finalization_transition(args: argparse.Namespace) -> dict[str, A
                 gate,
                 context["plan"],
                 pr,
+            )
+            retired_owner_state = finalization_retire_current_state(root, task_dir)
+            return {
+                "status": "ok",
+                "stage": "ready_recovered",
+                "typed_exit": exit_id,
+                "output": materialized_gate["route"]["output"],
+                "retired_owner_state": retired_owner_state,
+            }
+        if (
+            context["transaction_state"] == "archived"
+            and context.get("published_transition_complete") is not True
+        ):
+            transaction = finalization_read_transaction(root, task_dir)
+            if not isinstance(transaction, dict):
+                raise WorkflowError(
+                    "Task finalization archived recovery is missing its transaction.",
+                    exit_code=2,
+                )
+            bound_pr = transaction.get("pr")
+            if not isinstance(bound_pr, dict):
+                raise WorkflowError(
+                    "Task finalization archived recovery is missing its bound pull request.",
+                    exit_code=2,
+                )
+            publish_payload = ensure_closeout_pr_ready(
+                root,
+                context["plan"],
+                bound_pr=bound_pr,
+            )
+            finalization_write_transaction(
+                root,
+                task_dir,
+                finalization_advance_transaction(
+                    context["plan"],
+                    transaction,
+                    next_transition="mark_ready",
+                    pr=publish_payload["pr"],
+                ),
+            )
+            materialized_gate = finalization_gate_with_ready_for_merge_output(
+                root,
+                task_dir,
+                gate,
+                context["plan"],
+                publish_payload["pr"],
             )
             retired_owner_state = finalization_retire_current_state(root, task_dir)
             return {

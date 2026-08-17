@@ -34,6 +34,12 @@ before any pre-PR provenance inference. A matching post-bind recovery continues
 from its recorded transition; any mismatch fails closed instead of falling back
 to fresh PR adoption or provenance reprepare.
 
+If archive move, commit, and push complete before Draft-to-Ready succeeds, the
+archived task retains the exact `archive`/`push_archive` transaction stage. A
+same-plan retry validates the archived task, Draft PR, and three-way archive
+HEAD, performs only the remaining Ready transition, then persists `mark_ready`
+and retires owner state. It never reruns archive or creates a second PR.
+
 Current preparation retires a historically tracked but already deleted
 `closeout-plan.json` through the private archive projection. The path is absent
 from move, retained, required, and reviewed-binding sets, but remains an exact
