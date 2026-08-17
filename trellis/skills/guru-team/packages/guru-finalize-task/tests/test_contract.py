@@ -988,6 +988,268 @@ class FinalizeTaskContractTests(unittest.TestCase):
             },
         )
 
+    def test_planless_publication_stale_runs_preview_record_check_and_public_invoke(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            GTT.run_stdout(["git", "init", "-q", "-b", "main"], cwd=root)
+            GTT.run_stdout(["git", "config", "user.name", "Guru Test"], cwd=root)
+            GTT.run_stdout(
+                ["git", "config", "user.email", "guru@example.invalid"], cwd=root
+            )
+            marker = root / "reviewed.txt"
+            marker.write_text("base\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "reviewed.txt"], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "base"], cwd=root)
+            base_head = GTT.current_head(root)
+            GTT.run_stdout(
+                ["git", "update-ref", "refs/remotes/origin/main", base_head],
+                cwd=root,
+            )
+            GTT.run_stdout(
+                ["git", "switch", "-q", "-c", "fix/253-planless-stale"],
+                cwd=root,
+            )
+            task_ref = ".trellis/tasks/08-17-253-planless-stale"
+            task_dir = root / task_ref
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_text(
+                json.dumps(
+                    {
+                        "id": "253-planless-stale",
+                        "name": "253-planless-stale",
+                        "status": "in_progress",
+                        "branch": "fix/253-planless-stale",
+                        "base_branch": "main",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            marker.write_text("reviewed\n", encoding="utf-8")
+            GTT.run_stdout(["git", "add", "."], cwd=root)
+            GTT.run_stdout(["git", "commit", "-q", "-m", "reviewed"], cwd=root)
+            reviewed_commit = GTT.current_head(root)
+            marker.write_text("advanced after publication review\n", encoding="utf-8")
+            GTT.run_stdout(["git", "commit", "-q", "-am", "advance head"], cwd=root)
+            self.assertNotEqual(GTT.current_head(root), reviewed_commit)
+
+            fixture_dir = root / ".trellis/.runtime/guru-team/issue-253"
+            fixture_dir.mkdir(parents=True)
+            public_input = {
+                "profile": "publication_ready",
+                "mode": "workflow",
+                "task_ref": task_ref,
+                "branch_review_commit": reviewed_commit,
+                "pr_title": "修复 planless stale route",
+                "pr_body": "## 变更摘要\n\n- 测试。",
+            }
+            public_path = fixture_dir / "public-input.json"
+            public_path.write_text(
+                json.dumps(public_input, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            stale_output = {
+                "exit_id": "publication_review_stale",
+                "task_ref": task_ref,
+                "branch_review_commit": reviewed_commit,
+                "stale_reason": "publication_review_stale",
+            }
+            review_path = fixture_dir / "semantic-review.json"
+            review_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "3.0",
+                        "skill_id": "guru-finalize-task",
+                        "review": {
+                            "status": "reroute",
+                            "summary": "Publication owner facts are stale before plan creation.",
+                        },
+                        "route": {
+                            "typed_exit": "publication_review_stale",
+                            "consumer": {
+                                "kind": "skill",
+                                "id": "guru-review-task-publication",
+                            },
+                            "output": stale_output,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            input_locator = public_path.relative_to(root).as_posix()
+            review_locator = review_path.relative_to(root).as_posix()
+            preview_args = SimpleNamespace(root=str(root), input=input_locator)
+            record_args = SimpleNamespace(
+                root=str(root),
+                input=input_locator,
+                review_input=review_locator,
+                dry_run=False,
+            )
+            task_context = {"base_head_sha": base_head, "base_branch": "main"}
+            with (
+                mock.patch.object(GTT, "finalization_package_root", return_value=PACKAGE),
+                mock.patch.object(GTT, "load_config", return_value={}),
+                mock.patch.object(
+                    GTT, "load_task_runtime_identity", return_value=task_context
+                ),
+            ):
+                preview = GTT.cmd_preview_finalization(preview_args)
+                self.assertFalse(preview["side_effects"])
+                self.assertEqual(preview["closeout_plan"], None)
+                self.assertEqual(preview["expected_actions"], [])
+                self.assertEqual(
+                    preview["transaction_state"], "publication_review_stale"
+                )
+                self.assertEqual(preview["publication_status"], "stale")
+                self.assertEqual(
+                    preview["publication_stale_reason"], "publication_review_stale"
+                )
+                self.assertEqual(preview["branch_review_commit"], reviewed_commit)
+
+                recorded = GTT.cmd_record_finalization_gate(record_args)
+                gate_path = Path(recorded["artifact_path"])
+                gate = json.loads(gate_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    gate["identity"]["branch_review_commit"], reviewed_commit
+                )
+                gate_locator = gate_path.resolve().relative_to(root.resolve()).as_posix()
+                checked = GTT.cmd_check_finalization_gate(
+                    SimpleNamespace(
+                        root=str(root), input=input_locator, gate=gate_locator
+                    )
+                )
+                self.assertEqual(checked["typed_exit"], "publication_review_stale")
+                self.assertEqual(
+                    checked["transaction_state"], "publication_review_stale"
+                )
+
+                sys.path.insert(0, str(shared_runtime_parent()))
+                sys.path.insert(0, str(PACKAGE / "runtime"))
+                previous_common = sys.modules.pop("common", None)
+                try:
+                    spec = importlib.util.spec_from_file_location(
+                        "finalize_planless_stale_invoke_test",
+                        PACKAGE / "runtime/invoke.py",
+                    )
+                    assert spec and spec.loader
+                    invoke = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(invoke)
+                finally:
+                    sys.modules.pop("common", None)
+                    if previous_common is not None:
+                        sys.modules["common"] = previous_common
+                with mock.patch.object(invoke, "_o", return_value=GTT):
+                    public_output = invoke.run(
+                        PACKAGE,
+                        {"id": "invoke-guru-finalize-task"},
+                        [
+                            "--root",
+                            str(root),
+                            "--input",
+                            input_locator,
+                            "--owner-result",
+                            gate_locator,
+                        ],
+                    )
+                self.assertEqual(public_output, stale_output)
+                self.assertFalse((task_dir / GTT.CLOSEOUT_PLAN_ARTIFACT).exists())
+                self.assertIsNone(GTT.finalization_read_transaction(root, task_dir))
+
+    def test_publication_stale_route_rejects_mismatched_owner_facts_and_current_status(self) -> None:
+        task_ref = ".trellis/tasks/08-17-253-planless-stale"
+        owner_commit = "a" * 40
+        context = {
+            "plan": None,
+            "plan_ref": None,
+            "transaction_state": "publication_review_stale",
+            "publication_status": "stale",
+            "publication_stale_reason": "publication_review_stale",
+            "publication_branch_review_commit": owner_commit,
+        }
+        route = {
+            "typed_exit": "publication_review_stale",
+            "consumer": copy.deepcopy(
+                GTT.FINALIZATION_CONSUMERS["publication_review_stale"]
+            ),
+            "output": {
+                "exit_id": "publication_review_stale",
+                "task_ref": task_ref,
+                "branch_review_commit": owner_commit,
+                "stale_reason": "publication_review_stale",
+            },
+        }
+        with mock.patch.object(GTT, "finalization_package_root", return_value=PACKAGE):
+            GTT.finalization_validate_route(
+                Path("/repo"), {"task_ref": task_ref}, context, route
+            )
+            cases = {
+                "wrong_task": {"task_ref": ".trellis/tasks/other"},
+                "wrong_owner_commit": {"branch_review_commit": "b" * 40},
+                "wrong_reason": {"stale_reason": "publication_review_missing"},
+            }
+            for name, changes in cases.items():
+                with self.subTest(case=name):
+                    invalid = copy.deepcopy(route)
+                    invalid["output"].update(changes)
+                    with self.assertRaises(GTT.WorkflowError):
+                        GTT.finalization_validate_route(
+                            Path("/repo"),
+                            {"task_ref": task_ref},
+                            context,
+                            invalid,
+                        )
+            current = copy.deepcopy(context)
+            current["publication_status"] = "current"
+            with self.assertRaises(GTT.WorkflowError):
+                GTT.finalization_validate_route(
+                    Path("/repo"), {"task_ref": task_ref}, current, route
+                )
+
+    def test_plan_backed_reprepare_remains_bound_to_plan_commit(self) -> None:
+        task_ref = ".trellis/tasks/08-17-253-plan-backed"
+        plan_commit = "c" * 40
+        publication_head = "d" * 40
+        context = {
+            "plan": {
+                "git": {
+                    "branch_review_commit": plan_commit,
+                    "publication_head": publication_head,
+                }
+            },
+            "plan_ref": "finalization:" + "e" * 64,
+            "transaction_state": "reprepare_required",
+            "publication_status": "current",
+            "publication_stale_reason": None,
+            "publication_branch_review_commit": "f" * 40,
+            "reprepare_reason_code": GTT.FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+        }
+        route = {
+            "typed_exit": "reprepare_required",
+            "consumer": copy.deepcopy(
+                GTT.FINALIZATION_CONSUMERS["reprepare_required"]
+            ),
+            "output": {
+                "exit_id": "reprepare_required",
+                "task_ref": task_ref,
+                "reason_code": GTT.FINALIZATION_REPREPARE_ARCHIVE_MONTH,
+                "branch_review_commit": plan_commit,
+                "publication_head": publication_head,
+            },
+        }
+        with mock.patch.object(GTT, "finalization_package_root", return_value=PACKAGE):
+            GTT.finalization_validate_route(
+                Path("/repo"), {"task_ref": task_ref}, context, route
+            )
+            invalid = copy.deepcopy(route)
+            invalid["output"]["branch_review_commit"] = context[
+                "publication_branch_review_commit"
+            ]
+            with self.assertRaises(GTT.WorkflowError):
+                GTT.finalization_validate_route(
+                    Path("/repo"), {"task_ref": task_ref}, context, invalid
+                )
+
     def test_archive_conflict_fails_before_finalizer_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

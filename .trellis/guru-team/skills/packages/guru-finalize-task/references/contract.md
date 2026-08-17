@@ -60,3 +60,12 @@ from the task's base anchor returns `base_reconciliation_required` with the
 exact pair and `finalization_resume`. This route is distinct from
 `publication_review_stale`, which is reserved for Publication content or
 metadata evidence. Finalizer does not interpret the base delta.
+
+`publication_review_stale` is valid before a closeout plan or transaction
+exists. Its `task_ref`, `branch_review_commit`, and `stale_reason` bind the
+current public input and the Publication owner facts exactly; in particular,
+the commit is `publication_branch_review_commit`, not a value inferred from a
+missing plan or the current HEAD. The route is accepted only while Publication
+is `stale` and the current transaction state is `publication_review_stale`.
+Every plan-backed exit continues to bind the immutable plan commit,
+publication HEAD, plan ref, and its existing recovery-state contract.
