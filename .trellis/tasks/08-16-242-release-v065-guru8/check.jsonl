@@ -1,5 +1,0 @@
-{"file":".trellis/spec/docs/public-docs.md","reason":"独立检查 public version mapping、安装命令、模型证据披露和文档 SSOT。"}
-{"file":".trellis/spec/preset/installer.md","reason":"独立检查 clean install、preview/switch、update/reapply、inventory 和零 sidecar。"}
-{"file":".trellis/spec/preset/upstream-ownership.md","reason":"独立检查 generated projection、ownership、mode 和 overlay drift。"}
-{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"独立检查 Phase 2、package/integration/eval、throwaway、Branch Review 与 freshness 覆盖。"}
-{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"独立检查 #237 qualification 与公开 Skill package/typed exit 边界未被 release metadata 破坏。"}

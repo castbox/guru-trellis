@@ -2,10 +2,11 @@
   "id": "242-release-v065-guru8",
   "name": "242-release-v065-guru8",
   "title": "#242 完成 v0.6.5-guru.8 累计发布门禁",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "codex/242-release-v065-guru8",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/242"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/242",
+  "completedAt": "2026-08-17"
 }

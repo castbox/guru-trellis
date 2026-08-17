@@ -1,0 +1,245 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-17T06:17:17Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-16-242-release-v065-guru8",
+    "title": "#242 完成 v0.6.5-guru.8 累计发布门禁",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-16-242-release-v065-guru8",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/242-release-v065-guru8",
+    "commits": [
+      "edff648b46e85646853b391934bbc73ba4d8e0d0",
+      "e62c6f0315908ba757109165abf80b3a6538221f"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+      ".trellis/spec/docs/public-docs.md",
+      ".trellis/spec/preset/installer.md",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/08-16-242-release-v065-guru8/check.jsonl",
+      ".trellis/tasks/08-16-242-release-v065-guru8/design.md",
+      ".trellis/tasks/08-16-242-release-v065-guru8/implement.jsonl",
+      ".trellis/tasks/08-16-242-release-v065-guru8/implement.md",
+      ".trellis/tasks/08-16-242-release-v065-guru8/issue-scope-ledger.json",
+      ".trellis/tasks/08-16-242-release-v065-guru8/prd.md",
+      ".trellis/tasks/08-16-242-release-v065-guru8/release-notes-zh.md",
+      ".trellis/tasks/08-16-242-release-v065-guru8/task.json",
+      ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/design.md",
+      ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/implement.md",
+      ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/prd.md",
+      ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/task.json",
+      "README.md",
+      "trellis/guru-team-extension.json",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+      "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+      "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      242
+    ],
+    "close_issues": [
+      242
+    ],
+    "related_issues": [
+      164,
+      208,
+      222,
+      236,
+      237,
+      243
+    ],
+    "followup_issues": [
+      240
+    ],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/246"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#242 完成 v0.6.5-guru.8 累计发布门禁",
+    "outcome": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。",
+    "changed_behavior": [
+      "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。",
+      "累计纳入 guru.7 后已合并但尚未发布的 #208、#164、#236、#237，以及修复 immutable production 3.0 bytes 的 #243。",
+      "同步 README、durable specs、verifier fixtures/tests、canonical/dogfood/platform projections 与 #242 发布说明。",
+      "强化 production/throwaway snapshot staging 的 bytecode 排除与零命中门禁；source ignored bytecode 不参与产品 identity、freshness 或 blocking evidence。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/docs/public-docs.md",
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/tasks/08-16-242-release-v065-guru8/design.md",
+          ".trellis/tasks/08-16-242-release-v065-guru8/implement.md",
+          ".trellis/tasks/08-16-242-release-v065-guru8/prd.md",
+          ".trellis/tasks/08-16-242-release-v065-guru8/release-notes-zh.md",
+          ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/design.md",
+          ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/implement.md",
+          ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/prd.md",
+          "README.md"
+        ],
+        "change": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          "trellis/guru-team-extension.json"
+        ],
+        "change": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md"
+        ],
+        "change": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py"
+        ],
+        "change": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+          ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+          "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json"
+        ],
+        "change": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-16-242-release-v065-guru8/check.jsonl",
+          ".trellis/tasks/08-16-242-release-v065-guru8/implement.jsonl",
+          ".trellis/tasks/08-16-242-release-v065-guru8/issue-scope-ledger.json",
+          ".trellis/tasks/08-16-242-release-v065-guru8/task.json",
+          ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/task.json"
+        ],
+        "change": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "change": "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#164",
+        "#208",
+        "#222",
+        "#236",
+        "#237",
+        "#240",
+        "#242",
+        "#243"
+      ],
+      "pr_refs": [
+        "PR #246"
+      ],
+      "branches": [
+        "codex/242-release-v065-guru8"
+      ],
+      "paths": [
+        ".agents/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".claude/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".codex/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".cursor/skills/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
+        ".trellis/spec/docs/public-docs.md",
+        ".trellis/spec/preset/installer.md",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/08-16-242-release-v065-guru8/check.jsonl",
+        ".trellis/tasks/08-16-242-release-v065-guru8/design.md",
+        ".trellis/tasks/08-16-242-release-v065-guru8/implement.jsonl",
+        ".trellis/tasks/08-16-242-release-v065-guru8/implement.md",
+        ".trellis/tasks/08-16-242-release-v065-guru8/issue-scope-ledger.json",
+        ".trellis/tasks/08-16-242-release-v065-guru8/prd.md",
+        ".trellis/tasks/08-16-242-release-v065-guru8/release-notes-zh.md",
+        ".trellis/tasks/08-16-242-release-v065-guru8/task.json",
+        ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/design.md",
+        ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/implement.md",
+        ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/prd.md",
+        ".trellis/tasks/archive/2026-08/08-16-242-release-v065-guru8/task.json",
+        "README.md",
+        "trellis/guru-team-extension.json",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh",
+        "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/execution-facts.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/examples/marketplace-verification.json",
+        "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
+        "trellis/workflows/guru-team/README.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#242 完成 v0.6.5-guru.8 累计发布门禁",
+        "固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。",
+        "完成 marketplace-verification.json 相关变更"
+      ]
+    },
+    "retrieval_text": "#242 完成 v0.6.5-guru.8 累计发布门禁\n固定 `v0.6.5-guru.8` 与 `0.6.5-guru.33` 版本映射。\n累计纳入 guru.7 后已合并但尚未发布的 #208、#164、#236、#237，以及修复 immutable production 3.0 bytes 的 #243。\n同步 README、durable specs、verifier fixtures/tests、canonical/dogfood/platform projections 与 #242 发布说明。\n强化 production/throwaway snapshot staging 的 bytecode 排除与零命中门禁；source ignored bytecode 不参与产品 identity、freshness 或 blocking evidence。\n完成 marketplace-verification.json 相关变更"
+  }
+}
