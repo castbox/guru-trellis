@@ -379,11 +379,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-17T18:10:15Z",
+  "installed_at": "2026-08-18T02:20:00Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "0ca34f7aff5873735b7314f546ebc8cceaaf2f99",
-    "commit": "0ca34f7aff5873735b7314f546ebc8cceaaf2f99",
+    "ref": "fb7d4aab8960e8a930f41630b06ceaaec47e9364",
+    "commit": "fb7d4aab8960e8a930f41630b06ceaaec47e9364",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -479,7 +479,7 @@
   },
   "skill_packages": {
     "schema_version": "1.0",
-    "status": "conflict",
+    "status": "ok",
     "canonical_registry_sha256": "86d1a6e58428a315db991a48390fe557e2b6cba13a3e7a28356a3f338835b4c3",
     "registry_schema_version": "1.4",
     "active_ids": [
@@ -6058,7 +6058,7 @@
         "source": "trellis/skills/guru-team/packages/guru-finalize-task/tests/test_contract.py",
         "sha256": "7dd35c001b9d21ef542fd4539e2d9efa417aa6bc9a4931a4945c51e2daa5d559",
         "executable": false,
-        "action": "updated_managed"
+        "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-pr/SKILL.md",
@@ -24900,9 +24900,7 @@
     ],
     "removals": [],
     "conflicts": [],
-    "sidecars": [
-      ".trellis/guru-team/skills/packages/guru-finalize-task/tests/test_contract.py.bak"
-    ]
+    "sidecars": []
   },
   "overlays": {
     "schema_version": "1.0",
