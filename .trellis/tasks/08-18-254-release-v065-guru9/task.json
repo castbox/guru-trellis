@@ -1,0 +1,11 @@
+{
+  "id": "254-release-v065-guru9",
+  "name": "254-release-v065-guru9",
+  "title": "#254 发布 v0.6.5-guru.9：统一验证累计候选并完成 live 发布",
+  "status": "in_progress",
+  "branch": "codex/254-release-v065-guru9",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/254"
+}
