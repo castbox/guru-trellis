@@ -10,12 +10,19 @@ forward behavior -> AI review gate -> conditional current-conversation
 authorization -> recorder/validator -> typed exit
 ```
 
-The checked `approved` exit and `task.py start` status write do not create a
-routine authorization stop. The conditional authorization step exists only
-when unresolved scope, a material plan choice, or the next real external side
-effect requires it. Authorization is never an artifact or public field.
-Workflow and standalone mode apply the same semantic review and objective
-checks.
+The checked `approved` exit proves semantic adequacy; it does not accept the
+current solution direction or activate the task. Its stable consumer remains
+the workflow target `phase-1-task-activation`. That target separately owns the
+human-readable plan presentation, dialogue-local review pause, and subsequent
+activation transition. The workflow boundary is outside this Skill's Gate,
+recorder, validator, private result, and public DTO.
+
+The conditional authorization step inside this Skill exists only when
+unresolved scope or a material plan choice requires it during semantic review.
+Authorization is never an artifact or public field. Workflow and standalone
+mode apply the same semantic review and objective checks; standalone invocation
+returns the same minimal exit to its caller without pretending to satisfy the
+workflow-owned plan pause.
 
 ## Public Entry
 
@@ -106,7 +113,8 @@ valid public projection retires it before control reaches the next owner.
 ## Exits
 
 - `approved`: every dimension passed and the activation workflow receives only
-  `exit_id` and `task_ref`.
+  `exit_id` and `task_ref`; the consumer must still satisfy its own
+  presentation and dialogue-local review boundary.
 - `revision_required`: task-local revision actions return to this owner.
 - `clarify_scope`: exact scope proposal references route to requirements
   clarification.

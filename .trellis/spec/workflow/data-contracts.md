@@ -682,14 +682,17 @@ public wrapper before typed-output projection. It detects same-path drift and
 returns control to the AI owner for delta classification; it is not authorization,
 semantic approval, public handoff, or whole-chain authority. After the checked
 typed output passes its schema, the same producer wrapper deletes the checkpoint.
-Task activation and Phase 2 consume only the DTO plus current planning/live facts
-and never read or delete this private state. The checkpoint does not retain
+The activation workflow consumes only the DTO plus current planning/live facts,
+then separately presents the plan and owns the dialogue-local review pause.
+Task activation and Phase 2 never read or delete this private state. The checkpoint does not retain
 per-file hashes, sizes, mtimes, repository snapshots, scan history, reviewer
 metadata, raw reports, assignments, liveness, authorization, authorization
 wording, or authorization digests.
-When task activation or a real scope choice needs authorization, that occurs
-in the current conversation and is never projected into persisted or public
-state.
+The Phase 1 plan reply and any real scope choice occur only in the current
+conversation and are never projected into persisted or public state. The Skill
+recorder/checker does not inspect that reply. Phase 0 confirmation and replies
+about a materially changed plan are not reusable; explicit autonomous execution
+may omit only the ordinary unchanged-plan pause and is likewise not persisted.
 
 The closed exits are:
 

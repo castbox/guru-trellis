@@ -349,6 +349,16 @@ output-schema success. The Phase 2 wrapper retains only a valid `passed`
 checkpoint for Task Commit and deletes every other valid exit checkpoint; Task
 Commit tests must prove candidate construction and execution reread it, failures
 retain it, and successful publication or recovery deletes it.
+Workflow/static and semantic eval coverage must additionally prove the checked
+approved exit remains semantic adequacy only and the consumer presents all
+three planning links plus the AI conclusion, key choices, alternatives,
+trade-offs, and unverified boundaries before activation. Cover `确认继续`, an
+equivalent affirmative, a question, a revision request, Phase 0 confirmation
+non-reuse, material-plan-change non-reuse, an open AI finding, explicit
+autonomous execution, and autonomous scope/authority/material/risk change.
+Verify four confirmation markers for an existing Open Issue, five for a newly
+created Issue, and zero persisted user-acceptance fields or reply parsing in a
+recorder/validator.
 Run source and installed package validation, dogfood drift, clean throwaway
 install, and `trellis update` plus preset reapply because the package, runtime
 commands, schema, and four discovery roots are one distribution contract.

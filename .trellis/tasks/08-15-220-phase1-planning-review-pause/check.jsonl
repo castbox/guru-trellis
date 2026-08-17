@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 检查 targeted tests、eval、distribution、upgrade 和 clean throwaway 覆盖。"}
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"检查 workflow target、mapped exit、对话确认与后续副作用边界一致性。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"检查 Skill/public API/schema/runtime 未发生未计划破坏。"}
+{"file":".trellis/spec/preset/installer.md","reason":"检查 apply/reapply、dogfood drift、sidecar 和 fresh install/update 证据。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"检查 README、requirements 与平台支持说明语义一致。"}

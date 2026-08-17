@@ -191,8 +191,15 @@ Planning produces non-empty `prd.md`, `design.md`, and `implement.md`, including
 one explicit Docs SSOT Plan. Before presenting those files, mandatory invoke
 `guru-review-contract-wording` with the planning profile. Then mandatory invoke
 `guru-approve-task-plan` and automatically consume its typed exit. Only
-`approved` reaches `phase-1-task-activation` and the official task-start state
-transition.
+`approved` reaches `phase-1-task-activation`. That target first presents the
+three planning links, semantic conclusion, key choices, alternatives,
+trade-offs, and unverified boundaries, then owns the dialogue-local review
+pause before the official task-start state transition. Questions, revision
+requests, partial choices, and ambiguous replies remain paused. Material plan
+changes rerun wording and semantic review before a new presentation; an older
+reply and any Phase 0 confirmation are not reusable. Explicit autonomous
+execution may omit only the ordinary unchanged-plan pause; scope, authority,
+material design, or risk changes still pause.
 
 Planning owner private checkpoints are not workflow authority. The approved DTO
 is sufficient for the activation consumer; later phases must not reopen or
@@ -313,19 +320,20 @@ Automatically consume mapped typed exits, stale/re-entry/reprepare routes, and
 recorder/validator steps. Do not simulate a human approval chain and do not
 persist authorization state, text, refs, digests, or process.
 
-For an existing Open Issue, the happy-path budget is exactly three
-`确认继续` boundaries: workspace/task creation, the complete Finalizer side-effect
-set, and expected-head merge. Creating a new Issue adds one independent Issue
-creation confirmation for a total of four. Planning, task activation,
-implementation, Phase 2 check, Branch Review, an exactly requested task commit,
-mapped exits and read-only recovery add no routine confirmation. Branch
+For an existing Open Issue, the happy-path budget is exactly four
+`确认继续` boundaries: workspace/task creation, Phase 1 plan review, the complete
+Finalizer side-effect set, and expected-head merge. Creating a new Issue adds
+one independent Issue creation confirmation for a total of five. Task
+activation after the Phase 1 acceptance, implementation, Phase 2 check, Branch
+Review, an exactly requested task commit, mapped exits and read-only recovery
+add no routine confirmation. Branch
 classification, protection, sharing, ownership and publication state are not
 operation authority; without a current exact commit request, Task Commit asks
 once for the fully displayed action.
 Finalizer and merge confirmation remain separate because merge readiness exists
 only after Finalizer reaches `ready_for_merge`.
 
-The canonical workflow declares those four possible boundaries with one
+The canonical workflow declares those five possible boundaries with one
 `guru-confirmation-boundary` marker each. The controlled #174 replay derives
 open/new-Issue budgets from those markers and its single chained event log; it
 must not hard-code totals or sum isolated eval cases.

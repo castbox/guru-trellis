@@ -933,6 +933,16 @@ HEAD drift, metadata tail, or unrelated dirty paths. `task.py start` remains
 only a status transition. The Planning public wrapper deletes its checkpoint
 after the checked typed output passes schema validation; activation and Phase 2
 consume only the DTO and current live facts.
+The checked `approved` DTO establishes semantic adequacy only. The live workflow
+then presents `prd.md`, `design.md`, and `implement.md` links plus the AI
+conclusion, key choices, alternatives, trade-offs, and unverified boundaries,
+and waits for a clear post-presentation affirmative before activation. Questions
+and revisions remain in Phase 1; material changes require wording/semantic
+re-review and a new presentation. Phase 0 or old-plan replies are not reusable.
+Explicit autonomous execution omits only the ordinary unchanged-plan pause;
+scope, authority, material design, or risk changes still pause. The reply is
+never installed, recorded, validated, or persisted. Existing Open Issue and
+new-Issue happy paths contain four and five confirmation boundaries respectively.
 `resolve-human-artifacts.sh` is the deterministic fact layer for phase replies:
 before a planning stop, Phase 2 completion, Branch Review Gate result,
 finish-work dry-run reply, or final archive/publish reply, the AI runs it and
@@ -1085,7 +1095,7 @@ invokes `guru-approve-task-plan`. Only `approved` enters
 invokes `guru-clarify-requirements:active_task_scope_change`; the caller AI
 authors the complete semantic input from fresh live context. The preset
 distributes this route's package and v2 deterministic runtime; it does not move
-the step-local review loop into a platform overlay.
+the Skill review loop or workflow-owned plan pause into a platform overlay.
 
 ```bash
 .trellis/guru-team/scripts/bash/check-env.sh --json
