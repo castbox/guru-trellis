@@ -1,0 +1,63 @@
+{
+  "close_issues": [
+    {
+      "number": 242,
+      "reason": "本任务唯一关闭对象与 v0.6.5-guru.8 累计发布门禁 authority。",
+      "title": "发布 v0.6.5-guru.8：完成累计 Release Gate 与 live 发布闭环",
+      "url": "https://github.com/castbox/guru-trellis/issues/242"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 240,
+      "reason": "发布后的独立解决机制资格任务；本任务不实施、不关闭。",
+      "title": "建立 AI 驱动的解决机制资格合同，禁止业务能力下沉到 OS 原语",
+      "url": "https://github.com/castbox/guru-trellis/issues/240"
+    }
+  ],
+  "primary_issue": {
+    "number": 242,
+    "reason": "本任务唯一关闭对象与 v0.6.5-guru.8 累计发布门禁 authority。",
+    "title": "发布 v0.6.5-guru.8：完成累计 Release Gate 与 live 发布闭环",
+    "url": "https://github.com/castbox/guru-trellis/issues/242"
+  },
+  "related_issues": [
+    {
+      "number": 222,
+      "reason": "上一稳定发布 v0.6.5-guru.7 的基线与历史约束；不复用其任务资源或证据。",
+      "title": "Guru Team 新版本累计发布门禁：#219、#217、#218、#227、#231 合并后的业务仓库安装基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/222"
+    },
+    {
+      "number": 208,
+      "reason": "guru.7 后已合并、尚未累计发布的 Finalizer 既有 Ready PR 接管 payload。",
+      "title": "支持 Finalizer 安全接管同一变更请求的既有 Ready PR",
+      "url": "https://github.com/castbox/guru-trellis/issues/208"
+    },
+    {
+      "number": 164,
+      "reason": "guru.7 后已合并、尚未累计发布的 task-free/standard Intake 选择 payload。",
+      "title": "智能选择 task-free 或标准 Guru Team Intake",
+      "url": "https://github.com/castbox/guru-trellis/issues/164"
+    },
+    {
+      "number": 236,
+      "reason": "guru.7 后已合并的受管 Python 路由 payload 与双 PATH verifier 约束。",
+      "title": "修复 throwaway verifier 未使用受管 Python 导致无 jsonschema 环境失败",
+      "url": "https://github.com/castbox/guru-trellis/issues/236"
+    },
+    {
+      "number": 237,
+      "reason": "guru.7 后已合并的正常场景资格 payload 与 no-model evidence 声明边界。",
+      "title": "建立 AI 驱动的正常场景资格合同，阻止攻击类范围重复进入实现",
+      "url": "https://github.com/castbox/guru-trellis/issues/237"
+    },
+    {
+      "number": 243,
+      "reason": "修复 #237 合并后发现的 immutable production 3.0 contract 字节回归；其 merged bytes 是 guru.8 累计候选的发布 blocker corrective payload。",
+      "title": "修复 #237 immutable production 3.0 contract 字节回归",
+      "url": "https://github.com/castbox/guru-trellis/issues/243"
+    }
+  ],
+  "schema_version": "2.0"
+}

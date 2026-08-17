@@ -1,0 +1,6 @@
+{"file":".trellis/spec/docs/public-docs.md","reason":"实现 public README、stable source、version mapping 与发布声明时遵循文档 SSOT。"}
+{"file":".trellis/spec/preset/installer.md","reason":"实现 initial install、official update、preset reapply、managed inventory 与投影一致性。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"实现 canonical/dogfood/platform projection 时保持 ownership 和 upstream 边界。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"更新 release identity examples/tests 与 task/public payload 时保持当前数据合同。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现后选择 package、integration、eval、throwaway 与 upgrade/update 验证矩阵。"}
+
