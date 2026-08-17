@@ -2,10 +2,11 @@
   "id": "220-phase1-planning-review-pause",
   "name": "220-phase1-planning-review-pause",
   "title": "#220 恢复 Phase 1 规划人工审阅停点",
-  "status": "in_progress",
+  "status": "completed",
   "branch": "fix/220-phase1-planning-review-pause",
   "base_branch": "main",
   "creator": "wesleywu",
   "assignee": "wesleywu",
-  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/220"
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/220",
+  "completedAt": "2026-08-17"
 }

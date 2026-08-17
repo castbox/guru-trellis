@@ -1,0 +1,301 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-17T13:24:37Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-15-220-phase1-planning-review-pause",
+    "title": "#220 恢复 Phase 1 规划人工审阅停点",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-15-220-phase1-planning-review-pause",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/220-phase1-planning-review-pause",
+    "commits": [
+      "e5186b7ea7c3a739ea6cc3c85afb22ce3e8f6e11",
+      "1ce14f67c71878836b8baf774bec2187041f06c8"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-approve-task-plan/SKILL.md",
+      ".agents/skills/guru-approve-task-plan/evals/evals.json",
+      ".agents/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+      ".agents/skills/guru-approve-task-plan/references/contract.md",
+      ".claude/skills/guru-approve-task-plan/SKILL.md",
+      ".claude/skills/guru-approve-task-plan/evals/evals.json",
+      ".claude/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+      ".claude/skills/guru-approve-task-plan/references/contract.md",
+      ".codex/skills/guru-approve-task-plan/SKILL.md",
+      ".codex/skills/guru-approve-task-plan/evals/evals.json",
+      ".codex/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+      ".codex/skills/guru-approve-task-plan/references/contract.md",
+      ".cursor/skills/guru-approve-task-plan/SKILL.md",
+      ".cursor/skills/guru-approve-task-plan/evals/evals.json",
+      ".cursor/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+      ".cursor/skills/guru-approve-task-plan/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/evals.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/runtime/invoke.py",
+      ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/workflow-contract.md",
+      ".trellis/tasks/08-15-220-phase1-planning-review-pause/check.jsonl",
+      ".trellis/tasks/08-15-220-phase1-planning-review-pause/design.md",
+      ".trellis/tasks/08-15-220-phase1-planning-review-pause/implement.jsonl",
+      ".trellis/tasks/08-15-220-phase1-planning-review-pause/implement.md",
+      ".trellis/tasks/08-15-220-phase1-planning-review-pause/issue-scope-ledger.json",
+      ".trellis/tasks/08-15-220-phase1-planning-review-pause/prd.md",
+      ".trellis/tasks/08-15-220-phase1-planning-review-pause/task.json",
+      ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/design.md",
+      ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/implement.md",
+      ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/prd.md",
+      ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/task.json",
+      ".trellis/workflow.md",
+      "docs/requirements/guru-team-trellis-flow.md",
+      "docs/requirements/requirement-main.md",
+      "trellis/presets/guru-team/README.md",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+      "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+      "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/evals.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/runtime/invoke.py",
+      "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+      "trellis/workflows/guru-team/README.md",
+      "trellis/workflows/guru-team/workflow.md"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      220
+    ],
+    "close_issues": [
+      220
+    ],
+    "related_issues": [
+      52,
+      129,
+      161,
+      164
+    ],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/255"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#220 恢复 Phase 1 规划人工审阅停点",
+    "outcome": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。",
+    "changed_behavior": [
+      "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。",
+      "只有当前对话中的清晰肯定才进入 task activation；提问、修订、scope 变化与旧确认均按当前规划重新处理。",
+      "保持 AI semantic gate 与用户 review pause 解耦，不持久化确认内容，也不改变 task-free 路径。",
+      "修复 shared eval production fixture composition 与 `clarify_scope` 字符串列表 projection，确保九类对话回归通过真实 Codex wrapper 判定。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          ".trellis/tasks/08-15-220-phase1-planning-review-pause/design.md",
+          ".trellis/tasks/08-15-220-phase1-planning-review-pause/implement.md",
+          ".trellis/tasks/08-15-220-phase1-planning-review-pause/prd.md",
+          ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/design.md",
+          ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/implement.md",
+          ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/prd.md",
+          "docs/requirements/guru-team-trellis-flow.md",
+          "docs/requirements/requirement-main.md"
+        ],
+        "change": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/presets/guru-team/spec/workflow/workflow-contract.md"
+        ],
+        "change": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+          "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py"
+        ],
+        "change": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-approve-task-plan/SKILL.md",
+          ".agents/skills/guru-approve-task-plan/evals/evals.json",
+          ".agents/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+          ".agents/skills/guru-approve-task-plan/references/contract.md",
+          ".claude/skills/guru-approve-task-plan/SKILL.md",
+          ".claude/skills/guru-approve-task-plan/evals/evals.json",
+          ".claude/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+          ".claude/skills/guru-approve-task-plan/references/contract.md",
+          ".codex/skills/guru-approve-task-plan/SKILL.md",
+          ".codex/skills/guru-approve-task-plan/evals/evals.json",
+          ".codex/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+          ".codex/skills/guru-approve-task-plan/references/contract.md",
+          ".cursor/skills/guru-approve-task-plan/SKILL.md",
+          ".cursor/skills/guru-approve-task-plan/evals/evals.json",
+          ".cursor/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+          ".cursor/skills/guru-approve-task-plan/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/evals.json",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+          ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/evals.json",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+          "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md"
+        ],
+        "change": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-15-220-phase1-planning-review-pause/check.jsonl",
+          ".trellis/tasks/08-15-220-phase1-planning-review-pause/implement.jsonl",
+          ".trellis/tasks/08-15-220-phase1-planning-review-pause/issue-scope-ledger.json",
+          ".trellis/tasks/08-15-220-phase1-planning-review-pause/task.json",
+          ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/task.json"
+        ],
+        "change": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。"
+      },
+      {
+        "kind": "workflow",
+        "name": "workflow",
+        "paths": [
+          ".trellis/workflow.md",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "change": "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#52",
+        "#129",
+        "#161",
+        "#164",
+        "#220"
+      ],
+      "pr_refs": [
+        "PR #255"
+      ],
+      "branches": [
+        "fix/220-phase1-planning-review-pause"
+      ],
+      "paths": [
+        ".agents/skills/guru-approve-task-plan/SKILL.md",
+        ".agents/skills/guru-approve-task-plan/evals/evals.json",
+        ".agents/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        ".agents/skills/guru-approve-task-plan/references/contract.md",
+        ".claude/skills/guru-approve-task-plan/SKILL.md",
+        ".claude/skills/guru-approve-task-plan/evals/evals.json",
+        ".claude/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        ".claude/skills/guru-approve-task-plan/references/contract.md",
+        ".codex/skills/guru-approve-task-plan/SKILL.md",
+        ".codex/skills/guru-approve-task-plan/evals/evals.json",
+        ".codex/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        ".codex/skills/guru-approve-task-plan/references/contract.md",
+        ".cursor/skills/guru-approve-task-plan/SKILL.md",
+        ".cursor/skills/guru-approve-task-plan/evals/evals.json",
+        ".cursor/skills/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        ".cursor/skills/guru-approve-task-plan/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
+        ".trellis/guru-team/skills/packages/guru-approve-task-plan/SKILL.md",
+        ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/evals.json",
+        ".trellis/guru-team/skills/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-approve-task-plan/runtime/invoke.py",
+        ".trellis/guru-team/skills/packages/guru-approve-task-plan/tests/test_contract.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/spec/workflow/quality-guidelines.md",
+        ".trellis/spec/workflow/workflow-contract.md",
+        ".trellis/tasks/08-15-220-phase1-planning-review-pause/check.jsonl",
+        ".trellis/tasks/08-15-220-phase1-planning-review-pause/design.md",
+        ".trellis/tasks/08-15-220-phase1-planning-review-pause/implement.jsonl",
+        ".trellis/tasks/08-15-220-phase1-planning-review-pause/implement.md",
+        ".trellis/tasks/08-15-220-phase1-planning-review-pause/issue-scope-ledger.json",
+        ".trellis/tasks/08-15-220-phase1-planning-review-pause/prd.md",
+        ".trellis/tasks/08-15-220-phase1-planning-review-pause/task.json",
+        ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/design.md",
+        ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/implement.md",
+        ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/prd.md",
+        ".trellis/tasks/archive/2026-08/08-15-220-phase1-planning-review-pause/task.json",
+        ".trellis/workflow.md",
+        "docs/requirements/guru-team-trellis-flow.md",
+        "docs/requirements/requirement-main.md",
+        "trellis/presets/guru-team/README.md",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+        "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+        "trellis/skills/guru-team/adapters/eval/native_adapter.py",
+        "trellis/skills/guru-team/packages/guru-approve-task-plan/SKILL.md",
+        "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/evals.json",
+        "trellis/skills/guru-team/packages/guru-approve-task-plan/evals/files/approved-initial-facts.json",
+        "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-approve-task-plan/runtime/invoke.py",
+        "trellis/skills/guru-team/packages/guru-approve-task-plan/tests/test_contract.py",
+        "trellis/workflows/guru-team/README.md",
+        "trellis/workflows/guru-team/workflow.md"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#220 恢复 Phase 1 规划人工审阅停点",
+        "在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示",
+        "完成 SKILL.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#220 恢复 Phase 1 规划人工审阅停点\n在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示与暂停。\n只有当前对话中的清晰肯定才进入 task activation；提问、修订、scope 变化与旧确认均按当前规划重新处理。\n保持 AI semantic gate 与用户 review pause 解耦，不持久化确认内容，也不改变 task-free 路径。\n修复 shared eval production fixture composition 与 `clarify_scope` 字符串列表 projection，确保九类对话回归通过真实 Codex wrapper 判定。\n在 `standard_intake` 的 Phase 1 semantic review 通过后恢复用户可见的规划展示\n完成 SKILL.md 相关变更"
+  }
+}

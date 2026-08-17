@@ -2,7 +2,7 @@
   "close_issues": [
     {
       "number": 220,
-      "reason": "仅在 #220 全部 acceptance 经当前 HEAD 审核后关闭。",
+      "reason": "Issue #220 是当前纠正需求及唯一关闭对象。",
       "title": "恢复 Phase 1 规划人工审阅停点并支持简洁确认推进",
       "url": "https://github.com/castbox/guru-trellis/issues/220"
     }
