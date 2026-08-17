@@ -1,12 +1,5 @@
 {
-  "close_issues": [
-    {
-      "number": 242,
-      "reason": "本任务唯一关闭对象与 v0.6.5-guru.8 累计发布门禁 authority。",
-      "title": "发布 v0.6.5-guru.8：完成累计 Release Gate 与 live 发布闭环",
-      "url": "https://github.com/castbox/guru-trellis/issues/242"
-    }
-  ],
+  "close_issues": [],
   "followup_issues": [
     {
       "number": 240,
@@ -17,11 +10,17 @@
   ],
   "primary_issue": {
     "number": 242,
-    "reason": "本任务唯一关闭对象与 v0.6.5-guru.8 累计发布门禁 authority。",
+    "reason": "本任务发布 authority；PR merge 仅引用，immutable tag、tag-pinned smoke 与 GitHub Release live 验证后再单独关闭。",
     "title": "发布 v0.6.5-guru.8：完成累计 Release Gate 与 live 发布闭环",
     "url": "https://github.com/castbox/guru-trellis/issues/242"
   },
   "related_issues": [
+    {
+      "number": 242,
+      "reason": "本任务发布 authority；PR merge 仅引用，immutable tag、tag-pinned smoke 与 GitHub Release live 验证后再单独关闭。",
+      "title": "发布 v0.6.5-guru.8：完成累计 Release Gate 与 live 发布闭环",
+      "url": "https://github.com/castbox/guru-trellis/issues/242"
+    },
     {
       "number": 222,
       "reason": "上一稳定发布 v0.6.5-guru.7 的基线与历史约束；不复用其任务资源或证据。",
