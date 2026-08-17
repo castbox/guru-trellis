@@ -9,12 +9,12 @@
   合并保留 #237 normal-scenario qualification 与 #236 managed Python throwaway 合同。
 - [x] 以 `planning_scenario_set` 资格化 Issue #220 的九类对话回归候选，并由 Planning owner
   独立判断其 acceptance 充分性。
-- [ ] 完成 planning wording review 与 `guru-approve-task-plan` semantic review。
-- [ ] 展示 `prd.md`、`design.md`、`implement.md`，停在当前 Phase 1 方案确认边界。
-- [ ] 确认后才运行 `task.py start` 和派发 `trellis-implement`。
+- [x] 完成 planning wording review 与 `guru-approve-task-plan` semantic review。
+- [x] 展示 `prd.md`、`design.md`、`implement.md`，停在当前 Phase 1 方案确认边界。
+- [x] 确认后才运行 `task.py start` 和派发 `trellis-implement`。
 - [x] Phase 2 发现并通过 `implementation_discovery` 资格化 shared eval 缺少 `write_json`
   的正常路径缺陷；因涉及原计划排除的 runtime 范围，已暂停并返回 Phase 1。
-- [ ] 将受限 staging helper 纳入当前规划，重新执行 wording/planning review 并展示新方案。
+- [x] 将受限 staging helper 纳入当前规划，重新执行 wording/planning review 并展示新方案。
 
 ## 实现顺序
 

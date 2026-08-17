@@ -3,4 +3,3 @@
 {"file":".trellis/spec/workflow/data-contracts.md","reason":"确保 planning checkpoint 与 public DTO 不新增用户授权字段。"}
 {"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束 canonical-first、managed-copy 同步与 upstream-owned platform entry 边界。"}
 {"file":".trellis/spec/docs/public-docs.md","reason":"同步公开 README 与 durable requirements 的长期合同。"}
-
