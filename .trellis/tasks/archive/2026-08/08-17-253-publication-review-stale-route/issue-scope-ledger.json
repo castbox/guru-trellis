@@ -17,7 +17,7 @@
   ],
   "primary_issue": {
     "number": 253,
-    "reason": "Issue #253 是本任务唯一 primary delivery authority。",
+    "reason": "本任务完整覆盖 Issue #253 的 route-validation acceptance。",
     "title": "修复 Finalizer 无 closeout plan 时 publication_review_stale 路由被通用 commit 校验拒绝",
     "url": "https://github.com/castbox/guru-trellis/issues/253"
   },
