@@ -140,9 +140,9 @@ Chinese documentation contract.
 
 Stable workflow marketplace installs should pin the repo release tag that
 combines the target official Trellis CLI version and Guru Team revision, for
-example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.7`. The stable source for
-this release is annotated tag `v0.6.5-guru.7`, extension revision
-`0.6.5-guru.31`, and official `@mindfoldhq/trellis` `0.6.5`. The tag is created
+example `gh:castbox/guru-trellis/trellis#v0.6.5-guru.8`. The stable source for
+this release is annotated tag `v0.6.5-guru.8`, extension revision
+`0.6.5-guru.33`, and official `@mindfoldhq/trellis` `0.6.5`. The tag is created
 only after the preparation PR merges and the exact remote candidate passes the
 pre-tag gate. Its peeled commit must equal that final candidate and is recorded
 by immutable Git facts, GitHub Release notes, and release evidence rather than
@@ -224,7 +224,7 @@ command.
 ## Apply
 
 ```bash
-git clone --depth 1 --branch v0.6.5-guru.7 \
+git clone --depth 1 --branch v0.6.5-guru.8 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
@@ -508,7 +508,7 @@ legacy bytes；只有 `production-current.json` / v4 参与 current membership �
 同一 transaction 还安装 Interface 1.4 additive
 `skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
 commit self-reentry、commit-to-Branch-Review、Branch-Review-to-publication 与
-finalization family 共九条声明 edge 的 target-owned
+finalization family 与 task-free execution family 共十三条声明 edge 的 target-owned
 authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
 projection operation；部分 edge、缺失 authoring example 或 canonical/installed/platform
 字节不一致均视为 mixed production graph。
@@ -531,7 +531,7 @@ semantic 结论。
 新增 additive active `guru-verify-extension-installation` package 安装单一
 `source_repository_verification` standalone input、`verified|blocked` 两个 per-exit
 contracts、source-session private result schema、两例 production corpus 与 thin wrappers。
-它不修改 live Intake 6/23 或 production 3/11 合同。Active
+它不修改 live Intake 6/23 或 production-current-v4 4/15 合同。Active
 `guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
 `guru-merge-task-pr` 再安装两种 inputs、三个
@@ -667,15 +667,18 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
 `guru-finalize-task`、`guru-merge-task-pr`、`guru-review-branch`、
 `guru-review-task-publication`、`guru-select-workflow-mode`、
-`guru-reconcile-task-base`、`guru-verify-extension-installation`。十五个 integrated
-business packages 加一个 standalone-only verifier 共声明 62 个 external exits。
+`guru-execute-task-free-change`、`guru-qualify-normal-scenario`、
+`guru-reconcile-task-base`、`guru-verify-extension-installation`。十七个 integrated
+business packages 加一个 standalone-only verifier 共声明 73 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前未发布的 canonical extension version 为
-`0.6.5-guru.32`；最新 stable source `v0.6.5-guru.7` 对应 extension revision
-`0.6.5-guru.31`，并以官方 Trellis CLI `0.6.5` 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
+invoke 与六个 exit marker。当前 release preparation 的 canonical extension version 为
+`0.6.5-guru.33`；stable source `v0.6.5-guru.8` 对应同一 extension revision
+`0.6.5-guru.33`，并以官方 Trellis CLI `0.6.5` 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
 由 immutable Git facts、GitHub Release notes 与 release evidence 精确记录。Repo release
 tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
+本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
+fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
 Preset 将 active package
 （含 interface、artifact schema、commands、error catalog、runtime、thin wrappers 与 tests）
 完整安装到 `.trellis/guru-team/skills/`。Shared root 和所选 Codex/Cursor/Claude
@@ -882,7 +885,7 @@ Trellis workflow marketplace:
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.7 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.8 \
   --template guru-team
 ```
 

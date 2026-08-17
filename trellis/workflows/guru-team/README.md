@@ -29,20 +29,20 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 ```bash
 trellis init -y --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.7
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.8
 ```
 
 `-y` 是团队默认安装路径的一部分，用于跳过交互式 spec template picker。自动验收、
 throwaway 安装验证和 README 默认命令都必须使用非交互形式；只有用户明确想手动选择
 spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`。
 
-稳定安装 source 使用 repo release tag `#v0.6.5-guru.7`，并要求官方 Trellis CLI 安装到
+稳定安装 source 使用 repo release tag `#v0.6.5-guru.8`，并要求官方 Trellis CLI 安装到
 `0.6.5`。维护者刻意跟随最新 `main` / canary 时可以去掉 `#ref` 或改用其它 branch/tag ref，
 但应在验证和排障报告中说明 source 是否为 mutable ref，以及是否仍以官方 Trellis `0.6.5`
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
-source 是 annotated tag `v0.6.5-guru.7`，canonical extension version 为
-`0.6.5-guru.31`。该 tag 只会在 preparation PR 合并且 exact remote candidate 验证通过后创建；
+source 是 annotated tag `v0.6.5-guru.8`，canonical extension version 为
+`0.6.5-guru.33`。该 tag 只会在 preparation PR 合并且 exact remote candidate 验证通过后创建；
 peeled source commit 必须等于最终 candidate，并由 immutable Git ref、GitHub Release notes 与
 release evidence 记录，不在 candidate 尚未产生的 README 中预填。Repo release tag 与 extension
 revision 是独立版本轴；workflow marketplace 与 preset 必须来自同一个 immutable tag。
@@ -51,7 +51,7 @@ revision 是独立版本轴；workflow marketplace 与 preset 必须来自同一
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.7 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.8 \
   --template guru-team
 ```
 
@@ -65,12 +65,13 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 17 Skills / 69 package exits；其中业务 global workflow closure
-为 16 个 invokes / 67 个 exits / 39 个 targets。下列 16 个业务 active ids 参与
+当前 registry 激活 18 Skills / 73 package exits；其中业务 global workflow closure
+为 17 个 invokes / 71 个 exits / 42 个 targets。下列 17 个业务 active ids 参与
 global workflow：
 
 - guru-select-workflow-mode
 - guru-execute-task-free-change
+- guru-qualify-normal-scenario
 - guru-sync-base
 - guru-discover-change-context
 - guru-clarify-requirements
@@ -129,7 +130,7 @@ Finalizer stale DTO 只增加 Publication 唯一 consumer 直接使用的
 `branch_review_commit`；真实 descendant content
 drift 只能由 Publication 语义门禁返回现有 Phase 2 router，不能产生 `ready`。
 
-Interface 1.4 的九条 semantic package handoff 使用 target-owned
+Interface 1.4 的十三条 semantic package handoff 使用 target-owned
 skill_input_authoring_seed；producer 只给 minimal seed，target authoring 补齐其自己拥有
 的 fresh semantic input，projection 只允许 direct/select/rename/normalize。
 `production-current-v4` 是唯一 current manifest，固定绑定 planning/check/commit 与
@@ -146,8 +147,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前未发布的 canonical extension version 为 `0.6.5-guru.32`；上文 pin 的 stable
-release tag `v0.6.5-guru.7` 对应 extension revision `0.6.5-guru.31`。
+当前 release preparation 的 canonical extension version 为 `0.6.5-guru.33`；上文 pin 的
+stable release tag `v0.6.5-guru.8` 对应同一 extension revision `0.6.5-guru.33`。
 Source/installed package validation 必须同时验证
 registry、17 invokes / 71 exits / 42 combined targets（24 workflow + 18 stop）
 business marker graph、18-package/73-exit closure、consumer
@@ -234,6 +235,9 @@ path，不执行 live GPT-5.6 Sol matrix。只有另行完成且绑定 exact
 model/prompt/package/matrix 的 live run 才能形成模型行为证据；没有该证据时 Issue、PR、
 README 与 release-facing text 均不得声称 pressure matrix 或模型稳定性已经通过，也不
 承诺未来永不复发。
+
+本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
+fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
 
 ## Phase 0 Public Transition And Invocation
 
@@ -1013,7 +1017,7 @@ Current semantic input 固定 `applicability.status=required`，private result �
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十七个 packages 已维护 canonical corpora 并覆盖全部 69 package exits/profile；六个 Intake
+中的十八个 packages 已维护 canonical corpora 并覆盖全部 73 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台
