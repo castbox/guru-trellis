@@ -27,7 +27,7 @@ provenance 写入目标仓库的 `.trellis/guru-team/extension.json`，并通过
 ## Marketplace 安装
 
 ```bash
-trellis init -y --codex --cursor \
+trellis init -y --claude --codex --cursor \
   --workflow guru-team \
   --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.9
 ```

@@ -29,14 +29,14 @@ candidate 门禁后，以 Git ref、GitHub Release notes 和 release evidence �
 
 ```bash
 npm install --global @mindfoldhq/trellis@0.6.5
-trellis init -y --codex --cursor \
+trellis init -y --claude --codex --cursor \
   --workflow guru-team \
   --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.9
 guru_trellis_source="$(mktemp -d)"
 git clone --depth 1 --branch v0.6.5-guru.9 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
-  --repo . --platform codex --platform cursor
+  --repo . --all-platforms
 ```
 
 已有仓库先安装固定 CLI 并 preview official update：
@@ -71,7 +71,7 @@ guru_trellis_source="$(mktemp -d)"
 git clone --depth 1 --branch v0.6.5-guru.9 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
-  --repo . --platform codex --platform cursor
+  --repo . --all-platforms
 ```
 
 升级完成后必须处理全部 `.new` / `.bak`，再验证 source/installed/platform equality、

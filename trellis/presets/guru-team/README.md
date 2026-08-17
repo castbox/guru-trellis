@@ -228,8 +228,7 @@ git clone --depth 1 --branch v0.6.5-guru.9 \
   https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
 /path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
   --repo /path/to/project \
-  --platform codex \
-  --platform cursor
+  --all-platforms
 ```
 
 Examples:
