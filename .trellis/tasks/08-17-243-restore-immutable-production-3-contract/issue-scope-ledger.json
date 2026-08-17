@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 243,
+    "url": "https://github.com/castbox/guru-trellis/issues/243",
+    "title": "修复 #237 immutable production 3.0 contract 字节回归",
+    "reason": "本任务完整恢复 #237 引入的 immutable legacy contract 字节回归。"
+  },
+  "close_issues": [
+    {
+      "number": 243,
+      "url": "https://github.com/castbox/guru-trellis/issues/243",
+      "title": "修复 #237 immutable production 3.0 contract 字节回归",
+      "reason": "Issue #243 的全部 acceptance 均由本任务实现、验证和 Branch Review 覆盖。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 237,
+      "url": "https://github.com/castbox/guru-trellis/issues/237",
+      "title": "正常场景资格合同",
+      "reason": "#237 的提交 cef73ece 引入本次字节回归，但不在本任务关闭范围。"
+    },
+    {
+      "number": 242,
+      "url": "https://github.com/castbox/guru-trellis/issues/242",
+      "title": "发布 v0.6.5-guru.8",
+      "reason": "#242 在本修复合并后重新冻结 candidate 并重跑发布证据，不在本任务关闭范围。"
+    }
+  ],
+  "followup_issues": []
+}

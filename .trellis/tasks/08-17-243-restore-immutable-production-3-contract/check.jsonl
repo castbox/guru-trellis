@@ -1,0 +1,2 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Phase 2 验证范围、immutable bytes、inventory、drift 与 sidecar gate。"}
+{"file":".trellis/spec/preset/installer.md","reason":"source/installed/preset 验证与未执行 throwaway 边界。"}

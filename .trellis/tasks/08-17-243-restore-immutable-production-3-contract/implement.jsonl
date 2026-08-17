@@ -1,0 +1,3 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"实现与验证 legacy immutable contract、source/installed inventory 和发布门禁。"}
+{"file":".trellis/spec/preset/installer.md","reason":"preset apply、installed copy、manifest 与 sidecar 行为。"}
+{"file":".trellis/spec/guides/index.md","reason":"跨 canonical/installed/manifest 表面的修改前检查。"}
