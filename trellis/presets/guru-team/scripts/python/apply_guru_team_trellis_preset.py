@@ -57,6 +57,9 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
     "sidecar and reapply the preset.\n"
 ).encode("utf-8")
 SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
+PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
+    "guru-review-branch": frozenset({Path("schemas/review-gate-6.0.schema.json")}),
+}
 CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "production-contract-manifest-4.0.schema.json",
     "production-contract-manifest-3.0.schema.json",
@@ -991,6 +994,18 @@ def skill_package_source_files(package_root: Path) -> list[Path]:
 def skill_platform_public_files(package_root: Path) -> list[Path]:
     """Return the Agent-readable projection without package-private runtime assets."""
     interface = json.loads((package_root / "interface.json").read_text(encoding="utf-8"))
+    required_schema_paths = PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS.get(
+        str(interface.get("id")), frozenset()
+    )
+    declared_schema_paths = {
+        Path(str(item["path"]))
+        for item in interface.get("schemas", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    if not required_schema_paths.issubset(declared_schema_paths):
+        raise SystemExit(
+            f"Platform-required schemas are not declared by {package_root.name}."
+        )
     private_paths = {
         str(item["schema"]["path"])
         for item in interface.get("public_contracts", {}).get("private_artifacts", [])
@@ -1015,17 +1030,21 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
         .get("wrapper", "")
     )
     excluded_roots = {"runtime", "tests", "errors"}
-    return [
-        path
-        for path in skill_package_source_files(package_root)
-        if path.relative_to(package_root).parts[0] not in excluded_roots
-        and (
-            path.relative_to(package_root).parts[0] != "scripts"
-            or path.relative_to(package_root).as_posix() == public_wrapper
-        )
-        and path.relative_to(package_root).as_posix() not in private_paths
-        and path.relative_to(package_root).as_posix() not in private_artifact_paths
-    ]
+    result = []
+    for path in skill_package_source_files(package_root):
+        relative = path.relative_to(package_root)
+        relative_text = relative.as_posix()
+        if relative.parts[0] in excluded_roots:
+            continue
+        if relative.parts[0] == "scripts" and relative_text != public_wrapper:
+            continue
+        if relative in required_schema_paths:
+            result.append(path)
+            continue
+        if relative_text in private_paths or relative_text in private_artifact_paths:
+            continue
+        result.append(path)
+    return result
 
 
 def install_skill_packages(
