@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 274,
+      "reason": "Issue #274 is the sole current delivery authority and is fully covered by this task.",
+      "title": "fix(guru-team): 修复 wording_current 与 readiness 的目标内容摘要不一致",
+      "url": "https://github.com/castbox/guru-trellis/issues/274"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 274,
+    "reason": "Issue #274 is the sole current delivery authority and is fully covered by this task.",
+    "title": "fix(guru-team): 修复 wording_current 与 readiness 的目标内容摘要不一致",
+    "url": "https://github.com/castbox/guru-trellis/issues/274"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

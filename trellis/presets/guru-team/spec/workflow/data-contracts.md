@@ -86,6 +86,15 @@ stage; refresh/re-entry discards stale state and starts from a fresh
 and writes nothing below `.trellis/tasks/**`, `.trellis/workspace/**`, or
 `.trellis/.runtime/**`.
 
+For `guru-review-contract-wording:change_request:pass`, the checked wording
+scope contains exactly one title item and one body item. The producer sets both
+the top-level and nested `wording_current` target content fields to the canonical
+JSON digest of `{"title_sha256": <title item content SHA-256>,
+"body_sha256": <body item content SHA-256>}`. Missing or duplicate title/body
+items fail closed before transition projection. Change-request readiness uses
+that public transition value directly for its current-content linkage; it does
+not read or recompute identity from the wording owner's private scope.
+
 The invocation contract uses separate closed call-local envelopes for
 deterministic sync, semantic owner invocation, and confirmed workspace
 mutation. Semantic transport has three distinct domains: caller-owned public
