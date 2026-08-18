@@ -107,6 +107,35 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
         self.assertEqual(result.returncode, 3)
         self.assertEqual(json.loads(result.stdout)["code"], "semantic_result_invalid")
 
+    def test_ssot_current_active_version_is_profile_bound(self):
+        cases = (
+            ("public-input-bootstrap.json", "target_version", "authority-v1"),
+            ("public-input-impact.json", "authority_version", "authority-v1"),
+            ("public-input-promotion.json", "target_version", "authority-v1"),
+            ("public-input-repair.json", "authority_version", "authority-v1"),
+        )
+        for example, version_field, freshness in cases:
+            public_input = json.loads((self.package / "examples" / example).read_text())
+            owner = {
+                "typed_exit": "ssot_current",
+                "authority_locator": public_input.get("authority_locator", "docs"),
+                "active_version": public_input[version_field],
+                "status": "active",
+                "applicability_scope": public_input.get("applicability_scope", "repository"),
+                "freshness": public_input.get("authority_freshness", public_input.get("freshness", freshness)),
+            }
+            with self.subTest(profile=public_input["profile"], state="current"):
+                result = self.invoke(example, owner)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads(result.stdout)["active_version"], public_input[version_field])
+            owner["active_version"] = "stale-version"
+            with self.subTest(profile=public_input["profile"], state="stale"):
+                result = self.invoke(example, owner)
+                self.assertEqual(result.returncode, 3, result.stderr)
+                payload = json.loads(result.stdout)
+                self.assertEqual(payload["code"], "stale_identity")
+                self.assertEqual(payload["field_path"], "owner_result.active_version")
+
     def test_all_profiles_reject_stale_architecture_identity(self):
         examples = (
             "public-input-bootstrap.json",
