@@ -13,7 +13,7 @@ fallback. Local Git and Git transport remain `git` operations.
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、14 个 mandatory Skill invocation、52 个 typed exit、31 个
+phase/status route、19 个 mandatory Skill invocation、83 个 typed exit、51 个
 workflow/stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
@@ -65,10 +65,12 @@ Workflow marketplace 只安装 global .trellis/workflow.md；完整 Guru Team ex
 installed 与 Shared/Codex/Claude/Cursor discovery copies 都是 managed projection，
 不能反向成为语义来源。
 
-当前 registry 激活 18 Skills / 73 package exits；其中业务 global workflow closure
-为 17 个 invokes / 71 个 exits / 42 个 targets。下列 17 个业务 active ids 参与
+当前 registry 激活 20 Skills / 85 package exits；其中业务 global workflow closure
+为 19 个 invokes / 83 个 exits / 51 个 total targets。下列 19 个业务 active ids 参与
 global workflow：
 
+- guru-maintain-architecture-baseline
+- guru-maintain-requirements-design-test-ssot
 - guru-select-workflow-mode
 - guru-execute-task-free-change
 - guru-qualify-normal-scenario
@@ -1028,7 +1030,7 @@ Current semantic input 固定 `applicability.status=required`，private result �
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的十八个 packages 已维护 canonical corpora 并覆盖全部 73 package exits/profile；六个 Intake
+中的二十个 packages 已维护 canonical corpora 并覆盖全部 85 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

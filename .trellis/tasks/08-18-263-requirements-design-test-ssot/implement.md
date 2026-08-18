@@ -45,7 +45,7 @@ git diff --check
 
 - 公共 skill/profile/schema/exit/consumer id 是 API；任何不兼容变化必须新版本化，不能靠同步副本掩盖。
 - apply 会批量同步 generated projections；执行前后都检查 worktree diff，仅保留 #263 scoped files，并逐项处理 `.new/.bak`。
-- consumer graph 改动可能影响现有 18-skill/73-exit closure；必须同时验证 canonical、installed、workflow 和平台 projection，不以 package 单测替代集成证据。
+- consumer graph 改动以 #263 前 live 19-skill/80-exit baseline 为起点，并收敛到 #263 当前 20-skill/85-exit target closure；必须同时验证 canonical、installed、workflow 和平台 projection，不以 package 单测替代集成证据。
 - throwaway 只证明当前版本代表性安装，不宣称完整平台、upgrade 或 release readiness。
 - 不提交、push、创建 PR、merge、release 或 cleanup，直到各自后续语义门禁与用户确认。
 
