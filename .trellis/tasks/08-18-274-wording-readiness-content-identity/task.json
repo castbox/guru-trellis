@@ -1,0 +1,11 @@
+{
+  "id": "274-wording-readiness-content-identity",
+  "name": "274-wording-readiness-content-identity",
+  "title": "#274 修复 wording_current 与 readiness 的目标内容摘要不一致",
+  "status": "in_progress",
+  "branch": "fix/274-wording-readiness-content-identity",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/274"
+}

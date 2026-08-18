@@ -28,6 +28,21 @@ field, preimage hash, reread content hash, current source update time, and the
 derived mutation-result identity. The checker requires those result facts to
 match the rebuilt live scope. Draft review remains side-effect-free.
 
+The checked scope must contain exactly one `field=title` item and exactly one
+`field=body` item. A missing or duplicate item is stale fixed-scope evidence and
+the public invocation fails closed at `owner_result.scope` before projecting a
+transition. For `change_request:pass`, the producer computes the target content
+identity with the existing canonical JSON digest rule:
+
+```text
+digest({"title_sha256": title_item.content_sha256,
+        "body_sha256": body_item.content_sha256})
+```
+
+The top-level `wording_current.target_content_sha256` and nested
+`wording.target_content_sha256` carry that same value. It is not the body-only
+digest, and callers do not rebuild it from owner-private scope evidence.
+
 ### `planning_artifacts`
 
 The scope is exactly the current active task's `prd.md`, `design.md`, and
