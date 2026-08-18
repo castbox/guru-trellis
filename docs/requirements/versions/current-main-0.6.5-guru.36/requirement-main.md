@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.36`；状态：`active`；基线：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）。
+版本：`current-main-0.6.5-guru.36`；状态：`superseded`；基线：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 committed task-branch delta。
 
 ## 目标、角色与适用范围
 

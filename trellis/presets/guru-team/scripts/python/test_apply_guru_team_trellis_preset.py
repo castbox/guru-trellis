@@ -2397,8 +2397,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.36")
-        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.37")
+        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.15")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
@@ -2735,8 +2735,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("format-merge-commit", public_api["companion_scripts"])
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
-        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.5")
-        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.5"])
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.15")
+        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.15"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
         self.assertEqual(
             installed["install"]["managed_asset_hashes"],

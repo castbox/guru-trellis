@@ -51,7 +51,15 @@ try:
         reviewed_content_identity as canonical_reviewed_content_identity,
     )
 except ModuleNotFoundError:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    for runtime_parent in Path(__file__).resolve().parents:
+        if (
+            (runtime_parent / "runtime/reviewed_content.py").is_file()
+            and (runtime_parent / "runtime/io.py").is_file()
+        ):
+            sys.path.insert(0, str(runtime_parent))
+            break
+    else:
+        raise
     from runtime.reviewed_content import (
         PROVENANCE_TAIL_MANIFEST_PATH,
         ReviewedContentError,
@@ -1676,7 +1684,7 @@ def extension_verification_ownership_facts(path: Path) -> dict[str, Any]:
         }
         and payload.get("schema_version") == "3.0"
         and payload.get("inventory_id") == "guru-team-upstream-ownership"
-        and payload.get("target_trellis_cli") == "0.6.5"
+        and payload.get("target_trellis_cli") == "0.6.15"
         and payload.get("overlay_root") == "trellis/presets/guru-team/overlays"
         and isinstance(rules, list)
         and len(rules) == 11

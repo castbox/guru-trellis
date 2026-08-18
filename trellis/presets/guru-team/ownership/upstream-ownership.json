@@ -1,7 +1,7 @@
 {
   "schema_version": "3.0",
   "inventory_id": "guru-team-upstream-ownership",
-  "target_trellis_cli": "0.6.5",
+  "target_trellis_cli": "0.6.15",
   "overlay_root": "trellis/presets/guru-team/overlays",
   "guru_owned_rules": [
     {

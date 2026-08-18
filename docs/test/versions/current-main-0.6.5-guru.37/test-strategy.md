@@ -1,0 +1,55 @@
+# 当前测试策略
+
+版本：`current-main-0.6.5-guru.37`；状态：`active`。
+
+## Evidence 分层
+
+| ID | 层级 | 能证明 | 不能替代 |
+| --- | --- | --- | --- |
+| `TST-001` | static/docs | 格式、链接、结构、scope、context 可加载 | runtime 行为 |
+| `TST-002` | package/unit | interface/schema/runtime 局部合同 | installed graph 与外部服务 |
+| `TST-003` | semantic eval/review | normal-path 语义、finding 与 route 充分性 | deterministic side effect |
+| `TST-004` | integration | producer -> consumer、task/history/recovery 数据流 | 多平台安装 |
+| `TST-005` | distribution/throwaway | canonical/installed/platform/preset 实际一致 | 未执行的 upgrade/release candidate |
+| `TST-006` | SSOT | RDT/Architecture/Bootstrap locator、traceability、freshness | 产品 runtime |
+| `TST-007` | compatibility | public id/schema/exit/command closure | 未来版本兼容，除非 exact matrix |
+| `TST-008` | live/external/release | GitHub、tag、Release、exact candidate 与目标环境 | static/unit 或 skipped test |
+| `TST-009` | business parallel matrix | 两个 task 的 worktree/contribution/Finish/cleanup 隔离 | 单 task package test |
+| `TST-010` | history/acceptance | task index、archive、finish-summary、retained ref 与查询可发现性 | PR body 声明 |
+| `TST-011` | recovery | base/provider stale、partial recovery、re-entry 与零重复副作用 | happy-path static check |
+| `TST-012` | terminal projection | retired locator + archive summary + current ready facts 的正向投影与 stale 负例 | pre-archive Publication authority |
+| `TST-013` | inventory derivation | canonical registry/interface-derived ids/commands/complete packages 与 installed equality | 固定 magic count |
+| `TST-014` | full platform matrix | live-derived platform × clean/existing 的 official install/update 与 installed behavior | representative single-repo throwaway |
+| `TST-015` | capability preservation | before/after complete projection、template hash、mode、sidecar 与 Docs authority equality | 仅 version 字符串检查 |
+| `TST-016` | installed SSOT contracts | RDT/Architecture/Bootstrap profiles 与双 SSOT projection 保持 | package discovery 或 `--help` |
+| `TST-017` | A/B lifecycle and live provider | 独立 Finish routes、recovery、merge order、reachability 与真实 GitHub expected-head merge/closure | fake provider 单独结论 |
+
+## 核心场景
+
+- `SCN-001`：标准 Intake 从 current base/context 到唯一 workspace，无 pre-task tracked residue。
+- `SCN-002`：Planning/Phase 2/commit/review 对 content freshness fail closed，并支持 finding fix + fresh final review。
+- `SCN-003`：Finalization/merge 使用 expected HEAD，archive/history 可发现且 close issues 精确。
+- `SCN-004`：base/provider evolution 自动进入唯一 reconcile/recovery route，不复用 stale evidence。
+- `SCN-005`：canonical、dogfood、installed、Shared/Codex/Claude/Cursor byte/mode/graph 一致；preset reapply 不留未知 sidecar。
+- `SCN-006`：RDT 与 Architecture version/status/traceability 对齐；Bootstrap projection 最小且不形成第三 authority。
+- `SCN-007`：同一 clean base 的 A/B task 使用独立 worktree、branch、task 与 contribution；
+  Planning/Check/Review/Finish/cleanup 不读写对方 tracked state，也不要求合并对方 bookkeeping commit。
+- `SCN-008`：provider failure、stale evidence 与 partial finalization 由 exact owner 恢复；已发生副作用
+  不重复，unsupported/mismatch fail closed。
+- `SCN-009`：task 已归档且 owner state 正常退休后，精确 retired locator 可重建 schema-valid `ready_for_merge`；缺 locator、archive/head/PR/scope drift 继续 fail closed。
+- `SCN-010`：新增或移除 active Skill 时 verifier 从 registry/interface 自动取得 inventory，并与 installed projection 做 exact equality。
+- `SCN-011`：`claude|codex|cursor × clean|existing` 六个独立 cell 全部使用 Trellis `0.6.15` 结束，sidecar 与 unknown template drift 为零。
+- `SCN-012`：existing cell 从 official `0.6.5` + `v0.6.5-guru.10` 运行 upgrade/update dry-run、条件式 migrate、workflow preview/switch 与 preset reapply。
+- `SCN-013`：before/after active id、interface/schema/exit/command/consumer/route、managed path/mode 与 Docs locator 无未审查 capability loss。
+- `SCN-014`：每个 cell 运行 RDT、Architecture、Bootstrap 全 profile installed eval，并保持 #266 docs authority 与最小 spec projection。
+- `SCN-015`：local A/B 完成两种 merge order、零 metadata intersection、task-local archive、Finish/provider/cleanup 同 owner recovery 与 cleanup 后 reachability；B 的 GitHub 调用为零。
+- `SCN-016`：真实 A disposable repo 的 PR #2 在 expected source head 上 rebase merge，Issue #1 在 merge 后关闭；remote branch/repo cleanup 后 retained-ref proof仍成立。
+- `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
+- `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
+
+## 选择规则
+
+先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
+
+完整矩阵只证明 `public_plus_local_candidate` 与 current source compatibility；`.37` stable tag、
+GitHub Release 与 tag-pinned release smoke 必须继续标记为 #267 boundary。

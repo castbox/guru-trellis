@@ -1,0 +1,75 @@
+{
+  "close_issues": [
+    {
+      "number": 260,
+      "reason": "Close only after the full multi-platform matrix, dogfood migration, installed contracts, authority preservation and both parallel Finish scenarios pass.",
+      "title": "在当前双 SSOT 基线上升级并验证 Trellis v0.6.15：业务仓库安装态与并行兼容",
+      "url": "https://github.com/castbox/guru-trellis/issues/260"
+    }
+  ],
+  "followup_issues": [
+    {
+      "number": 248,
+      "reason": "Consumes the compatibility result for later acceptance and Finish handoff work; it is not implemented or closed here.",
+      "title": "Task Acceptance 与 upstream Finish handoff",
+      "url": "https://github.com/castbox/guru-trellis/issues/248"
+    },
+    {
+      "number": 252,
+      "reason": "Consumes bookkeeping reachability and cleanup safety evidence; it is not implemented or closed here.",
+      "title": "建立独立 post-finish Git resource cleanup owner",
+      "url": "https://github.com/castbox/guru-trellis/issues/252"
+    },
+    {
+      "number": 267,
+      "reason": "Owns the downstream stable tag and GitHub Release after #260 passes; it is not started or closed here.",
+      "title": "发布 Trellis v0.6.15 双 SSOT 稳定基线版本",
+      "url": "https://github.com/castbox/guru-trellis/issues/267"
+    }
+  ],
+  "primary_issue": {
+    "number": 260,
+    "reason": "This task owns the complete Trellis 0.6.5 to 0.6.15 migration and live-inventory-derived compatibility baseline.",
+    "title": "在当前双 SSOT 基线上升级并验证 Trellis v0.6.15：业务仓库安装态与并行兼容",
+    "url": "https://github.com/castbox/guru-trellis/issues/260"
+  },
+  "related_issues": [
+    {
+      "number": 53,
+      "reason": "Closed source of the business-repository no-shared-tracked-write constraint; it is not reopened or closed here.",
+      "title": "多个并行的 Trellis 任务有没有可能不要让他们产出冲突的结果",
+      "url": "https://github.com/castbox/guru-trellis/issues/53"
+    },
+    {
+      "number": 263,
+      "reason": "Its Requirements/Design/Test installed contract must be preserved and validated by this migration.",
+      "title": "建立 Requirements/Design/Test SSOT 原子闭环 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/263"
+    },
+    {
+      "number": 264,
+      "reason": "Its Architecture Baseline installed contract must be preserved and validated by this migration.",
+      "title": "建立 Architecture Baseline 原子闭环 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/264"
+    },
+    {
+      "number": 265,
+      "reason": "Its Bootstrap new/existing/repair profiles and upstream ownership must be preserved and validated.",
+      "title": "扩展 Trellis Bootstrap：编排双 SSOT 建设与 Spec 投影",
+      "url": "https://github.com/castbox/guru-trellis/issues/265"
+    },
+    {
+      "number": 266,
+      "reason": "Its active dual-SSOT, Architecture and minimal Spec projection are the current before-state authority.",
+      "title": "Bootstrap guru-trellis 当前仓库：建立完整双 SSOT 与架构基线",
+      "url": "https://github.com/castbox/guru-trellis/issues/266"
+    },
+    {
+      "number": 275,
+      "reason": "Its replacement release v0.6.5-guru.10 and synchronized main define the true before-state.",
+      "title": "修复 v0.6.5-guru.9 Throwaway closeout 回归并发布 replacement release",
+      "url": "https://github.com/castbox/guru-trellis/issues/275"
+    }
+  ],
+  "schema_version": "2.0"
+}

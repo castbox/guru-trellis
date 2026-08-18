@@ -135,7 +135,7 @@ class UpstreamOwnershipTest(unittest.TestCase):
         self.assertEqual(first["status"], "ok")
         self.assertEqual(first["schema_version"], "3.0")
         self.assertEqual(first["inventory_id"], "guru-team-upstream-ownership")
-        self.assertEqual(first["target_trellis_cli"], "0.6.5")
+        self.assertEqual(first["target_trellis_cli"], "0.6.15")
         self.assertEqual(first["overlay_count"], 3)
         self.assertEqual(first["managed_claim_count"], 9)
         self.assertEqual(first["classified_managed_claim_count"], 9)

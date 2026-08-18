@@ -1,0 +1,14 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"约束完整 Phase 路由、mandatory Skill invocation、typed exit consumer 与 fail-closed transition。"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"约束 public Skill I/O、private state、source/installed/platform package identity 与 recorder/checker 边界。"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"#260 是累计兼容与 upgrade owner，必须执行 full multi-platform Throwaway、dogfood、A/B lifecycle、Branch Review 与 publication gate。"}
+{"file":".trellis/spec/workflow/data-contracts.md","reason":"约束 manifest、task、history、Finish/archive、reachability 与 capability inventory 数据合同。"}
+{"file":".trellis/spec/workflow/companion-scripts.md","reason":"约束 upgrade verifier、workspace、commit、review、publication、Finalizer 与 cleanup executor/validator 行为。"}
+{"file":".trellis/spec/preset/installer.md","reason":"约束 official upgrade/update、preset initial apply/reapply、installed provenance、sidecar、template hash 与 runtime routing。"}
+{"file":".trellis/spec/preset/upstream-ownership.md","reason":"约束 upstream/Guru dual ownership、managed inventory 与 update migration 边界。"}
+{"file":".trellis/spec/preset/overlay-guidelines.md","reason":"约束 canonical overlay、dogfood apply、平台 projection、mode 与 drift。"}
+{"file":".trellis/spec/docs/requirements-design-test-ssot.md","reason":"约束 #266 current Requirements/Design/Test authority、task impact sync、promotion 与最小 projection。"}
+{"file":".trellis/spec/architecture/baseline-usage.md","reason":"约束 Architecture current identity、task impact sync、promotion、evidence 与 repair route。"}
+{"file":".trellis/spec/workflow/bootstrap-repository-ssot.md","reason":"约束 #265 Bootstrap 三 profile 与 upstream trellis-spec-bootstrap ownership。"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"约束公开版本矩阵、安装/升级命令、current-main 与 stable release 边界。"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"检查 manifest、workflow、preset、runtime、platform、docs 跨层同步。"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"修改 verifier/installer 前复用 current inventory 与 validation helpers。"}

@@ -1,6 +1,6 @@
 # 非功能需求与边界
 
-版本：`current-main-0.6.5-guru.36`；状态：`active`。
+版本：`current-main-0.6.5-guru.36`；状态：`superseded`。
 
 - `NFR-001`：canonical source 是长期源头；dogfood 与平台副本必须可从 preset/overlay 重建。
 - `NFR-002`：public DTO 只携带唯一 consumer 必需的最小 identity/freshness；Git/live 可重建事实与授权不得持久化。

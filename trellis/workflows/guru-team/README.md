@@ -13,8 +13,8 @@ fallback. Local Git and Git transport remain `git` operations.
 本目录维护 Guru 团队可复用的 Trellis workflow。
 
 这个 workflow 的 marketplace id 固定为通用的 `guru-team`。它只承载 global
-phase/status route、19 个 mandatory Skill invocation、83 个 typed exit、51 个
-workflow/stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
+phase/status route、20 个 mandatory Skill invocation、87 个 typed exit、33 个 workflow
+target 与 21 个 stop target，以及 workspace、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 和外部 side-effect boundary。具体 intake、planning、check、review、
 publication 与 finalization 判断由对应 active package 独占。
 
@@ -42,10 +42,15 @@ spec template 时，才去掉 `-y` 或改用官方支持的 `--template <name>`�
 为目标基线。Guru Team release tag 使用 repo 级 `v<official-trellis-version>-guru.<revision>`，
 并与该 tag 所指提交中的 `trellis/guru-team-extension.json.version` 精确映射。本次 stable
 source 是 annotated tag `v0.6.5-guru.10`，canonical extension version 为
-`0.6.5-guru.36`。该 tag 只会在 preparation PR 合并且 exact remote candidate 验证通过后创建；
-peeled source commit 必须等于最终 candidate，并由 immutable Git ref、GitHub Release notes 与
-release evidence 记录，不在 candidate 尚未产生的 README 中预填。Repo release tag 与 extension
+`0.6.5-guru.36`；tag object 为 `b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，
+peeled source commit 为 `5c059f4943edad7dfe25182a78af94759d41f9a1`。对应 GitHub
+Release 是 non-draft、non-prerelease、zero-asset release。Repo release tag 与 extension
 revision 是独立版本轴；workflow marketplace 与 preset 必须来自同一个 immutable tag。
+
+当前 `main` candidate 为 extension `0.6.5-guru.37` / official Trellis `0.6.15`，已通过
+live-derived 六-cell compatibility matrix、installed contracts 和 A/B lifecycle proof；
+evidence classification 是 `public_plus_local_candidate`。它不是 stable source，`.37`
+tag、GitHub Release、tag-pinned install 与 release smoke 仍由 #267 独占。
 
 已有 Trellis 项目切换 active workflow：
 
@@ -150,7 +155,7 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 source candidate 的 canonical extension version 为 `0.6.5-guru.36`；上文 pin 的
+当前 source candidate 的 canonical extension version 为 `0.6.5-guru.37`；上文 pin 的
 stable release tag `v0.6.5-guru.10` 仍对应 extension revision `0.6.5-guru.36`。
 Source/installed package validation 必须同时验证
 registry、20 invokes / 87 exits / 54 combined targets（33 workflow + 21 stop）
@@ -1031,7 +1036,7 @@ Current semantic input 固定 `applicability.status=required`，private result �
 `guru-team-skill-evals-1.0`，status 闭集为
 `passed|evaluation_failed|execution_error|unsupported`。外部 semantic grading
 与 human feedback 独立，run evidence 只能位于 repo 外。当前 production Skills
-中的二十个 packages 已维护 canonical corpora 并覆盖全部 89 package exits/profile；六个 Intake
+中的二十一个 packages 已维护 canonical corpora 并覆盖全部 89 package exits/profile；六个 Intake
 packages 的 23-exit closure 仍独立验证。四个 descriptor 分别绑定
 可执行 `shared.sh|codex.sh|claude.sh|cursor.sh`；shared 解析 preset-managed
 `guru-team-shared-eval`，其余 adapter 从 `PATH` 解析 `codex|claude|cursor-agent` 并组装平台

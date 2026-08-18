@@ -4,16 +4,16 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.36",
+    "version": "0.6.5-guru.37",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
-    "target_trellis_cli": "0.6.5",
+    "target_trellis_cli": "0.6.15",
     "requires": {
-      "trellis_cli": "0.6.5"
+      "trellis_cli": "0.6.15"
     },
     "tested": {
       "trellis_cli": [
-        "0.6.5"
+        "0.6.15"
       ]
     },
     "public_api": {
@@ -392,11 +392,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-19T10:27:51Z",
+  "installed_at": "2026-08-19T17:29:13Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "7ebb2f5f9a0a27cc3303159d3efe48761ac118bc",
-    "commit": "7ebb2f5f9a0a27cc3303159d3efe48761ac118bc",
+    "ref": "5c059f4943edad7dfe25182a78af94759d41f9a1",
+    "commit": "5c059f4943edad7dfe25182a78af94759d41f9a1",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -529,7 +529,7 @@
       {
         "id": "guru-bootstrap-repository-ssot",
         "interface_sha256": "e45ae98be0e89b674f47c0ddf212b0bb2641d3fef69f469df29bc9a4ca44b176",
-        "tree_sha256": "a1bbad06fc95c29122ff2a3dfd9c510be4139bb4d7f4af03fb175f4340a6d235"
+        "tree_sha256": "1646e915882ea9d8745d3eaabb4345479abfcd97aa5654d22d08f1d9e9afae4a"
       },
       {
         "id": "guru-maintain-architecture-baseline",
@@ -599,7 +599,7 @@
       {
         "id": "guru-verify-extension-installation",
         "interface_sha256": "87925b8157721ce8f0142f3a46fccea145b0e0f5d6782a4b6bad85e76978d0f5",
-        "tree_sha256": "b65038c3efe8d0ff9a91e5baa7294b4c9a99086333de0a9a7a855168c98401be"
+        "tree_sha256": "18b1a994bb9ced30227733cd0363fee9a45a2b7e964db39468e05ee307a34d65"
       },
       {
         "id": "guru-finalize-task",
@@ -902,7 +902,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "2a5da358ff656b1262a5def321b2733288009f16b9f95d6ce32ae1d92dd6bd06",
+        "sha256": "24287e05257e9fba57c899978b5391f1e307cc4cd159a11f96d34de1bedde143",
         "executable": false,
         "action": "unchanged"
       },
@@ -1343,7 +1343,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
-        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "sha256": "70fc18660ff896ef2da97cd4354af6b631aabe198bb6031aae31579d3dfc1a12",
         "executable": false,
         "action": "unchanged"
       },
@@ -1357,7 +1357,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
-        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "sha256": "615b079149b3460bc3230618294a95ff10cf94947c6739f69941b205625bc13e",
         "executable": false,
         "action": "unchanged"
       },
@@ -1371,7 +1371,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
-        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "sha256": "5abe25355abfb43ab69090698ee55ef05f1a621dfc8bc3e75335591111b54bc5",
         "executable": false,
         "action": "unchanged"
       },
@@ -1385,7 +1385,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
-        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "sha256": "7f307d1b6a3bafb3f5e1377a2138ab92cfcaec96adce929aacbd32af98f8d2fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -1595,7 +1595,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bootstrap-repository-ssot/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/tests/test_contract.py",
-        "sha256": "d219affa2995895d506704997255a276dd02492c894078ac7ed94e70d2684df9",
+        "sha256": "f8e7bc3531f6d9bd9aa85c19801e93573c7e3c745ca3c4d366670c2207a2dc83",
         "executable": false,
         "action": "unchanged"
       },
@@ -6257,7 +6257,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/runtime/owner.py",
-        "sha256": "4cad0096b4571de71f1f9d83ac8c7f34982a735b5522ba98f14976419c4eed07",
+        "sha256": "73e9f0e8114a9ff88391a64299990bafe923f3a507f4018431a9c541fa240103",
         "executable": false,
         "action": "unchanged"
       },
@@ -6481,7 +6481,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-verify-extension-installation/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-verify-extension-installation/tests/test_contract.py",
-        "sha256": "bf826b8d4323349f6c3f7124b16ab23460520ba67e0942c10a8c2923bdf4bb49",
+        "sha256": "01d0f0f736c64c99573dbd74727f29b56dba8d02c0648bff333befe0ca77c9d8",
         "executable": false,
         "action": "unchanged"
       },
@@ -8910,7 +8910,7 @@
       {
         "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
-        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "sha256": "70fc18660ff896ef2da97cd4354af6b631aabe198bb6031aae31579d3dfc1a12",
         "executable": false,
         "action": "unchanged"
       },
@@ -8924,7 +8924,7 @@
       {
         "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
-        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "sha256": "615b079149b3460bc3230618294a95ff10cf94947c6739f69941b205625bc13e",
         "executable": false,
         "action": "unchanged"
       },
@@ -8938,7 +8938,7 @@
       {
         "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
-        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "sha256": "5abe25355abfb43ab69090698ee55ef05f1a621dfc8bc3e75335591111b54bc5",
         "executable": false,
         "action": "unchanged"
       },
@@ -8952,7 +8952,7 @@
       {
         "path": ".agents/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
-        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "sha256": "7f307d1b6a3bafb3f5e1377a2138ab92cfcaec96adce929aacbd32af98f8d2fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -9197,7 +9197,7 @@
       {
         "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
-        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "sha256": "70fc18660ff896ef2da97cd4354af6b631aabe198bb6031aae31579d3dfc1a12",
         "executable": false,
         "action": "unchanged"
       },
@@ -9211,7 +9211,7 @@
       {
         "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
-        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "sha256": "615b079149b3460bc3230618294a95ff10cf94947c6739f69941b205625bc13e",
         "executable": false,
         "action": "unchanged"
       },
@@ -9225,7 +9225,7 @@
       {
         "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
-        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "sha256": "5abe25355abfb43ab69090698ee55ef05f1a621dfc8bc3e75335591111b54bc5",
         "executable": false,
         "action": "unchanged"
       },
@@ -9239,7 +9239,7 @@
       {
         "path": ".codex/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
-        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "sha256": "7f307d1b6a3bafb3f5e1377a2138ab92cfcaec96adce929aacbd32af98f8d2fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -9484,7 +9484,7 @@
       {
         "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
-        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "sha256": "70fc18660ff896ef2da97cd4354af6b631aabe198bb6031aae31579d3dfc1a12",
         "executable": false,
         "action": "unchanged"
       },
@@ -9498,7 +9498,7 @@
       {
         "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
-        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "sha256": "615b079149b3460bc3230618294a95ff10cf94947c6739f69941b205625bc13e",
         "executable": false,
         "action": "unchanged"
       },
@@ -9512,7 +9512,7 @@
       {
         "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
-        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "sha256": "5abe25355abfb43ab69090698ee55ef05f1a621dfc8bc3e75335591111b54bc5",
         "executable": false,
         "action": "unchanged"
       },
@@ -9526,7 +9526,7 @@
       {
         "path": ".claude/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
-        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "sha256": "7f307d1b6a3bafb3f5e1377a2138ab92cfcaec96adce929aacbd32af98f8d2fa",
         "executable": false,
         "action": "unchanged"
       },
@@ -9771,7 +9771,7 @@
       {
         "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/bootstrap-incomplete-facts.json",
-        "sha256": "d0e03ac96c4ea4f58c883e2869f01ea12b8e7c4556f6b263684e1e644ed6eac9",
+        "sha256": "70fc18660ff896ef2da97cd4354af6b631aabe198bb6031aae31579d3dfc1a12",
         "executable": false,
         "action": "unchanged"
       },
@@ -9785,7 +9785,7 @@
       {
         "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/impact-current-facts.json",
-        "sha256": "ee7e053b44214c4229729b214f3a6ba9a16442d263cb699bb87b9a0cdc44226b",
+        "sha256": "615b079149b3460bc3230618294a95ff10cf94947c6739f69941b205625bc13e",
         "executable": false,
         "action": "unchanged"
       },
@@ -9799,7 +9799,7 @@
       {
         "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/promotion-sync-facts.json",
-        "sha256": "c247984e4b500cecd91b6cc01e47d7c6c1e1ab588889de9b4283d6be704598f8",
+        "sha256": "5abe25355abfb43ab69090698ee55ef05f1a621dfc8bc3e75335591111b54bc5",
         "executable": false,
         "action": "unchanged"
       },
@@ -9813,7 +9813,7 @@
       {
         "path": ".cursor/skills/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-bootstrap-repository-ssot/evals/files/repair-blocked-facts.json",
-        "sha256": "f375333bac373e9a04611d868d2fcd740c57d69b3911188efb10bcc446b2174b",
+        "sha256": "7f307d1b6a3bafb3f5e1377a2138ab92cfcaec96adce929aacbd32af98f8d2fa",
         "executable": false,
         "action": "unchanged"
       },

@@ -22,8 +22,16 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 | 官方 `@mindfoldhq/trellis` CLI | `0.6.5` |
 
 repo tag 与 extension revision 是两个独立版本轴。稳定 workflow 与 preset 必须来自同一个
-immutable tag `v0.6.5-guru.10`；tag 的 peeled commit 在 preparation 合并并通过 exact
-candidate 门禁后，以 Git ref、GitHub Release notes 和 release evidence 记录，不在合并前猜测。
+immutable annotated tag `v0.6.5-guru.10`；tag object 是
+`b5fd47e9dc45ca4d6950f87f38d495776ce676ce`，peeled commit 是
+`5c059f4943edad7dfe25182a78af94759d41f9a1`。对应 GitHub Release 为 non-draft、
+non-prerelease、zero-asset release。
+
+当前 `main` 的兼容候选是 extension `0.6.5-guru.37` / 官方 Trellis `0.6.15`。
+它已通过 `claude|codex|cursor × clean|existing` 六个隔离 cell、完整 capability
+preservation、installed SSOT contracts 与 A/B Finish/cleanup compatibility；workflow
+证据边界为 `public_plus_local_candidate`。`.37` 尚不是 stable tag 或 GitHub Release，
+其发布、tag-pinned install 与 release smoke 只由 #267 负责。
 
 新仓库的非交互安装入口：
 

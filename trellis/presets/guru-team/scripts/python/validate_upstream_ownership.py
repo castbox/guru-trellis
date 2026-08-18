@@ -27,7 +27,7 @@ WORKFLOW_ROOT_RELATIVE = Path("trellis/workflows/guru-team")
 
 SCHEMA_VERSION = "3.0"
 INVENTORY_ID = "guru-team-upstream-ownership"
-TARGET_TRELLIS_CLI = "0.6.5"
+TARGET_TRELLIS_CLI = "0.6.15"
 TOP_LEVEL_KEYS = {
     "schema_version",
     "inventory_id",

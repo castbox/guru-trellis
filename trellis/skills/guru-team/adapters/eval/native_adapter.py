@@ -5364,6 +5364,7 @@ def stage_owner_execution(
     if skill_id in {
         "guru-select-workflow-mode",
         "guru-execute-task-free-change",
+        "guru-bootstrap-repository-ssot",
         "guru-maintain-architecture-baseline",
         "guru-maintain-requirements-design-test-ssot",
     }:
@@ -5458,6 +5459,22 @@ def stage_owner_execution(
             }.get(recipe)
             if expected is None:
                 raise ValueError(f"unsupported architecture baseline owner staging recipe: {recipe}")
+            owner = {
+                "profile": public_payload["profile"],
+                "continuation_id": public_payload["continuation_id"],
+                "typed_exit": expected,
+            }
+        elif skill_id == "guru-bootstrap-repository-ssot":
+            expected = {
+                "bootstrap-baseline-incomplete": "baseline_incomplete",
+                "bootstrap-completed": "completed",
+                "bootstrap-repair-required": "repair_required",
+                "bootstrap-blocked": "blocked",
+            }.get(recipe)
+            if expected is None:
+                raise ValueError(
+                    f"unsupported repository SSOT Bootstrap owner staging recipe: {recipe}"
+                )
             owner = {
                 "profile": public_payload["profile"],
                 "continuation_id": public_payload["continuation_id"],
