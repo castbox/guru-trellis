@@ -38,11 +38,11 @@
   不重复，unsupported/mismatch fail closed。
 - `SCN-009`：task 已归档且 owner state 正常退休后，精确 retired locator 可重建 schema-valid `ready_for_merge`；缺 locator、archive/head/PR/scope drift 继续 fail closed。
 - `SCN-010`：新增或移除 active Skill 时 verifier 从 registry/interface 自动取得 inventory，并与 installed projection 做 exact equality。
-- `SCN-011`：`claude|codex|cursor × clean|existing` 六个独立 cell 全部使用 Trellis `0.6.15` 结束，sidecar 与 unknown template drift 为零。
+- `SCN-011`：`claude|codex|cursor × clean|existing` 六个独立 cell 全部使用 Trellis `0.6.15` 结束，sidecar 与 unknown template drift 为零；matrix `source_state` 绑定 HEAD、tracked/untracked candidate bytes/modes 与 candidate tree，run 前后 identity 一致。
 - `SCN-012`：existing cell 从 official `0.6.5` + `v0.6.5-guru.10` 运行 upgrade/update dry-run、条件式 migrate、workflow preview/switch 与 preset reapply。
-- `SCN-013`：before/after active id、interface/schema/exit/command/consumer/route、managed path/mode 与 Docs locator 无未审查 capability loss。
+- `SCN-013`：before/after active id、interface/schema/exit/command/consumer/route、Skill package/ordinary managed asset/overlay executable mode、recursive `docs/**` authority 与 extension identity 无未审查 capability loss。
 - `SCN-014`：每个 cell 运行 RDT、Architecture、Bootstrap 全 profile installed eval，并保持 #266 docs authority 与最小 spec projection。
-- `SCN-015`：local A/B 完成两种 merge order、零 metadata intersection、task-local archive、Finish/provider/cleanup 同 owner recovery 与 cleanup 后 reachability；B 的 GitHub 调用为零。
+- `SCN-015`：local A/B 完成两种 merge order、零 metadata intersection、task-local archive、Finish/provider/cleanup 同 owner recovery 与 cleanup 后 reachability；B 的 GitHub 调用为零；A archive 后 history query 返回唯一 `PR #301` finish-summary candidate。
 - `SCN-016`：真实 A disposable repo 的 PR #2 在 expected source head 上 rebase merge，Issue #1 在 merge 后关闭；remote branch/repo cleanup 后 retained-ref proof仍成立。
 - `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
 - `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。

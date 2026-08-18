@@ -20,6 +20,7 @@ import stat
 import subprocess
 import sys
 import tarfile
+import tempfile
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -77,6 +78,54 @@ def _executable_projection(path: Path) -> int:
     """Project the installer-owned executable bit, not archive/umask permissions."""
 
     return 1 if path.stat().st_mode & stat.S_IXUSR else 0
+
+
+def _managed_asset_executable(relative: str) -> bool:
+    return relative.startswith(".trellis/guru-team/scripts/bash/")
+
+
+def _installed_mode_declarations(installed: Mapping[str, Any]) -> dict[str, list[str]]:
+    skill_packages = _require_dict(installed.get("skill_packages"), "skill_packages")
+    package_rows = skill_packages.get("files")
+    if not isinstance(package_rows, list) or not package_rows:
+        raise MatrixError("installed skill package file inventory is empty")
+    package_modes = _sorted_strings(
+        f"{row.get('path')}:{1 if row.get('executable') else 0}"
+        for row in package_rows
+        if isinstance(row, dict)
+        and isinstance(row.get("path"), str)
+        and isinstance(row.get("executable"), bool)
+    )
+    if len(package_modes) != len(package_rows):
+        raise MatrixError("installed skill package mode inventory is incomplete")
+
+    overlays = _require_dict(installed.get("overlays"), "overlays")
+    overlay_rows = overlays.get("files")
+    if not isinstance(overlay_rows, list) or not overlay_rows:
+        raise MatrixError("installed overlay file inventory is empty")
+    overlay_modes = _sorted_strings(
+        f"{row.get('path')}:{1 if row.get('executable') else 0}"
+        for row in overlay_rows
+        if isinstance(row, dict)
+        and isinstance(row.get("path"), str)
+        and isinstance(row.get("executable"), bool)
+    )
+    if len(overlay_modes) != len(overlay_rows):
+        raise MatrixError("installed overlay mode inventory is incomplete")
+
+    install = _require_dict(installed.get("install"), "install")
+    managed_assets = _require_string_list(
+        install.get("managed_assets"), "install.managed_assets"
+    )
+    managed_modes = _sorted_strings(
+        f"{relative}:{1 if _managed_asset_executable(relative) else 0}"
+        for relative in managed_assets
+    )
+    return {
+        "skill_package_files_and_modes": package_modes,
+        "overlay_files_and_modes": overlay_modes,
+        "managed_asset_files_and_modes": managed_modes,
+    }
 
 
 def _require_dict(value: Any, label: str) -> dict[str, Any]:
@@ -394,6 +443,11 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
     rows = _active_registry_rows(repo_root)
     interfaces = [_interface_projection(repo_root, row) for row in rows]
     platform_inventory = derive_platform_inventory(repo_root)
+    installed_manifest = _require_dict(
+        _load_json(repo_root / ".trellis/guru-team/extension.json"),
+        "source dogfood installed manifest",
+    )
+    mode_declarations = _installed_mode_declarations(installed_manifest)
 
     commands: list[str] = []
     companion = public_api.get("companion_scripts")
@@ -469,7 +523,16 @@ def capability_projection(repo_root: Path) -> dict[str, Any]:
                 for row in ownership.get("managed_path_claims", [])
                 if isinstance(row, dict)
             ),
-            "overlay_files_and_modes": overlay_files,
+            "overlay_files_and_modes": mode_declarations[
+                "overlay_files_and_modes"
+            ],
+            "skill_package_files_and_modes": mode_declarations[
+                "skill_package_files_and_modes"
+            ],
+            "managed_asset_files_and_modes": mode_declarations[
+                "managed_asset_files_and_modes"
+            ],
+            "canonical_overlay_files_and_modes": overlay_files,
         },
         "skill_api": {
             "interfaces": interfaces,
@@ -558,6 +621,7 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
         else []
     )
     overlays = _require_dict(installed.get("overlays"), "installed overlays")
+    mode_declarations = _installed_mode_declarations(installed)
     overlay_files = _sorted_strings(
         f"{row.get('source')}:{1 if row.get('executable') else 0}"
         for row in overlays.get("files", [])
@@ -613,7 +677,16 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
             ),
             "ownership_rules": [],
             "managed_claims": [],
-            "overlay_files_and_modes": overlay_files,
+            "overlay_files_and_modes": mode_declarations[
+                "overlay_files_and_modes"
+            ],
+            "skill_package_files_and_modes": mode_declarations[
+                "skill_package_files_and_modes"
+            ],
+            "managed_asset_files_and_modes": mode_declarations[
+                "managed_asset_files_and_modes"
+            ],
+            "canonical_overlay_files_and_modes": overlay_files,
         },
         "skill_api": {
             "interfaces": interfaces,
@@ -661,11 +734,33 @@ def installed_capability_projection(target: Path) -> dict[str, Any]:
 def compare_capabilities(before: Mapping[str, Any], after: Mapping[str, Any]) -> dict[str, Any]:
     """Compare semantic capability groups while isolating version binding."""
 
+    version_fields = (
+        "version",
+        "target_trellis_cli",
+        "requires_trellis_cli",
+        "tested_trellis_cli",
+    )
+    before_extension = _require_dict(before.get("extension"), "before extension")
+    after_extension = _require_dict(after.get("extension"), "after extension")
     version_binding = {
-        "before": before.get("extension"),
-        "after": after.get("extension"),
+        "before": {field: before_extension.get(field) for field in version_fields},
+        "after": {field: after_extension.get(field) for field in version_fields},
     }
     differences: list[dict[str, Any]] = []
+    before_identity = {
+        key: value for key, value in before_extension.items() if key not in version_fields
+    }
+    after_identity = {
+        key: value for key, value in after_extension.items() if key not in version_fields
+    }
+    if before_identity != after_identity:
+        differences.append(
+            {
+                "group": "extension_identity",
+                "before": before_identity,
+                "after": after_identity,
+            }
+        )
     for group in ("distribution", "skill_api", "workflow", "task_data", "docs_authority"):
         if before.get(group) != after.get(group):
             differences.append(
@@ -717,6 +812,104 @@ def _git(repo: Path, *args: str, capture: bool = True) -> str:
     return _run(("git", "-C", str(repo), *args), capture=capture).strip()
 
 
+def source_state(repo_root: Path) -> dict[str, Any]:
+    """Bind one HEAD plus the exact tracked and untracked candidate delta."""
+
+    head = _git(repo_root, "rev-parse", "HEAD")
+    tracked = subprocess.run(
+        ("git", "-C", str(repo_root), "diff", "--binary", "HEAD", "--"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if tracked.returncode != 0:
+        raise MatrixError(
+            "cannot capture source tracked delta: "
+            + tracked.stderr.decode("utf-8", errors="replace")
+        )
+    untracked = subprocess.run(
+        (
+            "git",
+            "-C",
+            str(repo_root),
+            "ls-files",
+            "--others",
+            "--exclude-standard",
+            "-z",
+        ),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if untracked.returncode != 0:
+        raise MatrixError(
+            "cannot capture source untracked paths: "
+            + untracked.stderr.decode("utf-8", errors="replace")
+        )
+    untracked_rows: list[dict[str, Any]] = []
+    for raw in (item for item in untracked.stdout.split(b"\0") if item):
+        relative = raw.decode("utf-8")
+        path = repo_root / relative
+        if path.is_symlink():
+            content = os.readlink(path).encode("utf-8")
+            mode = "120000"
+        elif path.is_file():
+            content = path.read_bytes()
+            mode = "100755" if _executable_projection(path) else "100644"
+        else:
+            raise MatrixError(f"unsupported untracked source entry: {relative}")
+        untracked_rows.append(
+            {
+                "path": relative,
+                "mode": mode,
+                "sha256": hashlib.sha256(content).hexdigest(),
+            }
+        )
+    with tempfile.TemporaryDirectory(prefix="guru-matrix-source-index-") as directory:
+        index_path = Path(directory) / "index"
+        index_env = {**os.environ, "GIT_INDEX_FILE": str(index_path)}
+        for argv in (
+            ("git", "-C", str(repo_root), "read-tree", "HEAD"),
+            ("git", "-C", str(repo_root), "add", "-A", "--", "."),
+        ):
+            completed = subprocess.run(
+                argv,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=index_env,
+                check=False,
+            )
+            if completed.returncode != 0:
+                raise MatrixError(
+                    "cannot build source candidate tree: "
+                    + completed.stderr.decode("utf-8", errors="replace")
+                )
+        written = subprocess.run(
+            ("git", "-C", str(repo_root), "write-tree"),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=index_env,
+            check=False,
+        )
+        if written.returncode != 0:
+            raise MatrixError(
+                "cannot write source candidate tree: "
+                + written.stderr.decode("utf-8", errors="replace")
+            )
+        candidate_tree = written.stdout.decode("ascii").strip()
+    state: dict[str, Any] = {
+        "head": head,
+        "candidate_tree": candidate_tree,
+        "tracked_delta_sha256": hashlib.sha256(tracked.stdout).hexdigest(),
+        "untracked_files": sorted(
+            untracked_rows, key=lambda row: str(row["path"]).encode("utf-8")
+        ),
+        "dirty": bool(tracked.stdout or untracked_rows),
+    }
+    state["identity_sha256"] = _digest(state)
+    return state
+
+
 def _parse_cli_version(output: str) -> str:
     matched = VERSION_RE.search(output)
     if not matched:
@@ -765,6 +958,20 @@ def _init_git_repo(target: Path) -> None:
         readme.write_text(
             f"# Matrix {domain.title()} Authority\n\n"
             f"This exact business-owned {domain} authority must survive install and update.\n",
+            encoding="utf-8",
+        )
+        versioned = (
+            target
+            / "docs"
+            / domain
+            / "versions"
+            / "current-business"
+            / "authority.md"
+        )
+        versioned.parent.mkdir(parents=True, exist_ok=True)
+        versioned.write_text(
+            f"# Current {domain.title()} Body\n\n"
+            f"This versioned business-owned {domain} body must survive install and update.\n",
             encoding="utf-8",
         )
     _run(("git", "add", ".throwaway-baseline", "docs"), cwd=target)
@@ -1080,9 +1287,7 @@ def _assert_installed_file_modes(
             digest = hashlib.sha256(target_path.read_bytes()).hexdigest()
             if managed_hashes[relative] != digest:
                 raise MatrixError(f"managed asset digest mismatch for {relative}")
-        expected_executable = relative.startswith(
-            ".trellis/guru-team/scripts/bash/"
-        )
+        expected_executable = _managed_asset_executable(relative)
         target_executable = bool(target_path.stat().st_mode & stat.S_IXUSR)
         if target_executable is not expected_executable:
             raise MatrixError(f"managed asset mode drift for {relative}")
@@ -1192,8 +1397,28 @@ def _assert_template_hashes(target: Path, source_root: Path) -> dict[str, Any]:
     }
 
 
+def _docs_authority_snapshot(target: Path) -> dict[str, str]:
+    docs_root = target / "docs"
+    if not docs_root.is_dir():
+        raise MatrixError("business repository has no Docs authority root")
+    expected = {
+        path.relative_to(target).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(docs_root.rglob("*"))
+        if path.is_file() and not path.is_symlink()
+    }
+    for domain in ("requirements", "design", "test", "architecture"):
+        prefix = f"docs/{domain}/"
+        if not any(relative.startswith(prefix) for relative in expected):
+            raise MatrixError(f"complete {domain} authority was not frozen")
+        if not any(
+            relative.startswith(f"{prefix}versions/") for relative in expected
+        ):
+            raise MatrixError(f"versioned {domain} authority was not frozen")
+    return expected
+
+
 def _assert_docs_authority(target: Path, expected: Mapping[str, str]) -> None:
-    if len(expected) != 4:
+    if not expected:
         raise MatrixError("complete Requirements/Design/Test/Architecture authority was not frozen")
     authority_bytes: list[bytes] = []
     for relative, digest in expected.items():
@@ -1468,16 +1693,7 @@ def _run_cell(
         allow_local_sample if scenario == "clean" else False,
         cell_root / "trellis-init.log",
     )
-    before_docs = {
-        relative: hashlib.sha256((target / relative).read_bytes()).hexdigest()
-        for relative in (
-            "docs/requirements/README.md",
-            "docs/design/README.md",
-            "docs/test/README.md",
-            "docs/architecture/README.md",
-        )
-        if (target / relative).is_file()
-    }
+    before_docs = _docs_authority_snapshot(target)
     initial_preset = _apply_preset(
         source_root, target, platform, cell_root / "preset-initial.log"
     )
@@ -1611,7 +1827,7 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
         raise MatrixError(f"matrix work root must be empty: {work_root}")
     work_root.mkdir(parents=True, exist_ok=True)
     matrix = build_matrix(repo_root)
-    source_commit = _git(repo_root, "rev-parse", "HEAD")
+    source_before = source_state(repo_root)
     before_commit = _git(repo_root, "rev-parse", f"{args.before_tag}^{{}}")
     before_tag_object = _git(repo_root, "rev-parse", args.before_tag)
     results = []
@@ -1665,6 +1881,10 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
     if parallel_finish.get("status") != "passed":
         raise MatrixError("parallel Finish compatibility fixture did not pass")
 
+    source_after = source_state(repo_root)
+    if source_after["identity_sha256"] != source_before["identity_sha256"]:
+        raise MatrixError("source repository changed while compatibility matrix was running")
+
     legacy_representative = work_root.parent / "project"
     if legacy_representative.exists():
         raise MatrixError(f"representative install root already exists: {legacy_representative}")
@@ -1676,7 +1896,9 @@ def run_matrix(args: argparse.Namespace) -> dict[str, Any]:
     summary = {
         "schema_version": SCHEMA_VERSION,
         "status": "passed",
-        "source_commit": source_commit,
+        "source_commit": source_before["head"],
+        "source_state": source_before,
+        "source_identity_sha256": source_before["identity_sha256"],
         "before_tag": args.before_tag,
         "before_tag_object": before_tag_object,
         "before_commit": before_commit,

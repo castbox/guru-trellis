@@ -265,6 +265,24 @@ SESSION_AUTO_COMMIT_HEADER = """# Guru Team owns archive and finish-summary meta
 
 
 def now_iso() -> str:
+    explicit = os.environ.get("GURU_TEAM_INSTALLED_AT")
+    if explicit is not None:
+        try:
+            parsed = datetime.fromisoformat(explicit.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise SystemExit(
+                "GURU_TEAM_INSTALLED_AT must be one timezone-aware ISO-8601 timestamp."
+            ) from exc
+        if parsed.tzinfo is None:
+            raise SystemExit(
+                "GURU_TEAM_INSTALLED_AT must be one timezone-aware ISO-8601 timestamp."
+            )
+        return (
+            parsed.astimezone(timezone.utc)
+            .replace(microsecond=0)
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 

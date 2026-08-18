@@ -4,6 +4,7 @@ import ast
 import hashlib
 import importlib.util
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -150,6 +151,102 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             projection["distribution"]["platforms"],
             ["claude", "codex", "cursor"],
         )
+        self.assertGreater(
+            len(projection["distribution"]["skill_package_files_and_modes"]),
+            4000,
+        )
+        self.assertGreater(
+            len(projection["distribution"]["managed_asset_files_and_modes"]),
+            0,
+        )
+
+    def test_source_state_binds_head_tracked_delta_and_untracked_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            subprocess.run(("git", "init", "-q"), cwd=repo, check=True)
+            subprocess.run(
+                ("git", "config", "user.name", "Matrix Test"), cwd=repo, check=True
+            )
+            subprocess.run(
+                ("git", "config", "user.email", "matrix@example.invalid"),
+                cwd=repo,
+                check=True,
+            )
+            tracked = repo / "tracked.txt"
+            tracked.write_text("base\n")
+            subprocess.run(("git", "add", "tracked.txt"), cwd=repo, check=True)
+            subprocess.run(
+                ("git", "commit", "-q", "-m", "base"), cwd=repo, check=True
+            )
+
+            clean = self.matrix.source_state(repo)
+            self.assertFalse(clean["dirty"])
+            self.assertEqual(clean["untracked_files"], [])
+            self.assertEqual(
+                clean["candidate_tree"],
+                subprocess.run(
+                    ("git", "rev-parse", "HEAD^{tree}"),
+                    cwd=repo,
+                    check=True,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                ).stdout.strip(),
+            )
+
+            tracked.write_text("candidate\n")
+            untracked = repo / "new.sh"
+            untracked.write_text("#!/bin/sh\n")
+            untracked.chmod(0o755)
+            dirty = self.matrix.source_state(repo)
+            self.assertTrue(dirty["dirty"])
+            self.assertEqual(dirty["head"], clean["head"])
+            self.assertNotEqual(dirty["identity_sha256"], clean["identity_sha256"])
+            self.assertNotEqual(dirty["candidate_tree"], clean["candidate_tree"])
+            self.assertEqual(
+                dirty["untracked_files"],
+                [
+                    {
+                        "path": "new.sh",
+                        "mode": "100755",
+                        "sha256": hashlib.sha256(b"#!/bin/sh\n").hexdigest(),
+                    }
+                ],
+            )
+
+            tracked.write_text("different candidate\n")
+            changed = self.matrix.source_state(repo)
+            self.assertNotEqual(
+                changed["identity_sha256"], dirty["identity_sha256"]
+            )
+
+    def test_docs_authority_snapshot_covers_versioned_bodies(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "repo"
+            self.matrix._init_git_repo(target)
+            projection = target / ".trellis/spec/docs/index.md"
+            projection.parent.mkdir(parents=True, exist_ok=True)
+            projection.write_text("# Minimal projection\n")
+            snapshot = self.matrix._docs_authority_snapshot(target)
+
+            self.assertEqual(len(snapshot), 8)
+            self.assertTrue(
+                all(
+                    f"docs/{domain}/versions/current-business/authority.md"
+                    in snapshot
+                    for domain in ("requirements", "design", "test", "architecture")
+                )
+            )
+            self.matrix._assert_docs_authority(target, snapshot)
+
+            removed = (
+                target
+                / "docs/requirements/versions/current-business/authority.md"
+            )
+            removed.unlink()
+            with self.assertRaisesRegex(
+                self.matrix.MatrixError, "changed Docs authority"
+            ):
+                self.matrix._assert_docs_authority(target, snapshot)
 
     def test_overlay_mode_projection_ignores_archive_umask_but_preserves_executable(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -181,6 +278,29 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         self.assertEqual(
             [difference["group"] for difference in lost["blocking_differences"]],
             ["workflow"],
+        )
+
+        after = json.loads(json.dumps(before))
+        after["extension"]["extension_id"] = "guru-team-drifted"
+        identity_drift = self.matrix.compare_capabilities(before, after)
+        self.assertFalse(identity_drift["capabilities_preserved"])
+        self.assertEqual(
+            [
+                difference["group"]
+                for difference in identity_drift["blocking_differences"]
+            ],
+            ["extension_identity"],
+        )
+
+        after = json.loads(json.dumps(before))
+        after["distribution"]["skill_package_files_and_modes"] = after[
+            "distribution"
+        ]["skill_package_files_and_modes"][1:]
+        mode_loss = self.matrix.compare_capabilities(before, after)
+        self.assertFalse(mode_loss["capabilities_preserved"])
+        self.assertEqual(
+            [difference["group"] for difference in mode_loss["blocking_differences"]],
+            ["distribution"],
         )
 
     def test_installed_projection_and_template_hash_classification_are_current(self) -> None:

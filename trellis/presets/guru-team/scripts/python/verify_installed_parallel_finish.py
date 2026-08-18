@@ -544,6 +544,54 @@ def assert_reachable(root: Path, commits: Sequence[str], refs: Sequence[str]) ->
             raise ParallelFinishError(f"protected commit is unreachable: {commit}")
 
 
+def verify_archived_history(
+    root: Path,
+    archived_task: Path,
+    *,
+    pr_number: int,
+) -> dict[str, Any]:
+    preview = (
+        root
+        / ".trellis/guru-team/skills/packages/guru-discover-change-context/scripts/preview-change-context-history.sh"
+    )
+    payload = json.loads(
+        run(
+            (
+                str(preview),
+                "--root",
+                str(root),
+                "--json",
+                "--query-json",
+                json.dumps({"pr_refs": [f"PR #{pr_number}"]}, sort_keys=True),
+            ),
+            root,
+        ).stdout
+    )
+    expected = (archived_task / "finish-summary.json").relative_to(root).as_posix()
+    candidates = payload.get("candidates")
+    invalid = payload.get("invalid")
+    if invalid != [] or not isinstance(candidates, list) or len(candidates) != 1:
+        raise ParallelFinishError("archived history preview was not uniquely discoverable")
+    candidate = candidates[0]
+    matched = candidate.get("matched_clues")
+    score = candidate.get("score")
+    if (
+        candidate.get("finish_summary_path") != expected
+        or not isinstance(matched, dict)
+        or matched.get("pr_refs") != [f"PR #{pr_number}"]
+        or not isinstance(score, dict)
+        or not isinstance(score.get("total"), int)
+        or score["total"] <= 0
+    ):
+        raise ParallelFinishError("archived history preview selected the wrong Finish summary")
+    return {
+        "status": "passed",
+        "candidate_count": 1,
+        "finish_summary_path": expected,
+        "matched_pr_ref": f"PR #{pr_number}",
+    }
+
+
 def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
     installed_repo = installed_repo.resolve()
     work_root = work_root.resolve()
@@ -660,6 +708,11 @@ def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
     git(seed, "fetch", "-q", "origin")
     protected = [a_work, a_finish, b_work, b_finish]
     assert_reachable(seed, protected, retained_refs)
+    archived_history = verify_archived_history(
+        a_worktree,
+        a_archive,
+        pr_number=301,
+    )
 
     failed_delete = run(
         ("git", "branch", "-D", b_branch), b_current, check=False
@@ -690,6 +743,7 @@ def run_fixture(installed_repo: Path, work_root: Path) -> dict[str, Any]:
             "work_commit": a_work,
             "finish_commit": a_finish,
             "archive_locator": a_archive.relative_to(a_worktree).as_posix(),
+            "history_discovery": archived_history,
             "provider_failure_recovered": a_closeout[
                 "provider_failure_recovered"
             ],

@@ -130,6 +130,10 @@ version lives in `trellis/guru-team-extension.json`; it is separate from the
 official Trellis CLI version and from the marketplace index schema version in
 `trellis/index.json`.
 
+Normal apply records the current UTC install time. A deterministic recovery or
+fixture may set `GURU_TEAM_INSTALLED_AT` to one timezone-aware ISO-8601 value;
+the installer validates it and normalizes it to UTC before writing provenance.
+
 The preset also normalizes known Trellis-generated English documentation
 language rules in target business repositories. It deterministically replaces
 the fixed `All documentation ... English` template lines in `.trellis/spec/**` and

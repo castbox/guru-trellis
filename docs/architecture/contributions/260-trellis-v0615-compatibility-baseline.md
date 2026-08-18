@@ -8,7 +8,9 @@ review，等待本次 promotion 投影，不单独构成 CURRENT authority。
   version 为 `0.6.15`；canonical extension candidate 为 `0.6.5-guru.37`。
 - `ARCH-CUR-009`：兼容 verifier 从 live registry/interface/manifest/ownership
   生成完整 capability projection，不使用固定 package/command/platform count 作为
-  authority。
+  authority；HEAD、tracked/untracked candidate bytes/modes 与 candidate tree 共同绑定
+  source state，三类 file mode、recursive Docs authority、extension identity 与
+  post-archive history discovery 分别 fail closed。
 - `ARCH-INT-006`：每个 declared platform cell 同时安装 shared `.agents` public
   projection 与唯一 selected platform projection；package-private validator scripts
   不分发到 platform roots。
@@ -24,6 +26,5 @@ review，等待本次 promotion 投影，不单独构成 CURRENT authority。
 Fitness gate：六个 cell 全部保持现有 21 active Skills、89 external exits、
 RDT/Architecture/Bootstrap contracts、History/Finish/naming routes 与声明平台入口；
 版本 binding 和已审查 official migration mapping 之外没有差异。matrix summary
-中的稳定 matrix SHA-256 为
-`660422848f6efba9f1c3c6fcf2d9d23a1e8b710af8ffd10bf0f12e0954910f49`；
-wrapper summary 会包含临时 fixture commit identity，不作为跨重跑稳定 authority。
+的精确 final candidate tree/source identity/digest 只保留在 runtime/conversation evidence，
+不写回 tracked 文档以避免自引用；matrix 继续保持 `real_github_verified:false`。

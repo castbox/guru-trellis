@@ -34,6 +34,17 @@ class InstalledParallelFinishTests(unittest.TestCase):
             self.assertEqual(case["branch_review"], "passed")
             self.assertEqual(case["publication_review"], "passed")
         self.assertTrue(result["a"]["provider_failure_recovered"])
+        self.assertEqual(
+            result["a"]["history_discovery"],
+            {
+                "status": "passed",
+                "candidate_count": 1,
+                "finish_summary_path": (
+                    result["a"]["archive_locator"] + "/finish-summary.json"
+                ),
+                "matched_pr_ref": "PR #301",
+            },
+        )
         self.assertEqual(result["b"]["github_pr_call_count"], 0)
         self.assertFalse(result["b"]["workspace_journal_tracked"])
         self.assertTrue(result["cleanup_failure_recovered"])
