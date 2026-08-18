@@ -150,11 +150,16 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 - `issue-scope-ledger.json` 中 `close_issues`、`related_issues`、`followup_issues` 是否正确。
 - PR readiness：PR 标题、正文、验证结果、安全说明、部署影响、关闭 issue 语义是否真实充分。
 
-## 6. 开箱即用门禁
+## 6. 验证范围与开箱即用门禁
 
-任何修改 workflow / preset / marketplace / overlay / companion scripts 后，都必须验证“新仓库安装后开箱即用”。不能只验证当前 dogfood 仓库里的已安装副本。
+验证范围以 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership` 为 SSOT。每个 Issue/task 只执行证明其 accepted scope 所需的最小可靠验证集：
 
-最低验收要求：
+- 普通 feature、bug、governance、workflow、preset、overlay 或 companion-script Issue，执行与变更相关的 package/runtime、canonical/dogfood/installed、声明平台投影、reapply/drift、sidecar 和 mode 定向验证，不执行完整多平台 Throwaway installer 矩阵。
+- 普通 Issue 修改 installer/workflow/preset/overlay，且 accepted scope 确实需要证明当前版本可干净安装时，最多执行一个代表性 clean throwaway；这不等同于完整矩阵，也不继承升级或发布门禁职责。
+- 只有专门的累计兼容性、Trellis upgrade/update 或 Release Gate Issue，才执行完整多平台 Throwaway installer 矩阵；具体平台及 clean/existing/update/reapply/workflow-switch/release-candidate 组合以该 live Issue 的 accepted contract 为准。
+- 更具体的 live Issue 验证合同对该 Issue 优先。普通 Issue/task 不得自行扩张为完整矩阵；由专门 Issue 承担的矩阵证据应明确记为 deferred/unverified boundary，而不是普通任务失败。
+
+专门矩阵 Issue 的最低验收要求：
 
 - 从干净临时仓库或 throwaway repo 安装 workflow marketplace 和 preset。
 - 验证 `trellis/index.json` 能被 Trellis 识别，`guru-team` workflow id、path、type 正确。
@@ -165,7 +170,7 @@ Mandatory skill 缺失，或出现 unknown、multiple、unmapped exit，或出�
 - 验证 Codex / Claude / Cursor 等声明支持的平台入口文案一致，不出现某个平台仍停留旧流程的情况。
 - 验证 README 中给出的安装命令是真实可执行的，不依赖本机隐藏状态。
 
-如果暂时无法跑完整 throwaway 安装，必须在最终说明中明确未验证项和风险，不能声称开箱即用。
+如果专门矩阵 Issue 暂时无法跑完整 throwaway 安装，必须在最终说明中明确未验证项和风险，不能声称完整兼容、升级或 Release Gate 已通过。
 
 ## 7. Upgrade / Update 抗漂移门禁
 

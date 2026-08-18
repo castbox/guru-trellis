@@ -434,6 +434,11 @@ Use the configured Trellis implement/check agents when available; their
 terminal results are ephemeral evidence. Execute the approved Docs SSOT Plan
 and implement the current scope.
 
+Before selecting validation, read
+`.trellis/spec/workflow/quality-guidelines.md` and apply its `Validation Scope
+Ownership` contract. A generic extension change never authorizes the full
+multi-platform Throwaway installer matrix.
+
 Every dispatch prompt for an official Trellis implement, check, research,
 channel-runtime, or independent-review worker authorizes approved-plan work
 only. If that worker observes anything outside the approved planning, it must

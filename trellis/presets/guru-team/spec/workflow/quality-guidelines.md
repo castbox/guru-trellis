@@ -90,6 +90,31 @@ rg "review-branch|finding|observation|followup-candidate|最终放行审查代�
 rg "wait-timeout|progress-observed|continue-waiting|supersedes_agent_id|default at least 5 minutes|stale_after_unanswered_status_request|agent-progress.jsonl|long-command wrapper|periodic heartbeat"
 ```
 
+## Validation Scope Ownership
+
+Every Issue and task must use the smallest reliable validation set that proves
+its own accepted scope. Validation ownership is split as follows:
+
+- An ordinary feature, bug, governance, workflow, preset, overlay, or companion-
+  script Issue runs targeted checks for the changed package/runtime and the
+  relevant canonical, dogfood, installed, declared-platform, reapply, drift,
+  sidecar, and mode surfaces. It does not run the full multi-platform Throwaway
+  installer matrix.
+- When an ordinary Issue changes installer, workflow, preset, or overlay
+  behavior and its accepted scope directly requires clean current-version
+  installation proof, it may run one representative clean throwaway. That
+  focused proof is not the full matrix and does not inherit upgrade or release
+  ownership.
+- Only a dedicated cumulative compatibility, Trellis upgrade/update, or Release
+  Gate Issue runs the full multi-platform Throwaway installer matrix. The live
+  accepted Issue contract defines its declared platforms and the applicable
+  clean, existing-project, update, reapply, workflow-switch, and release-candidate
+  variants.
+- A more specific live accepted Issue contract remains authoritative for that
+  Issue. An ordinary Issue or task must not self-expand into the full matrix;
+  deferred matrix coverage belongs to its dedicated owner and is reported as an
+  explicit unverified boundary rather than an ordinary-task failure.
+
 ## Required Checks
 
 Use these checks before committing workflow or preset changes:
