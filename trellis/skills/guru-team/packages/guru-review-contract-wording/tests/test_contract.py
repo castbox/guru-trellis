@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+import hashlib
 import json
 import sys
 import tempfile
@@ -84,6 +86,76 @@ class ContractWordingPackageTest(unittest.TestCase):
             ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(input_path), "--path", "docs/contract.md"],
         )
 
+    def change_request_owner(self) -> tuple[dict, dict]:
+        change = {
+            "source_kind": "draft",
+            "identity": "draft-274",
+            "title": "Exact title",
+            "body": "Exact body",
+            "updated_at": None,
+        }
+        scope = wording_common.scope(self.root, "change_request", change=change)
+        contents = {item["id"]: change[item["field"]] for item in scope["items"]}
+        scan = wording_common.scan(scope, contents)
+        authored = {
+            "generated_at": "2026-08-18T00:00:00Z",
+            "semantic_review": {
+                "revisions": [],
+                "classifications": [],
+                "ai_review_gate": {
+                    "status": "passed",
+                    "reviewer": "package-local-test",
+                    "summary": "The complete title and body scope was reviewed.",
+                    "reviewed_scan_sha256": scan["scan_sha256"],
+                    "checked_dimensions": {name: True for name in DIMENSIONS},
+                },
+            },
+            "typed_exit": "pass",
+        }
+        owner = wording_common.contract_wording_derive_result(
+            "change_request", "workflow", scope, scan, authored
+        )
+        wording_common.validate_result(PACKAGE_ROOT, owner)
+        return owner, change
+
+    def invoke_change_request(self, owner: dict) -> dict:
+        transition = json.loads(
+            (PACKAGE_ROOT / "examples/public-pass-output-2.0.json").read_text()
+        )["transition"]
+        transition.update({
+            "stage": "clarity_current",
+            "transition_id": "clarity_current:" + "3" * 24,
+        })
+        for field in ("wording_facts_sha256", "target_content_sha256", "wording"):
+            transition.pop(field, None)
+        envelope = self.write_json("change-request-invoke.json", {
+            "public_input": {
+                "profile": "change_request",
+                "source_exit": "clear",
+                "mode": "workflow",
+                "target_locator": transition["target_locator"],
+                "continuation_id": transition["continuation_id"],
+            },
+            "transition": transition,
+            "owner_result": owner,
+            "validation_receipt": wording_common.validation_receipt(owner),
+        })
+        return wording_invoke.run(
+            PACKAGE_ROOT,
+            {},
+            ["--root", str(self.root), "--invocation", str(envelope)],
+        )
+
+    @staticmethod
+    def reseal_owner(owner: dict) -> None:
+        scope = owner["scope"]
+        scope["scope_sha256"] = wording_common.digest({
+            "identity": scope["identity"],
+            "items": scope["items"],
+        })
+        unsigned = {key: value for key, value in owner.items() if key != "facts_sha256"}
+        owner["facts_sha256"] = wording_common.digest(unsigned)
+
     def test_interface_declares_semantic_closed_loop_and_fixed_exits(self) -> None:
         interface = json.loads((PACKAGE_ROOT / "interface.json").read_text(encoding="utf-8"))
         self.assertEqual("semantic", interface["judgment_mode"])
@@ -104,6 +176,42 @@ class ContractWordingPackageTest(unittest.TestCase):
         self.assertEqual({"exit_id": "pass", "profile": "explicit_paths", "continuation_id": "stage0-current"}, output)
         schema = json.loads((PACKAGE_ROOT / "schemas/public-pass-output-2.0.schema.json").read_text())
         self.assertEqual([], list(Draft202012Validator(schema).iter_errors(output)))
+
+    def test_change_request_pass_projects_canonical_title_body_identity(self) -> None:
+        owner, change = self.change_request_owner()
+        output = self.invoke_change_request(owner)
+        title_sha256 = hashlib.sha256(change["title"].encode()).hexdigest()
+        body_sha256 = hashlib.sha256(change["body"].encode()).hexdigest()
+        expected = wording_common.digest({
+            "title_sha256": title_sha256,
+            "body_sha256": body_sha256,
+        })
+        transition = output["transition"]
+        self.assertEqual(expected, transition["target_content_sha256"])
+        self.assertEqual(expected, transition["wording"]["target_content_sha256"])
+        self.assertNotEqual(body_sha256, expected)
+        self.assertEqual(
+            "wording_current:" + wording_common.digest(transition["wording"])[:24],
+            transition["transition_id"],
+        )
+
+    def test_change_request_pass_rejects_missing_or_duplicate_title_body(self) -> None:
+        owner, _ = self.change_request_owner()
+        cases = {
+            "missing-title": ["body"],
+            "missing-body": ["title"],
+            "duplicate-title": ["title", "title", "body"],
+            "duplicate-body": ["title", "body", "body"],
+        }
+        original = {item["field"]: item for item in owner["scope"]["items"]}
+        for name, fields in cases.items():
+            candidate = copy.deepcopy(owner)
+            candidate["scope"]["items"] = [copy.deepcopy(original[field]) for field in fields]
+            self.reseal_owner(candidate)
+            with self.subTest(case=name), self.assertRaises(CommandError) as raised:
+                self.invoke_change_request(candidate)
+            self.assertEqual("stale_identity", raised.exception.code)
+            self.assertEqual("owner_result.scope", raised.exception.field_path)
 
     def test_content_drift_invalidates_recorded_result(self) -> None:
         result_path = self.write_json("result.json", self.record())
