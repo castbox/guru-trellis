@@ -52,6 +52,16 @@ unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
 invalid interface projections stop fail closed.
 
 ## Integrated Public Graph
+
+### Architecture Baseline owner
+<!-- guru-skill-invoke: {"skill":"guru-maintain-architecture-baseline","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"baseline_current","consumer":{"kind":"workflow","id":"guru-architecture-baseline-current-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"sync_required","consumer":{"kind":"skill","id":"guru-maintain-architecture-baseline"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-architecture-baseline-bootstrap-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"architecture_conflict","consumer":{"kind":"workflow","id":"guru-architecture-baseline-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"contract_incomplete","consumer":{"kind":"workflow","id":"guru-architecture-baseline-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"fitness_regression","consumer":{"kind":"workflow","id":"guru-architecture-baseline-check-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"blocked","consumer":{"kind":"stop","id":"architecture-baseline-blocked"}} -->
 The installed graph is exactly 18 active Skills. The business-task workflow is
 exactly 17 mandatory invokes and 71 external exits.
 ### Cross-phase normal-scenario qualification owner
@@ -149,6 +159,11 @@ exactly 17 mandatory invokes and 71 external exits.
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
 <!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
 ## Workflow And Stop Targets
+<!-- guru-workflow-target: {"id":"guru-architecture-baseline-current-router"} -->
+<!-- guru-workflow-target: {"id":"guru-architecture-baseline-bootstrap-router"} -->
+<!-- guru-workflow-target: {"id":"guru-architecture-baseline-planning-router"} -->
+<!-- guru-workflow-target: {"id":"guru-architecture-baseline-check-router"} -->
+<!-- guru-stop-target: {"id":"architecture-baseline-blocked"} -->
 The graph contains exactly 24 workflow targets and 18 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->

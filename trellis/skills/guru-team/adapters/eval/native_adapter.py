@@ -4947,7 +4947,11 @@ def stage_production_owner_execution(
     fixture_runtime_target = fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
     if fixture_runtime_target.is_symlink() or not os.access(fixture_runtime_target, os.X_OK):
         raise ValueError("fixture public invocation runtime is unavailable")
-    runtime = load_package_owner_runtime(fixture_runtime_target, skill_id)
+    runtime = (
+        None
+        if skill_id == "guru-maintain-architecture-baseline"
+        else load_package_owner_runtime(fixture_runtime_target, skill_id)
+    )
     if skill_id == "guru-reconcile-task-base":
         return stage_base_reconciliation_owner_execution(
             request,
@@ -5357,7 +5361,7 @@ def stage_owner_execution(
     head = run_git(fixture, "rev-parse", "HEAD")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
-    if skill_id in {"guru-select-workflow-mode", "guru-execute-task-free-change"}:
+    if skill_id in {"guru-select-workflow-mode", "guru-execute-task-free-change", "guru-maintain-architecture-baseline"}:
         runtime = None
     elif skill_id == "guru-discover-change-context":
         runtime = load_package_runtime_module(
@@ -5440,6 +5444,20 @@ def stage_owner_execution(
             owner_context = {"change_request": change_request}
         elif skill_id == "guru-create-task-workspace":
             owner = build_workspace_owner(runtime, fixture, recipe, public_mode)
+        elif skill_id == "guru-maintain-architecture-baseline":
+            expected = {
+                "architecture-bootstrap-incomplete": "baseline_incomplete",
+                "architecture-impact-current": "baseline_current",
+                "architecture-promotion-sync": "sync_required",
+                "architecture-repair-blocked": "blocked",
+            }.get(recipe)
+            if expected is None:
+                raise ValueError(f"unsupported architecture baseline owner staging recipe: {recipe}")
+            owner = {
+                "profile": public_payload["profile"],
+                "continuation_id": public_payload["continuation_id"],
+                "typed_exit": expected,
+            }
         else:
             raise ValueError(f"owner staging is not implemented for {skill_id}")
     finally:

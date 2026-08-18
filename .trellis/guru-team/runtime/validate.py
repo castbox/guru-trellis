@@ -48,8 +48,8 @@ def _active_rows(registry: dict[str, Any]) -> list[dict[str, Any]]:
     if not isinstance(rows, list):
         raise CommandError("schema_mismatch", "registry.skills", "Restore the current Skill registry.")
     active = [row for row in rows if isinstance(row, dict) and row.get("state") == "active"]
-    if len(active) != 18 or len({row.get("id") for row in active}) != 18:
-        raise CommandError("owner_mismatch", "registry.skills", "Restore exactly eighteen uniquely identified active packages.")
+    if len(active) != 19 or len({row.get("id") for row in active}) != 19:
+        raise CommandError("owner_mismatch", "registry.skills", "Restore exactly nineteen uniquely identified active packages.")
     return active
 
 

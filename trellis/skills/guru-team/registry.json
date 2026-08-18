@@ -3,6 +3,18 @@
   "schema_version": "1.4",
   "skills": [
     {
+      "id": "guru-maintain-architecture-baseline",
+      "state": "active",
+      "name": "guru-maintain-architecture-baseline",
+      "package": "packages/guru-maintain-architecture-baseline",
+      "interface": "packages/guru-maintain-architecture-baseline/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "workflow_integration_state": "integrated",
+      "supported_platforms": ["shared", "codex", "cursor", "claude"],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "architecture-baseline-maintenance"
+    },
+    {
       "id": "guru-approve-task-plan",
       "state": "active",
       "name": "guru-approve-task-plan",

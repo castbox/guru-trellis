@@ -1285,7 +1285,7 @@ for command in (
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-execute-task-free-change", "guru-finalize-task", "guru-merge-task-pr", "guru-qualify-normal-scenario", "guru-reconcile-task-base", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-execute-task-free-change", "guru-finalize-task", "guru-maintain-architecture-baseline", "guru-merge-task-pr", "guru-qualify-normal-scenario", "guru-reconcile-task-base", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"]
 assert api["skill_contracts"]["planned_skill_ids"] == []
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-context-owner-result-2.0" in api["skill_contracts"]["artifact_schema_ids"]
