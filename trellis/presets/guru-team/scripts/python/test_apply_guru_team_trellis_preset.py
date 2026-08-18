@@ -1413,7 +1413,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         ownership_facts = payload["upstream_ownership_validation"]
         self.assertEqual(ownership_facts["schema_version"], "3.0")
         self.assertEqual(ownership_facts["overlay_count"], 3)
-        self.assertEqual(ownership_facts["active_skill_count"], 18)
+        self.assertEqual(ownership_facts["active_skill_count"], 20)
         self.assertEqual(ownership_facts["managed_claim_count"], 9)
         self.assertEqual(payload["replaced_overlays"], [])
         overlay_root = self.guru_root / "trellis/presets/guru-team/overlays"
@@ -1462,6 +1462,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 ".trellis/spec/workflow/companion-scripts.md",
                 ".trellis/spec/workflow/data-contracts.md",
                 ".trellis/spec/workflow/quality-guidelines.md",
+                ".trellis/spec/workflow/requirements-design-test-ssot.md",
                 ".trellis/spec/workflow/semantic-retrieval.md",
                 ".trellis/spec/workflow/skill-package-contract.md",
                 ".trellis/spec/workflow/workflow-contract.md",
@@ -2384,7 +2385,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.34")
+        self.assertEqual(installed["extension"]["version"], "0.6.5-guru.35")
         self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.5")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
@@ -2457,8 +2458,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 52),
-            ("typed_output_schema_ids", 73),
+            ("public_input_schema_ids", 57),
+            ("typed_output_schema_ids", 78),
             ("private_artifact_schema_ids", 18),
         ):
             self.assertEqual(
@@ -2616,6 +2617,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-approve-task-plan",
                 "guru-check-task",
                 "guru-clarify-requirements",
+                "guru-maintain-architecture-baseline",
+                "guru-maintain-requirements-design-test-ssot",
                 "guru-create-task-commit",
                 "guru-create-task-workspace",
                 "guru-discover-change-context",

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-requirements-design-test-ssot-semantic-result-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "continuation_id",
+    "input_sha256",
+    "ai_review_gate",
+    "typed_exit",
+    "consumer"
+  ],
+  "properties": {
+    "profile": {
+      "enum": [
+        "bootstrap_foundation",
+        "task_impact_sync",
+        "promotion",
+        "repair"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ai_review_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewed_scope",
+        "evidence_summary",
+        "findings",
+        "conclusion"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "blocked"
+          ]
+        },
+        "reviewed_scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "conclusion": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "typed_exit": {
+      "enum": [
+        "ssot_current",
+        "sync_required",
+        "revision_required",
+        "baseline_incomplete",
+        "blocked"
+      ]
+    },
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "skill",
+            "workflow",
+            "stop"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "authority_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "active_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active",
+        "superseded",
+        "historical"
+      ]
+    },
+    "applicability_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "freshness": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "contribution_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sync_kind": {
+      "enum": [
+        "promotion",
+        "repair"
+      ]
+    },
+    "task_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "affected_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "known_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "missing_layer_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "remediation": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-maintain-requirements-design-test-ssot",
+  "commands": [
+    {
+      "id": "invoke-guru-maintain-requirements-design-test-ssot",
+      "owner": "guru-maintain-requirements-design-test-ssot",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": false,
+          "kind": "json",
+          "description": "Closed call-local invocation envelope or dash for stdin.",
+          "repeatable": false,
+          "conflicts": [
+            "--input",
+            "--owner-result"
+          ]
+        },
+        {
+          "flag": "--input",
+          "required": false,
+          "kind": "string",
+          "description": "Public input JSON locator.",
+          "repeatable": false,
+          "conflicts": [
+            "--invocation"
+          ]
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "string",
+          "description": "Completed semantic owner result JSON locator.",
+          "repeatable": false,
+          "conflicts": [
+            "--invocation"
+          ]
+        }
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "semantic_result_invalid",
+        "stale_identity",
+        "unsafe_path",
+        "environment_unavailable",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

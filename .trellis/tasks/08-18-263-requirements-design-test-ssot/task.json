@@ -1,0 +1,11 @@
+{
+  "id": "263-requirements-design-test-ssot",
+  "name": "263-requirements-design-test-ssot",
+  "title": "#263 建立 Requirements/Design/Test SSOT 原子闭环 Skill",
+  "status": "in_progress",
+  "branch": "feat/263-requirements-design-test-ssot",
+  "base_branch": "main",
+  "creator": "wesleywu",
+  "assignee": "wesleywu",
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/263"
+}

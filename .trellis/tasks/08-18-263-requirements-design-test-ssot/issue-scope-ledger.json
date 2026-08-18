@@ -1,0 +1,19 @@
+{
+  "close_issues": [
+    {
+      "number": 263,
+      "reason": "当前 delivery unit 完整覆盖并仅关闭 Issue #263。",
+      "title": "建立 Requirements/Design/Test SSOT 原子闭环 Skill",
+      "url": "https://github.com/castbox/guru-trellis/issues/263"
+    }
+  ],
+  "followup_issues": [],
+  "primary_issue": {
+    "number": 263,
+    "reason": "本 task 唯一 primary Issue。",
+    "title": "建立 Requirements/Design/Test SSOT 原子闭环 Skill",
+    "url": "https://github.com/castbox/guru-trellis/issues/263"
+  },
+  "related_issues": [],
+  "schema_version": "2.0"
+}

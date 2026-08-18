@@ -8,6 +8,7 @@ workflow and preset. It is not a product backend/frontend application.
 Use these specs when changing:
 
 - [architecture-baseline.md](./architecture-baseline.md) for the Architecture Baseline owner and authority projection.
+- [requirements-design-test-ssot.md](./requirements-design-test-ssot.md) for the atomic Requirements, Design, and Test authority, contribution, and traceability contract.
 
 - `trellis/workflows/guru-team/workflow.md`
 - `trellis/workflows/guru-team/config-template.yml`
@@ -51,8 +52,8 @@ Before editing workflow behavior:
 - Registry 1.4 accepts integrated, deferred, and standalone-only active rows.
   Integrated packages select Interface 1.4, normal-scenario qualification selects
   Interface 1.6, and the source-only verifier selects Interface 1.5. The registry
-  contains eighteen active packages and 73 exits; global business workflow markers
-  are 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. Registry,
+  contains twenty active packages and 85 exits; global business workflow markers
+  are 19 invokes, 83 exits, 31 workflow targets, and 20 stop targets. Registry,
   discovery, invocation, installation, and validation read only the live
   current package graph. The planning/check/commit/qualification closure is
   defined only by `contracts/production-current.json` with contract id
@@ -158,9 +159,9 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-eighteen-Skill/73-exit package closure, and install/update checks. The global
-business workflow projection is 17 invokes, 71 exits, 24 workflow targets, and
-18 stop targets.
+twenty-Skill/85-exit package closure, and install/update checks. The global
+business workflow projection is 19 invokes, 83 exits, 31 workflow targets, and
+20 stop targets.
 
 ## Extension Installation Verification Closed-Loop Owner
 
@@ -182,9 +183,9 @@ and `docs/public-docs.md`. Together they own its four profiles, six external
 exits, dialogue-only side-effect confirmation, owner-private minimal transaction,
 six-core archive, real-wrapper eval, and additive distribution.
 
-The current package graph contains eighteen active Skills and 73 external exits
-with thirteen target-owned `skill_input_authoring_seed` handoffs. Global workflow
-markers are 17 invokes, 71 exits, 24 workflow targets, and 18 stop targets. Issue #119 combined acceptance
+The current package graph contains twenty active Skills and 85 external exits
+with fourteen target-owned `skill_input_authoring_seed` handoffs. Global workflow
+markers are 19 invokes, 83 exits, 31 workflow targets, and 20 stop targets. Issue #119 combined acceptance
 additionally requires the three Guru-owned daily entries, terminal
 `ready_for_merge` and Merge evals, current ownership
 validation, and installed integration coverage.

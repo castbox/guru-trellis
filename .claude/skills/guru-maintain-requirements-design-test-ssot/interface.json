@@ -1,0 +1,474 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-maintain-requirements-design-test-ssot",
+  "name": "guru-maintain-requirements-design-test-ssot",
+  "description": "Maintain one traceable Requirements, Design, and Test repository authority through semantic profiles.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "profile_binding",
+        "live_authority",
+        "architecture_baseline",
+        "invocation_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "profile_binding",
+        "live_authority",
+        "architecture_baseline",
+        "invocation_freshness"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "compatible Guru Team runtime",
+      "binding": "current installation",
+      "freshness": "validated before invocation"
+    },
+    {
+      "id": "profile_binding",
+      "evidence": "one closed bootstrap_foundation, task_impact_sync, promotion, or repair input",
+      "binding": "the exact caller, mode, profile, scope, and continuation under review",
+      "freshness": "the caller authors a fresh profile input for every invocation"
+    },
+    {
+      "id": "live_authority",
+      "evidence": "current Requirements, Design, Test, task delta, and contribution locators applicable to the selected profile",
+      "binding": "the exact repository authority and task-owned contribution reviewed by the AI",
+      "freshness": "the AI rereads the declared locators before its gate and the invocation validates direct locator, version, and freshness bindings"
+    },
+    {
+      "id": "architecture_baseline",
+      "evidence": "public Architecture Baseline locator, version, and status",
+      "binding": "the inheritance identity used by Design and Test review without private Architecture state",
+      "freshness": "the AI rereads the public Architecture identity before its gate"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "call-local input digest, mode, profile, continuation, AI gate, typed exit, unique consumer, and minimal output",
+      "binding": "one workflow or standalone semantic round with no persisted result",
+      "freshness": "authority, contribution, task delta, Architecture identity, or scope changes require complete re-entry"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "bootstrap_input",
+      "path": "examples/public-input-bootstrap.json"
+    },
+    {
+      "id": "impact_input",
+      "path": "examples/public-input-impact.json"
+    },
+    {
+      "id": "promotion_input",
+      "path": "examples/public-input-promotion.json"
+    },
+    {
+      "id": "repair_input",
+      "path": "examples/public-input-repair.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "public_input",
+      "path": "schemas/public-input-aggregate.schema.json"
+    },
+    {
+      "id": "ssot_current_output",
+      "path": "schemas/public-ssot-current-output.schema.json"
+    },
+    {
+      "id": "sync_required_output",
+      "path": "schemas/public-sync-required-output.schema.json"
+    },
+    {
+      "id": "revision_required_output",
+      "path": "schemas/public-revision-required-output.schema.json"
+    },
+    {
+      "id": "baseline_incomplete_output",
+      "path": "schemas/public-baseline-incomplete-output.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-maintain-requirements-design-test-ssot",
+      "objective_scope": "Record one call-local reviewed result, validate the AI gate, mode, profile, continuation, locator/version/freshness bindings and unique consumer, then serialize one typed projection."
+    }
+  ],
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ],
+  "external_exits": [
+    {
+      "id": "ssot_current",
+      "evidence": "reviewed current Requirements Design Test authority",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-requirements-design-test-ssot-current-router"
+      }
+    },
+    {
+      "id": "sync_required",
+      "evidence": "reviewed contribution requires controlled promotion or repair",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-maintain-requirements-design-test-ssot"
+      }
+    },
+    {
+      "id": "revision_required",
+      "evidence": "current task planning or implementation requires revision",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-requirements-design-test-ssot-planning-router"
+      }
+    },
+    {
+      "id": "baseline_incomplete",
+      "evidence": "one required authority layer or inheritance is incomplete",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-requirements-design-test-ssot-bootstrap-router"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "current authority cannot support a safe route",
+      "consumer": {
+        "kind": "stop",
+        "id": "requirements-design-test-ssot-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "profile, authority, contribution, and continuation identity",
+    "freshness": "authority or contribution changes require fresh semantic review",
+    "stale_behavior": "fail_closed"
+  },
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-requirements-design-test-ssot-input-aggregate-1.0",
+        "path": "schemas/public-input-aggregate.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "bootstrap_foundation",
+          "schema": {
+            "schema_id": "guru-requirements-design-test-ssot-input-bootstrap-1.0",
+            "path": "schemas/public-input-bootstrap.schema.json"
+          },
+          "example": {
+            "id": "bootstrap_input",
+            "path": "examples/public-input-bootstrap.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "bootstrap_foundation"
+          }
+        },
+        {
+          "id": "task_impact_sync",
+          "schema": {
+            "schema_id": "guru-requirements-design-test-ssot-input-impact-1.0",
+            "path": "schemas/public-input-impact.schema.json"
+          },
+          "example": {
+            "id": "impact_input",
+            "path": "examples/public-input-impact.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "task_impact_sync"
+          }
+        },
+        {
+          "id": "promotion",
+          "schema": {
+            "schema_id": "guru-requirements-design-test-ssot-input-promotion-1.0",
+            "path": "schemas/public-input-promotion.schema.json"
+          },
+          "example": {
+            "id": "promotion_input",
+            "path": "examples/public-input-promotion.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "promotion"
+          }
+        },
+        {
+          "id": "repair",
+          "schema": {
+            "schema_id": "guru-requirements-design-test-ssot-input-repair-1.0",
+            "path": "schemas/public-input-repair.schema.json"
+          },
+          "example": {
+            "id": "repair_input",
+            "path": "examples/public-input-repair.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "repair"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "profile-specific"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-requirements-design-test-ssot-output-blocked-1.0",
+        "path": "schemas/public-blocked-output.schema.json"
+      },
+      "error_example": {
+        "id": "blocked_output",
+        "path": "examples/public-output-blocked.json"
+      },
+      "example_argv": [
+        "--invocation",
+        "-"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "ssot_current",
+        "schema": {
+          "schema_id": "guru-requirements-design-test-ssot-output-current-1.0",
+          "path": "schemas/public-ssot-current-output.schema.json"
+        },
+        "example": {
+          "id": "current_output",
+          "path": "examples/public-output-current.json"
+        },
+        "consumer_use_ids": [
+          "current_projection"
+        ]
+      },
+      {
+        "exit_id": "sync_required",
+        "schema": {
+          "schema_id": "guru-requirements-design-test-ssot-output-sync-required-1.0",
+          "path": "schemas/public-sync-required-output.schema.json"
+        },
+        "example": {
+          "id": "sync_output",
+          "path": "examples/public-output-sync-required.json"
+        },
+        "consumer_use_ids": [
+          "sync_projection"
+        ]
+      },
+      {
+        "exit_id": "revision_required",
+        "schema": {
+          "schema_id": "guru-requirements-design-test-ssot-output-revision-required-1.0",
+          "path": "schemas/public-revision-required-output.schema.json"
+        },
+        "example": {
+          "id": "revision_output",
+          "path": "examples/public-output-revision-required.json"
+        },
+        "consumer_use_ids": [
+          "revision_projection"
+        ]
+      },
+      {
+        "exit_id": "baseline_incomplete",
+        "schema": {
+          "schema_id": "guru-requirements-design-test-ssot-output-baseline-incomplete-1.0",
+          "path": "schemas/public-baseline-incomplete-output.schema.json"
+        },
+        "example": {
+          "id": "incomplete_output",
+          "path": "examples/public-output-baseline-incomplete.json"
+        },
+        "consumer_use_ids": [
+          "incomplete_projection"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-requirements-design-test-ssot-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-output-blocked.json"
+        },
+        "consumer_use_ids": [
+          "blocked_projection"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "current_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-requirements-design-test-ssot-current-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "current_input",
+          "path": "consumers/workflow/current.schema.json"
+        }
+      },
+      {
+        "id": "sync_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-maintain-requirements-design-test-ssot"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-maintain-requirements-design-test-ssot/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "promotion",
+          "seed_fields": [
+            "exit_id",
+            "authority_locator",
+            "target_version",
+            "contribution_locator",
+            "sync_kind",
+            "freshness"
+          ],
+          "authoring_fields": [
+            "profile",
+            "source_exit",
+            "mode",
+            "continuation_id",
+            "architecture_baseline"
+          ],
+          "authoring_example": {
+            "id": "promotion_authoring",
+            "path": "examples/public-promotion-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "revision_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-requirements-design-test-ssot-planning-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "revision_input",
+          "path": "consumers/workflow/planning.schema.json"
+        }
+      },
+      {
+        "id": "incomplete_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-requirements-design-test-ssot-bootstrap-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "incomplete_input",
+          "path": "consumers/workflow/bootstrap.schema.json"
+        }
+      },
+      {
+        "id": "blocked_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "requirements-design-test-ssot-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "blocked_input",
+          "path": "consumers/stop/blocked.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "current_projection",
+        "exit_id": "ssot_current",
+        "consumer_input_id": "current_input",
+        "operation": "direct"
+      },
+      {
+        "id": "sync_projection",
+        "exit_id": "sync_required",
+        "consumer_input_id": "sync_input",
+        "operation": "direct"
+      },
+      {
+        "id": "revision_projection",
+        "exit_id": "revision_required",
+        "consumer_input_id": "revision_input",
+        "operation": "direct"
+      },
+      {
+        "id": "incomplete_projection",
+        "exit_id": "baseline_incomplete",
+        "consumer_input_id": "incomplete_input",
+        "operation": "direct"
+      },
+      {
+        "id": "blocked_projection",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_input",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": []
+  }
+}
