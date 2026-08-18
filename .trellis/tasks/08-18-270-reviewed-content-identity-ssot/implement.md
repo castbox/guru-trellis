@@ -15,6 +15,7 @@
 - [x] I11 Fix the independent Branch Review findings: remove the Phase 2 algorithm-id collision and synchronize Branch Review schema 6.0 authority.
 - [x] I12 Reapply projections, rerun targeted validation, complete fresh Phase 2, commit the fixes, close finding continuity and pass a distinct fresh final Branch Review.
 - [x] I13 Fix the distinct fresh-final findings: align Branch Review metadata dirty-path filtering with the canonical classifier, synchronize Phase 2 algorithm Docs SSOT, and move production eval coverage to Branch Review schema 6.0.
+- [x] I14 Recover the failed Finalizer transaction by validating every planned metadata-tail binding against current bytes and mode even when it is already committed in the publication parent, preserving exact unbound-path continuity, and restoring canonical/installed legacy-wrapper imports of the shared runtime.
 
 ## 2. Targeted Validation
 

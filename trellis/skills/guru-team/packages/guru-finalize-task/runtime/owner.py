@@ -8357,6 +8357,7 @@ def validate_closeout_pre_move_continuity(
         expected_pr=expected_summary_pr,
     )
 
+    binding_map = closeout_reviewed_tracked_binding_map(plan)
     observed_binding_paths: set[str] = set()
     for relative in plan["projection"]["tracked_move_paths"]:
         repo_path = f"{active_locator}/{relative}"
@@ -8387,10 +8388,11 @@ def validate_closeout_pre_move_continuity(
         differs_from_parent = (
             current_bytes != before or expected_working_mode != git_mode
         )
-        if differs_from_parent and relative != CLOSEOUT_PLAN_ARTIFACT:
+        binding = binding_map.get(relative)
+        if binding is not None:
             observed_binding_paths.add(relative)
         if (
-            differs_from_parent
+            (binding is not None or differs_from_parent)
             and not closeout_projection_content_is_current(
                 plan,
                 relative,
@@ -8408,7 +8410,7 @@ def validate_closeout_pre_move_continuity(
                     "stage": "pre-archive-continuity",
                 },
             )
-    expected_binding_paths = set(closeout_reviewed_tracked_binding_map(plan))
+    expected_binding_paths = set(binding_map)
     if observed_binding_paths != expected_binding_paths:
         raise WorkflowError(
             "Closeout reviewed tracked bindings do not exactly cover the metadata tail.",

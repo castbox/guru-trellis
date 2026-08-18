@@ -861,6 +861,35 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
+    def test_legacy_finalizer_wrappers_import_shared_runtime_from_canonical_and_installed_roots(self) -> None:
+        self.install({"codex", "cursor"})
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
+        wrappers = (
+            "check-workspace-boundary.sh",
+            "check-agent-recovery.sh",
+            "record-agent-recovery.sh",
+        )
+        roots = (
+            self.workflow_src / "scripts/bash",
+            self.install_dst / "scripts/bash",
+        )
+        for root in roots:
+            for wrapper in wrappers:
+                with self.subTest(root=root, wrapper=wrapper):
+                    process = subprocess.run(
+                        [str(root / wrapper), "--help"],
+                        cwd=self.repo,
+                        env=env,
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    self.assertEqual(process.returncode, 0, process.stderr)
+                    self.assertIn("usage:", process.stdout)
+                    self.assertNotIn("ModuleNotFoundError", process.stderr)
+
     def test_managed_spec_unknown_collision_is_preserved_with_new_sidecar(self) -> None:
         source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
         target = self.repo / target_relative
