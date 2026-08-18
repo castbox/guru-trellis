@@ -39,6 +39,12 @@ CONSUMERS = {
     "baseline_incomplete": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-bootstrap-router"},
     "blocked": {"kind": "stop", "id": "requirements-design-test-ssot-blocked"},
 }
+SSOT_CURRENT_VERSION_FIELDS = {
+    "bootstrap_foundation": "target_version",
+    "task_impact_sync": "authority_version",
+    "promotion": "target_version",
+    "repair": "authority_version",
+}
 
 
 def _digest(value: object) -> str:
@@ -64,6 +70,10 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
     if recorded["continuation_id"] != public["continuation_id"]:
         raise CommandError("stale_identity", "owner_result.continuation_id", "Rerun the profile from current authority facts.", 3)
     exit_id = recorded["typed_exit"]
+    if exit_id == "ssot_current":
+        version_field = SSOT_CURRENT_VERSION_FIELDS[public["profile"]]
+        if recorded.get("active_version") != public[version_field]:
+            raise CommandError("stale_identity", "owner_result.active_version", "Reread the reviewed public version and repeat the semantic round.", 3)
     if recorded["consumer"] != CONSUMERS[exit_id]:
         raise CommandError("semantic_result_invalid", "owner_result.consumer", "Use the unique consumer declared for the selected exit.", 3)
     gate_status = recorded["ai_review_gate"]["status"]
