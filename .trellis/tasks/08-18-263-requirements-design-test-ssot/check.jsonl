@@ -1,6 +1,0 @@
-{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validation ownership, semantic review and representative throwaway boundary."}
-{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Verify mandatory invocation, exact graph closure and mapped stops."}
-{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Verify four profile inputs, five outputs, direct consumers and private state isolation."}
-{"file": ".trellis/spec/workflow/architecture-baseline.md", "reason": "Verify public Architecture inheritance without copied authority."}
-{"file": ".trellis/spec/preset/installer.md", "reason": "Verify canonical and installed inventory, reapply, sidecars and executable modes."}
-{"file": ".trellis/spec/docs/public-docs.md", "reason": "Verify README commands, declared platform projection and evidence wording."}
