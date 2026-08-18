@@ -1,0 +1,28 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 264,
+    "url": "https://github.com/castbox/guru-trellis/issues/264",
+    "title": "建立 Architecture Baseline 原子闭环 Skill",
+    "reason": "本 task 完整覆盖 Issue #264 的 Skill、合同、安装与当前版本验证范围。"
+  },
+  "close_issues": [
+    {
+      "number": 264,
+      "url": "https://github.com/castbox/guru-trellis/issues/264",
+      "title": "建立 Architecture Baseline 原子闭环 Skill",
+      "reason": "仅在当前 task 的实现、独立审查和发布门禁完成后关闭 #264。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 260,
+      "reason": "#260 owns the later Trellis upgrade and complete multi-platform compatibility matrix; it is not closed here."
+    },
+    {
+      "number": 267,
+      "reason": "#267 owns the exact-candidate final matrix; it is not closed here."
+    }
+  ],
+  "followup_issues": []
+}
