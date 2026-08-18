@@ -1,5 +1,17 @@
 # Task Publication Review Contract
 
+## Structured invocation diagnostics
+
+Recorder, checker, invocation, and dry-run use one sanitized owner-error
+projection. A classified owner failure may supply a stable `error_code`, a
+bounded locator, and a short recovery instruction. The public error contains
+only `code`, `field_path`, and `remediation`; stderr, exception text, URLs,
+credentials, tokens, absolute paths, and external payloads are discarded.
+Freshness failures alone map to `publication_stale`. Input-contract,
+reviewed-content continuity, Git/GitHub, and other classified owner failures
+retain their stable codes. Missing or invalid classification maps to
+`internal_error` with the generic owner locator and remediation.
+
 ## Entry
 
 `publication_review` consumes the target-owned merge of Branch Review seed

@@ -113,6 +113,11 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise owner.WorkflowError(
                 "Publication owner result is not the exact checker-passed result.",
                 exit_code=2,
+                payload={
+                    "error_code": "publication_freshness_failed",
+                    "field_path": "publication.owner_result",
+                    "recovery": "Re-run the Publication checker and invoke with its exact current result.",
+                },
             )
         if (
             checked_owner_result.get("task_ref") != public["task_ref"]
@@ -122,6 +127,11 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise owner.WorkflowError(
                 "Publication public input does not match the checker-passed owner result.",
                 exit_code=2,
+                payload={
+                    "error_code": "publication_input_invalid",
+                    "field_path": "input.branch_review_commit",
+                    "recovery": "Use the task and reviewed commit from the checker-passed Publication result.",
+                },
             )
 
         output = _project_output(checked_owner_result)

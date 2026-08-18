@@ -427,7 +427,7 @@ class TaskPublicationContractTest(unittest.TestCase):
                 copy.deepcopy(self.readiness_example),
                 supplied_owner_result=supplied,
             )
-        self.assertEqual(raised.exception.code, "publication_stale")
+        self.assertEqual(raised.exception.code, "internal_error")
         self.assertTrue(self.last_wrapper_checkpoint.is_file())
 
     def test_provenance_tail_accepts_only_semantic_spec_managed_hash(self) -> None:
@@ -504,8 +504,42 @@ class TaskPublicationContractTest(unittest.TestCase):
 
         with self.assertRaises(CommandError) as raised:
             common.call_owner(FakeOwner, FakeOwner().fail)
-        self.assertEqual(raised.exception.code, "publication_stale")
-        self.assertEqual(raised.exception.field_path, "publication")
+        self.assertEqual(raised.exception.code, "internal_error")
+        self.assertEqual(raised.exception.field_path, "owner")
+
+    def test_owner_diagnostic_projection_preserves_classified_codes_and_redacts(self) -> None:
+        sys.path.insert(0, str(PACKAGE.parents[1]))
+        from runtime.io import CommandError
+
+        common_path = PACKAGE / "runtime/common.py"
+        spec = importlib.util.spec_from_file_location("task_publication_runtime_common_diagnostic", common_path)
+        assert spec and spec.loader
+        common = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(common)
+
+        class FakeOwner:
+            class WorkflowError(RuntimeError):
+                def __init__(self, payload):
+                    super().__init__("secret token https://example.invalid/private")
+                    self.payload = payload
+
+            def fail(self, payload):
+                raise self.WorkflowError(payload)
+
+        cases = [
+            ({"error_code": "publication_freshness_failed", "field_path": "publication.freshness", "recovery": "Repeat review."}, "publication_stale", "publication.freshness"),
+            ({"error_code": "github_auth_failed", "field_path": "github.auth", "recovery": "https://user:secret@example.invalid/token"}, "github_auth_failed", "github.auth"),
+            ({"error_codes": ["reviewed_content_continuity_invalid"]}, "reviewed_content_continuity_failed", "publication"),
+            ({"error_codes": ["invalid_input_shape"]}, "publication_input_invalid", "publication"),
+        ]
+        for payload, code, locator in cases:
+            with self.subTest(payload=payload):
+                with self.assertRaises(CommandError) as raised:
+                    common.call_owner(FakeOwner, FakeOwner().fail, payload)
+                self.assertEqual(raised.exception.code, code)
+                self.assertEqual(raised.exception.field_path, locator)
+                self.assertNotIn("secret", raised.exception.remediation)
+                self.assertNotIn("https://", raised.exception.remediation)
 
         parser = __import__("argparse").ArgumentParser(add_help=False)
         parser.add_argument("--required", required=True)

@@ -1547,6 +1547,20 @@ Finalizer never reads or augments Publication's
 checkpoint. Inputs outside the current Publication schemas fail closed before
 owner invocation.
 
+### Publication diagnostic contract
+
+Recorder, checker, and public invocation share one structured diagnostic
+projection. A classified owner failure may provide a stable `error_code`, a
+bounded `field_path`/`locator`, and a short `recovery`/`remediation`; the
+wrapper emits only `code`, `field_path`, and `remediation`. Raw exception text,
+stderr, URLs, credentials, tokens, absolute local paths, and external payloads
+are never projected. `publication_stale` is reserved for current-evidence,
+owner-result, or checkpoint freshness failures. Known input, reviewed-content
+continuity, Git/GitHub, and owner-classified codes remain distinct; an absent
+or invalid classification fails closed as `internal_error`. The mapping lives
+once in `runtime/common.py` and is used by recorder, checker, invoke, and
+dry-run so entry points cannot drift.
+
 ## Task Finalization Recorder, Checker, Executor, And Invocation
 
 Stable commands are `preview-finalization`, `record-finalization-gate`,
