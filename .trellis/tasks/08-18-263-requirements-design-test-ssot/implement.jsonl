@@ -1,6 +1,0 @@
-{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Global workflow invocation, typed exit, router and stop ownership."}
-{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Semantic closed-loop package, public I/O, projection and private state contract."}
-{"file": ".trellis/spec/workflow/architecture-baseline.md", "reason": "Issue #264 public Architecture Baseline inheritance boundary."}
-{"file": ".trellis/spec/preset/installer.md", "reason": "Canonical, managed inventory, reapply and installed projection contract."}
-{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Platform overlay synchronization and drift rules."}
-{"file": ".trellis/spec/docs/public-docs.md", "reason": "Public README and installation evidence contract."}
