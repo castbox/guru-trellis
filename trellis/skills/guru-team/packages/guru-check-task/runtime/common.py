@@ -3,6 +3,7 @@ import argparse, copy, hashlib, json, os, stat, subprocess, sys
 from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
+PHASE2_WORKTREE_CONTENT_ALGORITHM="guru-phase2-worktree-content-1.0"
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
  try:return p.parse_args(argv)
@@ -44,7 +45,7 @@ def file_set(repo,paths):
   if stat.S_ISREG(metadata.st_mode):rows.append({"path":path,"kind":"file","content_sha256":hashlib.sha256(target.read_bytes()).hexdigest()})
   elif stat.S_ISLNK(metadata.st_mode):rows.append({"path":path,"kind":"symlink","target":os.readlink(target)})
   else:raise CommandError("stale_identity","reviewed_paths",f"Unsupported reviewed-content path type: {path}",3)
- return digest({"algorithm":"guru-reviewed-content-1.0","entries":rows})
+ return digest({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":rows})
 def git(repo,*args):
  p=subprocess.run(["git",*args],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if p.returncode:raise CommandError("stale_identity","repository",p.stderr.strip() or "Repair Git state.",3)

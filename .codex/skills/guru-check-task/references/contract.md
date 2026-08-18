@@ -78,7 +78,9 @@ changes, unknown dirty content, missing checks, or reproduced findings do.
 
 New evidence uses schema `guru-phase2-check-5.0` in ignored runtime. It retains
 only task and checked content identity, one composite
-`reviewed_content_sha256` freshness token, reviewed path locators, validation
+`reviewed_content_sha256` freshness token computed with the private
+`guru-phase2-worktree-content-1.0` algorithm over live tracked and untracked
+worktree paths, reviewed path locators, validation
 summaries and unverified items, Docs SSOT conclusion, nine-dimension semantic
 result, scope decisions, findings, route, reason, and consumer.
 

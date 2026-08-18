@@ -113,12 +113,12 @@ or invalid projection retains the checkpoint for same-owner repair. Missing
 after retirement, wrong-task/base/HEAD/content, unsafe components, and symlink
 ancestors or gate files fail closed.
 
-The current gate uses only schema 5.0 with profile-specific identity,
-`review_commit`, `reviewed_content_sha256`, and the final terminal
-candidate-classification witness required by its direct consumer. Aggregate
-input schema 2.0 and gate schemas 3.0 and 4.0 remain legacy compatibility
-inventory, not current runtime authority. Any current schema mismatch is
-invalid input and fails closed before owner evaluation.
+The current gate uses only schema 6.0 with profile-specific identity,
+`review_commit`, `reviewed_content_algorithm`, `reviewed_content_sha256`, and
+the final terminal candidate-classification witness required by its direct
+consumer. Aggregate input schema 2.0 and gate schema 5.0 or older remain legacy
+stale inventory, not current runtime authority. Any non-6.0 gate fails closed
+before owner evaluation; it is never dual-read, rewritten, or migrated.
 
 Return exactly one of:
 

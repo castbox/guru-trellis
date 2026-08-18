@@ -1286,7 +1286,7 @@ facts for only `prd.md`, `design.md`, and `implement.md`. It must
 not read planning/check/review gate JSON artifacts, must
 not decide phase sufficiency, and must not create links for missing files.
 
-`review-branch.sh` records only current gate schema 5.0 after an independent AI
+`review-branch.sh` records only current gate schema 6.0 after an independent AI
 semantic review exists. Aggregate public input schema 3.0 dispatches the
 six-field `branch_review` schema 2.0 profile or the bounded `base_continuity`
 schema 1.0 profile. The recorder requires one selected public profile, one
@@ -1310,15 +1310,15 @@ undeclared current non-metadata dirty path blocks the gate; allowed downstream
 workflow metadata is validated by its owning gate rather than projected back
 into Phase 2.
 
-For finding closure, current gate schema 5.0 retains the original
+For finding closure, current gate schema 6.0 retains the original
 `introduced_head`, binds the fixing commit as `fix_head`, binds the later
 transient judgment as `closure_head`, and uses `review_commit` for the distinct
 fresh-final range.
 The semantic normalizer and lifecycle validator both accept this normal
-finding -> fix -> closure path. Aggregate input schema 2.0 and gate schema 3.0
-and 4.0 remain legacy compatibility inventory, not current runtime authority. Non-5.0
-current gates and tracked assignment/report files are invalid current inputs
-and fail closed without projection or re-entry.
+finding -> fix -> closure path. Aggregate input schema 2.0 remains legacy
+compatibility inventory. Gate schema 5.0 or older is legacy stale inventory;
+it and tracked assignment/report files fail closed without projection or
+re-entry.
 
 Independent review agents do not run Guru Team recorder/validator extension
 scripts as part of their review. They may inspect docs, code, tests, diffs, and
@@ -1472,7 +1472,7 @@ input, and missing Cursor authentication returns deterministic `unsupported`.
 `review-branch` records only an already completed AI semantic review. It may
 rebuild task/worktree/base/HEAD/range, planning, Phase 2, issue-ledger,
 commit-evidence, Docs SSOT, working-tree, hash, schema and freshness facts, then
-write compact schema 5.0 `review-gate.json` at the exact task-owned
+write compact schema 6.0 `review-gate.json` at the exact task-owned
 owner-private ignored-runtime checkpoint and return only a minimal receipt.
 It must not decide
 scope, scenario class, qualification, severity, reviewer sufficiency, route, or
@@ -1480,8 +1480,9 @@ pass.
 
 `check-review-gate` revalidates the same objective facts, finding lifecycle,
 `introduced_head`/`fix_head`/`closure_head`, final-review freshness and the selected
-typed exit. Only schema 5.0 is accepted; older gate shapes fail closed without
-projection. The checker resolves the exact checkpoint from task identity. The
+typed exit. Only schema 6.0 is accepted; schema 5.0 or older fails closed as
+stale without projection, dual-read, rewrite, or migration. The checker
+resolves the exact checkpoint from task identity. The
 public package wrapper accepts only closed public input, reruns the checker,
 reads the actual exit, and emits exactly one declared DTO. It never accepts a
 caller-authored gate or checker result. Successful `passed`,

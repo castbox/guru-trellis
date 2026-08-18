@@ -12,6 +12,8 @@
 - [x] I8 Reapply the preset to synchronize dogfood/shared/Codex/Claude/Cursor copies; resolve every `.new`/`.bak` and verify executable modes.
 - [x] I9 Run targeted package/runtime/integration/ownership/drift validation and fix all in-scope findings.
 - [x] I10 Run fresh Phase 2 semantic check and preserve the full-matrix boundary in PR/final reporting.
+- [x] I11 Fix the independent Branch Review findings: remove the Phase 2 algorithm-id collision and synchronize Branch Review schema 6.0 authority.
+- [x] I12 Reapply projections, rerun targeted validation, complete fresh Phase 2, commit the fixes, close finding continuity and pass a distinct fresh final Branch Review.
 
 ## 2. Targeted Validation
 

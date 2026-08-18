@@ -73,9 +73,10 @@ fails closed.
 Aggregate public input schema 3.0 dispatches two profiles: `branch_review`
 schema 2.0 accepts only `initial_review` and `fresh_final_review`, while
 `base_continuity` schema 1.0 accepts only `base_continuity`. The owner-private
-gate is current-only schema 5.0 and records profile-specific identity plus
-`review_commit` and `reviewed_content_sha256`. Aggregate input schema 2.0 and
-gate schemas 3.0 and 4.0 remain legacy compatibility inventory, not current runtime
-authority. Any other current gate shape or input field fails closed through
-the normal invalid-input path. The commit is used for range and finding
+gate is current-only schema 6.0 and records profile-specific identity plus
+`review_commit`, `reviewed_content_algorithm`, and `reviewed_content_sha256`.
+Aggregate input schema 2.0 and gate schema 5.0 or older remain legacy stale
+inventory, not current runtime authority. Any non-6.0 gate fails closed through
+the stable stale-identity path. Any other current input shape fails closed
+through the normal invalid-input path. The commit is used for range and finding
 ancestry; the reviewed-content identity alone owns content freshness.

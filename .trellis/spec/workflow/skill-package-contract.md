@@ -1506,11 +1506,11 @@ profile consumes the exact old/new base candidate and unchanged task review
 from `guru-reconcile-task-base:review_continuity_required`. Neither profile
 reopens the Phase 2 private checkpoint. Current issue scope, findings, range,
 candidate identity, and freshness remain owner-private evidence. The
-current-only compact gate schema 5.0 is ignored runtime state and stores
-profile-specific identity plus `review_commit` and
-`reviewed_content_sha256`. Aggregate input schema 2.0 and gate schema 3.0 remain
-legacy compatibility inventory, not current runtime authority; any other
-current shape fails closed.
+current-only compact gate schema 6.0 is ignored runtime state and stores
+profile-specific identity plus `review_commit`, `reviewed_content_algorithm`,
+and `reviewed_content_sha256`. Aggregate input schema 2.0 and gate schema 5.0
+or older remain legacy stale inventory, not current runtime authority; any
+non-6.0 gate fails closed.
 
 The five outputs are independent minimal DTOs:
 
@@ -1532,9 +1532,10 @@ the shared reviewed-content identity defined by
 workflow metadata changes and becomes stale for any reviewed-content change.
 Branch Review, Publication, Finalizer, and Verification use the one canonical
 shared helper for that contract; no package owns a second implementation. The
-Branch Review owner-private checkpoint is current-only. A checkpoint from the
-former package-local identity implementation is stale and routes to a fresh
-Branch Review without compatibility reads, migration, or rewriting.
+Branch Review owner-private checkpoint is current-only. A schema 5.0 or older
+checkpoint from the former package-local identity implementation is stale and
+routes to a fresh Branch Review without compatibility reads, migration, or
+rewriting.
 
 For every structured projection, an `exit_id` field whose schema is the exact
 matching const may be omitted only as the already selected route discriminator.

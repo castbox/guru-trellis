@@ -126,8 +126,8 @@ replace a wrapper call with a direct package-local helper test.
 
 The acceptance fixture covers the positive same-HEAD result, excluded
 metadata-only changes, included path/mode/oid drift, independent base/range/
-ancestry failure, an old Branch Review checkpoint becoming stale, and fresh
-Branch Review re-entry. Algorithm, ordering, and exclusion details remain
+ancestry failure, a schema 5.0 or older Branch Review checkpoint becoming stale,
+and fresh Branch Review re-entry. Algorithm, ordering, and exclusion details remain
 owned only by `data-contracts.md#reviewed-content-identity`.
 
 For an ordinary workflow-defect Issue, this cross-package acceptance runs with

@@ -1,5 +1,5 @@
 from __future__ import annotations
-import copy, json, os, subprocess, sys, tempfile, unittest
+import copy, hashlib, json, os, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from jsonschema import Draft202012Validator
 
@@ -9,7 +9,7 @@ RUNTIME=SKILLS/"runtime"
 if str(SKILLS) not in sys.path: sys.path.insert(0,str(SKILLS))
 if str(PACKAGE/"runtime") not in sys.path: sys.path.insert(0,str(PACKAGE/"runtime"))
 from runtime.command import main
-from common import content_identity, dirty_paths
+from common import PHASE2_WORKTREE_CONTENT_ALGORITHM, content_identity, dirty_paths
 
 class PackageLocalRuntimeTest(unittest.TestCase):
  def test_command_and_error_contract_close(self):
@@ -83,6 +83,20 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    before=content_identity(repo)
    private.write_text("two\n")
    self.assertEqual(before,content_identity(repo))
+
+ def test_content_identity_uses_distinct_phase2_worktree_algorithm(self):
+  with tempfile.TemporaryDirectory() as temporary:
+   repo=Path(temporary)
+   subprocess.run(["git","init","-q"],cwd=repo,check=True)
+   content=b"tracked\n"
+   (repo/"tracked.txt").write_bytes(content)
+   subprocess.run(["git","add","tracked.txt"],cwd=repo,check=True)
+   entries=[{"path":"tracked.txt","kind":"file","content_sha256":hashlib.sha256(content).hexdigest()}]
+   expected=hashlib.sha256(json.dumps({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
+   retired=hashlib.sha256(json.dumps({"algorithm":"guru-reviewed-content-1.0","entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
+   self.assertEqual("guru-phase2-worktree-content-1.0",PHASE2_WORKTREE_CONTENT_ALGORITHM)
+   self.assertEqual(expected,content_identity(repo))
+   self.assertNotEqual(retired,content_identity(repo))
 
  def test_public_wrapper_retains_only_passed_checkpoint_and_projects_all_exits(self):
   example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())

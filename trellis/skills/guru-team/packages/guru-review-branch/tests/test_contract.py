@@ -442,8 +442,9 @@ class BranchReviewContractTest(unittest.TestCase):
             text = path.read_text()
             self.assertIn("base_continuity", text)
             self.assertIn("schema 3.0", text)
+            self.assertIn("schema 6.0", text)
             self.assertIn("schema 5.0", text)
-            self.assertIn("schemas 3.0 and 4.0", text)
+            self.assertRegex(text, r"legacy\s+stale")
             self.assertIn("continuity_passed", text)
 
     def test_wrappers_are_executable(self):
