@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 import unittest
@@ -8,12 +9,28 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
     def setUp(self):
         self.package = Path(__file__).parents[1]
 
+    @staticmethod
+    def digest(value: object) -> str:
+        encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+        return hashlib.sha256(encoded).hexdigest()
+
+    def run_envelope(self, public_input: dict, owner: dict) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
+            input=json.dumps({"public_input": public_input, "owner_result": owner}),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
     def invoke(self, example: str, owner: dict) -> subprocess.CompletedProcess[str]:
         public_input = json.loads((self.package / "examples" / example).read_text())
         owner = {
             "profile": public_input["profile"],
             "mode": public_input["mode"],
             "continuation_id": public_input["continuation_id"],
+            "input_sha256": self.digest(public_input),
+            "architecture_baseline": dict(public_input["architecture_baseline"]),
             "ai_review_gate": {
                 "status": "blocked" if owner["typed_exit"] == "blocked" else "passed",
                 "reviewed_scope": "Current Requirements Design Test authority and selected profile.",
@@ -30,13 +47,7 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
             }[owner["typed_exit"]],
             **owner,
         }
-        return subprocess.run(
-            [str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
-            input=json.dumps({"public_input": public_input, "owner_result": owner}),
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+        return self.run_envelope(public_input, owner)
 
     def test_declares_four_profiles_five_exits_and_unique_consumers(self):
         interface = json.loads((self.package / "interface.json").read_text())
@@ -65,8 +76,8 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
 
     def test_stale_owner_identity_fails_closed(self):
         public_input = json.loads((self.package / "examples/public-input-bootstrap.json").read_text())
-        owner = {"profile": "bootstrap_foundation", "mode": "workflow", "continuation_id": "stale", "ai_review_gate": {"status": "blocked", "reviewed_scope": "authority", "evidence_summary": "live facts", "findings": ["stale"], "conclusion": "blocked"}, "typed_exit": "blocked", "consumer": {"kind": "stop", "id": "requirements-design-test-ssot-blocked"}, "reason_code": "stale_identity", "remediation": "Reread."}
-        result = subprocess.run([str(self.package / "scripts/invoke.sh"), "--invocation", "-"], input=json.dumps({"public_input": public_input, "owner_result": owner}), text=True, capture_output=True, check=False)
+        owner = {"profile": "bootstrap_foundation", "mode": "workflow", "continuation_id": "stale", "input_sha256": self.digest(public_input), "architecture_baseline": dict(public_input["architecture_baseline"]), "ai_review_gate": {"status": "blocked", "reviewed_scope": "authority", "evidence_summary": "live facts", "findings": ["stale"], "conclusion": "blocked"}, "typed_exit": "blocked", "consumer": {"kind": "stop", "id": "requirements-design-test-ssot-blocked"}, "reason_code": "stale_identity", "remediation": "Reread."}
+        result = self.run_envelope(public_input, owner)
         self.assertEqual(result.returncode, 3)
         self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
 
@@ -76,6 +87,8 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
             "profile": "task_impact_sync",
             "mode": "workflow",
             "continuation_id": public_input["continuation_id"],
+            "input_sha256": self.digest(public_input),
+            "architecture_baseline": dict(public_input["architecture_baseline"]),
             "ai_review_gate": {"status": "passed", "reviewed_scope": "authority", "evidence_summary": "live facts", "findings": [], "conclusion": "current"},
             "typed_exit": "ssot_current",
             "consumer": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-current-router"},
@@ -85,14 +98,68 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
             "applicability_scope": "repository",
             "freshness": "stale",
         }
-        result = subprocess.run([str(self.package / "scripts/invoke.sh"), "--invocation", "-"], input=json.dumps({"public_input": public_input, "owner_result": owner}), text=True, capture_output=True, check=False)
+        result = self.run_envelope(public_input, owner)
         self.assertEqual(result.returncode, 3)
         self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
         owner["freshness"] = public_input["authority_freshness"]
         owner["consumer"] = {"kind": "stop", "id": "requirements-design-test-ssot-blocked"}
-        result = subprocess.run([str(self.package / "scripts/invoke.sh"), "--invocation", "-"], input=json.dumps({"public_input": public_input, "owner_result": owner}), text=True, capture_output=True, check=False)
+        result = self.run_envelope(public_input, owner)
         self.assertEqual(result.returncode, 3)
         self.assertEqual(json.loads(result.stdout)["code"], "semantic_result_invalid")
+
+    def test_all_profiles_reject_stale_architecture_identity(self):
+        examples = (
+            "public-input-bootstrap.json",
+            "public-input-impact.json",
+            "public-input-promotion.json",
+            "public-input-repair.json",
+        )
+        for example in examples:
+            public_input = json.loads((self.package / "examples" / example).read_text())
+            for field, stale_value in (
+                ("version", "2.0"),
+                ("locator", "docs/architecture-v2/README.md"),
+                ("status", "superseded"),
+            ):
+                owner = {
+                    "profile": public_input["profile"],
+                    "mode": public_input["mode"],
+                    "continuation_id": public_input["continuation_id"],
+                    "input_sha256": self.digest(public_input),
+                    "architecture_baseline": dict(public_input["architecture_baseline"]),
+                    "ai_review_gate": {"status": "blocked", "reviewed_scope": "authority", "evidence_summary": "live facts", "findings": ["stale"], "conclusion": "blocked"},
+                    "typed_exit": "blocked",
+                    "consumer": {"kind": "stop", "id": "requirements-design-test-ssot-blocked"},
+                    "reason_code": "stale_identity",
+                    "remediation": "Reread.",
+                }
+                owner["architecture_baseline"][field] = stale_value
+                with self.subTest(profile=public_input["profile"], field=field):
+                    result = self.run_envelope(public_input, owner)
+                    self.assertEqual(result.returncode, 3, result.stderr)
+                    self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
+
+    def test_runtime_does_not_overwrite_ai_authored_input_digest(self):
+        public_input = json.loads((self.package / "examples/public-input-impact.json").read_text())
+        reviewed_input = json.loads(json.dumps(public_input))
+        public_input["architecture_baseline"]["version"] = "2.0"
+        owner = {
+            "profile": public_input["profile"],
+            "mode": public_input["mode"],
+            "continuation_id": public_input["continuation_id"],
+            "input_sha256": self.digest(reviewed_input),
+            "architecture_baseline": dict(public_input["architecture_baseline"]),
+            "ai_review_gate": {"status": "blocked", "reviewed_scope": "authority", "evidence_summary": "live facts", "findings": ["stale"], "conclusion": "blocked"},
+            "typed_exit": "blocked",
+            "consumer": {"kind": "stop", "id": "requirements-design-test-ssot-blocked"},
+            "reason_code": "stale_identity",
+            "remediation": "Reread.",
+        }
+        result = self.run_envelope(public_input, owner)
+        self.assertEqual(result.returncode, 3, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["code"], "stale_identity")
+        self.assertEqual(payload["field_path"], "owner_result.input_sha256")
 
     def test_parallel_contributions_are_task_owned_and_distinct(self):
         first = "docs/requirements-design-test-contributions/task-a"

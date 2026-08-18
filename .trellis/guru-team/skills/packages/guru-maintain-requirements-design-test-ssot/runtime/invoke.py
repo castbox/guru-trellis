@@ -54,10 +54,11 @@ def _locator(value: object, field: str) -> None:
         raise CommandError("unsafe_path", field, "Use a repository-relative locator without parent traversal.")
 
 
-def _record_and_check(package_root: Path, public: dict, owner: dict) -> dict:
+def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
     recorded = copy.deepcopy(owner)
-    recorded["input_sha256"] = _digest(public)
     validate_json(recorded, _schema(package_root, "semantic-result.schema.json"), "owner_result")
+    if recorded["input_sha256"] != _digest(public):
+        raise CommandError("stale_identity", "owner_result.input_sha256", "Rerun the semantic review against the current public input.", 3)
     if recorded["profile"] != public["profile"] or recorded["mode"] != public["mode"]:
         raise CommandError("stale_identity", "owner_result", "Rerun the profile in the declared mode from current authority facts.", 3)
     if recorded["continuation_id"] != public["continuation_id"]:
@@ -73,9 +74,11 @@ def _record_and_check(package_root: Path, public: dict, owner: dict) -> dict:
             _locator(public[field], f"public_input.{field}")
         if field in recorded:
             _locator(recorded[field], f"owner_result.{field}")
-    architecture = public.get("architecture_baseline")
-    if isinstance(architecture, dict):
-        _locator(architecture["locator"], "public_input.architecture_baseline.locator")
+    architecture = public["architecture_baseline"]
+    _locator(architecture["locator"], "public_input.architecture_baseline.locator")
+    _locator(recorded["architecture_baseline"]["locator"], "owner_result.architecture_baseline.locator")
+    if recorded["architecture_baseline"] != architecture:
+        raise CommandError("stale_identity", "owner_result.architecture_baseline", "Reread the current Architecture Baseline and repeat the semantic round.", 3)
     for field in ("authority_locator", "authority_version", "task_locator", "target_version", "contribution_locator", "sync_kind"):
         if field in recorded and field in public and recorded[field] != public[field]:
             raise CommandError("stale_identity", f"owner_result.{field}", "Reread current authority and repeat the semantic round.", 3)
@@ -134,7 +137,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if profile not in PROFILES:
         raise CommandError("schema_mismatch", "profile", "Use one declared Requirements Design Test SSOT profile.")
     validate_json(public, _schema(package_root, PROFILE_SCHEMAS[profile]), "input")
-    owner = _record_and_check(package_root, public, owner)
+    owner = _check_owner_result(package_root, public, owner)
     exit_id = owner["typed_exit"]
     output = {"exit_id": exit_id}
     for key in OUTPUT_FIELDS[exit_id]:
