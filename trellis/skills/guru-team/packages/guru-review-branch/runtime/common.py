@@ -10,6 +10,11 @@ import sys
 from pathlib import Path
 
 from runtime.io import CommandError
+from runtime.reviewed_content import (
+    REVIEWED_CONTENT_ALGORITHM,
+    ReviewedContentError,
+    reviewed_content_identity,
+)
 from runtime.schema import validate_json
 
 
@@ -260,30 +265,30 @@ def dirty_paths(repo, task_ref):
     return rows
 
 
-def content_identity(repo, base_commit, commit, task_ref):
-    rows = []
-    for line in git(repo, "ls-tree", "-rz", commit).split("\0"):
-        if not line:
-            continue
-        meta, path = line.split("\t", 1)
-        mode, kind, oid = meta.split()
-        if path.startswith(task_ref + "/") and Path(path).name in {
-            "review.md",
-            "review-gate.json",
-        }:
-            continue
-        rows.append({"path": path, "mode": mode, "kind": kind, "oid": oid})
-    return digest(
-        {
-            "algorithm": "guru-reviewed-content-1.0",
-            "base_commit": base_commit,
-            "entries": sorted(rows, key=lambda item: item["path"].encode()),
-        }
-    )
+def content_identity(repo, commit):
+    try:
+        return reviewed_content_identity(repo, commit, include_worktree=False)["sha256"]
+    except ReviewedContentError as exc:
+        raise CommandError(
+            "stale_identity",
+            "reviewed_content_sha256",
+            str(exc),
+            3,
+        ) from exc
 
 
 def validate_gate(package_root, repo, value, expected_exit=None):
-    validate_json(value, package_root / "schemas/review-gate-5.0.schema.json", "gate")
+    if (
+        value.get("schema_version") != "6.0"
+        or value.get("reviewed_content_algorithm") != REVIEWED_CONTENT_ALGORITHM
+    ):
+        raise CommandError(
+            "stale_identity",
+            "checkpoint",
+            "Run a fresh Branch Review for the current reviewed-content contract.",
+            3,
+        )
+    validate_json(value, package_root / "schemas/review-gate-6.0.schema.json", "gate")
     classifications = value.get("candidate_classifications")
     refs = [
         item.get("candidate_ref")
@@ -374,7 +379,7 @@ def validate_gate(package_root, repo, value, expected_exit=None):
             3,
         )
     if (
-        content_identity(repo, value["base_head"], current, value["task_dir"])
+        content_identity(repo, current)
         != value["reviewed_content_sha256"]
     ):
         raise CommandError(

@@ -44,7 +44,8 @@
     {"id": "public_ready_output", "path": "examples/public-ready-output.json"},
     {"id": "public_return_to_task_work_output", "path": "examples/public-return-to-task-work-output.json"},
     {"id": "public_blocked_output", "path": "examples/public-blocked-output.json"},
-    {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"}
+    {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"},
+    {"id": "reviewed_content_identity_output_example", "path": "examples/reviewed-content-identity-output.json"}
   ],
   "schemas": [
     {"id": "legacy_readiness_schema_4_0", "path": "schemas/pr-readiness-4.0.schema.json"},
@@ -56,12 +57,14 @@
     {"id": "public_ready_output", "path": "schemas/public-ready-output-4.0.schema.json"},
     {"id": "public_return_to_task_work_output", "path": "schemas/public-return-to-task-work-output.schema.json"},
     {"id": "public_blocked_output", "path": "schemas/public-blocked-output.schema.json"},
-    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"}
+    {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"},
+    {"id": "reviewed_content_identity_output", "path": "schemas/reviewed-content-identity-output.schema.json"}
   ],
   "validators": [
     {"id": "publication_review_recorder", "command": "scripts/record-task-publication-review.sh", "runtime_command": "record-task-publication-review", "objective_scope": "Record only the completed semantic dimensions, findings, conclusions and route after current owner preflight"},
     {"id": "publication_review_checker", "command": "scripts/check-task-publication-review.sh", "runtime_command": "check-task-publication-review", "objective_scope": "Reread live owner facts and the shared Finalizer preflight without persisting derived bindings"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-task-publication", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"}
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-task-publication", "objective_scope": "Validate public input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"},
+    {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "review-task-publication-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
     {"id": "ready", "evidence": "all ten current semantic dimensions pass and every current-scope finding is closed", "consumer": {"kind": "skill", "id": "guru-finalize-task"}},

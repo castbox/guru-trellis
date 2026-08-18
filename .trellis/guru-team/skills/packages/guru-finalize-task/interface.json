@@ -55,7 +55,8 @@
     {"id": "ready_for_merge_output", "path": "examples/public-ready-for-merge-output.json"},
     {"id": "ready_for_merge_authoring", "path": "examples/public-ready-for-merge-authoring.json"},
     {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
-    {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
+    {"id": "invocation_error", "path": "examples/public-invocation-error.json"},
+    {"id": "reviewed_content_identity_output_example", "path": "examples/reviewed-content-identity-output.json"}
   ],
   "schemas": [
     {"id": "current_gate_schema_alias", "path": "schemas/task-finalization-gate.schema.json"},
@@ -86,14 +87,16 @@
     {"id": "legacy_finalization_transaction_2_0", "path": "schemas/finalization-transaction-2.0.schema.json"},
     {"id": "finalization_transaction", "path": "schemas/finalization-transaction.schema.json"},
     {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
-    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"}
+    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"},
+    {"id": "reviewed_content_identity_output", "path": "schemas/reviewed-content-identity-output.schema.json"}
   ],
   "validators": [
     {"id": "finalization_previewer", "command": "scripts/preview-finalization.sh", "runtime_command": "preview-finalization", "objective_scope": "Build or rediscover the immutable closeout plan with the existing deterministic engine and no side effect"},
     {"id": "finalization_gate_recorder", "command": "scripts/record-finalization-gate.sh", "runtime_command": "record-finalization-gate", "objective_scope": "Record only the completed AI review, objective task/plan/content identity and selected route; user authorization remains conversation-only"},
     {"id": "finalization_gate_checker", "command": "scripts/check-finalization-gate.sh", "runtime_command": "check-finalization-gate", "objective_scope": "Validate the minimal gate against current task, plan, content, route, consumer and transaction facts"},
     {"id": "finalization_transition_executor", "command": "scripts/execute-finalization-transition.sh", "runtime_command": "execute-finalization-transition", "objective_scope": "Execute one checked deterministic transition through the existing closeout engine without choosing the external route"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Validate current public input, rerun the finalization gate checker, select the actual exit schema and emit one minimal DTO"}
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-finalize-task", "objective_scope": "Validate current public input, rerun the finalization gate checker, select the actual exit schema and emit one minimal DTO"},
+    {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "finalize-task-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
     {

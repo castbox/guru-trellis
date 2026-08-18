@@ -5,6 +5,7 @@ from pathlib import Path
 
 from common import git, load_checkpoint, parse, rel, root, task, validate_gate
 from runtime.io import CommandError
+from reviewed_content import run as reviewed_content_run
 
 
 def checked_gate(package_root: Path, repo: Path, task_dir: Path, expected_exit=None):
@@ -17,6 +18,8 @@ def checked_gate(package_root: Path, repo: Path, task_dir: Path, expected_exit=N
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+    if command["id"] == "review-branch-content-identity":
+        return reviewed_content_run(package_root, command, argv)
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
     parser.add_argument("--task")

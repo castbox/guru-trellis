@@ -100,6 +100,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("launch.sh"),
     Path("probe.py"),
     Path("python-runtime.json"),
+    Path("reviewed_content.py"),
     Path("requirements.lock"),
     Path("resolve-python.sh"),
     Path("schema.py"),

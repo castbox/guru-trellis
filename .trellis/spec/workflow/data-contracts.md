@@ -1156,6 +1156,56 @@ Commit message payloads must never use close keywords such as `Closes`,
 `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; those keywords remain PR
 body-only close semantics controlled by Issue Scope Ledger.
 
+## Reviewed Content Identity
+
+`guru-reviewed-content-1.0` is the durable content-continuity contract shared
+by Branch Review, Publication, Finalizer, and source Verification. Its digest is
+SHA-256 over this canonical UTF-8 JSON payload, encoded with sorted object keys,
+no ASCII escaping, and compact separators:
+
+```json
+{
+  "algorithm": "guru-reviewed-content-1.0",
+  "entries": [
+    {"path": "<UTF-8 repository-relative path>", "mode": "<Git mode>", "oid": "<Git object id>"}
+  ]
+}
+```
+
+The metadata-excluded entry set is derived from the selected Git commit and,
+when explicitly requested for current `HEAD`, its worktree overlay. Each entry
+contains exactly `path`, `mode`, and `oid`; Git object kind, `base_commit`,
+review range, stage-private fields, and any other metadata are not identity
+input. Entries are ordered by the raw bytes of `path.encode("utf-8")` before
+the payload is hashed. Paths must decode as strict UTF-8. Supported atomic Git
+entries retain the existing regular/executable blob, symlink, and gitlink
+semantics; ambiguous or unavailable entries fail closed.
+
+The closed metadata exclusion set is:
+
+- `.trellis/tasks` and every descendant, including archived tasks;
+- `.trellis/workspace` and every descendant;
+- `.trellis/.runtime` and every descendant;
+- the exact provenance-tail manifest `.trellis/guru-team/extension.json`;
+- `.DS_Store` at any path depth, matched by basename.
+
+The canonical shared helper owns this exclusion classifier and all tree,
+worktree-overlay, gitlink, ordering, payload, and digest behavior. Branch
+Review, Publication, Finalizer, and Verification call that helper; a stage must
+not keep a package-local algorithm or metadata classifier.
+
+This digest proves reviewed business-content continuity only. Base ref and base
+commit identity, review range, review/current commit, target ref/HEAD, and
+ancestry are independent freshness authorities owned by their existing gates.
+Changing an included path, mode, or oid changes the digest and fails continuity;
+changing only an excluded path leaves it unchanged and does not waive any
+independent freshness check.
+
+Branch Review owner-private checkpoints are current-only for this contract.
+Any checkpoint written by the former package-local identity implementation is
+stale: current loaders do not dual-read, migrate, rewrite, or synthesize it.
+Recovery is one fresh Branch Review over current authority and content.
+
 ## Review Gate Artifact
 
 `review-branch.sh` writes compact schema 5.0 `review-gate.json` at the exact

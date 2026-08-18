@@ -1527,8 +1527,14 @@ The Branch Review `passed` edge supplies only
 `task_ref/branch_review_commit` through `skill_input_authoring_seed`; the
 caller authors `profile/mode/review_intent` for active
 `guru-review-task-publication`. The commit remains the Git range/ancestry anchor;
-the shared reviewed-content identity remains fresh across excluded workflow
-metadata changes and becomes stale for any reviewed-content change.
+the shared reviewed-content identity defined by
+`data-contracts.md#reviewed-content-identity` remains fresh across excluded
+workflow metadata changes and becomes stale for any reviewed-content change.
+Branch Review, Publication, Finalizer, and Verification use the one canonical
+shared helper for that contract; no package owns a second implementation. The
+Branch Review owner-private checkpoint is current-only. A checkpoint from the
+former package-local identity implementation is stale and routes to a fresh
+Branch Review without compatibility reads, migration, or rewriting.
 
 For every structured projection, an `exit_id` field whose schema is the exact
 matching const may be omitted only as the already selected route discriminator.
@@ -1678,6 +1684,10 @@ Finalizer, finish-work, re-entry, and recovery cannot make this Skill applicable
 Legacy workflow/task-bearing input, `not_required`, `return_to_task_work`, and
 Finalizer projection schemas remain immutable compatibility assets only; current
 Interface, registry, eval corpus, manifest inventory, and runtime reject them.
+Source Verification computes reviewed-content continuity only through the
+canonical shared helper and the contract in
+`data-contracts.md#reviewed-content-identity`; target repository/ref/HEAD and
+ancestry remain independent verifier authorities.
 
 ## Task Finalization Owner
 
@@ -1720,6 +1730,11 @@ Internal transaction state, semantic review, authorization, live facts, paths,
 and digests remain private.
 Transaction 2.0 remains an explicit legacy schema and is not current Interface
 authority.
+
+Finalizer and Publication consume the same canonical reviewed-content helper
+as Branch Review and Verification. Their base, range, reviewed/publication HEAD,
+remote, and ancestry checks remain package-owned independent freshness gates;
+the reviewed-content digest is not a substitute for those authorities.
 
 Current archive contains exactly six durable core files: `task.json`, `prd.md`,
 `design.md`, `implement.md`, `issue-scope-ledger.json`, and

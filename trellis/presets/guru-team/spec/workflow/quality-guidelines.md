@@ -115,6 +115,27 @@ its own accepted scope. Validation ownership is split as follows:
   deferred matrix coverage belongs to its dedicated owner and is reported as an
   explicit unverified boundary rather than an ordinary-task failure.
 
+### Reviewed Content Cross-Package Acceptance
+
+Changes to the reviewed-content identity contract require one real Git fixture
+at one exact `HEAD` that calls the production package wrappers for Branch
+Review, Publication, Finalizer, and Verification. The test obtains identities
+from wrapper output or normal owner/checker flow and compares those observed
+values; it must not copy an expected digest, import a test-only algorithm, or
+replace a wrapper call with a direct package-local helper test.
+
+The acceptance fixture covers the positive same-HEAD result, excluded
+metadata-only changes, included path/mode/oid drift, independent base/range/
+ancestry failure, an old Branch Review checkpoint becoming stale, and fresh
+Branch Review re-entry. Algorithm, ordering, and exclusion details remain
+owned only by `data-contracts.md#reviewed-content-identity`.
+
+For an ordinary workflow-defect Issue, this cross-package acceptance runs with
+the relevant package/runtime, canonical/dogfood/installed, declared-platform,
+preset-reapply, ownership, drift, sidecar, and executable-mode checks required
+by its accepted scope. It does not expand into the complete multi-platform
+Throwaway installer matrix; that unrun matrix is reported explicitly.
+
 ## Required Checks
 
 Use these checks before committing workflow or preset changes:

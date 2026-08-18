@@ -1,0 +1,19 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 270,
+    "url": "https://github.com/castbox/guru-trellis/issues/270",
+    "title": "统一 guru-reviewed-content-1.0 identity 算法与跨阶段 freshness 合同",
+    "reason": "本 task 完整承接 Issue #270 的 accepted scope。"
+  },
+  "close_issues": [
+    {
+      "number": 270,
+      "url": "https://github.com/castbox/guru-trellis/issues/270",
+      "title": "统一 guru-reviewed-content-1.0 identity 算法与跨阶段 freshness 合同",
+      "reason": "仅在全部 acceptance、合并与收尾门禁通过后关闭。"
+    }
+  ],
+  "related_issues": [],
+  "followup_issues": []
+}

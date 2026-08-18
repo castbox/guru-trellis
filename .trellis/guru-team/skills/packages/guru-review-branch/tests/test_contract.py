@@ -153,7 +153,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         )
         gate = self.checkpoint()
         self.assertTrue(gate.is_file())
-        self.assertEqual("5.0", json.loads(gate.read_text())["schema_version"])
+        self.assertEqual("6.0", json.loads(gate.read_text())["schema_version"])
         checked = self.run_wrapper(
             "check-review-gate.sh",
             "--task",
@@ -417,7 +417,7 @@ class BranchReviewContractTest(unittest.TestCase):
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
-            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-5.0.json",
+            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-6.0.json",
             public["private_artifacts"][0]["schema"]["schema_id"],
         )
         self.assertEqual(

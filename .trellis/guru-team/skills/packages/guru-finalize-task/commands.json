@@ -226,6 +226,23 @@
         "schemas/public-invocation-error.schema.json"
       ],
       "runtime_role": "invoke"
+    },
+    {
+      "id": "finalize-task-content-identity",
+      "owner": "guru-finalize-task",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []},
+        {"flag": "--commit", "required": false, "kind": "string", "description": "Git commit; defaults to HEAD.", "repeatable": false, "conflicts": []},
+        {"flag": "--include-worktree", "required": false, "kind": "boolean", "description": "Overlay current worktree state.", "repeatable": false, "conflicts": []}
+      ],
+      "stdin": "none",
+      "stdout": "single_json_object",
+      "errors": ["invalid_arguments", "conflicting_arguments", "finalization_stale", "internal_error"],
+      "side_effect": "none",
+      "schema_bindings": ["schemas/reviewed-content-identity-output.schema.json"],
+      "validator_id": "reviewed_content_identity",
+      "runtime_role": "check"
     }
   ]
 }

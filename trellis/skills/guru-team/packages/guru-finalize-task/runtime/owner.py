@@ -44,6 +44,24 @@ from typing import Any
 
 from urllib.parse import quote, urlsplit
 
+try:
+    from runtime.reviewed_content import (
+        PROVENANCE_TAIL_MANIFEST_PATH,
+        ReviewedContentError,
+        os_noise_path as ai_first_os_noise_path,
+        reviewed_content_identity as canonical_reviewed_content_identity,
+        reviewed_content_metadata_path,
+    )
+except ModuleNotFoundError:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    from runtime.reviewed_content import (
+        PROVENANCE_TAIL_MANIFEST_PATH,
+        ReviewedContentError,
+        os_noise_path as ai_first_os_noise_path,
+        reviewed_content_identity as canonical_reviewed_content_identity,
+        reviewed_content_metadata_path,
+    )
+
 DEFAULTS: dict[str, Any] = {
     "github_repo": "",
     "source_issue_required": False,
@@ -82,18 +100,6 @@ AI_FIRST_OWNER_ARTIFACTS = frozenset({
     "task-finalization-transition-gate.json",
     "finalization-transaction.json",
 })
-
-AI_FIRST_OS_NOISE_NAMES = frozenset({".DS_Store"})
-
-REVIEWED_CONTENT_ALGORITHM = "guru-reviewed-content-1.0"
-
-REVIEWED_CONTENT_METADATA_PREFIXES = (
-    ".trellis/tasks",
-    ".trellis/workspace",
-    ".trellis/.runtime",
-)
-
-PROVENANCE_TAIL_MANIFEST_PATH = ".trellis/guru-team/extension.json"
 
 PROVENANCE_TAIL_ALLOWED_FIELDS = frozenset({
     "installed_at",
@@ -1573,298 +1579,15 @@ def current_branch(root: Path) -> str:
 def current_head(root: Path) -> str:
     return run_stdout(["git", "rev-parse", "HEAD"], cwd=root)
 
-def ai_first_os_noise_path(path: str) -> bool:
-    return Path(path).name in AI_FIRST_OS_NOISE_NAMES
-
-def reviewed_content_metadata_path(path: str) -> bool:
-    return path == PROVENANCE_TAIL_MANIFEST_PATH or ai_first_os_noise_path(path) or any(
-        path == prefix or path.startswith(prefix + "/")
-        for prefix in REVIEWED_CONTENT_METADATA_PREFIXES
-    )
-
-def reviewed_content_tree_entries(
-    root: Path,
-    commit: str,
-) -> dict[str, dict[str, str]]:
-    if not isinstance(commit, str) or not commit.strip():
-        raise WorkflowError(
-            "Reviewed-content commit must be a non-empty Git revision.",
-            exit_code=2,
-        )
-    proc = subprocess.run(
-        ["git", "ls-tree", "-r", "-z", "--full-tree", commit.strip()],
-        cwd=str(root),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if proc.returncode != 0:
-        raise WorkflowError(
-            "Could not read the reviewed-content commit tree.",
-            exit_code=2,
-            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
-        )
-    entries: dict[str, dict[str, str]] = {}
-    for raw_record in proc.stdout.split(b"\0"):
-        if not raw_record:
-            continue
-        metadata_raw, separator, path_raw = raw_record.partition(b"\t")
-        if not separator:
-            raise WorkflowError(
-                "Git returned an invalid reviewed-content tree record.",
-                exit_code=2,
-            )
-        try:
-            path = path_raw.decode("utf-8", "strict")
-            metadata = metadata_raw.decode("ascii", "strict").split()
-        except UnicodeDecodeError as exc:
-            raise WorkflowError(
-                "Reviewed-content tree paths must be valid UTF-8.",
-                exit_code=2,
-            ) from exc
-        if len(metadata) != 3:
-            raise WorkflowError(
-                "Git returned incomplete reviewed-content tree metadata.",
-                exit_code=2,
-            )
-        mode, object_type, oid = metadata
-        path_parts = path.split("/")
-        valid_type = (
-            (mode == "160000" and object_type == "commit")
-            or (mode in {"100644", "100755", "120000"} and object_type == "blob")
-        )
-        if (
-            not valid_type
-            or re.fullmatch(r"[0-9a-f]{40,64}", oid) is None
-            or not path
-            or path.startswith("/")
-            or any(part in {"", ".", ".."} for part in path_parts)
-            or path in entries
-        ):
-            raise WorkflowError(
-                "Reviewed-content tree contains an unsupported or ambiguous entry.",
-                exit_code=2,
-                payload={"path": path},
-            )
-        if reviewed_content_metadata_path(path):
-            continue
-        entries[path] = {"path": path, "mode": mode, "oid": oid}
-    return entries
-
-def reviewed_content_blob_oid(root: Path, content: bytes) -> str:
-    proc = subprocess.run(
-        ["git", "hash-object", "--stdin"],
-        cwd=str(root),
-        input=content,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    oid = proc.stdout.decode("ascii", "strict").strip() if proc.returncode == 0 else ""
-    if proc.returncode != 0 or re.fullmatch(r"[0-9a-f]{40,64}", oid) is None:
-        raise WorkflowError(
-            "Could not calculate a reviewed-content blob identity.",
-            exit_code=2,
-            payload={"stderr": proc.stderr.decode("utf-8", "replace")},
-        )
-    return oid
-
-def reviewed_content_worktree_overlays(root: Path) -> list[dict[str, Any]]:
-    overlays: list[dict[str, Any]] = []
-    for record in task_commit_porcelain_status_records(root):
-        path = str(record.get("path") or "")
-        renamed_from = record.get("renamed_from")
-        if isinstance(renamed_from, str) and not reviewed_content_metadata_path(
-            renamed_from
-        ):
-            overlays.append({"path": renamed_from, "deleted": True})
-        if reviewed_content_metadata_path(path):
-            continue
-        entry = task_commit_snapshot_entry(root, record)
-        if entry.get("deleted") is True:
-            overlays.append({"path": path, "deleted": True})
-            continue
-        mode = str(entry.get("mode") or "")
-        if mode == "160000":
-            oid = str(entry.get("gitlink_head") or "")
-            index_oid = str(entry.get("index_blob") or "")
-            if (
-                entry.get("gitlink_initialized") is not True
-                or entry.get("gitlink_dirty") is not False
-                or re.fullmatch(r"[0-9a-f]{40,64}", oid) is None
-                or re.fullmatch(r"[0-9a-f]{40,64}", index_oid) is None
-            ):
-                raise WorkflowError(
-                    "Reviewed-content gitlink identity is unavailable or dirty.",
-                    exit_code=2,
-                    payload={"path": path},
-                )
-            if entry.get("index_status") and index_oid != oid:
-                raise WorkflowError(
-                    "Reviewed-content gitlink index pointer does not match its worktree binding.",
-                    exit_code=2,
-                    payload={"path": path},
-                )
-        else:
-            content, _sha256, worktree_mode = task_commit_worktree_content(root, path)
-            if content is None or worktree_mode not in {"100644", "100755", "120000"}:
-                raise WorkflowError(
-                    "Reviewed-content worktree entry is unavailable or unsupported.",
-                    exit_code=2,
-                    payload={"path": path},
-                )
-            mode = worktree_mode
-            oid = reviewed_content_blob_oid(root, content)
-        overlay = {
-            "path": path,
-            "deleted": False,
-            "mode": mode,
-            "oid": oid,
-        }
-        if mode == "160000":
-            overlay["index_oid"] = index_oid
-        overlays.append(overlay)
-    return sorted(
-        overlays,
-        key=lambda item: (
-            str(item["path"]).encode("utf-8"),
-            0 if item.get("deleted") is True else 1,
-        ),
-    )
-
-def reviewed_content_gitlink_identity(
-    root: Path,
-    path: str,
-    recorded_oid: str | None,
-    overlay: dict[str, Any] | None,
-) -> str:
-    expected_oid = (
-        str(overlay.get("oid") or "") if overlay else str(recorded_oid or "")
-    )
-    expected_index_oid = (
-        str(overlay.get("index_oid") or "") if overlay else str(recorded_oid or "")
-    )
-    if (
-        re.fullmatch(r"[0-9a-f]{40,64}", expected_oid) is None
-        or re.fullmatch(r"[0-9a-f]{40,64}", expected_index_oid) is None
-    ):
-        raise WorkflowError(
-            "Reviewed-content gitlink binding is unavailable or ambiguous.",
-            exit_code=2,
-            payload={"path": path},
-        )
-
-    target = root / path
-    try:
-        metadata = target.lstat()
-    except FileNotFoundError:
-        metadata = None
-    deinitialized = metadata is None
-    if metadata is not None and stat.S_ISDIR(metadata.st_mode):
-        try:
-            with os.scandir(target) as children:
-                deinitialized = next(children, None) is None
-        except OSError as exc:
-            raise WorkflowError(
-                "Reviewed-content gitlink worktree root is ambiguous.",
-                exit_code=2,
-                payload={"path": path},
-            ) from exc
-
-    current_index_oid, current_index_mode = task_commit_index_identity(root, path)
-    if current_index_oid != expected_index_oid or current_index_mode != "160000":
-        raise WorkflowError(
-            "Reviewed-content gitlink index binding drifted after capture.",
-            exit_code=2,
-            payload={"path": path},
-        )
-    if deinitialized:
-        if overlay is not None:
-            raise WorkflowError(
-                "Reviewed-content gitlink overlay requires an initialized worktree.",
-                exit_code=2,
-                payload={"path": path},
-            )
-        return expected_oid
-
-    identity = task_commit_gitlink_worktree_identity(root, path)
-    if identity.get("gitlink_head") != expected_oid:
-        raise WorkflowError(
-            "Reviewed-content gitlink worktree HEAD drifted after capture.",
-            exit_code=2,
-            payload={"path": path},
-        )
-    return expected_oid
-
 def reviewed_content_identity(
     root: Path,
     commit: str = "HEAD",
     include_worktree: bool = True,
 ) -> dict[str, str]:
-    if include_worktree:
-        resolved_commit = run_stdout(["git", "rev-parse", commit], cwd=root)
-        if resolved_commit != current_head(root):
-            raise WorkflowError(
-                "Reviewed-content worktree overlays require the current HEAD commit.",
-                exit_code=2,
-            )
-    entries = reviewed_content_tree_entries(root, commit)
-    recorded_gitlink_oids = {
-        path: entry["oid"]
-        for path, entry in entries.items()
-        if entry["mode"] == "160000"
-    }
-    if include_worktree:
-        gitlink_overlays: dict[str, dict[str, Any]] = {}
-        for overlay in reviewed_content_worktree_overlays(root):
-            path = str(overlay["path"])
-            existing = entries.get(path)
-            if overlay.get("deleted") is True:
-                if existing is not None and existing["mode"] == "160000":
-                    raise WorkflowError(
-                        "Reviewed-content gitlink deletion or replacement is unsupported.",
-                        exit_code=2,
-                        payload={"path": path},
-                    )
-                entries.pop(path, None)
-            else:
-                if (
-                    existing is not None
-                    and existing["mode"] == "160000"
-                    and str(overlay["mode"]) != "160000"
-                ):
-                    raise WorkflowError(
-                        "Reviewed-content gitlink deletion or replacement is unsupported.",
-                        exit_code=2,
-                        payload={"path": path},
-                    )
-                entries[path] = {
-                    "path": path,
-                    "mode": str(overlay["mode"]),
-                    "oid": str(overlay["oid"]),
-                }
-                if overlay["mode"] == "160000":
-                    gitlink_overlays[path] = overlay
-        for path, entry in entries.items():
-            if entry["mode"] != "160000":
-                continue
-            entry["oid"] = reviewed_content_gitlink_identity(
-                root,
-                path,
-                recorded_gitlink_oids.get(path),
-                gitlink_overlays.get(path),
-            )
-    canonical_entries = sorted(
-        entries.values(),
-        key=lambda item: item["path"].encode("utf-8"),
-    )
-    sha256 = canonical_json_sha256(
-        {
-            "algorithm": REVIEWED_CONTENT_ALGORITHM,
-            "entries": canonical_entries,
-        }
-    )
-    return {"algorithm": REVIEWED_CONTENT_ALGORITHM, "sha256": sha256}
+    try:
+        return canonical_reviewed_content_identity(root, commit, include_worktree)
+    except ReviewedContentError as exc:
+        raise WorkflowError(str(exc), exit_code=2, payload=exc.payload) from exc
 
 def ai_first_git_blob_contents(
     root: Path,
