@@ -97,14 +97,14 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains eighteen active packages and 73 package exits while
+Registry 1.4 graph contains twenty active packages and 85 package exits while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
 `merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
 `ready_for_merge` in place of `published`; the old published schema/example
 remain immutable legacy assets but are not selected by the Interface, registry,
-workflow or extension manifest. The integrated business graph has 15 invoke
-markers, 60 exit markers and 36 unique workflow/stop targets.
+workflow or extension manifest. The integrated business graph has 19 invoke
+markers, 83 exit markers and 51 unique workflow/stop targets.
 
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
 repository/PR identity, `expected_head_sha`, expected base/head branch identity,
@@ -123,7 +123,7 @@ post-merge read-only validation. A terminal projection retires the merge gate.
 Neither Finalizer nor Merge calls Issue-close APIs, enters Phase 0, invokes base
 sync, updates the PR branch, synchronizes local `main`, or cleans resources.
 
-Sixteen integrated packages select Interface 1.4.
+Eighteen integrated packages select Interface 1.4.
 `guru-qualify-normal-scenario` selects Interface 1.6,
 `guru-verify-extension-installation` selects Interface 1.5, and the latter has
 `workflow_integration_state=standalone_only`. Registry schema
@@ -135,7 +135,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all eighteen active packages and their 73 external exits. The
+for all twenty active packages and their 85 external exits. The
 `production-current-v4` is the sole current manifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
 activation of other packages, including `guru-finalize-task`, does not rewrite
@@ -709,7 +709,7 @@ executor consumes only that private candidate.
 Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
 absolute paths, and runtime snapshots are not public input.
 
-Exactly thirteen semantic handoffs use target-owned authoring seeds. The first
+Exactly fourteen semantic handoffs use target-owned authoring seeds. The first
 five are
 `guru-approve-task-plan:revision_required -> revision_reentry`,
 `guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
@@ -723,6 +723,10 @@ and the finalizer's `publication_review_stale`, `same_plan_resume`, and
 `guru-select-workflow-mode:task_free -> guru-execute-task-free-change:selected_route`,
 the execution Skill's `location_required` and `explicit_choice_required`
 self-reentries, and `reselect_mode -> guru-select-workflow-mode:initial_request`.
+Requirements/Design/Test SSOT adds
+`guru-maintain-requirements-design-test-ssot:sync_required -> promotion`; its
+`sync_kind` preserves whether the reviewed bounded projection is promotion or
+repair work without asking the consumer to repeat that semantic judgment.
 Their projected seed fields are respectively `source_exit/task_ref`,
 `source_exit/task_ref/phase2_commit_anchor`, `source_exit/task_ref`,
 `task_ref/base_ref/branch_review_commit`, and
@@ -739,9 +743,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is eighteen active Skills and 73
-exits. The integrated business workflow projection contains 17 invoke markers,
-71 exit markers, 24 workflow-target markers, and 18 stop-target markers. Missing,
+The current package cardinality assertion is twenty active Skills and 85
+exits. The integrated business workflow projection contains 19 invoke markers,
+83 exit markers, 31 workflow-target markers, and 20 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1647,8 +1651,8 @@ aggregate input schema `guru-finalize-task-input-aggregate-6.0`. Aggregate
 fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
-The current additive activation set contributes to the live closure of eighteen
-active Skills and 73 exits. The production current manifest contains exactly
+The current additive activation set contributes to the live closure of twenty
+active Skills and 85 exits. The production current manifest contains exactly
 four Skills and 15 exits.
 
 ## Extension Installation Verification Owner

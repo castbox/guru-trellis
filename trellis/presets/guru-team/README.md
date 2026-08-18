@@ -66,8 +66,8 @@ Branch Review, or Publication owner gate for that gate's own consumer.
 The preset manages the six canonical workflow specifications from
 `trellis/presets/guru-team/spec/workflow/` into `.trellis/spec/workflow/`:
 `workflow-contract.md`, `skill-package-contract.md`, `data-contracts.md`,
-`companion-scripts.md`, `quality-guidelines.md`, and
-`semantic-retrieval.md`. The canonical preset files are the distribution
+`companion-scripts.md`, `quality-guidelines.md`,
+`requirements-design-test-ssot.md`, and `semantic-retrieval.md`. The canonical preset files are the distribution
 source; installed/dogfood copies are projections. Exact previously managed
 bytes upgrade with an adjacent `.bak`, unknown local edits are preserved with
 an adjacent `.new`, and either unresolved sidecar blocks activation.
@@ -534,9 +534,10 @@ contracts、source-session private result schema、两例 production corpus 与 
 `guru-finalize-task` 另行安装四个 distinct profiles、六个 `exit_id` outputs、
 private gate、七条 production eval cases 与 finalization runtime wrappers。独立
 `guru-merge-task-pr` 再安装两种 inputs、三个
-exits 与五个 merge runtime wrappers。Source/installed package closure 为 18 Skills /
-73 exits；business global workflow marker closure 为 17 invokes / 71 exits /
-42 combined targets（24 workflow + 18 stop）。
+exits 与五个 merge runtime wrappers。Requirements/Design/Test SSOT package 另提供
+四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
+Source/installed package closure 为 20 Skills / 85 exits；business global workflow
+marker closure 为 19 invokes / 83 exits / 51 combined targets（31 workflow + 20 stop）。
 1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
 grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
 pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
@@ -667,12 +668,14 @@ Production skill registry 包含 active `guru-create-task-workspace`、`guru-syn
 `guru-finalize-task`、`guru-merge-task-pr`、`guru-review-branch`、
 `guru-review-task-publication`、`guru-select-workflow-mode`、
 `guru-execute-task-free-change`、`guru-qualify-normal-scenario`、
-`guru-reconcile-task-base`、`guru-verify-extension-installation`。十七个 integrated
-business packages 加一个 standalone-only verifier 共声明 73 个 external exits。
+`guru-reconcile-task-base`、`guru-maintain-architecture-baseline`、
+`guru-maintain-requirements-design-test-ssot`、
+`guru-verify-extension-installation`。十九个 integrated business packages 加一个
+standalone-only verifier 共声明 85 个 external exits。
 `guru-finalize-task` 的
 `workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
-invoke 与六个 exit marker。当前 release preparation 的 canonical extension version 为
-`0.6.5-guru.34`；stable source `v0.6.5-guru.9` 对应同一 extension revision
+invoke 与六个 exit marker。当前 source candidate 的 canonical extension version 为
+`0.6.5-guru.35`；stable source `v0.6.5-guru.9` 仍对应 extension revision
 `0.6.5-guru.34`，并以官方 Trellis CLI `0.6.5` 为目标。该 annotated tag 只在最终 candidate 通过 pre-tag gate 后创建，peeled commit
 由 immutable Git facts、GitHub Release notes 与 release evidence 精确记录。Repo release
 tag 与 extension revision 是独立版本轴；workflow 与 preset 必须 pin 同一 immutable tag。
@@ -1407,7 +1410,7 @@ runtime 留在 native execution 外；四平台 projection 内对应 raw read �
 throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
 `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
 `trellis update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
-preset reapply。之后重新验证 18 Skills/73 package exits、17 invokes/71 workflow
-exits、24 workflow targets、18 stop targets、全部十 profile real installed entry、
+preset reapply。之后重新验证 20 Skills/85 package exits、19 invokes/83 workflow
+exits、31 workflow targets、20 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。

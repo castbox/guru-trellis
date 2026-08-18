@@ -1198,14 +1198,15 @@ assert ownership["overlay_root"] == "trellis/presets/guru-team/overlays"
 assert len(ownership["guru_owned_rules"]) == 11
 assert len(ownership["managed_path_claims"]) == 9
 assert extension["extension_id"] == "guru-team"
-assert extension["version"] == "0.6.5-guru.34"
+assert extension["version"] == "0.6.5-guru.35"
 assert extension["target_trellis_cli"] == "0.6.5"
 assert assets == sorted(set(assets))
-assert len(assets) == 68
+assert len(assets) == 69
 managed_specs = {
     ".trellis/spec/workflow/companion-scripts.md",
     ".trellis/spec/workflow/data-contracts.md",
     ".trellis/spec/workflow/quality-guidelines.md",
+    ".trellis/spec/workflow/requirements-design-test-ssot.md",
     ".trellis/spec/workflow/semantic-retrieval.md",
     ".trellis/spec/workflow/skill-package-contract.md",
     ".trellis/spec/workflow/workflow-contract.md",
@@ -1285,7 +1286,7 @@ for command in (
 ):
     assert command in api["companion_scripts"]
 assert api["skill_contracts"]["canonical_root"] == "trellis/skills/guru-team/"
-assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-execute-task-free-change", "guru-finalize-task", "guru-maintain-architecture-baseline", "guru-merge-task-pr", "guru-qualify-normal-scenario", "guru-reconcile-task-base", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"]
+assert api["skill_contracts"]["active_skill_ids"] == ["guru-approve-task-plan", "guru-check-task", "guru-clarify-requirements", "guru-maintain-architecture-baseline", "guru-maintain-requirements-design-test-ssot", "guru-create-task-commit", "guru-create-task-workspace", "guru-discover-change-context", "guru-execute-task-free-change", "guru-finalize-task", "guru-merge-task-pr", "guru-qualify-normal-scenario", "guru-reconcile-task-base", "guru-review-branch", "guru-review-change-request", "guru-review-contract-wording", "guru-review-task-publication", "guru-select-workflow-mode", "guru-sync-base", "guru-verify-extension-installation"]
 assert api["skill_contracts"]["planned_skill_ids"] == []
 assert "guru-base-sync-result-1.0" in api["skill_contracts"]["artifact_schema_ids"]
 assert "guru-change-context-owner-result-2.0" in api["skill_contracts"]["artifact_schema_ids"]
@@ -1313,8 +1314,8 @@ assert set(api["skill_contracts"]) == {
     "registry_lifecycle", "contract_manifests",
     "workflow_markers",
 }
-assert len(api["skill_contracts"]["public_input_schema_ids"]) == 52
-assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 73
+assert len(api["skill_contracts"]["public_input_schema_ids"]) == 57
+assert len(api["skill_contracts"]["typed_output_schema_ids"]) == 78
 assert len(api["skill_contracts"]["legacy_typed_output_schema_ids"]) == 5
 assert len(api["skill_contracts"]["private_artifact_schema_ids"]) == 18
 assert api["skill_contracts"]["contract_manifests"] == [
@@ -1382,7 +1383,7 @@ test -x "$TARGET/.trellis/guru-team/skills/adapters/eval/cursor.sh"
 TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 SOURCE_SKILL_VALIDATION_JSON="$("$REPO_ROOT/trellis/workflows/guru-team/scripts/bash/check-skill-packages.sh" --root "$REPO_ROOT" --json --mode source)"
 INSTALLED_SKILL_VALIDATION_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/check-skill-packages.sh" --root "$TARGET" --json --mode installed)"
-installed_python "$TARGET" -c 'import json, sys; target_source = json.loads(sys.argv[1]); source = json.loads(sys.argv[2]); installed = json.load(sys.stdin); assert target_source == source; assert source["status"] == installed["status"] == "passed"; assert (source["active_packages"], source["commands"], source["complete_package_commands"]) == (18, 65, 18); assert len(installed["facts"]["active_ids"]) == source["active_packages"]; assert installed["facts"]["command_count"] == source["commands"]; assert installed["facts"]["planned_ids"] == []' "$TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON" "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
+installed_python "$TARGET" -c 'import json, sys; target_source = json.loads(sys.argv[1]); source = json.loads(sys.argv[2]); installed = json.load(sys.stdin); assert target_source == source; assert source["status"] == installed["status"] == "passed"; assert (source["active_packages"], source["commands"], source["complete_package_commands"]) == (20, 71, 20); assert len(installed["facts"]["active_ids"]) == source["active_packages"]; assert installed["facts"]["command_count"] == source["commands"]; assert installed["facts"]["planned_ids"] == []' "$TARGET_WRAPPER_SOURCE_SKILL_VALIDATION_JSON" "$SOURCE_SKILL_VALIDATION_JSON" <<<"$INSTALLED_SKILL_VALIDATION_JSON"
 MINIMAL_CONTRACT_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-contract.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"
 installed_python "$TARGET" -c 'import json, sys; payload=json.load(sys.stdin); assert set(payload) == {"status","skill_id","interface_schema_id","input","invocation","outputs","consumer_inputs","projections","private_artifacts"}; assert payload["interface_schema_id"] == "guru-team-skill-interface-1.4"' <<<"$MINIMAL_CONTRACT_JSON"
 MINIMAL_EVAL_JSON="$("$TARGET/.trellis/guru-team/scripts/bash/discover-skill-evals.sh" --root "$TARGET" --mode installed --skill guru-sync-base --json)"

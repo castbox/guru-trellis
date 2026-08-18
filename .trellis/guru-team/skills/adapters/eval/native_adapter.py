@@ -5361,7 +5361,12 @@ def stage_owner_execution(
     head = run_git(fixture, "rev-parse", "HEAD")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
-    if skill_id in {"guru-select-workflow-mode", "guru-execute-task-free-change", "guru-maintain-architecture-baseline"}:
+    if skill_id in {
+        "guru-select-workflow-mode",
+        "guru-execute-task-free-change",
+        "guru-maintain-architecture-baseline",
+        "guru-maintain-requirements-design-test-ssot",
+    }:
         runtime = None
     elif skill_id == "guru-discover-change-context":
         runtime = load_package_runtime_module(
@@ -5457,6 +5462,82 @@ def stage_owner_execution(
                 "profile": public_payload["profile"],
                 "continuation_id": public_payload["continuation_id"],
                 "typed_exit": expected,
+            }
+        elif skill_id == "guru-maintain-requirements-design-test-ssot":
+            if recipe == "rdt-bootstrap-incomplete":
+                selected = {
+                    "typed_exit": "baseline_incomplete",
+                    "authority_locator": "docs",
+                    "known_status": "partial",
+                    "applicability_scope": "repository",
+                    "missing_layer_code": "test",
+                }
+            elif recipe == "rdt-impact-current":
+                selected = {
+                    "typed_exit": "ssot_current",
+                    "authority_locator": "docs",
+                    "active_version": "1.0",
+                    "status": "active",
+                    "applicability_scope": "repository",
+                    "freshness": "authority-v1",
+                }
+            elif recipe == "rdt-impact-revision":
+                selected = {
+                    "typed_exit": "revision_required",
+                    "task_locator": str(public_payload["task_locator"]),
+                    "affected_scope": "requirements-design-test traceability",
+                    "authority_locator": str(public_payload["authority_locator"]),
+                    "authority_version": str(public_payload["authority_version"]),
+                    "revision_code": "traceability_revision",
+                }
+            elif recipe == "rdt-impact-sync":
+                selected = {
+                    "typed_exit": "sync_required",
+                    "authority_locator": str(public_payload["authority_locator"]),
+                    "target_version": "1.1",
+                    "contribution_locator": "docs/requirements-design-test-contributions/example-c",
+                    "sync_kind": "promotion",
+                    "freshness": str(public_payload["authority_freshness"]),
+                }
+            elif recipe == "rdt-promotion-sync":
+                selected = {
+                    "typed_exit": "ssot_current",
+                    "authority_locator": str(public_payload["authority_locator"]),
+                    "active_version": str(public_payload["target_version"]),
+                    "status": "active",
+                    "applicability_scope": "repository",
+                    "freshness": str(public_payload["freshness"]),
+                }
+            elif recipe == "rdt-repair-blocked":
+                selected = {
+                    "typed_exit": "blocked",
+                    "reason_code": "stale_identity",
+                    "remediation": "Reread the current authority and repeat semantic review.",
+                }
+            else:
+                raise ValueError(
+                    "unsupported Requirements Design Test SSOT owner staging recipe: "
+                    f"{recipe}"
+                )
+            owner = {
+                "profile": public_payload["profile"],
+                "mode": public_payload["mode"],
+                "continuation_id": public_payload["continuation_id"],
+                "ai_review_gate": {
+                    "status": "blocked" if selected["typed_exit"] == "blocked" else "passed",
+                    "reviewed_scope": "Current Requirements Design Test authority and selected profile.",
+                    "evidence_summary": "The eval facts bind the live authority, contribution, traceability, and Architecture Baseline identity.",
+                    "findings": [],
+                    "conclusion": "The expected typed exit is justified by the evaluated scenario.",
+                },
+                "consumer": {
+                    "ssot_current": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-current-router"},
+                    "sync_required": {"kind": "skill", "id": "guru-maintain-requirements-design-test-ssot"},
+                    "revision_required": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-planning-router"},
+                    "baseline_incomplete": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-bootstrap-router"},
+                    "blocked": {"kind": "stop", "id": "requirements-design-test-ssot-blocked"},
+                }[selected["typed_exit"]],
+                **selected,
             }
         else:
             raise ValueError(f"owner staging is not implemented for {skill_id}")

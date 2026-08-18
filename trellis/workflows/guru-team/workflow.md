@@ -62,8 +62,15 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"contract_incomplete","consumer":{"kind":"workflow","id":"guru-architecture-baseline-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"fitness_regression","consumer":{"kind":"workflow","id":"guru-architecture-baseline-check-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"blocked","consumer":{"kind":"stop","id":"architecture-baseline-blocked"}} -->
-The installed graph is exactly 18 active Skills. The business-task workflow is
-exactly 17 mandatory invokes and 71 external exits.
+### Requirements Design Test SSOT owner
+<!-- guru-skill-invoke: {"skill":"guru-maintain-requirements-design-test-ssot","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"ssot_current","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-current-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"sync_required","consumer":{"kind":"skill","id":"guru-maintain-requirements-design-test-ssot"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
+The installed graph is exactly 20 active Skills and 85 package exits. The
+business-task workflow is exactly 19 mandatory invokes and 83 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
@@ -164,7 +171,11 @@ exactly 17 mandatory invokes and 71 external exits.
 <!-- guru-workflow-target: {"id":"guru-architecture-baseline-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-architecture-baseline-check-router"} -->
 <!-- guru-stop-target: {"id":"architecture-baseline-blocked"} -->
-The graph contains exactly 24 workflow targets and 18 stop targets.
+<!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-current-router"} -->
+<!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-planning-router"} -->
+<!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-bootstrap-router"} -->
+<!-- guru-stop-target: {"id":"requirements-design-test-ssot-blocked"} -->
+The graph contains exactly 31 workflow targets and 20 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
@@ -210,6 +221,9 @@ The graph contains exactly 24 workflow targets and 18 stop targets.
 ### Workflow target behavior
 | Target | Global behavior |
 | --- | --- |
+| guru-requirements-design-test-ssot-current-router | Consume the reviewed authority locator, active version, scope, status, and freshness; the next owner rereads live Requirements, Design, and Test authority. |
+| guru-requirements-design-test-ssot-planning-router | Return the exact affected scope and revision code to the current planning or implementation owner. |
+| guru-requirements-design-test-ssot-bootstrap-router | Enter controlled foundation bootstrap or repair for the declared missing layer without expanding business scope. |
 | original-request-route | Return to the original non-repository request. |
 | guru-workflow-standard-intake-router | Enter the existing mandatory `guru-sync-base` route without requiring a pre-existing Issue. |
 | guru-normal-scenario-classified-router | Validate the profile binding and return the current invocation-local classifications to the exact original owner. |
@@ -541,6 +555,15 @@ Mapped implementation, planning, scope, bounded-continuity, resume, and blocked
 routes remain automatic and owner-specific.
 
 ### Docs SSOT
+
+The mandatory `guru-maintain-requirements-design-test-ssot` owner runs
+`bootstrap_foundation` when the repository authority is absent or incompatible,
+`task_impact_sync` for an approved task delta, `promotion` for a reviewed
+isolated contribution, and `repair` for a bounded authority defect. Planning,
+Phase 2 Check, Branch Review, Publication, acceptance, and Finish consume only
+its public routes and reread the live Requirements, Design, and Test authority;
+they never read package-private owner state. Architecture inheritance uses only
+the public Architecture Baseline locator/version/status.
 
 Each planning cycle chooses exactly one strategy:
 

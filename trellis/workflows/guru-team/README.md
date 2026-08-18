@@ -147,11 +147,11 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 `.trellis/guru-team/runtime/resolve-python.sh`。缺 runtime、版本漂移或未解决 sidecar 时必须在
 业务副作用前 fail closed，不得回退 PATH Python。
 
-当前 release preparation 的 canonical extension version 为 `0.6.5-guru.34`；上文 pin 的
-stable release tag `v0.6.5-guru.9` 对应同一 extension revision `0.6.5-guru.34`。
+当前 source candidate 的 canonical extension version 为 `0.6.5-guru.35`；上文 pin 的
+stable release tag `v0.6.5-guru.9` 仍对应 extension revision `0.6.5-guru.34`。
 Source/installed package validation 必须同时验证
-registry、17 invokes / 71 exits / 42 combined targets（24 workflow + 18 stop）
-business marker graph、18-package/73-exit closure、consumer
+registry、19 invokes / 83 exits / 51 combined targets（31 workflow + 20 stop）
+business marker graph、20-package/85-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
@@ -159,8 +159,8 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、17 mandatory Skill markers、71 exits、24 workflow targets、
-18 stop targets、
+current-task router、19 mandatory Skill markers、83 exits、31 workflow targets、
+20 stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。

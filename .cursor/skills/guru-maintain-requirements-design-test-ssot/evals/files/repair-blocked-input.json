@@ -1,0 +1,1 @@
+{"profile":"repair","source_exit":"repair_requested","mode":"standalone","continuation_id":"eval-rdt-repair","authority_locator":"docs","authority_version":"1.0","authority_freshness":"authority-v1","problem_scope":"version navigation","architecture_baseline":{"locator":"docs/architecture/README.md","version":"1.0","status":"current"}}

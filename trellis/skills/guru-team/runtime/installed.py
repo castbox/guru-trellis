@@ -23,6 +23,14 @@ PRIVATE_PROJECTION_ROOTS = {"runtime", "tests", "errors"}
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
     "guru-review-branch": frozenset({Path("schemas/review-gate-6.0.schema.json")}),
 }
+PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
+    "guru-maintain-requirements-design-test-ssot": frozenset({
+        Path("examples/public-input-bootstrap.json"),
+        Path("examples/public-input-impact.json"),
+        Path("examples/public-input-promotion.json"),
+        Path("examples/public-input-repair.json"),
+    }),
+}
 SIDECAR_SUFFIXES = (".new", ".bak")
 MARKER_PATTERNS = {
     "invoke": re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$"),
@@ -127,12 +135,24 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
     required_schema_paths = PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS.get(
         str(interface.get("id")), frozenset()
     )
+    required_public_paths = PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS.get(
+        str(interface.get("id")), frozenset()
+    )
     declared_schema_paths = {
         Path(str(item["path"]))
         for item in interface.get("schemas", [])
         if isinstance(item, dict) and isinstance(item.get("path"), str)
     }
     if not required_schema_paths.issubset(declared_schema_paths):
+        return []
+    declared_public_examples = {
+        Path(str(item["example"]["path"]))
+        for item in interface.get("public_contracts", {}).get("input", {}).get("profiles", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("example"), dict)
+        and isinstance(item["example"].get("path"), str)
+    }
+    if not required_public_paths.issubset(declared_public_examples):
         return []
     private_paths = {
         str(item.get("schema", {}).get("path"))
@@ -157,7 +177,7 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
             continue
         if inner.parts[0] == "scripts" and text != wrapper:
             continue
-        if inner in required_schema_paths:
+        if inner in required_schema_paths or inner in required_public_paths:
             result.append(path)
             continue
         if text in private_paths or text in private_artifacts:

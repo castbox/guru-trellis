@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.5-guru.34",
+    "version": "0.6.5-guru.35",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.5",
@@ -77,6 +77,11 @@
           "guru-normal-scenario-input-requirements-scope-set-1.0",
           "guru-normal-scenario-input-task-free-evolution-1.0",
           "guru-normal-scenario-input-task-free-pre-write-1.0",
+          "guru-requirements-design-test-ssot-input-aggregate-1.0",
+          "guru-requirements-design-test-ssot-input-bootstrap-1.0",
+          "guru-requirements-design-test-ssot-input-impact-1.0",
+          "guru-requirements-design-test-ssot-input-promotion-1.0",
+          "guru-requirements-design-test-ssot-input-repair-1.0",
           "guru-production-approve-task-plan-input-clarification-reentry-2.0",
           "guru-production-approve-task-plan-input-initial-review-2.0",
           "guru-production-approve-task-plan-input-revision-reentry-2.0",
@@ -128,6 +133,11 @@
           "guru-normal-scenario-output-classified-1.0",
           "guru-normal-scenario-output-mechanism-revision-required-1.0",
           "guru-normal-scenario-output-scope-confirmation-required-1.0",
+          "guru-requirements-design-test-ssot-output-baseline-incomplete-1.0",
+          "guru-requirements-design-test-ssot-output-blocked-1.0",
+          "guru-requirements-design-test-ssot-output-current-1.0",
+          "guru-requirements-design-test-ssot-output-revision-required-1.0",
+          "guru-requirements-design-test-ssot-output-sync-required-1.0",
           "guru-production-approve-task-plan-output-approved-2.0",
           "guru-production-approve-task-plan-output-blocked-1.0",
           "guru-production-approve-task-plan-output-clarify-scope-1.0",
@@ -235,6 +245,7 @@
           "guru-check-task",
           "guru-clarify-requirements",
           "guru-maintain-architecture-baseline",
+          "guru-maintain-requirements-design-test-ssot",
           "guru-create-task-commit",
           "guru-create-task-workspace",
           "guru-discover-change-context",
@@ -380,11 +391,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-08-18T17:08:33Z",
+  "installed_at": "2026-08-18T21:06:11Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "d07f7bba5ecd592ab85a33114c32f7758f0d4d6a",
-    "commit": "d07f7bba5ecd592ab85a33114c32f7758f0d4d6a",
+    "ref": "86eadd478cb1c2b0b8bc2dca77a1beea89b34ddf",
+    "commit": "86eadd478cb1c2b0b8bc2dca77a1beea89b34ddf",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -461,17 +472,19 @@
       ".trellis/spec/workflow/companion-scripts.md",
       ".trellis/spec/workflow/data-contracts.md",
       ".trellis/spec/workflow/quality-guidelines.md",
+      ".trellis/spec/workflow/requirements-design-test-ssot.md",
       ".trellis/spec/workflow/semantic-retrieval.md",
       ".trellis/spec/workflow/skill-package-contract.md",
       ".trellis/spec/workflow/workflow-contract.md"
     ],
     "managed_asset_hashes": {
+      ".trellis/spec/workflow/requirements-design-test-ssot.md": "5c92ecd811bbaba26ff443a1d3d0944ebdebbd993d7f9d2f02352f1fd3429829",
       ".trellis/spec/workflow/semantic-retrieval.md": "2c9a3097949979e84d42e15811278df1b047ec4c2101f3019e887e7799aef483",
-      ".trellis/spec/workflow/workflow-contract.md": "1f5bf8119cd8e63fc5f349044bedd2f1b922e0c72fe5b3ab8dc4b00526f9d566",
-      ".trellis/spec/workflow/skill-package-contract.md": "c90cb190528aeb291cf571263ffd326ec0719b65f08efceb8d112120c1a2baf2",
-      ".trellis/spec/workflow/data-contracts.md": "1885fbaca455f0be616ef77f2ca26ea3a3ef7a2fd412f49273372d7d118dce7a",
+      ".trellis/spec/workflow/workflow-contract.md": "f3a9805d7486100bbee14ae4bf1daeb3d9d39f0eca21a1f382b5c653b4ea9a22",
+      ".trellis/spec/workflow/skill-package-contract.md": "ab5f75104689a190090569a56c2ada8565b828210a6fb97bfb31f5add5d92b67",
+      ".trellis/spec/workflow/data-contracts.md": "d5082886e4488bbada3fc31bdf62acf8176617cd2f1d635edb52873d78bd474a",
       ".trellis/spec/workflow/companion-scripts.md": "7b42af874ea5b08c318b2ff46860204fa884b2674eb3cfedefc86e62bb1cd617",
-      ".trellis/spec/workflow/quality-guidelines.md": "3a84d2552e43a458db8f4e9401adbe96de98b21ecb2a4d0cfc55a550954a0381"
+      ".trellis/spec/workflow/quality-guidelines.md": "109bd12bf4774f4a70b5a95dbb60047d7b11dd718eb1c53542045f81953ee33b"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -481,7 +494,7 @@
   "skill_packages": {
     "schema_version": "1.0",
     "status": "ok",
-    "canonical_registry_sha256": "990dce30e6bb5608114c09ab7fef361f0c53af1edfbe86c48801731b9eee7eaf",
+    "canonical_registry_sha256": "a168c581f18c9be55b329b413d840011c61f25bdc97fda13cf25c0f8eaf72c06",
     "registry_schema_version": "1.4",
     "active_ids": [
       "guru-approve-task-plan",
@@ -493,6 +506,7 @@
       "guru-execute-task-free-change",
       "guru-finalize-task",
       "guru-maintain-architecture-baseline",
+      "guru-maintain-requirements-design-test-ssot",
       "guru-merge-task-pr",
       "guru-qualify-normal-scenario",
       "guru-reconcile-task-base",
@@ -514,6 +528,11 @@
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "8bb4801c1f59bbb09d9f068b6dcafa10828d37214733b28bc633c0dfcd0a72cc",
         "tree_sha256": "1c5885e1b595cacb06979a9d504c93dd1725694cc35dc455fd0db004f9cee06e"
+      },
+      {
+        "id": "guru-maintain-requirements-design-test-ssot",
+        "interface_sha256": "7566aebfea86000ba7706730c29af96f147b28231f47b9d7fe691ec9f50d34bc",
+        "tree_sha256": "701b9972468c4944eda86973b8b7c2bc9ae91d5378f7abc16dc8fb55b653b1c2"
       },
       {
         "id": "guru-approve-task-plan",
@@ -610,14 +629,14 @@
       {
         "path": ".trellis/guru-team/skills/registry.json",
         "source": "trellis/skills/guru-team/registry.json",
-        "sha256": "990dce30e6bb5608114c09ab7fef361f0c53af1edfbe86c48801731b9eee7eaf",
+        "sha256": "a168c581f18c9be55b329b413d840011c61f25bdc97fda13cf25c0f8eaf72c06",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "4992cc0aa7f5d8e138c14121dd34a3f67f394870c450fa6c50bb466f19c8efe3",
+        "sha256": "3be0aca55e58ed4e251703f0a4743e87d34bcaad8a735c7bdc2224934d4bf2fd",
         "executable": false,
         "action": "unchanged"
       },
@@ -876,7 +895,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "7de4590a488d55a2fc5f7b7d792d17edc5e562efe6d4f14c6e036cffb4d9d928",
+        "sha256": "7ca2b6bfdaa7d5de92e969b7e70d93a72d269811e6d5d237f3eb0077c29b8820",
         "executable": false,
         "action": "unchanged"
       },
@@ -1521,6 +1540,328 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
         "sha256": "bbbd238c48cdb00a3ee408cdec0721aa950c3a5dca7571a2efa7b7885502c24c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "sha256": "59d2ea96422f518417997849623d34bdb1936c07294d2a9d87ddcd47124402e3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/commands.json",
+        "sha256": "c8837a80bc90e2cbb86246d097e2fa9a49fccc33e684b5f5f07438a22bf1408d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "02517114dcf5a5d5a712948bbaada00fa03ac31ae81181d31dad135f8cf93a07",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "3a8f6cc7fdb27fe04d55562abd552bc0ed6f7073a37fb688361b6ddbbaec4b8c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "sha256": "97f86418e4f3de211c2712bcd0aab621b8169d9fc54d7d3be3a58b884e829862",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "7ed6161938c8720e1671b7c5e40cf1ecefff7ad935ba183e91fad86c892e6cf7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/errors/catalog.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/errors/catalog.json",
+        "sha256": "ed988614e79054cd99e73aaa7e82cf8014956638d5860cf3297fec37363c3427",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "sha256": "9ec340a0f23a2488344db2ff3634f0acd5733c7d1651a7f71157076163699aff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "cf17d23658f6f78879a22cd46c58bc77cf306df2db03115654acd65d9f3d770c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "4dc943851b032c5c52e4d250364d3bc30381526b1d845f38a03d8cc7998193a2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "sha256": "23a9e445ae6c3f7f0b41d15fe0b34b41425f89f6a58c9e35a3b3507cad5ed760",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "sha256": "605df6deb045a73ec504d241b2725ea0f7ca1a323dbbe72bbaae1c4aba859d67",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "sha256": "e26cef5e1e00d7d672666cd6177fefb6b977d2b4552a260e423ff7bd788abaa5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "sha256": "1606c6fcd1c055e7ca415d01569effd5cbe375ab0a5904ca902820e821b79e96",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "sha256": "0ec3f2640fa622b928c553d470acb5fc134b04cc57913df4229fd673242e7d7e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "sha256": "75eb01b1db5520e58238d9c979f7caf6f763125449f0e1226322e4745dfc6ff3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c110cbbeb6abbffdfae41e9d25fe305c0a9e36edac2229441fccc0ff2bfcb9d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "595c329a3e605fd2d0818d0849365abf51e5a1f6b39a192021ef8aec89f0e11f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "356210109d105db98d201cd39183d10b191adbd5ad453b31b66b80f58799da6f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "356c42c4655b13ebce42e7d5f5282aaa74f7f1ca636ce35f753d1e78a5a0f1d7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "sha256": "228e23a6b05b27959ac25f209ec306284367d31d77a225ed1e663eec169814f4",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "sha256": "6627b935e899a2ce7fabf58547affd7d915a8883614159b2bb8a3768379c2090",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "sha256": "252d2da6f1348e3cd621d4bfa4e01e3ffa81df246315c51b20388e0cd16d0815",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "sha256": "8452909e85a39793c8f2d6371f150956ef2d4c33ede403d386577dfcf35768fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "ff0daf8c9eed5dfaa28ed4a69e9b46c7aa992a7149dd0ec4551185ef2228e630",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "sha256": "741c7b18786e4e708db14873c84db851d1828ca22a35b42be02751ea6d4d1593",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "sha256": "0b55803962af6d84433c796da047e8ed5a74d647a92b5a091c060a0918cd503a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "sha256": "3470035040af79d3c5cf6ab42c4f748256116f58479f513d8114d56971201517",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "sha256": "73a6cd3f41a175204aabec64c8ccaaba8c2fe26fc88e6a04c1b6edd22fa26da1",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "sha256": "c75bf998b1841d8d604c8e91b14716ab557fee9adceb02b03f9fc3e92e353f3a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/interface.json",
+        "sha256": "7566aebfea86000ba7706730c29af96f147b28231f47b9d7fe691ec9f50d34bc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "sha256": "e710f350c11456d67dfa68001631ef5443db78c8ccc6347a9dedef66e1688aa3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/runtime/invoke.py",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/runtime/invoke.py",
+        "sha256": "9240c8016a866fc55de7b97eeda8671bf36b8032b1ee21c102e8e32a226e095c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "4b055537030acfcf139a75c024bad58d3728b8896b6696f5ca5afa673dfc2b0e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "02300bb76160e2a47fd9de6068fba33f48fa7586da28be8241dcba91f4c41852",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "535a9ab74edd2a5d5d61a7904bff8a3a109bcc92291c7419d8dd4754bf148f9c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "sha256": "2cc6e60a42c4822875bc8d9b9d63de3d79f417316cfa4b1c53ba84367386f9ce",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "sha256": "d1c525d05f63a1254647585a73982ab99a48d843f296df97578c9779407fdf62",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "sha256": "424cec9cf054069bf1e3f2babf332469ac2ce36e9e8b57cbe701633d1b086729",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "53c5f292f75a8f3a1341eaef0a94cc2b49f5bffd33ad74af7d5817dc2cdcec3b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "sha256": "c7e65c35a256fc2acf9a88a188803f41d37dc03bd5e82d8d88a899d72bd6a93a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "sha256": "7f2e902c233af882cb521e05cc5a5660abb446920514207e6a9d71a6bd9a685c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a7dae04dc48e999d739a5da7b3510f77d8718090084e9d843fe55c93294d5725",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "sha256": "65c690d7e5fa3ed964518c178329733132fcd0988bef4a95714f214d21611b6d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "sha256": "e9895ba79cd2e50f4093c6775f927141597b1f0e79b8e42a46dff3e6bb8d0a5b",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/tests/test_contract.py",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/tests/test_contract.py",
+        "sha256": "313fec10804502e30ac6a1619ca2ea14c2cf4d6ab98b1a1bf2e81fc12462bc13",
         "executable": false,
         "action": "unchanged"
       },
@@ -8086,7 +8427,7 @@
       {
         "path": ".trellis/guru-team/runtime/installed.py",
         "source": "trellis/skills/guru-team/runtime/installed.py",
-        "sha256": "c508cba9ff3f6bfc9be9960698318a61fc253a5ac99d7ebf532150fcd94a8a90",
+        "sha256": "6a18530e543c8e9534834108723007a66624c884aaac0b8796469f1e478d7658",
         "executable": false,
         "action": "unchanged"
       },
@@ -8149,7 +8490,7 @@
       {
         "path": ".trellis/guru-team/runtime/validate.py",
         "source": "trellis/skills/guru-team/runtime/validate.py",
-        "sha256": "303fed6d54c670bb98d1f91dd1b87e56efa84d876f3399ef2d74852e4086f143",
+        "sha256": "eab26cff74395ccbe698389676497cbeb75d7f144047ced3b8d57acfaf1793f1",
         "executable": false,
         "action": "unchanged"
       },
@@ -9074,6 +9415,1210 @@
         "path": ".cursor/skills/guru-maintain-architecture-baseline/scripts/invoke.sh",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/scripts/invoke.sh",
         "sha256": "4988d4a32ffedae4dd4d88d02cb70bdac2701bb896ffe9250111202e3b365ecb",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "sha256": "59d2ea96422f518417997849623d34bdb1936c07294d2a9d87ddcd47124402e3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/commands.json",
+        "sha256": "c8837a80bc90e2cbb86246d097e2fa9a49fccc33e684b5f5f07438a22bf1408d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "02517114dcf5a5d5a712948bbaada00fa03ac31ae81181d31dad135f8cf93a07",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "3a8f6cc7fdb27fe04d55562abd552bc0ed6f7073a37fb688361b6ddbbaec4b8c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "sha256": "97f86418e4f3de211c2712bcd0aab621b8169d9fc54d7d3be3a58b884e829862",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "7ed6161938c8720e1671b7c5e40cf1ecefff7ad935ba183e91fad86c892e6cf7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "sha256": "9ec340a0f23a2488344db2ff3634f0acd5733c7d1651a7f71157076163699aff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "cf17d23658f6f78879a22cd46c58bc77cf306df2db03115654acd65d9f3d770c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "4dc943851b032c5c52e4d250364d3bc30381526b1d845f38a03d8cc7998193a2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "sha256": "23a9e445ae6c3f7f0b41d15fe0b34b41425f89f6a58c9e35a3b3507cad5ed760",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "sha256": "605df6deb045a73ec504d241b2725ea0f7ca1a323dbbe72bbaae1c4aba859d67",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "sha256": "e26cef5e1e00d7d672666cd6177fefb6b977d2b4552a260e423ff7bd788abaa5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "sha256": "1606c6fcd1c055e7ca415d01569effd5cbe375ab0a5904ca902820e821b79e96",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "sha256": "0ec3f2640fa622b928c553d470acb5fc134b04cc57913df4229fd673242e7d7e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "sha256": "75eb01b1db5520e58238d9c979f7caf6f763125449f0e1226322e4745dfc6ff3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c110cbbeb6abbffdfae41e9d25fe305c0a9e36edac2229441fccc0ff2bfcb9d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "595c329a3e605fd2d0818d0849365abf51e5a1f6b39a192021ef8aec89f0e11f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "356210109d105db98d201cd39183d10b191adbd5ad453b31b66b80f58799da6f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "356c42c4655b13ebce42e7d5f5282aaa74f7f1ca636ce35f753d1e78a5a0f1d7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "sha256": "228e23a6b05b27959ac25f209ec306284367d31d77a225ed1e663eec169814f4",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "sha256": "6627b935e899a2ce7fabf58547affd7d915a8883614159b2bb8a3768379c2090",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "sha256": "252d2da6f1348e3cd621d4bfa4e01e3ffa81df246315c51b20388e0cd16d0815",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "sha256": "8452909e85a39793c8f2d6371f150956ef2d4c33ede403d386577dfcf35768fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "ff0daf8c9eed5dfaa28ed4a69e9b46c7aa992a7149dd0ec4551185ef2228e630",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "sha256": "741c7b18786e4e708db14873c84db851d1828ca22a35b42be02751ea6d4d1593",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "sha256": "0b55803962af6d84433c796da047e8ed5a74d647a92b5a091c060a0918cd503a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "sha256": "3470035040af79d3c5cf6ab42c4f748256116f58479f513d8114d56971201517",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "sha256": "73a6cd3f41a175204aabec64c8ccaaba8c2fe26fc88e6a04c1b6edd22fa26da1",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "sha256": "c75bf998b1841d8d604c8e91b14716ab557fee9adceb02b03f9fc3e92e353f3a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/interface.json",
+        "sha256": "7566aebfea86000ba7706730c29af96f147b28231f47b9d7fe691ec9f50d34bc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "sha256": "e710f350c11456d67dfa68001631ef5443db78c8ccc6347a9dedef66e1688aa3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "4b055537030acfcf139a75c024bad58d3728b8896b6696f5ca5afa673dfc2b0e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "02300bb76160e2a47fd9de6068fba33f48fa7586da28be8241dcba91f4c41852",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "535a9ab74edd2a5d5d61a7904bff8a3a109bcc92291c7419d8dd4754bf148f9c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "sha256": "2cc6e60a42c4822875bc8d9b9d63de3d79f417316cfa4b1c53ba84367386f9ce",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "sha256": "d1c525d05f63a1254647585a73982ab99a48d843f296df97578c9779407fdf62",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "sha256": "424cec9cf054069bf1e3f2babf332469ac2ce36e9e8b57cbe701633d1b086729",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "53c5f292f75a8f3a1341eaef0a94cc2b49f5bffd33ad74af7d5817dc2cdcec3b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "sha256": "c7e65c35a256fc2acf9a88a188803f41d37dc03bd5e82d8d88a899d72bd6a93a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "sha256": "7f2e902c233af882cb521e05cc5a5660abb446920514207e6a9d71a6bd9a685c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a7dae04dc48e999d739a5da7b3510f77d8718090084e9d843fe55c93294d5725",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "sha256": "65c690d7e5fa3ed964518c178329733132fcd0988bef4a95714f214d21611b6d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "sha256": "e9895ba79cd2e50f4093c6775f927141597b1f0e79b8e42a46dff3e6bb8d0a5b",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "sha256": "59d2ea96422f518417997849623d34bdb1936c07294d2a9d87ddcd47124402e3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/commands.json",
+        "sha256": "c8837a80bc90e2cbb86246d097e2fa9a49fccc33e684b5f5f07438a22bf1408d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "02517114dcf5a5d5a712948bbaada00fa03ac31ae81181d31dad135f8cf93a07",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "3a8f6cc7fdb27fe04d55562abd552bc0ed6f7073a37fb688361b6ddbbaec4b8c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "sha256": "97f86418e4f3de211c2712bcd0aab621b8169d9fc54d7d3be3a58b884e829862",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "7ed6161938c8720e1671b7c5e40cf1ecefff7ad935ba183e91fad86c892e6cf7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "sha256": "9ec340a0f23a2488344db2ff3634f0acd5733c7d1651a7f71157076163699aff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "cf17d23658f6f78879a22cd46c58bc77cf306df2db03115654acd65d9f3d770c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "4dc943851b032c5c52e4d250364d3bc30381526b1d845f38a03d8cc7998193a2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "sha256": "23a9e445ae6c3f7f0b41d15fe0b34b41425f89f6a58c9e35a3b3507cad5ed760",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "sha256": "605df6deb045a73ec504d241b2725ea0f7ca1a323dbbe72bbaae1c4aba859d67",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "sha256": "e26cef5e1e00d7d672666cd6177fefb6b977d2b4552a260e423ff7bd788abaa5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "sha256": "1606c6fcd1c055e7ca415d01569effd5cbe375ab0a5904ca902820e821b79e96",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "sha256": "0ec3f2640fa622b928c553d470acb5fc134b04cc57913df4229fd673242e7d7e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "sha256": "75eb01b1db5520e58238d9c979f7caf6f763125449f0e1226322e4745dfc6ff3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c110cbbeb6abbffdfae41e9d25fe305c0a9e36edac2229441fccc0ff2bfcb9d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "595c329a3e605fd2d0818d0849365abf51e5a1f6b39a192021ef8aec89f0e11f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "356210109d105db98d201cd39183d10b191adbd5ad453b31b66b80f58799da6f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "356c42c4655b13ebce42e7d5f5282aaa74f7f1ca636ce35f753d1e78a5a0f1d7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "sha256": "228e23a6b05b27959ac25f209ec306284367d31d77a225ed1e663eec169814f4",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "sha256": "6627b935e899a2ce7fabf58547affd7d915a8883614159b2bb8a3768379c2090",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "sha256": "252d2da6f1348e3cd621d4bfa4e01e3ffa81df246315c51b20388e0cd16d0815",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "sha256": "8452909e85a39793c8f2d6371f150956ef2d4c33ede403d386577dfcf35768fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "ff0daf8c9eed5dfaa28ed4a69e9b46c7aa992a7149dd0ec4551185ef2228e630",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "sha256": "741c7b18786e4e708db14873c84db851d1828ca22a35b42be02751ea6d4d1593",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "sha256": "0b55803962af6d84433c796da047e8ed5a74d647a92b5a091c060a0918cd503a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "sha256": "3470035040af79d3c5cf6ab42c4f748256116f58479f513d8114d56971201517",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "sha256": "73a6cd3f41a175204aabec64c8ccaaba8c2fe26fc88e6a04c1b6edd22fa26da1",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "sha256": "c75bf998b1841d8d604c8e91b14716ab557fee9adceb02b03f9fc3e92e353f3a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/interface.json",
+        "sha256": "7566aebfea86000ba7706730c29af96f147b28231f47b9d7fe691ec9f50d34bc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "sha256": "e710f350c11456d67dfa68001631ef5443db78c8ccc6347a9dedef66e1688aa3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "4b055537030acfcf139a75c024bad58d3728b8896b6696f5ca5afa673dfc2b0e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "02300bb76160e2a47fd9de6068fba33f48fa7586da28be8241dcba91f4c41852",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "535a9ab74edd2a5d5d61a7904bff8a3a109bcc92291c7419d8dd4754bf148f9c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "sha256": "2cc6e60a42c4822875bc8d9b9d63de3d79f417316cfa4b1c53ba84367386f9ce",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "sha256": "d1c525d05f63a1254647585a73982ab99a48d843f296df97578c9779407fdf62",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "sha256": "424cec9cf054069bf1e3f2babf332469ac2ce36e9e8b57cbe701633d1b086729",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "53c5f292f75a8f3a1341eaef0a94cc2b49f5bffd33ad74af7d5817dc2cdcec3b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "sha256": "c7e65c35a256fc2acf9a88a188803f41d37dc03bd5e82d8d88a899d72bd6a93a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "sha256": "7f2e902c233af882cb521e05cc5a5660abb446920514207e6a9d71a6bd9a685c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a7dae04dc48e999d739a5da7b3510f77d8718090084e9d843fe55c93294d5725",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "sha256": "65c690d7e5fa3ed964518c178329733132fcd0988bef4a95714f214d21611b6d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "sha256": "e9895ba79cd2e50f4093c6775f927141597b1f0e79b8e42a46dff3e6bb8d0a5b",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "sha256": "59d2ea96422f518417997849623d34bdb1936c07294d2a9d87ddcd47124402e3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/commands.json",
+        "sha256": "c8837a80bc90e2cbb86246d097e2fa9a49fccc33e684b5f5f07438a22bf1408d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "02517114dcf5a5d5a712948bbaada00fa03ac31ae81181d31dad135f8cf93a07",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "3a8f6cc7fdb27fe04d55562abd552bc0ed6f7073a37fb688361b6ddbbaec4b8c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "sha256": "97f86418e4f3de211c2712bcd0aab621b8169d9fc54d7d3be3a58b884e829862",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "7ed6161938c8720e1671b7c5e40cf1ecefff7ad935ba183e91fad86c892e6cf7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "sha256": "9ec340a0f23a2488344db2ff3634f0acd5733c7d1651a7f71157076163699aff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "cf17d23658f6f78879a22cd46c58bc77cf306df2db03115654acd65d9f3d770c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "4dc943851b032c5c52e4d250364d3bc30381526b1d845f38a03d8cc7998193a2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "sha256": "23a9e445ae6c3f7f0b41d15fe0b34b41425f89f6a58c9e35a3b3507cad5ed760",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "sha256": "605df6deb045a73ec504d241b2725ea0f7ca1a323dbbe72bbaae1c4aba859d67",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "sha256": "e26cef5e1e00d7d672666cd6177fefb6b977d2b4552a260e423ff7bd788abaa5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "sha256": "1606c6fcd1c055e7ca415d01569effd5cbe375ab0a5904ca902820e821b79e96",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "sha256": "0ec3f2640fa622b928c553d470acb5fc134b04cc57913df4229fd673242e7d7e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "sha256": "75eb01b1db5520e58238d9c979f7caf6f763125449f0e1226322e4745dfc6ff3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c110cbbeb6abbffdfae41e9d25fe305c0a9e36edac2229441fccc0ff2bfcb9d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "595c329a3e605fd2d0818d0849365abf51e5a1f6b39a192021ef8aec89f0e11f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "356210109d105db98d201cd39183d10b191adbd5ad453b31b66b80f58799da6f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "356c42c4655b13ebce42e7d5f5282aaa74f7f1ca636ce35f753d1e78a5a0f1d7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "sha256": "228e23a6b05b27959ac25f209ec306284367d31d77a225ed1e663eec169814f4",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "sha256": "6627b935e899a2ce7fabf58547affd7d915a8883614159b2bb8a3768379c2090",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "sha256": "252d2da6f1348e3cd621d4bfa4e01e3ffa81df246315c51b20388e0cd16d0815",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "sha256": "8452909e85a39793c8f2d6371f150956ef2d4c33ede403d386577dfcf35768fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "ff0daf8c9eed5dfaa28ed4a69e9b46c7aa992a7149dd0ec4551185ef2228e630",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "sha256": "741c7b18786e4e708db14873c84db851d1828ca22a35b42be02751ea6d4d1593",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "sha256": "0b55803962af6d84433c796da047e8ed5a74d647a92b5a091c060a0918cd503a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "sha256": "3470035040af79d3c5cf6ab42c4f748256116f58479f513d8114d56971201517",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "sha256": "73a6cd3f41a175204aabec64c8ccaaba8c2fe26fc88e6a04c1b6edd22fa26da1",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "sha256": "c75bf998b1841d8d604c8e91b14716ab557fee9adceb02b03f9fc3e92e353f3a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/interface.json",
+        "sha256": "7566aebfea86000ba7706730c29af96f147b28231f47b9d7fe691ec9f50d34bc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "sha256": "e710f350c11456d67dfa68001631ef5443db78c8ccc6347a9dedef66e1688aa3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "4b055537030acfcf139a75c024bad58d3728b8896b6696f5ca5afa673dfc2b0e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "02300bb76160e2a47fd9de6068fba33f48fa7586da28be8241dcba91f4c41852",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "535a9ab74edd2a5d5d61a7904bff8a3a109bcc92291c7419d8dd4754bf148f9c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "sha256": "2cc6e60a42c4822875bc8d9b9d63de3d79f417316cfa4b1c53ba84367386f9ce",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "sha256": "d1c525d05f63a1254647585a73982ab99a48d843f296df97578c9779407fdf62",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "sha256": "424cec9cf054069bf1e3f2babf332469ac2ce36e9e8b57cbe701633d1b086729",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "53c5f292f75a8f3a1341eaef0a94cc2b49f5bffd33ad74af7d5817dc2cdcec3b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "sha256": "c7e65c35a256fc2acf9a88a188803f41d37dc03bd5e82d8d88a899d72bd6a93a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "sha256": "7f2e902c233af882cb521e05cc5a5660abb446920514207e6a9d71a6bd9a685c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a7dae04dc48e999d739a5da7b3510f77d8718090084e9d843fe55c93294d5725",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "sha256": "65c690d7e5fa3ed964518c178329733132fcd0988bef4a95714f214d21611b6d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "sha256": "e9895ba79cd2e50f4093c6775f927141597b1f0e79b8e42a46dff3e6bb8d0a5b",
+        "executable": true,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
+        "sha256": "59d2ea96422f518417997849623d34bdb1936c07294d2a9d87ddcd47124402e3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/commands.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/commands.json",
+        "sha256": "c8837a80bc90e2cbb86246d097e2fa9a49fccc33e684b5f5f07438a22bf1408d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/stop/blocked.schema.json",
+        "sha256": "02517114dcf5a5d5a712948bbaada00fa03ac31ae81181d31dad135f8cf93a07",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/bootstrap.schema.json",
+        "sha256": "3a8f6cc7fdb27fe04d55562abd552bc0ed6f7073a37fb688361b6ddbbaec4b8c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/current.schema.json",
+        "sha256": "97f86418e4f3de211c2712bcd0aab621b8169d9fc54d7d3be3a58b884e829862",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/consumers/workflow/planning.schema.json",
+        "sha256": "7ed6161938c8720e1671b7c5e40cf1ecefff7ad935ba183e91fad86c892e6cf7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/evals.json",
+        "sha256": "9ec340a0f23a2488344db2ff3634f0acd5733c7d1651a7f71157076163699aff",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-facts.json",
+        "sha256": "cf17d23658f6f78879a22cd46c58bc77cf306df2db03115654acd65d9f3d770c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/bootstrap-incomplete-input.json",
+        "sha256": "4dc943851b032c5c52e4d250364d3bc30381526b1d845f38a03d8cc7998193a2",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-facts.json",
+        "sha256": "23a9e445ae6c3f7f0b41d15fe0b34b41425f89f6a58c9e35a3b3507cad5ed760",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-current-input.json",
+        "sha256": "605df6deb045a73ec504d241b2725ea0f7ca1a323dbbe72bbaae1c4aba859d67",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-facts.json",
+        "sha256": "e26cef5e1e00d7d672666cd6177fefb6b977d2b4552a260e423ff7bd788abaa5",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-revision-input.json",
+        "sha256": "1606c6fcd1c055e7ca415d01569effd5cbe375ab0a5904ca902820e821b79e96",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-facts.json",
+        "sha256": "0ec3f2640fa622b928c553d470acb5fc134b04cc57913df4229fd673242e7d7e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/impact-sync-input.json",
+        "sha256": "75eb01b1db5520e58238d9c979f7caf6f763125449f0e1226322e4745dfc6ff3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-facts.json",
+        "sha256": "c110cbbeb6abbffdfae41e9d25fe305c0a9e36edac2229441fccc0ff2bfcb9d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/promotion-sync-input.json",
+        "sha256": "595c329a3e605fd2d0818d0849365abf51e5a1f6b39a192021ef8aec89f0e11f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-facts.json",
+        "sha256": "356210109d105db98d201cd39183d10b191adbd5ad453b31b66b80f58799da6f",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/evals/files/repair-blocked-input.json",
+        "sha256": "356c42c4655b13ebce42e7d5f5282aaa74f7f1ca636ce35f753d1e78a5a0f1d7",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-bootstrap.json",
+        "sha256": "228e23a6b05b27959ac25f209ec306284367d31d77a225ed1e663eec169814f4",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-impact.json",
+        "sha256": "6627b935e899a2ce7fabf58547affd7d915a8883614159b2bb8a3768379c2090",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-promotion.json",
+        "sha256": "252d2da6f1348e3cd621d4bfa4e01e3ffa81df246315c51b20388e0cd16d0815",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-input-repair.json",
+        "sha256": "8452909e85a39793c8f2d6371f150956ef2d4c33ede403d386577dfcf35768fd",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-baseline-incomplete.json",
+        "sha256": "ff0daf8c9eed5dfaa28ed4a69e9b46c7aa992a7149dd0ec4551185ef2228e630",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-blocked.json",
+        "sha256": "741c7b18786e4e708db14873c84db851d1828ca22a35b42be02751ea6d4d1593",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-current.json",
+        "sha256": "0b55803962af6d84433c796da047e8ed5a74d647a92b5a091c060a0918cd503a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-revision-required.json",
+        "sha256": "3470035040af79d3c5cf6ab42c4f748256116f58479f513d8114d56971201517",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-output-sync-required.json",
+        "sha256": "73a6cd3f41a175204aabec64c8ccaaba8c2fe26fc88e6a04c1b6edd22fa26da1",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/examples/public-promotion-authoring.json",
+        "sha256": "c75bf998b1841d8d604c8e91b14716ab557fee9adceb02b03f9fc3e92e353f3a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/interface.json",
+        "sha256": "7566aebfea86000ba7706730c29af96f147b28231f47b9d7fe691ec9f50d34bc",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
+        "sha256": "e710f350c11456d67dfa68001631ef5443db78c8ccc6347a9dedef66e1688aa3",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-baseline-incomplete-output.schema.json",
+        "sha256": "4b055537030acfcf139a75c024bad58d3728b8896b6696f5ca5afa673dfc2b0e",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-blocked-output.schema.json",
+        "sha256": "02300bb76160e2a47fd9de6068fba33f48fa7586da28be8241dcba91f4c41852",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-aggregate.schema.json",
+        "sha256": "535a9ab74edd2a5d5d61a7904bff8a3a109bcc92291c7419d8dd4754bf148f9c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-bootstrap.schema.json",
+        "sha256": "2cc6e60a42c4822875bc8d9b9d63de3d79f417316cfa4b1c53ba84367386f9ce",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-impact.schema.json",
+        "sha256": "d1c525d05f63a1254647585a73982ab99a48d843f296df97578c9779407fdf62",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-promotion.schema.json",
+        "sha256": "424cec9cf054069bf1e3f2babf332469ac2ce36e9e8b57cbe701633d1b086729",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-input-repair.schema.json",
+        "sha256": "53c5f292f75a8f3a1341eaef0a94cc2b49f5bffd33ad74af7d5817dc2cdcec3b",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-revision-required-output.schema.json",
+        "sha256": "c7e65c35a256fc2acf9a88a188803f41d37dc03bd5e82d8d88a899d72bd6a93a",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-ssot-current-output.schema.json",
+        "sha256": "7f2e902c233af882cb521e05cc5a5660abb446920514207e6a9d71a6bd9a685c",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/public-sync-required-output.schema.json",
+        "sha256": "a7dae04dc48e999d739a5da7b3510f77d8718090084e9d843fe55c93294d5725",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/schemas/semantic-result.schema.json",
+        "sha256": "65c690d7e5fa3ed964518c178329733132fcd0988bef4a95714f214d21611b6d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/scripts/invoke.sh",
+        "sha256": "e9895ba79cd2e50f4093c6775f927141597b1f0e79b8e42a46dff3e6bb8d0a5b",
         "executable": true,
         "action": "unchanged"
       },

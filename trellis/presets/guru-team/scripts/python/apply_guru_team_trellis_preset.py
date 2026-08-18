@@ -60,6 +60,14 @@ SKILL_DESTINATION_PLATFORM_ORDER = ("shared", "codex", "claude", "cursor")
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
     "guru-review-branch": frozenset({Path("schemas/review-gate-6.0.schema.json")}),
 }
+PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
+    "guru-maintain-requirements-design-test-ssot": frozenset({
+        Path("examples/public-input-bootstrap.json"),
+        Path("examples/public-input-impact.json"),
+        Path("examples/public-input-promotion.json"),
+        Path("examples/public-input-repair.json"),
+    }),
+}
 CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "production-contract-manifest-4.0.schema.json",
     "production-contract-manifest-3.0.schema.json",
@@ -123,6 +131,10 @@ CODEX_DISPATCH_HEADER = """#----------------------------------------------------
 """
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_SPEC_PATHS = (
+    (
+        Path("trellis/presets/guru-team/spec/workflow/requirements-design-test-ssot.md"),
+        Path(".trellis/spec/workflow/requirements-design-test-ssot.md"),
+    ),
     (
         Path("trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"),
         Path(".trellis/spec/workflow/semantic-retrieval.md"),
@@ -997,6 +1009,9 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
     required_schema_paths = PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS.get(
         str(interface.get("id")), frozenset()
     )
+    required_public_paths = PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS.get(
+        str(interface.get("id")), frozenset()
+    )
     declared_schema_paths = {
         Path(str(item["path"]))
         for item in interface.get("schemas", [])
@@ -1005,6 +1020,17 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
     if not required_schema_paths.issubset(declared_schema_paths):
         raise SystemExit(
             f"Platform-required schemas are not declared by {package_root.name}."
+        )
+    declared_public_examples = {
+        Path(str(item["example"]["path"]))
+        for item in interface.get("public_contracts", {}).get("input", {}).get("profiles", [])
+        if isinstance(item, dict)
+        and isinstance(item.get("example"), dict)
+        and isinstance(item["example"].get("path"), str)
+    }
+    if not required_public_paths.issubset(declared_public_examples):
+        raise SystemExit(
+            f"Platform-required public examples are not declared by {package_root.name}."
         )
     private_paths = {
         str(item["schema"]["path"])
@@ -1038,7 +1064,7 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
             continue
         if relative.parts[0] == "scripts" and relative_text != public_wrapper:
             continue
-        if relative in required_schema_paths:
+        if relative in required_schema_paths or relative in required_public_paths:
             result.append(path)
             continue
         if relative_text in private_paths or relative_text in private_artifact_paths:
