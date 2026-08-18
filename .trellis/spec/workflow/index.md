@@ -7,6 +7,8 @@ workflow and preset. It is not a product backend/frontend application.
 
 Use these specs when changing:
 
+- [architecture-baseline.md](./architecture-baseline.md) for the Architecture Baseline owner and authority projection.
+
 - `trellis/workflows/guru-team/workflow.md`
 - `trellis/workflows/guru-team/config-template.yml`
 - `trellis/workflows/guru-team/schemas/`

@@ -232,6 +232,7 @@
         "guru-approve-task-plan",
         "guru-check-task",
         "guru-clarify-requirements",
+        "guru-maintain-architecture-baseline",
         "guru-create-task-commit",
         "guru-create-task-workspace",
         "guru-discover-change-context",

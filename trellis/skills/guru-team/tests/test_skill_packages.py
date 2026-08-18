@@ -111,7 +111,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 cwd=target,
             )
             self.assertEqual(installed["status"], "passed")
-            self.assertEqual(len(installed["facts"]["active_ids"]), 18)
+            self.assertEqual(len(installed["facts"]["active_ids"]), 19)
             source_commands = sum(
                 len(json.loads(path.read_text(encoding="utf-8"))["commands"])
                 for path in (SKILLS / "packages").glob("guru-*/commands.json")
