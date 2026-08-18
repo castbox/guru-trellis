@@ -5523,6 +5523,15 @@ def stage_owner_execution(
                 "profile": public_payload["profile"],
                 "mode": public_payload["mode"],
                 "continuation_id": public_payload["continuation_id"],
+                "input_sha256": hashlib.sha256(
+                    json.dumps(
+                        public_payload,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode()
+                ).hexdigest(),
+                "architecture_baseline": dict(public_payload["architecture_baseline"]),
                 "ai_review_gate": {
                     "status": "blocked" if selected["typed_exit"] == "blocked" else "passed",
                     "reviewed_scope": "Current Requirements Design Test authority and selected profile.",

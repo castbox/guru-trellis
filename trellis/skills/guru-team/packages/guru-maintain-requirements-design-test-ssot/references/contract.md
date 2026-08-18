@@ -18,9 +18,10 @@ Architecture content. Repository authority remains separate from Trellis
 task-local `prd.md`, `design.md`, and `implement.md`.
 
 The AI owns provenance, authority, completeness, traceability, conflict,
-revision, sync, and route decisions. The deterministic runtime records only
-call-local data and validates the explicit AI gate, declared mode/profile,
-continuation identity, safe locator, direct version/freshness binding, unique
-consumer, minimal output, and schema. Public
+revision, sync, and route decisions. The deterministic runtime validates the
+AI-authored exact public-input digest, Architecture Baseline
+locator/version/status, explicit AI gate, declared mode/profile, continuation
+identity, safe locator, direct version/freshness binding, unique consumer,
+minimal output, and schema. It never overwrites those semantic-owner bindings. Public
 output never contains document bodies, scan history, review narrative, Git
 facts, authorization, recorder state, or private digests.

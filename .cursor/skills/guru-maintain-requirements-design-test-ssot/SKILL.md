@@ -55,9 +55,11 @@ Public exits are `ssot_current`, `sync_required`,
 
 Perform positive behavior, then the AI Review Gate. Ask for confirmation only
 when the call introduces a real choice or side effect. Author the semantic
-owner result, including the explicit AI Review Gate and unique consumer, only
-after that review; invoke `scripts/invoke.sh`; and consume exactly one declared
-exit. Workflow and standalone modes use the same entry,
+owner result, including the exact current public-input SHA-256, Architecture
+Baseline locator/version/status, explicit AI Review Gate, and unique consumer,
+only after that review; invoke `scripts/invoke.sh`; and consume exactly one
+declared exit. The runtime validates those AI-authored bindings and never
+overwrites them. Workflow and standalone modes use the same entry,
 review, freshness, and projection rules.
 
 `sync_required` re-enters this Skill through a target-authored `promotion`

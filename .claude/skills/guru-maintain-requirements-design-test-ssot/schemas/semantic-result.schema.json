@@ -8,6 +8,7 @@
     "mode",
     "continuation_id",
     "input_sha256",
+    "architecture_baseline",
     "ai_review_gate",
     "typed_exit",
     "consumer"
@@ -34,6 +35,29 @@
     "input_sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
+    },
+    "architecture_baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locator",
+        "version",
+        "status"
+      ],
+      "properties": {
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "ai_review_gate": {
       "type": "object",
