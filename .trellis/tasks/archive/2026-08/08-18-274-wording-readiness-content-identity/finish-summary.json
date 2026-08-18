@@ -1,0 +1,196 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-18T15:14:54Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "08-18-274-wording-readiness-content-identity",
+    "title": "#274 修复 wording_current 与 readiness 的目标内容摘要不一致",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/08-18-274-wording-readiness-content-identity",
+    "archive_dir": ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "fix/274-wording-readiness-content-identity",
+    "commits": [
+      "492335cf2ed20cf8905d6b58fab40ed657483307"
+    ],
+    "changed_paths": [
+      ".agents/skills/guru-review-contract-wording/references/contract.md",
+      ".claude/skills/guru-review-contract-wording/references/contract.md",
+      ".codex/skills/guru-review-contract-wording/references/contract.md",
+      ".cursor/skills/guru-review-contract-wording/references/contract.md",
+      ".trellis/guru-team/extension.json",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/runtime/common.py",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/runtime/invoke.py",
+      ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+      ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/tasks/08-18-274-wording-readiness-content-identity/design.md",
+      ".trellis/tasks/08-18-274-wording-readiness-content-identity/implement.md",
+      ".trellis/tasks/08-18-274-wording-readiness-content-identity/issue-scope-ledger.json",
+      ".trellis/tasks/08-18-274-wording-readiness-content-identity/prd.md",
+      ".trellis/tasks/08-18-274-wording-readiness-content-identity/task.json",
+      ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/design.md",
+      ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/finish-summary.json",
+      ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/implement.md",
+      ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/issue-scope-ledger.json",
+      ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/prd.md",
+      ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/task.json",
+      "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+      "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/runtime/common.py",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/runtime/invoke.py",
+      "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py"
+    ]
+  },
+  "github": {
+    "source_issues": [
+      274
+    ],
+    "close_issues": [
+      274
+    ],
+    "related_issues": [],
+    "followup_issues": [],
+    "pr_url": "https://github.com/castbox/guru-trellis/pull/277"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md",
+    "issue_scope_ledger": "issue-scope-ledger.json"
+  },
+  "index": {
+    "problem": "#274 修复 wording_current 与 readiness 的目标内容摘要不一致",
+    "outcome": "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。",
+    "changed_behavior": [
+      "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。",
+      "让 installed Phase 0 transcript 直接消费 public `wording_current` transition，移除 caller 从 owner-private scope 手工重算摘要的旁路。",
+      "增加唯一 scope、title/body 漂移和跨 package 回归，并同步 canonical contract、installed dogfood 与平台 public projection。"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "docs",
+        "name": "docs",
+        "paths": [
+          ".trellis/spec/workflow/data-contracts.md",
+          ".trellis/tasks/08-18-274-wording-readiness-content-identity/design.md",
+          ".trellis/tasks/08-18-274-wording-readiness-content-identity/implement.md",
+          ".trellis/tasks/08-18-274-wording-readiness-content-identity/prd.md",
+          ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/design.md",
+          ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/implement.md",
+          ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/prd.md"
+        ],
+        "change": "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。"
+      },
+      {
+        "kind": "other",
+        "name": "other",
+        "paths": [
+          ".trellis/guru-team/extension.json"
+        ],
+        "change": "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。"
+      },
+      {
+        "kind": "preset",
+        "name": "preset",
+        "paths": [
+          "trellis/presets/guru-team/spec/workflow/data-contracts.md"
+        ],
+        "change": "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。"
+      },
+      {
+        "kind": "script",
+        "name": "script",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-review-contract-wording/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-review-contract-wording/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py"
+        ],
+        "change": "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。"
+      },
+      {
+        "kind": "skill",
+        "name": "skill",
+        "paths": [
+          ".agents/skills/guru-review-contract-wording/references/contract.md",
+          ".claude/skills/guru-review-contract-wording/references/contract.md",
+          ".codex/skills/guru-review-contract-wording/references/contract.md",
+          ".cursor/skills/guru-review-contract-wording/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md"
+        ],
+        "change": "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。"
+      },
+      {
+        "kind": "task-artifact",
+        "name": "task-artifact",
+        "paths": [
+          ".trellis/tasks/08-18-274-wording-readiness-content-identity/issue-scope-ledger.json",
+          ".trellis/tasks/08-18-274-wording-readiness-content-identity/task.json",
+          ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/finish-summary.json",
+          ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/issue-scope-ledger.json",
+          ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/task.json"
+        ],
+        "change": "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#274"
+      ],
+      "pr_refs": [
+        "PR #277"
+      ],
+      "branches": [
+        "fix/274-wording-readiness-content-identity"
+      ],
+      "paths": [
+        ".agents/skills/guru-review-contract-wording/references/contract.md",
+        ".claude/skills/guru-review-contract-wording/references/contract.md",
+        ".codex/skills/guru-review-contract-wording/references/contract.md",
+        ".cursor/skills/guru-review-contract-wording/references/contract.md",
+        ".trellis/guru-team/extension.json",
+        ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+        ".trellis/guru-team/skills/packages/guru-review-contract-wording/runtime/common.py",
+        ".trellis/guru-team/skills/packages/guru-review-contract-wording/runtime/invoke.py",
+        ".trellis/guru-team/skills/packages/guru-review-contract-wording/tests/test_contract.py",
+        ".trellis/spec/workflow/data-contracts.md",
+        ".trellis/tasks/08-18-274-wording-readiness-content-identity/design.md",
+        ".trellis/tasks/08-18-274-wording-readiness-content-identity/implement.md",
+        ".trellis/tasks/08-18-274-wording-readiness-content-identity/issue-scope-ledger.json",
+        ".trellis/tasks/08-18-274-wording-readiness-content-identity/prd.md",
+        ".trellis/tasks/08-18-274-wording-readiness-content-identity/task.json",
+        ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/design.md",
+        ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/finish-summary.json",
+        ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/implement.md",
+        ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/issue-scope-ledger.json",
+        ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/prd.md",
+        ".trellis/tasks/archive/2026-08/08-18-274-wording-readiness-content-identity/task.json",
+        "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
+        "trellis/presets/guru-team/spec/workflow/data-contracts.md",
+        "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+        "trellis/skills/guru-team/packages/guru-review-contract-wording/runtime/common.py",
+        "trellis/skills/guru-team/packages/guru-review-contract-wording/runtime/invoke.py",
+        "trellis/skills/guru-team/packages/guru-review-contract-wording/tests/test_contract.py"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "#274 修复 wording_current 与 readiness 的目标内容摘要不一致",
+        "修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯",
+        "完成 contract.md 相关变更"
+      ]
+    },
+    "retrieval_text": "#274 修复 wording_current 与 readiness 的目标内容摘要不一致\n修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯一 title/body 的 canonical 组合摘要，并保持顶层与嵌套 `target_content_sha256` 一致。\n让 installed Phase 0 transcript 直接消费 public `wording_current` transition，移除 caller 从 owner-private scope 手工重算摘要的旁路。\n增加唯一 scope、title/body 漂移和跨 package 回归，并同步 canonical contract、installed dogfood 与平台 public projection。\n修复 `guru-review-contract-wording:change_request` 的内容身份投影，使用唯\n完成 contract.md 相关变更"
+  }
+}
