@@ -34,7 +34,20 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         (self.repo / "app.txt").write_text("feature\n")
         (self.repo / TASK_REF).mkdir(parents=True)
         (self.repo / ".trellis/tasks/08-12-other").mkdir(parents=True)
+        metadata_files = {
+            ".trellis/tasks/archive/old/task.json": "archived\n",
+            ".trellis/workspace/test/journal.md": "journal\n",
+            ".trellis/.runtime/tracked-state.json": "runtime\n",
+            ".trellis/guru-team/extension.json": "provenance\n",
+            ".DS_Store": "os noise\n",
+            "nested/.DS_Store": "nested os noise\n",
+        }
+        for relative, content in metadata_files.items():
+            target = self.repo / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content)
         self.git("add", ".")
+        self.git("add", "-f", ".trellis/.runtime/tracked-state.json")
         self.git("commit", "-qm", "feature")
         self.head = self.git("rev-parse", "HEAD")
 
@@ -125,7 +138,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             },
         }
 
-    def record(self, public=None, auth=None, exit_id="passed"):
+    def record(self, public=None, auth=None, exit_id="passed", ok=True):
         public = public or self.public()
         auth = auth or self.auth(exit_id)
         return self.run_wrapper(
@@ -138,6 +151,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             self.write("auth.json", auth),
             "--typed-exit",
             exit_id,
+            ok=ok,
         )
 
     def test_passed_record_check_invoke_retires_and_rejects_repeat(self):
@@ -153,7 +167,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         )
         gate = self.checkpoint()
         self.assertTrue(gate.is_file())
-        self.assertEqual("5.0", json.loads(gate.read_text())["schema_version"])
+        self.assertEqual("6.0", json.loads(gate.read_text())["schema_version"])
         checked = self.run_wrapper(
             "check-review-gate.sh",
             "--task",
@@ -179,6 +193,52 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             "invoke.sh", "--task", TASK_REF, "--input", public_path, ok=False
         )
         self.assertEqual("stale_identity", repeated["code"])
+
+    def test_record_and_check_allow_canonical_metadata_only_dirty_paths(self):
+        metadata_changes = {
+            f"{TASK_REF}/review.md": "current task review\n",
+            ".trellis/tasks/archive/old/task.json": "updated archive\n",
+            ".trellis/workspace/test/status\nnote.md": "newline path\n",
+            ".trellis/.runtime/tracked-state.json": "updated runtime\n",
+            ".trellis/guru-team/extension.json": "updated provenance\n",
+            ".DS_Store": "updated os noise\n",
+            "nested/.DS_Store": "updated nested os noise\n",
+        }
+        for relative, content in metadata_changes.items():
+            target = self.repo / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content)
+        self.git(
+            "mv",
+            ".trellis/workspace/test/journal.md",
+            ".trellis/tasks/archive/old/journal.md",
+        )
+
+        receipt = self.record()
+        self.assertEqual("recorded", receipt["status"])
+        checked = self.run_wrapper(
+            "check-review-gate.sh",
+            "--task",
+            TASK_REF,
+            "--expected-exit",
+            "passed",
+        )
+        self.assertEqual("passed", checked["typed_exit"])
+
+    def test_record_and_check_reject_included_dirty_content(self):
+        (self.repo / "app.txt").write_text("dirty before record\n")
+        record_result = self.record(ok=False)
+        self.assertEqual("stale_identity", record_result["code"])
+        self.assertEqual("worktree", record_result["field_path"])
+
+        (self.repo / "app.txt").write_text("feature\n")
+        self.record()
+        self.git("mv", "app.txt", ".trellis/workspace/test/app.txt")
+        check_result = self.run_wrapper(
+            "check-review-gate.sh", "--task", TASK_REF, ok=False
+        )
+        self.assertEqual("stale_identity", check_result["code"])
+        self.assertEqual("worktree", check_result["field_path"])
 
     def test_nonterminal_record_and_invoke_are_idempotent_and_retain(self):
         auth = self.auth("implementation_required")
@@ -417,7 +477,7 @@ class BranchReviewContractTest(unittest.TestCase):
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
-            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-5.0.json",
+            "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-6.0.json",
             public["private_artifacts"][0]["schema"]["schema_id"],
         )
         self.assertEqual(
@@ -442,8 +502,9 @@ class BranchReviewContractTest(unittest.TestCase):
             text = path.read_text()
             self.assertIn("base_continuity", text)
             self.assertIn("schema 3.0", text)
+            self.assertIn("schema 6.0", text)
             self.assertIn("schema 5.0", text)
-            self.assertIn("schemas 3.0 and 4.0", text)
+            self.assertRegex(text, r"legacy\s+stale")
             self.assertIn("continuity_passed", text)
 
     def test_wrappers_are_executable(self):

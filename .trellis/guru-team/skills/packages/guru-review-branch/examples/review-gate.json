@@ -1,5 +1,5 @@
 {
-  "schema_version": "5.0",
+  "schema_version": "6.0",
   "skill_id": "guru-review-branch",
   "generated_at": "2026-07-30T00:00:00Z",
   "task_dir": ".trellis/tasks/example-task",
@@ -8,6 +8,7 @@
   "review_intent": "fresh_final_review",
   "typed_exit": "passed",
   "review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_content_algorithm": "guru-reviewed-content-1.0",
   "reviewed_content_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
   "base_ref": "origin/main",
   "base_head": "dddddddddddddddddddddddddddddddddddddddd",

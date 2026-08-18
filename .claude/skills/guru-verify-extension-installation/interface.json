@@ -38,7 +38,8 @@
     {"id": "verification_result", "path": "examples/verification-result.json"},
     {"id": "verified_output", "path": "examples/public-verified-output.json"},
     {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
-    {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"}
+    {"id": "public_invocation_error", "path": "examples/public-invocation-error.json"},
+    {"id": "reviewed_content_identity_output_example", "path": "examples/reviewed-content-identity-output.json"}
   ],
   "schemas": [
     {"id": "legacy_public_input_aggregate_3_0", "path": "schemas/public-input-3.0.schema.json"},
@@ -56,14 +57,16 @@
     {"id": "legacy_semantic_review_input_1_0", "path": "schemas/semantic-review-input.schema.json"},
     {"id": "semantic_review_input", "path": "schemas/semantic-review-input-2.0.schema.json"},
     {"id": "legacy_private_verification_result_4_0", "path": "schemas/verification-result-4.0.schema.json"},
-    {"id": "verification_result", "path": "schemas/verification-result-5.0.schema.json"}
+    {"id": "verification_result", "path": "schemas/verification-result-5.0.schema.json"},
+    {"id": "reviewed_content_identity_output", "path": "schemas/reviewed-content-identity-output.schema.json"}
   ],
   "validators": [
     {"id": "extension_version_projection", "command": "scripts/version.sh", "runtime_command": "show-extension-version", "objective_scope": "Project the installed Guru Team extension version and provenance from the repository-local manifest without semantic judgment"},
     {"id": "verification_executor", "command": "scripts/execute-extension-verification.sh", "runtime_command": "execute-extension-verification", "objective_scope": "Validate source identity before side effects, create isolated source and clean throwaway target checkouts, then execute the source-owned installation catalog"},
     {"id": "verification_recorder", "command": "scripts/record-extension-verification.sh", "runtime_command": "record-extension-verification", "objective_scope": "Record already completed AI adequacy, findings and route in ignored source-session runtime"},
     {"id": "verification_checker", "command": "scripts/check-extension-verification.sh", "runtime_command": "check-extension-verification", "objective_scope": "Validate source identity, schema, freshness, redaction, ignored persistence and terminal consumer without semantic judgment"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-extension-verification", "objective_scope": "Validate current source-only input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"}
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-extension-verification", "objective_scope": "Validate current source-only input, rerun the owner checker, select the actual exit schema and emit one minimal DTO"},
+    {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "verify-extension-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
     {"id": "verified", "evidence": "every selected source-owned installation capability passed and AI adequacy review has no open finding", "consumer": {"kind": "stop", "id": "extension-installation-verification-verified"}},

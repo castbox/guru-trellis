@@ -44,7 +44,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-5.0.json"))
         self.assertRegex(self.example["reviewed_content_sha256"], r"^[0-9a-f]{64}$")
         self.assertIn(
-            "guru-reviewed-content-1.0",
+            "guru-phase2-worktree-content-1.0",
             self.schema["properties"]["reviewed_content_sha256"]["description"],
         )
 

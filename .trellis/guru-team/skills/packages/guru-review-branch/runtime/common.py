@@ -10,6 +10,12 @@ import sys
 from pathlib import Path
 
 from runtime.io import CommandError
+from runtime.reviewed_content import (
+    REVIEWED_CONTENT_ALGORITHM,
+    ReviewedContentError,
+    reviewed_content_metadata_path,
+    reviewed_content_identity,
+)
 from runtime.schema import validate_json
 
 
@@ -245,45 +251,106 @@ def ancestor(repo, ancestor_ref, descendant_ref):
     )
 
 
-def dirty_paths(repo, task_ref):
+def dirty_paths(repo, _task_ref):
+    process = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=repo,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if process.returncode:
+        raise CommandError(
+            "stale_identity",
+            "repository",
+            process.stderr.decode("utf-8", "replace").strip()
+            or "Repair Git state.",
+            3,
+        )
+
+    fields = process.stdout.split(b"\0")
     rows = []
-    for line in git(repo, "status", "--porcelain=v1", "-z", "--untracked-files=all").split("\0"):
-        if not line:
+    index = 0
+    while index < len(fields):
+        field = fields[index]
+        index += 1
+        if not field:
             continue
-        path = line[3:].split(" -> ")[-1]
-        if path.startswith(task_ref + "/") and Path(path).name in {
-            "review.md",
-            "review-gate.json",
-        }:
-            continue
-        rows.append(path)
+        if len(field) < 4:
+            raise CommandError(
+                "stale_identity",
+                "worktree",
+                "Git returned an invalid porcelain status record.",
+                3,
+            )
+        try:
+            status_text = field[:2].decode("ascii", "strict")
+            path = field[3:].decode("utf-8", "strict")
+        except UnicodeDecodeError as exc:
+            raise CommandError(
+                "stale_identity",
+                "worktree",
+                "Dirty paths must be valid UTF-8.",
+                3,
+            ) from exc
+
+        related_path = None
+        relation_kinds = {item for item in status_text if item in {"R", "C"}}
+        if len(relation_kinds) > 1 or (
+            relation_kinds and (index >= len(fields) or not fields[index])
+        ):
+            raise CommandError(
+                "stale_identity",
+                "worktree",
+                "Git returned an invalid rename/copy status record.",
+                3,
+            )
+        if relation_kinds:
+            try:
+                related_path = fields[index].decode("utf-8", "strict")
+            except UnicodeDecodeError as exc:
+                raise CommandError(
+                    "stale_identity",
+                    "worktree",
+                    "Dirty paths must be valid UTF-8.",
+                    3,
+                ) from exc
+            index += 1
+
+        included_paths = [path]
+        if relation_kinds == {"R"} and related_path is not None:
+            included_paths.append(related_path)
+        rows.extend(
+            candidate
+            for candidate in included_paths
+            if not reviewed_content_metadata_path(candidate)
+        )
     return rows
 
 
-def content_identity(repo, base_commit, commit, task_ref):
-    rows = []
-    for line in git(repo, "ls-tree", "-rz", commit).split("\0"):
-        if not line:
-            continue
-        meta, path = line.split("\t", 1)
-        mode, kind, oid = meta.split()
-        if path.startswith(task_ref + "/") and Path(path).name in {
-            "review.md",
-            "review-gate.json",
-        }:
-            continue
-        rows.append({"path": path, "mode": mode, "kind": kind, "oid": oid})
-    return digest(
-        {
-            "algorithm": "guru-reviewed-content-1.0",
-            "base_commit": base_commit,
-            "entries": sorted(rows, key=lambda item: item["path"].encode()),
-        }
-    )
+def content_identity(repo, commit):
+    try:
+        return reviewed_content_identity(repo, commit, include_worktree=False)["sha256"]
+    except ReviewedContentError as exc:
+        raise CommandError(
+            "stale_identity",
+            "reviewed_content_sha256",
+            str(exc),
+            3,
+        ) from exc
 
 
 def validate_gate(package_root, repo, value, expected_exit=None):
-    validate_json(value, package_root / "schemas/review-gate-5.0.schema.json", "gate")
+    if (
+        value.get("schema_version") != "6.0"
+        or value.get("reviewed_content_algorithm") != REVIEWED_CONTENT_ALGORITHM
+    ):
+        raise CommandError(
+            "stale_identity",
+            "checkpoint",
+            "Run a fresh Branch Review for the current reviewed-content contract.",
+            3,
+        )
+    validate_json(value, package_root / "schemas/review-gate-6.0.schema.json", "gate")
     classifications = value.get("candidate_classifications")
     refs = [
         item.get("candidate_ref")
@@ -374,7 +441,7 @@ def validate_gate(package_root, repo, value, expected_exit=None):
             3,
         )
     if (
-        content_identity(repo, value["base_head"], current, value["task_dir"])
+        content_identity(repo, current)
         != value["reviewed_content_sha256"]
     ):
         raise CommandError(

@@ -20,6 +20,9 @@ OVERLAY_PATHS = {
     "claude": Path(".claude/commands/guru/finish-work.md"),
 }
 PRIVATE_PROJECTION_ROOTS = {"runtime", "tests", "errors"}
+PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
+    "guru-review-branch": frozenset({Path("schemas/review-gate-6.0.schema.json")}),
+}
 SIDECAR_SUFFIXES = (".new", ".bak")
 MARKER_PATTERNS = {
     "invoke": re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$"),
@@ -121,6 +124,16 @@ def sha256(path: Path) -> str:
 
 
 def public_files(package: Path, interface: dict[str, Any], files: list[Path]) -> list[Path]:
+    required_schema_paths = PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS.get(
+        str(interface.get("id")), frozenset()
+    )
+    declared_schema_paths = {
+        Path(str(item["path"]))
+        for item in interface.get("schemas", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    if not required_schema_paths.issubset(declared_schema_paths):
+        return []
     private_paths = {
         str(item.get("schema", {}).get("path"))
         for item in interface.get("public_contracts", {}).get("private_artifacts", [])
@@ -140,9 +153,14 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
     for path in files:
         inner = path.relative_to(package)
         text = inner.as_posix()
-        if inner.parts[0] in PRIVATE_PROJECTION_ROOTS or text in private_paths or text in private_artifacts:
+        if inner.parts[0] in PRIVATE_PROJECTION_ROOTS:
             continue
         if inner.parts[0] == "scripts" and text != wrapper:
+            continue
+        if inner in required_schema_paths:
+            result.append(path)
+            continue
+        if text in private_paths or text in private_artifacts:
             continue
         result.append(path)
     return result

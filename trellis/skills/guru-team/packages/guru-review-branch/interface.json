@@ -70,12 +70,14 @@
     {"id": "public_output_continuity_passed_example", "path": "examples/public-continuity-passed-output.json"},
     {"id": "public_output_implementation_required_example", "path": "examples/public-implementation-required-output.json"},
     {"id": "public_output_scope_confirmation_required_example", "path": "examples/public-scope-confirmation-required-output.json"},
-    {"id": "public_output_blocked_example", "path": "examples/public-blocked-output.json"}
+    {"id": "public_output_blocked_example", "path": "examples/public-blocked-output.json"},
+    {"id": "reviewed_content_identity_output_example", "path": "examples/reviewed-content-identity-output.json"}
   ],
   "schemas": [
     {"id": "legacy_review_gate_schema_3_0", "path": "schemas/review-gate.schema.json"},
     {"id": "legacy_review_gate_schema_4_0", "path": "schemas/review-gate-4.0.schema.json"},
-    {"id": "review_gate_schema", "path": "schemas/review-gate-5.0.schema.json"},
+    {"id": "legacy_review_gate_schema_5_0", "path": "schemas/review-gate-5.0.schema.json"},
+    {"id": "review_gate_schema", "path": "schemas/review-gate-6.0.schema.json"},
     {"id": "public_input_branch_review", "path": "schemas/public-branch-review-input.schema.json"},
     {"id": "public_input_base_continuity", "path": "schemas/public-base-continuity-input.schema.json"},
     {"id": "legacy_public_input_aggregate_2_0", "path": "schemas/public-input.schema.json"},
@@ -85,12 +87,14 @@
     {"id": "public_output_continuity_passed", "path": "schemas/public-continuity-passed-output.schema.json"},
     {"id": "public_output_implementation_required", "path": "schemas/public-implementation-required-output.schema.json"},
     {"id": "public_output_scope_confirmation_required", "path": "schemas/public-scope-confirmation-required-output.schema.json"},
-    {"id": "public_output_blocked", "path": "schemas/public-blocked-output.schema.json"}
+    {"id": "public_output_blocked", "path": "schemas/public-blocked-output.schema.json"},
+    {"id": "reviewed_content_identity_output", "path": "schemas/reviewed-content-identity-output.schema.json"}
   ],
   "validators": [
     {"id": "review_gate_recorder", "command": "scripts/review-branch.sh", "runtime_command": "review-branch", "objective_scope": "Record an already completed AI review while rebuilding objective task, range, HEAD and freshness facts"},
     {"id": "review_gate_checker", "command": "scripts/check-review-gate.sh", "runtime_command": "check-review-gate", "objective_scope": "Validate the compact gate, complete range, finding closure, fresh final review and exact typed exit"},
-    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-branch", "objective_scope": "Validate the public input, rerun the owner checker, derive actual exit and serialize one declared minimal DTO"}
+    {"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-review-branch", "objective_scope": "Validate the public input, rerun the owner checker, derive actual exit and serialize one declared minimal DTO"},
+    {"id": "reviewed_content_identity", "command": "scripts/reviewed-content-identity.sh", "runtime_command": "review-branch-content-identity", "objective_scope": "Compute the canonical metadata-excluded reviewed-content identity for one Git commit"}
   ],
   "external_exits": [
     {"id": "passed", "evidence": "all qualified findings closed and a fresh final reviewer passed the complete current range", "consumer": {"kind": "skill", "id": "guru-review-task-publication"}},
@@ -203,7 +207,7 @@
       {
         "id": "review_gate",
         "kind": "gate_evidence",
-        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-5.0.json", "path": "schemas/review-gate-5.0.schema.json"},
+        "schema": {"schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-6.0.json", "path": "schemas/review-gate-6.0.schema.json"},
         "persistence": "ignored_runtime"
       }
     ]

@@ -43,7 +43,7 @@
     "reviewed_content_sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
-      "description": "Owner-private guru-reviewed-content-1.0 identity and the only Phase 2 content freshness authority."
+      "description": "Owner-private guru-phase2-worktree-content-1.0 identity over the live tracked and untracked worktree, and the only Phase 2 content freshness authority."
     },
     "validation": {"$ref": "#/$defs/validation"},
     "docs_ssot": {"$ref": "#/$defs/docsSsot"},

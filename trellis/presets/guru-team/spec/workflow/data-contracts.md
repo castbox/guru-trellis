@@ -875,16 +875,18 @@ by the workflow/interface graph. Unknown, missing, duplicate, multi-exit,
 profile/caller mismatch, stale identity, or consumer mismatch fails closed.
 
 No schema defines a qualification result/report/checkpoint locator. The checked
-result is process-local stdout and expires when the invocation ends. Phase 2,
-Branch Review, and Publication schema 5.0 gates independently record only
-terminal qualified/rejected classifications for their own direct consumers.
+result is process-local stdout and expires when the invocation ends. Phase 2
+and Publication current schema 5.0 gates and the Branch Review current schema
+6.0 gate independently record only terminal qualified/rejected classifications
+for their own direct consumers.
 Every row contains unique `candidate_ref`, one terminal decision, a six-field
 witness (`requirement_refs`, `supported_entry_refs`,
 `existing_caller_refs`, `honest_action_sequence`, `defect_observation`,
 `excluded_assumptions`), and the fixed `consumer_use`. Their semantic
-findings/dispositions bind a candidate in the same gate. Legacy schema 4.0
-checkpoints are stale and require a complete fresh owner round; no compatibility
-reader converts them to 5.0.
+findings/dispositions bind a candidate in the same gate. Legacy Phase 2 and
+Publication schema 4.0 checkpoints, plus Branch Review schema 5.0 or older
+checkpoints, are stale and require a complete fresh owner round; no
+compatibility reader converts them to a current schema.
 
 ## Phase 2 Check Artifact
 
@@ -894,12 +896,14 @@ parallel pass artifact is allowed. The ignored owner checkpoint stores only
 mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
 executed validation evidence, the final Docs SSOT result, semantic
 adequacy/findings, final candidate classifications with direct-consumer
-witness, and one typed exit/route/reason/consumer. The shared
-`guru-reviewed-content-1.0` identity has one local deterministic consumer: the
-checker invoked inside the Phase 2 public wrapper before typed-output
-projection. It detects reviewed-content drift and returns control to the AI
-owner for delta classification; it is not authorization, semantic approval,
-public handoff, or whole-chain authority. Live implementation output, Planning owner state, issue
+witness, and one typed exit/route/reason/consumer. The private
+`guru-phase2-worktree-content-1.0` identity covers live tracked and untracked
+worktree paths and has one local deterministic consumer: the checker invoked
+inside the Phase 2 public wrapper before typed-output projection. It is
+distinct from the four-consumer durable `guru-reviewed-content-1.0` contract.
+It detects reviewed-content drift and returns control to the AI owner for delta
+classification; it is not authorization, semantic approval, public handoff, or
+whole-chain authority. Live implementation output, Planning owner state, issue
 scope, repository snapshots, raw worker evidence, assignment/liveness,
 per-file or artifact digest bundles, and handoff narration are transient entry
 facts and are not copied into it.
@@ -1165,13 +1169,65 @@ Commit message payloads must never use close keywords such as `Closes`,
 `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; those keywords remain PR
 body-only close semantics controlled by Issue Scope Ledger.
 
+## Reviewed Content Identity
+
+`guru-reviewed-content-1.0` is the durable content-continuity contract shared
+by Branch Review, Publication, Finalizer, and source Verification. Its digest is
+SHA-256 over this canonical UTF-8 JSON payload, encoded with sorted object keys,
+no ASCII escaping, and compact separators:
+
+```json
+{
+  "algorithm": "guru-reviewed-content-1.0",
+  "entries": [
+    {"path": "<UTF-8 repository-relative path>", "mode": "<Git mode>", "oid": "<Git object id>"}
+  ]
+}
+```
+
+The metadata-excluded entry set is derived from the selected Git commit and,
+when explicitly requested for current `HEAD`, its worktree overlay. Each entry
+contains exactly `path`, `mode`, and `oid`; Git object kind, `base_commit`,
+review range, stage-private fields, and any other metadata are not identity
+input. Entries are ordered by the raw bytes of `path.encode("utf-8")` before
+the payload is hashed. Paths must decode as strict UTF-8. Supported atomic Git
+entries retain the existing regular/executable blob, symlink, and gitlink
+semantics; ambiguous or unavailable entries fail closed.
+
+The closed metadata exclusion set is:
+
+- `.trellis/tasks` and every descendant, including archived tasks;
+- `.trellis/workspace` and every descendant;
+- `.trellis/.runtime` and every descendant;
+- the exact provenance-tail manifest `.trellis/guru-team/extension.json`;
+- `.DS_Store` at any path depth, matched by basename.
+
+The canonical shared helper owns this exclusion classifier and all tree,
+worktree-overlay, gitlink, ordering, payload, and digest behavior. Branch
+Review, Publication, Finalizer, and Verification call that helper; a stage must
+not keep a package-local algorithm or metadata classifier.
+
+This digest proves reviewed business-content continuity only. Base ref and base
+commit identity, review range, review/current commit, target ref/HEAD, and
+ancestry are independent freshness authorities owned by their existing gates.
+Changing an included path, mode, or oid changes the digest and fails continuity;
+changing only an excluded path leaves it unchanged and does not waive any
+independent freshness check.
+
+Branch Review owner-private checkpoints are current-only for this contract.
+Any schema 5.0 or older checkpoint written by the former package-local identity
+implementation is stale: current loaders do not dual-read, migrate, rewrite,
+or synthesize it.
+Recovery is one fresh Branch Review over current authority and content.
+
 ## Review Gate Artifact
 
-`review-branch.sh` writes compact schema 5.0 `review-gate.json` at the exact
+`review-branch.sh` writes compact schema 6.0 `review-gate.json` at the exact
 task-owned ignored-runtime checkpoint after the independent semantic judgment
 exists. The gate
 contains only schema/skill identity, task/mode/review intent, typed exit,
-`review_commit`, `reviewed_content_sha256`, `base_ref`, normalized semantic
+`review_commit`, `reviewed_content_algorithm`, `reviewed_content_sha256`,
+`base_ref`, normalized semantic
 candidates/findings, minimum independent reviewer/evidence facts, and
 `facts_sha256`.
 
@@ -1706,9 +1762,9 @@ artifact bodies.
 After a fix commit, finding closure is an internal transient AI judgment by the
 finding owner or a real unfinished-agent replacement. It has no public exit or
 artifact and automatically dispatches a distinct fresh reviewer. Current gate
-schema 5.0 accepts the intent allowed by the selected current profile.
-Aggregate input schema 2.0 and gate schemas 3.0 and 4.0 remain legacy compatibility
-inventory, not current runtime authority; any other current value fails closed.
+schema 6.0 accepts the intent allowed by the selected current profile.
+Aggregate input schema 2.0 and gate schema 5.0 or older remain legacy stale
+inventory, not current runtime authority; any non-6.0 gate fails closed.
 
 Only `review-gate.json` is written for a new review. It contains a non-empty
 terminal-only `candidate_classifications` set. Each row binds `candidate_ref`,

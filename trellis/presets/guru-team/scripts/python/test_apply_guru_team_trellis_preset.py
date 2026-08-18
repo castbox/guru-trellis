@@ -861,6 +861,35 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
     def install(self, platforms: set[str] | None = None, all_platforms: bool = False) -> dict[str, object]:
         return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms, all_platforms=all_platforms)
 
+    def test_legacy_finalizer_wrappers_import_shared_runtime_from_canonical_and_installed_roots(self) -> None:
+        self.install({"codex", "cursor"})
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
+        wrappers = (
+            "check-workspace-boundary.sh",
+            "check-agent-recovery.sh",
+            "record-agent-recovery.sh",
+        )
+        roots = (
+            self.workflow_src / "scripts/bash",
+            self.install_dst / "scripts/bash",
+        )
+        for root in roots:
+            for wrapper in wrappers:
+                with self.subTest(root=root, wrapper=wrapper):
+                    process = subprocess.run(
+                        [str(root / wrapper), "--help"],
+                        cwd=self.repo,
+                        env=env,
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    self.assertEqual(process.returncode, 0, process.stderr)
+                    self.assertIn("usage:", process.stdout)
+                    self.assertNotIn("ModuleNotFoundError", process.stderr)
+
     def test_managed_spec_unknown_collision_is_preserved_with_new_sidecar(self) -> None:
         source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
         target = self.repo / target_relative
@@ -1463,6 +1492,53 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                 ).read_bytes()
             ).hexdigest(),
         )
+
+    def test_review_branch_current_gate_schema_closes_every_platform_interface_reference(self) -> None:
+        platforms, all_platforms = preset.selected_platforms(None, True)
+        payload = self.install(platforms, all_platforms=all_platforms)
+
+        self.assertEqual(payload["skill_packages"]["status"], "ok")
+        canonical_root = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-review-branch"
+        )
+        schema_relative = Path("schemas/review-gate-6.0.schema.json")
+        canonical_bytes = (canonical_root / schema_relative).read_bytes()
+        package_roots = (
+            self.repo / ".trellis/guru-team/skills/packages/guru-review-branch",
+            self.repo / ".agents/skills/guru-review-branch",
+            self.repo / ".codex/skills/guru-review-branch",
+            self.repo / ".claude/skills/guru-review-branch",
+            self.repo / ".cursor/skills/guru-review-branch",
+        )
+        legacy_schema_paths = (
+            Path("schemas/review-gate.schema.json"),
+            Path("schemas/review-gate-4.0.schema.json"),
+            Path("schemas/review-gate-5.0.schema.json"),
+        )
+        for package_root in package_roots:
+            with self.subTest(package_root=package_root):
+                interface = json.loads(
+                    (package_root / "interface.json").read_text(encoding="utf-8")
+                )
+                referenced = {
+                    Path(str(item["path"]))
+                    for item in interface["schemas"]
+                    if str(item["id"]) == "review_gate_schema"
+                }
+                self.assertEqual(referenced, {schema_relative})
+                self.assertEqual(
+                    (package_root / schema_relative).read_bytes(), canonical_bytes
+                )
+                self.assertEqual(
+                    (package_root / schema_relative).stat().st_mode & 0o777,
+                    0o644,
+                )
+                for legacy_relative in legacy_schema_paths:
+                    self.assertEqual(
+                        (package_root / legacy_relative).read_bytes(),
+                        (canonical_root / legacy_relative).read_bytes(),
+                    )
 
     def test_all_platforms_to_subset_removes_clean_managed_overlay(self) -> None:
         platforms, all_platforms = preset.selected_platforms(None, True)

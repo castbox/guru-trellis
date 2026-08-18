@@ -5,6 +5,7 @@ import importlib.util
 from pathlib import Path
 
 from runtime.io import CommandError
+from reviewed_content import run as reviewed_content_run
 
 
 def _owner(package_root: Path):
@@ -18,6 +19,8 @@ def _owner(package_root: Path):
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+    if command["id"] == "verify-extension-content-identity":
+        return reviewed_content_run(package_root, command, argv)
     if command["id"] == "show-extension-version":
         from version import run as show_version
 

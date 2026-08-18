@@ -4,7 +4,9 @@ import copy
 import importlib.util
 import hashlib
 import json
+import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -103,6 +105,113 @@ def large_finish_summary() -> dict:
 
 
 class FinalizeTaskContractTests(unittest.TestCase):
+    def test_pre_move_continuity_rechecks_bindings_already_in_publication_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Guru Test"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.email", "guru@example.com"], cwd=root, check=True)
+
+            active_locator = ".trellis/tasks/08-18-270-fixture"
+            task_dir = root / active_locator
+            task_dir.mkdir(parents=True)
+            (task_dir / "task.json").write_bytes(b'{"status":"in_progress"}\n')
+            (task_dir / "design.md").write_bytes(b"# Reviewed design\n")
+            business = root / "src/feature.txt"
+            business.parent.mkdir(parents=True)
+            business.write_bytes(b"reviewed business content\n")
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "reviewed content"], cwd=root, check=True)
+            review_commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True, text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+
+            planned_task = b'{"status":"completed"}\n'
+            (task_dir / "task.json").write_bytes(planned_task)
+            provenance = root / ".trellis/guru-team/extension.json"
+            provenance.parent.mkdir(parents=True)
+            provenance.write_bytes(b'{"source":"publication"}\n')
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "publication metadata"], cwd=root, check=True)
+            publication_parent = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True, text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+
+            self.assertEqual(
+                GTT.reviewed_content_identity(root, review_commit, include_worktree=False),
+                GTT.reviewed_content_identity(root, publication_parent, include_worktree=False),
+            )
+
+            summary_bytes = b'{"summary":"planned"}\n'
+            (task_dir / GTT.FINISH_SUMMARY_ARTIFACT).write_bytes(summary_bytes)
+            hook_state = {}
+            plan = {
+                "task": {"active_locator": active_locator},
+                "inputs": {
+                    "official_after_archive_hooks": {
+                        "path": ".trellis/config.yaml",
+                        "sha256": GTT.canonical_json_sha256(hook_state),
+                    },
+                },
+                "projection": {
+                    "move_paths": ["design.md", GTT.FINISH_SUMMARY_ARTIFACT, "task.json"],
+                    "tracked_move_paths": ["design.md", "task.json"],
+                    "untracked_archive_outputs": [GTT.FINISH_SUMMARY_ARTIFACT],
+                    "retired_tracked_paths": [],
+                    "reviewed_tracked_bindings": [
+                        {
+                            "path": "task.json",
+                            "mode": "100644",
+                            "sha256": hashlib.sha256(planned_task).hexdigest(),
+                        },
+                    ],
+                },
+            }
+
+            def validate(candidate: dict = plan) -> None:
+                with (
+                    mock.patch.object(GTT, "assert_closeout_archive_month_current"),
+                    mock.patch.object(
+                        GTT, "official_after_archive_hook_state", return_value=hook_state
+                    ),
+                    mock.patch.object(GTT, "closeout_summary_runtime_pr_facts_from_bytes"),
+                ):
+                    GTT.validate_closeout_pre_move_continuity(
+                        root, task_dir, candidate, publication_parent
+                    )
+
+            validate()
+
+            (task_dir / "task.json").write_bytes(b'{"status":"drifted"}\n')
+            with self.assertRaises(GTT.WorkflowError):
+                validate()
+
+            (task_dir / "task.json").write_bytes(planned_task)
+            os.chmod(task_dir / "task.json", 0o755)
+            with self.assertRaises(GTT.WorkflowError):
+                validate()
+            os.chmod(task_dir / "task.json", 0o644)
+
+            (task_dir / "design.md").write_bytes(b"# Unplanned metadata drift\n")
+            with self.assertRaises(GTT.WorkflowError):
+                validate()
+            (task_dir / "design.md").write_bytes(b"# Reviewed design\n")
+
+            extra_binding = copy.deepcopy(plan)
+            extra_binding["projection"]["reviewed_tracked_bindings"].append(
+                {
+                    "path": "missing.md",
+                    "mode": "100644",
+                    "sha256": hashlib.sha256(b"missing\n").hexdigest(),
+                }
+            )
+            with self.assertRaisesRegex(GTT.WorkflowError, "exactly cover"):
+                validate(extra_binding)
+
+            validate()
+
     def test_large_finish_summary_preserves_complete_path_contract(self) -> None:
         payload = large_finish_summary()
         self.assertEqual(GTT.finish_summary_errors(payload), [])

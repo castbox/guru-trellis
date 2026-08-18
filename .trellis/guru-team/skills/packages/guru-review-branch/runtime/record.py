@@ -20,6 +20,7 @@ from common import (
     validate_gate,
 )
 from runtime.io import CommandError
+from runtime.reviewed_content import REVIEWED_CONTENT_ALGORITHM
 from runtime.schema import validate_json
 
 
@@ -154,7 +155,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         }
     )
     value = {
-        "schema_version": "5.0",
+        "schema_version": "6.0",
         "skill_id": "guru-review-branch",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "task_dir": task_ref,
@@ -163,7 +164,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         "review_intent": public["review_intent"],
         "typed_exit": args.typed_exit,
         "review_commit": head,
-        "reviewed_content_sha256": content_identity(repo, base_head, head, task_ref),
+        "reviewed_content_algorithm": REVIEWED_CONTENT_ALGORITHM,
+        "reviewed_content_sha256": content_identity(repo, head),
         "base_ref": base_ref,
         "base_head": base_head,
         "integration_pair": pair,

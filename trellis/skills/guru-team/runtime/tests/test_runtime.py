@@ -903,14 +903,14 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     }
                     self.assertLessEqual(linked_refs, {candidate_ref})
 
-    def test_production_branch_review_inputs_close_schema_5_for_every_exit(self) -> None:
+    def test_production_branch_review_inputs_close_schema_6_for_every_exit(self) -> None:
         from adapters.eval import native_adapter
         from jsonschema import Draft202012Validator
 
         schema = json.loads(
             (
                 SKILLS
-                / "packages/guru-review-branch/schemas/review-gate-5.0.schema.json"
+                / "packages/guru-review-branch/schemas/review-gate-6.0.schema.json"
             ).read_text(encoding="utf-8")
         )
         expected = {
@@ -954,7 +954,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     },
                 }
                 payload = {
-                    "schema_version": "5.0",
+                    "schema_version": "6.0",
                     "skill_id": "guru-review-branch",
                     "generated_at": "2026-08-16T00:00:00Z",
                     "task_dir": ".trellis/tasks/branch-review-eval",
@@ -963,6 +963,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     "review_intent": "initial_review",
                     "typed_exit": exit_id,
                     "review_commit": "1" * 40,
+                    "reviewed_content_algorithm": "guru-reviewed-content-1.0",
                     "reviewed_content_sha256": "2" * 64,
                     "base_ref": "origin/main",
                     "base_head": "3" * 40,
