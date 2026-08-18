@@ -294,10 +294,13 @@ When workflow behavior changes, update the docs that users actually read:
 
 Public docs describing Phase 2 must name active semantic Skill
 `guru-check-task`, its single `phase2-check.json` artifact, active
-`guru-phase2-check-5.0` current-only schema, legacy 4.0 compatibility inventory, shared
-`guru-reviewed-content-1.0` identity, `phase2_capture_commit`, public
+`guru-phase2-check-5.0` current-only schema, legacy 4.0 compatibility inventory,
+private `guru-phase2-worktree-content-1.0` identity over live tracked and
+untracked worktree paths, `phase2_capture_commit`, public
 `phase2_commit_anchor`, scope-before-severity rule, full-rerun finding loop,
-four exits, and official unchanged `trellis-check` evidence-only role. They must
+four exits, and official unchanged `trellis-check` evidence-only role. Phase 2
+docs must not claim it consumes the four-stage durable
+`guru-reviewed-content-1.0` contract. They must
 state that non-current artifact shapes fail current schema validation and must
 not claim that coverage flags, successful commands, worker output, or
 deterministic scripts can produce Guru pass.

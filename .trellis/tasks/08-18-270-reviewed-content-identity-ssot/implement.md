@@ -14,6 +14,7 @@
 - [x] I10 Run fresh Phase 2 semantic check and preserve the full-matrix boundary in PR/final reporting.
 - [x] I11 Fix the independent Branch Review findings: remove the Phase 2 algorithm-id collision and synchronize Branch Review schema 6.0 authority.
 - [x] I12 Reapply projections, rerun targeted validation, complete fresh Phase 2, commit the fixes, close finding continuity and pass a distinct fresh final Branch Review.
+- [x] I13 Fix the distinct fresh-final findings: align Branch Review metadata dirty-path filtering with the canonical classifier, synchronize Phase 2 algorithm Docs SSOT, and move production eval coverage to Branch Review schema 6.0.
 
 ## 2. Targeted Validation
 

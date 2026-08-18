@@ -1278,9 +1278,11 @@ Guru Gate, artifact, finding severity, or route. The package
 publishes current-only schema `guru-phase2-check-5.0`. Recorder/checker runtime
 commands accept AI-authored closed input and validate only objective schema,
 `phase2_capture_commit` ancestry, recomputed
-`guru-reviewed-content-1.0` identity, current dirty reviewed-path coverage,
-finding/scope linkage, and exit/consumer invariants. Any non-current input or
-checkpoint shape fails closed rather than synthesizing a semantic result.
+private `guru-phase2-worktree-content-1.0` identity over live tracked and
+untracked worktree paths, current dirty reviewed-path coverage, finding/scope
+linkage, and exit/consumer invariants. Phase 2 does not consume the four-stage
+durable `guru-reviewed-content-1.0` contract. Any non-current input or checkpoint
+shape fails closed rather than synthesizing a semantic result.
 
 Reviewed paths and validation evidence are non-empty. Every adequacy dimension
 has current evidence from planning, implementation, Docs SSOT, repository,

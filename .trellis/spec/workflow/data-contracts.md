@@ -887,12 +887,14 @@ parallel pass artifact is allowed. The ignored owner checkpoint stores only
 mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
 executed validation evidence, the final Docs SSOT result, semantic
 adequacy/findings, final candidate classifications with direct-consumer
-witness, and one typed exit/route/reason/consumer. The shared
-`guru-reviewed-content-1.0` identity has one local deterministic consumer: the
-checker invoked inside the Phase 2 public wrapper before typed-output
-projection. It detects reviewed-content drift and returns control to the AI
-owner for delta classification; it is not authorization, semantic approval,
-public handoff, or whole-chain authority. Live implementation output, Planning owner state, issue
+witness, and one typed exit/route/reason/consumer. The private
+`guru-phase2-worktree-content-1.0` identity covers live tracked and untracked
+worktree paths and has one local deterministic consumer: the checker invoked
+inside the Phase 2 public wrapper before typed-output projection. It is
+distinct from the four-consumer durable `guru-reviewed-content-1.0` contract.
+It detects reviewed-content drift and returns control to the AI owner for delta
+classification; it is not authorization, semantic approval, public handoff, or
+whole-chain authority. Live implementation output, Planning owner state, issue
 scope, repository snapshots, raw worker evidence, assignment/liveness,
 per-file or artifact digest bundles, and handoff narration are transient entry
 facts and are not copied into it.

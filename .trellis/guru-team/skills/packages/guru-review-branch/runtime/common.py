@@ -13,6 +13,7 @@ from runtime.io import CommandError
 from runtime.reviewed_content import (
     REVIEWED_CONTENT_ALGORITHM,
     ReviewedContentError,
+    reviewed_content_metadata_path,
     reviewed_content_identity,
 )
 from runtime.schema import validate_json
@@ -250,18 +251,79 @@ def ancestor(repo, ancestor_ref, descendant_ref):
     )
 
 
-def dirty_paths(repo, task_ref):
+def dirty_paths(repo, _task_ref):
+    process = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=repo,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if process.returncode:
+        raise CommandError(
+            "stale_identity",
+            "repository",
+            process.stderr.decode("utf-8", "replace").strip()
+            or "Repair Git state.",
+            3,
+        )
+
+    fields = process.stdout.split(b"\0")
     rows = []
-    for line in git(repo, "status", "--porcelain=v1", "-z", "--untracked-files=all").split("\0"):
-        if not line:
+    index = 0
+    while index < len(fields):
+        field = fields[index]
+        index += 1
+        if not field:
             continue
-        path = line[3:].split(" -> ")[-1]
-        if path.startswith(task_ref + "/") and Path(path).name in {
-            "review.md",
-            "review-gate.json",
-        }:
-            continue
-        rows.append(path)
+        if len(field) < 4:
+            raise CommandError(
+                "stale_identity",
+                "worktree",
+                "Git returned an invalid porcelain status record.",
+                3,
+            )
+        try:
+            status_text = field[:2].decode("ascii", "strict")
+            path = field[3:].decode("utf-8", "strict")
+        except UnicodeDecodeError as exc:
+            raise CommandError(
+                "stale_identity",
+                "worktree",
+                "Dirty paths must be valid UTF-8.",
+                3,
+            ) from exc
+
+        related_path = None
+        relation_kinds = {item for item in status_text if item in {"R", "C"}}
+        if len(relation_kinds) > 1 or (
+            relation_kinds and (index >= len(fields) or not fields[index])
+        ):
+            raise CommandError(
+                "stale_identity",
+                "worktree",
+                "Git returned an invalid rename/copy status record.",
+                3,
+            )
+        if relation_kinds:
+            try:
+                related_path = fields[index].decode("utf-8", "strict")
+            except UnicodeDecodeError as exc:
+                raise CommandError(
+                    "stale_identity",
+                    "worktree",
+                    "Dirty paths must be valid UTF-8.",
+                    3,
+                ) from exc
+            index += 1
+
+        included_paths = [path]
+        if relation_kinds == {"R"} and related_path is not None:
+            included_paths.append(related_path)
+        rows.extend(
+            candidate
+            for candidate in included_paths
+            if not reviewed_content_metadata_path(candidate)
+        )
     return rows
 
 
