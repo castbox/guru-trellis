@@ -2,7 +2,7 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-- `ARCH-CUR-001`（`code_recovered`）：main baseline `c2b17846…` + #275 uncommitted task delta 包含 21 个 active Skill packages；registry 统一指向 interface/route/platform，20 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
+- `ARCH-CUR-001`（`code_recovered`）：main baseline `c2b17846…` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）包含 21 个 active Skill packages；registry 统一指向 interface/route/platform，20 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
 - `ARCH-CUR-003`（`code_recovered`）：RDT、Architecture Baseline、Repository Bootstrap 三个 semantic package 已 active，分别源自 #263/#264/#265。
 - `ARCH-CUR-004`（`source_confirmed`）：extension manifest 为 `0.6.5-guru.36`，target/tested Trellis CLI 为 `0.6.5`。

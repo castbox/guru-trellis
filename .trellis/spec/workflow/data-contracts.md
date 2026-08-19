@@ -1333,7 +1333,9 @@ the minimal archived change-context index/summary and PR identity.
 The post-cleanup public projection accepts only the exact retired gate locator
 previously emitted for that task. Because the private gate and transaction are
 already absent, it reconstructs the executor marker from the committed archive
-terminal authority and revalidates archive commit continuity, canonical PR,
+terminal authority and requires current local/remote/Ready PR HEAD to remain the
+exact reviewed archive metadata commit. It revalidates that commit's active-task
+deletion, six-file archive tree, reviewed-content continuity, canonical PR,
 three-way HEAD/branch identity, close-Issue authority and the declared output
 schema. Wrong or unsafe locators, a transaction without its gate, incomplete
 archive identity, or any live drift fail closed; the projection does not revive

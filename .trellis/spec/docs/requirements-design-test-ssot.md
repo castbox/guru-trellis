@@ -8,7 +8,7 @@
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
-- source binding：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 uncommitted task delta
+- source binding：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）
 
 ## 读取与更新
 

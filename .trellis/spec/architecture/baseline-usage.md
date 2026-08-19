@@ -5,7 +5,7 @@
 - locator：`docs/architecture/README.md`
 - version：`current-main-0.6.5-guru.36`
 - status：`active`
-- source binding：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 uncommitted task delta
+- source binding：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）
 
 ## 语义分区
 

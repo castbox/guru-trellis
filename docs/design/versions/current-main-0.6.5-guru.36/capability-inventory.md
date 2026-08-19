@@ -1,6 +1,6 @@
 # Current Capability Inventory
 
-派生日期：2026-08-19；source：`trellis/skills/guru-team/registry.json` 与各 package `interface.json`；source baseline：`c2b17846…` + #275 uncommitted task delta；provenance：`code_recovered`。
+派生日期：2026-08-19；source：`trellis/skills/guru-team/registry.json` 与各 package `interface.json`；source baseline：`c2b17846…` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）；provenance：`code_recovered`。
 
 | Skill id | External exits |
 | --- | --- |

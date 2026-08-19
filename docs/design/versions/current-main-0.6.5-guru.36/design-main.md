@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.36`；状态：`active`；provenance：`code_recovered`，绑定 baseline `c2b17846…` + #275 uncommitted task delta。
+版本：`current-main-0.6.5-guru.36`；状态：`active`；provenance：`code_recovered`，绑定 baseline `c2b17846…` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）。
 
 ## 分层与 ownership
 
