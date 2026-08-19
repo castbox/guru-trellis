@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-版本：`current-main-0.6.5-guru.35`；状态：`current`；基线：main `3c0d4a2ffe4799eb67f4c5b1c33d8f8a36f61875`。
+版本：`current-main-0.6.5-guru.35`；状态：`active`；基线：main `3c0d4a2ffe4799eb67f4c5b1c33d8f8a36f61875`。
 
 ## 目标、角色与适用范围
 

@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前设计
 
-版本：`current-main-0.6.5-guru.35`；状态：`current`；provenance：`code_recovered`，绑定 `3c0d4a2f…`。
+版本：`current-main-0.6.5-guru.35`；状态：`active`；provenance：`code_recovered`，绑定 `3c0d4a2f…`。
 
 ## 分层与 ownership
 

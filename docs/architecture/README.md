@@ -1,6 +1,6 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.5-guru.35`；状态：`current`；source commit：`3c0d4a2ffe4799eb67f4c5b1c33d8f8a36f61875`。
+版本：`current-main-0.6.5-guru.35`；状态：`active`；source commit：`3c0d4a2ffe4799eb67f4c5b1c33d8f8a36f61875`。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 

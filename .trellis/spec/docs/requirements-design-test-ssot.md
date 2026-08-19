@@ -3,11 +3,11 @@
 ## Current identity
 
 - version：`current-main-0.6.5-guru.35`
-- status：`current`
+- status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
-- Architecture inheritance：`docs/architecture/README.md`，同版本、`current`
+- Architecture inheritance：`docs/architecture/README.md`，同版本、`active`
 - source binding：main `3c0d4a2ffe4799eb67f4c5b1c33d8f8a36f61875`
 
 ## 读取与更新

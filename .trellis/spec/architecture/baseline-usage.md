@@ -4,7 +4,7 @@
 
 - locator：`docs/architecture/README.md`
 - version：`current-main-0.6.5-guru.35`
-- status：`current`
+- status：`active`
 - source binding：main `3c0d4a2ffe4799eb67f4c5b1c33d8f8a36f61875`
 
 ## 语义分区

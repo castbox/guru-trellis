@@ -6,7 +6,7 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `current` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | `source_confirmed` + `code_recovered`，绑定 main `3c0d4a2f…` |
+| `active` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | `source_confirmed` + `code_recovered`，绑定 main `3c0d4a2f…` |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 | `target` | Trellis `0.6.15` compatibility | [当前版本 gap](./versions/current-main-0.6.5-guru.35/requirement-non-functional.md#兼容与未验证边界) | `unverified`，由 #260/#267 验证 |
 
