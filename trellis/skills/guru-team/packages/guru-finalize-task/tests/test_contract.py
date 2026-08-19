@@ -369,6 +369,192 @@ class FinalizeTaskContractTests(unittest.TestCase):
                     ".trellis/.runtime/guru-team/other/finalization-gate.json",
                 )
 
+    def test_terminal_archive_commit_requires_exact_current_archive_head(self) -> None:
+        root = Path("/repo")
+        task_ref = ".trellis/tasks/example"
+        archive_locator = ".trellis/tasks/archive/2026-08/example"
+        reviewed = "a" * 40
+        parent = "b" * 40
+        archive = "c" * 40
+        active_paths = {
+            f"{task_ref}/task.json",
+            f"{task_ref}/prd.md",
+            f"{task_ref}/design.md",
+            f"{task_ref}/implement.md",
+            f"{task_ref}/issue-scope-ledger.json",
+        }
+        archive_paths = {
+            f"{archive_locator}/{relative}"
+            for relative in GTT.CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS
+        }
+
+        def tracked_paths(_root, commit, locator):
+            if commit == parent and locator == task_ref:
+                return active_paths
+            if commit == archive and locator == archive_locator:
+                return archive_paths
+            return set()
+
+        with (
+            mock.patch.object(GTT, "current_head", return_value=archive),
+            mock.patch.object(GTT, "closeout_commit_parent", return_value=parent),
+            mock.patch.object(
+                GTT,
+                "closeout_commit_tracked_task_paths",
+                side_effect=tracked_paths,
+            ),
+            mock.patch.object(
+                GTT,
+                "closeout_commit_paths",
+                return_value=active_paths | archive_paths,
+            ),
+            mock.patch.object(GTT, "is_ancestor", return_value=True),
+            mock.patch.object(
+                GTT,
+                "reviewed_content_identity",
+                return_value={"sha256": "d" * 64},
+            ),
+        ):
+            self.assertEqual(
+                GTT.finalization_terminal_archive_commit(
+                    root,
+                    task_ref,
+                    archive_locator,
+                    reviewed,
+                ),
+                archive,
+            )
+
+    def test_terminal_archive_commit_rejects_post_archive_head(self) -> None:
+        root = Path("/repo")
+        task_ref = ".trellis/tasks/example"
+        archive_locator = ".trellis/tasks/archive/2026-08/example"
+        reviewed = "a" * 40
+        archive = "b" * 40
+        later = "c" * 40
+        with (
+            mock.patch.object(GTT, "current_head", return_value=later),
+            mock.patch.object(GTT, "closeout_commit_parent", return_value=archive),
+            mock.patch.object(
+                GTT,
+                "closeout_commit_tracked_task_paths",
+                return_value=set(),
+            ),
+            mock.patch.object(
+                GTT,
+                "closeout_commit_paths",
+                return_value={"README.md"},
+            ),
+            mock.patch.object(GTT, "is_ancestor", return_value=True),
+            mock.patch.object(
+                GTT,
+                "reviewed_content_identity",
+                return_value={"sha256": "d" * 64},
+            ),
+        ):
+            with self.assertRaisesRegex(
+                GTT.WorkflowError,
+                "exact reviewed archive metadata commit",
+            ):
+                GTT.finalization_terminal_archive_commit(
+                    root,
+                    task_ref,
+                    archive_locator,
+                    reviewed,
+                )
+
+    def test_terminal_archive_commit_real_git_rejects_metadata_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", "-b", "main", str(root)], check=True)
+            subprocess.run(
+                ["git", "config", "user.name", "Test"], cwd=root, check=True
+            )
+            subprocess.run(
+                ["git", "config", "user.email", "test@example.invalid"],
+                cwd=root,
+                check=True,
+            )
+            task_ref = ".trellis/tasks/example"
+            archive_locator = ".trellis/tasks/archive/2026-08/example"
+            active = root / task_ref
+            active.mkdir(parents=True)
+            artifacts = {
+                "task.json": '{"status":"in_progress"}\n',
+                "prd.md": "requirements\n",
+                "design.md": "design\n",
+                "implement.md": "implementation\n",
+                "issue-scope-ledger.json": "{}\n",
+                "check.jsonl": "{}\n",
+            }
+            for relative, content in artifacts.items():
+                (active / relative).write_text(content, encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "reviewed"], cwd=root, check=True
+            )
+            reviewed = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=root,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+
+            archived = root / archive_locator
+            archived.mkdir(parents=True)
+            for relative in GTT.CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS - {
+                GTT.FINISH_SUMMARY_ARTIFACT
+            }:
+                source = active / relative
+                target = archived / relative
+                target.write_bytes(source.read_bytes())
+            (archived / "task.json").write_text(
+                '{"status":"completed"}\n', encoding="utf-8"
+            )
+            (archived / GTT.FINISH_SUMMARY_ARTIFACT).write_text(
+                "{}\n", encoding="utf-8"
+            )
+            shutil.rmtree(active)
+            subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "archive"], cwd=root, check=True
+            )
+            archive_commit = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=root,
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
+            self.assertEqual(
+                GTT.finalization_terminal_archive_commit(
+                    root,
+                    task_ref,
+                    archive_locator,
+                    reviewed,
+                ),
+                archive_commit,
+            )
+
+            journal = root / ".trellis/workspace/test/journal.md"
+            journal.parent.mkdir(parents=True)
+            journal.write_text("later metadata\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=root, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "later metadata"], cwd=root, check=True
+            )
+            with self.assertRaisesRegex(
+                GTT.WorkflowError,
+                "exact reviewed archive metadata commit",
+            ):
+                GTT.finalization_terminal_archive_commit(
+                    root,
+                    task_ref,
+                    archive_locator,
+                    reviewed,
+                )
+
     def test_step_local_contract_matches_current_gate_and_exit_graph(self) -> None:
         skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")

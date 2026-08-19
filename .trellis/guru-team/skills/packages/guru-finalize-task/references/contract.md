@@ -62,8 +62,10 @@ consuming that validated terminal DTO.
 After that terminal cleanup, public invoke may receive the exact retired gate
 locator emitted by the completed checker. Its authority is then the committed
 archive terminal state, not the obsolete in-progress Publication state: the
-wrapper reconstructs only the private executor marker and rechecks the archive
-transaction, PR/head/branch/close-Issue facts and output schema before
+wrapper reconstructs only the private executor marker and requires current
+local/remote/Ready PR HEAD to remain the exact reviewed archive metadata commit.
+It rechecks that commit's active-task deletion, six-file archive tree,
+reviewed-content continuity, PR/head/branch/close-Issue facts and output schema before
 projecting `ready_for_merge`. A different locator, a surviving transaction
 without its gate, an unsafe gate path, or any terminal fact drift remains
 fail-closed and never falls back to reprepare.

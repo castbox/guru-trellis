@@ -10554,12 +10554,19 @@ def finalization_terminal_projection_gate(
         or branch_review_commit not in commits
     ):
         return None
+    archive_commit = finalization_terminal_archive_commit(
+        root,
+        task_ref,
+        archive_locator,
+        branch_review_commit,
+    )
     terminal_digest = canonical_json_sha256(
         {
             "schema_version": "1.0",
             "task_ref": task_ref,
             "archive_locator": archive_locator,
             "branch_review_commit": branch_review_commit,
+            "archive_commit": archive_commit,
             "finish_summary_sha256": canonical_json_sha256(summary),
         }
     )
@@ -10582,6 +10589,67 @@ def finalization_terminal_projection_gate(
             "output": copy.deepcopy(FINALIZATION_EXECUTOR_OUTPUT_MARKER),
         },
     }
+
+
+def finalization_terminal_archive_commit(
+    root: Path,
+    task_ref: str,
+    archive_locator: str,
+    branch_review_commit: str,
+) -> str:
+    """Require current HEAD to be the exact reviewed archive metadata commit."""
+    archive_commit = current_head(root)
+    transaction_parent = closeout_commit_parent(root, archive_commit)
+    parent_active_paths = closeout_commit_tracked_task_paths(
+        root,
+        transaction_parent,
+        task_ref,
+    )
+    expected_archive_paths = {
+        f"{archive_locator}/{relative}"
+        for relative in CLOSEOUT_ARCHIVE_DURABLE_ARTIFACTS
+    }
+    archived_paths = closeout_commit_tracked_task_paths(
+        root,
+        archive_commit,
+        archive_locator,
+    )
+    remaining_active_paths = closeout_commit_tracked_task_paths(
+        root,
+        archive_commit,
+        task_ref,
+    )
+    committed_paths = closeout_commit_paths(root, archive_commit)
+    expected_paths = parent_active_paths | expected_archive_paths
+    reviewed_identity = reviewed_content_identity(
+        root,
+        branch_review_commit,
+        include_worktree=False,
+    )["sha256"]
+    archive_identity = reviewed_content_identity(
+        root,
+        archive_commit,
+        include_worktree=False,
+    )["sha256"]
+    if (
+        not parent_active_paths
+        or not is_ancestor(root, branch_review_commit, transaction_parent)
+        or archived_paths != expected_archive_paths
+        or remaining_active_paths
+        or committed_paths != expected_paths
+        or archive_identity != reviewed_identity
+    ):
+        raise WorkflowError(
+            "Archived current Finalizer HEAD is not the exact reviewed archive metadata commit.",
+            exit_code=2,
+            payload={
+                "archive_commit": archive_commit,
+                "transaction_parent": transaction_parent,
+                "expected_paths": sorted(expected_paths),
+                "actual_paths": sorted(committed_paths),
+            },
+        )
+    return archive_commit
 
 def finalization_find_transaction_by_task_ref(
     root: Path,
@@ -11273,6 +11341,12 @@ def finalization_current_terminal_context(
             "Archived current Finalizer summary does not bind the terminal gate.",
             exit_code=2,
         )
+    archive_commit = finalization_terminal_archive_commit(
+        root,
+        task_ref,
+        archive_locator,
+        str(identity.get("branch_review_commit") or ""),
+    )
     remote = str(publish_config(load_config(root)).get("remote") or "origin")
     repo = normalize_github_repository(infer_github_repo(root))
     repo = validate_github_remote_repository(root, remote, repo)
@@ -11321,6 +11395,7 @@ def finalization_current_terminal_context(
         or re.fullmatch(r"[0-9a-f]{40}", ready_head) is None
         or local_head != remote_head
         or local_head != ready_head
+        or local_head != archive_commit
         or archive_status
         or not reviewed_is_ancestor
         or search_terms.get("pr_refs") != [f"PR #{pr_number}"]

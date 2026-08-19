@@ -1,6 +1,6 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.5-guru.36`；状态：`active`；source baseline：`c2b1784654a95b999bbff71daf1393c22aa01048` + #275 uncommitted task delta。
+版本：`current-main-0.6.5-guru.36`；状态：`active`；source baseline：`c2b1784654a95b999bbff71daf1393c22aa01048` + #275 committed task-branch delta（精确 revision 为当前 Git HEAD）。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
