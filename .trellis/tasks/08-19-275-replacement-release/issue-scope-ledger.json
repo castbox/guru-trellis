@@ -1,0 +1,32 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 275,
+    "url": "https://github.com/castbox/guru-trellis/issues/275",
+    "title": "修复 v0.6.5-guru.9 Throwaway closeout 回归并发布 replacement release",
+    "reason": "本 task 完整实现并验证 #275 的 Finalizer terminal projection、registry-derived verifier inventory 与 replacement release 闭环；Issue 仅在 tag、Release、post-publish smoke 和 downstream gate 完成后关闭。"
+  },
+  "close_issues": [
+    {
+      "number": 275,
+      "url": "https://github.com/castbox/guru-trellis/issues/275",
+      "title": "修复 v0.6.5-guru.9 Throwaway closeout 回归并发布 replacement release",
+      "reason": "仅在当前 task 的实现、独立审查、exact-candidate gate、合并、immutable tag、GitHub Release、tag-pinned smoke 与 downstream consumer gate 全部通过后关闭 #275。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 260,
+      "url": "https://github.com/castbox/guru-trellis/issues/260",
+      "title": "在当前双 SSOT 基线上升级并验证 Trellis v0.6.15：业务仓库安装态与并行兼容",
+      "reason": "独立拥有累计 upgrade/update 与完整多平台 Throwaway installer matrix；本 task 不实施、不关闭。"
+    },
+    {
+      "number": 267,
+      "url": "https://github.com/castbox/guru-trellis/issues/267",
+      "title": "发布 Trellis v0.6.15 双 SSOT 稳定基线版本",
+      "reason": "独立拥有后续最终 release authority；本 task 不实施、不关闭。"
+    }
+  ],
+  "followup_issues": []
+}

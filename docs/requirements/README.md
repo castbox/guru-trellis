@@ -6,9 +6,10 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | `source_confirmed` + `code_recovered`，绑定 main `3c0d4a2f…` |
+| `active` | `current-main-0.6.5-guru.36` | [requirement-main.md](./versions/current-main-0.6.5-guru.36/requirement-main.md) | `source_confirmed` + `code_recovered`，绑定 main `c2b17846…` + #275 uncommitted task delta |
+| `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
-| `target` | Trellis `0.6.15` compatibility | [当前版本 gap](./versions/current-main-0.6.5-guru.35/requirement-non-functional.md#兼容与未验证边界) | `unverified`，由 #260/#267 验证 |
+| `target` | Trellis `0.6.15` compatibility | [当前版本 gap](./versions/current-main-0.6.5-guru.36/requirement-non-functional.md#兼容与未验证边界) | `unverified`，由 #260/#267 验证 |
 
 读取顺序：`requirement-main.md` -> `requirement-non-functional.md` -> `traceability.md` -> `decisions.md`。Design、Test 与 Architecture 入口分别位于 `docs/design/README.md`、`docs/test/README.md`、`docs/architecture/README.md`。
 

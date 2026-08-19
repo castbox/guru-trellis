@@ -180,13 +180,40 @@ class FinishFamilyIntegrationTests(unittest.TestCase):
                 expected_exits,
             )
 
-    def test_workflow_keeps_current_projection_and_six_route_groups(self) -> None:
+    def test_workflow_keeps_registry_derived_projection_and_six_route_groups(self) -> None:
         invokes = markers("skill-invoke")
         exits = markers("skill-exit")
-        targets = markers("(?:workflow|stop)-target")
-        self.assertEqual(len(invokes), 19)
-        self.assertEqual(len(exits), 83)
-        self.assertEqual(len(targets), 51)
+        registry = read_json(SKILLS_ROOT / "registry.json")
+        workflow_skill_ids = {
+            entry["id"]
+            for entry in registry["skills"]
+            if entry.get("state") == "active"
+            and entry["id"] != "guru-verify-extension-installation"
+        }
+        expected_exits = {
+            (skill_id, exit_contract["id"])
+            for skill_id in workflow_skill_ids
+            for exit_contract in read_json(package(skill_id) / "interface.json")["external_exits"]
+        }
+        expected_targets = {
+            (exit_contract["consumer"]["kind"], exit_contract["consumer"]["id"])
+            for skill_id in workflow_skill_ids
+            for exit_contract in read_json(package(skill_id) / "interface.json")["external_exits"]
+            if exit_contract["consumer"]["kind"] in {"workflow", "stop"}
+        }
+        self.assertEqual({item["skill"] for item in invokes}, workflow_skill_ids)
+        self.assertEqual(
+            {(item["skill"], item["exit"]) for item in exits},
+            expected_exits,
+        )
+        self.assertEqual(
+            {
+                (kind, item["id"])
+                for kind in ("workflow", "stop")
+                for item in markers(f"{kind}-target")
+            },
+            expected_targets,
+        )
         routed = {
             (item["skill"], item["exit"]): (
                 item["consumer"]["kind"],

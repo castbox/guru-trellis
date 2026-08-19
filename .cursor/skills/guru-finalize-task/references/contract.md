@@ -59,6 +59,15 @@ call the Draft-only finish path or repeat push, PR, archive, commit, or Ready
 mutations. The public invocation retires owner-private state only after
 consuming that validated terminal DTO.
 
+After that terminal cleanup, public invoke may receive the exact retired gate
+locator emitted by the completed checker. Its authority is then the committed
+archive terminal state, not the obsolete in-progress Publication state: the
+wrapper reconstructs only the private executor marker and rechecks the archive
+transaction, PR/head/branch/close-Issue facts and output schema before
+projecting `ready_for_merge`. A different locator, a surviving transaction
+without its gate, an unsafe gate path, or any terminal fact drift remains
+fail-closed and never falls back to reprepare.
+
 ## Migration
 
 The 5.0 aggregate, verification re-entry schemas, verification-required output,

@@ -10264,6 +10264,8 @@ def finalization_task_dir(root: Path, public_input: dict[str, Any]) -> Path:
                 return task_dir
         if finalization_current_terminal_gate(root, task_dir, task_ref) is not None:
             return task_dir
+        if finalization_terminal_projection_gate(root, task_dir, public_input) is not None:
+            return task_dir
         plan = finalization_closeout_plan(root, task_dir)
         if (
             plan is not None
@@ -10516,6 +10518,70 @@ def finalization_current_terminal_gate(
             payload={"errors": errors},
         )
     return gate
+
+
+def finalization_terminal_projection_gate(
+    root: Path,
+    task_dir: Path,
+    public_input: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Project a retired gate from the committed terminal archive authority."""
+    task_ref = str(public_input.get("task_ref") or "")
+    archive_locator = repo_relative(root, task_dir)
+    if (
+        not task_dir_is_archived(root, task_dir)
+        or closeout_plan_path(task_dir).exists()
+        or task_finalization_path(root, task_dir).exists()
+        or finalization_find_transaction_by_task_ref(root, task_ref) is not None
+    ):
+        return None
+    task = task_json(task_dir)
+    summary_path = task_dir / FINISH_SUMMARY_ARTIFACT
+    if task.get("status") != "completed":
+        return None
+    if not summary_path.is_file() or summary_path.is_symlink():
+        return None
+    summary = read_json(summary_path)
+    validate_finish_summary(summary)
+    summary_task = summary.get("task") if isinstance(summary.get("task"), dict) else {}
+    summary_git = summary.get("git") if isinstance(summary.get("git"), dict) else {}
+    branch_review_commit = str(public_input.get("branch_review_commit") or "")
+    commits = summary_git.get("commits") if isinstance(summary_git.get("commits"), list) else []
+    if (
+        summary_task.get("artifact_dir") != task_ref
+        or summary_task.get("archive_dir") != archive_locator
+        or re.fullmatch(r"[0-9a-f]{40}", branch_review_commit) is None
+        or branch_review_commit not in commits
+    ):
+        return None
+    terminal_digest = canonical_json_sha256(
+        {
+            "schema_version": "1.0",
+            "task_ref": task_ref,
+            "archive_locator": archive_locator,
+            "branch_review_commit": branch_review_commit,
+            "finish_summary_sha256": canonical_json_sha256(summary),
+        }
+    )
+    return {
+        "schema_version": FINALIZATION_GATE_SCHEMA_VERSION,
+        "skill_id": FINALIZE_TASK_SKILL_ID,
+        "identity": {
+            "task_ref": task_ref,
+            "plan_ref": f"finalization:{terminal_digest}",
+            "plan_digest": terminal_digest,
+            "branch_review_commit": branch_review_commit,
+        },
+        "review": {
+            "status": "passed",
+            "summary": "The committed terminal archive remains the reviewed Ready authority.",
+        },
+        "route": {
+            "typed_exit": "ready_for_merge",
+            "consumer": copy.deepcopy(FINALIZATION_CONSUMERS["ready_for_merge"]),
+            "output": copy.deepcopy(FINALIZATION_EXECUTOR_OUTPUT_MARKER),
+        },
+    }
 
 def finalization_find_transaction_by_task_ref(
     root: Path,
@@ -11182,6 +11248,9 @@ def finalization_current_terminal_context(
     summary_github = (
         summary.get("github") if isinstance(summary.get("github"), dict) else {}
     )
+    summary_commits = (
+        summary_git.get("commits") if isinstance(summary_git.get("commits"), list) else []
+    )
     search_terms = (
         summary.get("index", {}).get("search_terms", {})
         if isinstance(summary.get("index"), dict)
@@ -11198,6 +11267,7 @@ def finalization_current_terminal_context(
         or summary_task.get("archive_dir") != archive_locator
         or summary_git.get("branch") != branch
         or summary_git.get("base_branch") != base_branch
+        or identity.get("branch_review_commit") not in summary_commits
     ):
         raise WorkflowError(
             "Archived current Finalizer summary does not bind the terminal gate.",
@@ -11223,6 +11293,21 @@ def finalization_current_terminal_context(
     )
     ready_head = str(pr.get("headRefOid") or "")
     local_head = current_head(root)
+    archive_status = run_stdout(
+        ["git", "status", "--porcelain", "--untracked-files=all", "--", archive_locator],
+        cwd=root,
+    )
+    reviewed_is_ancestor = run(
+        [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            str(identity.get("branch_review_commit") or ""),
+            local_head,
+        ],
+        cwd=root,
+        check=False,
+    ).returncode == 0
     remote_head = closeout_remote_branch_head(
         root,
         {"git": {"remote": remote, "head_branch": branch}},
@@ -11236,6 +11321,8 @@ def finalization_current_terminal_context(
         or re.fullmatch(r"[0-9a-f]{40}", ready_head) is None
         or local_head != remote_head
         or local_head != ready_head
+        or archive_status
+        or not reviewed_is_ancestor
         or search_terms.get("pr_refs") != [f"PR #{pr_number}"]
     ):
         raise WorkflowError(
@@ -11316,6 +11403,18 @@ def finalization_preview_context(
                 task_dir,
                 public_input,
                 terminal_gate,
+            )
+        terminal_projection_gate = finalization_terminal_projection_gate(
+            root,
+            task_dir,
+            public_input,
+        )
+        if terminal_projection_gate is not None:
+            return finalization_current_terminal_context(
+                root,
+                task_dir,
+                public_input,
+                terminal_projection_gate,
             )
         plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
@@ -11959,13 +12058,23 @@ def finalization_gate_input(
             root,
             str(public_input.get("task_ref") or ""),
         )
+        # A completed terminal recovery retires the owner gate and transaction.
+        # Keep the caller's exact locator binding, but allow the archived
+        # committed-terminal projection to rebuild the checked marker when the
+        # normal owner artifact was intentionally retired.
+        owner_result_missing_after_terminal_cleanup = False
         if value:
-            supplied = stage0_owner_path(root, value, "arguments.owner_result")
-            if supplied.resolve() != expected.resolve():
+            relative = skill_safe_relative(str(value).strip())
+            supplied = root / relative if relative is not None else None
+            if supplied is None or supplied.resolve() != expected.resolve():
                 raise WorkflowError(
                     "Task finalization gate must use the exact owner-private artifact.",
                     exit_code=2,
                 )
+            if expected.exists() or expected.is_symlink():
+                supplied = stage0_owner_path(root, value, "arguments.owner_result")
+            else:
+                owner_result_missing_after_terminal_cleanup = True
         if transaction_match is not None:
             if not expected.is_file() or expected.is_symlink():
                 raise WorkflowError(
@@ -11979,7 +12088,7 @@ def finalization_gate_input(
             str(public_input.get("task_ref") or ""),
         )
         if terminal_gate is not None:
-            if value:
+            if value and not owner_result_missing_after_terminal_cleanup:
                 supplied = stage0_owner_path(root, value, "arguments.owner_result")
                 if supplied.resolve() != expected.resolve():
                     raise WorkflowError(
@@ -11987,6 +12096,18 @@ def finalization_gate_input(
                         exit_code=2,
                     )
             return terminal_gate, expected
+        terminal_projection_gate = finalization_terminal_projection_gate(
+            root,
+            task_dir,
+            public_input,
+        )
+        if terminal_projection_gate is not None:
+            if not value or not owner_result_missing_after_terminal_cleanup:
+                raise WorkflowError(
+                    "Retired terminal projection requires its exact owner-private locator.",
+                    exit_code=2,
+                )
+            return terminal_projection_gate, expected
         plan = finalization_closeout_plan(root, task_dir)
         if plan is None:
             raise WorkflowError(
