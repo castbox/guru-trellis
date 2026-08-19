@@ -183,7 +183,7 @@ business-task workflow is exactly 20 mandatory invokes and 87 external exits.
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-bootstrap-router"} -->
 <!-- guru-stop-target: {"id":"requirements-design-test-ssot-blocked"} -->
-The graph contains exactly 31 workflow targets and 20 stop targets.
+The graph contains exactly 33 workflow targets and 21 stop targets.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
