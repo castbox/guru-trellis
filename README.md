@@ -17,12 +17,12 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Guru Trellis repo tag | `v0.6.5-guru.9` |
-| Guru Team extension revision | `0.6.5-guru.34` |
+| Guru Trellis repo tag | `v0.6.5-guru.10` |
+| Guru Team extension revision | `0.6.5-guru.36` |
 | 官方 `@mindfoldhq/trellis` CLI | `0.6.5` |
 
 repo tag 与 extension revision 是两个独立版本轴。稳定 workflow 与 preset 必须来自同一个
-immutable tag `v0.6.5-guru.9`；tag 的 peeled commit 在 preparation 合并并通过 exact
+immutable tag `v0.6.5-guru.10`；tag 的 peeled commit 在 preparation 合并并通过 exact
 candidate 门禁后，以 Git ref、GitHub Release notes 和 release evidence 记录，不在合并前猜测。
 
 新仓库的非交互安装入口：
@@ -31,9 +31,9 @@ candidate 门禁后，以 Git ref、GitHub Release notes 和 release evidence �
 npm install --global @mindfoldhq/trellis@0.6.5
 trellis init -y --claude --codex --cursor \
   --workflow guru-team \
-  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.9
+  --workflow-source gh:castbox/guru-trellis/trellis#v0.6.5-guru.10
 guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.5-guru.9 \
+git clone --depth 1 --branch v0.6.5-guru.10 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo . --all-platforms
@@ -62,13 +62,13 @@ trellis update --skip-all
 
 ```bash
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.9 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.10 \
   --template guru-team --create-new
 trellis workflow \
-  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.9 \
+  --marketplace gh:castbox/guru-trellis/trellis#v0.6.5-guru.10 \
   --template guru-team
 guru_trellis_source="$(mktemp -d)"
-git clone --depth 1 --branch v0.6.5-guru.9 \
+git clone --depth 1 --branch v0.6.5-guru.10 \
   https://github.com/castbox/guru-trellis.git "$guru_trellis_source"
 "$guru_trellis_source/trellis/presets/guru-team/scripts/bash/apply.sh" \
   --repo . --all-platforms

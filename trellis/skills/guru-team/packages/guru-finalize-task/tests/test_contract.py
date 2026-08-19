@@ -284,6 +284,91 @@ class FinalizeTaskContractTests(unittest.TestCase):
             Path("/repo"), task_dir, gate, context["plan"], context["published_pr"]
         )
 
+    def test_archived_terminal_projection_accepts_retired_exact_gate_locator(self) -> None:
+        root = Path("/repo")
+        task_dir = root / ".trellis/tasks/archive/2026-08/example"
+        expected = root / ".trellis/.runtime/guru-team/example/finalization-gate.json"
+        public_input = {"task_ref": ".trellis/tasks/2026-08-example"}
+        projected_gate = {
+            "route": {
+                "typed_exit": "ready_for_merge",
+                "output": GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER,
+            },
+        }
+        with (
+            mock.patch.object(GTT, "finalization_task_dir", return_value=task_dir),
+            mock.patch.object(GTT, "task_dir_is_archived", return_value=True),
+            mock.patch.object(GTT, "task_finalization_path", return_value=expected),
+            mock.patch.object(GTT, "finalization_find_transaction_by_task_ref", return_value=None),
+            mock.patch.object(GTT, "finalization_current_terminal_gate", return_value=None),
+            mock.patch.object(
+                GTT,
+                "finalization_terminal_projection_gate",
+                return_value=projected_gate,
+            ),
+            mock.patch.object(GTT, "finalization_closeout_plan") as legacy_plan,
+        ):
+            gate, gate_path = GTT.finalization_gate_input(
+                root,
+                public_input,
+                ".trellis/.runtime/guru-team/example/finalization-gate.json",
+            )
+
+        self.assertEqual(gate_path, expected)
+        self.assertEqual(gate, projected_gate)
+        self.assertEqual(gate["route"]["typed_exit"], "ready_for_merge")
+        self.assertEqual(gate["route"]["output"], GTT.FINALIZATION_EXECUTOR_OUTPUT_MARKER)
+        legacy_plan.assert_not_called()
+
+    def test_archived_terminal_projection_requires_retired_exact_gate_locator(self) -> None:
+        root = Path("/repo")
+        task_dir = root / ".trellis/tasks/archive/2026-08/example"
+        expected = root / ".trellis/.runtime/guru-team/example/finalization-gate.json"
+        with (
+            mock.patch.object(GTT, "finalization_task_dir", return_value=task_dir),
+            mock.patch.object(GTT, "task_dir_is_archived", return_value=True),
+            mock.patch.object(GTT, "task_finalization_path", return_value=expected),
+            mock.patch.object(GTT, "finalization_find_transaction_by_task_ref", return_value=None),
+            mock.patch.object(GTT, "finalization_current_terminal_gate", return_value=None),
+            mock.patch.object(
+                GTT,
+                "finalization_terminal_projection_gate",
+                return_value={"route": {"typed_exit": "ready_for_merge"}},
+            ),
+        ):
+            with self.assertRaisesRegex(
+                GTT.WorkflowError,
+                "requires its exact owner-private locator",
+            ):
+                GTT.finalization_gate_input(
+                    root,
+                    {"task_ref": ".trellis/tasks/2026-08-example"},
+                    None,
+                )
+
+    def test_archived_terminal_projection_rejects_wrong_retired_gate_locator(self) -> None:
+        root = Path("/repo")
+        task_dir = root / ".trellis/tasks/archive/2026-08/example"
+        with (
+            mock.patch.object(GTT, "finalization_task_dir", return_value=task_dir),
+            mock.patch.object(GTT, "task_dir_is_archived", return_value=True),
+            mock.patch.object(
+                GTT,
+                "task_finalization_path",
+                return_value=root / ".trellis/.runtime/guru-team/example/finalization-gate.json",
+            ),
+            mock.patch.object(GTT, "finalization_find_transaction_by_task_ref", return_value=None),
+        ):
+            with self.assertRaisesRegex(
+                GTT.WorkflowError,
+                "exact owner-private artifact",
+            ):
+                GTT.finalization_gate_input(
+                    root,
+                    {"task_ref": ".trellis/tasks/2026-08-example"},
+                    ".trellis/.runtime/guru-team/other/finalization-gate.json",
+                )
+
     def test_step_local_contract_matches_current_gate_and_exit_graph(self) -> None:
         skill = (PACKAGE / "SKILL.md").read_text(encoding="utf-8")
         contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")

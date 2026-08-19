@@ -1735,6 +1735,13 @@ next Finalizer invocation. `ready_for_merge` carries the canonical PR and
 expected-head/branch/close-Issue authority needed by `guru-merge-task-pr`.
 Internal transaction state, semantic review, authorization, live facts, paths,
 and digests remain private.
+
+When successful terminal cleanup has already retired the Finalizer gate and
+transaction, public invoke may consume the exact retired gate locator as a
+continuity assertion and project from committed archive terminal authority.
+It must recheck the archive/PR/head/branch/close-Issue facts and schema; it may
+not treat a missing arbitrary owner result as current, return to in-progress
+Publication authority, or weaken any stale failure.
 Transaction 2.0 remains an explicit legacy schema and is not current Interface
 authority.
 

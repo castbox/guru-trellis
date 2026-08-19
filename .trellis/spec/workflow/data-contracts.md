@@ -504,7 +504,7 @@ error rather than a traceback.
 
 Repository release tags for the Guru Team extension use repo-level tags that
 combine the target official Trellis CLI version and the Guru Team revision,
-such as `v0.6.5-guru.9`, not namespaced tags such as
+such as `v0.6.5-guru.10`, not namespaced tags such as
 `guru-team/v0.6.5`. The tag must correspond to
 the exact `trellis/guru-team-extension.json.version` present in the tagged commit,
 and the manifest must expose `target_trellis_cli` so users can see which official
@@ -512,7 +512,7 @@ and the manifest must expose `target_trellis_cli` so users can see which officia
 tag and extension revision are independent version axes: release metadata binds
 one immutable tag to one exact tagged manifest version rather than assuming their
 Guru suffixes are equal. Stable workflow marketplace examples should use
-`gh:castbox/guru-trellis/trellis#v0.6.5-guru.9`; unpinned
+`gh:castbox/guru-trellis/trellis#v0.6.5-guru.10`; unpinned
 `gh:castbox/guru-trellis/trellis` means latest/canary and must be reported as a
 mutable source in install or upgrade evidence.
 An unreleased branch may carry the next canonical extension version while
@@ -1329,6 +1329,15 @@ superseded Finalizer-owned file. A
 input schema requires it; otherwise it deletes owner state. The official archive
 never moves or retains a transaction. Durable `finish-summary.json` remains only
 the minimal archived change-context index/summary and PR identity.
+
+The post-cleanup public projection accepts only the exact retired gate locator
+previously emitted for that task. Because the private gate and transaction are
+already absent, it reconstructs the executor marker from the committed archive
+terminal authority and revalidates archive commit continuity, canonical PR,
+three-way HEAD/branch identity, close-Issue authority and the declared output
+schema. Wrong or unsafe locators, a transaction without its gate, incomplete
+archive identity, or any live drift fail closed; the projection does not revive
+Publication authority or repeat a mutation.
 
 ## Current Source Verification Result
 

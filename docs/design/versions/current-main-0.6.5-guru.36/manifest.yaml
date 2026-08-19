@@ -1,0 +1,14 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.5-guru.36
+status: active
+source_commit: c2b1784654a95b999bbff71daf1393c22aa01048
+extension_manifest_version: 0.6.5-guru.36
+target_trellis_cli: 0.6.5
+released_baseline: v0.6.5-guru.9
+requirements_locator: docs/requirements/versions/current-main-0.6.5-guru.36/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.5-guru.36/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 21
+provenance: code_recovered

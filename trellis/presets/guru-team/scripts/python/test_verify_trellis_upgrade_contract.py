@@ -17,6 +17,7 @@ PHASE2_EXAMPLE = (
 PHASE2_RECORDER = (
     REPO / "trellis/skills/guru-team/packages/guru-check-task/runtime/record.py"
 )
+FINISH_WORK_WRAPPER = REPO / "trellis/workflows/guru-team/scripts/bash/finish-work.sh"
 
 
 class VerifyTrellisUpgradeContractTests(unittest.TestCase):
@@ -78,6 +79,14 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.text,
         )
         self.assertIn("Unexpected .new/.bak sidecars after preview, switch, update, and preset reapply", self.text)
+
+    def test_finish_work_compatibility_wrapper_exposes_shared_runtime(self) -> None:
+        wrapper = FINISH_WORK_WRAPPER.read_text(encoding="utf-8")
+        self.assertIn(
+            'export PYTHONPATH="$RUNTIME:$GURU_ROOT${PYTHONPATH:+:$PYTHONPATH}"',
+            wrapper,
+        )
+        self.assertIn('"$RUNTIME/legacy.py" finish-work "$@"', wrapper)
 
     def test_embedded_installed_schema_inventory_matches_canonical_source(self) -> None:
         inventory_anchor = 'skills_root = root / ".trellis/guru-team/skills"'

@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.5-guru.35`
+- version：`current-main-0.6.5-guru.36`
 - status：`active`
-- source binding：main `3c0d4a2ffe4799eb67f4c5b1c33d8f8a36f61875`
+- source binding：main `c2b1784654a95b999bbff71daf1393c22aa01048` + #275 uncommitted task delta
 
 ## 语义分区
 

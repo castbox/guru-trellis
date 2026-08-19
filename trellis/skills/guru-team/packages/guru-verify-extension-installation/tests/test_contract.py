@@ -241,7 +241,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                 },
                 "source": {
                     "repo": "castbox/guru-trellis",
-                    "ref": "v0.6.5-guru.9",
+                    "ref": "v0.6.5-guru.10",
                     "commit": "a" * 40,
                     "tree_state": "clean",
                     "is_mutable_ref": False,
