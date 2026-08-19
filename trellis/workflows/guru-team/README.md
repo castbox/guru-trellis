@@ -153,8 +153,8 @@ dispatcher；canonical validator/discovery/eval/compat wrapper 使用 source che
 当前 source candidate 的 canonical extension version 为 `0.6.5-guru.36`；上文 pin 的
 stable release tag `v0.6.5-guru.10` 仍对应 extension revision `0.6.5-guru.36`。
 Source/installed package validation 必须同时验证
-registry、19 invokes / 83 exits / 51 combined targets（31 workflow + 20 stop）
-business marker graph、20-package/85-exit closure、consumer
+registry、20 invokes / 87 exits / 54 combined targets（33 workflow + 21 stop）
+business marker graph、21-package/89-exit closure、consumer
 uniqueness、projection、selected-platform
 byte identity 和 executable mode。
 
@@ -162,8 +162,8 @@ byte identity 和 executable mode。
 
 Canonical workflow 是 trellis/workflows/guru-team/workflow.md；dogfood
 .trellis/workflow.md 必须 byte-identical。Global Markdown 只拥有 phase order、
-current-task router、19 mandatory Skill markers、83 exits、31 workflow targets、
-20 stop targets、
+current-task router、20 mandatory Skill markers、87 exits、33 workflow targets、
+21 stop targets、
 workspace/task activation、Docs SSOT、Issue Scope Ledger、human artifact、
 interaction 与外部 side-effect boundary。Step-local 合同只存在于对应 active
 package/interface。

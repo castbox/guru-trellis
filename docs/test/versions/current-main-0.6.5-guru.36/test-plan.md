@@ -43,7 +43,7 @@
 | Check | 当前结果 | 证明边界 |
 | --- | --- | --- |
 | exact `v0.6.5-guru.9` regression | `finalization_stale` 可复现 | immutable affected release identity 与原始故障 |
-| Finalizer source | 48/48 PASS | terminal projection 与 stale negative coverage |
+| Finalizer source / installed | 51/51 PASS | exact archive commit、metadata-tail fail-closed 与 terminal projection/stale negative coverage |
 | Finish-family source/installed | 6/6 PASS | Finalizer/Publication/Merge closeout integration |
 | routing / upgrade contract | 44/44、7/7 PASS | managed Python caller graph与 registry-derived inventory contract |
 | local-current representative Throwaway | PASS | clean install、0.6.5 -> 0.6.15 update/reapply、closeout initial/after-update、no-developer sample；不是 exact committed release proof |

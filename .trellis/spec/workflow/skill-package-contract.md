@@ -123,7 +123,7 @@ post-merge read-only validation. A terminal projection retires the merge gate.
 Neither Finalizer nor Merge calls Issue-close APIs, enters Phase 0, invokes base
 sync, updates the PR branch, synchronizes local `main`, or cleans resources.
 
-Eighteen integrated packages select Interface 1.4.
+Nineteen integrated packages select Interface 1.4.
 `guru-qualify-normal-scenario` selects Interface 1.6,
 `guru-verify-extension-installation` selects Interface 1.5, and the latter has
 `workflow_integration_state=standalone_only`. Registry schema

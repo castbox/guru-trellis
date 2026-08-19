@@ -1765,7 +1765,15 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertIn('verify_contract_wording_standalone_profiles "after-update"', verifier)
         self.assertIn('verify_change_request_review_package "initial"', verifier)
         self.assertIn('verify_change_request_review_package "after-update"', verifier)
-        self.assertIn('"planned_skill_ids"] == []', verifier)
+        self.assertNotIn('facts["planned_ids"] == []', verifier)
+        self.assertIn(
+            'facts["planned_ids"] == expected_planned_ids',
+            verifier,
+        )
+        self.assertIn(
+            'manifest["extension"]["public_api"]["skill_contracts"]["planned_skill_ids"]',
+            verifier,
+        )
         self.assertIn('test -f "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/SKILL.md"', verifier)
         self.assertIn('test -x "$TARGET/.trellis/guru-team/skills/packages/guru-create-task-workspace/scripts/record-task-workspace-plan.sh"', verifier)
         self.assertIn('test ! -e "$TARGET/.claude/skills/guru-create-task-workspace/scripts/create-task-workspace.sh"', verifier)
@@ -1846,8 +1854,12 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
             verifier,
         )
         self.assertIn('"legacy_typed_output_schema_ids"', verifier)
-        self.assertIn(
+        self.assertNotIn(
             'len(api["skill_contracts"]["legacy_typed_output_schema_ids"]) == 5',
+            verifier,
+        )
+        self.assertIn(
+            'assert len(inventory) == len(set(inventory))',
             verifier,
         )
         self.assertIn("build_discovery_invocation", verifier)

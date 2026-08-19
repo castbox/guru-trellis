@@ -160,7 +160,7 @@ The durable contracts for `guru-review-task-publication` are split across
 `companion-scripts.md`, and `quality-guidelines.md`. Together they own the two
 Interface 1.4 profiles, minimal exits, layered private gate, semantic/runtime
 boundary, thin routing, real-wrapper eval, participation in the current
-twenty-Skill/85-exit package closure, and install/update checks. The global
+twenty-one-Skill/89-exit package closure, and install/update checks. The global
 business workflow projection is 20 invokes, 87 exits, 33 workflow targets, and
 21 stop targets.
 
