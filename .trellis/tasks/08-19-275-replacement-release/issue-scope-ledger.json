@@ -9,6 +9,12 @@
   "close_issues": [],
   "related_issues": [
     {
+      "number": 275,
+      "url": "https://github.com/castbox/guru-trellis/issues/275",
+      "title": "修复 v0.6.5-guru.9 Throwaway closeout 回归并发布 replacement release",
+      "reason": "#275 是当前 task 的 primary source；本 PR 仅使用 Refs #275，Issue 在 merge 后继续保持 OPEN，并仅在 immutable tag、GitHub Release、tag-pinned smoke 与 downstream consumer gate 全部通过后手动关闭。"
+    },
+    {
       "number": 260,
       "url": "https://github.com/castbox/guru-trellis/issues/260",
       "title": "在当前双 SSOT 基线上升级并验证 Trellis v0.6.15：业务仓库安装态与并行兼容",
