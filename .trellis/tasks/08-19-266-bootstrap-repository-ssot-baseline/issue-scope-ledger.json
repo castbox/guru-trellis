@@ -1,0 +1,56 @@
+{
+  "schema_version": "2.0",
+  "primary_issue": {
+    "number": 266,
+    "url": "https://github.com/castbox/guru-trellis/issues/266",
+    "title": "Bootstrap guru-trellis 当前仓库：建立完整双 SSOT 与架构基线",
+    "reason": "仅在当前 docs/spec Bootstrap task 的规划、实现、独立审查、验证、发布与合并门禁全部完成后关闭 #266。"
+  },
+  "close_issues": [
+    {
+      "number": 266,
+      "url": "https://github.com/castbox/guru-trellis/issues/266",
+      "title": "Bootstrap guru-trellis 当前仓库：建立完整双 SSOT 与架构基线",
+      "reason": "当前 task 完整覆盖 #266 的双 SSOT、Architecture Baseline 与最小 Spec 投影。"
+    }
+  ],
+  "related_issues": [
+    {
+      "number": 263,
+      "url": "https://github.com/castbox/guru-trellis/issues/263",
+      "title": "建立 Requirements/Design/Test SSOT 原子闭环 Skill",
+      "reason": "已完成的 Requirements/Design/Test SSOT owner 与 focused evidence 来源；本 task 不重新实现或关闭。"
+    },
+    {
+      "number": 264,
+      "url": "https://github.com/castbox/guru-trellis/issues/264",
+      "title": "建立 Architecture Baseline 原子闭环 Skill",
+      "reason": "已完成的 Architecture Baseline owner 与 focused evidence 来源；本 task 不重新实现或关闭。"
+    },
+    {
+      "number": 265,
+      "url": "https://github.com/castbox/guru-trellis/issues/265",
+      "title": "扩展 Trellis Bootstrap：编排双 SSOT 建设与 Spec 投影",
+      "reason": "已完成的 existing_repository Bootstrap 编排 owner；本 task 真实调用其当前 active package。"
+    },
+    {
+      "number": 275,
+      "url": "https://github.com/castbox/guru-trellis/issues/275",
+      "title": "修复 v0.6.5-guru.9 Throwaway closeout 回归并发布 replacement release",
+      "reason": "独立拥有 replacement-release exact-candidate 累计 Release Gate；本 task 不开始、不修改。"
+    },
+    {
+      "number": 260,
+      "url": "https://github.com/castbox/guru-trellis/issues/260",
+      "title": "Trellis upgrade/update 与完整多平台兼容矩阵",
+      "reason": "独立拥有 v0.6.15 upgrade/update 与完整多平台兼容矩阵；本 task 仅记录 deferred boundary。"
+    },
+    {
+      "number": 267,
+      "url": "https://github.com/castbox/guru-trellis/issues/267",
+      "title": "exact-candidate 最终矩阵与 release evidence",
+      "reason": "独立拥有后续 exact-candidate release evidence；本 task 不发布 tag 或 Release。"
+    }
+  ],
+  "followup_issues": []
+}

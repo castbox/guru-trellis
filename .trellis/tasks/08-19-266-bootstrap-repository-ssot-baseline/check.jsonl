@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/bootstrap-repository-ssot.md","reason":"检查 Bootstrap completed/repair/baseline incomplete 语义与最小投影"}
+{"file":".trellis/spec/workflow/requirements-design-test-ssot.md","reason":"检查三层 authority、版本、provenance 与追踪闭环"}
+{"file":".trellis/spec/workflow/architecture-baseline.md","reason":"检查架构状态语义未串位"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"检查 #266 定向验证未扩张到 #260/#267 矩阵"}
+{"file":".trellis/spec/docs/public-docs.md","reason":"检查公共文档路径、示例与语言合同"}

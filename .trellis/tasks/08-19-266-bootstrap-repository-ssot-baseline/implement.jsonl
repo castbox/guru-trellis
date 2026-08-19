@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/bootstrap-repository-ssot.md","reason":"existing_repository Bootstrap 编排、projection 与 typed route contract"}
+{"file":".trellis/spec/workflow/requirements-design-test-ssot.md","reason":"Requirements/Design/Test authority、traceability 与 provenance contract"}
+{"file":".trellis/spec/workflow/architecture-baseline.md","reason":"Architecture Baseline 状态与 CURRENT/TARGET/GAP 边界"}
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"Validation Scope Ownership 与 deferred matrix 边界"}
+{"file":".trellis/spec/docs/index.md","reason":"top-level durable docs 读取与更新规范"}
