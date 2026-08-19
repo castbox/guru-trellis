@@ -103,8 +103,8 @@ retaining older Interface/Registry assets as immutable legacy contracts.
 `merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
 `ready_for_merge` in place of `published`; the old published schema/example
 remain immutable legacy assets but are not selected by the Interface, registry,
-workflow or extension manifest. The integrated business graph has 19 invoke
-markers, 83 exit markers and 51 unique workflow/stop targets.
+workflow or extension manifest. The integrated business graph has 20 invoke
+markers, 87 exit markers and 54 unique workflow/stop targets.
 
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
 repository/PR identity, `expected_head_sha`, expected base/head branch identity,
@@ -744,7 +744,7 @@ manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
 The current package cardinality assertion is twenty-one active Skills and 89
-exits. The integrated business workflow projection contains 19 invoke markers,
+exits. The integrated business workflow projection contains 20 invoke markers,
 87 exit markers, 33 workflow-target markers, and 21 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
