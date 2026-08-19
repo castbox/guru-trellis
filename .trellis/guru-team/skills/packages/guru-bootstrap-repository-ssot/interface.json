@@ -1,0 +1,365 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-bootstrap-repository-ssot",
+  "name": "guru-bootstrap-repository-ssot",
+  "description": "Bootstrap repository Requirements/Design/Test and Architecture Baseline SSOT with minimal .trellis/spec projection.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "compatible Guru Team runtime",
+      "binding": "current installation",
+      "freshness": "validated before invocation"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "new_repository_input",
+      "path": "examples/public-input-new-repository.json"
+    },
+    {
+      "id": "existing_repository_input",
+      "path": "examples/public-input-existing-repository.json"
+    },
+    {
+      "id": "repair_input",
+      "path": "examples/public-input-repair.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "completed_output",
+      "path": "schemas/public-completed-output.schema.json"
+    },
+    {
+      "id": "baseline_incomplete_output",
+      "path": "schemas/public-baseline-incomplete-output.schema.json"
+    },
+    {
+      "id": "repair_required_output",
+      "path": "schemas/public-repair-required-output.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-bootstrap-repository-ssot",
+      "objective_scope": "Validate owner identity and typed projection."
+    }
+  ],
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "codex",
+    "cursor",
+    "claude"
+  ],
+  "external_exits": [
+    {
+      "id": "completed",
+      "evidence": "upstream spec, #263, #264, alignment and spec projection completed",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-bootstrap-repository-ssot-completed-router"
+      }
+    },
+    {
+      "id": "baseline_incomplete",
+      "evidence": "one required SSOT or projection remains incomplete",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-bootstrap-repository-ssot-baseline-incomplete-router"
+      }
+    },
+    {
+      "id": "repair_required",
+      "evidence": "bootstrap authority or projection requires same-owner repair",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-bootstrap-repository-ssot"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "safe bootstrap route cannot be established",
+      "consumer": {
+        "kind": "stop",
+        "id": "guru-bootstrap-repository-ssot-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "profile and baseline identity",
+    "freshness": "baseline changes require fresh review",
+    "stale_behavior": "fail_closed"
+  },
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-bootstrap-repository-ssot-input-aggregate-1.0",
+        "path": "schemas/public-input-aggregate.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "new_repository",
+          "schema": {
+            "schema_id": "guru-bootstrap-repository-ssot-input-new-repository-1.0",
+            "path": "schemas/public-input-new-repository.schema.json"
+          },
+          "example": {
+            "id": "new_repository_input",
+            "path": "examples/public-input-new-repository.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "new_repository"
+          }
+        },
+        {
+          "id": "existing_repository",
+          "schema": {
+            "schema_id": "guru-bootstrap-repository-ssot-input-existing-repository-1.0",
+            "path": "schemas/public-input-existing-repository.schema.json"
+          },
+          "example": {
+            "id": "existing_repository_input",
+            "path": "examples/public-input-existing-repository.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "existing_repository"
+          }
+        },
+        {
+          "id": "repair",
+          "schema": {
+            "schema_id": "guru-bootstrap-repository-ssot-input-repair-1.0",
+            "path": "schemas/public-input-repair.schema.json"
+          },
+          "example": {
+            "id": "repair_input",
+            "path": "examples/public-input-repair.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "repair"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "profile-specific"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "error",
+        "path": "schemas/public-blocked-output.schema.json"
+      },
+      "error_example": {
+        "id": "blocked_output",
+        "path": "examples/public-blocked-output.json"
+      },
+      "example_argv": [
+        "--invocation",
+        "-"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "completed",
+        "schema": {
+          "schema_id": "completed",
+          "path": "schemas/public-completed-output.schema.json"
+        },
+        "example": {
+          "id": "completed_output",
+          "path": "examples/public-output-completed.json"
+        },
+        "consumer_use_ids": [
+          "completed_projection"
+        ]
+      },
+      {
+        "exit_id": "baseline_incomplete",
+        "schema": {
+          "schema_id": "baseline_incomplete",
+          "path": "schemas/public-baseline-incomplete-output.schema.json"
+        },
+        "example": {
+          "id": "baseline_incomplete_output",
+          "path": "examples/public-output-baseline-incomplete.json"
+        },
+        "consumer_use_ids": [
+          "baseline_incomplete_projection"
+        ]
+      },
+      {
+        "exit_id": "repair_required",
+        "schema": {
+          "schema_id": "repair_required",
+          "path": "schemas/public-repair-required-output.schema.json"
+        },
+        "example": {
+          "id": "repair_required_output",
+          "path": "examples/public-output-repair-required.json"
+        },
+        "consumer_use_ids": [
+          "repair_required_projection"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "blocked",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked_projection"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "completed_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-bootstrap-repository-ssot-completed-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "completed_input",
+          "path": "consumers/workflow/completed.schema.json"
+        }
+      },
+      {
+        "id": "baseline_incomplete_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-bootstrap-repository-ssot-baseline-incomplete-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "baseline_incomplete_input",
+          "path": "consumers/workflow/baseline-incomplete.schema.json"
+        }
+      },
+      {
+        "id": "repair_required_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-bootstrap-repository-ssot"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-bootstrap-repository-ssot/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "repair",
+          "seed_fields": [
+            "exit_id"
+          ],
+          "authoring_fields": [
+            "profile"
+          ],
+          "authoring_example": {
+            "id": "repair_input",
+            "path": "examples/public-input-repair.json"
+          }
+        }
+      },
+      {
+        "id": "blocked_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "guru-bootstrap-repository-ssot-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "blocked_input",
+          "path": "consumers/stop/blocked.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "completed_projection",
+        "exit_id": "completed",
+        "consumer_input_id": "completed_input",
+        "operation": "direct"
+      },
+      {
+        "id": "baseline_incomplete_projection",
+        "exit_id": "baseline_incomplete",
+        "consumer_input_id": "baseline_incomplete_input",
+        "operation": "direct"
+      },
+      {
+        "id": "repair_required_projection",
+        "exit_id": "repair_required",
+        "consumer_input_id": "repair_required_input",
+        "operation": "direct"
+      },
+      {
+        "id": "blocked_projection",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_input",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": []
+  }
+}

@@ -49,8 +49,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "--root", str(REPO), "--mode", "source", "--json",
         )
         self.assertEqual(payload["status"], "passed")
-        self.assertEqual(payload["active_packages"], 20)
-        self.assertEqual(payload["complete_package_commands"], 20)
+        self.assertEqual(payload["active_packages"], 21)
+        self.assertEqual(payload["complete_package_commands"], 21)
         self.assertGreater(payload["commands"], 0)
 
     def test_source_validator_rejects_duplicate_command_owner(self) -> None:
@@ -111,7 +111,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 cwd=target,
             )
             self.assertEqual(installed["status"], "passed")
-            self.assertEqual(len(installed["facts"]["active_ids"]), 20)
+            self.assertEqual(len(installed["facts"]["active_ids"]), 21)
             source_commands = sum(
                 len(json.loads(path.read_text(encoding="utf-8"))["commands"])
                 for path in (SKILLS / "packages").glob("guru-*/commands.json")

@@ -1,0 +1,1 @@
+{"scenario":"A reviewed architecture contribution is ready for projection.","owner_staging":{"recipe":"architecture-promotion-sync"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

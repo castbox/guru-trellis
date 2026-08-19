@@ -910,6 +910,13 @@ completed under `docs/**` must use Chinese human-readable prose by default.
 Literal commands, paths, config keys, GitHub keywords, external API names, and
 code symbols may remain English.
 
+The reusable `guru-bootstrap-repository-ssot` Skill owns this confirmed
+orchestration. It supports `new_repository`, `existing_repository`, and
+`repair`, calls the upstream spec bootstrap plus the active #263/#264 Skills,
+and projects only canonical locators, versions, statuses, traceability and
+freshness into `.trellis/spec`. Preset installation, upgrade, update, workflow
+switch and reapply only report its state; they never run or archive Bootstrap.
+
 The daily user-facing entry points are natural-language task requests, issue
 URLs or issue numbers, official Trellis platform entries that load the active
 workflow, and additive `guru-finish-work` (Codex prompt, Claude
@@ -1410,7 +1417,7 @@ runtime 留在 native execution 外；四平台 projection 内对应 raw read �
 throwaway project 的 `trellis update --dry-run` -> 仅当输出明确为
 `MIGRATION REQUIRED` 时执行 `trellis update --migrate --skip-all`，否则执行
 `trellis update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
-preset reapply。之后重新验证 20 Skills/85 package exits、19 invokes/83 workflow
+preset reapply。之后重新验证 20 Skills/89 package exits、19 invokes/87 workflow
 exits、31 workflow targets、20 stop targets、全部已声明 profile real installed entry、
 ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
 开发机 global npm，也不升级真实业务仓。

@@ -97,7 +97,7 @@ workflow/standalone preconditions before a package command can run.
 ### 0. Current Interface And Registry Contract
 
 Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains twenty active packages and 85 package exits while
+Registry 1.4 graph contains twenty-one active packages and 89 package exits while
 retaining older Interface/Registry assets as immutable legacy contracts.
 `guru-merge-task-pr` is a current semantic package with exactly
 `merged`, `merge_blocked`, and `closure_mismatch`. Current Finalizer exposes
@@ -135,7 +135,7 @@ The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
 defaults. The extension publishes one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all twenty active packages and their 85 external exits. The
+for all twenty-one active packages and their 89 external exits. The
 `production-current-v4` is the sole current manifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
 activation of other packages, including `guru-finalize-task`, does not rewrite
@@ -743,9 +743,9 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is twenty active Skills and 85
+The current package cardinality assertion is twenty-one active Skills and 89
 exits. The integrated business workflow projection contains 19 invoke markers,
-83 exit markers, 31 workflow-target markers, and 20 stop-target markers. Missing,
+87 exit markers, 33 workflow-target markers, and 21 stop-target markers. Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -1652,7 +1652,7 @@ fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
 The current additive activation set contributes to the live closure of twenty
-active Skills and 85 exits. The production current manifest contains exactly
+active Skills and 89 exits. The production current manifest contains exactly
 four Skills and 15 exits.
 
 ## Extension Installation Verification Owner
