@@ -4,7 +4,7 @@
     "number": 265,
     "url": "https://github.com/castbox/guru-trellis/issues/265",
     "title": "扩展 Trellis Bootstrap：编排双 SSOT 建设与 Spec 投影",
-    "reason": "本 task 完整覆盖 Issue #265 的 Bootstrap semantic Skill、跨 SSOT 编排、Spec projection、安装激活与 Issue-owned 验证范围。"
+    "reason": "仅在当前 task 的实现、独立审查、验证与发布门禁完成后关闭 #265。"
   },
   "close_issues": [
     {
@@ -17,18 +17,26 @@
   "related_issues": [
     {
       "number": 263,
+      "url": "https://github.com/castbox/guru-trellis/issues/263",
+      "title": "建立 Requirements/Design/Test SSOT 原子闭环 Skill",
       "reason": "Requirements/Design/Test SSOT atomic Skill prerequisite and runtime consumer; not closed here."
     },
     {
       "number": 264,
+      "url": "https://github.com/castbox/guru-trellis/issues/264",
+      "title": "建立 Architecture Baseline 原子闭环 Skill",
       "reason": "Architecture Baseline atomic Skill prerequisite and runtime consumer; not closed here."
     },
     {
       "number": 260,
+      "url": "https://github.com/castbox/guru-trellis/issues/260",
+      "title": "Trellis upgrade/update 与完整多平台兼容矩阵",
       "reason": "Owns later Trellis upgrade/update and complete multi-platform compatibility matrix; not closed here."
     },
     {
       "number": 267,
+      "url": "https://github.com/castbox/guru-trellis/issues/267",
+      "title": "exact-candidate 最终矩阵与 release evidence",
       "reason": "Owns exact-candidate final matrix and release evidence; not closed here."
     }
   ],
